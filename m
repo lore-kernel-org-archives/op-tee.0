@@ -1,54 +1,35 @@
-From: Jerome Forissier <jerome.forissier@linaro.org>
+From: Jerome Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: fix format string for printing optee build_id
-Date: Fri, 29 Nov 2024 13:58:35 +0100
-Message-ID: <41999ad0-30a3-4663-936d-9ce0a00992b8@linaro.org>
-In-Reply-To: <20241129114648.3048941-1-sahil.malhotra@nxp.com>
+Subject: [op-tee] [PATCH v2 0/2] hw/arm/virt: dt: add kaslr-seed property
+Date: Mon, 20 Apr 2020 14:18:05 +0200
+Message-ID: <20200420121807.8204-1-jerome@forissier.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2365537757111573700=="
+Content-Type: multipart/mixed; boundary="===============4936133501417343725=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2365537757111573700==
+--===============4936133501417343725==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+
+This patchset creates the DT property /chosen/kaslr-seed which is used
+by the OS for Address Space Layout Randomization. If the machine is
+secure, a similar property is created under /secure-chosen.
+
+Changes since v1:
+ - Move creation of /secure-chosen to create_fdt()
+ - Use qemu_guest_getrandom() instead of qcrypto_random_bytes()
+ - Create kaslr-seed for the non-secure OS too
+
+Jerome Forissier (2):
+  hw/arm/virt: dt: move creation of /secure-chosen to create_fdt()
+  hw/arm/virt: dt: add kaslr-seed property
+
+ hw/arm/virt.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+-- 
+2.20.1
 
 
-
-On 11/29/24 12:46, Sahil Malhotra wrote:
-> There has been a recent change in OP-TEE to print 8 and 16 character
-> commit id for 32bit and 64bit architecture respectively.
-> In case if commit id is starting with 0 like 04d1c612ec7beaede073b8c
-> it is printing revision as below removing leading 0
-> "optee: revision 4.4 (4d1c612ec7beaed)"
->=20
-> Signed-off-by: Sahil Malhotra <sahil.malhotra@nxp.com>
-> ---
->  drivers/tee/optee/smc_abi.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index e9456e3e74cc..eb51dc18f32d 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -1272,8 +1272,9 @@ static void optee_msg_get_os_revision(optee_invoke_fn=
- *invoke_fn)
->  		  &res.smccc);
-> =20
->  	if (res.result.build_id)
-> -		pr_info("revision %lu.%lu (%08lx)", res.result.major,
-> -			res.result.minor, res.result.build_id);
-> +		pr_info("revision %lu.%lu (%0*lx)", res.result.major,
-> +			res.result.minor, (int)sizeof(res.result.build_id) * 2,
-> +			res.result.build_id);
->  	else
->  		pr_info("revision %lu.%lu", res.result.major, res.result.minor);
->  }
-
-Reviewed-by: Jerome Forissier <jerome.forissier@linaro.org>
-
-Thanks,
---=20
-Jerome
-
---===============2365537757111573700==--
+--===============4936133501417343725==--
 
