@@ -1,38 +1,69 @@
-From: Peter Maydell <peter.maydell@linaro.org>
+From: Vesa Jääskeläinen <vesa.jaaskelainen@vaisala.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [op-tee] [PATCH v2 0/2] hw/arm/virt: dt: add kaslr-seed property
-Date: Thu, 23 Apr 2020 12:59:18 +0100
-Message-ID: 
- <CAFEAcA_q58Yk_7b0DViWse1v7sRMR05FKjSbtFtgHasY7fYWYw@mail.gmail.com>
-In-Reply-To: <20200420121807.8204-1-jerome@forissier.org>
+Subject: 
+ [op-tee] [PATCH 0/3] tee: add support for session's client UUID generation
+Date: Thu, 23 Apr 2020 18:16:58 +0300
+Message-ID: <20200423151701.111231-1-vesa.jaaskelainen@vaisala.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5411555408880208198=="
+Content-Type: multipart/mixed; boundary="===============7863534584716565828=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5411555408880208198==
+--===============7863534584716565828==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 20 Apr 2020 at 13:20, Jerome Forissier <jerome@forissier.org> wrote:
->
-> This patchset creates the DT property /chosen/kaslr-seed which is used
-> by the OS for Address Space Layout Randomization. If the machine is
-> secure, a similar property is created under /secure-chosen.
->
-> Changes since v1:
->  - Move creation of /secure-chosen to create_fdt()
->  - Use qemu_guest_getrandom() instead of qcrypto_random_bytes()
->  - Create kaslr-seed for the non-secure OS too
->
-> Jerome Forissier (2):
->   hw/arm/virt: dt: move creation of /secure-chosen to create_fdt()
->   hw/arm/virt: dt: add kaslr-seed property
+TEE Client API defines that from user space only information needed for
+specified login operations is group identifier for group based logins.
 
+REE kernel is expected to formulate trustworthy client UUID and pass that
+to TEE environment. REE kernel is required to verify that provided group
+identifier for group based logins matches calling processes group
+memberships.
 
+TEE specification only defines that the information passed from REE
+environment to TEE environment is encoded into on UUID.
 
-Applied to target-arm.next, thanks.
+In order to guarantee trustworthiness of client UUID user space is not
+allowed to freely pass client UUID.
 
--- PMM
+Vesa J=C3=A4=C3=A4skel=C3=A4inen (3):
+  tee: add support for session's client UUID generation
+  tee: optee: Add support for session login client UUID generation
+  [RFC] tee: add support for app id for client UUID generation
 
---===============5411555408880208198==--
+ drivers/tee/Kconfig      |   1 +
+ drivers/tee/optee/call.c |   6 +-
+ drivers/tee/tee_core.c   | 188 +++++++++++++++++++++++++++++++++++++++
+ include/linux/tee_drv.h  |  16 ++++
+ 4 files changed, 210 insertions(+), 1 deletion(-)
+
+--=20
+2.17.1
+
+Notes:
+
+This patcheset has been designed so that it can be iteratively intergrated
+meaning that the application ID (RFC patch) part can be left for later when
+there is agreed solution for that.
+
+TEE specification leaves Linux behavior undefined. It does not define any
+UUID value for name space. UUID in here is randomly generated with uuidgen
+tool.
+
+I have also include amdtee people as this method probably should also be
+applied in there.
+
+Using op-tee(a)lists.trustedfirmware.org instead of tee-dev(a)lists.linaro.or=
+g as
+latter is deprecated old list.
+
+Original issue in OP-TEE OS tracker:
+https://github.com/OP-TEE/optee_os/issues/3642
+
+Related reviews and demonstration for the concept:
+https://github.com/linaro-swg/linux/pull/74
+https://github.com/OP-TEE/optee_client/pull/195
+https://github.com/OP-TEE/optee_test/pull/406
+
+--===============7863534584716565828==--
 
