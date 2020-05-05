@@ -1,71 +1,35 @@
-From: Dave Rodgman <dave.rodgman@arm.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Mbed TLS GitHub migration
-Date: Thu, 31 Mar 2022 13:51:25 +0000
-Message-ID: <FA93C365-6313-4AAD-B570-826849B075BE@arm.com>
-In-Reply-To: <=?utf-8?q?=3CDU2PR08MB72886F0D04000A8C4047CF3F8F179=40DU2PR08MB?=
- =?utf-8?q?7288=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: [op-tee] Preparing for OP-TEE 3.9.0
+Date: Tue, 05 May 2020 19:01:00 +0200
+Message-ID: <20200505170100.GA16546@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0300623900511309275=="
+Content-Type: multipart/mixed; boundary="===============1983428508192935402=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0300623900511309275==
+--===============1983428508192935402==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi all,
+[BCC all OP-TEE maintainers]
 
-Please be advised that the Mbed TLS GitHub migration is complete. The new hom=
-e for Mbed TLS is:
+Hi OP-TEE maintainers & contributors,
 
-https://github.com/Mbed-TLS
+We're about to make another OP-TEE release, namely: 3.9.0. Target is
+Friday, May 22th which leaves us almost 3 weeks to finalize the
+release.
 
-We recommend updating your project, checkouts, etc to point at the new reposi=
-tory, but it's not urgent as everything will continue to work for some time v=
-ia automatic redirection.
+Please start testing your favorite platform(s) and report any issue in
+this pull request [1]. I will create a release candidate tag one week
+before the release date, at which point we will do some more testing and
+I will collect Tested-by tags in the same pull request.
 
-Also please note that our project boards, which we use for planning upcoming =
-work via epics, and tracking current activity, have moved. They are now avail=
-able here:
+[1] https://github.com/OP-TEE/optee_os/pull/3833
 
-Epics board: https://github.com/orgs/Mbed-TLS/projects/1
-Current activity: https://github.com/orgs/Mbed-TLS/projects/2=20
+Thanks!
 
-Thanks
+Regards,
+Jens
 
-Dave Rodgman
-
-=EF=BB=BFOn 22/03/2022, 14:52, "Dave Rodgman via Mbed-tls-announce" <mbed-tls=
--announce@lists.trustedfirmware.org> wrote:
-
-    Hi all,
-
-    Please note that in the next couple of weeks, we will migrate Mbed TLS to=
- a new GitHub organisation. Your existing scripts, links etc for accessing Mb=
-ed TLS on GitHub should not be affected.
-
-    This will change the url from https://github.com/ARMmbed/mbedtls to https=
-://github.com/Mbed-TLS/mbedtls . GitHub will redirect any accesses to the old=
- URL for the foreseeable future, but we would recommend updating your links o=
-nce the migration is complete.
-
-    All of the Mbed TLS repositories will migrate to this new organisation, i=
-.e.:
-
-    mbedtls
-    mbedtls-docs
-    mbedtls-test
-
-    Thanks
-
-    Dave Rodgman
-
-    --=20
-    Mbed-tls-announce mailing list -- mbed-tls-announce(a)lists.trustedfirmwa=
-re.org
-    To unsubscribe send an email to mbed-tls-announce-leave(a)lists.trustedfi=
-rmware.org
-
-
---===============0300623900511309275==--
+--===============1983428508192935402==--
 
