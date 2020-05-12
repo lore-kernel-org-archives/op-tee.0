@@ -1,80 +1,86 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [op-tee] [PATCH v4 0/4] Introduce TEE based Trusted Keys support
-Date: Tue, 12 May 2020 14:50:42 +0530
-Message-ID: 
- <CAFA6WYNgBQDBY+670fG38Yrg8tMg6U74TW12WON=9dVvsT0t6w@mail.gmail.com>
-In-Reply-To: <1588758017-30426-1-git-send-email-sumit.garg@linaro.org>
+Subject: Re: [op-tee] [PATCH v2 0/3] tee: add support for session's client
+ UUID generation
+Date: Tue, 12 May 2020 12:56:09 +0200
+Message-ID: <20200512105608.GA6646@jade>
+In-Reply-To: <20200430123711.20083-1-vesa.jaaskelainen@vaisala.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1296657122621172358=="
+Content-Type: multipart/mixed; boundary="===============1018488976568484827=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1296657122621172358==
+--===============1018488976568484827==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 6 May 2020 at 15:10, Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> Add support for TEE based trusted keys where TEE provides the functionality
-> to seal and unseal trusted keys using hardware unique key. Also, this is
-> an alternative in case platform doesn't possess a TPM device.
->
-> This patch-set has been tested with OP-TEE based early TA which can be
-> found here [1].
->
-> [1] https://github.com/OP-TEE/optee_os/pull/3838
+On Thu, Apr 30, 2020 at 03:37:08PM +0300, Vesa J=C3=A4=C3=A4skel=C3=A4inen wr=
+ote:
+> TEE Client API defines that from user space only information needed for
+> specified login operations is group identifier for group based logins.
+>=20
+> REE kernel is expected to formulate trustworthy client UUID and pass that
+> to TEE environment. REE kernel is required to verify that provided group
+> identifier for group based logins matches calling processes group
+> memberships.
+>=20
+> TEE specification only defines that the information passed from REE
+> environment to TEE environment is encoded into on UUID.
+>=20
+> In order to guarantee trustworthiness of client UUID user space is not
+> allowed to freely pass client UUID.
+>=20
+> Vesa J=C3=A4=C3=A4skel=C3=A4inen (3):
+>   tee: add support for session's client UUID generation
+>   tee: optee: Add support for session login client UUID generation
 
-Fyi, this PR has been merged in OP-TEE OS as commit [1]. Looking
-forward to any further comments/feedback on this patch-set.
+I'm picking up these two patches.
 
-[1] https://github.com/OP-TEE/optee_os/commit/f86ab8e7e0de869dfa25ca05a37ee07=
-0d7e5b86b
+>   [RFC] tee: add support for app id for client UUID generation
 
--Sumit
+I'm waiting with this patch until we've reached some conclusion.
 
->
-> Changes in v4:
-> 1. Pushed independent TEE features separately:
->   - Part of recent TEE PR: https://lkml.org/lkml/2020/5/4/1062
-> 2. Updated trusted-encrypted doc with TEE as a new trust source.
-> 3. Rebased onto latest tpmdd/master.
->
-> Changes in v3:
-> 1. Update patch #2 to support registration of multiple kernel pages.
-> 2. Incoporate dependency patch #4 in this patch-set:
->    https://patchwork.kernel.org/patch/11091435/
->
-> Changes in v2:
-> 1. Add reviewed-by tags for patch #1 and #2.
-> 2. Incorporate comments from Jens for patch #3.
-> 3. Switch to use generic trusted keys framework.
->
-> Sumit Garg (4):
->   KEYS: trusted: Add generic trusted keys framework
->   KEYS: trusted: Introduce TEE based Trusted Keys
->   doc: trusted-encrypted: updates with TEE as a new trust source
->   MAINTAINERS: Add entry for TEE based Trusted Keys
->
->  Documentation/security/keys/trusted-encrypted.rst | 203 ++++++++++---
->  MAINTAINERS                                       |   8 +
->  include/keys/trusted-type.h                       |  48 ++++
->  include/keys/trusted_tee.h                        |  66 +++++
->  include/keys/trusted_tpm.h                        |  15 -
->  security/keys/Kconfig                             |   3 +
->  security/keys/trusted-keys/Makefile               |   2 +
->  security/keys/trusted-keys/trusted_common.c       | 336 ++++++++++++++++++=
-++++
->  security/keys/trusted-keys/trusted_tee.c          | 282 ++++++++++++++++++
->  security/keys/trusted-keys/trusted_tpm1.c         | 335 ++++--------------=
----
->  10 files changed, 974 insertions(+), 324 deletions(-)
->  create mode 100644 include/keys/trusted_tee.h
->  create mode 100644 security/keys/trusted-keys/trusted_common.c
->  create mode 100644 security/keys/trusted-keys/trusted_tee.c
->
-> --
-> 2.7.4
->
+Thanks,
+Jens
 
---===============1296657122621172358==--
+>=20
+>  drivers/tee/Kconfig      |   1 +
+>  drivers/tee/optee/call.c |   6 +-
+>  drivers/tee/tee_core.c   | 211 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/tee_drv.h  |  16 +++
+>  4 files changed, 233 insertions(+), 1 deletion(-)
+>=20
+> --=20
+> 2.17.1
+>=20
+> Changes v1->v2:
+>=20
+> * Changed goto labels to be more logical
+> * Capture error if formatted string for UUIDv5 does not fit into buffer
+>=20
+> Notes:
+>=20
+> This patcheset has been designed so that it can be iteratively intergrated
+> meaning that the application ID (RFC patch) part can be left for later when
+> there is agreed solution for that.
+>=20
+> TEE specification leaves Linux behavior undefined. It does not define any
+> UUID value for name space. UUID in here is randomly generated with uuidgen
+> tool.
+>=20
+> I have also include amdtee people as this method probably should also be
+> applied in there.
+>=20
+> Using op-tee(a)lists.trustedfirmware.org instead of tee-dev(a)lists.linaro.=
+org as
+> latter is deprecated old list.
+>=20
+> Original issue in OP-TEE OS tracker:
+> https://github.com/OP-TEE/optee_os/issues/3642
+>=20
+> Related reviews and demonstration for the concept:
+> https://github.com/linaro-swg/linux/pull/74
+> https://github.com/OP-TEE/optee_client/pull/195
+> https://github.com/OP-TEE/optee_test/pull/406
+
+--===============1018488976568484827==--
 
