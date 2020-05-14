@@ -1,34 +1,34 @@
 From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [op-tee] [PATCH v4 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
-Date: Thu, 14 May 2020 03:28:18 +0300
-Message-ID: <ef2093f96eae7e9e6785f2c0ad00604d8adfd3be.camel@linux.intel.com>
-In-Reply-To: <1588758017-30426-3-git-send-email-sumit.garg@linaro.org>
+Subject: Re: [op-tee] [PATCH v4 3/4] doc: trusted-encrypted: updates with TEE
+ as a new trust source
+Date: Thu, 14 May 2020 03:29:20 +0300
+Message-ID: <f8d77be225783f428983ef38df026b7cd8724319.camel@linux.intel.com>
+In-Reply-To: <1588758017-30426-4-git-send-email-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3883986521176969220=="
+Content-Type: multipart/mixed; boundary="===============8231468009771709501=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3883986521176969220==
+--===============8231468009771709501==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
 On Wed, 2020-05-06 at 15:10 +0530, Sumit Garg wrote:
-> Add support for TEE based trusted keys where TEE provides the functionality
-> to seal and unseal trusted keys using hardware unique key.
+> Update documentation for Trusted and Encrypted Keys with TEE as a new
+> trust source. Following is brief description of updates:
 > 
-> Refer to Documentation/tee.txt for detailed information about TEE.
+> - Add a section to demostrate a list of supported devices along with
+>   their security properties/guarantees.
+> - Add a key generation section.
+> - Updates for usage section including differences specific to a trust
+>   source.
 > 
 > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 
-The implementation looks solid but how or who could possibly test this?
-
-I do posses (personally, not from employer) bunch of ARM boards but my
-TZ knowledge is somewhat limited (e.g. how can I get something running
-in TZ).
+Reviewed-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
 
 /Jarkko
 
 
---===============3883986521176969220==--
+--===============8231468009771709501==--
 
