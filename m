@@ -1,86 +1,38 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [op-tee] [PATCH v2 0/3] tee: add support for session's client
- UUID generation
-Date: Tue, 12 May 2020 12:56:09 +0200
-Message-ID: <20200512105608.GA6646@jade>
-In-Reply-To: <20200430123711.20083-1-vesa.jaaskelainen@vaisala.com>
+Subject: 
+ Re: [op-tee] [PATCH v4 1/4] KEYS: trusted: Add generic trusted keys framework
+Date: Thu, 14 May 2020 03:25:14 +0300
+Message-ID: <07bb6080f8be9f6613f460e2d6e19f3d456e219c.camel@linux.intel.com>
+In-Reply-To: <1588758017-30426-2-git-send-email-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1018488976568484827=="
+Content-Type: multipart/mixed; boundary="===============6821506881099145356=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1018488976568484827==
+--===============6821506881099145356==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 30, 2020 at 03:37:08PM +0300, Vesa J=C3=A4=C3=A4skel=C3=A4inen wr=
-ote:
-> TEE Client API defines that from user space only information needed for
-> specified login operations is group identifier for group based logins.
->=20
-> REE kernel is expected to formulate trustworthy client UUID and pass that
-> to TEE environment. REE kernel is required to verify that provided group
-> identifier for group based logins matches calling processes group
-> memberships.
->=20
-> TEE specification only defines that the information passed from REE
-> environment to TEE environment is encoded into on UUID.
->=20
-> In order to guarantee trustworthiness of client UUID user space is not
-> allowed to freely pass client UUID.
->=20
-> Vesa J=C3=A4=C3=A4skel=C3=A4inen (3):
->   tee: add support for session's client UUID generation
->   tee: optee: Add support for session login client UUID generation
+On Wed, 2020-05-06 at 15:10 +0530, Sumit Garg wrote:
+> Current trusted keys framework is tightly coupled to use TPM device as
+> an underlying implementation which makes it difficult for implementations
+> like Trusted Execution Environment (TEE) etc. to provide trusked keys
+> support in case platform doesn't posses a TPM device.
+> 
+> So this patch tries to add generic trusted keys framework where underlying
+> implemtations like TPM, TEE etc. could be easily plugged-in.
+> 
+> Suggested-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 
-I'm picking up these two patches.
+I tend to agree how this is implemented and could merge it as such.
 
->   [RFC] tee: add support for app id for client UUID generation
+I'm just thinking if we could refine this patch in a way that instead of
+copying TRUSTED_DEBUG macro we could just replace pr_info() statements
+with pr_debug()?
 
-I'm waiting with this patch until we've reached some conclusion.
+/Jarkko
 
-Thanks,
-Jens
 
->=20
->  drivers/tee/Kconfig      |   1 +
->  drivers/tee/optee/call.c |   6 +-
->  drivers/tee/tee_core.c   | 211 +++++++++++++++++++++++++++++++++++++++
->  include/linux/tee_drv.h  |  16 +++
->  4 files changed, 233 insertions(+), 1 deletion(-)
->=20
-> --=20
-> 2.17.1
->=20
-> Changes v1->v2:
->=20
-> * Changed goto labels to be more logical
-> * Capture error if formatted string for UUIDv5 does not fit into buffer
->=20
-> Notes:
->=20
-> This patcheset has been designed so that it can be iteratively intergrated
-> meaning that the application ID (RFC patch) part can be left for later when
-> there is agreed solution for that.
->=20
-> TEE specification leaves Linux behavior undefined. It does not define any
-> UUID value for name space. UUID in here is randomly generated with uuidgen
-> tool.
->=20
-> I have also include amdtee people as this method probably should also be
-> applied in there.
->=20
-> Using op-tee(a)lists.trustedfirmware.org instead of tee-dev(a)lists.linaro.=
-org as
-> latter is deprecated old list.
->=20
-> Original issue in OP-TEE OS tracker:
-> https://github.com/OP-TEE/optee_os/issues/3642
->=20
-> Related reviews and demonstration for the concept:
-> https://github.com/linaro-swg/linux/pull/74
-> https://github.com/OP-TEE/optee_client/pull/195
-> https://github.com/OP-TEE/optee_test/pull/406
-
---===============1018488976568484827==--
+--===============6821506881099145356==--
 
