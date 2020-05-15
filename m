@@ -1,57 +1,51 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [op-tee] [PATCH v4 1/4] KEYS: trusted: Add generic trusted keys framework
-Date: Fri, 15 May 2020 03:00:25 +0300
-Message-ID: <956b284c2b144313fd158de75cba510eb98f71bf.camel@linux.intel.com>
-In-Reply-To: <
- <CAFA6WYMciZ=qkG3N_9YWzt_DJr2dGwdAy9diMXCJSNjr2o5ONA@mail.gmail.com>>
+Subject: Re: [op-tee] Preparing for OP-TEE 3.9.0
+Date: Fri, 15 May 2020 13:10:18 +0200
+Message-ID: 
+ <CAHUa44GrMjXwyCvZ06K44rJHiPXNV9BTooN5KR_Jd_J5i+=+sA@mail.gmail.com>
+In-Reply-To: <20200505170100.GA16546@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8036045337099583789=="
+Content-Type: multipart/mixed; boundary="===============0583794127754595513=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8036045337099583789==
+--===============0583794127754595513==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2020-05-14 at 16:53 +0530, Sumit Garg wrote:
-> On Thu, 14 May 2020 at 05:55, Jarkko Sakkinen
-> <jarkko.sakkinen@linux.intel.com> wrote:
-> > On Wed, 2020-05-06 at 15:10 +0530, Sumit Garg wrote:
-> > > Current trusted keys framework is tightly coupled to use TPM device as
-> > > an underlying implementation which makes it difficult for implementatio=
-ns
-> > > like Trusted Execution Environment (TEE) etc. to provide trusked keys
-> > > support in case platform doesn't posses a TPM device.
-> > >=20
-> > > So this patch tries to add generic trusted keys framework where underly=
-ing
-> > > implemtations like TPM, TEE etc. could be easily plugged-in.
-> > >=20
-> > > Suggested-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-> > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> >=20
-> > I tend to agree how this is implemented and could merge it as such.
-> >=20
-> > I'm just thinking if we could refine this patch in a way that instead of
-> > copying TRUSTED_DEBUG macro we could just replace pr_info() statements
-> > with pr_debug()?
->=20
-> AFAIU, TRUSTED_DEBUG being a security sensitive operation is only
-> meant to be used in development environments and should be strictly
-> disabled in production environments. But it may not always be true
-> with pr_debug() with CONFIG_DYNAMIC_DEBUG=3Dy which allows the debug
-> paths to be compiled into the kernel which can be enabled/disabled at
-> runtime.
->=20
-> IMO we should keep this TRUSTED_DEBUG macro, so that users are aware
-> of its security sensitive nature and need to explicitly enable it to
-> debug.
+Hi,
 
-You are absolutely correct.
+FYI, I've tagged 3.9.0-rc1 now. One week to go until the release
+Friday, May 22th.
 
-/Jarkko
+So far nothing big and scary has been discovered. I hope we'll be able
+to do the release as scheduled.
 
+Cheers,
+Jens
 
---===============8036045337099583789==--
+On Tue, May 5, 2020 at 7:01 PM Jens Wiklander <jens.wiklander@linaro.org> w=
+rote:
+>
+> [BCC all OP-TEE maintainers]
+>
+> Hi OP-TEE maintainers & contributors,
+>
+> We're about to make another OP-TEE release, namely: 3.9.0. Target is
+> Friday, May 22th which leaves us almost 3 weeks to finalize the
+> release.
+>
+> Please start testing your favorite platform(s) and report any issue in
+> this pull request [1]. I will create a release candidate tag one week
+> before the release date, at which point we will do some more testing and
+> I will collect Tested-by tags in the same pull request.
+>
+> [1] https://github.com/OP-TEE/optee_os/pull/3833
+>
+> Thanks!
+>
+> Regards,
+> Jens
+
+--===============0583794127754595513==--
 
