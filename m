@@ -1,85 +1,110 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [op-tee] [PATCH] Documentation: tee: Document TEE kernel interface
-Date: Wed, 03 Jun 2020 17:01:28 +0530
-Message-ID: <1591183888-11101-1-git-send-email-sumit.garg@linaro.org>
+Subject: Re: [op-tee] [PATCH v5 0/4] Introduce TEE based Trusted Keys support
+Date: Wed, 03 Jun 2020 17:15:20 +0530
+Message-ID: 
+ <CAFA6WYOFO8YptYp2JrY7nQL0MeM02VLCHvtnxUCEDd5-fb-z+Q@mail.gmail.com>
+In-Reply-To: <
+ <CAKrSGQSLKpb8T=H9zUoPP1B6EFrgMTMP3ZX1pEv99JtdPq7H0w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4866038616064524997=="
+Content-Type: multipart/mixed; boundary="===============7998218171053212585=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4866038616064524997==
+--===============7998218171053212585==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Update documentation with TEE bus infrastructure which provides an
-interface for kernel client drivers to communicate with corresponding
-Trusted Application.
+On Wed, 3 Jun 2020 at 14:20, Luke Hinds <lhinds@redhat.com> wrote:
+>
+>
+>
+> On Wed, Jun 3, 2020 at 9:08 AM Sumit Garg <sumit.garg@linaro.org> wrote:
+>>
+>> On Tue, 2 Jun 2020 at 20:14, James Bottomley <jejb@linux.ibm.com> wrote:
+>> >
+>> > On Tue, 2020-06-02 at 19:48 +0530, Sumit Garg wrote:
+>> > > Add support for TEE based trusted keys where TEE provides the
+>> > > functionality to seal and unseal trusted keys using hardware unique
+>> > > key. Also, this is an alternative in case platform doesn't possess a
+>> > > TPM device.
+>> >
+>> > So here's a meta problem: in the case when the platform possesses both
+>> > TEE and TPM  what should it do?
+>>
+>> IMO, trust source (either a TPM or a TEE) should be unique and
+>> carefully chosen as per platform security policy corresponding to a
+>> particular threat model.
+>>
+>> And moreover TEEs have been mostly used in the embedded world where
+>> having a hardware TPM is cumbersome given constraints regarding BoM
+>> cost and hardware resources.
+>>
+>> >  Things like this:
+>> >
+>> > > --- a/security/keys/trusted-keys/trusted_core.c
+>> > > +++ b/security/keys/trusted-keys/trusted_core.c
+>> > > @@ -25,6 +25,8 @@
+>> > >
+>> > >  #if defined(CONFIG_TRUSTED_TPM)
+>> > >  static struct trusted_key_ops *trusted_key_ops =3D
+>> > > &tpm_trusted_key_ops;
+>> > > +#elif defined(CONFIG_TRUSTED_TEE)
+>> > > +static struct trusted_key_ops *trusted_key_ops =3D
+>> > > &tee_trusted_key_ops;
+>> > >  #else
+>> >
+>> > Say it's either/or at a Kconfig level: so if you select both TEE and
+>> > TPM based trusted keys at compile time, we intall the TPM ops and
+>> > ignore the TEE ops, is that right?  Surely this should be runtime
+>> > selectable based on what the platform has ...
+>>
+>> This dynamic selection was already part of v4 patch-set but after
+>> objection from Jarrko here [1], I switched to compile time mode
+>> instead.
+>>
+>> [1] https://lkml.org/lkml/2020/6/2/139
+>
+>
+> Unless I have misunderstood, my concerns about compile time are that distri=
+butors will be cornered into releasing kernels with an opinionated selection =
+of either TEE or TPM and any users needing the non default will need to compi=
+le their own kernel.
+>
 
-Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
----
- Documentation/tee.txt | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+I echo with your concerns.
 
-diff --git a/Documentation/tee.txt b/Documentation/tee.txt
-index c8fad81..428d3b5 100644
---- a/Documentation/tee.txt
-+++ b/Documentation/tee.txt
-@@ -53,6 +53,28 @@ clients, forward them to the TEE and send back the results=
-. In the case of
- supplicants the communication goes in the other direction, the TEE sends
- requests to the supplicant which then sends back the result.
-=20
-+The TEE kernel interface
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+Kernel provides a TEE bus infrastructure where a Trusted Application is
-+represented as a device identified via Universally Unique Identifier (UUID) =
-and
-+client drivers register a table of supported device UUIDs.
-+
-+TEE bus infrastructure registers following APIs:
-+-  match(): iterates over the client driver UUID table to find a correspondi=
-ng
-+   match for device UUID. If a match is found, then this particular device is
-+   probed via corresponding probe API registered by the client driver. This
-+   process happens whenever a device or a client driver is registered with T=
-EE
-+   bus.
-+-  uevent(): notifies user-space (udev) whenever a new device is registered =
-on
-+   TEE bus for auto-loading of modularized client drivers.
-+
-+TEE bus device enumeration is specific to underlying TEE implementation, so =
-it
-+is left open for TEE drivers to provide corresponding implementation.
-+
-+Then TEE client driver can talk to a matched Trusted Application using APIs
-+listed in include/linux/tee_drv.h.
-+
- OP-TEE driver
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=20
-@@ -112,6 +134,14 @@ kernel are handled by the kernel driver. Other RPC messa=
-ges will be forwarded to
- tee-supplicant without further involvement of the driver, except switching
- shared memory buffer representation.
-=20
-+OP-TEE device enumeration
-+-------------------------
-+
-+OP-TEE provides a pseudo Trusted Application: drivers/tee/optee/device.c in
-+order to support device enumeration. In other words, OP-TEE driver invokes t=
-his
-+application to retrieve a list of Trusted Applications which can be register=
-ed
-+as devices on the TEE bus.
-+
- AMD-TEE driver
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=20
---=20
-2.7.4
+Jarrko,
 
+If it's fine with you then I can switch back to dynamic approach again
+in the next version.
 
---===============4866038616064524997==--
+-Sumit
+
+>>
+>>
+>> > perhaps it should even be
+>> > selectable per key?
+>> >
+>> > Once it is runtime selectable, what should be selected in the both
+>> > case?  Or should we allow the user to decide, if so, how?
+>> >
+>> > when you pipe a trusted key, I think the subtype (TEE or TPM) should be
+>> > part of the piped information, so it loads again seamlessly.  This
+>> > would actually be fixed by something like the ASN.1 scheme I'm trying
+>> > to upstream, at least for TPM keys, but do TEE keys have a recognized
+>> > ASN.1 format?
+>> >
+>>
+>> I guess this is something which we can refine later if there are real
+>> platforms that have a particular security requirement to support both
+>> TPM and a TEE.
+>>
+>> -Sumit
+>>
+>> > James
+>> >
+>>
+>
+
+--===============7998218171053212585==--
 
