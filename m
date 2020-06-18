@@ -1,48 +1,44 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+From: Muhammad Saad <saad.ucf@Knights.ucf.edu>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 1/4] KEYS: trusted: Add generic trusted keys framework
-Date: Thu, 18 Jun 2020 10:19:55 +0300
-Message-ID: <20200618071955.GE6560@linux.intel.com>
-In-Reply-To: <
- <CAFA6WYOdtwnewqY0ASnMf7fyw3s_hQx0+oWJRhT3CpkkkxYpDA@mail.gmail.com>>
+Subject: OP-TEE Development Guidance
+Date: Thu, 18 Jun 2020 07:32:22 +0000
+Message-ID: <BL0PR07MB55243FCAF31BAC3A01572032D39B0@BL0PR07MB5524.namprd07.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6922075130722585190=="
+Content-Type: multipart/mixed; boundary="===============2485909606693283627=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6922075130722585190==
+--===============2485909606693283627==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 18, 2020 at 12:12:41PM +0530, Sumit Garg wrote:
-> On Thu, 18 Jun 2020 at 04:44, Jarkko Sakkinen
-> <jarkko.sakkinen@linux.intel.com> wrote:
-> >
-> > On Tue, Jun 16, 2020 at 07:02:37PM +0530, Sumit Garg wrote:
-> > > + Luke
-> > >
-> > > Hi Jarkko,
-> > >
-> > > Prior to addressing your comments below which seems to show your
-> > > preference for compile time selection of trust source (TPM or TEE), I
-> > > would just like to hear the reasons for this preference especially if
-> > > it makes distro vendor's life difficult [1] to make opinionated
-> > > selection which could rather be achieved dynamically based on platform
-> > > capability.
-> > >
-> > > [1] https://lkml.org/lkml/2020/6/3/405
-> > >
-> > > -Sumit
-> >
-> > Hmm... I do get the distribution kernel point. OK, lets revert to
-> > dynamic then. Thanks for the remark.
-> >
-> > /Jarkko
-> 
-> Thanks, will revert to dynamic mode in v6.
+Hello All,
 
-Sorry about the extra trouble caused by me.
+First, I hope you are safe and doing fine in the unfortunate COVID-19 situati=
+on. I am a Ph.D. student at the University of Central Florida. Currently, I a=
+m working on a TEE-based prototype application for a proof-of-concept. Since =
+I am totally new in this domain, so it is taking some effort. I have a few qu=
+estions and I hope you guys can help me in that.
 
-/Jarkko
+At present, I am able to set up OP-TEE on Qemu and run the examples on the no=
+rmal world and the secure world. Additionally, I tweaked a few parameters (ie=
+., the integer value in the main.c) for the CA and the addition and subtracti=
+on sequence in the TA. Upon building it again (cd/build/make all run), it see=
+ms to work. However, if I need to pass a normal string to the TA and the TA c=
+omputes Sha256 of the string and returns the value, what steps do I need to t=
+ake? In other words, how can I pass a tuple from the TA to the CA and obtain =
+the Hash of the tuple. Additionally, if I am able to do that by tailoring the=
+ HelloWorld examples, how can I develop new CA and TA with unique UUID and pe=
+rform the same procedure. Finally, instead of doing the entire (cd/build/make=
+ all run), is there a method by which I can simply build the application and =
+alone and run it on Qemu?
 
---===============6922075130722585190==--
+I understand that these must be trivial questions, however, I will deeply app=
+reciate if you can help me in figuring them out.
+
+
+Best,
+
+Saad
+
+--===============2485909606693283627==--
 
