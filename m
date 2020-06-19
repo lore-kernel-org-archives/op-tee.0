@@ -1,37 +1,32 @@
-From: Jonathan Corbet <corbet@lwn.net>
+From: Volodymyr Babchuk <Volodymyr_Babchuk@epam.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2] Documentation: tee: Document TEE kernel interface
-Date: Fri, 19 Jun 2020 13:42:40 -0600
-Message-ID: <20200619134240.6c5b93d4@lwn.net>
-In-Reply-To: <1591253979-29067-1-git-send-email-sumit.garg@linaro.org>
+Subject: [PATCH v2 0/2] optee: SHM handling fixes
+Date: Fri, 19 Jun 2020 22:33:55 +0000
+Message-ID: <20200619223332.438344-1-volodymyr_babchuk@epam.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6646193418150973770=="
+Content-Type: multipart/mixed; boundary="===============3495816084548725897=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6646193418150973770==
+--===============3495816084548725897==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu,  4 Jun 2020 12:29:39 +0530
-Sumit Garg <sumit.garg@linaro.org> wrote:
+There are two patches that previously was mailed separatedly. Both
+patches fix issues found during testing the OP-TEE 3.9 release.
 
-> Update documentation with TEE bus infrastructure which provides an
-> interface for kernel client drivers to communicate with corresponding
-> Trusted Application.
->=20
-> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> ---
->=20
-> Changes in v2:
-> - Add TEE client driver example snippet.
->=20
->  Documentation/tee.txt | 68 +++++++++++++++++++++++++++++++++++++++++++++++=
-++++
->  1 file changed, 68 insertions(+)
+Julien and Stefano suggested to include this patches in Xen 4.14
+release, because optee support still in the preview state and those
+patches provide no new functionality, bugfixes only.
 
-Applied, thanks.
+Volodymyr Babchuk (2):
+  optee: immediately free buffers that are released by OP-TEE
+  optee: allow plain TMEM buffers with NULL address
 
-jon
+ xen/arch/arm/tee/optee.c | 59 +++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 52 insertions(+), 7 deletions(-)
 
---===============6646193418150973770==--
+-- 
+2.26.2
+
+--===============3495816084548725897==--
 
