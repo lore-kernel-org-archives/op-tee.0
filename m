@@ -1,116 +1,122 @@
-From: Volodymyr Babchuk <Volodymyr_Babchuk@epam.com>
+From: Stefano Stabellini <sstabellini@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v2 1/2] optee: immediately free buffers that are released by OP-TEE
-Date: Fri, 19 Jun 2020 22:33:59 +0000
-Message-ID: <20200619223332.438344-2-volodymyr_babchuk@epam.com>
-In-Reply-To: <20200619223332.438344-1-volodymyr_babchuk@epam.com>
+Subject: Re: [PATCH v2 2/2] optee: allow plain TMEM buffers with NULL address
+Date: Mon, 22 Jun 2020 18:19:37 -0700
+Message-ID: <alpine.DEB.2.21.2006221809380.8121@sstabellini-ThinkPad-T480s>
+In-Reply-To: <20200619223332.438344-3-volodymyr_babchuk@epam.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4501884302531720587=="
+Content-Type: multipart/mixed; boundary="===============0343933849080949834=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4501884302531720587==
+--===============0343933849080949834==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Normal World can share buffer with OP-TEE for two reasons:
-1. Some client application wants to exchange data with TA
-2. OP-TEE asks for shared buffer for internal needs
+On Fri, 19 Jun 2020, Volodymyr Babchuk wrote:
+> Trusted Applications use popular approach to determine required size
+> of buffer: client provides a memory reference with the NULL pointer to
+> a buffer. This is so called "Null memory reference". TA updates the
+> reference with the required size and returns it back to the
+> client. Then client allocates buffer of needed size and repeats the
+> operation.
+>=20
+> This behavior is described in TEE Client API Specification, paragraph
+> 3.2.5. Memory References.
+>=20
+> OP-TEE represents this null memory reference as a TMEM parameter with
+> buf_ptr =3D 0x0. This is the only case when we should allow TMEM
+> buffer without the OPTEE_MSG_ATTR_NONCONTIG flag. This also the
+> special case for a buffer with OPTEE_MSG_ATTR_NONCONTIG flag.
+>=20
+> This could lead to a potential issue, because IPA 0x0 is a valid
+> address, but OP-TEE will treat it as a special case. So, care should
+> be taken when construction OP-TEE enabled guest to make sure that such
+> guest have no memory at IPA 0x0 and none of its memory is mapped at PA
+> 0x0.
+>=20
+> Signed-off-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
+> ---
+>=20
+> Changes from v1:
+>  - Added comment with TODO about possible PA/IPA 0x0 issue
+>  - The same is described in the commit message
+>  - Added check in translate_noncontig() for the NULL ptr buffer
+>=20
+> ---
+>  xen/arch/arm/tee/optee.c | 27 ++++++++++++++++++++++++---
+>  1 file changed, 24 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/xen/arch/arm/tee/optee.c b/xen/arch/arm/tee/optee.c
+> index 6963238056..70bfef7e5f 100644
+> --- a/xen/arch/arm/tee/optee.c
+> +++ b/xen/arch/arm/tee/optee.c
+> @@ -215,6 +215,15 @@ static bool optee_probe(void)
+>      return true;
+>  }
+> =20
+> +/*
+> + * TODO: There is a potential issue with guests that either have RAM
+> + * at IPA of 0x0 or some of theirs memory is mapped at PA 0x0. This is
+                               ^ their
 
-The second case was handle more strictly than necessary:
+> + * because PA of 0x0 is considered as NULL pointer by OP-TEE. It will
+> + * not be able to map buffer with such pointer to TA address space, or
+> + * use such buffer for communication with the guest. We either need to
+> + * check that guest have no such mappings or ensure that OP-TEE
+> + * enabled guest will not be created with such mappings.
+> + */
+>  static int optee_domain_init(struct domain *d)
+>  {
+>      struct arm_smccc_res resp;
+> @@ -725,6 +734,15 @@ static int translate_noncontig(struct optee_domain *ct=
+x,
+>          uint64_t next_page_data;
+>      } *guest_data, *xen_data;
+> =20
+> +    /*
+> +     * Special case: buffer with buf_ptr =3D=3D 0x0 is considered as NULL
+> +     * pointer by OP-TEE. No translation is needed. This can lead to
+> +     * an issue as IPA 0x0 is a valid address for Xen. See the comment
+> +     * near optee_domain_init()
+> +     */
+> +    if ( !param->u.tmem.buf_ptr )
+> +        return 0;
 
-1. In RPC request OP-TEE asks for buffer
-2. NW allocates buffer and provides it via RPC response
-3. Xen pins pages and translates data
-4. Xen provides buffer to OP-TEE
-5. OP-TEE uses it
-6. OP-TEE sends request to free the buffer
-7. NW frees the buffer and sends the RPC response
-8. Xen unpins pages and forgets about the buffer
+Given that today it is not possible for this to happen, it could even be
+an ASSERT. But I think I would just return an error, maybe -EINVAL?
 
-The problem is that Xen should forget about buffer in between stages 6
-and 7. I.e. the right flow should be like this:
+Aside from this, and the small grammar issue, everything else looks fine
+to me.
 
-6. OP-TEE sends request to free the buffer
-7. Xen unpins pages and forgets about the buffer
-8. NW frees the buffer and sends the RPC response
+Let's wait for Julien's reply, but if this is the only thing I could fix
+on commit.
 
-This is because OP-TEE internally frees the buffer before sending the
-"free SHM buffer" request. So we have no reason to hold reference for
-this buffer anymore. Moreover, in multiprocessor systems NW have time
-to reuse buffer cookie for another buffer. Xen complained about this
-and denied the new buffer registration. I have seen this issue while
-running tests on iMX SoC.
 
-So, this patch basically corrects that behavior by freeing the buffer
-earlier, when handling RPC return from OP-TEE.
+>      /* Offset of user buffer withing OPTEE_MSG_NONCONTIG_PAGE_SIZE-sized p=
+age */
+>      offset =3D param->u.tmem.buf_ptr & (OPTEE_MSG_NONCONTIG_PAGE_SIZE - 1);
+> =20
+> @@ -865,9 +883,12 @@ static int translate_params(struct optee_domain *ctx,
+>              }
+>              else
+>              {
+> -                gdprintk(XENLOG_WARNING, "Guest tries to use old tmem arg\=
+n");
+> -                ret =3D -EINVAL;
+> -                goto out;
+> +                if ( call->xen_arg->params[i].u.tmem.buf_ptr )
+> +                {
+> +                    gdprintk(XENLOG_WARNING, "Guest tries to use old tmem =
+arg\n");
+> +                    ret =3D -EINVAL;
+> +                    goto out;
+> +                }
+>              }
+>              break;
+>          case OPTEE_MSG_ATTR_TYPE_NONE:
+> --=20
+> 2.26.2
+>=20
 
-Signed-off-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
----
-
-Changes from v1:
- - reworded the comments
- - added WARN() for a case when OP-TEE wants to release not the
-   buffer it requeset to allocate durint this call
-
----
- xen/arch/arm/tee/optee.c | 32 ++++++++++++++++++++++++++++----
- 1 file changed, 28 insertions(+), 4 deletions(-)
-
-diff --git a/xen/arch/arm/tee/optee.c b/xen/arch/arm/tee/optee.c
-index 6a035355db..6963238056 100644
---- a/xen/arch/arm/tee/optee.c
-+++ b/xen/arch/arm/tee/optee.c
-@@ -1099,6 +1099,34 @@ static int handle_rpc_return(struct optee_domain *ctx,
-         if ( shm_rpc->xen_arg->cmd =3D=3D OPTEE_RPC_CMD_SHM_ALLOC )
-             call->rpc_buffer_type =3D shm_rpc->xen_arg->params[0].u.value.a;
-=20
-+        /*
-+         * OP-TEE is signalling that it has freed the buffer that it
-+         * requested before. This is the right time for us to do the
-+         * same.
-+         */
-+        if ( shm_rpc->xen_arg->cmd =3D=3D OPTEE_RPC_CMD_SHM_FREE )
-+        {
-+            uint64_t cookie =3D shm_rpc->xen_arg->params[0].u.value.b;
-+
-+            free_optee_shm_buf(ctx, cookie);
-+
-+            /*
-+             * OP-TEE asks to free buffer, but this is not the same
-+             * buffer we previously allocated for it. While nothing
-+             * prevents OP-TEE from asking this, it is the strange
-+             * situation. This may or may not be caused by a bug in
-+             * OP-TEE or mediator. But is better to print warning.
-+             */
-+            if ( call->rpc_data_cookie && call->rpc_data_cookie !=3D cookie )
-+            {
-+                gprintk(XENLOG_ERR,
-+                        "Saved RPC cookie does not corresponds to OP-TEE's (=
-%"PRIx64" !=3D %"PRIx64")\n",
-+                        call->rpc_data_cookie, cookie);
-+
-+                WARN();
-+            }
-+            call->rpc_data_cookie =3D 0;
-+        }
-         unmap_domain_page(shm_rpc->xen_arg);
-     }
-=20
-@@ -1464,10 +1492,6 @@ static void handle_rpc_cmd(struct optee_domain *ctx, s=
-truct cpu_user_regs *regs,
-             }
-             break;
-         case OPTEE_RPC_CMD_SHM_FREE:
--            free_optee_shm_buf(ctx, shm_rpc->xen_arg->params[0].u.value.b);
--            if ( call->rpc_data_cookie =3D=3D
--                 shm_rpc->xen_arg->params[0].u.value.b )
--                call->rpc_data_cookie =3D 0;
-             break;
-         default:
-             break;
---=20
-2.26.2
-
---===============4501884302531720587==--
+--===============0343933849080949834==--
 
