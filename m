@@ -1,18 +1,38 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Muhammad Saad <saad.ucf@Knights.ucf.edu>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: OP-TEE Development Guidance
-Date: Wed, 08 Jul 2020 17:26:43 +0200
-Message-ID: 
- <CAHUa44Hp+D9a6ka2Ltvbf3DouOavFtNuFs5dEg-s5VXfJZ0__w@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3C01000172c6620313-7c8403bf-f8ec-4702-a98f-43e601f2d?=
- =?utf-8?q?d66-000000=40email=2Eamazonses=2Ecom=3E?=>
+Date: Wed, 08 Jul 2020 17:56:01 +0000
+Message-ID: <BL0PR07MB5524D5F4D5B8EB5DCCE86892D3670@BL0PR07MB5524.namprd07.prod.outlook.com>
+In-Reply-To: <
+ <CAHUa44Hp+D9a6ka2Ltvbf3DouOavFtNuFs5dEg-s5VXfJZ0__w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4659587568351509598=="
+Content-Type: multipart/mixed; boundary="===============8699948545072808010=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4659587568351509598==
+--===============8699948545072808010==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi Jens,
+
+I was able to do all those operations last week. I actually cloned a pseudo-T=
+A, assign it a new UUID, and do all the required cryptographic operations as =
+well as the secure storage.  However, now that I try to benchmark it, an erro=
+r is thrown ([Benchmark] ERROR: TEEC_InvokeCommand: 0xffff000c). Can you tell=
+ me the right way of benchmarking a pseudo-TA? Also, if I want to take all th=
+e pseduo-TA code and make a new TA, what should be the simplest process?
+
+
+Best,
+
+Saad
+
+________________________________
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Sent: Wednesday, July 8, 2020 11:26 AM
+To: Muhammad Saad <saad.ucf@Knights.ucf.edu>
+Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
+Subject: Re: OP-TEE Development Guidance
 
 Hi Saad,
 
@@ -41,8 +61,12 @@ ke all run), is there a method by which I can simply build the application an=
 d alone and run it on Qemu?
 
 You can find an example of doing some hashing at
-https://github.com/OP-TEE/optee_test/blob/391168ec03980e1cc8fb6d3e3c4b424819c=
-d90cf/host/xtest/regression_1000.c#L106
+https://nam02.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgithub.co=
+m%2FOP-TEE%2Foptee_test%2Fblob%2F391168ec03980e1cc8fb6d3e3c4b424819cd90cf%2Fh=
+ost%2Fxtest%2Fregression_1000.c%23L106&amp;data=3D02%7C01%7Csaad.ucf%40knight=
+s.ucf.edu%7C078dff5cf5884ef2466308d8235358b9%7C5b16e18278b3412c919668342689ee=
+b7%7C0%7C1%7C637298188166072848&amp;sdata=3Df0th70K5qfcGs7lKwxkACJXE3YhFW63Rq=
+DAU6oG40zU%3D&amp;reserved=3D0
 
 You'll need to look around a little to get the whole picture, but it
 shouldn't be too hard.
@@ -70,7 +94,11 @@ ppreciate if you can help me in figuring them out.
 > --
 > OP-TEE mailing list
 > OP-TEE(a)lists.trustedfirmware.org
-> https://lists.trustedfirmware.org/mailman/listinfo/op-tee
+> https://nam02.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists.t=
+rustedfirmware.org%2Fmailman%2Flistinfo%2Fop-tee&amp;data=3D02%7C01%7Csaad.uc=
+f%40knights.ucf.edu%7C078dff5cf5884ef2466308d8235358b9%7C5b16e18278b3412c9196=
+68342689eeb7%7C0%7C1%7C637298188166072848&amp;sdata=3DJzi3jCUz6f0Hnw%2BZpsmJ2=
+4LIwfDT17xQtu8okvtbvXM%3D&amp;reserved=3D0
 
---===============4659587568351509598==--
+--===============8699948545072808010==--
 
