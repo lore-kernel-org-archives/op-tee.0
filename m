@@ -1,115 +1,194 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: OP-TEE Development Guidance
-Date: Fri, 10 Jul 2020 11:46:04 +0200
-Message-ID: 
- <CAHUa44Ei8_EDfzfOJPUqaGzTXA-Q1CbnUDyLzk8LGbqp6GRaFA@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CBL0PR07MB5524D5F4D5B8EB5DCCE86892D3670=40BL0PR07MB?=
- =?utf-8?q?5524=2Enamprd07=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: [PATCH] driver: tee: Handle NULL pointer indication from client
+Date: Fri, 10 Jul 2020 12:18:08 +0200
+Message-ID: <20200710101808.1316522-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4830532457088789800=="
+Content-Type: multipart/mixed; boundary="===============0012625235207278817=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4830532457088789800==
+--===============0012625235207278817==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jul 8, 2020 at 7:56 PM Muhammad Saad <saad.ucf@knights.ucf.edu> wro=
-te:
->
-> Hi Jens,
->
-> I was able to do all those operations last week. I actually cloned a pseudo=
--TA, assign it a new UUID, and do all the required cryptographic operations a=
-s well as the secure storage.  However, now that I try to benchmark it, an er=
-ror is thrown ([Benchmark] ERROR: TEEC_InvokeCommand: 0xffff000c). Can you te=
-ll me the right way of benchmarking a pseudo-TA? Also, if I want to take all =
-the pseduo-TA code and make a new TA, what should be the simplest process?
+From: Cedric Neveux <cedric.neveux@nxp.com>
 
-I suggest that you start out with studying
-https://optee.readthedocs.io/en/latest/ it will probably answer your
-questions and give a good overview too.
+TEE Client introduce a new capability "TEE_GEN_CAP_MEMREF_NULL"
+to handle the support of the shared memory buffer with a NULL pointer.
 
-Cheers,
-Jens
+This capability depends on TEE Capabilities and driver support.
+Driver and TEE exchange capabilities at driver initialization.
 
->
-> Best,
->
-> Saad
->
-> ________________________________
-> From: Jens Wiklander <jens.wiklander@linaro.org>
-> Sent: Wednesday, July 8, 2020 11:26 AM
-> To: Muhammad Saad <saad.ucf@Knights.ucf.edu>
-> Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
-> Subject: Re: OP-TEE Development Guidance
->
-> Hi Saad,
->
-> On Thu, Jun 18, 2020 at 9:43 AM Muhammad Saad via OP-TEE
-> <op-tee@lists.trustedfirmware.org> wrote:
-> >
-> > Hello All,
-> >
-> > First, I hope you are safe and doing fine in the unfortunate COVID-19 sit=
-uation. I am a Ph.D. student at the University of Central Florida. Currently,=
- I am working on a TEE-based prototype application for a proof-of-concept. Si=
-nce I am totally new in this domain, so it is taking some effort. I have a fe=
-w questions and I hope you guys can help me in that.
-> >
-> > At present, I am able to set up OP-TEE on Qemu and run the examples on th=
-e normal world and the secure world. Additionally, I tweaked a few parameters=
- (ie., the integer value in the main.c) for the CA and the addition and subtr=
-action sequence in the TA. Upon building it again (cd/build/make all run), it=
- seems to work. However, if I need to pass a normal string to the TA and the =
-TA computes Sha256 of the string and returns the value, what steps do I need =
-to take? In other words, how can I pass a tuple from the TA to the CA and obt=
-ain the Hash of the tuple. Additionally, if I am able to do that by tailoring=
- the HelloWorld examples, how can I develop new CA and TA with unique UUID an=
-d perform the same procedure. Finally, instead of doing the entire (cd/build/=
-make all run), is there a method by which I can simply build the application =
-and alone and run it on Qemu?
->
-> You can find an example of doing some hashing at
-> https://nam02.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgithub.=
-com%2FOP-TEE%2Foptee_test%2Fblob%2F391168ec03980e1cc8fb6d3e3c4b424819cd90cf%2=
-Fhost%2Fxtest%2Fregression_1000.c%23L106&amp;data=3D02%7C01%7Csaad.ucf%40knig=
-hts.ucf.edu%7C078dff5cf5884ef2466308d8235358b9%7C5b16e18278b3412c919668342689=
-eeb7%7C0%7C1%7C637298188166072848&amp;sdata=3Df0th70K5qfcGs7lKwxkACJXE3YhFW63=
-RqDAU6oG40zU%3D&amp;reserved=3D0
->
-> You'll need to look around a little to get the whole picture, but it
-> shouldn't be too hard.
->
-> If you only change a TA or some client application it's enough to rebuild w=
-ith:
-> make buildroot
->
-> and then run it with:
-> make run-only
->
-> A new UUID can be obtained with the Linux command uuidgen.
->
-> Cheers,
-> Jens
->
-> >
-> > I understand that these must be trivial questions, however, I will deeply=
- appreciate if you can help me in figuring them out.
-> >
-> >
-> > Best,
-> >
-> > Saad
-> > --
-> > OP-TEE mailing list
-> > OP-TEE(a)lists.trustedfirmware.org
-> > https://nam02.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists=
-.trustedfirmware.org%2Fmailman%2Flistinfo%2Fop-tee&amp;data=3D02%7C01%7Csaad.=
-ucf%40knights.ucf.edu%7C078dff5cf5884ef2466308d8235358b9%7C5b16e18278b3412c91=
-9668342689eeb7%7C0%7C1%7C637298188166072848&amp;sdata=3DJzi3jCUz6f0Hnw%2BZpsm=
-J24LIwfDT17xQtu8okvtbvXM%3D&amp;reserved=3D0
+Signed-off-by: Michael Whitfield <michael.whitfield@nxp.com>
+Signed-off-by: Cedric Neveux <cedric.neveux@nxp.com>
+Reviewed-by: Joakim Bech <joakim.bech@linaro.org>
+Tested-by: Joakim Bech <joakim.bech@linaro.org> (QEMU)
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ drivers/tee/optee/core.c      |  7 +++++
+ drivers/tee/optee/optee_smc.h |  3 +++
+ drivers/tee/tee_core.c        | 49 ++++++++++++++++++++++-------------
+ include/linux/tee_drv.h       |  3 +++
+ include/uapi/linux/tee.h      | 13 ++++++++++
+ 5 files changed, 57 insertions(+), 18 deletions(-)
 
---===============4830532457088789800==--
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 99698b8a3a74..8ef66e75b65e 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -215,6 +215,8 @@ static void optee_get_version(struct tee_device *teedev,
+=20
+ 	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
+ 		v.gen_caps |=3D TEE_GEN_CAP_REG_MEM;
++	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL)
++		v.gen_caps |=3D TEE_GEN_CAP_MEMREF_NULL;
+ 	*vers =3D v;
+ }
+=20
+@@ -246,6 +248,11 @@ static int optee_open(struct tee_context *ctx)
+ 	mutex_init(&ctxdata->mutex);
+ 	INIT_LIST_HEAD(&ctxdata->sess_list);
+=20
++	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL)
++		ctx->cap_memref_null  =3D true;
++	else
++		ctx->cap_memref_null =3D false;
++
+ 	ctx->data =3D ctxdata;
+ 	return 0;
+ }
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index c72122d9c997..777ad54d4c2c 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -215,6 +215,9 @@ struct optee_smc_get_shm_config_result {
+  */
+ #define OPTEE_SMC_SEC_CAP_DYNAMIC_SHM		BIT(2)
+=20
++/* Secure world supports Shared Memory with a NULL buffer reference */
++#define OPTEE_SMC_SEC_CAP_MEMREF_NULL		BIT(4)
++
+ #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
+ #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
+ 	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES)
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 64637e09a095..ce0f0309b6ac 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -383,25 +383,38 @@ static int params_from_user(struct tee_context *ctx, st=
+ruct tee_param *params,
+ 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+ 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+ 			/*
+-			 * If we fail to get a pointer to a shared memory
+-			 * object (and increase the ref count) from an
+-			 * identifier we return an error. All pointers that
+-			 * has been added in params have an increased ref
+-			 * count. It's the callers responibility to do
+-			 * tee_shm_put() on all resolved pointers.
++			 * If a NULL pointer is passed to a TA in the TEE,
++			 * the ip.c IOCTL parameters is set to TEE_MEMREF_NULL
++			 * indicating a NULL memory reference.
+ 			 */
+-			shm =3D tee_shm_get_from_id(ctx, ip.c);
+-			if (IS_ERR(shm))
+-				return PTR_ERR(shm);
+-
+-			/*
+-			 * Ensure offset + size does not overflow offset
+-			 * and does not overflow the size of the referred
+-			 * shared memory object.
+-			 */
+-			if ((ip.a + ip.b) < ip.a ||
+-			    (ip.a + ip.b) > shm->size) {
+-				tee_shm_put(shm);
++			if (ip.c !=3D TEE_MEMREF_NULL) {
++				/*
++				 * If we fail to get a pointer to a shared
++				 * memory object (and increase the ref count)
++				 * from an identifier we return an error. All
++				 * pointers that has been added in params have
++				 * an increased ref count. It's the callers
++				 * responibility to do tee_shm_put() on all
++				 * resolved pointers.
++				 */
++				shm =3D tee_shm_get_from_id(ctx, ip.c);
++				if (IS_ERR(shm))
++					return PTR_ERR(shm);
++
++				/*
++				 * Ensure offset + size does not overflow
++				 * offset and does not overflow the size of
++				 * the referred shared memory object.
++				 */
++				if ((ip.a + ip.b) < ip.a ||
++				    (ip.a + ip.b) > shm->size) {
++					tee_shm_put(shm);
++					return -EINVAL;
++				}
++			} else if (ctx->cap_memref_null) {
++				/* Pass NULL pointer to OP-TEE */
++				shm =3D NULL;
++			} else {
+ 				return -EINVAL;
+ 			}
+=20
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index d074302989dd..cdd049a724b1 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -47,6 +47,8 @@ struct tee_shm_pool;
+  *              and just return with an error code. It is needed for requests
+  *              that arises from TEE based kernel drivers that should be
+  *              non-blocking in nature.
++ * @cap_memref_null: flag indicating if the TEE Client support shared
++ *                   memory buffer with a NULL pointer.
+  */
+ struct tee_context {
+ 	struct tee_device *teedev;
+@@ -54,6 +56,7 @@ struct tee_context {
+ 	struct kref refcount;
+ 	bool releasing;
+ 	bool supp_nowait;
++	bool cap_memref_null;
+ };
+=20
+ struct tee_param_memref {
+diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
+index b619f37ee03e..d67cadf221fc 100644
+--- a/include/uapi/linux/tee.h
++++ b/include/uapi/linux/tee.h
+@@ -51,6 +51,9 @@
+ #define TEE_GEN_CAP_GP		(1 << 0)/* GlobalPlatform compliant TEE */
+ #define TEE_GEN_CAP_PRIVILEGED	(1 << 1)/* Privileged device (for supplicant)=
+ */
+ #define TEE_GEN_CAP_REG_MEM	(1 << 2)/* Supports registering shared memory */
++#define TEE_GEN_CAP_MEMREF_NULL	(1 << 3)/* NULL MemRef support */
++
++#define TEE_MEMREF_NULL		(__u64)(-1) /* NULL MemRef Buffer */
+=20
+ /*
+  * TEE Implementation ID
+@@ -200,6 +203,16 @@ struct tee_ioctl_buf_data {
+  * a part of a shared memory by specifying an offset (@a) and size (@b) of
+  * the object. To supply the entire shared memory object set the offset
+  * (@a) to 0 and size (@b) to the previously returned size of the object.
++ *
++ * A client may need to present a NULL pointer in the argument
++ * passed to a trusted application in the TEE.
++ * This is also a requirement in GlobalPlatform Client API v1.0c
++ * (section 3.2.5 memory references), which can be found at
++ * http://www.globalplatform.org/specificationsdevice.asp
++ *
++ * If a NULL pointer is passed to a TA in the TEE, the (@c)
++ * IOCTL parameters value must be set to TEE_MEMREF_NULL indicating a NULL
++ * memory reference.
+  */
+ struct tee_ioctl_param {
+ 	__u64 attr;
+--=20
+2.25.1
+
+
+--===============0012625235207278817==--
 
