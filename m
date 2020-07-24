@@ -1,50 +1,72 @@
-From: Jonathan Corbet <corbet@lwn.net>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] docs: staging/tee.rst: convert into definition list
-Date: Thu, 23 Jul 2020 14:25:17 -0600
-Message-ID: <20200723142517.4a6e17c5@lwn.net>
-In-Reply-To: <20200718165107.625847-4-dwlsalmeida@gmail.com>
+Subject: Re: [PATCHv2 2/2] hwrng: optee: fix wait use case
+Date: Fri, 24 Jul 2020 18:52:07 +0530
+Message-ID: 
+ <CAFA6WYPQ3GGYostoHU=6qg4c_LqoqOZVbZ8gbQbGkNfyGydQjQ@mail.gmail.com>
+In-Reply-To: <20200723084622.31134-2-jorge@foundries.io>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3088545984047248592=="
+Content-Type: multipart/mixed; boundary="===============6964681430068101940=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3088545984047248592==
+--===============6964681430068101940==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 18 Jul 2020 13:50:58 -0300
-"Daniel W. S. Almeida" <dwlsalmeida@gmail.com> wrote:
+On Thu, 23 Jul 2020 at 14:16, Jorge Ramirez-Ortiz <jorge@foundries.io> wrot=
+e:
+>
+> The current code waits for data to be available before attempting a
+> second read. However the second read would not be executed as the
+> while loop exits.
+>
+> This fix does not wait if all data has been read and reads a second
+> time if only partial data was retrieved on the first read.
+>
+> This fix also does not attempt to read if not data is requested.
 
->  TEE bus infrastructure registers following APIs:
-> --  match(): iterates over the client driver UUID table to find a correspon=
-ding
-> -   match for device UUID. If a match is found, then this particular device=
- is
-> -   probed via corresponding probe API registered by the client driver. This
-> -   process happens whenever a device or a client driver is registered with=
- TEE
-> -   bus.
-> --  uevent(): notifies user-space (udev) whenever a new device is registere=
-d on
-> -   TEE bus for auto-loading of modularized client drivers.
-> +
-> +match():
-> +  iterates over the client driver UUID table to find a corresponding
-> +  match for device UUID. If a match is found, then this particular device =
-is
-> +  probed via corresponding probe API registered by the client driver. This
-> +  process happens whenever a device or a client driver is registered with =
-TEE
-> +  bus.
-> +
-> +uevent():
-> +  notifies user-space (udev) whenever a new device is registered on
-> +  TEE bus for auto-loading of modularized client drivers.
+I am not sure how this is possible, can you elaborate?
 
-Just FWIW, this could have been fixed by adding a blank line between the
-two bulleted entries.  This fix is fine too, though, applied, thanks.
+>
+> Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+> ---
+>  v2: tidy up the while loop to avoid reading when no data is requested
+>
+>  drivers/char/hw_random/optee-rng.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/char/hw_random/optee-rng.c b/drivers/char/hw_random/op=
+tee-rng.c
+> index 5bc4700c4dae..a99d82949981 100644
+> --- a/drivers/char/hw_random/optee-rng.c
+> +++ b/drivers/char/hw_random/optee-rng.c
+> @@ -122,14 +122,14 @@ static int optee_rng_read(struct hwrng *rng, void *bu=
+f, size_t max, bool wait)
+>         if (max > MAX_ENTROPY_REQ_SZ)
+>                 max =3D MAX_ENTROPY_REQ_SZ;
+>
+> -       while (read =3D=3D 0) {
+> +       while (read < max) {
+>                 rng_size =3D get_optee_rng_data(pvt_data, data, (max - read=
+));
+>
+>                 data +=3D rng_size;
+>                 read +=3D rng_size;
+>
+>                 if (wait && pvt_data->data_rate) {
+> -                       if (timeout-- =3D=3D 0)
+> +                       if ((timeout-- =3D=3D 0) || (read =3D=3D max))
 
-jon
+If read =3D=3D max, would there be any sleep?
 
---===============3088545984047248592==--
+-Sumit
+
+>                                 return read;
+>                         msleep((1000 * (max - read)) / pvt_data->data_rate);
+>                 } else {
+> --
+> 2.17.1
+>
+
+--===============6964681430068101940==--
 
