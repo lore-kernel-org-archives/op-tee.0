@@ -1,33 +1,43 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Jérôme Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: OP-TEE release dates?
-Date: Mon, 27 Jul 2020 14:06:03 +0200
-Message-ID: <20200727120603.GB15798@goby>
-In-Reply-To: <20200727114859.GA15798@goby>
+Date: Mon, 27 Jul 2020 14:14:38 +0200
+Message-ID: 
+ <CAA-cTWakdCOrNq8fXYNddKrmcT=ZgSTPKPmbrHHsCasF+k60FQ@mail.gmail.com>
+In-Reply-To: <20200727120603.GB15798@goby>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3841424750540126643=="
+Content-Type: multipart/mixed; boundary="===============8230199309571323759=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3841424750540126643==
+--===============8230199309571323759==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Mon, Jul 27, 2020 at 01:48:59PM +0200, Joakim Bech wrote:
-> Hi Jerome,
->=20
-> On Fri, Jul 24, 2020 at 02:57:34PM +0000, J=C3=A9r=C3=B4me Forissier via OP=
--TEE wrote:
-> > Readthedocs [1] documents that we do quarterly releases, but it would help
-> > to have a more precise indication, at least for the next (upcoming) relea=
-se.
-> >=20
-> Agree, I can replicate what we have in the Jira instance and put that on
-> the release page you're referring to.
->=20
-Please see: https://github.com/OP-TEE/optee_docs/pull/82
+Hi Joakim,
+
+On Mon, Jul 27, 2020 at 2:06 PM Joakim Bech <joakim.bech@linaro.org> wrote:
+
+> On Mon, Jul 27, 2020 at 01:48:59PM +0200, Joakim Bech wrote:
+> > Hi Jerome,
+> >
+> > On Fri, Jul 24, 2020 at 02:57:34PM +0000, Jérôme Forissier via OP-TEE
+> wrote:
+> > > Readthedocs [1] documents that we do quarterly releases, but it would
+> help
+> > > to have a more precise indication, at least for the next (upcoming)
+> release.
+> > >
+> > Agree, I can replicate what we have in the Jira instance and put that on
+> > the release page you're referring to.
+> >
+> Please see: https://github.com/OP-TEE/optee_docs/pull/82
+
+
+Thanks! I will give minor comments in the PR.
 
 Regards,
-Joakim
+-- 
+Jerome
 
---===============3841424750540126643==--
+--===============8230199309571323759==--
 
