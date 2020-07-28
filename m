@@ -1,91 +1,59 @@
-From: "Jorge Ramirez-Ortiz, Foundries" <jorge@foundries.io>
+From: Miklos Balint <Miklos.Balint@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCHv2 2/2] hwrng: optee: fix wait use case
-Date: Tue, 28 Jul 2020 12:05:55 +0200
-Message-ID: <20200728100555.GA2074@trex>
-In-Reply-To: <20200724142305.GA24164@trex>
+Subject: PSA OP-TEE development
+Date: Tue, 28 Jul 2020 15:07:05 +0000
+Message-ID: <VE1PR08MB4861D15A391123BF372A785BE6730@VE1PR08MB4861.eurprd08.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8358899844470706591=="
+Content-Type: multipart/mixed; boundary="===============1142949017197780769=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8358899844470706591==
+--===============1142949017197780769==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 24/07/20, Jorge Ramirez-Ortiz, Foundries wrote:
-> On 24/07/20, Sumit Garg wrote:
-> > On Thu, 23 Jul 2020 at 14:16, Jorge Ramirez-Ortiz <jorge@foundries.io> =
-wrote:
-> > >
-> > > The current code waits for data to be available before attempting a
-> > > second read. However the second read would not be executed as the
-> > > while loop exits.
-> > >
-> > > This fix does not wait if all data has been read and reads a second
-> > > time if only partial data was retrieved on the first read.
-> > >
-> > > This fix also does not attempt to read if not data is requested.
-> >=20
-> > I am not sure how this is possible, can you elaborate?
->=20
-> currently, if the user sets max 0, get_optee_rng_data will regardless
-> issuese a call to the secure world requesting 0 bytes from the RNG
->=20
-> with this patch, this request is avoided.
->=20
-> >=20
-> > >
-> > > Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
-> > > ---
-> > >  v2: tidy up the while loop to avoid reading when no data is requested
-> > >
-> > >  drivers/char/hw_random/optee-rng.c | 4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/char/hw_random/optee-rng.c b/drivers/char/hw_rando=
-m/optee-rng.c
-> > > index 5bc4700c4dae..a99d82949981 100644
-> > > --- a/drivers/char/hw_random/optee-rng.c
-> > > +++ b/drivers/char/hw_random/optee-rng.c
-> > > @@ -122,14 +122,14 @@ static int optee_rng_read(struct hwrng *rng, void=
- *buf, size_t max, bool wait)
-> > >         if (max > MAX_ENTROPY_REQ_SZ)
-> > >                 max =3D MAX_ENTROPY_REQ_SZ;
-> > >
-> > > -       while (read =3D=3D 0) {
-> > > +       while (read < max) {
-> > >                 rng_size =3D get_optee_rng_data(pvt_data, data, (max - =
-read));
-> > >
-> > >                 data +=3D rng_size;
-> > >                 read +=3D rng_size;
-> > >
-> > >                 if (wait && pvt_data->data_rate) {
-> > > -                       if (timeout-- =3D=3D 0)
-> > > +                       if ((timeout-- =3D=3D 0) || (read =3D=3D max))
-> >=20
-> > If read =3D=3D max, would there be any sleep?
->=20
-> no but I see no reason why there should be a wait since we already have
-> all the data that we need; the msleep is only required when we need to
-> wait for the RNG to generate entropy for the number of bytes we are
-> requesting. if we are requesting 0 bytes, the entropy is already
-> available. at leat this is what makes sense to me.
->=20
->
+Hi,
 
-any further comments?
+In parallel with - and based on - the work by Jens to enable PSA FF-A as a tr=
+ansport for the SMC ABI (recently merged to the upstream as PR #3908) there's=
+ an effort to provide a fully-functional SPMC component in OP-TEE to manage S=
+-EL0 Secure Partitions, with the goal of providing a similar set of PSA Root =
+of Trust services over OP-TEE as presently supported for M-profile processors=
+, while also providing a standard execution framework and ABI for potential i=
+ntegration of 3rd party partitions, such as StMM.
+Please note that this work is currently at the prototyping stage and is manag=
+ed as a fork on trustedfirmware.org, but is planned to be merged with the off=
+icial OP-TEE stream as it matures.
 
-> >=20
-> > -Sumit
-> >=20
-> > >                                 return read;
-> > >                         msleep((1000 * (max - read)) / pvt_data->data_r=
-ate);
-> > >                 } else {
-> > > --
-> > > 2.17.1
-> > >
+There's an initial set of patches on review to provide
 
---===============8358899844470706591==--
+  *   A library for S-EL0 SPs to access FF-A ABI at the SVC call interface:
+https://review.trustedfirmware.org/c/OP-TEE/optee_os/+/4751
+  *   A change to introduce an SP build system to OP-TEE:
+https://review.trustedfirmware.org/c/OP-TEE/optee_os/+/4752
+  *   OP-TEE kernel changes to support initialization and context management =
+of SPs and the forwarding of FF-A messages to their designated endpoints:
+https://review.trustedfirmware.org/c/OP-TEE/optee_os/+/4987
+
+All related open reviews at the moment can be found here:
+https://review.trustedfirmware.org/q/project:OP-TEE%252Foptee_os+status:open
+
+For the S-EL1 SPMC configuration functionality and requirements see the PSA F=
+F-A specification (https://developer.arm.com/documentation/den0077/latest)
+
+Work is in progress to showcase the capabilities of the framework using a sub=
+set of PSA Crypto API and also to propose a standardized protocol layer for p=
+artitions, but as mentioned work is still at the early stages so expect gradu=
+al increments in functionality and flexibility.
+Any questions and feedback are very welcome
+
+Cheers,
+Miklos
+
+IMPORTANT NOTICE: The contents of this email and any attachments are confiden=
+tial and may also be privileged. If you are not the intended recipient, pleas=
+e notify the sender immediately and do not disclose the contents to any other=
+ person, use it for any purpose, or store or copy the information in any medi=
+um. Thank you.
+
+--===============1142949017197780769==--
 
