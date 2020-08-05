@@ -1,75 +1,59 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: "Jorge Ramirez-Ortiz, Foundries" <jorge@foundries.io>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3] optee: add timeout value to optee_notif_wait() to
- support timeout
-Date: Fri, 31 May 2024 08:55:58 +0200
-Message-ID: 
- <CAHUa44Hpfq+6qsuZ9NYUB55br=5H0Bi1p7ALoAY3Cad5egOcdg@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYNRVa_oem2TdyjoaUOTmW+vED-7LOC4wFjqG+puptg8tQ@mail.gmail.com>>
+Subject: Re: [PATCHv2 2/2] hwrng: optee: fix wait use case
+Date: Wed, 05 Aug 2020 15:34:20 +0200
+Message-ID: <20200805133420.GA8276@trex>
+In-Reply-To: <20200723084622.31134-2-jorge@foundries.io>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6344720686049697979=="
+Content-Type: multipart/mixed; boundary="===============8892514859294348744=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6344720686049697979==
+--===============8892514859294348744==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 23, 2024 at 9:35=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org> =
-wrote:
->
-> On Tue, 21 May 2024 at 14:16, Gavin Liu (=E5=8A=89=E5=93=B2=E5=BB=B7) <Gavi=
-n.Liu@mediatek.com> wrote:
-> >
-> > Hi, Sumit,
-> >
-> > The corresponding OPTEE-OS pull request and change is here.
-> >
-> > https://github.com/OP-TEE/optee_os/pull/6641
->
-> As this is an ABI change where I see backwards compatibility is
-> maintained. However, the forwards compatibility requires this change
-> to be backported to stable releases. So for the next version please CC
-> stable ML.
->
-> >
-> > On Mon, 2024-05-20 at 16:16 +0530, Sumit Garg wrote:
-> > >
-> > > External email : Please do not click links or open attachments until
-> > > you have verified the sender or the content.
-> > >  Hi,
-> > >
-> > > On Tue, 7 May 2024 at 07:31, gavin.liu <gavin.liu@mediatek.com>
-> > > wrote:
-> > > >
-> > > > From: Gavin Liu <gavin.liu@mediatek.com>
-> > > >
-> > > > Add timeout value to support self waking when timeout to avoid
-> > > waiting
-> > > > indefinitely.
-> > > >
-> > > > Signed-off-by: Gavin Liu <gavin.liu@mediatek.com>
-> > > > ---
-> > > > change in v3:
-> > > > 1. change the comment in optee_rpc_cmd.h
-> > > > 2. add macro for "TEE_ERROR_TIMEOUT"
-> > > > 3. change from "TEEC_ERROR_BUSY" to "TEE_ERROR_TIMEOUT"
-> > > > ---
-> > > >  drivers/tee/optee/notif.c         |  9 +++++++--
-> > > >  drivers/tee/optee/optee_private.h |  5 ++++-
-> > > >  drivers/tee/optee/optee_rpc_cmd.h |  1 +
-> > > >  drivers/tee/optee/rpc.c           | 10 ++++++++--
-> > > >  4 files changed, 20 insertions(+), 5 deletions(-)
-> > > >
->
-> FWIW:
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+On 23/07/20, Jorge Ramirez-Ortiz wrote:
+> The current code waits for data to be available before attempting a
+> second read. However the second read would not be executed as the
+> while loop exits.
+>=20
+> This fix does not wait if all data has been read and reads a second
+> time if only partial data was retrieved on the first read.
+>=20
+> This fix also does not attempt to read if not data is requested.
+>=20
+> Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+> ---
+>  v2: tidy up the while loop to avoid reading when no data is requested
+>=20
+>  drivers/char/hw_random/optee-rng.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/char/hw_random/optee-rng.c b/drivers/char/hw_random/op=
+tee-rng.c
+> index 5bc4700c4dae..a99d82949981 100644
+> --- a/drivers/char/hw_random/optee-rng.c
+> +++ b/drivers/char/hw_random/optee-rng.c
+> @@ -122,14 +122,14 @@ static int optee_rng_read(struct hwrng *rng, void *bu=
+f, size_t max, bool wait)
+>  	if (max > MAX_ENTROPY_REQ_SZ)
+>  		max =3D MAX_ENTROPY_REQ_SZ;
+> =20
+> -	while (read =3D=3D 0) {
+> +	while (read < max) {
+>  		rng_size =3D get_optee_rng_data(pvt_data, data, (max - read));
+> =20
+>  		data +=3D rng_size;
+>  		read +=3D rng_size;
+> =20
+>  		if (wait && pvt_data->data_rate) {
+> -			if (timeout-- =3D=3D 0)
+> +			if ((timeout-- =3D=3D 0) || (read =3D=3D max))
+>  				return read;
+>  			msleep((1000 * (max - read)) / pvt_data->data_rate);
+>  		} else {
 
-I'm picking up this.
+any comments please?
 
-Thanks,
-Jens
-
---===============6344720686049697979==--
+--===============8892514859294348744==--
 
