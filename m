@@ -1,13 +1,14 @@
 From: Jorge Ramirez-Ortiz <jorge@foundries.io>
 To: op-tee@lists.trustedfirmware.org
 Subject: [PATCHv3 2/2] hwrng: optee: fix wait use case
-Date: Thu, 06 Aug 2020 11:58:45 +0200
-Message-ID: <20200806095845.20288-2-jorge@foundries.io>
+Date: Thu, 06 Aug 2020 12:00:10 +0200
+Message-ID: <20200806100010.20509-2-jorge@foundries.io>
+In-Reply-To: <20200806100010.20509-1-jorge@foundries.io>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8390382611754562789=="
+Content-Type: multipart/mixed; boundary="===============8175432703539744599=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8390382611754562789==
+--===============8175432703539744599==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -55,5 +56,5 @@ index 5bc4700c4dae..a99d82949981 100644
 2.17.1
 
 
---===============8390382611754562789==--
+--===============8175432703539744599==--
 
