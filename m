@@ -1,55 +1,31 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jerome Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] tee memref null for v5.10
-Date: Fri, 21 Aug 2020 12:25:35 +0200
-Message-ID: <20200821102535.GA1872111@jade>
+Subject: OP-TEE 3.10.0 has been released
+Date: Fri, 21 Aug 2020 18:55:59 +0200
+Message-ID: <98ec1f16-26f7-9949-c12d-c94fbe259ae4@forissier.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6812033489853408750=="
+Content-Type: multipart/mixed; boundary="===============7510872581129629886=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6812033489853408750==
+--===============7510872581129629886==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hello arm-soc maintainers,
+[BCC all OP-TEE maintainers]
 
-Please pull this patch enabling a TEE client to indicate a NULL pointer
-instead of a valid buffer when invoking a Trusted Application.
+Hi,
 
-Thanks,
-Jens
+FYI, I have just finalized the OP-TEE 3.10.0 release (changelog [1]).
 
-The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bbf5:
+Many thanks to all of you who contributed to this release by submitting
+or reviewing code, or taking part in release testing [2].
 
-  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
+[1] https://github.com/OP-TEE/optee_os/blob/3.10.0/CHANGELOG.md
+[2] https://github.com/OP-TEE/optee_os/commit/d1c635434c55
 
-are available in the Git repository at:
+Regards,
+-- 
+Jerome
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/tee-memref-nu=
-ll-for-v5.10
-
-for you to fetch changes up to ba171d3f0850003216fd1a85190d17b1feddb961:
-
-  driver: tee: Handle NULL pointer indication from client (2020-08-21 08:55:1=
-3 +0200)
-
-----------------------------------------------------------------
-Handle NULL pointer indication from tee client
-
-Adds support to indicate NULL pointers instead of a valid buffer when
-querying the needed size of a buffer.
-
-----------------------------------------------------------------
-Cedric Neveux (1):
-      driver: tee: Handle NULL pointer indication from client
-
- drivers/tee/optee/core.c      |  7 +++++++
- drivers/tee/optee/optee_smc.h |  3 +++
- drivers/tee/tee_core.c        | 49 +++++++++++++++++++++++++++--------------=
---
- include/linux/tee_drv.h       |  3 +++
- include/uapi/linux/tee.h      | 13 ++++++++++++
- 5 files changed, 57 insertions(+), 18 deletions(-)
-
---===============6812033489853408750==--
+--===============7510872581129629886==--
 
