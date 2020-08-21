@@ -1,53 +1,46 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] optee i2c for v5.10
-Date: Fri, 21 Aug 2020 12:05:32 +0200
-Message-ID: <20200821100532.GA1868056@jade>
+Subject: Re: [PATCH] driver: tee: Handle NULL pointer indication from client
+Date: Fri, 21 Aug 2020 12:09:22 +0200
+Message-ID: 
+ <CAHUa44GKffKTBdrfchtj=wuM_4EMcFPw35DyXT7pRuqDYQ6VYA@mail.gmail.com>
+In-Reply-To: <20200710101808.1316522-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2444166625970669359=="
+Content-Type: multipart/mixed; boundary="===============5752915547110982255=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2444166625970669359==
+--===============5752915547110982255==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+On Fri, Jul 10, 2020 at 12:18 PM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> From: Cedric Neveux <cedric.neveux@nxp.com>
+>
+> TEE Client introduce a new capability "TEE_GEN_CAP_MEMREF_NULL"
+> to handle the support of the shared memory buffer with a NULL pointer.
+>
+> This capability depends on TEE Capabilities and driver support.
+> Driver and TEE exchange capabilities at driver initialization.
+>
+> Signed-off-by: Michael Whitfield <michael.whitfield@nxp.com>
+> Signed-off-by: Cedric Neveux <cedric.neveux@nxp.com>
+> Reviewed-by: Joakim Bech <joakim.bech@linaro.org>
+> Tested-by: Joakim Bech <joakim.bech@linaro.org> (QEMU)
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  drivers/tee/optee/core.c      |  7 +++++
+>  drivers/tee/optee/optee_smc.h |  3 +++
+>  drivers/tee/tee_core.c        | 49 ++++++++++++++++++++++-------------
+>  include/linux/tee_drv.h       |  3 +++
+>  include/uapi/linux/tee.h      | 13 ++++++++++
+>  5 files changed, 57 insertions(+), 18 deletions(-)
 
-Please pull this patch enabling i2c access from secure world via a
-trampoline in the OP-TEE driver.
+I almost forgot this one. I'm picking this up.
 
-Thanks,
+Cheers,
 Jens
 
-The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bbf5:
-
-  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
-
-are available in the Git repository at:
-
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-i2c-for=
--v5.10
-
-for you to fetch changes up to c05210ab975771e161427eb47696b869d820bdaf:
-
-  drivers: optee: allow op-tee to access devices on the i2c bus (2020-08-21 1=
-1:41:45 +0200)
-
-----------------------------------------------------------------
-Enable i2c device access from OP-TEE RPC
-
-Extends the OP-TEE RPC protocol to enable I2C device access. This allows
-a driver in secure world to access devices on a normal world I2C bus.
-
-----------------------------------------------------------------
-Jorge Ramirez-Ortiz (1):
-      drivers: optee: allow op-tee to access devices on the i2c bus
-
- drivers/tee/optee/optee_msg.h     | 21 +++++++++
- drivers/tee/optee/optee_private.h |  1 +
- drivers/tee/optee/rpc.c           | 95 +++++++++++++++++++++++++++++++++++++=
-++
- 3 files changed, 117 insertions(+)
-
---===============2444166625970669359==--
+--===============5752915547110982255==--
 
