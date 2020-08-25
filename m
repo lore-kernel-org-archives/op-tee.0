@@ -1,31 +1,47 @@
-From: Jerome Forissier <jerome@forissier.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 3.10.0 has been released
-Date: Fri, 21 Aug 2020 18:55:59 +0200
-Message-ID: <98ec1f16-26f7-9949-c12d-c94fbe259ae4@forissier.org>
+Subject: [GIT PULL] tee subsystem pin_user_pages for v5.10
+Date: Tue, 25 Aug 2020 11:07:15 +0200
+Message-ID: <20200825090715.GA2370775@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7510872581129629886=="
+Content-Type: multipart/mixed; boundary="===============2720389832273051171=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7510872581129629886==
+--===============2720389832273051171==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-[BCC all OP-TEE maintainers]
+Hello arm-soc maintainers,
 
-Hi,
+Please pull this small patch converting the tee subsystem to use
+pin_user_pages() instead of get_user_pages().
 
-FYI, I have just finalized the OP-TEE 3.10.0 release (changelog [1]).
+Thanks,
+Jens
 
-Many thanks to all of you who contributed to this release by submitting
-or reviewing code, or taking part in release testing [2].
+The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bbf5:
 
-[1] https://github.com/OP-TEE/optee_os/blob/3.10.0/CHANGELOG.md
-[2] https://github.com/OP-TEE/optee_os/commit/d1c635434c55
+  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
 
-Regards,
--- 
-Jerome
+are available in the Git repository at:
 
---===============7510872581129629886==--
+  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/tee-pin-user-=
+pages-for-5.10
+
+for you to fetch changes up to 4300cd6374a5192a2c8122a4a48ed647bdcb0214:
+
+  tee: convert get_user_pages() --> pin_user_pages() (2020-08-25 11:01:06 +02=
+00)
+
+----------------------------------------------------------------
+Converts tee subsystem to use pin_user_pages() instead of get_user_pages()
+
+----------------------------------------------------------------
+John Hubbard (1):
+      tee: convert get_user_pages() --> pin_user_pages()
+
+ drivers/tee/tee_shm.c | 32 +++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
+
+--===============2720389832273051171==--
 
