@@ -1,47 +1,77 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] tee subsystem pin_user_pages for v5.10
-Date: Tue, 25 Aug 2020 11:07:15 +0200
-Message-ID: <20200825090715.GA2370775@jade>
+Subject: Re: Linaro OP-TEE Contributions meeting Aug 2020
+Date: Thu, 27 Aug 2020 10:20:35 +0200
+Message-ID: 
+ <CA+EyddYR9YWMqkuNF_M53FhxE9FoE=jgTd=jN__rfkk1iOxN1Q@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3C0100017406fdb659-3d7c2cef-9ea6-466a-b38f-e9ba46b94?=
+ =?utf-8?q?c4b-000000=40email=2Eamazonses=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2720389832273051171=="
+Content-Type: multipart/mixed; boundary="===============1854088868393729110=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2720389832273051171==
+--===============1854088868393729110==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello arm-soc maintainers,
+Hi,
 
-Please pull this small patch converting the tee subsystem to use
-pin_user_pages() instead of get_user_pages().
+Just a friendly reminder, that we have the first public "Linaro OP-TEE
+Contributions" meeting taking place later today.
+2020-08-27(a)16.00 UTC+2, 1h duration (for other timezones, use this URL
+https://everytimezone.com/s/12a83ab5). Connection details and etc can be
+found in the email below.
 
-Thanks,
-Jens
+This time I've also included more people on BCC who might not have
+subscribed to the <op-tee@lists.trustedfirmware.org> list.
 
-The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bbf5:
+Regards,
+Joakim
 
-  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
+On Wed, 19 Aug 2020 at 15:52, Joakim Bech via OP-TEE <
+op-tee@lists.trustedfirmware.org> wrote:
 
-are available in the Git repository at:
+> Hi,
+>
+> As part of opening up Linaro projects to the general public we plan to have
+> an open monthly meeting where we discuss Linaro's activities around OP-TEE.
+> The way that we've planned to do this is that we send out an email to this
+> email list (https://lists.trustedfirmware.org/mailman/listinfo/op-tee) to
+> gather topics to discuss. If there are no topics, then there is no meeting.
+> Anyone can suggest a topic by replying to this email thread.
+>
+> As a first topic for this first meeting, we want to talk a bit about:
+> - Linaro and the relation to TrustedFirmware.org when it comes to OP-TEE.
+> - Where to find information.
+> - What is on the agenda for the next development cycle.
+>
+> Calendar invitation? I could just send one out here and now, but due to
+> Zoom bombing and that it'd be a logistic exercise inviting people, I've
+> decided to try another approach and that is to provide the connection
+> details in the meeting notes and leave it up to the attendees to add it to
+> their own calendars. To try to limit confusion I've explicitly added the
+> timezone and a link to everytimezone.com so it should be easy to get the
+> information in your own timezone. If this approach doesn't turn out to be
+> good, then we will try something different in the future (I understand that
+> canceling or shifting day/time will become a problem).
+>
+> Meeting details:
+> ---------------
+> Date/time: Thursday Aug 27th(a)16.00 (UTC+2)
+> https://everytimezone.com/s/12a83ab5
+> Invitation/connection details: In the meeting notes
+> Meeting notes:
+>
+> https://docs.google.com/document/d/15XsqgGktCrRRWiqyaz-erp_cZykwGjkBkhMD2Xt=
+UlUY
+>
+> Regards,
+> Joakim on behalf of the Linaro OP-TEE team
+> --
+> OP-TEE mailing list
+> OP-TEE(a)lists.trustedfirmware.org
+> https://lists.trustedfirmware.org/mailman/listinfo/op-tee
+>
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/tee-pin-user-=
-pages-for-5.10
-
-for you to fetch changes up to 4300cd6374a5192a2c8122a4a48ed647bdcb0214:
-
-  tee: convert get_user_pages() --> pin_user_pages() (2020-08-25 11:01:06 +02=
-00)
-
-----------------------------------------------------------------
-Converts tee subsystem to use pin_user_pages() instead of get_user_pages()
-
-----------------------------------------------------------------
-John Hubbard (1):
-      tee: convert get_user_pages() --> pin_user_pages()
-
- drivers/tee/tee_shm.c | 32 +++++++++++++++++++-------------
- 1 file changed, 19 insertions(+), 13 deletions(-)
-
---===============2720389832273051171==--
+--===============1854088868393729110==--
 
