@@ -1,21 +1,22 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 2/2] tee: avoid explicit sysfs_create/delete_group by
- initialising dev->groups
-Date: Tue, 01 Sep 2020 11:33:35 +0100
-Message-ID: <20200901103335.685-2-sudeep.holla@arm.com>
-In-Reply-To: <20200901103335.685-1-sudeep.holla@arm.com>
+Subject: [PATCH 1/2] tee: replace cdev_add + device_add with cdev_device_add
+Date: Tue, 01 Sep 2020 11:33:34 +0100
+Message-ID: <20200901103335.685-1-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7046039331303737884=="
+Content-Type: multipart/mixed; boundary="===============1411802989516247310=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7046039331303737884==
+--===============1411802989516247310==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-If the dev->groups is initialised, the sysfs group is created as part
-of device_add call. There is no need to call sysfs_create/delete_group
-explicitly.
+Commit 233ed09d7fda ("chardev: add helper function to register char devs
+with a struct device") added a helper function 'cdev_device_add'.
+
+Make use of cdev_device_add in tee_device_register to replace cdev_add
+and device_add. Since cdev_device_add takes care of setting the
+kobj->parent, drop explicit initialisation in tee_device_alloc.
 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
@@ -23,64 +24,69 @@ Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
  1 file changed, 4 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index b4a8b362d78f..f77d64fafead 100644
+index 64637e09a095..b4a8b362d78f 100644
 --- a/drivers/tee/tee_core.c
 +++ b/drivers/tee/tee_core.c
-@@ -962,9 +962,7 @@ static struct attribute *tee_dev_attrs[] = {
- 	NULL
- };
- 
--static const struct attribute_group tee_dev_group = {
--	.attrs = tee_dev_attrs,
--};
-+ATTRIBUTE_GROUPS(tee_dev);
- 
- /**
-  * tee_device_register() - Registers a TEE device
-@@ -984,6 +982,8 @@ int tee_device_register(struct tee_device *teedev)
+@@ -917,7 +917,6 @@ struct tee_device *tee_device_alloc(const struct tee_desc=
+ *teedesc,
+=20
+ 	cdev_init(&teedev->cdev, &tee_fops);
+ 	teedev->cdev.owner =3D teedesc->owner;
+-	teedev->cdev.kobj.parent =3D &teedev->dev.kobj;
+=20
+ 	dev_set_drvdata(&teedev->dev, driver_data);
+ 	device_initialize(&teedev->dev);
+@@ -985,24 +984,15 @@ int tee_device_register(struct tee_device *teedev)
  		return -EINVAL;
  	}
- 
-+	teedev->dev.groups = tee_dev_groups;
-+
- 	rc = cdev_device_add(&teedev->cdev, &teedev->dev);
+=20
+-	rc =3D cdev_add(&teedev->cdev, teedev->dev.devt, 1);
++	rc =3D cdev_device_add(&teedev->cdev, &teedev->dev);
  	if (rc) {
  		dev_err(&teedev->dev,
-@@ -993,19 +993,8 @@ int tee_device_register(struct tee_device *teedev)
+-			"unable to cdev_add() %s, major %d, minor %d, err=3D%d\n",
++			"unable to cdev_device_add() %s, major %d, minor %d, err=3D%d\n",
+ 			teedev->name, MAJOR(teedev->dev.devt),
+ 			MINOR(teedev->dev.devt), rc);
  		return rc;
  	}
- 
--	rc = sysfs_create_group(&teedev->dev.kobj, &tee_dev_group);
+=20
+-	rc =3D device_add(&teedev->dev);
 -	if (rc) {
 -		dev_err(&teedev->dev,
--			"failed to create sysfs attributes, err=%d\n", rc);
--		goto err_sysfs_create_group;
+-			"unable to device_add() %s, major %d, minor %d, err=3D%d\n",
+-			teedev->name, MAJOR(teedev->dev.devt),
+-			MINOR(teedev->dev.devt), rc);
+-		goto err_device_add;
 -	}
 -
- 	teedev->flags |= TEE_DEVICE_FLAG_REGISTERED;
+ 	rc =3D sysfs_create_group(&teedev->dev.kobj, &tee_dev_group);
+ 	if (rc) {
+ 		dev_err(&teedev->dev,
+@@ -1014,9 +1004,7 @@ int tee_device_register(struct tee_device *teedev)
  	return 0;
--
--err_sysfs_create_group:
--	cdev_device_del(&teedev->cdev, &teedev->dev);
--	return rc;
+=20
+ err_sysfs_create_group:
+-	device_del(&teedev->dev);
+-err_device_add:
+-	cdev_del(&teedev->cdev);
++	cdev_device_del(&teedev->cdev, &teedev->dev);
+ 	return rc;
  }
  EXPORT_SYMBOL_GPL(tee_device_register);
- 
-@@ -1048,10 +1037,8 @@ void tee_device_unregister(struct tee_device *teedev)
- 	if (!teedev)
- 		return;
- 
--	if (teedev->flags & TEE_DEVICE_FLAG_REGISTERED) {
--		sysfs_remove_group(&teedev->dev.kobj, &tee_dev_group);
-+	if (teedev->flags & TEE_DEVICE_FLAG_REGISTERED)
- 		cdev_device_del(&teedev->cdev, &teedev->dev);
--	}
- 
+@@ -1062,8 +1050,7 @@ void tee_device_unregister(struct tee_device *teedev)
+=20
+ 	if (teedev->flags & TEE_DEVICE_FLAG_REGISTERED) {
+ 		sysfs_remove_group(&teedev->dev.kobj, &tee_dev_group);
+-		cdev_del(&teedev->cdev);
+-		device_del(&teedev->dev);
++		cdev_device_del(&teedev->cdev, &teedev->dev);
+ 	}
+=20
  	tee_device_put(teedev);
- 	wait_for_completion(&teedev->c_no_users);
--- 
+--=20
 2.17.1
 
 
---===============7046039331303737884==--
+--===============1411802989516247310==--
 
