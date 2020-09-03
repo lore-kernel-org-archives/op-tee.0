@@ -1,137 +1,228 @@
-From: Achin Gupta <Achin.Gupta@arm.com>
+From: Peng Fan <peng.fan@nxp.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions meeting Aug 2020
-Date: Thu, 03 Sep 2020 09:54:29 +0000
-Message-ID: <ACD9C9E7-3006-40BF-AE77-26C8576BB95A@arm.com>
-In-Reply-To: <=?utf-8?q?=3C010001745350e118-c702287e-2111-4d5e-8b8e-21380c3b2?=
- =?utf-8?q?fa4-000000=40email=2Eamazonses=2Ecom=3E?=>
+Subject: RE: Linaro OP-TEE Contributions meeting Aug 2020
+Date: Thu, 03 Sep 2020 10:14:33 +0000
+Message-ID: <DB6PR0402MB27604D0C2C6136271CACD5D0882C0@DB6PR0402MB2760.eurprd04.prod.outlook.com>
+In-Reply-To: <ACD9C9E7-3006-40BF-AE77-26C8576BB95A@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4494221501836741059=="
+Content-Type: multipart/mixed; boundary="===============5364102611951872213=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4494221501836741059==
+--===============5364102611951872213==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Peng,
-
-
-> On 3 Sep 2020, at 10:34, Jens Wiklander via OP-TEE <op-tee@lists.trustedf=
-irmware.org> wrote:
+> Subject: Re: Linaro OP-TEE Contributions meeting Aug 2020
 >=20
 > Hi Peng,
 >=20
-> On Fri, Aug 28, 2020 at 9:10 AM Peng Fan via OP-TEE
-> <op-tee@lists.trustedfirmware.org> wrote:
->>=20
->> I was not able to join the meeting. Just wonder for S-EL2, is there any pl=
-atform supporting it? How to test?
-
-Just to be sure, you mean support for running OP-TEE under a Hypervisor/SPM i=
-n S-EL2?
-
-Cheers,
-Achin
-
 >=20
-> This is tested and developed using FVP as far as I know.
+> > On 3 Sep 2020, at 10:34, Jens Wiklander via OP-TEE
+> <op-tee@lists.trustedfirmware.org> wrote:
+> >
+> > Hi Peng,
+> >
+> > On Fri, Aug 28, 2020 at 9:10 AM Peng Fan via OP-TEE
+> > <op-tee@lists.trustedfirmware.org> wrote:
+> >>
+> >> I was not able to join the meeting. Just wonder for S-EL2, is there any
+> platform supporting it? How to test?
+>=20
+> Just to be sure, you mean support for running OP-TEE under a Hypervisor/SPM
+> in S-EL2?
+
+Yes. Actually I not follow the design decision that supporting multiple TEEs =
+in secure
+world. But anyway current OP-TEE support multiple XEN VMs contributed by EPAM,
+could this not serve normal world VM per future requirement?
+
+Thanks,
+Peng.
+
+
 >=20
 > Cheers,
-> Jens
+> Achin
 >=20
->>=20
->> Thanks,
->> Peng.
->>=20
->> From: Joakim Bech [mailto:joakim.bech(a)linaro.org]
->> Sent: 2020=E5=B9=B48=E6=9C=8827=E6=97=A5 16:21
->> To: op-tee(a)lists.trustedfirmware.org
->> Subject: Re: Linaro OP-TEE Contributions meeting Aug 2020
->>=20
->> Hi,
->>=20
->> Just a friendly reminder, that we have the first public "Linaro OP-TEE Con=
-tributions" meeting taking place later today.
->> 2020-08-27(a)16.00<mailto:2020-08-27@16.00> UTC+2, 1h duration (for othe=
-r timezones, use this URL https://everytimezone.com/s/12a83ab5<https://eur01.=
-safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Feverytimezone.com%2Fs%2=
-F12a83ab5&data=3D02%7C01%7Cpeng.fan%40nxp.com%7C968cd146eb384718c93308d84a622=
-84f%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C637341132734865135&sdata=3Dd=
-Vo8ZsJKM7NqaD5nySrCkmSXiITxmghW8gyqRTbgE4c%3D&reserved=3D0>). Connection deta=
-ils and etc can be found in the email below.
->>=20
->> This time I've also included more people on BCC who might not have subscri=
-bed to the <op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedf=
-irmware.org>> list.
->>=20
->> Regards,
->> Joakim
->>=20
->> On Wed, 19 Aug 2020 at 15:52, Joakim Bech via OP-TEE <op-tee(a)lists.trust=
-edfirmware.org<mailto:op-tee@lists.trustedfirmware.org>> wrote:
->> Hi,
->>=20
->> As part of opening up Linaro projects to the general public we plan to have
->> an open monthly meeting where we discuss Linaro's activities around OP-TEE.
->> The way that we've planned to do this is that we send out an email to this
->> email list (https://lists.trustedfirmware.org/mailman/listinfo/op-tee<http=
-s://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists.trusted=
-firmware.org%2Fmailman%2Flistinfo%2Fop-tee&data=3D02%7C01%7Cpeng.fan%40nxp.co=
-m%7C968cd146eb384718c93308d84a62284f%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7=
-C0%7C637341132734875130&sdata=3DhZZy2makgyvVU1DoY1e4Yn4c6WZ4Wn4jbFdml55%2Fv3s=
-%3D&reserved=3D0>) to
->> gather topics to discuss. If there are no topics, then there is no meeting.
->> Anyone can suggest a topic by replying to this email thread.
->>=20
->> As a first topic for this first meeting, we want to talk a bit about:
->> - Linaro and the relation to TrustedFirmware.org when it comes to OP-TEE.
->> - Where to find information.
->> - What is on the agenda for the next development cycle.
->>=20
->> Calendar invitation? I could just send one out here and now, but due to
->> Zoom bombing and that it'd be a logistic exercise inviting people, I've
->> decided to try another approach and that is to provide the connection
->> details in the meeting notes and leave it up to the attendees to add it to
->> their own calendars. To try to limit confusion I've explicitly added the
->> timezone and a link to everytimezone.com<https://eur01.safelinks.protectio=
-n.outlook.com/?url=3Dhttp%3A%2F%2Feverytimezone.com%2F&data=3D02%7C01%7Cpeng.=
-fan%40nxp.com%7C968cd146eb384718c93308d84a62284f%7C686ea1d3bc2b4c6fa92cd99c5c=
-301635%7C0%7C0%7C637341132734875130&sdata=3Dr9wZ94zXM1LJ%2BCk%2BGJM2Mdnc7vZtw=
-Iu5Gj2I4vcDZuE%3D&reserved=3D0> so it should be easy to get the
->> information in your own timezone. If this approach doesn't turn out to be
->> good, then we will try something different in the future (I understand that
->> canceling or shifting day/time will become a problem).
->>=20
->> Meeting details:
->> ---------------
->> Date/time: Thursday Aug 27th(a)16.00<mailto:27th@16.00> (UTC+2)
->> https://everytimezone.com/s/12a83ab5<https://eur01.safelinks.protection.ou=
-tlook.com/?url=3Dhttps%3A%2F%2Feverytimezone.com%2Fs%2F12a83ab5&data=3D02%7C0=
-1%7Cpeng.fan%40nxp.com%7C968cd146eb384718c93308d84a62284f%7C686ea1d3bc2b4c6fa=
-92cd99c5c301635%7C0%7C0%7C637341132734885125&sdata=3D7x3wtS9wsNwRhHmlwcO%2FcP=
-N3L1ZY%2FiGh6PIGpIeWZYw%3D&reserved=3D0>
->> Invitation/connection details: In the meeting notes
->> Meeting notes:
->> https://docs.google.com/document/d/15XsqgGktCrRRWiqyaz-erp_cZykwGjkBkhMD2X=
-tUlUY<https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fdoc=
-s.google.com%2Fdocument%2Fd%2F15XsqgGktCrRRWiqyaz-erp_cZykwGjkBkhMD2XtUlUY&da=
-ta=3D02%7C01%7Cpeng.fan%40nxp.com%7C968cd146eb384718c93308d84a62284f%7C686ea1=
-d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C637341132734885125&sdata=3D77G8RCi0GO13c=
-XuHID7EqmE%2BeCFGeosioORcAdmU4l0%3D&reserved=3D0>
->>=20
->> Regards,
->> Joakim on behalf of the Linaro OP-TEE team
->> --
->> OP-TEE mailing list
->> OP-TEE(a)lists.trustedfirmware.org<mailto:OP-TEE@lists.trustedfirmware.o=
-rg>
->> https://lists.trustedfirmware.org/mailman/listinfo/op-tee<https://eur01.sa=
-felinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists.trustedfirmware.org=
-%2Fmailman%2Flistinfo%2Fop-tee&data=3D02%7C01%7Cpeng.fan%40nxp.com%7C968cd146=
-eb384718c93308d84a62284f%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C6373411=
-32734895118&sdata=3DbH1obnnbfe365M%2BQ%2BFis3NwnWxrBLrahvL0v%2BHAMiug%3D&rese=
-rved=3D0>
+> >
+> > This is tested and developed using FVP as far as I know.
+> >
+> > Cheers,
+> > Jens
+> >
+> >>
+> >> Thanks,
+> >> Peng.
+> >>
+> >> From: Joakim Bech [mailto:joakim.bech(a)linaro.org]
+> >> Sent: 2020=E5=B9=B48=E6=9C=8827=E6=97=A5 16:21
+> >> To: op-tee(a)lists.trustedfirmware.org
+> >> Subject: Re: Linaro OP-TEE Contributions meeting Aug 2020
+> >>
+> >> Hi,
+> >>
+> >> Just a friendly reminder, that we have the first public "Linaro OP-TEE
+> Contributions" meeting taking place later today.
+> >> 2020-08-27(a)16.00<mailto:2020-08-27@16.00> UTC+2, 1h duration (for
+> other timezones, use this URL
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Feveryti
+> mezone.com%2Fs%2F12a83ab5&amp;data=3D02%7C01%7Cpeng.fan%40nxp.co
+> m%7C66d0df88519741b75aff08d84fef6af3%7C686ea1d3bc2b4c6fa92cd99c5
+> c301635%7C0%7C0%7C637347236997122381&amp;sdata=3D3T5L%2F0kMhB
+> GT%2BTu1FWxClGihm1mcKIhe52xYJeCUc68%3D&amp;reserved=3D0<https://e
+> ur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Feverytimezone.
+> com%2Fs%2F12a83ab5&amp;data=3D02%7C01%7Cpeng.fan%40nxp.com%7C6
+> 6d0df88519741b75aff08d84fef6af3%7C686ea1d3bc2b4c6fa92cd99c5c30163
+> 5%7C0%7C0%7C637347236997122381&amp;sdata=3D3T5L%2F0kMhBGT%2BT
+> u1FWxClGihm1mcKIhe52xYJeCUc68%3D&amp;reserved=3D0>). Connection
+> details and etc can be found in the email below.
+> >>
+> >> This time I've also included more people on BCC who might not have
+> subscribed to the
+> <op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmware.o=
+rg
+> >> list.
+> >>
+> >> Regards,
+> >> Joakim
+> >>
+> >> On Wed, 19 Aug 2020 at 15:52, Joakim Bech via OP-TEE
+> <op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmware.o=
+rg
+> >> wrote:
+> >> Hi,
+> >>
+> >> As part of opening up Linaro projects to the general public we plan
+> >> to have an open monthly meeting where we discuss Linaro's activities
+> around OP-TEE.
+> >> The way that we've planned to do this is that we send out an email to
+> >> this email list
+> >>
+> (https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists.=
+tr
+> ustedfirmware.org%2Fmailman%2Flistinfo%2Fop-tee&amp;data=3D02%7C01%
+> 7Cpeng.fan%40nxp.com%7C66d0df88519741b75aff08d84fef6af3%7C686ea1
+> d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C637347236997122381&amp;s
+> data=3D7fvZW6dyQ3xlsH0WqW%2BEXnzkmSvNinZwf3oYR%2BOP4U8%3D&am
+> p;reserved=3D0<https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%=
+3A
+> %2F%2Flists.trustedfirmware.org%2Fmailman%2Flistinfo%2Fop-tee&amp;dat
+> a=3D02%7C01%7Cpeng.fan%40nxp.com%7C66d0df88519741b75aff08d84fef6af
+> 3%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C63734723699712
+> 2381&amp;sdata=3D7fvZW6dyQ3xlsH0WqW%2BEXnzkmSvNinZwf3oYR%2BOP4
+> U8%3D&amp;reserved=3D0>) to gather topics to discuss. If there are no topic=
+s,
+> then there is no meeting.
+> >> Anyone can suggest a topic by replying to this email thread.
+> >>
+> >> As a first topic for this first meeting, we want to talk a bit about:
+> >> - Linaro and the relation to TrustedFirmware.org when it comes to OP-TEE.
+> >> - Where to find information.
+> >> - What is on the agenda for the next development cycle.
+> >>
+> >> Calendar invitation? I could just send one out here and now, but due
+> >> to Zoom bombing and that it'd be a logistic exercise inviting people,
+> >> I've decided to try another approach and that is to provide the
+> >> connection details in the meeting notes and leave it up to the
+> >> attendees to add it to their own calendars. To try to limit confusion
+> >> I've explicitly added the timezone and a link to
+> >> everytimezone.com<https://eur01.safelinks.protection.outlook.com/?url
+> >>
+> =3Dhttp%3A%2F%2Feverytimezone.com%2F&amp;data=3D02%7C01%7Cpeng.fan
+> %40nxp.
+> >>
+> com%7C66d0df88519741b75aff08d84fef6af3%7C686ea1d3bc2b4c6fa92cd99
+> c5c301635%7C0%7C0%7C637347236997122381&amp;sdata=3D1sod0wFduTTl
+> zsTmEz%2F0J4qJSIu1e15Js423GmXGyTQ%3D&amp;reserved=3D0> so it should
+> be easy to get the information in your own timezone. If this approach doesn=
+'t
+> turn out to be good, then we will try something different in the future (I
+> understand that canceling or shifting day/time will become a problem).
+> >>
+> >> Meeting details:
+> >> ---------------
+> >> Date/time: Thursday Aug 27th(a)16.00<mailto:27th@16.00> (UTC+2)
+> >> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Feve
+> >>
+> rytimezone.com%2Fs%2F12a83ab5&amp;data=3D02%7C01%7Cpeng.fan%40nx
+> p.com%7
+> >>
+> C66d0df88519741b75aff08d84fef6af3%7C686ea1d3bc2b4c6fa92cd99c5c301
+> 635%
+> >>
+> 7C0%7C0%7C637347236997122381&amp;sdata=3D3T5L%2F0kMhBGT%2BTu1F
+> WxClGihm1
+> >>
+> mcKIhe52xYJeCUc68%3D&amp;reserved=3D0<https://eur01.safelinks.protectio
+> >>
+> n.outlook.com/?url=3Dhttps%3A%2F%2Feverytimezone.com%2Fs%2F12a83ab5
+> &amp
+> >> ;data=3D02%7C01%7Cpeng.fan%40nxp.com%7C66d0df88519741b75aff08d8
+> 4fef6af3
+> >> %7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C637347236997
+> 122381&amp;
+> >>
+> sdata=3D3T5L%2F0kMhBGT%2BTu1FWxClGihm1mcKIhe52xYJeCUc68%3D&am
+> p;reserved
+> >> =3D0> Invitation/connection details: In the meeting notes Meeting
+> >> notes:
+> >> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fdoc
+> >>
+> s.google.com%2Fdocument%2Fd%2F15XsqgGktCrRRWiqyaz-erp_cZykwGjkBk
+> hMD2X
+> >>
+> tUlUY&amp;data=3D02%7C01%7Cpeng.fan%40nxp.com%7C66d0df88519741b7
+> 5aff08d
+> >>
+> 84fef6af3%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C6373472
+> 3699713
+> >>
+> 2377&amp;sdata=3Dp03kMVWuiSLGZvtkCpK1tHlW%2Fodgv924%2BW9YrU1ZCT
+> Y%3D&amp
+> >> ;reserved=3D0<https://eur01.safelinks.protection.outlook.com/?url=3Dhttps
+> >> %3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2F15XsqgGktCrRRWiqy
+> az-erp_cZy
+> >>
+> kwGjkBkhMD2XtUlUY&amp;data=3D02%7C01%7Cpeng.fan%40nxp.com%7C66d
+> 0df88519
+> >>
+> 741b75aff08d84fef6af3%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C
+> 0%7C63
+> >>
+> 7347236997132377&amp;sdata=3Dp03kMVWuiSLGZvtkCpK1tHlW%2Fodgv924
+> %2BW9YrU
+> >> 1ZCTY%3D&amp;reserved=3D0>
+> >>
+> >> Regards,
+> >> Joakim on behalf of the Linaro OP-TEE team
+> >> --
+> >> OP-TEE mailing list
+> >> OP-TEE(a)lists.trustedfirmware.org<mailto:OP-TEE@lists.trustedfirmware.
+> >> org>
+> >> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flis
+> >>
+> ts.trustedfirmware.org%2Fmailman%2Flistinfo%2Fop-tee&amp;data=3D02%7C0
+> 1
+> >> %7Cpeng.fan%40nxp.com%7C66d0df88519741b75aff08d84fef6af3%7C68
+> 6ea1d3bc
+> >>
+> 2b4c6fa92cd99c5c301635%7C0%7C0%7C637347236997132377&amp;sdata
+> =3DcgkP%2B
+> >>
+> DaYQpahvfbuiWsBoLjrTLayJkta%2F5rMX0tOteI%3D&amp;reserved=3D0<https:/
+> /eu
+> >> r01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists.trusted
+> >>
+> firmware.org%2Fmailman%2Flistinfo%2Fop-tee&amp;data=3D02%7C01%7Cpen
+> g.fa
+> >>
+> n%40nxp.com%7C66d0df88519741b75aff08d84fef6af3%7C686ea1d3bc2b4c
+> 6fa92c
+> >>
+> d99c5c301635%7C0%7C0%7C637347236997132377&amp;sdata=3DcgkP%2BD
+> aYQpahvfb
+> >> uiWsBoLjrTLayJkta%2F5rMX0tOteI%3D&amp;reserved=3D0>
 
 
---===============4494221501836741059==--
+--===============5364102611951872213==--
 
