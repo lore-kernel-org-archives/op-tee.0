@@ -1,32 +1,67 @@
-From: Souptick Joarder <jrdr.linux@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH] tee/tee_shm.c: Fix error handling path
-Date: Sun, 13 Sep 2020 18:31:08 +0530
-Message-ID: 
- <CAFqt6zYA4srnsGx+OzrzVuzasOvUQR+dN0nmVZcv1zVeotxKUA@mail.gmail.com>
-In-Reply-To: <641dfe3b-1de8-97ea-eac7-89d81846eab3@web.de>
+Date: Sun, 13 Sep 2020 22:29:09 +0200
+Message-ID: <20200913202909.GA1018725@jade>
+In-Reply-To: <1599972131-31770-1-git-send-email-jrdr.linux@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4647026224130096188=="
+Content-Type: multipart/mixed; boundary="===============5149828556780725934=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4647026224130096188==
+--===============5149828556780725934==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Sep 13, 2020 at 2:00 PM Markus Elfring <Markus.Elfring@web.de> wrot=
-e:
->
-> > When shm->num_pages <=3D 0, we should avoid calling
-> > release_registered_pages() in error handling path.
->
-> * Would an imperative wording become helpful for the change description?
->
-> * I suggest to add the tag =E2=80=9CFixes=E2=80=9D to the commit message.
+On Sun, Sep 13, 2020 at 10:12:11AM +0530, Souptick Joarder wrote:
+> When shm->num_pages <=3D 0, we should avoid calling
+> release_registered_pages() in error handling path.
+What are we fixing?
 
-Sure. Will address both in v2.
->
-> Regards,
-> Markus
+>=20
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> Cc: John Hubbard <jhubbard@nvidia.com>
+> ---
+>  drivers/tee/tee_shm.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> index 00472f5..e517d9f 100644
+> --- a/drivers/tee/tee_shm.c
+> +++ b/drivers/tee/tee_shm.c
+> @@ -260,8 +260,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ct=
+x, unsigned long addr,
+>  		rc =3D get_kernel_pages(kiov, num_pages, 0, shm->pages);
+>  		kfree(kiov);
+>  	}
+> -	if (rc > 0)
+> -		shm->num_pages =3D rc;
+> +	shm->num_pages =3D rc;
+Why not avoiding assigning invalid values to shm->num_pages?
+By the way, shm->num_pages is a size_t.
 
---===============4647026224130096188==--
+>  	if (rc !=3D num_pages) {
+>  		if (rc >=3D 0)
+>  			rc =3D -ENOMEM;
+> @@ -309,7 +308,9 @@ struct tee_shm *tee_shm_register(struct tee_context *ct=
+x, unsigned long addr,
+>  			idr_remove(&teedev->idr, shm->id);
+>  			mutex_unlock(&teedev->mutex);
+>  		}
+> -		release_registered_pages(shm);
+> +		if (shm->pages && (shm->num_pages > 0))
+> +			release_registered_pages(shm);
+> +
+With this we'll leak if shm->pages has been assigned something.
+
+>  	}
+>  	kfree(shm);
+>  	teedev_ctx_put(ctx);
+> --=20
+> 1.9.1
+>=20
+
+Thanks,
+Jens
+
+--===============5149828556780725934==--
 
