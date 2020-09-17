@@ -1,37 +1,45 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Linaro OP-TEE Contributions meeting Sept 2020
-Date: Thu, 17 Sep 2020 11:19:28 +0200
-Message-ID: 
- <CA+EyddbgLzL6K5L1Oqnqz7XUZw0Vkjd-giHPVdCNE3WqpiO9vw@mail.gmail.com>
+Subject: [PATCH] tee: client UUID: Skip REE kernel login method as well
+Date: Thu, 17 Sep 2020 19:10:22 +0530
+Message-ID: <1600350022-4554-1-git-send-email-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9021377413609642411=="
+Content-Type: multipart/mixed; boundary="===============6432775316376562243=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9021377413609642411==
+--===============6432775316376562243==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Since the addition of session's client UUID generation via commit [1],
+login via REE kernel method was disallowed. So fix that via passing
+nill UUID in case of TEE_IOCTL_LOGIN_REE_KERNEL method as well.
 
-LOC monthly meeting is planned to take place Sept 30 @ 16.00 (UTC+2).
-Connection details can be found in the meeting notes document (link below).
+Fixes: e33bcbab16d1 ("tee: add support for session's client UUID generation")=
+ [1]
+Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+---
+ drivers/tee/tee_core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-This email is a request to gather topics to discuss. If there are no
-suggestions, then there will be no meeting (announced in this email thread,
-if that's the case). To suggest a topic, either reply to this email thread
-or add your topic directly into the meeting notes (or do both).
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 64637e0..2f6199e 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -200,7 +200,8 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connec=
+tion_method,
+ 	int name_len;
+ 	int rc;
+=20
+-	if (connection_method =3D=3D TEE_IOCTL_LOGIN_PUBLIC) {
++	if (connection_method =3D=3D TEE_IOCTL_LOGIN_PUBLIC ||
++	    connection_method =3D=3D TEE_IOCTL_LOGIN_REE_KERNEL) {
+ 		/* Nil UUID to be passed to TEE environment */
+ 		uuid_copy(uuid, &uuid_null);
+ 		return 0;
+--=20
+2.7.4
 
-Meeting details:
----------------
-Date/time: Wednesday Sept 30th(a)16.00 (UTC+2)
-https://everytimezone.com/s/92bd296e
-Invitation/connection details: In the meeting notes
-Meeting notes: http://bit.ly/loc-notes
-Project page: https://www.linaro.org/projects/#LOC
 
-Regards,
-Joakim on behalf of the Linaro OP-TEE team
-
---===============9021377413609642411==--
+--===============6432775316376562243==--
 
