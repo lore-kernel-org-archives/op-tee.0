@@ -1,41 +1,37 @@
-From: Liu Shixin <liushixin2@huawei.com>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH -next] tee: optee: fix type warning of sizeof in pool_op_alloc()
-Date: Thu, 17 Sep 2020 16:13:56 +0800
-Message-ID: <20200917081356.2083345-1-liushixin2@huawei.com>
+Subject: Linaro OP-TEE Contributions meeting Sept 2020
+Date: Thu, 17 Sep 2020 11:19:28 +0200
+Message-ID: 
+ <CA+EyddbgLzL6K5L1Oqnqz7XUZw0Vkjd-giHPVdCNE3WqpiO9vw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6293528433300000072=="
+Content-Type: multipart/mixed; boundary="===============9021377413609642411=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6293528433300000072==
+--===============9021377413609642411==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-sizeof() when applied to a pointer typed expression should gives the
-size of the pointed data, even if the data is a pointer.
+Hi,
 
-Signed-off-by: Liu Shixin <liushixin2@huawei.com>
----
- drivers/tee/optee/shm_pool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+LOC monthly meeting is planned to take place Sept 30 @ 16.00 (UTC+2).
+Connection details can be found in the meeting notes document (link below).
 
-diff --git a/drivers/tee/optee/shm_pool.c b/drivers/tee/optee/shm_pool.c
-index d767eebf30bd..9fdc667b5df0 100644
---- a/drivers/tee/optee/shm_pool.c
-+++ b/drivers/tee/optee/shm_pool.c
-@@ -31,7 +31,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
- 		unsigned int nr_pages = 1 << order, i;
- 		struct page **pages;
- 
--		pages = kcalloc(nr_pages, sizeof(pages), GFP_KERNEL);
-+		pages = kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
- 		if (!pages)
- 			return -ENOMEM;
- 
--- 
-2.25.1
+This email is a request to gather topics to discuss. If there are no
+suggestions, then there will be no meeting (announced in this email thread,
+if that's the case). To suggest a topic, either reply to this email thread
+or add your topic directly into the meeting notes (or do both).
 
+Meeting details:
+---------------
+Date/time: Wednesday Sept 30th(a)16.00 (UTC+2)
+https://everytimezone.com/s/92bd296e
+Invitation/connection details: In the meeting notes
+Meeting notes: http://bit.ly/loc-notes
+Project page: https://www.linaro.org/projects/#LOC
 
---===============6293528433300000072==--
+Regards,
+Joakim on behalf of the Linaro OP-TEE team
+
+--===============9021377413609642411==--
 
