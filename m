@@ -1,69 +1,41 @@
-From: Souptick Joarder <jrdr.linux@gmail.com>
+From: Liu Shixin <liushixin2@huawei.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee/tee_shm.c: Fix error handling path
-Date: Mon, 14 Sep 2020 07:09:36 +0530
-Message-ID: 
- <CAFqt6zb3=JgD0FPwj9=RNvHRVEQF_fCvaH10eSidwZryTOMZ5A@mail.gmail.com>
-In-Reply-To: <20200913202909.GA1018725@jade>
+Subject: 
+ [PATCH -next] tee: optee: fix type warning of sizeof in pool_op_alloc()
+Date: Thu, 17 Sep 2020 16:13:56 +0800
+Message-ID: <20200917081356.2083345-1-liushixin2@huawei.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3493357102016717505=="
+Content-Type: multipart/mixed; boundary="===============6293528433300000072=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3493357102016717505==
+--===============6293528433300000072==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 14, 2020 at 1:59 AM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
->
-> On Sun, Sep 13, 2020 at 10:12:11AM +0530, Souptick Joarder wrote:
-> > When shm->num_pages <=3D 0, we should avoid calling
-> > release_registered_pages() in error handling path.
-> What are we fixing?
+sizeof() when applied to a pointer typed expression should gives the
+size of the pointed data, even if the data is a pointer.
 
-Current code is working fine and this patch is not needed. Sorry for the nois=
-e.
->
-> >
-> > Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
-> > Cc: John Hubbard <jhubbard@nvidia.com>
-> > ---
-> >  drivers/tee/tee_shm.c | 7 ++++---
-> >  1 file changed, 4 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index 00472f5..e517d9f 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -260,8 +260,7 @@ struct tee_shm *tee_shm_register(struct tee_context *=
-ctx, unsigned long addr,
-> >               rc =3D get_kernel_pages(kiov, num_pages, 0, shm->pages);
-> >               kfree(kiov);
-> >       }
-> > -     if (rc > 0)
-> > -             shm->num_pages =3D rc;
-> > +     shm->num_pages =3D rc;
-> Why not avoiding assigning invalid values to shm->num_pages?
-> By the way, shm->num_pages is a size_t.
->
-> >       if (rc !=3D num_pages) {
-> >               if (rc >=3D 0)
-> >                       rc =3D -ENOMEM;
-> > @@ -309,7 +308,9 @@ struct tee_shm *tee_shm_register(struct tee_context *=
-ctx, unsigned long addr,
-> >                       idr_remove(&teedev->idr, shm->id);
-> >                       mutex_unlock(&teedev->mutex);
-> >               }
-> > -             release_registered_pages(shm);
-> > +             if (shm->pages && (shm->num_pages > 0))
-> > +                     release_registered_pages(shm);
-> > +
-> With this we'll leak if shm->pages has been assigned something.
->
-> >       }
-> >       kfree(shm);
-> >       teedev_ctx_put(ctx);
-> > -
+Signed-off-by: Liu Shixin <liushixin2@huawei.com>
+---
+ drivers/tee/optee/shm_pool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---===============3493357102016717505==--
+diff --git a/drivers/tee/optee/shm_pool.c b/drivers/tee/optee/shm_pool.c
+index d767eebf30bd..9fdc667b5df0 100644
+--- a/drivers/tee/optee/shm_pool.c
++++ b/drivers/tee/optee/shm_pool.c
+@@ -31,7 +31,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
+ 		unsigned int nr_pages = 1 << order, i;
+ 		struct page **pages;
+ 
+-		pages = kcalloc(nr_pages, sizeof(pages), GFP_KERNEL);
++		pages = kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
+ 		if (!pages)
+ 			return -ENOMEM;
+ 
+-- 
+2.25.1
+
+
+--===============6293528433300000072==--
 
