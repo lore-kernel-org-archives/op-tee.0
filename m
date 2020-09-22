@@ -1,66 +1,74 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: fix some comment typos in header files
-Date: Sat, 19 Sep 2020 22:01:28 -0500
-Message-ID: <5dc9f507-df6b-b711-5312-648150451299@embeddedor.com>
-In-Reply-To: <20200920045857.34b612bf@akathisia>
+Subject: Re: [PATCH] drivers: optee: i2c: add bus retry configuration
+Date: Tue, 22 Sep 2020 18:38:59 +0200
+Message-ID: <20200922163859.GA1518183@jade>
+In-Reply-To: <20200916152732.23604-1-jorge@foundries.io>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6570616364399571915=="
+Content-Type: multipart/mixed; boundary="===============0340562635696901623=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6570616364399571915==
+--===============0340562635696901623==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-Here is another one you can solve:
-
-$ git grep -nw overlfow
-net/sctp/tsnmap.c:78:    * overlfow our map
-
-Thanks
---
-Gustavo
-
-On 9/19/20 20:58, Elvira Khabirova wrote:
-> struct tee_param: revc -> recv.
-> TEE_IOC_SUPPL_SEND: typo introduced by copy-pasting, replace invalid
-> description with description from the according argument struct.
-> 
-> Signed-off-by: Elvira Khabirova <e.khabirova@omprussia.ru>
+On Wed, Sep 16, 2020 at 05:27:32PM +0200, Jorge Ramirez-Ortiz wrote:
+> Allow OP-TEE to specify the number of retries in the adaptor.
+>=20
+> Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
 > ---
->  include/linux/tee_drv.h  | 2 +-
->  include/uapi/linux/tee.h | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index d074302989dd..61557bc0e29f 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -85,7 +85,7 @@ struct tee_param {
->   * @close_session:	close a session
->   * @invoke_func:	invoke a trusted function
->   * @cancel_req:		request cancel of an ongoing invoke or open
-> - * @supp_revc:		called for supplicant to get a command
-> + * @supp_recv:		called for supplicant to get a command
->   * @supp_send:		called for supplicant to send a response
->   * @shm_register:	register shared memory buffer in TEE
->   * @shm_unregister:	unregister shared memory buffer in TEE
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index b619f37ee03e..7546be5ed4f8 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -342,7 +342,7 @@ struct tee_iocl_supp_send_arg {
->  };
->  
->  /**
-> - * TEE_IOC_SUPPL_SEND - Receive a request for a supplicant function
-> + * TEE_IOC_SUPPL_SEND - Send a response to a received request
->   *
->   * Takes a struct tee_ioctl_buf_data which contains a struct
->   * tee_iocl_supp_send_arg followed by any array of struct tee_param
-> 
+>  drivers/tee/optee/rpc.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>=20
+> diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
+> index 1e3614e4798f..2d46a9ecb1de 100644
+> --- a/drivers/tee/optee/rpc.c
+> +++ b/drivers/tee/optee/rpc.c
+> @@ -58,6 +58,7 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee_c=
+ontext *ctx,
+>  	struct tee_param *params;
+>  	size_t i;
+>  	int ret =3D -EOPNOTSUPP;
+> +	int retries =3D 0;
+>  	u8 attr[] =3D {
+>  		TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
+>  		TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
+> @@ -102,12 +103,17 @@ static void handle_rpc_func_cmd_i2c_transfer(struct t=
+ee_context *ctx,
+>  	client.addr =3D params[0].u.value.c;
+>  	snprintf(client.name, I2C_NAME_SIZE, "i2c%d", client.adapter->nr);
+> =20
+> +	/* cache the current value */
+> +	retries =3D client.adapter->retries;
+> +
+>  	switch (params[0].u.value.a) {
+>  	case OPTEE_MSG_RPC_CMD_I2C_TRANSFER_RD:
+> +		client.adapter->retries =3D params[1].u.value.b;
+Do we need to take any locks befor this?
 
---===============6570616364399571915==--
+Cheers,
+Jens
+
+>  		ret =3D i2c_master_recv(&client, params[2].u.memref.shm->kaddr,
+>  				      params[2].u.memref.size);
+>  		break;
+>  	case OPTEE_MSG_RPC_CMD_I2C_TRANSFER_WR:
+> +		client.adapter->retries =3D params[1].u.value.b;
+>  		ret =3D i2c_master_send(&client, params[2].u.memref.shm->kaddr,
+>  				      params[2].u.memref.size);
+>  		break;
+> @@ -126,6 +132,7 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee=
+_context *ctx,
+>  			arg->ret =3D TEEC_SUCCESS;
+>  	}
+> =20
+> +	client.adapter->retries =3D retries;
+>  	i2c_put_adapter(client.adapter);
+>  	kfree(params);
+>  	return;
+> --=20
+> 2.17.1
+>=20
+
+--===============0340562635696901623==--
 
