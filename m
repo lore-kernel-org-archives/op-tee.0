@@ -1,47 +1,69 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v7 4/4] MAINTAINERS: Add entry for TEE based Trusted Keys
-Date: Wed, 07 Oct 2020 15:37:48 +0530
-Message-ID: <1602065268-26017-5-git-send-email-sumit.garg@linaro.org>
-In-Reply-To: <1602065268-26017-1-git-send-email-sumit.garg@linaro.org>
+Subject: Re: [PATCH] tee: client UUID: Skip REE kernel login method as well
+Date: Thu, 08 Oct 2020 07:53:57 +0200
+Message-ID: 
+ <CAHUa44FPG3kx3DBr-cZKttwH0_L-1=bTGoz6y7Mjj6WS3VKBdw@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYOg53-UVLM22oD9Mj5kqmsOnsr55abrSviscYnfXGP7rg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3633991575979377195=="
+Content-Type: multipart/mixed; boundary="===============1327455829579275468=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3633991575979377195==
+--===============1327455829579275468==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Add MAINTAINERS entry for TEE based Trusted Keys framework.
+Hi Sumit,
 
-Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-Acked-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+On Wed, Oct 7, 2020 at 11:27 AM Sumit Garg <sumit.garg@linaro.org> wrote:
+>
+> Hi Jens,
+>
+> On Thu, 17 Sep 2020 at 19:10, Sumit Garg <sumit.garg@linaro.org> wrote:
+> >
+> > Since the addition of session's client UUID generation via commit [1],
+> > login via REE kernel method was disallowed. So fix that via passing
+> > nill UUID in case of TEE_IOCTL_LOGIN_REE_KERNEL method as well.
+> >
+> > Fixes: e33bcbab16d1 ("tee: add support for session's client UUID generati=
+on") [1]
+> > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> > ---
+> >  drivers/tee/tee_core.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+>
+> Would you like to pick up this fix?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 48aff80..eb3d889 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9663,6 +9663,14 @@ F:	include/keys/trusted-type.h
- F:	include/keys/trusted_tpm.h
- F:	security/keys/trusted-keys/
- 
-+KEYS-TRUSTED-TEE
-+M:	Sumit Garg <sumit.garg@linaro.org>
-+L:	linux-integrity(a)vger.kernel.org
-+L:	keyrings(a)vger.kernel.org
-+S:	Supported
-+F:	include/keys/trusted_tee.h
-+F:	security/keys/trusted-keys/trusted_tee.c
-+
- KEYS/KEYRINGS
- M:	David Howells <dhowells@redhat.com>
- M:	Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
--- 
-2.7.4
+Thanks for the reminder.
+This looks good to me. I'll pick up this unless someone objects.
+Vesa, does this look good to you too?
 
+Cheers,
+Jens
 
---===============3633991575979377195==--
+>
+> -Sumit
+>
+> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> > index 64637e0..2f6199e 100644
+> > --- a/drivers/tee/tee_core.c
+> > +++ b/drivers/tee/tee_core.c
+> > @@ -200,7 +200,8 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 co=
+nnection_method,
+> >         int name_len;
+> >         int rc;
+> >
+> > -       if (connection_method =3D=3D TEE_IOCTL_LOGIN_PUBLIC) {
+> > +       if (connection_method =3D=3D TEE_IOCTL_LOGIN_PUBLIC ||
+> > +           connection_method =3D=3D TEE_IOCTL_LOGIN_REE_KERNEL) {
+> >                 /* Nil UUID to be passed to TEE environment */
+> >                 uuid_copy(uuid, &uuid_null);
+> >                 return 0;
+> > --
+> > 2.7.4
+> >
+
+--===============1327455829579275468==--
 
