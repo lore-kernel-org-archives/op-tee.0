@@ -1,60 +1,52 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 4/4] MAINTAINERS: Add entry for TEE based Trusted Keys
-Date: Tue, 13 Oct 2020 05:21:57 +0300
-Message-ID: <20201013022157.GA47751@linux.intel.com>
-In-Reply-To: <1602065268-26017-5-git-send-email-sumit.garg@linaro.org>
+Subject: [GIT PULL] OP-TEE use UUID API for v5.10
+Date: Tue, 13 Oct 2020 08:36:12 +0200
+Message-ID: <20201013063612.GA3325842@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0162253230801483666=="
+Content-Type: multipart/mixed; boundary="===============5952280363488872306=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0162253230801483666==
+--===============5952280363488872306==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 07, 2020 at 03:37:48PM +0530, Sumit Garg wrote:
-> Add MAINTAINERS entry for TEE based Trusted Keys framework.
-> 
-> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> Acked-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-> ---
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 48aff80..eb3d889 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -9663,6 +9663,14 @@ F:	include/keys/trusted-type.h
->  F:	include/keys/trusted_tpm.h
->  F:	security/keys/trusted-keys/
->  
-> +KEYS-TRUSTED-TEE
-> +M:	Sumit Garg <sumit.garg@linaro.org>
-> +L:	linux-integrity(a)vger.kernel.org
-> +L:	keyrings(a)vger.kernel.org
-> +S:	Supported
-> +F:	include/keys/trusted_tee.h
-> +F:	security/keys/trusted-keys/trusted_tee.c
-> +
->  KEYS/KEYRINGS
->  M:	David Howells <dhowells@redhat.com>
->  M:	Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-> -- 
-> 2.7.4
+Hello arm-soc maintainers,
 
-I'm sorry but I think I have changed my mind on this. This has been
-spinning for a while and sometimes conclusions change over the time.
+Please pull this small patch which allows to hide uuit_t internals from
+the OP-TEE driver.
 
-I don't think that we really need a separate subsystem tag. I'd be for a
-new M-entry or R-entry to the existing subsystem tag. It's essential to
-have ack from someone with ARM and TEE knowledge but this way too heavy
-for the purpose.
+I know it's a bit late for v5.10, if it's too late please queue it for
+v5.11 instead.
 
-I also see it the most manageable if the trusted keys PR's come from a
-single source.
+Thanks,
+Jens
 
-/Jarkko
+The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bbf5:
 
---===============0162253230801483666==--
+  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
+
+are available in the Git repository at:
+
+  git://git.linaro.org:/people/jens.wiklander/linux-tee.git tags/optee-use-uu=
+id-api-for-v5.10
+
+for you to fetch changes up to 57222a1be27e06ecb81cc2f945e897814d5f461c:
+
+  tee: optee: Use UUID API for exporting the UUID (2020-10-13 08:03:18 +0200)
+
+----------------------------------------------------------------
+Use UUID API to export the UUID
+
+Uses export_uuid() to export and uuid_t to an u8 array instead of depending
+on the internals of uuid_t.
+
+----------------------------------------------------------------
+Andy Shevchenko (1):
+      tee: optee: Use UUID API for exporting the UUID
+
+ drivers/tee/optee/device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--===============5952280363488872306==--
 
