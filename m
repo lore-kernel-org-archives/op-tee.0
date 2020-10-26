@@ -1,146 +1,230 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: "Wang, Xiaolei" <Xiaolei.Wang@windriver.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 1/4] KEYS: trusted: Add generic trusted keys framework
-Date: Thu, 22 Oct 2020 17:10:46 +0530
-Message-ID: 
- <CAFA6WYMk8g8i+zcEHYsUcZBq4_k5yGwYzLdEOMbRRnobz9xT4A@mail.gmail.com>
-In-Reply-To: <7b2ccd620a9de5c2fd57b8e8aeb41d5476f83b28.camel@linux.ibm.com>
+Subject: [PATCH] tee: optee: Set a flag to avoid memory leaks
+Date: Mon, 26 Oct 2020 02:22:49 +0000
+Message-ID: <PH0PR11MB5077E3F06F573C8D4170A73595190@PH0PR11MB5077.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7245677776688896048=="
+Content-Type: multipart/mixed; boundary="===============8525262171599736377=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7245677776688896048==
+--===============8525262171599736377==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 21 Oct 2020 at 17:55, Mimi Zohar <zohar@linux.ibm.com> wrote:
->
-> On Wed, 2020-10-21 at 11:16 +0530, Sumit Garg wrote:
-> > Thanks Mimi for your comments.
-> >
-> > On Wed, 21 Oct 2020 at 08:51, Mimi Zohar <zohar@linux.ibm.com> wrote:
-> > >
-> > > On Wed, 2020-10-07 at 15:37 +0530, Sumit Garg wrote:
-> > >
-> > > > +/*
-> > > > + * trusted_destroy - clear and free the key's payload
-> > > > + */
-> > > > +static void trusted_destroy(struct key *key)
-> > > > +{
-> > > > +     kfree_sensitive(key->payload.data[0]);
-> > > > +}
-> > > > +
-> > > > +struct key_type key_type_trusted =3D {
-> > > > +     .name =3D "trusted",
-> > > > +     .instantiate =3D trusted_instantiate,
-> > > > +     .update =3D trusted_update,
-> > > > +     .destroy =3D trusted_destroy,
-> > > > +     .describe =3D user_describe,
-> > > > +     .read =3D trusted_read,
-> > > > +};
-> > > > +EXPORT_SYMBOL_GPL(key_type_trusted);
-> > > > +
-> > > > +static int __init init_trusted(void)
-> > > > +{
-> > > > +     int i, ret =3D 0;
-> > > > +
-> > > > +     for (i =3D 0; i < ARRAY_SIZE(trusted_key_sources); i++) {
-> > > > +             if (trusted_key_source &&
-> > > > +                 strncmp(trusted_key_source, trusted_key_sources[i].=
-name,
-> > > > +                         strlen(trusted_key_sources[i].name)))
-> > > > +                     continue;
-> > > > +
-> > > > +             trusted_key_ops =3D trusted_key_sources[i].ops;
-> > > > +
-> > > > +             ret =3D trusted_key_ops->init();
-> > > > +             if (!ret)
-> > > > +                     break;
-> > > > +     }
-> > >
-> > > In the case when the module paramater isn't specified and both TPM and
-> > > TEE are enabled, trusted_key_ops is set to the last source initialized.
-> >
-> > I guess there is some misunderstanding. Here it's only a single trust
-> > source (TPM *or* TEE) is initialized and only that trust source would
-> > be active at runtime. And trusted_key_ops would be initialized to the
-> > first trust source whose initialization is successful (see check: "if
-> > (!ret)").
->
-> My mistake.
->
-> >
-> > > After patch 2/4, the last trusted source initialized is TEE.  If the
-> > > intention is to limit it to either TPM or TEE, then trusted_key_ops
-> > > should have a default value, which could be overwritten at runtime.
-> > > That would address Luke Hind's concerns of making the decision at
-> > > compile time.
-> >
-> > I think traversing the trust source list with the initial value being
-> > TPM would be default value.
->
-> Agreed
-> >
-> > >
-> > > trusted_key_ops should be defined as __ro_after_init, like is currently
-> > > done for other LSM structures.
-> >
-> > Sure, will do.
->
-> Thanks
-> >
-> > >
-> > > > +
-> > > > +     /*
-> > > > +      * encrypted_keys.ko depends on successful load of this module =
-even if
-> > > > +      * trusted key implementation is not found.
-> > > > +      */
-> > > > +     if (ret =3D=3D -ENODEV)
-> > > > +             return 0;
-> > > > +
-> > > > +     return ret;
-> > > > +}
-> > > > +
-> > > > +static void __exit cleanup_trusted(void)
-> > > > +{
-> > > > +     trusted_key_ops->exit();
-> > >
-> > > If the intention is really to support both TPM and TEE trusted keys at
-> > > the same time, as James suggested, then the same "for" loop as in
-> > > init_trusted() is needed here and probably elsewhere.
-> >
-> > Current intention is to only support a single trust source (TPM or
-> > TEE) at runtime. But in future if there are use-cases then framework
-> > can be extended to support multiple trust sources at runtime as well.
->
-> Ok, the last sentence of the patch description, "Also, add a module
-> parameter in order to select a particular trust source in case a
-> platform support multiple trust sources.", needs to be expanded to:
-> - indicate only one trust source at a time is supported
-> - indicate the default, if the module_param is not specified
->
+When an rpc message to release memory is not received, a memory leak will occ=
+ur, which should be released
 
-Sure, I will expand that.
 
-> I would also change the word from "add" to "define".
 
-Ack.
+unreferenced object 0xffff00006871b580 (size 128):
 
->   The new "source"
-> module parameter needs to be added to the admin-guide/kernel-parameters
-> documentation.
+  comm "swapper/0", pid 1, jiffies 4294892673 (age 428.192s)
 
-Okay, will update documentation as well.
+  hex dump (first 32 bytes):
 
--Sumit
+    80 b3 71 68 00 00 ff ff 00 e0 71 a8 00 00 00 00 ..qh......q.....
 
->
-> thanks,
->
-> Mimi
->
->
+    00 e0 71 68 00 00 ff ff 00 10 00 00 00 00 00 00 ..qh............
 
---===============7245677776688896048==--
+  backtrace:
+
+    [<00000000f0425299>] slab_post_alloc_hook+0x6c/0x338
+
+    [<000000004705f905>] kmem_cache_alloc+0x1d4/0x328
+
+    [<00000000773c66a0>] tee_shm_alloc+0x84/0x268
+
+    [<00000000ca052f98>] optee_handle_rpc+0x144/0x5a0
+
+    [<0000000015a8eebe>] optee_do_call_with_arg+0x14c/0x168
+
+    [<00000000d51ef0fd>] optee_open_session+0x12c/0x200
+
+    [<000000007146f51d>] tee_client_open_session+0x24/0x38
+
+    [<00000000ea2b35e7>] optee_enumerate_devices+0xa0/0x2c0
+
+    [<0000000068088775>] optee_probe+0x560/0x690
+
+    [<00000000ad1d997a>] platform_drv_probe+0x54/0xa8
+
+    [<00000000e11592d4>] really_probe+0x118/0x3e0
+
+    [<00000000dacd3142>] driver_probe_device+0x5c/0xc0
+
+    [<0000000077c13842>] device_driver_attach+0x74/0x80
+
+    [<00000000106ccc62>] __driver_attach+0x8c/0xd8
+
+    [<00000000e120c345>] bus_for_each_dev+0x7c/0xd8
+
+    [<00000000b79335f5>] driver_attach+0x24/0x30
+
+
+
+Signed-off-by: Xiaolei Wang <xiaolei.wang(a)windriver.com<mailto:xiaolei.wang=
+@windriver.com>>
+
+---
+
+drivers/tee/optee/call.c          | 7 ++++++-
+
+drivers/tee/optee/optee_private.h | 2 +-
+
+drivers/tee/optee/rpc.c           | 4 +++-
+
+3 files changed, 10 insertions(+), 3 deletions(-)
+
+
+
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c index 20b6fd=
+7383c5..522c133b9d95 100644
+
+--- a/drivers/tee/optee/call.c
+
++++ b/drivers/tee/optee/call.c
+
+@@ -129,6 +129,7 @@ u32 optee_do_call_with_arg(struct tee_context *ctx, phys_=
+addr_t parg)
+
+               struct optee_rpc_param param =3D { };
+
+               struct optee_call_ctx call_ctx =3D { };
+
+               u32 ret;
+
++             unsigned int flags =3D 0;
+
+
+
+                param.a0 =3D OPTEE_SMC_CALL_WITH_ARG;
+
+               reg_pair_from_64(&param.a1, &param.a2, parg); @@ -153,9 +154,1=
+3 @@ u32 optee_do_call_with_arg(struct tee_context *ctx, phys_addr_t parg)
+
+                                               param.a1 =3D res.a1;
+
+                                               param.a2 =3D res.a2;
+
+                                               param.a3 =3D res.a3;
+
+-                                              optee_handle_rpc(ctx, &param, =
+&call_ctx);
+
++                                             optee_handle_rpc(ctx, &param, &=
+call_ctx, &flags);
+
+                               } else {
+
+                                               ret =3D res.a0;
+
++                                             if (flags !=3D 0x0) {
+
++                                                             param.a0 =3D 2;
+
++                                                             optee_handle_rp=
+c(ctx, &param, &call_ctx, &flags);
+
++                                             }
+
+                                               break;
+
+                               }
+
+               }
+
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+
+index 8b71839a357e..1c1d62e21141 100644
+
+--- a/drivers/tee/optee/optee_private.h
+
++++ b/drivers/tee/optee/optee_private.h
+
+@@ -127,7 +127,7 @@ struct optee_call_ctx {  };
+
+
+
+ void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param *param,
+
+-                                    struct optee_call_ctx *call_ctx);
+
++                                  struct optee_call_ctx *call_ctx, unsigned =
+int *flags);
+
+void optee_rpc_finalize_call(struct optee_call_ctx *call_ctx);
+
+
+
+ void optee_wait_queue_init(struct optee_wait_queue *wq); diff --git a/driver=
+s/tee/optee/rpc.c b/drivers/tee/optee/rpc.c index b4ade54d1f28..4e76c87b61f4 =
+100644
+
+--- a/drivers/tee/optee/rpc.c
+
++++ b/drivers/tee/optee/rpc.c
+
+@@ -396,7 +396,7 @@ static void handle_rpc_func_cmd(struct tee_context *ctx, =
+struct optee *optee,
+
+  * Result of RPC is written back into @param.
+
+  */
+
+void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param *param,
+
+-                                    struct optee_call_ctx *call_ctx)
+
++                                   struct optee_call_ctx *call_ctx, unsigned=
+ int *flags)
+
+{
+
+               struct tee_device *teedev =3D ctx->teedev;
+
+               struct optee *optee =3D tee_get_drvdata(teedev); @@ -410,6 +41=
+0,7 @@ void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param =
+*param,
+
+                                               reg_pair_from_64(&param->a1, &=
+param->a2, pa);
+
+                                               reg_pair_from_64(&param->a4, &=
+param->a5,
+
+                                                                             =
+   (unsigned long)shm);
+
++                                             *flags =3D 0x1;
+
+                               } else {
+
+                                               param->a1 =3D 0;
+
+                                               param->a2 =3D 0;
+
+@@ -420,6 +421,7 @@ void optee_handle_rpc(struct tee_context *ctx, struct opt=
+ee_rpc_param *param,
+
+               case OPTEE_SMC_RPC_FUNC_FREE:
+
+                               shm =3D reg_pair_to_ptr(param->a1, param->a2);
+
+                               tee_shm_free(shm);
+
++                             *flags =3D 0x0;
+
+                               break;
+
+               case OPTEE_SMC_RPC_FUNC_FOREIGN_INTR:
+
+                               /*
+
+--
+
+2.25.1
+
+
+--===============8525262171599736377==--
 
