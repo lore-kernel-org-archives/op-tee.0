@@ -1,53 +1,40 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 0/4] Introduce TEE based Trusted Keys support
-Date: Fri, 06 Nov 2020 16:52:52 +0200
-Message-ID: <20201106145252.GA10434@kernel.org>
-In-Reply-To: <
- <CAFA6WYPetvod-Wov2n_L5TL771j+-kt+_csyWYT-uM=haEKMZQ@mail.gmail.com>>
+Subject: Re: [PATCH 0/2] AMD-TEE driver bug fixes
+Date: Mon, 09 Nov 2020 08:47:34 +0100
+Message-ID: 
+ <CAHUa44F4L+B=Kr_-hprhMRjgjfnQPRdzPsxq0WFABB6WPKqyog@mail.gmail.com>
+In-Reply-To: <cover.1604470183.git.Rijo-john.Thomas@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2796725414293718097=="
+Content-Type: multipart/mixed; boundary="===============5354506099998544898=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2796725414293718097==
+--===============5354506099998544898==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 06, 2020 at 03:02:41PM +0530, Sumit Garg wrote:
-> On Thu, 5 Nov 2020 at 10:37, Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> >
-> > On Tue, Nov 03, 2020 at 09:31:42PM +0530, Sumit Garg wrote:
-> > > Add support for TEE based trusted keys where TEE provides the functiona=
-lity
-> > > to seal and unseal trusted keys using hardware unique key. Also, this is
-> > > an alternative in case platform doesn't possess a TPM device.
-> > >
-> > > This patch-set has been tested with OP-TEE based early TA which is alre=
-ady
-> > > merged in upstream [1].
-> >
-> > Is the new RPI400 computer a platform that can be used for testing
-> > patch sets like this? I've been looking for a while something ARM64
-> > based with similar convenience as Intel NUC's, and on the surface
-> > this new RPI product looks great for kernel testing purposes.
->=20
-> Here [1] is the list of supported versions of Raspberry Pi in OP-TEE.
-> The easiest approach would be to pick up a supported version or else
-> do an OP-TEE port for an unsupported one (which should involve minimal
-> effort).
->=20
-> [1] https://optee.readthedocs.io/en/latest/building/devices/rpi3.html#what-=
-versions-of-raspberry-pi-will-work
->=20
-> -Sumit
+Hi Rijo,
 
-If porting is doable, then I'll just order RPI 400, and test with QEMU
-up until either I port OP-TEE myself or someone else does it.
+On Wed, Nov 4, 2020 at 7:26 AM Rijo Thomas <Rijo-john.Thomas@amd.com> wrote:
+>
+> AMD-TEE driver keeps track of shared memory buffers and their
+> corresponding buffer id's in a global linked list. These buffers are
+> used to share data between x86 and AMD Secure Processor. This patchset
+> fixes issues related to maintaining mapped buffers in a shared linked
+> list.
+>
+> Rijo Thomas (2):
+>   tee: amdtee: fix memory leak due to reset of global shm list
+>   tee: amdtee: synchronize access to shm list
+>
+>  drivers/tee/amdtee/amdtee_private.h |  8 ++++----
+>  drivers/tee/amdtee/core.c           | 26 +++++++++++++++++++-------
+>  2 files changed, 23 insertions(+), 11 deletions(-)
 
-For seldom ARM testing, RPI 400 is really convenient device with its
-boxed form factor.
+This series looks good. I'll pick it up.
 
-/Jarkko
+Thanks,
+Jens
 
---===============2796725414293718097==--
+--===============5354506099998544898==--
 
