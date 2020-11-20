@@ -1,43 +1,42 @@
-From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+From: Jakub Kicinski <kuba@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 061/141] tee: Fix fall-through warnings for Clang
-Date: Fri, 20 Nov 2020 12:33:19 -0600
-Message-ID: <c505109fe0c02f648e16caa83d8a9773afd696b1.1605896059.git.gustavoars@kernel.org>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Fri, 20 Nov 2020 10:53:44 -0800
+Message-ID: 
+ <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8442898741132783610=="
+Content-Type: multipart/mixed; boundary="===============4138882953764328147=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8442898741132783610==
+--===============4138882953764328147==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
-by explicitly adding a break statement instead of letting the code fall
-through to the next case.
+On Fri, 20 Nov 2020 12:21:39 -0600 Gustavo A. R. Silva wrote:
+> This series aims to fix almost all remaining fall-through warnings in
+> order to enable -Wimplicit-fallthrough for Clang.
+> 
+> In preparation to enable -Wimplicit-fallthrough for Clang, explicitly
+> add multiple break/goto/return/fallthrough statements instead of just
+> letting the code fall through to the next case.
+> 
+> Notice that in order to enable -Wimplicit-fallthrough for Clang, this
+> change[1] is meant to be reverted at some point. So, this patch helps
+> to move in that direction.
+> 
+> Something important to mention is that there is currently a discrepancy
+> between GCC and Clang when dealing with switch fall-through to empty case
+> statements or to cases that only contain a break/continue/return
+> statement[2][3][4].
 
-Link: https://github.com/KSPP/linux/issues/115
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- drivers/tee/tee_core.c | 1 +
- 1 file changed, 1 insertion(+)
+Are we sure we want to make this change? Was it discussed before?
 
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index 6ade4a5c4840..5fdf26688230 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -452,6 +452,7 @@ static int params_to_user(struct tee_ioctl_param __user *=
-uparams,
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
- 			if (put_user((u64)p->u.memref.size, &up->b))
- 				return -EFAULT;
-+			break;
- 		default:
- 			break;
- 		}
---=20
-2.27.0
+Are there any bugs Clangs puritanical definition of fallthrough helped
+find?
 
+IMVHO compiler warnings are supposed to warn about issues that could
+be bugs. Falling through to default: break; can hardly be a bug?!
 
---===============8442898741132783610==--
+--===============4138882953764328147==--
 
