@@ -1,36 +1,36 @@
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Fri, 20 Nov 2020 23:21:17 +0100
+Subject: Re: [PATCH 061/141] tee: Fix fall-through warnings for Clang
+Date: Sun, 22 Nov 2020 10:26:09 +0100
 Message-ID: 
- <CANiq72=E_gEVvqUUTSqU4zegC2=yZSTM4b=4G-iofp6d3=UgWQ@mail.gmail.com>
-In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
+ <CAHUa44G1B8_CSahTJ1uOUMLcDfpVKHUaoN+u87BywkVwyhjnRw@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3Cc505109fe0c02f648e16caa83d8a9773afd696b1=2E1605896?=
+ =?utf-8?q?059=2Egit=2Egustavoars=40kernel=2Eorg=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2804846426711730997=="
+Content-Type: multipart/mixed; boundary="===============3473572226851370788=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2804846426711730997==
+--===============3473572226851370788==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi Gustavo,
-
-On Fri, Nov 20, 2020 at 7:21 PM Gustavo A. R. Silva
+On Fri, Nov 20, 2020 at 7:33 PM Gustavo A. R. Silva
 <gustavoars@kernel.org> wrote:
 >
-> Hi all,
+> In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
+> by explicitly adding a break statement instead of letting the code fall
+> through to the next case.
 >
-> This series aims to fix almost all remaining fall-through warnings in
-> order to enable -Wimplicit-fallthrough for Clang.
+> Link: https://github.com/KSPP/linux/issues/115
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>  drivers/tee/tee_core.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Thanks for this.
+Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
 
-Since this warning is reliable in both/all compilers and we are
-eventually getting rid of all the cases, what about going even further
-and making it an error right after?
+Thanks,
+Jens
 
-Cheers,
-Miguel
-
---===============2804846426711730997==--
+--===============3473572226851370788==--
 
