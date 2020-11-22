@@ -1,36 +1,62 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Kees Cook <keescook@chromium.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 061/141] tee: Fix fall-through warnings for Clang
-Date: Sun, 22 Nov 2020 10:26:09 +0100
-Message-ID: 
- <CAHUa44G1B8_CSahTJ1uOUMLcDfpVKHUaoN+u87BywkVwyhjnRw@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3Cc505109fe0c02f648e16caa83d8a9773afd696b1=2E1605896?=
- =?utf-8?q?059=2Egit=2Egustavoars=40kernel=2Eorg=3E?=>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Sun, 22 Nov 2020 08:17:03 -0800
+Message-ID: <202011220816.8B6591A@keescook>
+In-Reply-To: <
+ <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3473572226851370788=="
+Content-Type: multipart/mixed; boundary="===============1082943146931284605=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3473572226851370788==
+--===============1082943146931284605==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 20, 2020 at 7:33 PM Gustavo A. R. Silva
-<gustavoars@kernel.org> wrote:
->
-> In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
-> by explicitly adding a break statement instead of letting the code fall
-> through to the next case.
->
-> Link: https://github.com/KSPP/linux/issues/115
-> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
-> ---
->  drivers/tee/tee_core.c | 1 +
->  1 file changed, 1 insertion(+)
+On Fri, Nov 20, 2020 at 11:51:42AM -0800, Jakub Kicinski wrote:
+> On Fri, 20 Nov 2020 11:30:40 -0800 Kees Cook wrote:
+> > On Fri, Nov 20, 2020 at 10:53:44AM -0800, Jakub Kicinski wrote:
+> > > On Fri, 20 Nov 2020 12:21:39 -0600 Gustavo A. R. Silva wrote: =20
+> > > > This series aims to fix almost all remaining fall-through warnings in
+> > > > order to enable -Wimplicit-fallthrough for Clang.
+> > > >=20
+> > > > In preparation to enable -Wimplicit-fallthrough for Clang, explicitly
+> > > > add multiple break/goto/return/fallthrough statements instead of just
+> > > > letting the code fall through to the next case.
+> > > >=20
+> > > > Notice that in order to enable -Wimplicit-fallthrough for Clang, this
+> > > > change[1] is meant to be reverted at some point. So, this patch helps
+> > > > to move in that direction.
+> > > >=20
+> > > > Something important to mention is that there is currently a discrepan=
+cy
+> > > > between GCC and Clang when dealing with switch fall-through to empty =
+case
+> > > > statements or to cases that only contain a break/continue/return
+> > > > statement[2][3][4]. =20
+> > >=20
+> > > Are we sure we want to make this change? Was it discussed before?
+> > >=20
+> > > Are there any bugs Clangs puritanical definition of fallthrough helped
+> > > find?
+> > >=20
+> > > IMVHO compiler warnings are supposed to warn about issues that could
+> > > be bugs. Falling through to default: break; can hardly be a bug?! =20
+> >=20
+> > It's certainly a place where the intent is not always clear. I think
+> > this makes all the cases unambiguous, and doesn't impact the machine
+> > code, since the compiler will happily optimize away any behavioral
+> > redundancy.
+>=20
+> If none of the 140 patches here fix a real bug, and there is no change
+> to machine code then it sounds to me like a W=3D2 kind of a warning.
 
-Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
+FWIW, this series has found at least one bug so far:
+https://lore.kernel.org/lkml/CAFCwf11izHF=3Dg1mGry1fE5kvFFFrxzhPSM6qKAO8gxSp=
+=3DKr_CQ(a)mail.gmail.com/
 
-Thanks,
-Jens
+--=20
+Kees Cook
 
---===============3473572226851370788==--
+--===============1082943146931284605==--
 
