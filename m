@@ -1,42 +1,47 @@
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+From: Sam Ravnborg <sam@ravnborg.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Sun, 22 Nov 2020 21:35:58 +0100
-Message-ID: 
- <CANiq72nZrHWTA4_Msg6MP9snTyenC6-eGfD27CyfNSu7QoVZbw@mail.gmail.com>
+Date: Sun, 22 Nov 2020 23:10:40 +0100
+Message-ID: <20201122221040.GD566387@ravnborg.org>
 In-Reply-To: <
  <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4953150152367307656=="
+Content-Type: multipart/mixed; boundary="===============7741873723261443605=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4953150152367307656==
+--===============7741873723261443605==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 22, 2020 at 7:22 PM James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
->
+Hi James.
+
+> > > If none of the 140 patches here fix a real bug, and there is no
+> > > change to machine code then it sounds to me like a W=3D2 kind of a
+> > > warning.
+> >=20
+> > FWIW, this series has found at least one bug so far:
+> > https://lore.kernel.org/lkml/CAFCwf11izHF=3Dg1mGry1fE5kvFFFrxzhPSM6qKAO8g=
+xSp=3DKr_CQ(a)mail.gmail.com/
+>=20
+>=20
 > Well, it's a problem in an error leg, sure, but it's not a really
 > compelling reason for a 141 patch series, is it?  All that fixing this
 > error will do is get the driver to print "oh dear there's a problem"
 > under four more conditions than it previously did.
->
-> We've been at this for three years now with nearly a thousand patches,
-> firstly marking all the fall throughs with /* fall through */ and later
-> changing it to fallthrough.  At some point we do have to ask if the
-> effort is commensurate with the protection afforded.  Please tell me
-> our reward for all this effort isn't a single missing error print.
 
-It isn't that much effort, isn't it? Plus we need to take into account
-the future mistakes that it might prevent, too. So even if there were
-zero problems found so far, it is still a positive change.
+You are asking the wrong question here.
 
-I would agree if these changes were high risk, though; but they are
-almost trivial.
+Yuo should ask  how many hours could have been saved by all the bugs
+people have been fighting with and then fixed *before* the code
+hit the kernel at all.
 
-Cheers,
-Miguel
+My personal experience is that I, more than once, have had errors
+related to a missing break in my code. So this warnings is IMO a win.
 
---===============4953150152367307656==--
+And if we are only ~100 patches to have it globally enabled then it is a
+no-brainer in my book.
+
+	Sam
+
+--===============7741873723261443605==--
 
