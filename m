@@ -1,85 +1,59 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: Joe Perches <joe@perches.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Mon, 23 Nov 2020 08:31:30 -0800
-Message-ID: 
- <8f5611bb015e044fa1c0a48147293923c2d904e4.camel@HansenPartnership.com>
-In-Reply-To: <20201123130348.GA3119@embeddedor>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Mon, 23 Nov 2020 08:32:41 -0800
+Message-ID: <32dc7423124b51da4e144e931bf099a368ab50a8.camel@perches.com>
+In-Reply-To: <
+ <fc45750b6d0277c401015b7aa11e16cd15f32ab2.camel@HansenPartnership.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7639376429497366557=="
+Content-Type: multipart/mixed; boundary="===============0496001689026304472=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7639376429497366557==
+--===============0496001689026304472==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2020-11-23 at 07:03 -0600, Gustavo A. R. Silva wrote:
-> On Sun, Nov 22, 2020 at 11:53:55AM -0800, James Bottomley wrote:
-> > On Sun, 2020-11-22 at 11:22 -0800, Joe Perches wrote:
-> > > On Sun, 2020-11-22 at 11:12 -0800, James Bottomley wrote:
-> > > > On Sun, 2020-11-22 at 10:25 -0800, Joe Perches wrote:
-> > > > > On Sun, 2020-11-22 at 10:21 -0800, James Bottomley wrote:
-> > > > > > Please tell me our reward for all this effort isn't a
-> > > > > > single missing error print.
-> > > > > 
-> > > > > There were quite literally dozens of logical defects found
-> > > > > by the fallthrough additions.  Very few were logging only.
-> > > > 
-> > > > So can you give us the best examples (or indeed all of them if
-> > > > someone is keeping score)?  hopefully this isn't a US election
-> > > > situation ...
-> > > 
-> > > Gustavo?  Are you running for congress now?
-> > > 
-> > > https://lwn.net/Articles/794944/
-> > 
-> > That's 21 reported fixes of which about 50% seem to produce no
-> > change in code behaviour at all, a quarter seem to have no user
-> > visible effect with the remaining quarter producing unexpected
-> > errors on obscure configuration parameters, which is why no-one
-> > really noticed them before.
-> 
-> The really important point here is the number of bugs this has
-> prevented and will prevent in the future. See an example of this,
-> below:
-> 
-> https://lore.kernel.org/linux-iio/20190813135802.GB27392(a)kroah.com/
+On Mon, 2020-11-23 at 07:58 -0800, James Bottomley wrote:
+> We're also complaining about the inability to recruit maintainers:
+>=20
+> https://www.theregister.com/2020/06/30/hard_to_find_linux_maintainers_says_=
+torvalds/
+>=20
+> And burn out:
+>=20
+> http://antirez.com/news/129
 
-I think this falls into the same category as the other six bugs: it
-changes the output/input for parameters but no-one has really noticed,
-usually because the command is obscure or the bias effect is minor.
+https://www.wired.com/story/open-source-coders-few-tired/
 
-> This work is still relevant, even if the total number of issues/bugs
-> we find in the process is zero (which is not the case).
+> What I'm actually trying to articulate is a way of measuring value of
+> the patch vs cost ... it has nothing really to do with who foots the
+> actual bill.
 
-Really, no ... something which produces no improvement has no value at
-all ... we really shouldn't be wasting maintainer time with it because
-it has a cost to merge.  I'm not sure we understand where the balance
-lies in value vs cost to merge but I am confident in the zero value
-case.
+It's unclear how to measure value in consistency.
 
-> "The sucky thing about doing hard work to deploy hardening is that
-> the result is totally invisible by definition (things not happening)
-> [..]"
-> - Dmitry Vyukov
+But one way that costs can be reduced is by automation and _not_
+involving maintainers when the patch itself is provably correct.
 
-Really, no.  Something that can't be measured at all doesn't exist.
+> One thesis I'm actually starting to formulate is that this continual
+> devaluing of maintainers is why we have so much difficulty keeping and
+> recruiting them.
 
-And actually hardening is one of those things you can measure (which I
-do have to admit isn't true for everything in the security space) ...
-it's number of exploitable bugs found before you did it vs number of
-exploitable bugs found after you did it.  Usually hardening eliminates
-a class of bug, so the way I've measured hardening before is to go
-through the CVE list for the last couple of years for product X, find
-all the bugs that are of the class we're looking to eliminate and say
-if we had hardened X against this class of bug we'd have eliminated Y%
-of the exploits.  It can be quite impressive if Y is a suitably big
-number.
+The linux kernel has something like 1500 different maintainers listed
+in the MAINTAINERS file.  That's not a trivial number.
 
-James
+$ git grep '^M:' MAINTAINERS | sort | uniq -c | wc -l
+1543
+$ git grep '^M:' MAINTAINERS| cut -f1 -d'<' | sort | uniq -c | wc -l
+1446
+
+I think the question you are asking is about trust and how it
+effects development.
+
+And back to that wired story, the actual number of what you might
+be considering to be maintainers is likely less than 10% of the
+listed numbers above.
 
 
 
---===============7639376429497366557==--
+--===============0496001689026304472==--
 
