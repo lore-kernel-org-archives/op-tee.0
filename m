@@ -1,64 +1,69 @@
-From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Mon, 23 Nov 2020 07:03:48 -0600
-Message-ID: <20201123130348.GA3119@embeddedor>
-In-Reply-To: <
- <dbd2cb703ed9eefa7dde9281ea26ab0f7acc8afe.camel@HansenPartnership.com>>
+Subject: Re: [PATCH] Properly check tee_shm buffer mmap offset
+Date: Mon, 23 Nov 2020 14:52:55 +0100
+Message-ID: 
+ <CAHUa44HB6WKoubGEWFANh8SmsOU0Z=p+42AV5-At8TC1B08npA@mail.gmail.com>
+In-Reply-To: <1606115436-15332-1-git-send-email-a869920004@163.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8723738654198790092=="
+Content-Type: multipart/mixed; boundary="===============9050254402185498689=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8723738654198790092==
+--===============9050254402185498689==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 22, 2020 at 11:53:55AM -0800, James Bottomley wrote:
-> On Sun, 2020-11-22 at 11:22 -0800, Joe Perches wrote:
-> > On Sun, 2020-11-22 at 11:12 -0800, James Bottomley wrote:
-> > > On Sun, 2020-11-22 at 10:25 -0800, Joe Perches wrote:
-> > > > On Sun, 2020-11-22 at 10:21 -0800, James Bottomley wrote:
-> > > > > Please tell me our reward for all this effort isn't a single
-> > > > > missing error print.
-> > > > 
-> > > > There were quite literally dozens of logical defects found
-> > > > by the fallthrough additions.  Very few were logging only.
-> > > 
-> > > So can you give us the best examples (or indeed all of them if
-> > > someone is keeping score)?  hopefully this isn't a US election
-> > > situation ...
-> > 
-> > Gustavo?  Are you running for congress now?
-> > 
-> > https://lwn.net/Articles/794944/
-> 
-> That's 21 reported fixes of which about 50% seem to produce no change
-> in code behaviour at all, a quarter seem to have no user visible effect
-> with the remaining quarter producing unexpected errors on obscure
-> configuration parameters, which is why no-one really noticed them
-> before.
+Hi,
 
-The really important point here is the number of bugs this has prevented
-and will prevent in the future. See an example of this, below:
+On Mon, Nov 23, 2020 at 8:10 AM gaoyusong <a869920004@163.com> wrote:
+>
+> The memmap options in tee_shm_op_mmap were not being checked for all
+> sets of possible crazy values. Fix this up by properly check tee_shm
+> buffer offsets.
+>
+> Signed-off-by: gaoyusong <a869920004@163.com>
+> ---
+>  drivers/tee/tee_shm.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> index 827ac3d..3f762c8 100644
+> --- a/drivers/tee/tee_shm.c
+> +++ b/drivers/tee/tee_shm.c
+> @@ -75,6 +75,16 @@ static int tee_shm_op_mmap(struct dma_buf *dmabuf, struc=
+t vm_area_struct *vma)
+>  {
+>         struct tee_shm *shm =3D dmabuf->priv;
+>         size_t size =3D vma->vm_end - vma->vm_start;
+> +       unsigned long offset;
+> +
+> +       /* Check dmabuffer mmap offset */
+> +       if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+> +               return -EINVAL;
+> +
+> +       offset =3D vma->vm_pgoff << PAGE_SHIFT;
+> +
+> +       if (offset > shm->size || size > shm->size - offset)
+> +               return -EINVAL;
 
-https://lore.kernel.org/linux-iio/20190813135802.GB27392(a)kroah.com/
+If we would have used vm_pgoff below to offset into the shm buffer
+these checks would be needed.
+Currently we're ignoring this field though. That might be a bit
+inconsistent with the mmap() API, but on the other hand this buffer
+has just been carved out of the shared memory pool for the purpose of
+mapping it in user space. To carve out more than we're going to map
+would be wasteful so I guess that in the end it makes sense to ignore
+vm_pgoff.
 
-This work is still relevant, even if the total number of issues/bugs
-we find in the process is zero (which is not the case).
+Thanks,
+Jens
 
-"The sucky thing about doing hard work to deploy hardening is that the
-result is totally invisible by definition (things not happening) [..]"
-- Dmitry Vyukov
+>
+>         /* Refuse sharing shared memory provided by application */
+>         if (shm->flags & TEE_SHM_USER_MAPPED)
+> --
+> 1.8.3.1
+>
 
-Thanks
---
-Gustavo
-
-
-
-
-
-
---===============8723738654198790092==--
+--===============9050254402185498689==--
 
