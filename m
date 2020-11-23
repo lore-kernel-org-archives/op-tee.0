@@ -1,69 +1,57 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] Properly check tee_shm buffer mmap offset
-Date: Mon, 23 Nov 2020 14:52:55 +0100
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Mon, 23 Nov 2020 15:05:31 +0100
 Message-ID: 
- <CAHUa44HB6WKoubGEWFANh8SmsOU0Z=p+42AV5-At8TC1B08npA@mail.gmail.com>
-In-Reply-To: <1606115436-15332-1-git-send-email-a869920004@163.com>
+ <CANiq72=z+tmuey9wj3Kk7wX5s0hTHpsQdLhAqcOVNrHon6xn5Q@mail.gmail.com>
+In-Reply-To: <alpine.LNX.2.23.453.2011230938390.7@nippy.intranet>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9050254402185498689=="
+Content-Type: multipart/mixed; boundary="===============5594553197365453008=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9050254402185498689==
+--===============5594553197365453008==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, Nov 23, 2020 at 8:10 AM gaoyusong <a869920004@163.com> wrote:
+On Sun, Nov 22, 2020 at 11:54 PM Finn Thain <fthain@telegraphics.com.au> wr=
+ote:
 >
-> The memmap options in tee_shm_op_mmap were not being checked for all
-> sets of possible crazy values. Fix this up by properly check tee_shm
-> buffer offsets.
->
-> Signed-off-by: gaoyusong <a869920004@163.com>
-> ---
->  drivers/tee/tee_shm.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index 827ac3d..3f762c8 100644
-> --- a/drivers/tee/tee_shm.c
-> +++ b/drivers/tee/tee_shm.c
-> @@ -75,6 +75,16 @@ static int tee_shm_op_mmap(struct dma_buf *dmabuf, struc=
-t vm_area_struct *vma)
->  {
->         struct tee_shm *shm =3D dmabuf->priv;
->         size_t size =3D vma->vm_end - vma->vm_start;
-> +       unsigned long offset;
-> +
-> +       /* Check dmabuffer mmap offset */
-> +       if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
-> +               return -EINVAL;
-> +
-> +       offset =3D vma->vm_pgoff << PAGE_SHIFT;
-> +
-> +       if (offset > shm->size || size > shm->size - offset)
-> +               return -EINVAL;
+> We should also take into account optimisim about future improvements in
+> tooling.
 
-If we would have used vm_pgoff below to offset into the shm buffer
-these checks would be needed.
-Currently we're ignoring this field though. That might be a bit
-inconsistent with the mmap() API, but on the other hand this buffer
-has just been carved out of the shared memory pool for the purpose of
-mapping it in user space. To carve out more than we're going to map
-would be wasteful so I guess that in the end it makes sense to ignore
-vm_pgoff.
+Not sure what you mean here. There is no reliable way to guess what
+the intention was with a missing fallthrough, even if you parsed
+whitespace and indentation.
 
-Thanks,
-Jens
+> It is if you want to spin it that way.
 
+How is that a "spin"? It is a fact that we won't get *implicit*
+fallthrough mistakes anymore (in particular if we make it a hard
+error).
+
+> But what we inevitably get is changes like this:
 >
->         /* Refuse sharing shared memory provided by application */
->         if (shm->flags & TEE_SHM_USER_MAPPED)
-> --
-> 1.8.3.1
+>  case 3:
+>         this();
+> +       break;
+>  case 4:
+>         hmmm();
 >
+> Why? Mainly to silence the compiler. Also because the patch author argued
+> successfully that they had found a theoretical bug, often in mature code.
 
---===============9050254402185498689==--
+If someone changes control flow, that is on them. Every kernel
+developer knows what `break` does.
+
+> But is anyone keeping score of the regressions? If unreported bugs count,
+> what about unreported regressions?
+
+Introducing `fallthrough` does not change semantics. If you are really
+keen, you can always compare the objects because the generated code
+shouldn't change.
+
+Cheers,
+Miguel
+
+--===============5594553197365453008==--
 
