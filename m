@@ -1,59 +1,77 @@
-From: Joe Perches <joe@perches.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Mon, 23 Nov 2020 08:32:41 -0800
-Message-ID: <32dc7423124b51da4e144e931bf099a368ab50a8.camel@perches.com>
+Date: Mon, 23 Nov 2020 19:56:01 +0100
+Message-ID: 
+ <CANiq72k5tpDoDPmJ0ZWc1DGqm+81Gi-uEENAtvEs9v3SZcx6_Q@mail.gmail.com>
 In-Reply-To: <
  <fc45750b6d0277c401015b7aa11e16cd15f32ab2.camel@HansenPartnership.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0496001689026304472=="
+Content-Type: multipart/mixed; boundary="===============4692844090903893879=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0496001689026304472==
+--===============4692844090903893879==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2020-11-23 at 07:58 -0800, James Bottomley wrote:
+On Mon, Nov 23, 2020 at 4:58 PM James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+>
+> Well, I used git.  It says that as of today in Linus' tree we have 889
+> patches related to fall throughs and the first series went in in
+> october 2017 ... ignoring a couple of outliers back to February.
+
+I can see ~10k insertions over ~1k commits and 15 years that mention a
+fallthrough in the entire repo. That is including some commits (like
+the biggest one, 960 insertions) that have nothing to do with C
+fallthrough. A single kernel release has an order of magnitude more
+changes than this...
+
+But if we do the math, for an author, at even 1 minute per line change
+and assuming nothing can be automated at all, it would take 1 month of
+work. For maintainers, a couple of trivial lines is noise compared to
+many other patches.
+
+In fact, this discussion probably took more time than the time it
+would take to review the 200 lines. :-)
+
 > We're also complaining about the inability to recruit maintainers:
->=20
+>
 > https://www.theregister.com/2020/06/30/hard_to_find_linux_maintainers_says_=
 torvalds/
->=20
+>
 > And burn out:
->=20
+>
 > http://antirez.com/news/129
 
-https://www.wired.com/story/open-source-coders-few-tired/
+Accepting trivial and useful 1-line patches is not what makes a
+voluntary maintainer quit... Thankless work with demanding deadlines is.
+
+> The whole crux of your argument seems to be maintainers' time isn't
+> important so we should accept all trivial patches
+
+I have not said that, at all. In fact, I am a voluntary one and I
+welcome patches like this. It takes very little effort on my side to
+review and it helps the kernel overall. Paid maintainers are the ones
+that can take care of big features/reviews.
 
 > What I'm actually trying to articulate is a way of measuring value of
 > the patch vs cost ... it has nothing really to do with who foots the
 > actual bill.
 
-It's unclear how to measure value in consistency.
-
-But one way that costs can be reduced is by automation and _not_
-involving maintainers when the patch itself is provably correct.
+I understand your point, but you were the one putting it in terms of a
+junior FTE. In my view, 1 month-work (worst case) is very much worth
+removing a class of errors from a critical codebase.
 
 > One thesis I'm actually starting to formulate is that this continual
 > devaluing of maintainers is why we have so much difficulty keeping and
 > recruiting them.
 
-The linux kernel has something like 1500 different maintainers listed
-in the MAINTAINERS file.  That's not a trivial number.
+That may very well be true, but I don't feel anybody has devalued
+maintainers in this discussion.
 
-$ git grep '^M:' MAINTAINERS | sort | uniq -c | wc -l
-1543
-$ git grep '^M:' MAINTAINERS| cut -f1 -d'<' | sort | uniq -c | wc -l
-1446
+Cheers,
+Miguel
 
-I think the question you are asking is about trust and how it
-effects development.
-
-And back to that wired story, the actual number of what you might
-be considering to be maintainers is likely less than 10% of the
-listed numbers above.
-
-
-
---===============0496001689026304472==--
+--===============4692844090903893879==--
 
