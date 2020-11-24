@@ -1,82 +1,47 @@
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+From: Finn Thain <fthain@telegraphics.com.au>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Wed, 25 Nov 2020 00:46:23 +0100
-Message-ID: 
- <CANiq72=Ybm2MHmOizo1xQ_QYGuvbthtnLbwCkr8AFb8PcfmuQw@mail.gmail.com>
-In-Reply-To: <alpine.LNX.2.23.453.2011241036520.7@nippy.intranet>
+Subject: 
+ Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Wed, 25 Nov 2020 10:53:13 +1100
+Message-ID: <alpine.LNX.2.23.453.2011251022550.14@nippy.intranet>
+In-Reply-To: <
+ <CANiq72nUt57u5DG9rH=DB0DzQH7U6-QbG-2Ou+PyCY=p=_Ggag@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5468386282133876837=="
+Content-Type: multipart/mixed; boundary="===============5807742783358758906=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5468386282133876837==
+--===============5807742783358758906==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 24, 2020 at 1:58 AM Finn Thain <fthain@telegraphics.com.au> wro=
-te:
->
-> What I meant was that you've used pessimism as if it was fact.
 
-"future mistakes that it might prevent" is neither pessimism nor states a fac=
-t.
+On Wed, 25 Nov 2020, Miguel Ojeda wrote:
 
-> For example, "There is no way to guess what the effect would be if the
-> compiler trained programmers to add a knee-jerk 'break' statement to avoid
-> a warning".
+> 
+> The C standard has nothing to do with this. We use compiler extensions 
+> of several kinds, for many years. Even discounting those extensions, the 
+> kernel is not even conforming to C due to e.g. strict aliasing. I am not 
+> sure what you are trying to argue here.
+> 
 
-It is only knee-jerk if you think you are infallible.
+I'm saying that supporting the official language spec makes more sense 
+than attempting to support a multitude of divergent interpretations of the 
+spec (i.e. gcc, clang, coverity etc.)
 
-> Moreover, what I meant was that preventing programmer mistakes is a
-> problem to be solved by development tools
+I'm also saying that the reason why we use -std=gnu89 is that existing 
+code was written in that language, not in ad hoc languages comprised of 
+collections of extensions that change with every release.
 
-This warning comes from a development tool -- the compiler.
+> But, since you insist: yes, the `fallthrough` attribute is in the 
+> current C2x draft.
+> 
 
-> The idea that retro-fitting new
-> language constructs onto mature code is somehow necessary to "prevent
-> future mistakes" is entirely questionable.
+Thank you for checking. I found a free version that's only 6 weeks old:
 
-The kernel is not a frozen codebase.
+http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2583.pdf
 
-Further, "mature code vs. risk of change" arguments don't apply here
-because the semantics of the program and binary output isn't changing.
+It will be interesting to see whether 6.7.11.5 changes once the various 
+implementations reach agreement.
 
-> Sure. And if you put -Wimplicit-fallthrough into the Makefile and if that
-> leads to well-intentioned patches that cause regressions, it is partly on
-> you.
-
-Again: adding a `fallthrough` does not change the program semantics.
-If you are a maintainer and want to cross-check, compare the codegen.
-
-> Have you ever considered the overall cost of the countless
-> -Wpresume-incompetence flags?
-
-Yeah: negative. On the other hand, the overall cost of the countless
--fI-am-infallible flags is very noticeable.
-
-> Perhaps you pay the power bill for a build farm that produces logs that
-> no-one reads? Perhaps you've run git bisect, knowing that the compiler
-> messages are not interesting? Or compiled software in using a language
-> that generates impenetrable messages? If so, here's a tip:
->
-> # grep CFLAGS /etc/portage/make.conf
-> CFLAGS=3D"... -Wno-all -Wno-extra ..."
-> CXXFLAGS=3D"${CFLAGS}"
->
-> Now allow me some pessimism: the hardware upgrades, gigawatt hours and
-> wait time attributable to obligatory static analyses are a net loss.
-
-If you really believe compiler warnings and static analysis are
-useless and costly, I think there is not much point in continuing the
-discussion.
-
-> No, it's not for me to prove that such patches don't affect code
-> generation. That's for the patch author and (unfortunately) for reviewers.
-
-I was not asking you to prove it. I am stating that proving it is very easy.
-
-Cheers,
-Miguel
-
---===============5468386282133876837==--
+--===============5807742783358758906==--
 
