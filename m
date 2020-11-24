@@ -1,45 +1,32 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Linaro OP-TEE Contributions meeting November 2020
-Date: Tue, 24 Nov 2020 10:07:35 +0100
-Message-ID: 
- <CA+EyddZ7gVizB_4jLdg3w2gJDpNnfgS3+fqXk_+E4HJNvk6mdQ@mail.gmail.com>
-In-Reply-To: <
- <CA+EyddZfxHg1yTu-vYNNgHO9rwG-=4bqtGSoKToYvDOctOyq+w@mail.gmail.com>>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Tue, 24 Nov 2020 08:47:05 -0600
+Message-ID: <20201124144705.GK16084@embeddedor>
+In-Reply-To: <20201123200345.GA38546@nvidia.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6661320391447475169=="
+Content-Type: multipart/mixed; boundary="===============7163683893657387985=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6661320391447475169==
+--===============7163683893657387985==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+On Mon, Nov 23, 2020 at 04:03:45PM -0400, Jason Gunthorpe wrote:
+> On Fri, Nov 20, 2020 at 12:21:39PM -0600, Gustavo A. R. Silva wrote:
+> 
+> >   IB/hfi1: Fix fall-through warnings for Clang
+> >   IB/mlx4: Fix fall-through warnings for Clang
+> >   IB/qedr: Fix fall-through warnings for Clang
+> >   RDMA/mlx5: Fix fall-through warnings for Clang
+> 
+> I picked these four to the rdma tree, thanks
 
-LOC monthly meeting is planned to take place December 3rd(a)16.00 (UTC+1).
-I'm fully aware that the November meeting will be held in December, but it
-wasn't possible to schedule it earlier. We will probably try to squeeze in
-the December one before people will go on Christmas holidays. Connection
-details can be found in the meeting notes document (link below).
+Awesome. :)
 
-This time I'm going to give an introduction to OP-TEE debugging in QEMU
-using gdb. The audience here probably already knows quite well how to do
-it, but there might be something to pick up as well there might be
-questions and/or new ideas related to this.
+Thank you, Jason.
+--
+Gustavo
 
-Other than that feel free to suggest topics you'd like to discuss (by
-replying to this email or write it directly in the meeting notes).
-
-Meeting details:
----------------
-Date/time: Wednesday December 3rd(a)16.00 (UTC+1)
-https://everytimezone.com/s/44862045
-Invitation/connection details: In the meeting notes
-Meeting notes: http://bit.ly/loc-notes
-Project page: https://www.linaro.org/projects/#LOC
-
-Regards,
-Joakim on behalf of the Linaro OP-TEE team
-
---===============6661320391447475169==--
+--===============7163683893657387985==--
 
