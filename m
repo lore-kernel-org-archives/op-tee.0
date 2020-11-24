@@ -1,54 +1,45 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v8 4/4] MAINTAINERS: Add myself as Trusted Keys co-maintainer
-Date: Tue, 24 Nov 2020 05:46:41 +0200
-Message-ID: <20201124034641.GC40379@kernel.org>
-In-Reply-To: <1604419306-26105-5-git-send-email-sumit.garg@linaro.org>
+Subject: Linaro OP-TEE Contributions meeting November 2020
+Date: Tue, 24 Nov 2020 10:07:35 +0100
+Message-ID: 
+ <CA+EyddZ7gVizB_4jLdg3w2gJDpNnfgS3+fqXk_+E4HJNvk6mdQ@mail.gmail.com>
+In-Reply-To: <
+ <CA+EyddZfxHg1yTu-vYNNgHO9rwG-=4bqtGSoKToYvDOctOyq+w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0986445640097953733=="
+Content-Type: multipart/mixed; boundary="===============6661320391447475169=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0986445640097953733==
+--===============6661320391447475169==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 03, 2020 at 09:31:46PM +0530, Sumit Garg wrote:
-> Add a Trusted Keys co-maintainer entry in order to support TEE based
-> Trusted Keys framework.
-> 
-> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+Hi,
 
-Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
+LOC monthly meeting is planned to take place December 3rd(a)16.00 (UTC+1).
+I'm fully aware that the November meeting will be held in December, but it
+wasn't possible to schedule it earlier. We will probably try to squeeze in
+the December one before people will go on Christmas holidays. Connection
+details can be found in the meeting notes document (link below).
 
-> ---
->  MAINTAINERS | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e73636b..52687bb 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -9732,11 +9732,13 @@ KEYS-TRUSTED
->  M:	James Bottomley <jejb@linux.ibm.com>
->  M:	Jarkko Sakkinen <jarkko@kernel.org>
->  M:	Mimi Zohar <zohar@linux.ibm.com>
-> +M:	Sumit Garg <sumit.garg@linaro.org>
->  L:	linux-integrity(a)vger.kernel.org
->  L:	keyrings(a)vger.kernel.org
->  S:	Supported
->  F:	Documentation/security/keys/trusted-encrypted.rst
->  F:	include/keys/trusted-type.h
-> +F:	include/keys/trusted_tee.h
->  F:	include/keys/trusted_tpm.h
->  F:	security/keys/trusted-keys/
->  
-> -- 
-> 2.7.4
-> 
-> 
+This time I'm going to give an introduction to OP-TEE debugging in QEMU
+using gdb. The audience here probably already knows quite well how to do
+it, but there might be something to pick up as well there might be
+questions and/or new ideas related to this.
 
-/Jarkko
+Other than that feel free to suggest topics you'd like to discuss (by
+replying to this email or write it directly in the meeting notes).
 
---===============0986445640097953733==--
+Meeting details:
+---------------
+Date/time: Wednesday December 3rd(a)16.00 (UTC+1)
+https://everytimezone.com/s/44862045
+Invitation/connection details: In the meeting notes
+Meeting notes: http://bit.ly/loc-notes
+Project page: https://www.linaro.org/projects/#LOC
+
+Regards,
+Joakim on behalf of the Linaro OP-TEE team
+
+--===============6661320391447475169==--
 
