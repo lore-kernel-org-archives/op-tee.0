@@ -1,41 +1,39 @@
-From: Jakub Kicinski <kuba@kernel.org>
+From: Finn Thain <fthain@telegraphics.com.au>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Mon, 23 Nov 2020 17:46:48 -0800
-Message-ID: 
- <20201123174648.6a22575b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <
- <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>>
+Date: Tue, 24 Nov 2020 13:48:34 +1100
+Message-ID: <alpine.LNX.2.23.453.2011241210310.7@nippy.intranet>
+In-Reply-To: <e72a1aaef8673553a3ee9dfa033d6e893e00abcd.camel@perches.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0173192636075307743=="
+Content-Type: multipart/mixed; boundary="===============0997075553461916331=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0173192636075307743==
+--===============0997075553461916331==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 23 Nov 2020 17:32:51 -0800 Nick Desaulniers wrote:
-> On Sun, Nov 22, 2020 at 8:17 AM Kees Cook <keescook@chromium.org> wrote:
-> > On Fri, Nov 20, 2020 at 11:51:42AM -0800, Jakub Kicinski wrote: =20
-> > > If none of the 140 patches here fix a real bug, and there is no change
-> > > to machine code then it sounds to me like a W=3D2 kind of a warning. =20
-> >
-> > FWIW, this series has found at least one bug so far:
-> > https://lore.kernel.org/lkml/CAFCwf11izHF=3Dg1mGry1fE5kvFFFrxzhPSM6qKAO8g=
-xSp=3DKr_CQ(a)mail.gmail.com/ =20
->=20
-> So looks like the bulk of these are:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     break;
-> }
->=20
-> I have a patch that fixes those up for clang:
-> https://reviews.llvm.org/D91895
 
-=F0=9F=98=8D
+On Mon, 23 Nov 2020, Joe Perches wrote:
 
---===============0173192636075307743==--
+> On Tue, 2020-11-24 at 11:58 +1100, Finn Thain wrote:
+> > it's not for me to prove that such patches don't affect code=20
+> > generation. That's for the patch author and (unfortunately) for=20
+> > reviewers.
+>=20
+> Ideally, that proof would be provided by the compilation system itself=20
+> and not patch authors nor reviewers nor maintainers.
+>=20
+> Unfortunately gcc does not guarantee repeatability or deterministic=20
+> output. To my knowledge, neither does clang.
+>=20
+
+Yes, I've said the same thing myself. But having attempted it, I now think=20
+this is a hard problem. YMMV.
+
+https://lore.kernel.org/linux-scsi/alpine.LNX.2.22.394.2004281017310.12(a)nip=
+py.intranet/
+https://lore.kernel.org/linux-scsi/alpine.LNX.2.22.394.2005211358460.8(a)nipp=
+y.intranet/
+
+--===============0997075553461916331==--
 
