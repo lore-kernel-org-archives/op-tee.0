@@ -1,32 +1,56 @@
-From: Edward Cree <ecree.xilinx@gmail.com>
+From: Finn Thain <fthain@telegraphics.com.au>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Wed, 25 Nov 2020 23:02:40 +0000
-Message-ID: <99a9ffd7-6356-b81d-6e08-7ed74b6fb82c@gmail.com>
-In-Reply-To: <202011241324.B3439A2@keescook>
+Subject: 
+ Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Thu, 26 Nov 2020 10:21:54 +1100
+Message-ID: <alpine.LNX.2.23.453.2011260918510.6@nippy.intranet>
+In-Reply-To: <
+ <CAKwvOdna5Zj_O=sB7Q0jHZX0BJSaakX=ZyftwQ_3=L3-ZB54XQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4325780742108708032=="
+Content-Type: multipart/mixed; boundary="===============0297091215551317129=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4325780742108708032==
+--===============0297091215551317129==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 24/11/2020 21:25, Kees Cook wrote:
-> I still think this isn't right -- it's a case statement that runs off
-> the end without an explicit flow control determination.
+On Wed, 25 Nov 2020, Nick Desaulniers wrote:
 
-Proves too much — for instance
-    case foo:
-    case bar:
-        thing;
-        break;
- doesn't require a fallthrough; after case foo:, and afaik
- no-one is suggesting it should.  Yet it, too, is "a case
- statement that runs off the end without an explicit flow
- control determination".
+> On Wed, Nov 25, 2020 at 1:33 PM Finn Thain <fthain@telegraphics.com.au> 
+> wrote:
+> >
+> > Or do you think that a codebase can somehow satisfy multiple checkers 
+> > and their divergent interpretations of the language spec?
+> 
+> Have we found any cases yet that are divergent? I don't think so.
 
--ed
+There are many implementations, so I think you are guaranteed to find more 
+divergence if you look. That's because the spec is full of language like 
+this: "implementations are encouraged not to emit a diagnostic" and 
+"implementations are encouraged to issue a diagnostic".
 
---===============4325780742108708032==--
+Some implementations will decide to not emit (under the premise that vast 
+amounts of existing code would have to get patched until the compiler goes 
+quiet) whereas other implementations will decide to emit (under the 
+premise that the author is doing the checking and not the janitor or the 
+packager).
+
+> It sounds to me like GCC's cases it warns for is a subset of Clang's. 
+> Having additional coverage with Clang then should ensure coverage for 
+> both.
+> 
+
+If that claim were true, the solution would be simple. (It's not.)
+
+For the benefit of projects that enable -Werror and projects that 
+nominated gcc as their preferred compiler, clang would simply need a flag 
+to enable conformance with gcc by suppressing those additional warnings 
+that clang would normally produce.
+
+This simple solution is, of course, completely unworkable, since it would 
+force clang to copy some portion of gcc's logic (rewritten under LLVM's 
+unique license) and then to track future changes to that portion of gcc 
+indefinitely.
+
+--===============0297091215551317129==--
 
