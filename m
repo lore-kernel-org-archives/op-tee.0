@@ -1,78 +1,63 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: Sean Young <sean@mess.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Tue, 24 Nov 2020 23:05:35 -0800
-Message-ID: 
- <a841536fe65bb33f1c72ce2455a6eb47a0107565.camel@HansenPartnership.com>
-In-Reply-To: <202011241327.BB28F12F6@keescook>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Wed, 25 Nov 2020 09:01:14 +0000
+Message-ID: <20201125090114.GA24274@gofer.mess.org>
+In-Reply-To: <
+ <fc45750b6d0277c401015b7aa11e16cd15f32ab2.camel@HansenPartnership.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6343983798853163934=="
+Content-Type: multipart/mixed; boundary="===============4401341836335520176=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6343983798853163934==
+--===============4401341836335520176==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2020-11-24 at 13:32 -0800, Kees Cook wrote:
-> On Mon, Nov 23, 2020 at 08:31:30AM -0800, James Bottomley wrote:
-> > Really, no ... something which produces no improvement has no value
-> > at all ... we really shouldn't be wasting maintainer time with it
-> > because it has a cost to merge.  I'm not sure we understand where
-> > the balance lies in value vs cost to merge but I am confident in
-> > the zero value case.
-> 
-> What? We can't measure how many future bugs aren't introduced because
-> the kernel requires explicit case flow-control statements for all new
-> code.
+On Mon, Nov 23, 2020 at 07:58:06AM -0800, James Bottomley wrote:
+> On Mon, 2020-11-23 at 15:19 +0100, Miguel Ojeda wrote:
+> > On Sun, Nov 22, 2020 at 11:36 PM James Bottomley
+> > <James.Bottomley@hansenpartnership.com> wrote:
+> > > It's not about the risk of the changes it's about the cost of
+> > > implementing them.  Even if you discount the producer time (which
+> > > someone gets to pay for, and if I were the engineering manager, I'd
+> > > be unhappy about), the review/merge/rework time is pretty
+> > > significant in exchange for six minor bug fixes.  Fine, when a new
+> > > compiler warning comes along it's certainly reasonable to see if we
+> > > can benefit from it and the fact that the compiler people think
+> > > it's worthwhile is enough evidence to assume this initially.  But
+> > > at some point you have to ask whether that assumption is supported
+> > > by the evidence we've accumulated over the time we've been using
+> > > it.  And if the evidence doesn't support it perhaps it is time to
+> > > stop the experiment.
+> >=20
+> > Maintainers routinely review 1-line trivial patches, not to mention
+> > internal API changes, etc.
+>=20
+> We're also complaining about the inability to recruit maintainers:
+>=20
+> https://www.theregister.com/2020/06/30/hard_to_find_linux_maintainers_says_=
+torvalds/
+>=20
+> And burn out:
+>=20
+> http://antirez.com/news/129
+>=20
+> The whole crux of your argument seems to be maintainers' time isn't
+> important so we should accept all trivial patches ... I'm pushing back
+> on that assumption in two places, firstly the valulessness of the time
+> and secondly that all trivial patches are valuable.
 
-No but we can measure how vulnerable our current coding habits are to
-the mistake this warning would potentially prevent.  I don't think it's
-wrong to extrapolate that if we had no instances at all of prior coding
-problems we likely wouldn't have any in future either making adopting
-the changes needed to enable the warning valueless ... that's the zero
-value case I was referring to above.
+You're assuming burn out or recruitment problems is due to patch workload
+or too many "trivial" patches.
 
-Now, what we have seems to be about 6 cases (at least what's been shown
-in this thread) where a missing break would cause potentially user
-visible issues.  That means the value of this isn't zero, but it's not
-a no-brainer massive win either.  That's why I think asking what we've
-invested vs the return isn't a useless exercise.
+In my experience, "other maintainers" is by far the biggest cause of
+burn out for my kernel maintenance work.
 
-> We already enable -Wimplicit-fallthrough globally, so that's not the
-> discussion. The issue is that Clang is (correctly) even more strict
-> than GCC for this, so these are the remaining ones to fix for full
-> Clang coverage too.
-> 
-> People have spent more time debating this already than it would have
-> taken to apply the patches. :)
-
-You mean we've already spent 90% of the effort to come this far so we
-might as well go the remaining 10% because then at least we get some
-return? It's certainly a clinching argument in defence procurement ...
-
-> This is about robustness and language wrangling. It's a big code-
-> base, and this is the price of our managing technical debt for
-> permanent robustness improvements. (The numbers I ran from Gustavo's
-> earlier patches were that about 10% of the places adjusted were
-> identified as legitimate bugs being fixed. This final series may be
-> lower, but there are still bugs being found from it -- we need to
-> finish this and shut the door on it for good.)
-
-I got my six patches by analyzing the lwn.net report of the fixes that
-was cited which had 21 of which 50% didn't actually change the emitted
-code, and 25% didn't have a user visible effect.
-
-But the broader point I'm making is just because the compiler people
-come up with a shiny new warning doesn't necessarily mean the problem
-it's detecting is one that causes us actual problems in the code base. 
-I'd really be happier if we had a theory about what classes of CVE or
-bug we could eliminate before we embrace the next new warning.
-
-James
+Certainly arguing with a maintainer about some obviously-correct patch
+series must be a good example of this.
 
 
+Sean
 
-
---===============6343983798853163934==--
+--===============4401341836335520176==--
 
