@@ -1,46 +1,62 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Wed, 25 Nov 2020 12:38:17 +0200
+Subject: Re: [PATCH] optee: add writeback to valid memory type
+Date: Wed, 25 Nov 2020 12:55:24 +0100
 Message-ID: 
- <CAHp75VfaewwkLsrht95Q7DaxFk7JpQjwx0KQ7Jvh5f7DUbZkRA@mail.gmail.com>
-In-Reply-To: <
- <4993259d01a0064f8bb22770503490f9252f3659.camel@HansenPartnership.com>>
+ <CAHUa44Fw-9ukJpeaK0YA4WHf1FtP1UteOFf54Fefur4duN+5kQ@mail.gmail.com>
+In-Reply-To: <20201113150604.426784-1-rui.silva@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2730229439137813076=="
+Content-Type: multipart/mixed; boundary="===============3768374940450864369=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2730229439137813076==
+--===============3768374940450864369==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Nov 23, 2020 at 10:39 PM James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Mon, 2020-11-23 at 19:56 +0100, Miguel Ojeda wrote:
-> > On Mon, Nov 23, 2020 at 4:58 PM James Bottomley
-> > <James.Bottomley@hansenpartnership.com> wrote:
-
-...
-
-> > But if we do the math, for an author, at even 1 minute per line
-> > change and assuming nothing can be automated at all, it would take 1
-> > month of work. For maintainers, a couple of trivial lines is noise
-> > compared to many other patches.
+On Fri, Nov 13, 2020 at 4:06 PM Rui Miguel Silva <rui.silva@linaro.org> wro=
+te:
 >
-> So you think a one line patch should take one minute to produce ... I
-> really don't think that's grounded in reality.  I suppose a one line
-> patch only takes a minute to merge with b4 if no-one reviews or tests
-> it, but that's not really desirable.
+> Only in smp systems the cache policy is setup as write alloc, in
+> single cpu systems the cache policy is set as writeback and it is
+> normal memory, so, it should pass the is_normal_memory check in the
+> share memory registration.
+>
+> Add the right condition to make it work in no smp systems.
+>
+> Fixes: cdbcf83d29c1 ("tee: optee: check type of registered shared memory")
+> Signed-off-by: Rui Miguel Silva <rui.silva@linaro.org>
 
-In my practice most of the one line patches were either to fix or to
-introduce quite interesting issues.
-1 minute is 2-3 orders less than usually needed for such patches.
-That's why I don't like churn produced by people who often even didn't
-compile their useful contributions.
+Looks good, I'll pick up this.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Thanks,
+Jens
 
---===============2730229439137813076==--
+>
+> ---
+>  drivers/tee/optee/call.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+> index 20b6fd7383c5..c981757ba0d4 100644
+> --- a/drivers/tee/optee/call.c
+> +++ b/drivers/tee/optee/call.c
+> @@ -534,7 +534,8 @@ void optee_free_pages_list(void *list, size_t num_entri=
+es)
+>  static bool is_normal_memory(pgprot_t p)
+>  {
+>  #if defined(CONFIG_ARM)
+> -       return (pgprot_val(p) & L_PTE_MT_MASK) =3D=3D L_PTE_MT_WRITEALLOC;
+> +       return (((pgprot_val(p) & L_PTE_MT_MASK) =3D=3D L_PTE_MT_WRITEALLOC=
+) ||
+> +               ((pgprot_val(p) & L_PTE_MT_MASK) =3D=3D L_PTE_MT_WRITEBACK)=
+);
+>  #elif defined(CONFIG_ARM64)
+>         return (pgprot_val(p) & PTE_ATTRINDX_MASK) =3D=3D PTE_ATTRINDX(MT_N=
+ORMAL);
+>  #else
+> --
+> 2.29.2
+>
+
+--===============3768374940450864369==--
 
