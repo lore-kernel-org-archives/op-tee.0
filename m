@@ -1,43 +1,37 @@
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+From: Arnd Bergmann <arnd@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Thu, 26 Nov 2020 18:05:45 +0100
+Subject: Re: [GIT PULL] OP-TEE driver for v5.11
+Date: Thu, 26 Nov 2020 22:00:20 +0100
 Message-ID: 
- <CANiq72=n4rVvmKt0RCb5aOfQydA8bgDxfntRLDieV8Q2efP8Zg@mail.gmail.com>
-In-Reply-To: <
- <CAMuHMdV5kOakvZJMWLxbpigFPS+Xuw6DVYsWCWZy7wGsv3idcw@mail.gmail.com>>
+ <CAK8P3a2CDp0KwCZjffA78fXUqOfAkvUb8Q=R64830fvvn_WG2w@mail.gmail.com>
+In-Reply-To: <20201125120134.GA1642471@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5697574128193329475=="
+Content-Type: multipart/mixed; boundary="===============2994475995690630028=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5697574128193329475==
+--===============2994475995690630028==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 26, 2020 at 4:28 PM Geert Uytterhoeven <geert@linux-m68k.org> w=
-rote:
+On Wed, Nov 25, 2020 at 1:01 PM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
 >
-> The maintainer is not necessarily the owner/author of the code, and
-> thus may not know the intent of the code.
+> Hello arm-soc maintainers,
+>
+> Please pull this small patch which allows the OP-TEE driver to work with
+> ARMv7 based single CPU systems.
 
-Agreed, I was not blaming maintainers -- just trying to point out that
-the problem is there :-)
+Can you rebase that branch onto -rc1? I had started the arm/drivers
+branch early on top of that, so I'd prefer to avoid a backmerged.
 
-In those cases, it is still very useful: we add the `fallthrough` and
-a comment saying `FIXME: fallthrough intended? Figure this out...`.
-Thus a previous unknown unknown is now a known unknown. And no new
-unknown unknowns will be introduced since we enabled the warning
-globally.
+For the commit itself, shouldn't that be marked as a bugfix and get
+merged into v5.10 instead? If it should, you don't have to rebase
+since the arm/fixes branch is already ahead.
 
-> BTW, you cannot mindlessly fix the latter, as you cannot know if
-> "(a =3D=3D b)" or "((a =3D b))" was intended, without understanding the code
-> (and the (possibly unavailable) data sheet, and the hardware, ...).
+Also, it would be nice to Cc linux-arm-kernel on the pull request
+in addition to linux-kernel.
 
-That's right, I was referring to the cases where the compiler saves
-someone time from a typo they just made.
+       Arnd
 
-Cheers,
-Miguel
-
---===============5697574128193329475==--
+--===============2994475995690630028==--
 
