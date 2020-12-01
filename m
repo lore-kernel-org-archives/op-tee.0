@@ -1,69 +1,27 @@
-From: Jérôme Forissier <jerome@forissier.org>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contribution (LOC) monthly meeting October
-Date: Tue, 25 Oct 2022 11:04:11 +0200
-Message-ID: 
- <CAA-cTWb8usGrXGk1T-hQfaRz4FdV=dGnWkdi1mf03coEXdP+fA@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44FQ5UkHwYSxohQRHmvB4hz2kL0yDmAyF9hZOTitUuos2Q@mail.gmail.com>>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Date: Tue, 01 Dec 2020 00:52:27 -0500
+Message-ID: <yq1h7p6gjkk.fsf@ca-mkp.ca.oracle.com>
+In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7267383450815079127=="
+Content-Type: multipart/mixed; boundary="===============2757585180315567926=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7267383450815079127==
+--===============2757585180315567926==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Oct 25, 2022 at 10:32 AM Jens Wiklander <jens.wiklander@linaro.org>
-wrote:
-
-> Hi,
->
-> I'm so sorry, I missed the meeting today. And the first on the new
-> timeslot on top of that. :-(
->
-
-Well you're not alone, I thought it was 11:00 UTC+2 when it was actually
-10:00 UTC+2
-(=3D 9:00 UTC+1, UK) :-(
-
---=20
-Jerome
+Content-Transfer-Encoding: 7bit
 
 
->
-> If you had any items you wanted to discuss please let me know and
-> we'll schedule it for the next meeting.
->
-> Thanks,
-> Jens
->
-> On Thu, Oct 20, 2022 at 11:31 PM Jens Wiklander
-> <jens.wiklander@linaro.org> wrote:
-> >
-> > Hi,
-> >
-> > OP-TEE Contributions (LOC) monthly meeting is planned for Tuesday, Oct
-> > 25 at 10.00 (UTC). Note, new time!
-> >
-> > If you have any topics you'd like to discuss, please let us know and
-> > we can schedule them.
-> >
-> > Meeting details:
-> > Date/time: October 25 at 10.00 (UTC)
-> > Meeting notes: http://bit.ly/loc-notes
-> > Project page: https://www.linaro.org/projects/#LOC
-> >
-> > Connection details
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >
-> > Join Zoom:
-> https://linaro-org.zoom.us/j/93697277554?pwd=3DMGdFRU4xZjdDS2VSMzVMbGZIdnkw=
-Zz09
-> >
-> > Thanks,
-> > Jens on behalf of the Linaro OP-TEE team
->
+Gustavo,
 
---===============7267383450815079127==--
+> This series aims to fix almost all remaining fall-through warnings in
+> order to enable -Wimplicit-fallthrough for Clang.
+
+Applied 20-22,54,120-124 to 5.11/scsi-staging, thanks.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
+
+--===============2757585180315567926==--
 
