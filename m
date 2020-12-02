@@ -1,82 +1,74 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
+From: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Date: Tue, 01 Dec 2020 17:08:49 +0300
-Message-ID: <20201201140849.GH2767@kadam>
-In-Reply-To: <
- <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>>
+Subject: [PATCH] optee: extend normal memory check to also write-through
+Date: Wed, 02 Dec 2020 07:10:57 +0000
+Message-ID: <20201202071057.4877-1-andrey.zhizhikin@leica-geosystems.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3351683399050253062=="
+Content-Type: multipart/mixed; boundary="===============0872957419578090360=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3351683399050253062==
+--===============0872957419578090360==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 23, 2020 at 05:32:51PM -0800, Nick Desaulniers wrote:
-> On Sun, Nov 22, 2020 at 8:17 AM Kees Cook <keescook@chromium.org> wrote:
-> >
-> > On Fri, Nov 20, 2020 at 11:51:42AM -0800, Jakub Kicinski wrote:
-> > > If none of the 140 patches here fix a real bug, and there is no change
-> > > to machine code then it sounds to me like a W=3D2 kind of a warning.
-> >
-> > FWIW, this series has found at least one bug so far:
-> > https://lore.kernel.org/lkml/CAFCwf11izHF=3Dg1mGry1fE5kvFFFrxzhPSM6qKAO8g=
-xSp=3DKr_CQ(a)mail.gmail.com/
->=20
-> So looks like the bulk of these are:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     break;
-> }
+ARMv7 Architecture Reference Manual [1] section A3.5.5 details Normal
+memory type, together with cacheability attributes that could be applied
+to memory regions defined as "Normal memory".
 
-This should not generate a warning.
+Section B2.1.2 of the Architecture Reference Manual [1] also provides
+details regarding the Memory attributes that could be assigned to
+particular memory regions, which includes the descrption of cacheability
+attributes and cache allocation hints.
 
->=20
-> I have a patch that fixes those up for clang:
-> https://reviews.llvm.org/D91895
->=20
-> There's 3 other cases that don't quite match between GCC and Clang I
-> observe in the kernel:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     goto y;
-> }
-> y:;
+Memory type and cacheability attributes forms 2 separate definitions,
+where cacheability attributes defines a mechanism of coherency control
+rather than the type of memory itself.
 
-This should generate a warning.
+In other words: Normal memory type can be configured with several
+combination of cacheability attributes, namely:
+- Write-Through (WT)
+- Write-Back (WB) followed by cache allocation hint:
+  - Write-Allocate
+  - No Write-Allocate (also known as Read-Allocate)
 
->=20
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     return;
-> }
+Those types are mapped in the kernel to corresponding macros:
+- Write-Through: L_PTE_MT_WRITETHROUGH
+- Write-Back Write-Allocate: L_PTE_MT_WRITEALLOC
+- Write-Back Read-Allocate: L_PTE_MT_WRITEBACK
 
-Warn for this.
+Current implementation of the op-tee driver takes in account only 2 last
+memory region types, while performing a check if the memory block is
+allocated as "Normal memory", leaving Write-Through allocations to be
+not considered.
+
+Extend verification mechanism to include also Normal memory regios,
+which are designated with Write-Through cacheability attributes.
+
+Link: [1]: https://developer.arm.com/documentation/ddi0406/cd
+Fixes: 853735e40424 ("optee: add writeback to valid memory type")
+Cc: stable(a)vger.kernel.org
+Signed-off-by: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
+---
+ drivers/tee/optee/call.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index c981757ba0d4..8da27d02a2d6 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -535,7 +535,8 @@ static bool is_normal_memory(pgprot_t p)
+ {
+ #if defined(CONFIG_ARM)
+ 	return (((pgprot_val(p) & L_PTE_MT_MASK) == L_PTE_MT_WRITEALLOC) ||
+-		((pgprot_val(p) & L_PTE_MT_MASK) == L_PTE_MT_WRITEBACK));
++		((pgprot_val(p) & L_PTE_MT_MASK) == L_PTE_MT_WRITEBACK) ||
++		((pgprot_val(p) & L_PTE_MT_MASK) == L_PTE_MT_WRITETHROUGH));
+ #elif defined(CONFIG_ARM64)
+ 	return (pgprot_val(p) & PTE_ATTRINDX_MASK) == PTE_ATTRINDX(MT_NORMAL);
+ #else
+-- 
+2.17.1
 
 
->=20
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     ;
-> }
-
-Don't warn for this.
-
-If adding a break statement changes the flow of the code then warn about
-potentially missing break statements, but if it doesn't change anything
-then don't warn about it.
-
-regards,
-dan carpenter
-
---===============3351683399050253062==--
+--===============0872957419578090360==--
 
