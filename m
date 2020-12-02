@@ -1,183 +1,360 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: gmail Elaine Palmer <erpalmerny@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Secure memory allocation
-Date: Wed, 02 Dec 2020 15:57:17 +0100
-Message-ID: 
- <CAHUa44HfYrQR1ErvjrsoGAp7bZL_vAsTN4Qh5_r9r+CoHgoWig@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3C010001762353367b-5e3a4ee5-11ff-45b6-b61e-ce7174353?=
- =?utf-8?q?1ae-000000=40email=2Eamazonses=2Ecom=3E?=>
+Subject: Re: [PATCH v8 3/4] doc: trusted-encrypted: updates with TEE as a new
+ trust source
+Date: Wed, 02 Dec 2020 14:34:07 -0500
+Message-ID: <81A6B61D-3811-4957-B270-52AE5FA6DE4F@gmail.com>
+In-Reply-To: <1604419306-26105-4-git-send-email-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3987840667152949615=="
+Content-Type: multipart/mixed; boundary="===============5427457770710711221=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3987840667152949615==
+--===============5427457770710711221==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Robert,
 
-Some answers below.
+Hi Sumit, =20
 
-On Wed, Dec 2, 2020 at 1:00 PM Robert Deli=C3=ABn via OP-TEE
-<op-tee@lists.trustedfirmware.org> wrote:
->
-> Hi,
->
-> We are using op-tee 3.10 in our i.MX6UL-based product and we are running in=
-to a small problem we hope you can help us out with. Apologies for the large =
-mail; It's mostly pictures.
->
-> The nature of our product requires us to protect access to the display cont=
-ents. To achieve this, we have added a display driver to op-tee and have allo=
-cated the frame buffers in op-tee too.
->
-> We are conforming to the memory-map as layed out in .../core/arch/arm/inclu=
-de/mm/generic_ram_layout.h:
->
-> TEE RAM layout without CFG_WITH_PAGER
->
-> +----------------------------------+ <-- CFG_TZDRAM_START
-> | TEE core secure RAM (TEE_RAM)    |
-> +----------------------------------+
-> | Trusted Application RAM (TA_RAM) |
-> +----------------------------------+
-> | SDP test memory (optional)       |
-> +----------------------------------+ <-- CFG_TZDRAM_START + CFG_TZDRAM_SIZE
->
-> +----------------------------------+ <-- CFG_SHMEM_START
-> | Non-secure static SHM            |
-> +----------------------------------+ <-- CFG_SHMEM_START + CFG_SHMEM_SIZE
->
-> With this memory map in mind, we came up with the following solution:
->
-> +----------------------------------+ <-- CFG_DRAM_BASE
-> |                                  |
-> | Non-secure memory                |
-> |                                  |
-> +----------------------------------+ <-- CFG_TZDRAM_START
-> | TEE core secure RAM (TEE_RAM)    |
-> +----------------------------------+
-> | Trusted Application RAM (TA_RAM) |
-> +----------------------------------+ <-- CFG_POS_SEC_FB0_START
-> | Secure frame buffer 0            |
-> +----------------------------------+ <-- CFG_POS_SEC_FB1_START
-> | Secure frame buffer 1            |
-> +----------------------------------+ <-- CFG_SHMEM_START (=3D=3D CFG_TZDRAM=
-_START + CFG_TZDRAM_SIZE)
-> | Non-secure static SHM            |
-> +----------------------------------+ <-- Top of DDR (CFG_SHMEM_START + CFG_=
-SHMEM_SIZE)
-> CFG_DDR_SIZE          =3D 0x10000000
-> CFG_SHMEM_SIZE        =3D 0x00200000
-> CFG_SHMEM_START       =3D ($(CFG_DRAM_BASE) + $(CFG_DDR_SIZE) - $(CFG_SHMEM=
-_SIZE))
-> CFG_SEC_FB_SIZE       =3D 0x00096000
-> CFG_POS_SEC_FB1_START =3D ($(CFG_SHMEM_START) - $(CFG_SEC_FB_SIZE))
-> CFG_POS_SEC_FB0_START =3D ($(CFG_POS_SEC_FB1_START) - $(CFG_SEC_FB_SIZE))
-> CFG_TZDRAM_START      =3D ($(CFG_DRAM_BASE) + 0x0e000000)
-> CFG_TZDRAM_SIZE       =3D ($(CFG_SHMEM_START) - $(CFG_TZDRAM_START))
->
-> This solution keeps the frame buffers within the region CFG_TZDRAM_START:CF=
-G_TZDRAM_SIZE, but when booting the system, we notice an overlap between TA_R=
-AM and both frame buffer areas:
->
-> D/TC:0   dump_mmap_table:732 type TA_RAM       va 0x88c00000..0x8a8fffff pa=
- 0x8e100000..0x8fdfffff size 0x01d00000 (pgdir)
-> ...
-> D/TC:0   dump_mmap_table:732 type RAM_SEC      va 0x8ded4000..0x8df69fff pa=
- 0x8fd6a000..0x8fdfffff size 0x00096000 (smallpg)
-> D/TC:0   dump_mmap_table:732 type RAM_SEC      va 0x8df6a000..0x8dffffff pa=
- 0x8fcd4000..0x8fd69fff size 0x00096000 (smallpg)
->
-> Without fully comprehending how memory is allocated, we fear that this situ=
-ation will allow TA's to be loaded into these frame buffer areas.
-> To mitigate this, we came up with this alternative:
->
-> +----------------------------------+ <-- CFG_DRAM_BASE
-> |                                  |
-> | Non-secure memory                |
-> |                                  |
-> +----------------------------------+ <-- CFG_TZDRAM_START
-> | TEE core secure RAM (TEE_RAM)    |
-> +----------------------------------+
-> | Trusted Application RAM (TA_RAM) |
-> +----------------------------------+ <-- CFG_POS_SEC_FB0_START (=3D=3D CFG_=
-TZDRAM_START + CFG_TZDRAM_SIZE)
-> | Secure frame buffer 0            |
-> +----------------------------------+ <-- CFG_POS_SEC_FB1_START
-> | Secure frame buffer 1            |
-> +----------------------------------+ <-- CFG_SHMEM_START
-> | Non-secure static SHM            |
-> +----------------------------------+ <-- Top of DDR (CFG_SHMEM_START + CFG_=
-SHMEM_SIZE)
-> CFG_DDR_SIZE          =3D 0x10000000
-> CFG_SHMEM_SIZE        =3D 0x00200000
-> CFG_SHMEM_START       =3D ($(CFG_DRAM_BASE) + $(CFG_DDR_SIZE) - $(CFG_SHMEM=
-_SIZE))
-> CFG_SEC_FB_SIZE       =3D 0x00096000
-> CFG_POS_SEC_FB1_START =3D ($(CFG_SHMEM_START) - $(CFG_SEC_FB_SIZE))
-> CFG_POS_SEC_FB0_START =3D ($(CFG_POS_SEC_FB1_START) - $(CFG_SEC_FB_SIZE))
-> CFG_TZDRAM_START      =3D ($(CFG_DRAM_BASE) + 0x0e000000)
-> CFG_TZDRAM_SIZE       =3D ($(CFG_POS_SEC_FB0_START) - $(CFG_TZDRAM_START))
->
-> This solution puts the frame buffers outside the region CFG_TZDRAM_START:CF=
-G_TZDRAM_SIZE so they no longer overlap with TA_RAM. However, when booting th=
-e system, op-tee panics:
->
-> D/TC:0   dump_mmap_table:732 type RAM_SEC      va 0x8c2d4000..0x8c369fff pa=
- 0x8fd6a000..0x8fdfffff size 0x00096000 (smallpg)
-> D/TC:0   dump_mmap_table:732 type RAM_SEC      va 0x8c36a000..0x8c3fffff pa=
- 0x8fcd4000..0x8fd69fff size 0x00096000 (smallpg)
-> ...
-> D/TC:0   dump_mmap_table:732 type TA_RAM       va 0x8c400000..0x8dfd3fff pa=
- 0x8e100000..0x8fcd3fff size 0x01bd4000 (smallpg)
-> ...
-> E/TC:0 0 check_phys_mem_is_outside:332 Non-sec mem (0x8fcd4000:0x12c000) ov=
-erlaps map (type 12 0x8fd6a000:0x96000)
-> E/TC:0 0 Panic at core/arch/arm/mm/core_mmu.c:336 <check_phys_mem_is_outsid=
-e>
-> E/TC:0 0 TEE load address @ 0x8e000000
-> E/TC:0 0 Call stack:
-> E/TC:0 0  0x8e005621
-> E/TC:0 0  0x8e01d397
-> E/TC:0 0  0x8e005aaf
-> E/TC:0 0  0x8e004da7
-> E/TC:0 0  0x8e000174
->
-> In this situation, the memory area intended for the frame buffers (0x8fd6a0=
-00:0x96000) is now implicitly regarded as non-secure RAM, regardless of us re=
-gistering it as MEM_AREA_RAM_SEC in main.c:
->
-> register_phys_mem(MEM_AREA_RAM_SEC, CFG_POS_SEC_FB0_START, CFG_SEC_FB_SIZE);
-> register_phys_mem(MEM_AREA_RAM_SEC, CFG_POS_SEC_FB1_START, CFG_SEC_FB_SIZE);
->
-> Could you please confirm (or deny) that our first solution is the proper wa=
-y to allocate these secure frame buffers and that they will not be overwritte=
-n by the process of loading TAs?
+Thank you for the detailed descriptions and examples of trust sources for Tru=
+sted Keys.   A group of us in IBM (Stefan Berger, Ken Goldman, Zhongshu Gu, N=
+ayna Jain, Elaine Palmer, George Wilson, Mimi Zohar) have been doing related =
+work for quite some time, and we have one primary concern and some suggested =
+changes to the document.=20
 
-It looks like something went wrong in the first solution. The failure
-in the last solution is because OP-TEE thinks that you've accidentally
-tried to configure non-secure memory as secure memory.
+Our primary concern is that describing a TEE as a Trust Source needs to be mo=
+re specific.   For example, "ARM TrustZone" is not sufficient, but "wolfSSL e=
+mbedded SSL/TLS library with ARM TrustZone CryptoCell-310" is.  Just because =
+a key is protected by software running in a TEE is not enough to establish tr=
+ust.  Just like cryptographic modules, a Trust Source should be defined as a =
+specific implementation on specific hardware with well-documented environment=
+al assumptions, dependencies, and threats.
 
-> If this is not the proper way, could you give us some pointers on how to do=
- this? We do not feel comfortable allocating such large areas on the heap bec=
-ause of good taste and because we're not sure yet whether or not there are ad=
-ditional alignment requirement for these frame buffers. Perhaps something sim=
-ilar to the Linux slab-allocator is available?
+In addition to the above concern, our suggested changes are inline below.
 
-I think the easiest is to allocate memory from the pool used for TAs with:
-mm =3D tee_mm_alloc(&tee_mm_sec_ddr, size);
-Until this mm is freed no one else will use the memory it represents.
-Returned memory is page aligned (based on CORE_MMU_USER_CODE_SHIFT).
+> Begin forwarded message:
+>=20
+> From: Sumit Garg <sumit.garg@linaro.org>
+> Subject: [PATCH v8 3/4] doc: trusted-encrypted: updates with TEE as a new t=
+rust source
+> Date: November 3, 2020 at 11:01:45 AM EST
+> To: jarkko.sakkinen(a)linux.intel.com, zohar(a)linux.ibm.com, jejb(a)linux.=
+ibm.com
+> Cc: dhowells(a)redhat.com, jens.wiklander(a)linaro.org, corbet(a)lwn.net, j=
+morris(a)namei.org, serge(a)hallyn.com, casey(a)schaufler-ca.com, janne.karhu=
+nen(a)gmail.com, daniel.thompson(a)linaro.org, Markus.Wamser(a)mixed-mode.de,=
+ lhinds(a)redhat.com, keyrings(a)vger.kernel.org, linux-integrity(a)vger.kern=
+el.org, linux-security-module(a)vger.kernel.org, linux-doc(a)vger.kernel.org,=
+ linux-kernel(a)vger.kernel.org, linux-arm-kernel(a)lists.infradead.org, op-t=
+ee(a)lists.trustedfirmware.org, Sumit Garg <sumit.garg@linaro.org>
+>=20
+> Update documentation for Trusted and Encrypted Keys with TEE as a new
+> trust source. Following is brief description of updates:
+>=20
+> - Add a section to demostrate a list of supported devices along with
+> their security properties/guarantees.
+> - Add a key generation section.
+> - Updates for usage section including differences specific to a trust
+> source.
+>=20
+> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> Reviewed-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> ---
+> Documentation/security/keys/trusted-encrypted.rst | 203 ++++++++++++++++++-=
+---
+> 1 file changed, 171 insertions(+), 32 deletions(-)
+>=20
+> diff --git a/Documentation/security/keys/trusted-encrypted.rst b/Documentat=
+ion/security/keys/trusted-encrypted.rst
+> index 1da879a..16042c8 100644
+> --- a/Documentation/security/keys/trusted-encrypted.rst
+> +++ b/Documentation/security/keys/trusted-encrypted.rst
+> @@ -6,30 +6,161 @@ Trusted and Encrypted Keys are two new key types added t=
+o the existing kernel
+> key ring service.  Both of these new types are variable length symmetric ke=
+ys,
+> and in both cases all keys are created in the kernel, and user space sees,
+> stores, and loads only encrypted blobs.  Trusted Keys require the availabil=
+ity
+> -of a Trusted Platform Module (TPM) chip for greater security, while Encryp=
+ted
+> -Keys can be used on any system.  All user level blobs, are displayed and l=
+oaded
+> -in hex ascii for convenience, and are integrity verified.
+> +of a Trust Source for greater security, while Encrypted Keys can be used o=
+n any
+> +system. All user level blobs, are displayed and loaded in hex ascii for
+> +convenience, and are integrity verified.
+>=20
+> -Trusted Keys use a TPM both to generate and to seal the keys.  Keys are se=
+aled
+> -under a 2048 bit RSA key in the TPM, and optionally sealed to specified PCR
+> -(integrity measurement) values, and only unsealed by the TPM, if PCRs and =
+blob
+> -integrity verifications match.  A loaded Trusted Key can be updated with n=
+ew
+> -(future) PCR values, so keys are easily migrated to new pcr values, such as
+> -when the kernel and initramfs are updated.  The same key can have many sav=
+ed
+> -blobs under different PCR values, so multiple boots are easily supported.
+>=20
+> -TPM 1.2
+> --------
+> +Trust Source
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> -By default, trusted keys are sealed under the SRK, which has the default
+> -authorization value (20 zeros).  This can be set at takeownership time wit=
+h the
+> -trouser's utility: "tpm_takeownership -u -z".
+> +Trust Source provides the source of security for the Trusted Keys, on which
+> +basis Trusted Keys establishes a Trust model with its user. A Trust Source=
+ could
+> +differ from one system to another depending on its security requirements. =
+It
+> +could be either an off-chip device or an on-chip device. Following section
+> +demostrates a list of supported devices along with their security properti=
+es/
+> +guarantees:
+Please change the following=20
+"Trust Source provides the source of security for the Trusted Keys, on which =
+basis Trusted Keys establishes a Trust model with its user."=20
+to=20
+"A trust source provides the source of security for the Trusted Keys.  Whethe=
+r or not a trust source is sufficiently safe depends on the strength and corr=
+ectness of its implementation, as well as the threat environment for a specif=
+ic use case.  Since the kernel doesn't know what the environment is, and ther=
+e is no metric of trust, it is dependent on the consumer of the Trusted Keys =
+to determine if the trust source is sufficiently safe."
+>=20
+> -TPM 2.0
+> --------
+> +  *  Root of trust for storage
+>=20
+> -The user must first create a storage key and make it persistent, so the ke=
+y is
+> -available after reboot. This can be done using the following commands.
+> +     (1) TPM (Trusted Platform Module: hardware device)
+> +
+> +         Rooted to Storage Root Key (SRK) which never leaves the TPM that
+> +         provides crypto operation to establish root of trust for storage.
+> +
+> +     (2) TEE (Trusted Execution Environment: OP-TEE based on Arm TrustZone)
+> +
+> +         Rooted to Hardware Unique Key (HUK) which is generally burnt in o=
+n-chip
+> +         fuses and is accessible to TEE only.
+> +
+> +  *  Execution isolation
+> +
+> +     (1) TPM
+> +
+> +         Fixed set of operations running in isolated execution environment.
+> +
+> +     (2) TEE
+> +
+> +         Customizable set of operations running in isolated execution
+> +         environment verified via Secure/Trusted boot process.
+> +
+> +  * Optional binding to platform integrity state
+> +
+> +     (1) TPM
+> +
+> +         Keys can be optionally sealed to specified PCR (integrity measure=
+ment)
+> +         values, and only unsealed by the TPM, if PCRs and blob integrity
+> +         verifications match. A loaded Trusted Key can be updated with new
+> +         (future) PCR values, so keys are easily migrated to new PCR value=
+s,
+> +         such as when the kernel and initramfs are updated. The same key c=
+an
+> +         have many saved blobs under different PCR values, so multiple boo=
+ts are
+> +         easily supported.
+> +
+> +     (2) TEE
+> +
+> +         Relies on Secure/Trusted boot process for platform integrity. It =
+can
+> +         be extended with TEE based measured boot process.
+> +
+> +  *  On-chip versus off-chip
+> +
+> +     (1) TPM
+> +
+> +         Off-chip device connected via serial bus (like I2C, SPI etc.) exp=
+osing
+> +         physical access which represents an attack surface that can be
+> +         mitigated via tamper detection.
+> +
+> +     (2) TEE
+> +
+> +         On-chip functionality, immune to this attack surface.
+> +
+> +  *  Memory attacks (DRAM based like attaching a bus monitor etc.)
+> +
+> +     (1) TPM
+> +
+> +         Immune to these attacks as it doesn=E2=80=99t make use of system =
+DRAM.
+> +
+> +     (2) TEE
+> +
+> +         An implementation based on TrustZone protected DRAM is susceptibl=
+e to
+> +         such attacks. In order to mitigate these attacks one needs to rel=
+y on
+> +         on-chip secure RAM to store secrets or have the entire TEE
+> +         implementation based on on-chip secure RAM. An alternative mitiga=
+tion
+> +         would be to use encrypted DRAM.
+> +
+> +  *  Side-channel attacks (cache, memory, CPU or time based)
+> +
+> +     (1) TPM
+> +
+> +         Immune to side-channel attacks as its resources are isolated from=
+ the
+> +         main OS.
+> +
+> +     (2) TEE
+> +
+> +         A careful implementation is required to mitigate against these at=
+tacks
+> +         for resources which are shared (eg. shared memory) with the main =
+OS.
+> +         Cache and CPU based side-channel attacks can be mitigated via
+> +         invalidating caches and CPU registers during context switch to an=
+d from
+> +         the secure world.
+> +         To mitigate against time based attacks, one needs to have time
+> +         invariant implementations (like crypto algorithms etc.).
+> +
+> +  *  Resistance to physical attacks (power analysis, electromagnetic emana=
+tion,
+> +     probes etc.)
+> +
+> +     (1) TPM
+> +
+> +         Provides limited protection utilizing tamper resistance.
+> +
+> +     (2) TEE
+> +
+> +         Provides no protection by itself, relies on the underlying platfo=
+rm for
+> +         features such as tamper resistance.
+> +
+> +
+please add the following:
 
-This depends on paging being disabled, which it seems it is for the
-IMX platforms.
-If paging would have been enabled this memory might have been less
-secure than what you require, depending on how the platform is
-configured.
+* Provisioning - the trust source's unique and verifiable cryptographic ident=
+ity is provisioned during manufacturing
 
-Cheers,
-Jens
+(1) TPM
+The unique and verifiable cryptographic identity is the endorsement key (EK) =
+or its primary seed.  A review of the generation of the EK and its accompanyi=
+ng certificate is part of the Common Criteria evaluation of the product's lif=
+ecycle processes (ALC_*).  See "TCG Protection Profile for PC Client Specific=
+ TPM 2" (https://trustedcomputinggroup.org/resource/pc-client-protection-prof=
+ile-for-tpm-2-0/).
 
---===============3987840667152949615==--
+(2) TEE
+A protection profile for TEEs does not yet exist.  Therefore, the provisionin=
+g process that generates the Hardware Unique Key is not evaluated by an indep=
+endent third party and is highly dependent on the manufacturing environment. =
+=20
+
+
+* Cryptography
+(1) TPM
+As part of the TPM's mandatory Common Criteria evaluation, the correctness of=
+ the TPM's implementation of cryptographic algorithms, the protection of keys=
+, and the generation of random numbers, and other security-relevant functions=
+ must be documented, reviewed, and tested by an independent third party evalu=
+ation agency.  It must meet the requirements of FIPS 140-2, FIPS 140-3, or IS=
+O/IEC 19790:2012.=20
+
+(2) TEE
+Evaluations of cryptographic modules within TEEs are not required, but some a=
+re available for specific implementations within TEEs.
+
+
+
+* Interfaces and APIs
+(1) TPMs have well-documented, standardized interfaces and APIs.
+(2) Unless they implement functionality such as a virtual TPM, TEEs have cust=
+om interfaces and APIs.=20
+
+
+
+* Threat model
+The strength and appropriateness of  TPMs and TEEs for a given purpose must b=
+e assessed when using them to protect security-relevant data.   =20
+
+We suggest documenting environmental assumptions and dependencies in a high-l=
+evel threat model for each additional trust source.  Just as each new LSM nee=
+ds to comply with Documentation/security/lsm-development.rst, each new Truste=
+d Key source should provide a high-level threat model.   An example of a high=
+-level threat model is "Common Security Threats v1.0=E2=80=9D (https://www.op=
+encompute.org/documents/common-security-threats-notes-1-pdf ).=20
+
+The original Trusted Keys implementation assumed discrete physical TPMs for k=
+ey protection.  However, even physical TPMs themselves vary based on the manu=
+facturer and systems in which they are placed.  The embedded chipset, firmwar=
+e load, algorithms, packaging, pins, and countermeasures vary.  (Threats and =
+mitigations on physical TPMs are well documented, e.g., "Threat Model of a Sc=
+enario Based on Trusted Platform Module 2.0 Specification=E2=80=9D (http://ce=
+ur-ws.org/Vol-1011/6.pdf).
+
+Specific to Trusted Keys and TPMs, there is some discussion of threats and mi=
+tigations in the Integrity_overview.pdf on the IMA wiki:
+
+	=E2=80=A2 The trusted key component does two things to help with secure key =
+management on Linux. First, it provides a kernel key ring service in which th=
+e symmetric encryption keys are never visible in plain text to userspace. The=
+ keys are created in the kernel, and sealed by a hardware device such as a TP=
+M, with userspace seeing only the sealed blobs. Malicious or compromised appl=
+ications cannot steal a trusted key, since only the kernel can see the unseal=
+ed blobs. Secondly, the trusted keys can tie key unsealing to the integrity m=
+easurements, so that keys cannot be stolen in an offline attack, such as by b=
+ooting an unlocked Linux image from CD or USB.  As the measurements will be d=
+ifferent, the TPM chip will refuse to unseal the keys, even for the kernel.
+
+Consumers of Trusted Keys in different environments need enough information s=
+o that they can create their own threat models tailored to their use cases.  =
+For the present submission, a high-level security model of ARM TrustZone and =
+how Trusted Keys key protection is implemented along with an enumeration of s=
+ecurity considerations for end-use threat models would be appropriate. =20
+
+An excellent and related paper describes the strengths, weaknesses, and count=
+ermeasures of a firmware TPM implemented within a TEE.  See "fTPM: A Software=
+-only Implementation of a TPM Chip=E2=80=9D (https://www.usenix.org/conferenc=
+e/usenixsecurity16/technical-sessions/presentation/raj)
+
+
+> +Key Generation
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Trusted Keys
+> +------------
+> +
+> +New keys are created from trust source generated random numbers, and are
+> +encrypted/decrypted using trust source storage root key.
+Please change the following
+"New keys are created from trust source generated random numbers, and are enc=
+rypted/decrypted using trust source storage root key."
+to
+"New keys are created from random numbers generated in the trust source. They=
+ are encrypted/decrypted using a child key in the storage key hierarchy.  Enc=
+ryption and decryption of the child key must be protected by a strong access =
+control policy within the trust source. =E2=80=9C
+
+Thank you.=20
+Elaine
+_____________________________________
+Elaine R. Palmer, Senior Technical Staff Member
+Secure Systems and Academy of Technology
+IBM T.J. Watson Research Center
+
+--===============5427457770710711221==--
 
