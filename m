@@ -1,93 +1,63 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Secure memory allocation
-Date: Thu, 03 Dec 2020 07:41:34 +0100
+Subject: Re: Linaro OP-TEE Contributions meeting November 2020
+Date: Thu, 03 Dec 2020 16:03:15 +0100
 Message-ID: 
- <CAHUa44EBRxaC=93yTB6n-dHpWkY45sHqWivB_n93nkApsPfyCw@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CAM0PR08MB345984ACBBE6D43E6C4990AEC5F30=40AM0PR08MB?=
- =?utf-8?q?3459=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+ <CA+Eydda3VwqzFwvMdUjvcGSsSnHyPpw6UshDMb6vR5=gAZ5+Yg@mail.gmail.com>
+In-Reply-To: <
+ <CA+EyddZ7gVizB_4jLdg3w2gJDpNnfgS3+fqXk_+E4HJNvk6mdQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5312662033835462587=="
+Content-Type: multipart/mixed; boundary="===============0245847387883197903=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5312662033835462587==
+--===============0245847387883197903==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 2, 2020 at 9:28 PM Robert Deli=C3=ABn <robert@delien.nl> wrote:
->
-> Hi Jens,
->
-> Thank you very much for your prompt answer.
->
-> > It looks like something went wrong in the first solution.
->
-> Ok. Since I don't fully understand the failure mode, I'm going to abandon t=
-hat solution.
->
-> > The failure
-> > in the last solution is because OP-TEE thinks that you've accidentally
-> > tried to configure non-secure memory as secure memory.
->
-> Ok, I figured that much, so that's clearly not the way to go.
->
-> > I think the easiest is to allocate memory from the pool used for TAs with:
-> > mm =3D tee_mm_alloc(&tee_mm_sec_ddr, size);
-> > Until this mm is freed no one else will use the memory it represents.
->
-> That's a great idea! And thanks to this solution, I don't have to discard h=
-alf a day of work refactoring the code to use calloc. because It was fairly e=
-asy to convert from calloc to tee_mm_alloc.
->
-> > Returned memory is page aligned (based on CORE_MMU_USER_CODE_SHIFT).
->
-> I wasn't really sure exactly what it is that tee_mm_alloc() returns, but tw=
-o consecutive calls for 0x96000 bytes of data produced returned values (1st =
-=3D 0x8e076e60, 2nd =3D 0x8e076e48) of only 0x18 bytes apart. So perhaps they=
-'re TLB entries?
-> But I went through the code for examples and this is what I came up with:
->
->         /* Allocate memory for all frame buffers */
->         for (ndx =3D 0; ndx < ARRAY_SIZE(fb); ndx++) {
->                 tee_mm_entry_t  *mm;
->
->                 if (!(mm =3D tee_mm_alloc(&tee_mm_sec_ddr, MXSFB_SIZE))) {
->                         EMSG("Error allocating fb[%d]\n", ndx);
->                         return;
->                 }
->                 fb[ndx].va =3D phys_to_virt(tee_mm_get_smem(mm), MEM_AREA_T=
-A_RAM);
->                 fb[ndx].pa =3D (void *)virt_to_phys(fb[ndx].va);
->                 DMSG("fb[%d] @%p (pa %p)\n", ndx, fb[ndx].va, fb[ndx].pa);
->                 memset(fb[ndx].va, 0x00, MXSFB_SIZE);
->         }
-> Does that look al right to you?
-> Could you suggest a more elegant way to convert the contents of mm to fb[nd=
-x].va and fb[ndx].pa?
-> Is the memset() still necessary? I didn't see that in any of the examples I=
-'ve found, and it's an expensive function.
-> Is the memory allocated with tee_mm_alloc() garranteed to be a single block=
- of consecutive pages?
+Hi,
 
-Looks good, the tee_mm functions handle resource allocation typically
-virtual or physical memory. It doesn't touch the memory itself. The
-code above looks OK. Yep, the memory will be physically contiguous
-since the entire TA RAM range (represented here by tee_mm_sec_ddr) is
-mapped with physically contiguous memory.
+For some reason the meeting ID had become invalid, for this meeting today,
+please connect using this:
 
-Cheers,
-Jens
+Join Zoom Meeting:
+https://linaro-org.zoom.us/my/joakimbech?pwd=M3JMbnhhQS92UFJUV3Y5VDJXbmd4Zz09
 
->
-> > This depends on paging being disabled, which it seems it is for the
-> > IMX platforms.
-> > If paging would have been enabled this memory might have been less
-> > secure than what you require, depending on how the platform is
-> > configured.
->
-> Paging is disabled, so we're good here. Thank you for making me check.
->
-> Again, thank you very much!
+Meeting ID: joakimbech
+Passcode: 13371337
 
---===============5312662033835462587==--
+Regards,
+Joakim
+
+
+On Tue, 24 Nov 2020 at 10:07, Joakim Bech <joakim.bech@linaro.org> wrote:
+
+> Hi,
+>
+> LOC monthly meeting is planned to take place December 3rd(a)16.00 (UTC+1).
+> I'm fully aware that the November meeting will be held in December, but it
+> wasn't possible to schedule it earlier. We will probably try to squeeze in
+> the December one before people will go on Christmas holidays. Connection
+> details can be found in the meeting notes document (link below).
+>
+> This time I'm going to give an introduction to OP-TEE debugging in QEMU
+> using gdb. The audience here probably already knows quite well how to do
+> it, but there might be something to pick up as well there might be
+> questions and/or new ideas related to this.
+>
+> Other than that feel free to suggest topics you'd like to discuss (by
+> replying to this email or write it directly in the meeting notes).
+>
+> Meeting details:
+> ---------------
+> Date/time: Wednesday December 3rd(a)16.00 (UTC+1)
+> https://everytimezone.com/s/44862045
+> Invitation/connection details: In the meeting notes
+> Meeting notes: http://bit.ly/loc-notes
+> Project page: https://www.linaro.org/projects/#LOC
+>
+> Regards,
+> Joakim on behalf of the Linaro OP-TEE team
+>
+
+--===============0245847387883197903==--
 
