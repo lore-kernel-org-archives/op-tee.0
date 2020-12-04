@@ -1,109 +1,58 @@
 From: Jarkko Sakkinen <jarkko@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 0/4] Introduce TEE based Trusted Keys support
-Date: Fri, 04 Dec 2020 07:16:42 +0200
-Message-ID: <20201204051642.GA154469@kernel.org>
-In-Reply-To: <20201106145252.GA10434@kernel.org>
+Subject: Re: [PATCH v8 3/4] doc: trusted-encrypted: updates with TEE as a new
+ trust source
+Date: Fri, 04 Dec 2020 17:30:37 +0200
+Message-ID: <20201204153037.GC4922@kernel.org>
+In-Reply-To: <81A6B61D-3811-4957-B270-52AE5FA6DE4F@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2024852346379164069=="
+Content-Type: multipart/mixed; boundary="===============2905245600660761038=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2024852346379164069==
+--===============2905245600660761038==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 06, 2020 at 04:52:52PM +0200, Jarkko Sakkinen wrote:
-> On Fri, Nov 06, 2020 at 03:02:41PM +0530, Sumit Garg wrote:
-> > On Thu, 5 Nov 2020 at 10:37, Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> > >
-> > > On Tue, Nov 03, 2020 at 09:31:42PM +0530, Sumit Garg wrote:
-> > > > Add support for TEE based trusted keys where TEE provides the functio=
-nality
-> > > > to seal and unseal trusted keys using hardware unique key. Also, this=
- is
-> > > > an alternative in case platform doesn't possess a TPM device.
-> > > >
-> > > > This patch-set has been tested with OP-TEE based early TA which is al=
-ready
-> > > > merged in upstream [1].
-> > >
-> > > Is the new RPI400 computer a platform that can be used for testing
-> > > patch sets like this? I've been looking for a while something ARM64
-> > > based with similar convenience as Intel NUC's, and on the surface
-> > > this new RPI product looks great for kernel testing purposes.
-> >=20
-> > Here [1] is the list of supported versions of Raspberry Pi in OP-TEE.
-> > The easiest approach would be to pick up a supported version or else
-> > do an OP-TEE port for an unsupported one (which should involve minimal
-> > effort).
-> >=20
-> > [1] https://optee.readthedocs.io/en/latest/building/devices/rpi3.html#wha=
-t-versions-of-raspberry-pi-will-work
-> >=20
-> > -Sumit
->=20
-> If porting is doable, then I'll just order RPI 400, and test with QEMU
-> up until either I port OP-TEE myself or someone else does it.
->=20
-> For seldom ARM testing, RPI 400 is really convenient device with its
-> boxed form factor.
+On Wed, Dec 02, 2020 at 02:34:07PM -0500, gmail Elaine Palmer wrote:
+> Hi Sumit,  
+> 
+> Thank you for the detailed descriptions and examples of trust sources
+> for Trusted Keys.   A group of us in IBM (Stefan Berger, Ken Goldman,
+> Zhongshu Gu, Nayna Jain, Elaine Palmer, George Wilson, Mimi Zohar)
+> have been doing related work for quite some time, and we have one
+> primary concern and some suggested changes to the document. 
+> 
+> Our primary concern is that describing a TEE as a Trust Source needs
+> to be more specific.   For example, "ARM TrustZone" is not sufficient,
+> but "wolfSSL embedded SSL/TLS library with ARM TrustZone
+> CryptoCell-310" is.  Just because a key is protected by software
+> running in a TEE is not enough to establish trust.  Just like
+> cryptographic modules, a Trust Source should be defined as a specific
+> implementation on specific hardware with well-documented environmental
+> assumptions, dependencies, and threats.
+> 
+> In addition to the above concern, our suggested changes are inline
+> below.
 
-I'm now a proud owner of Raspberry Pi 400 home computer :-)
+In order to give a decent review comment it should have two ingredients:
 
-I also found instructions on how to boot a custom OS from a USB stick:
+- Where the existing line of code / text / whatever goes wrong.
+- How it should modified and why that makes sense. And use as plain
+  English and non-academic terms as possible, if it is documentation.
+  Further, scope is only the kernel implementation, no more or no
+  less.
 
-https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/msd.=
-md
+"do this" is not unfortunately an argument. Feedback is welcome when
+it is supported by something common sensse.
 
-Also, my favorite build system BuildRoot has bunch of of the shelf
-configs:
+Some meta suggestion of related to email:
 
-=E2=9E=9C  buildroot-sgx (master) =E2=9C=94 ls -1 configs | grep raspberry
-raspberrypi0_defconfig
-raspberrypi0w_defconfig
-raspberrypi2_defconfig
-raspberrypi3_64_defconfig
-raspberrypi3_defconfig
-raspberrypi3_qt5we_defconfig
-raspberrypi4_64_defconfig
-raspberrypi4_defconfig
-raspberrypi_defconfig
-
-I.e. I'm capable of compiling kernel and user space and boot it up
-with it.
-
-Further, I can select this compilation option:
-
-BR2_TARGET_OPTEE_OS:                                                         =
-                                                                             =
-        =E2=94=82 =20
-                                                                             =
-                                                                             =
-           =E2=94=82 =20
-   OP-TEE OS provides the secure world boot image and the trust              =
-                                                                             =
-           =E2=94=82 =20
-   application development kit of the OP-TEE project. OP-TEE OS              =
-                                                                             =
-           =E2=94=82 =20
-   also provides generic trusted application one can embedded                =
-                                                                             =
-           =E2=94=82 =20
-   into its system.                                                          =
-                                                                             =
-           =E2=94=82 =20
-                                                                             =
-                                                                             =
-           =E2=94=82 =20
-   http://github.com/OP-TEE/optee_os      =20
-
-Is that what I want? If I put this all together and apply your patches,
-should the expectation be that I can use trusted keys?
-
-Please note that I had a few remarks about your patches (minor but need
-to be fixed), but this version is already solid enough for testing.
+Please also use a proper email client and split your paragraphs into
+at most 80 character lines with new line characters when writing email.
+I prefer to use 72 character line length so that there's some space
+for longer email threads.
 
 /Jarkko
 
---===============2024852346379164069==--
+--===============2905245600660761038==--
 
