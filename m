@@ -1,23 +1,37 @@
-From: Robert Deliën <robert@delien.nl>
+From: Mimi Zohar <zohar@linux.ibm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Secure memory allocation
-Date: Wed, 09 Dec 2020 16:05:21 +0000
-Message-ID: <75FCA426-2467-4811-9CD8-75629BD5F9EB@delien.nl>
-In-Reply-To: <cc94a2214d53a6d88c0a7a35644ddd8af6f12fd5.camel@pengutronix.de>
+Subject: Re: [PATCH v8 3/4] doc: trusted-encrypted: updates with TEE as a new
+ trust source
+Date: Wed, 09 Dec 2020 11:50:19 -0500
+Message-ID: <b2465d27f3683331019c5a9b6d0856304d992a0a.camel@linux.ibm.com>
+In-Reply-To: <20201208174906.GA58572@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0152679419083393606=="
+Content-Type: multipart/mixed; boundary="===============1584954204852110180=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0152679419083393606==
+--===============1584954204852110180==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-> Hm, since the LCDIF CSL register is lumped together with the PXP, you
-> could try setting the SA bit for the PXP peripheral.
+On Tue, 2020-12-08 at 19:49 +0200, Jarkko Sakkinen wrote:
+> On Tue, Dec 08, 2020 at 10:02:57AM -0500, Mimi Zohar wrote:
 
-Thank you for thinking along with us. We have tried this, and even putting al=
-l masters and slaves in Secure mode, but to no avail. We are consulting NXP n=
-ow.
+> > > Please also use a proper email client and split your paragraphs into
+> > > at most 80 character lines with new line characters when writing email.
+> > > I prefer to use 72 character line length so that there's some space
+> > > for longer email threads.
+> > 
+> > Sure, we'll re-post the suggested documentation changes/additions.
+> > 
+> > Mimi
+> 
+> So. Wouldn't it be a better idea to post a patch that Sumit could
+> squash to his (and add co-developed-by tag)?
 
---===============0152679419083393606==--
+I just posted it on Elaine's behalf.
+  
+Mimi
+
+
+--===============1584954204852110180==--
 
