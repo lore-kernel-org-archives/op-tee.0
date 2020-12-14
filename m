@@ -1,58 +1,94 @@
-From: Mimi Zohar <zohar@linux.ibm.com>
+From: Joanna Farley <Joanna.Farley@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 3/4] doc: trusted-encrypted: updates with TEE as a new
- trust source
-Date: Fri, 11 Dec 2020 10:29:05 -0500
-Message-ID: <16a279eaf2c209345044c3b4e1e57e2878798940.camel@linux.ibm.com>
-In-Reply-To: <20201211103627.GB12091@kernel.org>
+Subject: TF-A Tech Forum Agenda @ Thr 17th December 2020 16:00-1700 GMT:
+ Introduction to the Trusted Services project
+Date: Mon, 14 Dec 2020 10:00:10 +0000
+Message-ID: <936F8D04-E5F7-4AC2-9263-6C8B6C700C94@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7023452942776118608=="
+Content-Type: multipart/mixed; boundary="===============6901182423156204732=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7023452942776118608==
+--===============6901182423156204732==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2020-12-11 at 12:36 +0200, Jarkko Sakkinen wrote:
-> On Wed, Dec 09, 2020 at 11:50:19AM -0500, Mimi Zohar wrote:
-> > On Tue, 2020-12-08 at 19:49 +0200, Jarkko Sakkinen wrote:
-> > > On Tue, Dec 08, 2020 at 10:02:57AM -0500, Mimi Zohar wrote:
-> >=20
-> > > > > Please also use a proper email client and split your paragraphs into
-> > > > > at most 80 character lines with new line characters when writing em=
-ail.
-> > > > > I prefer to use 72 character line length so that there's some space
-> > > > > for longer email threads.
-> > > >=20
-> > > > Sure, we'll re-post the suggested documentation changes/additions.
-> > > >=20
-> > >=20
-> > > So. Wouldn't it be a better idea to post a patch that Sumit could
-> > > squash to his (and add co-developed-by tag)?
-> >=20
-> > I just posted it on Elaine's behalf.
-> >  =20
->=20
-> I responded. It's good that this feedback came as I think the whole
-> thing does not have the correct label for it.
+Hi All,
 
-Every HW is going to want to add "trusted keys" support.   We've seen
-this with Udit Agarwal's "secure keys" proposal for NXP CAAM crypto HW
-accelerator.  If we go down this route to extend "trusted keys" to
-support specific implementations like this one, I strongly recommend
-requiring an accompaying high-level threat model.  This is similar to
-how new LSMs need to comply with Documentation/security/lsm-
-development.rst.
+The next TF-A Tech Forum is scheduled for Thu 17th December 2020 16:00 =E2=80=
+=93 17:00 (GMT).
+As well as being posted to the TF-A mailing list this has been cross posted t=
+o OPTEE mailing list. For OPTEE attendees the Zoom call details are included =
+below.
 
-Based on Elaine's work with OCP, an example of a high-level threat
-model is "Common Security Threats v1.0=E2=80=9D (
-https://www.opencompute.org/documents/common-security-threats-notes-1-pdf
- ).
+Agenda:
 
-thanks,
+  *   An introduction to the Trusted Services project
+     *   Presented by Julian Hall
+     *   Summary
+        *   The Trusted Services project is a new trustedfirmware.org project=
+ that provides a home for security related service components that can run in=
+ the different isolated processing environments available on Arm Cortex-A.  T=
+he project attempts to promote reuse and standardization to enable a consiste=
+nt set of services to be provided by firmware, independent of which isolation=
+ technology is used.
 
-Mimi
+If TF-A contributors have anything they wish to present at any future TF-A te=
+ch forum please contact me to have that scheduled.
+
+Previous sessions, both recording and presentation material can be found on t=
+he trustedfirmware.org TF-A Technical meeting webpage: https://www.trustedfir=
+mware.org/meetings/tf-a-technical-forum/
+
+A scheduling tracking page is also available to help track sessions suggested=
+ and being prepared: https://developer.trustedfirmware.org/w/tf_a/tf-a-tech-f=
+orum-scheduling/ Final decisions on what will be presented will be shared a f=
+ew days before the next meeting and shared on the TF-A mailing list.
+
+This is the last TF-A Tech Forum session until January 2021.
 
 
---===============7023452942776118608==--
+Join Zoom Meeting
+
+https://zoom.us/j/9159704974<https://www.google.com/url?q=3Dhttps%3A%2F%2Fzoo=
+m.us%2Fj%2F9159704974&sa=3DD&ust=3D1592587253515000&usg=3DAOvVaw0Wqwu3aHeTRWo=
+aF_9AQwgq>
+
+
+
+Meeting ID: 915 970 4974
+
+
+
+One tap mobile
+
++16465588656,,9159704974# US (New York)
+
++16699009128,,9159704974# US (San Jose)
+
+
+
+Dial by your location
+
+        +1 646 558 8656 US (New York)
+
+        +1 669 900 9128 US (San Jose)
+
+        877 853 5247 US Toll-free
+
+        888 788 0099 US Toll-free
+
+Meeting ID: 915 970 4974
+
+Find your local number: https://zoom.us/u/ad27hc6t7h<https://www.google.com/u=
+rl?q=3Dhttps%3A%2F%2Fzoom.us%2Fu%2Fad27hc6t7h&sa=3DD&ust=3D1592587253515000&u=
+sg=3DAOvVaw0oU7jjBlz1P9VncfgjPkAL>
+
+
+Thanks
+
+Joanna
+
+
+
+--===============6901182423156204732==--
 
