@@ -1,94 +1,41 @@
-From: Joanna Farley <Joanna.Farley@arm.com>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: TF-A Tech Forum Agenda @ Thr 17th December 2020 16:00-1700 GMT:
- Introduction to the Trusted Services project
-Date: Mon, 14 Dec 2020 10:00:10 +0000
-Message-ID: <936F8D04-E5F7-4AC2-9263-6C8B6C700C94@arm.com>
+Subject: Linaro OP-TEE Contributions meeting December 2020
+Date: Mon, 14 Dec 2020 11:23:52 +0100
+Message-ID: 
+ <CA+EyddaMhvBzGdUhk4XHUk2mT1fB45Yh8g1k0=WBTFXRkbgPJA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6901182423156204732=="
+Content-Type: multipart/mixed; boundary="===============5354286606823114095=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6901182423156204732==
+--===============5354286606823114095==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi All,
+Hi,
 
-The next TF-A Tech Forum is scheduled for Thu 17th December 2020 16:00 =E2=80=
-=93 17:00 (GMT).
-As well as being posted to the TF-A mailing list this has been cross posted t=
-o OPTEE mailing list. For OPTEE attendees the Zoom call details are included =
-below.
+LOC monthly meeting is planned to take place Monday December 21st(a)16.00
+(UTC+1). This time it will just be an open discussion, since we have no
+planned presentation/talks otherwise. So feel free to suggest topics you'd
+like to discuss (by replying to this email or write it directly in the
+meeting notes).
 
-Agenda:
+The issue we had last time with Zoom ID not valid any longer should have
+been fixed now. Note that the fix involved generating a new meeting ID,
+which means that the old connection information is no longer valid. It's
+also worth mentioning that all upcoming meetings can now be found at the
+TrustedFirmware calendar (url is below).
 
-  *   An introduction to the Trusted Services project
-     *   Presented by Julian Hall
-     *   Summary
-        *   The Trusted Services project is a new trustedfirmware.org project=
- that provides a home for security related service components that can run in=
- the different isolated processing environments available on Arm Cortex-A.  T=
-he project attempts to promote reuse and standardization to enable a consiste=
-nt set of services to be provided by firmware, independent of which isolation=
- technology is used.
+Meeting details:
+---------------
+Date/time: Monday December 21st(a)16.00 (UTC+1)
+https://everytimezone.com/s/f5c1ffe4
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
+Project page: https://www.linaro.org/projects/#LOC
 
-If TF-A contributors have anything they wish to present at any future TF-A te=
-ch forum please contact me to have that scheduled.
+Regards,
+Joakim on behalf of the Linaro OP-TEE team
 
-Previous sessions, both recording and presentation material can be found on t=
-he trustedfirmware.org TF-A Technical meeting webpage: https://www.trustedfir=
-mware.org/meetings/tf-a-technical-forum/
-
-A scheduling tracking page is also available to help track sessions suggested=
- and being prepared: https://developer.trustedfirmware.org/w/tf_a/tf-a-tech-f=
-orum-scheduling/ Final decisions on what will be presented will be shared a f=
-ew days before the next meeting and shared on the TF-A mailing list.
-
-This is the last TF-A Tech Forum session until January 2021.
-
-
-Join Zoom Meeting
-
-https://zoom.us/j/9159704974<https://www.google.com/url?q=3Dhttps%3A%2F%2Fzoo=
-m.us%2Fj%2F9159704974&sa=3DD&ust=3D1592587253515000&usg=3DAOvVaw0Wqwu3aHeTRWo=
-aF_9AQwgq>
-
-
-
-Meeting ID: 915 970 4974
-
-
-
-One tap mobile
-
-+16465588656,,9159704974# US (New York)
-
-+16699009128,,9159704974# US (San Jose)
-
-
-
-Dial by your location
-
-        +1 646 558 8656 US (New York)
-
-        +1 669 900 9128 US (San Jose)
-
-        877 853 5247 US Toll-free
-
-        888 788 0099 US Toll-free
-
-Meeting ID: 915 970 4974
-
-Find your local number: https://zoom.us/u/ad27hc6t7h<https://www.google.com/u=
-rl?q=3Dhttps%3A%2F%2Fzoom.us%2Fu%2Fad27hc6t7h&sa=3DD&ust=3D1592587253515000&u=
-sg=3DAOvVaw0oU7jjBlz1P9VncfgjPkAL>
-
-
-Thanks
-
-Joanna
-
-
-
---===============6901182423156204732==--
+--===============5354286606823114095==--
 
