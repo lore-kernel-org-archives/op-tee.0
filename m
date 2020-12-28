@@ -1,36 +1,52 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Robert Delien <r.delien@payter.nl>
 To: op-tee@lists.trustedfirmware.org
-Subject: Preparing for OP-TEE 3.12.0
-Date: Mon, 28 Dec 2020 10:35:00 +0100
+Subject: Mapping an arbitrary SDRAM block outside TZDRAM
+Date: Mon, 28 Dec 2020 19:48:45 +0100
 Message-ID: 
- <CA+EyddYso0P96MG+-bUYoG8K5W91hRZpFgqT1HgX5riDWO_kkA@mail.gmail.com>
+ <CAEhEOQm38Qi9JXDnpZ+b=qWNZSz2Vw5wTdvvnDwxhMCbxyrRaQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8135585418697158677=="
+Content-Type: multipart/mixed; boundary="===============6990739152865706590=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8135585418697158677==
+--===============6990739152865706590==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-[BCC all OP-TEE maintainers]
+Hi,
 
-Hi OP-TEE maintainers & contributors,
+As discussed earlier, our application requires secured display contents and
+is using a secure frame buffer.
 
-OP-TEE v3.12.0 is scheduled to be released at 2021-01-15. So, now is
-a good time to start testing the master branch on the various platforms
-and report/fix any bugs.
+Now to transit from U-Boot to Op-tee as smoothly as possible, I would like
+to copy the contents from the U-Boot frame buffer into the Optee frame
+buffer upon LCD driver initialisation.
 
-The GitHub pull request for collecting Tested-by tags or any other
-comments is https://github.com/OP-TEE/optee_os/pull/4291.
+The U-Boot frame buffer address is calculated at run time and I haven't
+found a hand-off mechanism, but the physical address can be easily read
+from the LCDIF peripheral's registers. Unfortunately, no MMU mapping is
+present per default for this physical address outside the TZDRAM area.
 
-As usual, we will create a release candidate tag one week before the
-release date for final testing.
+Is it possible to temporarily map this rather arbitrary non-secure physical
+DDR address outside TZDRAM, so I can access it through a virtual address?
+Preferably in a way that I can also remove this mapping after copying the
+frame buffer?
 
-In addition to that you can find some additional information related to
-releases here: https://optee.readthedocs.io/en/latest/general/releases.html
+Thanks in advance; Your help is highly appreciated.
 
-Regards,
-Joakim
+With kind regards,
 
---===============8135585418697158677==--
+        Robert.
+
+-- 
+DISCLAIMER
+De informatie, verzonden in of met dit e-mailbericht, is 
+vertrouwelijk en uitsluitend voor de geadresseerde(n) bestemd. Het gebruik 
+van de informatie in dit bericht, de openbaarmaking, vermenigvuldiging, 
+verspreiding en|of verstrekking daarvan aan derden is niet toegestaan. 
+Gebruik van deze informatie door anderen dan geadresseerde(n) is strikt 
+verboden. Aan deze informatie kunnen geen rechten worden ontleend. U wordt 
+verzocht bij onjuiste adressering de afzender direct te informeren door het 
+bericht te retourneren en het bericht uit uw computersysteem te verwijderen.
+
+--===============6990739152865706590==--
 
