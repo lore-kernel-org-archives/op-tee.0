@@ -1,50 +1,48 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Jarkko Sakkinen <jarkko@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Preparing for OP-TEE 3.12.0
-Date: Fri, 08 Jan 2021 13:39:25 +0100
-Message-ID: 
- <CA+EyddbBkSgpfzQ2X-ZR4wpi1gGRE5MsCQFyRSj6afeR=MPQAg@mail.gmail.com>
-In-Reply-To: <
- <CA+EyddYso0P96MG+-bUYoG8K5W91hRZpFgqT1HgX5riDWO_kkA@mail.gmail.com>>
+Subject: Re: [PATCH v8 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
+Date: Mon, 11 Jan 2021 18:35:03 +0200
+Message-ID: <X/x+N0fgrzIZTeNi@kernel.org>
+In-Reply-To: <1604419306-26105-3-git-send-email-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3683754347635168519=="
+Content-Type: multipart/mixed; boundary="===============0113152825057547094=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3683754347635168519==
+--===============0113152825057547094==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Tue, Nov 03, 2020 at 09:31:44PM +0530, Sumit Garg wrote:
+> Add support for TEE based trusted keys where TEE provides the functionality
+> to seal and unseal trusted keys using hardware unique key.
+>=20
+> Refer to Documentation/tee.txt for detailed information about TEE.
+>=20
+> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 
-Tag 3.12.0-rc1 has been created, so please continue with your release
-regression testing.
+I haven't yet got QEMU environment working with aarch64, this produces
+just a blank screen:
 
-Regards,
-Joakim
+./output/host/usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a53 -smp 1 -ker=
+nel output/images/Image -initrd output/images/rootfs.cpio -serial stdio
 
-On Mon, 28 Dec 2020 at 10:35, Joakim Bech <joakim.bech@linaro.org> wrote:
+My BuildRoot fork for TPM and keyring testing is located over here:
 
-> [BCC all OP-TEE maintainers]
->
-> Hi OP-TEE maintainers & contributors,
->
-> OP-TEE v3.12.0 is scheduled to be released at 2021-01-15. So, now is
-> a good time to start testing the master branch on the various platforms
-> and report/fix any bugs.
->
-> The GitHub pull request for collecting Tested-by tags or any other
-> comments is https://github.com/OP-TEE/optee_os/pull/4291.
->
-> As usual, we will create a release candidate tag one week before the
-> release date for final testing.
->
-> In addition to that you can find some additional information related to
-> releases here:
-> https://optee.readthedocs.io/en/latest/general/releases.html
->
-> Regards,
-> Joakim
->
+https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/buildroot-tpmdd.git/
 
---===============3683754347635168519==--
+The "ARM version" is at this point in aarch64 branch. Over time I will
+define tpmdd-x86_64 and tpmdd-aarch64 boards and everything will be then
+in the master branch.
+
+To create identical images you just need to
+
+$ make tpmdd_defconfig && make
+
+Can you check if you see anything obviously wrong? I'm eager to test this
+patch set, and in bigger picture I really need to have ready to run
+aarch64 environment available.
+
+/Jarkko
+
+--===============0113152825057547094==--
 
