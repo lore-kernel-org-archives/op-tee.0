@@ -1,129 +1,173 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v8 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
-Date: Wed, 20 Jan 2021 03:31:06 +0200
-Message-ID: <YAeH2pb8szQyjusL@kernel.org>
-In-Reply-To: <YAa0ys4YJcZtKdfF@kernel.org>
+Date: Wed, 20 Jan 2021 12:53:28 +0530
+Message-ID: 
+ <CAFA6WYP5G6NfGk96ePOC+2kpD6B+4hz9nywyUM9Nh=dJDYMiuA@mail.gmail.com>
+In-Reply-To: <YAeH2pb8szQyjusL@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2387944331824327962=="
+Content-Type: multipart/mixed; boundary="===============5136778114099761091=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2387944331824327962==
+--===============5136778114099761091==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 19, 2021 at 12:30:42PM +0200, Jarkko Sakkinen wrote:
-> On Fri, Jan 15, 2021 at 11:32:31AM +0530, Sumit Garg wrote:
-> > On Thu, 14 Jan 2021 at 07:35, Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> > >
-> > > On Wed, Jan 13, 2021 at 04:47:00PM +0530, Sumit Garg wrote:
-> > > > Hi Jarkko,
+On Wed, 20 Jan 2021 at 07:01, Jarkko Sakkinen <jarkko@kernel.org> wrote:
+>
+> On Tue, Jan 19, 2021 at 12:30:42PM +0200, Jarkko Sakkinen wrote:
+> > On Fri, Jan 15, 2021 at 11:32:31AM +0530, Sumit Garg wrote:
+> > > On Thu, 14 Jan 2021 at 07:35, Jarkko Sakkinen <jarkko@kernel.org> wro=
+te:
 > > > >
-> > > > On Mon, 11 Jan 2021 at 22:05, Jarkko Sakkinen <jarkko@kernel.org> w=
-rote:
+> > > > On Wed, Jan 13, 2021 at 04:47:00PM +0530, Sumit Garg wrote:
+> > > > > Hi Jarkko,
 > > > > >
-> > > > > On Tue, Nov 03, 2020 at 09:31:44PM +0530, Sumit Garg wrote:
-> > > > > > Add support for TEE based trusted keys where TEE provides the fun=
-ctionality
-> > > > > > to seal and unseal trusted keys using hardware unique key.
+> > > > > On Mon, 11 Jan 2021 at 22:05, Jarkko Sakkinen <jarkko@kernel.org>=
+ wrote:
 > > > > > >
-> > > > > > Refer to Documentation/tee.txt for detailed information about TEE.
+> > > > > > On Tue, Nov 03, 2020 at 09:31:44PM +0530, Sumit Garg wrote:
+> > > > > > > Add support for TEE based trusted keys where TEE provides the f=
+unctionality
+> > > > > > > to seal and unseal trusted keys using hardware unique key.
+> > > > > > >
+> > > > > > > Refer to Documentation/tee.txt for detailed information about T=
+EE.
+> > > > > > >
+> > > > > > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 > > > > > >
-> > > > > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> > > > > > I haven't yet got QEMU environment working with aarch64, this pro=
+duces
+> > > > > > just a blank screen:
+> > > > > >
+> > > > > > ./output/host/usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a53=
+ -smp 1 -kernel output/images/Image -initrd output/images/rootfs.cpio -serial=
+ stdio
+> > > > > >
+> > > > > > My BuildRoot fork for TPM and keyring testing is located over her=
+e:
+> > > > > >
+> > > > > > https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/buildroot-=
+tpmdd.git/
+> > > > > >
+> > > > > > The "ARM version" is at this point in aarch64 branch. Over time I=
+ will
+> > > > > > define tpmdd-x86_64 and tpmdd-aarch64 boards and everything will =
+be then
+> > > > > > in the master branch.
+> > > > > >
+> > > > > > To create identical images you just need to
+> > > > > >
+> > > > > > $ make tpmdd_defconfig && make
+> > > > > >
+> > > > > > Can you check if you see anything obviously wrong? I'm eager to t=
+est this
+> > > > > > patch set, and in bigger picture I really need to have ready to r=
+un
+> > > > > > aarch64 environment available.
 > > > > >
-> > > > > I haven't yet got QEMU environment working with aarch64, this produ=
-ces
-> > > > > just a blank screen:
+> > > > > I would rather suggest you to follow steps listed here [1] as to te=
+st
+> > > > > this feature on Qemu aarch64 we need to build firmwares such as TF-=
+A,
+> > > > > OP-TEE, UEFI etc. which are all integrated into OP-TEE Qemu build
+> > > > > system [2]. And then it would be easier to migrate them to your
+> > > > > buildroot environment as well.
 > > > > >
-> > > > > ./output/host/usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a53 -=
-smp 1 -kernel output/images/Image -initrd output/images/rootfs.cpio -serial s=
-tdio
+> > > > > [1] https://lists.trustedfirmware.org/pipermail/op-tee/2020-May/000=
+027.html
+> > > > > [2] https://optee.readthedocs.io/en/latest/building/devices/qemu.ht=
+ml#qemu-v8
 > > > > >
-> > > > > My BuildRoot fork for TPM and keyring testing is located over here:
-> > > > >
-> > > > > https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/buildroot-tp=
-mdd.git/
-> > > > >
-> > > > > The "ARM version" is at this point in aarch64 branch. Over time I w=
-ill
-> > > > > define tpmdd-x86_64 and tpmdd-aarch64 boards and everything will be=
- then
-> > > > > in the master branch.
-> > > > >
-> > > > > To create identical images you just need to
-> > > > >
-> > > > > $ make tpmdd_defconfig && make
-> > > > >
-> > > > > Can you check if you see anything obviously wrong? I'm eager to tes=
-t this
-> > > > > patch set, and in bigger picture I really need to have ready to run
-> > > > > aarch64 environment available.
+> > > > > -Sumit
 > > > >
-> > > > I would rather suggest you to follow steps listed here [1] as to test
-> > > > this feature on Qemu aarch64 we need to build firmwares such as TF-A,
-> > > > OP-TEE, UEFI etc. which are all integrated into OP-TEE Qemu build
-> > > > system [2]. And then it would be easier to migrate them to your
-> > > > buildroot environment as well.
+> > > > Can you provide 'keyctl_change'? Otherwise, the steps are easy to fol=
+low.
 > > > >
-> > > > [1] https://lists.trustedfirmware.org/pipermail/op-tee/2020-May/00002=
-7.html
-> > > > [2] https://optee.readthedocs.io/en/latest/building/devices/qemu.html=
-#qemu-v8
+> > >
+> > > $ cat keyctl_change
+> > > diff --git a/common.mk b/common.mk
+> > > index aeb7b41..663e528 100644
+> > > --- a/common.mk
+> > > +++ b/common.mk
+> > > @@ -229,6 +229,7 @@ BR2_PACKAGE_OPTEE_TEST_SDK ?=3D $(OPTEE_OS_TA_DEV_K=
+IT_DIR)
+> > >  BR2_PACKAGE_OPTEE_TEST_SITE ?=3D $(OPTEE_TEST_PATH)
+> > >  BR2_PACKAGE_STRACE ?=3D y
+> > >  BR2_TARGET_GENERIC_GETTY_PORT ?=3D $(if
+> > > $(CFG_NW_CONSOLE_UART),ttyAMA$(CFG_NW_CONSOLE_UART),ttyAMA0)
+> > > +BR2_PACKAGE_KEYUTILS :=3D y
+> > >
+> > >  # All BR2_* variables from the makefile or the environment are appende=
+d to
+> > >  # ../out-br/extra.conf. All values are quoted "..." except y and n.
+> > > diff --git a/kconfigs/qemu.conf b/kconfigs/qemu.conf
+> > > index 368c18a..832ab74 100644
+> > > --- a/kconfigs/qemu.conf
+> > > +++ b/kconfigs/qemu.conf
+> > > @@ -20,3 +20,5 @@ CONFIG_9P_FS=3Dy
+> > >  CONFIG_9P_FS_POSIX_ACL=3Dy
+> > >  CONFIG_HW_RANDOM=3Dy
+> > >  CONFIG_HW_RANDOM_VIRTIO=3Dy
+> > > +CONFIG_TRUSTED_KEYS=3Dy
+> > > +CONFIG_ENCRYPTED_KEYS=3Dy
+> > >
+> > > > After I've successfully tested 2/4, I'd suggest that you roll out one=
+ more
+> > > > version and CC the documentation patch to Elaine and Mini, and clearly
+> > > > remark in the commit message that TEE is a standard, with a link to t=
+he
+> > > > specification.
 > > > >
-> > > > -Sumit
 > > >
-> > > Can you provide 'keyctl_change'? Otherwise, the steps are easy to follo=
-w.
-> > >
-> >=20
-> > $ cat keyctl_change
-> > diff --git a/common.mk b/common.mk
-> > index aeb7b41..663e528 100644
-> > --- a/common.mk
-> > +++ b/common.mk
-> > @@ -229,6 +229,7 @@ BR2_PACKAGE_OPTEE_TEST_SDK ?=3D $(OPTEE_OS_TA_DEV_KIT=
-_DIR)
-> >  BR2_PACKAGE_OPTEE_TEST_SITE ?=3D $(OPTEE_TEST_PATH)
-> >  BR2_PACKAGE_STRACE ?=3D y
-> >  BR2_TARGET_GENERIC_GETTY_PORT ?=3D $(if
-> > $(CFG_NW_CONSOLE_UART),ttyAMA$(CFG_NW_CONSOLE_UART),ttyAMA0)
-> > +BR2_PACKAGE_KEYUTILS :=3D y
-> >=20
-> >  # All BR2_* variables from the makefile or the environment are appended =
-to
-> >  # ../out-br/extra.conf. All values are quoted "..." except y and n.
-> > diff --git a/kconfigs/qemu.conf b/kconfigs/qemu.conf
-> > index 368c18a..832ab74 100644
-> > --- a/kconfigs/qemu.conf
-> > +++ b/kconfigs/qemu.conf
-> > @@ -20,3 +20,5 @@ CONFIG_9P_FS=3Dy
-> >  CONFIG_9P_FS_POSIX_ACL=3Dy
-> >  CONFIG_HW_RANDOM=3Dy
-> >  CONFIG_HW_RANDOM_VIRTIO=3Dy
-> > +CONFIG_TRUSTED_KEYS=3Dy
-> > +CONFIG_ENCRYPTED_KEYS=3Dy
-> >=20
-> > > After I've successfully tested 2/4, I'd suggest that you roll out one m=
-ore
-> > > version and CC the documentation patch to Elaine and Mini, and clearly
-> > > remark in the commit message that TEE is a standard, with a link to the
-> > > specification.
-> > >
-> >=20
-> > Sure, I will roll out the next version after your testing.
->=20
-> Thanks, I'll try this at instant, and give my feedback.
+> > > Sure, I will roll out the next version after your testing.
+> >
+> > Thanks, I'll try this at instant, and give my feedback.
+>
+> I bump into this:
+>
+> $ make run-only
+> ln -sf /home/jarkko/devel/tpm/optee/build/../out-br/images/rootfs.cpio.gz /=
+home/jarkko/devel/tpm/optee/build/../out/bin/
+> ln: failed to create symbolic link '/home/jarkko/devel/tpm/optee/build/../o=
+ut/bin/': No such file or directory
+> make: *** [Makefile:194: run-only] Error 1
+>
 
-I bump into this:
+Could you check if the following directory tree is built after
+executing the below command?
 
-$ make run-only
-ln -sf /home/jarkko/devel/tpm/optee/build/../out-br/images/rootfs.cpio.gz /ho=
-me/jarkko/devel/tpm/optee/build/../out/bin/
-ln: failed to create symbolic link '/home/jarkko/devel/tpm/optee/build/../out=
-/bin/': No such file or directory
-make: *** [Makefile:194: run-only] Error 1
+$ make -j`nproc`
+CFG_IN_TREE_EARLY_TAS=3Dtrusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c
 
-/Jarkko
+$ tree out/bin/
+out/bin/
+=E2=94=9C=E2=94=80=E2=94=80 bl1.bin -> /home/sumit/build/optee/build/../trust=
+ed-firmware-a/build/qemu/release/bl1.bin
+=E2=94=9C=E2=94=80=E2=94=80 bl2.bin -> /home/sumit/build/optee/build/../trust=
+ed-firmware-a/build/qemu/release/bl2.bin
+=E2=94=9C=E2=94=80=E2=94=80 bl31.bin ->
+/home/sumit/build/optee/build/../trusted-firmware-a/build/qemu/release/bl31.b=
+in
+=E2=94=9C=E2=94=80=E2=94=80 bl32.bin ->
+/home/sumit/build/optee/build/../optee_os/out/arm/core/tee-header_v2.bin
+=E2=94=9C=E2=94=80=E2=94=80 bl32_extra1.bin ->
+/home/sumit/build/optee/build/../optee_os/out/arm/core/tee-pager_v2.bin
+=E2=94=9C=E2=94=80=E2=94=80 bl32_extra2.bin ->
+/home/sumit/build/optee/build/../optee_os/out/arm/core/tee-pageable_v2.bin
+=E2=94=9C=E2=94=80=E2=94=80 bl33.bin ->
+/home/sumit/build/optee/build/../edk2/Build/ArmVirtQemuKernel-AARCH64/RELEASE=
+_GCC49/FV/QEMU_EFI.fd
+=E2=94=9C=E2=94=80=E2=94=80 Image -> /home/sumit/build/optee/build/../linux/a=
+rch/arm64/boot/Image
+=E2=94=94=E2=94=80=E2=94=80 rootfs.cpio.gz ->
+/home/sumit/build/optee/build/../out-br/images/rootfs.cpio.gz
 
---===============2387944331824327962==--
+0 directories, 9 files
+
+-Sumit
+
+> /Jarkko
+
+--===============5136778114099761091==--
 
