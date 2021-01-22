@@ -1,240 +1,109 @@
-From: Jerome Forissier <jerome@forissier.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
-Date: Thu, 21 Jan 2021 17:23:45 +0100
-Message-ID: <1486cfe8-bc30-1266-12bd-0049f2b64820@forissier.org>
-In-Reply-To: <YAmcyKnYCK+Y4IGW@kernel.org>
+Subject: Re: [PATCH v2] tee: optee: replace might_sleep with cond_resched
+Date: Fri, 22 Jan 2021 08:42:00 +0100
+Message-ID: 
+ <CAHUa44HBrRUOX4y+bee957APWtknxb=X8RMPw0xA_qF=CmgEGQ@mail.gmail.com>
+In-Reply-To: <20210105102843.11254-1-r.czerwinski@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1267826859076447001=="
+Content-Type: multipart/mixed; boundary="===============8702623201763628246=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1267826859076447001==
+--===============8702623201763628246==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+On Tue, Jan 5, 2021 at 11:29 AM Rouven Czerwinski
+<r.czerwinski@pengutronix.de> wrote:
+>
+> might_sleep() is a debugging aid and triggers rescheduling only for
+> certain kernel configurations. Replace with an explicit check and
+> reschedule to work for all kernel configurations. Fixes the following
+> trace:
+>
+>   [  572.945146] rcu: INFO: rcu_sched self-detected stall on CPU
+>   [  572.949275] rcu:     0-....: (2099 ticks this GP) idle=3D572/1/0x40000=
+002 softirq=3D7412/7412 fqs=3D974
+>   [  572.957964]  (t=3D2100 jiffies g=3D10393 q=3D21)
+>   [  572.962054] NMI backtrace for cpu 0
+>   [  572.965540] CPU: 0 PID: 165 Comm: xtest Not tainted 5.8.7 #1
+>   [  572.971188] Hardware name: STM32 (Device Tree Support)
+>   [  572.976354] [<c011163c>] (unwind_backtrace) from [<c010b7f8>] (show_st=
+ack+0x10/0x14)
+>   [  572.984080] [<c010b7f8>] (show_stack) from [<c0511e4c>] (dump_stack+0x=
+c4/0xd8)
+>   [  572.991300] [<c0511e4c>] (dump_stack) from [<c0519abc>] (nmi_cpu_backt=
+race+0x90/0xc4)
+>   [  572.999130] [<c0519abc>] (nmi_cpu_backtrace) from [<c0519bdc>] (nmi_tr=
+igger_cpumask_backtrace+0xec/0x130)
+>   [  573.008706] [<c0519bdc>] (nmi_trigger_cpumask_backtrace) from [<c01a51=
+84>] (rcu_dump_cpu_stacks+0xe8/0x110)
+>   [  573.018453] [<c01a5184>] (rcu_dump_cpu_stacks) from [<c01a4234>] (rcu_=
+sched_clock_irq+0x7fc/0xa88)
+>   [  573.027416] [<c01a4234>] (rcu_sched_clock_irq) from [<c01acdd0>] (upda=
+te_process_times+0x30/0x8c)
+>   [  573.036291] [<c01acdd0>] (update_process_times) from [<c01bfb90>] (tic=
+k_sched_timer+0x4c/0xa8)
+>   [  573.044905] [<c01bfb90>] (tick_sched_timer) from [<c01adcc8>] (__hrtim=
+er_run_queues+0x174/0x358)
+>   [  573.053696] [<c01adcc8>] (__hrtimer_run_queues) from [<c01aea2c>] (hrt=
+imer_interrupt+0x118/0x2bc)
+>   [  573.062573] [<c01aea2c>] (hrtimer_interrupt) from [<c09ad664>] (arch_t=
+imer_handler_virt+0x28/0x30)
+>   [  573.071536] [<c09ad664>] (arch_timer_handler_virt) from [<c0190f50>] (=
+handle_percpu_devid_irq+0x8c/0x240)
+>   [  573.081109] [<c0190f50>] (handle_percpu_devid_irq) from [<c018ab8c>] (=
+generic_handle_irq+0x34/0x44)
+>   [  573.090156] [<c018ab8c>] (generic_handle_irq) from [<c018b194>] (__han=
+dle_domain_irq+0x5c/0xb0)
+>   [  573.098857] [<c018b194>] (__handle_domain_irq) from [<c052ac50>] (gic_=
+handle_irq+0x4c/0x90)
+>   [  573.107209] [<c052ac50>] (gic_handle_irq) from [<c0100b0c>] (__irq_svc=
++0x6c/0x90)
+>   [  573.114682] Exception stack(0xd90dfcf8 to 0xd90dfd40)
+>   [  573.119732] fce0:                                                     =
+  ffff0004 00000000
+>   [  573.127917] fd00: 00000000 00000000 00000000 00000000 00000000 0000000=
+0 d93493cc ffff0000
+>   [  573.136098] fd20: d2bc39c0 be926998 d90dfd58 d90dfd48 c09f3384 c01151f=
+0 400d0013 ffffffff
+>   [  573.144281] [<c0100b0c>] (__irq_svc) from [<c01151f0>] (__arm_smccc_sm=
+c+0x10/0x20)
+>   [  573.151854] [<c01151f0>] (__arm_smccc_smc) from [<c09f3384>] (optee_sm=
+ccc_smc+0x3c/0x44)
+>   [  573.159948] [<c09f3384>] (optee_smccc_smc) from [<c09f4170>] (optee_do=
+_call_with_arg+0xb8/0x154)
+>   [  573.168735] [<c09f4170>] (optee_do_call_with_arg) from [<c09f4638>] (o=
+ptee_invoke_func+0x110/0x190)
+>   [  573.177786] [<c09f4638>] (optee_invoke_func) from [<c09f1ebc>] (tee_io=
+ctl+0x10b8/0x11c0)
+>   [  573.185879] [<c09f1ebc>] (tee_ioctl) from [<c029f62c>] (ksys_ioctl+0xe=
+0/0xa4c)
+>   [  573.193101] [<c029f62c>] (ksys_ioctl) from [<c0100060>] (ret_fast_sysc=
+all+0x0/0x54)
+>   [  573.200750] Exception stack(0xd90dffa8 to 0xd90dfff0)
+>   [  573.205803] ffa0:                   be926bf4 be926a78 00000003 8010a40=
+3 be926908 004e3cf8
+>   [  573.213987] ffc0: be926bf4 be926a78 00000000 00000036 be926908 be92691=
+8 be9269b0 bffdf0f8
+>   [  573.222162] ffe0: b6d76fb0 be9268fc b6d66621 b6c7e0d8
+>
+> seen on STM32 DK2 with CONFIG_PREEMPT_NONE.
+>
+> Signed-off-by: Rouven Czerwinski <r.czerwinski@pengutronix.de>
+> Tested-by: Sumit Garg <sumit.garg@linaro.org>
+> ---
+> v2:
+> - Add tested-by from Sumit Garg
+> - Adjust commit message as agreed upon with Lucas Stach
+>
+>  drivers/tee/optee/call.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
+I'm picking this up.
 
-On 1/21/21 4:24 PM, Jarkko Sakkinen wrote:
-> On Thu, Jan 21, 2021 at 05:07:42PM +0200, Jarkko Sakkinen wrote:
->> On Thu, Jan 21, 2021 at 09:44:07AM +0100, Jerome Forissier wrote:
->>>
->>>
->>> On 1/21/21 1:02 AM, Jarkko Sakkinen via OP-TEE wrote:
->>>> On Wed, Jan 20, 2021 at 12:53:28PM +0530, Sumit Garg wrote:
->>>>> On Wed, 20 Jan 2021 at 07:01, Jarkko Sakkinen <jarkko@kernel.org> wro=
-te:
->>>>>>
->>>>>> On Tue, Jan 19, 2021 at 12:30:42PM +0200, Jarkko Sakkinen wrote:
->>>>>>> On Fri, Jan 15, 2021 at 11:32:31AM +0530, Sumit Garg wrote:
->>>>>>>> On Thu, 14 Jan 2021 at 07:35, Jarkko Sakkinen <jarkko@kernel.org> =
-wrote:
->>>>>>>>>
->>>>>>>>> On Wed, Jan 13, 2021 at 04:47:00PM +0530, Sumit Garg wrote:
->>>>>>>>>> Hi Jarkko,
->>>>>>>>>>
->>>>>>>>>> On Mon, 11 Jan 2021 at 22:05, Jarkko Sakkinen <jarkko@kernel.org=
-> wrote:
->>>>>>>>>>>
->>>>>>>>>>> On Tue, Nov 03, 2020 at 09:31:44PM +0530, Sumit Garg wrote:
->>>>>>>>>>>> Add support for TEE based trusted keys where TEE provides the fu=
-nctionality
->>>>>>>>>>>> to seal and unseal trusted keys using hardware unique key.
->>>>>>>>>>>>
->>>>>>>>>>>> Refer to Documentation/tee.txt for detailed information about TE=
-E.
->>>>>>>>>>>>
->>>>>>>>>>>> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
->>>>>>>>>>>
->>>>>>>>>>> I haven't yet got QEMU environment working with aarch64, this pro=
-duces
->>>>>>>>>>> just a blank screen:
->>>>>>>>>>>
->>>>>>>>>>> ./output/host/usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a53=
- -smp 1 -kernel output/images/Image -initrd output/images/rootfs.cpio -serial=
- stdio
->>>>>>>>>>>
->>>>>>>>>>> My BuildRoot fork for TPM and keyring testing is located over her=
-e:
->>>>>>>>>>>
->>>>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/buildroot-=
-tpmdd.git/
->>>>>>>>>>>
->>>>>>>>>>> The "ARM version" is at this point in aarch64 branch. Over time I=
- will
->>>>>>>>>>> define tpmdd-x86_64 and tpmdd-aarch64 boards and everything will =
-be then
->>>>>>>>>>> in the master branch.
->>>>>>>>>>>
->>>>>>>>>>> To create identical images you just need to
->>>>>>>>>>>
->>>>>>>>>>> $ make tpmdd_defconfig && make
->>>>>>>>>>>
->>>>>>>>>>> Can you check if you see anything obviously wrong? I'm eager to t=
-est this
->>>>>>>>>>> patch set, and in bigger picture I really need to have ready to r=
-un
->>>>>>>>>>> aarch64 environment available.
->>>>>>>>>>
->>>>>>>>>> I would rather suggest you to follow steps listed here [1] as to t=
-est
->>>>>>>>>> this feature on Qemu aarch64 we need to build firmwares such as TF=
--A,
->>>>>>>>>> OP-TEE, UEFI etc. which are all integrated into OP-TEE Qemu build
->>>>>>>>>> system [2]. And then it would be easier to migrate them to your
->>>>>>>>>> buildroot environment as well.
->>>>>>>>>>
->>>>>>>>>> [1] https://lists.trustedfirmware.org/pipermail/op-tee/2020-May/00=
-0027.html
->>>>>>>>>> [2] https://optee.readthedocs.io/en/latest/building/devices/qemu.h=
-tml#qemu-v8
->>>>>>>>>>
->>>>>>>>>> -Sumit
->>>>>>>>>
->>>>>>>>> Can you provide 'keyctl_change'? Otherwise, the steps are easy to f=
-ollow.
->>>>>>>>>
->>>>>>>>
->>>>>>>> $ cat keyctl_change
->>>>>>>> diff --git a/common.mk b/common.mk
->>>>>>>> index aeb7b41..663e528 100644
->>>>>>>> --- a/common.mk
->>>>>>>> +++ b/common.mk
->>>>>>>> @@ -229,6 +229,7 @@ BR2_PACKAGE_OPTEE_TEST_SDK ?=3D $(OPTEE_OS_TA_DE=
-V_KIT_DIR)
->>>>>>>>  BR2_PACKAGE_OPTEE_TEST_SITE ?=3D $(OPTEE_TEST_PATH)
->>>>>>>>  BR2_PACKAGE_STRACE ?=3D y
->>>>>>>>  BR2_TARGET_GENERIC_GETTY_PORT ?=3D $(if
->>>>>>>> $(CFG_NW_CONSOLE_UART),ttyAMA$(CFG_NW_CONSOLE_UART),ttyAMA0)
->>>>>>>> +BR2_PACKAGE_KEYUTILS :=3D y
->>>>>>>>
->>>>>>>>  # All BR2_* variables from the makefile or the environment are appe=
-nded to
->>>>>>>>  # ../out-br/extra.conf. All values are quoted "..." except y and n.
->>>>>>>> diff --git a/kconfigs/qemu.conf b/kconfigs/qemu.conf
->>>>>>>> index 368c18a..832ab74 100644
->>>>>>>> --- a/kconfigs/qemu.conf
->>>>>>>> +++ b/kconfigs/qemu.conf
->>>>>>>> @@ -20,3 +20,5 @@ CONFIG_9P_FS=3Dy
->>>>>>>>  CONFIG_9P_FS_POSIX_ACL=3Dy
->>>>>>>>  CONFIG_HW_RANDOM=3Dy
->>>>>>>>  CONFIG_HW_RANDOM_VIRTIO=3Dy
->>>>>>>> +CONFIG_TRUSTED_KEYS=3Dy
->>>>>>>> +CONFIG_ENCRYPTED_KEYS=3Dy
->>>>>>>>
->>>>>>>>> After I've successfully tested 2/4, I'd suggest that you roll out o=
-ne more
->>>>>>>>> version and CC the documentation patch to Elaine and Mini, and clea=
-rly
->>>>>>>>> remark in the commit message that TEE is a standard, with a link to=
- the
->>>>>>>>> specification.
->>>>>>>>>
->>>>>>>>
->>>>>>>> Sure, I will roll out the next version after your testing.
->>>>>>>
->>>>>>> Thanks, I'll try this at instant, and give my feedback.
->>>>>>
->>>>>> I bump into this:
->>>>>>
->>>>>> $ make run-only
->>>>>> ln -sf /home/jarkko/devel/tpm/optee/build/../out-br/images/rootfs.cpio=
-.gz /home/jarkko/devel/tpm/optee/build/../out/bin/
->>>>>> ln: failed to create symbolic link '/home/jarkko/devel/tpm/optee/build=
-/../out/bin/': No such file or directory
->>>>>> make: *** [Makefile:194: run-only] Error 1
->>>>>>
->>>>>
->>>>> Could you check if the following directory tree is built after
->>>>> executing the below command?
->>>>>
->>>>> $ make -j`nproc`
->>>>> CFG_IN_TREE_EARLY_TAS=3Dtrusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce=
-8c
->>>>>
->>>>> $ tree out/bin/
->>>>> out/bin/
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl1.bin -> /home/sumit/build/optee/build/..=
-/trusted-firmware-a/build/qemu/release/bl1.bin
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl2.bin -> /home/sumit/build/optee/build/..=
-/trusted-firmware-a/build/qemu/release/bl2.bin
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl31.bin ->
->>>>> /home/sumit/build/optee/build/../trusted-firmware-a/build/qemu/release/=
-bl31.bin
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl32.bin ->
->>>>> /home/sumit/build/optee/build/../optee_os/out/arm/core/tee-header_v2.bin
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl32_extra1.bin ->
->>>>> /home/sumit/build/optee/build/../optee_os/out/arm/core/tee-pager_v2.bin
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl32_extra2.bin ->
->>>>> /home/sumit/build/optee/build/../optee_os/out/arm/core/tee-pageable_v2.=
-bin
->>>>> =E2=94=9C=E2=94=80=E2=94=80 bl33.bin ->
->>>>> /home/sumit/build/optee/build/../edk2/Build/ArmVirtQemuKernel-AARCH64/R=
-ELEASE_GCC49/FV/QEMU_EFI.fd
->>>>> =E2=94=9C=E2=94=80=E2=94=80 Image -> /home/sumit/build/optee/build/../l=
-inux/arch/arm64/boot/Image
->>>>> =E2=94=94=E2=94=80=E2=94=80 rootfs.cpio.gz ->
->>>>> /home/sumit/build/optee/build/../out-br/images/rootfs.cpio.gz
->>>>>
->>>>> 0 directories, 9 files
->>>>>
->>>>> -Sumit
->>>>
->>>> I actually spotted a build error that was unnoticed last time:
->>>>
->>>> make[2]: Entering directory '/home/jarkko/devel/tpm/optee/edk2/BaseTools=
-/Tests'
->>>> /bin/sh: 1: python: not found
->>>>
->>>> I'd prefer not to install Python2. It has been EOL over a year.
->>>
->>> AFAIK, everything should build fine with Python3. On my Ubuntu 20.04
->>> machine, this is accomplished by installing package "python-is-python3"
->>> (after uninstalling "python-is-python2" if need be).
->>>
->>> $ ls -l /usr/bin/python
->>> lrwxrwxrwx 1 root root 7 Apr 15  2020 /usr/bin/python -> python3
->>
->> Right, just found about this in unrelated context :-) [*]
->>
->> Hope this will work out...
->>
->> [*] https://github.com/surge-synthesizer/surge/pull/3655
->=20
-> Now I get
->=20
-> Traceback (most recent call last):
->   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/RunTests.py", =
-line 36, in <module>
->     allTests =3D GetAllTestsSuite()
->   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/RunTests.py", =
-line 33, in GetAllTestsSuite
->     return unittest.TestSuite([GetCTestSuite(), GetPythonTestSuite()])
->   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/RunTests.py", =
-line 25, in GetCTestSuite
->     import CToolsTests
->   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/CToolsTests.py=
-", line 22, in <module>
->     import TianoCompress
->   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/TianoCompress.=
-py", line 69, in <module>
->     TheTestSuite =3D TestTools.MakeTheTestSuite(locals())
->   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/TestTools.py",=
- line 43, in MakeTheTestSuite
->     for name, item in localItems.iteritems():
-> AttributeError: 'dict' object has no attribute 'iteritems'
+Thanks,
+Jens
 
-Right. Same here after removing all traces of Python2 from my system :-/
-
-A couple of fixes are needed:
-1. EDK2 needs to be upgraded to tag or later [1]
-2. The PYTHON3_ENABLE environment variable needs to be set to TRUE [2]
-
-[1] https://github.com/OP-TEE/manifest/pull/177
-[2] https://github.com/OP-TEE/build/pull/450
-
-HTH,
---=20
-Jerome
-
---===============1267826859076447001==--
+--===============8702623201763628246==--
 
