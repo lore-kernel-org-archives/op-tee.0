@@ -1,50 +1,55 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Arnd Bergmann <arnd@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE driver fix for v5.11
-Date: Fri, 22 Jan 2021 08:42:34 +0100
-Message-ID: <20210122074234.GA1074747@jade>
+Subject: Re: [GIT PULL] OP-TEE driver fix for v5.11
+Date: Fri, 22 Jan 2021 15:25:37 +0100
+Message-ID: 
+ <CAK8P3a12gaDHLTrayEuWp5gkDK8EyMOZDH+Zd3fgMHi7=KOaVQ@mail.gmail.com>
+In-Reply-To: <20210122074234.GA1074747@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4185536742518152576=="
+Content-Type: multipart/mixed; boundary="===============4777833309100456733=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4185536742518152576==
+--===============4777833309100456733==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello arm-soc maintainers,
+On Fri, Jan 22, 2021 at 8:42 AM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+> for you to fetch changes up to dcb3b06d9c34f33a249f65c08805461fb0c4325b:
+>
+>   tee: optee: replace might_sleep with cond_resched (2021-01-21 10:36:48 +0=
+100)
+>
+> ----------------------------------------------------------------
+> Fix rcu_sched trace from OP-TEE invoke
+>
+> Replaces might_sleep() with a conditional call to cond_resched()
+> in order to avoid the rcu_sched trace in some corner cases.
 
-Please pull this small patch taking care of a rcu_sched trace in some
-corner cases when OP-TEE is invoked.
+Hi Rouven,
 
-Thanks,
-Jens
+The bugfix looks correct in the sense that it fixes the issue, but
+it took me a while to understand what you actually try to do here
+because of the unusual way it's written as
 
-The following changes since commit e71ba9452f0b5b2e8dc8aa5445198cd9214a6a62:
+              if (need_resched())
+                          cond_resched();
 
-  Linux 5.11-rc2 (2021-01-03 15:55:30 -0800)
+which /looks/ like you are doing something fishy here. In the
+end I concluded that this was probably just a misunderstanding
+of what cond_resched() does.
 
-are available in the Git repository at:
+Can you replace it with a normal
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-rcu-sch=
-ed-trace-for-v5.11
+       cond_resched()
 
-for you to fetch changes up to dcb3b06d9c34f33a249f65c08805461fb0c4325b:
+without the second need_resched() check and make sure this
+still works? cond_resched() by definition performs the check
+to ensure that rescheduling is needed, so unless you want to
+explicitly hide the might_sleep() in it from being seen, it's
+better to call that.
 
-  tee: optee: replace might_sleep with cond_resched (2021-01-21 10:36:48 +010=
-0)
+        Arnd
 
-----------------------------------------------------------------
-Fix rcu_sched trace from OP-TEE invoke
-
-Replaces might_sleep() with a conditional call to cond_resched()
-in order to avoid the rcu_sched trace in some corner cases.
-
-----------------------------------------------------------------
-Rouven Czerwinski (1):
-      tee: optee: replace might_sleep with cond_resched
-
- drivers/tee/optee/call.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
---===============4185536742518152576==--
+--===============4777833309100456733==--
 
