@@ -1,42 +1,41 @@
-From: Arnd Bergmann <arnd@kernel.org>
+From: Bjorn Helgaas <helgaas@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: simplify i2c access
-Date: Tue, 26 Jan 2021 15:09:02 +0100
-Message-ID: 
- <CAK8P3a0nZSejOkQScYBPnDP+2H_bo2nmtOqxW1j-F4tb6dbLAA@mail.gmail.com>
-In-Reply-To: <20210126114507.GA9282@trex>
+Subject: [PATCH] tee: optee: fix 'physical' typos
+Date: Tue, 26 Jan 2021 15:15:07 -0600
+Message-ID: <20210126211507.2920362-1-helgaas@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5125388972290069601=="
+Content-Type: multipart/mixed; boundary="===============1254479488165145471=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5125388972290069601==
+--===============1254479488165145471==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jan 26, 2021 at 12:50 PM Jorge Ramirez-Ortiz, Foundries
-<jorge@foundries.io> wrote:
-> On 26/01/21, Arnd Bergmann wrote:
-> > On Tue, Jan 26, 2021 at 9:08 AM Jorge Ramirez-Ortiz, Foundries
-> >
-> > The fixes tag only describes which commit introduced the bug, it is irrel=
-evant
-> > what type of bug this is.
->
-> thanks Arnd.
->
-> what compiler warnings are defined as kernel bugs? is there a list
-> that you use when tracking these?
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-I consider any warning a bug, a normal kernel build should always be
-warning free.
+Fix misspellings of "physical".
 
-I sometimes send fixes for warnings that only happen with 'make W=3D1',
-'make C=3D1' or even 'make W=3D2'. For those, I would only categorize them
-as a real bug if they actually cause runtime misbehavior, but there are
-some -Wsomething flags that we would like to enable by default in the
-future.
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/tee/optee/optee_smc.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-      Arnd
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index 777ad54d4c2c..b52eb34b4237 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -139,7 +139,7 @@ struct optee_smc_call_get_os_revision_result {
+  *					optee_msg_arg.
+  * OPTEE_SMC_RETURN_ETHREAD_LIMIT	Number of Trusted OS threads exceeded,
+  *					try again later.
+- * OPTEE_SMC_RETURN_EBADADDR		Bad physcial pointer to struct
++ * OPTEE_SMC_RETURN_EBADADDR		Bad physical pointer to struct
+  *					optee_msg_arg.
+  * OPTEE_SMC_RETURN_EBADCMD		Bad/unknown cmd in struct optee_msg_arg
+  * OPTEE_SMC_RETURN_IS_RPC()		Call suspended by RPC call to normal
+-- 
+2.25.1
 
---===============5125388972290069601==--
+
+--===============1254479488165145471==--
 
