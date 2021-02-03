@@ -1,48 +1,53 @@
-From: Tian Tao <tiantao6@hisilicon.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] hwrng: optee -: Use device-managed registration API
-Date: Wed, 03 Feb 2021 17:24:48 +0800
-Message-ID: <1612344288-12201-1-git-send-email-tiantao6@hisilicon.com>
+Subject: Re: [PATCH] tee: optee: fix 'physical' typos
+Date: Wed, 03 Feb 2021 13:00:48 +0100
+Message-ID: 
+ <CAHUa44E+s0KVGhk--vZX-puxADGytfGquBPHqH-PRvwa5bQCRQ@mail.gmail.com>
+In-Reply-To: <20210126211507.2920362-1-helgaas@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6674806667369085512=="
+Content-Type: multipart/mixed; boundary="===============2473686319490799063=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6674806667369085512==
+--===============2473686319490799063==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Use devm_hwrng_register to get rid of manual unregistration.
+On Tue, Jan 26, 2021 at 10:15 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> From: Bjorn Helgaas <bhelgaas@google.com>
+>
+> Fix misspellings of "physical".
+>
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  drivers/tee/optee/optee_smc.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Signed-off-by: Tian Tao <tiantao6@hisilicon.com>
----
- drivers/char/hw_random/optee-rng.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+I'm picking this up.
 
-diff --git a/drivers/char/hw_random/optee-rng.c b/drivers/char/hw_random/opte=
-e-rng.c
-index a99d829..135a825 100644
---- a/drivers/char/hw_random/optee-rng.c
-+++ b/drivers/char/hw_random/optee-rng.c
-@@ -243,7 +243,7 @@ static int optee_rng_probe(struct device *dev)
- 	if (err)
- 		goto out_sess;
-=20
--	err =3D hwrng_register(&pvt_data.optee_rng);
-+	err =3D devm_hwrng_register(dev, &pvt_data.optee_rng);
- 	if (err) {
- 		dev_err(dev, "hwrng registration failed (%d)\n", err);
- 		goto out_sess;
-@@ -263,7 +263,6 @@ static int optee_rng_probe(struct device *dev)
-=20
- static int optee_rng_remove(struct device *dev)
- {
--	hwrng_unregister(&pvt_data.optee_rng);
- 	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
- 	tee_client_close_context(pvt_data.ctx);
-=20
---=20
-2.7.4
+Thanks,
+Jens
 
+>
+> diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+> index 777ad54d4c2c..b52eb34b4237 100644
+> --- a/drivers/tee/optee/optee_smc.h
+> +++ b/drivers/tee/optee/optee_smc.h
+> @@ -139,7 +139,7 @@ struct optee_smc_call_get_os_revision_result {
+>   *                                     optee_msg_arg.
+>   * OPTEE_SMC_RETURN_ETHREAD_LIMIT      Number of Trusted OS threads exceed=
+ed,
+>   *                                     try again later.
+> - * OPTEE_SMC_RETURN_EBADADDR           Bad physcial pointer to struct
+> + * OPTEE_SMC_RETURN_EBADADDR           Bad physical pointer to struct
+>   *                                     optee_msg_arg.
+>   * OPTEE_SMC_RETURN_EBADCMD            Bad/unknown cmd in struct optee_msg=
+_arg
+>   * OPTEE_SMC_RETURN_IS_RPC()           Call suspended by RPC call to normal
+> --
+> 2.25.1
+>
 
---===============6674806667369085512==--
+--===============2473686319490799063==--
 
