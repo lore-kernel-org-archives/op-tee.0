@@ -1,53 +1,66 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: fix 'physical' typos
-Date: Wed, 03 Feb 2021 13:00:48 +0100
+Subject: Re: [PATCH] tee: fix some comment typos in header files
+Date: Wed, 03 Feb 2021 13:02:53 +0100
 Message-ID: 
- <CAHUa44E+s0KVGhk--vZX-puxADGytfGquBPHqH-PRvwa5bQCRQ@mail.gmail.com>
-In-Reply-To: <20210126211507.2920362-1-helgaas@kernel.org>
+ <CAHUa44FOvPMWUNE+D4tbfNLxijhQYpkcit0LEyC=LNqZm+uU-Q@mail.gmail.com>
+In-Reply-To: <20200920045857.34b612bf@akathisia>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2473686319490799063=="
+Content-Type: multipart/mixed; boundary="===============5838827798452459719=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2473686319490799063==
+--===============5838827798452459719==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jan 26, 2021 at 10:15 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+On Sun, Sep 20, 2020 at 3:58 AM Elvira Khabirova
+<e.khabirova@omprussia.ru> wrote:
 >
-> From: Bjorn Helgaas <bhelgaas@google.com>
+> struct tee_param: revc -> recv.
+> TEE_IOC_SUPPL_SEND: typo introduced by copy-pasting, replace invalid
+> description with description from the according argument struct.
 >
-> Fix misspellings of "physical".
->
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Elvira Khabirova <e.khabirova@omprussia.ru>
 > ---
->  drivers/tee/optee/optee_smc.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  include/linux/tee_drv.h  | 2 +-
+>  include/uapi/linux/tee.h | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-I'm picking this up.
+I'll pick this up.
 
 Thanks,
 Jens
 
 >
-> diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
-> index 777ad54d4c2c..b52eb34b4237 100644
-> --- a/drivers/tee/optee/optee_smc.h
-> +++ b/drivers/tee/optee/optee_smc.h
-> @@ -139,7 +139,7 @@ struct optee_smc_call_get_os_revision_result {
->   *                                     optee_msg_arg.
->   * OPTEE_SMC_RETURN_ETHREAD_LIMIT      Number of Trusted OS threads exceed=
-ed,
->   *                                     try again later.
-> - * OPTEE_SMC_RETURN_EBADADDR           Bad physcial pointer to struct
-> + * OPTEE_SMC_RETURN_EBADADDR           Bad physical pointer to struct
->   *                                     optee_msg_arg.
->   * OPTEE_SMC_RETURN_EBADCMD            Bad/unknown cmd in struct optee_msg=
-_arg
->   * OPTEE_SMC_RETURN_IS_RPC()           Call suspended by RPC call to normal
+> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> index d074302989dd..61557bc0e29f 100644
+> --- a/include/linux/tee_drv.h
+> +++ b/include/linux/tee_drv.h
+> @@ -85,7 +85,7 @@ struct tee_param {
+>   * @close_session:     close a session
+>   * @invoke_func:       invoke a trusted function
+>   * @cancel_req:                request cancel of an ongoing invoke or open
+> - * @supp_revc:         called for supplicant to get a command
+> + * @supp_recv:         called for supplicant to get a command
+>   * @supp_send:         called for supplicant to send a response
+>   * @shm_register:      register shared memory buffer in TEE
+>   * @shm_unregister:    unregister shared memory buffer in TEE
+> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
+> index b619f37ee03e..7546be5ed4f8 100644
+> --- a/include/uapi/linux/tee.h
+> +++ b/include/uapi/linux/tee.h
+> @@ -342,7 +342,7 @@ struct tee_iocl_supp_send_arg {
+>  };
+>
+>  /**
+> - * TEE_IOC_SUPPL_SEND - Receive a request for a supplicant function
+> + * TEE_IOC_SUPPL_SEND - Send a response to a received request
+>   *
+>   * Takes a struct tee_ioctl_buf_data which contains a struct
+>   * tee_iocl_supp_send_arg followed by any array of struct tee_param
 > --
-> 2.25.1
+> 2.28.0
 >
 
---===============2473686319490799063==--
+--===============5838827798452459719==--
 
