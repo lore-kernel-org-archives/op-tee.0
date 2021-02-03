@@ -1,20 +1,20 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] TEE housekeeping for v5.12
-Date: Wed, 03 Feb 2021 13:07:42 +0100
-Message-ID: <20210203120742.GA3624453@jade>
+Subject: [GIT PULL] OP-TEE fix for v5.12
+Date: Wed, 03 Feb 2021 13:09:53 +0100
+Message-ID: <20210203120953.GB3624453@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2208113871438699299=="
+Content-Type: multipart/mixed; boundary="===============3487072591834605980=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2208113871438699299==
+--===============3487072591834605980==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hello arm-soc maintainers,
 
-Please pull these patches fixing some comment typos and also a larger
-patch syncing some internal OP-TEE driver headers with OP-TEE OS.
+Please pull this small fix removing an unnecessary call to need_resched()
+before cond_resched() while the OP-TEE driver is handing a RPC.
 
 Thanks,
 Jens
@@ -25,42 +25,26 @@ The following changes since commit e71ba9452f0b5b2e8dc8aa5445198cd9214a6a62:
 
 are available in the Git repository at:
 
-  git://git.linaro.org:/people/jens.wiklander/linux-tee.git tags/tee-housekee=
-ping-for-v5.12
+  git://git.linaro.org:/people/jens.wiklander/linux-tee.git tags/optee-fix-co=
+nd-resched-call-for-v5.12
 
-for you to fetch changes up to 617d8e8b347edcee6da38df0aeb671fc9c9ba19c:
+for you to fetch changes up to 958567600517fd15b7f35ca1a8be0104f0eb0686:
 
-  optee: sync OP-TEE headers (2021-02-02 14:50:41 +0100)
-
-----------------------------------------------------------------
-TEE subsystem housekeeping
-
-- Fixes some comment typos in header files
-- Updates to use flexible-array member instead of zero-length array
-- Syncs internal OP-TEE headers with the ones from OP-TEE OS
+  tee: optee: remove need_resched() before cond_resched() (2021-02-03 08:11:1=
+1 +0100)
 
 ----------------------------------------------------------------
-Bjorn Helgaas (1):
-      tee: optee: fix 'physical' typos
+Remove unnecessary need_resched() before cond_resched()
 
-Elvira Khabirova (1):
-      tee: fix some comment typos in header files
-
+----------------------------------------------------------------
 Jens Wiklander (1):
-      optee: sync OP-TEE headers
+      tee: optee: remove need_resched() before cond_resched()
 
-Tian Tao (1):
-      drivers: optee: use flexible-array member instead of zero-length array
+Rouven Czerwinski (1):
+      tee: optee: replace might_sleep with cond_resched
 
- drivers/tee/optee/optee_msg.h     | 158 +++---------------------------------=
---
- drivers/tee/optee/optee_rpc_cmd.h | 103 +++++++++++++++++++++++++
- drivers/tee/optee/optee_smc.h     |  72 +++++++++++------
- drivers/tee/optee/rpc.c           |  39 +++++-----
- include/linux/tee_drv.h           |   2 +-
- include/uapi/linux/tee.h          |   2 +-
- 6 files changed, 183 insertions(+), 193 deletions(-)
- create mode 100644 drivers/tee/optee/optee_rpc_cmd.h
+ drivers/tee/optee/call.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---===============2208113871438699299==--
+--===============3487072591834605980==--
 
