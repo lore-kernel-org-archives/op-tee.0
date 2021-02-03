@@ -1,51 +1,35 @@
-From: Tian Tao <tiantao6@hisilicon.com>
+From: Arnd Bergmann <arnd@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2] hwrng: optee: Use device-managed registration API
-Date: Wed, 03 Feb 2021 20:26:06 +0800
-Message-ID: <1612355166-11824-1-git-send-email-tiantao6@hisilicon.com>
+Subject: Re: [GIT PULL] OP-TEE fix for v5.12
+Date: Wed, 03 Feb 2021 13:30:56 +0100
+Message-ID: <161235543740.2002596.8962861009539553209.b4-ty@arndb.de>
+In-Reply-To: <20210203120953.GB3624453@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8375734085051452394=="
+Content-Type: multipart/mixed; boundary="===============4447427853089125243=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8375734085051452394==
+--===============4447427853089125243==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Use devm_hwrng_register to get rid of manual unregistration.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Signed-off-by: Tian Tao <tiantao6@hisilicon.com>
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
----
-v2:Fix up subject line as s/hwrng: optee -:/hwrng: optee:/
----
- drivers/char/hw_random/optee-rng.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+On Wed, 3 Feb 2021 13:09:53 +0100, Jens Wiklander wrote:
+> Please pull this small fix removing an unnecessary call to need_resched()
+> before cond_resched() while the OP-TEE driver is handing a RPC.
+> 
+> Thanks,
+> Jens
+> 
+> The following changes since commit e71ba9452f0b5b2e8dc8aa5445198cd9214a6a62:
+> 
+> [...]
 
-diff --git a/drivers/char/hw_random/optee-rng.c b/drivers/char/hw_random/opte=
-e-rng.c
-index a99d829..135a825 100644
---- a/drivers/char/hw_random/optee-rng.c
-+++ b/drivers/char/hw_random/optee-rng.c
-@@ -243,7 +243,7 @@ static int optee_rng_probe(struct device *dev)
- 	if (err)
- 		goto out_sess;
-=20
--	err =3D hwrng_register(&pvt_data.optee_rng);
-+	err =3D devm_hwrng_register(dev, &pvt_data.optee_rng);
- 	if (err) {
- 		dev_err(dev, "hwrng registration failed (%d)\n", err);
- 		goto out_sess;
-@@ -263,7 +263,6 @@ static int optee_rng_probe(struct device *dev)
-=20
- static int optee_rng_remove(struct device *dev)
- {
--	hwrng_unregister(&pvt_data.optee_rng);
- 	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
- 	tee_client_close_context(pvt_data.ctx);
-=20
---=20
-2.7.4
+Merged into arm/drivers, thanks!
 
+merge commit: d94bd41a0022ca3e14479ed7b71cc5f79f159750
 
---===============8375734085051452394==--
+       Arnd
+
+--===============4447427853089125243==--
 
