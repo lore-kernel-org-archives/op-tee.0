@@ -1,40 +1,56 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
-Date: Thu, 04 Feb 2021 02:05:46 +0200
-Message-ID: <YBs6WsGifYudzzPB@kernel.org>
+Subject: Re: [PATCH] optee: simplify i2c access
+Date: Mon, 08 Feb 2021 08:00:55 +0100
+Message-ID: 
+ <CAHUa44Fa4oCjpGQj-52nei1M+KkyxPYBsX5TDmgA3ekRPqg8GQ@mail.gmail.com>
 In-Reply-To: <
- <CAFA6WYPQ+LZyHKZJQb=3euTy8f8TO3HqCADojpZaHXgtzNj+fw@mail.gmail.com>>
+ <CAHUa44GwSRB=7tFpXi2ZW-SXGipp7ErDkB2_4iGQfyH_ECAU8A@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7927733715190481980=="
+Content-Type: multipart/mixed; boundary="===============3796810142386027829=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7927733715190481980==
+--===============3796810142386027829==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 25, 2021 at 02:47:38PM +0530, Sumit Garg wrote:
-> The main reason to guide you towards the OP-TEE build system is that
-> you will be able to build all the firmwares (TF-A, OP-TEE, edk2 etc.)
-> from source. If you don't need to rebuild those then I have prepared a
-> flash firmware binary blob for your testing (attached flash.bin). So
-> Qemu cmdline will look like:
->=20
-> $ qemu-system-aarch64 -nographic -s -machine virt,secure=3Don -cpu
-> cortex-a57 -kernel out/bin/Image -no-acpi -append
-> 'console=3DttyAMA0,38400 keep_bootcon root=3D/dev/vda2' -initrd
-> out/bin/rootfs.cpio.gz -smp 2 -m 1024 -bios flash.bin -d unimp
->=20
-> Here you can use "Image" and "rootfs.cpio.gz" from your plain BR builds.
->=20
-> Give it a try and let me know if this works for you.
+Hi Jorge,
 
-Sumit, I can try this again now :-) Thanks Yann for fixing the issue!
+On Wed, Jan 27, 2021 at 11:41 AM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> Hi Arnd,
+>
+> On Mon, Jan 25, 2021 at 12:38 PM Arnd Bergmann <arnd@kernel.org> wrote:
+> >
+> > From: Arnd Bergmann <arnd@arndb.de>
+> >
+> > Storing a bogus i2c_client structure on the stack adds overhead and
+> > causes a compile-time warning:
+> >
+> > drivers/tee/optee/rpc.c:493:6: error: stack frame size of 1056 bytes in f=
+unction 'optee_handle_rpc' [-Werror,-Wframe-larger-than=3D]
+> > void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param *pa=
+ram,
+> >
+> > Change the implementation of handle_rpc_func_cmd_i2c_transfer() to
+> > open-code the i2c_transfer() call, which makes it easier to read
+> > and avoids the warning.
+> >
+> > Fixes: c05210ab9757 ("drivers: optee: allow op-tee to access devices on t=
+he i2c bus")
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> >  drivers/tee/optee/rpc.c | 31 ++++++++++++++++---------------
+> >  1 file changed, 16 insertions(+), 15 deletions(-)
+>
+> Looks good to me.
+> Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 
-https://git.busybox.net/buildroot/commit/?id=3Db9e7adc152b5811b20724d8c05f0f2=
-117254919c
+Would you mind testing this?
 
-/Jarkko
+Thanks,
+Jens
 
---===============7927733715190481980==--
+--===============3796810142386027829==--
 
