@@ -1,514 +1,1075 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
-Date: Mon, 15 Feb 2021 18:37:00 +0530
+Subject: Re: [PATCH v8 1/4] KEYS: trusted: Add generic trusted keys framework
+Date: Mon, 15 Feb 2021 18:43:39 +0530
 Message-ID: 
- <CAFA6WYNiM3cPqPDhzQ5vaadvhqsxm51820RjorZkFB+-ntoRqA@mail.gmail.com>
-In-Reply-To: <YCW/BKmeswM5AThU@kernel.org>
+ <CAFA6WYMt2nyNwAWijb__7DPDpqY8xHH5PFHog87B=N+L_uDnKQ@mail.gmail.com>
+In-Reply-To: <20201124034241.GA40379@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3016865254759537037=="
+Content-Type: multipart/mixed; boundary="===============7894528750984446994=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3016865254759537037==
+--===============7894528750984446994==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 12 Feb 2021 at 05:04, Jarkko Sakkinen <jarkko@kernel.org> wrote:
+On Tue, 24 Nov 2020 at 09:12, Jarkko Sakkinen <jarkko@kernel.org> wrote:
 >
-> On Mon, Jan 25, 2021 at 02:47:38PM +0530, Sumit Garg wrote:
-> > Hi Jarkko,
+> On Tue, Nov 03, 2020 at 09:31:43PM +0530, Sumit Garg wrote:
+> > Current trusted keys framework is tightly coupled to use TPM device as
+> > an underlying implementation which makes it difficult for implementations
+> > like Trusted Execution Environment (TEE) etc. to provide trusted keys
+> > support in case platform doesn't posses a TPM device.
 > >
-> > On Fri, 22 Jan 2021 at 23:42, Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> > >
-> > > On Thu, Jan 21, 2021 at 05:23:45PM +0100, Jerome Forissier wrote:
-> > > >
-> > > >
-> > > > On 1/21/21 4:24 PM, Jarkko Sakkinen wrote:
-> > > > > On Thu, Jan 21, 2021 at 05:07:42PM +0200, Jarkko Sakkinen wrote:
-> > > > >> On Thu, Jan 21, 2021 at 09:44:07AM +0100, Jerome Forissier wrote:
-> > > > >>>
-> > > > >>>
-> > > > >>> On 1/21/21 1:02 AM, Jarkko Sakkinen via OP-TEE wrote:
-> > > > >>>> On Wed, Jan 20, 2021 at 12:53:28PM +0530, Sumit Garg wrote:
-> > > > >>>>> On Wed, 20 Jan 2021 at 07:01, Jarkko Sakkinen <jarkko@kernel.=
-org> wrote:
-> > > > >>>>>>
-> > > > >>>>>> On Tue, Jan 19, 2021 at 12:30:42PM +0200, Jarkko Sakkinen wrot=
-e:
-> > > > >>>>>>> On Fri, Jan 15, 2021 at 11:32:31AM +0530, Sumit Garg wrote:
-> > > > >>>>>>>> On Thu, 14 Jan 2021 at 07:35, Jarkko Sakkinen <jarkko@kern=
-el.org> wrote:
-> > > > >>>>>>>>>
-> > > > >>>>>>>>> On Wed, Jan 13, 2021 at 04:47:00PM +0530, Sumit Garg wrote:
-> > > > >>>>>>>>>> Hi Jarkko,
-> > > > >>>>>>>>>>
-> > > > >>>>>>>>>> On Mon, 11 Jan 2021 at 22:05, Jarkko Sakkinen <jarkko@ke=
-rnel.org> wrote:
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> On Tue, Nov 03, 2020 at 09:31:44PM +0530, Sumit Garg wrot=
-e:
-> > > > >>>>>>>>>>>> Add support for TEE based trusted keys where TEE provide=
-s the functionality
-> > > > >>>>>>>>>>>> to seal and unseal trusted keys using hardware unique ke=
-y.
-> > > > >>>>>>>>>>>>
-> > > > >>>>>>>>>>>> Refer to Documentation/tee.txt for detailed information =
-about TEE.
-> > > > >>>>>>>>>>>>
-> > > > >>>>>>>>>>>> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> I haven't yet got QEMU environment working with aarch64, =
-this produces
-> > > > >>>>>>>>>>> just a blank screen:
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> ./output/host/usr/bin/qemu-system-aarch64 -M virt -cpu co=
-rtex-a53 -smp 1 -kernel output/images/Image -initrd output/images/rootfs.cpio=
- -serial stdio
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> My BuildRoot fork for TPM and keyring testing is located =
-over here:
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/bu=
-ildroot-tpmdd.git/
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> The "ARM version" is at this point in aarch64 branch. Ove=
-r time I will
-> > > > >>>>>>>>>>> define tpmdd-x86_64 and tpmdd-aarch64 boards and everythi=
-ng will be then
-> > > > >>>>>>>>>>> in the master branch.
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> To create identical images you just need to
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> $ make tpmdd_defconfig && make
-> > > > >>>>>>>>>>>
-> > > > >>>>>>>>>>> Can you check if you see anything obviously wrong? I'm ea=
-ger to test this
-> > > > >>>>>>>>>>> patch set, and in bigger picture I really need to have re=
-ady to run
-> > > > >>>>>>>>>>> aarch64 environment available.
-> > > > >>>>>>>>>>
-> > > > >>>>>>>>>> I would rather suggest you to follow steps listed here [1]=
- as to test
-> > > > >>>>>>>>>> this feature on Qemu aarch64 we need to build firmwares su=
-ch as TF-A,
-> > > > >>>>>>>>>> OP-TEE, UEFI etc. which are all integrated into OP-TEE Qem=
-u build
-> > > > >>>>>>>>>> system [2]. And then it would be easier to migrate them to=
- your
-> > > > >>>>>>>>>> buildroot environment as well.
-> > > > >>>>>>>>>>
-> > > > >>>>>>>>>> [1] https://lists.trustedfirmware.org/pipermail/op-tee/202=
-0-May/000027.html
-> > > > >>>>>>>>>> [2] https://optee.readthedocs.io/en/latest/building/device=
-s/qemu.html#qemu-v8
-> > > > >>>>>>>>>>
-> > > > >>>>>>>>>> -Sumit
-> > > > >>>>>>>>>
-> > > > >>>>>>>>> Can you provide 'keyctl_change'? Otherwise, the steps are e=
-asy to follow.
-> > > > >>>>>>>>>
-> > > > >>>>>>>>
-> > > > >>>>>>>> $ cat keyctl_change
-> > > > >>>>>>>> diff --git a/common.mk b/common.mk
-> > > > >>>>>>>> index aeb7b41..663e528 100644
-> > > > >>>>>>>> --- a/common.mk
-> > > > >>>>>>>> +++ b/common.mk
-> > > > >>>>>>>> @@ -229,6 +229,7 @@ BR2_PACKAGE_OPTEE_TEST_SDK ?=3D $(OPTEE_=
-OS_TA_DEV_KIT_DIR)
-> > > > >>>>>>>>  BR2_PACKAGE_OPTEE_TEST_SITE ?=3D $(OPTEE_TEST_PATH)
-> > > > >>>>>>>>  BR2_PACKAGE_STRACE ?=3D y
-> > > > >>>>>>>>  BR2_TARGET_GENERIC_GETTY_PORT ?=3D $(if
-> > > > >>>>>>>> $(CFG_NW_CONSOLE_UART),ttyAMA$(CFG_NW_CONSOLE_UART),ttyAMA0)
-> > > > >>>>>>>> +BR2_PACKAGE_KEYUTILS :=3D y
-> > > > >>>>>>>>
-> > > > >>>>>>>>  # All BR2_* variables from the makefile or the environment =
-are appended to
-> > > > >>>>>>>>  # ../out-br/extra.conf. All values are quoted "..." except =
-y and n.
-> > > > >>>>>>>> diff --git a/kconfigs/qemu.conf b/kconfigs/qemu.conf
-> > > > >>>>>>>> index 368c18a..832ab74 100644
-> > > > >>>>>>>> --- a/kconfigs/qemu.conf
-> > > > >>>>>>>> +++ b/kconfigs/qemu.conf
-> > > > >>>>>>>> @@ -20,3 +20,5 @@ CONFIG_9P_FS=3Dy
-> > > > >>>>>>>>  CONFIG_9P_FS_POSIX_ACL=3Dy
-> > > > >>>>>>>>  CONFIG_HW_RANDOM=3Dy
-> > > > >>>>>>>>  CONFIG_HW_RANDOM_VIRTIO=3Dy
-> > > > >>>>>>>> +CONFIG_TRUSTED_KEYS=3Dy
-> > > > >>>>>>>> +CONFIG_ENCRYPTED_KEYS=3Dy
-> > > > >>>>>>>>
-> > > > >>>>>>>>> After I've successfully tested 2/4, I'd suggest that you ro=
-ll out one more
-> > > > >>>>>>>>> version and CC the documentation patch to Elaine and Mini, =
-and clearly
-> > > > >>>>>>>>> remark in the commit message that TEE is a standard, with a=
- link to the
-> > > > >>>>>>>>> specification.
-> > > > >>>>>>>>>
-> > > > >>>>>>>>
-> > > > >>>>>>>> Sure, I will roll out the next version after your testing.
-> > > > >>>>>>>
-> > > > >>>>>>> Thanks, I'll try this at instant, and give my feedback.
-> > > > >>>>>>
-> > > > >>>>>> I bump into this:
-> > > > >>>>>>
-> > > > >>>>>> $ make run-only
-> > > > >>>>>> ln -sf /home/jarkko/devel/tpm/optee/build/../out-br/images/roo=
-tfs.cpio.gz /home/jarkko/devel/tpm/optee/build/../out/bin/
-> > > > >>>>>> ln: failed to create symbolic link '/home/jarkko/devel/tpm/opt=
-ee/build/../out/bin/': No such file or directory
-> > > > >>>>>> make: *** [Makefile:194: run-only] Error 1
-> > > > >>>>>>
-> > > > >>>>>
-> > > > >>>>> Could you check if the following directory tree is built after
-> > > > >>>>> executing the below command?
-> > > > >>>>>
-> > > > >>>>> $ make -j`nproc`
-> > > > >>>>> CFG_IN_TREE_EARLY_TAS=3Dtrusted_keys/f04a0fe7-1f5d-4b9b-abf7-61=
-9b85b4ce8c
-> > > > >>>>>
-> > > > >>>>> $ tree out/bin/
-> > > > >>>>> out/bin/
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl1.bin -> /home/sumit/build/optee/=
-build/../trusted-firmware-a/build/qemu/release/bl1.bin
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl2.bin -> /home/sumit/build/optee/=
-build/../trusted-firmware-a/build/qemu/release/bl2.bin
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl31.bin ->
-> > > > >>>>> /home/sumit/build/optee/build/../trusted-firmware-a/build/qemu/=
-release/bl31.bin
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl32.bin ->
-> > > > >>>>> /home/sumit/build/optee/build/../optee_os/out/arm/core/tee-head=
-er_v2.bin
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl32_extra1.bin ->
-> > > > >>>>> /home/sumit/build/optee/build/../optee_os/out/arm/core/tee-page=
-r_v2.bin
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl32_extra2.bin ->
-> > > > >>>>> /home/sumit/build/optee/build/../optee_os/out/arm/core/tee-page=
-able_v2.bin
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 bl33.bin ->
-> > > > >>>>> /home/sumit/build/optee/build/../edk2/Build/ArmVirtQemuKernel-A=
-ARCH64/RELEASE_GCC49/FV/QEMU_EFI.fd
-> > > > >>>>> =E2=94=9C=E2=94=80=E2=94=80 Image -> /home/sumit/build/optee/bu=
-ild/../linux/arch/arm64/boot/Image
-> > > > >>>>> =E2=94=94=E2=94=80=E2=94=80 rootfs.cpio.gz ->
-> > > > >>>>> /home/sumit/build/optee/build/../out-br/images/rootfs.cpio.gz
-> > > > >>>>>
-> > > > >>>>> 0 directories, 9 files
-> > > > >>>>>
-> > > > >>>>> -Sumit
-> > > > >>>>
-> > > > >>>> I actually spotted a build error that was unnoticed last time:
-> > > > >>>>
-> > > > >>>> make[2]: Entering directory '/home/jarkko/devel/tpm/optee/edk2/B=
-aseTools/Tests'
-> > > > >>>> /bin/sh: 1: python: not found
-> > > > >>>>
-> > > > >>>> I'd prefer not to install Python2. It has been EOL over a year.
-> > > > >>>
-> > > > >>> AFAIK, everything should build fine with Python3. On my Ubuntu 20=
-.04
-> > > > >>> machine, this is accomplished by installing package "python-is-py=
-thon3"
-> > > > >>> (after uninstalling "python-is-python2" if need be).
-> > > > >>>
-> > > > >>> $ ls -l /usr/bin/python
-> > > > >>> lrwxrwxrwx 1 root root 7 Apr 15  2020 /usr/bin/python -> python3
-> > > > >>
-> > > > >> Right, just found about this in unrelated context :-) [*]
-> > > > >>
-> > > > >> Hope this will work out...
-> > > > >>
-> > > > >> [*] https://github.com/surge-synthesizer/surge/pull/3655
-> > > > >
-> > > > > Now I get
-> > > > >
-> > > > > Traceback (most recent call last):
-> > > > >   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/RunTes=
-ts.py", line 36, in <module>
-> > > > >     allTests =3D GetAllTestsSuite()
-> > > > >   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/RunTes=
-ts.py", line 33, in GetAllTestsSuite
-> > > > >     return unittest.TestSuite([GetCTestSuite(), GetPythonTestSuite(=
-)])
-> > > > >   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/RunTes=
-ts.py", line 25, in GetCTestSuite
-> > > > >     import CToolsTests
-> > > > >   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/CTools=
-Tests.py", line 22, in <module>
-> > > > >     import TianoCompress
-> > > > >   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/TianoC=
-ompress.py", line 69, in <module>
-> > > > >     TheTestSuite =3D TestTools.MakeTheTestSuite(locals())
-> > > > >   File "/home/jarkko/Projects/tpm/optee/edk2/BaseTools/Tests/TestTo=
-ols.py", line 43, in MakeTheTestSuite
-> > > > >     for name, item in localItems.iteritems():
-> > > > > AttributeError: 'dict' object has no attribute 'iteritems'
-> > > >
-> > > > Right. Same here after removing all traces of Python2 from my system =
-:-/
-> > > >
-> > > > A couple of fixes are needed:
-> > > > 1. EDK2 needs to be upgraded to tag or later [1]
-> > > > 2. The PYTHON3_ENABLE environment variable needs to be set to TRUE [2]
-> > > >
-> > > > [1] https://github.com/OP-TEE/manifest/pull/177
-> > > > [2] https://github.com/OP-TEE/build/pull/450
-> > >
-> > > BTW, Is to *really* impossible to test this with plain BuildRoot.  It's
-> > > obvious that this forks BR internally.
-> > >
-> > > I mean even if I get this working once, this will feels like a clumsy w=
-ay
-> > > to test Aarch64 regularly. I use BuildRoot extensively for x86 testing.=
- And
-> > > it would be nice to be able to start doing regular ARM testing.
+> > Add a generic trusted keys framework where underlying implementations
+> > can be easily plugged in. Create struct trusted_key_ops to achieve this,
+> > which contains necessary functions of a backend.
 > >
-> > The main reason to guide you towards the OP-TEE build system is that
-> > you will be able to build all the firmwares (TF-A, OP-TEE, edk2 etc.)
-> > from source. If you don't need to rebuild those then I have prepared a
-> > flash firmware binary blob for your testing (attached flash.bin). So
-> > Qemu cmdline will look like:
+> > Also, define a module parameter in order to select a particular trust
+> > source in case a platform support multiple trust sources. In case its
+> > not specified then implementation itetrates through trust sources list
+> > starting with TPM and assign the first trust source as a backend which
+> > has initiazed successfully during iteration.
 > >
-> > $ qemu-system-aarch64 -nographic -s -machine virt,secure=3Don -cpu
-> > cortex-a57 -kernel out/bin/Image -no-acpi -append
-> > 'console=3DttyAMA0,38400 keep_bootcon root=3D/dev/vda2' -initrd
-> > out/bin/rootfs.cpio.gz -smp 2 -m 1024 -bios flash.bin -d unimp
+> > Note that current implementation only supports a single trust source at
+> > runtime which is either selectable at compile time or during boot via
+> > aforementioned module parameter.
+> >
+> > Suggested-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> > ---
+> >  Documentation/admin-guide/kernel-parameters.txt |  12 +
+> >  include/keys/trusted-type.h                     |  47 ++++
 >
-> I spentt couple of days to try to get this running.
 >
-> Here's the log:
 >
-> =E2=9D=AF ./qemu.sh
-> NOTICE:  Booting Trusted Firmware
-> NOTICE:  BL1: v2.3():v2.3
-> NOTICE:  BL1: Built : 13:28:04, Jan 25 2021
-> NOTICE:  BL1: Booting BL2
-> NOTICE:  BL2: v2.3():v2.3
-> NOTICE:  BL2: Built : 13:28:06, Jan 25 2021
-> NOTICE:  BL1: Booting BL31
-> NOTICE:  BL31: v2.3():v2.3
-> NOTICE:  BL31: Built : 13:28:08, Jan 25 2021
-> UEFI firmware (version  built at 18:49:27 on Nov 18 2019)
-> pflash_write: Write to buffer emulation is flawed
-> pflash_write: Write to buffer emulation is flawed
-> EFI stub: Booting Linux Kernel...
-> EFI stub: Using DTB from configuration table
-> EFI stub: Exiting boot services and installing virtual address map...
-> Booting Linux on physical CPU 0x0000000000 [0x411fd070]
-> Linux version 5.11.0-rc5 (jarkko(a)suppilovahvero) (aarch64-buildroot-linux=
--uclibc-gcc.br_real (Buildroot 2021.02-rc1-10-ga72c90b972) 9.3.0, GNU ld (GNU=
- Binutils) 2.35.2) #1 SMP Thu Feb 11 22:04:53 EET 2021
-> Machine model: linux,dummy-virt
-> efi: EFI v2.70 by EDK II
-> efi: SMBIOS=3D0x7f520000 SMBIOS 3.0=3D0x7f500000 MEMATTR=3D0x7e59b018 MEMRE=
-SERVE=3D0x7c143f18
-> Zone ranges:
->   DMA      [mem 0x0000000040000000-0x000000007fffffff]
->   DMA32    empty
->   Normal   empty
-> Movable zone start for each node
-> Early memory node ranges
->   node   0: [mem 0x0000000040000000-0x0000000041ffffff]
->   node   0: [mem 0x0000000042200000-0x000000007be3ffff]
->   node   0: [mem 0x000000007be40000-0x000000007c13ffff]
->   node   0: [mem 0x000000007c140000-0x000000007f41ffff]
->   node   0: [mem 0x000000007f420000-0x000000007f4affff]
->   node   0: [mem 0x000000007f4b0000-0x000000007f4cffff]
->   node   0: [mem 0x000000007f4d0000-0x000000007f5dffff]
->   node   0: [mem 0x000000007f5e0000-0x000000007fffffff]
-> Zeroed struct page in unavailable ranges: 864 pages
-> Initmem setup node 0 [mem 0x0000000040000000-0x000000007fffffff]
-> psci: probing for conduit method from DT.
-> psci: PSCIv1.1 detected in firmware.
-> psci: Using standard PSCI v0.2 function IDs
-> psci: Trusted OS migration not required
-> psci: SMC Calling Convention v1.2
-> percpu: Embedded 21 pages/cpu s48024 r8192 d29800 u86016
-> Detected PIPT I-cache on CPU0
-> CPU features: detected: ARM erratum 832075
-> CPU features: detected: Spectre-v2
-> CPU features: detected: ARM errata 1165522, 1319367, or 1530923
-> Built 1 zonelists, mobility grouping on.  Total pages: 257536
-> Kernel command line: root=3D/dev/vda rw console=3DttyAMA0,115200
-> Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
-> Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
-> mem auto-init: stack:off, heap alloc:off, heap free:off
-> Memory: 1011284K/1046528K available (6592K kernel code, 804K rwdata, 1460K =
-rodata, 1088K init, 321K bss, 35244K reserved, 0K cma-reserved)
-> SLUB: HWalign=3D64, Order=3D0-3, MinObjects=3D0, CPUs=3D1, Nodes=3D1
-> rcu: Hierarchical RCU implementation.
-> rcu:    RCU restricting CPUs from NR_CPUS=3D256 to nr_cpu_ids=3D1.
-> rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
-> rcu: Adjusting geometry for rcu_fanout_leaf=3D16, nr_cpu_ids=3D1
-> NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
-> GICv2m: range[mem 0x08020000-0x08020fff], SPI[80:143]
-> random: get_random_bytes called from start_kernel+0x340/0x53c with crng_ini=
-t=3D0
-> arch_timer: cp15 timer(s) running at 62.50MHz (virt).
-> clocksource: arch_sys_counter: mask: 0xffffffffffffff max_cycles: 0x1cd42e2=
-08c, max_idle_ns: 881590405314 ns
-> sched_clock: 56 bits at 62MHz, resolution 16ns, wraps every 4398046511096ns
-> Console: colour dummy device 80x25
-> Calibrating delay loop (skipped), value calculated using timer frequency.. =
-125.00 BogoMIPS (lpj=3D250000)
-> pid_max: default: 32768 minimum: 301
-> Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
-> Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
-> rcu: Hierarchical SRCU implementation.
-> Remapping and enabling EFI services.
-> smp: Bringing up secondary CPUs ...
-> smp: Brought up 1 node, 1 CPU
-> SMP: Total of 1 processors activated.
-> CPU features: detected: 32-bit EL0 Support
-> CPU features: detected: CRC32 instructions
-> CPU: All CPU(s) started at EL1
-> alternatives: patching kernel code
-> devtmpfs: initialized
-> clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns:=
- 7645041785100000 ns
-> futex hash table entries: 256 (order: 2, 16384 bytes, linear)
-> SMBIOS 3.0.0 present.
-> DMI: QEMU QEMU Virtual Machine, BIOS 0.0.0 02/06/2015
-> NET: Registered protocol family 16
-> DMA: preallocated 128 KiB GFP_KERNEL pool for atomic allocations
-> DMA: preallocated 128 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
-> DMA: preallocated 128 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
-> hw-breakpoint: found 6 breakpoint and 4 watchpoint registers.
-> ASID allocator initialised with 65536 entries
-> Serial: AMBA PL011 UART driver
-> 9000000.pl011: ttyAMA0 at MMIO 0x9000000 (irq =3D 46, base_baud =3D 0) is a=
- PL011 rev1
-> printk: console [ttyAMA0] enabled
-> iommu: Default domain type: Translated
-> vgaarb: loaded
-> SCSI subsystem initialized
-> Registered efivars operations
-> clocksource: Switched to clocksource arch_sys_counter
-> NET: Registered protocol family 2
-> tcp_listen_portaddr_hash hash table entries: 512 (order: 1, 8192 bytes, lin=
-ear)
-> TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
-> TCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)
-> TCP: Hash tables configured (established 8192 bind 8192)
-> UDP hash table entries: 512 (order: 2, 16384 bytes, linear)
-> UDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)
-> NET: Registered protocol family 1
-> PCI: CLS 0 bytes, default 64
-> hw perfevents: enabled with armv8_pmuv3 PMU driver, 5 counters available
-> workingset: timestamp_bits=3D62 max_order=3D18 bucket_order=3D0
-> fuse: init (API version 7.33)
-> Block layer SCSI generic (bsg) driver version 0.4 loaded (major 251)
-> io scheduler mq-deadline registered
-> io scheduler kyber registered
-> pci-host-generic 4010000000.pcie: host bridge /pcie(a)10000000 ranges:
-> pci-host-generic 4010000000.pcie:       IO 0x003eff0000..0x003effffff -> 0x=
-0000000000
-> pci-host-generic 4010000000.pcie:      MEM 0x0010000000..0x003efeffff -> 0x=
-0010000000
-> pci-host-generic 4010000000.pcie:      MEM 0x8000000000..0xffffffffff -> 0x=
-8000000000
-> pci-host-generic 4010000000.pcie: Memory resource size exceeds max for 32 b=
-its
-> pci-host-generic 4010000000.pcie: ECAM at [mem 0x4010000000-0x401fffffff] f=
-or [bus 00-ff]
-> pci-host-generic 4010000000.pcie: PCI host bridge to bus 0000:00
-> pci_bus 0000:00: root bus resource [bus 00-ff]
-> pci_bus 0000:00: root bus resource [io  0x0000-0xffff]
-> pci_bus 0000:00: root bus resource [mem 0x10000000-0x3efeffff]
-> pci_bus 0000:00: root bus resource [mem 0x8000000000-0xffffffffff]
-> pci 0000:00:00.0: [1b36:0008] type 00 class 0x060000
-> pci 0000:00:01.0: [1af4:1000] type 00 class 0x020000
-> pci 0000:00:01.0: reg 0x10: [io  0x0080-0x009f]
-> pci 0000:00:01.0: reg 0x14: [mem 0x10001000-0x10001fff]
-> pci 0000:00:01.0: reg 0x20: [mem 0x8000000000-0x8000003fff 64bit pref]
-> pci 0000:00:01.0: reg 0x30: [mem 0xfffc0000-0xffffffff pref]
-> pci 0000:00:02.0: [1af4:1001] type 00 class 0x010000
-> pci 0000:00:02.0: reg 0x10: [io  0x0000-0x007f]
-> pci 0000:00:02.0: reg 0x14: [mem 0x10000000-0x10000fff]
-> pci 0000:00:02.0: reg 0x20: [mem 0x8000004000-0x8000007fff 64bit pref]
-> pci 0000:00:01.0: BAR 6: assigned [mem 0x10000000-0x1003ffff pref]
-> pci 0000:00:01.0: BAR 4: assigned [mem 0x8000000000-0x8000003fff 64bit pref]
-> pci 0000:00:02.0: BAR 4: assigned [mem 0x8000004000-0x8000007fff 64bit pref]
-> pci 0000:00:01.0: BAR 1: assigned [mem 0x10040000-0x10040fff]
-> pci 0000:00:02.0: BAR 1: assigned [mem 0x10041000-0x10041fff]
-> pci 0000:00:02.0: BAR 0: assigned [io  0x1000-0x107f]
-> pci 0000:00:01.0: BAR 0: assigned [io  0x1080-0x109f]
-> virtio-pci 0000:00:01.0: enabling device (0000 -> 0003)
-> virtio-pci 0000:00:02.0: enabling device (0000 -> 0003)
-> cacheinfo: Unable to detect cache hierarchy for CPU 0
-> virtio_blk virtio1: [vda] 122880 512-byte logical blocks (62.9 MB/60.0 MiB)
-> SMCCC: SOC_ID: ARCH_FEATURES(ARCH_SOC_ID) returned error: fffffffffffffffd
-> NET: Registered protocol family 10
-> Segment Routing with IPv6
-> sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
-> NET: Registered protocol family 17
-> NET: Registered protocol family 15
-> NET: Registered protocol family 40
-> registered taskstats version 1
-> EXT4-fs (vda): recovery complete
-> EXT4-fs (vda): mounted filesystem with ordered data mode. Opts: (null). Quo=
-ta mode: disabled.
-> VFS: Mounted root (ext4 filesystem) on device 254:0.
-> devtmpfs: mounted
-> Freeing unused kernel memory: 1088K
-> Run /sbin/init as init process
-> mount: you must be root
-> mount: you must be root
-> mkdir: can't create directory '/dev/pts': Permission denied
-> mkdir: can't create directory '/dev/shm': Permission denied
-> mount: you must be root
-> hostname: sethostname: Operation not permitted
-> Starting syslogd: OK
-> Starting klogd: OK
-> Running sysctl: OK
-> Initializing random number generator: OK
-> Saving random seed: random: dd: uninitialized urandom read (512 bytes read)
-> OK
-> Starting network: ip: RTNETLINK answers: Operation not permitted
-> ip: SIOCSIFFLAGS: Operation not permitted
-> sed: /proc/mounts: No such file or directory
-> Waiting for interface eth0 to appear............... timeout!
-> run-parts: /etc/network/if-pre-up.d/wait_iface: exit status 1
-> FAIL
-> can't open /dev/ttyAMA0: Permission denied
-> can't open /dev/ttyAMA0: Permission denied
-> can't open /dev/ttyAMA0: Permission denied
-> can't open /dev/ttyAMA0: Permission denied
+> >  include/keys/trusted_tpm.h                      |  17 +-
+> >  security/keys/trusted-keys/Makefile             |   1 +
+> >  security/keys/trusted-keys/trusted_core.c       | 350 ++++++++++++++++++=
+++++++
+> >  security/keys/trusted-keys/trusted_tpm1.c       | 336 ++++--------------=
+-----
+> >  6 files changed, 468 insertions(+), 295 deletions(-)
+> >  create mode 100644 security/keys/trusted-keys/trusted_core.c
+> >
+> > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentat=
+ion/admin-guide/kernel-parameters.txt
+> > index 526d65d..df9b9fe 100644
+> > --- a/Documentation/admin-guide/kernel-parameters.txt
+> > +++ b/Documentation/admin-guide/kernel-parameters.txt
+> > @@ -5392,6 +5392,18 @@
+> >                       See Documentation/admin-guide/mm/transhuge.rst
+> >                       for more details.
+> >
+> > +     trusted.source=3D [KEYS]
+> > +                     Format: <string>
+> > +                     This parameter identifies the trust source as a bac=
+kend
+> > +                     for trusted keys implementation. Supported trust
+> > +                     sources:
+> > +                     - "tpm"
+> > +                     - "tee"
+> > +                     If not specified then it defaults to iterating thro=
+ugh
+> > +                     the trust source list starting with TPM and assigns=
+ the
+> > +                     first trust source as a backend which is initialized
+> > +                     successfully during iteration.
+> > +
+> >       tsc=3D            Disable clocksource stability checks for TSC.
+> >                       Format: <string>
+> >                       [x86] reliable: mark tsc clocksource as reliable, t=
+his
+> > diff --git a/include/keys/trusted-type.h b/include/keys/trusted-type.h
+> > index a94c03a..a566451 100644
+> > --- a/include/keys/trusted-type.h
+> > +++ b/include/keys/trusted-type.h
+> > @@ -40,6 +40,53 @@ struct trusted_key_options {
+> >       uint32_t policyhandle;
+> >  };
+> >
+> > +struct trusted_key_ops {
+> > +     /*
+> > +      * flag to indicate if trusted key implementation supports migration
+> > +      * or not.
+> > +      */
+> > +     unsigned char migratable;
+> > +
+> > +     /* Initialize key interface. */
+> > +     int (*init)(void);
+> > +
+> > +     /* Seal a key. */
+> > +     int (*seal)(struct trusted_key_payload *p, char *datablob);
+> > +
+> > +     /* Unseal a key. */
+> > +     int (*unseal)(struct trusted_key_payload *p, char *datablob);
+> > +
+> > +     /* Get a randomized key. */
+> > +     int (*get_random)(unsigned char *key, size_t key_len);
+> > +
+> > +     /* Exit key interface. */
+> > +     void (*exit)(void);
+> > +};
+> > +
+> > +struct trusted_key_source {
+> > +     char *name;
+> > +     struct trusted_key_ops *ops;
+> > +};
+> > +
+> >  extern struct key_type key_type_trusted;
+> >
+> > +#define TRUSTED_DEBUG 0
+> > +
+> > +#if TRUSTED_DEBUG
+> > +static inline void dump_payload(struct trusted_key_payload *p)
+> > +{
+> > +     pr_info("trusted_key: key_len %d\n", p->key_len);
+> > +     print_hex_dump(KERN_INFO, "key ", DUMP_PREFIX_NONE,
+> > +                    16, 1, p->key, p->key_len, 0);
+> > +     pr_info("trusted_key: bloblen %d\n", p->blob_len);
+> > +     print_hex_dump(KERN_INFO, "blob ", DUMP_PREFIX_NONE,
+> > +                    16, 1, p->blob, p->blob_len, 0);
+> > +     pr_info("trusted_key: migratable %d\n", p->migratable);
+> > +}
+> > +#else
+> > +static inline void dump_payload(struct trusted_key_payload *p)
+> > +{
+> > +}
+> > +#endif
+> > +
+> >  #endif /* _KEYS_TRUSTED_TYPE_H */
+> > diff --git a/include/keys/trusted_tpm.h b/include/keys/trusted_tpm.h
+> > index a56d8e1..fb3280a 100644
+> > --- a/include/keys/trusted_tpm.h
+> > +++ b/include/keys/trusted_tpm.h
+> > @@ -16,6 +16,8 @@
+> >  #define LOAD32N(buffer, offset)      (*(uint32_t *)&buffer[offset])
+> >  #define LOAD16(buffer, offset)       (ntohs(*(uint16_t *)&buffer[offset]=
+))
+> >
+> > +extern struct trusted_key_ops tpm_trusted_key_ops;
+> > +
+> >  struct osapsess {
+> >       uint32_t handle;
+> >       unsigned char secret[SHA1_DIGEST_SIZE];
+> > @@ -60,17 +62,6 @@ static inline void dump_options(struct trusted_key_opt=
+ions *o)
+> >                      16, 1, o->pcrinfo, o->pcrinfo_len, 0);
+> >  }
+> >
+> > -static inline void dump_payload(struct trusted_key_payload *p)
+> > -{
+> > -     pr_info("trusted_key: key_len %d\n", p->key_len);
+> > -     print_hex_dump(KERN_INFO, "key ", DUMP_PREFIX_NONE,
+> > -                    16, 1, p->key, p->key_len, 0);
+> > -     pr_info("trusted_key: bloblen %d\n", p->blob_len);
+> > -     print_hex_dump(KERN_INFO, "blob ", DUMP_PREFIX_NONE,
+> > -                    16, 1, p->blob, p->blob_len, 0);
+> > -     pr_info("trusted_key: migratable %d\n", p->migratable);
+> > -}
+> > -
+> >  static inline void dump_sess(struct osapsess *s)
+> >  {
+> >       print_hex_dump(KERN_INFO, "trusted-key: handle ", DUMP_PREFIX_NONE,
+> > @@ -96,10 +87,6 @@ static inline void dump_options(struct trusted_key_opt=
+ions *o)
+> >  {
+> >  }
+> >
+> > -static inline void dump_payload(struct trusted_key_payload *p)
+> > -{
+> > -}
+> > -
+> >  static inline void dump_sess(struct osapsess *s)
+> >  {
+> >  }
+> > diff --git a/security/keys/trusted-keys/Makefile b/security/keys/trusted-=
+keys/Makefile
+> > index 7b73ceb..49e3bcf 100644
+> > --- a/security/keys/trusted-keys/Makefile
+> > +++ b/security/keys/trusted-keys/Makefile
+> > @@ -4,5 +4,6 @@
+> >  #
+> >
+> >  obj-$(CONFIG_TRUSTED_KEYS) +=3D trusted.o
+> > +trusted-y +=3D trusted_core.o
+> >  trusted-y +=3D trusted_tpm1.o
+> >  trusted-y +=3D trusted_tpm2.o
+> > diff --git a/security/keys/trusted-keys/trusted_core.c b/security/keys/tr=
+usted-keys/trusted_core.c
+> > new file mode 100644
+> > index 0000000..aa4f2a0
+> > --- /dev/null
+> > +++ b/security/keys/trusted-keys/trusted_core.c
+> > @@ -0,0 +1,350 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (C) 2010 IBM Corporation
+> > + * Copyright (c) 2019-2020, Linaro Limited
+> > + *
+> > + * See Documentation/security/keys/trusted-encrypted.rst
+> > + */
+> > +
+> > +#include <keys/user-type.h>
+> > +#include <keys/trusted-type.h>
+> > +#include <keys/trusted_tpm.h>
+> > +#include <linux/capability.h>
+> > +#include <linux/err.h>
+> > +#include <linux/init.h>
+> > +#include <linux/key-type.h>
+> > +#include <linux/module.h>
+> > +#include <linux/parser.h>
+> > +#include <linux/rcupdate.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/static_call.h>
+> > +#include <linux/string.h>
+> > +#include <linux/uaccess.h>
+> > +
+> > +static char *trusted_key_source;
+> > +module_param_named(source, trusted_key_source, charp, 0);
+> > +MODULE_PARM_DESC(source, "Select trusted keys source (tpm or tee)");
+> > +
+> > +static const struct trusted_key_source trusted_key_sources[] =3D {
+> > +#if defined(CONFIG_TCG_TPM)
+> > +     { "tpm", &tpm_trusted_key_ops },
+> > +#endif
+> > +};
+> > +
+> > +DEFINE_STATIC_CALL_NULL(trusted_key_init, *trusted_key_sources[0].ops->i=
+nit);
+> > +DEFINE_STATIC_CALL_NULL(trusted_key_seal, *trusted_key_sources[0].ops->s=
+eal);
+> > +DEFINE_STATIC_CALL_NULL(trusted_key_unseal,
+> > +                     *trusted_key_sources[0].ops->unseal);
+> > +DEFINE_STATIC_CALL_NULL(trusted_key_get_random,
+> > +                     *trusted_key_sources[0].ops->get_random);
+> > +DEFINE_STATIC_CALL_NULL(trusted_key_exit, *trusted_key_sources[0].ops->e=
+xit);
+> > +static unsigned char migratable;
+> > +
+> > +enum {
+> > +     Opt_err,
+> > +     Opt_new, Opt_load, Opt_update,
+> > +};
+> > +
+> > +static const match_table_t key_tokens =3D {
+> > +     {Opt_new, "new"},
+> > +     {Opt_load, "load"},
+> > +     {Opt_update, "update"},
+> > +     {Opt_err, NULL}
+> > +};
+> > +
+> > +/*
+> > + * datablob_parse - parse the keyctl data and fill in the
+> > + *                  payload structure
+> > + *
+> > + * On success returns 0, otherwise -EINVAL.
+> > + */
+> > +static int datablob_parse(char *datablob, struct trusted_key_payload *p)
+> > +{
+> > +     substring_t args[MAX_OPT_ARGS];
+> > +     long keylen;
+> > +     int ret =3D -EINVAL;
+> > +     int key_cmd;
+> > +     char *c;
+> > +
+> > +     /* main command */
+> > +     c =3D strsep(&datablob, " \t");
+> > +     if (!c)
+> > +             return -EINVAL;
+> > +     key_cmd =3D match_token(c, key_tokens, args);
+> > +     switch (key_cmd) {
+> > +     case Opt_new:
+> > +             /* first argument is key size */
+> > +             c =3D strsep(&datablob, " \t");
+> > +             if (!c)
+> > +                     return -EINVAL;
+> > +             ret =3D kstrtol(c, 10, &keylen);
+> > +             if (ret < 0 || keylen < MIN_KEY_SIZE || keylen > MAX_KEY_SI=
+ZE)
+> > +                     return -EINVAL;
+> > +             p->key_len =3D keylen;
+> > +             ret =3D Opt_new;
+> > +             break;
+> > +     case Opt_load:
+> > +             /* first argument is sealed blob */
+> > +             c =3D strsep(&datablob, " \t");
+> > +             if (!c)
+> > +                     return -EINVAL;
+> > +             p->blob_len =3D strlen(c) / 2;
+> > +             if (p->blob_len > MAX_BLOB_SIZE)
+> > +                     return -EINVAL;
+> > +             ret =3D hex2bin(p->blob, c, p->blob_len);
+> > +             if (ret < 0)
+> > +                     return -EINVAL;
+> > +             ret =3D Opt_load;
+> > +             break;
+> > +     case Opt_update:
+> > +             ret =3D Opt_update;
+> > +             break;
+> > +     case Opt_err:
+> > +             return -EINVAL;
+> > +     }
+> > +     return ret;
+> > +}
+> > +
+> > +static struct trusted_key_payload *trusted_payload_alloc(struct key *key)
+> > +{
+> > +     struct trusted_key_payload *p =3D NULL;
+> > +     int ret;
+> > +
+> > +     ret =3D key_payload_reserve(key, sizeof(*p));
+> > +     if (ret < 0)
+> > +             return p;
+> > +     p =3D kzalloc(sizeof(*p), GFP_KERNEL);
+> > +
+> > +     p->migratable =3D migratable;
+> > +
+> > +     return p;
+> > +}
+> > +
+> > +/*
+> > + * trusted_instantiate - create a new trusted key
+> > + *
+> > + * Unseal an existing trusted blob or, for a new key, get a
+> > + * random key, then seal and create a trusted key-type key,
+> > + * adding it to the specified keyring.
+> > + *
+> > + * On success, return 0. Otherwise return errno.
+> > + */
+> > +static int trusted_instantiate(struct key *key,
+> > +                            struct key_preparsed_payload *prep)
+> > +{
+> > +     struct trusted_key_payload *payload =3D NULL;
+> > +     size_t datalen =3D prep->datalen;
+> > +     char *datablob;
+> > +     int ret =3D 0;
+> > +     int key_cmd;
+> > +     size_t key_len;
+> > +
+> > +     if (datalen <=3D 0 || datalen > 32767 || !prep->data)
+> > +             return -EINVAL;
+> > +
+> > +     datablob =3D kmalloc(datalen + 1, GFP_KERNEL);
+> > +     if (!datablob)
+> > +             return -ENOMEM;
+> > +     memcpy(datablob, prep->data, datalen);
+> > +     datablob[datalen] =3D '\0';
+> > +
+> > +     payload =3D trusted_payload_alloc(key);
+> > +     if (!payload) {
+> > +             ret =3D -ENOMEM;
+> > +             goto out;
+> > +     }
+> > +
+> > +     key_cmd =3D datablob_parse(datablob, payload);
+> > +     if (key_cmd < 0) {
+> > +             ret =3D key_cmd;
+> > +             goto out;
+> > +     }
+> > +
+> > +     dump_payload(payload);
+> > +
+> > +     switch (key_cmd) {
+> > +     case Opt_load:
+> > +             ret =3D static_call(trusted_key_unseal)(payload, datablob);
+> > +             dump_payload(payload);
+> > +             if (ret < 0)
+> > +                     pr_info("trusted_key: key_unseal failed (%d)\n", re=
+t);
+> > +             break;
+> > +     case Opt_new:
+> > +             key_len =3D payload->key_len;
+> > +             ret =3D static_call(trusted_key_get_random)(payload->key,
+> > +                                                       key_len);
+> > +             if (ret !=3D key_len) {
+> > +                     pr_info("trusted_key: key_create failed (%d)\n", re=
+t);
+> > +                     goto out;
+> > +             }
+> > +
+> > +             ret =3D static_call(trusted_key_seal)(payload, datablob);
+> > +             if (ret < 0)
+> > +                     pr_info("trusted_key: key_seal failed (%d)\n", ret);
+> > +             break;
+> > +     default:
+> > +             ret =3D -EINVAL;
+> > +     }
+> > +out:
+> > +     kfree_sensitive(datablob);
+> > +     if (!ret)
+> > +             rcu_assign_keypointer(key, payload);
+> > +     else
+> > +             kfree_sensitive(payload);
+> > +     return ret;
+> > +}
+> > +
+> > +static void trusted_rcu_free(struct rcu_head *rcu)
+> > +{
+> > +     struct trusted_key_payload *p;
+> > +
+> > +     p =3D container_of(rcu, struct trusted_key_payload, rcu);
+> > +     kfree_sensitive(p);
+> > +}
+> > +
+> > +/*
+> > + * trusted_update - reseal an existing key with new PCR values
+> > + */
+> > +static int trusted_update(struct key *key, struct key_preparsed_payload =
+*prep)
+> > +{
+> > +     struct trusted_key_payload *p;
+> > +     struct trusted_key_payload *new_p;
+> > +     size_t datalen =3D prep->datalen;
+> > +     char *datablob;
+> > +     int ret =3D 0;
+> > +
+> > +     if (key_is_negative(key))
+> > +             return -ENOKEY;
+> > +     p =3D key->payload.data[0];
+> > +     if (!p->migratable)
+> > +             return -EPERM;
+> > +     if (datalen <=3D 0 || datalen > 32767 || !prep->data)
+> > +             return -EINVAL;
+> > +
+> > +     datablob =3D kmalloc(datalen + 1, GFP_KERNEL);
+> > +     if (!datablob)
+> > +             return -ENOMEM;
+> > +
+> > +     new_p =3D trusted_payload_alloc(key);
+> > +     if (!new_p) {
+> > +             ret =3D -ENOMEM;
+> > +             goto out;
+> > +     }
+> > +
+> > +     memcpy(datablob, prep->data, datalen);
+> > +     datablob[datalen] =3D '\0';
+> > +     ret =3D datablob_parse(datablob, new_p);
+> > +     if (ret !=3D Opt_update) {
+> > +             ret =3D -EINVAL;
+> > +             kfree_sensitive(new_p);
+> > +             goto out;
+> > +     }
+> > +
+> > +     /* copy old key values, and reseal with new pcrs */
+> > +     new_p->migratable =3D p->migratable;
+> > +     new_p->key_len =3D p->key_len;
+> > +     memcpy(new_p->key, p->key, p->key_len);
+> > +     dump_payload(p);
+> > +     dump_payload(new_p);
+> > +
+> > +     ret =3D static_call(trusted_key_seal)(new_p, datablob);
+> > +     if (ret < 0) {
+> > +             pr_info("trusted_key: key_seal failed (%d)\n", ret);
+> > +             kfree_sensitive(new_p);
+> > +             goto out;
+> > +     }
+> > +
+> > +     rcu_assign_keypointer(key, new_p);
+> > +     call_rcu(&p->rcu, trusted_rcu_free);
+> > +out:
+> > +     kfree_sensitive(datablob);
+> > +     return ret;
+> > +}
+> > +
+> > +/*
+> > + * trusted_read - copy the sealed blob data to userspace in hex.
+> > + * On success, return to userspace the trusted key datablob size.
+> > + */
+> > +static long trusted_read(const struct key *key, char *buffer,
+> > +                      size_t buflen)
+> > +{
+> > +     const struct trusted_key_payload *p;
+> > +     char *bufp;
+> > +     int i;
+> > +
+> > +     p =3D dereference_key_locked(key);
+> > +     if (!p)
+> > +             return -EINVAL;
+> > +
+> > +     if (buffer && buflen >=3D 2 * p->blob_len) {
+> > +             bufp =3D buffer;
+> > +             for (i =3D 0; i < p->blob_len; i++)
+> > +                     bufp =3D hex_byte_pack(bufp, p->blob[i]);
+> > +     }
+> > +     return 2 * p->blob_len;
+> > +}
+> > +
+> > +/*
+> > + * trusted_destroy - clear and free the key's payload
+> > + */
+> > +static void trusted_destroy(struct key *key)
+> > +{
+> > +     kfree_sensitive(key->payload.data[0]);
+> > +}
+> > +
+> > +struct key_type key_type_trusted =3D {
+> > +     .name =3D "trusted",
+> > +     .instantiate =3D trusted_instantiate,
+> > +     .update =3D trusted_update,
+> > +     .destroy =3D trusted_destroy,
+> > +     .describe =3D user_describe,
+> > +     .read =3D trusted_read,
+> > +};
+> > +EXPORT_SYMBOL_GPL(key_type_trusted);
+> > +
+> > +static int __init init_trusted(void)
+> > +{
+> > +     int i, ret =3D 0;
+> > +
+> > +     for (i =3D 0; i < ARRAY_SIZE(trusted_key_sources); i++) {
+> > +             if (trusted_key_source &&
+> > +                 strncmp(trusted_key_source, trusted_key_sources[i].name,
+> > +                         strlen(trusted_key_sources[i].name)))
+> > +                     continue;
+> > +
+> > +             static_call_update(trusted_key_init,
+> > +                                trusted_key_sources[i].ops->init);
+> > +             static_call_update(trusted_key_seal,
+> > +                                trusted_key_sources[i].ops->seal);
+> > +             static_call_update(trusted_key_unseal,
+> > +                                trusted_key_sources[i].ops->unseal);
+> > +             static_call_update(trusted_key_get_random,
+> > +                                trusted_key_sources[i].ops->get_random);
+> > +             static_call_update(trusted_key_exit,
+> > +                                trusted_key_sources[i].ops->exit);
+> > +             migratable =3D trusted_key_sources[i].ops->migratable;
+> > +
+> > +             ret =3D static_call(trusted_key_init)();
+> > +             if (!ret)
+> > +                     break;
+> > +     }
+> > +
+> > +     /*
+> > +      * encrypted_keys.ko depends on successful load of this module even=
+ if
+> > +      * trusted key implementation is not found.
+> > +      */
+> > +     if (ret =3D=3D -ENODEV)
+> > +             return 0;
+> > +
+> > +     return ret;
+> > +}
+> > +
+> > +static void __exit cleanup_trusted(void)
+> > +{
+> > +     static_call(trusted_key_exit)();
+> > +}
+> > +
+> > +late_initcall(init_trusted);
+> > +module_exit(cleanup_trusted);
+> > +
+> > +MODULE_LICENSE("GPL");
+> > diff --git a/security/keys/trusted-keys/trusted_tpm1.c b/security/keys/tr=
+usted-keys/trusted_tpm1.c
+> > index b9fe02e..bd03914 100644
+> > --- a/security/keys/trusted-keys/trusted_tpm1.c
+> > +++ b/security/keys/trusted-keys/trusted_tpm1.c
+> > @@ -1,29 +1,22 @@
+> >  // SPDX-License-Identifier: GPL-2.0-only
+> >  /*
+> >   * Copyright (C) 2010 IBM Corporation
+> > - *
+> > - * Author:
+> > - * David Safford <safford@us.ibm.com>
+> > + * Copyright (c) 2019-2020, Linaro Limited
+> >   *
+> >   * See Documentation/security/keys/trusted-encrypted.rst
+> >   */
+> >
+> >  #include <crypto/hash_info.h>
+> > -#include <linux/uaccess.h>
+> > -#include <linux/module.h>
+> >  #include <linux/init.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/parser.h>
+> >  #include <linux/string.h>
+> >  #include <linux/err.h>
+> > -#include <keys/user-type.h>
+> >  #include <keys/trusted-type.h>
+> >  #include <linux/key-type.h>
+> > -#include <linux/rcupdate.h>
+> >  #include <linux/crypto.h>
+> >  #include <crypto/hash.h>
+> >  #include <crypto/sha.h>
+> > -#include <linux/capability.h>
+> >  #include <linux/tpm.h>
+> >  #include <linux/tpm_command.h>
+> >
+> > @@ -703,7 +696,6 @@ static int key_unseal(struct trusted_key_payload *p,
+> >
+> >  enum {
+> >       Opt_err,
+> > -     Opt_new, Opt_load, Opt_update,
+> >       Opt_keyhandle, Opt_keyauth, Opt_blobauth,
+> >       Opt_pcrinfo, Opt_pcrlock, Opt_migratable,
+> >       Opt_hash,
+> > @@ -712,9 +704,6 @@ enum {
+> >  };
+> >
+> >  static const match_table_t key_tokens =3D {
+> > -     {Opt_new, "new"},
+> > -     {Opt_load, "load"},
+> > -     {Opt_update, "update"},
+> >       {Opt_keyhandle, "keyhandle=3D%s"},
+> >       {Opt_keyauth, "keyauth=3D%s"},
+> >       {Opt_blobauth, "blobauth=3D%s"},
+> > @@ -841,71 +830,6 @@ static int getoptions(char *c, struct trusted_key_pa=
+yload *pay,
+> >       return 0;
+> >  }
+> >
+> > -/*
+> > - * datablob_parse - parse the keyctl data and fill in the
+> > - *               payload and options structures
+> > - *
+> > - * On success returns 0, otherwise -EINVAL.
+> > - */
+> > -static int datablob_parse(char *datablob, struct trusted_key_payload *p,
+> > -                       struct trusted_key_options *o)
+> > -{
+> > -     substring_t args[MAX_OPT_ARGS];
+> > -     long keylen;
+> > -     int ret =3D -EINVAL;
+> > -     int key_cmd;
+> > -     char *c;
+> > -
+> > -     /* main command */
+> > -     c =3D strsep(&datablob, " \t");
+> > -     if (!c)
+> > -             return -EINVAL;
+> > -     key_cmd =3D match_token(c, key_tokens, args);
+> > -     switch (key_cmd) {
+> > -     case Opt_new:
+> > -             /* first argument is key size */
+> > -             c =3D strsep(&datablob, " \t");
+> > -             if (!c)
+> > -                     return -EINVAL;
+> > -             ret =3D kstrtol(c, 10, &keylen);
+> > -             if (ret < 0 || keylen < MIN_KEY_SIZE || keylen > MAX_KEY_SI=
+ZE)
+> > -                     return -EINVAL;
+> > -             p->key_len =3D keylen;
+> > -             ret =3D getoptions(datablob, p, o);
+> > -             if (ret < 0)
+> > -                     return ret;
+> > -             ret =3D Opt_new;
+> > -             break;
+> > -     case Opt_load:
+> > -             /* first argument is sealed blob */
+> > -             c =3D strsep(&datablob, " \t");
+> > -             if (!c)
+> > -                     return -EINVAL;
+> > -             p->blob_len =3D strlen(c) / 2;
+> > -             if (p->blob_len > MAX_BLOB_SIZE)
+> > -                     return -EINVAL;
+> > -             ret =3D hex2bin(p->blob, c, p->blob_len);
+> > -             if (ret < 0)
+> > -                     return -EINVAL;
+> > -             ret =3D getoptions(datablob, p, o);
+> > -             if (ret < 0)
+> > -                     return ret;
+> > -             ret =3D Opt_load;
+> > -             break;
+> > -     case Opt_update:
+> > -             /* all arguments are options */
+> > -             ret =3D getoptions(datablob, p, o);
+> > -             if (ret < 0)
+> > -                     return ret;
+> > -             ret =3D Opt_update;
+> > -             break;
+> > -     case Opt_err:
+> > -             return -EINVAL;
+> > -             break;
+> > -     }
+> > -     return ret;
+> > -}
+> > -
+> >  static struct trusted_key_options *trusted_options_alloc(void)
+> >  {
+> >       struct trusted_key_options *options;
+> > @@ -926,248 +850,99 @@ static struct trusted_key_options *trusted_options=
+_alloc(void)
+> >       return options;
+> >  }
+> >
+> > -static struct trusted_key_payload *trusted_payload_alloc(struct key *key)
+> > +static int trusted_tpm_seal(struct trusted_key_payload *p, char *datablo=
+b)
+> >  {
+> > -     struct trusted_key_payload *p =3D NULL;
+> > -     int ret;
+> > -
+> > -     ret =3D key_payload_reserve(key, sizeof *p);
+> > -     if (ret < 0)
+> > -             return p;
+> > -     p =3D kzalloc(sizeof *p, GFP_KERNEL);
+> > -     if (p)
+> > -             p->migratable =3D 1; /* migratable by default */
+> > -     return p;
+> > -}
+> > -
+> > -/*
+> > - * trusted_instantiate - create a new trusted key
+> > - *
+> > - * Unseal an existing trusted blob or, for a new key, get a
+> > - * random key, then seal and create a trusted key-type key,
+> > - * adding it to the specified keyring.
+> > - *
+> > - * On success, return 0. Otherwise return errno.
+> > - */
+> > -static int trusted_instantiate(struct key *key,
+> > -                            struct key_preparsed_payload *prep)
+> > -{
+> > -     struct trusted_key_payload *payload =3D NULL;
+> >       struct trusted_key_options *options =3D NULL;
+> > -     size_t datalen =3D prep->datalen;
+> > -     char *datablob;
+> >       int ret =3D 0;
+> > -     int key_cmd;
+> > -     size_t key_len;
+> >       int tpm2;
+> >
+> >       tpm2 =3D tpm_is_tpm2(chip);
+> >       if (tpm2 < 0)
+> >               return tpm2;
+> >
+> > -     if (datalen <=3D 0 || datalen > 32767 || !prep->data)
+> > -             return -EINVAL;
+> > -
+> > -     datablob =3D kmalloc(datalen + 1, GFP_KERNEL);
+> > -     if (!datablob)
+> > -             return -ENOMEM;
+> > -     memcpy(datablob, prep->data, datalen);
+> > -     datablob[datalen] =3D '\0';
+> > -
+> >       options =3D trusted_options_alloc();
+> > -     if (!options) {
+> > -             ret =3D -ENOMEM;
+> > -             goto out;
+> > -     }
+> > -     payload =3D trusted_payload_alloc(key);
+> > -     if (!payload) {
+> > -             ret =3D -ENOMEM;
+> > -             goto out;
+> > -     }
+> > +     if (!options)
+> > +             return -ENOMEM;
+> >
+> > -     key_cmd =3D datablob_parse(datablob, payload, options);
+> > -     if (key_cmd < 0) {
+> > -             ret =3D key_cmd;
+> > +     ret =3D getoptions(datablob, p, options);
+> > +     if (ret < 0)
+> >               goto out;
+> > -     }
+> > +     dump_options(options);
+> >
+> >       if (!options->keyhandle) {
+> >               ret =3D -EINVAL;
+> >               goto out;
+> >       }
+> >
+> > -     dump_payload(payload);
+> > -     dump_options(options);
+> > +     if (tpm2)
+> > +             ret =3D tpm2_seal_trusted(chip, p, options);
+> > +     else
+> > +             ret =3D key_seal(p, options);
+> > +     if (ret < 0) {
+> > +             pr_info("tpm_trusted_key: key_seal failed (%d)\n", ret);
+> > +             goto out;
+> > +     }
+> >
+> > -     switch (key_cmd) {
+> > -     case Opt_load:
+> > -             if (tpm2)
+> > -                     ret =3D tpm2_unseal_trusted(chip, payload, options);
+> > -             else
+> > -                     ret =3D key_unseal(payload, options);
+> > -             dump_payload(payload);
+> > -             dump_options(options);
+> > -             if (ret < 0)
+> > -                     pr_info("trusted_key: key_unseal failed (%d)\n", re=
+t);
+> > -             break;
+> > -     case Opt_new:
+> > -             key_len =3D payload->key_len;
+> > -             ret =3D tpm_get_random(chip, payload->key, key_len);
+> > -             if (ret !=3D key_len) {
+> > -                     pr_info("trusted_key: key_create failed (%d)\n", re=
+t);
+> > +     if (options->pcrlock) {
+> > +             ret =3D pcrlock(options->pcrlock);
+> > +             if (ret < 0) {
+> > +                     pr_info("tpm_trusted_key: pcrlock failed (%d)\n", r=
+et);
+> >                       goto out;
+> >               }
+> > -             if (tpm2)
+> > -                     ret =3D tpm2_seal_trusted(chip, payload, options);
+> > -             else
+> > -                     ret =3D key_seal(payload, options);
+> > -             if (ret < 0)
+> > -                     pr_info("trusted_key: key_seal failed (%d)\n", ret);
+> > -             break;
+> > -     default:
+> > -             ret =3D -EINVAL;
+> > -             goto out;
+> >       }
+> > -     if (!ret && options->pcrlock)
+> > -             ret =3D pcrlock(options->pcrlock);
+> >  out:
+> > -     kfree_sensitive(datablob);
+> >       kfree_sensitive(options);
+> > -     if (!ret)
+> > -             rcu_assign_keypointer(key, payload);
+> > -     else
+> > -             kfree_sensitive(payload);
+> >       return ret;
+> >  }
+> >
+> > -static void trusted_rcu_free(struct rcu_head *rcu)
+> > -{
+> > -     struct trusted_key_payload *p;
+> > -
+> > -     p =3D container_of(rcu, struct trusted_key_payload, rcu);
+> > -     kfree_sensitive(p);
+> > -}
+> > -
+> > -/*
+> > - * trusted_update - reseal an existing key with new PCR values
+> > - */
+> > -static int trusted_update(struct key *key, struct key_preparsed_payload =
+*prep)
+> > +static int trusted_tpm_unseal(struct trusted_key_payload *p, char *datab=
+lob)
+> >  {
+> > -     struct trusted_key_payload *p;
+> > -     struct trusted_key_payload *new_p;
+> > -     struct trusted_key_options *new_o;
+> > -     size_t datalen =3D prep->datalen;
+> > -     char *datablob;
+> > +     struct trusted_key_options *options =3D NULL;
+> >       int ret =3D 0;
+> > +     int tpm2;
+> >
+> > -     if (key_is_negative(key))
+> > -             return -ENOKEY;
+> > -     p =3D key->payload.data[0];
+> > -     if (!p->migratable)
+> > -             return -EPERM;
+> > -     if (datalen <=3D 0 || datalen > 32767 || !prep->data)
+> > -             return -EINVAL;
+> > +     tpm2 =3D tpm_is_tpm2(chip);
+> > +     if (tpm2 < 0)
+> > +             return tpm2;
+> >
+> > -     datablob =3D kmalloc(datalen + 1, GFP_KERNEL);
+> > -     if (!datablob)
+> > +     options =3D trusted_options_alloc();
+> > +     if (!options)
+> >               return -ENOMEM;
+> > -     new_o =3D trusted_options_alloc();
+> > -     if (!new_o) {
+> > -             ret =3D -ENOMEM;
+> > -             goto out;
+> > -     }
+> > -     new_p =3D trusted_payload_alloc(key);
+> > -     if (!new_p) {
+> > -             ret =3D -ENOMEM;
+> > -             goto out;
+> > -     }
+> >
+> > -     memcpy(datablob, prep->data, datalen);
+> > -     datablob[datalen] =3D '\0';
+> > -     ret =3D datablob_parse(datablob, new_p, new_o);
+> > -     if (ret !=3D Opt_update) {
+> > -             ret =3D -EINVAL;
+> > -             kfree_sensitive(new_p);
+> > +     ret =3D getoptions(datablob, p, options);
+> > +     if (ret < 0)
+> >               goto out;
+> > -     }
+> > +     dump_options(options);
+> >
+> > -     if (!new_o->keyhandle) {
+> > +     if (!options->keyhandle) {
+> >               ret =3D -EINVAL;
+> > -             kfree_sensitive(new_p);
+> >               goto out;
+> >       }
+> >
+> > -     /* copy old key values, and reseal with new pcrs */
+> > -     new_p->migratable =3D p->migratable;
+> > -     new_p->key_len =3D p->key_len;
+> > -     memcpy(new_p->key, p->key, p->key_len);
+> > -     dump_payload(p);
+> > -     dump_payload(new_p);
+> > +     if (tpm2)
+> > +             ret =3D tpm2_unseal_trusted(chip, p, options);
+> > +     else
+> > +             ret =3D key_unseal(p, options);
+> > +     if (ret < 0)
+> > +             pr_info("tpm_trusted_key: key_unseal failed (%d)\n", ret);
+> >
+> > -     ret =3D key_seal(new_p, new_o);
+> > -     if (ret < 0) {
+> > -             pr_info("trusted_key: key_seal failed (%d)\n", ret);
+> > -             kfree_sensitive(new_p);
+> > -             goto out;
+> > -     }
+> > -     if (new_o->pcrlock) {
+> > -             ret =3D pcrlock(new_o->pcrlock);
+> > +     if (options->pcrlock) {
+> > +             ret =3D pcrlock(options->pcrlock);
+> >               if (ret < 0) {
+> > -                     pr_info("trusted_key: pcrlock failed (%d)\n", ret);
+> > -                     kfree_sensitive(new_p);
+> > +                     pr_info("tpm_trusted_key: pcrlock failed (%d)\n", r=
+et);
+> >                       goto out;
+> >               }
+> >       }
+> > -     rcu_assign_keypointer(key, new_p);
+> > -     call_rcu(&p->rcu, trusted_rcu_free);
+> >  out:
+> > -     kfree_sensitive(datablob);
+> > -     kfree_sensitive(new_o);
+> > +     kfree_sensitive(options);
+> >       return ret;
+> >  }
+> >
+> > -/*
+> > - * trusted_read - copy the sealed blob data to userspace in hex.
+> > - * On success, return to userspace the trusted key datablob size.
+> > - */
+> > -static long trusted_read(const struct key *key, char *buffer,
+> > -                      size_t buflen)
+> > -{
+> > -     const struct trusted_key_payload *p;
+> > -     char *bufp;
+> > -     int i;
+> > -
+> > -     p =3D dereference_key_locked(key);
+> > -     if (!p)
+> > -             return -EINVAL;
+> > -
+> > -     if (buffer && buflen >=3D 2 * p->blob_len) {
+> > -             bufp =3D buffer;
+> > -             for (i =3D 0; i < p->blob_len; i++)
+> > -                     bufp =3D hex_byte_pack(bufp, p->blob[i]);
+> > -     }
+> > -     return 2 * p->blob_len;
+> > -}
+> > -
+> > -/*
+> > - * trusted_destroy - clear and free the key's payload
+> > - */
+> > -static void trusted_destroy(struct key *key)
+> > +static int trusted_tpm_get_random(unsigned char *key, size_t key_len)
+> >  {
+> > -     kfree_sensitive(key->payload.data[0]);
+> > +     return tpm_get_random(chip, key, key_len);
+> >  }
+> >
+> > -struct key_type key_type_trusted =3D {
+> > -     .name =3D "trusted",
+> > -     .instantiate =3D trusted_instantiate,
+> > -     .update =3D trusted_update,
+> > -     .destroy =3D trusted_destroy,
+> > -     .describe =3D user_describe,
+> > -     .read =3D trusted_read,
+> > -};
+> > -
+> > -EXPORT_SYMBOL_GPL(key_type_trusted);
+> > -
+> >  static void trusted_shash_release(void)
+> >  {
+> >       if (hashalg)
+> > @@ -1182,14 +957,14 @@ static int __init trusted_shash_alloc(void)
+> >
+> >       hmacalg =3D crypto_alloc_shash(hmac_alg, 0, 0);
+> >       if (IS_ERR(hmacalg)) {
+> > -             pr_info("trusted_key: could not allocate crypto %s\n",
+> > +             pr_info("tpm_trusted_key: could not allocate crypto %s\n",
+> >                       hmac_alg);
+> >               return PTR_ERR(hmacalg);
+> >       }
+> >
+> >       hashalg =3D crypto_alloc_shash(hash_alg, 0, 0);
+> >       if (IS_ERR(hashalg)) {
+> > -             pr_info("trusted_key: could not allocate crypto %s\n",
+> > +             pr_info("tpm_trusted_key: could not allocate crypto %s\n",
 >
-> And it continues...
+> Let's just add interal trusted.h file with:
 >
-> The qemu command I got did not work "as it is" and because I'm neither too
-> proficient with qemu nor aarch64, it took a while to get something usable.
-> This is my current qemu command:
+> #undef pr_fmt
+> #define pr_fmt(fmt) "trusted_key: " fmt
 >
-> qemu-system-aarch64 -nographic -s -machine virt,secure=3Don -cpu cortex-a57=
- \
->                     -kernel ~/Projects/tpm/buildroot/output/images/Image \
->                     -no-acpi \
->                     -append 'root=3D/dev/vda rw console=3DttyAMA0,115200 ' \
->                     -drive file=3D~/Projects/tpm/buildroot/output/images/ro=
-otfs.ext4,format=3Draw \
->                     -smp 1 \
->                     -monitor telnet:127.0.0.1:55555,server,nowait \
->                     -m 1024 -bios ~/Projects/tpm/fw/aarch64-fw.bin -d unimp
->
-> Then I start QEMU monitor from another terminal with:
->
-> socat tcp-connect:127.0.0.1:55555 file:`tty`,raw,echo=3D0
->
-> So... what could be the issue with permissions?
+> and remove tags from these. Does not add value to have separate tags
+> for backends. Makes the klog only a bit messier I think.
 >
 
-It mostly sounds like an issue with your buildroot filesystem.
-
-Can you try with this [1] init ramdisk instead?
-
--initrd rootfs.cpio.gz
-
-[1] https://people.linaro.org/~sumit.garg/rootfs.cpio.gz
+Okay makes sense, will do this in the next version.
 
 -Sumit
 
+>
+> >                       hash_alg);
+> >               ret =3D PTR_ERR(hashalg);
+> >               goto hashalg_fail;
+> > @@ -1217,16 +992,13 @@ static int __init init_digests(void)
+> >       return 0;
+> >  }
+> >
+> > -static int __init init_trusted(void)
+> > +static int trusted_tpm_init(void)
+> >  {
+> >       int ret;
+> >
+> > -     /* encrypted_keys.ko depends on successful load of this module even=
+ if
+> > -      * TPM is not used.
+> > -      */
+> >       chip =3D tpm_default_chip();
+> >       if (!chip)
+> > -             return 0;
+> > +             return -ENODEV;
+> >
+> >       ret =3D init_digests();
+> >       if (ret < 0)
+> > @@ -1247,7 +1019,7 @@ static int __init init_trusted(void)
+> >       return ret;
+> >  }
+> >
+> > -static void __exit cleanup_trusted(void)
+> > +static void trusted_tpm_exit(void)
+> >  {
+> >       if (chip) {
+> >               put_device(&chip->dev);
+> > @@ -1257,7 +1029,11 @@ static void __exit cleanup_trusted(void)
+> >       }
+> >  }
+> >
+> > -late_initcall(init_trusted);
+> > -module_exit(cleanup_trusted);
+> > -
+> > -MODULE_LICENSE("GPL");
+> > +struct trusted_key_ops tpm_trusted_key_ops =3D {
+> > +     .migratable =3D 1, /* migratable by default */
+> > +     .init =3D trusted_tpm_init,
+> > +     .seal =3D trusted_tpm_seal,
+> > +     .unseal =3D trusted_tpm_unseal,
+> > +     .get_random =3D trusted_tpm_get_random,
+> > +     .exit =3D trusted_tpm_exit,
+> > +};
+> > --
+> > 2.7.4
+> >
+> >
+>
 > /Jarkko
 
---===============3016865254759537037==--
+--===============7894528750984446994==--
 
