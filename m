@@ -1,140 +1,61 @@
 From: Allen Pais <allen.lkml@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH 1/2] optee: fix tee out of memory failure seen during kexec reboot
-Date: Wed, 17 Feb 2021 14:57:13 +0530
-Message-ID: <20210217092714.121297-2-allen.lkml@gmail.com>
+Subject: [PATCH 2/2] firmware: tee_bnxt: implement shutdown method to handle
+ kexec reboots
+Date: Wed, 17 Feb 2021 14:57:14 +0530
+Message-ID: <20210217092714.121297-3-allen.lkml@gmail.com>
 In-Reply-To: <20210217092714.121297-1-allen.lkml@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0112282669880079063=="
+Content-Type: multipart/mixed; boundary="===============2471843540838282987=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0112282669880079063==
+--===============2471843540838282987==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 From: Allen Pais <apais@linux.microsoft.com>
 
-The following out of memory errors are seen on kexec reboot
-from the optee core.
-
-[    0.368428] tee_bnxt_fw optee-clnt0: tee_shm_alloc failed
-[    0.368461] tee_bnxt_fw: probe of optee-clnt0 failed with error -22
-
-tee_shm_release() is not invoked on dma shm buffer.
-
-Implement .shutdown() method to handle the release of the buffers
+ On kexec reboot the firmware driver fails to deallocate
+shm memory leading to a memory leak. Implement .shutdown()
+method to handle kexec reboots and to release shm buffers
 correctly.
-
-More info:
-https://github.com/OP-TEE/optee_os/issues/3637
 
 Signed-off-by: Allen Pais <apais@linux.microsoft.com>
 ---
- drivers/tee/optee/core.c | 69 ++++++++++++++++++++++++++++------------
- 1 file changed, 49 insertions(+), 20 deletions(-)
+ drivers/firmware/broadcom/tee_bnxt_fw.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index cf4718c6d35d..b402e5eace7b 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -582,36 +582,64 @@ static optee_invoke_fn *get_invoke_func(struct device *=
-dev)
- 	return ERR_PTR(-EINVAL);
- }
-=20
--static int optee_remove(struct platform_device *pdev)
-+static int __optee_shutoff(struct platform_device *pdev, bool shutdown)
- {
- 	struct optee *optee =3D platform_get_drvdata(pdev);
-=20
--	/*
--	 * Ask OP-TEE to free all cached shared memory objects to decrease
--	 * reference counters and also avoid wild pointers in secure world
--	 * into the old shared memory range.
--	 */
--	optee_disable_shm_cache(optee);
-+	if (shutdown) {
-+		optee_disable_shm_cache(optee);
-+	} else {
-+		/*
-+		 * Ask OP-TEE to free all cached shared memory
-+		 * objects to decrease reference counters and
-+		 * also avoid wild pointers in secure world
-+		 * into the old shared memory range.
-+		 */
-+		optee_disable_shm_cache(optee);
-=20
--	/*
--	 * The two devices have to be unregistered before we can free the
--	 * other resources.
--	 */
--	tee_device_unregister(optee->supp_teedev);
--	tee_device_unregister(optee->teedev);
-+		/*
-+		 * The two devices have to be unregistered before
-+		 * we can free the other resources.
-+		 */
-+		tee_device_unregister(optee->supp_teedev);
-+		tee_device_unregister(optee->teedev);
-=20
--	tee_shm_pool_free(optee->pool);
--	if (optee->memremaped_shm)
--		memunmap(optee->memremaped_shm);
--	optee_wait_queue_exit(&optee->wait_queue);
--	optee_supp_uninit(&optee->supp);
--	mutex_destroy(&optee->call_queue.mutex);
-+		tee_shm_pool_free(optee->pool);
-+		if (optee->memremaped_shm)
-+			memunmap(optee->memremaped_shm);
-+		optee_wait_queue_exit(&optee->wait_queue);
-+		optee_supp_uninit(&optee->supp);
-+		mutex_destroy(&optee->call_queue.mutex);
-=20
--	kfree(optee);
-+		kfree(optee);
-+	}
-=20
+diff --git a/drivers/firmware/broadcom/tee_bnxt_fw.c b/drivers/firmware/broad=
+com/tee_bnxt_fw.c
+index ed10da5313e8..4c62e044a99f 100644
+--- a/drivers/firmware/broadcom/tee_bnxt_fw.c
++++ b/drivers/firmware/broadcom/tee_bnxt_fw.c
+@@ -242,6 +242,14 @@ static int tee_bnxt_fw_remove(struct device *dev)
  	return 0;
  }
 =20
-+/* optee_remove - Device Removal Routine
-+ * @pdev: platform device information struct
-+ *
-+ * optee_remove is called by platform subsystem to alter the driver
-+ * that it should release the device
-+ */
-+static int optee_remove(struct platform_device *pdev)
++static void tee_bnxt_fw_shutdown(struct device *dev)
 +{
-+	return __optee_shutoff(pdev, false);
++	tee_shm_free(pvt_data.fw_shm_pool);
++	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
++	tee_client_close_context(pvt_data.ctx);
++	pvt_data.ctx =3D NULL;
 +}
 +
-+/* optee_shutdown - Device Removal Routine
-+ * @pdev: platform device information struct
-+ *
-+ * platform_shutdown is called by the platform subsystem to alter
-+ * the driver that a shutdown/reboot(or kexec) is happening and
-+ * device must be disabled.
-+ */
-+static void optee_shutdown(struct platform_device *pdev)
-+{
-+	__optee_shutoff(pdev, true);
-+}
-+
- static int optee_probe(struct platform_device *pdev)
- {
- 	optee_invoke_fn *invoke_fn;
-@@ -738,6 +766,7 @@ MODULE_DEVICE_TABLE(of, optee_dt_match);
- static struct platform_driver optee_driver =3D {
- 	.probe  =3D optee_probe,
- 	.remove =3D optee_remove,
-+	.shutdown =3D optee_shutdown,
- 	.driver =3D {
- 		.name =3D "optee",
- 		.of_match_table =3D optee_dt_match,
+ static const struct tee_client_device_id tee_bnxt_fw_id_table[] =3D {
+ 	{UUID_INIT(0x6272636D, 0x2019, 0x0716,
+ 		    0x42, 0x43, 0x4D, 0x5F, 0x53, 0x43, 0x48, 0x49)},
+@@ -257,6 +265,7 @@ static struct tee_client_driver tee_bnxt_fw_driver =3D {
+ 		.bus		=3D &tee_bus_type,
+ 		.probe		=3D tee_bnxt_fw_probe,
+ 		.remove		=3D tee_bnxt_fw_remove,
++		.shutdown	=3D tee_bnxt_fw_shutdown,
+ 	},
+ };
+=20
 --=20
 2.25.1
 
 
---===============0112282669880079063==--
+--===============2471843540838282987==--
 
