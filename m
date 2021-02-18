@@ -1,35 +1,40 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Dhananjay Phadke <dphadke@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Linaro OP-TEE Contributions meeting February 2021
-Date: Wed, 17 Feb 2021 15:47:50 +0100
-Message-ID: 
- <CA+EyddZRixCSno5mBvevyxS0esS-e=dWuCyDTkqFE9ShfCU=0w@mail.gmail.com>
+Subject: [PATCH 0/2] optee: fix OOM seen due to tee_shm_free()
+Date: Thu, 18 Feb 2021 10:12:38 -0800
+Message-ID: <1613671958-1307-1-git-send-email-dphadke@linux.microsoft.com>
+In-Reply-To: <20210217092714.121297-1-allen.lkml@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4815908383403039193=="
+Content-Type: multipart/mixed; boundary="===============5327866715947014947=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4815908383403039193==
+--===============5327866715947014947==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+From: Allen Pais <apais@linux.microsoft.com>
 
-LOC monthly meeting is planned to take place on Thursday February 25th @
-16.00 (UTC+1).
+On Wed, 17 Feb 2021 14:57:12 +0530, Allen Pais wrote:
+> The following out of memory errors are seen on kexec reboot
+> from the optee core.
+>     
+> [    0.368428] tee_bnxt_fw optee-clnt0: tee_shm_alloc failed
+> [    0.368461] tee_bnxt_fw: probe of optee-clnt0 failed with error -22
+>     
+> tee_shm_release() is not invoked on dma shm buffer.
+>     
+> Implement .shutdown() in optee core as well as bnxt firmware driver
+> to handle the release of the buffers correctly.
+>     
+> More info:
+> https://github.com/OP-TEE/optee_os/issues/3637
 
-We're looking for topics to discuss in general. Eventually we'll have a
-presentation from Achin Gupta from Arm talking about the FF-A spec.
+CC: linux-kernel(a)vger.kernel.org instead of linux-mips?
+TEE / TrustZone is ARM.
 
-Meeting details:
----------------
-Date/time: Thursday Feb 25th(a)16.00 (UTC+1)
-https://everytimezone.com/s/c4e5d6a3
-Connection details: https://www.trustedfirmware.org/meetings/
-Meeting notes: http://bit.ly/loc-notes
-Project page: https://www.linaro.org/projects/#LOC
+Also, for Broadcom specific -
+CC: bcm-kernel-feedback-list(a)broadcom.com
 
-Regards,
-Joakim on behalf of the Linaro OP-TEE team
 
---===============4815908383403039193==--
+--===============5327866715947014947==--
 
