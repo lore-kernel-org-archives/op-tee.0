@@ -1,57 +1,58 @@
-From: Robert Delien <r.delien@payter.nl>
+From: Jerome Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Possible OB1 bug in imx_csu.c
-Date: Mon, 22 Feb 2021 11:01:13 +0100
-Message-ID: 
- <CAEhEOQ=GHavi7nOkYn0ov7tWrHoGJ=B4AG_6nSqWBytBQ7RQ=A@mail.gmail.com>
+Subject: Re: Possible OB1 bug in imx_csu.c
+Date: Mon, 22 Feb 2021 11:26:02 +0100
+Message-ID: <9025f921-f829-0b3b-7778-f76d55e0e58b@forissier.org>
+In-Reply-To: <=?utf-8?q?=3C01000177c92fd34d-9f93a3ef-2e7a-4bae-943f-2ef12d506?=
+ =?utf-8?q?f38-000000=40email=2Eamazonses=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3211609870354104289=="
+Content-Type: multipart/mixed; boundary="===============3043098937596339881=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3211609870354104289==
+--===============3043098937596339881==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Robert,
 
-In imx_csu.c, the Central Security Unit's CSU_CSL*n* registers are set,
-configuring access privileges for different peripherals. These registers
-range from CSU_CSL0 (@ 0x021c0000) to CSU_CSL39 (@ 0x021c009c).
+On 2/22/21 11:01 AM, Robert Delien via OP-TEE wrote:
+> Hi,
+> 
+> In imx_csu.c, the Central Security Unit's CSU_CSL*n* registers are set,
+> configuring access privileges for different peripherals. These registers
+> range from CSU_CSL0 (@ 0x021c0000) to CSU_CSL39 (@ 0x021c009c).
+> 
+> The different i.MX6 platform variants each have their individual tables,
+> filled with sets of CSL index and register value, terminated by a sentinel
+> set with the index set to -1. (the reason for the parentheses around -1
+> espaces me)
+> 
+> in .../core/arch/arm/plat-imx/drivers/imx_csu.c:csu_init()@115, a while
+> loop runs through this aforementioned table, setting the CSL registers
+> according to the table. However, this loop loops on CSL index values > 0:
+> while (csu_setting->csu_index *>* 0) {
+>         io_write32(csu_base + (csu_setting->csu_index * 4),
+>                    csu_setting->value);
+> 
+>         csu_setting++;
+> }
+> I think it should loop on CSL index values >= 0, because index 0 is a valid
+> index, utilized for the PWM peripherals. (I also think csl_index is a more
+> descriptive name, but that's besides the point).
+> 
+> I have attached a patch for his.
 
-The different i.MX6 platform variants each have their individual tables,
-filled with sets of CSL index and register value, terminated by a sentinel
-set with the index set to -1. (the reason for the parentheses around -1
-espaces me)
+It does look like a genuine bug to me, but I will let the i.MX expert
+comment further. Unfortunately, the OP-TEE ML strips attachments. Would
+you mind creating a GitHub pull request [1] (preferred method), or send
+the patch inline?
 
-in .../core/arch/arm/plat-imx/drivers/imx_csu.c:csu_init()@115, a while
-loop runs through this aforementioned table, setting the CSL registers
-according to the table. However, this loop loops on CSL index values > 0:
-while (csu_setting->csu_index *>* 0) {
-        io_write32(csu_base + (csu_setting->csu_index * 4),
-                   csu_setting->value);
+[1] https://github.com/OP-TEE/optee_os/pulls
 
-        csu_setting++;
-}
-I think it should loop on CSL index values >= 0, because index 0 is a valid
-index, utilized for the PWM peripherals. (I also think csl_index is a more
-descriptive name, but that's besides the point).
-
-I have attached a patch for his.
-
-With kind regards,
-
-          Robert.
+Thanks,
 
 -- 
-DISCLAIMER
-De informatie, verzonden in of met dit e-mailbericht, is 
-vertrouwelijk en uitsluitend voor de geadresseerde(n) bestemd. Het gebruik 
-van de informatie in dit bericht, de openbaarmaking, vermenigvuldiging, 
-verspreiding en|of verstrekking daarvan aan derden is niet toegestaan. 
-Gebruik van deze informatie door anderen dan geadresseerde(n) is strikt 
-verboden. Aan deze informatie kunnen geen rechten worden ontleend. U wordt 
-verzocht bij onjuiste adressering de afzender direct te informeren door het 
-bericht te retourneren en het bericht uit uw computersysteem te verwijderen.
+Jerome
 
---===============3211609870354104289==--
+--===============3043098937596339881==--
 
