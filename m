@@ -1,67 +1,53 @@
-From: Steven Rostedt <rostedt@goodmis.org>
+From: Allen Pais <apais@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: add invoke_fn tracepoints
-Date: Tue, 23 Feb 2021 09:19:36 -0500
-Message-ID: <20210223091936.5b390f35@gandalf.local.home>
-In-Reply-To: <20210223131124.GA2303918@jade>
+Subject: 
+ Re: [PATCH 1/2] optee: fix tee out of memory failure seen during kexec reboot
+Date: Tue, 23 Feb 2021 21:56:13 +0530
+Message-ID: <cbc963d5-6c4b-7e69-4a9b-3d66b95affab@linux.microsoft.com>
+In-Reply-To: <20210223081948.GA1836717@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1763936502554979222=="
+Content-Type: multipart/mixed; boundary="===============2780181658428838574=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1763936502554979222==
+--===============2780181658428838574==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 23 Feb 2021 14:11:24 +0100
-Jens Wiklander <jens.wiklander@linaro.org> wrote:
-
-> I used the -strict option.
->=20
-> ./scripts/checkpatch.pl -strict 0001-tee-optee-add-invoke_fn-tracepoints.pa=
-tch
-> WARNING: added, moved or deleted file(s), does MAINTAINERS need updating?
-> #44:=20
-> new file mode 100644
-
-The above is just asking for someone to take maintainership of the new file.
-
->=20
-> CHECK: Alignment should match open parenthesis
-> #68: FILE: drivers/tee/optee/optee_trace.h:20:
-> +TRACE_EVENT(optee_invoke_fn_begin,
-> +	TP_PROTO(struct optee_rpc_param *param),
->=20
-> CHECK: Lines should not end with a '('
-> #71: FILE: drivers/tee/optee/optee_trace.h:23:
-> +	TP_STRUCT__entry(
->=20
-> CHECK: Lines should not end with a '('
-> #76: FILE: drivers/tee/optee/optee_trace.h:28:
-> +	TP_fast_assign(
->=20
-> CHECK: Alignment should match open parenthesis
-> #89: FILE: drivers/tee/optee/optee_trace.h:41:
-> +TRACE_EVENT(optee_invoke_fn_end,
-> +	TP_PROTO(struct optee_rpc_param *param, struct arm_smccc_res *res),
->=20
-> CHECK: Lines should not end with a '('
-> #92: FILE: drivers/tee/optee/optee_trace.h:44:
-> +	TP_STRUCT__entry(
->=20
-> CHECK: Lines should not end with a '('
-> #97: FILE: drivers/tee/optee/optee_trace.h:49:
-> +	TP_fast_assign(
-
-The TRACE_EVENT() macro is "special", and checkpatch notoriously stumbles
-over it. I usually recommend that people ignore the checkpatch warnings on
-TRACE_EVENT() macros.
-
--- Steve
+Content-Transfer-Encoding: 7bit
 
 
->=20
-> total: 0 errors, 1 warnings, 6 checks, 86 lines checked
 
+>>>> -	/*
+>>>> -	 * Ask OP-TEE to free all cached shared memory objects to decrease
+>>>> -	 * reference counters and also avoid wild pointers in secure world
+>>>> -	 * into the old shared memory range.
+>>>> -	 */
+>>>> -	optee_disable_shm_cache(optee);
+>>>> +	if (shutdown) {
+>>>> +		optee_disable_shm_cache(optee);
+>>>> +	} else {
+>>>> +		/*
+>>>> +		 * Ask OP-TEE to free all cached shared memory
+>>>> +		 * objects to decrease reference counters and
+>>>> +		 * also avoid wild pointers in secure world
+>>>> +		 * into the old shared memory range.
+>>>> +		 */
+>>>> +		optee_disable_shm_cache(optee);
+>>> Calling optee_disable_shm_cache() in both if and else. It could be
+>>> put in front of if().
+>>>
+>>
+>>    Ideally, I could just use optee_remove for shutdown() too.
+>> But it would not look good. Hence this approach.
+> 
+> What is the problem with using optee_remove() for shutdown()?
+> 
 
---===============1763936502554979222==--
+  There is no problem, I just thought it would be more cleaner/readable
+with this approach. If you'd like to keep it simple by just calling
+optee_remove() for shutdown() too, I could quickly send out V2.
+
+Thanks for the review.
+
+- Allen
+
+--===============2780181658428838574==--
 
