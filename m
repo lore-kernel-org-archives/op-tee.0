@@ -1,50 +1,63 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Allen Pais <apais@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions meeting February 2021
-Date: Wed, 24 Feb 2021 09:17:18 +0100
-Message-ID: 
- <CA+EyddY4y+NUwVgD-4vQhOXMueAW7SBtMXQHM16FQL-P8j+XnQ@mail.gmail.com>
-In-Reply-To: <
- <CA+EyddZRixCSno5mBvevyxS0esS-e=dWuCyDTkqFE9ShfCU=0w@mail.gmail.com>>
+Subject: 
+ Re: [PATCH 1/2] optee: fix tee out of memory failure seen during kexec reboot
+Date: Wed, 24 Feb 2021 22:23:34 +0530
+Message-ID: <9f4b44c1-cf86-a061-a9c6-726c4e23f99b@linux.microsoft.com>
+In-Reply-To: <20210224081553.GB2653493@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2945308598160727595=="
+Content-Type: multipart/mixed; boundary="===============9209883478016117929=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2945308598160727595==
+--===============9209883478016117929==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi,
 
-Haven't received any suggestions for topics to discuss, so no agenda. No
-agenda means no meeting and therefore I'm cancelling the LOC meeting that
-was scheduled for tomorrow.
+>>>>>> -	/*
+>>>>>> -	 * Ask OP-TEE to free all cached shared memory objects to decrease
+>>>>>> -	 * reference counters and also avoid wild pointers in secure world
+>>>>>> -	 * into the old shared memory range.
+>>>>>> -	 */
+>>>>>> -	optee_disable_shm_cache(optee);
+>>>>>> +	if (shutdown) {
+>>>>>> +		optee_disable_shm_cache(optee);
+>>>>>> +	} else {
+>>>>>> +		/*
+>>>>>> +		 * Ask OP-TEE to free all cached shared memory
+>>>>>> +		 * objects to decrease reference counters and
+>>>>>> +		 * also avoid wild pointers in secure world
+>>>>>> +		 * into the old shared memory range.
+>>>>>> +		 */
+>>>>>> +		optee_disable_shm_cache(optee);
+>>>>> Calling optee_disable_shm_cache() in both if and else. It could be
+>>>>> put in front of if().
+>>>>>
+>>>>
+>>>>     Ideally, I could just use optee_remove for shutdown() too.
+>>>> But it would not look good. Hence this approach.
+>>>
+>>> What is the problem with using optee_remove() for shutdown()?
+>>>
+>>
+>>   There is no problem, I just thought it would be more cleaner/readable
+>> with this approach. If you'd like to keep it simple by just calling
+>> optee_remove() for shutdown() too, I could quickly send out V2.
+> 
+> In the patch you posted it looks like you'd like to call
+> only optee_disable_shm_cache() in the case of shutdown. Like:
+> 
+> static void optee_shutdown(struct platform_device *pdev)
+> {
+>          optee_disable_shm_cache(platform_get_drvdata(pdev));
+> }
+> 
+> and optee_remove() kept as it was before this patch.
+> 
 
-Regards,
-Joakim
+  Sure, Will have it fixed and send out V2.
 
+Thanks.
 
-On Wed, 17 Feb 2021 at 15:47, Joakim Bech <joakim.bech@linaro.org> wrote:
-
-> Hi,
->
-> LOC monthly meeting is planned to take place on Thursday February 25th @
-> 16.00 (UTC+1).
->
-> We're looking for topics to discuss in general. Eventually we'll have a
-> presentation from Achin Gupta from Arm talking about the FF-A spec.
->
-> Meeting details:
-> ---------------
-> Date/time: Thursday Feb 25th(a)16.00 (UTC+1)
-> https://everytimezone.com/s/c4e5d6a3
-> Connection details: https://www.trustedfirmware.org/meetings/
-> Meeting notes: http://bit.ly/loc-notes
-> Project page: https://www.linaro.org/projects/#LOC
->
-> Regards,
-> Joakim on behalf of the Linaro OP-TEE team
->
-
---===============2945308598160727595==--
+--===============9209883478016117929==--
 
