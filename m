@@ -1,88 +1,61 @@
 From: Allen Pais <allen.lkml@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v2 1/2] optee: fix tee out of memory failure seen during kexec reboot
-Date: Thu, 25 Feb 2021 14:36:09 +0530
-Message-ID: <20210225090610.242623-2-allen.lkml@gmail.com>
+Subject: [PATCH v2 2/2] firmware: tee_bnxt: implement shutdown method to
+ handle kexec reboots
+Date: Thu, 25 Feb 2021 14:36:10 +0530
+Message-ID: <20210225090610.242623-3-allen.lkml@gmail.com>
 In-Reply-To: <20210225090610.242623-1-allen.lkml@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2467545908882447635=="
+Content-Type: multipart/mixed; boundary="===============2269057590185218354=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2467545908882447635==
+--===============2269057590185218354==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 From: Allen Pais <apais@linux.microsoft.com>
 
-The following out of memory errors are seen on kexec reboot
-from the optee core.
-
-[    0.368428] tee_bnxt_fw optee-clnt0: tee_shm_alloc failed
-[    0.368461] tee_bnxt_fw: probe of optee-clnt0 failed with error -22
-
-tee_shm_release() is not invoked on dma shm buffer.
-
-Implement .shutdown() method to handle the release of the buffers
+ On kexec reboot the firmware driver fails to deallocate
+shm memory leading to a memory leak. Implement .shutdown()
+method to handle kexec reboots and to release shm buffers
 correctly.
-
-More info:
-https://github.com/OP-TEE/optee_os/issues/3637
 
 Signed-off-by: Allen Pais <apais@linux.microsoft.com>
 ---
- drivers/tee/optee/core.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/firmware/broadcom/tee_bnxt_fw.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index cf4718c6d35d..80e2774b5e2a 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -582,6 +582,13 @@ static optee_invoke_fn *get_invoke_func(struct device *d=
-ev)
- 	return ERR_PTR(-EINVAL);
- }
-=20
-+/* optee_remove - Device Removal Routine
-+ * @pdev: platform device information struct
-+ *
-+ * optee_remove is called by platform subsystem to alter the driver
-+ * that it should release the device
-+ */
-+
- static int optee_remove(struct platform_device *pdev)
- {
- 	struct optee *optee =3D platform_get_drvdata(pdev);
-@@ -612,6 +619,18 @@ static int optee_remove(struct platform_device *pdev)
+diff --git a/drivers/firmware/broadcom/tee_bnxt_fw.c b/drivers/firmware/broad=
+com/tee_bnxt_fw.c
+index ed10da5313e8..4c62e044a99f 100644
+--- a/drivers/firmware/broadcom/tee_bnxt_fw.c
++++ b/drivers/firmware/broadcom/tee_bnxt_fw.c
+@@ -242,6 +242,14 @@ static int tee_bnxt_fw_remove(struct device *dev)
  	return 0;
  }
 =20
-+/* optee_shutdown - Device Removal Routine
-+ * @pdev: platform device information struct
-+ *
-+ * platform_shutdown is called by the platform subsystem to alter
-+ * the driver that a shutdown/reboot(or kexec) is happening and
-+ * device must be disabled.
-+ */
-+static void optee_shutdown(struct platform_device *pdev)
++static void tee_bnxt_fw_shutdown(struct device *dev)
 +{
-+	optee_disable_shm_cache(platform_get_drvdata(pdev));
++	tee_shm_free(pvt_data.fw_shm_pool);
++	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
++	tee_client_close_context(pvt_data.ctx);
++	pvt_data.ctx =3D NULL;
 +}
 +
- static int optee_probe(struct platform_device *pdev)
- {
- 	optee_invoke_fn *invoke_fn;
-@@ -738,6 +757,7 @@ MODULE_DEVICE_TABLE(of, optee_dt_match);
- static struct platform_driver optee_driver =3D {
- 	.probe  =3D optee_probe,
- 	.remove =3D optee_remove,
-+	.shutdown =3D optee_shutdown,
- 	.driver =3D {
- 		.name =3D "optee",
- 		.of_match_table =3D optee_dt_match,
+ static const struct tee_client_device_id tee_bnxt_fw_id_table[] =3D {
+ 	{UUID_INIT(0x6272636D, 0x2019, 0x0716,
+ 		    0x42, 0x43, 0x4D, 0x5F, 0x53, 0x43, 0x48, 0x49)},
+@@ -257,6 +265,7 @@ static struct tee_client_driver tee_bnxt_fw_driver =3D {
+ 		.bus		=3D &tee_bus_type,
+ 		.probe		=3D tee_bnxt_fw_probe,
+ 		.remove		=3D tee_bnxt_fw_remove,
++		.shutdown	=3D tee_bnxt_fw_shutdown,
+ 	},
+ };
+=20
 --=20
 2.25.1
 
 
---===============2467545908882447635==--
+--===============2269057590185218354==--
 
