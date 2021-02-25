@@ -1,79 +1,46 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Allen Pais <allen.lkml@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions meeting February 2021
-Date: Thu, 25 Feb 2021 09:41:08 +0100
-Message-ID: 
- <CA+EyddYjao0tFkNcAH81MhhYmTX084dxOTzpbaV2MYr0evgvaQ@mail.gmail.com>
-In-Reply-To: <
- <CAJ1nHOW9g_3DVV1hergs_N6UoObGQ5c+q4Sh7ijwujfFzMBZTg@mail.gmail.com>>
+Subject: [PATCH v2 0/2] optee: fix OOM seen due to tee_shm_free()
+Date: Thu, 25 Feb 2021 14:36:08 +0530
+Message-ID: <20210225090610.242623-1-allen.lkml@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1300924033666978719=="
+Content-Type: multipart/mixed; boundary="===============6079416895975382139=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1300924033666978719==
+--===============6079416895975382139==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi Jorge,
+From: Allen Pais <apais@linux.microsoft.com>
 
-On Wed, 24 Feb 2021 at 18:14, Jorge Ramirez <jorge@foundries.io> wrote:
+The following out of memory errors are seen on kexec reboot
+from the optee core.
+    
+[    0.368428] tee_bnxt_fw optee-clnt0: tee_shm_alloc failed
+[    0.368461] tee_bnxt_fw: probe of optee-clnt0 failed with error -22
+    
+tee_shm_release() is not invoked on dma shm buffer.
+    
+Implement .shutdown() in optee core as well as bnxt firmware driver
+to handle the release of the buffers correctly.
+    
+More info:
+https://github.com/OP-TEE/optee_os/issues/3637
 
-> Sorry Joakim.
-> I guess it is too late now but It would have been good to talk about the
-> TEE strategy/direction with RNG.
-> 1) how often do we seed the PRNG.
-> 2) should we always use PRNG and only use HWRNG to seed if with a certain
-> cadence.
-> 3) how do we measure the quality of an RNG in OPTEE (how do we guarantee
-> no regressions)
-> this would be really an open discussion more than anything else (unless
-> there is a matematician amongst us)
->
-Yes, good suggestions. I'll add it to the next meeting (March 25:th).
+v2:
+  keep the .shutdown() method simple. [Jens Wiklander]
 
-Regards,
-Joakim
+Allen Pais (2):
+  optee: fix tee out of memory failure seen during kexec reboot
+  firmware: tee_bnxt: implement shutdown method to handle kexec reboots
+
+ drivers/firmware/broadcom/tee_bnxt_fw.c |  9 +++++++++
+ drivers/tee/optee/core.c                | 20 ++++++++++++++++++++
+ 2 files changed, 29 insertions(+)
+
+-- 
+2.25.1
 
 
->
->
->
-> On Wed, Feb 24, 2021 at 9:18 AM Joakim Bech via OP-TEE <
-> op-tee(a)lists.trustedfirmware.org> wrote:
->
->> Hi,
->>
->> Haven't received any suggestions for topics to discuss, so no agenda. No
->> agenda means no meeting and therefore I'm cancelling the LOC meeting that
->> was scheduled for tomorrow.
->>
->> Regards,
->> Joakim
->>
->>
->> On Wed, 17 Feb 2021 at 15:47, Joakim Bech <joakim.bech@linaro.org> wrote:
->>
->> > Hi,
->> >
->> > LOC monthly meeting is planned to take place on Thursday February 25th @
->> > 16.00 (UTC+1).
->> >
->> > We're looking for topics to discuss in general. Eventually we'll have a
->> > presentation from Achin Gupta from Arm talking about the FF-A spec.
->> >
->> > Meeting details:
->> > ---------------
->> > Date/time: Thursday Feb 25th(a)16.00 (UTC+1)
->> > https://everytimezone.com/s/c4e5d6a3
->> > Connection details: https://www.trustedfirmware.org/meetings/
->> > Meeting notes: http://bit.ly/loc-notes
->> > Project page: https://www.linaro.org/projects/#LOC
->> >
->> > Regards,
->> > Joakim on behalf of the Linaro OP-TEE team
->> >
->>
->
-
---===============1300924033666978719==--
+--===============6079416895975382139==--
 
