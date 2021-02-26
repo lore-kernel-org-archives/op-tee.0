@@ -1,61 +1,50 @@
-From: Allen Pais <allen.lkml@gmail.com>
+From: Jérôme Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 2/2] firmware: tee_bnxt: implement shutdown method to
- handle kexec reboots
-Date: Thu, 25 Feb 2021 14:36:10 +0530
-Message-ID: <20210225090610.242623-3-allen.lkml@gmail.com>
-In-Reply-To: <20210225090610.242623-1-allen.lkml@gmail.com>
+Subject: Re: Linaro OP-TEE Contributions meeting February 2021
+Date: Fri, 26 Feb 2021 09:50:28 +0100
+Message-ID: 
+ <CAA-cTWbBwVZ_qpO42fJWkCVb2DWti5wqCTJx2GYRGoNBZv_ZMA@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3C01000177d859f39f-a14e5838-6e47-46a7-857a-b55adfa4e?=
+ =?utf-8?q?32f-000000=40email=2Eamazonses=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2269057590185218354=="
+Content-Type: multipart/mixed; boundary="===============0220037554473469504=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2269057590185218354==
+--===============0220037554473469504==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-From: Allen Pais <apais@linux.microsoft.com>
+Hi,
 
- On kexec reboot the firmware driver fails to deallocate
-shm memory leading to a memory leak. Implement .shutdown()
-method to handle kexec reboots and to release shm buffers
-correctly.
+On Thu, Feb 25, 2021 at 9:41 AM Joakim Bech via OP-TEE <
+op-tee@lists.trustedfirmware.org> wrote:
 
-Signed-off-by: Allen Pais <apais@linux.microsoft.com>
----
- drivers/firmware/broadcom/tee_bnxt_fw.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+> Hi Jorge,
+>
+> On Wed, 24 Feb 2021 at 18:14, Jorge Ramirez <jorge@foundries.io> wrote:
+>
+> > Sorry Joakim.
+> > I guess it is too late now but It would have been good to talk about the
+> > TEE strategy/direction with RNG.
+> > 1) how often do we seed the PRNG.
+> > 2) should we always use PRNG and only use HWRNG to seed if with a certain
+> > cadence.
+> > 3) how do we measure the quality of an RNG in OPTEE (how do we guarantee
+> > no regressions)
+> > this would be really an open discussion more than anything else (unless
+> > there is a matematician amongst us)
+> >
+> Yes, good suggestions. I'll add it to the next meeting (March 25:th).
+>
 
-diff --git a/drivers/firmware/broadcom/tee_bnxt_fw.c b/drivers/firmware/broad=
-com/tee_bnxt_fw.c
-index ed10da5313e8..4c62e044a99f 100644
---- a/drivers/firmware/broadcom/tee_bnxt_fw.c
-+++ b/drivers/firmware/broadcom/tee_bnxt_fw.c
-@@ -242,6 +242,14 @@ static int tee_bnxt_fw_remove(struct device *dev)
- 	return 0;
- }
-=20
-+static void tee_bnxt_fw_shutdown(struct device *dev)
-+{
-+	tee_shm_free(pvt_data.fw_shm_pool);
-+	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
-+	tee_client_close_context(pvt_data.ctx);
-+	pvt_data.ctx =3D NULL;
-+}
-+
- static const struct tee_client_device_id tee_bnxt_fw_id_table[] =3D {
- 	{UUID_INIT(0x6272636D, 0x2019, 0x0716,
- 		    0x42, 0x43, 0x4D, 0x5F, 0x53, 0x43, 0x48, 0x49)},
-@@ -257,6 +265,7 @@ static struct tee_client_driver tee_bnxt_fw_driver =3D {
- 		.bus		=3D &tee_bus_type,
- 		.probe		=3D tee_bnxt_fw_probe,
- 		.remove		=3D tee_bnxt_fw_remove,
-+		.shutdown	=3D tee_bnxt_fw_shutdown,
- 	},
- };
-=20
---=20
-2.25.1
+And now that I think of it... there is this big OCALL contribution that has
+been mostly stalled for months...
+https://github.com/OP-TEE/optee_os/pull/3673
+We should discuss what to do with it.
 
+Regards,
+-- 
+Jerome
 
---===============2269057590185218354==--
+--===============0220037554473469504==--
 
