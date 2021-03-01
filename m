@@ -1,417 +1,47 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v9 2/4] KEYS: trusted: Introduce TEE based Trusted Keys
-Date: Mon, 01 Mar 2021 18:41:25 +0530
-Message-ID: <20210301131127.793707-3-sumit.garg@linaro.org>
+Subject: [PATCH v9 4/4] MAINTAINERS: Add entry for TEE based Trusted Keys
+Date: Mon, 01 Mar 2021 18:41:27 +0530
+Message-ID: <20210301131127.793707-5-sumit.garg@linaro.org>
 In-Reply-To: <20210301131127.793707-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8467125092582439402=="
+Content-Type: multipart/mixed; boundary="===============7485867038687348468=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8467125092582439402==
+--===============7485867038687348468==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Add support for TEE based trusted keys where TEE provides the functionality
-to seal and unseal trusted keys using hardware unique key.
-
-Refer to Documentation/staging/tee.rst for detailed information about TEE.
+Add MAINTAINERS entry for TEE based Trusted Keys framework.
 
 Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-Tested-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Acked-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
 ---
- include/keys/trusted_tee.h                |  16 ++
- security/keys/trusted-keys/Makefile       |   1 +
- security/keys/trusted-keys/trusted_core.c |   4 +
- security/keys/trusted-keys/trusted_tee.c  | 317 ++++++++++++++++++++++
- 4 files changed, 338 insertions(+)
- create mode 100644 include/keys/trusted_tee.h
- create mode 100644 security/keys/trusted-keys/trusted_tee.c
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/include/keys/trusted_tee.h b/include/keys/trusted_tee.h
-new file mode 100644
-index 000000000000..151be25a979e
---- /dev/null
-+++ b/include/keys/trusted_tee.h
-@@ -0,0 +1,16 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2019-2021 Linaro Ltd.
-+ *
-+ * Author:
-+ * Sumit Garg <sumit.garg@linaro.org>
-+ */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1d75afad615f..eb1ac9c90f7f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9830,6 +9830,14 @@ F:	include/keys/trusted-type.h
+ F:	include/keys/trusted_tpm.h
+ F:	security/keys/trusted-keys/
+ 
++KEYS-TRUSTED-TEE
++M:	Sumit Garg <sumit.garg@linaro.org>
++L:	linux-integrity(a)vger.kernel.org
++L:	keyrings(a)vger.kernel.org
++S:	Supported
++F:	include/keys/trusted_tee.h
++F:	security/keys/trusted-keys/trusted_tee.c
 +
-+#ifndef __TEE_TRUSTED_KEY_H
-+#define __TEE_TRUSTED_KEY_H
-+
-+#include <keys/trusted-type.h>
-+
-+extern struct trusted_key_ops trusted_key_tee_ops;
-+
-+#endif
-diff --git a/security/keys/trusted-keys/Makefile b/security/keys/trusted-keys=
-/Makefile
-index 49e3bcfe704f..347021d5d1f9 100644
---- a/security/keys/trusted-keys/Makefile
-+++ b/security/keys/trusted-keys/Makefile
-@@ -7,3 +7,4 @@ obj-$(CONFIG_TRUSTED_KEYS) +=3D trusted.o
- trusted-y +=3D trusted_core.o
- trusted-y +=3D trusted_tpm1.o
- trusted-y +=3D trusted_tpm2.o
-+trusted-$(CONFIG_TEE) +=3D trusted_tee.o
-diff --git a/security/keys/trusted-keys/trusted_core.c b/security/keys/truste=
-d-keys/trusted_core.c
-index 0db86b44605d..ec3a066a4b42 100644
---- a/security/keys/trusted-keys/trusted_core.c
-+++ b/security/keys/trusted-keys/trusted_core.c
-@@ -8,6 +8,7 @@
-=20
- #include <keys/user-type.h>
- #include <keys/trusted-type.h>
-+#include <keys/trusted_tee.h>
- #include <keys/trusted_tpm.h>
- #include <linux/capability.h>
- #include <linux/err.h>
-@@ -29,6 +30,9 @@ static const struct trusted_key_source trusted_key_sources[=
-] =3D {
- #if defined(CONFIG_TCG_TPM)
- 	{ "tpm", &trusted_key_tpm_ops },
- #endif
-+#if defined(CONFIG_TEE)
-+	{ "tee", &trusted_key_tee_ops },
-+#endif
- };
-=20
- DEFINE_STATIC_CALL_NULL(trusted_key_init, *trusted_key_sources[0].ops->init);
-diff --git a/security/keys/trusted-keys/trusted_tee.c b/security/keys/trusted=
--keys/trusted_tee.c
-new file mode 100644
-index 000000000000..62983d98a252
---- /dev/null
-+++ b/security/keys/trusted-keys/trusted_tee.c
-@@ -0,0 +1,317 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2019-2021 Linaro Ltd.
-+ *
-+ * Author:
-+ * Sumit Garg <sumit.garg@linaro.org>
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/key-type.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/tee_drv.h>
-+#include <linux/uuid.h>
-+
-+#include <keys/trusted_tee.h>
-+
-+#define DRIVER_NAME "trusted-key-tee"
-+
-+/*
-+ * Get random data for symmetric key
-+ *
-+ * [out]     memref[0]        Random data
-+ */
-+#define TA_CMD_GET_RANDOM	0x0
-+
-+/*
-+ * Seal trusted key using hardware unique key
-+ *
-+ * [in]      memref[0]        Plain key
-+ * [out]     memref[1]        Sealed key datablob
-+ */
-+#define TA_CMD_SEAL		0x1
-+
-+/*
-+ * Unseal trusted key using hardware unique key
-+ *
-+ * [in]      memref[0]        Sealed key datablob
-+ * [out]     memref[1]        Plain key
-+ */
-+#define TA_CMD_UNSEAL		0x2
-+
-+/**
-+ * struct trusted_key_tee_private - TEE Trusted key private data
-+ * @dev:		TEE based Trusted key device.
-+ * @ctx:		TEE context handler.
-+ * @session_id:		Trusted key TA session identifier.
-+ * @shm_pool:		Memory pool shared with TEE device.
-+ */
-+struct trusted_key_tee_private {
-+	struct device *dev;
-+	struct tee_context *ctx;
-+	u32 session_id;
-+	struct tee_shm *shm_pool;
-+};
-+
-+static struct trusted_key_tee_private pvt_data;
-+
-+/*
-+ * Have the TEE seal(encrypt) the symmetric key
-+ */
-+static int trusted_tee_seal(struct trusted_key_payload *p, char *datablob)
-+{
-+	int ret;
-+	struct tee_ioctl_invoke_arg inv_arg;
-+	struct tee_param param[4];
-+	struct tee_shm *reg_shm_in =3D NULL, *reg_shm_out =3D NULL;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	reg_shm_in =3D tee_shm_register(pvt_data.ctx, (unsigned long)p->key,
-+				      p->key_len, TEE_SHM_DMA_BUF |
-+				      TEE_SHM_KERNEL_MAPPED);
-+	if (IS_ERR(reg_shm_in)) {
-+		dev_err(pvt_data.dev, "key shm register failed\n");
-+		return PTR_ERR(reg_shm_in);
-+	}
-+
-+	reg_shm_out =3D tee_shm_register(pvt_data.ctx, (unsigned long)p->blob,
-+				       sizeof(p->blob), TEE_SHM_DMA_BUF |
-+				       TEE_SHM_KERNEL_MAPPED);
-+	if (IS_ERR(reg_shm_out)) {
-+		dev_err(pvt_data.dev, "blob shm register failed\n");
-+		ret =3D PTR_ERR(reg_shm_out);
-+		goto out;
-+	}
-+
-+	inv_arg.func =3D TA_CMD_SEAL;
-+	inv_arg.session =3D pvt_data.session_id;
-+	inv_arg.num_params =3D 4;
-+
-+	param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
-+	param[0].u.memref.shm =3D reg_shm_in;
-+	param[0].u.memref.size =3D p->key_len;
-+	param[0].u.memref.shm_offs =3D 0;
-+	param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
-+	param[1].u.memref.shm =3D reg_shm_out;
-+	param[1].u.memref.size =3D sizeof(p->blob);
-+	param[1].u.memref.shm_offs =3D 0;
-+
-+	ret =3D tee_client_invoke_func(pvt_data.ctx, &inv_arg, param);
-+	if ((ret < 0) || (inv_arg.ret !=3D 0)) {
-+		dev_err(pvt_data.dev, "TA_CMD_SEAL invoke err: %x\n",
-+			inv_arg.ret);
-+		ret =3D -EFAULT;
-+	} else {
-+		p->blob_len =3D param[1].u.memref.size;
-+	}
-+
-+out:
-+	if (reg_shm_out)
-+		tee_shm_free(reg_shm_out);
-+	if (reg_shm_in)
-+		tee_shm_free(reg_shm_in);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Have the TEE unseal(decrypt) the symmetric key
-+ */
-+static int trusted_tee_unseal(struct trusted_key_payload *p, char *datablob)
-+{
-+	int ret;
-+	struct tee_ioctl_invoke_arg inv_arg;
-+	struct tee_param param[4];
-+	struct tee_shm *reg_shm_in =3D NULL, *reg_shm_out =3D NULL;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	reg_shm_in =3D tee_shm_register(pvt_data.ctx, (unsigned long)p->blob,
-+				      p->blob_len, TEE_SHM_DMA_BUF |
-+				      TEE_SHM_KERNEL_MAPPED);
-+	if (IS_ERR(reg_shm_in)) {
-+		dev_err(pvt_data.dev, "blob shm register failed\n");
-+		return PTR_ERR(reg_shm_in);
-+	}
-+
-+	reg_shm_out =3D tee_shm_register(pvt_data.ctx, (unsigned long)p->key,
-+				       sizeof(p->key), TEE_SHM_DMA_BUF |
-+				       TEE_SHM_KERNEL_MAPPED);
-+	if (IS_ERR(reg_shm_out)) {
-+		dev_err(pvt_data.dev, "key shm register failed\n");
-+		ret =3D PTR_ERR(reg_shm_out);
-+		goto out;
-+	}
-+
-+	inv_arg.func =3D TA_CMD_UNSEAL;
-+	inv_arg.session =3D pvt_data.session_id;
-+	inv_arg.num_params =3D 4;
-+
-+	param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
-+	param[0].u.memref.shm =3D reg_shm_in;
-+	param[0].u.memref.size =3D p->blob_len;
-+	param[0].u.memref.shm_offs =3D 0;
-+	param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
-+	param[1].u.memref.shm =3D reg_shm_out;
-+	param[1].u.memref.size =3D sizeof(p->key);
-+	param[1].u.memref.shm_offs =3D 0;
-+
-+	ret =3D tee_client_invoke_func(pvt_data.ctx, &inv_arg, param);
-+	if ((ret < 0) || (inv_arg.ret !=3D 0)) {
-+		dev_err(pvt_data.dev, "TA_CMD_UNSEAL invoke err: %x\n",
-+			inv_arg.ret);
-+		ret =3D -EFAULT;
-+	} else {
-+		p->key_len =3D param[1].u.memref.size;
-+	}
-+
-+out:
-+	if (reg_shm_out)
-+		tee_shm_free(reg_shm_out);
-+	if (reg_shm_in)
-+		tee_shm_free(reg_shm_in);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Have the TEE generate random symmetric key
-+ */
-+static int trusted_tee_get_random(unsigned char *key, size_t key_len)
-+{
-+	int ret;
-+	struct tee_ioctl_invoke_arg inv_arg;
-+	struct tee_param param[4];
-+	struct tee_shm *reg_shm =3D NULL;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	reg_shm =3D tee_shm_register(pvt_data.ctx, (unsigned long)key, key_len,
-+				   TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_MAPPED);
-+	if (IS_ERR(reg_shm)) {
-+		dev_err(pvt_data.dev, "key shm register failed\n");
-+		return PTR_ERR(reg_shm);
-+	}
-+
-+	inv_arg.func =3D TA_CMD_GET_RANDOM;
-+	inv_arg.session =3D pvt_data.session_id;
-+	inv_arg.num_params =3D 4;
-+
-+	param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
-+	param[0].u.memref.shm =3D reg_shm;
-+	param[0].u.memref.size =3D key_len;
-+	param[0].u.memref.shm_offs =3D 0;
-+
-+	ret =3D tee_client_invoke_func(pvt_data.ctx, &inv_arg, param);
-+	if ((ret < 0) || (inv_arg.ret !=3D 0)) {
-+		dev_err(pvt_data.dev, "TA_CMD_GET_RANDOM invoke err: %x\n",
-+			inv_arg.ret);
-+		ret =3D -EFAULT;
-+	} else {
-+		ret =3D param[0].u.memref.size;
-+	}
-+
-+	tee_shm_free(reg_shm);
-+
-+	return ret;
-+}
-+
-+static int optee_ctx_match(struct tee_ioctl_version_data *ver, const void *d=
-ata)
-+{
-+	if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE)
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static int trusted_key_probe(struct device *dev)
-+{
-+	struct tee_client_device *rng_device =3D to_tee_client_device(dev);
-+	int ret;
-+	struct tee_ioctl_open_session_arg sess_arg;
-+
-+	memset(&sess_arg, 0, sizeof(sess_arg));
-+
-+	pvt_data.ctx =3D tee_client_open_context(NULL, optee_ctx_match, NULL,
-+					       NULL);
-+	if (IS_ERR(pvt_data.ctx))
-+		return -ENODEV;
-+
-+	memcpy(sess_arg.uuid, rng_device->id.uuid.b, TEE_IOCTL_UUID_LEN);
-+	sess_arg.clnt_login =3D TEE_IOCTL_LOGIN_REE_KERNEL;
-+	sess_arg.num_params =3D 0;
-+
-+	ret =3D tee_client_open_session(pvt_data.ctx, &sess_arg, NULL);
-+	if ((ret < 0) || (sess_arg.ret !=3D 0)) {
-+		dev_err(dev, "tee_client_open_session failed, err: %x\n",
-+			sess_arg.ret);
-+		ret =3D -EINVAL;
-+		goto out_ctx;
-+	}
-+	pvt_data.session_id =3D sess_arg.session;
-+
-+	ret =3D register_key_type(&key_type_trusted);
-+	if (ret < 0)
-+		goto out_sess;
-+
-+	pvt_data.dev =3D dev;
-+
-+	return 0;
-+
-+out_sess:
-+	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
-+out_ctx:
-+	tee_client_close_context(pvt_data.ctx);
-+
-+	return ret;
-+}
-+
-+static int trusted_key_remove(struct device *dev)
-+{
-+	unregister_key_type(&key_type_trusted);
-+	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
-+	tee_client_close_context(pvt_data.ctx);
-+
-+	return 0;
-+}
-+
-+static const struct tee_client_device_id trusted_key_id_table[] =3D {
-+	{UUID_INIT(0xf04a0fe7, 0x1f5d, 0x4b9b,
-+		   0xab, 0xf7, 0x61, 0x9b, 0x85, 0xb4, 0xce, 0x8c)},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(tee, trusted_key_id_table);
-+
-+static struct tee_client_driver trusted_key_driver =3D {
-+	.id_table	=3D trusted_key_id_table,
-+	.driver		=3D {
-+		.name		=3D DRIVER_NAME,
-+		.bus		=3D &tee_bus_type,
-+		.probe		=3D trusted_key_probe,
-+		.remove		=3D trusted_key_remove,
-+	},
-+};
-+
-+static int trusted_tee_init(void)
-+{
-+	return driver_register(&trusted_key_driver.driver);
-+}
-+
-+static void trusted_tee_exit(void)
-+{
-+	driver_unregister(&trusted_key_driver.driver);
-+}
-+
-+struct trusted_key_ops trusted_key_tee_ops =3D {
-+	.migratable =3D 0, /* non-migratable */
-+	.init =3D trusted_tee_init,
-+	.seal =3D trusted_tee_seal,
-+	.unseal =3D trusted_tee_unseal,
-+	.get_random =3D trusted_tee_get_random,
-+	.exit =3D trusted_tee_exit,
-+};
---=20
+ KEYS/KEYRINGS
+ M:	David Howells <dhowells@redhat.com>
+ M:	Jarkko Sakkinen <jarkko@kernel.org>
+-- 
 2.25.1
 
 
---===============8467125092582439402==--
+--===============7485867038687348468==--
 
