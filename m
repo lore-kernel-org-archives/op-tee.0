@@ -1,47 +1,115 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Request for support opensource optee contribution guide line
-Date: Wed, 03 Mar 2021 10:15:40 +0100
+Subject: Re: [PATCH v9 0/4] Introduce TEE based Trusted Keys support
+Date: Thu, 04 Mar 2021 15:30:18 +0530
 Message-ID: 
- <CAHUa44FuE9YuR9_MgQBCSomHe9T=tLzW8WBn0yJFuze5q0eksQ@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3C01000177f70657f0-c3987b5d-0bcf-4697-a5e3-f15441fc6?=
- =?utf-8?q?bac-000000=40email=2Eamazonses=2Ecom=3E?=>
+ <CAFA6WYO4HHhtymaUzmkuaCZybTAWBQ=4K9Dez1pe1kqo3AJhuA@mail.gmail.com>
+In-Reply-To: <20210301131127.793707-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4940914210280276816=="
+Content-Type: multipart/mixed; boundary="===============5359517601519354238=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4940914210280276816==
+--===============5359517601519354238==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Raghu,
+Hi Jarkko,
 
-On Wed, Mar 3, 2021 at 8:38 AM Yejerla, VeeraraghavuluX via OP-TEE
-<op-tee@lists.trustedfirmware.org> wrote:
+On Mon, 1 Mar 2021 at 18:41, Sumit Garg <sumit.garg@linaro.org> wrote:
 >
-> Dear Sir,
+> Add support for TEE based trusted keys where TEE provides the functionality
+> to seal and unseal trusted keys using hardware unique key. Also, this is
+> an alternative in case platform doesn't possess a TPM device.
 >
-> I would like to know that, if I want submit any patch for optee opensource =
-features, could please guide me what are the guide line I have to follow it. =
-Below are some information require .
+> This patch-set has been tested with OP-TEE based early TA which is already
+> merged in upstream [1].
 >
+> [1] https://github.com/OP-TEE/optee_os/commit/f86ab8e7e0de869dfa25ca05a37ee=
+070d7e5b86b
 >
->   1.  What is the maximum patch size shall I submit?
+> Changes in v9:
+> 1. Rebased to latest tpmdd/master.
+> 2. Defined pr_fmt() and removed redundant tags.
+> 3. Patch #2: incorporated misc. comments.
+> 4. Patch #3: incorporated doc changes from Elaine and misc. comments
+>    from Randy.
+> 5. Patch #4: reverted to separate maintainer entry as per request from
+>    Jarkko.
+> 6. Added Jarkko's Tested-by: tag on patch #2.
 
-That depends, it might be good to start with something small as a
-first contribution.
+It looks like we don't have any further comments on this patch-set. So
+would you be able to pick up this patch-set?
 
->   2.  What are the code guide line I have to follow it?
+-Sumit
 
-https://optee.readthedocs.io/en/latest/general/coding_standards.html
+>
+> Changes in v8:
+> 1. Added static calls support instead of indirect calls.
+> 2. Documented trusted keys source module parameter.
+> 3. Refined patch #1 commit message discription.
+> 4. Addressed misc. comments on patch #2.
+> 5. Added myself as Trusted Keys co-maintainer instead.
+> 6. Rebased to latest tpmdd master.
+>
+> Changes in v7:
+> 1. Added a trusted.source module parameter in order to enforce user's
+>    choice in case a particular platform posses both TPM and TEE.
+> 2. Refine commit description for patch #1.
+>
+> Changes in v6:
+> 1. Revert back to dynamic detection of trust source.
+> 2. Drop author mention from trusted_core.c and trusted_tpm1.c files.
+> 3. Rebased to latest tpmdd/master.
+>
+> Changes in v5:
+> 1. Drop dynamic detection of trust source and use compile time flags
+>    instead.
+> 2. Rename trusted_common.c -> trusted_core.c.
+> 3. Rename callback: cleanup() -> exit().
+> 4. Drop "tk" acronym.
+> 5. Other misc. comments.
+> 6. Added review tags for patch #3 and #4.
+>
+> Changes in v4:
+> 1. Pushed independent TEE features separately:
+>   - Part of recent TEE PR: https://lkml.org/lkml/2020/5/4/1062
+> 2. Updated trusted-encrypted doc with TEE as a new trust source.
+> 3. Rebased onto latest tpmdd/master.
+>
+> Changes in v3:
+> 1. Update patch #2 to support registration of multiple kernel pages.
+> 2. Incoporate dependency patch #4 in this patch-set:
+>    https://patchwork.kernel.org/patch/11091435/
+>
+> Changes in v2:
+> 1. Add reviewed-by tags for patch #1 and #2.
+> 2. Incorporate comments from Jens for patch #3.
+> 3. Switch to use generic trusted keys framework.
+>
+> Sumit Garg (4):
+>   KEYS: trusted: Add generic trusted keys framework
+>   KEYS: trusted: Introduce TEE based Trusted Keys
+>   doc: trusted-encrypted: updates with TEE as a new trust source
+>   MAINTAINERS: Add entry for TEE based Trusted Keys
+>
+>  .../admin-guide/kernel-parameters.txt         |  12 +
+>  .../security/keys/trusted-encrypted.rst       | 171 ++++++--
+>  MAINTAINERS                                   |   8 +
+>  include/keys/trusted-type.h                   |  53 +++
+>  include/keys/trusted_tee.h                    |  16 +
+>  include/keys/trusted_tpm.h                    |  29 +-
+>  security/keys/trusted-keys/Makefile           |   2 +
+>  security/keys/trusted-keys/trusted_core.c     | 358 +++++++++++++++++
+>  security/keys/trusted-keys/trusted_tee.c      | 317 +++++++++++++++
+>  security/keys/trusted-keys/trusted_tpm1.c     | 366 ++++--------------
+>  10 files changed, 981 insertions(+), 351 deletions(-)
+>  create mode 100644 include/keys/trusted_tee.h
+>  create mode 100644 security/keys/trusted-keys/trusted_core.c
+>  create mode 100644 security/keys/trusted-keys/trusted_tee.c
+>
+> --
+> 2.25.1
+>
 
->   3.  What are mail chain I have to include for patch review purpose?
->   4.  Is there any open source link for post quarry ?
-
-See https://optee.readthedocs.io/en/latest/general/contribute.html
-
-Cheers,
-Jens
-
---===============4940914210280276816==--
+--===============5359517601519354238==--
 
