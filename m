@@ -1,73 +1,38 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: James Bottomley <jejb@linux.ibm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v9 0/4] Introduce TEE based Trusted Keys support
-Date: Wed, 10 Mar 2021 21:56:13 +0200
-Message-ID: <YEkkXbWrYBTcGXEd@kernel.org>
-In-Reply-To: <
- <CAFA6WYOxsYin8wBB_yU=S-bnqM-g5TFnTU_KXxc3wSBfx_N_6A@mail.gmail.com>>
+Date: Wed, 10 Mar 2021 14:26:27 -0800
+Message-ID: <9aa3173ab46b0aa7edb8146ffd3df05c1f74207e.camel@linux.ibm.com>
+In-Reply-To: <YEkkXbWrYBTcGXEd@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5700317221961020556=="
+Content-Type: multipart/mixed; boundary="===============7346469756002117268=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5700317221961020556==
+--===============7346469756002117268==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 09, 2021 at 02:40:07PM +0530, Sumit Garg wrote:
-> On Thu, 4 Mar 2021 at 21:14, Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> >
-> > On Thu, Mar 04, 2021 at 03:30:18PM +0530, Sumit Garg wrote:
-> > > Hi Jarkko,
-> > >
-> > > On Mon, 1 Mar 2021 at 18:41, Sumit Garg <sumit.garg@linaro.org> wrote:
-> > > >
-> > > > Add support for TEE based trusted keys where TEE provides the functio=
-nality
-> > > > to seal and unseal trusted keys using hardware unique key. Also, this=
- is
-> > > > an alternative in case platform doesn't possess a TPM device.
-> > > >
-> > > > This patch-set has been tested with OP-TEE based early TA which is al=
-ready
-> > > > merged in upstream [1].
-> > > >
-> > > > [1] https://github.com/OP-TEE/optee_os/commit/f86ab8e7e0de869dfa25ca0=
-5a37ee070d7e5b86b
-> > > >
-> > > > Changes in v9:
-> > > > 1. Rebased to latest tpmdd/master.
-> > > > 2. Defined pr_fmt() and removed redundant tags.
-> > > > 3. Patch #2: incorporated misc. comments.
-> > > > 4. Patch #3: incorporated doc changes from Elaine and misc. comments
-> > > >    from Randy.
-> > > > 5. Patch #4: reverted to separate maintainer entry as per request from
-> > > >    Jarkko.
-> > > > 6. Added Jarkko's Tested-by: tag on patch #2.
-> > >
-> > > It looks like we don't have any further comments on this patch-set. So
-> > > would you be able to pick up this patch-set?
-> >
-> > I'm cool with that - I can pick this for 5.13.
-> >
+On Wed, 2021-03-10 at 21:56 +0200, Jarkko Sakkinen wrote:
+[...]
+> I also need to apply=20
 >=20
-> Thanks.
+> https://lore.kernel.org/linux-integrity/20210127190617.17564-1-James.Bottom=
+ley(a)HansenPartnership.com/
 >=20
-> -Sumit
+> and I would like to do both while I'm at it.
+>=20
+> James, there was one patch that needed fixing but I cannot find
+> lore.kernel.org link. Can you point me to that so that we
+> can proceed?
 
-I'll make it available soon'ish.
+I think you mean this one observing a missing space in the commit
+message:
 
-I also need to apply=20
+https://lore.kernel.org/keyrings/1327393.1612972717(a)warthog.procyon.org.uk/
 
-https://lore.kernel.org/linux-integrity/20210127190617.17564-1-James.Bottomle=
-y(a)HansenPartnership.com/
+James
 
-and I would like to do both while I'm at it.
 
-James, there was one patch that needed fixing but I cannot find
-lore.kernel.org link. Can you point me to that so that we
-can proceed?
 
-/Jarkko
-
---===============5700317221961020556==--
+--===============7346469756002117268==--
 
