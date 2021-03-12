@@ -1,60 +1,48 @@
-From: Ran Wang <ran.wang_1@nxp.com>
+From: Jarkko Sakkinen <jarkko@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] optee: enable apci support
-Date: Fri, 12 Mar 2021 16:36:53 +0800
-Message-ID: <20210312083653.38780-1-ran.wang_1@nxp.com>
+Subject: Re: [PATCH v9 0/4] Introduce TEE based Trusted Keys support
+Date: Fri, 12 Mar 2021 18:26:53 +0200
+Message-ID: <YEuWTet0wr5DuDy/@kernel.org>
+In-Reply-To: <9aa3173ab46b0aa7edb8146ffd3df05c1f74207e.camel@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0405260321919879646=="
+Content-Type: multipart/mixed; boundary="===============5030168520932951088=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0405260321919879646==
+--===============5030168520932951088==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-This patch add ACPI support for optee driver.
+On Wed, Mar 10, 2021 at 02:26:27PM -0800, James Bottomley wrote:
+> On Wed, 2021-03-10 at 21:56 +0200, Jarkko Sakkinen wrote:
+> [...]
+> > I also need to apply=20
+> >=20
+> > https://lore.kernel.org/linux-integrity/20210127190617.17564-1-James.Bott=
+omley(a)HansenPartnership.com/
+> >=20
+> > and I would like to do both while I'm at it.
+> >=20
+> > James, there was one patch that needed fixing but I cannot find
+> > lore.kernel.org link. Can you point me to that so that we
+> > can proceed?
+>=20
+> I think you mean this one observing a missing space in the commit
+> message:
+>=20
+> https://lore.kernel.org/keyrings/1327393.1612972717(a)warthog.procyon.org.u=
+k/
+>=20
+> James
 
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
----
- drivers/tee/optee/core.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Makefile needed fixing (separate lines), and spaces where missing between
+commas in one file (checkpatch complained).
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index cf4718c6d35d..8fb261f4b9db 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -5,6 +5,7 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/acpi.h>
- #include <linux/arm-smccc.h>
- #include <linux/errno.h>
- #include <linux/io.h>
-@@ -735,12 +736,21 @@ static const struct of_device_id optee_dt_match[] = {
- };
- MODULE_DEVICE_TABLE(of, optee_dt_match);
- 
-+#ifdef CONFIG_ACPI
-+static const struct acpi_device_id optee_acpi_match[] = {
-+	{ "OPTEE01",},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(acpi, dwc3_acpi_match);
-+#endif
-+
- static struct platform_driver optee_driver = {
- 	.probe  = optee_probe,
- 	.remove = optee_remove,
- 	.driver = {
- 		.name = "optee",
- 		.of_match_table = optee_dt_match,
-+		.acpi_match_table = ACPI_PTR(optee_acpi_match),
- 	},
- };
- module_platform_driver(optee_driver);
--- 
-2.25.1
+I digged a version from my reflog but as I noted privately it's missing one
+file.
 
+Either provide that file or send a new version of the full patch set.
 
---===============0405260321919879646==--
+/Jarkko
+
+--===============5030168520932951088==--
 
