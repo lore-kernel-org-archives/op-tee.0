@@ -1,15 +1,34 @@
-From: Peng Fan <peng.fan@nxp.com>
+From: Jelle Sels <Jelle.Sels@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: EHF + OPTEE on ARM64
-Date: Tue, 16 Mar 2021 10:08:04 +0000
-Message-ID: <DB6PR0402MB276037FE910CDDFD0C85CC9D886B9@DB6PR0402MB2760.eurprd04.prod.outlook.com>
+Subject: Re: EHF + OPTEE on ARM64
+Date: Tue, 16 Mar 2021 10:16:34 +0000
+Message-ID: <VI1PR08MB534470EBDC3D4CD3FFE65134866B9@VI1PR08MB5344.eurprd08.prod.outlook.com>
+In-Reply-To: <=?utf-8?q?=3C010001783a81d680-6a394230-97c8-4f1f-9c6f-c43307c4c?=
+ =?utf-8?q?9c9-000000=40email=2Eamazonses=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1505110670776131556=="
+Content-Type: multipart/mixed; boundary="===============8533184272937097477=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1505110670776131556==
+--===============8533184272937097477==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+If I am not mistaking, the fiq handler should be opteed_sel1_interrupt_handle=
+r which will forward the interrupt to S-EL1.
+
+R,
+
+Jelle
+
+
+________________________________________
+From: OP-TEE <op-tee-bounces@lists.trustedfirmware.org> on behalf of Peng F=
+an via OP-TEE <op-tee@lists.trustedfirmware.org>
+Sent: Tuesday, March 16, 2021 11:08
+To: op-tee(a)lists.trustedfirmware.org; Jens Wiklander; Joakim Bech
+Subject: EHF + OPTEE on ARM64
 
 Hi,
 
@@ -31,5 +50,5 @@ together?
 Thanks
 Peng.
 
---===============1505110670776131556==--
+--===============8533184272937097477==--
 
