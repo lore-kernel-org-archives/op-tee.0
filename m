@@ -1,49 +1,35 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Peng Fan <peng.fan@nxp.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE tracepoints for v5.13
-Date: Mon, 15 Mar 2021 12:37:33 +0100
-Message-ID: <20210315113733.GA1944243@jade>
+Subject: EHF + OPTEE on ARM64
+Date: Tue, 16 Mar 2021 10:08:04 +0000
+Message-ID: <DB6PR0402MB276037FE910CDDFD0C85CC9D886B9@DB6PR0402MB2760.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3811119821034553442=="
+Content-Type: multipart/mixed; boundary="===============1505110670776131556=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3811119821034553442==
+--===============1505110670776131556==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+Hi,
 
-Please pull this patch adding tracepoints around calls to OP-TEE in
-secure world.
+In bl31/ehf.c, there are following two lines, per my understanding,
+when cpu is in secure world, the non-secure interrupt as FIQ(GICv3)
+will be directly catched by EL3, not S-EL1
+        /* Route EL3 interrupts when in Secure and Non-secure. */
+        set_interrupt_rm_flag(flags, NON_SECURE);
+        set_interrupt_rm_flag(flags, SECURE);
 
-Thanks,
-Jens
+So this will conflict with OP-TEE, because OP-TEE needs catch
+NS-interrupt as FIQ in S-EL1 world.
 
-The following changes since commit a38fd8748464831584a19438cbb3082b5a2dab15:
+Am I understand correct?
 
-  Linux 5.12-rc2 (2021-03-05 17:33:41 -0800)
+Any ideas how we could address this to make EHF + OPTEE run
+together?
 
-are available in the Git repository at:
+Thanks
+Peng.
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-tracepo=
-ints-for-v5.13
-
-for you to fetch changes up to 0101947dbcc3204f08fb5b69a21dbd4b1535cad6:
-
-  tee: optee: add invoke_fn tracepoints (2021-03-15 12:04:01 +0100)
-
-----------------------------------------------------------------
-Add tracepoints around calls to secure world
-
-----------------------------------------------------------------
-Jisheng Zhang (1):
-      tee: optee: add invoke_fn tracepoints
-
- drivers/tee/optee/call.c        |  4 +++
- drivers/tee/optee/optee_trace.h | 67 +++++++++++++++++++++++++++++++++++++++=
-++
- 2 files changed, 71 insertions(+)
- create mode 100644 drivers/tee/optee/optee_trace.h
-
---===============3811119821034553442==--
+--===============1505110670776131556==--
 
