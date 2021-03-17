@@ -1,18 +1,46 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Achin Gupta <Achin.Gupta@arm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: EHF + OPTEE on ARM64
-Date: Wed, 17 Mar 2021 10:23:12 +0100
-Message-ID: 
- <CAHUa44G8gY2rpLtOA3M80+TFYrJru7CvwbFm6niS+vjdMYxKCw@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CDB6PR0402MB2760C9070B6DBA9907249ACB886A9=40DB6PR04?=
- =?utf-8?q?02MB2760=2Eeurprd04=2Eprod=2Eoutlook=2Ecom=3E?=>
+Date: Wed, 17 Mar 2021 09:59:03 +0000
+Message-ID: <DB6PR0801MB186187E5FB2478921413266CFF6A9@DB6PR0801MB1861.eurprd08.prod.outlook.com>
+In-Reply-To: <=?utf-8?q?=3C010001783f7f5251-ae6b47a8-f11e-4478-ae12-4e2a3974d?=
+ =?utf-8?q?518-000000=40email=2Eamazonses=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7317044861479643743=="
+Content-Type: multipart/mixed; boundary="===============2812905744798497472=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7317044861479643743==
+--===============2812905744798497472==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi Peng,
+
++TF-A folk.
+
+My 0.02$.
+
+What is the problem you are trying to solve? Why do you need to run OP-TEE an=
+d EHF together? EHF was originally written to support a S-EL0 SP that is mana=
+ged directly by TF-A in EL3 (TF-A folk can chime in).
+
+The SP could perform RAS error handling for which it needs the EHF. The EHF t=
+riages asynchronous exceptions and hands RAS errors to the SP for further han=
+dling.
+
+This is just one use case but there is no Trusted OS in these configurations.
+
+So, it would help to understand the requirement.
+
+cheers,
+Achin
+
+________________________________
+From: OP-TEE <op-tee-bounces@lists.trustedfirmware.org> on behalf of Jens W=
+iklander via OP-TEE <op-tee@lists.trustedfirmware.org>
+Sent: 17 March 2021 09:23
+To: Peng Fan <peng.fan@nxp.com>
+Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
+Subject: Re: EHF + OPTEE on ARM64
 
 On Wed, Mar 17, 2021 at 9:43 AM Peng Fan <peng.fan@nxp.com> wrote:
 >
@@ -110,5 +138,5 @@ this right now.
 Cheers,
 Jens
 
---===============7317044861479643743==--
+--===============2812905744798497472==--
 
