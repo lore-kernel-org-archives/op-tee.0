@@ -1,75 +1,98 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Ard Biesheuvel <ardb@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: EHF + OPTEE on ARM64
-Date: Wed, 17 Mar 2021 09:16:32 +0100
+Subject: Re: [PATCH] optee: enable apci support
+Date: Wed, 17 Mar 2021 09:29:23 +0100
 Message-ID: 
- <CAHUa44G0EuZ8Y-UoSJsoe-HUC6FfOpH=237CojqEroTBV2auCg@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CDB6PR0402MB2760BCA1305CF51F1AB222FA886A9=40DB6PR04?=
- =?utf-8?q?02MB2760=2Eeurprd04=2Eprod=2Eoutlook=2Ecom=3E?=>
+ <CAMj1kXFg1a5ezoVBvrZ7xc7oM2zH-Phu1eNoXv+YZ+Yda1k7SQ@mail.gmail.com>
+In-Reply-To: <20210317080442.GA3018337@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6084883962756637812=="
+Content-Type: multipart/mixed; boundary="===============1127582520235047744=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6084883962756637812==
+--===============1127582520235047744==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 17, 2021 at 9:02 AM Peng Fan <peng.fan@nxp.com> wrote:
+On Wed, 17 Mar 2021 at 09:04, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
 >
-> > Subject: Re: EHF + OPTEE on ARM64
+> On Fri, Mar 12, 2021 at 04:36:53PM +0800, Ran Wang wrote:
+> > This patch add ACPI support for optee driver.
 > >
-> > On Wed, Mar 17, 2021 at 8:41 AM Peng Fan <peng.fan@nxp.com> wrote:
-> > >
-> > > > Subject: Re: EHF + OPTEE on ARM64
-> > > >
-> > > > On Tue, Mar 16, 2021 at 11:08 AM Peng Fan <peng.fan@nxp.com> wrote:
-> > > > >
-> > > > > Hi,
-> > > > >
-> > > > > In bl31/ehf.c, there are following two lines, per my
-> > > > > understanding, when cpu is in secure world, the non-secure
-> > > > > interrupt as FIQ(GICv3) will be directly catched by EL3, not S-EL1
-> > > > >         /* Route EL3 interrupts when in Secure and Non-secure. */
-> > > > >         set_interrupt_rm_flag(flags, NON_SECURE);
-> > > > >         set_interrupt_rm_flag(flags, SECURE);
-> > > > >
-> > > > > So this will conflict with OP-TEE, because OP-TEE needs catch
-> > > > > NS-interrupt as FIQ in S-EL1 world.
-> > > >
-> > > > In the case of GICv3, OP-TEE is configured to receive the non-secure
-> > > > interrupts as FIQ and secure interrupts as IRQ. See CFG_ARM_GICV3.
-> > >
-> > > But EHF needs NS-interrupt FIQ be catched by EL3 if I understand
-> > > correct, per " set_interrupt_rm_flag(flags, SECURE);"
-> > >
-> > > So currently EHF could not work together with OP-TEE, right?
+> > Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+> > ---
+> >  drivers/tee/optee/core.c | 10 ++++++++++
+> >  1 file changed, 10 insertions(+)
 > >
-> > To be honest, I'm not completely sure what EHF does. From OP-TEE point of
-> > view we expect to receive the non-secure interrupts as a way of doing a
-> > controlled exit. This allows OP-TEE to resume execution with a different =
-core
-> > on re-entry. If EL3 takes the non-secure interrupts directly it will have=
- to
-> > make sure to only re-enter OP-TEE on this core as a return from exception.
+> > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> > index cf4718c6d35d..8fb261f4b9db 100644
+> > --- a/drivers/tee/optee/core.c
+> > +++ b/drivers/tee/optee/core.c
+> > @@ -5,6 +5,7 @@
+> >
+> >  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> >
+> > +#include <linux/acpi.h>
+> >  #include <linux/arm-smccc.h>
+> >  #include <linux/errno.h>
+> >  #include <linux/io.h>
+> > @@ -735,12 +736,21 @@ static const struct of_device_id optee_dt_match[] =
+=3D {
+> >  };
+> >  MODULE_DEVICE_TABLE(of, optee_dt_match);
+> >
+> > +#ifdef CONFIG_ACPI
+> > +static const struct acpi_device_id optee_acpi_match[] =3D {
+> > +     { "OPTEE01",},
+
+You cannot just invent ACPI HIDs like that. The 4 character prefix is
+a vendor ID that is assigned by the UEFI forum, the 4 following digits
+are up to the vendor to assign,
+
+> > +     { },
+> > +};
+> > +MODULE_DEVICE_TABLE(acpi, dwc3_acpi_match);
+
+dwc3_acpi_match ?? Does this even build?
+
+
+> > +#endif
+> > +
+> >  static struct platform_driver optee_driver =3D {
+> >       .probe  =3D optee_probe,
+> >       .remove =3D optee_remove,
+> >       .driver =3D {
+> >               .name =3D "optee",
+> >               .of_match_table =3D optee_dt_match,
+> > +             .acpi_match_table =3D ACPI_PTR(optee_acpi_match),
+> >       },
+> >  };
+> >  module_platform_driver(optee_driver);
+> > --
+> > 2.25.1
+> >
 >
-> Is this easy to be achieved?
-
-I don't know, it depends on what you intend to do with this non-secure
-interrupt. If it's handled at EL3 and then there's a return from
-exception back to S-EL1 there's likely no harm done. But if there's a
-world switch involved there might be trouble, OP-TEE might not be in a
-suitable state for a world switch.
-
+> This looks simple enough. Ard, is this what you had in mind earlier?
 >
-> Or by using opteed_sel1_interrupt_handler, could we have similar behavior
-> to allow the other core resume execution?
 
-Only OP-TEE itself can make a controlled exit as there's an internal
-state to maintain. Currently that's signalled with a non-secure
-interrupt.
+Not really.
 
-Cheers,
-Jens
+On SynQuacer, we use
 
---===============6084883962756637812==--
+    Device (TOS0) {
+      Name (_HID, "PRP0001")
+      Name (_UID, 0x0)
+      Name (_DSD, Package () {
+        ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+        Package () {
+          Package (2) { "compatible", "linaro,optee-tz" },
+          Package (2) { "method", "smc" },
+        }
+      })
+    }
+
+which does not require any changes to Linux. So I don't think this
+patch is needed at all tbh.
+
+--===============1127582520235047744==--
 
