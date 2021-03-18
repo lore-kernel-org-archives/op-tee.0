@@ -1,142 +1,122 @@
-From: Achin Gupta <Achin.Gupta@arm.com>
+From: Ran Wang <ran.wang_1@nxp.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: EHF + OPTEE on ARM64
-Date: Wed, 17 Mar 2021 09:59:03 +0000
-Message-ID: <DB6PR0801MB186187E5FB2478921413266CFF6A9@DB6PR0801MB1861.eurprd08.prod.outlook.com>
-In-Reply-To: <=?utf-8?q?=3C010001783f7f5251-ae6b47a8-f11e-4478-ae12-4e2a3974d?=
- =?utf-8?q?518-000000=40email=2Eamazonses=2Ecom=3E?=>
+Subject: RE: [PATCH] optee: enable apci support
+Date: Thu, 18 Mar 2021 07:29:31 +0000
+Message-ID: <AM6PR04MB54133297642949378521C6A9F1699@AM6PR04MB5413.eurprd04.prod.outlook.com>
+In-Reply-To: <
+ <CAMj1kXFg1a5ezoVBvrZ7xc7oM2zH-Phu1eNoXv+YZ+Yda1k7SQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2812905744798497472=="
+Content-Type: multipart/mixed; boundary="===============0767999362043394583=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2812905744798497472==
+--===============0767999362043394583==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Peng,
+Hi Ard,
 
-+TF-A folk.
 
-My 0.02$.
-
-What is the problem you are trying to solve? Why do you need to run OP-TEE an=
-d EHF together? EHF was originally written to support a S-EL0 SP that is mana=
-ged directly by TF-A in EL3 (TF-A folk can chime in).
-
-The SP could perform RAS error handling for which it needs the EHF. The EHF t=
-riages asynchronous exceptions and hands RAS errors to the SP for further han=
-dling.
-
-This is just one use case but there is no Trusted OS in these configurations.
-
-So, it would help to understand the requirement.
-
-cheers,
-Achin
-
-________________________________
-From: OP-TEE <op-tee-bounces@lists.trustedfirmware.org> on behalf of Jens W=
-iklander via OP-TEE <op-tee@lists.trustedfirmware.org>
-Sent: 17 March 2021 09:23
-To: Peng Fan <peng.fan@nxp.com>
-Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
-Subject: Re: EHF + OPTEE on ARM64
-
-On Wed, Mar 17, 2021 at 9:43 AM Peng Fan <peng.fan@nxp.com> wrote:
->
-> > Subject: Re: EHF + OPTEE on ARM64
+On Wednesday, March 17, 2021 4:29 PM, Ard Biesheuvel wrote:
+>=20
+> On Wed, 17 Mar 2021 at 09:04, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
 > >
-> > On Wed, Mar 17, 2021 at 9:02 AM Peng Fan <peng.fan@nxp.com> wrote:
+> > On Fri, Mar 12, 2021 at 04:36:53PM +0800, Ran Wang wrote:
+> > > This patch add ACPI support for optee driver.
 > > >
-> > > > Subject: Re: EHF + OPTEE on ARM64
-> > > >
-> > > > On Wed, Mar 17, 2021 at 8:41 AM Peng Fan <peng.fan@nxp.com> wrote:
-> > > > >
-> > > > > > Subject: Re: EHF + OPTEE on ARM64
-> > > > > >
-> > > > > > On Tue, Mar 16, 2021 at 11:08 AM Peng Fan <peng.fan@nxp.com>
-> > wrote:
-> > > > > > >
-> > > > > > > Hi,
-> > > > > > >
-> > > > > > > In bl31/ehf.c, there are following two lines, per my
-> > > > > > > understanding, when cpu is in secure world, the non-secure
-> > > > > > > interrupt as FIQ(GICv3) will be directly catched by EL3, not S-=
-EL1
-> > > > > > >         /* Route EL3 interrupts when in Secure and Non-secure.
-> > */
-> > > > > > >         set_interrupt_rm_flag(flags, NON_SECURE);
-> > > > > > >         set_interrupt_rm_flag(flags, SECURE);
-> > > > > > >
-> > > > > > > So this will conflict with OP-TEE, because OP-TEE needs catch
-> > > > > > > NS-interrupt as FIQ in S-EL1 world.
-> > > > > >
-> > > > > > In the case of GICv3, OP-TEE is configured to receive the
-> > > > > > non-secure interrupts as FIQ and secure interrupts as IRQ. See
-> > CFG_ARM_GICV3.
-> > > > >
-> > > > > But EHF needs NS-interrupt FIQ be catched by EL3 if I understand
-> > > > > correct, per " set_interrupt_rm_flag(flags, SECURE);"
-> > > > >
-> > > > > So currently EHF could not work together with OP-TEE, right?
-> > > >
-> > > > To be honest, I'm not completely sure what EHF does. From OP-TEE
-> > > > point of view we expect to receive the non-secure interrupts as a
-> > > > way of doing a controlled exit. This allows OP-TEE to resume
-> > > > execution with a different core on re-entry. If EL3 takes the
-> > > > non-secure interrupts directly it will have to make sure to only re-e=
-nter
-> > OP-TEE on this core as a return from exception.
+> > > Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+> > > ---
+> > >  drivers/tee/optee/core.c | 10 ++++++++++
+> > >  1 file changed, 10 insertions(+)
 > > >
-> > > Is this easy to be achieved?
-> >
-> > I don't know, it depends on what you intend to do with this non-secure
-> > interrupt. If it's handled at EL3 and then there's a return from exceptio=
-n back
-> > to S-EL1 there's likely no harm done. But if there's a world switch invol=
-ved
-> > there might be trouble, OP-TEE might not be in a suitable state for a wor=
-ld
-> > switch.
-> >
+> > > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> > > index cf4718c6d35d..8fb261f4b9db 100644
+> > > --- a/drivers/tee/optee/core.c
+> > > +++ b/drivers/tee/optee/core.c
+> > > @@ -5,6 +5,7 @@
 > > >
-> > > Or by using opteed_sel1_interrupt_handler, could we have similar
-> > > behavior to allow the other core resume execution?
+> > >  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > >
+> > > +#include <linux/acpi.h>
+> > >  #include <linux/arm-smccc.h>
+> > >  #include <linux/errno.h>
+> > >  #include <linux/io.h>
+> > > @@ -735,12 +736,21 @@ static const struct of_device_id
+> > > optee_dt_match[] =3D {  };  MODULE_DEVICE_TABLE(of, optee_dt_match);
+> > >
+> > > +#ifdef CONFIG_ACPI
+> > > +static const struct acpi_device_id optee_acpi_match[] =3D {
+> > > +     { "OPTEE01",},
+>=20
+> You cannot just invent ACPI HIDs like that. The 4 character prefix is a ven=
+dor ID that is assigned by the UEFI forum, the 4 following digits are
+> up to the vendor to assign,
+
+Thanks for this info. Could you please show me where I can find the guide/exa=
+mple for this assign process?
+
+> > > +     { },
+> > > +};
+> > > +MODULE_DEVICE_TABLE(acpi, dwc3_acpi_match);
+>=20
+> dwc3_acpi_match ?? Does this even build?
+
+My bad, I was referring dwc3 code as an example, will correct it.
+
+But looks this typo didn=E2=80=99t trigger error in my unit-test.
+=20
+>=20
+> > > +#endif
+> > > +
+> > >  static struct platform_driver optee_driver =3D {
+> > >       .probe  =3D optee_probe,
+> > >       .remove =3D optee_remove,
+> > >       .driver =3D {
+> > >               .name =3D "optee",
+> > >               .of_match_table =3D optee_dt_match,
+> > > +             .acpi_match_table =3D ACPI_PTR(optee_acpi_match),
+> > >       },
+> > >  };
+> > >  module_platform_driver(optee_driver);
+> > > --
+> > > 2.25.1
+> > >
 > >
-> > Only OP-TEE itself can make a controlled exit as there's an internal stat=
-e to
-> > maintain. Currently that's signalled with a non-secure interrupt.
->
->
-> Per EHF, https://trustedfirmware-a.readthedocs.io/en/latest/components/exce=
-ption-handling.html?highlight=3DException%20Handling%20Framework
-> On GICv3 systems, when executing in S-EL1, pending Non-secure interrupts of
-> sufficient priority are signalled as FIQs, and therefore will be routed to =
-EL3.
-> As a result, S-EL1 software cannot expect to handle Non-secure interrupts a=
-t S-EL1.
-> Essentially, this deprecates the routing mode described as CSS=3D0, TEL3=3D=
-0.
->
-> In order for S-EL1 software to handle Non-secure interrupts while having EH=
-F enabled,
-> the dispatcher must adopt a model where Non-secure interrupts are received =
-at EL3,
-> but are then synchronously handled over to S-EL1.
->
-> The issue to me here how to synchronously handled over to S-EL1 and not bre=
-ak optee.
+> > This looks simple enough. Ard, is this what you had in mind earlier?
+> >
+>=20
+> Not really.
+>=20
+> On SynQuacer, we use
+>=20
+>     Device (TOS0) {
+>       Name (_HID, "PRP0001")
+>       Name (_UID, 0x0)
+>       Name (_DSD, Package () {
+>         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+>         Package () {
+>           Package (2) { "compatible", "linaro,optee-tz" },
+>           Package (2) { "method", "smc" },
+>         }
+>       })
+>     }
+>=20
+> which does not require any changes to Linux. So I don't think this patch is=
+ needed at all tbh.
 
-I understand. OP-TEE is masking interrupts in some critical sections,
-while in such a state OP-TEE cannot handle any asynchronous interrupt.
-Temporarily masking interrupts is normally a quick operation so we do
-it in quite a few places.
-So the crux of the problem is to make sure that OP-TEE is in a state
-where it can make a controlled exit. I don't have any good ideas for
-this right now.
+Thanks for this example, but actually I failed to trigger kernel optee probe =
+function by using
+above code in ACPI table.
 
-Cheers,
-Jens
+And I am curious how this 'compatible' properties be picked up by kernel when=
+ try to match driver in ACPI mode?
 
---===============2812905744798497472==--
+My understanding is to get it done by feeding .acpi_match_table with somethin=
+g, right?
+
+Regards,
+Ran
+
+
+--===============0767999362043394583==--
 
