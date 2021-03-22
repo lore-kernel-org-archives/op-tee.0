@@ -1,173 +1,61 @@
-From: Peng Fan <peng.fan@nxp.com>
+From: Jerome Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: EHF + OPTEE on ARM64
-Date: Mon, 22 Mar 2021 09:11:12 +0000
-Message-ID: <DB6PR0402MB2760D253CF4642C13FFCC0CB88659@DB6PR0402MB2760.eurprd04.prod.outlook.com>
-In-Reply-To: <=?utf-8?q?=3CDB6PR0801MB186187E5FB2478921413266CFF6A9=40DB6PR08?=
- =?utf-8?q?01MB1861=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: 
+ [PATCH 1/1] tee: optee: do not check memref size on return from Secure World
+Date: Mon, 22 Mar 2021 11:40:37 +0100
+Message-ID: <f452049bc900365dd9183081a4bb8cf4a4d5a434.1616409291.git.jerome@forissier.org>
+In-Reply-To: <cover.1616409291.git.jerome@forissier.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4430065945984498254=="
+Content-Type: multipart/mixed; boundary="===============0239293392778775249=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4430065945984498254==
+--===============0239293392778775249==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Achin,
+When Secure World returns, it may have changed the size attribute of the
+memory references passed as [in/out] parameters. The GlobalPlatform TEE
+Internal Core API specification does not restrict the values that this
+size can take. In particular, Secure World may increase the value to be
+larger than the size of the input buffer to indicate that it needs more.
 
-We are using SDEI for Jailhouse hypervisor to minimize interrupt latency, how=
-ever we also wanna use OP-TEE when SDEI enabled.
+Therefore, the size check in optee_from_msg_param() is incorrect and
+needs to be removed. This fixes a number of failed test cases in the
+GlobalPlatform TEE Initial Configuratiom Test Suite v2_0_0_0-2017_06_09
+when OP-TEE is compiled without dynamic shared memory support
+(CFG_CORE_DYN_SHM=3Dn).
 
-So I wanna how to make both work together.
+Suggested-by: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: Jerome Forissier <jerome@forissier.org>
+---
+ drivers/tee/optee/core.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-Thanks,
-Peng.
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 319a1e701163..ddb8f9ecf307 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -79,16 +79,6 @@ int optee_from_msg_param(struct tee_param *params, size_t =
+num_params,
+ 				return rc;
+ 			p->u.memref.shm_offs =3D mp->u.tmem.buf_ptr - pa;
+ 			p->u.memref.shm =3D shm;
+-
+-			/* Check that the memref is covered by the shm object */
+-			if (p->u.memref.size) {
+-				size_t o =3D p->u.memref.shm_offs +
+-					   p->u.memref.size - 1;
+-
+-				rc =3D tee_shm_get_pa(shm, o, NULL);
+-				if (rc)
+-					return rc;
+-			}
+ 			break;
+ 		case OPTEE_MSG_ATTR_TYPE_RMEM_INPUT:
+ 		case OPTEE_MSG_ATTR_TYPE_RMEM_OUTPUT:
+--=20
+2.25.1
 
-From: Achin Gupta [mailto:Achin.Gupta(a)arm.com]
-Sent: 2021=E5=B9=B43=E6=9C=8817=E6=97=A5 17:59
-To: Peng Fan <peng.fan@nxp.com>; Jens Wiklander <jens.wiklander@linaro.or=
-g>
-Cc: op-tee(a)lists.trustedfirmware.org; tf-a(a)lists.trustedfirmware.org
-Subject: Re: EHF + OPTEE on ARM64
 
-Hi Peng,
-
-+TF-A folk.
-
-My 0.02$.
-
-What is the problem you are trying to solve? Why do you need to run OP-TEE an=
-d EHF together? EHF was originally written to support a S-EL0 SP that is mana=
-ged directly by TF-A in EL3 (TF-A folk can chime in).
-
-The SP could perform RAS error handling for which it needs the EHF. The EHF t=
-riages asynchronous exceptions and hands RAS errors to the SP for further han=
-dling.
-
-This is just one use case but there is no Trusted OS in these configurations.
-
-So, it would help to understand the requirement.
-
-cheers,
-Achin
-
-________________________________
-From: OP-TEE <op-tee-bounces(a)lists.trustedfirmware.org<mailto:op-tee-bounce=
-s@lists.trustedfirmware.org>> on behalf of Jens Wiklander via OP-TEE <op-te=
-e(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmware.org>>
-Sent: 17 March 2021 09:23
-To: Peng Fan <peng.fan(a)nxp.com<mailto:peng.fan@nxp.com>>
-Cc: op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmware.=
-org> <op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmwar=
-e.org>>
-Subject: Re: EHF + OPTEE on ARM64
-
-On Wed, Mar 17, 2021 at 9:43 AM Peng Fan <peng.fan@nxp.com<mailto:peng.fan(=
-a)nxp.com>> wrote:
->
-> > Subject: Re: EHF + OPTEE on ARM64
-> >
-> > On Wed, Mar 17, 2021 at 9:02 AM Peng Fan <peng.fan(a)nxp.com<mailto:peng.=
-fan@nxp.com>> wrote:
-> > >
-> > > > Subject: Re: EHF + OPTEE on ARM64
-> > > >
-> > > > On Wed, Mar 17, 2021 at 8:41 AM Peng Fan <peng.fan(a)nxp.com<mailto:p=
-eng.fan@nxp.com>> wrote:
-> > > > >
-> > > > > > Subject: Re: EHF + OPTEE on ARM64
-> > > > > >
-> > > > > > On Tue, Mar 16, 2021 at 11:08 AM Peng Fan <peng.fan(a)nxp.com<mai=
-lto:peng.fan@nxp.com>>
-> > wrote:
-> > > > > > >
-> > > > > > > Hi,
-> > > > > > >
-> > > > > > > In bl31/ehf.c, there are following two lines, per my
-> > > > > > > understanding, when cpu is in secure world, the non-secure
-> > > > > > > interrupt as FIQ(GICv3) will be directly catched by EL3, not S-=
-EL1
-> > > > > > >         /* Route EL3 interrupts when in Secure and Non-secure.
-> > */
-> > > > > > >         set_interrupt_rm_flag(flags, NON_SECURE);
-> > > > > > >         set_interrupt_rm_flag(flags, SECURE);
-> > > > > > >
-> > > > > > > So this will conflict with OP-TEE, because OP-TEE needs catch
-> > > > > > > NS-interrupt as FIQ in S-EL1 world.
-> > > > > >
-> > > > > > In the case of GICv3, OP-TEE is configured to receive the
-> > > > > > non-secure interrupts as FIQ and secure interrupts as IRQ. See
-> > CFG_ARM_GICV3.
-> > > > >
-> > > > > But EHF needs NS-interrupt FIQ be catched by EL3 if I understand
-> > > > > correct, per " set_interrupt_rm_flag(flags, SECURE);"
-> > > > >
-> > > > > So currently EHF could not work together with OP-TEE, right?
-> > > >
-> > > > To be honest, I'm not completely sure what EHF does. From OP-TEE
-> > > > point of view we expect to receive the non-secure interrupts as a
-> > > > way of doing a controlled exit. This allows OP-TEE to resume
-> > > > execution with a different core on re-entry. If EL3 takes the
-> > > > non-secure interrupts directly it will have to make sure to only re-e=
-nter
-> > OP-TEE on this core as a return from exception.
-> > >
-> > > Is this easy to be achieved?
-> >
-> > I don't know, it depends on what you intend to do with this non-secure
-> > interrupt. If it's handled at EL3 and then there's a return from exceptio=
-n back
-> > to S-EL1 there's likely no harm done. But if there's a world switch invol=
-ved
-> > there might be trouble, OP-TEE might not be in a suitable state for a wor=
-ld
-> > switch.
-> >
-> > >
-> > > Or by using opteed_sel1_interrupt_handler, could we have similar
-> > > behavior to allow the other core resume execution?
-> >
-> > Only OP-TEE itself can make a controlled exit as there's an internal stat=
-e to
-> > maintain. Currently that's signalled with a non-secure interrupt.
->
->
-> Per EHF, https://trustedfirmware-a.readthedocs.io/en/latest/components/exce=
-ption-handling.html?highlight=3DException%20Handling%20Framework<https://eur0=
-1.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Ftrustedfirmware-a.rea=
-dthedocs.io%2Fen%2Flatest%2Fcomponents%2Fexception-handling.html%3Fhighlight%=
-3DException%2520Handling%2520Framework&data=3D04%7C01%7Cpeng.fan%40nxp.com%7C=
-1632994e19aa4b3db22208d8e92b5332%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C1%7=
-C637515719585229040%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luM=
-zIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000&sdata=3D4yUCaoNYp7dsL6I%2BU2nC67%2Br=
-MZvhbAjQgarqoWSeF1E%3D&reserved=3D0>
-> On GICv3 systems, when executing in S-EL1, pending Non-secure interrupts of
-> sufficient priority are signalled as FIQs, and therefore will be routed to =
-EL3.
-> As a result, S-EL1 software cannot expect to handle Non-secure interrupts a=
-t S-EL1.
-> Essentially, this deprecates the routing mode described as CSS=3D0, TEL3=3D=
-0.
->
-> In order for S-EL1 software to handle Non-secure interrupts while having EH=
-F enabled,
-> the dispatcher must adopt a model where Non-secure interrupts are received =
-at EL3,
-> but are then synchronously handled over to S-EL1.
->
-> The issue to me here how to synchronously handled over to S-EL1 and not bre=
-ak optee.
-
-I understand. OP-TEE is masking interrupts in some critical sections,
-while in such a state OP-TEE cannot handle any asynchronous interrupt.
-Temporarily masking interrupts is normally a quick operation so we do
-it in quite a few places.
-So the crux of the problem is to make sure that OP-TEE is in a state
-where it can make a controlled exit. I don't have any good ideas for
-this right now.
-
-Cheers,
-Jens
-
---===============4430065945984498254==--
+--===============0239293392778775249==--
 
