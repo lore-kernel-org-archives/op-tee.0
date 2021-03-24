@@ -1,35 +1,39 @@
-From: Arnd Bergmann <arnd@kernel.org>
+From: Guenter Roeck <linux@roeck-us.net>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [GIT PULL] OP-TEE tracepoints for v5.13
-Date: Tue, 23 Mar 2021 18:32:41 +0100
-Message-ID: <161652074443.2900645.3221618123232650172.b4-ty@arndb.de>
-In-Reply-To: <20210315113733.GA1944243@jade>
+Subject: Re: [PATCH] tee: optee: add invoke_fn tracepoints
+Date: Wed, 24 Mar 2021 07:34:07 -0700
+Message-ID: <20210324143407.GA8717@roeck-us.net>
+In-Reply-To: <20210210144409.36ecdaed@xhacker.debian>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7962242961688104822=="
+Content-Type: multipart/mixed; boundary="===============9187945489309488148=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7962242961688104822==
+--===============9187945489309488148==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-From: Arnd Bergmann <arnd@arndb.de>
+On Wed, Feb 10, 2021 at 02:44:09PM +0800, Jisheng Zhang wrote:
+> Add tracepoints to retrieve information about the invoke_fn. This would
+> help to measure how many invoke_fn are triggered and how long it takes
+> to complete one invoke_fn call.
+>=20
+> Signed-off-by: Jisheng Zhang <Jisheng.Zhang@synaptics.com>
 
-On Mon, 15 Mar 2021 12:37:33 +0100, Jens Wiklander wrote:
-> Please pull this patch adding tracepoints around calls to OP-TEE in
-> secure world.
-> 
-> Thanks,
-> Jens
-> 
-> The following changes since commit a38fd8748464831584a19438cbb3082b5a2dab15:
-> 
-> [...]
+arm64:defconfig:
 
-Merged into arm/drivers, thanks!
+make-arm64 -j drivers/tee/optee/call.o
+  CALL    scripts/atomic/check-atomics.sh
+  CALL    scripts/checksyscalls.sh
+  CC      drivers/tee/optee/call.o
+In file included from drivers/tee/optee/optee_trace.h:67,
+                 from drivers/tee/optee/call.c:18:
+./include/trace/define_trace.h:95:42: fatal error: ./optee_trace.h: No such f=
+ile or directory
+   95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+      |                                          ^
+compilation terminated.
 
-merge commit: 9a752ebe6bca61150f3eeee22a8d7b4516c8d350
+Guenter
 
-       Arnd
-
---===============7962242961688104822==--
+--===============9187945489309488148==--
 
