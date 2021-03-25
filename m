@@ -1,74 +1,79 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 1/1] tee: optee: do not check memref size on return from
- Secure World
-Date: Thu, 25 Mar 2021 19:48:21 +0530
-Message-ID: 
- <CAFA6WYPryB+9W6EGXvea07=JH8_cfHKF8a4BDEyPeqPVkzvutw@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3C010001785986e9be-63aa88ce-3cf8-425f-87da-b2e3f84f6?=
- =?utf-8?q?ef5-000000=40email=2Eamazonses=2Ecom=3E?=>
+Subject: [PATCH 0/6] Add FF-A support in OP-TEE driver
+Date: Thu, 25 Mar 2021 16:44:20 +0100
+Message-ID: <20210325154426.3520148-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8166846479829656686=="
+Content-Type: multipart/mixed; boundary="===============7862648770370463784=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8166846479829656686==
+--===============7862648770370463784==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 22 Mar 2021 at 16:11, Jerome Forissier via OP-TEE
-<op-tee@lists.trustedfirmware.org> wrote:
->
-> When Secure World returns, it may have changed the size attribute of the
-> memory references passed as [in/out] parameters. The GlobalPlatform TEE
-> Internal Core API specification does not restrict the values that this
-> size can take. In particular, Secure World may increase the value to be
-> larger than the size of the input buffer to indicate that it needs more.
->
-> Therefore, the size check in optee_from_msg_param() is incorrect and
-> needs to be removed. This fixes a number of failed test cases in the
-> GlobalPlatform TEE Initial Configuratiom Test Suite v2_0_0_0-2017_06_09
-> when OP-TEE is compiled without dynamic shared memory support
-> (CFG_CORE_DYN_SHM=3Dn).
->
-> Suggested-by: Jens Wiklander <jens.wiklander@linaro.org>
-> Signed-off-by: Jerome Forissier <jerome@forissier.org>
-> ---
->  drivers/tee/optee/core.c | 10 ----------
->  1 file changed, 10 deletions(-)
->
+Hi all,
 
-Looks good to me.
+This adds supports for the OP-TEE driver to communicate with secure world
+using FF-A [1] as transport.
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+These patches are based on the FF-A v4 patch set by Sudeep Holla [2] [3].
 
--Sumit
+There is one change to the TEE subsystem with "tee: add sec_world_id to
+struct tee_shm" to add support for holding globally unique handle assigned
+by the FF-A. This is a field that I believe could useful for the AMDTEE
+driver too.
 
-> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index 319a1e701163..ddb8f9ecf307 100644
-> --- a/drivers/tee/optee/core.c
-> +++ b/drivers/tee/optee/core.c
-> @@ -79,16 +79,6 @@ int optee_from_msg_param(struct tee_param *params, size_=
-t num_params,
->                                 return rc;
->                         p->u.memref.shm_offs =3D mp->u.tmem.buf_ptr - pa;
->                         p->u.memref.shm =3D shm;
-> -
-> -                       /* Check that the memref is covered by the shm obje=
-ct */
-> -                       if (p->u.memref.size) {
-> -                               size_t o =3D p->u.memref.shm_offs +
-> -                                          p->u.memref.size - 1;
-> -
-> -                               rc =3D tee_shm_get_pa(shm, o, NULL);
-> -                               if (rc)
-> -                                       return rc;
-> -                       }
->                         break;
->                 case OPTEE_MSG_ATTR_TYPE_RMEM_INPUT:
->                 case OPTEE_MSG_ATTR_TYPE_RMEM_OUTPUT:
-> --
-> 2.25.1
->
+For communication the OP-TEE message protocol is still used, but with a new
+type of memory reference, struct optee_msg_param_fmem, to carry the
+information needed by FF-A. The OP-TEE driver is refactored internally with
+to sets of callbacks, one for the old SMC based communication and another
+set with FF-A as transport.
 
---===============8166846479829656686==--
+There is also a difference in how the drivers are instantiated. With the
+SMC based transport we have a platform driver, module_platform_driver(),
+today which we're keeping as is for this configuration. In a FF-A system we
+have a FF-A driver, module_ffa_driver(), instead.
+
+The OP-TEE driver can be compiled for both targets at the same time and
+it's up to runtime configuration (device tree or ACPI) to decide how it's
+initialized.
+
+Thanks,
+Jens
+
+[1] https://developer.arm.com/documentation/den0077/latest
+[2] https://lore.kernel.org/linux-arm-kernel/20210212154614.38604-1-sudeep.ho=
+lla(a)arm.com/
+[3] git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.git v5.1=
+1/ffa
+
+Jens Wiklander (6):
+  tee: add sec_world_id to struct tee_shm
+  optee: simplify optee_release()
+  optee: sync optee_msg.h and optee_rpc_cmd.h
+  optee: refactor driver with internal callbacks
+  optee: add a FF-A memory pool
+  optee: add FF-A support
+
+ drivers/tee/optee/call.c          | 327 +++++++++++---
+ drivers/tee/optee/core.c          | 698 +++++++++++++++++++++++++-----
+ drivers/tee/optee/optee_ffa.h     | 153 +++++++
+ drivers/tee/optee/optee_msg.h     | 168 ++-----
+ drivers/tee/optee/optee_private.h |  88 +++-
+ drivers/tee/optee/optee_rpc_cmd.h | 333 ++++++++++++++
+ drivers/tee/optee/rpc.c           | 169 +++++++-
+ drivers/tee/optee/shm_pool.c      |  65 ++-
+ drivers/tee/optee/shm_pool.h      |   1 +
+ include/linux/tee_drv.h           |   7 +-
+ 10 files changed, 1685 insertions(+), 324 deletions(-)
+ create mode 100644 drivers/tee/optee/optee_ffa.h
+ create mode 100644 drivers/tee/optee/optee_rpc_cmd.h
+
+
+base-commit: 31ef391700953fb59ea8755ea38c6085bdec380e
+--=20
+2.25.1
+
+
+--===============7862648770370463784==--
 
