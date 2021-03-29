@@ -1,59 +1,138 @@
-From: Jerome Forissier <jerome@forissier.org>
+From: Miklos Balint <Miklos.Balint@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Possible OB1 bug in imx_csu.c
-Date: Fri, 26 Mar 2021 14:23:55 +0100
-Message-ID: <2224db21-2442-935c-6d33-b994df51f81f@forissier.org>
-In-Reply-To: <=?utf-8?q?=3C01000177c94663b2-9469fc3a-c721-4bcf-9000-b3d47c2cb?=
- =?utf-8?q?912-000000=40email=2Eamazonses=2Ecom=3E?=>
+Subject: RE: [TF-A] Firmware FuSa workshop
+Date: Mon, 29 Mar 2021 08:07:40 +0000
+Message-ID: <VE1PR08MB48615EE9AB5D90C93C3FAE34E67E9@VE1PR08MB4861.eurprd08.prod.outlook.com>
+In-Reply-To: <=?utf-8?q?=3C010001786fb8ce6a-a2addc27-58c8-48f8-a93b-6a3ac04a4?=
+ =?utf-8?q?d82-000000=40email=2Eamazonses=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2036187175627757286=="
+Content-Type: multipart/mixed; boundary="===============6048287330695184218=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2036187175627757286==
+--===============6048287330695184218==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On 2/22/21 11:26 AM, Jerome Forissier via OP-TEE wrote:
-> Hi Robert,
-> 
-> On 2/22/21 11:01 AM, Robert Delien via OP-TEE wrote:
->> Hi,
->>
->> In imx_csu.c, the Central Security Unit's CSU_CSL*n* registers are set,
->> configuring access privileges for different peripherals. These registers
->> range from CSU_CSL0 (@ 0x021c0000) to CSU_CSL39 (@ 0x021c009c).
->>
->> The different i.MX6 platform variants each have their individual tables,
->> filled with sets of CSL index and register value, terminated by a sentinel
->> set with the index set to -1. (the reason for the parentheses around -1
->> espaces me)
->>
->> in .../core/arch/arm/plat-imx/drivers/imx_csu.c:csu_init()@115, a while
->> loop runs through this aforementioned table, setting the CSL registers
->> according to the table. However, this loop loops on CSL index values > 0:
->> while (csu_setting->csu_index *>* 0) {
->>         io_write32(csu_base + (csu_setting->csu_index * 4),
->>                    csu_setting->value);
->>
->>         csu_setting++;
->> }
->> I think it should loop on CSL index values >= 0, because index 0 is a valid
->> index, utilized for the PWM peripherals. (I also think csl_index is a more
->> descriptive name, but that's besides the point).
->>
->> I have attached a patch for his.
-> 
-> It does look like a genuine bug to me, but I will let the i.MX expert
-> comment further. Unfortunately, the OP-TEE ML strips attachments. Would
-> you mind creating a GitHub pull request [1] (preferred method), or send
-> the patch inline?
-> 
-> [1] https://github.com/OP-TEE/optee_os/pulls
-> 
-> Thanks,
-> 
+To +=3D op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmw=
+are.org>
 
-https://github.com/OP-TEE/optee_os/pull/4511
+From: TF-A <tf-a-bounces@lists.trustedfirmware.org> On Behalf Of Fran=C3=A7=
+ois Ozog via TF-A
+Sent: 26 March 2021 19:08
+To: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Cc: tf-a(a)lists.trustedfirmware.org; Boot Architecture Mailman List <boot-ar=
+chitecture@lists.linaro.org>; Ilias Apalodimas <ilias.apalodimas@linaro.o=
+rg>
+Subject: Re: [TF-A] Firmware FuSa workshop
 
---===============2036187175627757286==--
+
+
+Le ven. 26 mars 2021 =C3=A0 18:42, Heinrich Schuchardt <xypron.glpk(a)gmx.de<=
+mailto:xypron.glpk@gmx.de>> a =C3=A9crit :
+On 26.03.21 16:05, Fran=C3=A7ois Ozog wrote:
+> Hi,
+>
+>
+> Linaro is conducting an opportunity assessment to make OP-TEE ready for
+> functional safety sensitive environments. The goal is to present a plan to
+> Linaro members by the end of July 2021.
+>
+> The scope of the research is somewhat bigger because we can=E2=80=99t think=
+ of
+> OP-TEE without thinking of Trusted Firmware and Hafnium. The plan will
+> though not address those (unless we recognize we have to). We don=E2=80=99t=
+ think
+> U-Boot shall be part of the picture but we are welcoming contradictory
+> points of views.
+
+Hello Fran=C3=A7ois,
+
+Some boards boot via SPL->TF-A->U-Boot. Here U-Boot's SPL is relevant
+for OP-TEE's security.
+
+U-Boot can save variables via OP-TEE (implemented by Ilias). In this
+case OP-TEE has an implication on secure boot.
+
+I fully understand that these scenarios are not in the focus of the
+workshop.
+it may if companies have this particular flow in mind for safety certificatio=
+n.  Our goal is not to make all boot flows safety ready but to identify which=
+ ones we need to consider. And the workshop may help in this identification.
+
+Best regards
+
+Heinrich
+
+>
+> We are organizing a 2 hours workshop on April 15th 9am CET to mostly hear
+> about use cases and ideas about Long Term Support requirements . We will
+> present the state of the research.
+>
+> The first  use case is booting a safety certified type-1 hypervisor (open
+> source or commercial is irrelevant).
+>
+> But we know there are many more: please be ready to contribute.
+>
+> We think of more radical use cases: a safety payload is actually loaded as
+> a Secure Partition on top of Hafnium with OP-TEE or Zephyr used as a device
+> backends. In other words, Trust Zone hosts both safety and security worlds
+> , EL3 being the =C2=AB software root of trust =C2=BB pivot world. In those =
+cases,
+> some cores never go out of secure state=E2=80=A6
+>
+>
+> Agenda (to be refined)
+>
+>    -
+>
+>    Vision
+>    -
+>
+>    State of the research
+>    <https://docs.google.com/presentation/u/0/d/1jWqu39gCF-5XzbFkodXsiVNJJLU=
+N88BgkiBu__D5KeE/edit>
+>    -
+>
+>    Use cases discussion
+>    -
+>
+>    What is the right scope?
+>    -
+>
+>    =E2=80=9CWho do what=E2=80=9D discussion (LTS, archiving...)
+>    -
+>
+>    Safety personnel (Linaro and contractors) discussion
+>    -
+>
+>    Other considerations from participants?
+>    -
+>
+>    Community organizations and funding?
+>    -
+>
+>    Closing and next steps
+>
+>
+> Should you want to participate and have not yet received an invite, please
+> contact me directly.
+>
+> Cordially,
+>
+> Fran=C3=A7ois-Fr=C3=A9d=C3=A9ric
+>
+> PS: Please reach out should you want another date with a time compatible
+> with more time zones. This alternate date is not guaranteed though.
+>
+>
+--
+[https://drive.google.com/a/linaro.org/uc?id=3D0BxTAygkus3RgQVhuNHMwUi1mYWc&e=
+xport=3Ddownload]
+Fran=C3=A7ois-Fr=C3=A9d=C3=A9ric Ozog | Director Linaro Edge & Fog Computing =
+Group
+T: +33.67221.6485
+francois.ozog(a)linaro.org<mailto:francois.ozog@linaro.org> | Skype: ffozog
+
+
+--===============6048287330695184218==--
 
