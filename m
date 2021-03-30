@@ -1,138 +1,63 @@
-From: Miklos Balint <Miklos.Balint@arm.com>
+From: Heiko Thiery <heiko.thiery@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: [TF-A] Firmware FuSa workshop
-Date: Mon, 29 Mar 2021 08:07:40 +0000
-Message-ID: <VE1PR08MB48615EE9AB5D90C93C3FAE34E67E9@VE1PR08MB4861.eurprd08.prod.outlook.com>
-In-Reply-To: <=?utf-8?q?=3C010001786fb8ce6a-a2addc27-58c8-48f8-a93b-6a3ac04a4?=
- =?utf-8?q?d82-000000=40email=2Eamazonses=2Ecom=3E?=>
+Subject: Re: [PATCH] tee: optee: fix build error caused by recent optee
+ tracepoints feature
+Date: Tue, 30 Mar 2021 08:53:42 +0200
+Message-ID: <20210330065341.18074-1-heiko.thiery@gmail.com>
+In-Reply-To: <20210325120601.71584253@xhacker.debian>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6048287330695184218=="
+Content-Type: multipart/mixed; boundary="===============6056115380988573208=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6048287330695184218==
+--===============6056115380988573208==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-To +=3D op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmw=
-are.org>
+> If build kernel without "O=3Ddir", below error will be seen:
+>=20
+> In file included from drivers/tee/optee/optee_trace.h:67,
+>                  from drivers/tee/optee/call.c:18:
+> ./include/trace/define_trace.h:95:42: fatal error: ./optee_trace.h: No such=
+ file or directory
+>    95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+>       |                                          ^
+> compilation terminated.
+>=20
+> Fix it by adding below line to Makefile:
+> CFLAGS_call.o :=3D -I$(src)
+>=20
+> Tested with and without "O=3Ddir", both can build successfully.
+>=20
+> Reported-by: Guenter Roeck <linux@roeck-us.net>
+> Suggested-by: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Jisheng Zhang <Jisheng.Zhang@synaptics.com>
 
-From: TF-A <tf-a-bounces@lists.trustedfirmware.org> On Behalf Of Fran=C3=A7=
-ois Ozog via TF-A
-Sent: 26 March 2021 19:08
-To: Heinrich Schuchardt <xypron.glpk@gmx.de>
-Cc: tf-a(a)lists.trustedfirmware.org; Boot Architecture Mailman List <boot-ar=
-chitecture@lists.linaro.org>; Ilias Apalodimas <ilias.apalodimas@linaro.o=
-rg>
-Subject: Re: [TF-A] Firmware FuSa workshop
+Fixes: 0101947dbcc3 ("tee: optee: add invoke_fn tracepoints")
+Tested-by: Heiko Thiery <heiko.thiery@gmail.com>
 
+> ---
+>  drivers/tee/optee/Makefile | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
+> index 56263ae3b1d7..3aa33ea9e6a6 100644
+> --- a/drivers/tee/optee/Makefile
+> +++ b/drivers/tee/optee/Makefile
+> @@ -6,3 +6,6 @@ optee-objs +=3D rpc.o
+>  optee-objs +=3D supp.o
+>  optee-objs +=3D shm_pool.o
+>  optee-objs +=3D device.o
+> +
+> +# for tracing framework to find optee_trace.h
+> +CFLAGS_call.o :=3D -I$(src)
+> --=20
+> 2.31.0
+>=20
 
+Thank you.
 
-Le ven. 26 mars 2021 =C3=A0 18:42, Heinrich Schuchardt <xypron.glpk(a)gmx.de<=
-mailto:xypron.glpk@gmx.de>> a =C3=A9crit :
-On 26.03.21 16:05, Fran=C3=A7ois Ozog wrote:
-> Hi,
->
->
-> Linaro is conducting an opportunity assessment to make OP-TEE ready for
-> functional safety sensitive environments. The goal is to present a plan to
-> Linaro members by the end of July 2021.
->
-> The scope of the research is somewhat bigger because we can=E2=80=99t think=
- of
-> OP-TEE without thinking of Trusted Firmware and Hafnium. The plan will
-> though not address those (unless we recognize we have to). We don=E2=80=99t=
- think
-> U-Boot shall be part of the picture but we are welcoming contradictory
-> points of views.
+--=20
+Heiko
 
-Hello Fran=C3=A7ois,
-
-Some boards boot via SPL->TF-A->U-Boot. Here U-Boot's SPL is relevant
-for OP-TEE's security.
-
-U-Boot can save variables via OP-TEE (implemented by Ilias). In this
-case OP-TEE has an implication on secure boot.
-
-I fully understand that these scenarios are not in the focus of the
-workshop.
-it may if companies have this particular flow in mind for safety certificatio=
-n.  Our goal is not to make all boot flows safety ready but to identify which=
- ones we need to consider. And the workshop may help in this identification.
-
-Best regards
-
-Heinrich
-
->
-> We are organizing a 2 hours workshop on April 15th 9am CET to mostly hear
-> about use cases and ideas about Long Term Support requirements . We will
-> present the state of the research.
->
-> The first  use case is booting a safety certified type-1 hypervisor (open
-> source or commercial is irrelevant).
->
-> But we know there are many more: please be ready to contribute.
->
-> We think of more radical use cases: a safety payload is actually loaded as
-> a Secure Partition on top of Hafnium with OP-TEE or Zephyr used as a device
-> backends. In other words, Trust Zone hosts both safety and security worlds
-> , EL3 being the =C2=AB software root of trust =C2=BB pivot world. In those =
-cases,
-> some cores never go out of secure state=E2=80=A6
->
->
-> Agenda (to be refined)
->
->    -
->
->    Vision
->    -
->
->    State of the research
->    <https://docs.google.com/presentation/u/0/d/1jWqu39gCF-5XzbFkodXsiVNJJLU=
-N88BgkiBu__D5KeE/edit>
->    -
->
->    Use cases discussion
->    -
->
->    What is the right scope?
->    -
->
->    =E2=80=9CWho do what=E2=80=9D discussion (LTS, archiving...)
->    -
->
->    Safety personnel (Linaro and contractors) discussion
->    -
->
->    Other considerations from participants?
->    -
->
->    Community organizations and funding?
->    -
->
->    Closing and next steps
->
->
-> Should you want to participate and have not yet received an invite, please
-> contact me directly.
->
-> Cordially,
->
-> Fran=C3=A7ois-Fr=C3=A9d=C3=A9ric
->
-> PS: Please reach out should you want another date with a time compatible
-> with more time zones. This alternate date is not guaranteed though.
->
->
---
-[https://drive.google.com/a/linaro.org/uc?id=3D0BxTAygkus3RgQVhuNHMwUi1mYWc&e=
-xport=3Ddownload]
-Fran=C3=A7ois-Fr=C3=A9d=C3=A9ric Ozog | Director Linaro Edge & Fog Computing =
-Group
-T: +33.67221.6485
-francois.ozog(a)linaro.org<mailto:francois.ozog@linaro.org> | Skype: ffozog
-
-
---===============6048287330695184218==--
+--===============6056115380988573208==--
 
