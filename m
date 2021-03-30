@@ -1,63 +1,50 @@
-From: Heiko Thiery <heiko.thiery@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: fix build error caused by recent optee
- tracepoints feature
-Date: Tue, 30 Mar 2021 08:53:42 +0200
-Message-ID: <20210330065341.18074-1-heiko.thiery@gmail.com>
-In-Reply-To: <20210325120601.71584253@xhacker.debian>
+Subject: [GIT PULL] OP-TEE tracepoints fix for v5.13
+Date: Tue, 30 Mar 2021 10:22:08 +0200
+Message-ID: <20210330082208.GA965793@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6056115380988573208=="
+Content-Type: multipart/mixed; boundary="===============4061376666320269292=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6056115380988573208==
+--===============4061376666320269292==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-> If build kernel without "O=3Ddir", below error will be seen:
->=20
-> In file included from drivers/tee/optee/optee_trace.h:67,
->                  from drivers/tee/optee/call.c:18:
-> ./include/trace/define_trace.h:95:42: fatal error: ./optee_trace.h: No such=
- file or directory
->    95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
->       |                                          ^
-> compilation terminated.
->=20
-> Fix it by adding below line to Makefile:
-> CFLAGS_call.o :=3D -I$(src)
->=20
-> Tested with and without "O=3Ddir", both can build successfully.
->=20
-> Reported-by: Guenter Roeck <linux@roeck-us.net>
-> Suggested-by: Steven Rostedt <rostedt@goodmis.org>
-> Signed-off-by: Jisheng Zhang <Jisheng.Zhang@synaptics.com>
+Hello arm-soc maintainers,
 
-Fixes: 0101947dbcc3 ("tee: optee: add invoke_fn tracepoints")
-Tested-by: Heiko Thiery <heiko.thiery@gmail.com>
+The previous pull request for OP-TEE tracepoints introduced a build
+error when building whithout O=3D..., apparently many regression builds
+uses that option.
 
-> ---
->  drivers/tee/optee/Makefile | 3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-> index 56263ae3b1d7..3aa33ea9e6a6 100644
-> --- a/drivers/tee/optee/Makefile
-> +++ b/drivers/tee/optee/Makefile
-> @@ -6,3 +6,6 @@ optee-objs +=3D rpc.o
->  optee-objs +=3D supp.o
->  optee-objs +=3D shm_pool.o
->  optee-objs +=3D device.o
-> +
-> +# for tracing framework to find optee_trace.h
-> +CFLAGS_call.o :=3D -I$(src)
-> --=20
-> 2.31.0
->=20
+Please pull this small fix for the build error.
 
-Thank you.
+Thanks,
+Jens
 
---=20
-Heiko
+The following changes since commit 0101947dbcc3204f08fb5b69a21dbd4b1535cad6:
 
---===============6056115380988573208==--
+  tee: optee: add invoke_fn tracepoints (2021-03-15 12:04:01 +0100)
+
+are available in the Git repository at:
+
+  git://git.linaro.org/people/jens.wiklander/linux-tee.git/ tags/optee-tracep=
+oints-fix-for-v5.13
+
+for you to fetch changes up to 7ccdcaace80810175bd20b2ece856b42edd43991:
+
+  tee: optee: fix build error caused by recent optee tracepoints feature (202=
+1-03-30 09:33:33 +0200)
+
+----------------------------------------------------------------
+Fixes build error for recently added OP-TEE tracepoints
+
+----------------------------------------------------------------
+Jisheng Zhang (1):
+      tee: optee: fix build error caused by recent optee tracepoints feature
+
+ drivers/tee/optee/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
+
+--===============4061376666320269292==--
 
