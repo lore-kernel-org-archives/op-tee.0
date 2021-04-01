@@ -1,35 +1,35 @@
 From: Arnd Bergmann <arnd@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [GIT PULL] OP-TEE tracepoints fix for v5.13
-Date: Thu, 01 Apr 2021 16:32:11 +0200
-Message-ID: 
- <CAK8P3a1eKs+xkO0JVT38iUn2PJf5KQh0gQ2SuiLeRpMUSmgUrQ@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44Fdvhj2ca4O+CxD94YZ6BtzNut9HMn3FxDshh_vgHVwDA@mail.gmail.com>>
+Subject: Re: [GIT PULL] OP-TEE memref size check for v5.13
+Date: Thu, 01 Apr 2021 21:24:13 +0200
+Message-ID: <161730504488.632809.12872911046632269445.b4-ty@arndb.de>
+In-Reply-To: <20210330110037.GA1166563@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1659994487803802449=="
+Content-Type: multipart/mixed; boundary="===============8072466835380705985=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1659994487803802449==
+--===============8072466835380705985==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 1, 2021 at 2:32 PM Jens Wiklander <jens.wiklander@linaro.org> w=
-rote:
-> On Thu, Apr 1, 2021 at 12:23 PM Arnd Bergmann <arnd@kernel.org> wrote:
-> >
-> > merge commit: 3e530f89d72dd1ab31e20d6f8567e357b928705c
->
-> OK. Please note that this pulls in 0101947dbcc3 ("tee: optee: add
-> invoke_fn tracepoints") (the commit just before actually) which I
-> believe was queued for v5.13.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Of course, that explains it. I'll take it out of the fixes branch again then
-and apply it on top of the original merge in the drivers branch instead.
+On Tue, 30 Mar 2021 13:00:37 +0200, Jens Wiklander wrote:
+> Please pull this small patch for the OP-TEE driver to remove the invalid
+> size check of outgoing memref parameters. This code path is only
+> activated for a certain configuration of OP-TEE in secure world
+> (CFG_CORE_DYN_SHM=n) so this problem isn't always visible.
+> 
+> Thanks,
+> Jens
+> 
+> [...]
 
-Thanks for the clarification!
+Merged into arm/drivers, thanks!
 
-         Arnd
+merge commit: d6358a687891dacbe7d88541a83f61bdccb4f7b8
 
---===============1659994487803802449==--
+       Arnd
+
+--===============8072466835380705985==--
 
