@@ -1,72 +1,43 @@
-From: Heiko Thiery <heiko.thiery@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: fix build error caused by recent optee
- tracepoints feature
-Date: Tue, 06 Apr 2021 16:20:31 +0200
-Message-ID: 
- <CAEyMn7br25J9kdZULWjryeXQ-n2w0Ap-O-KgVciBknJGfNmL8A@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44HDrHP6-z=FRkNJtkSe8cVJY-acPDK_r7QrO5QgPwo+iA@mail.gmail.com>>
+Subject: 
+ Re: [PATCH v2] tee: amdtee: unload TA only when its refcount becomes 0
+Date: Fri, 09 Apr 2021 11:45:41 +0300
+Message-ID: <20210409084541.GE6048@kadam>
+In-Reply-To: <=?utf-8?q?=3C3150feb19421ca6b15202c853215f8b40fe35567=2E1617615?=
+ =?utf-8?q?067=2Egit=2ERijo-john=2EThomas=40amd=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7179129538454527574=="
+Content-Type: multipart/mixed; boundary="===============6938686745196084225=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7179129538454527574==
+--===============6938686745196084225==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
+On Mon, Apr 05, 2021 at 03:13:09PM +0530, Rijo Thomas wrote:
+> @@ -340,7 +398,8 @@ int handle_open_session(struct tee_ioctl_open_session_a=
+rg *arg, u32 *info,
+>=20
+>  int handle_load_ta(void *data, u32 size, struct tee_ioctl_open_session_arg=
+ *arg)
+>  {
+> -	struct tee_cmd_load_ta cmd =3D {0};
+> +	struct tee_cmd_unload_ta unload_cmd =3D {0};
+> +	struct tee_cmd_load_ta load_cmd =3D {0};
 
-Am Di., 6. Apr. 2021 um 14:30 Uhr schrieb Jens Wiklander
-<jens.wiklander@linaro.org>:
->
-> Hi Heiko,
->
-> [+Arnd]
->
-> On Tue, Apr 6, 2021 at 12:38 PM Heiko Thiery <heiko.thiery@gmail.com> wro=
-te:
-> >
-> > Hi Jens,
-> >
-> > Am Di., 30. M=C3=A4rz 2021 um 10:26 Uhr schrieb Jens Wiklander
-> > <jens.wiklander@linaro.org>:
-> > >
-> > > On Thu, Mar 25, 2021 at 12:06:01PM +0800, Jisheng Zhang wrote:
-> > > > If build kernel without "O=3Ddir", below error will be seen:
-> > > >
-> > > > In file included from drivers/tee/optee/optee_trace.h:67,
-> > > >                  from drivers/tee/optee/call.c:18:
-> > > > ./include/trace/define_trace.h:95:42: fatal error: ./optee_trace.h: N=
-o such file or directory
-> > > >    95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-> > > >       |                                          ^
-> > > > compilation terminated.
-> > > >
-> > > > Fix it by adding below line to Makefile:
-> > > > CFLAGS_call.o :=3D -I$(src)
-> > > >
-> > > > Tested with and without "O=3Ddir", both can build successfully.
-> > > >
-> > > > Reported-by: Guenter Roeck <linux@roeck-us.net>
-> > > > Suggested-by: Steven Rostedt <rostedt@goodmis.org>
-> > > > Signed-off-by: Jisheng Zhang <Jisheng.Zhang@synaptics.com>
-> > >
-> > > I've picked up this.
-> >
-> > For what tree did you pick this? I still see this build failure on the
-> > latest next tree (next-20210401).
->
-> The next tree hasn't been updated since 1th of April so it's not
-> unexpected. The fix is supposed to be on its way to
-> https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=3Darm/dr=
-ivers
-> , I can't see it there yet though.
+It's better style to write:
 
-Ah I see. Now it has been landed in the actual next tree.
+	struct tee_cmd_unload_ta unload_cmd =3D {};
 
-Thank you,
-Heiko
+It doesn't make a difference in this case, but if the first struct
+member is a pointer then {0} can generate a Sparse warning.  Or
+depending on which bugs your version of GCC has it can affect whether
+struct holes are initialized.  But mostly it's just the prefered style.
 
---===============7179129538454527574==--
+
+regards,
+dan carpenter
+
+
+--===============6938686745196084225==--
 
