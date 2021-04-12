@@ -1,59 +1,36 @@
-From: Rijo Thomas <Rijo-john.Thomas@amd.com>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2] tee: amdtee: unload TA only when its refcount becomes 0
-Date: Mon, 12 Apr 2021 15:49:51 +0530
-Message-ID: <1318f015-40cb-2bdd-17fb-2a3843ed45bc@amd.com>
-In-Reply-To: <
- <CAHUa44Gga=k3indU8FC3X5xE=6RnKEDNeZBDWeJzm47-Spm0QA@mail.gmail.com>>
+Subject: Preparing for OP-TEE 3.13.0
+Date: Mon, 12 Apr 2021 18:57:42 +0530
+Message-ID: 
+ <CANZ+81EHRZ0ibzTDeBQoyTiHtc+8OJYDpBtrn1KyffqkB6Y5QA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6735762283876235735=="
+Content-Type: multipart/mixed; boundary="===============7773158818379840434=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6735762283876235735==
+--===============7773158818379840434==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
+[BCC all OP-TEE maintainers]
 
+Hi OP-TEE maintainers & contributors,
 
-On 12/04/21 1:06 pm, Jens Wiklander wrote:
-> On Mon, Apr 5, 2021 at 11:43 AM Rijo Thomas <Rijo-john.Thomas@amd.com> wr=
-ote:
->>
->> Same Trusted Application (TA) can be loaded in multiple TEE contexts.
->>
->> If it is a single instance TA, the TA should not get unloaded from AMD
->> Secure Processor, while it is still in use in another TEE context.
->>
->> Therefore reference count TA and unload it when the count becomes zero.
->>
->> Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
->> Reviewed-by: Devaraj Rangasamy <Devaraj.Rangasamy@amd.com>
->> Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
->> ---
->> v2:
->>  * Unload TA if get_ta_refcount() fails
->>
->>  drivers/tee/amdtee/amdtee_private.h | 13 ++++
->>  drivers/tee/amdtee/call.c           | 94 ++++++++++++++++++++++++++---
->>  drivers/tee/amdtee/core.c           | 15 +++--
->>  3 files changed, 106 insertions(+), 16 deletions(-)
->=20
-> Looks good to me. Please address Dan's comment.
->=20
+OP-TEE v3.13.0 is scheduled to be released at 2021-04-30. So, now is
+a good time to start testing the master branch on the various platforms
+and report/fix any bugs.
 
-Hi Jens,
+The GitHub pull request for collecting Tested-by tags or any other
+comments is https://github.com/OP-TEE/optee_os/pull/4552.
 
-I have replied to Dan's comment.
+As usual, we will create a release candidate tag one week before the
+release date for final testing.
 
-If you are okay with the current patch, request you to pull this.
+In addition to that you can find some additional information related to
+releases here: https://optee.readthedocs.io/en/latest/general/releases.html
 
-Thanks,
-Rijo
+Regards,
+Ruchika
 
-> Cheers,
-> Jens
->=20
-
---===============6735762283876235735==--
+--===============7773158818379840434==--
 
