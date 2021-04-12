@@ -2,56 +2,58 @@ From: Rijo Thomas <Rijo-john.Thomas@amd.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [PATCH v2] tee: amdtee: unload TA only when its refcount becomes 0
-Date: Mon, 12 Apr 2021 15:45:36 +0530
-Message-ID: <b74535f2-b0ab-2463-cac0-ffef8db159af@amd.com>
-In-Reply-To: <20210409084541.GE6048@kadam>
+Date: Mon, 12 Apr 2021 15:49:51 +0530
+Message-ID: <1318f015-40cb-2bdd-17fb-2a3843ed45bc@amd.com>
+In-Reply-To: <
+ <CAHUa44Gga=k3indU8FC3X5xE=6RnKEDNeZBDWeJzm47-Spm0QA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8487947674799224297=="
+Content-Type: multipart/mixed; boundary="===============6735762283876235735=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8487947674799224297==
+--===============6735762283876235735==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 09/04/21 2:15 pm, Dan Carpenter wrote:
-> On Mon, Apr 05, 2021 at 03:13:09PM +0530, Rijo Thomas wrote:
->> @@ -340,7 +398,8 @@ int handle_open_session(struct tee_ioctl_open_session_=
-arg *arg, u32 *info,
+On 12/04/21 1:06 pm, Jens Wiklander wrote:
+> On Mon, Apr 5, 2021 at 11:43 AM Rijo Thomas <Rijo-john.Thomas@amd.com> wr=
+ote:
 >>
->>  int handle_load_ta(void *data, u32 size, struct tee_ioctl_open_session_ar=
-g *arg)
->>  {
->> -	struct tee_cmd_load_ta cmd =3D {0};
->> +	struct tee_cmd_unload_ta unload_cmd =3D {0};
->> +	struct tee_cmd_load_ta load_cmd =3D {0};
+>> Same Trusted Application (TA) can be loaded in multiple TEE contexts.
+>>
+>> If it is a single instance TA, the TA should not get unloaded from AMD
+>> Secure Processor, while it is still in use in another TEE context.
+>>
+>> Therefore reference count TA and unload it when the count becomes zero.
+>>
+>> Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+>> Reviewed-by: Devaraj Rangasamy <Devaraj.Rangasamy@amd.com>
+>> Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
+>> ---
+>> v2:
+>>  * Unload TA if get_ta_refcount() fails
+>>
+>>  drivers/tee/amdtee/amdtee_private.h | 13 ++++
+>>  drivers/tee/amdtee/call.c           | 94 ++++++++++++++++++++++++++---
+>>  drivers/tee/amdtee/core.c           | 15 +++--
+>>  3 files changed, 106 insertions(+), 16 deletions(-)
 >=20
-> It's better style to write:
+> Looks good to me. Please address Dan's comment.
 >=20
-> 	struct tee_cmd_unload_ta unload_cmd =3D {};
->=20
-> It doesn't make a difference in this case, but if the first struct
-> member is a pointer then {0} can generate a Sparse warning.  Or
-> depending on which bugs your version of GCC has it can affect whether
-> struct holes are initialized.  But mostly it's just the prefered style.
->
 
-Hi Dan,
+Hi Jens,
 
-We do not have any pointers nor do I see a possibility of structure holes, si=
-nce all data
-members are u32 in both struct tee_cmd_load_ta and struct tee_cmd_unload_ta. =
-So, will prefer
-to use {0} for now.
+I have replied to Dan's comment.
+
+If you are okay with the current patch, request you to pull this.
 
 Thanks,
 Rijo
-=20
->=20
-> regards,
-> dan carpenter
+
+> Cheers,
+> Jens
 >=20
 
---===============8487947674799224297==--
+--===============6735762283876235735==--
 
