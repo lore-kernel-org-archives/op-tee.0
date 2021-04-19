@@ -1,51 +1,52 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v1 1/1] tee: optee: Provide special parameter field for
- UUID values
-Date: Mon, 19 Apr 2021 15:01:32 +0300
-Message-ID: <YH1xHDbFyJ1URYYV@smile.fi.intel.com>
-In-Reply-To: <
- <CAHUa44FWJiL1yzHR0jwL2VJG_4t_O6An48v47gORitcaahwmYw@mail.gmail.com>>
+Subject: Linaro OP-TEE Contributions meeting April 2021
+Date: Mon, 19 Apr 2021 14:29:59 +0200
+Message-ID: 
+ <CA+EyddamWH_FwrAUdq8mqDAFuHht1UzJ1RB2nRWT9h+uiX0+6Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9074459502368411837=="
+Content-Type: multipart/mixed; boundary="===============2336482957876884647=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9074459502368411837==
+--===============2336482957876884647==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 19, 2021 at 01:35:51PM +0200, Jens Wiklander wrote:
-> On Thu, Apr 15, 2021 at 4:58 PM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
+Hi,
 
-Thanks for review, my answer below.
+LOC monthly meeting is planned to take place Thursday April 29th(a)17.00
+(UTC+2).
 
-> >                 struct optee_msg_param_tmem tmem;
-> >                 struct optee_msg_param_rmem rmem;
-> >                 struct optee_msg_param_value value;
-> > +               uuid_t uuid;
->=20
-> It's nice to get rid of the cast above, but I'm not that keen on the
-> change in this struct. This file defines the ABI towards Secure world
-> and adding dependencies on external complex types is a larger problem
-> than the cast above in my opinion.
+First, note that we have pushed the meeting forward one hour. If you
+subscribe to the meeting via the TrustedFirmware calendar, then your invite
+hopefully should've been updated (it could be worth cross checking).
 
-I understand.
+This month we will have Achin Gupta from Arm giving us an update regarding
+the evolution of FF-A and how that could work together with virtualization.
 
-So, the cast is simply wrong there. Can you add a comment above that cast to
-explain that and make it is marked as FIXME? Because there is no guarantee th=
-at
-internal Linux types can be 1:1 mapped to the ABI of something.
+Usually there is some time left over for other discussions. So if you
+have anything you'd like to talk about, then please let me know by replying
+to this email thread. Related to that, Linaro arranged an "OP-TEE readiness
+for safety" workshop last week. We're looking at all kinds of things
+related to that right now. But this is also something that we could touch
+in the LOC meeting. How would that affect upstream work? What code changes
+could we expect etc? Any expertise out there who would be interested in
+collaborating?
 
-What you need, perhaps, is a middle layer function that will copy u64 data
-to uuid_t or so. Also, u64 is not an ABI type, why the respective __uXX
-variants are not in use?
+OP-TEE 3.13.0 is planned to be released 2012-04-30, so in case you have any
+questions related to that, then the LOC meeting would be a good opportunity
+to ask.
 
---=20
-With Best Regards,
-Andy Shevchenko
+Meeting details:
+---------------
+Date/time: Thursday April 29th(a)17.00 (UTC+2)
+https://everytimezone.com/s/c32cdcc3
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
+Project page: https://www.linaro.org/projects#trusted-substrate_TS
 
+Regards,
+Joakim on behalf of the Linaro OP-TEE team
 
-
---===============9074459502368411837==--
+--===============2336482957876884647==--
 
