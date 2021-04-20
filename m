@@ -1,110 +1,46 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: use export_uuid() to copy client UUID
-Date: Tue, 20 Apr 2021 13:26:17 +0300
-Message-ID: <YH6sSUyFZd8uva6Q@smile.fi.intel.com>
-In-Reply-To: <20210420082547.3542261-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH 061/141] tee: Fix fall-through warnings for Clang
+Date: Tue, 20 Apr 2021 15:20:56 -0500
+Message-ID: <e44a9011-f2ed-f1d2-cc1a-7dcba2f41956@embeddedor.com>
+In-Reply-To: <20201123225507.GR21644@embeddedor>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6743825415875155690=="
+Content-Type: multipart/mixed; boundary="===============4277319640679688325=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6743825415875155690==
+--===============4277319640679688325==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 20, 2021 at 10:25:47AM +0200, Jens Wiklander wrote:
-> Prior to this patch optee_open_session() was making assumptions about
-> the internal format of uuid_t by casting a memory location in a
-> parameter struct to uuid_t *. Fix this using export_uuid() to get a well
-> defined binary representation and also add an octets field in struct
-> optee_msg_param in order to avoid casting.
+Hi all,
 
-Wonderful! Thanks for fixing this!
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Friendly ping: who can take this, please?
 
-A bit of off-topic, have you know by any chance who may consider applying this
-one?
-https://lore.kernel.org/linux-mips/20210121183741.45333-1-andriy.shevchenko(a=
-)linux.intel.com/
+Thanks
+--
+Gustavo
 
-> Fixes: c5b4312bea5d ("tee: optee: Add support for session login client UUID=
- generation")
-> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/optee/call.c      | 6 ++++--
->  drivers/tee/optee/optee_msg.h | 6 ++++--
->  2 files changed, 8 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> index 7a77e375b503..6b52f0c526ba 100644
-> --- a/drivers/tee/optee/call.c
-> +++ b/drivers/tee/optee/call.c
-> @@ -216,6 +216,7 @@ int optee_open_session(struct tee_context *ctx,
->  	struct optee_msg_arg *msg_arg;
->  	phys_addr_t msg_parg;
->  	struct optee_session *sess =3D NULL;
-> +	uuid_t client_uuid;
-> =20
->  	/* +2 for the meta parameters added below */
->  	shm =3D get_msg_arg(ctx, arg->num_params + 2, &msg_arg, &msg_parg);
-> @@ -236,10 +237,11 @@ int optee_open_session(struct tee_context *ctx,
->  	memcpy(&msg_arg->params[0].u.value, arg->uuid, sizeof(arg->uuid));
->  	msg_arg->params[1].u.value.c =3D arg->clnt_login;
-> =20
-> -	rc =3D tee_session_calc_client_uuid((uuid_t *)&msg_arg->params[1].u.value,
-> -					  arg->clnt_login, arg->clnt_uuid);
-> +	rc =3D tee_session_calc_client_uuid(&client_uuid, arg->clnt_login,
-> +					  arg->clnt_uuid);
->  	if (rc)
->  		goto out;
-> +	export_uuid(msg_arg->params[1].u.octets, &client_uuid);
-> =20
->  	rc =3D optee_to_msg_param(msg_arg->params + 2, arg->num_params, param);
->  	if (rc)
-> diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
-> index 81ff593ac4ec..e3d72d09c484 100644
-> --- a/drivers/tee/optee/optee_msg.h
-> +++ b/drivers/tee/optee/optee_msg.h
-> @@ -9,7 +9,7 @@
->  #include <linux/types.h>
-> =20
->  /*
-> - * This file defines the OP-TEE message protocol used to communicate
-> + * This file defines the OP-TEE message protocol (ABI) used to communicate
->   * with an instance of OP-TEE running in secure world.
->   *
->   * This file is divided into two sections.
-> @@ -144,9 +144,10 @@ struct optee_msg_param_value {
->   * @tmem:	parameter by temporary memory reference
->   * @rmem:	parameter by registered memory reference
->   * @value:	parameter by opaque value
-> + * @octets:	parameter by octet string
->   *
->   * @attr & OPTEE_MSG_ATTR_TYPE_MASK indicates if tmem, rmem or value is us=
-ed in
-> - * the union. OPTEE_MSG_ATTR_TYPE_VALUE_* indicates value,
-> + * the union. OPTEE_MSG_ATTR_TYPE_VALUE_* indicates value or octets,
->   * OPTEE_MSG_ATTR_TYPE_TMEM_* indicates @tmem and
->   * OPTEE_MSG_ATTR_TYPE_RMEM_* indicates @rmem,
->   * OPTEE_MSG_ATTR_TYPE_NONE indicates that none of the members are used.
-> @@ -157,6 +158,7 @@ struct optee_msg_param {
->  		struct optee_msg_param_tmem tmem;
->  		struct optee_msg_param_rmem rmem;
->  		struct optee_msg_param_value value;
-> +		u8 octets[24];
->  	} u;
->  };
-> =20
-> --=20
-> 2.25.1
->=20
+On 11/23/20 16:55, Gustavo A. R. Silva wrote:
+> On Sun, Nov 22, 2020 at 10:26:09AM +0100, Jens Wiklander wrote:
+>> On Fri, Nov 20, 2020 at 7:33 PM Gustavo A. R. Silva
+>> <gustavoars@kernel.org> wrote:
+>>>
+>>> In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
+>>> by explicitly adding a break statement instead of letting the code fall
+>>> through to the next case.
+>>>
+>>> Link: https://github.com/KSPP/linux/issues/115
+>>> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+>>> ---
+>>>  drivers/tee/tee_core.c | 1 +
+>>>  1 file changed, 1 insertion(+)
+>>
+>> Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
+> 
+> Thanks, Jens.
+> --
+> Gustavo
+> 
 
---=20
-With Best Regards,
-Andy Shevchenko
-
-
-
---===============6743825415875155690==--
+--===============4277319640679688325==--
 
