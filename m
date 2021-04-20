@@ -1,108 +1,94 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v1 1/1] tee: optee: Provide special parameter field for
- UUID values
-Date: Mon, 19 Apr 2021 17:41:56 +0300
-Message-ID: 
- <CAHp75VfUrNmrCgX4WQqwc-CCBv2niDp0iwidc0LvJOx+A-mfcA@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44GOZL=2Owua2fD79EnBuzVAh-Oh3nZ=cA1TQy0NAgNMaw@mail.gmail.com>>
+Subject: [PATCH] optee: use export_uuid() to copy client UUID
+Date: Tue, 20 Apr 2021 10:25:47 +0200
+Message-ID: <20210420082547.3542261-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8972456641322198882=="
+Content-Type: multipart/mixed; boundary="===============1791126364040313394=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8972456641322198882==
+--===============1791126364040313394==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 19, 2021 at 5:30 PM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
-> On Mon, Apr 19, 2021 at 3:40 PM Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
-> > On Mon, Apr 19, 2021 at 4:30 PM Jens Wiklander
-> > <jens.wiklander@linaro.org> wrote:
-> > > On Mon, Apr 19, 2021 at 2:01 PM Andy Shevchenko
-> > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > On Mon, Apr 19, 2021 at 01:35:51PM +0200, Jens Wiklander wrote:
-> > > > > On Thu, Apr 15, 2021 at 4:58 PM Andy Shevchenko
-> > > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > >
-> > > > Thanks for review, my answer below.
-> > > >
-> > > > > >                 struct optee_msg_param_tmem tmem;
-> > > > > >                 struct optee_msg_param_rmem rmem;
-> > > > > >                 struct optee_msg_param_value value;
-> > > > > > +               uuid_t uuid;
-> > > > >
-> > > > > It's nice to get rid of the cast above, but I'm not that keen on the
-> > > > > change in this struct. This file defines the ABI towards Secure wor=
-ld
-> > > > > and adding dependencies on external complex types is a larger probl=
-em
-> > > > > than the cast above in my opinion.
-> > > >
-> > > > I understand.
-> > > >
-> > > > So, the cast is simply wrong there. Can you add a comment above that =
-cast to
-> > > > explain that and make it is marked as FIXME? Because there is no guar=
-antee that
-> > > > internal Linux types can be 1:1 mapped to the ABI of something.
-> > >
-> > > We might as well fix it directly instead. How about storing the
-> > > intermediate result in a proper uuid_t and then export it as:
-> > > export_uuid((u8 *)&msg_arg->params[1].u.uuid, &myuuid);
-> >
-> > Still a casting here.
-> > With u64 members you have a (potential) endianness issue (consider
-> > BE-32 platform). Also you never know that a b c translates properly to
-> > byte array.
-> >
-> > I would rather see a custom function
-> >
-> > optee_import_uuid(param, uuid_t *uuid)
-> > {
-> >   u8 uuid_raw[UUID_SIZE];
-> >
-> >   put_unaligned_le64(&uuid_raw[0], param.a); // not sure about endianness
-> >   put_unaligned_le64(&uuid_raw[0], param.b); // ditto
->
-> I believe it's a memcpy() we want then, since UUIDs are supposed to be
-> transmitted using a big endian memory pattern.
-> We should perhaps add
-> u8 octets[24];
-> to that union. Then should the result be well defined using export_uuid().
+Prior to this patch optee_open_session() was making assumptions about
+the internal format of uuid_t by casting a memory location in a
+parameter struct to uuid_t *. Fix this using export_uuid() to get a well
+defined binary representation and also add an octets field in struct
+optee_msg_param in order to avoid casting.
 
-Right, if you do that, it would be wonderful!
+Fixes: c5b4312bea5d ("tee: optee: Add support for session login client UUID g=
+eneration")
+Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ drivers/tee/optee/call.c      | 6 ++++--
+ drivers/tee/optee/optee_msg.h | 6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-> >   import_uuid();
-> > }
-> >
-> > > > What you need, perhaps, is a middle layer function that will copy u64=
- data
-> > > > to uuid_t or so. Also, u64 is not an ABI type, why the respective __u=
-XX
-> > > > variants are not in use?
-> > >
-> > > Does it make any difference? The file isn't shared with user space and
-> > > I need to sync the file manually anyway since OP-TEE doesn't have the
-> > > same include files.
-> >
-> > Yes. It gives a hint that these are ABI (that's why I felt free to add
-> > a member to the union. I have no idea that's an ABI). Optionally a
-> > comment suggesting that.
->
-> It does say that it defines a protocol at the beginning of the file, I
-> can add ABI too if you think that helps.
-
-I read the structure definition, perhaps some clarification on a data
-type level would be nice.
-
-Thanks!
-
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index 7a77e375b503..6b52f0c526ba 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -216,6 +216,7 @@ int optee_open_session(struct tee_context *ctx,
+ 	struct optee_msg_arg *msg_arg;
+ 	phys_addr_t msg_parg;
+ 	struct optee_session *sess =3D NULL;
++	uuid_t client_uuid;
+=20
+ 	/* +2 for the meta parameters added below */
+ 	shm =3D get_msg_arg(ctx, arg->num_params + 2, &msg_arg, &msg_parg);
+@@ -236,10 +237,11 @@ int optee_open_session(struct tee_context *ctx,
+ 	memcpy(&msg_arg->params[0].u.value, arg->uuid, sizeof(arg->uuid));
+ 	msg_arg->params[1].u.value.c =3D arg->clnt_login;
+=20
+-	rc =3D tee_session_calc_client_uuid((uuid_t *)&msg_arg->params[1].u.value,
+-					  arg->clnt_login, arg->clnt_uuid);
++	rc =3D tee_session_calc_client_uuid(&client_uuid, arg->clnt_login,
++					  arg->clnt_uuid);
+ 	if (rc)
+ 		goto out;
++	export_uuid(msg_arg->params[1].u.octets, &client_uuid);
+=20
+ 	rc =3D optee_to_msg_param(msg_arg->params + 2, arg->num_params, param);
+ 	if (rc)
+diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+index 81ff593ac4ec..e3d72d09c484 100644
+--- a/drivers/tee/optee/optee_msg.h
++++ b/drivers/tee/optee/optee_msg.h
+@@ -9,7 +9,7 @@
+ #include <linux/types.h>
+=20
+ /*
+- * This file defines the OP-TEE message protocol used to communicate
++ * This file defines the OP-TEE message protocol (ABI) used to communicate
+  * with an instance of OP-TEE running in secure world.
+  *
+  * This file is divided into two sections.
+@@ -144,9 +144,10 @@ struct optee_msg_param_value {
+  * @tmem:	parameter by temporary memory reference
+  * @rmem:	parameter by registered memory reference
+  * @value:	parameter by opaque value
++ * @octets:	parameter by octet string
+  *
+  * @attr & OPTEE_MSG_ATTR_TYPE_MASK indicates if tmem, rmem or value is used=
+ in
+- * the union. OPTEE_MSG_ATTR_TYPE_VALUE_* indicates value,
++ * the union. OPTEE_MSG_ATTR_TYPE_VALUE_* indicates value or octets,
+  * OPTEE_MSG_ATTR_TYPE_TMEM_* indicates @tmem and
+  * OPTEE_MSG_ATTR_TYPE_RMEM_* indicates @rmem,
+  * OPTEE_MSG_ATTR_TYPE_NONE indicates that none of the members are used.
+@@ -157,6 +158,7 @@ struct optee_msg_param {
+ 		struct optee_msg_param_tmem tmem;
+ 		struct optee_msg_param_rmem rmem;
+ 		struct optee_msg_param_value value;
++		u8 octets[24];
+ 	} u;
+ };
+=20
 --=20
-With Best Regards,
-Andy Shevchenko
+2.25.1
 
---===============8972456641322198882==--
+
+--===============1791126364040313394==--
 
