@@ -1,15 +1,15 @@
 From: Sasha Levin <sashal@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH AUTOSEL 5.4 16/34] tee: optee: do not check memref size on
+Subject: [PATCH AUTOSEL 4.19 10/21] tee: optee: do not check memref size on
  return from Secure World
-Date: Sun, 02 May 2021 10:04:16 -0400
-Message-ID: <20210502140434.2719553-16-sashal@kernel.org>
-In-Reply-To: <20210502140434.2719553-1-sashal@kernel.org>
+Date: Sun, 02 May 2021 10:05:06 -0400
+Message-ID: <20210502140517.2719912-10-sashal@kernel.org>
+In-Reply-To: <20210502140517.2719912-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6734652374215667224=="
+Content-Type: multipart/mixed; boundary="===============5672474540813666488=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6734652374215667224==
+--===============5672474540813666488==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -39,10 +39,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 10 deletions(-)
 
 diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index b830e0a87fba..ba6cfba589a6 100644
+index 2f254f957b0a..1d71fcb13dba 100644
 --- a/drivers/tee/optee/core.c
 +++ b/drivers/tee/optee/core.c
-@@ -78,16 +78,6 @@ int optee_from_msg_param(struct tee_param *params, size_t =
+@@ -87,16 +87,6 @@ int optee_from_msg_param(struct tee_param *params, size_t =
 num_params,
  				return rc;
  			p->u.memref.shm_offs =3D mp->u.tmem.buf_ptr - pa;
@@ -64,5 +64,5 @@ num_params,
 2.30.2
 
 
---===============6734652374215667224==--
+--===============5672474540813666488==--
 
