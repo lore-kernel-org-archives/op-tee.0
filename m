@@ -1,241 +1,161 @@
 From: Allen Pais <apais@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: Disable shm cache when booting the crash kernel
-Date: Fri, 07 May 2021 12:30:33 +0530
-Message-ID: <720CDF03-42F9-43C3-B3B3-999E4A5E2864@linux.microsoft.com>
-In-Reply-To: <20210507035816.426585-1-tyhicks@linux.microsoft.com>
+Subject: Re: [PATCH v2 1/2] optee: fix tee out of memory failure seen during
+ kexec reboot
+Date: Fri, 07 May 2021 12:33:23 +0530
+Message-ID: <07B8F141-6ABC-429A-B18D-91C79617D0D6@linux.microsoft.com>
+In-Reply-To: <
+ <CAHUa44G9qoqwou8et_EaQWF5SdHMuG+iXgpYmzLNHm-C7ETJKQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1980601848647835192=="
+Content-Type: multipart/mixed; boundary="===============5891470197509859821=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1980601848647835192==
+--===============5891470197509859821==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-
-
-> On 07-May-2021, at 9:28 AM, Tyler Hicks <tyhicks@linux.microsoft.com> wro=
-te:
+>>>>>>>>=20
+>>>>>>>> I could not reproduce nor create a setup using QEMU, I could only
+>>>>>>>> do it on a real h/w.
+>>>>>>>>=20
+>>>>>>>> I have extensively tested the fix and I don't see any issues.
+>>>>>>>=20
+>>>>>>> I did a few test runs too, seems OK.
+>>>>>>=20
+>>>>>> I carried these changes and have not run into any issues with Kexec so=
+ far.
+>>>>>> Last week, while trying out kdump, we ran into a crash(this is when the
+>>>>>> Kdump kernel reboots).
+>>>>>>=20
+>>>>>> $echo c > /proc/sysrq-trigger
+>>>>>>=20
+>>>>>> Leads to:
+>>>>>>=20
+>>>>>> [   18.004831] Unable to handle kernel paging request at virtual addre=
+ss ffff0008dcef6758
+>>>>>> [   18.013002] Mem abort info:
+>>>>>> [   18.015885]   ESR =3D 0x96000005
+>>>>>> [   18.019034]   EC =3D 0x25: DABT (current EL), IL =3D 32 bits
+>>>>>> [   18.024516]   SET =3D 0, FnV =3D 0
+>>>>>> [   18.027667]   EA =3D 0, S1PTW =3D 0
+>>>>>> [   18.030905] Data abort info:
+>>>>>> [   18.033877]   ISV =3D 0, ISS =3D 0x00000005
+>>>>>> [   18.037835]   CM =3D 0, WnR =3D 0
+>>>>>> [   18.040896] swapper pgtable: 4k pages, 48-bit VAs, pgdp=3D000000097=
+0a78000
+>>>>>> [   18.047811] [ffff0008dcef6758] pgd=3D000000097fbf9003, pud=3D000000=
+0000000000
+>>>>>> [   18.054819] Internal error: Oops: 96000005 [#1] SMP
+>>>>>> [   18.059850] Modules linked in: bnxt_en pcie_iproc_platform pcie_ipr=
+oc diagbe(O)
+>>>>>> [   18.067395] CPU: 3 PID: 1 Comm: systemd-shutdow Tainted: G         =
+  O      5.4.83-microsoft-standard #1
+>>>>>> [   18.077174] Hardware name: Overlake (DT)
+>>>>>> [   18.081219] pstate: 80400005 (Nzcv daif +PAN -UAO)
+>>>>>> [   18.086170] pc : tee_shm_free+0x18/0x48
+>>>>>> [   18.090126] lr : optee_disable_shm_cache+0xa4/0xf0
+>>>>>> [   18.095066] sp : ffff80001005bb90
+>>>>>> [   18.098484] x29: ffff80001005bb90 x28: ffff000037e20000
+>>>>>> [   18.103962] x27: 0000000000000000 x26: ffff00003ed10490
+>>>>>> [   18.109440] x25: ffffca760e975f90 x24: 0000000000000000
+>>>>>> [   18.114918] x23: ffffca760ed79808 x22: ffff00003ec66e18
+>>>>>> [   18.120396] x21: ffff80001005bc08 x20: 00000000b200000a
+>>>>>> [   18.125874] x19: ffff0008dcef6700 x18: 0000000000000010
+>>>>>> [   18.131352] x17: 0000000000000000 x16: 0000000000000000
+>>>>>> [   18.136829] x15: ffffffffffffffff x14: ffffca760ed79808
+>>>>>> [   18.142307] x13: ffff80009005b897 x12: ffff80001005b89f
+>>>>>> [   18.147786] x11: ffffca760eda4000 x10: ffff80001005b820
+>>>>>> [   18.153264] x9 : 00000000ffffffd0 x8 : ffffca760e59b2c0
+>>>>>> [   18.158742] x7 : 0000000000000000 x6 : 0000000000000000
+>>>>>> [   18.164220] x5 : 0000000000000000 x4 : 0000000000000000
+>>>>>> [   18.169698] x3 : 0000000000000000 x2 : ffff0008dcef6700
+>>>>>> [   18.175175] x1 : 00000000ffff0008 x0 : ffffca760e59ca04
+>>>>>> [   18.180654] Call trace:
+>>>>>> [   18.183176]  tee_shm_free+0x18/0x48
+>>>>>> [   18.186773]  optee_disable_shm_cache+0xa4/0xf0
+>>>>>> [   18.191356]  optee_shutdown+0x20/0x30
+>>>>>> [   18.195135]  platform_drv_shutdown+0x2c/0x38
+>>>>>> [   18.199538]  device_shutdown+0x180/0x298
+>>>>>> [   18.203586]  kernel_restart_prepare+0x44/0x50
+>>>>>> [   18.208078]  kernel_restart+0x20/0x68
+>>>>>> [   18.211853]  __do_sys_reboot+0x104/0x258
+>>>>>> [   18.215899]  __arm64_sys_reboot+0x2c/0x38
+>>>>>> [   18.220035]  el0_svc_handler+0x90/0x138
+>>>>>> [   18.223991]  el0_svc+0x8/0x208
+>>>>>> [   18.227143] Code: f9000bf3 aa0003f3 aa1e03e0 d503201f (b9405a60)
+>>>>>> [   18.233435] ---[ end trace 835d756cd66aa959 ]---
+>>>>>> [   18.238621] Kernel panic - not syncing: Fatal exception
+>>>>>> [   18.244014] Kernel Offset: 0x4a75fde00000 from 0xffff800010000000
+>>>>>> [   18.250299] PHYS_OFFSET: 0xffff99c680000000
+>>>>>> [   18.254613] CPU features: 0x0002,21806008
+>>>>>> [   18.258747] Memory Limit: none
+>>>>>> [   18.262310] ---[ end Kernel panic - not syncing: Fatal exception ]=
+=E2=80=94
+>>>>>>=20
+>>>>>> I see that before secure world returns OPTEE_SMC_RETURN_ENOTAVAIL(which
+>>>>>> Should disable and clear all the cache) we run into the crash trying t=
+o free shm.
+>>>>>>=20
+>>>>>> Thoughts?
+>>>>>=20
+>>>>> It seems that the pointer is invalid, but the pointer doesn't look
+>>>>> like garbage. Could the kernel have unmapped the memory area covering
+>>>>> that address?
+>>>>>=20
+>>>>=20
+>>>> Yes, I am not entirely sure if the kernel had the time to unmap the memo=
+ry.
+>>>> Right after triggering the crash the kdump kernel is booted and I see th=
+e following
+>>>>=20
+>>>> [ 2.050145] optee: probing for conduit method.
+>>>> [ 2.054743] optee: revision 3.6 (f84427aa)
+>>>> [ 2.054821] optee: dynamic shared memory is enabled
+>>>> [ 2.066186] optee: initialized driver
+>>>>=20
+>>>> Could this be previous un-released maps causing corruption?
+>>>=20
+>>> Aha, yes, that could be it.
+>>>=20
+>>=20
+>> How about checking for the ptr?
+>>=20
+>> diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+>> index aadedec3bfe7..8dc4fe9a1588 100644
+>> --- a/drivers/tee/optee/call.c
+>> +++ b/drivers/tee/optee/call.c
+>> @@ -426,10 +426,12 @@ void optee_disable_shm_cache(struct optee *optee)
+>>                if (res.result.status =3D=3D OPTEE_SMC_RETURN_ENOTAVAIL)
+>>                        break; /* All shm's freed */
+>>                if (res.result.status =3D=3D OPTEE_SMC_RETURN_OK) {
+>> -                       struct tee_shm *shm;
+>> +                       struct tee_shm *shm =3D NULL;
+>>=20
+>>                        shm =3D reg_pair_to_ptr(res.result.shm_upper32,
+>>                                              res.result.shm_lower32);
+>> +                       if (IS_ERR(shm))
+>> +                               return PTR_ERR(shm);
+>>                        tee_shm_free(shm);
 >=20
-> The .shutdown hook is not called after a kernel crash when a kdump
-> kernel is pre-loaded. A kexec into the kdump kernel takes place as
-> quickly as possible without allowing drivers to clean up.
->=20
-> That means that the OP-TEE shared memory cache, which was initialized by
-> the kernel that crashed, is still in place when the kdump kernel is
-> booted. As the kdump kernel is shutdown, the .shutdown hook is called,
-> which calls optee_disable_shm_cache(), and OP-TEE's
-> OPTEE_SMC_DISABLE_SHM_CACHE API returns virtual addresses that are not
-> mapped for the kdump kernel since the cache was set up by the previous
-> kernel. Trying to dereference the tee_shm pointer or otherwise translate
-> the address results in a fault that cannot be handled:
->=20
-> Unable to handle kernel paging request at virtual address ffff4317b9c09744
-> Mem abort info:
->   ESR =3D 0x96000004
->   EC =3D 0x25: DABT (current EL), IL =3D 32 bits
->   SET =3D 0, FnV =3D 0
->   EA =3D 0, S1PTW =3D 0
-> Data abort info:
->   ISV =3D 0, ISS =3D 0x00000004
->   CM =3D 0, WnR =3D 0
-> swapper pgtable: 4k pages, 48-bit VAs, pgdp=3D0000000970b1e000
-> [ffff4317b9c09744] pgd=3D0000000000000000, p4d=3D0000000000000000
-> Internal error: Oops: 96000004 [#1] SMP
-> Modules linked in: bnxt_en pcie_iproc_platform pcie_iproc diagbe(O)
-> CPU: 4 PID: 1 Comm: systemd-shutdow Tainted: G           O      5.10.19.8 #1
-> Hardware name: Redacted (DT)
-> pstate: 60400005 (nZCv daif +PAN -UAO -TCO BTYPE=3D--)
-> pc : tee_shm_free (/usr/src/kernel/drivers/tee/tee_shm.c:363)
-> lr : optee_disable_shm_cache (/usr/src/kernel/drivers/tee/optee/call.c:441)
-> sp : ffff80001005bb70
-> x29: ffff80001005bb70 x28: ffff608e74648e00
-> x27: ffff80001005bb98 x26: dead000000000100
-> x25: ffff80001005bbb8 x24: aaaaaaaaaaaaaaaa
-> x23: ffff608e74cf8818 x22: ffff608e738be600
-> x21: ffff80001005bbc8 x20: ffff608e738be638
-> x19: ffff4317b9c09700 x18: ffffffffffffffff
-> x17: 0000000000000041 x16: ffffba61b5171764
-> x15: 0000000000000004 x14: 0000000000000fff
-> x13: ffffba61b5c9dfc8 x12: 0000000000000003
-> x11: 0000000000000000 x10: 0000000000000000
-> x9 : ffffba61b5413824 x8 : 00000000ffff4317
-> x7 : 0000000000000000 x6 : 0000000000000000
-> x5 : 0000000000000000 x4 : 0000000000000000
-> x3 : 0000000000000000 x2 : ffff4317b9c09700
-> x1 : 00000000ffff4317 x0 : ffff4317b9c09700
-> Call trace:
-> tee_shm_free (/usr/src/kernel/drivers/tee/tee_shm.c:363)
-> optee_disable_shm_cache (/usr/src/kernel/drivers/tee/optee/call.c:441)
-> optee_shutdown (/usr/src/kernel/drivers/tee/optee/core.c:636)
-> platform_drv_shutdown (/usr/src/kernel/drivers/base/platform.c:800)
-> device_shutdown (/usr/src/kernel/include/linux/device.h:758 /usr/src/kernel=
-/drivers/base/core.c:4078)
-> kernel_restart (/usr/src/kernel/kernel/reboot.c:221 /usr/src/kernel/kernel/=
-reboot.c:248)
-> __arm64_sys_reboot (/usr/src/kernel/kernel/reboot.c:349 /usr/src/kernel/ker=
-nel/reboot.c:312 /usr/src/kernel/kernel/reboot.c:312)
-> do_el0_svc (/usr/src/kernel/arch/arm64/kernel/syscall.c:56 /usr/src/kernel/=
-arch/arm64/kernel/syscall.c:158 /usr/src/kernel/arch/arm64/kernel/syscall.c:1=
-97)
-> el0_svc (/usr/src/kernel/arch/arm64/kernel/entry-common.c:368)
-> el0_sync_handler (/usr/src/kernel/arch/arm64/kernel/entry-common.c:428)
-> el0_sync (/usr/src/kernel/arch/arm64/kernel/entry.S:671)
-> Code: aa0003f3 b5000060 12800003 14000002 (b9404663)
->=20
-> When booting the kdump kernel, drain the shared memory cache while being
-> careful to not translate the addresses returned from
-> OPTEE_SMC_DISABLE_SHM_CACHE. Once the invalid cache objects are drained
-> and the cache is disabled, proceed with re-enabling the cache so that we
-> aren't dealing with invalid addresses while shutting down the kdump
-> kernel.
->=20
-> Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-> ---
->=20
-> This patch fixes a crash introduced by "optee: fix tee out of memory
-> failure seen during kexec reboot"[1]. However, I don't think that the
-> original two patch series[2] plus this patch is the full solution to
-> properly handling OP-TEE shared memory across kexec.
->=20
-> While testing this fix, I did about 10 kexec reboots and then triggered
-> a kernel crash by writing 'c' to /proc/sysrq-trigger. The kdump kernel
-> became unresponsive during boot while steadily streaming the following
-> errors to the serial console:
->=20
-> arm-smmu 64000000.mmu: Blocked unknown Stream ID 0x2000; boot with "arm-smm=
-u.disable_bypass=3D0" to allow, but this may have security implications
-> arm-smmu 64000000.mmu:     GFSR 0x00000002, GFSYNR0 0x00000002, GFSYNR1 0x0=
-0002000, GFSYNR2 0x00000000
->=20
-> I suspect that this is related to the problems of OP-TEE shared memory
-> handling across kexec. My current hunch is that while we've disabled the
-> shared memory cache with this patch, we haven't unregistered all of the
-> addresses that the previous kernel (which crashed) had registered with
-> OP-TEE and that perhaps OP-TEE OS is still trying to make use those
-> addresses?
->=20
-> I'm still pretty early in investigating that assumption and
-> I'm learning about OP-TEE as I go but I wanted to get this initial
-> fix-of-the-fix out so that it was clear that the v2 of the series[2] is
-> not complete.
->=20
-> [1] https://lore.kernel.org/lkml/20210225090610.242623-2-allen.lkml(a)gmail=
-.com/
-> [2] https://lore.kernel.org/lkml/20210225090610.242623-1-allen.lkml(a)gmail=
-.com/#t
->=20
-> drivers/tee/optee/call.c          | 11 ++++++++++-
-> drivers/tee/optee/core.c          | 13 +++++++++++--
-> drivers/tee/optee/optee_private.h |  2 +-
-> 3 files changed, 22 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> index 6132cc8d014c..799e84bec63d 100644
-> --- a/drivers/tee/optee/call.c
-> +++ b/drivers/tee/optee/call.c
-> @@ -417,8 +417,10 @@ void optee_enable_shm_cache(struct optee *optee)
->  * optee_disable_shm_cache() - Disables caching of some shared memory alloc=
-ation
->  *			      in OP-TEE
->  * @optee:	main service struct
-> + * @is_mapped:	true if the cached shared memory addresses were mapped by t=
-his
-> + *		kernel, are safe to dereference, and should be freed
->  */
-> -void optee_disable_shm_cache(struct optee *optee)
-> +void optee_disable_shm_cache(struct optee *optee, bool is_mapped)
-> {
-> 	struct optee_call_waiter w;
->=20
-> @@ -437,6 +439,13 @@ void optee_disable_shm_cache(struct optee *optee)
-> 		if (res.result.status =3D=3D OPTEE_SMC_RETURN_OK) {
-> 			struct tee_shm *shm;
+> I don't think that will help. If your theory is correct then that
+> pointer is from an older incarnation of the kernel. It could be worth
+> trying calling this function just before the call to
+> optee_enable_shm_cache() in optee_probe() but skipping the calls to
+> `tee_shm_free()` in that case. Since the kernel has restarted these
+> returned pointers are not valid any more and there's nothing to free,
+> we just need to make sure that secure world stops using those too.
 >=20
 
- Thanks Tyler.
- From what I understand from my email exchange with Jens, I don=E2=80=99t
-Think we want to touch optee_disable_shm_cache(), I could be wrong too,
-@Jens, comments?
+Jens,
 
-> +			/*
-> +			 * Shared memory references that were not mapped by
-> +			 * this kernel must be ignored to prevent a crash.
-> +			 */
-> +			if (!is_mapped)
-> +				continue;
-> +
-> 			shm =3D reg_pair_to_ptr(res.result.shm_upper32,
-> 					      res.result.shm_lower32);
-> 			tee_shm_free(shm);
-> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index 69d1f698907c..9985c671bd1f 100644
-> --- a/drivers/tee/optee/core.c
-> +++ b/drivers/tee/optee/core.c
-> @@ -6,6 +6,7 @@
-> #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->=20
-> #include <linux/arm-smccc.h>
-> +#include <linux/crash_dump.h>
-> #include <linux/errno.h>
-> #include <linux/io.h>
-> #include <linux/module.h>
-> @@ -588,7 +589,7 @@ static int optee_remove(struct platform_device *pdev)
-> 	 * reference counters and also avoid wild pointers in secure world
-> 	 * into the old shared memory range.
-> 	 */
-> -	optee_disable_shm_cache(optee);
-> +	optee_disable_shm_cache(optee, true);
->=20
-> 	/*
-> 	 * The two devices have to be unregistered before we can free the
-> @@ -618,7 +619,7 @@ static int optee_remove(struct platform_device *pdev)
->  */
-> static void optee_shutdown(struct platform_device *pdev)
-> {
-> -	optee_disable_shm_cache(platform_get_drvdata(pdev));
-> +	optee_disable_shm_cache(platform_get_drvdata(pdev), true);
-> }
->=20
-> static int optee_probe(struct platform_device *pdev)
-> @@ -705,6 +706,14 @@ static int optee_probe(struct platform_device *pdev)
-> 	optee->memremaped_shm =3D memremaped_shm;
-> 	optee->pool =3D pool;
->=20
-> +	/*
-> +	 * The kexec into the crash kernel did not call our .shutdown hook. The
-> +	 * shm cache objects registered with OP-TEE are not valid for the crash
-> +	 * kernel.
-> +	 */
-> +	if (is_kdump_kernel())
-> +		optee_disable_shm_cache(optee, false);
-> +
+  I suppose you saw the email from @Tyler, we have it fixed but ran
+Into many arm-smmu 64000000.mmu: xxx logs being printed out
+And system becoming unstable and stops responding.=20
 
- Am glad this solves the kdump crash that we have been seeing.
+ Am debugging this further, any input would be really helpful.
 
-- Allen
-
-> 	optee_enable_shm_cache(optee);
->=20
-> 	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
-ivate.h
-> index e25b216a14ef..16d8c82213e7 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -158,7 +158,7 @@ int optee_invoke_func(struct tee_context *ctx, struct t=
-ee_ioctl_invoke_arg *arg,
-> int optee_cancel_req(struct tee_context *ctx, u32 cancel_id, u32 session);
->=20
-> void optee_enable_shm_cache(struct optee *optee);
-> -void optee_disable_shm_cache(struct optee *optee);
-> +void optee_disable_shm_cache(struct optee *optee, bool is_mapped);
->=20
-> int optee_shm_register(struct tee_context *ctx, struct tee_shm *shm,
-> 		       struct page **pages, size_t num_pages,
-> --=20
-> 2.25.1
+Thanks.
 
 
---===============1980601848647835192==--
+--===============5891470197509859821==--
 
