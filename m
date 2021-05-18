@@ -1,48 +1,41 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE fix for v5.13
-Date: Tue, 18 May 2021 12:07:12 +0200
-Message-ID: <20210518100712.GA449561@jade>
+Subject: Linaro OP-TEE Contributions meeting May 2021
+Date: Tue, 18 May 2021 14:32:24 +0200
+Message-ID: 
+ <CA+EyddY7iu=8QjgfECfBYL0UMG5FZSXjvAJvR_rVdEsj14L+BQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0825777993088709599=="
+Content-Type: multipart/mixed; boundary="===============6293879490173927597=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0825777993088709599==
+--===============6293879490173927597==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+Hi,
 
-Please pull this small OP-TEE driver fix which uses export_uuid() to copy
-the client UUID instead of making asumptions about the internal format of
-uuid_t.
+LOC monthly meeting is planned to take place Thursday May 27(a)17.00 (UTC+2).
 
-Thanks,
-Jens
+Looking for topics from people. If you have anything you'd like to discuss,
+please let me know.
 
-The following changes since commit 6efb943b8616ec53a5e444193dccf1af9ad627b5:
+I have a couple of examples of things that could be worth having a chat
+about if there are no other proposals.
+- OP-TEE and MISRA C
+- Rust in OP-TEE
+- SDP (ION support removed in Linux kernel will affect OP-TEE's SDP
+solution)
 
-  Linux 5.13-rc1 (2021-05-09 14:17:44 -0700)
+Meeting details:
+---------------
+Date/time: Thursday May 27(a)17.00 (UTC+2)
+https://everytimezone.com/s/83944ce6
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
+Project page: https://www.linaro.org/projects/#LOC
 
-are available in the Git repository at:
+Regards,
+Joakim on behalf of the Linaro OP-TEE team
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-fix-for=
--v5.13
-
-for you to fetch changes up to 673c7aa2436bfc857b92417f3e590a297c586dde:
-
-  optee: use export_uuid() to copy client UUID (2021-05-18 07:59:27 +0200)
-
-----------------------------------------------------------------
-OP-TEE use export_uuid() to copy UUID
-
-----------------------------------------------------------------
-Jens Wiklander (1):
-      optee: use export_uuid() to copy client UUID
-
- drivers/tee/optee/call.c      | 6 ++++--
- drivers/tee/optee/optee_msg.h | 6 ++++--
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
---===============0825777993088709599==--
+--===============6293879490173927597==--
 
