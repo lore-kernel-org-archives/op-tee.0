@@ -1,53 +1,48 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 061/141] tee: Fix fall-through warnings for Clang
-Date: Mon, 17 May 2021 18:43:17 -0500
-Message-ID: <aabd24b1-fe72-946d-c9f4-dea5e5db40db@embeddedor.com>
-In-Reply-To: <e44a9011-f2ed-f1d2-cc1a-7dcba2f41956@embeddedor.com>
+Subject: [GIT PULL] OP-TEE fix for v5.13
+Date: Tue, 18 May 2021 12:07:12 +0200
+Message-ID: <20210518100712.GA449561@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3173746367390575372=="
+Content-Type: multipart/mixed; boundary="===============0825777993088709599=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3173746367390575372==
+--===============0825777993088709599==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hello arm-soc maintainers,
 
-On 4/20/21 15:20, Gustavo A. R. Silva wrote:
-> Hi all,
->=20
-> Friendly ping: who can take this, please?
->=20
-> Thanks
-> --
-> Gustavo
->=20
-> On 11/23/20 16:55, Gustavo A. R. Silva wrote:
->> On Sun, Nov 22, 2020 at 10:26:09AM +0100, Jens Wiklander wrote:
->>> On Fri, Nov 20, 2020 at 7:33 PM Gustavo A. R. Silva
->>> <gustavoars@kernel.org> wrote:
->>>>
->>>> In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
->>>> by explicitly adding a break statement instead of letting the code fall
->>>> through to the next case.
->>>>
->>>> Link: https://github.com/KSPP/linux/issues/115
->>>> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
->>>> ---
->>>>  drivers/tee/tee_core.c | 1 +
->>>>  1 file changed, 1 insertion(+)
->>>
->>> Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
+Please pull this small OP-TEE driver fix which uses export_uuid() to copy
+the client UUID instead of making asumptions about the internal format of
+uuid_t.
 
-I've added this to my -next[1] branch for v5.14.
+Thanks,
+Jens
 
-Thanks
---
-Gustavo
+The following changes since commit 6efb943b8616ec53a5e444193dccf1af9ad627b5:
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/gustavoars/linux.git/log/=
-?h=3Dfor-next/kspp
+  Linux 5.13-rc1 (2021-05-09 14:17:44 -0700)
 
---===============3173746367390575372==--
+are available in the Git repository at:
+
+  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-fix-for=
+-v5.13
+
+for you to fetch changes up to 673c7aa2436bfc857b92417f3e590a297c586dde:
+
+  optee: use export_uuid() to copy client UUID (2021-05-18 07:59:27 +0200)
+
+----------------------------------------------------------------
+OP-TEE use export_uuid() to copy UUID
+
+----------------------------------------------------------------
+Jens Wiklander (1):
+      optee: use export_uuid() to copy client UUID
+
+ drivers/tee/optee/call.c      | 6 ++++--
+ drivers/tee/optee/optee_msg.h | 6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+--===============0825777993088709599==--
 
