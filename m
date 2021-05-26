@@ -1,144 +1,55 @@
 From: Christoph Gellner <cgellner@de.adit-jv.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [RFC PATCH 0/3] tee: optee: Allow to freeze when tee-supplicant is frozen
-Date: Wed, 26 May 2021 09:09:08 +0200
-Message-ID: <20210526070911.31681-1-cgellner@de.adit-jv.com>
+Subject: [RFC PATCH 1/3] tee: optee: Allow to freeze the task waiting for
+ tee-supplicant
+Date: Wed, 26 May 2021 09:09:09 +0200
+Message-ID: <20210526070911.31681-2-cgellner@de.adit-jv.com>
+In-Reply-To: <20210526070911.31681-1-cgellner@de.adit-jv.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5515539950234639173=="
+Content-Type: multipart/mixed; boundary="===============7459196689790864143=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5515539950234639173==
+--===============7459196689790864143==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 When the system is going to hibernate or suspend it might happen
 that the tee-supplicant task is frozen first.
-In this case a running OP-TEE task might get stuck in the loop using
-wait_for_completion_interruptible to wait for response of tee-supplicant.
-   =20
-As a consequence other OP-TEE tasks waiting for the above or a
-succeeding stuck OP-TEE task might get stuck as well
-- waiting for call queue entry to be completed
-- waiting for OPTEE_RPC_WAIT_QUEUE_WAKEUP
+wait_for_completion_interruptible might get stuck in this case.
 
-This will result in the tasks "refusing to freeze" and
-the hibernate or suspend will fail.
+Add try_to_freeze to allow the waiting task to be frozen while
+waiting for the response of tee-supplicant.
 
-OP-TEE issue: https://github.com/OP-TEE/optee_os/issues/4581
-
-
-- Read back the object
-PM: suspend entry (s2idle)
-Filesystems sync: 0.000 seconds
-Freezing user space processes ...
-Freezing of tasks failed after 20.008 seconds (3 tasks refusing to freeze, wq=
-_busy=3D0):
-task:optee_example_s state:R  running task     stack:    0 pid:  124 ppid:   =
-  1 flags:0x00000001
-[<807d3e24>] (__schedule) from [<841c4000>] (0x841c4000)
-task:optee_example_s state:D stack:    0 pid:  126 ppid:     1 flags:0x000000=
-01
-[<807d3e24>] (__schedule) from [<807d41d0>] (schedule+0x60/0x120)
-[<807d41d0>] (schedule) from [<807d7ffc>] (schedule_timeout+0x1f4/0x340)
-[<807d7ffc>] (schedule_timeout) from [<807d56a0>] (wait_for_completion+0x94/0=
-xfc)
-[<807d56a0>] (wait_for_completion) from [<80692134>] (optee_cq_wait_for_compl=
-etion+0x14/0x60)
-[<80692134>] (optee_cq_wait_for_completion) from [<806924dc>] (optee_do_call_=
-with_arg+0x14c/0x154)
-[<806924dc>] (optee_do_call_with_arg) from [<80692edc>] (optee_shm_unregister=
-+0x78/0xcc)
-[<80692edc>] (optee_shm_unregister) from [<80690a9c>] (tee_shm_release+0x88/0=
-x174)
-[<80690a9c>] (tee_shm_release) from [<8057f89c>] (dma_buf_release+0x44/0xb0)
-[<8057f89c>] (dma_buf_release) from [<8028e4e8>] (__dentry_kill+0x110/0x17c)
-[<8028e4e8>] (__dentry_kill) from [<80276cfc>] (__fput+0xc0/0x234)
-[<80276cfc>] (__fput) from [<80140b1c>] (task_work_run+0x90/0xbc)
-[<80140b1c>] (task_work_run) from [<8010b1c8>] (do_work_pending+0x4a0/0x5a0)
-[<8010b1c8>] (do_work_pending) from [<801000cc>] (slow_work_pending+0xc/0x20)
-Exception stack(0x843f5fb0 to 0x843f5ff8)
-5fa0:                                     00000000 7ef63448 fffffffe 00000000
-5fc0: 7ef63448 76f163b0 7ef63448 00000006 7ef63448 7ef634e0 7ef63438 00000000
-5fe0: 00000006 7ef63400 76e74833 76dff856 800e0130 00000004
-task:optee_example_s state:D stack:    0 pid:  128 ppid:     1 flags:0x000000=
-01
-[<807d3e24>] (__schedule) from [<807d41d0>] (schedule+0x60/0x120)
-[<807d41d0>] (schedule) from [<807d7ffc>] (schedule_timeout+0x1f4/0x340)
-[<807d7ffc>] (schedule_timeout) from [<807d56a0>] (wait_for_completion+0x94/0=
-xfc)
-[<807d56a0>] (wait_for_completion) from [<8069359c>] (optee_handle_rpc+0x554/=
-0x710)
-[<8069359c>] (optee_handle_rpc) from [<806924cc>] (optee_do_call_with_arg+0x1=
-3c/0x154)
-[<806924cc>] (optee_do_call_with_arg) from [<80692910>] (optee_invoke_func+0x=
-110/0x190)
-[<80692910>] (optee_invoke_func) from [<8068fe3c>] (tee_ioctl+0x113c/0x1244)
-[<8068fe3c>] (tee_ioctl) from [<802892ec>] (sys_ioctl+0xe0/0xa24)
-[<802892ec>] (sys_ioctl) from [<80100060>] (ret_fast_syscall+0x0/0x54)
-Exception stack(0x8424ffa8 to 0x8424fff0)
-ffa0:                   00000000 7eb67584 00000003 8010a403 7eb67438 7eb675fc
-ffc0: 00000000 7eb67584 7eb67604 00000036 7eb67448 7eb674e0 7eb67438 00000000
-ffe0: 76ef7030 7eb6742c 76ee6469 76e83178
-OOM killer enabled.
-Restarting tasks ... done.
-PM: suspend exit
-sh: write error: Device or resource busy
-
-
-The patch set will switch to interruptible waits and add try_to_freeze to all=
-ow the waiting
-OP-TEE tasks to be frozen as well.
-
+Signed-off-by: Christoph Gellner <cgellner@de.adit-jv.com>
 ---
-
-In my humble understanding without these patches OP-TEE tasks have only been =
-frozen in user-space.
-With these patches it is possible that OP-TEE tasks are frozen although the O=
-P-TEE command
-invocation didn't complete.
-I'm unable to judge if there are any OP-TEE implementations relying on the fa=
-ct that suspend won't
-happen while the OP-TEE command invocation didn't complete.
-
-The theoretical alternative would be to prevent that tee-supplicant is frozen=
- first.
-
-
-I was able to reproduce the issue in OP-TEE QEMU v7 using a modified version =
-of
-optee_example_secure_storage (loop around REE FS read, support multi-session).
-See https://github.com/OP-TEE/optee_os/issues/4581 for details.
-
-After applying these patches (minor adjustments of the includes) I was no lon=
-ger able to
-reproduce the issues.
-In my tests OP-TEE QEMU v7 did suspend and resume without troubles.
-
-I'm not able to test on other devices supporting OP-TEE.
-
-
-I decided to handle each of the locations the OP-TEE task could get stuck as =
-a separate commit.
-The downside is that the above call stack doesn't really fit to any of the co=
-mmits.
-
-Christoph Gellner (3):
-  tee: optee: Allow to freeze the task waiting for tee-supplicant
-  tee: optee: Allow to freeze while waiting for call_queue
-  tee: optee: Allow to freeze while waiting in
-    OPTEE_RPC_WAIT_QUEUE_SLEEP
-
- drivers/tee/optee/call.c | 8 +++++++-
- drivers/tee/optee/rpc.c  | 9 ++++++++-
  drivers/tee/optee/supp.c | 3 +++
- 3 files changed, 18 insertions(+), 2 deletions(-)
+ 1 file changed, 3 insertions(+)
 
-
-base-commit: c4681547bcce777daf576925a966ffa824edd09d
+diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
+index 322a543b8c27..03c37bae6ac4 100644
+--- a/drivers/tee/optee/supp.c
++++ b/drivers/tee/optee/supp.c
+@@ -5,6 +5,7 @@
+ #include <linux/device.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
++#include <linux/freezer.h>
+ #include "optee_private.h"
+=20
+ struct optee_supp_req {
+@@ -141,6 +142,8 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func=
+, size_t num_params,
+ 			req->ret =3D TEEC_ERROR_COMMUNICATION;
+ 			break;
+ 		}
++
++		try_to_freeze();
+ 	}
+=20
+ 	ret =3D req->ret;
 --=20
 2.32.0.rc0
 
 
---===============5515539950234639173==--
+--===============7459196689790864143==--
 
