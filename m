@@ -1,61 +1,78 @@
-From: Christoph Gellner <cgellner@de.adit-jv.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RFC PATCH 3/3] tee: optee: Allow to freeze while waiting in
- OPTEE_RPC_WAIT_QUEUE_SLEEP
-Date: Wed, 26 May 2021 09:09:11 +0200
-Message-ID: <20210526070911.31681-4-cgellner@de.adit-jv.com>
-In-Reply-To: <20210526070911.31681-1-cgellner@de.adit-jv.com>
+Subject: [PATCH v2 0/5] Add FF-A support in OP-TEE driver
+Date: Thu, 27 May 2021 10:13:59 +0200
+Message-ID: <20210527081404.1433177-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4785823923334919206=="
+Content-Type: multipart/mixed; boundary="===============0237247918198044336=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4785823923334919206==
+--===============0237247918198044336==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-When the system is going to hibernate or suspend and the task calling
-the corresponding OPTEE_RPC_WAIT_QUEUE_WAKEUP gets frozen waiting
-for completion in OPTEE_RPC_WAIT_QUEUE_SLEEP might get stuck.
+Hi all,
 
-Change wait to interruptible and add try_to_freeze in order to
-allow that the waiting task is frozen as well.
+This adds supports for the OP-TEE driver to communicate with secure world
+using FF-A [1] as transport.
 
-Signed-off-by: Christoph Gellner <cgellner@de.adit-jv.com>
----
- drivers/tee/optee/rpc.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+These patches are based on the FF-A v7 patch set by Sudeep Holla [2] [3].
 
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index 1849180b0278..0851b19be529 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -10,6 +10,7 @@
- #include <linux/i2c.h>
- #include <linux/slab.h>
- #include <linux/tee_drv.h>
-+#include <linux/freezer.h>
- #include "optee_private.h"
- #include "optee_smc.h"
- #include "optee_rpc_cmd.h"
-@@ -169,7 +170,13 @@ static void wq_sleep(struct optee_wait_queue *wq, u32 ke=
-y)
- 	struct wq_entry *w =3D wq_entry_get(wq, key);
-=20
- 	if (w) {
--		wait_for_completion(&w->c);
-+		/*
-+		 * wait_for_completion but allow hibernation/suspend
-+		 * to freeze the waiting task
-+		 */
-+		while (wait_for_completion_interruptible(&w->c))
-+			try_to_freeze();
-+
- 		mutex_lock(&wq->mu);
- 		list_del(&w->link);
- 		mutex_unlock(&wq->mu);
+There is one change to the TEE subsystem with "tee: add sec_world_id to
+struct tee_shm" to add support for holding globally unique handle assigned
+by the FF-A. This is a field that I believe could useful for the AMDTEE
+driver too.
+
+For communication the OP-TEE message protocol is still used, but with a new
+type of memory reference, struct optee_msg_param_fmem, to carry the
+information needed by FF-A. The OP-TEE driver is refactored internally with
+to sets of callbacks, one for the old SMC based communication and another
+set with FF-A as transport.
+
+There is also a difference in how the drivers are instantiated. With the
+SMC based transport we have a platform driver, module_platform_driver(),
+today which we're keeping as is for this configuration. In a FF-A system we
+have a FF-A driver, module_ffa_driver(), instead.
+
+The OP-TEE driver can be compiled for both targets at the same time and
+it's up to runtime configuration (device tree or ACPI) to decide how it's
+initialized.
+
+Thanks,
+Jens
+
+[1] https://developer.arm.com/documentation/den0077/latest
+[2] https://lore.kernel.org/linux-arm-kernel/20210521151033.181846-1-sudeep.h=
+olla(a)arm.com/
+[3] git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.git v5.1=
+3/ffa
+
+v1->v2:
+- Rebased to the FF-A v7 patch
+- Fixed a couple of reports from kernel test robot <lkp@intel.com>
+
+Jens Wiklander (5):
+  tee: add sec_world_id to struct tee_shm
+  optee: simplify optee_release()
+  optee: refactor driver with internal callbacks
+  optee: add a FF-A memory pool
+  optee: add FF-A support
+
+ drivers/tee/optee/call.c          | 325 +++++++++++---
+ drivers/tee/optee/core.c          | 689 ++++++++++++++++++++++++++----
+ drivers/tee/optee/optee_ffa.h     | 153 +++++++
+ drivers/tee/optee/optee_msg.h     |  27 +-
+ drivers/tee/optee/optee_private.h |  88 +++-
+ drivers/tee/optee/rpc.c           | 137 +++++-
+ drivers/tee/optee/shm_pool.c      |  65 ++-
+ drivers/tee/optee/shm_pool.h      |   1 +
+ include/linux/tee_drv.h           |   7 +-
+ 9 files changed, 1326 insertions(+), 166 deletions(-)
+ create mode 100644 drivers/tee/optee/optee_ffa.h
+
 --=20
-2.32.0.rc0
+2.25.1
 
 
---===============4785823923334919206==--
+--===============0237247918198044336==--
 
