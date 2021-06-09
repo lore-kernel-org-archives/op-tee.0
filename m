@@ -1,18 +1,18 @@
 From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 4/7] hwrng: optee-rng: use tee_shm_alloc_kernel_buf()
-Date: Wed, 09 Jun 2021 09:51:53 -0500
-Message-ID: <20210609145153.GH4910@sequoia>
-In-Reply-To: <20210609102324.2222332-5-jens.wiklander@linaro.org>
+Subject: Re: [PATCH 5/7] tpm_ftpm_tee: use tee_shm_alloc_kernel_buf()
+Date: Wed, 09 Jun 2021 09:53:00 -0500
+Message-ID: <20210609145300.GI4910@sequoia>
+In-Reply-To: <20210609102324.2222332-6-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6328689079779658619=="
+Content-Type: multipart/mixed; boundary="===============3755636382474509510=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6328689079779658619==
+--===============3755636382474509510==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 2021-06-09 12:23:21, Jens Wiklander wrote:
+On 2021-06-09 12:23:22, Jens Wiklander wrote:
 > Uses the new simplified tee_shm_alloc_kernel_buf() function instead of
 > the old deprecated tee_shm_alloc() function which required specific
 > TEE_SHM-flags.
@@ -24,31 +24,33 @@ Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Tyler
 
 > ---
->  drivers/char/hw_random/optee-rng.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/char/tpm/tpm_ftpm_tee.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/drivers/char/hw_random/optee-rng.c b/drivers/char/hw_random/op=
-tee-rng.c
-> index 135a82590923..a948c0727b2b 100644
-> --- a/drivers/char/hw_random/optee-rng.c
-> +++ b/drivers/char/hw_random/optee-rng.c
-> @@ -145,10 +145,10 @@ static int optee_rng_init(struct hwrng *rng)
->  	struct optee_rng_private *pvt_data =3D to_optee_rng_private(rng);
->  	struct tee_shm *entropy_shm_pool =3D NULL;
+> diff --git a/drivers/char/tpm/tpm_ftpm_tee.c b/drivers/char/tpm/tpm_ftpm_te=
+e.c
+> index 2ccdf8ac6994..6e3235565a4d 100644
+> --- a/drivers/char/tpm/tpm_ftpm_tee.c
+> +++ b/drivers/char/tpm/tpm_ftpm_tee.c
+> @@ -254,11 +254,11 @@ static int ftpm_tee_probe(struct device *dev)
+>  	pvt_data->session =3D sess_arg.session;
 > =20
-> -	entropy_shm_pool =3D tee_shm_alloc(pvt_data->ctx, MAX_ENTROPY_REQ_SZ,
-> -					 TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
-> +	entropy_shm_pool =3D tee_shm_alloc_kernel_buf(pvt_data->ctx,
-> +						    MAX_ENTROPY_REQ_SZ);
->  	if (IS_ERR(entropy_shm_pool)) {
-> -		dev_err(pvt_data->dev, "tee_shm_alloc failed\n");
-> +		dev_err(pvt_data->dev, "tee_shm_alloc_kernel_buf failed\n");
->  		return PTR_ERR(entropy_shm_pool);
+>  	/* Allocate dynamic shared memory with fTPM TA */
+> -	pvt_data->shm =3D tee_shm_alloc(pvt_data->ctx,
+> -				      MAX_COMMAND_SIZE + MAX_RESPONSE_SIZE,
+> -				      TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
+> +	pvt_data->shm =3D tee_shm_alloc_kernel_buf(pvt_data->ctx,
+> +						 MAX_COMMAND_SIZE +
+> +						 MAX_RESPONSE_SIZE);
+>  	if (IS_ERR(pvt_data->shm)) {
+> -		dev_err(dev, "%s: tee_shm_alloc failed\n", __func__);
+> +		dev_err(dev, "%s: tee_shm_alloc_kernel_buf failed\n", __func__);
+>  		rc =3D -ENOMEM;
+>  		goto out_shm_alloc;
 >  	}
-> =20
 > --=20
 > 2.31.1
 >=20
 
---===============6328689079779658619==--
+--===============3755636382474509510==--
 
