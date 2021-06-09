@@ -1,195 +1,147 @@
 From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v3 5/7] tee: Support shm registration without dma-buf backing
-Date: Wed, 09 Jun 2021 08:51:04 -0500
-Message-ID: <20210609135104.GD4910@sequoia>
-In-Reply-To: <20210609134225.GC4910@sequoia>
+Subject: Re: [PATCH 1/7] tee: remove unused tee_shm_pool_alloc_res_mem()
+Date: Wed, 09 Jun 2021 09:03:03 -0500
+Message-ID: <20210609140303.GE4910@sequoia>
+In-Reply-To: <20210609102324.2222332-2-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7021984170793463500=="
+Content-Type: multipart/mixed; boundary="===============6618884883768383808=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7021984170793463500==
+--===============6618884883768383808==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 2021-06-09 08:42:28, Tyler Hicks wrote:
-> On 2021-06-09 14:15:33, Jens Wiklander wrote:
-> > Hi,
-> >=20
-> > On Wed, Jun 09, 2021 at 04:22:49PM +0530, Sumit Garg wrote:
-> > > + Rijo
-> > >=20
-> > > On Wed, 9 Jun 2021 at 11:16, Tyler Hicks <tyhicks@linux.microsoft.com=
-> wrote:
-> > > >
-> > > > On 2021-06-09 09:59:04, Sumit Garg wrote:
-> > > > > Hi Tyler,
-> > > >
-> > > > Hey Sumit - Thanks for the review.
-> > > >
-> > > > >
-> > > > > On Wed, 9 Jun 2021 at 05:55, Tyler Hicks <tyhicks@linux.microsoft=
-.com> wrote:
-> > > > > >
-> > > > > > Uncouple the registration of dynamic shared memory buffers from t=
-he
-> > > > > > TEE_SHM_DMA_BUF flag. Drivers may wish to allocate dynamic shared=
- memory
-> > > > > > regions but do not need them to be backed by a dma-buf when the m=
-emory
-> > > > > > region is private to the driver.
-> > > > >
-> > > > > In this case drivers should use tee_shm_register() instead where the
-> > > > > memory allocated is actually private to the driver. However, you ne=
-ed
-> > > > > to remove TEE_SHM_DMA_BUF as a mandatory flag for tee_shm_register(=
-).
-> > > > > Have a look at an example here [1]. So modifying tee_shm_alloc() for
-> > > > > this purpose doesn't look appropriate to me.
-> > > > >
-> > > > > [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.=
-git/tree/security/keys/trusted-keys/trusted_tee.c#n73
-> > > >
-> > > > I noticed what you did in commit 2a6ba3f794e8 ("tee: enable support to
-> > > > register kernel memory") and considered moving ftpm and tee_bnxt_fw o=
-ver
-> > > > to tee_shm_register(). I think that's likely the right long term
-> > > > approach but I decided against it since this series is a minimal set =
-of
-> > > > bug fixes that will hopefully go to stable (I'm affected by these bugs
-> > > > in 5.4). Here are my reasons for feeling like moving to
-> > > > tee_shm_register() isn't minimal in terms of a stable-focused fix:
-> > > >
-> > > > - tee_shm_alloc() looks like it should work fine with AMD-TEE today.
-> > > >   tee_shm_register() definitely does not since AMD-TEE doesn't provid=
-e a
-> > > >   .shm_register or .shm_unregister hook. This may break existing users
-> > > >   of AMD-TEE?
-> > >=20
-> > > AFAIK, ftpm and tee_bnxt_fw drivers only support OP-TEE at this point.
-> > > See ftpm_tee_match() and optee_ctx_match() APIs in corresponding
-> > > drivers.
-> > >=20
-> > > > - tee_shm_register() has not historically been used for kernel
-> > > >   allocations and is not fixed wrt the bug that Jens fixed in commit
-> > > >   f1bbacedb0af ("tee: don't assign shm id for private shms").
-> > >=20
-> > > Yes, that's what I meant earlier to make the TEE_SHM_DMA_BUF flag optio=
-nal.
-> > >=20
-> > > > - tee_shm_alloc() performs allocations using contiguous pages
-> > > >   from alloc_pages() while tee_shm_register() performs non-contiguous
-> > > >   allocations with kcalloc(). I suspect this would be fine but I don't
-> > > >   know the secure world side of these things well enough to assess the
-> > > >   risk involved with such a change on the kernel side.
-> > > >
-> > >=20
-> > > I don't think that would make any difference.
-> > >=20
-> > > > I should have mentioned this in the cover letter but my hope was that
-> > > > these minimal changes would be accepted and then additional work could
-> > > > be done to merge tee_shm_alloc() and tee_shm_register() in a way that
-> > > > would allow the caller to request contiguous or non-contiguous pages,
-> > > > fix up the additional issues mentioned above, and then adjust the
-> > > > call sites in ftpm and tee_bnxt_fw as appropriate.
-> > > >
-> > > > I think that's a bigger set of changes because there are several thin=
-gs
-> > > > that still confuse/concern me:
-> > > >
-> > > > - Why does tee_shm_alloc() use TEE_SHM_MAPPED while tee_shm_register()
-> > > >   uses TEE_SHM_KERNEL_MAPPED or TEE_SHM_USER_MAPPED? Why do all three
-> > > >   exist?
-> > >=20
-> > > AFAIK, its due the the inherent nature of tee_shm_alloc() and
-> > > tee_shm_register() where tee_shm_alloc() doesn't need to know whether
-> > > its a kernel or user-space memory since it is the one that allocates
-> > > whereas tee_shm_register() need to know that since it has to register
-> > > pre-allocated client memory.
-> > >=20
-> > > > - Why does tee_shm_register() unconditionally use non-contiguous
-> > > >   allocations without ever taking into account whether or not
-> > > >   OPTEE_SMC_SEC_CAP_DYNAMIC_SHM was set? It sounds like that's requir=
-ed
-> > > >   from my reading of https://optee.readthedocs.io/en/latest/architect=
-ure/core.html#noncontiguous-shared-buffers.
-> > >=20
-> > > Yeah, but do we have platforms in OP-TEE that don't support dynamic
-> > > shared memory? I guess it has become the sane default which is a
-> > > mandatory requirement when it comes to OP-TEE driver in u-boot.
-> > >=20
-> > > > - Why is TEE_SHM_REGISTER implemented at the TEE driver level when it=
- is
-> > > >   specific to OP-TEE? How to better abstract that away?
-> > > >
-> > >=20
-> > > I would like you to go through Section "3.2.4. Shared Memory" in TEE
-> > > Client API Specification. There are two standard ways for shared
-> > > memory approach with TEE:
-> > >=20
-> > > 1. A Shared Memory block can either be existing Client Application
-> > > memory (kernel driver in our case) which is subsequently registered
-> > > with the TEE Client API (using tee_shm_register() in our case).
-> > >=20
-> > > 2. Or memory which is allocated on behalf of the Client Application
-> > > using the TEE
-> > > Client API (using tee_shm_alloc() in our case).
-> > >=20
-> > > > Let me know if you agree with the more minimal approach that I took f=
-or
-> > > > these bug fix series or still feel like tee_shm_register() should be
-> > > > fixed up so that it is usable. Thanks!
-> > >=20
-> > > From drivers perspective I think the change should be:
-> > >=20
-> > > tee_shm_alloc()
-> > >=20
-> > > to
-> > >=20
-> > > kcalloc()
-> > > tee_shm_register()
-> >=20
-> > I've just posted "[PATCH 0/7] tee: shared memory updates",
-> > https://lore.kernel.org/lkml/20210609102324.2222332-1-jens.wiklander(a)li=
-naro.org/
-> >=20
-> > Where tee_shm_alloc() is replaced by among other functions
-> > tee_shm_alloc_kernel_buf(). tee_shm_alloc_kernel_buf() takes care of the
-> > problem with TEE_SHM_DMA_BUF.
+On 2021-06-09 12:23:18, Jens Wiklander wrote:
+> None of the drivers in the TEE subsystem uses
+> tee_shm_pool_alloc_res_mem() so remove the function.
 >=20
-> Thanks! At first glance, that series would take care of the last three
-> patches in my kexec/kdump series.
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 
-Correction: Your series would not completely take care of the last three
-patches in my kexec/kdump series because your series doesn't implement
-the .shutdown() hook for tee_bnxt_fw.
-
-Does it make sense to take my series first and then rebase your series
-on top of it? That would allow my fixes to flow back to stable, then
-your changes would greatly clean up the implementation in future
-releases.
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 
 Tyler
 
+> ---
+>  drivers/tee/tee_shm_pool.c | 56 --------------------------------------
+>  include/linux/tee_drv.h    | 30 --------------------
+>  2 files changed, 86 deletions(-)
 >=20
-> I'm a bit worried that it is a rewrite of the shm allocator. Do you plan
-> to send all of that to stable? (I mentioned earlier in this thread that
-> I'm affected by these bugs in linux-5.4.y.)
+> diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
+> index fcbb461fc59c..a9f9d50fd181 100644
+> --- a/drivers/tee/tee_shm_pool.c
+> +++ b/drivers/tee/tee_shm_pool.c
+> @@ -47,62 +47,6 @@ static const struct tee_shm_pool_mgr_ops pool_ops_generi=
+c =3D {
+>  	.destroy_poolmgr =3D pool_op_gen_destroy_poolmgr,
+>  };
+> =20
+> -/**
+> - * tee_shm_pool_alloc_res_mem() - Create a shared memory pool from reserved
+> - * memory range
+> - * @priv_info:	Information for driver private shared memory pool
+> - * @dmabuf_info: Information for dma-buf shared memory pool
+> - *
+> - * Start and end of pools will must be page aligned.
+> - *
+> - * Allocation with the flag TEE_SHM_DMA_BUF set will use the range supplied
+> - * in @dmabuf, others will use the range provided by @priv.
+> - *
+> - * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
+> - */
+> -struct tee_shm_pool *
+> -tee_shm_pool_alloc_res_mem(struct tee_shm_pool_mem_info *priv_info,
+> -			   struct tee_shm_pool_mem_info *dmabuf_info)
+> -{
+> -	struct tee_shm_pool_mgr *priv_mgr;
+> -	struct tee_shm_pool_mgr *dmabuf_mgr;
+> -	void *rc;
+> -
+> -	/*
+> -	 * Create the pool for driver private shared memory
+> -	 */
+> -	rc =3D tee_shm_pool_mgr_alloc_res_mem(priv_info->vaddr, priv_info->paddr,
+> -					    priv_info->size,
+> -					    3 /* 8 byte aligned */);
+> -	if (IS_ERR(rc))
+> -		return rc;
+> -	priv_mgr =3D rc;
+> -
+> -	/*
+> -	 * Create the pool for dma_buf shared memory
+> -	 */
+> -	rc =3D tee_shm_pool_mgr_alloc_res_mem(dmabuf_info->vaddr,
+> -					    dmabuf_info->paddr,
+> -					    dmabuf_info->size, PAGE_SHIFT);
+> -	if (IS_ERR(rc))
+> -		goto err_free_priv_mgr;
+> -	dmabuf_mgr =3D rc;
+> -
+> -	rc =3D tee_shm_pool_alloc(priv_mgr, dmabuf_mgr);
+> -	if (IS_ERR(rc))
+> -		goto err_free_dmabuf_mgr;
+> -
+> -	return rc;
+> -
+> -err_free_dmabuf_mgr:
+> -	tee_shm_pool_mgr_destroy(dmabuf_mgr);
+> -err_free_priv_mgr:
+> -	tee_shm_pool_mgr_destroy(priv_mgr);
+> -
+> -	return rc;
+> -}
+> -EXPORT_SYMBOL_GPL(tee_shm_pool_alloc_res_mem);
+> -
+>  struct tee_shm_pool_mgr *tee_shm_pool_mgr_alloc_res_mem(unsigned long vadd=
+r,
+>  							phys_addr_t paddr,
+>  							size_t size,
+> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> index 54269e47ac9a..53b9b2a13a87 100644
+> --- a/include/linux/tee_drv.h
+> +++ b/include/linux/tee_drv.h
+> @@ -272,36 +272,6 @@ static inline void tee_shm_pool_mgr_destroy(struct tee=
+_shm_pool_mgr *poolm)
+>  	poolm->ops->destroy_poolmgr(poolm);
+>  }
+> =20
+> -/**
+> - * struct tee_shm_pool_mem_info - holds information needed to create a sha=
+red
+> - * memory pool
+> - * @vaddr:	Virtual address of start of pool
+> - * @paddr:	Physical address of start of pool
+> - * @size:	Size in bytes of the pool
+> - */
+> -struct tee_shm_pool_mem_info {
+> -	unsigned long vaddr;
+> -	phys_addr_t paddr;
+> -	size_t size;
+> -};
+> -
+> -/**
+> - * tee_shm_pool_alloc_res_mem() - Create a shared memory pool from reserved
+> - * memory range
+> - * @priv_info:	 Information for driver private shared memory pool
+> - * @dmabuf_info: Information for dma-buf shared memory pool
+> - *
+> - * Start and end of pools will must be page aligned.
+> - *
+> - * Allocation with the flag TEE_SHM_DMA_BUF set will use the range supplied
+> - * in @dmabuf, others will use the range provided by @priv.
+> - *
+> - * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
+> - */
+> -struct tee_shm_pool *
+> -tee_shm_pool_alloc_res_mem(struct tee_shm_pool_mem_info *priv_info,
+> -			   struct tee_shm_pool_mem_info *dmabuf_info);
+> -
+>  /**
+>   * tee_shm_pool_free() - Free a shared memory pool
+>   * @pool:	The shared memory pool to free
+> --=20
+> 2.31.1
 >=20
-> Also, you and Sumit don't seem to have the same opinion on kernel
-> drivers making use of tee_shm_register() for allocations that are only
-> used internally. Can you comment on that?
->=20
-> I'm not clear on the next steps for fixing these kexec/kdump bugs in
-> older releases. I appreciate any guidance here.
->=20
-> Tyler
->=20
-> >=20
-> > Cheers,
-> > Jens
-> >=20
 
---===============7021984170793463500==--
+--===============6618884883768383808==--
 
