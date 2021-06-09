@@ -1,24 +1,116 @@
-From: Manish Shakya <manishshakya.nd@gmail.com>
+From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Zynq 7000 Support
-Date: Wed, 02 Jun 2021 16:10:25 -0400
-Message-ID: 
- <CAAPJt9+J-HM8HcLz1+cAapcuWMFWgcw8Ko+7CpJfEEjbqHTM0w@mail.gmail.com>
+Subject: [PATCH v3 0/7] tee: Improve support for kexec and kdump
+Date: Tue, 08 Jun 2021 19:23:19 -0500
+Message-ID: <20210609002326.210024-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6484616095286525563=="
+Content-Type: multipart/mixed; boundary="===============2441003307987450617=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6484616095286525563==
+--===============2441003307987450617==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi Everyone,
+v3:
+- Tyler inherited the original series from Allen Pais
+- New patch to fix memory leaks in OP-TEE's pool_op_alloc()
+  + Unrelated to kexec/kdump
+- New patch to refuse to load the OP-TEE driver when booting the kdump
+  kernel
+- Minor comment typo cleanups (s/alter/alert/) in the "optee: fix tee
+  out of memory failure seen during kexec reboot" patch, as mentioned in
+  v2 feedback
+- New patch to clear stale cache entries during initialization to avoid
+  crashes when kexec'ing from a buggy kernel, that didn't disable the
+  shm cache, to a fixed kernel
+- Three new patches to allow drivers to allocate a multi-page dynamic
+  shm that's not dma-buf backed but is still fully registered with the
+  TEE, ensuring that all driver private shms are unregistered during
+  kexec
+v2: https://lore.kernel.org/lkml/20210225090610.242623-1-allen.lkml(a)gmail.c=
+om/
+v1: https://lore.kernel.org/lkml/20210217092714.121297-1-allen.lkml(a)gmail.c=
+om/
 
-The documentation page says Zynq 7000 is not supported. I would like to
-know why the support was stopped. Was there any specific technical reason?
+This series fixes several bugs uncovered while exercising the OP-TEE
+(Open Portable Trusted Execution Environment), ftpm (firmware TPM), and
+tee_bnxt_fw (Broadcom BNXT firmware manager) drivers with kexec and
+kdump (emergency kexec) based workflows.
 
-Regards,
-Manish Shakya
+The majority of the problems are caused by missing .shutdown hooks in
+the drivers. The .shutdown hooks are used by the normal kexec code path
+to let the drivers clean up prior to executing the target kernel. The
+.remove hooks, which are already implemented in these drivers, are not
+called as part of the kexec code path. This resulted in shared memory
+regions, that were cached and/or registered with OP-TEE, not being
+cleared/unregistered prior to kexec. The new kernel would then run into
+problems when handling the previously cached virtual addresses or trying
+to register newly allocated shared memory objects that overlapped with
+the previously registered virtual addresses. The TEE didn't receive
+notification that the old virtual addresses were no longer meaningful
+and that a new kernel, with a new address space, would soon be running.
 
---===============6484616095286525563==--
+However, implementing .shutdown hooks was not enough for supporting
+kexec. There was an additional problem caused by the TEE driver's
+reliance on the dma-buf subsystem for multi-page shared memory objects
+that were registered with the TEE. Shared memory objects backed by a
+dma-buf use a different mechanism for reference counting. When the final
+reference is released, work is scheduled to be executed to unregister
+the shared memory with the TEE but that work is only completed prior to
+the current task returning the userspace. In the case of a kexec
+operation, the current task that's calling the driver .shutdown hooks
+never returns to userspace prior to the kexec operation so the shared
+memory was never unregistered. This eventually caused problems from
+overlapping shared memory regions that were registered with the TEE
+after several kexec operations. The large 4M contiguous region
+allocated by the tee_bnxt_fw driver reliably ran into this issue on the
+fourth kexec on a system with 8G of RAM.
+
+The use of dma-buf makes sense for shared memory that's in use by
+userspace but dma-buf's aren't needed for shared memory that will only
+used by the driver. This series separates dma-buf backed shared memory
+allocated by the kernel from multi-page shared memory that the kernel
+simply needs registered with the TEE for private use.
+
+One other noteworthy change in this series is to completely refuse to
+load the OP-TEE driver in the kdump kernel. This is needed because the
+secure world may have had all of its threads in suspended state when the
+regular kernel crashed. The kdump kernel would then hang during boot
+because the OP-TEE driver's .probe function would attempt to use a
+secure world thread when they're all in suspended state. Another problem
+is that shared memory allocations could fail under the kdump kernel
+because the previously registered were not unregistered (the .shutdown
+hook is not called when kexec'ing into the kdump kernel).
+
+The first patch in the series fixes potential memory leaks that are not
+directly related to kexec or kdump but were noticed during the
+development of this series.
+
+Tyler
+
+Allen Pais (2):
+  optee: fix tee out of memory failure seen during kexec reboot
+  firmware: tee_bnxt: Release shm, session, and context during kexec
+
+Tyler Hicks (5):
+  optee: Fix memory leak when failing to register shm pages
+  optee: Refuse to load the driver under the kdump kernel
+  optee: Clear stale cache entries during initialization
+  tee: Support shm registration without dma-buf backing
+  tpm_ftpm_tee: Free and unregister dynamic shared memory during kexec
+
+ drivers/char/tpm/tpm_ftpm_tee.c         |  2 +-
+ drivers/firmware/broadcom/tee_bnxt_fw.c | 11 ++++++-
+ drivers/tee/optee/call.c                | 11 ++++++-
+ drivers/tee/optee/core.c                | 42 ++++++++++++++++++++++++-
+ drivers/tee/optee/optee_private.h       |  2 +-
+ drivers/tee/optee/shm_pool.c            | 17 +++++++---
+ drivers/tee/tee_shm.c                   | 11 ++++++-
+ 7 files changed, 85 insertions(+), 11 deletions(-)
+
+--=20
+2.25.1
+
+
+--===============2441003307987450617==--
 
