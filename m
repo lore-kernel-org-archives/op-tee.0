@@ -1,122 +1,85 @@
 From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 4/7] optee: Clear stale cache entries during initialization
-Date: Tue, 08 Jun 2021 19:23:23 -0500
-Message-ID: <20210609002326.210024-5-tyhicks@linux.microsoft.com>
+Subject: [PATCH v3 7/7] firmware: tee_bnxt: Release shm, session, and context
+ during kexec
+Date: Tue, 08 Jun 2021 19:23:26 -0500
+Message-ID: <20210609002326.210024-8-tyhicks@linux.microsoft.com>
 In-Reply-To: <20210609002326.210024-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8263432695282015527=="
+Content-Type: multipart/mixed; boundary="===============5266312960695349913=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8263432695282015527==
+--===============5266312960695349913==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The shm cache could contain invalid addresses if
-optee_disable_shm_cache() was not called from the .shutdown hook of the
-previous kernel before a kexec. These addresses could be unmapped or
-they could point to mapped but unintended locations in memory.
+From: Allen Pais <apais@linux.microsoft.com>
 
-Clear the shared memory cache, while being careful to not translate the
-addresses returned from OPTEE_SMC_DISABLE_SHM_CACHE, during driver
-initialization. Once all pre-cache shm objects are removed, proceed with
-enabling the cache so that we know that we can handle cached shm objects
-with confidence later in the .shutdown hook.
+Implement a .shutdown hook that will be called during a kexec operation
+so that the TEE shared memory, session, and context that were set up
+during .probe can be properly freed/closed.
 
+Additionally, don't use dma-buf backed shared memory for the multi-page
+dynamic shm that's private to the driver. dma-buf backed shared memory
+cannot be reliably freed and unregistered during a kexec operation even
+when tee_shm_free() is called on the shm from a .shutdown hook. The
+problem occurs because dma_buf_put() calls fput() which then uses
+task_work_add(), with the TWA_RESUME parameter, to queue
+tee_shm_release() to be called before the current task returns to user
+mode. However, the current task never returns to user mode before the
+kexec completes so the memory is never freed nor unregistered.
+
+Continue to register the multi-page dynamic shm with the TEE so that all
+4K chunks can be used.
+
+Fixes: 246880958ac9 ("firmware: broadcom: add OP-TEE based BNXT f/w manager")
+Signed-off-by: Allen Pais <apais@linux.microsoft.com>
+Co-developed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 ---
- drivers/tee/optee/call.c          | 11 ++++++++++-
- drivers/tee/optee/core.c          | 13 +++++++++++--
- drivers/tee/optee/optee_private.h |  2 +-
- 3 files changed, 22 insertions(+), 4 deletions(-)
+ drivers/firmware/broadcom/tee_bnxt_fw.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index 6e6eb836e9b6..5dcba6105ed7 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -419,8 +419,10 @@ void optee_enable_shm_cache(struct optee *optee)
-  * optee_disable_shm_cache() - Disables caching of some shared memory alloca=
-tion
-  *			      in OP-TEE
-  * @optee:	main service struct
-+ * @is_mapped:	true if the cached shared memory addresses were mapped by this
-+ *		kernel, are safe to dereference, and should be freed
-  */
--void optee_disable_shm_cache(struct optee *optee)
-+void optee_disable_shm_cache(struct optee *optee, bool is_mapped)
- {
- 	struct optee_call_waiter w;
+diff --git a/drivers/firmware/broadcom/tee_bnxt_fw.c b/drivers/firmware/broad=
+com/tee_bnxt_fw.c
+index ed10da5313e8..c496723e9e8d 100644
+--- a/drivers/firmware/broadcom/tee_bnxt_fw.c
++++ b/drivers/firmware/broadcom/tee_bnxt_fw.c
+@@ -213,7 +213,7 @@ static int tee_bnxt_fw_probe(struct device *dev)
+ 	pvt_data.dev =3D dev;
 =20
-@@ -439,6 +441,13 @@ void optee_disable_shm_cache(struct optee *optee)
- 		if (res.result.status =3D=3D OPTEE_SMC_RETURN_OK) {
- 			struct tee_shm *shm;
-=20
-+			/*
-+			 * Shared memory references that were not mapped by
-+			 * this kernel must be ignored to prevent a crash.
-+			 */
-+			if (!is_mapped)
-+				continue;
-+
- 			shm =3D reg_pair_to_ptr(res.result.shm_upper32,
- 					      res.result.shm_lower32);
- 			tee_shm_free(shm);
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 0987074d7ed0..6974e1104bd4 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -589,7 +589,7 @@ static int optee_remove(struct platform_device *pdev)
- 	 * reference counters and also avoid wild pointers in secure world
- 	 * into the old shared memory range.
- 	 */
--	optee_disable_shm_cache(optee);
-+	optee_disable_shm_cache(optee, true);
-=20
- 	/*
- 	 * The two devices have to be unregistered before we can free the
-@@ -619,7 +619,7 @@ static int optee_remove(struct platform_device *pdev)
-  */
- static void optee_shutdown(struct platform_device *pdev)
- {
--	optee_disable_shm_cache(platform_get_drvdata(pdev));
-+	optee_disable_shm_cache(platform_get_drvdata(pdev), true);
+ 	fw_shm_pool =3D tee_shm_alloc(pvt_data.ctx, MAX_SHM_MEM_SZ,
+-				    TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
++				    TEE_SHM_MAPPED | TEE_SHM_REGISTER);
+ 	if (IS_ERR(fw_shm_pool)) {
+ 		dev_err(pvt_data.dev, "tee_shm_alloc failed\n");
+ 		err =3D PTR_ERR(fw_shm_pool);
+@@ -242,6 +242,14 @@ static int tee_bnxt_fw_remove(struct device *dev)
+ 	return 0;
  }
 =20
- static int optee_probe(struct platform_device *pdev)
-@@ -716,6 +716,15 @@ static int optee_probe(struct platform_device *pdev)
- 	optee->memremaped_shm =3D memremaped_shm;
- 	optee->pool =3D pool;
-=20
-+	/*
-+	 * Ensure that there are no pre-existing shm objects before enabling
-+	 * the shm cache so that there's no chance of receiving an invalid
-+	 * address during shutdown. This could occur, for example, if we're
-+	 * kexec booting from an older kernel that did not properly cleanup the
-+	 * shm cache.
-+	 */
-+	optee_disable_shm_cache(optee, false);
++static void tee_bnxt_fw_shutdown(struct device *dev)
++{
++	tee_shm_free(pvt_data.fw_shm_pool);
++	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
++	tee_client_close_context(pvt_data.ctx);
++	pvt_data.ctx =3D NULL;
++}
 +
- 	optee_enable_shm_cache(optee);
+ static const struct tee_client_device_id tee_bnxt_fw_id_table[] =3D {
+ 	{UUID_INIT(0x6272636D, 0x2019, 0x0716,
+ 		    0x42, 0x43, 0x4D, 0x5F, 0x53, 0x43, 0x48, 0x49)},
+@@ -257,6 +265,7 @@ static struct tee_client_driver tee_bnxt_fw_driver =3D {
+ 		.bus		=3D &tee_bus_type,
+ 		.probe		=3D tee_bnxt_fw_probe,
+ 		.remove		=3D tee_bnxt_fw_remove,
++		.shutdown	=3D tee_bnxt_fw_shutdown,
+ 	},
+ };
 =20
- 	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index e25b216a14ef..16d8c82213e7 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -158,7 +158,7 @@ int optee_invoke_func(struct tee_context *ctx, struct tee=
-_ioctl_invoke_arg *arg,
- int optee_cancel_req(struct tee_context *ctx, u32 cancel_id, u32 session);
-=20
- void optee_enable_shm_cache(struct optee *optee);
--void optee_disable_shm_cache(struct optee *optee);
-+void optee_disable_shm_cache(struct optee *optee, bool is_mapped);
-=20
- int optee_shm_register(struct tee_context *ctx, struct tee_shm *shm,
- 		       struct page **pages, size_t num_pages,
 --=20
 2.25.1
 
 
---===============8263432695282015527==--
+--===============5266312960695349913==--
 
