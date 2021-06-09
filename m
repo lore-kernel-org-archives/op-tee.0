@@ -1,53 +1,47 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 0/4] Asynchronous notifications from secure world
-Date: Wed, 09 Jun 2021 08:09:06 +0200
-Message-ID: <20210609060910.1500481-1-jens.wiklander@linaro.org>
+Subject: [PATCH 1/4] tee: fix put order in teedev_close_context()
+Date: Wed, 09 Jun 2021 08:09:07 +0200
+Message-ID: <20210609060910.1500481-2-jens.wiklander@linaro.org>
+In-Reply-To: <20210609060910.1500481-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5964132903689672683=="
+Content-Type: multipart/mixed; boundary="===============1978903004227388890=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5964132903689672683==
+--===============1978903004227388890==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi all,
+Prior to this patch was teedev_close_context() calling tee_device_put()
+before teedev_ctx_put() leading to teedev_ctx_release() accessing
+ctx->teedev just after the reference counter was decreased on the
+teedev. Fix this by calling teedev_ctx_put() before tee_device_put().
 
-This adds support for asynchronous notifications from OP-TEE in secure
-world to the OP-TEE driver. This allows a design with a top half and bottom
-half type of driver where the top half runs in secure interrupt context and
-a notifications tells normal world to schedule a yielding call to do the
-bottom half processing.
+Fixes: 217e0250cccb ("tee: use reference counting for tee_context")
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ drivers/tee/tee_core.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-An SPI interrupt is used to notify the driver that there are asynchronous
-notifications pending.
-
-Thanks,
-Jens
-
-Jens Wiklander (4):
-  tee: fix put order in teedev_close_context()
-  tee: add tee_dev_open_helper() primitive
-  optee: separate notification functions
-  optee: add asynchronous notifications
-
- drivers/tee/optee/Makefile        |   1 +
- drivers/tee/optee/call.c          |  27 ++++
- drivers/tee/optee/core.c          | 104 ++++++++++----
- drivers/tee/optee/notif.c         | 226 ++++++++++++++++++++++++++++++
- drivers/tee/optee/optee_msg.h     |   9 ++
- drivers/tee/optee/optee_private.h |  23 +--
- drivers/tee/optee/optee_rpc_cmd.h |  31 ++--
- drivers/tee/optee/optee_smc.h     |  79 ++++++++++-
- drivers/tee/optee/rpc.c           |  73 ++--------
- drivers/tee/tee_core.c            |  37 +++--
- include/linux/tee_drv.h           |  27 ++++
- 11 files changed, 512 insertions(+), 125 deletions(-)
- create mode 100644 drivers/tee/optee/notif.c
-
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 480d294a23ab..f97d95b50773 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -98,8 +98,10 @@ void teedev_ctx_put(struct tee_context *ctx)
+ 
+ static void teedev_close_context(struct tee_context *ctx)
+ {
+-	tee_device_put(ctx->teedev);
++	struct tee_device *teedev = ctx->teedev;
++
+ 	teedev_ctx_put(ctx);
++	tee_device_put(teedev);
+ }
+ 
+ static int tee_open(struct inode *inode, struct file *filp)
 -- 
 2.31.1
 
 
---===============5964132903689672683==--
+--===============1978903004227388890==--
 
