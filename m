@@ -1,122 +1,96 @@
 From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 4/8] optee: Clear stale cache entries during initialization
-Date: Thu, 10 Jun 2021 16:09:09 -0500
-Message-ID: <20210610210913.536081-5-tyhicks@linux.microsoft.com>
+Subject: 
+ [PATCH v4 2/8] optee: Refuse to load the driver under the kdump kernel
+Date: Thu, 10 Jun 2021 16:09:07 -0500
+Message-ID: <20210610210913.536081-3-tyhicks@linux.microsoft.com>
 In-Reply-To: <20210610210913.536081-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4349476275045459433=="
+Content-Type: multipart/mixed; boundary="===============8696521242145534577=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4349476275045459433==
+--===============8696521242145534577==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-The shm cache could contain invalid addresses if
-optee_disable_shm_cache() was not called from the .shutdown hook of the
-previous kernel before a kexec. These addresses could be unmapped or
-they could point to mapped but unintended locations in memory.
+Fix a hung task issue, seen when booting the kdump kernel, that is
+caused by all of the secure world threads being in a permanent suspended
+state:
 
-Clear the shared memory cache, while being careful to not translate the
-addresses returned from OPTEE_SMC_DISABLE_SHM_CACHE, during driver
-initialization. Once all pre-cache shm objects are removed, proceed with
-enabling the cache so that we know that we can handle cached shm objects
-with confidence later in the .shutdown hook.
+ INFO: task swapper/0:1 blocked for more than 120 seconds.
+       Not tainted 5.4.83 #1
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ swapper/0       D    0     1      0 0x00000028
+ Call trace:
+  __switch_to+0xc8/0x118
+  __schedule+0x2e0/0x700
+  schedule+0x38/0xb8
+  schedule_timeout+0x258/0x388
+  wait_for_completion+0x16c/0x4b8
+  optee_cq_wait_for_completion+0x28/0xa8
+  optee_disable_shm_cache+0xb8/0xf8
+  optee_probe+0x560/0x61c
+  platform_drv_probe+0x58/0xa8
+  really_probe+0xe0/0x338
+  driver_probe_device+0x5c/0xf0
+  device_driver_attach+0x74/0x80
+  __driver_attach+0x64/0xe0
+  bus_for_each_dev+0x84/0xd8
+  driver_attach+0x30/0x40
+  bus_add_driver+0x188/0x1e8
+  driver_register+0x64/0x110
+  __platform_driver_register+0x54/0x60
+  optee_driver_init+0x20/0x28
+  do_one_initcall+0x54/0x24c
+  kernel_init_freeable+0x1e8/0x2c0
+  kernel_init+0x18/0x118
+  ret_from_fork+0x10/0x18
+
+The invoke_fn hook returned OPTEE_SMC_RETURN_ETHREAD_LIMIT, indicating
+that the secure world threads were all in a suspended state at the time
+of the kernel crash. This intermittently prevented the kdump kernel from
+booting, resulting in a failure to collect the kernel dump.
+
+Make kernel dump collection more reliable on systems utilizing OP-TEE by
+refusing to load the driver under the kdump kernel.
 
 Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 ---
- drivers/tee/optee/call.c          | 11 ++++++++++-
- drivers/tee/optee/core.c          | 13 +++++++++++--
- drivers/tee/optee/optee_private.h |  2 +-
- 3 files changed, 22 insertions(+), 4 deletions(-)
+ drivers/tee/optee/core.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index 6e6eb836e9b6..5dcba6105ed7 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -419,8 +419,10 @@ void optee_enable_shm_cache(struct optee *optee)
-  * optee_disable_shm_cache() - Disables caching of some shared memory alloca=
-tion
-  *			      in OP-TEE
-  * @optee:	main service struct
-+ * @is_mapped:	true if the cached shared memory addresses were mapped by this
-+ *		kernel, are safe to dereference, and should be freed
-  */
--void optee_disable_shm_cache(struct optee *optee)
-+void optee_disable_shm_cache(struct optee *optee, bool is_mapped)
- {
- 	struct optee_call_waiter w;
-=20
-@@ -439,6 +441,13 @@ void optee_disable_shm_cache(struct optee *optee)
- 		if (res.result.status =3D=3D OPTEE_SMC_RETURN_OK) {
- 			struct tee_shm *shm;
-=20
-+			/*
-+			 * Shared memory references that were not mapped by
-+			 * this kernel must be ignored to prevent a crash.
-+			 */
-+			if (!is_mapped)
-+				continue;
-+
- 			shm =3D reg_pair_to_ptr(res.result.shm_upper32,
- 					      res.result.shm_lower32);
- 			tee_shm_free(shm);
 diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 0987074d7ed0..6974e1104bd4 100644
+index ddb8f9ecf307..5288cd767d82 100644
 --- a/drivers/tee/optee/core.c
 +++ b/drivers/tee/optee/core.c
-@@ -589,7 +589,7 @@ static int optee_remove(struct platform_device *pdev)
- 	 * reference counters and also avoid wild pointers in secure world
- 	 * into the old shared memory range.
- 	 */
--	optee_disable_shm_cache(optee);
-+	optee_disable_shm_cache(optee, true);
-=20
- 	/*
- 	 * The two devices have to be unregistered before we can free the
-@@ -619,7 +619,7 @@ static int optee_remove(struct platform_device *pdev)
-  */
- static void optee_shutdown(struct platform_device *pdev)
- {
--	optee_disable_shm_cache(platform_get_drvdata(pdev));
-+	optee_disable_shm_cache(platform_get_drvdata(pdev), true);
- }
-=20
- static int optee_probe(struct platform_device *pdev)
-@@ -716,6 +716,15 @@ static int optee_probe(struct platform_device *pdev)
- 	optee->memremaped_shm =3D memremaped_shm;
- 	optee->pool =3D pool;
-=20
+@@ -6,6 +6,7 @@
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+ #include <linux/arm-smccc.h>
++#include <linux/crash_dump.h>
+ #include <linux/errno.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+@@ -612,6 +613,16 @@ static int optee_probe(struct platform_device *pdev)
+ 	u32 sec_caps;
+ 	int rc;
+ 
 +	/*
-+	 * Ensure that there are no pre-existing shm objects before enabling
-+	 * the shm cache so that there's no chance of receiving an invalid
-+	 * address during shutdown. This could occur, for example, if we're
-+	 * kexec booting from an older kernel that did not properly cleanup the
-+	 * shm cache.
++	 * The kernel may have crashed at the same time that all available
++	 * secure world threads were suspended and we cannot reschedule the
++	 * suspended threads without access to the crashed kernel's wait_queue.
++	 * Therefore, we cannot reliably initialize the OP-TEE driver in the
++	 * kdump kernel.
 +	 */
-+	optee_disable_shm_cache(optee, false);
++	if (is_kdump_kernel())
++		return -ENODEV;
 +
- 	optee_enable_shm_cache(optee);
-=20
- 	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index e25b216a14ef..16d8c82213e7 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -158,7 +158,7 @@ int optee_invoke_func(struct tee_context *ctx, struct tee=
-_ioctl_invoke_arg *arg,
- int optee_cancel_req(struct tee_context *ctx, u32 cancel_id, u32 session);
-=20
- void optee_enable_shm_cache(struct optee *optee);
--void optee_disable_shm_cache(struct optee *optee);
-+void optee_disable_shm_cache(struct optee *optee, bool is_mapped);
-=20
- int optee_shm_register(struct tee_context *ctx, struct tee_shm *shm,
- 		       struct page **pages, size_t num_pages,
---=20
+ 	invoke_fn = get_invoke_func(&pdev->dev);
+ 	if (IS_ERR(invoke_fn))
+ 		return PTR_ERR(invoke_fn);
+-- 
 2.25.1
 
 
---===============4349476275045459433==--
+--===============8696521242145534577==--
 
