@@ -1,96 +1,78 @@
 From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v4 2/8] optee: Refuse to load the driver under the kdump kernel
-Date: Thu, 10 Jun 2021 16:09:07 -0500
-Message-ID: <20210610210913.536081-3-tyhicks@linux.microsoft.com>
+Subject: [PATCH v4 5/8] tee: add tee_shm_alloc_kernel_buf()
+Date: Thu, 10 Jun 2021 16:09:10 -0500
+Message-ID: <20210610210913.536081-6-tyhicks@linux.microsoft.com>
 In-Reply-To: <20210610210913.536081-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8696521242145534577=="
+Content-Type: multipart/mixed; boundary="===============2806471792551184473=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8696521242145534577==
+--===============2806471792551184473==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Fix a hung task issue, seen when booting the kdump kernel, that is
-caused by all of the secure world threads being in a permanent suspended
-state:
+From: Jens Wiklander <jens.wiklander@linaro.org>
 
- INFO: task swapper/0:1 blocked for more than 120 seconds.
-       Not tainted 5.4.83 #1
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- swapper/0       D    0     1      0 0x00000028
- Call trace:
-  __switch_to+0xc8/0x118
-  __schedule+0x2e0/0x700
-  schedule+0x38/0xb8
-  schedule_timeout+0x258/0x388
-  wait_for_completion+0x16c/0x4b8
-  optee_cq_wait_for_completion+0x28/0xa8
-  optee_disable_shm_cache+0xb8/0xf8
-  optee_probe+0x560/0x61c
-  platform_drv_probe+0x58/0xa8
-  really_probe+0xe0/0x338
-  driver_probe_device+0x5c/0xf0
-  device_driver_attach+0x74/0x80
-  __driver_attach+0x64/0xe0
-  bus_for_each_dev+0x84/0xd8
-  driver_attach+0x30/0x40
-  bus_add_driver+0x188/0x1e8
-  driver_register+0x64/0x110
-  __platform_driver_register+0x54/0x60
-  optee_driver_init+0x20/0x28
-  do_one_initcall+0x54/0x24c
-  kernel_init_freeable+0x1e8/0x2c0
-  kernel_init+0x18/0x118
-  ret_from_fork+0x10/0x18
+Adds a new function tee_shm_alloc_kernel_buf() to allocate shared memory
+from a kernel driver. This function can later be made more lightweight
+by unnecessary dma-buf export.
 
-The invoke_fn hook returned OPTEE_SMC_RETURN_ETHREAD_LIMIT, indicating
-that the secure world threads were all in a suspended state at the time
-of the kernel crash. This intermittently prevented the kdump kernel from
-booting, resulting in a failure to collect the kernel dump.
-
-Make kernel dump collection more reliable on systems utilizing OP-TEE by
-refusing to load the driver under the kdump kernel.
-
-Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 ---
- drivers/tee/optee/core.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/tee/tee_shm.c   | 18 ++++++++++++++++++
+ include/linux/tee_drv.h |  1 +
+ 2 files changed, 19 insertions(+)
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index ddb8f9ecf307..5288cd767d82 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -6,6 +6,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/arm-smccc.h>
-+#include <linux/crash_dump.h>
- #include <linux/errno.h>
- #include <linux/io.h>
- #include <linux/module.h>
-@@ -612,6 +613,16 @@ static int optee_probe(struct platform_device *pdev)
- 	u32 sec_caps;
- 	int rc;
- 
-+	/*
-+	 * The kernel may have crashed at the same time that all available
-+	 * secure world threads were suspended and we cannot reschedule the
-+	 * suspended threads without access to the crashed kernel's wait_queue.
-+	 * Therefore, we cannot reliably initialize the OP-TEE driver in the
-+	 * kdump kernel.
-+	 */
-+	if (is_kdump_kernel())
-+		return -ENODEV;
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 00472f5ce22e..c65e44707cd6 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -193,6 +193,24 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, s=
+ize_t size, u32 flags)
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_alloc);
+=20
++/**
++ * tee_shm_alloc_kernel_buf() - Allocate shared memory for kernel buffer
++ * @ctx:	Context that allocates the shared memory
++ * @size:	Requested size of shared memory
++ *
++ * The returned memory registered in secure world and is suitable to be
++ * passed as a memory buffer in parameter argument to
++ * tee_client_invoke_func(). The memory allocated is later freed with a
++ * call to tee_shm_free().
++ *
++ * @returns a pointer to 'struct tee_shm'
++ */
++struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
+e)
++{
++	return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
++}
++EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
 +
- 	invoke_fn = get_invoke_func(&pdev->dev);
- 	if (IS_ERR(invoke_fn))
- 		return PTR_ERR(invoke_fn);
--- 
+ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
+ 				 size_t length, u32 flags)
+ {
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index 54269e47ac9a..8990f7628387 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -332,6 +332,7 @@ void *tee_get_drvdata(struct tee_device *teedev);
+  * @returns a pointer to 'struct tee_shm'
+  */
+ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, size_t size, u32 flag=
+s);
++struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
+e);
+=20
+ /**
+  * tee_shm_register() - Register shared memory buffer
+--=20
 2.25.1
 
 
---===============8696521242145534577==--
+--===============2806471792551184473==--
 
