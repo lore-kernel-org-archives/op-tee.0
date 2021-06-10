@@ -1,77 +1,56 @@
-From: Allen Pais <apais@linux.microsoft.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [PATCH v3 5/7] tee: Support shm registration without dma-buf backing
-Date: Thu, 10 Jun 2021 13:10:35 +0530
-Message-ID: <F2A9E44A-137B-4081-AA82-B84FF4761957@linux.microsoft.com>
-In-Reply-To: <20210609121533.GA2267052@jade>
+Date: Thu, 10 Jun 2021 09:49:48 +0200
+Message-ID: <20210610074948.GC2753553@jade>
+In-Reply-To: <20210609134225.GC4910@sequoia>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8999949362758292221=="
+Content-Type: multipart/mixed; boundary="===============3571461490335247620=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8999949362758292221==
+--===============3571461490335247620==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
->>=20
->> AFAIK, its due the the inherent nature of tee_shm_alloc() and
->> tee_shm_register() where tee_shm_alloc() doesn't need to know whether
->> its a kernel or user-space memory since it is the one that allocates
->> whereas tee_shm_register() need to know that since it has to register
->> pre-allocated client memory.
->>=20
->>> - Why does tee_shm_register() unconditionally use non-contiguous
->>>  allocations without ever taking into account whether or not
->>>  OPTEE_SMC_SEC_CAP_DYNAMIC_SHM was set? It sounds like that's required
->>>  from my reading of https://optee.readthedocs.io/en/latest/architecture/c=
-ore.html#noncontiguous-shared-buffers.
->>=20
->> Yeah, but do we have platforms in OP-TEE that don't support dynamic
->> shared memory? I guess it has become the sane default which is a
->> mandatory requirement when it comes to OP-TEE driver in u-boot.
->>=20
->>> - Why is TEE_SHM_REGISTER implemented at the TEE driver level when it is
->>>  specific to OP-TEE? How to better abstract that away?
->>>=20
->>=20
->> I would like you to go through Section "3.2.4. Shared Memory" in TEE
->> Client API Specification. There are two standard ways for shared
->> memory approach with TEE:
->>=20
->> 1. A Shared Memory block can either be existing Client Application
->> memory (kernel driver in our case) which is subsequently registered
->> with the TEE Client API (using tee_shm_register() in our case).
->>=20
->> 2. Or memory which is allocated on behalf of the Client Application
->> using the TEE
->> Client API (using tee_shm_alloc() in our case).
->>=20
->>> Let me know if you agree with the more minimal approach that I took for
->>> these bug fix series or still feel like tee_shm_register() should be
->>> fixed up so that it is usable. Thanks!
->>=20
->> From drivers perspective I think the change should be:
->>=20
->> tee_shm_alloc()
->>=20
->> to
->>=20
->> kcalloc()
->> tee_shm_register()
+On Wed, Jun 09, 2021 at 08:42:25AM -0500, Tyler Hicks wrote:
+[snip]
+> > I've just posted "[PATCH 0/7] tee: shared memory updates",
+> > https://lore.kernel.org/lkml/20210609102324.2222332-1-jens.wiklander(a)li=
+naro.org/
+> >=20
+> > Where tee_shm_alloc() is replaced by among other functions
+> > tee_shm_alloc_kernel_buf(). tee_shm_alloc_kernel_buf() takes care of the
+> > problem with TEE_SHM_DMA_BUF.
 >=20
-> I've just posted "[PATCH 0/7] tee: shared memory updates",
-> https://lore.kernel.org/lkml/20210609102324.2222332-1-jens.wiklander(a)lina=
-ro.org/
+> Thanks! At first glance, that series would take care of the last three
+> patches in my kexec/kdump series.
 >=20
-> Where tee_shm_alloc() is replaced by among other functions
-> tee_shm_alloc_kernel_buf(). tee_shm_alloc_kernel_buf() takes care of the
-> problem with TEE_SHM_DMA_BUF.
+> I'm a bit worried that it is a rewrite of the shm allocator. Do you plan
+> to send all of that to stable? (I mentioned earlier in this thread that
+> I'm affected by these bugs in linux-5.4.y.)
+
+No, that might be a bit much.
+
+> Also, you and Sumit don't seem to have the same opinion on kernel
+> drivers making use of tee_shm_register() for allocations that are only
+> used internally. Can you comment on that?
 >=20
+> I'm not clear on the next steps for fixing these kexec/kdump bugs in
+> older releases. I appreciate any guidance here.
 
-Thanks Jens. The series looks fine.  Tested too.
+Neither am I be honest. You're the only one that has brought up this
+problem so perhaps it's enough to focus on the stable branch you need to
+have fixed.
 
-- Allen
+If I've understood it correctly it's best if it's possible to
+cherry-pick the fixes from mainline to the stable branch in question.
+So we must make sure to get your needed patches in before any rewrites
+that would make cherry-picking impossible. The rewrite I'm proposing
+isn't urgent so it can be held off for a while.
 
+Cheers,
+Jens
 
---===============8999949362758292221==--
+--===============3571461490335247620==--
 
