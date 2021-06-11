@@ -1,70 +1,45 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v4 2/8] optee: Refuse to load the driver under the kdump kernel
-Date: Fri, 11 Jun 2021 11:08:48 +0200
+Subject: Re: [PATCH v4 3/8] optee: fix tee out of memory failure seen during
+ kexec reboot
+Date: Fri, 11 Jun 2021 11:11:33 +0200
 Message-ID: 
- <CAHUa44Hh2Q06zu0TwvCejcc_0cqXeTVNA8fyt=1VH9uT7++1vg@mail.gmail.com>
-In-Reply-To: <20210610210913.536081-3-tyhicks@linux.microsoft.com>
+ <CAHUa44H=vJrkYYTb2T8WPfy6TznQyO8a8wnLCbJUuSE8QO4iuw@mail.gmail.com>
+In-Reply-To: <20210610210913.536081-4-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1020566347701056752=="
+Content-Type: multipart/mixed; boundary="===============7806761546351421180=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1020566347701056752==
+--===============7806761546351421180==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
 On Thu, Jun 10, 2021 at 11:09 PM Tyler Hicks
 <tyhicks@linux.microsoft.com> wrote:
 >
-> Fix a hung task issue, seen when booting the kdump kernel, that is
-> caused by all of the secure world threads being in a permanent suspended
-> state:
+> From: Allen Pais <apais@linux.microsoft.com>
 >
->  INFO: task swapper/0:1 blocked for more than 120 seconds.
->        Not tainted 5.4.83 #1
->  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->  swapper/0       D    0     1      0 0x00000028
->  Call trace:
->   __switch_to+0xc8/0x118
->   __schedule+0x2e0/0x700
->   schedule+0x38/0xb8
->   schedule_timeout+0x258/0x388
->   wait_for_completion+0x16c/0x4b8
->   optee_cq_wait_for_completion+0x28/0xa8
->   optee_disable_shm_cache+0xb8/0xf8
->   optee_probe+0x560/0x61c
->   platform_drv_probe+0x58/0xa8
->   really_probe+0xe0/0x338
->   driver_probe_device+0x5c/0xf0
->   device_driver_attach+0x74/0x80
->   __driver_attach+0x64/0xe0
->   bus_for_each_dev+0x84/0xd8
->   driver_attach+0x30/0x40
->   bus_add_driver+0x188/0x1e8
->   driver_register+0x64/0x110
->   __platform_driver_register+0x54/0x60
->   optee_driver_init+0x20/0x28
->   do_one_initcall+0x54/0x24c
->   kernel_init_freeable+0x1e8/0x2c0
->   kernel_init+0x18/0x118
->   ret_from_fork+0x10/0x18
+> The following out of memory errors are seen on kexec reboot
+> from the optee core.
 >
-> The invoke_fn hook returned OPTEE_SMC_RETURN_ETHREAD_LIMIT, indicating
-> that the secure world threads were all in a suspended state at the time
-> of the kernel crash. This intermittently prevented the kdump kernel from
-> booting, resulting in a failure to collect the kernel dump.
+> [    0.368428] tee_bnxt_fw optee-clnt0: tee_shm_alloc failed
+> [    0.368461] tee_bnxt_fw: probe of optee-clnt0 failed with error -22
 >
-> Make kernel dump collection more reliable on systems utilizing OP-TEE by
-> refusing to load the driver under the kdump kernel.
+> tee_shm_release() is not invoked on dma shm buffer.
 >
-> Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-> ---
->  drivers/tee/optee/core.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+> Implement .shutdown() method to handle the release of the buffers
+> correctly.
+>
+> More info:
+> https://github.com/OP-TEE/optee_os/issues/3637
+>
+> Signed-off-by: Allen Pais <apais@linux.microsoft.com>
+> Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 
-Looks good
-Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+Do we really need this considering the patch "optee: Refuse to load
+the driver under the kdump kernel"?
 
---===============1020566347701056752==--
+Jens
+
+--===============7806761546351421180==--
 
