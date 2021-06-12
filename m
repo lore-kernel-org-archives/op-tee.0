@@ -1,196 +1,222 @@
-From: Tyler Hicks <tyhicks@linux.microsoft.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v4 6/8] tee: Support kernel shm registration without
  dma-buf backing
-Date: Fri, 11 Jun 2021 08:16:19 -0500
-Message-ID: <20210611131619.GS4910@sequoia>
-In-Reply-To: <20210611130958.GR4910@sequoia>
+Date: Sat, 12 Jun 2021 13:49:38 +0530
+Message-ID: 
+ <CAFA6WYPJXmeepe=4EiiA0_MUz=KsAGnbwY98FfEm1Z2EaGxz-w@mail.gmail.com>
+In-Reply-To: <20210611131619.GS4910@sequoia>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6592128300766879147=="
+Content-Type: multipart/mixed; boundary="===============0998181758850814793=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6592128300766879147==
+--===============0998181758850814793==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 2021-06-11 08:10:01, Tyler Hicks wrote:
-> On 2021-06-11 10:46:20, Sumit Garg wrote:
-> > On Fri, 11 Jun 2021 at 02:39, Tyler Hicks <tyhicks@linux.microsoft.com>=
- wrote:
+On Fri, 11 Jun 2021 at 18:46, Tyler Hicks <tyhicks@linux.microsoft.com> wro=
+te:
+>
+> On 2021-06-11 08:10:01, Tyler Hicks wrote:
+> > On 2021-06-11 10:46:20, Sumit Garg wrote:
+> > > On Fri, 11 Jun 2021 at 02:39, Tyler Hicks <tyhicks@linux.microsoft.co=
+m> wrote:
+> > > >
+> > > > Uncouple the registration of kernel shared memory buffers from the
+> > > > TEE_SHM_DMA_BUF flag. Drivers may wish to allocate multi-page contigu=
+ous
+> > > > shared memory regions but do not need them to be backed by a dma-buf
+> > > > when the memory region is only used by the driver.
+> > > >
+> > > > If the TEE implementation does not require shared memory to be
+> > > > registered, clear the flag prior to calling the corresponding pool al=
+loc
+> > > > function. Update the OP-TEE driver to respect TEE_SHM_REGISTER, rather
+> > > > than TEE_SHM_DMA_BUF, when deciding whether to (un)register on
+> > > > alloc/free operations.
 > > >
-> > > Uncouple the registration of kernel shared memory buffers from the
-> > > TEE_SHM_DMA_BUF flag. Drivers may wish to allocate multi-page contiguous
-> > > shared memory regions but do not need them to be backed by a dma-buf
-> > > when the memory region is only used by the driver.
+> > > > The AMD-TEE driver continues to ignore the
+> > > > TEE_SHM_REGISTER flag.
+> > > >
 > > >
-> > > If the TEE implementation does not require shared memory to be
-> > > registered, clear the flag prior to calling the corresponding pool alloc
-> > > function. Update the OP-TEE driver to respect TEE_SHM_REGISTER, rather
-> > > than TEE_SHM_DMA_BUF, when deciding whether to (un)register on
-> > > alloc/free operations.
-> >=20
-> > > The AMD-TEE driver continues to ignore the
-> > > TEE_SHM_REGISTER flag.
+> > > That's the main point that no other TEE implementation would honour
+> > > TEE_SHM_REGISTER and I think it's just the incorrect usage of
+> > > TEE_SHM_REGISTER flag to suffice OP-TEE underlying implementation.
 > > >
-> >=20
-> > That's the main point that no other TEE implementation would honour
-> > TEE_SHM_REGISTER and I think it's just the incorrect usage of
-> > TEE_SHM_REGISTER flag to suffice OP-TEE underlying implementation.
-> >=20
-> > > Allow callers of tee_shm_alloc_kernel_buf() to allocate and register a
-> > > shared memory region without the backing of dma-buf.
+> > > > Allow callers of tee_shm_alloc_kernel_buf() to allocate and register a
+> > > > shared memory region without the backing of dma-buf.
+> > > >
+> > > > Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
+> > > > ---
+> > > >  drivers/tee/optee/shm_pool.c |  5 ++---
+> > > >  drivers/tee/tee_shm.c        | 13 +++++++++++--
+> > > >  2 files changed, 13 insertions(+), 5 deletions(-)
+> > > >
 > > >
-> > > Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-> > > ---
-> > >  drivers/tee/optee/shm_pool.c |  5 ++---
-> > >  drivers/tee/tee_shm.c        | 13 +++++++++++--
-> > >  2 files changed, 13 insertions(+), 5 deletions(-)
+> > > This patch is just mixing two separate approaches to TEE shared
+> > > memory. Have a look at alternative suggestions below.
 > > >
-> >=20
-> > This patch is just mixing two separate approaches to TEE shared
-> > memory. Have a look at alternative suggestions below.
-> >=20
-> > > diff --git a/drivers/tee/optee/shm_pool.c b/drivers/tee/optee/shm_pool.c
-> > > index da06ce9b9313..6054343a29fb 100644
-> > > --- a/drivers/tee/optee/shm_pool.c
-> > > +++ b/drivers/tee/optee/shm_pool.c
-> > > @@ -27,7 +27,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poo=
-lm,
-> > >         shm->paddr =3D page_to_phys(page);
-> > >         shm->size =3D PAGE_SIZE << order;
+> > > > diff --git a/drivers/tee/optee/shm_pool.c b/drivers/tee/optee/shm_poo=
+l.c
+> > > > index da06ce9b9313..6054343a29fb 100644
+> > > > --- a/drivers/tee/optee/shm_pool.c
+> > > > +++ b/drivers/tee/optee/shm_pool.c
+> > > > @@ -27,7 +27,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *p=
+oolm,
+> > > >         shm->paddr =3D page_to_phys(page);
+> > > >         shm->size =3D PAGE_SIZE << order;
+> > > >
+> > > > -       if (shm->flags & TEE_SHM_DMA_BUF) {
+> > > > +       if (shm->flags & TEE_SHM_REGISTER) {
 > > >
-> > > -       if (shm->flags & TEE_SHM_DMA_BUF) {
-> > > +       if (shm->flags & TEE_SHM_REGISTER) {
-> >=20
-> > Here you can just do following check instead:
-> >=20
-> >        if (!(shm->flags & TEE_SHM_PRIV)) {
->=20
-> This is a bug fix series that's intended to fix the current and older
-> kernels. tee_shm_alloc_anon_kernel_buf()/TEE_SHM_PRIV is not present in
-> older kernels and isn't required to fix these kexec/kdump bugs. Your
-> suggestion feels like something that should be done in the allocator
-> rewrite that Jens is working on to clean all of this up going forward.
+> > > Here you can just do following check instead:
+> > >
+> > >        if (!(shm->flags & TEE_SHM_PRIV)) {
+> >
+> > This is a bug fix series that's intended to fix the current and older
+> > kernels. tee_shm_alloc_anon_kernel_buf()/TEE_SHM_PRIV is not present in
+> > older kernels and isn't required to fix these kexec/kdump bugs. Your
+> > suggestion feels like something that should be done in the allocator
+> > rewrite that Jens is working on to clean all of this up going forward.
+>
+> I want to add that I do fully agree with you that TEE_SHM_REGISTER is an
+> OP-TEE thing and not a TEE thing. Ideally, it wouldn't be defined in
+> tee_drv.h and would be completely private to the OP-TEE driver.
+> Likewise, I don't think that tee_shm_register() should exist (certainly
+> not at the TEE level) because it only works with OP-TEE.
 
-I want to add that I do fully agree with you that TEE_SHM_REGISTER is an
-OP-TEE thing and not a TEE thing. Ideally, it wouldn't be defined in
-tee_drv.h and would be completely private to the OP-TEE driver.
-Likewise, I don't think that tee_shm_register() should exist (certainly
-not at the TEE level) because it only works with OP-TEE.
+I think there is some confusion going on. tee_shm_register() is a
+standard interface that is listed in TEE client API specification as
+an alternative approach to tee_shm_alloc(). As I earlier mentioned,
+please read through "3.2.4. Shared Memory" in TEE Client API
+Specification.
 
-That said, I think the first step is to fix the kexec/kdump bugs and the
-second step is to clean up the code to remove the layering violation of
-exposing shm registration from the TEE interfaces.
+In the initial times, OP-TEE only supported tee_shm_alloc() approach
+but with the addition of dynamic shared memory feature it became
+possible to support tee_shm_register() as well but we had to add new
+capability as TEE_GEN_CAP_REG_MEM in order to maintain OP-TEE
+backwards compatibility. It can very well be the same case for AMD-TEE
+which currently only supports tee_shm_alloc() approach.
 
-Tyler
+The reason for confusion here seems to be that OP-TEE driver is
+providing a way to leverage dynamic shared memory approach in order to
+implement tee_shm_alloc() but that doesn't mean at TEE level we should
+intermix both approaches via using TEE_SHM_REGISTER to implement
+tee_shm_alloc().
 
->=20
-> Tyler
->=20
-> >=20
-> > And this flag needs to be passed from the call sites here [1] [2].
-> >=20
-> > [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tr=
-ee/drivers/tee/optee/core.c#n280
-> > [2] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tr=
-ee/drivers/tee/optee/call.c#n186
-> >=20
-> > >                 unsigned int nr_pages =3D 1 << order, i;
-> > >                 struct page **pages;
-> > >
-> > > @@ -42,7 +42,6 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poo=
-lm,
-> > >                         page++;
-> > >                 }
-> > >
-> > > -               shm->flags |=3D TEE_SHM_REGISTER;
-> >=20
-> > This should remain as it is.
-> >=20
-> > >                 rc =3D optee_shm_register(shm->ctx, shm, pages, nr_page=
-s,
-> > >                                         (unsigned long)shm->kaddr);
-> > >                 kfree(pages);
-> > > @@ -60,7 +59,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poo=
-lm,
-> > >  static void pool_op_free(struct tee_shm_pool_mgr *poolm,
-> > >                          struct tee_shm *shm)
-> > >  {
-> > > -       if (shm->flags & TEE_SHM_DMA_BUF)
-> > > +       if (shm->flags & TEE_SHM_REGISTER)
-> >=20
-> > Same as above.
-> >=20
-> > >                 optee_shm_unregister(shm->ctx, shm);
-> > >
-> > >         free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> > > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > > index c65e44707cd6..26a76f817c57 100644
-> > > --- a/drivers/tee/tee_shm.c
-> > > +++ b/drivers/tee/tee_shm.c
-> > > @@ -117,7 +117,7 @@ struct tee_shm *tee_shm_alloc(struct tee_context *c=
-tx, size_t size, u32 flags)
-> > >                 return ERR_PTR(-EINVAL);
-> > >         }
-> > >
-> > > -       if ((flags & ~(TEE_SHM_MAPPED | TEE_SHM_DMA_BUF))) {
-> > > +       if ((flags & ~(TEE_SHM_MAPPED | TEE_SHM_DMA_BUF | TEE_SHM_REGIS=
-TER))) {
-> >=20
-> > No need for this change.
-> >=20
-> > >                 dev_err(teedev->dev.parent, "invalid shm flags 0x%x", f=
-lags);
-> > >                 return ERR_PTR(-EINVAL);
-> > >         }
-> > > @@ -137,6 +137,15 @@ struct tee_shm *tee_shm_alloc(struct tee_context *=
-ctx, size_t size, u32 flags)
-> > >                 goto err_dev_put;
-> > >         }
-> > >
-> > > +       if (!teedev->desc->ops->shm_register ||
-> > > +           !teedev->desc->ops->shm_unregister) {
-> > > +               /* registration is not required by the TEE implementati=
-on */
-> > > +               flags &=3D ~TEE_SHM_REGISTER;
-> > > +       } else if (flags & TEE_SHM_DMA_BUF) {
-> > > +               /* all dma-buf backed shm allocations are registered */
-> > > +               flags |=3D TEE_SHM_REGISTER;
-> > > +       }
-> > > +
-> >=20
-> > This change isn't required as well as underlying TEE implementation:
-> > OP-TEE in this case knows how to implement shared memory allocation
-> > whether to use reserved shared memory pool or dynamic shared memory
-> > pool. For more details see shared memory pool creation in
-> > optee_probe().
-> >=20
-> > >         shm->flags =3D flags | TEE_SHM_POOL;
-> > >         shm->ctx =3D ctx;
-> > >         if (flags & TEE_SHM_DMA_BUF)
-> > > @@ -207,7 +216,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc);
-> > >   */
-> > >  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size=
-_t size)
-> > >  {
-> > > -       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BU=
-F);
-> > > +       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_REGIST=
-ER);
-> >=20
-> > Here it could just be:
-> >=20
-> >        return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED);
-> >=20
-> > -Sumit
-> >=20
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
-> > >
-> > > --
-> > > 2.25.1
-> > >
-> >=20
+>
+> That said, I think the first step is to fix the kexec/kdump bugs and the
+> second step is to clean up the code to remove the layering violation of
+> exposing shm registration from the TEE interfaces.
+>
 
---===============6592128300766879147==--
+Doesn't the following patch sound suitable to be backported to a
+stable kernel? It has even less changes compared to your patch as well
+:).
+
+-Sumit
+
+-------------------------------------------
+Subject: [PATCH] tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
+
+Currently TEE_SHM_DMA_BUF flag has been inappropriately used to not
+register shared memory allocated for private usage by underlying TEE
+driver: OP-TEE in this case. So rather add a new flag as TEE_SHM_PRIV
+that can be utilized by underlying TEE drivers for private allocation
+and usage of shared memory.
+
+With this corrected, allow tee_shm_alloc_kernel_buf() to allocate a
+shared memory region without the backing of dma-buf.
+
+Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+---
+ drivers/tee/optee/call.c     | 2 +-
+ drivers/tee/optee/core.c     | 3 ++-
+ drivers/tee/optee/shm_pool.c | 8 ++++++--
+ drivers/tee/tee_shm.c        | 2 +-
+ include/linux/tee_drv.h      | 1 +
+ 5 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index 6132cc8d014c..faaa13c9172b 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -184,7 +184,7 @@ static struct tee_shm *get_msg_arg(struct
+tee_context *ctx, size_t num_params,
+        struct optee_msg_arg *ma;
+
+        shm =3D tee_shm_alloc(ctx, OPTEE_MSG_GET_ARG_SIZE(num_params),
+-                           TEE_SHM_MAPPED);
++                           TEE_SHM_MAPPED | TEE_SHM_PRIV);
+        if (IS_ERR(shm))
+                return shm;
+
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index ddb8f9ecf307..eac0e91ec559 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -277,7 +277,8 @@ static void optee_release(struct tee_context *ctx)
+        if (!ctxdata)
+                return;
+
+-       shm =3D tee_shm_alloc(ctx, sizeof(struct optee_msg_arg), TEE_SHM_MAPP=
+ED);
++       shm =3D tee_shm_alloc(ctx, sizeof(struct optee_msg_arg),
++                           TEE_SHM_MAPPED | TEE_SHM_PRIV);
+        if (!IS_ERR(shm)) {
+                arg =3D tee_shm_get_va(shm, 0);
+                /*
+diff --git a/drivers/tee/optee/shm_pool.c b/drivers/tee/optee/shm_pool.c
+index d767eebf30bd..3b4a3853a10f 100644
+--- a/drivers/tee/optee/shm_pool.c
++++ b/drivers/tee/optee/shm_pool.c
+@@ -27,7 +27,11 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
+        shm->paddr =3D page_to_phys(page);
+        shm->size =3D PAGE_SIZE << order;
+
+-       if (shm->flags & TEE_SHM_DMA_BUF) {
++       /*
++        * Shared memory private to the OP-TEE driver doesn't need
++        * to be registered with OP-TEE.
++        */
++       if (!(shm->flags & TEE_SHM_PRIV)) {
+                unsigned int nr_pages =3D 1 << order, i;
+                struct page **pages;
+
+@@ -52,7 +56,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
+ static void pool_op_free(struct tee_shm_pool_mgr *poolm,
+                         struct tee_shm *shm)
+ {
+-       if (shm->flags & TEE_SHM_DMA_BUF)
++       if (!(shm->flags & TEE_SHM_PRIV))
+                optee_shm_unregister(shm->ctx, shm);
+
+        free_pages((unsigned long)shm->kaddr, get_order(shm->size));
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index c425ad80d6a6..f8b73e734094 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -207,7 +207,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc);
+  */
+ struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
+e)
+ {
+-       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
++       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED);
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index 8990f7628387..3ebfea0781f1 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -27,6 +27,7 @@
+ #define TEE_SHM_USER_MAPPED    BIT(4)  /* Memory mapped in user space */
+ #define TEE_SHM_POOL           BIT(5)  /* Memory allocated from pool */
+ #define TEE_SHM_KERNEL_MAPPED  BIT(6)  /* Memory mapped in kernel space */
++#define TEE_SHM_PRIV           BIT(7)  /* Memory private to TEE driver */
+
+ struct device;
+ struct tee_device;
+
+--===============0998181758850814793==--
 
