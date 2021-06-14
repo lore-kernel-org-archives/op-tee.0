@@ -1,123 +1,124 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v4 4/8] optee: Clear stale cache entries during initialization
-Date: Mon, 14 Jun 2021 21:15:06 +0200
-Message-ID: <20210614191506.GA1373417@jade>
-In-Reply-To: <20210614190646.GW4910@sequoia>
+Subject: [PATCH v5 0/8] tee: Improve support for kexec and kdump
+Date: Mon, 14 Jun 2021 17:33:09 -0500
+Message-ID: <20210614223317.999867-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3816443437109517772=="
+Content-Type: multipart/mixed; boundary="===============5127651471341124968=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3816443437109517772==
+--===============5127651471341124968==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 14, 2021 at 02:06:46PM -0500, Tyler Hicks wrote:
-> On 2021-06-14 10:27:15, Jens Wiklander wrote:
-> > On Thu, Jun 10, 2021 at 04:09:09PM -0500, Tyler Hicks wrote:
-> > > The shm cache could contain invalid addresses if
-> > > optee_disable_shm_cache() was not called from the .shutdown hook of the
-> > > previous kernel before a kexec. These addresses could be unmapped or
-> > > they could point to mapped but unintended locations in memory.
-> > >=20
-> > > Clear the shared memory cache, while being careful to not translate the
-> > > addresses returned from OPTEE_SMC_DISABLE_SHM_CACHE, during driver
-> > > initialization. Once all pre-cache shm objects are removed, proceed with
-> > > enabling the cache so that we know that we can handle cached shm objects
-> > > with confidence later in the .shutdown hook.
-> > >=20
-> > > Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-> > > ---
-> > >  drivers/tee/optee/call.c          | 11 ++++++++++-
-> > >  drivers/tee/optee/core.c          | 13 +++++++++++--
-> > >  drivers/tee/optee/optee_private.h |  2 +-
-> > >  3 files changed, 22 insertions(+), 4 deletions(-)
-> > >=20
-> > > diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> > > index 6e6eb836e9b6..5dcba6105ed7 100644
-> > > --- a/drivers/tee/optee/call.c
-> > > +++ b/drivers/tee/optee/call.c
-> > > @@ -419,8 +419,10 @@ void optee_enable_shm_cache(struct optee *optee)
-> > >   * optee_disable_shm_cache() - Disables caching of some shared memory =
-allocation
-> > >   *			      in OP-TEE
-> > >   * @optee:	main service struct
-> > > + * @is_mapped:	true if the cached shared memory addresses were mapped =
-by this
-> > > + *		kernel, are safe to dereference, and should be freed
-> > >   */
-> > > -void optee_disable_shm_cache(struct optee *optee)
-> > > +void optee_disable_shm_cache(struct optee *optee, bool is_mapped)
-> > >  {
-> > >  	struct optee_call_waiter w;
-> > > =20
-> > > @@ -439,6 +441,13 @@ void optee_disable_shm_cache(struct optee *optee)
-> > >  		if (res.result.status =3D=3D OPTEE_SMC_RETURN_OK) {
-> > >  			struct tee_shm *shm;
-> > > =20
-> > > +			/*
-> > > +			 * Shared memory references that were not mapped by
-> > > +			 * this kernel must be ignored to prevent a crash.
-> > > +			 */
-> > > +			if (!is_mapped)
-> > > +				continue;
-> > > +
-> > >  			shm =3D reg_pair_to_ptr(res.result.shm_upper32,
-> > >  					      res.result.shm_lower32);
-> > >  			tee_shm_free(shm);
-> > > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> > > index 0987074d7ed0..6974e1104bd4 100644
-> > > --- a/drivers/tee/optee/core.c
-> > > +++ b/drivers/tee/optee/core.c
-> > > @@ -589,7 +589,7 @@ static int optee_remove(struct platform_device *pde=
-v)
-> > >  	 * reference counters and also avoid wild pointers in secure world
-> > >  	 * into the old shared memory range.
-> > >  	 */
-> > > -	optee_disable_shm_cache(optee);
-> > > +	optee_disable_shm_cache(optee, true);
-> >=20
-> > Naked "true" or "false" parameters are normally not very descriptive.
-> > Would it make sense to write this as:
-> > optee_disable_shm_cache(optee, true /*is_mapped*/);
-> > instead (same for the other call sites in this patch)? That way it would
-> > be easier to see what it is that is true or false.
->=20
-> Yeah, I understand the issue with the naked bools. What about turning
-> 'optee_disable_shm_cache(struct optee *optee, bool is_mapped)' into
-> '__optee_disable_shm_cache(struct optee *optee, bool is_mapped)' and
-> introducing these two wrappers:
->=20
-> /**
->  * optee_disable_shm_cache() - Disables caching of mapped shared memory
->  *                             allocations in OP-TEE
->  * @optee:     main service struct
->  */
-> void optee_disable_shm_cache(struct optee *optee)
-> {
->        return __optee_disable_shm_cache(optee, true);
-> }
->=20
-> /**
->  * optee_disable_unmapped_shm_cache() - Disables caching of shared memory
->  *                                      allocations in OP-TEE which are not
->  *                                      currently mapped
->  * @optee:     main service struct
->  */
-> void optee_disable_unmapped_shm_cache(struct optee *optee)
-> {
->        return __optee_disable_shm_cache(optee, false);
-> }
->=20
-> Existing callers of optee_disable_shm_cache() remain unchanged and we just =
-add
-> one caller of optee_disable_unmapped_shm_cache() with this patch.
->=20
+v5:
+- Picked up Reviewed-by's from Jens.
+- Added 'Cc: stable(a)vger.kernel.org' to all commits as this is intended
+  to be a bug fix series. I'm happy to sort out backports with the
+  stable team.
+- Got rid of the bool is_mapped parameter of optee_disable_shm_cache()
+  by abstracting out the function with two wrappers. One
+  (optee_disable_shm_cache()) for normal case where the shm cache is
+  fully mapped and another (optee_disable_unmapped_shm_cache()) for the
+  unusual case of the shm cache having potentially invalid entries.
+- Replaced my previous 'tee: Support kernel shm registration without
+  dma-buf' patch with a cleaner implementation ('tee: Correct
+  inappropriate usage of TEE_SHM_DMA_BUF flag') from Sumit Garg.
+v4: https://lore.kernel.org/lkml/20210610210913.536081-1-tyhicks(a)linux.micr=
+osoft.com/
+v3: https://lore.kernel.org/lkml/20210609002326.210024-1-tyhicks(a)linux.micr=
+osoft.com/
+v2: https://lore.kernel.org/lkml/20210225090610.242623-1-allen.lkml(a)gmail.c=
+om/
+v1: https://lore.kernel.org/lkml/20210217092714.121297-1-allen.lkml(a)gmail.c=
+om/
 
-Sounds good.
+This series fixes several bugs uncovered while exercising the OP-TEE
+(Open Portable Trusted Execution Environment), ftpm (firmware TPM), and
+tee_bnxt_fw (Broadcom BNXT firmware manager) drivers with kexec and
+kdump (emergency kexec) based workflows.
 
-Jens
+The majority of the problems are caused by missing .shutdown hooks in
+the drivers. The .shutdown hooks are used by the normal kexec code path
+to let the drivers clean up prior to executing the target kernel. The
+.remove hooks, which are already implemented in these drivers, are not
+called as part of the kexec code path. This resulted in shared memory
+regions, that were cached and/or registered with OP-TEE, not being
+cleared/unregistered prior to kexec. The new kernel would then run into
+problems when handling the previously cached virtual addresses or trying
+to register newly allocated shared memory objects that overlapped with
+the previously registered virtual addresses. The TEE didn't receive
+notification that the old virtual addresses were no longer meaningful
+and that a new kernel, with a new address space, would soon be running.
 
---===============3816443437109517772==--
+However, implementing .shutdown hooks was not enough for supporting
+kexec. There was an additional problem caused by the TEE driver's
+reliance on the dma-buf subsystem for multi-page shared memory objects
+that were registered with the TEE. Shared memory objects backed by a
+dma-buf use a different mechanism for reference counting. When the final
+reference is released, work is scheduled to be executed to unregister
+the shared memory with the TEE but that work is only completed prior to
+the current task returning the userspace. In the case of a kexec
+operation, the current task that's calling the driver .shutdown hooks
+never returns to userspace prior to the kexec operation so the shared
+memory was never unregistered. This eventually caused problems from
+overlapping shared memory regions that were registered with the TEE
+after several kexec operations. The large 4M contiguous region
+allocated by the tee_bnxt_fw driver reliably ran into this issue on the
+fourth kexec on a system with 8G of RAM.
+
+The use of dma-buf makes sense for shared memory that's in use by
+userspace but dma-buf's aren't needed for shared memory that will only
+used by the driver. This series separates dma-buf backed shared memory
+allocated by the kernel from multi-page shared memory that the kernel
+simply needs registered with the TEE for private use.
+
+One other noteworthy change in this series is to completely refuse to
+load the OP-TEE driver in the kdump kernel. This is needed because the
+secure world may have had all of its threads in suspended state when the
+regular kernel crashed. The kdump kernel would then hang during boot
+because the OP-TEE driver's .probe function would attempt to use a
+secure world thread when they're all in suspended state. Another problem
+is that shared memory allocations could fail under the kdump kernel
+because the previously registered were not unregistered (the .shutdown
+hook is not called when kexec'ing into the kdump kernel).
+
+The first patch in the series fixes potential memory leaks that are not
+directly related to kexec or kdump but were noticed during the
+development of this series.
+
+Tyler
+
+Allen Pais (2):
+  optee: fix tee out of memory failure seen during kexec reboot
+  firmware: tee_bnxt: Release TEE shm, session, and context during kexec
+
+Jens Wiklander (1):
+  tee: add tee_shm_alloc_kernel_buf()
+
+Sumit Garg (1):
+  tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
+
+Tyler Hicks (4):
+  optee: Fix memory leak when failing to register shm pages
+  optee: Refuse to load the driver under the kdump kernel
+  optee: Clear stale cache entries during initialization
+  tpm_ftpm_tee: Free and unregister TEE shared memory during kexec
+
+ drivers/char/tpm/tpm_ftpm_tee.c         |  8 ++---
+ drivers/firmware/broadcom/tee_bnxt_fw.c | 14 ++++++--
+ drivers/tee/optee/call.c                | 38 +++++++++++++++++++---
+ drivers/tee/optee/core.c                | 43 ++++++++++++++++++++++++-
+ drivers/tee/optee/optee_private.h       |  1 +
+ drivers/tee/optee/rpc.c                 |  5 +--
+ drivers/tee/optee/shm_pool.c            | 20 +++++++++---
+ drivers/tee/tee_shm.c                   | 20 +++++++++++-
+ include/linux/tee_drv.h                 |  2 ++
+ 9 files changed, 132 insertions(+), 19 deletions(-)
+
+--=20
+2.25.1
+
+
+--===============5127651471341124968==--
 
