@@ -1,98 +1,91 @@
 From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- [PATCH v5 2/8] optee: Refuse to load the driver under the kdump kernel
-Date: Mon, 14 Jun 2021 17:33:11 -0500
-Message-ID: <20210614223317.999867-3-tyhicks@linux.microsoft.com>
+ [PATCH v5 3/8] optee: fix tee out of memory failure seen during kexec reboot
+Date: Mon, 14 Jun 2021 17:33:12 -0500
+Message-ID: <20210614223317.999867-4-tyhicks@linux.microsoft.com>
 In-Reply-To: <20210614223317.999867-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6947820247101023472=="
+Content-Type: multipart/mixed; boundary="===============4554399700487865331=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6947820247101023472==
+--===============4554399700487865331==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Fix a hung task issue, seen when booting the kdump kernel, that is
-caused by all of the secure world threads being in a permanent suspended
-state:
+From: Allen Pais <apais@linux.microsoft.com>
 
- INFO: task swapper/0:1 blocked for more than 120 seconds.
-       Not tainted 5.4.83 #1
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- swapper/0       D    0     1      0 0x00000028
- Call trace:
-  __switch_to+0xc8/0x118
-  __schedule+0x2e0/0x700
-  schedule+0x38/0xb8
-  schedule_timeout+0x258/0x388
-  wait_for_completion+0x16c/0x4b8
-  optee_cq_wait_for_completion+0x28/0xa8
-  optee_disable_shm_cache+0xb8/0xf8
-  optee_probe+0x560/0x61c
-  platform_drv_probe+0x58/0xa8
-  really_probe+0xe0/0x338
-  driver_probe_device+0x5c/0xf0
-  device_driver_attach+0x74/0x80
-  __driver_attach+0x64/0xe0
-  bus_for_each_dev+0x84/0xd8
-  driver_attach+0x30/0x40
-  bus_add_driver+0x188/0x1e8
-  driver_register+0x64/0x110
-  __platform_driver_register+0x54/0x60
-  optee_driver_init+0x20/0x28
-  do_one_initcall+0x54/0x24c
-  kernel_init_freeable+0x1e8/0x2c0
-  kernel_init+0x18/0x118
-  ret_from_fork+0x10/0x18
+The following out of memory errors are seen on kexec reboot
+from the optee core.
 
-The invoke_fn hook returned OPTEE_SMC_RETURN_ETHREAD_LIMIT, indicating
-that the secure world threads were all in a suspended state at the time
-of the kernel crash. This intermittently prevented the kdump kernel from
-booting, resulting in a failure to collect the kernel dump.
+[    0.368428] tee_bnxt_fw optee-clnt0: tee_shm_alloc failed
+[    0.368461] tee_bnxt_fw: probe of optee-clnt0 failed with error -22
 
-Make kernel dump collection more reliable on systems utilizing OP-TEE by
-refusing to load the driver under the kdump kernel.
+tee_shm_release() is not invoked on dma shm buffer.
+
+Implement .shutdown() method to handle the release of the buffers
+correctly.
+
+More info:
+https://github.com/OP-TEE/optee_os/issues/3637
 
 Cc: stable(a)vger.kernel.org
-Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
+Signed-off-by: Allen Pais <apais@linux.microsoft.com>
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/optee/core.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/tee/optee/core.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index ddb8f9ecf307..5288cd767d82 100644
+index 5288cd767d82..0987074d7ed0 100644
 --- a/drivers/tee/optee/core.c
 +++ b/drivers/tee/optee/core.c
-@@ -6,6 +6,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/arm-smccc.h>
-+#include <linux/crash_dump.h>
- #include <linux/errno.h>
- #include <linux/io.h>
- #include <linux/module.h>
-@@ -612,6 +613,16 @@ static int optee_probe(struct platform_device *pdev)
- 	u32 sec_caps;
- 	int rc;
- 
-+	/*
-+	 * The kernel may have crashed at the same time that all available
-+	 * secure world threads were suspended and we cannot reschedule the
-+	 * suspended threads without access to the crashed kernel's wait_queue.
-+	 * Therefore, we cannot reliably initialize the OP-TEE driver in the
-+	 * kdump kernel.
-+	 */
-+	if (is_kdump_kernel())
-+		return -ENODEV;
+@@ -573,6 +573,13 @@ static optee_invoke_fn *get_invoke_func(struct device *d=
+ev)
+ 	return ERR_PTR(-EINVAL);
+ }
+=20
++/* optee_remove - Device Removal Routine
++ * @pdev: platform device information struct
++ *
++ * optee_remove is called by platform subsystem to alert the driver
++ * that it should release the device
++ */
 +
- 	invoke_fn = get_invoke_func(&pdev->dev);
- 	if (IS_ERR(invoke_fn))
- 		return PTR_ERR(invoke_fn);
--- 
+ static int optee_remove(struct platform_device *pdev)
+ {
+ 	struct optee *optee =3D platform_get_drvdata(pdev);
+@@ -603,6 +610,18 @@ static int optee_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+=20
++/* optee_shutdown - Device Removal Routine
++ * @pdev: platform device information struct
++ *
++ * platform_shutdown is called by the platform subsystem to alert
++ * the driver that a shutdown, reboot, or kexec is happening and
++ * device must be disabled.
++ */
++static void optee_shutdown(struct platform_device *pdev)
++{
++	optee_disable_shm_cache(platform_get_drvdata(pdev));
++}
++
+ static int optee_probe(struct platform_device *pdev)
+ {
+ 	optee_invoke_fn *invoke_fn;
+@@ -739,6 +758,7 @@ MODULE_DEVICE_TABLE(of, optee_dt_match);
+ static struct platform_driver optee_driver =3D {
+ 	.probe  =3D optee_probe,
+ 	.remove =3D optee_remove,
++	.shutdown =3D optee_shutdown,
+ 	.driver =3D {
+ 		.name =3D "optee",
+ 		.of_match_table =3D optee_dt_match,
+--=20
 2.25.1
 
 
---===============6947820247101023472==--
+--===============4554399700487865331==--
 
