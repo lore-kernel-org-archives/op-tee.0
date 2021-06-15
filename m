@@ -1,39 +1,72 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jarkko Sakkinen <jarkko@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] MAINTAINERS: Add myself as TEE subsystem reviewer
-Date: Tue, 15 Jun 2021 17:41:03 +0530
-Message-ID: <20210615121103.2361341-1-sumit.garg@linaro.org>
+Subject: Re: [PATCH v4 7/8] tpm_ftpm_tee: Free and unregister TEE shared
+ memory during kexec
+Date: Tue, 15 Jun 2021 16:04:11 +0300
+Message-ID: <20210615130411.hvpnaxnhimjloiz3@kernel.org>
+In-Reply-To: <20210610210913.536081-8-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5952577219826487107=="
+Content-Type: multipart/mixed; boundary="===============7036243450603784033=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5952577219826487107==
+--===============7036243450603784033==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Since I have been helping with TEE subsystem reviews, so make that role
-official.
-
-Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index bd7aff0c120f..1e43bc497a15 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17916,6 +17916,7 @@ F:	include/media/i2c/tw9910.h
- 
- TEE SUBSYSTEM
- M:	Jens Wiklander <jens.wiklander@linaro.org>
-+R:	Sumit Garg <sumit.garg@linaro.org>
- L:	op-tee(a)lists.trustedfirmware.org
- S:	Maintained
- F:	Documentation/staging/tee.rst
--- 
-2.25.1
+On Thu, Jun 10, 2021 at 04:09:12PM -0500, Tyler Hicks wrote:
+> dma-buf backed shared memory cannot be reliably freed and unregistered
+> during a kexec operation even when tee_shm_free() is called on the shm
+> from a .shutdown hook. The problem occurs because dma_buf_put() calls
+> fput() which then uses task_work_add(), with the TWA_RESUME parameter,
+> to queue tee_shm_release() to be called before the current task returns
+> to user mode. However, the current task never returns to user mode
+> before the kexec completes so the memory is never freed nor
+> unregistered.
+>=20
+> Use tee_shm_alloc_kernel_buf() to avoid dma-buf backed shared memory
+> allocation so that tee_shm_free() can directly call tee_shm_release().
+> This will ensure that the shm can be freed and unregistered during a
+> kexec operation.
+>=20
+> Fixes: 09e574831b27 ("tpm/tpm_ftpm_tee: A driver for firmware TPM running i=
+nside TEE")
+> Fixes: 1760eb689ed6 ("tpm/tpm_ftpm_tee: add shutdown call back")
+> Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 
 
---===============5952577219826487107==--
+Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
+
+> ---
+>  drivers/char/tpm/tpm_ftpm_tee.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/char/tpm/tpm_ftpm_tee.c b/drivers/char/tpm/tpm_ftpm_te=
+e.c
+> index 2ccdf8ac6994..6e3235565a4d 100644
+> --- a/drivers/char/tpm/tpm_ftpm_tee.c
+> +++ b/drivers/char/tpm/tpm_ftpm_tee.c
+> @@ -254,11 +254,11 @@ static int ftpm_tee_probe(struct device *dev)
+>  	pvt_data->session =3D sess_arg.session;
+> =20
+>  	/* Allocate dynamic shared memory with fTPM TA */
+> -	pvt_data->shm =3D tee_shm_alloc(pvt_data->ctx,
+> -				      MAX_COMMAND_SIZE + MAX_RESPONSE_SIZE,
+> -				      TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
+> +	pvt_data->shm =3D tee_shm_alloc_kernel_buf(pvt_data->ctx,
+> +						 MAX_COMMAND_SIZE +
+> +						 MAX_RESPONSE_SIZE);
+>  	if (IS_ERR(pvt_data->shm)) {
+> -		dev_err(dev, "%s: tee_shm_alloc failed\n", __func__);
+> +		dev_err(dev, "%s: tee_shm_alloc_kernel_buf failed\n", __func__);
+>  		rc =3D -ENOMEM;
+>  		goto out_shm_alloc;
+>  	}
+> --=20
+> 2.25.1
+>=20
+>=20
+
+/Jarkko
+
+--===============7036243450603784033==--
 
