@@ -1,160 +1,138 @@
-From: Tyler Hicks <tyhicks@linux.microsoft.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v5 6/8] tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
-Date: Mon, 14 Jun 2021 17:33:15 -0500
-Message-ID: <20210614223317.999867-7-tyhicks@linux.microsoft.com>
+Subject: Re: [PATCH v5 0/8] tee: Improve support for kexec and kdump
+Date: Tue, 15 Jun 2021 10:02:39 +0530
+Message-ID: 
+ <CAFA6WYOwCRtdvow1xaT6zUZ+7pjBekT7s-v+anRsbMk56WZMAA@mail.gmail.com>
 In-Reply-To: <20210614223317.999867-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8393323098716014975=="
+Content-Type: multipart/mixed; boundary="===============2906255205074680141=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8393323098716014975==
+--===============2906255205074680141==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-From: Sumit Garg <sumit.garg@linaro.org>
+Hi Tyler,
 
-Currently TEE_SHM_DMA_BUF flag has been inappropriately used to not
-register shared memory allocated for private usage by underlying TEE
-driver: OP-TEE in this case. So rather add a new flag as TEE_SHM_PRIV
-that can be utilized by underlying TEE drivers for private allocation
-and usage of shared memory.
+On Tue, 15 Jun 2021 at 04:03, Tyler Hicks <tyhicks@linux.microsoft.com> wro=
+te:
+>
+> v5:
+> - Picked up Reviewed-by's from Jens.
+> - Added 'Cc: stable(a)vger.kernel.org' to all commits as this is intended
+>   to be a bug fix series. I'm happy to sort out backports with the
+>   stable team.
+> - Got rid of the bool is_mapped parameter of optee_disable_shm_cache()
+>   by abstracting out the function with two wrappers. One
+>   (optee_disable_shm_cache()) for normal case where the shm cache is
+>   fully mapped and another (optee_disable_unmapped_shm_cache()) for the
+>   unusual case of the shm cache having potentially invalid entries.
+> - Replaced my previous 'tee: Support kernel shm registration without
+>   dma-buf' patch with a cleaner implementation ('tee: Correct
+>   inappropriate usage of TEE_SHM_DMA_BUF flag') from Sumit Garg.
+> v4: https://lore.kernel.org/lkml/20210610210913.536081-1-tyhicks(a)linux.mi=
+crosoft.com/
+> v3: https://lore.kernel.org/lkml/20210609002326.210024-1-tyhicks(a)linux.mi=
+crosoft.com/
+> v2: https://lore.kernel.org/lkml/20210225090610.242623-1-allen.lkml(a)gmail=
+.com/
+> v1: https://lore.kernel.org/lkml/20210217092714.121297-1-allen.lkml(a)gmail=
+.com/
+>
 
-With this corrected, allow tee_shm_alloc_kernel_buf() to allocate a
-shared memory region without the backing of dma-buf.
+This series looks good to me. Feel free to add:
 
-Cc: stable(a)vger.kernel.org
-Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-Co-developed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
----
- drivers/tee/optee/call.c     | 2 +-
- drivers/tee/optee/core.c     | 3 ++-
- drivers/tee/optee/rpc.c      | 5 +++--
- drivers/tee/optee/shm_pool.c | 8 ++++++--
- drivers/tee/tee_shm.c        | 4 ++--
- include/linux/tee_drv.h      | 1 +
- 6 files changed, 15 insertions(+), 8 deletions(-)
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index 387e94768182..945f03da0223 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -184,7 +184,7 @@ static struct tee_shm *get_msg_arg(struct tee_context *ct=
-x, size_t num_params,
- 	struct optee_msg_arg *ma;
-=20
- 	shm =3D tee_shm_alloc(ctx, OPTEE_MSG_GET_ARG_SIZE(num_params),
--			    TEE_SHM_MAPPED);
-+			    TEE_SHM_MAPPED | TEE_SHM_PRIV);
- 	if (IS_ERR(shm))
- 		return shm;
-=20
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 651d49b53d3b..5ce13b099d7d 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -278,7 +278,8 @@ static void optee_release(struct tee_context *ctx)
- 	if (!ctxdata)
- 		return;
-=20
--	shm =3D tee_shm_alloc(ctx, sizeof(struct optee_msg_arg), TEE_SHM_MAPPED);
-+	shm =3D tee_shm_alloc(ctx, sizeof(struct optee_msg_arg),
-+			    TEE_SHM_MAPPED | TEE_SHM_PRIV);
- 	if (!IS_ERR(shm)) {
- 		arg =3D tee_shm_get_va(shm, 0);
- 		/*
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index 1849180b0278..efbaff7ad7e5 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -314,7 +314,7 @@ static void handle_rpc_func_cmd_shm_alloc(struct tee_cont=
-ext *ctx,
- 		shm =3D cmd_alloc_suppl(ctx, sz);
- 		break;
- 	case OPTEE_RPC_SHM_TYPE_KERNEL:
--		shm =3D tee_shm_alloc(ctx, sz, TEE_SHM_MAPPED);
-+		shm =3D tee_shm_alloc(ctx, sz, TEE_SHM_MAPPED | TEE_SHM_PRIV);
- 		break;
- 	default:
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-@@ -502,7 +502,8 @@ void optee_handle_rpc(struct tee_context *ctx, struct opt=
-ee_rpc_param *param,
-=20
- 	switch (OPTEE_SMC_RETURN_GET_RPC_FUNC(param->a0)) {
- 	case OPTEE_SMC_RPC_FUNC_ALLOC:
--		shm =3D tee_shm_alloc(ctx, param->a1, TEE_SHM_MAPPED);
-+		shm =3D tee_shm_alloc(ctx, param->a1,
-+				    TEE_SHM_MAPPED | TEE_SHM_PRIV);
- 		if (!IS_ERR(shm) && !tee_shm_get_pa(shm, 0, &pa)) {
- 			reg_pair_from_64(&param->a1, &param->a2, pa);
- 			reg_pair_from_64(&param->a4, &param->a5,
-diff --git a/drivers/tee/optee/shm_pool.c b/drivers/tee/optee/shm_pool.c
-index da06ce9b9313..c41a9a501a6e 100644
---- a/drivers/tee/optee/shm_pool.c
-+++ b/drivers/tee/optee/shm_pool.c
-@@ -27,7 +27,11 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
- 	shm->paddr =3D page_to_phys(page);
- 	shm->size =3D PAGE_SIZE << order;
-=20
--	if (shm->flags & TEE_SHM_DMA_BUF) {
-+	/*
-+	 * Shared memory private to the OP-TEE driver doesn't need
-+	 * to be registered with OP-TEE.
-+	 */
-+	if (!(shm->flags & TEE_SHM_PRIV)) {
- 		unsigned int nr_pages =3D 1 << order, i;
- 		struct page **pages;
-=20
-@@ -60,7 +64,7 @@ static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
- static void pool_op_free(struct tee_shm_pool_mgr *poolm,
- 			 struct tee_shm *shm)
- {
--	if (shm->flags & TEE_SHM_DMA_BUF)
-+	if (!(shm->flags & TEE_SHM_PRIV))
- 		optee_shm_unregister(shm->ctx, shm);
-=20
- 	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index c65e44707cd6..8a9384a64f3e 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -117,7 +117,7 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, si=
-ze_t size, u32 flags)
- 		return ERR_PTR(-EINVAL);
- 	}
-=20
--	if ((flags & ~(TEE_SHM_MAPPED | TEE_SHM_DMA_BUF))) {
-+	if ((flags & ~(TEE_SHM_MAPPED | TEE_SHM_DMA_BUF | TEE_SHM_PRIV))) {
- 		dev_err(teedev->dev.parent, "invalid shm flags 0x%x", flags);
- 		return ERR_PTR(-EINVAL);
- 	}
-@@ -207,7 +207,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc);
-  */
- struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
-e)
- {
--	return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
-+	return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED);
- }
- EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
-=20
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index 8990f7628387..3ebfea0781f1 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -27,6 +27,7 @@
- #define TEE_SHM_USER_MAPPED	BIT(4)  /* Memory mapped in user space */
- #define TEE_SHM_POOL		BIT(5)  /* Memory allocated from pool */
- #define TEE_SHM_KERNEL_MAPPED	BIT(6)  /* Memory mapped in kernel space */
-+#define TEE_SHM_PRIV		BIT(7)  /* Memory private to TEE driver */
-=20
- struct device;
- struct tee_device;
---=20
-2.25.1
+-Sumit
 
+> This series fixes several bugs uncovered while exercising the OP-TEE
+> (Open Portable Trusted Execution Environment), ftpm (firmware TPM), and
+> tee_bnxt_fw (Broadcom BNXT firmware manager) drivers with kexec and
+> kdump (emergency kexec) based workflows.
+>
+> The majority of the problems are caused by missing .shutdown hooks in
+> the drivers. The .shutdown hooks are used by the normal kexec code path
+> to let the drivers clean up prior to executing the target kernel. The
+> .remove hooks, which are already implemented in these drivers, are not
+> called as part of the kexec code path. This resulted in shared memory
+> regions, that were cached and/or registered with OP-TEE, not being
+> cleared/unregistered prior to kexec. The new kernel would then run into
+> problems when handling the previously cached virtual addresses or trying
+> to register newly allocated shared memory objects that overlapped with
+> the previously registered virtual addresses. The TEE didn't receive
+> notification that the old virtual addresses were no longer meaningful
+> and that a new kernel, with a new address space, would soon be running.
+>
+> However, implementing .shutdown hooks was not enough for supporting
+> kexec. There was an additional problem caused by the TEE driver's
+> reliance on the dma-buf subsystem for multi-page shared memory objects
+> that were registered with the TEE. Shared memory objects backed by a
+> dma-buf use a different mechanism for reference counting. When the final
+> reference is released, work is scheduled to be executed to unregister
+> the shared memory with the TEE but that work is only completed prior to
+> the current task returning the userspace. In the case of a kexec
+> operation, the current task that's calling the driver .shutdown hooks
+> never returns to userspace prior to the kexec operation so the shared
+> memory was never unregistered. This eventually caused problems from
+> overlapping shared memory regions that were registered with the TEE
+> after several kexec operations. The large 4M contiguous region
+> allocated by the tee_bnxt_fw driver reliably ran into this issue on the
+> fourth kexec on a system with 8G of RAM.
+>
+> The use of dma-buf makes sense for shared memory that's in use by
+> userspace but dma-buf's aren't needed for shared memory that will only
+> used by the driver. This series separates dma-buf backed shared memory
+> allocated by the kernel from multi-page shared memory that the kernel
+> simply needs registered with the TEE for private use.
+>
+> One other noteworthy change in this series is to completely refuse to
+> load the OP-TEE driver in the kdump kernel. This is needed because the
+> secure world may have had all of its threads in suspended state when the
+> regular kernel crashed. The kdump kernel would then hang during boot
+> because the OP-TEE driver's .probe function would attempt to use a
+> secure world thread when they're all in suspended state. Another problem
+> is that shared memory allocations could fail under the kdump kernel
+> because the previously registered were not unregistered (the .shutdown
+> hook is not called when kexec'ing into the kdump kernel).
+>
+> The first patch in the series fixes potential memory leaks that are not
+> directly related to kexec or kdump but were noticed during the
+> development of this series.
+>
+> Tyler
+>
+> Allen Pais (2):
+>   optee: fix tee out of memory failure seen during kexec reboot
+>   firmware: tee_bnxt: Release TEE shm, session, and context during kexec
+>
+> Jens Wiklander (1):
+>   tee: add tee_shm_alloc_kernel_buf()
+>
+> Sumit Garg (1):
+>   tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
+>
+> Tyler Hicks (4):
+>   optee: Fix memory leak when failing to register shm pages
+>   optee: Refuse to load the driver under the kdump kernel
+>   optee: Clear stale cache entries during initialization
+>   tpm_ftpm_tee: Free and unregister TEE shared memory during kexec
+>
+>  drivers/char/tpm/tpm_ftpm_tee.c         |  8 ++---
+>  drivers/firmware/broadcom/tee_bnxt_fw.c | 14 ++++++--
+>  drivers/tee/optee/call.c                | 38 +++++++++++++++++++---
+>  drivers/tee/optee/core.c                | 43 ++++++++++++++++++++++++-
+>  drivers/tee/optee/optee_private.h       |  1 +
+>  drivers/tee/optee/rpc.c                 |  5 +--
+>  drivers/tee/optee/shm_pool.c            | 20 +++++++++---
+>  drivers/tee/tee_shm.c                   | 20 +++++++++++-
+>  include/linux/tee_drv.h                 |  2 ++
+>  9 files changed, 132 insertions(+), 19 deletions(-)
+>
+> --
+> 2.25.1
+>
 
---===============8393323098716014975==--
+--===============2906255205074680141==--
 
