@@ -1,47 +1,144 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v5 6/8] tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
-Date: Tue, 15 Jun 2021 09:10:08 +0200
+Subject: Re: [PATCH v5 0/8] tee: Improve support for kexec and kdump
+Date: Tue, 15 Jun 2021 09:23:25 +0200
 Message-ID: 
- <CAHUa44G+hxjckap1e1qZXTf6vQqQYNMw=ofzdFCP1OgCXQsF5Q@mail.gmail.com>
-In-Reply-To: <20210614223317.999867-7-tyhicks@linux.microsoft.com>
+ <CAHUa44ErgoxT3L1W-ouoQwUg1fNC-zagOOgy=KBuGN_pETnYaw@mail.gmail.com>
+In-Reply-To: <20210614223317.999867-1-tyhicks@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6222150324918646232=="
+Content-Type: multipart/mixed; boundary="===============3478790805151881199=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6222150324918646232==
+--===============3478790805151881199==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+
+Hi Tyler,
 
 On Tue, Jun 15, 2021 at 12:33 AM Tyler Hicks
 <tyhicks@linux.microsoft.com> wrote:
 >
-> From: Sumit Garg <sumit.garg@linaro.org>
+> v5:
+> - Picked up Reviewed-by's from Jens.
+> - Added 'Cc: stable(a)vger.kernel.org' to all commits as this is intended
+>   to be a bug fix series. I'm happy to sort out backports with the
+>   stable team.
+> - Got rid of the bool is_mapped parameter of optee_disable_shm_cache()
+>   by abstracting out the function with two wrappers. One
+>   (optee_disable_shm_cache()) for normal case where the shm cache is
+>   fully mapped and another (optee_disable_unmapped_shm_cache()) for the
+>   unusual case of the shm cache having potentially invalid entries.
+> - Replaced my previous 'tee: Support kernel shm registration without
+>   dma-buf' patch with a cleaner implementation ('tee: Correct
+>   inappropriate usage of TEE_SHM_DMA_BUF flag') from Sumit Garg.
+> v4: https://lore.kernel.org/lkml/20210610210913.536081-1-tyhicks(a)linux.mi=
+crosoft.com/
+> v3: https://lore.kernel.org/lkml/20210609002326.210024-1-tyhicks(a)linux.mi=
+crosoft.com/
+> v2: https://lore.kernel.org/lkml/20210225090610.242623-1-allen.lkml(a)gmail=
+.com/
+> v1: https://lore.kernel.org/lkml/20210217092714.121297-1-allen.lkml(a)gmail=
+.com/
 >
-> Currently TEE_SHM_DMA_BUF flag has been inappropriately used to not
-> register shared memory allocated for private usage by underlying TEE
-> driver: OP-TEE in this case. So rather add a new flag as TEE_SHM_PRIV
-> that can be utilized by underlying TEE drivers for private allocation
-> and usage of shared memory.
+> This series fixes several bugs uncovered while exercising the OP-TEE
+> (Open Portable Trusted Execution Environment), ftpm (firmware TPM), and
+> tee_bnxt_fw (Broadcom BNXT firmware manager) drivers with kexec and
+> kdump (emergency kexec) based workflows.
 >
-> With this corrected, allow tee_shm_alloc_kernel_buf() to allocate a
-> shared memory region without the backing of dma-buf.
+> The majority of the problems are caused by missing .shutdown hooks in
+> the drivers. The .shutdown hooks are used by the normal kexec code path
+> to let the drivers clean up prior to executing the target kernel. The
+> .remove hooks, which are already implemented in these drivers, are not
+> called as part of the kexec code path. This resulted in shared memory
+> regions, that were cached and/or registered with OP-TEE, not being
+> cleared/unregistered prior to kexec. The new kernel would then run into
+> problems when handling the previously cached virtual addresses or trying
+> to register newly allocated shared memory objects that overlapped with
+> the previously registered virtual addresses. The TEE didn't receive
+> notification that the old virtual addresses were no longer meaningful
+> and that a new kernel, with a new address space, would soon be running.
 >
-> Cc: stable(a)vger.kernel.org
-> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> Co-developed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-> Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
-> ---
->  drivers/tee/optee/call.c     | 2 +-
->  drivers/tee/optee/core.c     | 3 ++-
->  drivers/tee/optee/rpc.c      | 5 +++--
->  drivers/tee/optee/shm_pool.c | 8 ++++++--
->  drivers/tee/tee_shm.c        | 4 ++--
->  include/linux/tee_drv.h      | 1 +
->  6 files changed, 15 insertions(+), 8 deletions(-)
+> However, implementing .shutdown hooks was not enough for supporting
+> kexec. There was an additional problem caused by the TEE driver's
+> reliance on the dma-buf subsystem for multi-page shared memory objects
+> that were registered with the TEE. Shared memory objects backed by a
+> dma-buf use a different mechanism for reference counting. When the final
+> reference is released, work is scheduled to be executed to unregister
+> the shared memory with the TEE but that work is only completed prior to
+> the current task returning the userspace. In the case of a kexec
+> operation, the current task that's calling the driver .shutdown hooks
+> never returns to userspace prior to the kexec operation so the shared
+> memory was never unregistered. This eventually caused problems from
+> overlapping shared memory regions that were registered with the TEE
+> after several kexec operations. The large 4M contiguous region
+> allocated by the tee_bnxt_fw driver reliably ran into this issue on the
+> fourth kexec on a system with 8G of RAM.
+>
+> The use of dma-buf makes sense for shared memory that's in use by
+> userspace but dma-buf's aren't needed for shared memory that will only
+> used by the driver. This series separates dma-buf backed shared memory
+> allocated by the kernel from multi-page shared memory that the kernel
+> simply needs registered with the TEE for private use.
+>
+> One other noteworthy change in this series is to completely refuse to
+> load the OP-TEE driver in the kdump kernel. This is needed because the
+> secure world may have had all of its threads in suspended state when the
+> regular kernel crashed. The kdump kernel would then hang during boot
+> because the OP-TEE driver's .probe function would attempt to use a
+> secure world thread when they're all in suspended state. Another problem
+> is that shared memory allocations could fail under the kdump kernel
+> because the previously registered were not unregistered (the .shutdown
+> hook is not called when kexec'ing into the kdump kernel).
+>
+> The first patch in the series fixes potential memory leaks that are not
+> directly related to kexec or kdump but were noticed during the
+> development of this series.
+>
+> Tyler
+>
+> Allen Pais (2):
+>   optee: fix tee out of memory failure seen during kexec reboot
+>   firmware: tee_bnxt: Release TEE shm, session, and context during kexec
+>
+> Jens Wiklander (1):
+>   tee: add tee_shm_alloc_kernel_buf()
+>
+> Sumit Garg (1):
+>   tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
+>
+> Tyler Hicks (4):
+>   optee: Fix memory leak when failing to register shm pages
+>   optee: Refuse to load the driver under the kdump kernel
+>   optee: Clear stale cache entries during initialization
+>   tpm_ftpm_tee: Free and unregister TEE shared memory during kexec
+>
+>  drivers/char/tpm/tpm_ftpm_tee.c         |  8 ++---
+>  drivers/firmware/broadcom/tee_bnxt_fw.c | 14 ++++++--
+>  drivers/tee/optee/call.c                | 38 +++++++++++++++++++---
+>  drivers/tee/optee/core.c                | 43 ++++++++++++++++++++++++-
+>  drivers/tee/optee/optee_private.h       |  1 +
+>  drivers/tee/optee/rpc.c                 |  5 +--
+>  drivers/tee/optee/shm_pool.c            | 20 +++++++++---
+>  drivers/tee/tee_shm.c                   | 20 +++++++++++-
+>  include/linux/tee_drv.h                 |  2 ++
+>  9 files changed, 132 insertions(+), 19 deletions(-)
+>
+> --
+ > 2.25.1
+>
 
-Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+It looks like we're almost done now. Thanks for your patience to see
+this through.
 
---===============6222150324918646232==--
+I suppose it makes most sense to take this via my tree, but before I
+can do that I'll need acks from the maintainers of
+drivers/char/tpm/tpm_ftpm_tee.c ("tpm_ftpm_tee: Free and unregister
+TEE shared memory during kexec") and
+drivers/firmware/broadcom/tee_bnxt_fw.c ("firmware: tee_bnxt: Release
+TEE shm, session, and context during kexec").
+
+Cheers,
+Jens
+
+--===============3478790805151881199==--
 
