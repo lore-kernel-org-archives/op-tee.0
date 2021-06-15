@@ -1,72 +1,49 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v4 7/8] tpm_ftpm_tee: Free and unregister TEE shared
- memory during kexec
-Date: Tue, 15 Jun 2021 16:04:11 +0300
-Message-ID: <20210615130411.hvpnaxnhimjloiz3@kernel.org>
-In-Reply-To: <20210610210913.536081-8-tyhicks@linux.microsoft.com>
+Subject: Re: [PATCH v5 0/8] tee: Improve support for kexec and kdump
+Date: Tue, 15 Jun 2021 08:37:34 -0500
+Message-ID: <20210615133734.GY4910@sequoia>
+In-Reply-To: <
+ <CAHUa44ErgoxT3L1W-ouoQwUg1fNC-zagOOgy=KBuGN_pETnYaw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7036243450603784033=="
+Content-Type: multipart/mixed; boundary="===============2846998839981577850=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7036243450603784033==
+--===============2846998839981577850==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 10, 2021 at 04:09:12PM -0500, Tyler Hicks wrote:
-> dma-buf backed shared memory cannot be reliably freed and unregistered
-> during a kexec operation even when tee_shm_free() is called on the shm
-> from a .shutdown hook. The problem occurs because dma_buf_put() calls
-> fput() which then uses task_work_add(), with the TWA_RESUME parameter,
-> to queue tee_shm_release() to be called before the current task returns
-> to user mode. However, the current task never returns to user mode
-> before the kexec completes so the memory is never freed nor
-> unregistered.
+On 2021-06-15 09:23:25, Jens Wiklander wrote:
+> It looks like we're almost done now. Thanks for your patience to see
+> this through.
 >=20
-> Use tee_shm_alloc_kernel_buf() to avoid dma-buf backed shared memory
-> allocation so that tee_shm_free() can directly call tee_shm_release().
-> This will ensure that the shm can be freed and unregistered during a
-> kexec operation.
->=20
-> Fixes: 09e574831b27 ("tpm/tpm_ftpm_tee: A driver for firmware TPM running i=
-nside TEE")
-> Fixes: 1760eb689ed6 ("tpm/tpm_ftpm_tee: add shutdown call back")
-> Signed-off-by: Tyler Hicks <tyhicks@linux.microsoft.com>
+> I suppose it makes most sense to take this via my tree, but before I
+> can do that I'll need acks from the maintainers of
+> drivers/char/tpm/tpm_ftpm_tee.c ("tpm_ftpm_tee: Free and unregister
+> TEE shared memory during kexec") and
+> drivers/firmware/broadcom/tee_bnxt_fw.c ("firmware: tee_bnxt: Release
+> TEE shm, session, and context during kexec").
 
+@Rafa=C5=82 Mi=C5=82ecki, we just need an ack from you for the tee_bnxt_fw.c
+change:
 
-Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
+ https://lore.kernel.org/lkml/20210614223317.999867-9-tyhicks(a)linux.microso=
+ft.com/
 
-> ---
->  drivers/char/tpm/tpm_ftpm_tee.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+Jarkko just gave us an ack for tpm_ftpm_tee.c on the v4 series:
+
+ https://lore.kernel.org/lkml/20210615130411.hvpnaxnhimjloiz3(a)kernel.org/
+
+The patch tpm_ftpm_tee.c patch didn't change from v4 to v5 and the
+underlying concept of not using TEE_SHM_DMA_BUF remained the same so I
+don't think we need a separate v5 ack.
+
+Tyler
+
 >=20
-> diff --git a/drivers/char/tpm/tpm_ftpm_tee.c b/drivers/char/tpm/tpm_ftpm_te=
-e.c
-> index 2ccdf8ac6994..6e3235565a4d 100644
-> --- a/drivers/char/tpm/tpm_ftpm_tee.c
-> +++ b/drivers/char/tpm/tpm_ftpm_tee.c
-> @@ -254,11 +254,11 @@ static int ftpm_tee_probe(struct device *dev)
->  	pvt_data->session =3D sess_arg.session;
-> =20
->  	/* Allocate dynamic shared memory with fTPM TA */
-> -	pvt_data->shm =3D tee_shm_alloc(pvt_data->ctx,
-> -				      MAX_COMMAND_SIZE + MAX_RESPONSE_SIZE,
-> -				      TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
-> +	pvt_data->shm =3D tee_shm_alloc_kernel_buf(pvt_data->ctx,
-> +						 MAX_COMMAND_SIZE +
-> +						 MAX_RESPONSE_SIZE);
->  	if (IS_ERR(pvt_data->shm)) {
-> -		dev_err(dev, "%s: tee_shm_alloc failed\n", __func__);
-> +		dev_err(dev, "%s: tee_shm_alloc_kernel_buf failed\n", __func__);
->  		rc =3D -ENOMEM;
->  		goto out_shm_alloc;
->  	}
-> --=20
-> 2.25.1
->=20
+> Cheers,
+> Jens
 >=20
 
-/Jarkko
-
---===============7036243450603784033==--
+--===============2846998839981577850==--
 
