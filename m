@@ -1,41 +1,69 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 0/8] tee: Improve support for kexec and kdump
-Date: Tue, 15 Jun 2021 07:15:58 -0700
-Message-ID: <944c1df8-3e9f-0026-c83c-d778f42fa1b3@gmail.com>
-In-Reply-To: <20210615133734.GY4910@sequoia>
+Subject: [PATCH v2 0/7] Asynchronous notifications from secure world
+Date: Wed, 16 Jun 2021 12:36:42 +0200
+Message-ID: <20210616103649.2662395-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1700815372789537888=="
+Content-Type: multipart/mixed; boundary="===============7973363058841415042=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1700815372789537888==
+--===============7973363058841415042==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
+This adds support for asynchronous notifications from OP-TEE in secure
+world to the OP-TEE driver. This allows a design with a top half and bottom
+half type of driver where the top half runs in secure interrupt context and
+a notifications tells normal world to schedule a yielding call to do the
+bottom half processing.
 
-On 6/15/2021 6:37 AM, Tyler Hicks wrote:
-> On 2021-06-15 09:23:25, Jens Wiklander wrote:
->> It looks like we're almost done now. Thanks for your patience to see
->> this through.
->>
->> I suppose it makes most sense to take this via my tree, but before I
->> can do that I'll need acks from the maintainers of
->> drivers/char/tpm/tpm_ftpm_tee.c ("tpm_ftpm_tee: Free and unregister
->> TEE shared memory during kexec") and
->> drivers/firmware/broadcom/tee_bnxt_fw.c ("firmware: tee_bnxt: Release
->> TEE shm, session, and context during kexec").
->=20
-> @Rafa=C5=82 Mi=C5=82ecki, we just need an ack from you for the tee_bnxt_fw.c
-> change:
->=20
->  https://lore.kernel.org/lkml/20210614223317.999867-9-tyhicks(a)linux.micro=
-soft.com/
+An interrupt is used to notify the driver that there are asynchronous
+notifications pending.
 
-Rafal is listed as the maintainer of drivers/firmware/broadcom/ but he
-did not author that file, Vikas did, adding him.
+v2:
+* Added documentation
+* Converted optee bindings to json-schema and added interrupt property
+* Configure notification interrupt from DT instead of getting it
+  from secure world, suggested by Ard Biesheuvel <ardb@kernel.org>.
+
+Thanks,
+Jens
+
+Jens Wiklander (7):
+  docs: staging/tee.rst: add a section on OP-TEE notifications
+  dt-bindings: arm: Convert optee binding to json-schema
+  dt-bindings: arm: optee: add interrupt property
+  tee: fix put order in teedev_close_context()
+  tee: add tee_dev_open_helper() primitive
+  optee: separate notification functions
+  optee: add asynchronous notifications
+
+ .../bindings/arm/firmware/linaro,optee-tz.txt |  31 ---
+ .../arm/firmware/linaro,optee-tz.yaml         |  57 +++++
+ Documentation/staging/tee.rst                 |  27 +++
+ drivers/tee/optee/Makefile                    |   1 +
+ drivers/tee/optee/call.c                      |  27 +++
+ drivers/tee/optee/core.c                      |  87 +++++--
+ drivers/tee/optee/notif.c                     | 226 ++++++++++++++++++
+ drivers/tee/optee/optee_msg.h                 |   9 +
+ drivers/tee/optee/optee_private.h             |  23 +-
+ drivers/tee/optee/optee_rpc_cmd.h             |  31 +--
+ drivers/tee/optee/optee_smc.h                 |  75 +++++-
+ drivers/tee/optee/rpc.c                       |  73 +-----
+ drivers/tee/tee_core.c                        |  37 ++-
+ include/linux/tee_drv.h                       |  27 +++
+ 14 files changed, 576 insertions(+), 155 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro,opt=
+ee-tz.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro,opt=
+ee-tz.yaml
+ create mode 100644 drivers/tee/optee/notif.c
+
 --=20
-Florian
+2.31.1
 
---===============1700815372789537888==--
+
+--===============7973363058841415042==--
 
