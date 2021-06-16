@@ -1,69 +1,126 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v2 1/7] docs: staging/tee.rst: add a section on OP-TEE notifications
-Date: Wed, 16 Jun 2021 12:36:43 +0200
-Message-ID: <20210616103649.2662395-2-jens.wiklander@linaro.org>
+Subject: [PATCH v2 2/7] dt-bindings: arm: Convert optee binding to json-schema
+Date: Wed, 16 Jun 2021 12:36:44 +0200
+Message-ID: <20210616103649.2662395-3-jens.wiklander@linaro.org>
 In-Reply-To: <20210616103649.2662395-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7299559084996603706=="
+Content-Type: multipart/mixed; boundary="===============4394408521546805173=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7299559084996603706==
+--===============4394408521546805173==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Adds a section on notifications used by OP-TEE, synchronous and
-asynchronous.
+Converts the optee binding to use DT schema format.
 
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- Documentation/staging/tee.rst | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ .../bindings/arm/firmware/linaro,optee-tz.txt | 31 ------------
+ .../arm/firmware/linaro,optee-tz.yaml         | 49 +++++++++++++++++++
+ 2 files changed, 49 insertions(+), 31 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro,opt=
+ee-tz.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro,opt=
+ee-tz.yaml
 
-diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
-index 4d4b5f889603..37bdd097336f 100644
---- a/Documentation/staging/tee.rst
-+++ b/Documentation/staging/tee.rst
-@@ -184,6 +184,33 @@ order to support device enumeration. In other words, OP-=
-TEE driver invokes this
- application to retrieve a list of Trusted Applications which can be register=
-ed
- as devices on the TEE bus.
-=20
-+OP-TEE notifications
-+--------------------
+diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.t=
+xt b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.txt
+deleted file mode 100644
+index d38834c67dff..000000000000
+--- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.txt
++++ /dev/null
+@@ -1,31 +0,0 @@
+-OP-TEE Device Tree Bindings
+-
+-OP-TEE is a piece of software using hardware features to provide a Trusted
+-Execution Environment. The security can be provided with ARM TrustZone, but
+-also by virtualization or a separate chip.
+-
+-We're using "linaro" as the first part of the compatible property for
+-the reference implementation maintained by Linaro.
+-
+-* OP-TEE based on ARM TrustZone required properties:
+-
+-- compatible     : should contain "linaro,optee-tz"
+-
+-- method         : The method of calling the OP-TEE Trusted OS. Permitted
+-                   values are:
+-
+-                   "smc" : SMC #0, with the register assignments specified
+-		           in drivers/tee/optee/optee_smc.h
+-
+-                   "hvc" : HVC #0, with the register assignments specified
+-		           in drivers/tee/optee/optee_smc.h
+-
+-
+-
+-Example:
+-	firmware {
+-		optee {
+-			compatible =3D "linaro,optee-tz";
+-			method =3D "smc";
+-		};
+-	};
+diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.y=
+aml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+new file mode 100644
+index 000000000000..c931b030057f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+@@ -0,0 +1,49 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/arm/firmware/linaro,optee-tz.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+There are two kinds of notifications that secure world can use to make
-+normal world aware of some event.
++title: OP-TEE Device Tree Bindings
 +
-+1. Synchronous notifications delivered with ``OPTEE_RPC_CMD_NOTIFICATION``
-+   using the ``OPTEE_RPC_NOTIFICATION_SEND`` parameter.
-+2. Asynchronous notifications delivered with a combination of a non-secure
-+   interrupt and a fast call from the non-secure interrupt handler.
++maintainers:
++  - Jens Wiklander <jens.wiklander@linaro.org>
 +
-+Synchronous notifications are limited by depending on RPC for delivery,
-+this is only usable when secure world is entered with a yielding call via
-+``OPTEE_SMC_CALL_WITH_ARG``. This excludes such notifications from secure
-+world interrupt handlers.
++description: |
++  OP-TEE is a piece of software using hardware features to provide a Trusted
++  Execution Environment. The security can be provided with ARM TrustZone, but
++  also by virtualization or a separate chip.
 +
-+An asynchronous notification is delivered via a non-secure interrupt to an
-+interrupt handler registered in the OP-TEE driver. The actual notification
-+value are retrieved with the fast call ``OPTEE_SMC_GET_ASYNC_NOTIF_VALUE``.
++properties:
++  $nodename:
++    const: optee
++  compatible:
++      oneOf:
++        - description:
++            We're using "linaro" as the first part of the compatible property
++            for the reference implementation maintained by Linaro.
++          const: linaro,optee-tz
 +
-+One notification value ``OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF`` has a
-+special meaning. When this value is received it means that normal world is
-+supposed to make a yielding call ``OPTEE_MSG_CMD_DO_BOTTOM_HALF``. This
-+call is done from the thread assisting the interrupt handler. This is a
-+building block for OP-TEE OS in secure world to implement the top half and
-+bottom half style of device drivers.
++  method:
++    description: The method of calling the OP-TEE Trusted OS.
++    $ref: /schemas/types.yaml#/definitions/string-array
++    oneOf:
++      - description: |
++          SMC #0, with the register assignments specified in
++          in drivers/tee/optee/optee_smc.h
++        const: smc
++      - description: |
++          HVC #0, with the register assignments specified in
++          in drivers/tee/optee/optee_smc.h
++        const: hvc
 +
- AMD-TEE driver
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=20
++additionalProperties: false
++
++examples:
++  - |
++    firmware {
++      optee {
++        compatible =3D "linaro,optee-tz";
++        method =3D "smc";
++      };
++    };
 --=20
 2.31.1
 
 
---===============7299559084996603706==--
+--===============4394408521546805173==--
 
