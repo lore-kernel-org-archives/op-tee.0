@@ -1,34 +1,63 @@
 From: Rob Herring <robh@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2 2/7] dt-bindings: arm: Convert optee binding to json-schema
-Date: Wed, 16 Jun 2021 10:05:14 -0600
-Message-ID: <20210616160514.GA3472903@robh.at.kernel.org>
-In-Reply-To: <20210616103649.2662395-3-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v2 3/7] dt-bindings: arm: optee: add interrupt property
+Date: Wed, 16 Jun 2021 10:05:57 -0600
+Message-ID: <20210616160557.GB3472903@robh.at.kernel.org>
+In-Reply-To: <20210616103649.2662395-4-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4163528793467290155=="
+Content-Type: multipart/mixed; boundary="===============6237404310063420116=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4163528793467290155==
+--===============6237404310063420116==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 16, 2021 at 12:36:44PM +0200, Jens Wiklander wrote:
-> Converts the optee binding to use DT schema format.
+On Wed, Jun 16, 2021 at 12:36:45PM +0200, Jens Wiklander wrote:
+> Adds an optional interrupt property to the optee binding.
 >=20
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
->  .../bindings/arm/firmware/linaro,optee-tz.txt | 31 ------------
->  .../arm/firmware/linaro,optee-tz.yaml         | 49 +++++++++++++++++++
->  2 files changed, 49 insertions(+), 31 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro,o=
-ptee-tz.txt
->  create mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro,o=
-ptee-tz.yaml
+>  .../devicetree/bindings/arm/firmware/linaro,optee-tz.yaml | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz=
+.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> index c931b030057f..3efbe11b637d 100644
+> --- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> +++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> @@ -24,6 +24,9 @@ properties:
+>              for the reference implementation maintained by Linaro.
+>            const: linaro,optee-tz
+> =20
+> +  interrupts:
+> +    maxItems: 1
+> +
+>    method:
+>      description: The method of calling the OP-TEE Trusted OS.
+>      $ref: /schemas/types.yaml#/definitions/string-array
+> @@ -37,6 +40,10 @@ properties:
+>            in drivers/tee/optee/optee_smc.h
+>          const: hvc
+> =20
+> +required:
+> +  - compatible
+> +  - method
+> +
 
-Other than the indentation,
+This should go in the first patch.
 
-Reviewed-by: Rob Herring <robh@kernel.org>=20
+>  additionalProperties: false
+> =20
+>  examples:
+> @@ -45,5 +52,6 @@ examples:
+>        optee {
+>          compatible =3D "linaro,optee-tz";
+>          method =3D "smc";
+> +        interrupts =3D <0 187 4>;
+>        };
+>      };
+> --=20
+> 2.31.1
 
---===============4163528793467290155==--
+--===============6237404310063420116==--
 
