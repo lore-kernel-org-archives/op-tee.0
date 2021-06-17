@@ -1,107 +1,63 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/7] Asynchronous notifications from secure world
-Date: Thu, 17 Jun 2021 08:10:01 +0200
+Subject: Linaro OP-TEE Contributions meeting June 2021
+Date: Thu, 17 Jun 2021 10:07:41 +0200
 Message-ID: 
- <CAHUa44EeAENHv+CxtXeLuqX_NGWW6w-6P8D-BLsb69+XmGaqEQ@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYMrxNfR09doWQgYKCQSYKyUMVKqSTPuRYn=-nueY9pSvQ@mail.gmail.com>>
+ <CA+EyddZvYo-AY2Db--z30XqR39vKsLetdyGTjbJYXjJ=3W0eEg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1541902870465316032=="
+Content-Type: multipart/mixed; boundary="===============1896350356148386922=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1541902870465316032==
+--===============1896350356148386922==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit,
+Hi,
 
-On Thu, Jun 17, 2021 at 6:33 AM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> Hi Jens,
->
-> On Wed, 16 Jun 2021 at 16:07, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > Hi all,
-> >
-> > This adds support for asynchronous notifications from OP-TEE in secure
-> > world to the OP-TEE driver. This allows a design with a top half and bott=
-om
-> > half type of driver where the top half runs in secure interrupt context a=
-nd
-> > a notifications tells normal world to schedule a yielding call to do the
-> > bottom half processing.
-> >
-> > An interrupt is used to notify the driver that there are asynchronous
-> > notifications pending.
-> >
->
-> It looks like a nice feature. I would like to get hands on with this.
-> Can I test this feature on Qemu?
+The next LOC monthly meeting is planned to take place Thursday June
+24th(a)17.00 (UTC+2).
 
-Absolutely, you can get this into the normal OP-TEE development repo setup wi=
-th:
-repo init -u https://github.com/OP-TEE/manifest.git -m default.xml
-repo sync
-Update optee_os with
-https://github.com/jenswi-linaro/optee_os/tree/async_notif_v2
-Update linux with https://github.com/jenswi-linaro/linux-1/tree/async_notif_v2
-cd build
-make all -j...
-make run-only
+We will have Mingshen Sun from Baidu talking about their efforts with
+OP-TEE and Rust. At Linaro Connect in San Diego 2019 Mingshen gave a
+presentation about this [1], but since then things have been improved and
+Baidu has officially donated their work to ASF which is called "Apache
+Teaclave TrustZone SDK (incubating) 0.1.0" [2]. Etienne (ST) and I have
+recently had a discussion with Mingshen as well, where our goal was to
+better understand what it would take to bring Baidu's OP-TEE Rust
+enablement into the official OP-TEE upstream tree. Doing so would enable
+official Trusted Application development for OP-TEE using Rust.
 
-If you type anything at the secure console you'll notice how it
-changes behaviour once the Linux kernel has booted.
+We'll have no other topics this month, the entire hour is dedicated to this
+discussion. If you have any questions, we'll take them at the end of the
+call. Alternatively, feel free to add your question into the meeting notes
+whenever you like (anyone can edit).
 
-Cheers,
-Jens
+Note that we don't send out invites for this meeting, so if
+you're interested in attending, then please follow the "Connection details"
+link below that will take you to the Google calendar, where you can add the
+invite yourself by clicking on the meeting itself and then scroll down and
+click on "copy to my calendar=C2=BB".
 
->
-> -Sumit
->
-> > v2:
-> > * Added documentation
-> > * Converted optee bindings to json-schema and added interrupt property
-> > * Configure notification interrupt from DT instead of getting it
-> >   from secure world, suggested by Ard Biesheuvel <ardb@kernel.org>.
-> >
-> > Thanks,
-> > Jens
-> >
-> > Jens Wiklander (7):
-> >   docs: staging/tee.rst: add a section on OP-TEE notifications
-> >   dt-bindings: arm: Convert optee binding to json-schema
-> >   dt-bindings: arm: optee: add interrupt property
-> >   tee: fix put order in teedev_close_context()
-> >   tee: add tee_dev_open_helper() primitive
-> >   optee: separate notification functions
-> >   optee: add asynchronous notifications
-> >
-> >  .../bindings/arm/firmware/linaro,optee-tz.txt |  31 ---
-> >  .../arm/firmware/linaro,optee-tz.yaml         |  57 +++++
-> >  Documentation/staging/tee.rst                 |  27 +++
-> >  drivers/tee/optee/Makefile                    |   1 +
-> >  drivers/tee/optee/call.c                      |  27 +++
-> >  drivers/tee/optee/core.c                      |  87 +++++--
-> >  drivers/tee/optee/notif.c                     | 226 ++++++++++++++++++
-> >  drivers/tee/optee/optee_msg.h                 |   9 +
-> >  drivers/tee/optee/optee_private.h             |  23 +-
-> >  drivers/tee/optee/optee_rpc_cmd.h             |  31 +--
-> >  drivers/tee/optee/optee_smc.h                 |  75 +++++-
-> >  drivers/tee/optee/rpc.c                       |  73 +-----
-> >  drivers/tee/tee_core.c                        |  37 ++-
-> >  include/linux/tee_drv.h                       |  27 +++
-> >  14 files changed, 576 insertions(+), 155 deletions(-)
-> >  delete mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro=
-,optee-tz.txt
-> >  create mode 100644 Documentation/devicetree/bindings/arm/firmware/linaro=
-,optee-tz.yaml
-> >  create mode 100644 drivers/tee/optee/notif.c
-> >
-> > --
-> > 2.31.1
-> >
+Another reminder that people might not have realized is that we record all
+monthly LOC meetings, so in case you've missed a call or want to go back,
+then you'll find the Zoom link and the password for it in the meeting notes
+(link below as well).
 
---===============1541902870465316032==--
+[1] https://connect.linaro.org/resources/san19/san19-513/
+[2]
+https://teaclave.apache.org/blog/2021-06-15-announcing-teaclave-trustzone-sdk=
+-0-1-0/
+
+Meeting details:
+---------------
+Date/time: Thursday June 24th(a)17.00 (UTC+2)
+https://everytimezone.com/s/08f4fb4e
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
+Project page: https://www.linaro.org/projects/#LOC
+
+Regards,
+Joakim on behalf of the Linaro OP-TEE team
+
+--===============1896350356148386922==--
 
