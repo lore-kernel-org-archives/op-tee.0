@@ -1,74 +1,49 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 3/7] dt-bindings: arm: optee: add interrupt property
-Date: Tue, 22 Jun 2021 10:41:45 +0200
+Subject: Re: [PATCH] MAINTAINERS: Add myself as TEE subsystem reviewer
+Date: Tue, 22 Jun 2021 15:04:38 +0200
 Message-ID: 
- <CAHUa44ELTefa32oa3Zq+gFG+G1hfjMyMY9sf_fDPFmphf9-APw@mail.gmail.com>
-In-Reply-To: <20210616160557.GB3472903@robh.at.kernel.org>
+ <CAHUa44ENTG0zcsekc-me6nSLFVsXBsOChWxU+gdEXbGPDaY+CQ@mail.gmail.com>
+In-Reply-To: <20210615121103.2361341-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4945337677963661689=="
+Content-Type: multipart/mixed; boundary="===============1556382455914611740=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4945337677963661689==
+--===============1556382455914611740==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 16, 2021 at 6:06 PM Rob Herring <robh@kernel.org> wrote:
+On Tue, Jun 15, 2021 at 2:11 PM Sumit Garg <sumit.garg@linaro.org> wrote:
 >
-> On Wed, Jun 16, 2021 at 12:36:45PM +0200, Jens Wiklander wrote:
-> > Adds an optional interrupt property to the optee binding.
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  .../devicetree/bindings/arm/firmware/linaro,optee-tz.yaml | 8 ++++++++
-> >  1 file changed, 8 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-=
-tz.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-> > index c931b030057f..3efbe11b637d 100644
-> > --- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-> > +++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-> > @@ -24,6 +24,9 @@ properties:
-> >              for the reference implementation maintained by Linaro.
-> >            const: linaro,optee-tz
-> >
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> >    method:
-> >      description: The method of calling the OP-TEE Trusted OS.
-> >      $ref: /schemas/types.yaml#/definitions/string-array
-> > @@ -37,6 +40,10 @@ properties:
-> >            in drivers/tee/optee/optee_smc.h
-> >          const: hvc
-> >
-> > +required:
-> > +  - compatible
-> > +  - method
-> > +
+> Since I have been helping with TEE subsystem reviews, so make that role
+> official.
 >
-> This should go in the first patch.
+> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 
-OK, that will be covered when I rebase the next patch set on what's
-now be78329717e4 ("dt-bindings: arm: firmware: Convert linaro,optee-tz
-to json schema") in linux-next.
+Thank you Sumit, I'm picking up this.
 
-Thanks,
+Cheers,
 Jens
 
+> ---
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> >  additionalProperties: false
-> >
-> >  examples:
-> > @@ -45,5 +52,6 @@ examples:
-> >        optee {
-> >          compatible =3D "linaro,optee-tz";
-> >          method =3D "smc";
-> > +        interrupts =3D <0 187 4>;
-> >        };
-> >      };
-> > --
-> > 2.31.1
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index bd7aff0c120f..1e43bc497a15 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -17916,6 +17916,7 @@ F:      include/media/i2c/tw9910.h
+>
+>  TEE SUBSYSTEM
+>  M:     Jens Wiklander <jens.wiklander@linaro.org>
+> +R:     Sumit Garg <sumit.garg@linaro.org>
+>  L:     op-tee(a)lists.trustedfirmware.org
+>  S:     Maintained
+>  F:     Documentation/staging/tee.rst
+> --
+> 2.25.1
+>
 
---===============4945337677963661689==--
+--===============1556382455914611740==--
 
