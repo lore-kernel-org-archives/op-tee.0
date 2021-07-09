@@ -1,21 +1,19 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Etienne CARRIERE <etienne.carriere@st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2 0/7] Asynchronous notifications from secure world
-Date: Thu, 08 Jul 2021 18:26:30 +0530
-Message-ID: 
- <CAFA6WYNF_GkRiqn+H5UO6O4ZEkZ16xO=JkV6LOvgvvaVqwFtxw@mail.gmail.com>
-In-Reply-To: <20210707175123.xdotr3lsy3e32plm@bogus>
+Date: Fri, 09 Jul 2021 08:05:57 +0000
+Message-ID: <PAXPR10MB4687E737261282B78600272DFD189@PAXPR10MB4687.EURPRD10.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1399844137566165095=="
+Content-Type: multipart/mixed; boundary="===============7463881278730641336=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1399844137566165095==
+--===============7463881278730641336==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sudeep,
+Hello Sudeep and all,
 
-On Wed, 7 Jul 2021 at 23:22, Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Wed, 7 Jul 2021 at 19:52, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
 > Hi Sumit,
 >
@@ -50,85 +48,34 @@ On Wed, 7 Jul 2021 at 23:22, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
 > I can understand that but won't those platforms add the support both in
 > the kernel(current series) and secure world to address notifications.
-
-Agree.
-
 > While you could argue that it is small extension to what is already present
 > but I prefer they support FF-A is they need such a support instead of adding
 > custom mechanisms. It is hard to maintain and each vendor will deviate
 > from this custom mechanism and soon we will have bunch of them to handle.
+
+
+There exist armv7-a platforms that expect OP-TEE notification support and wil=
+l not move the FF-A, like the stm32mp15. This platform won't move to FF-A mai=
+nly due to the memory cost of the added SPM layer and the device physical con=
+straints.
+We have a usecase for OP-TEE notification. We're working on the integration o=
+f an SCMI server in OP-TEE. SCMI notification is a feature needed is this sco=
+pe and it requires OP-TEE async notification means as those proposed here.
+
+This OP-TEE async notif also brings a lot of value in OP-TEE as it allows a O=
+P-TEE secure thread (i.e. executing a trusted application service) to gently =
+wait on a secure interrupt (as a slow bus transaction completion or many othe=
+r usecase) with the CPU relaxed. This support is provided by the proposed ser=
+ies. I believe existing device should be able to leverage this OP-TEE feature=
+ without needing their OP-TEE to move to the new FF-A interface.
+
+Regards,
+Etienne
+
 >
+> [...]
 
-I haven't had a deep dive into FF-A spec, maybe you can clarify on the
-following queries regarding Armv7 compatibility:
-- As you may be aware, secure monitor implementation on Armv7 is
-tightly coupled to trusted OS (part of the same code base), so would
-you like each trusted OS vendor to implement a common FF-A interface?
-- IIRC, FF-A spec has the notion of multiple secure partitions, are
-those supported on Armv7? If yes then how?
+ST Restricted
 
-> > > > >
-> > > > > In general, cross world SGIs are a really bad idea. Yes, some people
-> > > > > like them. I still think they are misguided, and I don't intend to
-> > > > > provide a generic request interface for this.
-> > > >
-> > > > Okay, as I mentioned above having it specific to OP-TEE driver
-> > > > requesting secure world donated SGI would work for you?
-> > >
-> > > No. I want a proper architecture between secure and non-secure that
-> > > explain how messages are conveyed between the two world, how
-> > > signalling is done, how CPU PM is handled, how targeting is
-> > > negotiated. And at the end of the day, this is starting to look a lot
-> > > like FFA.
-> >
-> > AFAIK when FFA comes in picture than OP-TEE will use the standard
-> > interface provided by FFA ABIs but if FFA isn't supported by a
-> > particular platform (eg. based on Armv7) then we need to rely on TEE
-> > specific ABI like what OP-TEE currently provides:
-> >
->
-> Who are asking for this ? Can we ask them to migrate to FF-A if this
-> (new) notification support is needed on their platforms ? It is help to
-> know the requesters so that they can be included in FF-A spec discussions.
->
-
-I would let Jens answer that.
-
-> > > that. You'll even get to keep the pieces once it breaks. But if you
-> > > are going to invent a new universal way of signalling things across
-> > > world, you'd better start specifying things the right way, taking into
-> > > considerations systems where the interrupt controller doesn't allow
-> > > cross-world signalling.
-> >
-> > As I mentioned above, this patch-set adds an OP-TEE specific
-> > notifications feature. AFAIK, the interrupt controllers supported by
-> > OP-TEE (GICv2, GICv3 etc.) don't restrict cross-world signaling.
-> >
-> > So given the explanation above, if you still think requesting an SGI
-> > as an IRQ by drivers isn't allowed then I am fine with the approach
-> > that Jens has already implemented in this patch-set to use platform
-> > specific SPI.
-> >
->
-> And I assume these platforms in question have SPI to spare and way to
-> trigger it from secure world ?
->
-
-Yeah, that is the requirement on the platform if we rely on SPI (Qemu
-test example [1]) which wouldn't be the case if we use secure world
-donated SGI.
-
-BTW, is this notification mechanism discussed in the case of FF-A? If
-yes, can you throw some light on that?
-
-[1] https://github.com/jenswi-linaro/optee_os/commit/9007f8184deb9b7995da8d59=
-0779cb3ba2783394
-
--Sumit
-
-> --
-> Regards,
-> Sudeep
-
---===============1399844137566165095==--
+--===============7463881278730641336==--
 
