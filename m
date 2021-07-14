@@ -1,100 +1,115 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/7] Asynchronous notifications from secure world
-Date: Tue, 13 Jul 2021 12:11:43 +0100
-Message-ID: <20210713111143.g6ztdakegs6ck25s@bogus>
-In-Reply-To: <=?utf-8?q?=3CPAXPR10MB4687E737261282B78600272DFD189=40PAXPR10MB?=
- =?utf-8?q?4687=2EEURPRD10=2EPROD=2EOUTLOOK=2ECOM=3E?=>
+Subject: Re: [PATCH v2 0/5] Add FF-A support in OP-TEE driver
+Date: Wed, 14 Jul 2021 16:39:07 +0530
+Message-ID: 
+ <CAFA6WYPpJWRJbca_MSziEXZRRK5eK8NiU68zBeBxh4Fvn+NCvA@mail.gmail.com>
+In-Reply-To: <20210527081404.1433177-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7307134784949922038=="
+Content-Type: multipart/mixed; boundary="===============7296104888205269759=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7307134784949922038==
+--===============7296104888205269759==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 09, 2021 at 08:05:57AM +0000, Etienne CARRIERE wrote:
-> Hello Sudeep and all,
->=20
-> On Wed, 7 Jul 2021 at 19:52, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> > Hi Sumit,
-> >
-> > I was holding off you reply as I didn't have all the background on this.
-> > Achin did mention that this is preparatory work for FFA notifications.
-> > I did mention to him that this is more than that, it is custom extension
-> > to address what FF-A notification is trying to in standard way.
-> >
-> > I share same opinion as Marc Z.
-> >
-> > On Wed, Jul 07, 2021 at 11:22:23AM +0530, Sumit Garg wrote:
-> > > On Tue, 6 Jul 2021 at 18:16, Marc Zyngier <maz@kernel.org> wrote:
-> >
-> > [...]
-> >
-> > > >
-> > > > I don't care about OP-TEE. If you are proposing a contract between S
-> > > > and NS, it has to be TEE and OS independent. That's how the
-> > > > architecture works.
-> > > >
-> > >
-> > > Agree, here we are not proposing a common contract among the S and NS
-> > > world that every TEE (based on Arm TrustZone) will use to communicate
-> > > with REE (Linux in our case) but rather an OP-TEE specific
-> > > notifications feature that is built on top of OP-TEE specific ABIs.
-> > >
-> > > And I can see your arguments coming from an FFA perspective but there
-> > > are platforms like the ones based on Armv7 which don't support FFA
-> > > ABI. Maybe Jens can elaborate how this feature will fit in when FFA
-> > > comes into picture?
-> > >
-> >
-> > I can understand that but won't those platforms add the support both in
-> > the kernel(current series) and secure world to address notifications.
-> > While you could argue that it is small extension to what is already prese=
-nt
-> > but I prefer they support FF-A is they need such a support instead of add=
-ing
-> > custom mechanisms. It is hard to maintain and each vendor will deviate
-> > from this custom mechanism and soon we will have bunch of them to handle.
+Hi Jens,
+
+This patch-set skipped my inbox as I was not on the CC list. So while
+reading through ML archives, I found it.
+
+On Thu, 27 May 2021 at 13:45, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
 >
-> There exist armv7-a platforms that expect OP-TEE notification support and
-> will not move the FF-A, like the stm32mp15. This platform won't move to FF-A
-> mainly due to the memory cost of the added SPM layer and the device physical
-> constraints.
-
-Fair enough on the use-case and the analysis for not being able to use FF-A.
-As you may already know it doesn't simply this problem. This has been
-discussed for years and FF-A was assumed to be the solution when FF-A
-spec work started.
-
-> We have a usecase for OP-TEE notification. We're working on the integration
-> of an SCMI server in OP-TEE. SCMI notification is a feature needed is this
-> scope and it requires OP-TEE async notification means as those proposed
-> here.
+> Hi all,
+>
+> This adds supports for the OP-TEE driver to communicate with secure world
+> using FF-A [1] as transport.
+>
+> These patches are based on the FF-A v7 patch set by Sudeep Holla [2] [3].
 >
 
-I am aware of this use-case, I understand. But I can only share rants
-which I know doesn't help much.
+I could see the FF-A driver support merged upstream. Is this patch-set
+directly applicable on the upstream kernel? If yes, can you also share
+steps to test it on Qemu?
 
-> This OP-TEE async notif also brings a lot of value in OP-TEE as it allows a
-> OP-TEE secure thread (i.e. executing a trusted application service) to
-> gently wait on a secure interrupt (as a slow bus transaction completion or
-> many other usecase) with the CPU relaxed. This support is provided by the
-> proposed series. I believe existing device should be able to leverage this
-> OP-TEE feature without needing their OP-TEE to move to the new FF-A
-> interface.
+> There is one change to the TEE subsystem with "tee: add sec_world_id to
+> struct tee_shm" to add support for holding globally unique handle assigned
+> by the FF-A. This is a field that I believe could useful for the AMDTEE
+> driver too.
 >
+> For communication the OP-TEE message protocol is still used, but with a new
+> type of memory reference, struct optee_msg_param_fmem, to carry the
+> information needed by FF-A. The OP-TEE driver is refactored internally with
+> to sets of callbacks, one for the old SMC based communication and another
+> set with FF-A as transport.
 
-While I agree these are nice to have in OPTEE, the timing is just odd.
+Since now we have two ABIs towards secure world:
+- OP-TEE ABI
+- FF-A ABI
 
-We are trying hard to push FF-A as standard solution to address all such
-issues that couldn't be solved with OPTEE + DT, now we are back to address
-the same in parallel to FF-A.
+I think it would be better to have ABI specific APIs separated from
+core.c to have a clear view of abstraction. How about new file names
+as:
+- optee_{msg/abi}.c
+- ffa_{msg/abi}.c
 
---
-Regards,
-Sudeep
+>
+> There is also a difference in how the drivers are instantiated. With the
+> SMC based transport we have a platform driver, module_platform_driver(),
+> today which we're keeping as is for this configuration. In a FF-A system we
+> have a FF-A driver, module_ffa_driver(), instead.
+>
+> The OP-TEE driver can be compiled for both targets at the same time and
+> it's up to runtime configuration (device tree or ACPI) to decide how it's
+> initialized.
 
---===============7307134784949922038==--
+Can you elaborate on different device tree or ACPI configuration?
+AFAIR, FF-A utilizes bus enumeration to scan OP-TEE UUID.
+
+-Sumit
+
+>
+> Thanks,
+> Jens
+>
+> [1] https://developer.arm.com/documentation/den0077/latest
+> [2] https://lore.kernel.org/linux-arm-kernel/20210521151033.181846-1-sudeep=
+.holla(a)arm.com/
+> [3] git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.git v5=
+.13/ffa
+>
+> v1->v2:
+> - Rebased to the FF-A v7 patch
+> - Fixed a couple of reports from kernel test robot <lkp@intel.com>
+>
+> Jens Wiklander (5):
+>   tee: add sec_world_id to struct tee_shm
+>   optee: simplify optee_release()
+>   optee: refactor driver with internal callbacks
+>   optee: add a FF-A memory pool
+>   optee: add FF-A support
+>
+>  drivers/tee/optee/call.c          | 325 +++++++++++---
+>  drivers/tee/optee/core.c          | 689 ++++++++++++++++++++++++++----
+>  drivers/tee/optee/optee_ffa.h     | 153 +++++++
+>  drivers/tee/optee/optee_msg.h     |  27 +-
+>  drivers/tee/optee/optee_private.h |  88 +++-
+>  drivers/tee/optee/rpc.c           | 137 +++++-
+>  drivers/tee/optee/shm_pool.c      |  65 ++-
+>  drivers/tee/optee/shm_pool.h      |   1 +
+>  include/linux/tee_drv.h           |   7 +-
+>  9 files changed, 1326 insertions(+), 166 deletions(-)
+>  create mode 100644 drivers/tee/optee/optee_ffa.h
+>
+> --
+> 2.25.1
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel(a)lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============7296104888205269759==--
 
