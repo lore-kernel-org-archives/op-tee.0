@@ -1,34 +1,24 @@
-From: Ruchika Gupta <ruchika.gupta@linaro.org>
+From: vikas gupta <vikas.gupta@broadcom.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: LOC Monthly Meeting - Thursday July 22
-Date: Thu, 15 Jul 2021 16:04:34 +0530
-Message-ID: 
- <CANZ+81F3fdeEKYL6XqgNQQvcj7ARrfH1GK6CHOrXMnkJmh6gaA@mail.gmail.com>
+Subject: Re: [PATCH v5 8/8] firmware: tee_bnxt: Release TEE shm, session, and
+ context during kexec
+Date: Thu, 15 Jul 2021 23:14:36 +0530
+Message-ID: <FF640E0E-B4D8-4E45-88D0-0FC653E66EEA@hxcore.ol>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9058003406887891647=="
+Content-Type: multipart/mixed; boundary="===============5023712053736615242=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9058003406887891647==
+--===============5023712053736615242==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi,
 
-LOC (Linaro OP-TEE Contribution) monthly meeting is planned to take place
-on Thursday July22(a)17.00 (UTC+2).
+   The patch looks good to me
 
-Looking for topics from people. If you have anything you'd like to discuss,
-please let us know.
 
-Meeting details:
----------------
-Date/time: Thursday Jul22(a)17.00 (UTC+2)
-https://everytimezone.com/s/d926310d
-Connection details: https://www.trustedfirmware.org/meetings/
-Meeting notes: http://bit.ly/loc-notes
+   Thanks,
 
-Regards,
-Ruchika on behalf of the Linaro OP-TEE team
+   Vikas
 
---===============9058003406887891647==--
+--===============5023712053736615242==--
 
