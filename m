@@ -1,55 +1,67 @@
-From: Christoph Gellner <cgellner@de.adit-jv.com>
+From: Rafael Gameiro <rr.gameiro@campus.fct.unl.pt>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH 1/3] tee: optee: Allow to freeze the task waiting for tee-supplicant
-Date: Fri, 16 Jul 2021 17:44:58 +0200
-Message-ID: <20210716154500.10115-2-cgellner@de.adit-jv.com>
-In-Reply-To: <20210716154500.10115-1-cgellner@de.adit-jv.com>
+Subject: OP-TEE SKS
+Date: Sat, 17 Jul 2021 17:29:26 +0100
+Message-ID: 
+ <CAAwxyZ_eahZo8J2QSvbQ4xNOJwGa9YtkFCQ82OTXYSVtp00CtQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4900095059433112499=="
+Content-Type: multipart/mixed; boundary="===============1831054492675088873=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4900095059433112499==
+--===============1831054492675088873==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-When the system is going to hibernate or suspend it might happen
-that the tee-supplicant task is frozen first.
-wait_for_completion_interruptible might get stuck in this case.
-
-Add try_to_freeze to allow the waiting task to be frozen while
-waiting for the response of tee-supplicant.
-
-Signed-off-by: Christoph Gellner <cgellner@de.adit-jv.com>
----
- drivers/tee/optee/supp.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
-index 322a543b8c27..03c37bae6ac4 100644
---- a/drivers/tee/optee/supp.c
-+++ b/drivers/tee/optee/supp.c
-@@ -5,6 +5,7 @@
- #include <linux/device.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/freezer.h>
- #include "optee_private.h"
-=20
- struct optee_supp_req {
-@@ -141,6 +142,8 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func=
-, size_t num_params,
- 			req->ret =3D TEEC_ERROR_COMMUNICATION;
- 			break;
- 		}
-+
-+		try_to_freeze();
- 	}
-=20
- 	ret =3D req->ret;
---=20
-2.32.0.rc0
+Greetings,
 
 
---===============4900095059433112499==--
+
+I=E2=80=99m Rafael Gameiro, and I=E2=80=99m currently doing my Thesis in Msc =
+Computer
+Science course of FCT NOVA University of Lisbon.
+
+
+
+As the subject suggests, I have come across a presentation Linaro did some
+years ago [1]. In my thesis, I have been trying to create an attestation
+ta, that generates an attestation proof of a set of components created by
+me. To ensure trustability over this attestation service, I thought I could
+use this SKS to possibly generate a keypair, and perform the sign operation
+that I need to generate the attestation proof.
+
+I searched for this SKS on OP-TEE OS [2], OP-TEE Client [3], and OP-TEE
+Tests[4], but I did not found any TA that explicitly said it was the SKS
+that was referred in the said presentation. The only possible comparisons I
+found were the TEE_AsymmetricSignDigest etc functions, derived from GP
+internal API, and the TA PKCS#11.
+
+
+My Question is, does this SKS still exists, and if yes, where could I find
+it.
+
+If not, does one of the above mentioned libraries is a SKS "replacement"?
+If yes, which one?
+
+
+
+Thank you for your time.
+
+
+
+Best regards,
+
+Rafael Gameiro
+
+
+[1]
+https://pt.slideshare.net/linaroorg/hkg18402-build-secure-key-management-serv=
+ices-in-optee
+
+[2] https://github.com/OP-TEE/optee_os
+
+[3] https://github.com/OP-TEE/optee_client
+
+[4] https://github.com/OP-TEE/optee_test
+
+--===============1831054492675088873==--
 
