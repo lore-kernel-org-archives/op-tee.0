@@ -1,27 +1,51 @@
-From: 최호진 <tjdwls3818@naver.com>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Question about OP-TEE
-Date: Wed, 21 Jul 2021 17:21:19 +0900
-Message-ID: <27ea327a26add58a751f2334a7f7fa6@cweb006.nm.nfra.io>
+Subject: Re: LOC Monthly Meeting - Thursday July 22
+Date: Thu, 22 Jul 2021 09:56:13 +0530
+Message-ID: 
+ <CANZ+81F-jATScuQvxyhCSx=xnPksgqLLRagSkn898CpjTRqOoA@mail.gmail.com>
+In-Reply-To: <
+ <CANZ+81F3fdeEKYL6XqgNQQvcj7ARrfH1GK6CHOrXMnkJmh6gaA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1716186588533469668=="
+Content-Type: multipart/mixed; boundary="===============8297447328220884136=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1716186588533469668==
+--===============8297447328220884136==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Dear. Linaro
-=20
-hello! my name is Hojin-Choi from Korea Univ in Korea
-I have a question about optee=20
-currently werun optee with virtual machine. Although we modify 'Makefile' in =
-'build' folder for changing cortex a-15 to cortex-a9 in optee, it give error =
-message which "cortex-a9's support machines 'xilinx-zynq-a9, vexpress-a9, rea=
-lview-pbx-a9, sabrelite' do not support secure". How can we fix the error or =
-any other methods to run cortex-a9 with trustzone?=20
-=20
-best.
+Hi,
 
---===============1716186588533469668==--
+We haven't received any suggestions for topics to discuss, so no agenda. No
+agenda means no meeting and therefore I'm cancelling the LOC meeting that
+was scheduled for today.
+
+Regards,
+Ruchika on behalf of the Linaro OP-TEE team
+
+
+On Thu, 15 Jul 2021 at 16:04, Ruchika Gupta <ruchika.gupta@linaro.org>
+wrote:
+
+> Hi,
+>
+> LOC (Linaro OP-TEE Contribution) monthly meeting is planned to take place
+> on Thursday July22(a)17.00 (UTC+2).
+>
+> Looking for topics from people. If you have anything you'd like to discuss,
+> please let us know.
+>
+> Meeting details:
+> ---------------
+> Date/time: Thursday Jul22(a)17.00 (UTC+2)
+> https://everytimezone.com/s/d926310d
+> Connection details: https://www.trustedfirmware.org/meetings/
+> Meeting notes: http://bit.ly/loc-notes
+>
+> Regards,
+> Ruchika on behalf of the Linaro OP-TEE team
+>
+>
+
+--===============8297447328220884136==--
 
