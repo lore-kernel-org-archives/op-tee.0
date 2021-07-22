@@ -1,112 +1,194 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 0/5] Add FF-A support in OP-TEE driver
-Date: Thu, 22 Jul 2021 14:17:52 +0200
-Message-ID: <20210722121757.1944658-1-jens.wiklander@linaro.org>
+Subject: [PATCH v3 2/5] optee: simplify optee_release()
+Date: Thu, 22 Jul 2021 14:17:54 +0200
+Message-ID: <20210722121757.1944658-3-jens.wiklander@linaro.org>
+In-Reply-To: <20210722121757.1944658-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6582166158721355847=="
+Content-Type: multipart/mixed; boundary="===============8843911577354062436=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6582166158721355847==
+--===============8843911577354062436==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Simplifies optee_release() with a new helper function,
+optee_close_session_helper() which has been factored out from
+optee_close_session().
 
-This adds supports for the OP-TEE driver to communicate with secure world
-using FF-A [1] as transport.
+A separate optee_release_supp() is added for the supplicant device.
 
-There is one change to the TEE subsystem with "tee: add sec_world_id to
-struct tee_shm" to add support for holding globally unique handle assigned
-by the FF-A. This is a field that I believe could useful for the AMDTEE
-driver too.
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ drivers/tee/optee/call.c          | 31 ++++++++++-------
+ drivers/tee/optee/core.c          | 55 +++++++++++--------------------
+ drivers/tee/optee/optee_private.h |  1 +
+ 3 files changed, 39 insertions(+), 48 deletions(-)
 
-For communication the OP-TEE message protocol is still used, but with a new
-type of memory reference, struct optee_msg_param_fmem, to carry the
-information needed by FF-A. The OP-TEE driver is refactored internally with
-to sets of callbacks, one for the old SMC based communication and another
-set with FF-A as transport. The functions relating to the SMC based ABI
-are moved to smc_abi.c while the FF-A based ABI is added in a ffa_abi.c.
-
-There is also a difference in how the drivers are instantiated. With the
-SMC based transport we have a platform driver, module_platform_driver(),
-today which we're keeping as is for this configuration. In a FF-A system we
-have a FF-A driver, module_ffa_driver(), instead.
-
-The OP-TEE driver can be compiled for both targets at the same time and
-it's up to runtime configuration (device tree or ACPI) to decide how it's
-initialized. Note that it's only the old SMC based driver instance that
-need device tree or ACPI to initialize. The FF-A based driver relies on the
-FF-A bus instead.
-
-This can be tested QEMU
-The repo for SPMC at S-EL1 retrieved by
-repo init -u https://github.com/jenswi-linaro/manifest.git -m
-qemu_v8.xml -b ffav4_spmc
-repo sync
-# Then checkout the branch optee_ffa_v3 from
-# git://git.linaro.org/people/jens.wiklander/linux-tee.git
-# in the linux directory
-
-To build do:
-cd build
-make toolchains
-make all
-
-To boot:
-make run-only
-
-Test with xtest, perhaps only with the command "xtest 1004" in case you're
-not interested in too many tests.
-
-Thanks,
-Jens
-
-[1] https://developer.arm.com/documentation/den0077/latest
-
-v2->v3:
-- Rebased on 5.14-rc2 which now have the FF-A patches merged
-- Fixed a couple bugs in optee_shm_register() and optee_shm_unregister()
-  which where introduced in "optee: refactor driver with internal callbacks"
-  in previous the version.
-- Separated SMC ABI specifics into smc_abi.c to keep it separated from
-  the FF-A ABI functions as requested by Sumit.
-- Added the FF-A specifics in ffa_abi.c
-- Provided an implementation for optee_ffa_remove()
-
-v1->v2:
-- Rebased to the FF-A v7 patch
-- Fixed a couple of reports from kernel test robot <lkp@intel.com>
-
-Jens Wiklander (5):
-  tee: add sec_world_id to struct tee_shm
-  optee: simplify optee_release()
-  optee: refactor driver with internal callbacks
-  optee: isolate smc abi
-  optee: add FF-A support
-
- drivers/tee/optee/Makefile        |    7 +-
- drivers/tee/optee/call.c          |  415 ++-------
- drivers/tee/optee/core.c          |  673 ++-------------
- drivers/tee/optee/ffa_abi.c       |  910 ++++++++++++++++++++
- drivers/tee/optee/optee_ffa.h     |  153 ++++
- drivers/tee/optee/optee_msg.h     |   27 +-
- drivers/tee/optee/optee_private.h |  155 +++-
- drivers/tee/optee/rpc.c           |  270 +-----
- drivers/tee/optee/shm_pool.c      |   89 --
- drivers/tee/optee/shm_pool.h      |   14 -
- drivers/tee/optee/smc_abi.c       | 1301 +++++++++++++++++++++++++++++
- include/linux/tee_drv.h           |    7 +-
- 12 files changed, 2650 insertions(+), 1371 deletions(-)
- create mode 100644 drivers/tee/optee/ffa_abi.c
- create mode 100644 drivers/tee/optee/optee_ffa.h
- delete mode 100644 drivers/tee/optee/shm_pool.c
- delete mode 100644 drivers/tee/optee/shm_pool.h
- create mode 100644 drivers/tee/optee/smc_abi.c
-
--- 
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index 6e6eb836e9b6..9d8f5a95e42f 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -288,12 +288,28 @@ int optee_open_session(struct tee_context *ctx,
+ 	return rc;
+ }
+=20
+-int optee_close_session(struct tee_context *ctx, u32 session)
++int optee_close_session_helper(struct tee_context *ctx, u32 session)
+ {
+-	struct optee_context_data *ctxdata =3D ctx->data;
+ 	struct tee_shm *shm;
+ 	struct optee_msg_arg *msg_arg;
+ 	phys_addr_t msg_parg;
++
++	shm =3D get_msg_arg(ctx, 0, &msg_arg, &msg_parg);
++	if (IS_ERR(shm))
++		return PTR_ERR(shm);
++
++	msg_arg->cmd =3D OPTEE_MSG_CMD_CLOSE_SESSION;
++	msg_arg->session =3D session;
++	optee_do_call_with_arg(ctx, msg_parg);
++
++	tee_shm_free(shm);
++
++	return 0;
++}
++
++int optee_close_session(struct tee_context *ctx, u32 session)
++{
++	struct optee_context_data *ctxdata =3D ctx->data;
+ 	struct optee_session *sess;
+=20
+ 	/* Check that the session is valid and remove it from the list */
+@@ -306,16 +322,7 @@ int optee_close_session(struct tee_context *ctx, u32 ses=
+sion)
+ 		return -EINVAL;
+ 	kfree(sess);
+=20
+-	shm =3D get_msg_arg(ctx, 0, &msg_arg, &msg_parg);
+-	if (IS_ERR(shm))
+-		return PTR_ERR(shm);
+-
+-	msg_arg->cmd =3D OPTEE_MSG_CMD_CLOSE_SESSION;
+-	msg_arg->session =3D session;
+-	optee_do_call_with_arg(ctx, msg_parg);
+-
+-	tee_shm_free(shm);
+-	return 0;
++	return optee_close_session_helper(ctx, session);
+ }
+=20
+ int optee_invoke_func(struct tee_context *ctx, struct tee_ioctl_invoke_arg *=
+arg,
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index ddb8f9ecf307..949223b214c3 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -263,59 +263,42 @@ static int optee_open(struct tee_context *ctx)
+ 	return 0;
+ }
+=20
+-static void optee_release(struct tee_context *ctx)
++static void optee_release_helper(struct tee_context *ctx,
++				 int (*close_session)(struct tee_context *ctx,
++						      u32 session))
+ {
+ 	struct optee_context_data *ctxdata =3D ctx->data;
+-	struct tee_device *teedev =3D ctx->teedev;
+-	struct optee *optee =3D tee_get_drvdata(teedev);
+-	struct tee_shm *shm;
+-	struct optee_msg_arg *arg =3D NULL;
+-	phys_addr_t parg;
+ 	struct optee_session *sess;
+ 	struct optee_session *sess_tmp;
+=20
+ 	if (!ctxdata)
+ 		return;
+=20
+-	shm =3D tee_shm_alloc(ctx, sizeof(struct optee_msg_arg), TEE_SHM_MAPPED);
+-	if (!IS_ERR(shm)) {
+-		arg =3D tee_shm_get_va(shm, 0);
+-		/*
+-		 * If va2pa fails for some reason, we can't call into
+-		 * secure world, only free the memory. Secure OS will leak
+-		 * sessions and finally refuse more sessions, but we will
+-		 * at least let normal world reclaim its memory.
+-		 */
+-		if (!IS_ERR(arg))
+-			if (tee_shm_va2pa(shm, arg, &parg))
+-				arg =3D NULL; /* prevent usage of parg below */
+-	}
+-
+ 	list_for_each_entry_safe(sess, sess_tmp, &ctxdata->sess_list,
+ 				 list_node) {
+ 		list_del(&sess->list_node);
+-		if (!IS_ERR_OR_NULL(arg)) {
+-			memset(arg, 0, sizeof(*arg));
+-			arg->cmd =3D OPTEE_MSG_CMD_CLOSE_SESSION;
+-			arg->session =3D sess->session_id;
+-			optee_do_call_with_arg(ctx, parg);
+-		}
++		close_session(ctx, sess->session_id);
+ 		kfree(sess);
+ 	}
+ 	kfree(ctxdata);
++	ctx->data =3D NULL;
++}
+=20
+-	if (!IS_ERR(shm))
+-		tee_shm_free(shm);
++static void optee_release(struct tee_context *ctx)
++{
++	optee_release_helper(ctx, optee_close_session_helper);
++}
+=20
+-	ctx->data =3D NULL;
++static void optee_release_supp(struct tee_context *ctx)
++{
++	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+=20
+-	if (teedev =3D=3D optee->supp_teedev) {
+-		if (optee->scan_bus_wq) {
+-			destroy_workqueue(optee->scan_bus_wq);
+-			optee->scan_bus_wq =3D NULL;
+-		}
+-		optee_supp_release(&optee->supp);
++	optee_release_helper(ctx, optee_close_session_helper);
++	if (optee->scan_bus_wq) {
++		destroy_workqueue(optee->scan_bus_wq);
++		optee->scan_bus_wq =3D NULL;
+ 	}
++	optee_supp_release(&optee->supp);
+ }
+=20
+ static const struct tee_driver_ops optee_ops =3D {
+@@ -339,7 +322,7 @@ static const struct tee_desc optee_desc =3D {
+ static const struct tee_driver_ops optee_supp_ops =3D {
+ 	.get_version =3D optee_get_version,
+ 	.open =3D optee_open,
+-	.release =3D optee_release,
++	.release =3D optee_release_supp,
+ 	.supp_recv =3D optee_supp_recv,
+ 	.supp_send =3D optee_supp_send,
+ 	.shm_register =3D optee_shm_register_supp,
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+index e25b216a14ef..2b63b796645e 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -152,6 +152,7 @@ u32 optee_do_call_with_arg(struct tee_context *ctx, phys_=
+addr_t parg);
+ int optee_open_session(struct tee_context *ctx,
+ 		       struct tee_ioctl_open_session_arg *arg,
+ 		       struct tee_param *param);
++int optee_close_session_helper(struct tee_context *ctx, u32 session);
+ int optee_close_session(struct tee_context *ctx, u32 session);
+ int optee_invoke_func(struct tee_context *ctx, struct tee_ioctl_invoke_arg *=
+arg,
+ 		      struct tee_param *param);
+--=20
 2.31.1
 
 
---===============6582166158721355847==--
+--===============8843911577354062436==--
 
