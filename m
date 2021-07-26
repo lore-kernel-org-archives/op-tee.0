@@ -1,93 +1,82 @@
-From: Marc Zyngier <maz@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 1/6] docs: staging/tee.rst: add a section on OP-TEE
- notifications
-Date: Fri, 23 Jul 2021 11:16:52 +0100
-Message-ID: <87zgud1giz.wl-maz@kernel.org>
-In-Reply-To: <20210723094422.2150313-2-jens.wiklander@linaro.org>
+Subject: [GIT PULL] TEE kexec fixes for v5.14
+Date: Mon, 26 Jul 2021 10:10:39 +0200
+Message-ID: <20210726081039.GA2482361@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9201026251809633878=="
+Content-Type: multipart/mixed; boundary="===============6232955759779363743=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9201026251809633878==
+--===============6232955759779363743==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 23 Jul 2021 10:44:17 +0100,
-Jens Wiklander <jens.wiklander@linaro.org> wrote:
->=20
-> Adds a section on notifications used by OP-TEE, synchronous and
-> asynchronous.
->=20
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  Documentation/staging/tee.rst | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
->=20
-> diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
-> index 4d4b5f889603..37bdd097336f 100644
-> --- a/Documentation/staging/tee.rst
-> +++ b/Documentation/staging/tee.rst
-> @@ -184,6 +184,33 @@ order to support device enumeration. In other words, O=
-P-TEE driver invokes this
->  application to retrieve a list of Trusted Applications which can be regist=
-ered
->  as devices on the TEE bus.
-> =20
-> +OP-TEE notifications
-> +--------------------
-> +
-> +There are two kinds of notifications that secure world can use to make
-> +normal world aware of some event.
-> +
-> +1. Synchronous notifications delivered with ``OPTEE_RPC_CMD_NOTIFICATION``
-> +   using the ``OPTEE_RPC_NOTIFICATION_SEND`` parameter.
-> +2. Asynchronous notifications delivered with a combination of a non-secure
-> +   interrupt and a fast call from the non-secure interrupt handler.
-> +
-> +Synchronous notifications are limited by depending on RPC for delivery,
-> +this is only usable when secure world is entered with a yielding call via
-> +``OPTEE_SMC_CALL_WITH_ARG``. This excludes such notifications from secure
-> +world interrupt handlers.
-> +
-> +An asynchronous notification is delivered via a non-secure interrupt to an
-> +interrupt handler registered in the OP-TEE driver. The actual notification
-> +value are retrieved with the fast call ``OPTEE_SMC_GET_ASYNC_NOTIF_VALUE``.
-> +
-> +One notification value ``OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF`` has a
-> +special meaning. When this value is received it means that normal world is
-> +supposed to make a yielding call ``OPTEE_MSG_CMD_DO_BOTTOM_HALF``. This
-> +call is done from the thread assisting the interrupt handler. This is a
-> +building block for OP-TEE OS in secure world to implement the top half and
-> +bottom half style of device drivers.
-> +
+Hello arm-soc maintainers,
 
-What I find missing here is a description of the trigger for this
-interrupt, and how it influences the way the kernel drivers interacts
-with the secure side:
+Please pull these fixes relating to OP-TEE, ftpm (firmware TPM), and
+tee_bnxt_fw (Broadcom BNXT firmware manager) drivers in kexec and kdump
+(emergency kexec) based workflows.
 
-- if it is edge triggered, this is 'fire and forget'. The interrupt
-  will be consumed by the kernel handler, and whether it eventually
-  calls into the secure side has no impact on the interrupt flow.
+The two patches "firmware: tee_bnxt: Release TEE shm, session, and context
+during kexec" and "tpm_ftpm_tee: Free and unregister TEE shared memory
+during kexec" are acked by their respective maintainers.
 
-- if it is level triggered, then the interrupt may be asserted until
-  the kernel calls into the secure side, which may then drop the line
-  level if no other requests are pending.
-
-These are evidently two very different flows, and you need to pick a
-side. Note that not all interrupt controllers support both signalling
-modes, so you are likely to leave something behind. Or you can try and
-support both flows, but that may make the driver slightly more
-complex.
-
-Either way, this needs specifying, here and in the DT binding.
+For more details please see the description of the last patch set
+https://lore.kernel.org/lkml/20210614223317.999867-1-tyhicks(a)linux.microsof=
+t.com/
 
 Thanks,
+Jens
 
-	M.
+The following changes since commit 2734d6c1b1a089fb593ef6a23d4b70903526fe0c:
 
---=20
-Without deviation from the norm, progress is not possible.
+  Linux 5.14-rc2 (2021-07-18 14:13:49 -0700)
 
---===============9201026251809633878==--
+are available in the Git repository at:
+
+  git://git.linaro.org:/people/jens.wiklander/linux-tee.git tags/tee-kexec-fi=
+xes-for-v5.14
+
+for you to fetch changes up to 914ab19e471d8fb535ed50dff108b0a615f3c2d8:
+
+  firmware: tee_bnxt: Release TEE shm, session, and context during kexec (202=
+1-07-21 07:55:50 +0200)
+
+----------------------------------------------------------------
+tee: Improve support for kexec and kdump
+
+This fixes several bugs uncovered while exercising the OP-TEE, ftpm
+(firmware TPM), and tee_bnxt_fw (Broadcom BNXT firmware manager) drivers
+with kexec and kdump (emergency kexec) based workflows.
+
+----------------------------------------------------------------
+Allen Pais (2):
+      optee: fix tee out of memory failure seen during kexec reboot
+      firmware: tee_bnxt: Release TEE shm, session, and context during kexec
+
+Jens Wiklander (1):
+      tee: add tee_shm_alloc_kernel_buf()
+
+Sumit Garg (1):
+      tee: Correct inappropriate usage of TEE_SHM_DMA_BUF flag
+
+Tyler Hicks (4):
+      optee: Fix memory leak when failing to register shm pages
+      optee: Refuse to load the driver under the kdump kernel
+      optee: Clear stale cache entries during initialization
+      tpm_ftpm_tee: Free and unregister TEE shared memory during kexec
+
+ drivers/char/tpm/tpm_ftpm_tee.c         |  8 +++---
+ drivers/firmware/broadcom/tee_bnxt_fw.c | 14 ++++++++---
+ drivers/tee/optee/call.c                | 38 ++++++++++++++++++++++++++---
+ drivers/tee/optee/core.c                | 43 +++++++++++++++++++++++++++++++=
++-
+ drivers/tee/optee/optee_private.h       |  1 +
+ drivers/tee/optee/rpc.c                 |  5 ++--
+ drivers/tee/optee/shm_pool.c            | 20 ++++++++++++---
+ drivers/tee/tee_shm.c                   | 20 ++++++++++++++-
+ include/linux/tee_drv.h                 |  2 ++
+ 9 files changed, 132 insertions(+), 19 deletions(-)
+
+--===============6232955759779363743==--
 
