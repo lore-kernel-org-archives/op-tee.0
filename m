@@ -1,206 +1,144 @@
-From: Marc Zyngier <maz@kernel.org>
+From: Christoph Gellner <cgellner@de.adit-jv.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 1/6] docs: staging/tee.rst: add a section on OP-TEE
- notifications
-Date: Wed, 04 Aug 2021 15:39:17 +0100
-Message-ID: <87lf5hw9yi.wl-maz@kernel.org>
-In-Reply-To: <
- <CAHUa44HCEr_HKU0Fz10HPZYMowXVkx5JtnXMVTXd29wAv-dTCg@mail.gmail.com>>
+Subject: 
+ [PATCH 0/3 RESEND] tee: optee: Allow to freeze when tee-supplicant is frozen
+Date: Mon, 09 Aug 2021 09:14:49 +0200
+Message-ID: <20210809071452.28508-1-cgellner@de.adit-jv.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4525040871164677196=="
+Content-Type: multipart/mixed; boundary="===============4034687073371247681=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4525040871164677196==
+--===============4034687073371247681==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 27 Jul 2021 15:57:07 +0100,
-Jens Wiklander <jens.wiklander@linaro.org> wrote:
->=20
-> On Tue, Jul 27, 2021 at 10:32 AM Marc Zyngier <maz@kernel.org> wrote:
-> >
-> > On Tue, 27 Jul 2021 08:46:39 +0100,
-> > Jens Wiklander <jens.wiklander@linaro.org> wrote:
-> > >
-> > > On Fri, Jul 23, 2021 at 12:16 PM Marc Zyngier <maz@kernel.org> wrote:
-> > > >
-> > > > On Fri, 23 Jul 2021 10:44:17 +0100,
-> > > > Jens Wiklander <jens.wiklander@linaro.org> wrote:
-> > > > >
-> > > > > Adds a section on notifications used by OP-TEE, synchronous and
-> > > > > asynchronous.
-> > > > >
-> > > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > > ---
-> > > > >  Documentation/staging/tee.rst | 27 +++++++++++++++++++++++++++
-> > > > >  1 file changed, 27 insertions(+)
-> > > > >
-> > > > > diff --git a/Documentation/staging/tee.rst b/Documentation/staging/=
-tee.rst
-> > > > > index 4d4b5f889603..37bdd097336f 100644
-> > > > > --- a/Documentation/staging/tee.rst
-> > > > > +++ b/Documentation/staging/tee.rst
-> > > > > @@ -184,6 +184,33 @@ order to support device enumeration. In other =
-words, OP-TEE driver invokes this
-> > > > >  application to retrieve a list of Trusted Applications which can b=
-e registered
-> > > > >  as devices on the TEE bus.
-> > > > >
-> > > > > +OP-TEE notifications
-> > > > > +--------------------
-> > > > > +
-> > > > > +There are two kinds of notifications that secure world can use to =
-make
-> > > > > +normal world aware of some event.
-> > > > > +
-> > > > > +1. Synchronous notifications delivered with ``OPTEE_RPC_CMD_NOTIFI=
-CATION``
-> > > > > +   using the ``OPTEE_RPC_NOTIFICATION_SEND`` parameter.
-> > > > > +2. Asynchronous notifications delivered with a combination of a no=
-n-secure
-> > > > > +   interrupt and a fast call from the non-secure interrupt handler.
-> > > > > +
-> > > > > +Synchronous notifications are limited by depending on RPC for deli=
-very,
-> > > > > +this is only usable when secure world is entered with a yielding c=
-all via
-> > > > > +``OPTEE_SMC_CALL_WITH_ARG``. This excludes such notifications from=
- secure
-> > > > > +world interrupt handlers.
-> > > > > +
-> > > > > +An asynchronous notification is delivered via a non-secure interru=
-pt to an
-> > > > > +interrupt handler registered in the OP-TEE driver. The actual noti=
-fication
-> > > > > +value are retrieved with the fast call ``OPTEE_SMC_GET_ASYNC_NOTIF=
-_VALUE``.
-> > > > > +
-> > > > > +One notification value ``OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HAL=
-F`` has a
-> > > > > +special meaning. When this value is received it means that normal =
-world is
-> > > > > +supposed to make a yielding call ``OPTEE_MSG_CMD_DO_BOTTOM_HALF``.=
- This
-> > > > > +call is done from the thread assisting the interrupt handler. This=
- is a
-> > > > > +building block for OP-TEE OS in secure world to implement the top =
-half and
-> > > > > +bottom half style of device drivers.
-> > > > > +
-> > > >
-> > > > What I find missing here is a description of the trigger for this
-> > > > interrupt, and how it influences the way the kernel drivers interacts
-> > > > with the secure side:
-> > > >
-> > > > - if it is edge triggered, this is 'fire and forget'. The interrupt
-> > > >   will be consumed by the kernel handler, and whether it eventually
-> > > >   calls into the secure side has no impact on the interrupt flow.
-> > > >
-> > > > - if it is level triggered, then the interrupt may be asserted until
-> > > >   the kernel calls into the secure side, which may then drop the line
-> > > >   level if no other requests are pending.
-> > > >
-> > > > These are evidently two very different flows, and you need to pick a
-> > > > side. Note that not all interrupt controllers support both signalling
-> > > > modes, so you are likely to leave something behind. Or you can try and
-> > > > support both flows, but that may make the driver slightly more
-> > > > complex.
-> > > >
-> > > > Either way, this needs specifying, here and in the DT binding.
-> > >
-> > > In the example I'm using a level triggered interrupt which is
-> > > triggered by writing to GICD_ISPENDR by secure world. Reading of
-> > > GICC_IAR should clear the interrupt,the GICv2 reference manual is
-> > > quite clear on that.
-> >
-> > No, it merely activates it. You can't transition an interrupt from
-> > pending to inactive (unless you clear it using GICD_ICPENDR). If you
-> > have spotted something else in the GICv2 architecture manual, please
-> > say so and I'll get it fixed 15 years after the facts. The fact that
-> > GICC_IAR consumes a pending bit introduced by a write to ISPENDR is an
-> > implementation detail, see below.
->=20
-> I was looking at figure 4-10 "Logic of the pending status of a
-> level-sensitive interrupt".
->=20
-> >
-> > It is also a flawed approach, as this behaviour is IMPDEF on GICv3
-> > (see 4.5 "Shared Peripheral Interrupts" in the GICv3 arch spec). Given
-> > that GICv2 is pretty much a dead horse (TFFT!), I can't see this approach
-> > being successful in the long run.
->=20
-> OK, thanks.
->=20
-> >
-> > > So, if I understand it correctly, it will for
-> > > this purpose work in the same way as an edge triggered interrupt. If
-> > > this wouldn't be the case in some configuration and the interrupt must
-> > > be cleared by some other action that would be a job for the receiver
-> > > of OPTEE_SMC_GET_ASYNC_NOTIF_VALUE, that is, a secure world problem.
-> > > The normal world flow should be the same.
-> >
-> > You are assuming that the secure side will use GICD_ISPENDR, and
-> > that's a leap of faith.
->=20
-> Not in this case with upstream OP-TEE. If we need to signal in a
-> different way we can do that instead.
-> What happens downstream we have no control over, but that's perhaps
-> not so different from the kernel.
->=20
-> > An implementation should use, say, a GPIO to
-> > drive the interrupt line and give it proper level semantics.
->=20
-> I'm not so keen on that since we often don't touch GPIO at all in
-> OP-TEE and this would then mean more platform specific code. We may
-> even need to synchronize some hardware access with the normal world
-> and then we'd be back at square one again.
+When the system is going to hibernate or suspend it might happen
+that the tee-supplicant task is frozen first.
+In this case a running OP-TEE task might get stuck in the loop using
+wait_for_completion_interruptible to wait for response of tee-supplicant.
+   =20
+As a consequence other OP-TEE tasks waiting for the above or a
+succeeding stuck OP-TEE task might get stuck as well
+- waiting for call queue entry to be completed
+- waiting for OPTEE_RPC_WAIT_QUEUE_WAKEUP
 
-I'm trying to make a general statement here. OP-TEE may not do any of
-this. Yet. Other TEE implementations may do it because there is no
-free SPI in the system, for example. The problem is that interrupt
-signalling is a *device* thing, even if the device is actually some SW
-running on the secure side, and I would like the TEE to behave as
-such.
+This will result in the tasks "refusing to freeze" and
+the hibernate or suspend will fail.
 
-> > > Now that we describe the interrupt configuration in device tree it
-> > > must use something that mirrors the secure world expectations. I don't
-> > > see a point in restricting what's allowed as long it doesn't need code
-> > > changes in the kernel too. Does this make any sense?
-> >
-> > And that's the crucial point: what *are* the expectations of the
-> > secure side?
->=20
-> That should be up to the OP-TEE port of that particular platform to
-> decide and advise which device tree configuration to use.
->=20
-> > You seem to assume edge semantics, but that's unclear at
-> > best.
->=20
-> Fair enough, edge semantics solves the problem here.
->=20
-> >
-> > > If I just expand a bit above explaining that the interrupt handler
-> > > must call OPTEE_SMC_GET_ASYNC_NOTIF_VALUE as part of clearing the
-> > > interrupt even if it might be cleared anyway in some configurations.
-> > > Would that make it more clear, good enough even :-) ?
-> >
-> > This is an interrupt, please document it in terms of interrupt
-> > signalling.
->=20
-> In this file, Documentation/staging/tee.rst ? A pointer to a good
-> example of what you're expecting would be much appreciated.
-> There's also the file drivers/tee/optee/optee_smc.h, this is where the
-> ABI to OP-TEE is defined.
+OP-TEE issue: https://github.com/OP-TEE/optee_os/issues/4581
 
-This file is fine, but repeating in the DT binding that edge
-signalling is what is expected would be good.
 
-Thanks,
+- Read back the object
+PM: suspend entry (s2idle)
+Filesystems sync: 0.000 seconds
+Freezing user space processes ...
+Freezing of tasks failed after 20.008 seconds (3 tasks refusing to freeze, wq=
+_busy=3D0):
+task:optee_example_s state:R  running task     stack:    0 pid:  124 ppid:   =
+  1 flags:0x00000001
+[<807d3e24>] (__schedule) from [<841c4000>] (0x841c4000)
+task:optee_example_s state:D stack:    0 pid:  126 ppid:     1 flags:0x000000=
+01
+[<807d3e24>] (__schedule) from [<807d41d0>] (schedule+0x60/0x120)
+[<807d41d0>] (schedule) from [<807d7ffc>] (schedule_timeout+0x1f4/0x340)
+[<807d7ffc>] (schedule_timeout) from [<807d56a0>] (wait_for_completion+0x94/0=
+xfc)
+[<807d56a0>] (wait_for_completion) from [<80692134>] (optee_cq_wait_for_compl=
+etion+0x14/0x60)
+[<80692134>] (optee_cq_wait_for_completion) from [<806924dc>] (optee_do_call_=
+with_arg+0x14c/0x154)
+[<806924dc>] (optee_do_call_with_arg) from [<80692edc>] (optee_shm_unregister=
++0x78/0xcc)
+[<80692edc>] (optee_shm_unregister) from [<80690a9c>] (tee_shm_release+0x88/0=
+x174)
+[<80690a9c>] (tee_shm_release) from [<8057f89c>] (dma_buf_release+0x44/0xb0)
+[<8057f89c>] (dma_buf_release) from [<8028e4e8>] (__dentry_kill+0x110/0x17c)
+[<8028e4e8>] (__dentry_kill) from [<80276cfc>] (__fput+0xc0/0x234)
+[<80276cfc>] (__fput) from [<80140b1c>] (task_work_run+0x90/0xbc)
+[<80140b1c>] (task_work_run) from [<8010b1c8>] (do_work_pending+0x4a0/0x5a0)
+[<8010b1c8>] (do_work_pending) from [<801000cc>] (slow_work_pending+0xc/0x20)
+Exception stack(0x843f5fb0 to 0x843f5ff8)
+5fa0:                                     00000000 7ef63448 fffffffe 00000000
+5fc0: 7ef63448 76f163b0 7ef63448 00000006 7ef63448 7ef634e0 7ef63438 00000000
+5fe0: 00000006 7ef63400 76e74833 76dff856 800e0130 00000004
+task:optee_example_s state:D stack:    0 pid:  128 ppid:     1 flags:0x000000=
+01
+[<807d3e24>] (__schedule) from [<807d41d0>] (schedule+0x60/0x120)
+[<807d41d0>] (schedule) from [<807d7ffc>] (schedule_timeout+0x1f4/0x340)
+[<807d7ffc>] (schedule_timeout) from [<807d56a0>] (wait_for_completion+0x94/0=
+xfc)
+[<807d56a0>] (wait_for_completion) from [<8069359c>] (optee_handle_rpc+0x554/=
+0x710)
+[<8069359c>] (optee_handle_rpc) from [<806924cc>] (optee_do_call_with_arg+0x1=
+3c/0x154)
+[<806924cc>] (optee_do_call_with_arg) from [<80692910>] (optee_invoke_func+0x=
+110/0x190)
+[<80692910>] (optee_invoke_func) from [<8068fe3c>] (tee_ioctl+0x113c/0x1244)
+[<8068fe3c>] (tee_ioctl) from [<802892ec>] (sys_ioctl+0xe0/0xa24)
+[<802892ec>] (sys_ioctl) from [<80100060>] (ret_fast_syscall+0x0/0x54)
+Exception stack(0x8424ffa8 to 0x8424fff0)
+ffa0:                   00000000 7eb67584 00000003 8010a403 7eb67438 7eb675fc
+ffc0: 00000000 7eb67584 7eb67604 00000036 7eb67448 7eb674e0 7eb67438 00000000
+ffe0: 76ef7030 7eb6742c 76ee6469 76e83178
+OOM killer enabled.
+Restarting tasks ... done.
+PM: suspend exit
+sh: write error: Device or resource busy
 
-	M.
 
+The patch set will switch to interruptible waits and add try_to_freeze to all=
+ow the waiting
+OP-TEE tasks to be frozen as well.
+
+---
+
+In my humble understanding without these patches OP-TEE tasks have only been =
+frozen in user-space.
+With these patches it is possible that OP-TEE tasks are frozen although the O=
+P-TEE command
+invocation didn't complete.
+I'm unable to judge if there are any OP-TEE implementations relying on the fa=
+ct that suspend won't
+happen while the OP-TEE command invocation didn't complete.
+
+The theoretical alternative would be to prevent that tee-supplicant is frozen=
+ first.
+
+
+I was able to reproduce the issue in OP-TEE QEMU v7 using a modified version =
+of
+optee_example_secure_storage (loop around REE FS read, support multi-session).
+See https://github.com/OP-TEE/optee_os/issues/4581 for details.
+
+After applying these patches (minor adjustments of the includes) I was no lon=
+ger able to
+reproduce the issues.
+In my tests OP-TEE QEMU v7 did suspend and resume without troubles.
+
+I'm not able to test on other devices supporting OP-TEE.
+
+
+I decided to handle each of the locations the OP-TEE task could get stuck as =
+a separate commit.
+The downside is that the above call stack doesn't really fit to any of the co=
+mmits.
+
+Christoph Gellner (3):
+  tee: optee: Allow to freeze the task waiting for tee-supplicant
+  tee: optee: Allow to freeze while waiting for call_queue
+  tee: optee: Allow to freeze while waiting in
+    OPTEE_RPC_WAIT_QUEUE_SLEEP
+
+ drivers/tee/optee/call.c | 8 +++++++-
+ drivers/tee/optee/rpc.c  | 9 ++++++++-
+ drivers/tee/optee/supp.c | 3 +++
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+
+base-commit: c4681547bcce777daf576925a966ffa824edd09d
 --=20
-Without deviation from the norm, progress is not possible.
+2.32.0.rc0
 
---===============4525040871164677196==--
+
+--===============4034687073371247681==--
 
