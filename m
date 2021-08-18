@@ -1,55 +1,71 @@
-From: Christoph Gellner <cgellner@de.adit-jv.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 1/3 RESEND] tee: optee: Allow to freeze the task waiting for
- tee-supplicant
-Date: Mon, 09 Aug 2021 09:14:50 +0200
-Message-ID: <20210809071452.28508-2-cgellner@de.adit-jv.com>
-In-Reply-To: <20210809071452.28508-1-cgellner@de.adit-jv.com>
+Subject: 
+ [PATCH v4 1/6] docs: staging/tee.rst: add a section on OP-TEE notifications
+Date: Wed, 18 Aug 2021 12:18:44 +0200
+Message-ID: <20210818101849.602257-2-jens.wiklander@linaro.org>
+In-Reply-To: <20210818101849.602257-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2860996208664316660=="
+Content-Type: multipart/mixed; boundary="===============1533344754724110418=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2860996208664316660==
+--===============1533344754724110418==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-When the system is going to hibernate or suspend it might happen
-that the tee-supplicant task is frozen first.
-wait_for_completion_interruptible might get stuck in this case.
+Adds a section on notifications used by OP-TEE, synchronous and
+asynchronous.
 
-Add try_to_freeze to allow the waiting task to be frozen while
-waiting for the response of tee-supplicant.
-
-Signed-off-by: Christoph Gellner <cgellner@de.adit-jv.com>
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/optee/supp.c | 3 +++
- 1 file changed, 3 insertions(+)
+ Documentation/staging/tee.rst | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
-index 322a543b8c27..03c37bae6ac4 100644
---- a/drivers/tee/optee/supp.c
-+++ b/drivers/tee/optee/supp.c
-@@ -5,6 +5,7 @@
- #include <linux/device.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/freezer.h>
- #include "optee_private.h"
+diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
+index 4d4b5f889603..951f07dd026b 100644
+--- a/Documentation/staging/tee.rst
++++ b/Documentation/staging/tee.rst
+@@ -184,6 +184,35 @@ order to support device enumeration. In other words, OP-=
+TEE driver invokes this
+ application to retrieve a list of Trusted Applications which can be register=
+ed
+ as devices on the TEE bus.
 =20
- struct optee_supp_req {
-@@ -141,6 +142,8 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func=
-, size_t num_params,
- 			req->ret =3D TEEC_ERROR_COMMUNICATION;
- 			break;
- 		}
++OP-TEE notifications
++--------------------
 +
-+		try_to_freeze();
- 	}
++There are two kinds of notifications that secure world can use to make
++normal world aware of some event.
++
++1. Synchronous notifications delivered with ``OPTEE_RPC_CMD_NOTIFICATION``
++   using the ``OPTEE_RPC_NOTIFICATION_SEND`` parameter.
++2. Asynchronous notifications delivered with a combination of a non-secure
++   edge-triggered interrupt and a fast call from the non-secure interrupt
++   handler.
++
++Synchronous notifications are limited by depending on RPC for delivery,
++this is only usable when secure world is entered with a yielding call via
++``OPTEE_SMC_CALL_WITH_ARG``. This excludes such notifications from secure
++world interrupt handlers.
++
++An asynchronous notification is delivered via a non-secure edge-triggered
++interrupt to an interrupt handler registered in the OP-TEE driver. The
++actual notification value are retrieved with the fast call
++``OPTEE_SMC_GET_ASYNC_NOTIF_VALUE``.
++
++One notification value ``OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF`` has a
++special meaning. When this value is received it means that normal world is
++supposed to make a yielding call ``OPTEE_MSG_CMD_DO_BOTTOM_HALF``. This
++call is done from the thread assisting the interrupt handler. This is a
++building block for OP-TEE OS in secure world to implement the top half and
++bottom half style of device drivers.
++
+ AMD-TEE driver
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 =20
- 	ret =3D req->ret;
 --=20
-2.32.0.rc0
+2.31.1
 
 
---===============2860996208664316660==--
+--===============1533344754724110418==--
 
