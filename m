@@ -1,121 +1,56 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 0/5] Add FF-A support in OP-TEE driver
-Date: Thu, 19 Aug 2021 13:06:50 +0200
-Message-ID: <20210819110655.739318-1-jens.wiklander@linaro.org>
+Subject: [PATCH v4 1/5] tee: add sec_world_id to struct tee_shm
+Date: Thu, 19 Aug 2021 13:06:51 +0200
+Message-ID: <20210819110655.739318-2-jens.wiklander@linaro.org>
+In-Reply-To: <20210819110655.739318-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4653255591425132646=="
+Content-Type: multipart/mixed; boundary="===============2213120114502233336=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4653255591425132646==
+--===============2213120114502233336==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Adds sec_world_id to struct tee_shm which describes a shared memory
+object. sec_world_id can be used by a driver to store an id assigned by
+secure world.
 
-This adds supports for the OP-TEE driver to communicate with secure world
-using FF-A [1] as transport.
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ include/linux/tee_drv.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-There is one change to the TEE subsystem with "tee: add sec_world_id to
-struct tee_shm" to add support for holding globally unique handle assigned
-by the FF-A. This is a field that I believe could useful for the AMDTEE
-driver too.
-
-For communication the OP-TEE message protocol is still used, but with a new
-type of memory reference, struct optee_msg_param_fmem, to carry the
-information needed by FF-A. The OP-TEE driver is refactored internally with
-to sets of callbacks, one for the old SMC based communication and another
-set with FF-A as transport. The functions relating to the SMC based ABI
-are moved to smc_abi.c while the FF-A based ABI is added in a ffa_abi.c.
-
-There is also a difference in how the drivers are instantiated. With the
-SMC based transport we have a platform driver, module_platform_driver(),
-today which we're keeping as is for this configuration. In a FF-A system we
-have a FF-A driver, module_ffa_driver(), instead.
-
-The OP-TEE driver can be compiled for both targets at the same time and
-it's up to runtime configuration (device tree or ACPI) to decide how it's
-initialized. Note that it's only the old SMC based driver instance that
-need device tree or ACPI to initialize. The FF-A based driver relies on the
-FF-A bus instead.
-
-This can be tested QEMU
-The repo for SPMC at S-EL1 retrieved by
-repo init -u https://github.com/jenswi-linaro/manifest.git -m
-qemu_v8.xml -b ffav4_spmc
-repo sync
-# Then checkout the branch optee_ffa_v4 from
-# git://git.linaro.org/people/jens.wiklander/linux-tee.git
-# in the linux directory
-
-To build do:
-cd build
-make toolchains
-make all
-
-To boot:
-make run-only
-
-Test with xtest, perhaps only with the command "xtest 1004" in case you're
-not interested in too many tests.
-
-Thanks,
-Jens
-
-[1] https://developer.arm.com/documentation/den0077/latest
-
-v3->v4:
-- Made a bit more RPC code common between the SMC and FF-A ABIs as
-  requested by Sumit.
-- Replaced module_platform_driver() with module_init()/module_exit() as
-  described in the commit "optee: isolate smc abi".
-- Applied Sumit's R-B for the commits "tee: add sec_world_id to struct
-  tee_shm", "optee: simplify optee_release()", and "optee: refactor driver
-  with internal callbacks"
-
-v2->v3:
-- Rebased on 5.14-rc2 which now have the FF-A patches merged
-- Fixed a couple bugs in optee_shm_register() and optee_shm_unregister()
-  which where introduced in "optee: refactor driver with internal callbacks"
-  in previous the version.
-- Separated SMC ABI specifics into smc_abi.c to keep it separated from
-  the FF-A ABI functions as requested by Sumit.
-- Added the FF-A specifics in ffa_abi.c
-- Provided an implementation for optee_ffa_remove()
-
-v1->v2:
-- Rebased to the FF-A v7 patch
-- Fixed a couple of reports from kernel test robot <lkp@intel.com>
-
-Jens Wiklander (5):
-  tee: add sec_world_id to struct tee_shm
-  optee: simplify optee_release()
-  optee: refactor driver with internal callbacks
-  optee: isolate smc abi
-  optee: add FF-A support
-
- drivers/tee/optee/Makefile        |    7 +-
- drivers/tee/optee/call.c          |  415 ++-------
- drivers/tee/optee/core.c          |  685 ++-------------
- drivers/tee/optee/ffa_abi.c       |  907 ++++++++++++++++++++
- drivers/tee/optee/optee_ffa.h     |  153 ++++
- drivers/tee/optee/optee_msg.h     |   27 +-
- drivers/tee/optee/optee_private.h |  162 +++-
- drivers/tee/optee/rpc.c           |  236 +-----
- drivers/tee/optee/shm_pool.c      |   89 --
- drivers/tee/optee/shm_pool.h      |   14 -
- drivers/tee/optee/smc_abi.c       | 1299 +++++++++++++++++++++++++++++
- include/linux/tee_drv.h           |    7 +-
- 12 files changed, 2665 insertions(+), 1336 deletions(-)
- create mode 100644 drivers/tee/optee/ffa_abi.c
- create mode 100644 drivers/tee/optee/optee_ffa.h
- delete mode 100644 drivers/tee/optee/shm_pool.c
- delete mode 100644 drivers/tee/optee/shm_pool.h
- create mode 100644 drivers/tee/optee/smc_abi.c
-
--- 
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index 54269e47ac9a..1a29f0e66e13 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -196,7 +196,11 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 conne=
+ction_method,
+  * @num_pages:	number of locked pages
+  * @dmabuf:	dmabuf used to for exporting to user space
+  * @flags:	defined by TEE_SHM_* in tee_drv.h
+- * @id:		unique id of a shared memory object on this device
++ * @id:		unique id of a shared memory object on this device, shared
++ *		with user space
++ * @sec_world_id:
++ *		secure world assigned id of this shared memory object, not
++ *		used by all drivers
+  *
+  * This pool is only supposed to be accessed directly from the TEE
+  * subsystem and from drivers that implements their own shm pool manager.
+@@ -212,6 +216,7 @@ struct tee_shm {
+ 	struct dma_buf *dmabuf;
+ 	u32 flags;
+ 	int id;
++	u64 sec_world_id;
+ };
+=20
+ /**
+--=20
 2.31.1
 
 
---===============4653255591425132646==--
+--===============2213120114502233336==--
 
