@@ -1,455 +1,595 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v5 5/6] optee: separate notification functions
-Date: Thu, 26 Aug 2021 14:30:31 +0200
-Message-ID: <20210826123032.1732926-6-jens.wiklander@linaro.org>
+Subject: [PATCH v5 6/6] optee: add asynchronous notifications
+Date: Thu, 26 Aug 2021 14:30:32 +0200
+Message-ID: <20210826123032.1732926-7-jens.wiklander@linaro.org>
 In-Reply-To: <20210826123032.1732926-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0976278454063458404=="
+Content-Type: multipart/mixed; boundary="===============2707301656665866927=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0976278454063458404==
+--===============2707301656665866927==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Renames struct optee_wait_queue to struct optee_notif and all related
-functions to optee_notif_*().
+Adds support for asynchronous notifications from secure world to normal
+world. This allows a design with a top half and bottom half type of
+driver where the top half runs in secure interrupt context and a
+notifications tells normal world to schedule a yielding call to do the
+bottom half processing.
 
-The implementation is changed to allow sending a notification from an
-atomic state, that is from the top half of an interrupt handler.
+The protocol is defined in optee_msg.h optee_rpc_cmd.h and optee_smc.h.
 
-Waiting for keys is currently only used when secure world is waiting for
-a mutex or condition variable. The old implementation could handle any
-32-bit key while this new implementation is restricted to only 8 bits or
-the maximum value 255. A upper value is needed since a bitmap is
-allocated to allow an interrupt handler to only set a bit in case the
-waiter hasn't had the time yet to allocate and register a completion.
+A notification consists of a 32-bit value which normal world can
+retrieve using a fastcall into secure world. The value
+OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF (0) has a special meaning.
+When this value is sent it means that normal world is supposed to make a
+yielding call OPTEE_MSG_CMD_DO_BOTTOM_HALF.
 
-The keys are currently only representing secure world threads which
-number usually are never even close to 255 so it should be safe for now.
-In future ABI updates the maximum value of the key will be communicated
-while the driver is initializing.
+Notification capability is negotiated while the driver is initialized.
+If both sides supports these notifications then they are enabled.
 
+An interrupt is used to notify the driver that there are asynchronous
+notifications pending.  The maximum needed notification value is
+communicated at this stage. This allows scaling up when needed.
+
+Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/optee/Makefile        |   1 +
- drivers/tee/optee/core.c          |  12 ++-
- drivers/tee/optee/notif.c         | 125 ++++++++++++++++++++++++++++++
- drivers/tee/optee/optee_private.h |  19 +++--
- drivers/tee/optee/optee_rpc_cmd.h |  31 ++++----
- drivers/tee/optee/rpc.c           |  73 ++---------------
- 6 files changed, 170 insertions(+), 91 deletions(-)
- create mode 100644 drivers/tee/optee/notif.c
+ drivers/tee/optee/call.c          |  27 ++++++++
+ drivers/tee/optee/core.c          |  83 ++++++++++++++++-------
+ drivers/tee/optee/notif.c         | 109 ++++++++++++++++++++++++++++--
+ drivers/tee/optee/optee_msg.h     |   9 +++
+ drivers/tee/optee/optee_private.h |   6 +-
+ drivers/tee/optee/optee_smc.h     |  75 +++++++++++++++++++-
+ 6 files changed, 277 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-index 3aa33ea9e6a6..df55e4ad5370 100644
---- a/drivers/tee/optee/Makefile
-+++ b/drivers/tee/optee/Makefile
-@@ -2,6 +2,7 @@
- obj-$(CONFIG_OPTEE) +=3D optee.o
- optee-objs +=3D core.o
- optee-objs +=3D call.o
-+optee-objs +=3D notif.o
- optee-objs +=3D rpc.o
- optee-objs +=3D supp.o
- optee-objs +=3D shm_pool.o
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index 945f03da0223..e428e0e9a3af 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -392,6 +392,33 @@ int optee_cancel_req(struct tee_context *ctx, u32 cancel=
+_id, u32 session)
+ 	return 0;
+ }
+=20
++static int simple_call_with_arg(struct tee_context *ctx, u32 cmd)
++{
++	struct optee_msg_arg *msg_arg;
++	phys_addr_t msg_parg;
++	struct tee_shm *shm;
++
++	shm =3D get_msg_arg(ctx, 0, &msg_arg, &msg_parg);
++	if (IS_ERR(shm))
++		return PTR_ERR(shm);
++
++	msg_arg->cmd =3D cmd;
++	optee_do_call_with_arg(ctx, msg_parg);
++
++	tee_shm_free(shm);
++	return 0;
++}
++
++int optee_do_bottom_half(struct tee_context *ctx)
++{
++	return simple_call_with_arg(ctx, OPTEE_MSG_CMD_DO_BOTTOM_HALF);
++}
++
++int optee_stop_async_notif(struct tee_context *ctx)
++{
++	return simple_call_with_arg(ctx, OPTEE_MSG_CMD_STOP_ASYNC_NOTIF);
++}
++
+ /**
+  * optee_enable_shm_cache() - Enables caching of some shared memory allocati=
+on
+  *			      in OP-TEE
 diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 5ce13b099d7d..8531184f98f4 100644
+index 8531184f98f4..ccafd7151b45 100644
 --- a/drivers/tee/optee/core.c
 +++ b/drivers/tee/optee/core.c
-@@ -592,6 +592,7 @@ static int optee_remove(struct platform_device *pdev)
- 	 */
- 	optee_disable_shm_cache(optee);
+@@ -8,9 +8,12 @@
+ #include <linux/arm-smccc.h>
+ #include <linux/crash_dump.h>
+ #include <linux/errno.h>
++#include <linux/interrupt.h>
+ #include <linux/io.h>
++#include <linux/irqdomain.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+@@ -355,6 +358,17 @@ static const struct tee_desc optee_supp_desc =3D {
+ 	.flags =3D TEE_DESC_PRIVILEGED,
+ };
 =20
-+	optee_notif_uninit(optee);
- 	/*
- 	 * The two devices have to be unregistered before we can free the
- 	 * other resources.
-@@ -602,7 +603,6 @@ static int optee_remove(struct platform_device *pdev)
- 	tee_shm_pool_free(optee->pool);
- 	if (optee->memremaped_shm)
- 		memunmap(optee->memremaped_shm);
--	optee_wait_queue_exit(&optee->wait_queue);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
++static int enable_async_notif(optee_invoke_fn *invoke_fn)
++{
++	struct arm_smccc_res res;
++
++	invoke_fn(OPTEE_SMC_ENABLE_ASYNC_NOTIF, 0, 0, 0, 0, 0, 0, 0, &res);
++
++	if (res.a0)
++		return -EINVAL;
++	return 0;
++}
++
+ static bool optee_msg_api_uid_is_optee_api(optee_invoke_fn *invoke_fn)
+ {
+ 	struct arm_smccc_res res;
+@@ -404,7 +418,7 @@ static bool optee_msg_api_revision_is_compatible(optee_in=
+voke_fn *invoke_fn)
+ }
 =20
-@@ -712,11 +712,17 @@ static int optee_probe(struct platform_device *pdev)
+ static bool optee_msg_exchange_capabilities(optee_invoke_fn *invoke_fn,
+-					    u32 *sec_caps)
++					    u32 *sec_caps, u32 *max_notif_value)
+ {
+ 	union {
+ 		struct arm_smccc_res smccc;
+@@ -427,6 +441,7 @@ static bool optee_msg_exchange_capabilities(optee_invoke_=
+fn *invoke_fn,
+ 		return false;
+=20
+ 	*sec_caps =3D res.result.capabilities;
++	*max_notif_value =3D res.result.max_notif_value;
+ 	return true;
+ }
+=20
+@@ -630,6 +645,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	struct optee *optee =3D NULL;
+ 	void *memremaped_shm =3D NULL;
+ 	struct tee_device *teedev;
++	u32 max_notif_value;
+ 	u32 sec_caps;
+ 	int rc;
+=20
+@@ -659,7 +675,8 @@ static int optee_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+=20
+-	if (!optee_msg_exchange_capabilities(invoke_fn, &sec_caps)) {
++	if (!optee_msg_exchange_capabilities(invoke_fn, &sec_caps,
++					     &max_notif_value)) {
+ 		pr_warn("capabilities mismatch\n");
+ 		return -EINVAL;
+ 	}
+@@ -682,7 +699,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
+ 	if (!optee) {
+ 		rc =3D -ENOMEM;
+-		goto err;
++		goto err_free_pool;
+ 	}
+=20
+ 	optee->invoke_fn =3D invoke_fn;
+@@ -691,24 +708,24 @@ static int optee_probe(struct platform_device *pdev)
+ 	teedev =3D tee_device_alloc(&optee_desc, NULL, pool, optee);
+ 	if (IS_ERR(teedev)) {
+ 		rc =3D PTR_ERR(teedev);
+-		goto err;
++		goto err_free_optee;
+ 	}
+ 	optee->teedev =3D teedev;
+=20
+ 	teedev =3D tee_device_alloc(&optee_supp_desc, NULL, pool, optee);
+ 	if (IS_ERR(teedev)) {
+ 		rc =3D PTR_ERR(teedev);
+-		goto err;
++		goto err_unreg_teedev;
+ 	}
+ 	optee->supp_teedev =3D teedev;
+=20
+ 	rc =3D tee_device_register(optee->teedev);
+ 	if (rc)
+-		goto err;
++		goto err_unreg_supp_teedev;
+=20
+ 	rc =3D tee_device_register(optee->supp_teedev);
+ 	if (rc)
+-		goto err;
++		goto err_unreg_supp_teedev;
 =20
  	mutex_init(&optee->call_queue.mutex);
  	INIT_LIST_HEAD(&optee->call_queue.waiters);
--	optee_wait_queue_init(&optee->wait_queue);
- 	optee_supp_init(&optee->supp);
- 	optee->memremaped_shm =3D memremaped_shm;
+@@ -717,10 +734,31 @@ static int optee_probe(struct platform_device *pdev)
  	optee->pool =3D pool;
 =20
-+	platform_set_drvdata(pdev, optee);
-+	rc =3D optee_notif_init(optee, 255);
-+	if (rc) {
-+		optee_remove(pdev);
-+		return rc;
-+	}
+ 	platform_set_drvdata(pdev, optee);
+-	rc =3D optee_notif_init(optee, 255);
+-	if (rc) {
+-		optee_remove(pdev);
+-		return rc;
 +
- 	/*
- 	 * Ensure that there are no pre-existing shm objects before enabling
- 	 * the shm cache so that there's no chance of receiving an invalid
-@@ -731,8 +737,6 @@ static int optee_probe(struct platform_device *pdev)
- 	if (optee->sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
- 		pr_info("dynamic shared memory is enabled\n");
++	if (sec_caps & OPTEE_SMC_SEC_CAP_ASYNC_NOTIF) {
++		unsigned int irq;
++
++		rc =3D platform_get_irq(pdev, 0);
++		if (rc < 0) {
++			pr_err("platform_get_irq: ret %d\n", rc);
++			goto err_unreg_supp_teedev;
++		}
++		irq =3D rc;
++
++		rc =3D optee_notif_init(optee, max_notif_value, irq);
++		if (rc) {
++			irq_dispose_mapping(irq);
++			optee_remove(pdev);
++			return rc;
++		}
++		enable_async_notif(optee->invoke_fn);
++		pr_info("Asynchronous notifications enabled\n");
++	} else {
++		rc =3D optee_notif_init(optee, 255, 0);
++		if (rc) {
++			optee_remove(pdev);
++			return rc;
++		}
+ 	}
 =20
--	platform_set_drvdata(pdev, optee);
--
- 	rc =3D optee_enumerate_devices(PTA_CMD_GET_DEVICES);
- 	if (rc) {
- 		optee_remove(pdev);
+ 	/*
+@@ -745,20 +783,15 @@ static int optee_probe(struct platform_device *pdev)
+=20
+ 	pr_info("initialized driver\n");
+ 	return 0;
+-err:
+-	if (optee) {
+-		/*
+-		 * tee_device_unregister() is safe to call even if the
+-		 * devices hasn't been registered with
+-		 * tee_device_register() yet.
+-		 */
+-		tee_device_unregister(optee->supp_teedev);
+-		tee_device_unregister(optee->teedev);
+-		kfree(optee);
+-	}
+-	if (pool)
+-		tee_shm_pool_free(pool);
+-	if (memremaped_shm)
++err_unreg_supp_teedev:
++	tee_device_unregister(optee->supp_teedev);
++err_unreg_teedev:
++	tee_device_unregister(optee->teedev);
++err_free_optee:
++	kfree(optee);
++err_free_pool:
++	tee_shm_pool_free(pool);
++	if (optee->memremaped_shm)
+ 		memunmap(memremaped_shm);
+ 	return rc;
+ }
 diff --git a/drivers/tee/optee/notif.c b/drivers/tee/optee/notif.c
-new file mode 100644
-index 000000000000..a28fa03dcd0e
---- /dev/null
+index a28fa03dcd0e..ecfa82797695 100644
+--- a/drivers/tee/optee/notif.c
 +++ b/drivers/tee/optee/notif.c
-@@ -0,0 +1,125 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2015-2021, Linaro Limited
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/arm-smccc.h>
-+#include <linux/errno.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/tee_drv.h>
-+#include "optee_private.h"
-+
-+struct notif_entry {
-+	struct list_head link;
-+	struct completion c;
-+	u_int key;
-+};
-+
-+static bool have_key(struct optee *optee, u_int key)
+@@ -7,10 +7,14 @@
+=20
+ #include <linux/arm-smccc.h>
+ #include <linux/errno.h>
++#include <linux/interrupt.h>
++#include <linux/irqdomain.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/tee_drv.h>
+ #include "optee_private.h"
++#include "optee_smc.h"
++#include "optee_rpc_cmd.h"
+=20
+ struct notif_entry {
+ 	struct list_head link;
+@@ -18,6 +22,54 @@ struct notif_entry {
+ 	u_int key;
+ };
+=20
++static u32 get_async_notif_value(optee_invoke_fn *invoke_fn, bool *value_val=
+id,
++				 bool *value_pending)
 +{
-+	struct notif_entry *entry;
++	struct arm_smccc_res res;
 +
-+	list_for_each_entry(entry, &optee->notif.db, link)
-+		if (entry->key =3D=3D key)
-+			return true;
++	invoke_fn(OPTEE_SMC_GET_ASYNC_NOTIF_VALUE, 0, 0, 0, 0, 0, 0, 0, &res);
 +
-+	return false;
++	if (res.a0)
++		return 0;
++	*value_valid =3D (res.a2 & OPTEE_SMC_ASYNC_NOTIF_VALUE_VALID);
++	*value_pending =3D (res.a2 & OPTEE_SMC_ASYNC_NOTIF_VALUE_PENDING);
++	return res.a1;
 +}
 +
-+int optee_notif_wait(struct optee *optee, u_int key)
++static irqreturn_t notif_irq_handler(int irq, void *dev_id)
 +{
-+	unsigned long flags;
-+	struct notif_entry *entry;
-+	int rc =3D 0;
++	struct optee *optee =3D dev_id;
++	bool do_bottom_half =3D false;
++	bool value_valid;
++	bool value_pending;
++	u32 value;
 +
-+	if (key > optee->notif.max_key)
-+		return -EINVAL;
++	do {
++		value =3D get_async_notif_value(optee->invoke_fn, &value_valid,
++					      &value_pending);
++		if (!value_valid)
++			break;
 +
-+	entry =3D kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		return -ENOMEM;
-+	init_completion(&entry->c);
-+	entry->key =3D key;
++		if (value =3D=3D OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF)
++			do_bottom_half =3D true;
++		else
++			optee_notif_send(optee, value);
++	} while (value_pending);
 +
-+	spin_lock_irqsave(&optee->notif.lock, flags);
++	if (do_bottom_half)
++		return IRQ_WAKE_THREAD;
++	return IRQ_HANDLED;
++}
 +
-+	/*
-+	 * If the bit is already set it means that the key has already
-+	 * been posted and we must not wait.
-+	 */
-+	if (test_bit(key, optee->notif.bitmap)) {
-+		clear_bit(key, optee->notif.bitmap);
-+		goto out;
++static irqreturn_t notif_irq_thread_fn(int irq, void *dev_id)
++{
++	struct optee *optee =3D dev_id;
++
++	optee_do_bottom_half(optee->notif.ctx);
++
++	return IRQ_HANDLED;
++}
++
+ static bool have_key(struct optee *optee, u_int key)
+ {
+ 	struct notif_entry *entry;
+@@ -106,20 +158,69 @@ int optee_notif_send(struct optee *optee, u_int key)
+ 	return 0;
+ }
+=20
+-int optee_notif_init(struct optee *optee, u_int max_key)
++int optee_notif_init(struct optee *optee, u_int max_key, u_int irq)
+ {
++	struct tee_context *ctx;
++	int rc;
++
++	if (irq) {
++		ctx =3D tee_dev_open_helper(optee->teedev);
++		if (IS_ERR(ctx))
++			return PTR_ERR(ctx);
++
++		optee->notif.ctx =3D ctx;
 +	}
 +
-+	/*
-+	 * Check if someone is already waiting for this key. If there is
-+	 * it's a programming error.
-+	 */
-+	if (have_key(optee, key)) {
-+		rc =3D -EBUSY;
-+		goto out;
+ 	spin_lock_init(&optee->notif.lock);
+ 	INIT_LIST_HEAD(&optee->notif.db);
+ 	optee->notif.bitmap =3D bitmap_zalloc(max_key, GFP_KERNEL);
+-	if (!optee->notif.bitmap)
+-		return -ENOMEM;
+-
++	if (!optee->notif.bitmap) {
++		rc =3D -ENOMEM;
++		goto err_put_ctx;
++	}
+ 	optee->notif.max_key =3D max_key;
+=20
++	if (irq) {
++		rc =3D request_threaded_irq(irq, notif_irq_handler,
++					  notif_irq_thread_fn,
++					  0, "optee_notification", optee);
++		if (rc)
++			goto err_free_bitmap;
++
++		optee->notif.irq =3D irq;
 +	}
 +
-+	list_add_tail(&entry->link, &optee->notif.db);
+ 	return 0;
 +
-+	/*
-+	 * Unlock temporarily and wait for completion.
-+	 */
-+	spin_unlock_irqrestore(&optee->notif.lock, flags);
-+	wait_for_completion(&entry->c);
-+	spin_lock_irqsave(&optee->notif.lock, flags);
-+
-+	list_del(&entry->link);
-+out:
-+	spin_unlock_irqrestore(&optee->notif.lock, flags);
-+
-+	kfree(entry);
++err_free_bitmap:
++	kfree(optee->notif.bitmap);
++err_put_ctx:
++	tee_dev_ctx_put(optee->notif.ctx);
++	optee->notif.ctx =3D NULL;
 +
 +	return rc;
-+}
-+
-+int optee_notif_send(struct optee *optee, u_int key)
-+{
-+	unsigned long flags;
-+	struct notif_entry *entry;
-+
-+	if (key > optee->notif.max_key)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&optee->notif.lock, flags);
-+
-+	list_for_each_entry(entry, &optee->notif.db, link)
-+		if (entry->key =3D=3D key) {
-+			complete(&entry->c);
-+			goto out;
+ }
+=20
+ void optee_notif_uninit(struct optee *optee)
+ {
++	if (optee->notif.ctx) {
++		optee_stop_async_notif(optee->notif.ctx);
++		if (optee->notif.irq) {
++			free_irq(optee->notif.irq, optee);
++			irq_dispose_mapping(optee->notif.irq);
 +		}
 +
-+	/* Only set the bit in case there where nobody waiting */
-+	set_bit(key, optee->notif.bitmap);
-+out:
-+	spin_unlock_irqrestore(&optee->notif.lock, flags);
++		/*
++		 * The thread normally working with optee->notif.ctx was
++		 * stopped with free_irq() above.
++		 *
++		 * Note we're not using teedev_close_context() or
++		 * tee_client_close_context() since we have already called
++		 * tee_device_put() while initializing to avoid a circular
++		 * reference counting.
++		 */
++		tee_dev_ctx_put(optee->notif.ctx);
++	}
 +
-+	return 0;
-+}
-+
-+int optee_notif_init(struct optee *optee, u_int max_key)
-+{
-+	spin_lock_init(&optee->notif.lock);
-+	INIT_LIST_HEAD(&optee->notif.db);
-+	optee->notif.bitmap =3D bitmap_zalloc(max_key, GFP_KERNEL);
-+	if (!optee->notif.bitmap)
-+		return -ENOMEM;
-+
-+	optee->notif.max_key =3D max_key;
-+
-+	return 0;
-+}
-+
-+void optee_notif_uninit(struct optee *optee)
-+{
-+	kfree(optee->notif.bitmap);
-+}
+ 	kfree(optee->notif.bitmap);
+ }
+diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+index e3d72d09c484..3e09c8386e46 100644
+--- a/drivers/tee/optee/optee_msg.h
++++ b/drivers/tee/optee/optee_msg.h
+@@ -293,6 +293,13 @@ struct optee_msg_arg {
+  * [in] param[0].u.rmem.shm_ref		holds shared memory reference
+  * [in] param[0].u.rmem.offs		0
+  * [in] param[0].u.rmem.size		0
++ *
++ * OPTEE_MSG_CMD_DO_BOTTOM_HALF does the scheduled bottom half processing
++ * of a driver.
++ *
++ * OPTEE_MSG_CMD_STOP_ASYNC_NOTIF informs secure world that from now is
++ * normal world unable to process asynchronous notifications. Typically
++ * used when the driver is shut down.
+  */
+ #define OPTEE_MSG_CMD_OPEN_SESSION	0
+ #define OPTEE_MSG_CMD_INVOKE_COMMAND	1
+@@ -300,6 +307,8 @@ struct optee_msg_arg {
+ #define OPTEE_MSG_CMD_CANCEL		3
+ #define OPTEE_MSG_CMD_REGISTER_SHM	4
+ #define OPTEE_MSG_CMD_UNREGISTER_SHM	5
++#define OPTEE_MSG_CMD_DO_BOTTOM_HALF	6
++#define OPTEE_MSG_CMD_STOP_ASYNC_NOTIF	7
+ #define OPTEE_MSG_FUNCID_CALL_WITH_ARG	0x0004
+=20
+ #endif /* _OPTEE_MSG_H */
 diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
 ate.h
-index dbdd367be156..76a16d9b6cf4 100644
+index 76a16d9b6cf4..f62a16935c49 100644
 --- a/drivers/tee/optee/optee_private.h
 +++ b/drivers/tee/optee/optee_private.h
-@@ -35,10 +35,12 @@ struct optee_call_queue {
- 	struct list_head waiters;
- };
+@@ -37,6 +37,8 @@ struct optee_call_queue {
 =20
--struct optee_wait_queue {
--	/* Serializes access to this struct */
--	struct mutex mu;
-+struct optee_notif {
-+	u_int max_key;
-+	/* Serializes access to the elements below in this struct */
-+	spinlock_t lock;
+ struct optee_notif {
+ 	u_int max_key;
++	unsigned int irq;
++	struct tee_context *ctx;
+ 	/* Serializes access to the elements below in this struct */
+ 	spinlock_t lock;
  	struct list_head db;
-+	u_long *bitmap;
- };
-=20
- /**
-@@ -72,8 +74,7 @@ struct optee_supp {
-  * @teedev:		client device
-  * @invoke_fn:		function to issue smc or hvc
-  * @call_queue:		queue of threads waiting to call @invoke_fn
-- * @wait_queue:		queue of threads from secure world waiting for a
-- *			secure world sync object
-+ * @notif:		notification synchronization struct
-  * @supp:		supplicant synchronization struct for RPC to supplicant
-  * @pool:		shared memory pool
-  * @memremaped_shm	virtual address of memory in shared memory pool
-@@ -88,7 +89,7 @@ struct optee {
- 	struct tee_device *teedev;
- 	optee_invoke_fn *invoke_fn;
- 	struct optee_call_queue call_queue;
--	struct optee_wait_queue wait_queue;
-+	struct optee_notif notif;
- 	struct optee_supp supp;
- 	struct tee_shm_pool *pool;
- 	void *memremaped_shm;
-@@ -131,8 +132,10 @@ void optee_handle_rpc(struct tee_context *ctx, struct op=
-tee_rpc_param *param,
+@@ -132,7 +134,7 @@ void optee_handle_rpc(struct tee_context *ctx, struct opt=
+ee_rpc_param *param,
  		      struct optee_call_ctx *call_ctx);
  void optee_rpc_finalize_call(struct optee_call_ctx *call_ctx);
 =20
--void optee_wait_queue_init(struct optee_wait_queue *wq);
--void optee_wait_queue_exit(struct optee_wait_queue *wq);
-+int optee_notif_init(struct optee *optee, u_int max_key);
-+void optee_notif_uninit(struct optee *optee);
-+int optee_notif_wait(struct optee *optee, u_int key);
-+int optee_notif_send(struct optee *optee, u_int key);
+-int optee_notif_init(struct optee *optee, u_int max_key);
++int optee_notif_init(struct optee *optee, u_int max_key, u_int irq);
+ void optee_notif_uninit(struct optee *optee);
+ int optee_notif_wait(struct optee *optee, u_int key);
+ int optee_notif_send(struct optee *optee, u_int key);
+@@ -159,6 +161,8 @@ int optee_close_session(struct tee_context *ctx, u32 sess=
+ion);
+ int optee_invoke_func(struct tee_context *ctx, struct tee_ioctl_invoke_arg *=
+arg,
+ 		      struct tee_param *param);
+ int optee_cancel_req(struct tee_context *ctx, u32 cancel_id, u32 session);
++int optee_do_bottom_half(struct tee_context *ctx);
++int optee_stop_async_notif(struct tee_context *ctx);
 =20
- u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
- 			struct tee_param *param);
-diff --git a/drivers/tee/optee/optee_rpc_cmd.h b/drivers/tee/optee/optee_rpc_=
-cmd.h
-index b8275140cef8..f3f06e0994a7 100644
---- a/drivers/tee/optee/optee_rpc_cmd.h
-+++ b/drivers/tee/optee/optee_rpc_cmd.h
-@@ -28,24 +28,27 @@
- #define OPTEE_RPC_CMD_GET_TIME		3
-=20
+ void optee_enable_shm_cache(struct optee *optee);
+ void optee_disable_shm_cache(struct optee *optee);
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index 80eb763a8a80..c6eec6b6febf 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -107,6 +107,12 @@ struct optee_smc_call_get_os_revision_result {
  /*
-- * Wait queue primitive, helper for secure world to implement a wait queue.
-+ * Notification from/to secure world.
+  * Call with struct optee_msg_arg as argument
   *
-- * If secure world needs to wait for a secure world mutex it issues a sleep
-- * request instead of spinning in secure world. Conversely is a wakeup
-- * request issued when a secure world mutex with a thread waiting thread is
-- * unlocked.
-+ * If secure world needs to wait for something, for instance a mutex, it
-+ * does a notification wait request instead of spinning in secure world.
-+ * Conversely can a synchronous notification can be sent when a secure
-+ * world mutex with a thread waiting thread is unlocked.
-  *
-- * Waiting on a key
-- * [in]    value[0].a	    OPTEE_RPC_WAIT_QUEUE_SLEEP
-- * [in]    value[0].b	    Wait key
-+ * This interface can also be used to wait for a asynchronous notification
-+ * which instead is sent via a non-secure interrupt.
-  *
-- * Waking up a key
-- * [in]    value[0].a	    OPTEE_RPC_WAIT_QUEUE_WAKEUP
-- * [in]    value[0].b	    Wakeup key
-+ * Waiting on notification
-+ * [in]    value[0].a	    OPTEE_RPC_NOTIFICATION_WAIT
-+ * [in]    value[0].b	    notification value
++ * When calling this function normal world has a few responsibilities:
++ * 1. It must be able to handle eventual RPCs
++ * 2. Non-secure interrupts should not be masked
++ * 3. If asynchronous notifications has be negotiated successfully, then
++ *    asynchronous notifications should be unmasked during this call.
 + *
-+ * Sending a synchronous notification
-+ * [in]    value[0].a	    OPTEE_RPC_NOTIFICATION_SEND
-+ * [in]    value[0].b	    notification value
-  */
--#define OPTEE_RPC_CMD_WAIT_QUEUE	4
--#define OPTEE_RPC_WAIT_QUEUE_SLEEP	0
--#define OPTEE_RPC_WAIT_QUEUE_WAKEUP	1
-+#define OPTEE_RPC_CMD_NOTIFICATION	4
-+#define OPTEE_RPC_NOTIFICATION_WAIT	0
-+#define OPTEE_RPC_NOTIFICATION_SEND	1
+  * Call register usage:
+  * a0	SMC Function ID, OPTEE_SMC*CALL_WITH_ARG
+  * a1	Upper 32 bits of a 64-bit physical pointer to a struct optee_msg_arg
+@@ -195,7 +201,8 @@ struct optee_smc_get_shm_config_result {
+  * Normal return register usage:
+  * a0	OPTEE_SMC_RETURN_OK
+  * a1	bitfield of secure world capabilities OPTEE_SMC_SEC_CAP_*
+- * a2-7	Preserved
++ * a2	The maximum secure world notification number
++ * a3-7	Preserved
+  *
+  * Error return register usage:
+  * a0	OPTEE_SMC_RETURN_ENOTAVAIL, can't use the capabilities from normal wor=
+ld
+@@ -218,6 +225,8 @@ struct optee_smc_get_shm_config_result {
+ #define OPTEE_SMC_SEC_CAP_VIRTUALIZATION	BIT(3)
+ /* Secure world supports Shared Memory with a NULL reference */
+ #define OPTEE_SMC_SEC_CAP_MEMREF_NULL		BIT(4)
++/* Secure world supports asynchronous notification of normal world */
++#define OPTEE_SMC_SEC_CAP_ASYNC_NOTIF		BIT(5)
+=20
+ #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
+ #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
+@@ -226,8 +235,8 @@ struct optee_smc_get_shm_config_result {
+ struct optee_smc_exchange_capabilities_result {
+ 	unsigned long status;
+ 	unsigned long capabilities;
++	unsigned long max_notif_value;
+ 	unsigned long reserved0;
+-	unsigned long reserved1;
+ };
 =20
  /*
-  * Suspend execution
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index efbaff7ad7e5..fa492655843a 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
+@@ -319,6 +328,68 @@ struct optee_smc_disable_shm_cache_result {
+ #define OPTEE_SMC_GET_THREAD_COUNT \
+ 	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_THREAD_COUNT)
+=20
++/*
++ * Inform OP-TEE that normal world is able to receive asynchronous
++ * notifications.
++ *
++ * Call requests usage:
++ * a0	SMC Function ID, OPTEE_SMC_ENABLE_ASYNC_NOTIF
++ * a1-6	Not used
++ * a7	Hypervisor Client ID register
++ *
++ * Normal return register usage:
++ * a0	OPTEE_SMC_RETURN_OK
++ * a1-7	Preserved
++ *
++ * Not supported return register usage:
++ * a0	OPTEE_SMC_RETURN_ENOTAVAIL
++ * a1-7	Preserved
++ */
++#define OPTEE_SMC_FUNCID_ENABLE_ASYNC_NOTIF	16
++#define OPTEE_SMC_ENABLE_ASYNC_NOTIF \
++	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_ENABLE_ASYNC_NOTIF)
++
++/*
++ * Retrieve a value of notifications pended since the last call of this
++ * function.
++ *
++ * OP-TEE keeps a records of all posted values. When an interrupts is
++ * received which indicates that there are posed values this function
++ * should be called until all pended values has been retrieved. When a
++ * value is retrieved it's cleared from the record in secure world.
++ *
++ * Call requests usage:
++ * a0	SMC Function ID, OPTEE_SMC_GET_ASYNC_NOTIF_VALUE
++ * a1-6	Not used
++ * a7	Hypervisor Client ID register
++ *
++ * Normal return register usage:
++ * a0	OPTEE_SMC_RETURN_OK
++ * a1	value
++ * a2	Bit[0]: OPTEE_SMC_ASYNC_NOTIF_VALUE_VALID if the value in a1 is
++ *		valid, else 0 if no values where pending
++ * a2	Bit[1]: OPTEE_SMC_ASYNC_NOTIF_VALUE_PENDING if another value is
++ *		pending, else 0.
++ *	Bit[31:2]: MBZ
++ * a3-7	Preserved
++ *
++ * Not supported return register usage:
++ * a0	OPTEE_SMC_RETURN_ENOTAVAIL
++ * a1-7	Preserved
++ */
++#define OPTEE_SMC_ASYNC_NOTIF_VALUE_VALID	BIT(0)
++#define OPTEE_SMC_ASYNC_NOTIF_VALUE_PENDING	BIT(1)
++
++/*
++ * Notification that OP-TEE expects a yielding call to do some bottom half
++ * work in a driver.
++ */
++#define OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF	0
++
++#define OPTEE_SMC_FUNCID_GET_ASYNC_NOTIF_VALUE	17
++#define OPTEE_SMC_GET_ASYNC_NOTIF_VALUE \
++	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_ASYNC_NOTIF_VALUE)
++
  /*
-- * Copyright (c) 2015-2016, Linaro Limited
-+ * Copyright (c) 2015-2021, Linaro Limited
-  */
-=20
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-@@ -14,23 +14,6 @@
- #include "optee_smc.h"
- #include "optee_rpc_cmd.h"
-=20
--struct wq_entry {
--	struct list_head link;
--	struct completion c;
--	u32 key;
--};
--
--void optee_wait_queue_init(struct optee_wait_queue *priv)
--{
--	mutex_init(&priv->mu);
--	INIT_LIST_HEAD(&priv->db);
--}
--
--void optee_wait_queue_exit(struct optee_wait_queue *priv)
--{
--	mutex_destroy(&priv->mu);
--}
--
- static void handle_rpc_func_cmd_get_time(struct optee_msg_arg *arg)
- {
- 	struct timespec64 ts;
-@@ -143,48 +126,6 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee_=
-context *ctx,
- }
- #endif
-=20
--static struct wq_entry *wq_entry_get(struct optee_wait_queue *wq, u32 key)
--{
--	struct wq_entry *w;
--
--	mutex_lock(&wq->mu);
--
--	list_for_each_entry(w, &wq->db, link)
--		if (w->key =3D=3D key)
--			goto out;
--
--	w =3D kmalloc(sizeof(*w), GFP_KERNEL);
--	if (w) {
--		init_completion(&w->c);
--		w->key =3D key;
--		list_add_tail(&w->link, &wq->db);
--	}
--out:
--	mutex_unlock(&wq->mu);
--	return w;
--}
--
--static void wq_sleep(struct optee_wait_queue *wq, u32 key)
--{
--	struct wq_entry *w =3D wq_entry_get(wq, key);
--
--	if (w) {
--		wait_for_completion(&w->c);
--		mutex_lock(&wq->mu);
--		list_del(&w->link);
--		mutex_unlock(&wq->mu);
--		kfree(w);
--	}
--}
--
--static void wq_wakeup(struct optee_wait_queue *wq, u32 key)
--{
--	struct wq_entry *w =3D wq_entry_get(wq, key);
--
--	if (w)
--		complete(&w->c);
--}
--
- static void handle_rpc_func_cmd_wq(struct optee *optee,
- 				   struct optee_msg_arg *arg)
- {
-@@ -196,11 +137,13 @@ static void handle_rpc_func_cmd_wq(struct optee *optee,
- 		goto bad;
-=20
- 	switch (arg->params[0].u.value.a) {
--	case OPTEE_RPC_WAIT_QUEUE_SLEEP:
--		wq_sleep(&optee->wait_queue, arg->params[0].u.value.b);
-+	case OPTEE_RPC_NOTIFICATION_WAIT:
-+		if (optee_notif_wait(optee, arg->params[0].u.value.b))
-+			goto bad;
- 		break;
--	case OPTEE_RPC_WAIT_QUEUE_WAKEUP:
--		wq_wakeup(&optee->wait_queue, arg->params[0].u.value.b);
-+	case OPTEE_RPC_NOTIFICATION_SEND:
-+		if (optee_notif_send(optee, arg->params[0].u.value.b))
-+			goto bad;
- 		break;
- 	default:
- 		goto bad;
-@@ -463,7 +406,7 @@ static void handle_rpc_func_cmd(struct tee_context *ctx, =
-struct optee *optee,
- 	case OPTEE_RPC_CMD_GET_TIME:
- 		handle_rpc_func_cmd_get_time(arg);
- 		break;
--	case OPTEE_RPC_CMD_WAIT_QUEUE:
-+	case OPTEE_RPC_CMD_NOTIFICATION:
- 		handle_rpc_func_cmd_wq(optee, arg);
- 		break;
- 	case OPTEE_RPC_CMD_SUSPEND:
+  * Resume from RPC (for example after processing a foreign interrupt)
+  *
 --=20
 2.31.1
 
 
---===============0976278454063458404==--
+--===============2707301656665866927==--
 
