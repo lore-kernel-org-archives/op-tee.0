@@ -1,163 +1,165 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 4/6] tee: add tee_dev_open_helper() primitive
-Date: Fri, 27 Aug 2021 11:53:12 +0530
-Message-ID: 
- <CAFA6WYM_zaVsWzP-sDuD6_xf3qgv-sQsbEAebZG6vtFrKfRpag@mail.gmail.com>
-In-Reply-To: <20210826123032.1732926-5-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v4 4/5] optee: isolate smc abi
+Date: Fri, 27 Aug 2021 09:18:22 +0200
+Message-ID: <20210827071822.GA1748471@jade>
+In-Reply-To: <
+ <CAFA6WYOZsZKfG0ZO8LGMcvQG8-pV0Z=hGF2nDFg7OW2DQO0esw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3108553865727220219=="
+Content-Type: multipart/mixed; boundary="===============6797121924678230883=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3108553865727220219==
+--===============6797121924678230883==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 26 Aug 2021 at 18:00, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
-> Adds tee_dev_open_helper() and tee_dev_ctx_put() to make it easier to
-> create a driver internal struct tee_context without the usual
-> tee_device_get() on the struct tee_device as that adds a circular
-> reference counter dependency and would prevent the struct tee_device
-> from ever being released again.
+On Wed, Aug 25, 2021 at 05:11:00PM +0530, Sumit Garg wrote:
+> On Thu, 19 Aug 2021 at 16:37, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
+> >
+> > Isolate the ABI based on raw SMCs. Code specific to the raw SMC ABI is
+> > moved into smc_abi.c. This makes room for other ABIs with a clear
+> > separation.
+> >
+> > The driver changes to use module_init()/module_exit() instead of
+> > module_platform_driver(). The platform_driver_register() and
+> > platform_driver_unregister() functions called directly to keep the same
+> > behavior. This is needed because module_platform_driver() is based on
+> > module_driver() which can only be used once in a module.
+> >
+> > A function optee_rpc_cmd() is factored out from the function
+> > handle_rpc_func_cmd() to handle the ABI independent part of RPC
+> > processing.
+> >
+> > This patch is not supposed to change the driver behavior, it's only a
+> > matter of reorganizing the code.
+> >
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> >  drivers/tee/optee/Makefile        |    6 +-
+> >  drivers/tee/optee/call.c          |  339 +-------
+> >  drivers/tee/optee/core.c          |  688 +--------------
+> >  drivers/tee/optee/optee_private.h |  103 ++-
+> >  drivers/tee/optee/rpc.c           |  217 +----
+> >  drivers/tee/optee/shm_pool.c      |   89 --
+> >  drivers/tee/optee/shm_pool.h      |   14 -
+> >  drivers/tee/optee/smc_abi.c       | 1299 +++++++++++++++++++++++++++++
+> >  8 files changed, 1439 insertions(+), 1316 deletions(-)
+> >  delete mode 100644 drivers/tee/optee/shm_pool.c
+> >  delete mode 100644 drivers/tee/optee/shm_pool.h
+> >  create mode 100644 drivers/tee/optee/smc_abi.c
+> >
+>=20
+> Apart from minor comments below including one related to rebase, this
+> looks good to me. So feel free to add:
+>=20
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+>=20
+> > diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
+> > index 3aa33ea9e6a6..e92f77462f40 100644
+> > --- a/drivers/tee/optee/Makefile
+> > +++ b/drivers/tee/optee/Makefile
+> > @@ -4,8 +4,10 @@ optee-objs +=3D core.o
+> >  optee-objs +=3D call.o
+> >  optee-objs +=3D rpc.o
+> >  optee-objs +=3D supp.o
+> > -optee-objs +=3D shm_pool.o
+> >  optee-objs +=3D device.o
+> >
+> > +optee-smc-abi-y =3D smc_abi.o
+> > +optee-objs +=3D $(optee-ffa-abi-y)
+>=20
+> Did you mean optee-smc-abi-y here?
 
-Can you elaborate regarding the circular dependency issue you are
-referring to? IIUC, lifespan for struct tee_device would look like
-below with normal teedev_open():
+Yes, I'll fix, thanks.
 
-optee_probe() {
-  ...
-  tee_device_alloc()            <- teedev->num_users =3D 1
-  tee_device_register()
-  optee_notif_init()               <- tee_device_get()
-  ...
-}
+[snip]
+> > index d767eebf30bd..000000000000
+> > --- a/drivers/tee/optee/shm_pool.c
+> > +++ /dev/null
+> > @@ -1,89 +0,0 @@
+> > -// SPDX-License-Identifier: GPL-2.0-only
+> > -/*
+> > - * Copyright (c) 2015, Linaro Limited
+> > - * Copyright (c) 2017, EPAM Systems
+> > - */
+> > -#include <linux/device.h>
+> > -#include <linux/dma-buf.h>
+> > -#include <linux/genalloc.h>
+> > -#include <linux/slab.h>
+> > -#include <linux/tee_drv.h>
+> > -#include "optee_private.h"
+> > -#include "optee_smc.h"
+> > -#include "shm_pool.h"
+> > -
+> > -static int pool_op_alloc(struct tee_shm_pool_mgr *poolm,
+> > -                        struct tee_shm *shm, size_t size)
+> > -{
+> > -       unsigned int order =3D get_order(size);
+> > -       struct page *page;
+> > -       int rc =3D 0;
+> > -
+> > -       page =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
+> > -       if (!page)
+> > -               return -ENOMEM;
+> > -
+> > -       shm->kaddr =3D page_address(page);
+> > -       shm->paddr =3D page_to_phys(page);
+> > -       shm->size =3D PAGE_SIZE << order;
+> > -
+> > -       if (shm->flags & TEE_SHM_DMA_BUF) {
+>=20
+> I guess this series needs to be rebased on top of mainline, since now
+> we have TEE_SHM_PRIV flag here [1]?
+>=20
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree=
+/drivers/tee/optee/shm_pool.c
 
-optee_remove() {
-  ...
-  optee_notif_uninit()           <- tee_device_put()
-  tee_device_unregister()    <- tee_device_put()
-  ...
-}
+Right, I'll take care of that in the next patchset.
 
--Sumit
+[snip]
+> > --- /dev/null
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -0,0 +1,1299 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (c) 2015-2021, Linaro Limited
+> > + * Copyright (c) 2016, EPAM Systems
+> > + */
+> > +
+> > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > +
+> > +#include <linux/arm-smccc.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/io.h>
+> > +#include <linux/sched.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_platform.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/string.h>
+> > +#include <linux/tee_drv.h>
+> > +#include <linux/types.h>
+> > +#include <linux/workqueue.h>
+> > +#include "optee_private.h"
+> > +#include "optee_smc.h"
+> > +#include "optee_rpc_cmd.h"
+> > +#define CREATE_TRACE_POINTS
+> > +#include "optee_trace.h"
+> > +
+> > +/*
+> > + * This file implement the SMC ABI used when communicating with secure w=
+orld
+> > + * OP-TEE OS via raw SMCs.
+> > + * This file is divided into the follow sections:
+>=20
+> s/follow/following/
 
->
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/tee_core.c  | 33 ++++++++++++++++++++++++---------
->  include/linux/tee_drv.h | 27 +++++++++++++++++++++++++++
->  2 files changed, 51 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index 85102d12d716..3beb682684a8 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -43,14 +43,11 @@ static DEFINE_SPINLOCK(driver_lock);
->  static struct class *tee_class;
->  static dev_t tee_devt;
->
-> -static struct tee_context *teedev_open(struct tee_device *teedev)
-> +struct tee_context *tee_dev_open_helper(struct tee_device *teedev)
->  {
->         int rc;
->         struct tee_context *ctx;
->
-> -       if (!tee_device_get(teedev))
-> -               return ERR_PTR(-EINVAL);
-> -
->         ctx =3D kzalloc(sizeof(*ctx), GFP_KERNEL);
->         if (!ctx) {
->                 rc =3D -ENOMEM;
-> @@ -66,10 +63,30 @@ static struct tee_context *teedev_open(struct tee_devic=
-e *teedev)
->         return ctx;
->  err:
->         kfree(ctx);
-> -       tee_device_put(teedev);
->         return ERR_PTR(rc);
->
->  }
-> +EXPORT_SYMBOL_GPL(tee_dev_open_helper);
-> +
-> +void tee_dev_ctx_put(struct tee_context *ctx)
-> +{
-> +       teedev_ctx_put(ctx);
-> +}
-> +EXPORT_SYMBOL_GPL(tee_dev_ctx_put);
-> +
-> +static struct tee_context *teedev_open(struct tee_device *teedev)
-> +{
-> +       struct tee_context *ctx;
-> +
-> +       if (!tee_device_get(teedev))
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       ctx =3D tee_dev_open_helper(teedev);
-> +       if (IS_ERR(ctx))
-> +               tee_device_put(teedev);
-> +
-> +       return ctx;
-> +}
->
->  void teedev_ctx_get(struct tee_context *ctx)
->  {
-> @@ -90,10 +107,8 @@ static void teedev_ctx_release(struct kref *ref)
->
->  void teedev_ctx_put(struct tee_context *ctx)
->  {
-> -       if (ctx->releasing)
-> -               return;
-> -
-> -       kref_put(&ctx->refcount, teedev_ctx_release);
-> +       if (ctx && !ctx->releasing)
-> +               kref_put(&ctx->refcount, teedev_ctx_release);
->  }
->
->  static void teedev_close_context(struct tee_context *ctx)
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index 3ebfea0781f1..00a31ff03049 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -458,6 +458,33 @@ static inline int tee_shm_get_id(struct tee_shm *shm)
->   */
->  struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
->
-> +/**
-> + * tee_dev_open_helper() - helper function to make a struct tee_context
-> + * @teedev:    Device to open
-> + *
-> + * Creates the struct tee_context without increasing the reference counter
-> + * on @teedev. This is needed for instance when a driver need an internal
-> + * struct tee_context to operate on. By skipping the reference counter
-> + * the circular dependency is broken.
-> + *
-> + * Note that this struct tee_context need special care when freeing in
-> + * order to avoid the normal put on the struct tee_device.
-> + * tee_dev_ctx_put() is the best choice for this.
-> + *
-> + * @returns a pointer 'struct tee_context' on success or an ERR_PTR on fai=
-lure
-> + */
-> +struct tee_context *tee_dev_open_helper(struct tee_device *teedev);
-> +
-> +/**
-> + * tee_dev_ctx_put() - helper function to release a struct tee_context
-> + * @ctx:       The struct tee_context to release
-> + *
-> + * Note that this function doesn't do a tee_device_put() on the internal
-> + * struct tee_device so this function should normal only be used when
-> + * releasing a struct tee_context obtained with tee_dev_open_helper().
-> + */
-> +void tee_dev_ctx_put(struct tee_context *ctx);
-> +
->  /**
->   * tee_client_open_context() - Open a TEE context
->   * @start:     if not NULL, continue search after this context
-> --
-> 2.31.1
->
+I'll fix.
 
---===============3108553865727220219==--
+Thanks,
+Jens
+
+--===============6797121924678230883==--
 
