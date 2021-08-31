@@ -1,177 +1,134 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 4/6] tee: add tee_dev_open_helper() primitive
-Date: Fri, 27 Aug 2021 11:26:16 +0200
-Message-ID: 
- <CAHUa44FWM-QRfeEb5rreN4J9yJjQJQrh3XEm-YLBQmZMvBLC0g@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYM_zaVsWzP-sDuD6_xf3qgv-sQsbEAebZG6vtFrKfRpag@mail.gmail.com>>
+Subject: [PATCH v5 0/5] Add FF-A support in OP-TEE driver
+Date: Tue, 31 Aug 2021 09:24:07 +0200
+Message-ID: <20210831072412.887565-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4643832475297193100=="
+Content-Type: multipart/mixed; boundary="===============1577434662818981886=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4643832475297193100==
+--===============1577434662818981886==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 27, 2021 at 8:23 AM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Thu, 26 Aug 2021 at 18:00, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > Adds tee_dev_open_helper() and tee_dev_ctx_put() to make it easier to
-> > create a driver internal struct tee_context without the usual
-> > tee_device_get() on the struct tee_device as that adds a circular
-> > reference counter dependency and would prevent the struct tee_device
-> > from ever being released again.
->
-> Can you elaborate regarding the circular dependency issue you are
-> referring to? IIUC, lifespan for struct tee_device would look like
-> below with normal teedev_open():
->
-> optee_probe() {
->   ...
->   tee_device_alloc()            <- teedev->num_users =3D 1
->   tee_device_register()
->   optee_notif_init()               <- tee_device_get()
->   ...
-> }
->
-> optee_remove() {
->   ...
->   optee_notif_uninit()           <- tee_device_put()
->   tee_device_unregister()    <- tee_device_put()
->   ...
-> }
+Hi all,
 
-You're right, it works just as well without this patch.
-teedev_close_context() and teedev_open() must be exported in another
-patch though. I'll replace this patch with such a patch in the next
-patch set.
+This adds supports for the OP-TEE driver to communicate with secure world
+using FF-A [1] as transport.
 
+There is one change to the TEE subsystem with "tee: add sec_world_id to
+struct tee_shm" to add support for holding globally unique handle assigned
+by the FF-A. This is a field that I believe could useful for the AMDTEE
+driver too.
+
+For communication the OP-TEE message protocol is still used, but with a new
+type of memory reference, struct optee_msg_param_fmem, to carry the
+information needed by FF-A. The OP-TEE driver is refactored internally with
+to sets of callbacks, one for the old SMC based communication and another
+set with FF-A as transport. The functions relating to the SMC based ABI
+are moved to smc_abi.c while the FF-A based ABI is added in a ffa_abi.c.
+
+There is also a difference in how the drivers are instantiated. With the
+SMC based transport we have a platform driver, module_platform_driver(),
+today which we're keeping as is for this configuration. In a FF-A system we
+have a FF-A driver, module_ffa_driver(), instead.
+
+The OP-TEE driver can be compiled for both targets at the same time and
+it's up to runtime configuration (device tree or ACPI) to decide how it's
+initialized. Note that it's only the old SMC based driver instance that
+need device tree or ACPI to initialize. The FF-A based driver relies on the
+FF-A bus instead.
+
+This can be tested QEMU
+The repo for SPMC at S-EL1 retrieved by
+repo init -u https://github.com/jenswi-linaro/manifest.git -m
+qemu_v8.xml -b ffav4_spmc
+repo sync
+# Then checkout the branch optee_ffa_v5 from
+# git://git.linaro.org/people/jens.wiklander/linux-tee.git
+# in the linux directory
+
+To build do:
+cd build
+make toolchains
+make all
+
+To boot:
+make run-only
+
+Test with xtest, perhaps only with the command "xtest 1004" in case you're
+not interested in too many tests.
 
 Thanks,
 Jens
 
->
-> -Sumit
->
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/tee_core.c  | 33 ++++++++++++++++++++++++---------
-> >  include/linux/tee_drv.h | 27 +++++++++++++++++++++++++++
-> >  2 files changed, 51 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index 85102d12d716..3beb682684a8 100644
-> > --- a/drivers/tee/tee_core.c
-> > +++ b/drivers/tee/tee_core.c
-> > @@ -43,14 +43,11 @@ static DEFINE_SPINLOCK(driver_lock);
-> >  static struct class *tee_class;
-> >  static dev_t tee_devt;
-> >
-> > -static struct tee_context *teedev_open(struct tee_device *teedev)
-> > +struct tee_context *tee_dev_open_helper(struct tee_device *teedev)
-> >  {
-> >         int rc;
-> >         struct tee_context *ctx;
-> >
-> > -       if (!tee_device_get(teedev))
-> > -               return ERR_PTR(-EINVAL);
-> > -
-> >         ctx =3D kzalloc(sizeof(*ctx), GFP_KERNEL);
-> >         if (!ctx) {
-> >                 rc =3D -ENOMEM;
-> > @@ -66,10 +63,30 @@ static struct tee_context *teedev_open(struct tee_dev=
-ice *teedev)
-> >         return ctx;
-> >  err:
-> >         kfree(ctx);
-> > -       tee_device_put(teedev);
-> >         return ERR_PTR(rc);
-> >
-> >  }
-> > +EXPORT_SYMBOL_GPL(tee_dev_open_helper);
-> > +
-> > +void tee_dev_ctx_put(struct tee_context *ctx)
-> > +{
-> > +       teedev_ctx_put(ctx);
-> > +}
-> > +EXPORT_SYMBOL_GPL(tee_dev_ctx_put);
-> > +
-> > +static struct tee_context *teedev_open(struct tee_device *teedev)
-> > +{
-> > +       struct tee_context *ctx;
-> > +
-> > +       if (!tee_device_get(teedev))
-> > +               return ERR_PTR(-EINVAL);
-> > +
-> > +       ctx =3D tee_dev_open_helper(teedev);
-> > +       if (IS_ERR(ctx))
-> > +               tee_device_put(teedev);
-> > +
-> > +       return ctx;
-> > +}
-> >
-> >  void teedev_ctx_get(struct tee_context *ctx)
-> >  {
-> > @@ -90,10 +107,8 @@ static void teedev_ctx_release(struct kref *ref)
-> >
-> >  void teedev_ctx_put(struct tee_context *ctx)
-> >  {
-> > -       if (ctx->releasing)
-> > -               return;
-> > -
-> > -       kref_put(&ctx->refcount, teedev_ctx_release);
-> > +       if (ctx && !ctx->releasing)
-> > +               kref_put(&ctx->refcount, teedev_ctx_release);
-> >  }
-> >
-> >  static void teedev_close_context(struct tee_context *ctx)
-> > diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> > index 3ebfea0781f1..00a31ff03049 100644
-> > --- a/include/linux/tee_drv.h
-> > +++ b/include/linux/tee_drv.h
-> > @@ -458,6 +458,33 @@ static inline int tee_shm_get_id(struct tee_shm *shm)
-> >   */
-> >  struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
-> >
-> > +/**
-> > + * tee_dev_open_helper() - helper function to make a struct tee_context
-> > + * @teedev:    Device to open
-> > + *
-> > + * Creates the struct tee_context without increasing the reference count=
-er
-> > + * on @teedev. This is needed for instance when a driver need an internal
-> > + * struct tee_context to operate on. By skipping the reference counter
-> > + * the circular dependency is broken.
-> > + *
-> > + * Note that this struct tee_context need special care when freeing in
-> > + * order to avoid the normal put on the struct tee_device.
-> > + * tee_dev_ctx_put() is the best choice for this.
-> > + *
-> > + * @returns a pointer 'struct tee_context' on success or an ERR_PTR on f=
-ailure
-> > + */
-> > +struct tee_context *tee_dev_open_helper(struct tee_device *teedev);
-> > +
-> > +/**
-> > + * tee_dev_ctx_put() - helper function to release a struct tee_context
-> > + * @ctx:       The struct tee_context to release
-> > + *
-> > + * Note that this function doesn't do a tee_device_put() on the internal
-> > + * struct tee_device so this function should normal only be used when
-> > + * releasing a struct tee_context obtained with tee_dev_open_helper().
-> > + */
-> > +void tee_dev_ctx_put(struct tee_context *ctx);
-> > +
-> >  /**
-> >   * tee_client_open_context() - Open a TEE context
-> >   * @start:     if not NULL, continue search after this context
-> > --
-> > 2.31.1
-> >
+[1] https://developer.arm.com/documentation/den0077/latest
 
---===============4643832475297193100==--
+v4->v5:
+- Rebased on v5.14, tricky conflicts primarily between "optee: isolate smc
+  abi" and mostly 376e4199e327 "tee: Correct inappropriate usage of
+  TEE_SHM_DMA_BUF flag" but also with the other kexec fixes that went into
+  v5.14-rc5.
+- Addressing comments from Sumit and applying
+  Reviewed-by: Sumit Garg <sumit.garg@linaro.org> on "optee: isolate smc ab=
+i"
+- Addressing comments from Sumit and applying
+  Acked-by: Sumit Garg <sumit.garg@linaro.org> on "optee: add FF-A support"
+
+v3->v4:
+- Made a bit more RPC code common between the SMC and FF-A ABIs as
+  requested by Sumit.
+- Replaced module_platform_driver() with module_init()/module_exit() as
+  described in the commit "optee: isolate smc abi".
+- Applied Sumit's R-B for the commits "tee: add sec_world_id to struct
+  tee_shm", "optee: simplify optee_release()", and "optee: refactor driver
+  with internal callbacks"
+
+v2->v3:
+- Rebased on 5.14-rc2 which now have the FF-A patches merged
+- Fixed a couple bugs in optee_shm_register() and optee_shm_unregister()
+  which where introduced in "optee: refactor driver with internal callbacks"
+  in previous the version.
+- Separated SMC ABI specifics into smc_abi.c to keep it separated from
+  the FF-A ABI functions as requested by Sumit.
+- Added the FF-A specifics in ffa_abi.c
+- Provided an implementation for optee_ffa_remove()
+
+v1->v2:
+- Rebased to the FF-A v7 patch
+- Fixed a couple of reports from kernel test robot <lkp@intel.com>
+
+
+
+Jens Wiklander (5):
+  tee: add sec_world_id to struct tee_shm
+  optee: simplify optee_release()
+  optee: refactor driver with internal callbacks
+  optee: isolate smc abi
+  optee: add FF-A support
+
+ drivers/tee/optee/Makefile        |    7 +-
+ drivers/tee/optee/call.c          |  445 ++--------
+ drivers/tee/optee/core.c          |  719 ++-------------
+ drivers/tee/optee/ffa_abi.c       |  907 +++++++++++++++++++
+ drivers/tee/optee/optee_ffa.h     |  153 ++++
+ drivers/tee/optee/optee_msg.h     |   27 +-
+ drivers/tee/optee/optee_private.h |  163 +++-
+ drivers/tee/optee/rpc.c           |  237 +----
+ drivers/tee/optee/shm_pool.c      |  101 ---
+ drivers/tee/optee/shm_pool.h      |   14 -
+ drivers/tee/optee/smc_abi.c       | 1360 +++++++++++++++++++++++++++++
+ include/linux/tee_drv.h           |    7 +-
+ 12 files changed, 2732 insertions(+), 1408 deletions(-)
+ create mode 100644 drivers/tee/optee/ffa_abi.c
+ create mode 100644 drivers/tee/optee/optee_ffa.h
+ delete mode 100644 drivers/tee/optee/shm_pool.c
+ delete mode 100644 drivers/tee/optee/shm_pool.h
+ create mode 100644 drivers/tee/optee/smc_abi.c
+
+--=20
+2.31.1
+
+
+--===============1577434662818981886==--
 
