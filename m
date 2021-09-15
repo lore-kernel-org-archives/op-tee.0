@@ -1,43 +1,48 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH linux-next] tee/optee/shm_pool: fix application of sizeof
- to pointer
-Date: Mon, 13 Sep 2021 11:21:43 +0200
-Message-ID: <20210913092143.GA165502@jade>
-In-Reply-To: <20210902103428.bdbkybvi6he6mgy2@maple.lan>
+Subject: [GIT PULL] OP-TEE fix for v5.15
+Date: Wed, 15 Sep 2021 13:38:13 +0200
+Message-ID: <20210915113813.GA509196@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4346912371615786035=="
+Content-Type: multipart/mixed; boundary="===============8842338795944698143=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4346912371615786035==
+--===============8842338795944698143==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 02, 2021 at 11:34:28AM +0100, Daniel Thompson wrote:
-> On Thu, Aug 19, 2021 at 08:21:27PM -0700, CGEL wrote:
-> > From: jing yangyang <jing.yangyang@zte.com.cn>
-> >=20
-> > sizeof when applied to a pointer typed expression gives the size of
-> > the pointer.
-> >=20
-> > ./drivers/tee/optee/shm_pool.c:38:28-34: ERROR application of sizeof to p=
-ointer
-> >=20
-> > This issue was detected with the help of Coccinelle.
-> >=20
-> > Reported-by: Zeal Robot <zealci@zte.com.cn>
-> > Signed-off-by: jing yangyang <jing.yangyang@zte.com.cn>
->=20
-> This should not affect code generation since both pages and *pages are
-> pointers but the change looks good to me.
->=20
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Hello arm-soc maintainers,
 
-Thanks for reviewing, I agree with your analysis.=20
-I'm picking this up as a bugfix for V5.15.
+Please pull this small OP-TEE driver fix for the shared memory pool
+handler. The fix doesn't change the generated code, but it's still relevant
+since the problem obviously triggers warnings with some tools.
 
-Cheers,
+Thanks,
 Jens
 
---===============4346912371615786035==--
+The following changes since commit 7d2a07b769330c34b4deabeed939325c77a7ec2f:
+
+  Linux 5.14 (2021-08-29 15:04:50 -0700)
+
+are available in the Git repository at:
+
+  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-fix-for=
+-v5.15
+
+for you to fetch changes up to 88a3856c0a8c03188db7913f4d49379432fe1f93:
+
+  tee/optee/shm_pool: fix application of sizeof to pointer (2021-09-14 07:54:=
+56 +0200)
+
+----------------------------------------------------------------
+Fix OP-TEE shm_pool lint warning
+
+----------------------------------------------------------------
+jing yangyang (1):
+      tee/optee/shm_pool: fix application of sizeof to pointer
+
+ drivers/tee/optee/shm_pool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--===============8842338795944698143==--
 
