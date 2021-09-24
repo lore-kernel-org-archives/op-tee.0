@@ -1,55 +1,36 @@
 From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions (LOC) monthly meeting Sep 2021
-Date: Thu, 23 Sep 2021 09:39:49 +0530
+Subject: Preparing for OP-TEE 3.15.0
+Date: Fri, 24 Sep 2021 11:19:20 +0530
 Message-ID: 
- <CANZ+81F-QS+jMufp4KRtq1cLdZ7-GKpP1ywq1f7f_+5p2u-4gQ@mail.gmail.com>
-In-Reply-To: <
- <CANZ+81EJDNrsbmLc=nYTLxNOp1=Q6YsJkcAr52G6mewSCuuJ_Q@mail.gmail.com>>
+ <CANZ+81GNawQSEKyJYJShZ_zETdqhGO5_23jcbD2yepD1OjZJpg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5536224135442156545=="
+Content-Type: multipart/mixed; boundary="===============5324860052780979224=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5536224135442156545==
+--===============5324860052780979224==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+[BCC all OP-TEE maintainers]
 
-We have the Linaro OP-TEE Contributions (LOC) monthly meeting planned for
-today at 17.00 (UTC+2).
+Hi OP-TEE maintainers & contributors,
 
-Agenda:
-FF-A based mediator in XEN - Jens
-OP-TEE Linaro Contribution - Current status and Roadmap - Ruchika
+OP-TEE v3.15.0 is scheduled to be released on 2021-10-15. So, now is
+a good time to start testing the master branch on the various platforms
+and report/fix any bugs.
+
+The GitHub pull request for collecting Tested-by tags or any other
+comments is https://github.com/OP-TEE/optee_os/pull/4880
+
+As usual, we will create a release candidate tag one week before the
+release date for final testing.
+
+In addition to that you can find some additional information related to
+releases here: https://optee.readthedocs.io/en/latest/general/releases.html
 
 Regards,
 Ruchika
 
-On Thu, 16 Sept 2021 at 11:26, Ruchika Gupta <ruchika.gupta@linaro.org>
-wrote:
-
-> Hi,
->
-> Linaro OP-TEE Contributions (LOC) monthly meeting is planned to take
-> place on Thursday Sep 23(a)17.00 (UTC+2).
->
-> Following topics are on the agenda:
-> - OP-TEE Linaro Contribution - Current status and Roadmap - Ruchika
-> - FF-A based mediator in XEN - Jens
->
-> If you have any other topics you'd like to discuss, please let us know.
->
-> Meeting details:
-> ---------------
-> Date/time: Thursday Sep 23(a)17.00 (UTC+2)
-> https://everytimezone.com/s/35c9885e
-> Connection details: https://www.trustedfirmware.org/meetings/
-> Meeting notes: http://bit.ly/loc-notes
->
-> Regards,
-> Ruchika on behalf of the Linaro OP-TEE team
->
-
---===============5536224135442156545==--
+--===============5324860052780979224==--
 
