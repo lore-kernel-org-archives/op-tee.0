@@ -1,82 +1,121 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 0/5] Add FF-A support in OP-TEE driver
-Date: Fri, 01 Oct 2021 10:29:39 +0100
-Message-ID: <20211001092939.heiskb5gqzx3nd7p@bogus>
-In-Reply-To: <20210831072412.887565-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v5 5/5] optee: add FF-A support
+Date: Fri, 01 Oct 2021 10:34:24 +0100
+Message-ID: <20211001093424.n4x34qp3ewbbijmc@bogus>
+In-Reply-To: <20210831072412.887565-6-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6060495595659804387=="
+Content-Type: multipart/mixed; boundary="===============4408862566883834733=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6060495595659804387==
+--===============4408862566883834733==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 31, 2021 at 09:24:07AM +0200, Jens Wiklander wrote:
-> Hi all,
+On Tue, Aug 31, 2021 at 09:24:12AM +0200, Jens Wiklander wrote:
+> Adds support for using FF-A [1] as transport to the OP-TEE driver.
 >=20
-> This adds supports for the OP-TEE driver to communicate with secure world
-> using FF-A [1] as transport.
+> Introduces struct optee_msg_param_fmem which carries all information
+> needed when OP-TEE is calling FFA_MEM_RETRIEVE_REQ to get the shared
+> memory reference mapped by the hypervisor in S-EL2. Register usage is
+> also updated to include the information needed.
 >=20
-> There is one change to the TEE subsystem with "tee: add sec_world_id to
-> struct tee_shm" to add support for holding globally unique handle assigned
-> by the FF-A. This is a field that I believe could useful for the AMDTEE
-> driver too.
+> The FF-A part of this driver is enabled if CONFIG_ARM_FFA_TRANSPORT is
+> enabled.
 >=20
-> For communication the OP-TEE message protocol is still used, but with a new
-> type of memory reference, struct optee_msg_param_fmem, to carry the
-> information needed by FF-A. The OP-TEE driver is refactored internally with
-> to sets of callbacks, one for the old SMC based communication and another
-> set with FF-A as transport. The functions relating to the SMC based ABI
-> are moved to smc_abi.c while the FF-A based ABI is added in a ffa_abi.c.
+> [1] https://developer.arm.com/documentation/den0077/latest
+> Acked-by: Sumit Garg <sumit.garg@linaro.org>
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  drivers/tee/optee/Makefile        |   3 +-
+>  drivers/tee/optee/call.c          |  13 +-
+>  drivers/tee/optee/core.c          |  16 +-
+>  drivers/tee/optee/ffa_abi.c       | 907 ++++++++++++++++++++++++++++++
+>  drivers/tee/optee/optee_ffa.h     | 153 +++++
+>  drivers/tee/optee/optee_msg.h     |  27 +-
+>  drivers/tee/optee/optee_private.h |  43 +-
+>  7 files changed, 1148 insertions(+), 14 deletions(-)
+>  create mode 100644 drivers/tee/optee/ffa_abi.c
+>  create mode 100644 drivers/tee/optee/optee_ffa.h
 >=20
-> There is also a difference in how the drivers are instantiated. With the
-> SMC based transport we have a platform driver, module_platform_driver(),
-> today which we're keeping as is for this configuration. In a FF-A system we
-> have a FF-A driver, module_ffa_driver(), instead.
->=20
-> The OP-TEE driver can be compiled for both targets at the same time and
-> it's up to runtime configuration (device tree or ACPI) to decide how it's
-> initialized. Note that it's only the old SMC based driver instance that
-> need device tree or ACPI to initialize. The FF-A based driver relies on the
-> FF-A bus instead.
->=20
-> This can be tested QEMU
-> The repo for SPMC at S-EL1 retrieved by
-> repo init -u https://github.com/jenswi-linaro/manifest.git -m
-> qemu_v8.xml -b ffav4_spmc
-> repo sync
-> # Then checkout the branch optee_ffa_v5 from
-> # git://git.linaro.org/people/jens.wiklander/linux-tee.git
-> # in the linux directory
->=20
-> To build do:
-> cd build
-> make toolchains
-> make all
->=20
-> To boot:
-> make run-only
->=20
-> Test with xtest, perhaps only with the command "xtest 1004" in case you're
-> not interested in too many tests.
->=20
+> diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
+> index d4e4776d2dec..dbfd83d3c4ae 100644
+> --- a/drivers/tee/optee/Makefile
+> +++ b/drivers/tee/optee/Makefile
+> @@ -7,7 +7,8 @@ optee-objs +=3D supp.o
+>  optee-objs +=3D device.o
+> =20
+>  optee-smc-abi-y =3D smc_abi.o
+> -optee-objs +=3D $(optee-smc-abi-y)
+> +optee-ffa-abi-$(CONFIG_ARM_FFA_TRANSPORT) =3D ffa_abi.o
+> +optee-objs +=3D $(optee-smc-abi-y) $(optee-ffa-abi-y)
+>
 
-Ran entire xtest test suite with latest TF-A, hafinum and OPTEE.
-So for the series,
+This may not work when CONFIG_ARM_FFA_TRANSPORT=3Dm, I don't have cleaner
+solution apart from having if else.
 
-Tested-by:  Sudeep Holla <sudeep.holla@arm.com>
 
-Minor comments to address OPTEE as module when FFA is also built as module.
-FFA as a module couple of bugs(thanks for reporting one of them). I have the
-fixes here[1], please test and provide feedback.
+[...]
+
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index ca0213e330b5..2593742364da 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+
+[...]
+
+> @@ -116,11 +127,13 @@ struct optee_ops {
+>   *			world
+>   * @teedev:		client device
+>   * @smc:		specific to SMC ABI
+> + * @ffa:		specific to FF-A ABI
+>   * @call_queue:		queue of threads waiting to call @invoke_fn
+>   * @wait_queue:		queue of threads from secure world waiting for a
+>   *			secure world sync object
+>   * @supp:		supplicant synchronization struct for RPC to supplicant
+>   * @pool:		shared memory pool
+> + * @rpc_arg_count:	If > 0 number of RPC parameters to make room for
+>   * @scan_bus_done	flag if device registation was already done.
+>   * @scan_bus_wq		workqueue to scan optee bus and register optee drivers
+>   * @scan_bus_work	workq to scan optee bus and register optee drivers
+> @@ -129,11 +142,17 @@ struct optee {
+>  	struct tee_device *supp_teedev;
+>  	struct tee_device *teedev;
+>  	const struct optee_ops *ops;
+> -	struct optee_smc smc;
+> +	union {
+> +		struct optee_smc smc;
+> +#ifdef CONFIG_ARM_FFA_TRANSPORT
+
+I don't see a point in saving this especially that the definition is
+available always. Also helps the case when FFA is module.
+
+> +		struct optee_ffa ffa;
+> +#endif
+> +	};
+>  	struct optee_call_queue call_queue;
+>  	struct optee_wait_queue wait_queue;
+>  	struct optee_supp supp;
+>  	struct tee_shm_pool *pool;
+> +	unsigned int rpc_arg_count;
+>  	bool   scan_bus_done;
+>  	struct workqueue_struct *scan_bus_wq;
+>  	struct work_struct scan_bus_work;
+> @@ -266,4 +285,12 @@ static inline void reg_pair_from_64(u32 *reg0, u32 *re=
+g1, u64 val)
+>  int optee_smc_abi_register(void);
+>  void optee_smc_abi_unregister(void);
+> =20
+> +#ifdef CONFIG_ARM_FFA_TRANSPORT
+
+To support CONFIG_ARM_FFA_TRANSPORT=3Dm this must be,
+
+#if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
 
 --=20
 Regards,
 Sudeep
 
-[1] https://lore.kernel.org/linux-arm-kernel/20210924092859.3057562-1-sudeep.=
-holla(a)arm.com/
-
---===============6060495595659804387==--
+--===============4408862566883834733==--
 
