@@ -1,286 +1,82 @@
-From: Elvira Khabirova <e.khabirova@omprussia.ru>
+From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v2] tee: add support for application-based session login methods
-Date: Wed, 30 Sep 2020 19:56:52 +0300
-Message-ID: <20200930195652.5c316c3e@akathisia>
+Subject: Re: [PATCH v5 0/5] Add FF-A support in OP-TEE driver
+Date: Fri, 01 Oct 2021 10:29:39 +0100
+Message-ID: <20211001092939.heiskb5gqzx3nd7p@bogus>
+In-Reply-To: <20210831072412.887565-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2001792662448054890=="
+Content-Type: multipart/mixed; boundary="===============6060495595659804387=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2001792662448054890==
+--===============6060495595659804387==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-GP TEE Client API in addition to login methods already supported
-in the kernel also defines several application-based methods:
-TEEC_LOGIN_APPLICATION, TEEC_LOGIN_USER_APPLICATION, and
-TEEC_LOGIN_GROUP_APPLICATION.
+On Tue, Aug 31, 2021 at 09:24:07AM +0200, Jens Wiklander wrote:
+> Hi all,
+>=20
+> This adds supports for the OP-TEE driver to communicate with secure world
+> using FF-A [1] as transport.
+>=20
+> There is one change to the TEE subsystem with "tee: add sec_world_id to
+> struct tee_shm" to add support for holding globally unique handle assigned
+> by the FF-A. This is a field that I believe could useful for the AMDTEE
+> driver too.
+>=20
+> For communication the OP-TEE message protocol is still used, but with a new
+> type of memory reference, struct optee_msg_param_fmem, to carry the
+> information needed by FF-A. The OP-TEE driver is refactored internally with
+> to sets of callbacks, one for the old SMC based communication and another
+> set with FF-A as transport. The functions relating to the SMC based ABI
+> are moved to smc_abi.c while the FF-A based ABI is added in a ffa_abi.c.
+>=20
+> There is also a difference in how the drivers are instantiated. With the
+> SMC based transport we have a platform driver, module_platform_driver(),
+> today which we're keeping as is for this configuration. In a FF-A system we
+> have a FF-A driver, module_ffa_driver(), instead.
+>=20
+> The OP-TEE driver can be compiled for both targets at the same time and
+> it's up to runtime configuration (device tree or ACPI) to decide how it's
+> initialized. Note that it's only the old SMC based driver instance that
+> need device tree or ACPI to initialize. The FF-A based driver relies on the
+> FF-A bus instead.
+>=20
+> This can be tested QEMU
+> The repo for SPMC at S-EL1 retrieved by
+> repo init -u https://github.com/jenswi-linaro/manifest.git -m
+> qemu_v8.xml -b ffav4_spmc
+> repo sync
+> # Then checkout the branch optee_ffa_v5 from
+> # git://git.linaro.org/people/jens.wiklander/linux-tee.git
+> # in the linux directory
+>=20
+> To build do:
+> cd build
+> make toolchains
+> make all
+>=20
+> To boot:
+> make run-only
+>=20
+> Test with xtest, perhaps only with the command "xtest 1004" in case you're
+> not interested in too many tests.
+>=20
 
-It specifies credentials generated for TEEC_LOGIN_APPLICATION as only
-depending on the identity of the program, being persistent within one
-implementation, across multiple invocations of the application
-and across power cycles, enabling them to be used to disambiguate
-persistent storage. The exact nature is REE-specific.
+Ran entire xtest test suite with latest TF-A, hafinum and OPTEE.
+So for the series,
 
-As the exact method of generating application identifier strings may
-vary between vendors, setups and installations, add two suggested
-methods and an exact framework for vendors to extend upon.
+Tested-by:  Sudeep Holla <sudeep.holla@arm.com>
 
-Signed-off-by: Elvira Khabirova <e.khabirova@omprussia.ru>
----
- drivers/tee/Kconfig    |  29 +++++++++
- drivers/tee/tee_core.c | 133 ++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 154 insertions(+), 8 deletions(-)
+Minor comments to address OPTEE as module when FFA is also built as module.
+FFA as a module couple of bugs(thanks for reporting one of them). I have the
+fixes here[1], please test and provide feedback.
 
-diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
-index 6488b66d69dd..cd8f02a3d488 100644
---- a/drivers/tee/Kconfig
-+++ b/drivers/tee/Kconfig
-@@ -10,6 +10,35 @@ config TEE
- 	  This implements a generic interface towards a Trusted Execution
- 	  Environment (TEE).
-=20
-+choice
-+	prompt "Application ID for client UUID"
-+	depends on TEE
-+	default TEE_APPID_PATH
-+	help
-+	  This option allows to choose which method will be used to generate
-+	  application identifiers for client UUID generation when login methods
-+	  TEE_LOGIN_APPLICATION, TEE_LOGIN_USER_APPLICATION
-+	  and TEE_LOGIN_GROUP_APPLICATION are used.
-+	  Please be mindful of the security of each method in your particular
-+	  installation.
-+
-+	config TEE_APPID_PATH
-+		bool "Path-based application ID"
-+		help
-+		  Use the executable's path as an application ID.
-+
-+	config TEE_APPID_SECURITY
-+		bool "Security extended attribute based application ID"
-+		help
-+		  Use the executable's security extended attribute as an application ID.
-+endchoice
-+
-+config TEE_APPID_SECURITY_XATTR
-+	string "Security extended attribute to use for application ID"
-+	depends on TEE_APPID_SECURITY
-+	help
-+	  Attribute to be used as an application ID (with the security prefix remov=
-ed).
-+
- if TEE
-=20
- menu "TEE drivers"
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index 67186d00a52f..31fb244b59ed 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -16,9 +16,12 @@
-=20
- #include <linux/cdev.h>
- #include <linux/cred.h>
-+#include <linux/file.h>
- #include <linux/fs.h>
- #include <linux/idr.h>
-+#include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/security.h>
- #include <linux/slab.h>
- #include <linux/tee_drv.h>
- #include <linux/uaccess.h>
-@@ -31,7 +34,7 @@
-=20
- #define TEE_IOCTL_PARAM_SIZE(x) (sizeof(struct tee_param) * (x))
-=20
--#define TEE_UUID_NS_NAME_SIZE	128
-+#define TEE_UUID_NS_NAME_SIZE	PATH_MAX
-=20
- /*
-  * TEE Client UUID name space identifier (UUIDv4)
-@@ -136,6 +139,72 @@ static int tee_release(struct inode *inode, struct file =
-*filp)
- 	return 0;
- }
-=20
-+#ifdef CONFIG_TEE_APPID_SECURITY
-+static const char *get_app_id(void **data)
-+{
-+	struct file *exe_file;
-+	const char *name =3D CONFIG_TEE_APPID_SECURITY_XATTR;
-+	int len;
-+
-+	exe_file =3D get_mm_exe_file(current->mm);
-+	if (!exe_file)
-+		return ERR_PTR(-ENOENT);
-+
-+	if (!exe_file->f_inode) {
-+		fput(exe_file);
-+		return ERR_PTR(-ENOENT);
-+	}
-+
-+	/*
-+	 * An identifier string for the binary. Depends on the implementation.
-+	 * Could be, for example, a string containing the application vendor ID,
-+	 * or the binary's signature, or its hash and a timestamp.
-+	 */
-+	len =3D security_inode_getsecurity(exe_file->f_inode, name, data, true);
-+	if (len < 0)
-+		return ERR_PTR(len);
-+
-+	fput(exe_file);
-+
-+	return *data;
-+}
-+#endif /* CONFIG_TEE_APPID_SECURITY */
-+
-+#ifdef CONFIG_TEE_APPID_PATH
-+static const char *get_app_id(void **data)
-+{
-+	struct file *exe_file;
-+	char *path;
-+
-+	*data =3D kzalloc(TEE_UUID_NS_NAME_SIZE, GFP_KERNEL);
-+	if (!*data)
-+		return ERR_PTR(-ENOMEM);
-+
-+	exe_file =3D get_mm_exe_file(current->mm);
-+	if (!exe_file) {
-+		kfree(*data);
-+		return ERR_PTR(-ENOENT);
-+	}
-+
-+	path =3D file_path(exe_file, *data, TEE_UUID_NS_NAME_SIZE);
-+	if (IS_ERR(path)) {
-+		kfree(*data);
-+		return path;
-+	}
-+
-+	fput(exe_file);
-+
-+	return path;
-+}
-+#endif /* CONFIG_TEE_APPID_PATH */
-+
-+#if defined(CONFIG_TEE_APPID_PATH) || defined(CONFIG_TEE_APPID_SECURITY)
-+static void free_app_id(void *data)
-+{
-+	kfree(data);
-+}
-+#endif /* CONFIG_TEE_APPID_PATH || CONFIG_TEE_APPID_SECURITY */
-+
- /**
-  * uuid_v5() - Calculate UUIDv5
-  * @uuid: Resulting UUID
-@@ -208,6 +277,8 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connec=
-tion_method,
- 	gid_t ns_grp =3D (gid_t)-1;
- 	kgid_t grp =3D INVALID_GID;
- 	char *name =3D NULL;
-+	void *app_id_data =3D NULL;
-+	const char *app_id =3D NULL;
- 	int name_len;
- 	int rc;
-=20
-@@ -228,6 +299,14 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 conne=
-ction_method,
- 	 * For TEEC_LOGIN_GROUP:
- 	 * gid=3D<gid>
- 	 *
-+	 * For TEEC_LOGIN_APPLICATION:
-+	 * app=3D<application id>
-+	 *
-+	 * For TEEC_LOGIN_USER_APPLICATION:
-+	 * uid=3D<uid>:app=3D<application id>
-+	 *
-+	 * For TEEC_LOGIN_GROUP_APPLICATION:
-+	 * gid=3D<gid>:app=3D<application id>
- 	 */
-=20
- 	name =3D kzalloc(TEE_UUID_NS_NAME_SIZE, GFP_KERNEL);
-@@ -238,10 +317,6 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 conne=
-ction_method,
- 	case TEE_IOCTL_LOGIN_USER:
- 		name_len =3D snprintf(name, TEE_UUID_NS_NAME_SIZE, "uid=3D%x",
- 				    current_euid().val);
--		if (name_len >=3D TEE_UUID_NS_NAME_SIZE) {
--			rc =3D -E2BIG;
--			goto out_free_name;
--		}
- 		break;
-=20
- 	case TEE_IOCTL_LOGIN_GROUP:
-@@ -254,10 +329,49 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 conn=
-ection_method,
-=20
- 		name_len =3D snprintf(name, TEE_UUID_NS_NAME_SIZE, "gid=3D%x",
- 				    grp.val);
--		if (name_len >=3D TEE_UUID_NS_NAME_SIZE) {
--			rc =3D -E2BIG;
-+		break;
-+
-+	case TEE_IOCTL_LOGIN_APPLICATION:
-+		app_id =3D get_app_id(&app_id_data);
-+		if (IS_ERR(app_id)) {
-+			rc =3D PTR_ERR(app_id);
-+			goto out_free_name;
-+		}
-+
-+		name_len =3D snprintf(name, TEE_UUID_NS_NAME_SIZE, "app=3D%s",
-+				    app_id);
-+		free_app_id(app_id_data);
-+		break;
-+
-+	case TEE_IOCTL_LOGIN_USER_APPLICATION:
-+		app_id =3D get_app_id(&app_id_data);
-+		if (IS_ERR(app_id)) {
-+			rc =3D PTR_ERR(app_id);
-+			goto out_free_name;
-+		}
-+
-+		name_len =3D snprintf(name, TEE_UUID_NS_NAME_SIZE, "uid=3D%x:app=3D%s",
-+				    current_euid().val, app_id);
-+		free_app_id(app_id_data);
-+		break;
-+
-+	case TEE_IOCTL_LOGIN_GROUP_APPLICATION:
-+		memcpy(&ns_grp, connection_data, sizeof(gid_t));
-+		grp =3D make_kgid(current_user_ns(), ns_grp);
-+		if (!gid_valid(grp) || !in_egroup_p(grp)) {
-+			rc =3D -EPERM;
-+			goto out_free_name;
-+		}
-+
-+		app_id =3D get_app_id(&app_id_data);
-+		if (IS_ERR(app_id)) {
-+			rc =3D PTR_ERR(app_id);
- 			goto out_free_name;
- 		}
-+
-+		name_len =3D snprintf(name, TEE_UUID_NS_NAME_SIZE, "gid=3D%x:app=3D%s",
-+				    grp.val, app_id);
-+		free_app_id(app_id_data);
- 		break;
-=20
- 	default:
-@@ -265,7 +379,10 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 conne=
-ction_method,
- 		goto out_free_name;
- 	}
-=20
--	rc =3D uuid_v5(uuid, &tee_client_uuid_ns, name, name_len);
-+	if (name_len < TEE_UUID_NS_NAME_SIZE)
-+		rc =3D uuid_v5(uuid, &tee_client_uuid_ns, name, name_len);
-+	else
-+		rc =3D -E2BIG;
- out_free_name:
- 	kfree(name);
-=20
 --=20
-2.17.1
+Regards,
+Sudeep
 
+[1] https://lore.kernel.org/linux-arm-kernel/20210924092859.3057562-1-sudeep.=
+holla(a)arm.com/
 
---===============2001792662448054890==--
+--===============6060495595659804387==--
 
