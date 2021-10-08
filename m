@@ -1,68 +1,84 @@
-From: Robert Delien <r.delien@payter.nl>
+From: Jerome Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Shared memory mapping invalid after fork()
-Date: Thu, 07 Oct 2021 16:57:18 +0200
-Message-ID: 
- <CAEhEOQkqLvFQ2bR69F0q-BdJVpjq2r7soWtMfCrvQDkJSUFfaw@mail.gmail.com>
+Subject: Re: Shared memory mapping invalid after fork()
+Date: Fri, 08 Oct 2021 13:01:53 +0200
+Message-ID: <3120b51e-358f-0cbd-8623-d5ff2f2a5ee7@forissier.org>
+In-Reply-To: <
+ <CAEhEOQkqLvFQ2bR69F0q-BdJVpjq2r7soWtMfCrvQDkJSUFfaw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4174616169404988228=="
+Content-Type: multipart/mixed; boundary="===============8024165414133952977=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4174616169404988228==
+--===============8024165414133952977==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Robert,
 
-First of all, as I don't see a lot of questions being asked here, so
-please feel free to direct me elsewhere with my question(s) if this is
-not the proper place to do so.
+On 10/7/21 4:57 PM, Robert Delien wrote:
+> Hi,
+> 
+> First of all, as I don't see a lot of questions being asked here, so
+> please feel free to direct me elsewhere with my question(s) if this is
+> not the proper place to do so.
 
-In our application, we are using a custom Optee PTA to control our
-display securely. Our user space application utilizes LVGL with a
-custom LVGL Optee PTA driver, which allocates TEEC_SharedMemory using
-TEEC_AllocateSharedMemory() for the frame buffer, which transferred as
-TEEC_MEMREF_WHOLE to our custom PTA by our custom LVGL Optee-PTA
-driver whenever LVGL flushes its frame buffer.
+Many people report issues and ask questions on GitHub [1] but here is
+fine, too.
 
-Our user space application also starts and stops several LXC containers.
+[1] https://github.com/OP-TEE/optee_os/issues
 
-We noticed that after starting any LXC container, our display freezes.
-In this scenario, our custom LVGL Optee PTA driver is still pushing
-newly updated frame buffer contents to our custom Optee PTA, but the
-buffer received by our custom Optee PTA contains old data.
+> In our application, we are using a custom Optee PTA to control our
+> display securely. Our user space application utilizes LVGL with a
+> custom LVGL Optee PTA driver, which allocates TEEC_SharedMemory using
+> TEEC_AllocateSharedMemory() for the frame buffer, which transferred as
+> TEEC_MEMREF_WHOLE to our custom PTA by our custom LVGL Optee-PTA
+> driver whenever LVGL flushes its frame buffer.
+> 
+> Our user space application also starts and stops several LXC containers.
+> 
+> We noticed that after starting any LXC container, our display freezes.
+> In this scenario, our custom LVGL Optee PTA driver is still pushing
+> newly updated frame buffer contents to our custom Optee PTA, but the
+> buffer received by our custom Optee PTA contains old data.
+> 
+> We have traced down the cause to a fork() call in lxc_start();
+> Replacing lxc_start() with fork() has the same effect, hence we think
+> the problem is caused by fork(). After fork, updates from neither the
+> parent nor the child appear in the buffer at our custom Optee PTA end.
 
-We have traced down the cause to a fork() call in lxc_start();
-Replacing lxc_start() with fork() has the same effect, hence we think
-the problem is caused by fork(). After fork, updates from neither the
-parent nor the child appear in the buffer at our custom Optee PTA end.
+Do you have a simple reproducer? I tried a simple modification to the
+"Hello world" example but could not reproduce the issue. That being
+said, the example involves a TA, not a PTA. So perhaps the problem is
+caused by some invalid re-use of physical addresses (virt_to_phys())?
 
-We wonder if this is by design, as shared memory in combination with
-fork() might be a security hazard, exposing memory shared with the
-secure world to any forked process. Are we right? We really would like
-to understand this.
+> We wonder if this is by design, as shared memory in combination with
+> fork() might be a security hazard, exposing memory shared with the
+> secure world to any forked process. Are we right? We really would like
+> to understand this.
 
-If, instead of using TEEC_AllocateSharedMemory() and
-TEEC_MEMREF_WHOLE, we use calloc() and TEEC_MEMREF_WHOLE instead, the
-problem does not occur. Probably because the memory is mapped at each
-use. Is this the suggested work-around?
+The GlobalPlatform TEE Client API Specification does not mention
+anything wrt. fork(). I would say things should "just work", i.e., allow
+both the parent and the child to continue communicating with the (P)TA.
 
-Thank you in advance.
+Note that the term "shared memory" doesn't imply the existence of a
+single physical buffer. An implementation is allowed to copy data
+between buffers as long as the semantics of the GP APIs is preserved.
+See section 3.2.4 Shared Memory. OP-TEE tries to avoid copies when
+possible but this depends on which APIs are used and if dynamic shared
+memory is used (CFG_CORE_DYN_SHM=y [default] and a not too old Linux
+driver).
 
-With kind regards,
+> If, instead of using TEEC_AllocateSharedMemory() and
+> TEEC_MEMREF_WHOLE, we use calloc() and TEEC_MEMREF_WHOLE instead, the
+> problem does not occur. Probably because the memory is mapped at each
+> use. Is this the suggested work-around?
 
-        Robert Deliën.
+I would think both ways should work as you expect, but I might be
+missing something.
 
+Regards,
 -- 
-DISCLAIMER
-De informatie, verzonden in of met dit e-mailbericht, is 
-vertrouwelijk en uitsluitend voor de geadresseerde(n) bestemd. Het gebruik 
-van de informatie in dit bericht, de openbaarmaking, vermenigvuldiging, 
-verspreiding en|of verstrekking daarvan aan derden is niet toegestaan. 
-Gebruik van deze informatie door anderen dan geadresseerde(n) is strikt 
-verboden. Aan deze informatie kunnen geen rechten worden ontleend. U wordt 
-verzocht bij onjuiste adressering de afzender direct te informeren door het 
-bericht te retourneren en het bericht uit uw computersysteem te verwijderen.
+Jerome
 
---===============4174616169404988228==--
+--===============8024165414133952977==--
 
