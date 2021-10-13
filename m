@@ -1,64 +1,82 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH] tee: optee: Fix missing devices unregister during optee_remove
-Date: Wed, 13 Oct 2021 11:30:04 +0530
+Subject: Re: [PATCH v6 1/6] docs: staging/tee.rst: add a section on OP-TEE
+ notifications
+Date: Wed, 13 Oct 2021 12:32:01 +0530
 Message-ID: 
- <CAFA6WYNqzmEe23RQ2Wrq2oeaxAxxwg+e3sW0=7PmgZni5Sd2eQ@mail.gmail.com>
-In-Reply-To: <20211012180348.zalanzdw3ykqg4db@bogus>
+ <CAFA6WYPLCLmYhSa_-vJPvhy9fFpdD3u39YZenYgij4fSM-+JCw@mail.gmail.com>
+In-Reply-To: <20211006071546.2540920-2-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6736201987364680500=="
+Content-Type: multipart/mixed; boundary="===============4247854603233147875=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6736201987364680500==
+--===============4247854603233147875==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 12 Oct 2021 at 23:33, Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Wed, 6 Oct 2021 at 12:45, Jens Wiklander <jens.wiklander@linaro.org> wro=
+te:
 >
-> On Tue, Oct 12, 2021 at 01:01:16PM +0530, Sumit Garg wrote:
-> > When OP-TEE driver is built as a module, OP-TEE client devices
-> > registered on TEE bus during probe should be unregistered during
-> > optee_remove. So implement optee_unregister_devices() accordingly.
-> >
-> > Fixes: c3fa24af9244 ("tee: optee: add TEE bus device enumeration support")
-> > Reported-by: Sudeep Holla <sudeep.holla@arm.com>
-> > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> > ---
-> >  drivers/tee/optee/core.c          |  3 +++
-> >  drivers/tee/optee/device.c        | 22 ++++++++++++++++++++++
-> >  drivers/tee/optee/optee_private.h |  1 +
-> >  3 files changed, 26 insertions(+)
-> >
-> > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> > index ccad3c7c8f6d..3915dc574503 100644
-> > --- a/drivers/tee/optee/core.c
-> > +++ b/drivers/tee/optee/core.c
-> > @@ -586,6 +586,9 @@ static int optee_remove(struct platform_device *pdev)
-> >  {
-> >       struct optee *optee = platform_get_drvdata(pdev);
-> >
-> > +     /* Unregister OP-TEE specific client devices on TEE bus */
-> > +     optee_unregister_devices();
-> > +
+> Adds a section on notifications used by OP-TEE, synchronous and
+> asynchronous.
 >
-> This is not based on FF-A support series by Jens I assume.
-
-Yeah as it fixes an existing problem and for stable backport reasons I
-would suggest rebasing FF-A support series on top of it.
-
-> I added
-> optee_unregister_devices to optee_remove_common and that fixes the issue
-> I reported. I haven't followed the comments by Jens on the approach yet.
+> Acked-by: Marc Zyngier <maz@kernel.org>
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  Documentation/staging/tee.rst | 30 ++++++++++++++++++++++++++++++
+>  1 file changed, 30 insertions(+)
 >
 
-Thanks for testing this fix.
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
 -Sumit
 
+> diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
+> index 4d4b5f889603..3c63d8dcd61e 100644
+> --- a/Documentation/staging/tee.rst
+> +++ b/Documentation/staging/tee.rst
+> @@ -184,6 +184,36 @@ order to support device enumeration. In other words, O=
+P-TEE driver invokes this
+>  application to retrieve a list of Trusted Applications which can be regist=
+ered
+>  as devices on the TEE bus.
+>
+> +OP-TEE notifications
+> +--------------------
+> +
+> +There are two kinds of notifications that secure world can use to make
+> +normal world aware of some event.
+> +
+> +1. Synchronous notifications delivered with ``OPTEE_RPC_CMD_NOTIFICATION``
+> +   using the ``OPTEE_RPC_NOTIFICATION_SEND`` parameter.
+> +2. Asynchronous notifications delivered with a combination of a non-secure
+> +   edge-triggered interrupt and a fast call from the non-secure interrupt
+> +   handler.
+> +
+> +Synchronous notifications are limited by depending on RPC for delivery,
+> +this is only usable when secure world is entered with a yielding call via
+> +``OPTEE_SMC_CALL_WITH_ARG``. This excludes such notifications from secure
+> +world interrupt handlers.
+> +
+> +An asynchronous notification is delivered via a non-secure edge-triggered
+> +interrupt to an interrupt handler registered in the OP-TEE driver. The
+> +actual notification value are retrieved with the fast call
+> +``OPTEE_SMC_GET_ASYNC_NOTIF_VALUE``. Note that one interrupt can represent
+> +multiple notifications.
+> +
+> +One notification value ``OPTEE_SMC_ASYNC_NOTIF_VALUE_DO_BOTTOM_HALF`` has a
+> +special meaning. When this value is received it means that normal world is
+> +supposed to make a yielding call ``OPTEE_MSG_CMD_DO_BOTTOM_HALF``. This
+> +call is done from the thread assisting the interrupt handler. This is a
+> +building block for OP-TEE OS in secure world to implement the top half and
+> +bottom half style of device drivers.
+> +
+>  AMD-TEE driver
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
 > --
-> Regards,
-> Sudeep
+> 2.31.1
+>
 
---===============6736201987364680500==--
+--===============4247854603233147875==--
 
