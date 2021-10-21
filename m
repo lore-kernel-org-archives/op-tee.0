@@ -1,36 +1,64 @@
-From: Arnd Bergmann <arnd@kernel.org>
+From: Arnd Bergmann <arnd@arndb.de>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [GIT PULL] OP-TEE FF-A for V5.16
-Date: Wed, 20 Oct 2021 18:00:31 +0200
-Message-ID: <163474562374.2274953.13067132975473108014.b4-ty@arndb.de>
+Date: Thu, 21 Oct 2021 13:30:39 +0200
+Message-ID: 
+ <CAK8P3a0Z-Hh9xav1peg8LqGoPaHnrt9eo453QmwKrWcWwWAEXw@mail.gmail.com>
 In-Reply-To: <20211018121324.GA2943530@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6714487134464718948=="
+Content-Type: multipart/mixed; boundary="===============1491816675183506740=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6714487134464718948==
+--===============1491816675183506740==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-From: Arnd Bergmann <arnd@arndb.de>
+On Mon, Oct 18, 2021 at 2:13 PM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>       optee: isolate smc abi
 
-On Mon, 18 Oct 2021 14:13:24 +0200, Jens Wiklander wrote:
-> Please pull these patches which adds support for FF-A [1] in the OP-TEE
-> driver. There's a bit of shuffling in the code where everyhting related to
-> the old SMC based ABI is moved to drivers/tee/optee/smc_abi.c, but there
-> should not be any changed in behavior for with the old ABI.
-> 
-> Note that this is based on top of the recent fix 7f565d0ead26 ("tee: optee:
-> Fix missing devices unregister during optee_remove") which has already been
-> requested to be pulled.
-> 
-> [...]
+This one caused a randconfig build regression on 32-bit arm:
 
-Merged into arm/drivers, thanks!
+/git/arm-soc/drivers/tee/optee/smc_abi.c:405:15: error: implicit
+declaration of function 'page_to_section'
+[-Werror,-Wimplicit-function-declaration]
+        optee_page = page_to_phys(*pages) +
+                     ^
+/git/arm-soc/arch/arm/include/asm/memory.h:148:43: note: expanded from
+macro 'page_to_phys'
+#define page_to_phys(page)      (__pfn_to_phys(page_to_pfn(page)))
+                                               ^
+/git/arm-soc/include/asm-generic/memory_model.h:52:21: note: expanded
+from macro 'page_to_pfn'
+#define page_to_pfn __page_to_pfn
+                    ^
+/git/arm-soc/include/asm-generic/memory_model.h:35:14: note: expanded
+from macro '__page_to_pfn'
+        int __sec = page_to_section(__pg);                      \
+                    ^
+/git/arm-soc/drivers/tee/optee/smc_abi.c:405:15: note: did you mean
+'__nr_to_section'?
+/git/arm-soc/arch/arm/include/asm/memory.h:148:43: note: expanded from
+macro 'page_to_phys'
+#define page_to_phys(page)      (__pfn_to_phys(page_to_pfn(page)))
+                                               ^
+/git/arm-soc/include/asm-generic/memory_model.h:52:21: note: expanded
+from macro 'page_to_pfn'
+#define page_to_pfn __page_to_pfn
+                    ^
+/git/arm-soc/include/asm-generic/memory_model.h:35:14: note: expanded
+from macro '__page_to_pfn'
+        int __sec = page_to_section(__pg);                      \
+                    ^
+/git/arm-soc/include/linux/mmzone.h:1365:35: note: '__nr_to_section'
+declared here
+static inline struct mem_section *__nr_to_section(unsigned long nr)
 
-merge commit: 20f6d9586eee5734072886cf052b72807b0afc4c
+I have not investigated it, but it's probably trivial. Can have a look
+and send a fix to
+soc(a)kernel.org?
 
-       Arnd
+      Arnd
 
---===============6714487134464718948==--
+--===============1491816675183506740==--
 
