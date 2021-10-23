@@ -1,79 +1,50 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Colin Ian King <colin.i.king@googlemail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] optee: smc_abi.c: add missing #include <linux/mm.h>
-Date: Thu, 21 Oct 2021 14:55:39 +0200
-Message-ID: <20211021125539.3858495-1-jens.wiklander@linaro.org>
+Subject: [PATCH][next] optee: Fix spelling mistake "reclain" -> "reclaim"
+Date: Sat, 23 Oct 2021 12:52:09 +0100
+Message-ID: <20211023115209.19115-1-colin.i.king@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7324476333236538360=="
+Content-Type: multipart/mixed; boundary="===============5423992468301427560=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7324476333236538360==
+--===============5423992468301427560==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Adds missing #include <linux/mm.h> drivers/tee/optee/smc_abi.c to fix
-compile errors like:
-drivers/tee/optee/smc_abi.c:405:15: error: implicit
-declaration of function 'page_to_section'
-[-Werror,-Wimplicit-function-declaration]
-        optee_page = page_to_phys(*pages) +
-                     ^
-arch/arm/include/asm/memory.h:148:43: note: expanded from
-macro 'page_to_phys'
-                                               ^
-include/asm-generic/memory_model.h:52:21: note: expanded
-from macro 'page_to_pfn'
-                    ^
-include/asm-generic/memory_model.h:35:14: note: expanded
-from macro '__page_to_pfn'
-        int __sec = page_to_section(__pg);                      \
-                    ^
-drivers/tee/optee/smc_abi.c:405:15: note: did you mean
-'__nr_to_section'?
-arch/arm/include/asm/memory.h:148:43: note: expanded from
-macro 'page_to_phys'
-                                               ^
-include/asm-generic/memory_model.h:52:21: note: expanded
-from macro 'page_to_pfn'
-                    ^
-include/asm-generic/memory_model.h:35:14: note: expanded
-from macro '__page_to_pfn'
-        int __sec = page_to_section(__pg);                      \
-                    ^
-include/linux/mmzone.h:1365:35: note: '__nr_to_section'
-declared here
-static inline struct mem_section *__nr_to_section(unsigned long nr)
+There are spelling mistakes in pr_err error messages. Fix them.
 
-Fixes: c51a564a5b48 ("optee: isolate smc abi")
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 ---
+ drivers/tee/optee/ffa_abi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I wasn't able to reproduce the error above. It obviously involves
-CONFIG_SPARSEMEM=y, but something more seems to be needed to trigger the
-error. Nonetheless, including <linux/mm.h> should fix the error.
+diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+index 6defd1ec982a..45424824e0f9 100644
+--- a/drivers/tee/optee/ffa_abi.c
++++ b/drivers/tee/optee/ffa_abi.c
+@@ -333,7 +333,7 @@ static int optee_ffa_shm_unregister(struct tee_context *c=
+tx,
+=20
+ 	rc =3D ffa_ops->memory_reclaim(global_handle, 0);
+ 	if (rc)
+-		pr_err("mem_reclain: 0x%llx %d", global_handle, rc);
++		pr_err("mem_reclaim: 0x%llx %d", global_handle, rc);
+=20
+ 	return rc;
+ }
+@@ -355,7 +355,7 @@ static int optee_ffa_shm_unregister_supp(struct tee_conte=
+xt *ctx,
+ 	optee_shm_rem_ffa_handle(optee, global_handle);
+ 	rc =3D ffa_ops->memory_reclaim(global_handle, 0);
+ 	if (rc)
+-		pr_err("mem_reclain: 0x%llx %d", global_handle, rc);
++		pr_err("mem_reclaim: 0x%llx %d", global_handle, rc);
+=20
+ 	shm->sec_world_id =3D 0;
+=20
+--=20
+2.32.0
 
-Thanks,
-Jens
 
-
- drivers/tee/optee/smc_abi.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 9a787fb4f5e5..6196d7c3888f 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -10,6 +10,7 @@
- #include <linux/errno.h>
- #include <linux/io.h>
- #include <linux/sched.h>
-+#include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
--- 
-2.31.1
-
-
---===============7324476333236538360==--
+--===============5423992468301427560==--
 
