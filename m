@@ -1,56 +1,48 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v7 2/6] dt-bindings: arm: optee: add interrupt property
-Date: Tue, 26 Oct 2021 10:31:34 +0200
-Message-ID: <20211026083138.1818705-3-jens.wiklander@linaro.org>
+Subject: [PATCH v7 3/6] tee: fix put order in teedev_close_context()
+Date: Tue, 26 Oct 2021 10:31:35 +0200
+Message-ID: <20211026083138.1818705-4-jens.wiklander@linaro.org>
 In-Reply-To: <20211026083138.1818705-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0266239754758518738=="
+Content-Type: multipart/mixed; boundary="===============1638853109197471859=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0266239754758518738==
+--===============1638853109197471859==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Adds an optional interrupt property to the optee binding.
+Prior to this patch was teedev_close_context() calling tee_device_put()
+before teedev_ctx_put() leading to teedev_ctx_release() accessing
+ctx->teedev just after the reference counter was decreased on the
+teedev. Fix this by calling teedev_ctx_put() before tee_device_put().
 
+Fixes: 217e0250cccb ("tee: use reference counting for tee_context")
 Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- .../devicetree/bindings/arm/firmware/linaro,optee-tz.yaml  | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/tee/tee_core.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.y=
-aml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-index c24047c1fdd5..26d46ac0dbc2 100644
---- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-+++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-@@ -24,6 +24,12 @@ properties:
-   compatible:
-     const: linaro,optee-tz
-=20
-+  interrupts:
-+    maxItems: 1
-+    description: |
-+      This interrupt which is used to signal an event by the secure world
-+      software is expected to be edge-triggered.
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 2b37bc408fc3..85102d12d716 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -98,8 +98,10 @@ void teedev_ctx_put(struct tee_context *ctx)
+ 
+ static void teedev_close_context(struct tee_context *ctx)
+ {
+-	tee_device_put(ctx->teedev);
++	struct tee_device *teedev = ctx->teedev;
 +
-   method:
-     enum: [smc, hvc]
-     description: |
-@@ -46,6 +52,7 @@ examples:
-         optee  {
-             compatible =3D "linaro,optee-tz";
-             method =3D "smc";
-+            interrupts =3D <GIC_SPI 187 IRQ_TYPE_EDGE_RISING>;
-         };
-     };
-=20
---=20
+ 	teedev_ctx_put(ctx);
++	tee_device_put(teedev);
+ }
+ 
+ static int tee_open(struct inode *inode, struct file *filp)
+-- 
 2.31.1
 
 
---===============0266239754758518738==--
+--===============1638853109197471859==--
 
