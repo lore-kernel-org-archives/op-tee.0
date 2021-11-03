@@ -1,125 +1,61 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 0/6] Asynchronous notifications from secure world
-Date: Wed, 03 Nov 2021 10:02:49 +0100
-Message-ID: <20211103090255.998070-1-jens.wiklander@linaro.org>
+Subject: [PATCH v8 2/6] dt-bindings: arm: optee: add interrupt property
+Date: Wed, 03 Nov 2021 10:02:51 +0100
+Message-ID: <20211103090255.998070-3-jens.wiklander@linaro.org>
+In-Reply-To: <20211103090255.998070-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5499234642806959822=="
+Content-Type: multipart/mixed; boundary="===============1916451626702679195=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5499234642806959822==
+--===============1916451626702679195==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Adds an optional interrupt property to the optee binding.
 
-This adds support for asynchronous notifications from OP-TEE in secure
-world to the OP-TEE driver. This allows a design with a top half and bottom
-half type of driver where the top half runs in secure interrupt context and
-a notifications tells normal world to schedule a yielding call to do the
-bottom half processing.
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Marc Zyngier <maz@kernel.org>
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ .../devicetree/bindings/arm/firmware/linaro,optee-tz.yaml | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-An edge-triggered interrupt is used to notify the driver that there are
-asynchronous notifications pending.
-
-Only the SMC based ABI of the OP-TEE driver gains asynchronous
-notifications. Future support for asynchronous notifications in the FF-A
-based ABI will rely on APIs which are expected to be provided by the FF-A
-driver in a not too distant future.
-
-This patchset is also available at
-https://git.linaro.org/people/jens.wiklander/linux-tee.git/log/?h=3Dasync_not=
-if_v8
-
-v7->v8:
-* Fixed an error in "dt-bindings: arm: optee: add interrupt property"
-  reported by Rob's bot.
-* "optee: add asynchronous notifications":
-  - Fixed a few spell errors in comments
-  - Added a missing optee_unregister_devices() in the cleanup path of
-    optee_probe().
-  - Added Sumit's Reviewed-by
-
-v6->v7:
-* Rebased on 4615e5a34b95 ("optee: add FF-A support") in
-  https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git with
-  34f3c67b8178 ("optee: smc_abi.c: add missing #include <linux/mm.h>")
-  cherry-picked on top. This allows to resolve the conflicts with
-  pull request "[GIT PULL] OP-TEE FF-A for V5.16"
-* Factored out the interrupt handling added in "optee: add asynchronous
-  notifications" to only go into smb_abi.c. A different approach is
-  expected with FF-A once it has asynchronous notifications.
-* Addressed review comments from Sumit Garg:
-  - Replaced 0 and 1 with the macros GIC_SPI and IRQ_TYPE_EDGE_RISING in
-    the example in the bindings.
-  - Replaced the magic number to optee_notif_init() with
-    OPTEE_DEFAULT_MAX_NOTIF_VALUE in the commit "optee: separate notification
-    functions"
-  - Switched back to tagged error path in optee_probe()
-  - Fixed a few nits in "optee: add asynchronous notifications"
-  - Applied Sumit's Reviewed-by on all commits but the last,
-    "optee: add asynchronous notifications"
-
-v5->v6:
-* Rebased on v5.15-rc2
-* Replaced "tee: add tee_dev_open_helper() primitive" with "tee: export
-  teedev_open() and teedev_close_context()" since it turned out that the
-  normal teedev functions could be used instead as noted by Sumit.
-* Changed "optee: add asynchronous notifications" to use the exported
-  teedev_open() and teedev_close_context() functions instead.
-
-v4->v5:
-* Rebased on v5.14-rc7
-* Updated documentation to clarify that one interrupt may represent multiple
-  notifications as requested.
-* Applied Marc's and Rob's tags
-
-v3->v4:
-* Clarfied the expected type of interrypt is edge-triggered, both in
-  the normal documentation and in the DT bindings as requested.
-
-v2->v3:
-* Rebased on v5.14-rc2 which made the patch "dt-bindings: arm: Convert
-  optee binding to json-schema" from the V2 patch set obsolete.
-* Applied Ard's Acked-by on "optee: add asynchronous notifications"
-
-v1->v2:
-* Added documentation
-* Converted optee bindings to json-schema and added interrupt property
-* Configure notification interrupt from DT instead of getting it
-  from secure world, suggested by Ard Biesheuvel <ardb@kernel.org>.
-
-Thanks,
-Jens
-
-Jens Wiklander (6):
-  docs: staging/tee.rst: add a section on OP-TEE notifications
-  dt-bindings: arm: optee: add interrupt property
-  tee: fix put order in teedev_close_context()
-  tee: export teedev_open() and teedev_close_context()
-  optee: separate notification functions
-  optee: add asynchronous notifications
-
- .../arm/firmware/linaro,optee-tz.yaml         |   8 +
- Documentation/staging/tee.rst                 |  30 +++
- drivers/tee/optee/Makefile                    |   1 +
- drivers/tee/optee/core.c                      |   2 +-
- drivers/tee/optee/ffa_abi.c                   |   6 +-
- drivers/tee/optee/notif.c                     | 125 +++++++++
- drivers/tee/optee/optee_msg.h                 |   9 +
- drivers/tee/optee/optee_private.h             |  28 +-
- drivers/tee/optee/optee_rpc_cmd.h             |  31 ++-
- drivers/tee/optee/optee_smc.h                 |  75 +++++-
- drivers/tee/optee/rpc.c                       |  71 +-----
- drivers/tee/optee/smc_abi.c                   | 241 +++++++++++++++---
- drivers/tee/tee_core.c                        |  10 +-
- include/linux/tee_drv.h                       |  14 +
- 14 files changed, 525 insertions(+), 126 deletions(-)
- create mode 100644 drivers/tee/optee/notif.c
-
+diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.y=
+aml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+index c24047c1fdd5..9a426110a14a 100644
+--- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
++++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+@@ -24,6 +24,12 @@ properties:
+   compatible:
+     const: linaro,optee-tz
+=20
++  interrupts:
++    maxItems: 1
++    description: |
++      This interrupt which is used to signal an event by the secure world
++      software is expected to be edge-triggered.
++
+   method:
+     enum: [smc, hvc]
+     description: |
+@@ -42,10 +48,12 @@ additionalProperties: false
+=20
+ examples:
+   - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
+     firmware  {
+         optee  {
+             compatible =3D "linaro,optee-tz";
+             method =3D "smc";
++            interrupts =3D <GIC_SPI 187 IRQ_TYPE_EDGE_RISING>;
+         };
+     };
+=20
 --=20
 2.31.1
 
 
---===============5499234642806959822==--
+--===============1916451626702679195==--
 
