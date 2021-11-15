@@ -1,54 +1,60 @@
-From: Enrique Echeverria <enriqueoctavio@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 3/6] tee: fix put order in teedev_close_context()
-Date: Mon, 08 Nov 2021 17:45:24 -0300
+Subject: Re: [PATCH] optee: fix kfree NULL pointer
+Date: Mon, 15 Nov 2021 13:36:36 +0100
 Message-ID: 
- <CADqfzQHcB5ypQMUV47RueBSdPHgY=Ccqq2VYxaxNJau0OR+RzQ@mail.gmail.com>
-In-Reply-To: <20210723094422.2150313-4-jens.wiklander@linaro.org>
+ <CAHUa44FvNiyZ_S=G49UbbjdBScKXvtgtsMVYjfG_RE7--N7azw@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYPOz1g+-6=Roo88qwcSv9W5vsbVHFWTzv_ALXxyMsLJ8w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4977898432832824685=="
+Content-Type: multipart/mixed; boundary="===============4400931178373961154=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4977898432832824685==
+--===============4400931178373961154==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-Unsuscribe
+On Mon, Nov 8, 2021 at 6:34 AM Sumit Garg <sumit.garg@linaro.org> wrote:
+>
+> On Thu, 4 Nov 2021 at 17:00, <cgel.zte@gmail.com> wrote:
+> >
+> > From: Lv Ruyi <lv.ruyi@zte.com.cn>
+> >
+> > This patch fixes the following Coccinelle error:
+> > drivers/tee/optee/ffa_abi.c: 877: ERROR  optee is NULL but dereferenced.
+> >
+> > If memory allocation fails, optee is null pointer. the code will goto err
+> >  and release optee.
+> >
+> > Reported-by: Zeal Robot <zealci@zte.com.cn>
+> > Signed-off-by: Lv Ruyi <lv.ruyi@zte.com.cn>
+> > ---
+> >  drivers/tee/optee/ffa_abi.c | 3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> > index 6defd1ec982a..8d9d189557f9 100644
+> > --- a/drivers/tee/optee/ffa_abi.c
+> > +++ b/drivers/tee/optee/ffa_abi.c
+> > @@ -811,8 +811,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+> >
+> >         optee = kzalloc(sizeof(*optee), GFP_KERNEL);
+> >         if (!optee) {
+> > -               rc = -ENOMEM;
+> > -               goto err;
+> > +               return -ENOMEM;
+> >         }
+>
+> So the braces are redundant after this change, hence can be dropped.
+>
+> With that addressed:
+>
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-El vie., 23 de julio de 2021 6:46 a. m., Jens Wiklander <
-jens.wiklander@linaro.org> escribió:
+I'll fix up the commit and pick it up now.
 
-> Prior to this patch was teedev_close_context() calling tee_device_put()
-> before teedev_ctx_put() leading to teedev_ctx_release() accessing
-> ctx->teedev just after the reference counter was decreased on the
-> teedev. Fix this by calling teedev_ctx_put() before tee_device_put().
->
-> Fixes: 217e0250cccb ("tee: use reference counting for tee_context")
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/tee_core.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index 2b37bc408fc3..85102d12d716 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -98,8 +98,10 @@ void teedev_ctx_put(struct tee_context *ctx)
->
->  static void teedev_close_context(struct tee_context *ctx)
->  {
-> -       tee_device_put(ctx->teedev);
-> +       struct tee_device *teedev = ctx->teedev;
-> +
->         teedev_ctx_put(ctx);
-> +       tee_device_put(teedev);
->  }
->
->  static int tee_open(struct inode *inode, struct file *filp)
-> --
-> 2.31.1
->
->
+Thanks,
+Jens
 
---===============4977898432832824685==--
+--===============4400931178373961154==--
 
