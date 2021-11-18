@@ -1,46 +1,38 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE fix for v5.16
-Date: Wed, 17 Nov 2021 13:57:47 +0100
-Message-ID: <20211117125747.GA2896197@jade>
+Subject: Linaro OP-TEE Contributions (LOC) monthly meeting November 2021
+Date: Thu, 18 Nov 2021 18:02:26 +0530
+Message-ID: 
+ <CANZ+81F8Y16SzywYCVaPi3h7V3-2neT4uyD_76G7cHpa8pvoag@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2975524501900618857=="
+Content-Type: multipart/mixed; boundary="===============0739747871951900979=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2975524501900618857==
+--===============0739747871951900979==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+Hi,
 
-Please pull this small OP-TEE driver fix to avoid a possible NULL pointer
-dereference in the error handling path of a probe function.
+OP-TEE Contributions (LOC) monthly meeting is planned for Thursday Nov 25
+@17.00 (UTC+2).
 
-Thanks,
-Jens
+Following topic is on the agenda:
+- Walkthrough of proposal on sharing of hardware resources between multiple
+secure entities - Jens Wiklander.
 
-The following changes since commit fa55b7dcdc43c1aa1ba12bca9d2dd4318c2a0dbf:
+If you have any other topics you'd like to discuss, please let us know and
+we can schedule them.
 
-  Linux 5.16-rc1 (2021-11-14 13:56:52 -0800)
+Meeting details:
+---------------
+Date/time: Nov 25(a)16.00 (UTC)
+https://everytimezone.com/s/a43c71b2
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
 
-are available in the Git repository at:
+Regards,
+Ruchika on behalf of the Linaro OP-TEE team
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-fix-for=
--v5.16
-
-for you to fetch changes up to c23ca66a4dadb6f050dc57358bc8d57a747c35bf:
-
-  optee: fix kfree NULL pointer (2021-11-16 14:41:23 +0100)
-
-----------------------------------------------------------------
-Fix possible NULL pointer dereference in OP-TEE driver
-
-----------------------------------------------------------------
-Lv Ruyi (1):
-      optee: fix kfree NULL pointer
-
- drivers/tee/optee/ffa_abi.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
---===============2975524501900618857==--
+--===============0739747871951900979==--
 
