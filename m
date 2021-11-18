@@ -1,51 +1,72 @@
-From: Ruchika Gupta <ruchika.gupta@linaro.org>
+From: John Linn <linnj@xilinx.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions (LOC) monthly meeting November 2021
-Date: Thu, 18 Nov 2021 18:07:56 +0530
-Message-ID: 
- <CANZ+81EjpGgVBLS15ZKDz9Oax9-xvN7j_oiCZCVZKfVK0PFjhQ@mail.gmail.com>
-In-Reply-To: <
- <CANZ+81F8Y16SzywYCVaPi3h7V3-2neT4uyD_76G7cHpa8pvoag@mail.gmail.com>>
+Subject: Embedded DT (CFG_EMBED_DT) with dynamic shared memory
+ (CFG_CORE_DYN_SHM) in optee-os
+Date: Thu, 18 Nov 2021 20:23:59 +0000
+Message-ID: <DM8PR02MB8153B3285BF17628942612CED89B9@DM8PR02MB8153.namprd02.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2168167767903287834=="
+Content-Type: multipart/mixed; boundary="===============3175701081495964885=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2168167767903287834==
+--===============3175701081495964885==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Small correction in the timing.
-The timing of the meeting is - Thursday Nov 25 @16.00 (UTC).
+It appears that dynamic shared memory does not work with an embedded DT, but =
+I'm likely missing something. I have it working fine with an external DT.
 
-Regards,
-Ruchika
+There is a bit of interaction in kernel/boot.c with the two configuration opt=
+ions and my testing is not seeing it work with 3.14 and master looks the same=
+ viewing it.
 
-On Thu, 18 Nov 2021 at 18:02, Ruchika Gupta <ruchika.gupta@linaro.org>
-wrote:
+get_external_fdt() is called which does not work with the embedded DT it appe=
+ars to me.
 
-> Hi,
->
-> OP-TEE Contributions (LOC) monthly meeting is planned for Thursday Nov 25
-> @16.00 (UTC).
->
-> Following topic is on the agenda:
-> - Walkthrough of proposal on sharing of hardware resources between
-> multiple secure entities - Jens Wiklander.
->
-> If you have any other topics you'd like to discuss, please let us know and
-> we can schedule them.
->
-> Meeting details:
-> ---------------
-> Date/time: Nov 25(a)16.00 (UTC)
-> https://everytimezone.com/s/a43c71b2
-> Connection details: https://www.trustedfirmware.org/meetings/
-> Meeting notes: http://bit.ly/loc-notes
->
-> Regards,
-> Ruchika on behalf of the Linaro OP-TEE team
->
->
+Any hints or advice?
 
---===============2168167767903287834==--
+Thanks
+John
+
+#ifdef CFG_CORE_DYN_SHM
+static void discover_nsec_memory(void)
+{
+        struct core_mmu_phys_mem *mem;
+        const struct core_mmu_phys_mem *mem_begin =3D NULL;
+        const struct core_mmu_phys_mem *mem_end =3D NULL;
+        size_t nelems;
+        void *fdt =3D get_external_dt();
+
+        if (fdt) {
+                mem =3D get_nsec_memory(fdt, &nelems);
+                if (mem) {
+                        core_mmu_set_discovered_nsec_ddr(mem, nelems);
+                        return;
+                }
+
+                DMSG("No non-secure memory found in FDT");
+        }
+
+        mem_begin =3D phys_ddr_overall_begin;
+        mem_end =3D phys_ddr_overall_end;
+        nelems =3D mem_end - mem_begin;
+        if (nelems) {
+                /*
+                 * Platform cannot use both register_ddr() and the now
+                 * deprecated register_dynamic_shm().
+                 */
+                assert(phys_ddr_overall_compat_begin =3D=3D
+                       phys_ddr_overall_compat_end);
+        } else {
+                mem_begin =3D phys_ddr_overall_compat_begin;
+                mem_end =3D phys_ddr_overall_compat_end;
+                nelems =3D mem_end - mem_begin;
+                if (!nelems)
+                        return;
+This email and any attachments are intended for the sole use of the named rec=
+ipient(s) and contain(s) confidential information that may be proprietary, pr=
+ivileged or copyrighted under applicable law. If you are not the intended rec=
+ipient, do not read, copy, or forward this email message or any attachments. =
+Delete this email message and any attachments immediately.
+
+--===============3175701081495964885==--
 
