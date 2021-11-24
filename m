@@ -1,60 +1,45 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Fwd: Embedded DT (CFG_EMBED_DT) with dynamic shared memory
- (CFG_CORE_DYN_SHM) in optee-os
-Date: Mon, 22 Nov 2021 17:17:16 +0100
-Message-ID: 
- <CAN5uoS9H3c3f6mqAALaBBUsz+1KfwcerZ9T-dCuw1Sa98hwWQA@mail.gmail.com>
-In-Reply-To: <
- <CAA-cTWZDnM4GEXf71MtC+_z=MBOpMaENTKvOD5v+kN6DfeziBQ@mail.gmail.com>>
+Subject: [PATCH] tee: amdtee: fix an IS_ERR() vs NULL bug
+Date: Wed, 24 Nov 2021 17:54:04 +0300
+Message-ID: <20211124145404.GE13656@kili>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7436739319867699277=="
+Content-Type: multipart/mixed; boundary="===============5614911863080023819=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7436739319867699277==
+--===============5614911863080023819==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello John,
+The __get_free_pages() function does not return error pointers it returns
+NULL so fix this condition to avoid a NULL dereference.
 
-> From: John Linn <linnj@xilinx.com>
-> Date: Thu, Nov 18, 2021 at 10:24 PM
-> Subject: Embedded DT (CFG_EMBED_DT) with dynamic shared memory (CFG_CORE_DY=
-N_SHM) in optee-os
-> To: op-teeATlists.trustedfirmware.org <op-teeATlists.trustedfirmware.org>
->
->
-> It appears that dynamic shared memory does not work with an embedded DT, bu=
-t I'm likely missing something. I have it working fine with an external DT.
->
-> There is a bit of interaction in kernel/boot.c with the two configuration o=
-ptions and my testing is not seeing it work with 3.14 and master looks the sa=
-me viewing it.
->
-> get_external_fdt() is called which does not work with the embedded DT it ap=
-pears to me.
+Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/tee/amdtee/core.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Indeed the current implementation gets the main memory size from the
-external non-secure DTB.
-This memory is mainly REE memory and can tbe used  as shared memory.
-
-It looks reasonable to get the same info from the embedded DTB instead
-but the point to discuss, IMO, is whether the memory nodes of OP-TEE
-secure DT relate to OP-TEE "secure memory" or to system-wide (possibly
-non-secure) memory. In the former case, that information could not be
-used to define the "non-secure shareable address ranges".
-Feel free to create a P-R in optee_os for that purpose (something like
-try with embedded_dt() then fallback to external=C3=A8_dt()),
-
-Regards,
-Etienne
+diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
+index da6b88e80dc0..297dc62bca29 100644
+--- a/drivers/tee/amdtee/core.c
++++ b/drivers/tee/amdtee/core.c
+@@ -203,9 +203,8 @@ static int copy_ta_binary(struct tee_context *ctx, void *=
+ptr, void **ta,
+=20
+ 	*ta_size =3D roundup(fw->size, PAGE_SIZE);
+ 	*ta =3D (void *)__get_free_pages(GFP_KERNEL, get_order(*ta_size));
+-	if (IS_ERR(*ta)) {
+-		pr_err("%s: get_free_pages failed 0x%llx\n", __func__,
+-		       (u64)*ta);
++	if (!*ta) {
++		pr_err("%s: get_free_pages failed\n", __func__);
+ 		rc =3D -ENOMEM;
+ 		goto rel_fw;
+ 	}
+--=20
+2.20.1
 
 
->
-> Any hints or advice?
->
-> Thanks
-> John
-
---===============7436739319867699277==--
+--===============5614911863080023819==--
 
