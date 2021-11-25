@@ -1,45 +1,74 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] tee: amdtee: fix an IS_ERR() vs NULL bug
-Date: Wed, 24 Nov 2021 17:54:04 +0300
-Message-ID: <20211124145404.GE13656@kili>
+Subject: Re: Linaro OP-TEE Contributions (LOC) monthly meeting November 2021
+Date: Thu, 25 Nov 2021 20:28:12 +0530
+Message-ID: 
+ <CANZ+81EazXP+w5dMQS8No8u0T7XmROujV=yTXMNH7jQzE8jK=A@mail.gmail.com>
+In-Reply-To: <
+ <CANZ+81EjpGgVBLS15ZKDz9Oax9-xvN7j_oiCZCVZKfVK0PFjhQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5614911863080023819=="
+Content-Type: multipart/mixed; boundary="===============4153926157613874930=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5614911863080023819==
+--===============4153926157613874930==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-The __get_free_pages() function does not return error pointers it returns
-NULL so fix this condition to avoid a NULL dereference.
+Gentle reminder that we have the OP-TEE contribution (LOC)
+monthly meeting planned in an hour from now i.e @16.00 (UTC)
 
-Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/tee/amdtee/core.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
-index da6b88e80dc0..297dc62bca29 100644
---- a/drivers/tee/amdtee/core.c
-+++ b/drivers/tee/amdtee/core.c
-@@ -203,9 +203,8 @@ static int copy_ta_binary(struct tee_context *ctx, void *=
-ptr, void **ta,
-=20
- 	*ta_size =3D roundup(fw->size, PAGE_SIZE);
- 	*ta =3D (void *)__get_free_pages(GFP_KERNEL, get_order(*ta_size));
--	if (IS_ERR(*ta)) {
--		pr_err("%s: get_free_pages failed 0x%llx\n", __func__,
--		       (u64)*ta);
-+	if (!*ta) {
-+		pr_err("%s: get_free_pages failed\n", __func__);
- 		rc =3D -ENOMEM;
- 		goto rel_fw;
- 	}
---=20
-2.20.1
+Agenda
+Walkthrough of proposal on sharing of hardware resources between multiple
+secure entities - Jens Wiklander.
 
 
---===============5614911863080023819==--
+Meeting details:
+---------------
+Date/time: Nov 25(a)16.00 (UTC)
+https://everytimezone.com/s/a43c71b2
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
+
+Regards,
+Ruchika
+
+
+
+On Thu, 18 Nov 2021 at 18:07, Ruchika Gupta <ruchika.gupta@linaro.org>
+wrote:
+
+> Small correction in the timing.
+> The timing of the meeting is - Thursday Nov 25 @16.00 (UTC).
+>
+> Regards,
+> Ruchika
+>
+> On Thu, 18 Nov 2021 at 18:02, Ruchika Gupta <ruchika.gupta@linaro.org>
+> wrote:
+>
+>> Hi,
+>>
+>> OP-TEE Contributions (LOC) monthly meeting is planned for Thursday Nov 25
+>> @16.00 (UTC).
+>>
+>> Following topic is on the agenda:
+>> - Walkthrough of proposal on sharing of hardware resources between
+>> multiple secure entities - Jens Wiklander.
+>>
+>> If you have any other topics you'd like to discuss, please let us know
+>> and we can schedule them.
+>>
+>> Meeting details:
+>> ---------------
+>> Date/time: Nov 25(a)16.00 (UTC)
+>> https://everytimezone.com/s/a43c71b2
+>> Connection details: https://www.trustedfirmware.org/meetings/
+>> Meeting notes: http://bit.ly/loc-notes
+>>
+>> Regards,
+>> Ruchika on behalf of the Linaro OP-TEE team
+>>
+>>
+
+--===============4153926157613874930==--
 
