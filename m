@@ -1,74 +1,60 @@
-From: Ruchika Gupta <ruchika.gupta@linaro.org>
+From: "Thomas, Rijo-john" <Rijo-john.Thomas@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions (LOC) monthly meeting November 2021
-Date: Thu, 25 Nov 2021 20:28:12 +0530
-Message-ID: 
- <CANZ+81EazXP+w5dMQS8No8u0T7XmROujV=yTXMNH7jQzE8jK=A@mail.gmail.com>
-In-Reply-To: <
- <CANZ+81EjpGgVBLS15ZKDz9Oax9-xvN7j_oiCZCVZKfVK0PFjhQ@mail.gmail.com>>
+Subject: RE: [PATCH] tee: amdtee: fix an IS_ERR() vs NULL bug
+Date: Mon, 29 Nov 2021 08:23:59 +0000
+Message-ID: <CH0PR12MB5346CA4DBE99A795A1B6CA48CF669@CH0PR12MB5346.namprd12.prod.outlook.com>
+In-Reply-To: <20211124145404.GE13656@kili>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4153926157613874930=="
+Content-Type: multipart/mixed; boundary="===============7912518181025635169=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4153926157613874930==
+--===============7912518181025635169==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Gentle reminder that we have the OP-TEE contribution (LOC)
-monthly meeting planned in an hour from now i.e @16.00 (UTC)
+[Public]
 
-Agenda
-Walkthrough of proposal on sharing of hardware resources between multiple
-secure entities - Jens Wiklander.
+Acked-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
 
+-----Original Message-----
+From: Dan Carpenter <dan.carpenter@oracle.com>=20
+Sent: Wednesday, November 24, 2021 8:24 PM
+To: Jens Wiklander <jens.wiklander@linaro.org>; Thomas, Rijo-john <Rijo-joh=
+n.Thomas@amd.com>
+Cc: Sumit Garg <sumit.garg@linaro.org>; Rangasamy, Devaraj <Devaraj.Rangasa=
+my@amd.com>; Herbert Xu <herbert@gondor.apana.org.au>; Gary R Hook <gary.=
+hook@amd.com>; op-tee(a)lists.trustedfirmware.org; linux-kernel(a)vger.kern=
+el.org; kernel-janitors(a)vger.kernel.org
+Subject: [PATCH] tee: amdtee: fix an IS_ERR() vs NULL bug
 
-Meeting details:
----------------
-Date/time: Nov 25(a)16.00 (UTC)
-https://everytimezone.com/s/a43c71b2
-Connection details: https://www.trustedfirmware.org/meetings/
-Meeting notes: http://bit.ly/loc-notes
+The __get_free_pages() function does not return error pointers it returns
+NULL so fix this condition to avoid a NULL dereference.
 
-Regards,
-Ruchika
+Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/tee/amdtee/core.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
+index da6b88e80dc0..297dc62bca29 100644
+--- a/drivers/tee/amdtee/core.c
++++ b/drivers/tee/amdtee/core.c
+@@ -203,9 +203,8 @@ static int copy_ta_binary(struct tee_context *ctx, void *=
+ptr, void **ta,
+=20
+ 	*ta_size =3D roundup(fw->size, PAGE_SIZE);
+ 	*ta =3D (void *)__get_free_pages(GFP_KERNEL, get_order(*ta_size));
+-	if (IS_ERR(*ta)) {
+-		pr_err("%s: get_free_pages failed 0x%llx\n", __func__,
+-		       (u64)*ta);
++	if (!*ta) {
++		pr_err("%s: get_free_pages failed\n", __func__);
+ 		rc =3D -ENOMEM;
+ 		goto rel_fw;
+ 	}
+--=20
+2.20.1
 
-
-On Thu, 18 Nov 2021 at 18:07, Ruchika Gupta <ruchika.gupta@linaro.org>
-wrote:
-
-> Small correction in the timing.
-> The timing of the meeting is - Thursday Nov 25 @16.00 (UTC).
->
-> Regards,
-> Ruchika
->
-> On Thu, 18 Nov 2021 at 18:02, Ruchika Gupta <ruchika.gupta@linaro.org>
-> wrote:
->
->> Hi,
->>
->> OP-TEE Contributions (LOC) monthly meeting is planned for Thursday Nov 25
->> @16.00 (UTC).
->>
->> Following topic is on the agenda:
->> - Walkthrough of proposal on sharing of hardware resources between
->> multiple secure entities - Jens Wiklander.
->>
->> If you have any other topics you'd like to discuss, please let us know
->> and we can schedule them.
->>
->> Meeting details:
->> ---------------
->> Date/time: Nov 25(a)16.00 (UTC)
->> https://everytimezone.com/s/a43c71b2
->> Connection details: https://www.trustedfirmware.org/meetings/
->> Meeting notes: http://bit.ly/loc-notes
->>
->> Regards,
->> Ruchika on behalf of the Linaro OP-TEE team
->>
->>
-
---===============4153926157613874930==--
+--===============7912518181025635169==--
 
