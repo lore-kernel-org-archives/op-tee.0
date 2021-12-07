@@ -1,83 +1,50 @@
-From: Lars Persson <larper@axis.com>
+From: Andrey Zhizhikin <andrey.zhizhikin@leica-geosystems.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] tee: Do not publish partially initialized shm objects
-Date: Tue, 07 Dec 2021 10:57:58 +0100
-Message-ID: <20211207095758.1077636-1-larper@axis.com>
+Subject: [PATCH v3 0/2] CAAM Driver: re-factor and set proper JR status
+Date: Wed, 08 Dec 2021 00:02:04 +0100
+Message-ID: <20211207230206.14637-1-andrey.zhizhikin@leica-geosystems.com>
+In-Reply-To: <20211111164601.13135-1-andrey.zhizhikin@leica-geosystems.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1633898372353043002=="
+Content-Type: multipart/mixed; boundary="===============1153249687241631516=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1633898372353043002==
+--===============1153249687241631516==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Adding a partially initialized struct tee_shm to teedev->idr makes
-that object reachable from userspace through TEE_IOC_OPEN_SESSION and
-TEE_IOC_INVOKE. We should delay the registration of the pointer in the
-idr until the object is fully initialized.
+This V3 series covers points uncovered during the review of the previous
+series, one major point being that register readout should not be used
+for dynamic JR availability check due to its unreliability.
 
-Fixes: 967c9cca2cc5 ("tee: generic TEE subsystem")
-Reported-by: Patrik Lantz <patrik.lantz@axis.com>
-Signed-off-by: Lars Persson <larper@axis.com>
----
- drivers/tee/tee_shm.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+Instead, JR should have a proper status set in FDT which indicates the
+availability of the ring in NS-World. This status is aligned with what
+BootROM code configures, and can be modified by all actors in the boot
+chain.
 
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 8a9384a64f3e..93814ff7fde8 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -155,7 +155,7 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, si=
-ze_t size, u32 flags)
- 		DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
-=20
- 		mutex_lock(&teedev->mutex);
--		shm->id =3D idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
-+		shm->id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
- 		mutex_unlock(&teedev->mutex);
- 		if (shm->id < 0) {
- 			ret =3D ERR_PTR(shm->id);
-@@ -172,6 +172,12 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, s=
-ize_t size, u32 flags)
- 			ret =3D ERR_CAST(shm->dmabuf);
- 			goto err_rem;
- 		}
-+
-+		ret =3D idr_replace(&teedev->idr, shm, shm->id);
-+		if (IS_ERR(ret)) {
-+			dma_buf_put(shm->dmabuf);
-+			return ret;
-+		}
- 	}
-=20
- 	teedev_ctx_get(ctx);
-@@ -288,7 +294,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx,=
- unsigned long addr,
- 	}
-=20
- 	mutex_lock(&teedev->mutex);
--	shm->id =3D idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
-+	shm->id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
- 	mutex_unlock(&teedev->mutex);
-=20
- 	if (shm->id < 0) {
-@@ -319,6 +325,12 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx=
-, unsigned long addr,
- 		}
- 	}
-=20
-+	ret =3D idr_replace(&teedev->idr, shm, shm->id);
-+	if (IS_ERR(ret)) {
-+		tee_shm_free(shm);
-+		return ret;
-+	}
-+
- 	return shm;
- err:
- 	if (shm) {
---=20
-2.30.2
+Therefore, patch in V2 series that was handling the dynamic JR
+availability check is dropped in this series and replaced by the patch
+which sets proper DT status for JR nodes.
+
+Andrey Zhizhikin (2):
+  crypto: caam - convert to use capabilities
+  arm64: dts: imx8m: define proper status for caam jr
+
+ arch/arm64/boot/dts/freescale/imx8mm.dtsi |   4 +
+ arch/arm64/boot/dts/freescale/imx8mn.dtsi |   4 +
+ arch/arm64/boot/dts/freescale/imx8mp.dtsi |   4 +
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi |   4 +
+ drivers/crypto/caam/caamalg_qi.c          |   2 +-
+ drivers/crypto/caam/ctrl.c                | 115 ++++++++++++++--------
+ drivers/crypto/caam/intern.h              |  20 ++--
+ drivers/crypto/caam/jr.c                  |  19 +++-
+ drivers/crypto/caam/regs.h                |   2 -
+ 9 files changed, 122 insertions(+), 52 deletions(-)
 
 
---===============1633898372353043002==--
+base-commit: 04fe99a8d936d46a310ca61b8b63dc270962bf01
+-- 
+2.25.1
+
+
+--===============1153249687241631516==--
 
