@@ -1,97 +1,110 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: "Wang, Xiaolei" <Xiaolei.Wang@windriver.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: Do not publish partially initialized shm objects
-Date: Thu, 09 Dec 2021 17:30:16 +0530
-Message-ID: 
- <CAFA6WYNzyr1m_MHcqHP+GPTetLcsNDMsTPsUsah0DUVJREOYbw@mail.gmail.com>
-In-Reply-To: <20211207095758.1077636-1-larper@axis.com>
+Subject: Re: [PATCH] optee: Suppress false positive kmemleak report in
+ optee_handle_rpc()
+Date: Thu, 09 Dec 2021 14:40:45 +0000
+Message-ID: <PH0PR11MB5077918D1717DE95E1CFA96A95709@PH0PR11MB5077.namprd11.prod.outlook.com>
+In-Reply-To: <
+ <CAFA6WYN+0751=feb-O9Drmm5V_Gz-1qsgiHmLsA88=49MoK_dg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7645559932848843196=="
+Content-Type: multipart/mixed; boundary="===============7525131252954529790=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7645559932848843196==
+--===============7525131252954529790==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 7 Dec 2021 at 15:28, Lars Persson <larper@axis.com> wrote:
+
+
+________________________________
+From: Sumit Garg <sumit.garg@linaro.org>
+Sent: Thursday, December 9, 2021 7:40 PM
+To: Wang, Xiaolei <Xiaolei.Wang@windriver.com>
+Cc: jens.wiklander(a)linaro.org <jens.wiklander@linaro.org>; op-tee(a)lists=
+.trustedfirmware.org <op-tee@lists.trustedfirmware.org>; linux-kernel(a)vge=
+r.kernel.org <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] optee: Suppress false positive kmemleak report in optee_=
+handle_rpc()
+
+[Please note: This e-mail is from an EXTERNAL e-mail address]
+
+On Mon, 6 Dec 2021 at 17:35, Xiaolei Wang <xiaolei.wang@windriver.com> wrot=
+e:
 >
-> Adding a partially initialized struct tee_shm to teedev->idr makes
-> that object reachable from userspace through TEE_IOC_OPEN_SESSION and
-> TEE_IOC_INVOKE.
-
-Can you elaborate here how this partially initialized shared memory is
-reachable from user-space? AFAICT, TEE_IOC_OPEN_SESSION and
-TEE_IOC_INVOKE relies on shm->id to access underlying shared memory
-(via tee_shm_get_from_id()) and that is only known to user-space after
-TEE_IOC_SHM_ALLOC or TEE_IOC_SHM_REGISTER return successfully.
-
--Sumit
-
-> We should delay the registration of the pointer in the
-> idr until the object is fully initialized.
+> We observed the following kmemleak report:
+> unreferenced object 0xffff000007904500 (size 128):
+>   comm "swapper/0", pid 1, jiffies 4294892671 (age 44.036s)
+>   hex dump (first 32 bytes):
+>     00 47 90 07 00 00 ff ff 60 00 c0 ff 00 00 00 00  .G......`.......
+>     60 00 80 13 00 80 ff ff a0 00 00 00 00 00 00 00  `...............
+>   backtrace:
+>     [<000000004c12b1c7>] kmem_cache_alloc+0x1ac/0x2f4
+>     [<000000005d23eb4f>] tee_shm_alloc+0x78/0x230
+>     [<00000000794dd22c>] optee_handle_rpc+0x60/0x6f0
+>     [<00000000d9f7c52d>] optee_do_call_with_arg+0x17c/0x1dc
+>     [<00000000c35884da>] optee_open_session+0x128/0x1ec
+>     [<000000001748f2ff>] tee_client_open_session+0x28/0x40
+>     [<00000000aecb5389>] optee_enumerate_devices+0x84/0x2a0
+>     [<000000003df18bf1>] optee_probe+0x674/0x6cc
+>     [<000000003a4a534a>] platform_drv_probe+0x54/0xb0
+>     [<000000000c51ce7d>] really_probe+0xe4/0x4d0
+>     [<000000002f04c865>] driver_probe_device+0x58/0xc0
+>     [<00000000b485397d>] device_driver_attach+0xc0/0xd0
+>     [<00000000c835f0df>] __driver_attach+0x84/0x124
+>     [<000000008e5a429c>] bus_for_each_dev+0x70/0xc0
+>     [<000000001735e8a8>] driver_attach+0x24/0x30
+>     [<000000006d94b04f>] bus_add_driver+0x104/0x1ec
 >
-> Fixes: 967c9cca2cc5 ("tee: generic TEE subsystem")
-> Reported-by: Patrik Lantz <patrik.lantz@axis.com>
-> Signed-off-by: Lars Persson <larper@axis.com>
+> This is not a memory leak because we pass the share memory pointer
+> to secure world and would get it from secure world before releasing it.
+
+> How about if it's actually a memory leak caused by the secure world?
+> An example being secure world just allocates kernel memory via
+> OPTEE_SMC_RPC_FUNC_ALLOC and doesn't free it via
+> OPTEE_SMC_RPC_FUNC_FREE.
+
+
+> IMO, we need to cross-check optee-os if it's responsible for leaking
+> kernel memory.
+
+Hi sumit
+
+You mean we need to check whether there is a real memory leak, if being secur=
+e world just allocates kernel memory via OPTEE_SMC_RPC_FUNC_ALLOC and until t=
+he end, there is no free it via OPTEE_SMC_RPC_FUNC_FREE, then we should judge=
+ it as a memory leak.
+
+> -Sumit
+
+>
+> Signed-off-by: Xiaolei Wang <xiaolei.wang@windriver.com>
 > ---
->  drivers/tee/tee_shm.c | 16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
+>  drivers/tee/optee/smc_abi.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index 8a9384a64f3e..93814ff7fde8 100644
-> --- a/drivers/tee/tee_shm.c
-> +++ b/drivers/tee/tee_shm.c
-> @@ -155,7 +155,7 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, =
-size_t size, u32 flags)
->                 DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index 6196d7c3888f..cf2e3293567d 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -23,6 +23,7 @@
+>  #include "optee_private.h"
+>  #include "optee_smc.h"
+>  #include "optee_rpc_cmd.h"
+> +#include <linux/kmemleak.h>
+>  #define CREATE_TRACE_POINTS
+>  #include "optee_trace.h"
 >
->                 mutex_lock(&teedev->mutex);
-> -               shm->id =3D idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
-> +               shm->id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
->                 mutex_unlock(&teedev->mutex);
->                 if (shm->id < 0) {
->                         ret =3D ERR_PTR(shm->id);
-> @@ -172,6 +172,12 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx,=
- size_t size, u32 flags)
->                         ret =3D ERR_CAST(shm->dmabuf);
->                         goto err_rem;
+> @@ -783,6 +784,7 @@ static void optee_handle_rpc(struct tee_context *ctx,
+>                         param->a4 =3D 0;
+>                         param->a5 =3D 0;
 >                 }
-> +
-> +               ret =3D idr_replace(&teedev->idr, shm, shm->id);
-> +               if (IS_ERR(ret)) {
-> +                       dma_buf_put(shm->dmabuf);
-> +                       return ret;
-> +               }
->         }
->
->         teedev_ctx_get(ctx);
-> @@ -288,7 +294,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ct=
-x, unsigned long addr,
->         }
->
->         mutex_lock(&teedev->mutex);
-> -       shm->id =3D idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
-> +       shm->id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
->         mutex_unlock(&teedev->mutex);
->
->         if (shm->id < 0) {
-> @@ -319,6 +325,12 @@ struct tee_shm *tee_shm_register(struct tee_context *c=
-tx, unsigned long addr,
->                 }
->         }
->
-> +       ret =3D idr_replace(&teedev->idr, shm, shm->id);
-> +       if (IS_ERR(ret)) {
-> +               tee_shm_free(shm);
-> +               return ret;
-> +       }
-> +
->         return shm;
->  err:
->         if (shm) {
+> +               kmemleak_not_leak(shm);
+>                 break;
+>         case OPTEE_SMC_RPC_FUNC_FREE:
+>                 shm =3D reg_pair_to_ptr(param->a1, param->a2);
 > --
-> 2.30.2
+> 2.25.1
 >
 
---===============7645559932848843196==--
+--===============7525131252954529790==--
 
