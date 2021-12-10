@@ -1,22 +1,20 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH] optee: Suppress false positive kmemleak report in
  optee_handle_rpc()
-Date: Fri, 10 Dec 2021 10:38:03 +0100
+Date: Fri, 10 Dec 2021 15:08:21 +0530
 Message-ID: 
- <CAN5uoS9xv-kKpC4E6-muYdh59g8XPSDfbquk5=DbQ4GmiVk-PA@mail.gmail.com>
+ <CAFA6WYM1oCs9gE4b5DaRez+jhCXPb_c25ausj0yWdS5tawX0MA@mail.gmail.com>
 In-Reply-To: <ede44051-41db-60b4-d5a3-97a789dd52bc@forissier.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3469922606375089961=="
+Content-Type: multipart/mixed; boundary="===============4918840719017861779=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3469922606375089961==
+--===============4918840719017861779==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello all,
-
-On Fri, 10 Dec 2021 at 09:10, Jerome Forissier <jerome@forissier.org> wrote:
+On Fri, 10 Dec 2021 at 13:40, Jerome Forissier <jerome@forissier.org> wrote:
 >
 > +CC Jens, Etienne
 >
@@ -87,53 +85,27 @@ _ALLOC and until the end, there is no free
 >
 > I believe it can happen when OP-TEE's CFG_PREALLOC_RPC_CACHE is y. See
 > the config file [1] and the commit which introduced this config [2].
+
+Okay, I see the reasoning. So during the OP-TEE driver's lifetime, the
+RPC shared memory remains allocated. I guess that is done primarily
+for performance reasons.
+
+But still it doesn't feel appropriate that we term all RPC shm
+allocations as not leaking memory as we might miss obvious ones.
+
+Xiaolei,
+
+Can you once test with CFG_PREALLOC_RPC_CACHE=3Dn while compiling
+optee-os and see if the observed memory leak disappears or not?
+
+-Sumit
+
 >
 > [1] https://github.com/OP-TEE/optee_os/blob/3.15.0/mk/config.mk#L709
 > [2] https://github.com/OP-TEE/optee_os/commit/8887663248ad
 >
-
-It's been a while since OP-TEE caches some shm buffers to prevent
-re-allocting them on and on.
-OP-TEE does so for 1 shm buffer per "tee threads" OP-TEE has provisioned.
-Each thread can cache a shm reference.
-Note that used RPCs from optee to linux/u-boot/ree do not require such
-message buffer (IMO).
-
-The main issue is the shm buffer are allocated per optee thread
-(thread context assigned to client invocation request when entreing
-optee).
-Therefore, if an optee thread caches a shm buffer, it makes the caller
-tee session to have a shm reference with a refcount held, until Optee
-thread releases its cached shm reference.
-
-There are ugly side effects. Linux must disable the cache to release
-all resources.
-We recently saw some tee sessions may be left open because of such shm
-refcount held.
-It can lead to few misbehaviour of the TA service (restarting a
-service, releasing a resource)
-
-Config switch CFG_PREALLOC_RPC_CACHE was introduced [pr4896] to
-disable the feature at boot time.
-There are means to not use it, or to explicitly enable/disable it at
-run time (already used optee smc services for that). Would maybe be a
-better default config.
-Note this discussion thread ending at his comment [issue1918]:
-
-Comments are welcome. I may have missed something in the description
-(or understanding :).
-
-[pr4896] https://github.com/OP-TEE/optee_os/pull/4896
-[issue1918] https://github.com/OP-TEE/optee_os/issues/1918#issuecomment-96874=
-7738
-
-Best regards,
-etienne
-
-
-
 > --
 > Jerome
 
---===============3469922606375089961==--
+--===============4918840719017861779==--
 
