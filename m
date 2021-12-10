@@ -1,59 +1,48 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Lars Persson <larper@axis.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: Do not publish partially initialized shm objects
-Date: Fri, 10 Dec 2021 16:20:56 +0530
-Message-ID: 
- <CAFA6WYOo13FQtLs1DthrapScVtMfH5anB-P8DhMTXe8bQFO1Jw@mail.gmail.com>
-In-Reply-To: <8d2bf450-4500-9b00-be51-d82a46035ecc@axis.com>
+Subject: drivers/tee double-free of page when optee_shm_register fails
+Date: Fri, 10 Dec 2021 15:53:15 +0100
+Message-ID: <8a66d68a-16e0-20a7-98d5-3c8623a0d8c4@axis.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4215863635508054680=="
+Content-Type: multipart/mixed; boundary="===============8726338642269333135=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4215863635508054680==
+--===============8726338642269333135==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 10 Dec 2021 at 15:54, Lars Persson <larper@axis.com> wrote:
->
->
->
-> On 2021-12-09 13:00, Sumit Garg wrote:
-> > On Tue, 7 Dec 2021 at 15:28, Lars Persson <larper@axis.com> wrote:
-> >>
-> >> Adding a partially initialized struct tee_shm to teedev->idr makes
-> >> that object reachable from userspace through TEE_IOC_OPEN_SESSION and
-> >> TEE_IOC_INVOKE.
-> >
-> > Can you elaborate here how this partially initialized shared memory is
-> > reachable from user-space? AFAICT, TEE_IOC_OPEN_SESSION and
-> > TEE_IOC_INVOKE relies on shm->id to access underlying shared memory
-> > (via tee_shm_get_from_id()) and that is only known to user-space after
-> > TEE_IOC_SHM_ALLOC or TEE_IOC_SHM_REGISTER return successfully.
-> >
->
-> Hi
->
-> The IDR does not hand out high-entropy identifiers that userspace is
-> unable to guess. We can very easily provoke NULL pointer dereferences
-> in the kernel when running syzkaller on the TEE device because
-> shm->dmabuf has not yet been assigned.
->
-> It is also a general best practice that an object shall only be
-> available through an API once it is fully initialized. Else undefined
-> behavior will come back and bite us.
->
+Hi
 
-Okay, I see the fuzzing scenario where a kernel crash can be caused.
-So I take this fix as user-space shouldn't be able to crash the
-kernel.
+Me and Patrik have been tracing a kernel memory corruption bug that is 
+triggered when op-tee runs out of resources and returns an error from 
+the OPTEE_MSG_CMD_REGISTER_SHM call. This is yet another fall-out from 
+Patrik's fuzzing of the TEE subsystem.
 
-Please do add all these details to the commit description along with
-the possible kernel crash trace.
+The symptoms would look like this when page debugging is enabled:
+BUG: Bad page state in process optee_example_h  pfn:46bb0
+page:(ptrval) refcount:-1 mapcount:0 mapping:00000000 index:0x0 pfn:0x46bb0
+flags: 0x0(zone=0)
 
--Sumit
+Our reproducer runs a loop with the TEE_IOC_SHM_ALLOC until memory runs 
+out at the optee-os end (dynamic SHM enabled). The error is 100% 
+reproducible with such a loop.
 
-> BR,
->   Lars
+We have traced this down to what seems to be a miss in the memory 
+ownership contract during the call to OPTEE_MSG_CMD_REGISTER_SHM.
 
---===============4215863635508054680==--
+When pool_op_alloc() detects that optee_shm_register() has failed, it 
+will free the allocated page at the very end of the function. 
+Unfortunately that page has already been freed because OP-TEE has sent a 
+OPTEE_RPC_CMD_SHM_FREE for this shm object before returning from 
+OPTEE_MSG_CMD_REGISTER_SHM. This is my conclusion based on prints added 
+to the code.
+
+I cannot write a patch for this because I am at a loss of who actually 
+is supposed to trigger the free of the pages in this situation. Is there 
+an API spec that makes this clear ?
+
+BR,
+  Lars
+
+--===============8726338642269333135==--
 
