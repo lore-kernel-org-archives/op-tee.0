@@ -1,21 +1,23 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH] optee: Suppress false positive kmemleak report in
  optee_handle_rpc()
-Date: Fri, 10 Dec 2021 11:39:16 +0100
+Date: Fri, 10 Dec 2021 11:41:45 +0100
 Message-ID: 
- <CAN5uoS8E7TGZYDyk=+2ZuUC_TnV0u3ezRNLsVxUZZXwFOQK1QQ@mail.gmail.com>
+ <CAHUa44HqxTMcBu8ouUiSCC06gvvBUxZLZ0XWV+6Ha4kNfzRZJQ@mail.gmail.com>
 In-Reply-To: <
  <CAFA6WYNZAbDpFJVnmNGm7aqCc82ZQEeUXvVW4r1+svm8rfRn7w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2272641814531571673=="
+Content-Type: multipart/mixed; boundary="===============7186189984314597685=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2272641814531571673==
+--===============7186189984314597685==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 10 Dec 2021 at 11:29, Sumit Garg <sumit.garg@linaro.org> wrote:
+Hi,
+
+On Fri, Dec 10, 2021 at 11:29 AM Sumit Garg <sumit.garg@linaro.org> wrote:
 >
 > On Fri, 10 Dec 2021 at 15:08, Etienne Carriere
 > <etienne.carriere@linaro.org> wrote:
@@ -141,14 +143,12 @@ leak, wo need to judge whether it is caused by secure os?
 > any refconting of this special memory to be associated with TA
 > sessions.
 
-True. The driver currently invokes OPTEE_SMC_ENABLE_SHM_CACHE
-to start caching some shm allocations. The optee_os part of that command
-could be changed to preallocate the required small rpc message buffer per
-provisioned tee thread.
+The FF-A ABI part of the driver avoids this problem. I've started on a
+similar solution for the SMC based ABI, but it's not ready to post
+yet.
 
-Existing OPTEE_SMC_DISABLE_SHM_CACHE should behave accordingly.
-
-etienne
+Cheers,
+Jens
 
 >
 > -Sumit
@@ -168,5 +168,5 @@ etienne
 > > > --
 > > > Jerome
 
---===============2272641814531571673==--
+--===============7186189984314597685==--
 
