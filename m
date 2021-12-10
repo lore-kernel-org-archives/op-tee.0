@@ -1,57 +1,47 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Lars Persson <larper@axis.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: Suppress false positive kmemleak report in
- optee_handle_rpc()
-Date: Fri, 10 Dec 2021 10:43:50 +0100
-Message-ID: 
- <CAN5uoS-Ho-YVY8N_3ouW2zaeVMvBTquLV12cgJbM4nTwtZTDfg@mail.gmail.com>
+Subject: Re: [PATCH] tee: Do not publish partially initialized shm objects
+Date: Fri, 10 Dec 2021 11:24:19 +0100
+Message-ID: <8d2bf450-4500-9b00-be51-d82a46035ecc@axis.com>
 In-Reply-To: <
- <CAN5uoS9xv-kKpC4E6-muYdh59g8XPSDfbquk5=DbQ4GmiVk-PA@mail.gmail.com>>
+ <CAFA6WYNzyr1m_MHcqHP+GPTetLcsNDMsTPsUsah0DUVJREOYbw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2532935437635030231=="
+Content-Type: multipart/mixed; boundary="===============2528897358401069557=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2532935437635030231==
+--===============2528897358401069557==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-fixing typos :(
+Content-Transfer-Encoding: 7bit
 
 
-On Fri, 10 Dec 2021 at 10:38, Etienne Carriere
-<etienne.carriere@linaro.org> wrote:
-> On Fri, 10 Dec 2021 at 09:10, Jerome Forissier <jerome@forissier.org> wro=
-te:
-> > +CC Jens, Etienne
-> > On 12/10/21 06:00, Sumit Garg wrote:
-> > > On Fri, 10 Dec 2021 at 09:42, Wang, Xiaolei <Xiaolei.Wang@windriver.c=
-om> wrote:
-> > >> From: Sumit Garg <sumit.garg@linaro.org>
-> > >> Sent: Thursday, December 9, 2021 7:41 PM
-> > > Yes. AFAICT, optee-os should allocate shared memory to communicate
-> > > with tee-supplicant. So once the communication is done, the underlying
-> > > shared memory should be freed. I can't think of any scenario where
-> > > optee-os should keep hold-off shared memory indefinitely.
-> >
-> > I believe it can happen when OP-TEE's CFG_PREALLOC_RPC_CACHE is y. See
-> > the config file [1] and the commit which introduced this config [2].
-> >
-> > [1] https://github.com/OP-TEE/optee_os/blob/3.15.0/mk/config.mk#L709
-> > [2] https://github.com/OP-TEE/optee_os/commit/8887663248ad
->
-> (snip)
->
-> It's been a while since OP-TEE caches some shm buffers to prevent
-> re-allocting them on and on.
-> OP-TEE does so for 1 shm buffer per "tee threads" OP-TEE has provisioned.
-> Each thread can cache a shm reference.
-> Note that used RPCs from optee to linux/u-boot/ree do not require such
-> message buffer (IMO).
 
-I meant: "Note that **most of the** used RPCs from ..."
+On 2021-12-09 13:00, Sumit Garg wrote:
+> On Tue, 7 Dec 2021 at 15:28, Lars Persson <larper@axis.com> wrote:
+>>
+>> Adding a partially initialized struct tee_shm to teedev->idr makes
+>> that object reachable from userspace through TEE_IOC_OPEN_SESSION and
+>> TEE_IOC_INVOKE.
+> 
+> Can you elaborate here how this partially initialized shared memory is
+> reachable from user-space? AFAICT, TEE_IOC_OPEN_SESSION and
+> TEE_IOC_INVOKE relies on shm->id to access underlying shared memory
+> (via tee_shm_get_from_id()) and that is only known to user-space after
+> TEE_IOC_SHM_ALLOC or TEE_IOC_SHM_REGISTER return successfully.
+> 
 
-br,
-etienne
+Hi
 
---===============2532935437635030231==--
+The IDR does not hand out high-entropy identifiers that userspace is 
+unable to guess. We can very easily provoke NULL pointer dereferences
+in the kernel when running syzkaller on the TEE device because 
+shm->dmabuf has not yet been assigned.
+
+It is also a general best practice that an object shall only be 
+available through an API once it is fully initialized. Else undefined 
+behavior will come back and bite us.
+
+BR,
+  Lars
+
+--===============2528897358401069557==--
 
