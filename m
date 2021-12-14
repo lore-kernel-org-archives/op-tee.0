@@ -1,17 +1,29 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Patrik Lantz <Patrik.Lantz@axis.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: drivers/tee double-free of page when optee_shm_register fails
-Date: Tue, 14 Dec 2021 15:25:53 +0530
-Message-ID: 
- <CAFA6WYObPg3gTh9Vas55ae7AhRHWHV7sLNq8=BPNYKqK2aXS8g@mail.gmail.com>
-In-Reply-To: <d9d213441d174cb7af55c7042677282a@axis.com>
+Date: Tue, 14 Dec 2021 11:25:34 +0000
+Message-ID: <baaa865865c04375ad5e3a9602de0bc5@axis.com>
+In-Reply-To: <
+ <CAFA6WYObPg3gTh9Vas55ae7AhRHWHV7sLNq8=BPNYKqK2aXS8g@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3808123203496362145=="
+Content-Type: multipart/mixed; boundary="===============5614348010412584930=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3808123203496362145==
+--===============5614348010412584930==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+I'm running the version from [1] (5.14.0) with CONFIG_KASAN=3Dy and CONFIG_KA=
+SAN_INLINE=3Dy.
+
+
+[1] https://optee.readthedocs.io/en/latest/faq/faq.html#faq-try-optee
+________________________________
+From: Sumit Garg <sumit.garg@linaro.org>
+Sent: Tuesday, December 14, 2021 10:55:53 AM
+To: Patrik Lantz
+Cc: Lars Persson; op-tee(a)lists.trustedfirmware.org
+Subject: Re: drivers/tee double-free of page when optee_shm_register fails
 
 On Tue, 14 Dec 2021 at 14:00, Patrik Lantz <Patrik.Lantz@axis.com> wrote:
 >
@@ -92,5 +104,5 @@ b0
 > > BR,
 > >   Lars
 
---===============3808123203496362145==--
+--===============5614348010412584930==--
 
