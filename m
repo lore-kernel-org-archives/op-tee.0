@@ -1,57 +1,67 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2] tee: handle lookup of shm with reference count 0
-Date: Thu, 16 Dec 2021 15:56:01 +0100
-Message-ID: 
- <CAHUa44GqvZS1AY-C45K7kvHxryUu-hUEuCnR3z14BKE0iu34Qw@mail.gmail.com>
-In-Reply-To: <YbnlFf8930RuLkU8@kroah.com>
+Subject: [GIT PULL] TEE and OP-TEE fixes for v5.16
+Date: Thu, 16 Dec 2021 16:07:45 +0100
+Message-ID: <20211216150745.GA3347954@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0754397642614055695=="
+Content-Type: multipart/mixed; boundary="===============7027070921044897547=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0754397642614055695==
+--===============7027070921044897547==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Dec 15, 2021 at 1:52 PM Greg KH <gregkh@linuxfoundation.org> wrote:
->
-> On Wed, Dec 15, 2021 at 10:25:01AM +0100, Jens Wiklander wrote:
-> > Since the tee subsystem does not keep a strong reference to its idle
-> > shared memory buffers, it races with other threads that try to destroy a
-> > shared memory through a close of its dma-buf fd or by unmapping the
-> > memory.
-> >
-> > In tee_shm_get_from_id() when a lookup in teedev->idr has been
-> > successful, it is possible that the tee_shm is in the dma-buf teardown
-> > path, but that path is blocked by the teedev mutex. Since we don't have
-> > an API to tell if the tee_shm is in the dma-buf teardown path or not we
-> > must find another way of detecting this condition.
-> >
-> > Fix this by doing the reference counting directly on the tee_shm using a
-> > new refcount_t refcount field. dma-buf is replaced by using
-> > anon_inode_getfd() instead, this separates the life-cycle of the
-> > underlying file from the tee_shm. tee_shm_put() is updated to hold the
-> > mutex when decreasing the refcount to 0 and then remove the tee_shm from
-> > teedev->idr before releasing the mutex. This means that the tee_shm can
-> > never be found unless it has a refcount larger than 0.
-> >
-> > Fixes: 967c9cca2cc5 ("tee: generic TEE subsystem")
-> > Cc: stable(a)vger.kernel.org
-> > Reviewed-by: Lars Persson <larper@axis.com>
-> > Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-> > Reported-by: Patrik Lantz <patrik.lantz@axis.com>
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> > v1->v2
-> > * fix copyright years in drivers/tee/tee_shm.c
-> > * update kerneldoc comment for struct tee_shm with the reference counter
->
-> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Hello arm-soc maintainers,
 
-I'm picking up this now.
+Please pull these TEE subsystem and OP-TEE driver fixes which by coincident
+all are concerning memory shared with secure world.
 
-Thanks for reviewing,
+There's one in particular nasty race fixed when a tee_shm is about to be
+teared down.
+
+Thanks,
 Jens
 
---===============0754397642614055695==--
+The following changes since commit d58071a8a76d779eedab38033ae4c821c30295a5:
+
+  Linux 5.16-rc3 (2021-11-28 14:09:19 -0800)
+
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/fixes-for-v=
+5.16
+
+for you to fetch changes up to 6add87fdae9bcb1d20b4503df5bd02ce5246cc8b:
+
+  optee: Suppress false positive kmemleak report in optee_handle_rpc() (2021-=
+12-16 15:32:48 +0100)
+
+----------------------------------------------------------------
+TEE and OP-TEE fixes for v5.16
+
+- Fixes a race when a tee_shm reaches reference count 0 and is about to
+  be teared down
+- Fixes an incorrect page free bug in an error path of the OP-TEE shared
+  memory pool handling
+- Suppresses a false positive kmemleak report when allocating driver
+  private shared memory buffers for OP-TEE
+
+----------------------------------------------------------------
+Jens Wiklander (1):
+      tee: handle lookup of shm with reference count 0
+
+Sumit Garg (1):
+      tee: optee: Fix incorrect page free bug
+
+Xiaolei Wang (1):
+      optee: Suppress false positive kmemleak report in optee_handle_rpc()
+
+ drivers/tee/optee/core.c    |   6 +-
+ drivers/tee/optee/smc_abi.c |   2 +
+ drivers/tee/tee_shm.c       | 174 +++++++++++++++++-------------------------=
+--
+ include/linux/tee_drv.h     |   4 +-
+ 4 files changed, 72 insertions(+), 114 deletions(-)
+
+--===============7027070921044897547==--
 
