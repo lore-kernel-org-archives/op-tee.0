@@ -1,83 +1,57 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: Suppress false positive kmemleak report in
- optee_handle_rpc()
-Date: Thu, 16 Dec 2021 15:55:02 +0100
+Subject: Re: [PATCH v2] tee: handle lookup of shm with reference count 0
+Date: Thu, 16 Dec 2021 15:56:01 +0100
 Message-ID: 
- <CAHUa44F7-cf74otao04vfZHZdN0kgaUqzFVd4iTJgZN9xfJC-g@mail.gmail.com>
-In-Reply-To: <20211206120533.602062-1-xiaolei.wang@windriver.com>
+ <CAHUa44GqvZS1AY-C45K7kvHxryUu-hUEuCnR3z14BKE0iu34Qw@mail.gmail.com>
+In-Reply-To: <YbnlFf8930RuLkU8@kroah.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3128116742557319703=="
+Content-Type: multipart/mixed; boundary="===============0754397642614055695=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3128116742557319703==
+--===============0754397642614055695==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 6, 2021 at 1:05 PM Xiaolei Wang <xiaolei.wang@windriver.com> wr=
-ote:
+On Wed, Dec 15, 2021 at 1:52 PM Greg KH <gregkh@linuxfoundation.org> wrote:
 >
-> We observed the following kmemleak report:
-> unreferenced object 0xffff000007904500 (size 128):
->   comm "swapper/0", pid 1, jiffies 4294892671 (age 44.036s)
->   hex dump (first 32 bytes):
->     00 47 90 07 00 00 ff ff 60 00 c0 ff 00 00 00 00  .G......`.......
->     60 00 80 13 00 80 ff ff a0 00 00 00 00 00 00 00  `...............
->   backtrace:
->     [<000000004c12b1c7>] kmem_cache_alloc+0x1ac/0x2f4
->     [<000000005d23eb4f>] tee_shm_alloc+0x78/0x230
->     [<00000000794dd22c>] optee_handle_rpc+0x60/0x6f0
->     [<00000000d9f7c52d>] optee_do_call_with_arg+0x17c/0x1dc
->     [<00000000c35884da>] optee_open_session+0x128/0x1ec
->     [<000000001748f2ff>] tee_client_open_session+0x28/0x40
->     [<00000000aecb5389>] optee_enumerate_devices+0x84/0x2a0
->     [<000000003df18bf1>] optee_probe+0x674/0x6cc
->     [<000000003a4a534a>] platform_drv_probe+0x54/0xb0
->     [<000000000c51ce7d>] really_probe+0xe4/0x4d0
->     [<000000002f04c865>] driver_probe_device+0x58/0xc0
->     [<00000000b485397d>] device_driver_attach+0xc0/0xd0
->     [<00000000c835f0df>] __driver_attach+0x84/0x124
->     [<000000008e5a429c>] bus_for_each_dev+0x70/0xc0
->     [<000000001735e8a8>] driver_attach+0x24/0x30
->     [<000000006d94b04f>] bus_add_driver+0x104/0x1ec
+> On Wed, Dec 15, 2021 at 10:25:01AM +0100, Jens Wiklander wrote:
+> > Since the tee subsystem does not keep a strong reference to its idle
+> > shared memory buffers, it races with other threads that try to destroy a
+> > shared memory through a close of its dma-buf fd or by unmapping the
+> > memory.
+> >
+> > In tee_shm_get_from_id() when a lookup in teedev->idr has been
+> > successful, it is possible that the tee_shm is in the dma-buf teardown
+> > path, but that path is blocked by the teedev mutex. Since we don't have
+> > an API to tell if the tee_shm is in the dma-buf teardown path or not we
+> > must find another way of detecting this condition.
+> >
+> > Fix this by doing the reference counting directly on the tee_shm using a
+> > new refcount_t refcount field. dma-buf is replaced by using
+> > anon_inode_getfd() instead, this separates the life-cycle of the
+> > underlying file from the tee_shm. tee_shm_put() is updated to hold the
+> > mutex when decreasing the refcount to 0 and then remove the tee_shm from
+> > teedev->idr before releasing the mutex. This means that the tee_shm can
+> > never be found unless it has a refcount larger than 0.
+> >
+> > Fixes: 967c9cca2cc5 ("tee: generic TEE subsystem")
+> > Cc: stable(a)vger.kernel.org
+> > Reviewed-by: Lars Persson <larper@axis.com>
+> > Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+> > Reported-by: Patrik Lantz <patrik.lantz@axis.com>
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> > v1->v2
+> > * fix copyright years in drivers/tee/tee_shm.c
+> > * update kerneldoc comment for struct tee_shm with the reference counter
 >
-> This is not a memory leak because we pass the share memory pointer
-> to secure world and would get it from secure world before releasing it.
->
-> Signed-off-by: Xiaolei Wang <xiaolei.wang@windriver.com>
-> ---
->  drivers/tee/optee/smc_abi.c | 2 ++
->  1 file changed, 2 insertions(+)
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-I'm picking up this.
+I'm picking up this now.
 
-Thanks,
+Thanks for reviewing,
 Jens
 
->
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index 6196d7c3888f..cf2e3293567d 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -23,6 +23,7 @@
->  #include "optee_private.h"
->  #include "optee_smc.h"
->  #include "optee_rpc_cmd.h"
-> +#include <linux/kmemleak.h>
->  #define CREATE_TRACE_POINTS
->  #include "optee_trace.h"
->
-> @@ -783,6 +784,7 @@ static void optee_handle_rpc(struct tee_context *ctx,
->                         param->a4 =3D 0;
->                         param->a5 =3D 0;
->                 }
-> +               kmemleak_not_leak(shm);
->                 break;
->         case OPTEE_SMC_RPC_FUNC_FREE:
->                 shm =3D reg_pair_to_ptr(param->a1, param->a2);
-> --
-> 2.25.1
->
-
---===============3128116742557319703==--
+--===============0754397642614055695==--
 
