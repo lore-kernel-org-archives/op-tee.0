@@ -1,51 +1,50 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jan Engelhardt <jengelh@inai.de>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] optee: Use bitmap_free() to free bitmap
-Date: Mon, 27 Dec 2021 11:06:17 +0530
-Message-ID: 
- <CAFA6WYOZtMW7bq98JXm8AqgajaYmythiDQ53k-zgew6zE63YCg@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3C0e30e1f1bde74bc95085093fb0289007d510a68c=2E1640529?=
- =?utf-8?q?121=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=>
+Subject: [PATCH] tee: combine "config" and "menu" for TEE's menuconfig
+Date: Tue, 28 Dec 2021 20:57:37 +0100
+Message-ID: <20211228195737.16633-1-jengelh@inai.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2086879673645347953=="
+Content-Type: multipart/mixed; boundary="===============5852129588105076584=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2086879673645347953==
+--===============5852129588105076584==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 26 Dec 2021 at 20:02, Christophe JAILLET
-<christophe.jaillet@wanadoo.fr> wrote:
->
-> kfree() and bitmap_free() are the same. But using the latter is more
-> consistent when freeing memory allocated with bitmap_zalloc().
->
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/tee/optee/notif.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
+Don't let TEE occupy two lines in menuconfig when practically no
+other (sub)menu does either.
 
-Looks reasonable to me.
+Signed-off-by: Jan Engelhardt <jengelh@inai.de>
+---
+ drivers/tee/Kconfig | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+diff --git drivers/tee/Kconfig drivers/tee/Kconfig
+index e99d840c2511..73a147202e88 100644
+--- drivers/tee/Kconfig
++++ drivers/tee/Kconfig
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ # Generic Trusted Execution Environment Configuration
+-config TEE
++menuconfig TEE
+ 	tristate "Trusted Execution Environment support"
+ 	depends on HAVE_ARM_SMCCC || COMPILE_TEST || CPU_SUP_AMD
+ 	select CRYPTO
+@@ -13,10 +13,7 @@ config TEE
+ 
+ if TEE
+ 
+-menu "TEE drivers"
+-
+ source "drivers/tee/optee/Kconfig"
+ source "drivers/tee/amdtee/Kconfig"
+-endmenu
+ 
+ endif
+-- 
+2.34.1
 
--Sumit
 
-> diff --git a/drivers/tee/optee/notif.c b/drivers/tee/optee/notif.c
-> index a28fa03dcd0e..05212842b0a5 100644
-> --- a/drivers/tee/optee/notif.c
-> +++ b/drivers/tee/optee/notif.c
-> @@ -121,5 +121,5 @@ int optee_notif_init(struct optee *optee, u_int max_key)
->
->  void optee_notif_uninit(struct optee *optee)
->  {
-> -       kfree(optee->notif.bitmap);
-> +       bitmap_free(optee->notif.bitmap);
->  }
-> --
-> 2.32.0
->
-
---===============2086879673645347953==--
+--===============5852129588105076584==--
 
