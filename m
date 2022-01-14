@@ -1,53 +1,42 @@
-From: Jerome Forissier <jerome@forissier.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH] tee: optee: do not check memref size on return from Secure World
-Date: Thu, 13 Jan 2022 16:27:13 +0100
-Message-ID: <a4e48364368cce3c91005a3bd4fdacee086ef00d.1642087405.git.jerome@forissier.org>
+Subject: Re: [PATCH] optee: Use bitmap_free() to free bitmap
+Date: Fri, 14 Jan 2022 11:01:17 +0100
+Message-ID: 
+ <CAHUa44Ghzbtj_YUQxAjq7cKmmJW8hRrYvq+9UwZn9CHkHO8_PQ@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYOZtMW7bq98JXm8AqgajaYmythiDQ53k-zgew6zE63YCg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3201947636895950037=="
+Content-Type: multipart/mixed; boundary="===============7797056395706445132=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3201947636895950037==
+--===============7797056395706445132==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Commit c650b8dc7a79 ("tee: optee: do not check memref size on return
-from Secure World") was mistakenly lost in commit 4602c5842f64 ("optee:
-refactor driver with internal callbacks"). Remove the unwanted code
-again.
+On Mon, Dec 27, 2021 at 6:36 AM Sumit Garg <sumit.garg@linaro.org> wrote:
+>
+> On Sun, 26 Dec 2021 at 20:02, Christophe JAILLET
+> <christophe.jaillet@wanadoo.fr> wrote:
+> >
+> > kfree() and bitmap_free() are the same. But using the latter is more
+> > consistent when freeing memory allocated with bitmap_zalloc().
+> >
+> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> > ---
+> >  drivers/tee/optee/notif.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+>
+> Looks reasonable to me.
+>
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+>
 
-Fixes: 4602c5842f64 ("optee: refactor driver with internal callbacks")
-Signed-off-by: Jerome Forissier <jerome@forissier.org>
----
- drivers/tee/optee/smc_abi.c | 10 ----------
- 1 file changed, 10 deletions(-)
+Looks good, picking up this.
 
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index cf2e3293567d..09e7ec673bb6 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -71,16 +71,6 @@ static int from_msg_param_tmp_mem(struct tee_param *p, u32=
- attr,
- 	p->u.memref.shm_offs =3D mp->u.tmem.buf_ptr - pa;
- 	p->u.memref.shm =3D shm;
-=20
--	/* Check that the memref is covered by the shm object */
--	if (p->u.memref.size) {
--		size_t o =3D p->u.memref.shm_offs +
--			   p->u.memref.size - 1;
--
--		rc =3D tee_shm_get_pa(shm, o, NULL);
--		if (rc)
--			return rc;
--	}
--
- 	return 0;
- }
-=20
---=20
-2.32.0
+Thanks,
+Jens
 
-
---===============3201947636895950037==--
+--===============7797056395706445132==--
 
