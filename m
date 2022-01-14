@@ -1,305 +1,152 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 11/12] tee: replace tee_shm_register()
-Date: Fri, 14 Jan 2022 16:08:23 +0100
-Message-ID: <20220114150824.3578829-12-jens.wiklander@linaro.org>
+Subject: [PATCH v2 12/12] tee: refactor TEE_SHM_* flags
+Date: Fri, 14 Jan 2022 16:08:24 +0100
+Message-ID: <20220114150824.3578829-13-jens.wiklander@linaro.org>
 In-Reply-To: <20220114150824.3578829-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8220091212483685725=="
+Content-Type: multipart/mixed; boundary="===============8252313321950967999=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8220091212483685725==
+--===============8252313321950967999==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-tee_shm_register() is replaced by the previously introduced functions
-tee_shm_register_user_buf() and tee_shm_register_kernel_buf().
+Removes the redundant TEE_SHM_DMA_BUF, TEE_SHM_EXT_DMA_BUF,
+TEE_SHM_MAPPED and TEE_SHM_KERNEL_MAPPED flags.
 
-Since there are not external callers left we can remove tee_shm_register()
-and refactor the remains.
+Assigns new values to the remaining flags to void gaps.
 
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/tee_shm.c   | 157 +++++++++++++++++++++++-----------------
- include/linux/tee_drv.h |  11 ---
- 2 files changed, 91 insertions(+), 77 deletions(-)
+ drivers/tee/tee_shm.c   | 21 ++++++++++-----------
+ include/linux/tee_drv.h | 12 ++++--------
+ 2 files changed, 14 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 6a1dbce75616..fe3e5977dd7c 100644
+index fe3e5977dd7c..9945bdec086b 100644
 --- a/drivers/tee/tee_shm.c
 +++ b/drivers/tee/tee_shm.c
-@@ -12,17 +12,43 @@
- #include <linux/uio.h>
- #include "tee_private.h"
-=20
-+static void shm_put_kernel_pages(struct page **pages, unsigned long npages)
-+{
-+	unsigned long n;
-+
-+	for (n =3D 0; n < npages; n++)
-+		put_page(pages[n]);
-+}
-+
-+static int shm_get_kernel_pages(unsigned long start, int page_count,
-+				struct page **pages)
-+{
-+	struct kvec *kiov;
-+	unsigned int n;
-+	int rc;
-+
-+	kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
-+	if (!kiov)
-+		return -ENOMEM;
-+
-+	for (n =3D 0; n < page_count; n++) {
-+		kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
-+		kiov[n].iov_len =3D PAGE_SIZE;
-+	}
-+
-+	rc =3D get_kernel_pages(kiov, page_count, 0, pages);
-+	kfree(kiov);
-+
-+	return rc;
-+}
-+
- static void release_registered_pages(struct tee_shm *shm)
+@@ -139,8 +139,7 @@ static struct tee_shm *shm_alloc_helper(struct tee_contex=
+t *ctx, size_t size,
+  */
+ struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size)
  {
- 	if (shm->pages) {
--		if (shm->flags & TEE_SHM_USER_MAPPED) {
-+		if (shm->flags & TEE_SHM_USER_MAPPED)
- 			unpin_user_pages(shm->pages, shm->num_pages);
--		} else {
--			size_t n;
--
--			for (n =3D 0; n < shm->num_pages; n++)
--				put_page(shm->pages[n]);
--		}
-+		else
-+			shm_put_kernel_pages(shm->pages, shm->num_pages);
-=20
- 		kfree(shm->pages);
- 	}
-@@ -191,28 +217,24 @@ struct tee_shm *tee_shm_alloc_priv_kernel_buf(struct te=
-e_context *ctx,
- }
- EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_kernel_buf);
-=20
--struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
--				 size_t length, u32 flags)
-+static struct tee_shm *
-+register_shm_helper(struct tee_context *ctx, unsigned long addr,
-+		    size_t length, u32 flags, int id)
- {
+-	u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_DMA_BUF | TEE_SHM_REGISTER |
+-		    TEE_SHM_POOL;
++	u32 flags =3D TEE_SHM_REGISTER | TEE_SHM_POOL;
  	struct tee_device *teedev =3D ctx->teedev;
--	const u32 req_user_flags =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED;
--	const u32 req_kernel_flags =3D TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_MAPPED;
  	struct tee_shm *shm;
-+	unsigned long start;
-+	int num_pages;
  	void *ret;
- 	int rc;
--	int num_pages;
--	unsigned long start;
--
--	if (flags !=3D req_user_flags && flags !=3D req_kernel_flags)
--		return ERR_PTR(-ENOTSUPP);
+@@ -186,7 +185,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc_user_buf);
+  */
+ struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
+e)
+ {
+-	u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_REGISTER | TEE_SHM_POOL;
++	u32 flags =3D TEE_SHM_REGISTER | TEE_SHM_POOL;
 =20
- 	if (!tee_device_get(teedev))
- 		return ERR_PTR(-EINVAL);
-=20
- 	if (!teedev->desc->ops->shm_register ||
- 	    !teedev->desc->ops->shm_unregister) {
--		tee_device_put(teedev);
--		return ERR_PTR(-ENOTSUPP);
-+		ret =3D ERR_PTR(-ENOTSUPP);
-+		goto err_dev_put;
- 	}
-=20
- 	teedev_ctx_get(ctx);
-@@ -220,13 +242,13 @@ struct tee_shm *tee_shm_register(struct tee_context *ct=
-x, unsigned long addr,
- 	shm =3D kzalloc(sizeof(*shm), GFP_KERNEL);
- 	if (!shm) {
- 		ret =3D ERR_PTR(-ENOMEM);
--		goto err;
-+		goto err_ctx_put;
- 	}
-=20
- 	refcount_set(&shm->refcount, 1);
--	shm->flags =3D flags | TEE_SHM_REGISTER;
-+	shm->flags =3D flags;
- 	shm->ctx =3D ctx;
--	shm->id =3D -1;
-+	shm->id =3D id;
- 	addr =3D untagged_addr(addr);
- 	start =3D rounddown(addr, PAGE_SIZE);
- 	shm->offset =3D addr - start;
-@@ -235,71 +257,45 @@ struct tee_shm *tee_shm_register(struct tee_context *ct=
-x, unsigned long addr,
- 	shm->pages =3D kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
- 	if (!shm->pages) {
- 		ret =3D ERR_PTR(-ENOMEM);
--		goto err;
-+		goto err_free_shm;
- 	}
-=20
--	if (flags & TEE_SHM_USER_MAPPED) {
-+	if (flags & TEE_SHM_USER_MAPPED)
- 		rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
- 					 shm->pages);
--	} else {
--		struct kvec *kiov;
--		int i;
--
--		kiov =3D kcalloc(num_pages, sizeof(*kiov), GFP_KERNEL);
--		if (!kiov) {
--			ret =3D ERR_PTR(-ENOMEM);
--			goto err;
--		}
--
--		for (i =3D 0; i < num_pages; i++) {
--			kiov[i].iov_base =3D (void *)(start + i * PAGE_SIZE);
--			kiov[i].iov_len =3D PAGE_SIZE;
--		}
--
--		rc =3D get_kernel_pages(kiov, num_pages, 0, shm->pages);
--		kfree(kiov);
--	}
-+	else
-+		rc =3D shm_get_kernel_pages(start, num_pages, shm->pages);
- 	if (rc > 0)
- 		shm->num_pages =3D rc;
- 	if (rc !=3D num_pages) {
- 		if (rc >=3D 0)
- 			rc =3D -ENOMEM;
- 		ret =3D ERR_PTR(rc);
--		goto err;
--	}
--
--	mutex_lock(&teedev->mutex);
--	shm->id =3D idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
--	mutex_unlock(&teedev->mutex);
--
--	if (shm->id < 0) {
--		ret =3D ERR_PTR(shm->id);
--		goto err;
-+		goto err_put_shm_pages;
- 	}
-=20
- 	rc =3D teedev->desc->ops->shm_register(ctx, shm, shm->pages,
- 					     shm->num_pages, start);
- 	if (rc) {
- 		ret =3D ERR_PTR(rc);
--		goto err;
-+		goto err_put_shm_pages;
- 	}
-=20
- 	return shm;
--err:
--	if (shm) {
--		if (shm->id >=3D 0) {
--			mutex_lock(&teedev->mutex);
--			idr_remove(&teedev->idr, shm->id);
--			mutex_unlock(&teedev->mutex);
--		}
--		release_registered_pages(shm);
--	}
-+err_put_shm_pages:
-+	if (flags & TEE_SHM_USER_MAPPED)
-+		unpin_user_pages(shm->pages, shm->num_pages);
-+	else
-+		shm_put_kernel_pages(shm->pages, shm->num_pages);
-+	kfree(shm->pages);
-+err_free_shm:
- 	kfree(shm);
-+err_ctx_put:
- 	teedev_ctx_put(ctx);
-+err_dev_put:
- 	tee_device_put(teedev);
- 	return ret;
+ 	return shm_alloc_helper(ctx, size, PAGE_SIZE, flags, -1);
  }
--EXPORT_SYMBOL_GPL(tee_shm_register);
+@@ -211,7 +210,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
+ struct tee_shm *tee_shm_alloc_priv_kernel_buf(struct tee_context *ctx,
+ 					      size_t size)
+ {
+-	u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_PRIV | TEE_SHM_POOL;
++	u32 flags =3D TEE_SHM_PRIV | TEE_SHM_POOL;
 =20
- /**
-  * tee_shm_register_user_buf() - Register a userspace shared memory buffer
-@@ -312,8 +308,36 @@ EXPORT_SYMBOL_GPL(tee_shm_register);
+ 	return shm_alloc_helper(ctx, size, sizeof(long) * 2, flags, -1);
+ }
+@@ -308,7 +307,7 @@ register_shm_helper(struct tee_context *ctx, unsigned lon=
+g addr,
  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
  					  unsigned long addr, size_t length)
  {
--	return tee_shm_register(ctx, addr, length,
--				TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
-+	u32 f =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED | TEE_SHM_REGISTER;
-+	struct tee_device *teedev =3D ctx->teedev;
-+	struct tee_shm *shm;
-+	void *ret;
-+	int id;
-+
-+	mutex_lock(&teedev->mutex);
-+	id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
-+	mutex_unlock(&teedev->mutex);
-+
-+	if (id < 0)
-+		return ERR_PTR(id);
-+
-+	shm =3D register_shm_helper(ctx, addr, length, f, id);
-+	if (IS_ERR(shm)) {
-+		mutex_lock(&teedev->mutex);
-+		idr_remove(&teedev->idr, id);
-+		mutex_unlock(&teedev->mutex);
-+		return shm;
-+	}
-+
-+	mutex_lock(&teedev->mutex);
-+	ret =3D idr_replace(&teedev->idr, shm, id);
-+	mutex_unlock(&teedev->mutex);
-+	if (IS_ERR(ret)) {
-+		tee_shm_free(shm);
-+		return ret;
-+	}
-+
-+	return shm;
- }
- EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
-=20
-@@ -330,8 +354,9 @@ EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
+-	u32 f =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED | TEE_SHM_REGISTER;
++	u32 f =3D TEE_SHM_USER_MAPPED | TEE_SHM_REGISTER;
+ 	struct tee_device *teedev =3D ctx->teedev;
+ 	struct tee_shm *shm;
+ 	void *ret;
+@@ -354,7 +353,7 @@ EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
  					    void *addr, size_t length)
  {
--	return tee_shm_register(ctx, (unsigned long)addr, length,
--				TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_MAPPED);
-+	u32 f =3D TEE_SHM_REGISTER | TEE_SHM_KERNEL_MAPPED;
-+
-+	return register_shm_helper(ctx, (unsigned long)addr, length, f, -1);
- }
- EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
+-	u32 f =3D TEE_SHM_REGISTER | TEE_SHM_KERNEL_MAPPED;
++	u32 f =3D TEE_SHM_REGISTER;
 =20
+ 	return register_shm_helper(ctx, (unsigned long)addr, length, f, -1);
+ }
+@@ -398,7 +397,7 @@ int tee_shm_get_fd(struct tee_shm *shm)
+ {
+ 	int fd;
+=20
+-	if (!(shm->flags & TEE_SHM_DMA_BUF))
++	if (shm->id < 0)
+ 		return -EINVAL;
+=20
+ 	/* matched by tee_shm_put() in tee_shm_op_release() */
+@@ -428,7 +427,7 @@ EXPORT_SYMBOL_GPL(tee_shm_free);
+  */
+ int tee_shm_va2pa(struct tee_shm *shm, void *va, phys_addr_t *pa)
+ {
+-	if (!(shm->flags & TEE_SHM_MAPPED))
++	if (!shm->kaddr)
+ 		return -EINVAL;
+ 	/* Check that we're in the range of the shm */
+ 	if ((char *)va < (char *)shm->kaddr)
+@@ -450,7 +449,7 @@ EXPORT_SYMBOL_GPL(tee_shm_va2pa);
+  */
+ int tee_shm_pa2va(struct tee_shm *shm, phys_addr_t pa, void **va)
+ {
+-	if (!(shm->flags & TEE_SHM_MAPPED))
++	if (!shm->kaddr)
+ 		return -EINVAL;
+ 	/* Check that we're in the range of the shm */
+ 	if (pa < shm->paddr)
+@@ -478,7 +477,7 @@ EXPORT_SYMBOL_GPL(tee_shm_pa2va);
+  */
+ void *tee_shm_get_va(struct tee_shm *shm, size_t offs)
+ {
+-	if (!(shm->flags & TEE_SHM_MAPPED))
++	if (!shm->kaddr)
+ 		return ERR_PTR(-EINVAL);
+ 	if (offs >=3D shm->size)
+ 		return ERR_PTR(-EINVAL);
+@@ -553,7 +552,7 @@ void tee_shm_put(struct tee_shm *shm)
+ 		 * the refcount_inc() in tee_shm_get_from_id() never starts
+ 		 * from 0.
+ 		 */
+-		if (shm->flags & TEE_SHM_DMA_BUF)
++		if (shm->id >=3D 0)
+ 			idr_remove(&teedev->idr, shm->id);
+ 		do_release =3D true;
+ 	}
 diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index 029c9a0590cc..e4f32885e273 100644
+index e4f32885e273..dcc7a55e1128 100644
 --- a/include/linux/tee_drv.h
 +++ b/include/linux/tee_drv.h
-@@ -278,17 +278,6 @@ struct tee_shm *tee_shm_alloc_priv_kernel_buf(struct tee=
-_context *ctx,
- 					      size_t size);
- struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
-e);
+@@ -20,14 +20,10 @@
+  * specific TEE driver.
+  */
 =20
--/**
-- * tee_shm_register() - Register shared memory buffer
-- * @ctx:	Context that registers the shared memory
-- * @addr:	Address is userspace of the shared buffer
-- * @length:	Length of the shared buffer
-- * @flags:	Flags setting properties for the requested shared memory.
-- *
-- * @returns a pointer to 'struct tee_shm'
-- */
--struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
--				 size_t length, u32 flags);
- struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
- 					  unsigned long addr, size_t length);
- struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
+-#define TEE_SHM_MAPPED		BIT(0)	/* Memory mapped by the kernel */
+-#define TEE_SHM_DMA_BUF		BIT(1)	/* Memory with dma-buf handle */
+-#define TEE_SHM_EXT_DMA_BUF	BIT(2)	/* Memory with dma-buf handle */
+-#define TEE_SHM_REGISTER	BIT(3)  /* Memory registered in secure world */
+-#define TEE_SHM_USER_MAPPED	BIT(4)  /* Memory mapped in user space */
+-#define TEE_SHM_POOL		BIT(5)  /* Memory allocated from pool */
+-#define TEE_SHM_KERNEL_MAPPED	BIT(6)  /* Memory mapped in kernel space */
+-#define TEE_SHM_PRIV		BIT(7)  /* Memory private to TEE driver */
++#define TEE_SHM_REGISTER	BIT(0)  /* Memory registered in secure world */
++#define TEE_SHM_USER_MAPPED	BIT(1)  /* Memory mapped in user space */
++#define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
++#define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
+=20
+ struct device;
+ struct tee_device;
 --=20
 2.31.1
 
 
---===============8220091212483685725==--
+--===============8252313321950967999==--
 
