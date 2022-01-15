@@ -1,152 +1,62 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Randy Dunlap <rdunlap@infradead.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 12/12] tee: refactor TEE_SHM_* flags
-Date: Fri, 14 Jan 2022 16:08:24 +0100
-Message-ID: <20220114150824.3578829-13-jens.wiklander@linaro.org>
-In-Reply-To: <20220114150824.3578829-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH] docs: staging/tee.rst: fix two typos found while reading
+Date: Sat, 15 Jan 2022 07:30:14 -0800
+Message-ID: <a6b32e17-9aba-4a03-12db-0d707e0f8d26@infradead.org>
+In-Reply-To: <20220115125236.34886-1-wanngchenng@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8252313321950967999=="
+Content-Type: multipart/mixed; boundary="===============6059922899766421607=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8252313321950967999==
+--===============6059922899766421607==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Removes the redundant TEE_SHM_DMA_BUF, TEE_SHM_EXT_DMA_BUF,
-TEE_SHM_MAPPED and TEE_SHM_KERNEL_MAPPED flags.
 
-Assigns new values to the remaining flags to void gaps.
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/tee_shm.c   | 21 ++++++++++-----------
- include/linux/tee_drv.h | 12 ++++--------
- 2 files changed, 14 insertions(+), 19 deletions(-)
+On 1/15/22 04:52, Wang Cheng wrote:
+> Signed-off-by: Wang Cheng <wanngchenng@gmail.com>
 
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index fe3e5977dd7c..9945bdec086b 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -139,8 +139,7 @@ static struct tee_shm *shm_alloc_helper(struct tee_contex=
-t *ctx, size_t size,
-  */
- struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size)
- {
--	u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_DMA_BUF | TEE_SHM_REGISTER |
--		    TEE_SHM_POOL;
-+	u32 flags =3D TEE_SHM_REGISTER | TEE_SHM_POOL;
- 	struct tee_device *teedev =3D ctx->teedev;
- 	struct tee_shm *shm;
- 	void *ret;
-@@ -186,7 +185,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc_user_buf);
-  */
- struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
-e)
- {
--	u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_REGISTER | TEE_SHM_POOL;
-+	u32 flags =3D TEE_SHM_REGISTER | TEE_SHM_POOL;
-=20
- 	return shm_alloc_helper(ctx, size, PAGE_SIZE, flags, -1);
- }
-@@ -211,7 +210,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
- struct tee_shm *tee_shm_alloc_priv_kernel_buf(struct tee_context *ctx,
- 					      size_t size)
- {
--	u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_PRIV | TEE_SHM_POOL;
-+	u32 flags =3D TEE_SHM_PRIV | TEE_SHM_POOL;
-=20
- 	return shm_alloc_helper(ctx, size, sizeof(long) * 2, flags, -1);
- }
-@@ -308,7 +307,7 @@ register_shm_helper(struct tee_context *ctx, unsigned lon=
-g addr,
- struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
- 					  unsigned long addr, size_t length)
- {
--	u32 f =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED | TEE_SHM_REGISTER;
-+	u32 f =3D TEE_SHM_USER_MAPPED | TEE_SHM_REGISTER;
- 	struct tee_device *teedev =3D ctx->teedev;
- 	struct tee_shm *shm;
- 	void *ret;
-@@ -354,7 +353,7 @@ EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
- struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
- 					    void *addr, size_t length)
- {
--	u32 f =3D TEE_SHM_REGISTER | TEE_SHM_KERNEL_MAPPED;
-+	u32 f =3D TEE_SHM_REGISTER;
-=20
- 	return register_shm_helper(ctx, (unsigned long)addr, length, f, -1);
- }
-@@ -398,7 +397,7 @@ int tee_shm_get_fd(struct tee_shm *shm)
- {
- 	int fd;
-=20
--	if (!(shm->flags & TEE_SHM_DMA_BUF))
-+	if (shm->id < 0)
- 		return -EINVAL;
-=20
- 	/* matched by tee_shm_put() in tee_shm_op_release() */
-@@ -428,7 +427,7 @@ EXPORT_SYMBOL_GPL(tee_shm_free);
-  */
- int tee_shm_va2pa(struct tee_shm *shm, void *va, phys_addr_t *pa)
- {
--	if (!(shm->flags & TEE_SHM_MAPPED))
-+	if (!shm->kaddr)
- 		return -EINVAL;
- 	/* Check that we're in the range of the shm */
- 	if ((char *)va < (char *)shm->kaddr)
-@@ -450,7 +449,7 @@ EXPORT_SYMBOL_GPL(tee_shm_va2pa);
-  */
- int tee_shm_pa2va(struct tee_shm *shm, phys_addr_t pa, void **va)
- {
--	if (!(shm->flags & TEE_SHM_MAPPED))
-+	if (!shm->kaddr)
- 		return -EINVAL;
- 	/* Check that we're in the range of the shm */
- 	if (pa < shm->paddr)
-@@ -478,7 +477,7 @@ EXPORT_SYMBOL_GPL(tee_shm_pa2va);
-  */
- void *tee_shm_get_va(struct tee_shm *shm, size_t offs)
- {
--	if (!(shm->flags & TEE_SHM_MAPPED))
-+	if (!shm->kaddr)
- 		return ERR_PTR(-EINVAL);
- 	if (offs >=3D shm->size)
- 		return ERR_PTR(-EINVAL);
-@@ -553,7 +552,7 @@ void tee_shm_put(struct tee_shm *shm)
- 		 * the refcount_inc() in tee_shm_get_from_id() never starts
- 		 * from 0.
- 		 */
--		if (shm->flags & TEE_SHM_DMA_BUF)
-+		if (shm->id >=3D 0)
- 			idr_remove(&teedev->idr, shm->id);
- 		do_release =3D true;
- 	}
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index e4f32885e273..dcc7a55e1128 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -20,14 +20,10 @@
-  * specific TEE driver.
-  */
-=20
--#define TEE_SHM_MAPPED		BIT(0)	/* Memory mapped by the kernel */
--#define TEE_SHM_DMA_BUF		BIT(1)	/* Memory with dma-buf handle */
--#define TEE_SHM_EXT_DMA_BUF	BIT(2)	/* Memory with dma-buf handle */
--#define TEE_SHM_REGISTER	BIT(3)  /* Memory registered in secure world */
--#define TEE_SHM_USER_MAPPED	BIT(4)  /* Memory mapped in user space */
--#define TEE_SHM_POOL		BIT(5)  /* Memory allocated from pool */
--#define TEE_SHM_KERNEL_MAPPED	BIT(6)  /* Memory mapped in kernel space */
--#define TEE_SHM_PRIV		BIT(7)  /* Memory private to TEE driver */
-+#define TEE_SHM_REGISTER	BIT(0)  /* Memory registered in secure world */
-+#define TEE_SHM_USER_MAPPED	BIT(1)  /* Memory mapped in user space */
-+#define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
-+#define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
-=20
- struct device;
- struct tee_device;
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+
+Thanks.
+
+> ---
+>  Documentation/staging/tee.rst | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
+> index 3c63d8dcd61e..498343c7ab08 100644
+> --- a/Documentation/staging/tee.rst
+> +++ b/Documentation/staging/tee.rst
+> @@ -255,7 +255,7 @@ The following picture shows a high level overview of AM=
+D-TEE::
+>   +--------------------------+      +---------+--------------------+
+> =20
+>  At the lowest level (in x86), the AMD Secure Processor (ASP) driver uses t=
+he
+> -CPU to PSP mailbox regsister to submit commands to the PSP. The format of =
+the
+> +CPU to PSP mailbox register to submit commands to the PSP. The format of t=
+he
+>  command buffer is opaque to the ASP driver. It's role is to submit command=
+s to
+>  the secure processor and return results to AMD-TEE driver. The interface
+>  between AMD-TEE driver and AMD Secure Processor driver can be found in [6].
+> @@ -290,7 +290,7 @@ cancel_req driver callback is not supported by AMD-TEE.
+> =20
+>  The GlobalPlatform TEE Client API [5] can be used by the user space (clien=
+t) to
+>  talk to AMD's TEE. AMD's TEE provides a secure environment for loading, op=
+ening
+> -a session, invoking commands and clossing session with TA.
+> +a session, invoking commands and closing session with TA.
+> =20
+>  References
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
 --=20
-2.31.1
+~Randy
 
-
---===============8252313321950967999==--
+--===============6059922899766421607==--
 
