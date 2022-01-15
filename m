@@ -1,128 +1,50 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Wang Cheng <wanngchenng@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 03/12] tee: add tee_shm_alloc_user_buf()
-Date: Tue, 18 Jan 2022 18:41:20 +0530
-Message-ID: 
- <CAFA6WYOG263--zk9djUT1ueeXBCbg62fo95ZRJ1c733KULpUhw@mail.gmail.com>
-In-Reply-To: <20220114150824.3578829-4-jens.wiklander@linaro.org>
+Subject: [PATCH] docs: staging/tee.rst: fix two typos found while reading
+Date: Sat, 15 Jan 2022 12:52:42 +0000
+Message-ID: <20220115125236.34886-1-wanngchenng@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5318957215440268513=="
+Content-Type: multipart/mixed; boundary="===============7384746976505917928=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5318957215440268513==
+--===============7384746976505917928==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 14 Jan 2022 at 20:38, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
-> Adds a new function tee_shm_alloc_user_buf() or user mode allocations,
-> replacing passing the flags TEE_SHM_MAPPED | TEE_SHM_DMA_BUF to
-> tee_shm_alloc().
->
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/tee_core.c     |  2 +-
->  drivers/tee/tee_shm.c      | 18 ++++++++++++++++++
->  drivers/tee/tee_shm_pool.c |  2 +-
->  include/linux/tee_drv.h    |  3 ++-
->  4 files changed, 22 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index 3fc426dad2df..a15812baaeb1 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -297,7 +297,7 @@ static int tee_ioctl_shm_alloc(struct tee_context *ctx,
->         if (data.flags)
->                 return -EINVAL;
->
-> -       shm =3D tee_shm_alloc(ctx, data.size, TEE_SHM_MAPPED | TEE_SHM_DMA_=
-BUF);
-> +       shm =3D tee_shm_alloc_user_buf(ctx, data.size);
+Signed-off-by: Wang Cheng <wanngchenng@gmail.com>
+---
+ Documentation/staging/tee.rst | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Since it's the only place this API would be used within the driver
-itself and I can't see any future usage from other kernel drivers..
+diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
+index 3c63d8dcd61e..498343c7ab08 100644
+--- a/Documentation/staging/tee.rst
++++ b/Documentation/staging/tee.rst
+@@ -255,7 +255,7 @@ The following picture shows a high level overview of AMD-=
+TEE::
+  +--------------------------+      +---------+--------------------+
+=20
+ At the lowest level (in x86), the AMD Secure Processor (ASP) driver uses the
+-CPU to PSP mailbox regsister to submit commands to the PSP. The format of the
++CPU to PSP mailbox register to submit commands to the PSP. The format of the
+ command buffer is opaque to the ASP driver. It's role is to submit commands =
+to
+ the secure processor and return results to AMD-TEE driver. The interface
+ between AMD-TEE driver and AMD Secure Processor driver can be found in [6].
+@@ -290,7 +290,7 @@ cancel_req driver callback is not supported by AMD-TEE.
+=20
+ The GlobalPlatform TEE Client API [5] can be used by the user space (client)=
+ to
+ talk to AMD's TEE. AMD's TEE provides a secure environment for loading, open=
+ing
+-a session, invoking commands and clossing session with TA.
++a session, invoking commands and closing session with TA.
+=20
+ References
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--=20
+2.33.1
 
->         if (IS_ERR(shm))
->                 return PTR_ERR(shm);
->
-> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index 499fccba3d74..b43178986985 100644
-> --- a/drivers/tee/tee_shm.c
-> +++ b/drivers/tee/tee_shm.c
-> @@ -127,6 +127,24 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx,=
- size_t size, u32 flags)
->  }
->  EXPORT_SYMBOL_GPL(tee_shm_alloc);
->
-> +/**
-> + * tee_shm_alloc_user_buf() - Allocate shared memory for user space
-> + * @ctx:       Context that allocates the shared memory
-> + * @size:      Requested size of shared memory
-> + *
-> + * Memory allocated as user space shared memory is automatically freed when
-> + * the TEE file pointer is closed. The primary usage of this function is
-> + * when the TEE driver doesn't support registering ordinary user space
-> + * memory.
-> + *
-> + * @returns a pointer to 'struct tee_shm'
-> + */
-> +struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t siz=
-e)
-> +{
-> +       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
-> +}
-> +EXPORT_SYMBOL_GPL(tee_shm_alloc_user_buf);
-> +
 
-..so I don't see any value-add for this export..
-
->  /**
->   * tee_shm_alloc_kernel_buf() - Allocate shared memory for kernel buffer
->   * @ctx:       Context that allocates the shared memory
-> diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
-> index a9f9d50fd181..0e460347138a 100644
-> --- a/drivers/tee/tee_shm_pool.c
-> +++ b/drivers/tee/tee_shm_pool.c
-> @@ -1,6 +1,6 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /*
-> - * Copyright (c) 2015, Linaro Limited
-> + * Copyright (c) 2015, 2017, 2022 Linaro Limited
->   */
->  #include <linux/device.h>
->  #include <linux/dma-buf.h>
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index 6b0f0d01ebdf..26b450484ac1 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -1,6 +1,6 @@
->  /* SPDX-License-Identifier: GPL-2.0-only */
->  /*
-> - * Copyright (c) 2015-2016, Linaro Limited
-> + * Copyright (c) 2015-2022 Linaro Limited
->   */
->
->  #ifndef __TEE_DRV_H
-> @@ -308,6 +308,7 @@ void *tee_get_drvdata(struct tee_device *teedev);
->   * @returns a pointer to 'struct tee_shm'
->   */
->  struct tee_shm *tee_shm_alloc(struct tee_context *ctx, size_t size, u32 fl=
-ags);
-> +struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t siz=
-e);
-
-..and it should rather belong to drivers/tee/tee_private.h.
-
--Sumit
-
->  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t s=
-ize);
->
->  /**
-> --
-> 2.31.1
->
-
---===============5318957215440268513==--
+--===============7384746976505917928==--
 
