@@ -1,54 +1,72 @@
-From: 起飞的老杨 <sprhawk@gmail.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: no TEE TA log (D/TA:) issue (github issue #5112)
-Date: Sun, 16 Jan 2022 21:22:34 +0800
+Subject: Re: [PATCH] docs: staging/tee.rst: fix two typos found while reading
+Date: Mon, 17 Jan 2022 12:03:04 +0530
 Message-ID: 
- <CADBJ=yH5BhWpX5EF8yBFy-LBdbFtMP9T8rGWgvoCsyeUo-2GZQ@mail.gmail.com>
+ <CAFA6WYM=ie84YO7bBzeXU579LRpxfJ4VMBSkVJy2Fdxd4RpnwQ@mail.gmail.com>
+In-Reply-To: <a6b32e17-9aba-4a03-12db-0d707e0f8d26@infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1974005546805802158=="
+Content-Type: multipart/mixed; boundary="===============2193128098901077053=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1974005546805802158==
+--===============2193128098901077053==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hello, I got problems here:
+On Sat, 15 Jan 2022 at 21:00, Randy Dunlap <rdunlap@infradead.org> wrote:
+>
+>
+>
+> On 1/15/22 04:52, Wang Cheng wrote:
+> > Signed-off-by: Wang Cheng <wanngchenng@gmail.com>
+>
+> Acked-by: Randy Dunlap <rdunlap@infradead.org>
+>
+> Thanks.
+>
 
-I built  the whole system with yotcto 3.3.3, linux kernel 5.10, optee-os
-3.14, platform for rk3399 ( was working for qemu platform ).
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-Console Configuration:
-U-Boot / TrustFirmware-A / optee-os: all pointed console to uart2
-linux dts: chosen and secure-chosen all pointed to uart2. uart2's status
-and secure-status are both set to "okay"
+-Sumit
 
-Build Configuration:
-optee-os:
+> > ---
+> >  Documentation/staging/tee.rst | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
+> > index 3c63d8dcd61e..498343c7ab08 100644
+> > --- a/Documentation/staging/tee.rst
+> > +++ b/Documentation/staging/tee.rst
+> > @@ -255,7 +255,7 @@ The following picture shows a high level overview of =
+AMD-TEE::
+> >   +--------------------------+      +---------+--------------------+
+> >
+> >  At the lowest level (in x86), the AMD Secure Processor (ASP) driver uses=
+ the
+> > -CPU to PSP mailbox regsister to submit commands to the PSP. The format o=
+f the
+> > +CPU to PSP mailbox register to submit commands to the PSP. The format of=
+ the
+> >  command buffer is opaque to the ASP driver. It's role is to submit comma=
+nds to
+> >  the secure processor and return results to AMD-TEE driver. The interface
+> >  between AMD-TEE driver and AMD Secure Processor driver can be found in [=
+6].
+> > @@ -290,7 +290,7 @@ cancel_req driver callback is not supported by AMD-TE=
+E.
+> >
+> >  The GlobalPlatform TEE Client API [5] can be used by the user space (cli=
+ent) to
+> >  talk to AMD's TEE. AMD's TEE provides a secure environment for loading, =
+opening
+> > -a session, invoking commands and clossing session with TA.
+> > +a session, invoking commands and closing session with TA.
+> >
+> >  References
+> >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> --
+> ~Randy
 
-                                      DEBUG=1 \
-                                      CFG_TEE_CORE_LOG_LEVEL=4 \
-                                      CFG_TEE_CORE_DEBUG=y \
-                                      CFG_TEE_TA_LOG_LEVEL=4 \
-                                      ...
-
-both optee-examples and my TA:
-
-                                      DEBUG=1 \
-                                      CFG_TEE_TA_LOG_LEVEL=4 \
-                                      ...
-
-During boot I can see D/TC: logs, but no any D/TA: log is output.
-
-Some D/TC log like this:
-
-D/TC:? 0 tee_ta_init_session_with_context:607 Re-open TA xxxxx
-D/TC:? 0 tee_ta_close_session:512 csess 0xDDDDDD id 1
-D/TC:? 0 tee_ta_close_session:531 Destroy session
-
-My TA has correct output, no crashes,or other errors
-
-
-Thanks.
-
---===============1974005546805802158==--
+--===============2193128098901077053==--
 
