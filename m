@@ -1,50 +1,79 @@
-From: Wang Cheng <wanngchenng@gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] docs: staging/tee.rst: fix two typos found while reading
-Date: Sat, 15 Jan 2022 12:52:42 +0000
-Message-ID: <20220115125236.34886-1-wanngchenng@gmail.com>
+Subject: 
+ Re: [PATCH] tee: optee: do not check memref size on return from Secure World
+Date: Wed, 19 Jan 2022 08:32:30 +0100
+Message-ID: 
+ <CAHUa44Hff45AQxpqPT5_pKF3hTNGmcxhuGphdND=NRJVUpj5og@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYM94k7n3mXA7UpGxL=J5TYJFXSa6KWhqjHPzS63SrNCpg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7384746976505917928=="
+Content-Type: multipart/mixed; boundary="===============6039914036403964289=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7384746976505917928==
+--===============6039914036403964289==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Wang Cheng <wanngchenng@gmail.com>
----
- Documentation/staging/tee.rst | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Tue, Jan 18, 2022 at 1:05 PM Sumit Garg <sumit.garg@linaro.org> wrote:
+>
+> Hi Jerome,
+>
+> On Thu, 13 Jan 2022 at 20:57, Jerome Forissier <jerome@forissier.org> wro=
+te:
+> >
+> > Commit c650b8dc7a79 ("tee: optee: do not check memref size on return
+> > from Secure World") was mistakenly lost in commit 4602c5842f64 ("optee:
+> > refactor driver with internal callbacks"). Remove the unwanted code
+> > again.
+> >
+>
+> Ah, that's unfortunate. The refactoring that OP-TEE driver has gone
+> through to support multiple ABIs (SMC and FF-A) was huge and I missed
+> it during review.
+>
+> > Fixes: 4602c5842f64 ("optee: refactor driver with internal callbacks")
+> > Signed-off-by: Jerome Forissier <jerome@forissier.org>
+> > ---
+> >  drivers/tee/optee/smc_abi.c | 10 ----------
+> >  1 file changed, 10 deletions(-)
+> >
+>
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-diff --git a/Documentation/staging/tee.rst b/Documentation/staging/tee.rst
-index 3c63d8dcd61e..498343c7ab08 100644
---- a/Documentation/staging/tee.rst
-+++ b/Documentation/staging/tee.rst
-@@ -255,7 +255,7 @@ The following picture shows a high level overview of AMD-=
-TEE::
-  +--------------------------+      +---------+--------------------+
-=20
- At the lowest level (in x86), the AMD Secure Processor (ASP) driver uses the
--CPU to PSP mailbox regsister to submit commands to the PSP. The format of the
-+CPU to PSP mailbox register to submit commands to the PSP. The format of the
- command buffer is opaque to the ASP driver. It's role is to submit commands =
-to
- the secure processor and return results to AMD-TEE driver. The interface
- between AMD-TEE driver and AMD Secure Processor driver can be found in [6].
-@@ -290,7 +290,7 @@ cancel_req driver callback is not supported by AMD-TEE.
-=20
- The GlobalPlatform TEE Client API [5] can be used by the user space (client)=
- to
- talk to AMD's TEE. AMD's TEE provides a secure environment for loading, open=
-ing
--a session, invoking commands and clossing session with TA.
-+a session, invoking commands and closing session with TA.
-=20
- References
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---=20
-2.33.1
+I'm picking up this.
 
+Thanks,
+Jens
 
---===============7384746976505917928==--
+>
+> -Sumit
+>
+> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> > index cf2e3293567d..09e7ec673bb6 100644
+> > --- a/drivers/tee/optee/smc_abi.c
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -71,16 +71,6 @@ static int from_msg_param_tmp_mem(struct tee_param *p,=
+ u32 attr,
+> >         p->u.memref.shm_offs =3D mp->u.tmem.buf_ptr - pa;
+> >         p->u.memref.shm =3D shm;
+> >
+> > -       /* Check that the memref is covered by the shm object */
+> > -       if (p->u.memref.size) {
+> > -               size_t o =3D p->u.memref.shm_offs +
+> > -                          p->u.memref.size - 1;
+> > -
+> > -               rc =3D tee_shm_get_pa(shm, o, NULL);
+> > -               if (rc)
+> > -                       return rc;
+> > -       }
+> > -
+> >         return 0;
+> >  }
+> >
+> > --
+> > 2.32.0
+> >
+
+--===============6039914036403964289==--
 
