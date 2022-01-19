@@ -1,62 +1,117 @@
-From: David Laight <David.Laight@ACULAB.COM>
+From: Lars Persson <larper@axis.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: [PATCH] optee: add error checks in optee_ffa_do_call_with_arg()
-Date: Wed, 19 Jan 2022 14:18:03 +0000
-Message-ID: <bf3c1583f8d7466a96bab8feb462bb36@AcuMS.aculab.com>
-In-Reply-To: <20220119080736.2940906-1-jens.wiklander@linaro.org>
+Subject: [PATCH] optee: Do not send requests to supplicant during shutdown
+Date: Wed, 19 Jan 2022 18:49:33 +0100
+Message-ID: <20220119174933.449842-1-larper@axis.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7113637229486343185=="
+Content-Type: multipart/mixed; boundary="===============6391611191001661158=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7113637229486343185==
+--===============6391611191001661158==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-From: Jens Wiklander
-> Sent: 19 January 2022 08:08
->=20
-> Adds error checking in optee_ffa_do_call_with_arg() for correctness.
->=20
-> Fixes: 4615e5a34b95 ("optee: add FF-A support")
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/optee/ffa_abi.c | 15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> index d8c8683863aa..d88bd2e41572 100644
-> --- a/drivers/tee/optee/ffa_abi.c
-> +++ b/drivers/tee/optee/ffa_abi.c
-> @@ -619,9 +619,18 @@ static int optee_ffa_do_call_with_arg(struct tee_conte=
-xt *ctx,
->  		.data2 =3D (u32)(shm->sec_world_id >> 32),
->  		.data3 =3D shm->offset,
->  	};
-> -	struct optee_msg_arg *arg =3D tee_shm_get_va(shm, 0);
-> -	unsigned int rpc_arg_offs =3D OPTEE_MSG_GET_ARG_SIZE(arg->num_params);
-> -	struct optee_msg_arg *rpc_arg =3D tee_shm_get_va(shm, rpc_arg_offs);
-> +	struct optee_msg_arg *arg;
-> +	unsigned int rpc_arg_offs;
-> +	struct optee_msg_arg *rpc_arg;
-> +
-> +	arg =3D tee_shm_get_va(shm, 0);
-> +	if (IS_ERR(arg))
-> +		return PTR_ERR(arg);
-> +
-> +	rpc_arg_offs =3D OPTEE_MSG_GET_ARG_SIZE(arg->num_params);
-> +	rpc_arg =3D tee_shm_get_va(shm, rpc_arg_offs);
-> +	if (IS_ERR(arg))
-> +		return PTR_ERR(arg);
+The addition of a shutdown hook by commit f25889f93184 ("optee:
+fix tee out of memory failure seen during kexec reboot") introduced a
+kernel shutdown regression that can be triggered after running the
+xtest suites.
 
-What's this duplicate test for?
+Once the shutdown hook is called it is not possible to communicate any
+more with the supplicant process because the system is not scheduling
+task any longer. Thus if the optee driver shutdown path receives a
+supplicant RPC request from the OP-TEE we will deadlock the kernel's
+shutdown.
 
-	David
+This unexpected event will in fact occur after the xtest suite has
+been run. It seems some cached SHM kept alive a context object which
+in turn kept alive a session towards a PTA or TA. Closing the session
+results in a socket RPC command being sent back from OP-TEE.
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT=
-, UK
-Registration No: 1397386 (Wales)
+This sequence of events is captured by a 5.15 kernel annotated with
+extra prints:
+
+ Calling OPTEE_SMC_DISABLE_SHM_CACHE
+ OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+  freeing SHM ptr 0xFFFFFF8001079380
+ Calling OPTEE_SMC_DISABLE_SHM_CACHE
+ OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+  freeing SHM ptr 0xFFFFFF8001CC5580
+ Calling OPTEE_SMC_DISABLE_SHM_CACHE
+ OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+  freeing SHM ptr 0xFFFFFF8006308A80
+ Calling OPTEE_SMC_DISABLE_SHM_CACHE
+ OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+  freeing SHM ptr 0xFFFFFF8006308B00
+ optee: optee_handle_rpc: a0=3D0XFFFF0000 a1=3D0XA0 a2=3D0X0
+ optee: optee_handle_rpc: a0=3D0XFFFF0005 a1=3D0XFFFFFF80 a2=3D0X61E6500
+ optee: handle_rpc_func_cmd: cmd =3D 0XA
+ optee_supp_thrd_req: func=3D0XA
+
+Introduce a shutdown state in the optee device object to return an
+immediate error to all RPC requests in the shutdown path.
+
+Fixes: f25889f93184 ("optee: fix tee out of memory failure seen during kexec =
+reboot
+Signed-off-by: Lars Persson <larper@axis.com>
+---
+ drivers/tee/optee/optee_private.h | 1 +
+ drivers/tee/optee/smc_abi.c       | 5 ++++-
+ drivers/tee/optee/supp.c          | 8 ++++++++
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+index 46f74ab07c7e..83380974ff44 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -164,6 +164,7 @@ struct optee {
+ 	bool   scan_bus_done;
+ 	struct workqueue_struct *scan_bus_wq;
+ 	struct work_struct scan_bus_work;
++	bool shutting_down;
+ };
+=20
+ struct optee_session {
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index 449d6a72d289..10af747da816 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -1356,7 +1356,10 @@ static int optee_smc_remove(struct platform_device *pd=
+ev)
+  */
+ static void optee_shutdown(struct platform_device *pdev)
+ {
+-	optee_disable_shm_cache(platform_get_drvdata(pdev));
++	struct optee *optee =3D platform_get_drvdata(pdev);
++
++	optee->shutting_down =3D true;
++	optee_disable_shm_cache(optee);
+ }
+=20
+ static int optee_probe(struct platform_device *pdev)
+diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
+index 322a543b8c27..801b4ec659e8 100644
+--- a/drivers/tee/optee/supp.c
++++ b/drivers/tee/optee/supp.c
+@@ -83,6 +83,14 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func,=
+ size_t num_params,
+ 	bool interruptable;
+ 	u32 ret;
+=20
++	/*
++	 * When the system is shutting down we cannot talk
++	 * to the supplicant anymore even if we seem to have
++	 * an open session to it.
++	 */
++	if (optee->shutting_down)
++		return TEEC_ERROR_COMMUNICATION;
++
+ 	/*
+ 	 * Return in case there is no supplicant available and
+ 	 * non-blocking request.
+--=20
+2.30.2
 
 
---===============7113637229486343185==--
+--===============6391611191001661158==--
 
