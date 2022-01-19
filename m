@@ -1,139 +1,54 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 03/12] tee: add tee_shm_alloc_user_buf()
-Date: Wed, 19 Jan 2022 08:36:08 +0100
-Message-ID: 
- <CAHUa44HUdNGporP4-2QeL+oPgqD3faLv6WW0Mo0fkn0AT=qeNw@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYOG263--zk9djUT1ueeXBCbg62fo95ZRJ1c733KULpUhw@mail.gmail.com>>
+Subject: [PATCH] optee: add error checks in optee_ffa_do_call_with_arg()
+Date: Wed, 19 Jan 2022 09:07:36 +0100
+Message-ID: <20220119080736.2940906-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0688559949566570213=="
+Content-Type: multipart/mixed; boundary="===============3832738149640532368=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0688559949566570213==
+--===============3832738149640532368==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 18, 2022 at 2:11 PM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Fri, 14 Jan 2022 at 20:38, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > Adds a new function tee_shm_alloc_user_buf() or user mode allocations,
-> > replacing passing the flags TEE_SHM_MAPPED | TEE_SHM_DMA_BUF to
-> > tee_shm_alloc().
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/tee_core.c     |  2 +-
-> >  drivers/tee/tee_shm.c      | 18 ++++++++++++++++++
-> >  drivers/tee/tee_shm_pool.c |  2 +-
-> >  include/linux/tee_drv.h    |  3 ++-
-> >  4 files changed, 22 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index 3fc426dad2df..a15812baaeb1 100644
-> > --- a/drivers/tee/tee_core.c
-> > +++ b/drivers/tee/tee_core.c
-> > @@ -297,7 +297,7 @@ static int tee_ioctl_shm_alloc(struct tee_context *ct=
-x,
-> >         if (data.flags)
-> >                 return -EINVAL;
-> >
-> > -       shm =3D tee_shm_alloc(ctx, data.size, TEE_SHM_MAPPED | TEE_SHM_DM=
-A_BUF);
-> > +       shm =3D tee_shm_alloc_user_buf(ctx, data.size);
->
-> Since it's the only place this API would be used within the driver
-> itself and I can't see any future usage from other kernel drivers..
->
-> >         if (IS_ERR(shm))
-> >                 return PTR_ERR(shm);
-> >
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index 499fccba3d74..b43178986985 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -127,6 +127,24 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ct=
-x, size_t size, u32 flags)
-> >  }
-> >  EXPORT_SYMBOL_GPL(tee_shm_alloc);
-> >
-> > +/**
-> > + * tee_shm_alloc_user_buf() - Allocate shared memory for user space
-> > + * @ctx:       Context that allocates the shared memory
-> > + * @size:      Requested size of shared memory
-> > + *
-> > + * Memory allocated as user space shared memory is automatically freed w=
-hen
-> > + * the TEE file pointer is closed. The primary usage of this function is
-> > + * when the TEE driver doesn't support registering ordinary user space
-> > + * memory.
-> > + *
-> > + * @returns a pointer to 'struct tee_shm'
-> > + */
-> > +struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t s=
-ize)
-> > +{
-> > +       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
-> > +}
-> > +EXPORT_SYMBOL_GPL(tee_shm_alloc_user_buf);
-> > +
->
-> ..so I don't see any value-add for this export..
->
-> >  /**
-> >   * tee_shm_alloc_kernel_buf() - Allocate shared memory for kernel buffer
-> >   * @ctx:       Context that allocates the shared memory
-> > diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
-> > index a9f9d50fd181..0e460347138a 100644
-> > --- a/drivers/tee/tee_shm_pool.c
-> > +++ b/drivers/tee/tee_shm_pool.c
-> > @@ -1,6 +1,6 @@
-> >  // SPDX-License-Identifier: GPL-2.0-only
-> >  /*
-> > - * Copyright (c) 2015, Linaro Limited
-> > + * Copyright (c) 2015, 2017, 2022 Linaro Limited
-> >   */
-> >  #include <linux/device.h>
-> >  #include <linux/dma-buf.h>
-> > diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> > index 6b0f0d01ebdf..26b450484ac1 100644
-> > --- a/include/linux/tee_drv.h
-> > +++ b/include/linux/tee_drv.h
-> > @@ -1,6 +1,6 @@
-> >  /* SPDX-License-Identifier: GPL-2.0-only */
-> >  /*
-> > - * Copyright (c) 2015-2016, Linaro Limited
-> > + * Copyright (c) 2015-2022 Linaro Limited
-> >   */
-> >
-> >  #ifndef __TEE_DRV_H
-> > @@ -308,6 +308,7 @@ void *tee_get_drvdata(struct tee_device *teedev);
-> >   * @returns a pointer to 'struct tee_shm'
-> >   */
-> >  struct tee_shm *tee_shm_alloc(struct tee_context *ctx, size_t size, u32 =
-flags);
-> > +struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t s=
-ize);
->
-> ..and it should rather belong to drivers/tee/tee_private.h.
+Adds error checking in optee_ffa_do_call_with_arg() for correctness.
 
-Makes sense, I'll fix this in the next version.
+Fixes: 4615e5a34b95 ("optee: add FF-A support")
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+ drivers/tee/optee/ffa_abi.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-Thanks,
-Jens
+diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+index d8c8683863aa..d88bd2e41572 100644
+--- a/drivers/tee/optee/ffa_abi.c
++++ b/drivers/tee/optee/ffa_abi.c
+@@ -619,9 +619,18 @@ static int optee_ffa_do_call_with_arg(struct tee_context=
+ *ctx,
+ 		.data2 =3D (u32)(shm->sec_world_id >> 32),
+ 		.data3 =3D shm->offset,
+ 	};
+-	struct optee_msg_arg *arg =3D tee_shm_get_va(shm, 0);
+-	unsigned int rpc_arg_offs =3D OPTEE_MSG_GET_ARG_SIZE(arg->num_params);
+-	struct optee_msg_arg *rpc_arg =3D tee_shm_get_va(shm, rpc_arg_offs);
++	struct optee_msg_arg *arg;
++	unsigned int rpc_arg_offs;
++	struct optee_msg_arg *rpc_arg;
++
++	arg =3D tee_shm_get_va(shm, 0);
++	if (IS_ERR(arg))
++		return PTR_ERR(arg);
++
++	rpc_arg_offs =3D OPTEE_MSG_GET_ARG_SIZE(arg->num_params);
++	rpc_arg =3D tee_shm_get_va(shm, rpc_arg_offs);
++	if (IS_ERR(arg))
++		return PTR_ERR(arg);
+=20
+ 	return optee_ffa_yielding_call(ctx, &data, rpc_arg);
+ }
+--=20
+2.31.1
 
->
-> -Sumit
->
-> >  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t=
- size);
-> >
-> >  /**
-> > --
-> > 2.31.1
-> >
 
---===============0688559949566570213==--
+--===============3832738149640532368==--
 
