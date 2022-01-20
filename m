@@ -1,85 +1,317 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 09/12] tee: add tee_shm_register_{user,kernel}_buf()
-Date: Thu, 20 Jan 2022 14:06:56 +0100
+Subject: Re: [PATCH v2 11/12] tee: replace tee_shm_register()
+Date: Thu, 20 Jan 2022 15:12:02 +0100
 Message-ID: 
- <CAHUa44H0ryokLDJn3DLFEQUw+0jd0a_Jh9hPOCLjL-pZxKk-ZA@mail.gmail.com>
+ <CAHUa44H6ANeQYtsbXtZJ--bwJ0S6DTeCDDm3BfE3SGGvZiqgOw@mail.gmail.com>
 In-Reply-To: <
- <CAFA6WYOOLAxwK6P8=kcG29FGv3YG=jrOt_uAqEnrLmRwbQGU6w@mail.gmail.com>>
+ <CAFA6WYMQX_e4JKugQFV=87Wvvo2HAfpWLHHK2_MShGBqHBvh-A@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9171008432892931621=="
+Content-Type: multipart/mixed; boundary="===============8015234522658594655=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9171008432892931621==
+--===============8015234522658594655==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 20, 2022 at 12:00 PM Sumit Garg <sumit.garg@linaro.org> wrote:
+On Thu, Jan 20, 2022 at 12:51 PM Sumit Garg <sumit.garg@linaro.org> wrote:
 >
 > On Fri, 14 Jan 2022 at 20:38, Jens Wiklander <jens.wiklander@linaro.org> =
 wrote:
 > >
-> > Adds the two new functions tee_shm_register_user_buf() and
-> > tee_shm_register_kernel_buf() which should be used instead of the old
-> > tee_shm_register().
+> > tee_shm_register() is replaced by the previously introduced functions
+> > tee_shm_register_user_buf() and tee_shm_register_kernel_buf().
 > >
-> > This avoids having the caller supplying the flags parameter which
-> > exposes a bit more than desired of the internals of the TEE subsystem.
+> > Since there are not external callers left we can remove tee_shm_register()
+> > and refactor the remains.
 > >
 > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > > ---
-> >  drivers/tee/tee_core.c  |  3 +--
-> >  drivers/tee/tee_shm.c   | 34 ++++++++++++++++++++++++++++++++++
-> >  include/linux/tee_drv.h |  4 ++++
-> >  3 files changed, 39 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index a15812baaeb1..8aa1a4836b92 100644
-> > --- a/drivers/tee/tee_core.c
-> > +++ b/drivers/tee/tee_core.c
-> > @@ -334,8 +334,7 @@ tee_ioctl_shm_register(struct tee_context *ctx,
-> >         if (data.flags)
-> >                 return -EINVAL;
-> >
-> > -       shm =3D tee_shm_register(ctx, data.addr, data.length,
-> > -                              TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
-> > +       shm =3D tee_shm_register_user_buf(ctx, data.addr, data.length);
-> >         if (IS_ERR(shm))
-> >                 return PTR_ERR(shm);
+> >  drivers/tee/tee_shm.c   | 157 +++++++++++++++++++++++-----------------
+> >  include/linux/tee_drv.h |  11 ---
+> >  2 files changed, 91 insertions(+), 77 deletions(-)
 > >
 > > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index d51bf97ce7e5..6a1dbce75616 100644
+> > index 6a1dbce75616..fe3e5977dd7c 100644
 > > --- a/drivers/tee/tee_shm.c
 > > +++ b/drivers/tee/tee_shm.c
-> > @@ -301,6 +301,40 @@ struct tee_shm *tee_shm_register(struct tee_context =
-*ctx, unsigned long addr,
-> >  }
-> >  EXPORT_SYMBOL_GPL(tee_shm_register);
+> > @@ -12,17 +12,43 @@
+> >  #include <linux/uio.h>
+> >  #include "tee_private.h"
 > >
-> > +/**
-> > + * tee_shm_register_user_buf() - Register a userspace shared memory buff=
-er
-> > + * @ctx:       Context that registers the shared memory
-> > + * @addr:      The userspace address of the shared buffer
-> > + * @length:    Length of the shared buffer
-> > + *
-> > + * @returns a pointer to 'struct tee_shm'
-> > + */
-> > +struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
-> > +                                         unsigned long addr, size_t leng=
-th)
+> > +static void shm_put_kernel_pages(struct page **pages, unsigned long npag=
+es)
 > > +{
-> > +       return tee_shm_register(ctx, addr, length,
-> > +                               TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
+> > +       unsigned long n;
+>
+> nit: Can we have a consistent prototype for the number of pages?
+> size_t as used by struct tee_shm or unsigned long? Same holds true for
+> variables below as well: npages, page_count, num_pages, n.
+
+Fair point, I'll fix what's changed here.
+
+>
+> > +
+> > +       for (n =3D 0; n < npages; n++)
+> > +               put_page(pages[n]);
 > > +}
-> > +EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
+> > +
+> > +static int shm_get_kernel_pages(unsigned long start, int page_count,
+> > +                               struct page **pages)
+> > +{
+> > +       struct kvec *kiov;
+> > +       unsigned int n;
+> > +       int rc;
+> > +
+> > +       kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
+> > +       if (!kiov)
+> > +               return -ENOMEM;
+> > +
+> > +       for (n =3D 0; n < page_count; n++) {
+> > +               kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
+> > +               kiov[n].iov_len =3D PAGE_SIZE;
+> > +       }
+> > +
+> > +       rc =3D get_kernel_pages(kiov, page_count, 0, pages);
+> > +       kfree(kiov);
+> > +
+> > +       return rc;
+> > +}
+> > +
+> >  static void release_registered_pages(struct tee_shm *shm)
+> >  {
+> >         if (shm->pages) {
+> > -               if (shm->flags & TEE_SHM_USER_MAPPED) {
+> > +               if (shm->flags & TEE_SHM_USER_MAPPED)
+> >                         unpin_user_pages(shm->pages, shm->num_pages);
+> > -               } else {
+> > -                       size_t n;
+> > -
+> > -                       for (n =3D 0; n < shm->num_pages; n++)
+> > -                               put_page(shm->pages[n]);
+> > -               }
+> > +               else
+> > +                       shm_put_kernel_pages(shm->pages, shm->num_pages);
+> >
+> >                 kfree(shm->pages);
+> >         }
+> > @@ -191,28 +217,24 @@ struct tee_shm *tee_shm_alloc_priv_kernel_buf(struc=
+t tee_context *ctx,
+> >  }
+> >  EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_kernel_buf);
+> >
+> > -struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long =
+addr,
+> > -                                size_t length, u32 flags)
+> > +static struct tee_shm *
+> > +register_shm_helper(struct tee_context *ctx, unsigned long addr,
+> > +                   size_t length, u32 flags, int id)
+> >  {
+> >         struct tee_device *teedev =3D ctx->teedev;
+> > -       const u32 req_user_flags =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPE=
+D;
+> > -       const u32 req_kernel_flags =3D TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_M=
+APPED;
+> >         struct tee_shm *shm;
+> > +       unsigned long start;
+> > +       int num_pages;
+> >         void *ret;
+> >         int rc;
+> > -       int num_pages;
+> > -       unsigned long start;
+> > -
+> > -       if (flags !=3D req_user_flags && flags !=3D req_kernel_flags)
+> > -               return ERR_PTR(-ENOTSUPP);
+> >
+> >         if (!tee_device_get(teedev))
+> >                 return ERR_PTR(-EINVAL);
+> >
+> >         if (!teedev->desc->ops->shm_register ||
+> >             !teedev->desc->ops->shm_unregister) {
+> > -               tee_device_put(teedev);
+> > -               return ERR_PTR(-ENOTSUPP);
+> > +               ret =3D ERR_PTR(-ENOTSUPP);
+>
+> Checkpatch warns about this error code:
+>
+> WARNING: ENOTSUPP is not a SUSV4 error code, prefer EOPNOTSUPP
+> #104: FILE: drivers/tee/tee_shm.c:236:
+> + ret =3D ERR_PTR(-ENOTSUPP);
+
+I noticed that too. I'd rather keep it as it is for now as changing
+would a bit of a ABI change even if I doubt that anyone is depending
+on this particular errno value.
+
+>
+> > +               goto err_dev_put;
+> >         }
+> >
+> >         teedev_ctx_get(ctx);
+> > @@ -220,13 +242,13 @@ struct tee_shm *tee_shm_register(struct tee_context=
+ *ctx, unsigned long addr,
+> >         shm =3D kzalloc(sizeof(*shm), GFP_KERNEL);
+> >         if (!shm) {
+> >                 ret =3D ERR_PTR(-ENOMEM);
+> > -               goto err;
+> > +               goto err_ctx_put;
+> >         }
+> >
+> >         refcount_set(&shm->refcount, 1);
+> > -       shm->flags =3D flags | TEE_SHM_REGISTER;
+> > +       shm->flags =3D flags;
+> >         shm->ctx =3D ctx;
+> > -       shm->id =3D -1;
+> > +       shm->id =3D id;
+> >         addr =3D untagged_addr(addr);
+> >         start =3D rounddown(addr, PAGE_SIZE);
+> >         shm->offset =3D addr - start;
+> > @@ -235,71 +257,45 @@ struct tee_shm *tee_shm_register(struct tee_context=
+ *ctx, unsigned long addr,
+> >         shm->pages =3D kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL=
+);
+> >         if (!shm->pages) {
+> >                 ret =3D ERR_PTR(-ENOMEM);
+> > -               goto err;
+> > +               goto err_free_shm;
+> >         }
+> >
+> > -       if (flags & TEE_SHM_USER_MAPPED) {
+> > +       if (flags & TEE_SHM_USER_MAPPED)
+> >                 rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
+> >                                          shm->pages);
+> > -       } else {
+> > -               struct kvec *kiov;
+> > -               int i;
+> > -
+> > -               kiov =3D kcalloc(num_pages, sizeof(*kiov), GFP_KERNEL);
+> > -               if (!kiov) {
+> > -                       ret =3D ERR_PTR(-ENOMEM);
+> > -                       goto err;
+> > -               }
+> > -
+> > -               for (i =3D 0; i < num_pages; i++) {
+> > -                       kiov[i].iov_base =3D (void *)(start + i * PAGE_SI=
+ZE);
+> > -                       kiov[i].iov_len =3D PAGE_SIZE;
+> > -               }
+> > -
+> > -               rc =3D get_kernel_pages(kiov, num_pages, 0, shm->pages);
+> > -               kfree(kiov);
+> > -       }
+> > +       else
+> > +               rc =3D shm_get_kernel_pages(start, num_pages, shm->pages);
+> >         if (rc > 0)
+> >                 shm->num_pages =3D rc;
+> >         if (rc !=3D num_pages) {
+> >                 if (rc >=3D 0)
+> >                         rc =3D -ENOMEM;
+> >                 ret =3D ERR_PTR(rc);
+> > -               goto err;
+> > -       }
+> > -
+> > -       mutex_lock(&teedev->mutex);
+> > -       shm->id =3D idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
+> > -       mutex_unlock(&teedev->mutex);
+> > -
+> > -       if (shm->id < 0) {
+> > -               ret =3D ERR_PTR(shm->id);
+> > -               goto err;
+> > +               goto err_put_shm_pages;
+> >         }
+> >
+> >         rc =3D teedev->desc->ops->shm_register(ctx, shm, shm->pages,
+> >                                              shm->num_pages, start);
+> >         if (rc) {
+> >                 ret =3D ERR_PTR(rc);
+> > -               goto err;
+> > +               goto err_put_shm_pages;
+> >         }
+> >
+> >         return shm;
+> > -err:
+> > -       if (shm) {
+> > -               if (shm->id >=3D 0) {
+> > -                       mutex_lock(&teedev->mutex);
+> > -                       idr_remove(&teedev->idr, shm->id);
+> > -                       mutex_unlock(&teedev->mutex);
+> > -               }
+> > -               release_registered_pages(shm);
+> > -       }
+> > +err_put_shm_pages:
+> > +       if (flags & TEE_SHM_USER_MAPPED)
+> > +               unpin_user_pages(shm->pages, shm->num_pages);
+> > +       else
+> > +               shm_put_kernel_pages(shm->pages, shm->num_pages);
+> > +       kfree(shm->pages);
+> > +err_free_shm:
+> >         kfree(shm);
+> > +err_ctx_put:
+> >         teedev_ctx_put(ctx);
+> > +err_dev_put:
+> >         tee_device_put(teedev);
+> >         return ret;
+> >  }
+> > -EXPORT_SYMBOL_GPL(tee_shm_register);
+> >
+> >  /**
+> >   * tee_shm_register_user_buf() - Register a userspace shared memory buff=
+er
+> > @@ -312,8 +308,36 @@ EXPORT_SYMBOL_GPL(tee_shm_register);
+> >  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+> >                                           unsigned long addr, size_t leng=
+th)
+> >  {
+> > -       return tee_shm_register(ctx, addr, length,
+> > -                               TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
+> > +       u32 f =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED | TEE_SHM_REGISTE=
+R;
+>
+> nit: I would prefer to write variable name as "flags" for clarity.
+>
+> > +       struct tee_device *teedev =3D ctx->teedev;
+> > +       struct tee_shm *shm;
+> > +       void *ret;
+> > +       int id;
+> > +
+> > +       mutex_lock(&teedev->mutex);
+> > +       id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
+> > +       mutex_unlock(&teedev->mutex);
 > > +
 >
-> Similar comment as for tee_shm_alloc_user_buf() in patch #3. This
-> isn't required to be exported but rather a private function to TEE
-> core.
-
-OK, I'll fix it in v3.
+> nit: redundant extra line.
+>
+> > +       if (id < 0)
+> > +               return ERR_PTR(id);
+> > +
+> > +       shm =3D register_shm_helper(ctx, addr, length, f, id);
+> > +       if (IS_ERR(shm)) {
+> > +               mutex_lock(&teedev->mutex);
+> > +               idr_remove(&teedev->idr, id);
+> > +               mutex_unlock(&teedev->mutex);
+> > +               return shm;
+> > +       }
+> > +
+> > +       mutex_lock(&teedev->mutex);
+> > +       ret =3D idr_replace(&teedev->idr, shm, id);
+> > +       mutex_unlock(&teedev->mutex);
+> > +       if (IS_ERR(ret)) {
+> > +               tee_shm_free(shm);
+> > +               return ret;
+> > +       }
+> > +
+> > +       return shm;
+> >  }
+> >  EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
+> >
+> > @@ -330,8 +354,9 @@ EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
+> >  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
+> >                                             void *addr, size_t length)
+> >  {
+> > -       return tee_shm_register(ctx, (unsigned long)addr, length,
+> > -                               TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_MAPPED);
+> > +       u32 f =3D TEE_SHM_REGISTER | TEE_SHM_KERNEL_MAPPED;
+>
+> Ditto.
 
 Thanks,
 Jens
@@ -87,50 +319,41 @@ Jens
 >
 > -Sumit
 >
-> > +/**
-> > + * tee_shm_register_kernel_buf() - Register kernel memory to be shared w=
-ith
-> > + *                                secure world
-> > + * @ctx:       Context that registers the shared memory
-> > + * @addr:      The buffer
-> > + * @length:    Length of the buffer
-> > + *
-> > + * @returns a pointer to 'struct tee_shm'
-> > + */
 > > +
-> > +struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
-> > +                                           void *addr, size_t length)
-> > +{
-> > +       return tee_shm_register(ctx, (unsigned long)addr, length,
-> > +                               TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_MAPPED);
-> > +}
-> > +EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
-> > +
-> >  static int tee_shm_fop_release(struct inode *inode, struct file *filp)
-> >  {
-> >         tee_shm_put(filp->private_data);
+> > +       return register_shm_helper(ctx, (unsigned long)addr, length, f, -=
+1);
+> >  }
+> >  EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
+> >
 > > diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> > index e71cb0411e9c..029c9a0590cc 100644
+> > index 029c9a0590cc..e4f32885e273 100644
 > > --- a/include/linux/tee_drv.h
 > > +++ b/include/linux/tee_drv.h
-> > @@ -289,6 +289,10 @@ struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_=
-context *ctx, size_t size);
-> >   */
-> >  struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long =
-addr,
-> >                                  size_t length, u32 flags);
-> > +struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
-> > +                                         unsigned long addr, size_t leng=
-th);
-> > +struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
-> > +                                           void *addr, size_t length);
+> > @@ -278,17 +278,6 @@ struct tee_shm *tee_shm_alloc_priv_kernel_buf(struct=
+ tee_context *ctx,
+> >                                               size_t size);
+> >  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t=
+ size);
 > >
-> >  /**
-> >   * tee_shm_is_registered() - Check if shared memory object in registered=
- in TEE
+> > -/**
+> > - * tee_shm_register() - Register shared memory buffer
+> > - * @ctx:       Context that registers the shared memory
+> > - * @addr:      Address is userspace of the shared buffer
+> > - * @length:    Length of the shared buffer
+> > - * @flags:     Flags setting properties for the requested shared memory.
+> > - *
+> > - * @returns a pointer to 'struct tee_shm'
+> > - */
+> > -struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long =
+addr,
+> > -                                size_t length, u32 flags);
+> >  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+> >                                           unsigned long addr, size_t leng=
+th);
+> >  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
 > > --
 > > 2.31.1
 > >
 
---===============9171008432892931621==--
+--===============8015234522658594655==--
 
