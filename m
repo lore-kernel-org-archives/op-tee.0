@@ -1,71 +1,82 @@
-From: Lars Persson <larper@axis.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH] optee: Do not send requests to supplicant during shutdown
-Date: Thu, 20 Jan 2022 08:58:41 +0100
-Message-ID: <2541b86e-59bc-0f6a-841d-92aee05e15f2@axis.com>
-In-Reply-To: <20220120010216.GC89184@sequoia>
+Date: Thu, 20 Jan 2022 10:03:11 +0100
+Message-ID: <20220120090311.GA1108588@jade>
+In-Reply-To: <20220119174933.449842-1-larper@axis.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0769914856407603202=="
+Content-Type: multipart/mixed; boundary="===============4351412177269975469=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0769914856407603202==
+--===============4351412177269975469==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-
-
-On 2022-01-20 02:02, Tyler Hicks wrote:
-> On 2022-01-19 18:49:33, Lars Persson wrote:
->> The addition of a shutdown hook by commit f25889f93184 ("optee:
->> fix tee out of memory failure seen during kexec reboot") introduced a
->> kernel shutdown regression that can be triggered after running the
->> xtest suites.
->>=20
->> Once the shutdown hook is called it is not possible to communicate any
->> more with the supplicant process because the system is not scheduling
->> task any longer. Thus if the optee driver shutdown path receives a
->> supplicant RPC request from the OP-TEE we will deadlock the kernel's
->> shutdown.
+On Wed, Jan 19, 2022 at 06:49:33PM +0100, Lars Persson wrote:
+> The addition of a shutdown hook by commit f25889f93184 ("optee:
+> fix tee out of memory failure seen during kexec reboot") introduced a
+> kernel shutdown regression that can be triggered after running the
+> xtest suites.
 >=20
-> The system that I'm working on, and initially developed the kexec fixes
-> for, doesn't use a supplicant process so that would explain why I
-> haven't seen this issue.
+> Once the shutdown hook is called it is not possible to communicate any
+> more with the supplicant process because the system is not scheduling
+> task any longer. Thus if the optee driver shutdown path receives a
+> supplicant RPC request from the OP-TEE we will deadlock the kernel's
+> shutdown.
 >=20
-> What I'm a little unclear about is why the new(ish) .shutdown hook would
-> be the cause for this deadlock because it doesn't disable scheduling of
-> tasks (unless I'm forgetting something). Does disabling the shm cache
-> also cause tasks to no longer be scheduled? I'm having trouble finding
-> the documentation that describes this operation and my memory is fuzzy
-> since it has been a while since I've worked on OP-TEE issues.
+> This unexpected event will in fact occur after the xtest suite has
+> been run. It seems some cached SHM kept alive a context object which
+> in turn kept alive a session towards a PTA or TA. Closing the session
+> results in a socket RPC command being sent back from OP-TEE.
 >=20
-
-I tried to look for an explicit disable of the scheduler starting from=20
-do_sys_reboot but that was impossible to find. It might be hidden=20
-somewhere in the use of the system_state variable.
-
-Anyways since the do_sys_reboot system call is the last step of shutting=20
-down a system, any interaction with user-space will be a BadThing. The=20
-supplicant would typically be killed by the init process already in a=20
-clean shutdown, and if it wasn't, then device_shutdown() will remove the=20
-block devices that the file-system depends on. Any page fault in the=20
-supplicant would thus kill it. I am sure there is somewhere a piece of=20
-code that disables task scheduling before calling device_shutdown=20
-because so many crazy things could happen otherwise.
-
->> Introduce a shutdown state in the optee device object to return an
->> immediate error to all RPC requests in the shutdown path.
->>=20
->> Fixes: f25889f93184 ("optee: fix tee out of memory failure seen during kex=
-ec reboot
+> This sequence of events is captured by a 5.15 kernel annotated with
+> extra prints:
 >=20
-> Minor syntax error at the end of this line as it is missing the closing
-> double quotes and parenthesis.
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8001079380
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8001CC5580
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8006308A80
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8006308B00
+>  optee: optee_handle_rpc: a0=3D0XFFFF0000 a1=3D0XA0 a2=3D0X0
+>  optee: optee_handle_rpc: a0=3D0XFFFF0005 a1=3D0XFFFFFF80 a2=3D0X61E6500
+>  optee: handle_rpc_func_cmd: cmd =3D 0XA
+>  optee_supp_thrd_req: func=3D0XA
 >=20
+> Introduce a shutdown state in the optee device object to return an
+> immediate error to all RPC requests in the shutdown path.
+>=20
+> Fixes: f25889f93184 ("optee: fix tee out of memory failure seen during kexe=
+c reboot
+> Signed-off-by: Lars Persson <larper@axis.com>
+> ---
+>  drivers/tee/optee/optee_private.h | 1 +
+>  drivers/tee/optee/smc_abi.c       | 5 ++++-
+>  drivers/tee/optee/supp.c          | 8 ++++++++
+>  3 files changed, 13 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index 46f74ab07c7e..83380974ff44 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+> @@ -164,6 +164,7 @@ struct optee {
+>  	bool   scan_bus_done;
+>  	struct workqueue_struct *scan_bus_wq;
+>  	struct work_struct scan_bus_work;
+> +	bool shutting_down;
 
-Thanks. Let's see if Jens makes a fixup for this. Otherwise I can submit=20
-a v2.
+Please move this to right after "bool scan_bus_done" above to avoid
+unnecessary extra padding.
 
-/Lars
+Thanks,
+Jens
 
---===============0769914856407603202==--
+--===============4351412177269975469==--
 
