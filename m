@@ -1,199 +1,130 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Tyler Hicks <tyhicks@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH v2 07/12] optee: use driver internal tee_contex for some rpc
-Date: Fri, 21 Jan 2022 15:02:06 +0100
-Message-ID: 
- <CAHUa44H-t2fVFWHQDU6ZjY7qyk53rbOi_h7=V_pYXTN+TtbMjA@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYNo2xJ8VncpwbHG65hTTshxa-SWaPnGCB2v3KCTGogJkQ@mail.gmail.com>>
+ Re: [PATCH v2] optee: Do not send requests to supplicant during shutdown
+Date: Fri, 21 Jan 2022 10:47:20 -0600
+Message-ID: <20220121164720.GD89184@sequoia>
+In-Reply-To: <20220120104000.669278-1-larper@axis.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7369327524994079723=="
+Content-Type: multipart/mixed; boundary="===============0474616451160674636=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7369327524994079723==
+--===============0474616451160674636==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jan 21, 2022 at 2:37 PM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Fri, 21 Jan 2022 at 18:58, Jerome Forissier <jerome@forissier.org> wro=
-te:
-> >
-> > On 1/21/22 13:54, Sumit Garg wrote:
-> > > + Jerome, Etienne
-> > >
-> > > On Fri, 14 Jan 2022 at 20:38, Jens Wiklander <jens.wiklander@linaro.o=
-rg> wrote:
-> > >>
-> > >> Uses the new driver internal tee_context when allocating driver private
-> > >> shared memory. This decouples the shared memory object from its origin=
-al
-> > >> tee_context. This is needed when the life time of such a memory
-> > >> allocation outlives the client tee_context.
-> > >>
-> > >> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > >> ---
-> > >>  drivers/tee/optee/ffa_abi.c | 16 ++++++++--------
-> > >>  drivers/tee/optee/smc_abi.c |  7 ++++---
-> > >>  2 files changed, 12 insertions(+), 11 deletions(-)
-> > >>
-> > >
-> > > I guess with this patch we should no longer see issues [1] reported ear=
-lier.
-> >
-> > Correct. I have tested [1] again in QEMU with this whole series applied
-> > and the issue is gone.
-> >
->
-> Thanks for the confirmation.
->
-> Jens,
->
-> Can we have a Fixes tag for this and CC stable? I know it won't be
-> directly applicable to stable kernels but we can help with a backport.
->
+On 2022-01-20 11:40:00, Lars Persson wrote:
+> The addition of a shutdown hook by commit f25889f93184 ("optee:
+> fix tee out of memory failure seen during kexec reboot") introduced a
+> kernel shutdown regression that can be triggered after running the
+> xtest suites.
+>=20
+> Once the shutdown hook is called it is not possible to communicate any
+> more with the supplicant process because the system is not scheduling
+> task any longer. Thus if the optee driver shutdown path receives a
+> supplicant RPC request from the OP-TEE we will deadlock the kernel's
+> shutdown.
+>=20
+> This unexpected event will in fact occur after the xtest suite has
+> been run. It seems some cached SHM kept alive a context object which
+> in turn kept alive a session towards a PTA or TA. Closing the session
+> results in a socket RPC command being sent back from OP-TEE.
+>=20
+> This sequence of events is captured by a 5.15 kernel annotated with
+> extra prints:
+>=20
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8001079380
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8001CC5580
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8006308A80
+>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
+>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
+>   freeing SHM ptr 0xFFFFFF8006308B00
+>  optee: optee_handle_rpc: a0=3D0XFFFF0000 a1=3D0XA0 a2=3D0X0
+>  optee: optee_handle_rpc: a0=3D0XFFFF0005 a1=3D0XFFFFFF80 a2=3D0X61E6500
+>  optee: handle_rpc_func_cmd: cmd =3D 0XA
+>  optee_supp_thrd_req: func=3D0XA
+>=20
+> Introduce a shutdown state in the optee device object to return an
+> immediate error to all RPC requests in the shutdown path.
+>=20
+> Fixes: f25889f93184 ("optee: fix tee out of memory failure seen during kexe=
+c reboot")
+> Signed-off-by: Lars Persson <larper@axis.com>
 
-OK, I'll add that.
+I think that this change looks alright to fix the deadlock but I don't
+feel qualified to definitively say that this is the right fix. Something
+makes me wonder why the session is kept alive and if there's an
+underlying bug that we're masking over but I don't understand the
+lifetime of the objects, sessions, etc., when the supplicant is
+involved. I'm going to defer to Jens and Sumit on the design aspects.
 
-Thanks,
-Jens
+Tyler
 
-> -Sumit
->
-> > --
-> > Jerome
-> >
-> > >
-> > > FWIW,
-> > >
-> > > Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-> > >
-> > > [1] https://github.com/OP-TEE/optee_os/issues/1918
-> > >
-> > > -Sumit
-> > >
-> > >> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> > >> index 88a028d4fb7b..5ec484b42432 100644
-> > >> --- a/drivers/tee/optee/ffa_abi.c
-> > >> +++ b/drivers/tee/optee/ffa_abi.c
-> > >> @@ -424,6 +424,7 @@ static struct tee_shm_pool *optee_ffa_shm_pool_all=
-oc_pages(void)
-> > >>   */
-> > >>
-> > >>  static void handle_ffa_rpc_func_cmd_shm_alloc(struct tee_context *ctx,
-> > >> +                                             struct optee *optee,
-> > >>                                               struct optee_msg_arg *ar=
-g)
-> > >>  {
-> > >>         struct tee_shm *shm;
-> > >> @@ -439,7 +440,7 @@ static void handle_ffa_rpc_func_cmd_shm_alloc(stru=
-ct tee_context *ctx,
-> > >>                 shm =3D optee_rpc_cmd_alloc_suppl(ctx, arg->params[0].=
-u.value.b);
-> > >>                 break;
-> > >>         case OPTEE_RPC_SHM_TYPE_KERNEL:
-> > >> -               shm =3D tee_shm_alloc_priv_kernel_buf(ctx,
-> > >> +               shm =3D tee_shm_alloc_priv_kernel_buf(optee->ctx,
-> > >>                                                     arg->params[0].u.v=
-alue.b);
-> > >>                 break;
-> > >>         default:
-> > >> @@ -493,14 +494,13 @@ static void handle_ffa_rpc_func_cmd_shm_free(str=
-uct tee_context *ctx,
-> > >>  }
-> > >>
-> > >>  static void handle_ffa_rpc_func_cmd(struct tee_context *ctx,
-> > >> +                                   struct optee *optee,
-> > >>                                     struct optee_msg_arg *arg)
-> > >>  {
-> > >> -       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> > >> -
-> > >>         arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> > >>         switch (arg->cmd) {
-> > >>         case OPTEE_RPC_CMD_SHM_ALLOC:
-> > >> -               handle_ffa_rpc_func_cmd_shm_alloc(ctx, arg);
-> > >> +               handle_ffa_rpc_func_cmd_shm_alloc(ctx, optee, arg);
-> > >>                 break;
-> > >>         case OPTEE_RPC_CMD_SHM_FREE:
-> > >>                 handle_ffa_rpc_func_cmd_shm_free(ctx, optee, arg);
-> > >> @@ -510,12 +510,12 @@ static void handle_ffa_rpc_func_cmd(struct tee_c=
-ontext *ctx,
-> > >>         }
-> > >>  }
-> > >>
-> > >> -static void optee_handle_ffa_rpc(struct tee_context *ctx, u32 cmd,
-> > >> -                                struct optee_msg_arg *arg)
-> > >> +static void optee_handle_ffa_rpc(struct tee_context *ctx, struct opte=
-e *optee,
-> > >> +                                u32 cmd, struct optee_msg_arg *arg)
-> > >>  {
-> > >>         switch (cmd) {
-> > >>         case OPTEE_FFA_YIELDING_CALL_RETURN_RPC_CMD:
-> > >> -               handle_ffa_rpc_func_cmd(ctx, arg);
-> > >> +               handle_ffa_rpc_func_cmd(ctx, optee, arg);
-> > >>                 break;
-> > >>         case OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT:
-> > >>                 /* Interrupt delivered by now */
-> > >> @@ -582,7 +582,7 @@ static int optee_ffa_yielding_call(struct tee_cont=
-ext *ctx,
-> > >>                  * above.
-> > >>                  */
-> > >>                 cond_resched();
-> > >> -               optee_handle_ffa_rpc(ctx, data->data1, rpc_arg);
-> > >> +               optee_handle_ffa_rpc(ctx, optee, data->data1, rpc_arg);
-> > >>                 cmd =3D OPTEE_FFA_YIELDING_CALL_RESUME;
-> > >>                 data->data0 =3D cmd;
-> > >>                 data->data1 =3D 0;
-> > >> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > >> index 1dbb13b08381..f2ef76451443 100644
-> > >> --- a/drivers/tee/optee/smc_abi.c
-> > >> +++ b/drivers/tee/optee/smc_abi.c
-> > >> @@ -621,6 +621,7 @@ static void handle_rpc_func_cmd_shm_free(struct te=
-e_context *ctx,
-> > >>  }
-> > >>
-> > >>  static void handle_rpc_func_cmd_shm_alloc(struct tee_context *ctx,
-> > >> +                                         struct optee *optee,
-> > >>                                           struct optee_msg_arg *arg,
-> > >>                                           struct optee_call_ctx *call_=
-ctx)
-> > >>  {
-> > >> @@ -650,7 +651,7 @@ static void handle_rpc_func_cmd_shm_alloc(struct t=
-ee_context *ctx,
-> > >>                 shm =3D optee_rpc_cmd_alloc_suppl(ctx, sz);
-> > >>                 break;
-> > >>         case OPTEE_RPC_SHM_TYPE_KERNEL:
-> > >> -               shm =3D tee_shm_alloc_priv_kernel_buf(ctx, sz);
-> > >> +               shm =3D tee_shm_alloc_priv_kernel_buf(optee->ctx, sz);
-> > >>                 break;
-> > >>         default:
-> > >>                 arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> > >> @@ -746,7 +747,7 @@ static void handle_rpc_func_cmd(struct tee_context=
- *ctx, struct optee *optee,
-> > >>         switch (arg->cmd) {
-> > >>         case OPTEE_RPC_CMD_SHM_ALLOC:
-> > >>                 free_pages_list(call_ctx);
-> > >> -               handle_rpc_func_cmd_shm_alloc(ctx, arg, call_ctx);
-> > >> +               handle_rpc_func_cmd_shm_alloc(ctx, optee, arg, call_ct=
-x);
-> > >>                 break;
-> > >>         case OPTEE_RPC_CMD_SHM_FREE:
-> > >>                 handle_rpc_func_cmd_shm_free(ctx, arg);
-> > >> @@ -775,7 +776,7 @@ static void optee_handle_rpc(struct tee_context *c=
-tx,
-> > >>
-> > >>         switch (OPTEE_SMC_RETURN_GET_RPC_FUNC(param->a0)) {
-> > >>         case OPTEE_SMC_RPC_FUNC_ALLOC:
-> > >> -               shm =3D tee_shm_alloc_priv_kernel_buf(ctx, param->a1);
-> > >> +               shm =3D tee_shm_alloc_priv_kernel_buf(optee->ctx, para=
-m->a1);
-> > >>                 if (!IS_ERR(shm) && !tee_shm_get_pa(shm, 0, &pa)) {
-> > >>                         reg_pair_from_64(&param->a1, &param->a2, pa);
-> > >>                         reg_pair_from_64(&param->a4, &param->a5,
-> > >> --
-> > >> 2.31.1
-> > >>
+> ---
+>  drivers/tee/optee/optee_private.h | 1 +
+>  drivers/tee/optee/smc_abi.c       | 5 ++++-
+>  drivers/tee/optee/supp.c          | 8 ++++++++
+>  3 files changed, 13 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index 46f74ab07c7e..9eb72931e11f 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+> @@ -162,6 +162,7 @@ struct optee {
+>  	struct tee_shm_pool *pool;
+>  	unsigned int rpc_arg_count;
+>  	bool   scan_bus_done;
+> +	bool   shutting_down;
+>  	struct workqueue_struct *scan_bus_wq;
+>  	struct work_struct scan_bus_work;
+>  };
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index 449d6a72d289..10af747da816 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1356,7 +1356,10 @@ static int optee_smc_remove(struct platform_device *=
+pdev)
+>   */
+>  static void optee_shutdown(struct platform_device *pdev)
+>  {
+> -	optee_disable_shm_cache(platform_get_drvdata(pdev));
+> +	struct optee *optee =3D platform_get_drvdata(pdev);
+> +
+> +	optee->shutting_down =3D true;
+> +	optee_disable_shm_cache(optee);
+>  }
+> =20
+>  static int optee_probe(struct platform_device *pdev)
+> diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
+> index 322a543b8c27..801b4ec659e8 100644
+> --- a/drivers/tee/optee/supp.c
+> +++ b/drivers/tee/optee/supp.c
+> @@ -83,6 +83,14 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 fun=
+c, size_t num_params,
+>  	bool interruptable;
+>  	u32 ret;
+> =20
+> +	/*
+> +	 * When the system is shutting down we cannot talk
+> +	 * to the supplicant anymore even if we seem to have
+> +	 * an open session to it.
+> +	 */
+> +	if (optee->shutting_down)
+> +		return TEEC_ERROR_COMMUNICATION;
+> +
+>  	/*
+>  	 * Return in case there is no supplicant available and
+>  	 * non-blocking request.
+> --=20
+> 2.30.2
+>=20
 
---===============7369327524994079723==--
+--===============0474616451160674636==--
 
