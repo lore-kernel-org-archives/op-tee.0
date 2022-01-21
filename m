@@ -1,182 +1,314 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 12/12] tee: refactor TEE_SHM_* flags
-Date: Fri, 21 Jan 2022 08:23:20 +0100
+Subject: Re: [PATCH v2 06/12] optee: add driver private tee_context
+Date: Fri, 21 Jan 2022 18:18:12 +0530
 Message-ID: 
- <CAHUa44Hz=7L1odx746sCRuts3Xhr=ve1oU8CZ7-2+UuHyCr9pQ@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYOvsBZk17mPG9d79wQFNvQwv1deCm5ocs3qyBa8W0hvNQ@mail.gmail.com>>
+ <CAFA6WYNMYZTiaj4WUT=x6-XHu9tWwf2EefGx6fKfVUJ=BNYyOw@mail.gmail.com>
+In-Reply-To: <20220114150824.3578829-7-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7490666692226601149=="
+Content-Type: multipart/mixed; boundary="===============0597216839067379263=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7490666692226601149==
+--===============0597216839067379263==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 20, 2022 at 2:04 PM Sumit Garg <sumit.garg@linaro.org> wrote:
+On Fri, 14 Jan 2022 at 20:38, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
 >
-> On Fri, 14 Jan 2022 at 20:38, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > Removes the redundant TEE_SHM_DMA_BUF, TEE_SHM_EXT_DMA_BUF,
-> > TEE_SHM_MAPPED and TEE_SHM_KERNEL_MAPPED flags.
-> >
-> > Assigns new values to the remaining flags to void gaps.
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/tee_shm.c   | 21 ++++++++++-----------
-> >  include/linux/tee_drv.h | 12 ++++--------
-> >  2 files changed, 14 insertions(+), 19 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index fe3e5977dd7c..9945bdec086b 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -139,8 +139,7 @@ static struct tee_shm *shm_alloc_helper(struct tee_co=
-ntext *ctx, size_t size,
-> >   */
-> >  struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t s=
-ize)
-> >  {
-> > -       u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_DMA_BUF | TEE_SHM_REGISTER=
- |
-> > -                   TEE_SHM_POOL;
-> > +       u32 flags =3D TEE_SHM_REGISTER | TEE_SHM_POOL;
-> >         struct tee_device *teedev =3D ctx->teedev;
-> >         struct tee_shm *shm;
-> >         void *ret;
-> > @@ -186,7 +185,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc_user_buf);
-> >   */
-> >  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t=
- size)
-> >  {
-> > -       u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_REGISTER | TEE_SHM_POOL;
-> > +       u32 flags =3D TEE_SHM_REGISTER | TEE_SHM_POOL;
-> >
-> >         return shm_alloc_helper(ctx, size, PAGE_SIZE, flags, -1);
-> >  }
-> > @@ -211,7 +210,7 @@ EXPORT_SYMBOL_GPL(tee_shm_alloc_kernel_buf);
-> >  struct tee_shm *tee_shm_alloc_priv_kernel_buf(struct tee_context *ctx,
-> >                                               size_t size)
-> >  {
-> > -       u32 flags =3D TEE_SHM_MAPPED | TEE_SHM_PRIV | TEE_SHM_POOL;
-> > +       u32 flags =3D TEE_SHM_PRIV | TEE_SHM_POOL;
-> >
-> >         return shm_alloc_helper(ctx, size, sizeof(long) * 2, flags, -1);
-> >  }
-> > @@ -308,7 +307,7 @@ register_shm_helper(struct tee_context *ctx, unsigned=
- long addr,
-> >  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
-> >                                           unsigned long addr, size_t leng=
-th)
-> >  {
-> > -       u32 f =3D TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED | TEE_SHM_REGISTE=
-R;
-> > +       u32 f =3D TEE_SHM_USER_MAPPED | TEE_SHM_REGISTER;
-> >         struct tee_device *teedev =3D ctx->teedev;
-> >         struct tee_shm *shm;
-> >         void *ret;
-> > @@ -354,7 +353,7 @@ EXPORT_SYMBOL_GPL(tee_shm_register_user_buf);
-> >  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
-> >                                             void *addr, size_t length)
-> >  {
-> > -       u32 f =3D TEE_SHM_REGISTER | TEE_SHM_KERNEL_MAPPED;
-> > +       u32 f =3D TEE_SHM_REGISTER;
-> >
-> >         return register_shm_helper(ctx, (unsigned long)addr, length, f, -=
-1);
-> >  }
-> > @@ -398,7 +397,7 @@ int tee_shm_get_fd(struct tee_shm *shm)
-> >  {
-> >         int fd;
-> >
-> > -       if (!(shm->flags & TEE_SHM_DMA_BUF))
-> > +       if (shm->id < 0)
-> >                 return -EINVAL;
-> >
-> >         /* matched by tee_shm_put() in tee_shm_op_release() */
-> > @@ -428,7 +427,7 @@ EXPORT_SYMBOL_GPL(tee_shm_free);
-> >   */
-> >  int tee_shm_va2pa(struct tee_shm *shm, void *va, phys_addr_t *pa)
-> >  {
-> > -       if (!(shm->flags & TEE_SHM_MAPPED))
-> > +       if (!shm->kaddr)
-> >                 return -EINVAL;
-> >         /* Check that we're in the range of the shm */
-> >         if ((char *)va < (char *)shm->kaddr)
-> > @@ -450,7 +449,7 @@ EXPORT_SYMBOL_GPL(tee_shm_va2pa);
-> >   */
-> >  int tee_shm_pa2va(struct tee_shm *shm, phys_addr_t pa, void **va)
-> >  {
-> > -       if (!(shm->flags & TEE_SHM_MAPPED))
-> > +       if (!shm->kaddr)
-> >                 return -EINVAL;
-> >         /* Check that we're in the range of the shm */
-> >         if (pa < shm->paddr)
-> > @@ -478,7 +477,7 @@ EXPORT_SYMBOL_GPL(tee_shm_pa2va);
-> >   */
-> >  void *tee_shm_get_va(struct tee_shm *shm, size_t offs)
-> >  {
-> > -       if (!(shm->flags & TEE_SHM_MAPPED))
-> > +       if (!shm->kaddr)
-> >                 return ERR_PTR(-EINVAL);
-> >         if (offs >=3D shm->size)
-> >                 return ERR_PTR(-EINVAL);
-> > @@ -553,7 +552,7 @@ void tee_shm_put(struct tee_shm *shm)
-> >                  * the refcount_inc() in tee_shm_get_from_id() never star=
-ts
-> >                  * from 0.
-> >                  */
-> > -               if (shm->flags & TEE_SHM_DMA_BUF)
-> > +               if (shm->id >=3D 0)
-> >                         idr_remove(&teedev->idr, shm->id);
-> >                 do_release =3D true;
-> >         }
-> > diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> > index e4f32885e273..dcc7a55e1128 100644
-> > --- a/include/linux/tee_drv.h
-> > +++ b/include/linux/tee_drv.h
-> > @@ -20,14 +20,10 @@
-> >   * specific TEE driver.
-> >   */
-> >
-> > -#define TEE_SHM_MAPPED         BIT(0)  /* Memory mapped by the kernel */
-> > -#define TEE_SHM_DMA_BUF                BIT(1)  /* Memory with dma-buf ha=
-ndle */
-> > -#define TEE_SHM_EXT_DMA_BUF    BIT(2)  /* Memory with dma-buf handle */
-> > -#define TEE_SHM_REGISTER       BIT(3)  /* Memory registered in secure wo=
-rld */
-> > -#define TEE_SHM_USER_MAPPED    BIT(4)  /* Memory mapped in user space */
-> > -#define TEE_SHM_POOL           BIT(5)  /* Memory allocated from pool */
-> > -#define TEE_SHM_KERNEL_MAPPED  BIT(6)  /* Memory mapped in kernel space =
-*/
-> > -#define TEE_SHM_PRIV           BIT(7)  /* Memory private to TEE driver */
-> > +#define TEE_SHM_REGISTER       BIT(0)  /* Memory registered in secure wo=
-rld */
+> Adds a driver private tee_context by moving the tee_context in struct
+> optee_notif to struct optee. This tee_context is used when doing
+> internal calls to secure world to deliver notification and later also
+> when sharing driver private memory with secure world.
 >
-> TEE_SHM_REGISTER as a flag name seems ambiguous to me when it is being
-> used by both types of APIs tee_shm_alloc_* and tee_shm_register_*. Can
-> we rename it to TEE_SHM_DYNAMIC instead?
-
-Sure, I'll fix that in v3.
-
-Thanks,
-Jens
-
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  drivers/tee/optee/core.c          |  1 +
+>  drivers/tee/optee/ffa_abi.c       | 61 ++++++++++++++++++-------------
+>  drivers/tee/optee/optee_private.h |  5 ++-
+>  drivers/tee/optee/smc_abi.c       | 40 ++++++--------------
+>  4 files changed, 51 insertions(+), 56 deletions(-)
 >
-> -Sumit
->
-> > +#define TEE_SHM_USER_MAPPED    BIT(1)  /* Memory mapped in user space */
-> > +#define TEE_SHM_POOL           BIT(2)  /* Memory allocated from pool */
-> > +#define TEE_SHM_PRIV           BIT(3)  /* Memory private to TEE driver */
-> >
-> >  struct device;
-> >  struct tee_device;
-> > --
-> > 2.31.1
-> >
 
---===============7490666692226601149==--
+After looking at this patch, it looks like there is a need for some
+more refactoring to pick out common probe functionality from both ABIs
+and add optee_probe_common(). If it was there earlier, this patch
+would mostly be modifying the OP-TEE core file apart from
+notifications stuff.
+
+I would leave it upto you to have a refactoring patch before and then
+changes in this patch or vice-versa.
+
+-Sumit
+
+> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> index 2a369e346b85..f4bccb5f0e93 100644
+> --- a/drivers/tee/optee/core.c
+> +++ b/drivers/tee/optee/core.c
+> @@ -161,6 +161,7 @@ void optee_remove_common(struct optee *optee)
+>         optee_unregister_devices();
+>
+>         optee_notif_uninit(optee);
+> +       teedev_close_context(optee->ctx);
+>         /*
+>          * The two devices have to be unregistered before we can free the
+>          * other resources.
+> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> index 18963f7e4d48..88a028d4fb7b 100644
+> --- a/drivers/tee/optee/ffa_abi.c
+> +++ b/drivers/tee/optee/ffa_abi.c
+> @@ -766,7 +766,9 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>  {
+>         const struct ffa_dev_ops *ffa_ops;
+>         unsigned int rpc_arg_count;
+> +       struct tee_shm_pool *pool;
+>         struct tee_device *teedev;
+> +       struct tee_context *ctx;
+>         struct optee *optee;
+>         int rc;
+>
+> @@ -786,12 +788,12 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>         if (!optee)
+>                 return -ENOMEM;
+>
+> -       optee->pool =3D optee_ffa_shm_pool_alloc_pages();
+> -       if (IS_ERR(optee->pool)) {
+> -               rc =3D PTR_ERR(optee->pool);
+> -               optee->pool =3D NULL;
+> -               goto err;
+> +       pool =3D optee_ffa_shm_pool_alloc_pages();
+> +       if (IS_ERR(pool)) {
+> +               rc =3D PTR_ERR(pool);
+> +               goto err_free_optee;
+>         }
+> +       optee->pool =3D pool;
+>
+>         optee->ops =3D &optee_ffa_ops;
+>         optee->ffa.ffa_dev =3D ffa_dev;
+> @@ -802,7 +804,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>                                   optee);
+>         if (IS_ERR(teedev)) {
+>                 rc =3D PTR_ERR(teedev);
+> -               goto err;
+> +               goto err_free_pool;
+>         }
+>         optee->teedev =3D teedev;
+>
+> @@ -810,50 +812,57 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>                                   optee);
+>         if (IS_ERR(teedev)) {
+>                 rc =3D PTR_ERR(teedev);
+> -               goto err;
+> +               goto err_unreg_teedev;
+>         }
+>         optee->supp_teedev =3D teedev;
+>
+>         rc =3D tee_device_register(optee->teedev);
+>         if (rc)
+> -               goto err;
+> +               goto err_unreg_supp_teedev;
+>
+>         rc =3D tee_device_register(optee->supp_teedev);
+>         if (rc)
+> -               goto err;
+> +               goto err_unreg_supp_teedev;
+>
+>         rc =3D rhashtable_init(&optee->ffa.global_ids, &shm_rhash_params);
+>         if (rc)
+> -               goto err;
+> +               goto err_unreg_supp_teedev;
+>         mutex_init(&optee->ffa.mutex);
+>         mutex_init(&optee->call_queue.mutex);
+>         INIT_LIST_HEAD(&optee->call_queue.waiters);
+>         optee_supp_init(&optee->supp);
+>         ffa_dev_set_drvdata(ffa_dev, optee);
+> +       ctx =3D teedev_open(optee->teedev);
+> +       if (IS_ERR(ctx))
+> +               goto err_rhashtable_free;
+> +       optee->ctx =3D ctx;
+>         rc =3D optee_notif_init(optee, OPTEE_DEFAULT_MAX_NOTIF_VALUE);
+> -       if (rc) {
+> -               optee_ffa_remove(ffa_dev);
+> -               return rc;
+> -       }
+> +       if (rc)
+> +               goto err_close_ctx;
+>
+>         rc =3D optee_enumerate_devices(PTA_CMD_GET_DEVICES);
+> -       if (rc) {
+> -               optee_ffa_remove(ffa_dev);
+> -               return rc;
+> -       }
+> +       if (rc)
+> +               goto err_unregister_devices;
+>
+>         pr_info("initialized driver\n");
+>         return 0;
+> -err:
+> -       /*
+> -        * tee_device_unregister() is safe to call even if the
+> -        * devices hasn't been registered with
+> -        * tee_device_register() yet.
+> -        */
+> +
+> +err_unregister_devices:
+> +       optee_unregister_devices();
+> +       optee_notif_uninit(optee);
+> +err_close_ctx:
+> +       teedev_close_context(ctx);
+> +err_rhashtable_free:
+> +       rhashtable_free_and_destroy(&optee->ffa.global_ids, rh_free_fn, NUL=
+L);
+> +       optee_supp_uninit(&optee->supp);
+> +       mutex_destroy(&optee->call_queue.mutex);
+> +err_unreg_supp_teedev:
+>         tee_device_unregister(optee->supp_teedev);
+> +err_unreg_teedev:
+>         tee_device_unregister(optee->teedev);
+> -       if (optee->pool)
+> -               tee_shm_pool_free(optee->pool);
+> +err_free_pool:
+> +       tee_shm_pool_free(pool);
+> +err_free_optee:
+>         kfree(optee);
+>         return rc;
+>  }
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index df2450921464..df3a483bbf46 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+> @@ -53,7 +53,6 @@ struct optee_call_queue {
+>
+>  struct optee_notif {
+>         u_int max_key;
+> -       struct tee_context *ctx;
+>         /* Serializes access to the elements below in this struct */
+>         spinlock_t lock;
+>         struct list_head db;
+> @@ -134,9 +133,10 @@ struct optee_ops {
+>  /**
+>   * struct optee - main service struct
+>   * @supp_teedev:       supplicant device
+> + * @teedev:            client device
+>   * @ops:               internal callbacks for different ways to reach secu=
+re
+>   *                     world
+> - * @teedev:            client device
+> + * @ctx:               driver internal TEE context
+>   * @smc:               specific to SMC ABI
+>   * @ffa:               specific to FF-A ABI
+>   * @call_queue:                queue of threads waiting to call @invoke_fn
+> @@ -152,6 +152,7 @@ struct optee {
+>         struct tee_device *supp_teedev;
+>         struct tee_device *teedev;
+>         const struct optee_ops *ops;
+> +       struct tee_context *ctx;
+>         union {
+>                 struct optee_smc smc;
+>                 struct optee_ffa ffa;
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index 196cd4316d7d..1dbb13b08381 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -952,57 +952,34 @@ static irqreturn_t notif_irq_thread_fn(int irq, void =
+*dev_id)
+>  {
+>         struct optee *optee =3D dev_id;
+>
+> -       optee_smc_do_bottom_half(optee->notif.ctx);
+> +       optee_smc_do_bottom_half(optee->ctx);
+>
+>         return IRQ_HANDLED;
+>  }
+>
+>  static int optee_smc_notif_init_irq(struct optee *optee, u_int irq)
+>  {
+> -       struct tee_context *ctx;
+>         int rc;
+>
+> -       ctx =3D teedev_open(optee->teedev);
+> -       if (IS_ERR(ctx))
+> -               return PTR_ERR(ctx);
+> -
+> -       optee->notif.ctx =3D ctx;
+>         rc =3D request_threaded_irq(irq, notif_irq_handler,
+>                                   notif_irq_thread_fn,
+>                                   0, "optee_notification", optee);
+>         if (rc)
+> -               goto err_close_ctx;
+> +               return rc;
+>
+>         optee->smc.notif_irq =3D irq;
+>
+>         return 0;
+> -
+> -err_close_ctx:
+> -       teedev_close_context(optee->notif.ctx);
+> -       optee->notif.ctx =3D NULL;
+> -
+> -       return rc;
+>  }
+>
+>  static void optee_smc_notif_uninit_irq(struct optee *optee)
+>  {
+> -       if (optee->notif.ctx) {
+> -               optee_smc_stop_async_notif(optee->notif.ctx);
+> +       if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_ASYNC_NOTIF) {
+> +               optee_smc_stop_async_notif(optee->ctx);
+>                 if (optee->smc.notif_irq) {
+>                         free_irq(optee->smc.notif_irq, optee);
+>                         irq_dispose_mapping(optee->smc.notif_irq);
+>                 }
+> -
+> -               /*
+> -                * The thread normally working with optee->notif.ctx was
+> -                * stopped with free_irq() above.
+> -                *
+> -                * Note we're not using teedev_close_context() or
+> -                * tee_client_close_context() since we have already called
+> -                * tee_device_put() while initializing to avoid a circular
+> -                * reference counting.
+> -                */
+> -               teedev_close_context(optee->notif.ctx);
+>         }
+>  }
+>
+> @@ -1307,6 +1284,7 @@ static int optee_probe(struct platform_device *pdev)
+>         struct optee *optee =3D NULL;
+>         void *memremaped_shm =3D NULL;
+>         struct tee_device *teedev;
+> +       struct tee_context *ctx;
+>         u32 max_notif_value;
+>         u32 sec_caps;
+>         int rc;
+> @@ -1387,9 +1365,13 @@ static int optee_probe(struct platform_device *pdev)
+>         optee->pool =3D pool;
+>
+>         platform_set_drvdata(pdev, optee);
+> +       ctx =3D teedev_open(optee->teedev);
+> +       if (IS_ERR(ctx))
+> +               goto err_supp_uninit;
+> +       optee->ctx =3D ctx;
+>         rc =3D optee_notif_init(optee, max_notif_value);
+>         if (rc)
+> -               goto err_supp_uninit;
+> +               goto err_close_ctx;
+>
+>         if (sec_caps & OPTEE_SMC_SEC_CAP_ASYNC_NOTIF) {
+>                 unsigned int irq;
+> @@ -1437,6 +1419,8 @@ static int optee_probe(struct platform_device *pdev)
+>         optee_unregister_devices();
+>  err_notif_uninit:
+>         optee_notif_uninit(optee);
+> +err_close_ctx:
+> +       teedev_close_context(ctx);
+>  err_supp_uninit:
+>         optee_supp_uninit(&optee->supp);
+>         mutex_destroy(&optee->call_queue.mutex);
+> --
+> 2.31.1
+>
+
+--===============0597216839067379263==--
 
