@@ -1,140 +1,110 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 02/12] tee: remove unused tee_shm_pool_alloc_res_mem()
-Date: Tue, 25 Jan 2022 17:29:28 +0100
-Message-ID: <20220125162938.838382-3-jens.wiklander@linaro.org>
+Subject: [PATCH v3 03/12] tee: add tee_shm_alloc_user_buf()
+Date: Tue, 25 Jan 2022 17:29:29 +0100
+Message-ID: <20220125162938.838382-4-jens.wiklander@linaro.org>
 In-Reply-To: <20220125162938.838382-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4521845848313744976=="
+Content-Type: multipart/mixed; boundary="===============1205794438489637641=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4521845848313744976==
+--===============1205794438489637641==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-None of the drivers in the TEE subsystem uses
-tee_shm_pool_alloc_res_mem() so remove the function.
+Adds a new function tee_shm_alloc_user_buf() or user mode allocations,
+replacing passing the flags TEE_SHM_MAPPED | TEE_SHM_DMA_BUF to
+tee_shm_alloc().
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/tee_shm_pool.c | 56 --------------------------------------
- include/linux/tee_drv.h    | 30 --------------------
- 2 files changed, 86 deletions(-)
+ drivers/tee/tee_core.c     |  2 +-
+ drivers/tee/tee_private.h  |  2 ++
+ drivers/tee/tee_shm.c      | 17 +++++++++++++++++
+ drivers/tee/tee_shm_pool.c |  2 +-
+ include/linux/tee_drv.h    |  2 +-
+ 5 files changed, 22 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 3fc426dad2df..a15812baaeb1 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -297,7 +297,7 @@ static int tee_ioctl_shm_alloc(struct tee_context *ctx,
+ 	if (data.flags)
+ 		return -EINVAL;
+=20
+-	shm =3D tee_shm_alloc(ctx, data.size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
++	shm =3D tee_shm_alloc_user_buf(ctx, data.size);
+ 	if (IS_ERR(shm))
+ 		return PTR_ERR(shm);
+=20
+diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
+index e55204df31ce..e09c8aa5d967 100644
+--- a/drivers/tee/tee_private.h
++++ b/drivers/tee/tee_private.h
+@@ -68,4 +68,6 @@ void tee_device_put(struct tee_device *teedev);
+ void teedev_ctx_get(struct tee_context *ctx);
+ void teedev_ctx_put(struct tee_context *ctx);
+=20
++struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size);
++
+ #endif /*TEE_PRIVATE_H*/
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 499fccba3d74..7e7e762fc1de 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -127,6 +127,23 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ctx, s=
+ize_t size, u32 flags)
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_alloc);
+=20
++/**
++ * tee_shm_alloc_user_buf() - Allocate shared memory for user space
++ * @ctx:	Context that allocates the shared memory
++ * @size:	Requested size of shared memory
++ *
++ * Memory allocated as user space shared memory is automatically freed when
++ * the TEE file pointer is closed. The primary usage of this function is
++ * when the TEE driver doesn't support registering ordinary user space
++ * memory.
++ *
++ * @returns a pointer to 'struct tee_shm'
++ */
++struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size)
++{
++	return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
++}
++
+ /**
+  * tee_shm_alloc_kernel_buf() - Allocate shared memory for kernel buffer
+  * @ctx:	Context that allocates the shared memory
 diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
-index fcbb461fc59c..a9f9d50fd181 100644
+index a9f9d50fd181..0e460347138a 100644
 --- a/drivers/tee/tee_shm_pool.c
 +++ b/drivers/tee/tee_shm_pool.c
-@@ -47,62 +47,6 @@ static const struct tee_shm_pool_mgr_ops pool_ops_generic =
-=3D {
- 	.destroy_poolmgr =3D pool_op_gen_destroy_poolmgr,
- };
-=20
--/**
-- * tee_shm_pool_alloc_res_mem() - Create a shared memory pool from reserved
-- * memory range
-- * @priv_info:	Information for driver private shared memory pool
-- * @dmabuf_info: Information for dma-buf shared memory pool
-- *
-- * Start and end of pools will must be page aligned.
-- *
-- * Allocation with the flag TEE_SHM_DMA_BUF set will use the range supplied
-- * in @dmabuf, others will use the range provided by @priv.
-- *
-- * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
-- */
--struct tee_shm_pool *
--tee_shm_pool_alloc_res_mem(struct tee_shm_pool_mem_info *priv_info,
--			   struct tee_shm_pool_mem_info *dmabuf_info)
--{
--	struct tee_shm_pool_mgr *priv_mgr;
--	struct tee_shm_pool_mgr *dmabuf_mgr;
--	void *rc;
--
--	/*
--	 * Create the pool for driver private shared memory
--	 */
--	rc =3D tee_shm_pool_mgr_alloc_res_mem(priv_info->vaddr, priv_info->paddr,
--					    priv_info->size,
--					    3 /* 8 byte aligned */);
--	if (IS_ERR(rc))
--		return rc;
--	priv_mgr =3D rc;
--
--	/*
--	 * Create the pool for dma_buf shared memory
--	 */
--	rc =3D tee_shm_pool_mgr_alloc_res_mem(dmabuf_info->vaddr,
--					    dmabuf_info->paddr,
--					    dmabuf_info->size, PAGE_SHIFT);
--	if (IS_ERR(rc))
--		goto err_free_priv_mgr;
--	dmabuf_mgr =3D rc;
--
--	rc =3D tee_shm_pool_alloc(priv_mgr, dmabuf_mgr);
--	if (IS_ERR(rc))
--		goto err_free_dmabuf_mgr;
--
--	return rc;
--
--err_free_dmabuf_mgr:
--	tee_shm_pool_mgr_destroy(dmabuf_mgr);
--err_free_priv_mgr:
--	tee_shm_pool_mgr_destroy(priv_mgr);
--
--	return rc;
--}
--EXPORT_SYMBOL_GPL(tee_shm_pool_alloc_res_mem);
--
- struct tee_shm_pool_mgr *tee_shm_pool_mgr_alloc_res_mem(unsigned long vaddr,
- 							phys_addr_t paddr,
- 							size_t size,
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+- * Copyright (c) 2015, Linaro Limited
++ * Copyright (c) 2015, 2017, 2022 Linaro Limited
+  */
+ #include <linux/device.h>
+ #include <linux/dma-buf.h>
 diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index 5e1533ee3785..6b0f0d01ebdf 100644
+index 6b0f0d01ebdf..975500b2553e 100644
 --- a/include/linux/tee_drv.h
 +++ b/include/linux/tee_drv.h
-@@ -278,36 +278,6 @@ static inline void tee_shm_pool_mgr_destroy(struct tee_s=
-hm_pool_mgr *poolm)
- 	poolm->ops->destroy_poolmgr(poolm);
- }
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+- * Copyright (c) 2015-2016, Linaro Limited
++ * Copyright (c) 2015-2022 Linaro Limited
+  */
 =20
--/**
-- * struct tee_shm_pool_mem_info - holds information needed to create a shared
-- * memory pool
-- * @vaddr:	Virtual address of start of pool
-- * @paddr:	Physical address of start of pool
-- * @size:	Size in bytes of the pool
-- */
--struct tee_shm_pool_mem_info {
--	unsigned long vaddr;
--	phys_addr_t paddr;
--	size_t size;
--};
--
--/**
-- * tee_shm_pool_alloc_res_mem() - Create a shared memory pool from reserved
-- * memory range
-- * @priv_info:	 Information for driver private shared memory pool
-- * @dmabuf_info: Information for dma-buf shared memory pool
-- *
-- * Start and end of pools will must be page aligned.
-- *
-- * Allocation with the flag TEE_SHM_DMA_BUF set will use the range supplied
-- * in @dmabuf, others will use the range provided by @priv.
-- *
-- * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
-- */
--struct tee_shm_pool *
--tee_shm_pool_alloc_res_mem(struct tee_shm_pool_mem_info *priv_info,
--			   struct tee_shm_pool_mem_info *dmabuf_info);
--
- /**
-  * tee_shm_pool_free() - Free a shared memory pool
-  * @pool:	The shared memory pool to free
+ #ifndef __TEE_DRV_H
 --=20
 2.31.1
 
 
---===============4521845848313744976==--
+--===============1205794438489637641==--
 
