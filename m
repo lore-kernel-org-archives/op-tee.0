@@ -1,107 +1,113 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2] optee: Do not send requests to supplicant during shutdown
-Date: Tue, 25 Jan 2022 11:35:15 +0530
-Message-ID: 
- <CAFA6WYN4+s7XjVpRa-L28YHjEuoR2hR+3GqV-NZCwe12dK1H7w@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44FQAtR_vXHckSujPOp3M7bAtho93x+b8fmS5tVxvTX1nA@mail.gmail.com>>
+Subject: [PATCH v3 00/12] tee: shared memory updates
+Date: Tue, 25 Jan 2022 17:29:26 +0100
+Message-ID: <20220125162938.838382-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0234715228607746834=="
+Content-Type: multipart/mixed; boundary="===============0773091493785526752=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0234715228607746834==
+--===============0773091493785526752==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 25 Jan 2022 at 01:57, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
-> On Mon, Jan 24, 2022 at 6:48 PM Lars Persson <larper@axis.com> wrote:
-> >
-> >
-> >
-> > On 2022-01-24 06:56, Sumit Garg wrote:
-> > > Hi Lars,
-> > >
-> > > On Thu, 20 Jan 2022 at 16:10, Lars Persson <larper@axis.com> wrote:
-> > >>
-> > >> The addition of a shutdown hook by commit f25889f93184 ("optee:
-> > >> fix tee out of memory failure seen during kexec reboot") introduced a
-> > >> kernel shutdown regression that can be triggered after running the
-> > >> xtest suites.
-> > >>
-> > >> Once the shutdown hook is called it is not possible to communicate any
-> > >> more with the supplicant process because the system is not scheduling
-> > >> task any longer. Thus if the optee driver shutdown path receives a
-> > >> supplicant RPC request from the OP-TEE we will deadlock the kernel's
-> > >> shutdown.
-> > >>
-> > >> This unexpected event will in fact occur after the xtest suite has
-> > >> been run. It seems some cached SHM kept alive a context object which
-> > >> in turn kept alive a session towards a PTA or TA. Closing the session
-> > >> results in a socket RPC command being sent back from OP-TEE.
-> > >>
-> > >> This sequence of events is captured by a 5.15 kernel annotated with
-> > >> extra prints:
-> > >>
-> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> > >>   freeing SHM ptr 0xFFFFFF8001079380
-> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> > >>   freeing SHM ptr 0xFFFFFF8001CC5580
-> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> > >>   freeing SHM ptr 0xFFFFFF8006308A80
-> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> > >>   freeing SHM ptr 0xFFFFFF8006308B00
-> > >>  optee: optee_handle_rpc: a0=3D0XFFFF0000 a1=3D0XA0 a2=3D0X0
-> > >>  optee: optee_handle_rpc: a0=3D0XFFFF0005 a1=3D0XFFFFFF80 a2=3D0X61E65=
-00
-> > >>  optee: handle_rpc_func_cmd: cmd =3D 0XA
-> > >>  optee_supp_thrd_req: func=3D0XA
-> > >>
-> > >
-> > > This looks like another side effect (earlier known one is here [1]) of
-> > > shared memory cache being allocated via RPC in a particular client's
-> > > context. There is an appropriate fix from Jens here [2] to rather use
-> > > driver internal tee_contex for RPC allocations. Can you try that and
-> > > let us know if you still observe this issue?
-> > >
-> > > [1] https://github.com/OP-TEE/optee_os/issues/1918
-> > > <https://github.com/OP-TEE/optee_os/issues/1918>
-> > > [2]
-> > > https://lore.kernel.org/lkml/20220114150824.3578829-8-jens.wiklander(a)=
-linaro.org/
-> > > <https://lore.kernel.org/lkml/20220114150824.3578829-8-jens.wiklander(a=
-)linaro.org/>
-> > >
-> > > -Sumit
-> > >
-> >
-> > Indeed it seems this is the root cause. Backporting the patches to 5.15
-> > also fixes our shutdown deadlock.
->
-> That's good to hear.
->
-> >
-> > Nevertheless I prefer to have this extra guard in the supplicant
-> > interface to prevent other shutdown deadlocks in the future.
->
-> Yes, I agree, this still makes sense. Perhaps with an updated
-> description to avoid unnecessary confusion when applied on top of my
-> "tee: shared memory updates" patches.
->
+Hi all,
 
-That's fine with me and we should drop the fixes tag as well.
+This patchset is a general cleanup of shared memory handling in the TEE
+subsystem.
 
--Sumit
+Until now has the in-kernel tee clients used tee_shm_alloc() and
+tee_shm_register() to share memory with secure world. These two function
+exposes via a flags parameter a bit more of the internals of the TEE
+subsystem than one would like. So in order to make things easier are those
+two functions replaced by few functions which should provide better
+abstraction.
 
-> Thanks,
-> Jens
+Two in-kernel tee clients are updated to use these new functions.
 
---===============0234715228607746834==--
+The shared memory pool handling is simplified, an internal matter for the
+two TEE drivers OP-TEE and AMDTEE.
+
+An OP-TEE driver internal tee_context is added to handle shared memory
+allocations received via RPC, for instance the argument structure needed
+to make more complex RPC requests. The tee_context used when doing such a
+memory allocation must be kept until the memory is freed. With this we can
+avoid keeping a tee_context of a client around for longer than necessary.
+
+In the v1 review it was suggested [1] to allow physically non-contiguous
+memory allocations by the drivers. It turned out to be harder than
+anticipated so I'll save that for a separate patch.
+
+This patchset is also available at [2].
+
+Thanks,
+Jens
+
+[1] https://lore.kernel.org/linux-arm-kernel/20210609145811.GJ4910(a)sequoia/
+[2] https://git.linaro.org/people/jens.wiklander/linux-tee.git/log/?h=3Dtee_s=
+hm_v3
+
+v2->v3:
+* Make tee_shm_alloc_user_buf() and tee_shm_register_user_buf() internal
+  and don't export them to the drivers.
+* Rename tee_shm_alloc_priv_kernel_buf() to tee_shm_alloc_priv_buf()
+* Adressing comments on variable names and choice of types in "tee: replace
+  tee_shm_register()"
+* Adding detailed explaination on alignment in "tee: simplify shm pool handli=
+ng"
+* Added Sumits R-B on a few of the patches
+
+v1->v2:
+* The commits three "tee: add tee_shm_alloc_kernel_buf()",
+  "tpm_ftpm_tee: use tee_shm_alloc_kernel_buf()" and
+  "firmware: tee_bnxt: use tee_shm_alloc_kernel_buf()" has been merged some
+  time ago as part of another patchset.
+* Another in-kernel tee client is updated with the commit
+  "KEYS: trusted: tee: use tee_shm_register_kernel_buf()"
+* tee_shm_alloc_anon_kernel_buf() is replaced with an easier to use function
+  tee_shm_alloc_priv_kernel_buf() and tee_shm_free_anon_kernel_buf() has
+  been dropped.
+* A driver internal struct tee_context is used to when doing driver internal
+  calls to secure world.
+* Adds patches to replace tee_shm_register() in a similar way as how
+  tee_shm_alloc() is replaced.
+* A patch is added to clean up the TEE_SHM_* flags
+* Fixed a warning reported by kernel test robot <lkp@intel.com>
+
+Jens Wiklander (12):
+  hwrng: optee-rng: use tee_shm_alloc_kernel_buf()
+  tee: remove unused tee_shm_pool_alloc_res_mem()
+  tee: add tee_shm_alloc_user_buf()
+  tee: simplify shm pool handling
+  tee: replace tee_shm_alloc()
+  optee: add driver private tee_context
+  optee: use driver internal tee_contex for some rpc
+  optee: add optee_pool_op_free_helper()
+  tee: add tee_shm_register_{user,kernel}_buf()
+  KEYS: trusted: tee: use tee_shm_register_kernel_buf()
+  tee: replace tee_shm_register()
+  tee: refactor TEE_SHM_* flags
+
+ drivers/char/hw_random/optee-rng.c       |   6 +-
+ drivers/tee/amdtee/shm_pool.c            |  55 ++--
+ drivers/tee/optee/Kconfig                |   8 -
+ drivers/tee/optee/call.c                 |   2 +-
+ drivers/tee/optee/core.c                 |  22 +-
+ drivers/tee/optee/device.c               |   5 +-
+ drivers/tee/optee/ffa_abi.c              | 136 ++++------
+ drivers/tee/optee/optee_private.h        |  12 +-
+ drivers/tee/optee/smc_abi.c              | 159 +++--------
+ drivers/tee/tee_core.c                   |   5 +-
+ drivers/tee/tee_private.h                |  15 +-
+ drivers/tee/tee_shm.c                    | 320 +++++++++++++++--------
+ drivers/tee/tee_shm_pool.c               | 162 +++---------
+ include/linux/tee_drv.h                  | 138 +++-------
+ security/keys/trusted-keys/trusted_tee.c |  23 +-
+ 15 files changed, 438 insertions(+), 630 deletions(-)
+
+--=20
+2.31.1
+
+
+--===============0773091493785526752==--
 
