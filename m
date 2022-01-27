@@ -1,134 +1,143 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2] optee: Do not send requests to supplicant during shutdown
-Date: Thu, 27 Jan 2022 12:40:43 +0530
+Subject: Re: [PATCH v3 03/12] tee: add tee_shm_alloc_user_buf()
+Date: Thu, 27 Jan 2022 09:09:25 +0100
 Message-ID: 
- <CAFA6WYN_=9KdJpWr3WUkN3C4n-3V164J6_aqJAjvDZeoFm+VtA@mail.gmail.com>
-In-Reply-To: <ed6debc2-7610-c258-fa90-a11dcb4b3d35@axis.com>
+ <CAHUa44Ec0Mcr_4PW0pi2mkFBHW8wLQBK9F9WNkaid_MrhaeBTg@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYOT7capu1RrK57HAu_qKvG65X_C1-esw3DyD4_9LeKZSg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7651221087587447261=="
+Content-Type: multipart/mixed; boundary="===============8024796137481197218=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7651221087587447261==
+--===============8024796137481197218==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 26 Jan 2022 at 16:18, Lars Persson <larper@axis.com> wrote:
+On Thu, Jan 27, 2022 at 6:56 AM Sumit Garg <sumit.garg@linaro.org> wrote:
 >
->
->
-> On 2022-01-25 07:05, Sumit Garg wrote:
-> > On Tue, 25 Jan 2022 at 01:57, Jens Wiklander <jens.wiklander@linaro.org>
-> > wrote:
-> >>
-> >> On Mon, Jan 24, 2022 at 6:48 PM Lars Persson <larper@axis.com> wrote:
-> >> >
-> >> >
-> >> >
-> >> > On 2022-01-24 06:56, Sumit Garg wrote:
-> >> > > Hi Lars,
-> >> > >
-> >> > > On Thu, 20 Jan 2022 at 16:10, Lars Persson <larper@axis.com> wrote:
-> >> > >>
-> >> > >> The addition of a shutdown hook by commit f25889f93184 ("optee:
-> >> > >> fix tee out of memory failure seen during kexec reboot") introduced=
- a
-> >> > >> kernel shutdown regression that can be triggered after running the
-> >> > >> xtest suites.
-> >> > >>
-> >> > >> Once the shutdown hook is called it is not possible to communicate =
-any
-> >> > >> more with the supplicant process because the system is not scheduli=
-ng
-> >> > >> task any longer. Thus if the optee driver shutdown path receives a
-> >> > >> supplicant RPC request from the OP-TEE we will deadlock the kernel's
-> >> > >> shutdown.
-> >> > >>
-> >> > >> This unexpected event will in fact occur after the xtest suite has
-> >> > >> been run. It seems some cached SHM kept alive a context object which
-> >> > >> in turn kept alive a session towards a PTA or TA. Closing the sessi=
-on
-> >> > >> results in a socket RPC command being sent back from OP-TEE.
-> >> > >>
-> >> > >> This sequence of events is captured by a 5.15 kernel annotated with
-> >> > >> extra prints:
-> >> > >>
-> >> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> >> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> >> > >>   freeing SHM ptr 0xFFFFFF8001079380
-> >> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> >> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> >> > >>   freeing SHM ptr 0xFFFFFF8001CC5580
-> >> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> >> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> >> > >>   freeing SHM ptr 0xFFFFFF8006308A80
-> >> > >>  Calling OPTEE_SMC_DISABLE_SHM_CACHE
-> >> > >>  OPTEE_SMC_DISABLE_SHM_CACHE returned 0
-> >> > >>   freeing SHM ptr 0xFFFFFF8006308B00
-> >> > >>  optee: optee_handle_rpc: a0=3D0XFFFF0000 a1=3D0XA0 a2=3D0X0
-> >> > >>  optee: optee_handle_rpc: a0=3D0XFFFF0005 a1=3D0XFFFFFF80 a2=3D0X61=
-E6500
-> >> > >>  optee: handle_rpc_func_cmd: cmd =3D 0XA
-> >> > >>  optee_supp_thrd_req: func=3D0XA
-> >> > >>
-> >> > >
-> >> > > This looks like another side effect (earlier known one is here [1]) =
-of
-> >> > > shared memory cache being allocated via RPC in a particular client's
-> >> > > context. There is an appropriate fix from Jens here [2] to rather use
-> >> > > driver internal tee_contex for RPC allocations. Can you try that and
-> >> > > let us know if you still observe this issue?
-> >> > >
-> >> > > [1] https://github.com/OP-TEE/optee_os/issues/1918
-> > <https://github.com/OP-TEE/optee_os/issues/1918>
-> >> > > <https://github.com/OP-TEE/optee_os/issues/1918
-> > <https://github.com/OP-TEE/optee_os/issues/1918>>
-> >> > > [2]
-> >> > > https://lore.kernel.org/lkml/20220114150824.3578829-8-jens.wiklander=
-(a)linaro.org/
-> > <https://lore.kernel.org/lkml/20220114150824.3578829-8-jens.wiklander@l=
-inaro.org/>
-> >> > > <https://lore.kernel.org/lkml/20220114150824.3578829-8-jens.wiklande=
-r@linaro.org/
-> > <https://lore.kernel.org/lkml/20220114150824.3578829-8-jens.wiklander@l=
-inaro.org/>>
-> >> > >
-> >> > > -Sumit
-> >> > >
-> >> >
-> >> > Indeed it seems this is the root cause. Backporting the patches to 5.15
-> >> > also fixes our shutdown deadlock.
-> >>
-> >> That's good to hear.
-> >>
-> >> >
-> >> > Nevertheless I prefer to have this extra guard in the supplicant
-> >> > interface to prevent other shutdown deadlocks in the future.
-> >>
-> >> Yes, I agree, this still makes sense. Perhaps with an updated
-> >> description to avoid unnecessary confusion when applied on top of my
-> >> "tee: shared memory updates" patches.
-> >>
+> On Tue, 25 Jan 2022 at 21:59, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
 > >
-> > That's fine with me and we should drop the fixes tag as well.
+> > Adds a new function tee_shm_alloc_user_buf() or user mode allocations,
+>
+> typo: s/or/for/
+>
+> > replacing passing the flags TEE_SHM_MAPPED | TEE_SHM_DMA_BUF to
+> > tee_shm_alloc().
+> >
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> >  drivers/tee/tee_core.c     |  2 +-
+> >  drivers/tee/tee_private.h  |  2 ++
+> >  drivers/tee/tee_shm.c      | 17 +++++++++++++++++
+> >  drivers/tee/tee_shm_pool.c |  2 +-
+> >  include/linux/tee_drv.h    |  2 +-
+> >  5 files changed, 22 insertions(+), 3 deletions(-)
 > >
 >
-> Should we really drop the Fixes ? Depending on if and when the SHM
-> owning context patch is backported, this fix may still be relevant for
-> the 5.15 LTS branch.
+> Apart from minor comments below:
+>
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-I rather consider this as a robustness patch where the actual problem
-is being fixed by Jens patch. I hope we should be able to target Jens
-patch for 5.17 as a fix which should be backported to affected stable
-releases.
+Thanks, I'll fix those.
 
--Sumit
+/Jens
 
 >
-> /Lars
+> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> > index 3fc426dad2df..a15812baaeb1 100644
+> > --- a/drivers/tee/tee_core.c
+> > +++ b/drivers/tee/tee_core.c
+> > @@ -297,7 +297,7 @@ static int tee_ioctl_shm_alloc(struct tee_context *ct=
+x,
+> >         if (data.flags)
+> >                 return -EINVAL;
+> >
+> > -       shm =3D tee_shm_alloc(ctx, data.size, TEE_SHM_MAPPED | TEE_SHM_DM=
+A_BUF);
+> > +       shm =3D tee_shm_alloc_user_buf(ctx, data.size);
+> >         if (IS_ERR(shm))
+> >                 return PTR_ERR(shm);
+> >
+> > diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
+> > index e55204df31ce..e09c8aa5d967 100644
+> > --- a/drivers/tee/tee_private.h
+> > +++ b/drivers/tee/tee_private.h
+> > @@ -68,4 +68,6 @@ void tee_device_put(struct tee_device *teedev);
+> >  void teedev_ctx_get(struct tee_context *ctx);
+> >  void teedev_ctx_put(struct tee_context *ctx);
+> >
+> > +struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t s=
+ize);
+> > +
+> >  #endif /*TEE_PRIVATE_H*/
+> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> > index 499fccba3d74..7e7e762fc1de 100644
+> > --- a/drivers/tee/tee_shm.c
+> > +++ b/drivers/tee/tee_shm.c
+> > @@ -127,6 +127,23 @@ struct tee_shm *tee_shm_alloc(struct tee_context *ct=
+x, size_t size, u32 flags)
+> >  }
+> >  EXPORT_SYMBOL_GPL(tee_shm_alloc);
+> >
+> > +/**
+> > + * tee_shm_alloc_user_buf() - Allocate shared memory for user space
+> > + * @ctx:       Context that allocates the shared memory
+> > + * @size:      Requested size of shared memory
+> > + *
+> > + * Memory allocated as user space shared memory is automatically freed w=
+hen
+> > + * the TEE file pointer is closed. The primary usage of this function is
+> > + * when the TEE driver doesn't support registering ordinary user space
+> > + * memory.
+> > + *
+> > + * @returns a pointer to 'struct tee_shm'
+> > + */
+> > +struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t s=
+ize)
+> > +{
+> > +       return tee_shm_alloc(ctx, size, TEE_SHM_MAPPED | TEE_SHM_DMA_BUF);
+> > +}
+> > +
+> >  /**
+> >   * tee_shm_alloc_kernel_buf() - Allocate shared memory for kernel buffer
+> >   * @ctx:       Context that allocates the shared memory
+> > diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
+> > index a9f9d50fd181..0e460347138a 100644
+> > --- a/drivers/tee/tee_shm_pool.c
+> > +++ b/drivers/tee/tee_shm_pool.c
+> > @@ -1,6 +1,6 @@
+> >  // SPDX-License-Identifier: GPL-2.0-only
+> >  /*
+> > - * Copyright (c) 2015, Linaro Limited
+> > + * Copyright (c) 2015, 2017, 2022 Linaro Limited
 >
+> Redundant change?
 >
+> >   */
+> >  #include <linux/device.h>
+> >  #include <linux/dma-buf.h>
+> > diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> > index 6b0f0d01ebdf..975500b2553e 100644
+> > --- a/include/linux/tee_drv.h
+> > +++ b/include/linux/tee_drv.h
+> > @@ -1,6 +1,6 @@
+> >  /* SPDX-License-Identifier: GPL-2.0-only */
+> >  /*
+> > - * Copyright (c) 2015-2016, Linaro Limited
+> > + * Copyright (c) 2015-2022 Linaro Limited
+>
+> Ditto?
+>
+> -Sumit
+>
+> >   */
+> >
+> >  #ifndef __TEE_DRV_H
+> > --
+> > 2.31.1
+> >
 
---===============7651221087587447261==--
+--===============8024796137481197218==--
 
