@@ -1,105 +1,122 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 06/10] optee: add optee_pool_op_free_helper()
-Date: Fri, 04 Feb 2022 10:33:55 +0100
-Message-ID: <20220204093359.359059-7-jens.wiklander@linaro.org>
+Subject: [PATCH v4 07/10] tee: add tee_shm_register_{user,kernel}_buf()
+Date: Fri, 04 Feb 2022 10:33:56 +0100
+Message-ID: <20220204093359.359059-8-jens.wiklander@linaro.org>
 In-Reply-To: <20220204093359.359059-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8711186488359726622=="
+Content-Type: multipart/mixed; boundary="===============6385736465820117800=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8711186488359726622==
+--===============6385736465820117800==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Adds a common helper function to free a tee_shm allocated using the
-helper function optee_pool_op_alloc_helper().
+Adds the two new functions tee_shm_register_user_buf() and
+tee_shm_register_kernel_buf() which should be used instead of the old
+tee_shm_register().
+
+This avoids having the caller supplying the flags parameter which
+exposes a bit more than desired of the internals of the TEE subsystem.
 
 Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/optee/core.c          | 10 ++++++++++
- drivers/tee/optee/ffa_abi.c       |  4 +---
- drivers/tee/optee/optee_private.h |  3 +++
- drivers/tee/optee/smc_abi.c       |  7 +++----
- 4 files changed, 17 insertions(+), 7 deletions(-)
+ drivers/tee/tee_core.c    |  3 +--
+ drivers/tee/tee_private.h |  2 ++
+ drivers/tee/tee_shm.c     | 33 +++++++++++++++++++++++++++++++++
+ include/linux/tee_drv.h   |  2 ++
+ 4 files changed, 38 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index f4bccb5f0e93..daf947e98d14 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -69,6 +69,16 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, =
-struct tee_shm *shm,
- 	return rc;
- }
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index a15812baaeb1..8aa1a4836b92 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -334,8 +334,7 @@ tee_ioctl_shm_register(struct tee_context *ctx,
+ 	if (data.flags)
+ 		return -EINVAL;
 =20
-+void optee_pool_op_free_helper(struct tee_shm_pool *pool, struct tee_shm *sh=
-m,
-+			       int (*shm_unregister)(struct tee_context *ctx,
-+						     struct tee_shm *shm))
+-	shm =3D tee_shm_register(ctx, data.addr, data.length,
+-			       TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
++	shm =3D tee_shm_register_user_buf(ctx, data.addr, data.length);
+ 	if (IS_ERR(shm))
+ 		return PTR_ERR(shm);
+=20
+diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
+index 7265f47c6d8e..409cadcc1cff 100644
+--- a/drivers/tee/tee_private.h
++++ b/drivers/tee/tee_private.h
+@@ -58,5 +58,7 @@ void teedev_ctx_get(struct tee_context *ctx);
+ void teedev_ctx_put(struct tee_context *ctx);
+=20
+ struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size);
++struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
++					  unsigned long addr, size_t length);
+=20
+ #endif /*TEE_PRIVATE_H*/
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index dd748d572691..359bab36e163 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -299,6 +299,39 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx=
+, unsigned long addr,
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_register);
+=20
++/**
++ * tee_shm_register_user_buf() - Register a userspace shared memory buffer
++ * @ctx:	Context that registers the shared memory
++ * @addr:	The userspace address of the shared buffer
++ * @length:	Length of the shared buffer
++ *
++ * @returns a pointer to 'struct tee_shm'
++ */
++struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
++					  unsigned long addr, size_t length)
 +{
-+	if (shm_unregister)
-+		shm_unregister(shm->ctx, shm);
-+	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-+	shm->kaddr =3D NULL;
++	return tee_shm_register(ctx, addr, length,
++				TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
 +}
 +
- static void optee_bus_scan(struct work_struct *work)
++/**
++ * tee_shm_register_kernel_buf() - Register kernel memory to be shared with
++ *				   secure world
++ * @ctx:	Context that registers the shared memory
++ * @addr:	The buffer
++ * @length:	Length of the buffer
++ *
++ * @returns a pointer to 'struct tee_shm'
++ */
++
++struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
++					    void *addr, size_t length)
++{
++	return tee_shm_register(ctx, (unsigned long)addr, length,
++				TEE_SHM_DMA_BUF | TEE_SHM_KERNEL_MAPPED);
++}
++EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
++
+ static int tee_shm_fop_release(struct inode *inode, struct file *filp)
  {
- 	WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index bf85975c6e95..695f73becf6a 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -379,9 +379,7 @@ static int pool_ffa_op_alloc(struct tee_shm_pool *pool,
- static void pool_ffa_op_free(struct tee_shm_pool *pool,
- 			     struct tee_shm *shm)
- {
--	optee_ffa_shm_unregister(shm->ctx, shm);
--	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
--	shm->kaddr =3D NULL;
-+	optee_pool_op_free_helper(pool, shm, optee_ffa_shm_unregister);
- }
+ 	tee_shm_put(filp->private_data);
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index 7f038f8787c7..c9d2cc32a5ed 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -287,6 +287,8 @@ struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_conte=
+xt *ctx, size_t size);
+  */
+ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
+ 				 size_t length, u32 flags);
++struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
++					    void *addr, size_t length);
 =20
- static void pool_ffa_op_destroy_pool(struct tee_shm_pool *pool)
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index df3a483bbf46..e77765c78878 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -236,6 +236,9 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool,=
- struct tee_shm *shm,
- 						   struct page **pages,
- 						   size_t num_pages,
- 						   unsigned long start));
-+void optee_pool_op_free_helper(struct tee_shm_pool *pool, struct tee_shm *sh=
-m,
-+			       int (*shm_unregister)(struct tee_context *ctx,
-+						     struct tee_shm *shm));
-=20
-=20
- void optee_remove_common(struct optee *optee);
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 8198479d330e..0b68127a8afa 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -548,10 +548,9 @@ static void pool_op_free(struct tee_shm_pool *pool,
- 			 struct tee_shm *shm)
- {
- 	if (!(shm->flags & TEE_SHM_PRIV))
--		optee_shm_unregister(shm->ctx, shm);
--
--	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
--	shm->kaddr =3D NULL;
-+		optee_pool_op_free_helper(pool, shm, optee_shm_unregister);
-+	else
-+		optee_pool_op_free_helper(pool, shm, NULL);
- }
-=20
- static void pool_op_destroy_pool(struct tee_shm_pool *pool)
+ /**
+  * tee_shm_is_registered() - Check if shared memory object in registered in =
+TEE
 --=20
 2.31.1
 
 
---===============8711186488359726622==--
+--===============6385736465820117800==--
 
