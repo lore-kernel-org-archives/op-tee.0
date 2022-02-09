@@ -1,74 +1,41 @@
-From: Phil Chang <phil.chang@mediatek.com>
+From: Cai Huoqing <cai.huoqing@linux.dev>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] optee: make tee_shm_register vmalloc supported
-Date: Fri, 04 Feb 2022 17:32:54 +0800
-Message-ID: <20220204093254.2467-1-phil.chang@mediatek.com>
+Subject: [PATCH] tee: amdtee: Make use of the helper macro LIST_HEAD()
+Date: Wed, 09 Feb 2022 11:27:43 +0800
+Message-ID: <20220209032745.38570-1-cai.huoqing@linux.dev>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1732999012649793196=="
+Content-Type: multipart/mixed; boundary="===============2427755013332937415=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1732999012649793196==
+--===============2427755013332937415==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-This patch allowed the tee shm use vmalloc area buffer.
+Replace "struct list_head head =3D LIST_HEAD_INIT(head)" with
+"LIST_HEAD(head)" to simplify the code.
 
-Signed-off-by: Phil Chang <phil.chang@mediatek.com>
+Signed-off-by: Cai Huoqing <cai.huoqing@linux.dev>
 ---
+ drivers/tee/amdtee/call.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Hi,
-
- In some low-memory devices, it's hard to aquire large-orders pages,
- this pathes is allowed user use scatter pages to register shm.
-
- Thanks.
-
- drivers/tee/optee/call.c |  2 +-
- drivers/tee/tee_shm.c    | 14 ++++++++++++++
- 2 files changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index b25cc1fac945..937bcc7df8e4 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -362,7 +362,7 @@ int optee_check_mem_type(unsigned long start, size_t num_=
-pages)
- 	 * Allow kernel address to register with OP-TEE as kernel
- 	 * pages are configured as normal memory only.
- 	 */
--	if (virt_addr_valid(start))
-+	if (virt_addr_valid(start) || is_vmalloc_addr((void *)start))
- 		return 0;
-
- 	mmap_read_lock(mm);
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 499fccba3d74..31d0c10485ff 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -195,6 +195,20 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx=
-, unsigned long addr,
- 	if (flags & TEE_SHM_USER_MAPPED) {
- 		rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
- 					 shm->pages);
-+	} else if (is_vmalloc_addr((void *)start)) {
-+		struct page *page;
-+		int i;
-+
-+		for (i =3D 0; i < num_pages; i++) {
-+			page =3D vmalloc_to_page((void *)(start + PAGE_SIZE * i));
-+			if (!page) {
-+				ret =3D ERR_PTR(-ENOMEM);
-+				goto err;
-+			}
-+			get_page(page);
-+			shm->pages[i] =3D page;
-+		}
-+		rc =3D num_pages;
- 	} else {
- 		struct kvec *kiov;
- 		int i;
---
+diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
+index 07f36ac834c8..cec6e70f0ac9 100644
+--- a/drivers/tee/amdtee/call.c
++++ b/drivers/tee/amdtee/call.c
+@@ -122,7 +122,7 @@ static int amd_params_to_tee_params(struct tee_param *tee=
+, u32 count,
+ }
+=20
+ static DEFINE_MUTEX(ta_refcount_mutex);
+-static struct list_head ta_list =3D LIST_HEAD_INIT(ta_list);
++static LIST_HEAD(ta_list);
+=20
+ static u32 get_ta_refcount(u32 ta_handle)
+ {
+--=20
 2.25.1
 
---===============1732999012649793196==--
+
+--===============2427755013332937415==--
 
