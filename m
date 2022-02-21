@@ -1,46 +1,37 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v4 08/10] KEYS: trusted: tee: use tee_shm_register_kernel_buf()
-Date: Mon, 21 Feb 2022 02:52:56 +0100
-Message-ID: <YhLweBhnmITyErqG@kernel.org>
-In-Reply-To: <
- <CAHUa44HkQtstCyUt_J962rzysFnOJOP+e3T2gL7nV+6V5hfa9A@mail.gmail.com>>
+Subject: Linaro OP-TEE Contribution (LOC) monthly meeting Feb 2022
+Date: Mon, 21 Feb 2022 10:18:38 +0530
+Message-ID: 
+ <CANZ+81G5+t62Zv+X64OjTdf1LK9qBcLWKAtYTj+ya4gi9zwM6w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0618091341985422918=="
+Content-Type: multipart/mixed; boundary="===============0098304347516515715=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0618091341985422918==
+--===============0098304347516515715==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 09, 2022 at 03:08:48PM +0100, Jens Wiklander wrote:
-> Hi Jarkko,
-> 
-> On Fri, Feb 4, 2022 at 10:34 AM Jens Wiklander
-> <jens.wiklander@linaro.org> wrote:
-> >
-> > Uses the new simplified tee_shm_register_kernel_buf() function instead
-> > of the old tee_shm_alloc() function which required specific
-> > TEE_SHM-flags
-> >
-> > Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  security/keys/trusted-keys/trusted_tee.c | 23 +++++++++--------------
-> >  1 file changed, 9 insertions(+), 14 deletions(-)
-> 
-> Since this patch depends on other patches in this patch set and vice
-> versa is it OK if I take this patch via my tree? I'm aiming for v5.18
-> with this.
+Hi,
 
-Yes.
+OP-TEE Contributions (LOC) monthly meeting is planned for Thursday Feb 24
+@16.00 (UTC).
 
-You can also add:
+We have following on the agenda
+- SDP DT Configuration, Olivier Masse, NXP
 
-Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+If you have any more topics you'd like to discuss, please let us know and
+we can schedule them.
 
-BR, Jarkko
+Meeting details:
+---------------
+Date/time: Feb 24(a)16.00 (UTC)
+https://everytimezone.com/s/fef76b1b
+Connection details: https://www.trustedfirmware.org/meetings/
+Meeting notes: http://bit.ly/loc-notes
 
---===============0618091341985422918==--
+Regards,
+Ruchika on behalf of the Linaro OP-TEE team
+
+--===============0098304347516515715==--
 
