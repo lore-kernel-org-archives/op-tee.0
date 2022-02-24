@@ -1,79 +1,54 @@
-From: Manorit Chawdhry <m-chawdhry@ti.com>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Secure Storage Applications
-Date: Wed, 23 Feb 2022 17:39:45 +0530
-Message-ID: <20220223120945.uq2lwqwb2ldv64k6@ula0497581>
-In-Reply-To: <20220223085600.ny6sp3pgppmubz3n@tuxedo>
+Subject: Re: Linaro OP-TEE Contribution (LOC) monthly meeting Feb 2022
+Date: Thu, 24 Feb 2022 18:26:08 +0530
+Message-ID: 
+ <CANZ+81G5f-3knLi1i0LAgMsYJ5ozCvnaag5ygMbY+PEYU5Ok8g@mail.gmail.com>
+In-Reply-To: <
+ <CANZ+81G5+t62Zv+X64OjTdf1LK9qBcLWKAtYTj+ya4gi9zwM6w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3206324920695907768=="
+Content-Type: multipart/mixed; boundary="===============2114156889988958786=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3206324920695907768==
+--===============2114156889988958786==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On 09:56-20220223, Joakim Bech wrote:
+Gentle reminder for the OP-TEE Contributions (LOC)
+monthly meeting scheduled today @16.00 (UTC).
+
+Agenda
+- SDP DT Configuration, Olivier Masse, NXP
+
+Regards,
+Ruchika
+
+
+On Mon, 21 Feb 2022 at 10:18, Ruchika Gupta <ruchika.gupta@linaro.org>
+wrote:
+
 > Hi,
->=20
-Hi,
+>
+> OP-TEE Contributions (LOC) monthly meeting is planned for Thursday Feb 24
+> @16.00 (UTC).
+>
+> We have following on the agenda
+> - SDP DT Configuration, Olivier Masse, NXP
+>
+> If you have any more topics you'd like to discuss, please let us know and
+> we can schedule them.
+>
+> Meeting details:
+> ---------------
+> Date/time: Feb 24(a)16.00 (UTC)
+> https://everytimezone.com/s/fef76b1b
+> Connection details: https://www.trustedfirmware.org/meetings/
+> Meeting notes: http://bit.ly/loc-notes
+>
+> Regards,
+> Ruchika on behalf of the Linaro OP-TEE team
+>
+>
 
-Thank you all for your replies. Those have been really helpful!
-
-Though from all the links you have shared, I am still wondering if there is a=
-ny
-core part in OP-TEE which could allow to provide a generic interface for
-using the secure storage functionality instead of we needing to setup
-our own TA ( along with some binary on the host with the simple purpose of
-putting files from Linux in secure storage. )
-
-As this seemed somewhat intuitive to me from a perspective of user
-wanting to try out secure_storage and would be interested to know if
-something like this is available in it.=20
-
-Thanks and regards,
-Manorit
-
-> On Wed, Feb 23, 2022 at 11:37:33AM +0530, Sumit Garg wrote:
-> > Hi Manorit,
-> >=20
-> > On Tue, 22 Feb 2022 at 18:59, Manorit Chawdhry <m-chawdhry@ti.com> wrot=
-e:
-> > >
-> > > Hi,
-> > >
-> > > I have been exploring secure storage in OP-TEE for a few days and I need
-> > > some help in putting some files into it.
-> > >
-> > > I have been trying to find some tool which could help me put any files =
-from
-> > > Linux into secure storage and retrieve them back later so that I could
-> > > see secure storage in action but haven't been able to find any yet.
-> > >
-> > > Is there any tool which you guys might know of which helps put files in
-> > > secure storage and retrieve them back later?
-> > >
-> >=20
-> > I would suggest you have a look at storage tests from OP-TEE test
-> > suite here: client  [1] and TA [2].
-> >=20
-> > [1] https://github.com/OP-TEE/optee_test/blob/master/host/xtest/regressio=
-n_6000.c
-> > [2] https://github.com/OP-TEE/optee_test/tree/master/ta/storage
-> >=20
-> In addition to that we also have the secure storage example TA [3], that
-> comes deployed with our developer environments (QEMU [4] is an example
-> of such an environment).
->=20
-> [3] https://github.com/linaro-swg/optee_examples/tree/master/secure_storage
-> [4] https://optee.readthedocs.io/en/latest/building/devices/qemu.html
->=20
-> > -Sumit
-> >=20
-> > > Best Regards,
-> > > Manorit
->=20
-> // Regards,
-> Joakim
-
---===============3206324920695907768==--
+--===============2114156889988958786==--
 
