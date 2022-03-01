@@ -1,41 +1,55 @@
-From: Jelle Sels <Jelle.Sels@arm.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE S-EL1 SPMC status
-Date: Tue, 01 Mar 2022 13:34:34 +0000
-Message-ID: <VI1PR08MB5344963B0FA735FA76B1CC6586029@VI1PR08MB5344.eurprd08.prod.outlook.com>
+Subject: 
+ Re: [PATCH v4 08/10] KEYS: trusted: tee: use tee_shm_register_kernel_buf()
+Date: Tue, 01 Mar 2022 15:54:20 +0100
+Message-ID: 
+ <CAHUa44Ex0i345f-USHJ-QovTf3ZYs0rTDufYGrtaZJNVksKqgQ@mail.gmail.com>
+In-Reply-To: <YhLweBhnmITyErqG@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6644600685418352104=="
+Content-Type: multipart/mixed; boundary="===============7951251025378639615=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6644600685418352104==
+--===============7951251025378639615==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi all,
+On Mon, Feb 21, 2022 at 2:52 AM Jarkko Sakkinen <jarkko@kernel.org> wrote:
+>
+> On Wed, Feb 09, 2022 at 03:08:48PM +0100, Jens Wiklander wrote:
+> > Hi Jarkko,
+> >
+> > On Fri, Feb 4, 2022 at 10:34 AM Jens Wiklander
+> > <jens.wiklander@linaro.org> wrote:
+> > >
+> > > Uses the new simplified tee_shm_register_kernel_buf() function instead
+> > > of the old tee_shm_alloc() function which required specific
+> > > TEE_SHM-flags
+> > >
+> > > Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+> > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > > ---
+> > >  security/keys/trusted-keys/trusted_tee.c | 23 +++++++++--------------
+> > >  1 file changed, 9 insertions(+), 14 deletions(-)
+> >
+> > Since this patch depends on other patches in this patch set and vice
+> > versa is it OK if I take this patch via my tree? I'm aiming for v5.18
+> > with this.
+>
+> Yes.
+>
+> You can also add:
+>
+> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+>
+> BR, Jarkko
 
-As part of Trusted Services project we are extending OP-TEE to be a full comp=
-laint FF-A S-EL1 SPMC.
-This work is still on going but some of the Trusted Services applications are=
- already compatible.
+Thanks. Unfortunately it's a bit late to apply the R-B, I've already
+sent the pull request to arm-soc and it has been imported into that
+tree.
 
-We created https://developer.trustedfirmware.org/w/trusted-services/op-tee-sp=
-mc/
-which gives the current status of the SPMC work and can be a starting point f=
-or everyone who wants to get started with the Trusted Services or OP-TEE as a=
- S-EL1 SPMC.
+Thanks,
+Jens
 
-Please feel free to ask any questions on the Trusted Service and the OP-TEE m=
-ailing list.
-
-https://lists.trustedfirmware.org/mailman3/lists/trusted-services.lists.trust=
-edfirmware.org/
-https://lists.trustedfirmware.org/mailman3/lists/op-tee.lists.trustedfirmware=
-.org/
-
-
-Regards,
-
-Jelle
-
---===============6644600685418352104==--
+--===============7951251025378639615==--
 
