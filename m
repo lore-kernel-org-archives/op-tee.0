@@ -1,13 +1,13 @@
 From: Clément Léger <clement.leger@bootlin.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: [PATCH v2] rtc: optee: add RTC driver for OP-TEE RTC PTA
-Date: Fri, 04 Mar 2022 11:09:33 +0100
-Message-ID: <20220304100933.72175-1-clement.leger@bootlin.com>
+Date: Mon, 07 Mar 2022 10:40:42 +0100
+Message-ID: <20220307094042.48446-1-clement.leger@bootlin.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3881940788688698241=="
+Content-Type: multipart/mixed; boundary="===============2729930445447196914=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3881940788688698241==
+--===============2729930445447196914==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -21,17 +21,19 @@ Signed-off-by: Cl=C3=A9ment L=C3=A9ger <clement.leger@bootlin.com>
 ---
 
 Changes in v2:
-- Rebased over tee-shm-for-v5.18
-- Switch to tee_shm_alloc_kernel_buf()
-- Use export_uuid() to copy uuid
-- Fix warnings reported by checkpatch
-- Free SHM in error exit path
+ - Rebased over tee-shm-for-v5.18
+ - Switch to tee_shm_alloc_kernel_buf()
+ - Use export_uuid() to copy uuid
+ - Fix warnings reported by checkpatch
+ - Free SHM in error exit path
+ - Fix error messages to include ret value and fix wrong IOCTL names
+ - Use 100 columns char limit
 
  MAINTAINERS             |   6 +
- drivers/rtc/Kconfig     |  10 +
+ drivers/rtc/Kconfig     |  10 ++
  drivers/rtc/Makefile    |   1 +
- drivers/rtc/rtc-optee.c | 396 ++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 413 insertions(+)
+ drivers/rtc/rtc-optee.c | 386 ++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 403 insertions(+)
  create mode 100644 drivers/rtc/rtc-optee.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
@@ -52,7 +54,7 @@ index f41088418aae..b21375ad73d2 100644
  M:	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>
  M:	Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>
 diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index d85a3c31347c..b10d88db8e9c 100644
+index d85a3c31347c..cba5427f79b3 100644
 --- a/drivers/rtc/Kconfig
 +++ b/drivers/rtc/Kconfig
 @@ -1293,6 +1293,16 @@ config RTC_DRV_OPAL
@@ -63,8 +65,8 @@ index d85a3c31347c..b10d88db8e9c 100644
 +	tristate "OP-TEE based RTC driver"
 +	depends on OPTEE
 +	help
-+	  Select this to get support for OP-TEE based RTC control on ARM SoCs
-+	  where RTC are not accessible to the normal world (Linux).
++	  Select this to get support for OP-TEE based RTC control on SoCs where
++	  RTC are not accessible to the normal world (Linux).
 +
 +	  This driver can also be built as a module. If so, the module
 +	  will be called rtc-optee.
@@ -86,10 +88,10 @@ index e92f3e943245..2d827d8261d5 100644
  obj-$(CONFIG_RTC_DRV_PCF2123)	+=3D rtc-pcf2123.o
 diff --git a/drivers/rtc/rtc-optee.c b/drivers/rtc/rtc-optee.c
 new file mode 100644
-index 000000000000..7177c9d4675a
+index 000000000000..a2865ed17cfc
 --- /dev/null
 +++ b/drivers/rtc/rtc-optee.c
-@@ -0,0 +1,396 @@
+@@ -0,0 +1,386 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2022 Microchip.
@@ -160,13 +162,12 @@ index 000000000000..7177c9d4675a
 +	param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
 +	param[0].u.memref.shm =3D priv->shm;
 +	param[0].u.memref.size =3D sizeof(struct optee_rtc_time);
-+	param[0].u.memref.shm_offs =3D 0;
 +
 +	ret =3D tee_client_invoke_func(priv->ctx, &inv_arg, param);
 +	if (ret < 0 || inv_arg.ret !=3D 0) {
-+		dev_err(dev, "TA_CMD_RTC_GET_TIME invoke err: %x\n",
-+			inv_arg.ret);
-+		return ret;
++		dev_err(dev, "TA_CMD_RTC_GET_TIME invoke ret: %d, tee ret: %x\n", ret, inv=
+_arg.ret);
++		return ret ? ret : -EPROTO;
 +	}
 +
 +	optee_tm =3D tee_shm_get_va(priv->shm, 0);
@@ -177,7 +178,7 @@ index 000000000000..7177c9d4675a
 +
 +	if (param[0].u.memref.size !=3D sizeof(*optee_tm)) {
 +		dev_err(dev, "Invalid read size from OPTEE\n");
-+		return -EINVAL;
++		return -EPROTO;
 +	}
 +
 +	tm->tm_sec =3D optee_tm->tm_sec;
@@ -216,7 +217,6 @@ index 000000000000..7177c9d4675a
 +	param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
 +	param[0].u.memref.shm =3D priv->shm;
 +	param[0].u.memref.size =3D sizeof(struct optee_rtc_time);
-+	param[0].u.memref.shm_offs =3D 0;
 +
 +	rtc_data =3D tee_shm_get_va(priv->shm, 0);
 +	if (IS_ERR(rtc_data)) {
@@ -228,9 +228,9 @@ index 000000000000..7177c9d4675a
 +
 +	ret =3D tee_client_invoke_func(priv->ctx, &inv_arg, param);
 +	if (ret < 0 || inv_arg.ret !=3D 0) {
-+		dev_err(dev, "TA_CMD_RTC_GET_TIME invoke err: %x\n",
-+			inv_arg.ret);
-+		return ret;
++		dev_err(dev, "TA_CMD_RTC_SET_TIME invoke ret: %d, tee ret: %x\n", ret, inv=
+_arg.ret);
++		return ret ? ret : -EPROTO;
 +	}
 +
 +	return 0;
@@ -254,9 +254,9 @@ index 000000000000..7177c9d4675a
 +
 +	ret =3D tee_client_invoke_func(priv->ctx, &inv_arg, param);
 +	if (ret < 0 || inv_arg.ret !=3D 0) {
-+		dev_err(dev, "TA_CMD_RTC_GET_RNG_INFO invoke err: %x\n",
++		dev_err(dev, "TA_CMD_RTC_GET_OFFSET invoke ret: %d, tee ret: %x\n", ret,
 +			inv_arg.ret);
-+		return -EINVAL;
++		return ret ? ret : -EPROTO;
 +	}
 +
 +	*offset =3D param[0].u.value.a;
@@ -283,9 +283,9 @@ index 000000000000..7177c9d4675a
 +
 +	ret =3D tee_client_invoke_func(priv->ctx, &inv_arg, param);
 +	if (ret < 0 || inv_arg.ret !=3D 0) {
-+		dev_err(dev, "TA_CMD_RTC_GET_RNG_INFO invoke err: %x\n",
++		dev_err(dev, "TA_CMD_RTC_SET_OFFSET invoke ret: %d, tee ret: %x\n", ret,
 +			inv_arg.ret);
-+		return -EINVAL;
++		return ret ? ret : -EPROTO;
 +	}
 +
 +	return 0;
@@ -315,12 +315,11 @@ index 000000000000..7177c9d4675a
 +	param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
 +	param[0].u.memref.shm =3D priv->shm;
 +	param[0].u.memref.size =3D sizeof(*info);
-+	param[0].u.memref.shm_offs =3D 0;
 +
 +	ret =3D tee_client_invoke_func(priv->ctx, &inv_arg, param);
 +	if (ret < 0 || inv_arg.ret !=3D 0) {
-+		dev_err(dev, "TA_CMD_RTC_GET_RNG_INFO invoke err: %x\n",
-+			inv_arg.ret);
++		dev_err(dev, "TA_CMD_RTC_GET_INFO invoke ret: %d, tee ret: %x\n", ret, inv=
+_arg.ret);
 +		return -EINVAL;
 +	}
 +
@@ -332,23 +331,24 @@ index 000000000000..7177c9d4675a
 +
 +	if (param[0].u.memref.size !=3D sizeof(*info)) {
 +		dev_err(dev, "Invalid read size from OPTEE\n");
-+		return -EINVAL;
++		return -EPROTO;
 +	}
 +
 +	if (info->version !=3D RTC_INFO_VERSION) {
-+		dev_err(dev, "Unsupported information version %llu\n",
-+			info->version);
-+		return -EINVAL;
++		dev_err(dev, "Unsupported information version %llu\n", info->version);
++		return -EPROTO;
 +	}
 +
 +	*features =3D info->features;
 +
 +	tm =3D &info->range_min;
-+	rtc->range_min =3D mktime64(tm->tm_year, tm->tm_mon, tm->tm_mday,
-+				  tm->tm_hour, tm->tm_min, tm->tm_sec);
++	rtc->range_min =3D mktime64(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_ho=
+ur, tm->tm_min,
++				  tm->tm_sec);
 +	tm =3D &info->range_max;
-+	rtc->range_max =3D mktime64(tm->tm_year, tm->tm_mon, tm->tm_mday,
-+				  tm->tm_hour, tm->tm_min, tm->tm_sec);
++	rtc->range_max =3D mktime64(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_ho=
+ur, tm->tm_min,
++				  tm->tm_sec);
 +
 +	return 0;
 +}
@@ -389,21 +389,18 @@ ata)
 +	/* Open session with rtc Trusted App */
 +	export_uuid(sess_arg.uuid, &rtc_device->id.uuid);
 +	sess_arg.clnt_login =3D TEE_IOCTL_LOGIN_REE_KERNEL;
-+	sess_arg.num_params =3D 0;
 +
 +	ret =3D tee_client_open_session(priv->ctx, &sess_arg, NULL);
 +	if (ret < 0 || sess_arg.ret !=3D 0) {
-+		dev_err(dev, "tee_client_open_session failed, err: %x\n",
-+			sess_arg.ret);
++		dev_err(dev, "tee_client_open_session failed, err: %x\n", sess_arg.ret);
 +		err =3D -EINVAL;
 +		goto out_ctx;
 +	}
 +	priv->session_id =3D sess_arg.session;
 +
-+	shm =3D tee_shm_alloc_kernel_buf(priv->ctx,
-+				       sizeof(struct optee_rtc_info));
++	shm =3D tee_shm_alloc_kernel_buf(priv->ctx, sizeof(struct optee_rtc_info));
 +	if (IS_ERR(shm)) {
-+		dev_err(priv->dev, "tee_shm_alloc failed\n");
++		dev_err(priv->dev, "tee_shm_alloc_kernel_buf failed\n");
 +		err =3D PTR_ERR(shm);
 +		goto out_sess;
 +	}
@@ -491,5 +488,5 @@ ata)
 2.34.1
 
 
---===============3881940788688698241==--
+--===============2729930445447196914==--
 
