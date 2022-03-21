@@ -1,214 +1,64 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH 2/3] optee: add FF-A capability OPTEE_FFA_SEC_CAP_ARG_OFFSET
-Date: Fri, 18 Mar 2022 08:49:13 +0100
-Message-ID: 
- <CAHUa44EqPprBC_M8vuhxpJE8gVuzbYYitgsvHpRLHWp4-vJnfQ@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYPDxHz45Ev4yqi0rE4W08YnNbrwUg8FMt9y1FnL3f84yw@mail.gmail.com>>
+Subject: [PATCH v2 0/4]  OP-TEE RPC argument cache
+Date: Mon, 21 Mar 2022 14:03:37 +0100
+Message-ID: <20220321130341.935535-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4237190484157071079=="
+Content-Type: multipart/mixed; boundary="===============1299256075802539210=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4237190484157071079==
+--===============1299256075802539210==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 17, 2022 at 1:17 PM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Wed, 16 Mar 2022 at 14:57, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > On Mon, Mar 14, 2022 at 02:33:26PM +0530, Sumit Garg wrote:
-> > > On Wed, 2 Mar 2022 at 01:18, Jens Wiklander <jens.wiklander@linaro.or=
-g> wrote:
-> > > >
-> > > > Adds the secure capability OPTEE_FFA_SEC_CAP_ARG_OFFSET to indicate t=
-hat
-> > > > OP-TEE with FF-A can support an argument struct at a non-zero offset =
-into
-> > > > a passed shared memory object.
-> > > >
-> > >
-> > > It isn't clear to me why FF-A ABI requires this capability.
-> > > shm->offset should be honoured by default, if it isn't then it's a
-> > > bug.
-> >
-> > Yes, there was a bug in secure world when using a non-zero offset. So
-> > far the driver has always used a zero offset that's why it hasn't been
-> > caught earlier.
-> >
-> > It's not a serious bug, but it might be quite hard to track down. This
-> > is of course fixed now, but there is a window where it can be triggered.
->
-> I am not able to find the fix in this [1] OP-TEE OS commit. Could you
-> help me to point it out?
->
-> [1] https://github.com/OP-TEE/optee_os/commit/89d991352352b80ae90f82228a014=
-bb8cadfb80b
+Hi all,
 
-I believe it's this one:
-https://github.com/OP-TEE/optee_os/commit/7267624eef019476f20aee7dba11ff949d0=
-05670
+This patchset optimizes handling of the argument struct passed to
+call_with_arg when doing a yielding call to OP-TEE.
 
->
-> >
-> > So in order to spare FF-A developers this problem I'm making a non-zero
-> > offset an extension guarded by a capability bit. Even though this is an
-> > ABI change it's in practice not since it has been unused and not working
-> > as expected.
-> >
-> > The next commit will start using non-zero offsets if supported, so this
-> > will change to become a problem (if left unchecked) in the window
-> > mentioned above.
-> >
-> > > AFAIK, FF-A is currently still in its early stages so it
-> > > shouldn't be that hard to fix bugs in the ABI.
-> >
-> > Starting from the kernel release (v5.16) where FF-A support in this
-> > driver was merged the ABI is supposed to be stable.
-> >
->
-> From Linux kernel perspective, there are dedicated stable branches for
-> that purpose in case we want to push a fix for OP-TEE FF-A kernel
-> driver.
+Prior to this was this struct allocated before the yielding call and
+then freed after it had returned. In case many calls are made in succession
+this results in quite a bit of unnecessary allocte/free and possibly also
+switching back and forth to secure work in order to register if needed.
 
-The problem isn't in the kernel driver. What I'm doing here is to
-formalize the ABI that the kernel defacto was using. Since we
-obviously didn't test the driver with a non-zero offset before, we
-didn't notice that the offset wasn't used in the right way by the
-secure world.
+Another optimization handles the way the argument struct needed to do RPC
+is passed. Please see the patch "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+OPTEE_SMC_CALL_WITH_REGD_ARG" for details.
 
-Cheers,
+This patchset is based the next branch [1] in my kernel to avoid conflict
+with other recent patches.
+
+Thanks,
 Jens
 
->
-> -Sumit
->
-> > Thanks,
-> > Jens
-> >
-> > >
-> > > -Sumit
-> > >
-> > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > ---
-> > > >  drivers/tee/optee/ffa_abi.c   | 17 +++++++++++++++--
-> > > >  drivers/tee/optee/optee_ffa.h | 12 +++++++++++-
-> > > >  2 files changed, 26 insertions(+), 3 deletions(-)
-> > > >
-> > > > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> > > > index 7686f7020616..cc863aaefcd9 100644
-> > > > --- a/drivers/tee/optee/ffa_abi.c
-> > > > +++ b/drivers/tee/optee/ffa_abi.c
-> > > > @@ -615,12 +615,21 @@ static int optee_ffa_do_call_with_arg(struct te=
-e_context *ctx,
-> > > >                 .data0 =3D OPTEE_FFA_YIELDING_CALL_WITH_ARG,
-> > > >                 .data1 =3D (u32)shm->sec_world_id,
-> > > >                 .data2 =3D (u32)(shm->sec_world_id >> 32),
-> > > > -               .data3 =3D shm->offset,
-> > > > +               .data3 =3D 0,
-> > > >         };
-> > > >         struct optee_msg_arg *arg;
-> > > >         unsigned int rpc_arg_offs;
-> > > >         struct optee_msg_arg *rpc_arg;
-> > > >
-> > > > +       /*
-> > > > +        * The shared memory object has to start on a page when passe=
-d as
-> > > > +        * an argument struct. This is also what the shm pool allocat=
-or
-> > > > +        * returns, but check this before calling secure world to cat=
-ch
-> > > > +        * eventual errors early in case something changes.
-> > > > +        */
-> > > > +       if (shm->offset)
-> > > > +               return -EINVAL;
-> > > > +
-> > > >         arg =3D tee_shm_get_va(shm, 0);
-> > > >         if (IS_ERR(arg))
-> > > >                 return PTR_ERR(arg);
-> > > > @@ -678,6 +687,7 @@ static bool optee_ffa_api_is_compatbile(struct ff=
-a_device *ffa_dev,
-> > > >
-> > > >  static bool optee_ffa_exchange_caps(struct ffa_device *ffa_dev,
-> > > >                                     const struct ffa_dev_ops *ops,
-> > > > +                                   u32 *sec_caps,
-> > > >                                     unsigned int *rpc_param_count)
-> > > >  {
-> > > >         struct ffa_send_direct_data data =3D { OPTEE_FFA_EXCHANGE_CAP=
-ABILITIES };
-> > > > @@ -694,6 +704,7 @@ static bool optee_ffa_exchange_caps(struct ffa_de=
-vice *ffa_dev,
-> > > >         }
-> > > >
-> > > >         *rpc_param_count =3D (u8)data.data1;
-> > > > +       *sec_caps =3D data.data2;
-> > > >
-> > > >         return true;
-> > > >  }
-> > > > @@ -777,6 +788,7 @@ static int optee_ffa_probe(struct ffa_device *ffa=
-_dev)
-> > > >         struct tee_device *teedev;
-> > > >         struct tee_context *ctx;
-> > > >         struct optee *optee;
-> > > > +       u32 sec_caps;
-> > > >         int rc;
-> > > >
-> > > >         ffa_ops =3D ffa_dev_ops_get(ffa_dev);
-> > > > @@ -788,7 +800,8 @@ static int optee_ffa_probe(struct ffa_device *ffa=
-_dev)
-> > > >         if (!optee_ffa_api_is_compatbile(ffa_dev, ffa_ops))
-> > > >                 return -EINVAL;
-> > > >
-> > > > -       if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &rpc_param_cou=
-nt))
-> > > > +       if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,
-> > > > +                                    &rpc_param_count))
-> > > >                 return -EINVAL;
-> > > >
-> > > >         optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
-> > > > diff --git a/drivers/tee/optee/optee_ffa.h b/drivers/tee/optee/optee_=
-ffa.h
-> > > > index ee3a03fc392c..97266243deaa 100644
-> > > > --- a/drivers/tee/optee/optee_ffa.h
-> > > > +++ b/drivers/tee/optee/optee_ffa.h
-> > > > @@ -81,8 +81,16 @@
-> > > >   *                   as the second MSG arg struct for
-> > > >   *                   OPTEE_FFA_YIELDING_CALL_WITH_ARG.
-> > > >   *        Bit[31:8]: Reserved (MBZ)
-> > > > - * w5-w7: Note used (MBZ)
-> > > > + * w5:   Bitfield of secure world capabilities OPTEE_FFA_SEC_CAP_* b=
-elow,
-> > > > + *       unused bits MBZ.
-> > > > + * w6-w7: Not used (MBZ)
-> > > > + */
-> > > > +/*
-> > > > + * Secure world supports giving an offset into the argument shared m=
-emory
-> > > > + * object, see also OPTEE_FFA_YIELDING_CALL_WITH_ARG
-> > > >   */
-> > > > +#define OPTEE_FFA_SEC_CAP_ARG_OFFSET   BIT(0)
-> > > > +
-> > > >  #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
-> > > >
-> > > >  /*
-> > > > @@ -112,6 +120,8 @@
-> > > >   *       OPTEE_MSG_GET_ARG_SIZE(num_params) follows a struct optee_m=
-sg_arg
-> > > >   *       for RPC, this struct has reserved space for the number of R=
-PC
-> > > >   *       parameters as returned by OPTEE_FFA_EXCHANGE_CAPABILITIES.
-> > > > + *       MBZ unless the bit OPTEE_FFA_SEC_CAP_ARG_OFFSET is received=
- with
-> > > > + *       OPTEE_FFA_EXCHANGE_CAPABILITIES.
-> > > >   * w7:    Not used (MBZ)
-> > > >   * Resume from RPC. Register usage:
-> > > >   * w3:    Service ID, OPTEE_FFA_YIELDING_CALL_RESUME
-> > > > --
-> > > > 2.31.1
-> > > >
+[1] https://git.linaro.org/people/jens.wiklander/linux-tee.git/log/?h=next
 
---===============4237190484157071079==--
+v1->v2:
+* Split out a separate commit "optee: rename rpc_arg_count to
+  rpc_param_count"
+* Check optee->rpc_param_count before calling optee_disable_shm_cache().
+* Mention OPTEE_SMC_CALL_WITH_REGD_ARG in commit message.
+
+
+Jens Wiklander (4):
+  optee: rename rpc_arg_count to rpc_param_count
+  optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+    OPTEE_SMC_CALL_WITH_REGD_ARG
+  optee: add FF-A capability OPTEE_FFA_SEC_CAP_ARG_OFFSET
+  optee: cache argument shared memory structs
+
+ drivers/tee/optee/call.c          | 238 ++++++++++++++++++++++++------
+ drivers/tee/optee/core.c          |   1 +
+ drivers/tee/optee/ffa_abi.c       |  36 +++--
+ drivers/tee/optee/optee_ffa.h     |  12 +-
+ drivers/tee/optee/optee_private.h |  31 +++-
+ drivers/tee/optee/optee_smc.h     |  47 +++++-
+ drivers/tee/optee/smc_abi.c       | 162 +++++++++++++++-----
+ 7 files changed, 427 insertions(+), 100 deletions(-)
+
+-- 
+2.31.1
+
+
+--===============1299256075802539210==--
 
