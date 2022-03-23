@@ -1,32 +1,40 @@
-From: Ruchika Gupta <ruchika.gupta@linaro.org>
+From: Don Harbin <don.harbin@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Linaro OP-TEE Contributions (LOC) monthly meeting - Mar 24 CANCELLED
-Date: Wed, 23 Mar 2022 10:34:24 +0530
+Subject: TrustedFirmware Code of Conduct
+Date: Wed, 23 Mar 2022 08:42:43 -0700
 Message-ID: 
- <CANZ+81F0v0ZogbP_mA+0FssnTyrR1ZFSyZY9JEQT7DcbNq-ZDA@mail.gmail.com>
+ <CA+HB5jDherHK6_H=deV1_884MjJKO+8aVCmZQQ+FsEk_yZgh4A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0004776690700304465=="
+Content-Type: multipart/mixed; boundary="===============0943808821490019693=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0004776690700304465==
+--===============0943808821490019693==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi All,
 
-We don't have any topics for the meeting this month. Hence cancelling.
+Please find the link to the TrustedFirmware Community Code of Conduct here:
+https://developer.trustedfirmware.org/w/collaboration/community_guidelines/co=
+mmunity_code_of_conduct/
 
-Following topics related to OP-TEE will be presented in Linaro Connect Tech
-Day : Core Technologies
-<https://www.linaro.org/events/linaro-connect-tech-day-core-technologies/> on
-March 29. Feel free to join us there.
+Trusted Firmware has a very diverse and global developer community. It is
+important that we adhere to the code of conduct in all our interactions.
 
-   - OP-TEE and FF-A evolution
-   - OP-TEE Lightning Talk
+For some of you all this may be new and for others just a gentle reminder.
+In either case, if you have any questions, please feel free to reach out to
+me directly.
 
-Regards,
-Ruchika
-(on behalf of OP-TEE team)
+And thanks to you all for your contributions to the TrustedFirmware
+community!
 
---===============0004776690700304465==--
+Best regards,
+
+Don Harbin
+
+TrustedFirmware Community Manager
+
+don.harbin(a)linaro.org
+
+--===============0943808821490019693==--
 
