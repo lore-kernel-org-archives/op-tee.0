@@ -1,36 +1,45 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v4] rtc: optee: add RTC driver for OP-TEE RTC PTA
-Date: Fri, 25 Mar 2022 11:43:27 +0100
-Message-ID: <164820498345.150187.420135785211936016.b4-ty@bootlin.com>
-In-Reply-To: <20220308133505.471601-1-clement.leger@bootlin.com>
+Subject: Re: About patch for ARM Spectre-BHB in OPTEE OS
+Date: Fri, 25 Mar 2022 14:44:57 +0100
+Message-ID: 
+ <CAHUa44F4O_EsdmUfRDZLMOLoHDqhgxCfn5f02DK-0ORt_DtmtA@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3CPSAPR03MB56398315C9D431A2B349D307F7199=40PSAPR03MB?=
+ =?utf-8?q?5639=2Eapcprd03=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3733672196010755012=="
+Content-Type: multipart/mixed; boundary="===============7927165917717900574=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3733672196010755012==
+--===============7927165917717900574==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 8 Mar 2022 14:35:05 +0100, Clément Léger wrote:
-> This drivers allows to communicate with a RTC PTA handled by OP-TEE [1].
-> This PTA allows to query RTC information, set/get time and set/get
-> offset depending on the supported features.
-> 
-> [1] https://github.com/OP-TEE/optee_os/pull/5179
-> 
-> 
-> [...]
+Hi KL Huang,
 
-Applied, thanks!
+Thanks for bringing our attention to this. I've gone through the
+material and will publish a few patches shortly. We'll have our normal
+review process for patches before they are merged. We can expect them
+to be included in the upcoming release.
 
-[1/1] rtc: optee: add RTC driver for OP-TEE RTC PTA
-      commit: 81c2f059ab90b221931e78503c80dcd8fbadac53
+Thanks,
+Jens
 
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+On Thu, Mar 24, 2022 at 9:17 AM KL Huang (=E9=BB=83=E9=97=9E=E7=AB=8B) via OP=
+-TEE
+<op-tee@lists.trustedfirmware.org> wrote:
+>
+> Hi, Sir:
+>
+>   ARM announced vulnerability about Spectre-BHB and patches are also availa=
+ble for Linux and TF-A.
+> https://developer.arm.com/support/arm-security-updates/speculative-processo=
+r-vulnerability/spectre-bhb
+>
+>   May I know if OPTEE OS will have the patch in the upcoming version?
+>
+> Best regards,
+>
+> KL Huang
 
---===============3733672196010755012==--
+--===============7927165917717900574==--
 
