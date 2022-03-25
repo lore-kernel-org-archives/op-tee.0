@@ -1,40 +1,36 @@
-From: Jerome Forissier <jerome.forissier@linaro.org>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Preparing for OP-TEE 3.17.0
-Date: Fri, 25 Mar 2022 13:54:46 +0100
-Message-ID: <679e5ddc-a8a8-c979-2461-cf560a77dbd1@linaro.org>
+Subject: Re: [PATCH v4] rtc: optee: add RTC driver for OP-TEE RTC PTA
+Date: Fri, 25 Mar 2022 11:43:27 +0100
+Message-ID: <164820498345.150187.420135785211936016.b4-ty@bootlin.com>
+In-Reply-To: <20220308133505.471601-1-clement.leger@bootlin.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7900895957350839474=="
+Content-Type: multipart/mixed; boundary="===============3733672196010755012=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7900895957350839474==
+--===============3733672196010755012==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-[BCC all OP-TEE maintainers]
+On Tue, 8 Mar 2022 14:35:05 +0100, Clément Léger wrote:
+> This drivers allows to communicate with a RTC PTA handled by OP-TEE [1].
+> This PTA allows to query RTC information, set/get time and set/get
+> offset depending on the supported features.
+> 
+> [1] https://github.com/OP-TEE/optee_os/pull/5179
+> 
+> 
+> [...]
 
-Hi OP-TEE maintainers & contributors,
+Applied, thanks!
 
-OP-TEE v3.17.0 is scheduled to be released on 2022-04-22. So, now is a
-good time to start testing the master branch on the various platforms
-and report/fix any bugs.
+[1/1] rtc: optee: add RTC driver for OP-TEE RTC PTA
+      commit: 81c2f059ab90b221931e78503c80dcd8fbadac53
 
-The GitHub pull request for collecting Tested-by tags or any other
-comments is https://github.com/OP-TEE/optee_os/pull/5229
-
-As usual, we will create a release candidate tag one week before the
-release date for final testing.
-
-In addition to that you can find some additional information related
-to releases here:
-https://optee.readthedocs.io/en/latest/general/releases.html
-
-Thanks,
 -- 
-Jerome
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
-
-
-
---===============7900895957350839474==--
+--===============3733672196010755012==--
 
