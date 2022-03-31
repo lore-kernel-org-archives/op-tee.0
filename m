@@ -1,45 +1,71 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Dave Rodgman <dave.rodgman@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: About patch for ARM Spectre-BHB in OPTEE OS
-Date: Fri, 25 Mar 2022 14:44:57 +0100
-Message-ID: 
- <CAHUa44F4O_EsdmUfRDZLMOLoHDqhgxCfn5f02DK-0ORt_DtmtA@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CPSAPR03MB56398315C9D431A2B349D307F7199=40PSAPR03MB?=
- =?utf-8?q?5639=2Eapcprd03=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: Mbed TLS GitHub migration
+Date: Thu, 31 Mar 2022 13:51:25 +0000
+Message-ID: <FA93C365-6313-4AAD-B570-826849B075BE@arm.com>
+In-Reply-To: <=?utf-8?q?=3CDU2PR08MB72886F0D04000A8C4047CF3F8F179=40DU2PR08MB?=
+ =?utf-8?q?7288=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7927165917717900574=="
+Content-Type: multipart/mixed; boundary="===============0300623900511309275=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7927165917717900574==
+--===============0300623900511309275==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi KL Huang,
+Hi all,
 
-Thanks for bringing our attention to this. I've gone through the
-material and will publish a few patches shortly. We'll have our normal
-review process for patches before they are merged. We can expect them
-to be included in the upcoming release.
+Please be advised that the Mbed TLS GitHub migration is complete. The new hom=
+e for Mbed TLS is:
 
-Thanks,
-Jens
+https://github.com/Mbed-TLS
 
-On Thu, Mar 24, 2022 at 9:17 AM KL Huang (=E9=BB=83=E9=97=9E=E7=AB=8B) via OP=
--TEE
-<op-tee@lists.trustedfirmware.org> wrote:
->
-> Hi, Sir:
->
->   ARM announced vulnerability about Spectre-BHB and patches are also availa=
-ble for Linux and TF-A.
-> https://developer.arm.com/support/arm-security-updates/speculative-processo=
-r-vulnerability/spectre-bhb
->
->   May I know if OPTEE OS will have the patch in the upcoming version?
->
-> Best regards,
->
-> KL Huang
+We recommend updating your project, checkouts, etc to point at the new reposi=
+tory, but it's not urgent as everything will continue to work for some time v=
+ia automatic redirection.
 
---===============7927165917717900574==--
+Also please note that our project boards, which we use for planning upcoming =
+work via epics, and tracking current activity, have moved. They are now avail=
+able here:
+
+Epics board: https://github.com/orgs/Mbed-TLS/projects/1
+Current activity: https://github.com/orgs/Mbed-TLS/projects/2=20
+
+Thanks
+
+Dave Rodgman
+
+=EF=BB=BFOn 22/03/2022, 14:52, "Dave Rodgman via Mbed-tls-announce" <mbed-tls=
+-announce@lists.trustedfirmware.org> wrote:
+
+    Hi all,
+
+    Please note that in the next couple of weeks, we will migrate Mbed TLS to=
+ a new GitHub organisation. Your existing scripts, links etc for accessing Mb=
+ed TLS on GitHub should not be affected.
+
+    This will change the url from https://github.com/ARMmbed/mbedtls to https=
+://github.com/Mbed-TLS/mbedtls . GitHub will redirect any accesses to the old=
+ URL for the foreseeable future, but we would recommend updating your links o=
+nce the migration is complete.
+
+    All of the Mbed TLS repositories will migrate to this new organisation, i=
+.e.:
+
+    mbedtls
+    mbedtls-docs
+    mbedtls-test
+
+    Thanks
+
+    Dave Rodgman
+
+    --=20
+    Mbed-tls-announce mailing list -- mbed-tls-announce(a)lists.trustedfirmwa=
+re.org
+    To unsubscribe send an email to mbed-tls-announce-leave(a)lists.trustedfi=
+rmware.org
+
+
+--===============0300623900511309275==--
 
