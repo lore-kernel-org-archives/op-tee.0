@@ -1,47 +1,67 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [[GIT PULL] OP-TEE fix for v5.18
-Date: Wed, 13 Apr 2022 07:20:01 +0200
-Message-ID: <20220413052001.GA49798@jade>
+Subject: [PATCH v3 0/4] OP-TEE RPC argument cache
+Date: Wed, 13 Apr 2022 07:44:14 +0200
+Message-ID: <20220413054418.71996-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0503108298145175108=="
+Content-Type: multipart/mixed; boundary="===============4067309959153481810=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0503108298145175108==
+--===============4067309959153481810==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello arm-soc maintainers,
+Hi all,
 
-Please pull this small OP-TEE driver fix for the error handling path in
-the FF-A probe function.
+This patchset optimizes handling of the argument struct passed to
+call_with_arg when doing a yielding call to OP-TEE.
+
+Prior to this was this struct allocated before the yielding call and
+then freed after it had returned. In case many calls are made in succession
+this results in quite a bit of unnecessary allocte/free and possibly also
+switching back and forth to secure work in order to register if needed.
+
+Another optimization handles the way the argument struct needed to do RPC
+is passed. Please see the patch "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+OPTEE_SMC_CALL_WITH_REGD_ARG" for details.
 
 Thanks,
 Jens
 
-The following changes since commit 3123109284176b1532874591f7c81f3837bbdc17:
+v1->v2:
+* Split out a separate commit "optee: rename rpc_arg_count to
+  rpc_param_count"
+* Check optee->rpc_param_count before calling optee_disable_shm_cache().
+* Mention OPTEE_SMC_CALL_WITH_REGD_ARG in commit message.
 
-  Linux 5.18-rc1 (2022-04-03 14:08:21 -0700)
+v2->v3:
+* Applied Sumit's R-B to "optee: rename rpc_arg_count to rpc_param_count"
+  and "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and OPTEE_SMC_CALL_WITH_REGD_AR=
+G"
+* Fixed some review comments to "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+  OPTEE_SMC_CALL_WITH_REGD_ARG"
+* Rebased on v5.18-rc1
 
-are available in the Git repository at:
 
-  git://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-fix-for=
--v5.18
+Jens Wiklander (4):
+  optee: rename rpc_arg_count to rpc_param_count
+  optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+    OPTEE_SMC_CALL_WITH_REGD_ARG
+  optee: add FF-A capability OPTEE_FFA_SEC_CAP_ARG_OFFSET
+  optee: cache argument shared memory structs
 
-for you to fetch changes up to b5e22886839ae466fcf03295150094516c0fd8eb:
+ drivers/tee/optee/call.c          | 238 ++++++++++++++++++++++++------
+ drivers/tee/optee/core.c          |   1 +
+ drivers/tee/optee/ffa_abi.c       |  36 +++--
+ drivers/tee/optee/optee_ffa.h     |  12 +-
+ drivers/tee/optee/optee_private.h |  31 +++-
+ drivers/tee/optee/optee_smc.h     |  48 +++++-
+ drivers/tee/optee/smc_abi.c       | 162 +++++++++++++++-----
+ 7 files changed, 428 insertions(+), 100 deletions(-)
 
-  tee: optee: add missing mutext_destroy in optee_ffa_probe (2022-04-05 08:56=
-:26 +0200)
+--=20
+2.31.1
 
-----------------------------------------------------------------
-OP-TEE fix missing mutex_destroy in probe error handling path
 
-----------------------------------------------------------------
-Dongliang Mu (1):
-      tee: optee: add missing mutext_destroy in optee_ffa_probe
-
- drivers/tee/optee/ffa_abi.c | 1 +
- 1 file changed, 1 insertion(+)
-
---===============0503108298145175108==--
+--===============4067309959153481810==--
 
