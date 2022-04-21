@@ -1,31 +1,78 @@
-From: Jerome Forissier <jerome.forissier@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 3.17.0 has been released
-Date: Sat, 16 Apr 2022 00:03:52 +0200
-Message-ID: <b631712b-ab53-202b-7646-99a8a7d60a26@linaro.org>
+Subject: Re: [PATCH v3 0/4] OP-TEE RPC argument cache
+Date: Thu, 21 Apr 2022 13:32:49 +0200
+Message-ID: 
+ <CAHUa44FVPNT9zWNDdFE7GcwBT5O12+KeXtnELBrJPFFttK-aBw@mail.gmail.com>
+In-Reply-To: <20220413054418.71996-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1517177604905065685=="
+Content-Type: multipart/mixed; boundary="===============2584787553567876575=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1517177604905065685==
+--===============2584787553567876575==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Wed, Apr 13, 2022 at 7:44 AM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> Hi all,
+>
+> This patchset optimizes handling of the argument struct passed to
+> call_with_arg when doing a yielding call to OP-TEE.
+>
+> Prior to this was this struct allocated before the yielding call and
+> then freed after it had returned. In case many calls are made in succession
+> this results in quite a bit of unnecessary allocte/free and possibly also
+> switching back and forth to secure work in order to register if needed.
+>
+> Another optimization handles the way the argument struct needed to do RPC
+> is passed. Please see the patch "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+> OPTEE_SMC_CALL_WITH_REGD_ARG" for details.
+>
+> Thanks,
+> Jens
+>
+> v1->v2:
+> * Split out a separate commit "optee: rename rpc_arg_count to
+>   rpc_param_count"
+> * Check optee->rpc_param_count before calling optee_disable_shm_cache().
+> * Mention OPTEE_SMC_CALL_WITH_REGD_ARG in commit message.
+>
+> v2->v3:
+> * Applied Sumit's R-B to "optee: rename rpc_arg_count to rpc_param_count"
+>   and "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and OPTEE_SMC_CALL_WITH_REGD_=
+ARG"
+> * Fixed some review comments to "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+>   OPTEE_SMC_CALL_WITH_REGD_ARG"
+> * Rebased on v5.18-rc1
+>
+>
+> Jens Wiklander (4):
+>   optee: rename rpc_arg_count to rpc_param_count
+>   optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+>     OPTEE_SMC_CALL_WITH_REGD_ARG
+>   optee: add FF-A capability OPTEE_FFA_SEC_CAP_ARG_OFFSET
+>   optee: cache argument shared memory structs
+>
+>  drivers/tee/optee/call.c          | 238 ++++++++++++++++++++++++------
+>  drivers/tee/optee/core.c          |   1 +
+>  drivers/tee/optee/ffa_abi.c       |  36 +++--
+>  drivers/tee/optee/optee_ffa.h     |  12 +-
+>  drivers/tee/optee/optee_private.h |  31 +++-
+>  drivers/tee/optee/optee_smc.h     |  48 +++++-
+>  drivers/tee/optee/smc_abi.c       | 162 +++++++++++++++-----
+>  7 files changed, 428 insertions(+), 100 deletions(-)
 
-I'm pleased to announce that OP-TEE version 3.17.0 is now available.
-As usual, the list of changes can be found in the changelog [1].
+I'm going to pick up this if there are no further comments.
 
-A big thank you to everyone who participated with contributions and
-helping out with testing the release [2].
+Thanks,
+Jens
 
-[1] https://github.com/OP-TEE/optee_os/blob/master/CHANGELOG.md
-[2] https://github.com/OP-TEE/optee_os/commit/db2e7fe5eea80be6c244da3bf131676=
-eb6ef91ee
+>
+> --
+> 2.31.1
+>
 
-Regards,
---=20
-Jerome
-
---===============1517177604905065685==--
+--===============2584787553567876575==--
 
