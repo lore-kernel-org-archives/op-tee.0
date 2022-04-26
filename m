@@ -1,95 +1,163 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 2/2] tee: remove flags TEE_IOCTL_SHM_MAPPED and
- TEE_IOCTL_SHM_DMA_BUF
-Date: Tue, 26 Apr 2022 10:21:53 +0200
-Message-ID: 
- <CAHUa44H34Wh-Hpw9LzSS3KsKYethLMo_ih+9BafWCvW_TDU=3Q@mail.gmail.com>
+Subject: Re: [PATCH] tee: Add Arm FF-A TEE driver
+Date: Tue, 26 Apr 2022 15:45:45 +0100
+Message-ID: <20220426144545.6qkn6iwayuwpvi7g@bogus>
 In-Reply-To: <
- <CAFA6WYN7GG6ZgxQ=AMinZ91f7QDh+aEPhL-Obx1s=zqReViAew@mail.gmail.com>>
+ <CAFA6WYNbwqNqK89ZCWWpAT5HCR59A+J873_5Odyjyb9qu00nsg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3288069368320373485=="
+Content-Type: multipart/mixed; boundary="===============9031143362046148834=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3288069368320373485==
+--===============9031143362046148834==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 25, 2022 at 4:18 PM Sumit Garg <sumit.garg@linaro.org> wrote:
+On Fri, Apr 22, 2022 at 12:29:26PM +0530, Sumit Garg wrote:
+> Hi Sudeep,
 >
-> On Mon, 25 Apr 2022 at 19:46, Andrew Davis <afd@ti.com> wrote:
+> On Fri, 8 Apr 2022 at 19:11, Sudeep Holla <sudeep.holla@arm.com> wrote:
 > >
-> > These look to be leftover from an early edition of this driver. Userspace
-> > does not need this information. Checking all users of this that I have
-> > access to I have verified no one is using them.
+> > The Arm FF-A provides mechanism for Linux kernel and modules to
+> > communicate with the secure partitions. This is useful for some
+> > Trusted-OS driver that are kernel resident or modules.
 > >
-> > They leak internal use flags out to userspace. Even more they are not
-> > correct anymore after a45ea4efa358. Lets drop these flags before
-> > someone does try to use them for something and they become ABI.
+> > We would also like to avoid adding kernel drivers to communicate with
+> > each and every service provided by these secure partitions. In order to
+> > achieve the same with FF-A, it would be better to provide user-space
+> > interface to access the FF-A functionalities. TEE subsystem seems to be
+> > the best suited to meet those requirements without having to create a
+> > new solution custom to FF-A alone.
+>
+> Yeah, this interface sounds interesting.
+>
+
+Good to hear that.
+
 > >
-> > Signed-off-by: Andrew Davis <afd@ti.com>
+> > All FF-A partitions that user-space access can be associated with this
+> > new FF-A TEE driver and represented by a single TEE device. Though the
+> > various secure services are generally distributed across multiple secure
+> > partitions, all of these can be made accessible through this single FF-A
+> > TEE device.
+> >
+> > The minimal functionality needed by the user space application is
+> > implemented, namely:
+> >  - Query all partition IDs for a specific FF-A UUID
+> >  - Sending synchronous message to a partition
+> >  - Share/unshare buffer with the partition
+> >
+>
+> Are there any corresponding user-space applications/libraries
+> available to get hands-on with this interface?
+>
+
+Not sure if the changes to make use of this new interface is publicly
+available yet as these APIs are subject to change. I will see if something
+can be shared, but this is the project[2] I am using to test with relevant
+changes to use these TEE APIs.
+
+> > Cc: Jens Wiklander <jens.wiklander@linaro.org>
+> > Cc: Sumit Garg <sumit.garg@linaro.org>
+> > Co-developed-by: Balint Dobszay <balint.dobszay@arm.com>
+> > Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
+> > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > > ---
+> >  drivers/tee/Kconfig                       |   1 +
+> >  drivers/tee/Makefile                      |   1 +
+> >  drivers/tee/arm_ffa_tee/Kconfig           |  15 +
+> >  drivers/tee/arm_ffa_tee/Makefile          |   6 +
+> >  drivers/tee/arm_ffa_tee/core.c            | 460 ++++++++++++++++++++++
+> >  drivers/tee/arm_ffa_tee/ffa_tee_private.h |  39 ++
+> >  drivers/tee/arm_ffa_tee/shm_pool.c        |  94 +++++
+> >  drivers/tee/arm_ffa_tee/ts_msg.c          | 133 +++++++
+> >  drivers/tee/arm_ffa_tee/ts_msg.h          |  75 ++++
+> >  include/uapi/linux/arm_ffa_tee.h          | 116 ++++++
+> >  include/uapi/linux/tee.h                  |   1 +
+> >  11 files changed, 941 insertions(+)
+> >  create mode 100644 drivers/tee/arm_ffa_tee/Kconfig
+> >  create mode 100644 drivers/tee/arm_ffa_tee/Makefile
+> >  create mode 100644 drivers/tee/arm_ffa_tee/core.c
+> >  create mode 100644 drivers/tee/arm_ffa_tee/ffa_tee_private.h
+> >  create mode 100644 drivers/tee/arm_ffa_tee/shm_pool.c
+> >  create mode 100644 drivers/tee/arm_ffa_tee/ts_msg.c
+> >  create mode 100644 drivers/tee/arm_ffa_tee/ts_msg.h
+> >  create mode 100644 include/uapi/linux/arm_ffa_tee.h
 > >
-> > Changes from v1:
-> >  - Removed flags return from tee_ioctl_shm_alloc()
+> > Hi All,
+> >
+> > This is the initial version of FF-A TEE driver to get the feedback on the
+> > overall design/approach.
+> >
+> > Few TODOs I plan to do before we finalise:
+> > 1. Need to decouple the driver from few Trusted Service protocols current=
+ly
+> >    implemented. I have WIP, but couldn't get all the tests working(yet to
+> >    figure out whether the issue is in driver or tests themselves). Just
+> >    posting it as is to get initial feedback on other areas.
+>
+> Yes I would be in favor of this.
+>
+
+I am too, but Balint had some concerns which I need to discuss with him yet.
+
+> >
+> > 2. Based on the way FF-A spec changes/discussions, does it make sense to
+> >    make search based on UUID + partitionID instead of just partitionID or
+> >    leave that for userspace.
+>
+> IIUC, the UUID is the one identifying the trusted service. So what
+> purpose does partionID solves for user-space program?
+>
+
+Sorry for not giving complete picture here. In the context of FF-A and secure
+partitions, there were discussions to allow single partition implementing
+multiple services/protocols(each associated with UUID) and on a system with
+multiple SPs, 2 different SPs can be implementing same protocol/service.
+Sorry if I am missing something here or if that is impossible, this is just
+my understanding and hence I was check if UUID + something(vm_id as per FF-A
+spec) need to be used to identify which partition and service we would want to
+talk to.
+
+> >
+> > 3. While I definitely want to move the protocol specifics from the driver
+> >    (as mentioned in (1)), do we even try to remove adding UUID of each se=
+rvice
+> >    we would like to use this driver.
+>
+> Yes, we shouldn't hardcode any UUIDs for trusted services within the
+> driver (it isn't scalable) but rather during open sessions we should
+> search if a particular UUID is available on FF-A bus to communicate
+> with?
+>
+
+Yes it is not scalable and I am aware of that. I haven't explored the
+options to get rid of them yet. Thanks for the suggestion.
+
+> >    I haven't thought through that yet,
+> >    but the idea I have is to just have a blocked UUID list which can
+> >    contain UUID for OPTEE and other in-kernel users.
+> >    That may need changes in FF-A bus match but something to consider ?
 > >
 >
-> Acked-by: Sumit Garg <sumit.garg@linaro.org>
+> Currently in the case of OP-TEE we depend on an open session login
+> method where the particular trusted application decides whether a
+> particular login method is allowed or not, refer here [1] for more
+> details. I guess similar access control checks can be implemented by a
+> particular trusted service during an open session. This will allow us
+> to not maintain any allowed or blocked list.
 >
-> -Sumit
->
-> >  drivers/tee/tee_core.c   | 2 --
-> >  include/uapi/linux/tee.h | 4 ----
-> >  2 files changed, 6 deletions(-)
+
+Thanks for the details, I will explore and see how we can use something
+similar. I will ping you if I get stuck or need more info or need more
+discussion on that.
+
+--
+Regards,
+Sudeep
+
+[2] https://git.trustedfirmware.org/TS/trusted-services.git
 
 
-Looks good to me, I'm picking up this.
-
-Thanks,
-Jens
-
-> >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index 8aa1a4836b92f..af0f7c603fa46 100644
-> > --- a/drivers/tee/tee_core.c
-> > +++ b/drivers/tee/tee_core.c
-> > @@ -302,7 +302,6 @@ static int tee_ioctl_shm_alloc(struct tee_context *ct=
-x,
-> >                 return PTR_ERR(shm);
-> >
-> >         data.id =3D shm->id;
-> > -       data.flags =3D shm->flags;
-> >         data.size =3D shm->size;
-> >
-> >         if (copy_to_user(udata, &data, sizeof(data)))
-> > @@ -339,7 +338,6 @@ tee_ioctl_shm_register(struct tee_context *ctx,
-> >                 return PTR_ERR(shm);
-> >
-> >         data.id =3D shm->id;
-> > -       data.flags =3D shm->flags;
-> >         data.length =3D shm->size;
-> >
-> >         if (copy_to_user(udata, &data, sizeof(data)))
-> > diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> > index 25a6c534beb1b..23e57164693c4 100644
-> > --- a/include/uapi/linux/tee.h
-> > +++ b/include/uapi/linux/tee.h
-> > @@ -42,10 +42,6 @@
-> >  #define TEE_IOC_MAGIC  0xa4
-> >  #define TEE_IOC_BASE   0
-> >
-> > -/* Flags relating to shared memory */
-> > -#define TEE_IOCTL_SHM_MAPPED   0x1     /* memory mapped in normal world =
-*/
-> > -#define TEE_IOCTL_SHM_DMA_BUF  0x2     /* dma-buf handle on shared memor=
-y */
-> > -
-> >  #define TEE_MAX_ARG_SIZE       1024
-> >
-> >  #define TEE_GEN_CAP_GP         (1 << 0)/* GlobalPlatform compliant TEE */
-> > --
-> > 2.17.1
-> >
-
---===============3288069368320373485==--
+--===============9031143362046148834==--
 
