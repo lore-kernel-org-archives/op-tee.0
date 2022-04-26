@@ -1,74 +1,70 @@
-From: Andrew Davis <afd@ti.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 2/2] tee: remove flags TEE_IOCTL_SHM_MAPPED and
- TEE_IOCTL_SHM_DMA_BUF
-Date: Mon, 25 Apr 2022 09:16:17 -0500
-Message-ID: <20220425141617.23925-2-afd@ti.com>
-In-Reply-To: <20220425141617.23925-1-afd@ti.com>
+Subject: [PATCH v4 0/4] OP-TEE RPC argument cache
+Date: Tue, 26 Apr 2022 09:33:34 +0200
+Message-ID: <20220426073338.3048192-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7629283080898457635=="
+Content-Type: multipart/mixed; boundary="===============3233881773717194042=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7629283080898457635==
+--===============3233881773717194042==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-These look to be leftover from an early edition of this driver. Userspace
-does not need this information. Checking all users of this that I have
-access to I have verified no one is using them.
+Hi all,
 
-They leak internal use flags out to userspace. Even more they are not
-correct anymore after a45ea4efa358. Lets drop these flags before
-someone does try to use them for something and they become ABI.
+This patchset optimizes handling of the argument struct passed to
+call_with_arg when doing a yielding call to OP-TEE.
 
-Signed-off-by: Andrew Davis <afd@ti.com>
----
+Prior to this was this struct allocated before the yielding call and
+then freed after it had returned. In case many calls are made in succession
+this results in quite a bit of unnecessary allocte/free and possibly also
+switching back and forth to secure work in order to register if needed.
 
-Changes from v1:
- - Removed flags return from tee_ioctl_shm_alloc()
+Another optimization handles the way the argument struct needed to do RPC
+is passed. Please see the patch "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+OPTEE_SMC_CALL_WITH_REGD_ARG" for details.
 
- drivers/tee/tee_core.c   | 2 --
- include/uapi/linux/tee.h | 4 ----
- 2 files changed, 6 deletions(-)
+Thanks,
+Jens
 
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index 8aa1a4836b92f..af0f7c603fa46 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -302,7 +302,6 @@ static int tee_ioctl_shm_alloc(struct tee_context *ctx,
- 		return PTR_ERR(shm);
- 
- 	data.id = shm->id;
--	data.flags = shm->flags;
- 	data.size = shm->size;
- 
- 	if (copy_to_user(udata, &data, sizeof(data)))
-@@ -339,7 +338,6 @@ tee_ioctl_shm_register(struct tee_context *ctx,
- 		return PTR_ERR(shm);
- 
- 	data.id = shm->id;
--	data.flags = shm->flags;
- 	data.length = shm->size;
- 
- 	if (copy_to_user(udata, &data, sizeof(data)))
-diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-index 25a6c534beb1b..23e57164693c4 100644
---- a/include/uapi/linux/tee.h
-+++ b/include/uapi/linux/tee.h
-@@ -42,10 +42,6 @@
- #define TEE_IOC_MAGIC	0xa4
- #define TEE_IOC_BASE	0
- 
--/* Flags relating to shared memory */
--#define TEE_IOCTL_SHM_MAPPED	0x1	/* memory mapped in normal world */
--#define TEE_IOCTL_SHM_DMA_BUF	0x2	/* dma-buf handle on shared memory */
--
- #define TEE_MAX_ARG_SIZE	1024
- 
- #define TEE_GEN_CAP_GP		(1 << 0)/* GlobalPlatform compliant TEE */
--- 
-2.17.1
+v1->v2:
+* Split out a separate commit "optee: rename rpc_arg_count to
+  rpc_param_count"
+* Check optee->rpc_param_count before calling optee_disable_shm_cache().
+* Mention OPTEE_SMC_CALL_WITH_REGD_ARG in commit message.
+
+v2->v3:
+* Applied Sumit's R-B to "optee: rename rpc_arg_count to rpc_param_count"
+  and "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and OPTEE_SMC_CALL_WITH_REGD_AR=
+G"
+* Fixed some review comments to "optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+  OPTEE_SMC_CALL_WITH_REGD_ARG"
+* Rebased on v5.18-rc1
+
+v3->v4:
+* Updated "optee: cache argument shared memory structs" to work with older
+  versions of the SMC-ABI when using dynamic shared memory.
+
+Jens Wiklander (4):
+  optee: rename rpc_arg_count to rpc_param_count
+  optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and
+    OPTEE_SMC_CALL_WITH_REGD_ARG
+  optee: add FF-A capability OPTEE_FFA_SEC_CAP_ARG_OFFSET
+  optee: cache argument shared memory structs
+
+ drivers/tee/optee/call.c          | 238 ++++++++++++++++++++++++------
+ drivers/tee/optee/core.c          |   1 +
+ drivers/tee/optee/ffa_abi.c       |  36 +++--
+ drivers/tee/optee/optee_ffa.h     |  12 +-
+ drivers/tee/optee/optee_private.h |  31 +++-
+ drivers/tee/optee/optee_smc.h     |  48 +++++-
+ drivers/tee/optee/smc_abi.c       | 197 ++++++++++++++++++++-----
+ 7 files changed, 461 insertions(+), 102 deletions(-)
+
+--=20
+2.31.1
 
 
---===============7629283080898457635==--
+--===============3233881773717194042==--
 
