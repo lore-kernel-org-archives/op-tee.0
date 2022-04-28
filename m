@@ -1,185 +1,48 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Ruchika Gupta <ruchika.gupta@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: Add Arm FF-A TEE driver
-Date: Wed, 27 Apr 2022 19:05:38 +0530
+Subject: Re: Linaro OP-TEE Contribution (LOC) monthly meeting April 2022
+Date: Thu, 28 Apr 2022 18:06:50 +0530
 Message-ID: 
- <CAFA6WYMCTn-YQrA-GixYu6OG8Qr_xsZ7xuk4LfFA-1PHgus3RQ@mail.gmail.com>
-In-Reply-To: <20220426144545.6qkn6iwayuwpvi7g@bogus>
+ <CANZ+81HP9QXcUGvHEoW+C8BWQN0BD+bePteA5y385A8mKD6pqg@mail.gmail.com>
+In-Reply-To: <
+ <CANZ+81Hoc7t-Y_myUkL1wUE08kMD85SYYSbJytbXaxsRUUquxw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0808323215024282315=="
+Content-Type: multipart/mixed; boundary="===============6170995698055857557=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0808323215024282315==
+--===============6170995698055857557==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Tue, 26 Apr 2022 at 20:15, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> On Fri, Apr 22, 2022 at 12:29:26PM +0530, Sumit Garg wrote:
-> > Hi Sudeep,
-> >
-> > On Fri, 8 Apr 2022 at 19:11, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > >
-> > > The Arm FF-A provides mechanism for Linux kernel and modules to
-> > > communicate with the secure partitions. This is useful for some
-> > > Trusted-OS driver that are kernel resident or modules.
-> > >
-> > > We would also like to avoid adding kernel drivers to communicate with
-> > > each and every service provided by these secure partitions. In order to
-> > > achieve the same with FF-A, it would be better to provide user-space
-> > > interface to access the FF-A functionalities. TEE subsystem seems to be
-> > > the best suited to meet those requirements without having to create a
-> > > new solution custom to FF-A alone.
-> >
-> > Yeah, this interface sounds interesting.
-> >
->
-> Good to hear that.
->
-> > >
-> > > All FF-A partitions that user-space access can be associated with this
-> > > new FF-A TEE driver and represented by a single TEE device. Though the
-> > > various secure services are generally distributed across multiple secure
-> > > partitions, all of these can be made accessible through this single FF-A
-> > > TEE device.
-> > >
-> > > The minimal functionality needed by the user space application is
-> > > implemented, namely:
-> > >  - Query all partition IDs for a specific FF-A UUID
-> > >  - Sending synchronous message to a partition
-> > >  - Share/unshare buffer with the partition
-> > >
-> >
-> > Are there any corresponding user-space applications/libraries
-> > available to get hands-on with this interface?
-> >
->
-> Not sure if the changes to make use of this new interface is publicly
-> available yet as these APIs are subject to change. I will see if something
-> can be shared, but this is the project[2] I am using to test with relevant
-> changes to use these TEE APIs.
->
+Gentle Reminder. We have the LOC meeting scheduled for today.
 
-AFAIR, there is a concept of trusted services being launched by OP-TEE
-as well [1]. Is it the environment you are testing this interface
-with?
+Regards,
+Ruchika on behalf of Linaro OP-TEE team.
 
-[1] https://developer.trustedfirmware.org/w/trusted-services/op-tee-spmc/
+On Mon, 25 Apr 2022 at 11:26, Ruchika Gupta <ruchika.gupta@linaro.org>
+wrote:
 
-> > > Cc: Jens Wiklander <jens.wiklander@linaro.org>
-> > > Cc: Sumit Garg <sumit.garg@linaro.org>
-> > > Co-developed-by: Balint Dobszay <balint.dobszay@arm.com>
-> > > Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
-> > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> > > ---
-> > >  drivers/tee/Kconfig                       |   1 +
-> > >  drivers/tee/Makefile                      |   1 +
-> > >  drivers/tee/arm_ffa_tee/Kconfig           |  15 +
-> > >  drivers/tee/arm_ffa_tee/Makefile          |   6 +
-> > >  drivers/tee/arm_ffa_tee/core.c            | 460 ++++++++++++++++++++++
-> > >  drivers/tee/arm_ffa_tee/ffa_tee_private.h |  39 ++
-> > >  drivers/tee/arm_ffa_tee/shm_pool.c        |  94 +++++
-> > >  drivers/tee/arm_ffa_tee/ts_msg.c          | 133 +++++++
-> > >  drivers/tee/arm_ffa_tee/ts_msg.h          |  75 ++++
-> > >  include/uapi/linux/arm_ffa_tee.h          | 116 ++++++
-> > >  include/uapi/linux/tee.h                  |   1 +
-> > >  11 files changed, 941 insertions(+)
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/Kconfig
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/Makefile
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/core.c
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/ffa_tee_private.h
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/shm_pool.c
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/ts_msg.c
-> > >  create mode 100644 drivers/tee/arm_ffa_tee/ts_msg.h
-> > >  create mode 100644 include/uapi/linux/arm_ffa_tee.h
-> > >
-> > > Hi All,
-> > >
-> > > This is the initial version of FF-A TEE driver to get the feedback on t=
-he
-> > > overall design/approach.
-> > >
-> > > Few TODOs I plan to do before we finalise:
-> > > 1. Need to decouple the driver from few Trusted Service protocols curre=
-ntly
-> > >    implemented. I have WIP, but couldn't get all the tests working(yet =
-to
-> > >    figure out whether the issue is in driver or tests themselves). Just
-> > >    posting it as is to get initial feedback on other areas.
-> >
-> > Yes I would be in favor of this.
-> >
+> Hi,
 >
-> I am too, but Balint had some concerns which I need to discuss with him yet.
+> OP-TEE Contributions (LOC) monthly meeting is planned for Thursday April
+> 28 @17.00 (UTC + 2).
 >
-> > >
-> > > 2. Based on the way FF-A spec changes/discussions, does it make sense to
-> > >    make search based on UUID + partitionID instead of just partitionID =
-or
-> > >    leave that for userspace.
-> >
-> > IIUC, the UUID is the one identifying the trusted service. So what
-> > purpose does partionID solves for user-space program?
-> >
+> We have following on the agenda
+> -  Fault Mitigation patterns in OP-TEE - Jens Wiklander
 >
-> Sorry for not giving complete picture here. In the context of FF-A and secu=
-re
-> partitions, there were discussions to allow single partition implementing
-> multiple services/protocols(each associated with UUID) and on a system with
-> multiple SPs, 2 different SPs can be implementing same protocol/service.
-> Sorry if I am missing something here or if that is impossible, this is just
-> my understanding and hence I was check if UUID + something(vm_id as per FF-A
-> spec) need to be used to identify which partition and service we would want=
- to
-> talk to.
+> If you have any more topics you'd like to discuss, please let us know and
+> we can schedule them.
 >
-
-Okay, I see this explanation coming from FF-A spec but currently FF-A
-bus in the kernel only enumerates secure partitions via UUIDs only. I
-guess that needs to change first.
-
--Sumit
-
-> > >
-> > > 3. While I definitely want to move the protocol specifics from the driv=
-er
-> > >    (as mentioned in (1)), do we even try to remove adding UUID of each =
-service
-> > >    we would like to use this driver.
-> >
-> > Yes, we shouldn't hardcode any UUIDs for trusted services within the
-> > driver (it isn't scalable) but rather during open sessions we should
-> > search if a particular UUID is available on FF-A bus to communicate
-> > with?
-> >
+> Meeting details:
+> ---------------
+> Date/time: April 28(a)17.00 (UTC + 2)
+> https://everytimezone.com/s/700b9d66
+> Connection details: https://www.trustedfirmware.org/meetings/
+> Meeting notes: http://bit.ly/loc-notes
 >
-> Yes it is not scalable and I am aware of that. I haven't explored the
-> options to get rid of them yet. Thanks for the suggestion.
->
-> > >    I haven't thought through that yet,
-> > >    but the idea I have is to just have a blocked UUID list which can
-> > >    contain UUID for OPTEE and other in-kernel users.
-> > >    That may need changes in FF-A bus match but something to consider ?
-> > >
-> >
-> > Currently in the case of OP-TEE we depend on an open session login
-> > method where the particular trusted application decides whether a
-> > particular login method is allowed or not, refer here [1] for more
-> > details. I guess similar access control checks can be implemented by a
-> > particular trusted service during an open session. This will allow us
-> > to not maintain any allowed or blocked list.
-> >
->
-> Thanks for the details, I will explore and see how we can use something
-> similar. I will ping you if I get stuck or need more info or need more
-> discussion on that.
->
-> --
 > Regards,
-> Sudeep
->
-> [2] https://git.trustedfirmware.org/TS/trusted-services.git
+> Ruchika on behalf of the Linaro OP-TEE team
 >
 
---===============0808323215024282315==--
+--===============6170995698055857557==--
 
