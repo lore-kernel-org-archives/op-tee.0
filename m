@@ -1,55 +1,47 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE v3.17 S-EL1 SPMC status
-Date: Tue, 03 May 2022 16:08:37 +0200
-Message-ID: <9E76137B-DD0A-4BBB-9D5E-BCC178DBD9F3@arm.com>
+Subject: [GIT PULL] TEE menu for v5.19
+Date: Tue, 03 May 2022 21:16:26 +0200
+Message-ID: <20220503191626.GA3278203@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8195764717710722023=="
+Content-Type: multipart/mixed; boundary="===============5435494282329904279=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8195764717710722023==
+--===============5435494282329904279==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi All,
+Hello arm-soc maintainers,
 
-This is a follow-up email to the OP-TEE v3.17 release, highlighting the
-updates to the SPMC component. As you might know there is a forked
-version living at [1], and we are continuously working on moving all
-features to upstream.
+Please pull this small patch which combines the config and menu for TEE's
+menuconfig into one line.
 
-This version enables all PSA Secure Partitions implemented by Trusted
-Services to work with the upstream SPMC. For more information about the
-PSA SPs, please see [2].
+Thanks,
+Jens
 
-Short summary of introduced changes:
-  - Added support to process the SP manifests in the SPMC.
-    The device MMIO regions described in the SP manifest are mapped into
-    the SP's translation regime, as requested by FF-A.
-  - Added support for the FF-A v1.0 partition boot protocol.
-    The SPMC will pass information to the S-EL0 SPs about the device
-    regions mapped. The boot information is passed in device tree
-    format, using the same bindings as the SP manifest [3].
-  - Forward TPM Event Log to S-EL0 SPs.
+The following changes since commit 3123109284176b1532874591f7c81f3837bbdc17:
 
-For more details on how to get, build and test the SPMC, please see [4].
+  Linux 5.18-rc1 (2022-04-03 14:08:21 -0700)
 
-If you have any questions, please do not hesitate to reach out to us via
-[5] or [6].
+are available in the Git repository at:
 
-Regards,
-Balint on behalf of the Trusted Services team
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/tee-menu-fo=
+r-v5.19
 
-[1] https://git.trustedfirmware.org/OP-TEE/optee_os.git/log/?h=3Dpsa-developm=
-ent
-[2] https://trusted-services.readthedocs.io/en/integration
-[3] https://trustedfirmware-a.readthedocs.io/en/latest/components/ffa-manifes=
-t-binding.html
-[4] https://developer.trustedfirmware.org/w/trusted-services/op-tee-spmc
-[5] https://lists.trustedfirmware.org/mailman3/lists/op-tee.lists.trustedfirm=
-ware.org
-[6] https://lists.trustedfirmware.org/mailman3/lists/trusted-services.lists.t=
-rustedfirmware.org
+for you to fetch changes up to a4b75fe8e1c15c96c4eb083e211ccbbfd56599f9:
 
---===============8195764717710722023==--
+  tee: combine "config" and "menu" for TEE's menuconfig (2022-04-05 07:32:23 =
++0200)
+
+----------------------------------------------------------------
+Combine TEE config and menu in one line
+
+----------------------------------------------------------------
+Jan Engelhardt (1):
+      tee: combine "config" and "menu" for TEE's menuconfig
+
+ drivers/tee/Kconfig | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--===============5435494282329904279==--
 
