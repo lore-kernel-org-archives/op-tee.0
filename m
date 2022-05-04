@@ -1,23 +1,24 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] TEE SHM vmalloc for v5.19
-Date: Tue, 03 May 2022 21:29:16 +0200
-Message-ID: <20220503192916.GA3288817@jade>
+Subject: [GIT PULL] firmware: arm_ffa: Updates for v5.19
+Date: Wed, 04 May 2022 12:28:53 +0100
+Message-ID: <20220504112853.3491961-1-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6533140014115136734=="
+Content-Type: multipart/mixed; boundary="===============4098893122641222920=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6533140014115136734==
+--===============4098893122641222920==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello arm-soc maintainers,
+Hi ARM SoC Team,
 
-Please pull this patch which enables tee_shm_register_kernel_buf() to
-accept vmalloc()ed buffers.
+Please pull !
 
-Thanks,
-Jens
+Regards,
+Sudeep
+
+-->8
 
 The following changes since commit 3123109284176b1532874591f7c81f3837bbdc17:
 
@@ -25,24 +26,37 @@ The following changes since commit 3123109284176b1532874591f7c81f3837bbdc17:
 
 are available in the Git repository at:
 
-  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/tee-shm-vma=
-lloc-for-v5.19
+  git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.git tags/f=
+fa-updates-5.19
 
-for you to fetch changes up to 3e47235eaee09488c7e467b9aaccb7c93c862c6b:
+for you to fetch changes up to f3f3bdbd58cea4fdd088075fdc8864fc47ecd419:
 
-  tee: make tee_shm_register_kernel_buf vmalloc supported (2022-04-05 08:04:1=
-6 +0200)
-
-----------------------------------------------------------------
-TEE accept vmalloc()ed buffers for tee_shm_register_kernel_buf()
+  tee: optee: Use ffa_dev_get_drvdata to fetch driver_data (2022-04-29 14:51:=
+46 +0100)
 
 ----------------------------------------------------------------
-Phil Chang (1):
-      tee: make tee_shm_register_kernel_buf vmalloc supported
+Arm FF-A firmware driver updates/fixes for v5.19
 
- drivers/tee/optee/call.c |  2 +-
- drivers/tee/tee_shm.c    | 35 +++++++++++++++++++++++++----------
- 2 files changed, 26 insertions(+), 11 deletions(-)
+Couple of fixes to handle fragmented memory descriptors and incorrect
+UUID parameter passed to ffa_partition_probe. Another fix deals with
+the incorrect use of ffa_device's driver_data by the core driver.
+Apart from these fixes, there is an addition of ffa_dev_get_drvdata helper
+function and its use in optee driver.
 
---===============6533140014115136734==--
+----------------------------------------------------------------
+Marc Bonnici (1):
+      firmware: arm_ffa: Fix handling of fragmented memory descriptors
+
+Sudeep Holla (4):
+      firmware: arm_ffa: Fix uuid parameter to ffa_partition_probe
+      firmware: arm_ffa: Remove incorrect assignment of driver_data
+      firmware: arm_ffa: Add ffa_dev_get_drvdata helper function
+      tee: optee: Use ffa_dev_get_drvdata to fetch driver_data
+
+ drivers/firmware/arm_ffa/driver.c | 24 ++++++++++++++----------
+ drivers/tee/optee/ffa_abi.c       |  2 +-
+ include/linux/arm_ffa.h           |  7 ++++++-
+ 3 files changed, 21 insertions(+), 12 deletions(-)
+
+--===============4098893122641222920==--
 
