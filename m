@@ -1,53 +1,48 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Linus Walleij <linus.walleij@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: Add Arm FF-A TEE driver
-Date: Wed, 18 May 2022 11:11:09 +0100
-Message-ID: <20220518101109.xdmiuj5gjqg3drhm@bogus>
-In-Reply-To: <=?utf-8?q?=3CAS8PR08MB5895E2E79F48D5CBF939C45391CE9=40AS8PR08MB?=
- =?utf-8?q?5895=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: [PATCH] tee: optee: Pass a pointer to virt_addr_valid()
+Date: Thu, 19 May 2022 23:46:35 +0200
+Message-ID: <20220519214635.780339-1-linus.walleij@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8236863341238889070=="
+Content-Type: multipart/mixed; boundary="===============5206636010410736681=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8236863341238889070==
+--===============5206636010410736681==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 17, 2022 at 06:55:47PM +0100, Gyorgy Szing wrote:
-> Hi Sumit,
->=20
-> The best way to test the driver is to use the PSA SPs from Trusted Services
-> similarly as described on the wiki page above. We have merged the TEE driver
-> enablement patches to integration branch of TS recently, and as a result the
-> set-up and build instructions above will build an end-to-end config using
-> the TEE driver.
-> The TEE driver integration needs to be changed though. Instead of building
-> the TEE driver as an out of tree module from our fork [2], you might want to
-> change the config to use the driver posted by Sudeep. If you wish to use the
-> op-tee build flow, the makefiles in OP-TEE/build repo part of the above
-> set-up need modification too.
+A pointer into virtual memory is represented by a (void *)
+not an u32, so the compiler warns:
 
-Correct I have done something similar when testing as a module.
+drivers/tee/optee/call.c:365:29: warning: passing argument 1
+  of 'virt_to_pfn' makes pointer from integer without a
+  cast [-Wint-conversion]
 
-> TS will build multiple test executables targeting the Linux user-space. For
-> TEE driver testing any of these targeting the "arm-linux" environment will
-> do, but I suggest using the "ts-service-test".
->=20
-> AFAIK Sudeep is testing with TS too using a similar set-up.
->
+Fix this with an explicit cast.
 
-Indeed. I just made couple of minor changes to the way app checks the presence
-of the driver and dropped the version check.
-Ref: ffarpc_caller_check_version in components/rpc/ffarpc/caller/linux/ffarpc=
-_caller.c
-to make progress.
+Cc: Sumit Garg <sumit.garg@linaro.org>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/tee/optee/call.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> [2] https://gitlab.arm.com/linux-arm/linux-trusted-services
->=20
-
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index bd49ec934060..51275d77ec84 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -362,7 +362,7 @@ int optee_check_mem_type(unsigned long start, size_t num_=
+pages)
+ 	 * Allow kernel address to register with OP-TEE as kernel
+ 	 * pages are configured as normal memory only.
+ 	 */
+-	if (virt_addr_valid(start))
++	if (virt_addr_valid((void *)start))
+ 		return 0;
+=20
+ 	mmap_read_lock(mm);
 --=20
-Regards,
-Sudeep
+2.35.1
 
---===============8236863341238889070==--
+
+--===============5206636010410736681==--
 
