@@ -1,67 +1,52 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: Pass a pointer to virt_addr_valid()
-Date: Mon, 30 May 2022 07:55:00 +0200
-Message-ID: 
- <CAHUa44GF-k5NZnvQYMYQLo3HsmQ6b2Y7wW5rU-2jT7N39-C1Yg@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYPDMAaF2N-REbwoUCvXi2WcK8v1KBcy1UudCGtvYUiYmg@mail.gmail.com>>
+Subject: [GIT PULL] Fix OP-TEE compiler warning for v5.19
+Date: Mon, 30 May 2022 13:26:12 +0200
+Message-ID: <20220530112612.GA1511426@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9165760445229317325=="
+Content-Type: multipart/mixed; boundary="===============7546119952108804879=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9165760445229317325==
+--===============7546119952108804879==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 23, 2022 at 8:36 AM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Fri, 20 May 2022 at 03:18, Linus Walleij <linus.walleij@linaro.org> wr=
-ote:
-> >
-> > A pointer into virtual memory is represented by a (void *)
-> > not an u32, so the compiler warns:
-> >
-> > drivers/tee/optee/call.c:365:29: warning: passing argument 1
-> >   of 'virt_to_pfn' makes pointer from integer without a
-> >   cast [-Wint-conversion]
-> >
-> > Fix this with an explicit cast.
-> >
-> > Cc: Sumit Garg <sumit.garg@linaro.org>
-> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> > ---
-> >  drivers/tee/optee/call.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Hello arm-soc maintainers,
 
-Looks good, I'm picking up this.
+Please pull this small patch which fixes a compiler warning in the OP-TEE
+driver.
+
+Note that this pull request is on top of and earlier accepted/applied [1]
+pull request in order to avoid a merge conflict.
 
 Thanks,
 Jens
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> > index bd49ec934060..51275d77ec84 100644
-> > --- a/drivers/tee/optee/call.c
-> > +++ b/drivers/tee/optee/call.c
-> > @@ -362,7 +362,7 @@ int optee_check_mem_type(unsigned long start, size_t =
-num_pages)
-> >          * Allow kernel address to register with OP-TEE as kernel
-> >          * pages are configured as normal memory only.
-> >          */
-> > -       if (virt_addr_valid(start))
-> > +       if (virt_addr_valid((void *)start))
-> >                 return 0;
-> >
-> >         mmap_read_lock(mm);
-> > --
-> > 2.35.1
-> >
+[1] https://lore.kernel.org/lkml/20220503192916.GA3288817(a)jade/
 
---===============9165760445229317325==--
+The following changes since commit 3e47235eaee09488c7e467b9aaccb7c93c862c6b:
+
+  tee: make tee_shm_register_kernel_buf vmalloc supported (2022-04-05 08:04:1=
+6 +0200)
+
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git/ tags/optee-warn=
+ing-for-v5.19
+
+for you to fetch changes up to a3b9ecc805e9131476c719111fe347c7dbc0d1d1:
+
+  tee: optee: Pass a pointer to virt_addr_valid() (2022-05-30 08:06:45 +0200)
+
+----------------------------------------------------------------
+Fix a compiler warning in OP-TEE driver
+
+----------------------------------------------------------------
+Linus Walleij (1):
+      tee: optee: Pass a pointer to virt_addr_valid()
+
+ drivers/tee/optee/call.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--===============7546119952108804879==--
 
