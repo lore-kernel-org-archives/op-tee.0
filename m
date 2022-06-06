@@ -1,35 +1,44 @@
-From: Jerome Forissier <jerome@forissier.org>
+From: Marc Kleine-Budde <mkl@pengutronix.de>
 To: op-tee@lists.trustedfirmware.org
-Subject: Preparing for OP-TEE 3.10.0
-Date: Thu, 30 Jul 2020 14:23:38 +0200
-Message-ID: <c9b400cf-87cf-8052-aca8-32bca3f17bbe@forissier.org>
+Subject: [PATCH] tee: tee_get_drvdata(): fix description of return value
+Date: Mon, 06 Jun 2022 13:43:53 +0200
+Message-ID: <20220606114353.3551683-1-mkl@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1552861056015393879=="
+Content-Type: multipart/mixed; boundary="===============8594952303313247208=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1552861056015393879==
+--===============8594952303313247208==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-[BCC all OP-TEE maintainers]
+This patch fixes the description of tee_get_drvdata()'s return value.
+It actually returns the driver_data pointer supplied to
+tee_device_alloc() since the TEE subsystem was added to the kernel.
 
-Hi OP-TEE maintainers & contributors,
+Fixes: 967c9cca2cc5 ("tee: generic TEE subsystem")
+Cc: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
+---
+ drivers/tee/tee_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It is time again to prepare for a new OP-TEE release (3.10.0). Target is
-Friday, August 21st which leaves us 3 weeks to finalize the release.
-
-Please start testing your favorite platform(s) and report any issue in
-this pull request [1]. I will create a release candidate tag one week
-before the release date, at which point we will do some more testing and
-I will collect Tested-by tags in the same pull request.
-
-[1] https://github.com/OP-TEE/optee_os/pull/4008
-
-Thanks!
-
-Regards,
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 8aa1a4836b92..cebe4963ad87 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -1075,7 +1075,7 @@ EXPORT_SYMBOL_GPL(tee_device_unregister);
+ /**
+  * tee_get_drvdata() - Return driver_data pointer
+  * @teedev:	Device containing the driver_data pointer
+- * @returns the driver_data pointer supplied to tee_register().
++ * @returns the driver_data pointer supplied to tee_device_alloc().
+  */
+ void *tee_get_drvdata(struct tee_device *teedev)
+ {
 -- 
-Jerome
+2.35.1
 
---===============1552861056015393879==--
+
+
+--===============8594952303313247208==--
 
