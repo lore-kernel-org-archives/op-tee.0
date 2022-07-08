@@ -1,61 +1,61 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Preparing for OP-TEE 3.18.0
-Date: Fri, 08 Jul 2022 09:07:58 +0200
-Message-ID: 
- <CAHUa44ELc9JD35aTUbYU3u=67Js4cQ53_FjKBJr=C3HBShF78A@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44HcfGyDvX=wWd=5_pkPiPT3tUTkBMeoRejxKdAQaAffWw@mail.gmail.com>>
+Subject: [GIT PULL] TEE Fixes for v5.19
+Date: Fri, 08 Jul 2022 15:46:07 +0200
+Message-ID: <20220708134607.GA901814@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8295046362721794692=="
+Content-Type: multipart/mixed; boundary="===============8682417632659470576=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8295046362721794692==
+--===============8682417632659470576==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-[BCC all OP-TEE maintainers]
+Hello arm-soc maintainers,
 
-Hi,
-
-I've now added the tag 3.18.0-rc1 to the following repositories:
-build
-optee_benchmark
-optee_client
-optee_docs
-optee_examples
-optee_os
-optee_test
-
-The 3.18.0 release is scheduled for Friday 15-July-2022
+Please pull these small fixes in the TEE subssytem. The OP-TEE driver
+patch fixes an error which was introduced during the merge window. I'm
+not sure if the error really can be triggered, but it would be nice to
+have it fixed before the release.
 
 Thanks,
 Jens
 
-On Thu, Jun 23, 2022 at 5:10 PM Jens Wiklander <jens.wiklander@linaro.org>
-wrote:
+The following changes since commit b13baccc3850ca8b8cccbf8ed9912dbaa0fdf7f3:
 
-> [BCC all OP-TEE maintainers]
->
-> Hi OP-TEE maintainers & contributors,
->
-> OP-TEE v3.17.0 is scheduled to be released on 2022-07-15. So, now is a
-> good time to start testing the master branch on the various platforms
-> and report/fix any bugs.
->
-> The GitHub pull request for collecting Tested-by tags or any other
-> comments is https://github.com/OP-TEE/optee_os/pull/5395
->
-> As usual, we will create a release candidate tag one week before the
-> release date for final testing.
->
-> In addition to that you can find some additional information related
-> to releases here:
-> https://optee.readthedocs.io/en/latest/general/releases.html
->
-> Thanks,
-> Jens
->
+  Linux 5.19-rc2 (2022-06-12 16:11:37 -0700)
 
---===============8295046362721794692==--
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git/ tags/tee-fixes-=
+for-v5.19
+
+for you to fetch changes up to e5ce073c8a1e01b215a5eb32ba48f8d17ded3bd5:
+
+  tee: tee_get_drvdata(): fix description of return value (2022-07-08 10:51:2=
+4 +0200)
+
+----------------------------------------------------------------
+Fixes for TEE subsystem
+
+A fix for the recently merged commit ed8faf6c8f8c ("optee: add
+OPTEE_SMC_CALL_WITH_RPC_ARG and OPTEE_SMC_CALL_WITH_REGD_ARG").
+Two small fixes in comment, repeated words etc.
+
+----------------------------------------------------------------
+Jiang Jian (1):
+      optee: Remove duplicate 'of' in two places.
+
+Marc Kleine-Budde (1):
+      tee: tee_get_drvdata(): fix description of return value
+
+Yang Yingliang (1):
+      optee: smc_abi.c: fix wrong pointer passed to IS_ERR/PTR_ERR()
+
+ drivers/tee/optee/optee_smc.h | 2 +-
+ drivers/tee/optee/smc_abi.c   | 4 ++--
+ drivers/tee/tee_core.c        | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+--===============8682417632659470576==--
 
