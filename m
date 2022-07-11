@@ -1,61 +1,55 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] TEE Fixes for v5.19
-Date: Fri, 08 Jul 2022 15:46:07 +0200
-Message-ID: <20220708134607.GA901814@jade>
+Subject: Re: [PATCH] tee: tee_get_drvdata(): fix description of return value
+Date: Mon, 11 Jul 2022 08:05:56 +0200
+Message-ID: 
+ <CAHUa44Fr3S5QMV2WJRS=EkCiJtx5f+76x0wQDEfysv-W+CBWwg@mail.gmail.com>
+In-Reply-To: <20220606114353.3551683-1-mkl@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8682417632659470576=="
+Content-Type: multipart/mixed; boundary="===============4871053105268384928=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8682417632659470576==
+--===============4871053105268384928==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+On Mon, Jun 6, 2022 at 1:43 PM Marc Kleine-Budde <mkl@pengutronix.de> wrote:
+>
+> This patch fixes the description of tee_get_drvdata()'s return value.
+> It actually returns the driver_data pointer supplied to
+> tee_device_alloc() since the TEE subsystem was added to the kernel.
+>
+> Fixes: 967c9cca2cc5 ("tee: generic TEE subsystem")
+> Cc: Jens Wiklander <jens.wiklander@linaro.org>
+> Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
+> ---
+>  drivers/tee/tee_core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Please pull these small fixes in the TEE subssytem. The OP-TEE driver
-patch fixes an error which was introduced during the merge window. I'm
-not sure if the error really can be triggered, but it would be nice to
-have it fixed before the release.
+I'm picking up this.
 
 Thanks,
 Jens
 
-The following changes since commit b13baccc3850ca8b8cccbf8ed9912dbaa0fdf7f3:
+>
+>
+> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> index 8aa1a4836b92..cebe4963ad87 100644
+> --- a/drivers/tee/tee_core.c
+> +++ b/drivers/tee/tee_core.c
+> @@ -1075,7 +1075,7 @@ EXPORT_SYMBOL_GPL(tee_device_unregister);
+>  /**
+>   * tee_get_drvdata() - Return driver_data pointer
+>   * @teedev:    Device containing the driver_data pointer
+> - * @returns the driver_data pointer supplied to tee_register().
+> + * @returns the driver_data pointer supplied to tee_device_alloc().
+>   */
+>  void *tee_get_drvdata(struct tee_device *teedev)
+>  {
+> --
+> 2.35.1
+>
+>
 
-  Linux 5.19-rc2 (2022-06-12 16:11:37 -0700)
-
-are available in the Git repository at:
-
-  https://git.linaro.org/people/jens.wiklander/linux-tee.git/ tags/tee-fixes-=
-for-v5.19
-
-for you to fetch changes up to e5ce073c8a1e01b215a5eb32ba48f8d17ded3bd5:
-
-  tee: tee_get_drvdata(): fix description of return value (2022-07-08 10:51:2=
-4 +0200)
-
-----------------------------------------------------------------
-Fixes for TEE subsystem
-
-A fix for the recently merged commit ed8faf6c8f8c ("optee: add
-OPTEE_SMC_CALL_WITH_RPC_ARG and OPTEE_SMC_CALL_WITH_REGD_ARG").
-Two small fixes in comment, repeated words etc.
-
-----------------------------------------------------------------
-Jiang Jian (1):
-      optee: Remove duplicate 'of' in two places.
-
-Marc Kleine-Budde (1):
-      tee: tee_get_drvdata(): fix description of return value
-
-Yang Yingliang (1):
-      optee: smc_abi.c: fix wrong pointer passed to IS_ERR/PTR_ERR()
-
- drivers/tee/optee/optee_smc.h | 2 +-
- drivers/tee/optee/smc_abi.c   | 4 ++--
- drivers/tee/tee_core.c        | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
---===============8682417632659470576==--
+--===============4871053105268384928==--
 
