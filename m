@@ -1,57 +1,40 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Olivier Deprez <Olivier.Deprez@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH] optee: smc_abi.c: fix wrong pointer passed to IS_ERR/PTR_ERR()
-Date: Mon, 11 Jul 2022 08:09:22 +0200
-Message-ID: 
- <CAHUa44Gxs9-wB6xJ9+Fbkgzw+n8UkpLOzj0GDX4toH_O5Dtqwg@mail.gmail.com>
-In-Reply-To: <20220628065216.901194-1-yangyingliang@huawei.com>
+Subject: OP-TEE BTI support
+Date: Wed, 13 Jul 2022 13:20:34 +0000
+Message-ID: <VE1PR08MB4976593CAB0239C2FE9E075C9B899@VE1PR08MB4976.eurprd08.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9211650585664083545=="
+Content-Type: multipart/mixed; boundary="===============7000101009816845564=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9211650585664083545==
+--===============7000101009816845564==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 28, 2022 at 8:42 AM Yang Yingliang <yangyingliang@huawei.com> w=
-rote:
->
-> It should be 'rpc_arg' pass to IS_ERR/PTR_ERR().
->
-> Fixes: ed8faf6c8f8c ("optee: add OPTEE_SMC_CALL_WITH_RPC_ARG and OPTEE_SMC_=
-CALL_WITH_REGD_ARG")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
-> ---
->  drivers/tee/optee/smc_abi.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Hi,
 
-I'm picking up this. I've added some description in the commit message.
+(in context of testing BTI support when OP-TEE is loaded as a secure partitio=
+n on top of SEL2/Hafnium)
 
-Thanks,
-Jens
+I read through the OP-TEE documentation, and would like to confirm:
+CFG_CORE_BTI=3Dy seems mandatorily required to support BTI in TAs. It means w=
+e cannot enable independently BTI for TAs and 'disable' for TEE core, is this=
+ correct?
 
->
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index 385cb0aee610..a1c1fa1a9c28 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -884,8 +884,8 @@ static int optee_smc_do_call_with_arg(struct tee_contex=
-t *ctx,
->
->                 rpc_arg_offs =3D OPTEE_MSG_GET_ARG_SIZE(arg->num_params);
->                 rpc_arg =3D tee_shm_get_va(shm, offs + rpc_arg_offs);
-> -               if (IS_ERR(arg))
-> -                       return PTR_ERR(arg);
-> +               if (IS_ERR(rpc_arg))
-> +                       return PTR_ERR(rpc_arg);
->         }
->
->         if  (rpc_arg && tee_shm_is_dynamic(shm)) {
-> --
-> 2.25.1
->
+Interestingly I noticed I can build with CFG_CORE_BTI=3Dn and CTG_TA_BTI=3Dy =
+but I appreciate the end result is that the TA get BTI landpads but is not ef=
+fectively leveraging the arch extension because code page aren't guarde if TE=
+E core option isn't enabled.
 
---===============9211650585664083545==--
+I was investigating a way to omit building a specific toolchain as it appears=
+ to be required when CFG_CORE_BTI=3Dy, but I'll go ahead if there's no way ro=
+und.
+Out of curiosity is OP-TEE core pulling gcc libraries? And if yes, which kind=
+? I naively thought OP-TEE core would be freestanding or be independent from =
+toolchain libs.
+
+Thanks & Regards,
+Olivier.
+
+--===============7000101009816845564==--
 
