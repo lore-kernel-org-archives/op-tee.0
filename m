@@ -1,31 +1,38 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 3.18.0 has been released
-Date: Fri, 15 Jul 2022 11:36:57 +0200
-Message-ID: 
- <CAHUa44EO+qcjKqh-7BiwX7iu-o_g_ziv-ZdkYWZYU+K5ro4tFg@mail.gmail.com>
+Subject: OP-TEE 3.18 SPMC status
+Date: Tue, 19 Jul 2022 16:10:28 +0200
+Message-ID: <8D5B0415-5CE8-4401-9727-030F4CF9843D@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8031752284371759597=="
+Content-Type: multipart/mixed; boundary="===============7522375534427348851=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8031752284371759597==
+--===============7522375534427348851==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi All,
 
-I'm pleased to announce that OP-TEE version 3.18.0 is now available.
-The list of changes can be found in the changelog [1].
+This is a follow-up email to the OP-TEE 3.18 release, highlighting the
+updates to the SPMC and related components.
 
-A big thank you to everyone who participated with contributions and
-helping out with testing the release [2].
+Short summary of introduced changes:
+  - optee_os: Added support to the SPMC to process memory regions
+              described in the SP manifest. This enables running the
+              Trusted Services smm-gateway SP.
+  - manifest: Added new manifest (derived from the fvp manifest) which
+              includes Trusted Services and related kernel modules [1].
+  - build:    Added new top level Makefile to configure optee_os as
+              S-EL1 SPMC, build Trusted Services SPs and test apps [2].
 
-[1] https://github.com/OP-TEE/optee_os/blob/master/CHANGELOG.md
-[2] https://github.com/OP-TEE/optee_os/commit/1ee647035939e073a2e8dddb727c0f0=
-19cc035f1
+For more details on how to get, build and test the SPMC, please see [3].
 
 Regards,
-Jens
+Balint
 
---===============8031752284371759597==--
+[1]: https://github.com/OP-TEE/manifest/blob/3.18.0/fvp-ts.xml
+[2]: https://github.com/OP-TEE/build/blob/3.18.0/fvp-psa-sp.mk
+[3]: https://developer.trustedfirmware.org/w/trusted-services/op-tee-spmc
+
+--===============7522375534427348851==--
 
