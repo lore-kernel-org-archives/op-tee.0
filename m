@@ -1,38 +1,58 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Judy Wang <wangjudy@microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 3.18 SPMC status
-Date: Tue, 19 Jul 2022 16:10:28 +0200
-Message-ID: <8D5B0415-5CE8-4401-9727-030F4CF9843D@arm.com>
+Subject: Current design of tee-supplicant can't support ftpm requests during
+ kernel space bootup
+Date: Wed, 20 Jul 2022 03:51:57 +0000
+Message-ID: <PUZP153MB06977BECD3377560AE02D4BFDC8E9@PUZP153MB0697.APCP153.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7522375534427348851=="
+Content-Type: multipart/mixed; boundary="===============1163178508923745393=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7522375534427348851==
+--===============1163178508923745393==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi All,
+Hi Jens,
 
-This is a follow-up email to the OP-TEE 3.18 release, highlighting the
-updates to the SPMC and related components.
+As we are developing platforms to enable RPMB secure storage + fTPM TA, we re=
+alize that the current design of optee-os relying on a user space daemon tee-=
+supplicant to serve requests cannot meet requirements of another open source =
+linux kernel, IMA(Integrity Measurement Architecture). This module will try t=
+o collect data from TPM devices, which in our case, is fTPM TA. It has to col=
+lect data when kernel space is booting up, so we cannot delay these requests =
+further until user space is up. With RPMB as our secure storage, some request=
+s will be sent back to kernel space, but tee-supplicant context is not yet in=
+itialized, which results in IMA detection of TPM devices failed. Therefore, f=
+ailed on the measurements we need.
+I am wondering if we have related discussion on how modify the design to serv=
+e optee-os requests during kernel bootup. I can't find related topics in LKML=
+ archive.
 
-Short summary of introduced changes:
-  - optee_os: Added support to the SPMC to process memory regions
-              described in the SP manifest. This enables running the
-              Trusted Services smm-gateway SP.
-  - manifest: Added new manifest (derived from the fvp manifest) which
-              includes Trusted Services and related kernel modules [1].
-  - build:    Added new top level Makefile to configure optee_os as
-              S-EL1 SPMC, build Trusted Services SPs and test apps [2].
+Thank you.
+Judy.
 
-For more details on how to get, build and test the SPMC, please see [3].
+Cat from /Documentation/ABI/testing/sysfs-bus-optee-devices
+What:                /sys/bus/tee/devices/optee-ta-<uuid>/
+Date:           May 2020
+KernelVersion   5.8
+Contact:        op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trus=
+tedfirmware.org>
+Description:
+                  OP-TEE bus provides reference to registered drivers under t=
+his directory. The <uuid>
+                  matches Trusted Application (TA) driver and corresponding T=
+A in secure OS. Drivers
+                  are free to create needed API under optee-ta-<uuid> directo=
+ry.
 
-Regards,
-Balint
+Reference:
 
-[1]: https://github.com/OP-TEE/manifest/blob/3.18.0/fvp-ts.xml
-[2]: https://github.com/OP-TEE/build/blob/3.18.0/fvp-psa-sp.mk
-[3]: https://developer.trustedfirmware.org/w/trusted-services/op-tee-spmc
+fTPM TA: microsoft/MSRSec: Security and Privacy Research at Microsoft (github=
+.com)<https://github.com/microsoft/MSRSec>
+IMA enabling: https://sourceforge.net/p/linux-ima/wiki/Home/#enabling-ima-mea=
+surement:~:text=3Dsystem%27s%20runtime%20integrity.-,Enabling%20IMA%2Dmeasure=
+ment,-IMA%20was%20first
 
---===============7522375534427348851==--
+
+--===============1163178508923745393==--
 
