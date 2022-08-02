@@ -1,49 +1,57 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jérôme Forissier <jerome@forissier.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [GIT PULL] OP-TEE driver for v5.11
-Date: Fri, 27 Nov 2020 08:14:59 +0100
+Subject: Re: OP-TEE MTE support
+Date: Tue, 02 Aug 2022 14:58:51 +0200
 Message-ID: 
- <CAHUa44Fnj4zQ_3O+kdzVopVAggUOdb34KGnA8+r=Rp-4+etWbw@mail.gmail.com>
-In-Reply-To: <
- <CAK8P3a2CDp0KwCZjffA78fXUqOfAkvUb8Q=R64830fvvn_WG2w@mail.gmail.com>>
+ <CAA-cTWYHEYxgeEjwEUsPKB8PEKMnvwabTB0fm7J5LUMi+4YYHg@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3CVE1PR08MB4976A1A0CE0D3E0C4C30184B9B899=40VE1PR08MB?=
+ =?utf-8?q?4976=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0147191210715232764=="
+Content-Type: multipart/mixed; boundary="===============8254881615879837586=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0147191210715232764==
+--===============8254881615879837586==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi Arnd,
+Hi Olivier,
 
-On Thu, Nov 26, 2020 at 10:00 PM Arnd Bergmann <arnd@kernel.org> wrote:
+On Wed, Jul 13, 2022 at 3:39 PM Olivier Deprez <Olivier.Deprez@arm.com>
+wrote:
+
+> Hi,
 >
-> On Wed, Nov 25, 2020 at 1:01 PM Jens Wiklander
-> <jens.wiklander@linaro.org> wrote:
-> >
-> > Hello arm-soc maintainers,
-> >
-> > Please pull this small patch which allows the OP-TEE driver to work with
-> > ARMv7 based single CPU systems.
+> (in context of testing MTE support when OP-TEE is loaded as a secure
+> partition on top of SEL2/Hafnium)
 >
-> Can you rebase that branch onto -rc1? I had started the arm/drivers
-> branch early on top of that, so I'd prefer to avoid a backmerged.
+> I appreciate MTE support is fresh starting with v3.18, bear with me if I
+> missed details:
 >
-> For the commit itself, shouldn't that be marked as a bugfix and get
-> merged into v5.10 instead? If it should, you don't have to rebase
-> since the arm/fixes branch is already ahead.
-
-Yes it is a bit of a bugfix, so if you don't mind taking it as that
-I'm sure that Rui would be happy to get it in this release.
-
+> 1/ noticed using both CFG_TA_PAUTH=y CFG_MEMTAG=y (if permitted) may break
+> the build
 >
-> Also, it would be nice to Cc linux-arm-kernel on the pull request
-> in addition to linux-kernel.
+> diff --git a/core/tee/tee_svc.c b/core/tee/tee_svc.c
+> index 03bb174a..59f8afae 100644
+> --- a/core/tee/tee_svc.c
+> +++ b/core/tee/tee_svc.c
+> @@ -365,7 +365,7 @@ const struct tee_props tee_propset_tee[] = {
+>                 .name =
+> "org.trustedfirmware.optee.cpu.feat_pauth_implemented",
+>                 .prop_type = USER_TA_PROP_TYPE_BOOL,
+>                 .get_prop_func = get_prop_feat_pauth_implemented
+> -       }
+> +       },
+>  #endif
+>  #if MEMTAG_IS_ENABLED
+>         {
+>
 
-I'll keep that in mind the next time. Thanks for the feedback.
+Thanks for reporting, addressed in
+https://github.com/OP-TEE/optee_os/pull/5467. Feel free to give a
+Reported-by: if you want.
 
-Cheers,
-Jens
+-- 
+Jerome
 
---===============0147191210715232764==--
+--===============8254881615879837586==--
 
