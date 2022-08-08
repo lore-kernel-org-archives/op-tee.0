@@ -1,57 +1,102 @@
-From: Jérôme Forissier <jerome@forissier.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: OP-TEE MTE support
-Date: Tue, 02 Aug 2022 14:58:51 +0200
+Subject: Re: [EXTERNAL] Re: Current design of tee-supplicant can't support
+ ftpm requests during kernel space bootup
+Date: Mon, 08 Aug 2022 10:46:59 +0200
 Message-ID: 
- <CAA-cTWYHEYxgeEjwEUsPKB8PEKMnvwabTB0fm7J5LUMi+4YYHg@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CVE1PR08MB4976A1A0CE0D3E0C4C30184B9B899=40VE1PR08MB?=
- =?utf-8?q?4976=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+ <CAHUa44Fv=N3RfVLzg8qKL3ch_yMeukz_oxy-c4sWbDgO7JaKog@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYNw=WMTPHG=g5TxAo8LCK14-ktsosFyBVqpkCuV3RaxVw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8254881615879837586=="
+Content-Type: multipart/mixed; boundary="===============7826895650045560314=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8254881615879837586==
+--===============7826895650045560314==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi Olivier,
+Hi,
 
-On Wed, Jul 13, 2022 at 3:39 PM Olivier Deprez <Olivier.Deprez@arm.com>
-wrote:
-
-> Hi,
+On Wed, Jul 27, 2022 at 7:28 AM Sumit Garg <sumit.garg@linaro.org> wrote:
 >
-> (in context of testing MTE support when OP-TEE is loaded as a secure
-> partition on top of SEL2/Hafnium)
+> On Wed, 27 Jul 2022 at 07:47, Judy Wang <wangjudy@microsoft.com> wrote:
+> >
+> > If a fast path to the MMC driver isn't an option due to concerns of affec=
+ting RPMB emulation codes.
 >
-> I appreciate MTE support is fresh starting with v3.18, bear with me if I
-> missed details:
->
-> 1/ noticed using both CFG_TA_PAUTH=y CFG_MEMTAG=y (if permitted) may break
-> the build
->
-> diff --git a/core/tee/tee_svc.c b/core/tee/tee_svc.c
-> index 03bb174a..59f8afae 100644
-> --- a/core/tee/tee_svc.c
-> +++ b/core/tee/tee_svc.c
-> @@ -365,7 +365,7 @@ const struct tee_props tee_propset_tee[] = {
->                 .name =
-> "org.trustedfirmware.optee.cpu.feat_pauth_implemented",
->                 .prop_type = USER_TA_PROP_TYPE_BOOL,
->                 .get_prop_func = get_prop_feat_pauth_implemented
-> -       }
-> +       },
->  #endif
->  #if MEMTAG_IS_ENABLED
->         {
->
+> RPMB emulation in user-mode supplicant is just there for testing
+> purposes before switching to real RPMB partition. So a fast path to
+> MMC driver for RPMB access should be the default option with an
+> opt-out choice via a config option like CONFIG_OPTEE_RPMB_EMULATION
+> which should be disabled by default.
 
-Thanks for reporting, addressed in
-https://github.com/OP-TEE/optee_os/pull/5467. Feel free to give a
-Reported-by: if you want.
+I agree, but the name of the config option can be discussed. I'd
+prefer something that describes what it does from a kernel point of
+view, perhaps CONFIG_OPTEE_RPMB_FASTPATH.
 
--- 
-Jerome
+So far we have considered the problem of selecting the correct RPMB
+device (out of many) a user space problem, but with the fast-path
+option, we're moving the problem into kernel space. Tee-supplicant has
+a --rpmb-cid option as one way of addressing this problem. I'm not
+sure what's the best approach for the kernel driver.
 
---===============8254881615879837586==--
+Cheers,
+Jens
+
+>
+> -Sumit
+>
+> > Any other suggestions we could solve this issue?
+> > Thank you.
+> >
+> > Judy.
+> >
+> > -----Original Message-----
+> > From: Sumit Garg <sumit.garg@linaro.org>
+> > Sent: Tuesday, July 26, 2022 12:37 PM
+> > To: J=C3=A9r=C3=B4me Forissier <jerome@forissier.org>
+> > Cc: Judy Wang <wangjudy@microsoft.com>; op-tee(a)lists.trustedfirmware.=
+org; Carl Lamb <Carl.Lamb@microsoft.com>; Tyler Hicks <Tyler.Hicks@micros=
+oft.com>
+> > Subject: Re: [EXTERNAL] Re: Current design of tee-supplicant can't suppor=
+t ftpm requests during kernel space bootup
+> >
+> > [You don't often get email from sumit.garg(a)linaro.org. Learn why this i=
+s important at https://aka.ms/LearnAboutSenderIdentification ]
+> >
+> > On Mon, 25 Jul 2022 at 19:44, J=C3=A9r=C3=B4me Forissier <jerome@foriss=
+ier.org> wrote:
+> > >
+> > >
+> > > On Thu, Jul 21, 2022 at 11:46 AM Sumit Garg <sumit.garg@linaro.org> w=
+rote:
+> > >>
+> > >> On Thu, 21 Jul 2022 at 14:41, Judy Wang <wangjudy@microsoft.com> wro=
+te:
+> > >>
+> > >> > I can see the whole design is rooted with the idea of having tee-sup=
+plicant as the servant, don't think it's worth to flip the whole design just =
+to fill the gap before user space is up. We haven't really come up with a des=
+ign so will keep you posted.
+> > >>
+> > >> You don't need to flip the tee-supplicant design but rather just
+> > >> handle RPMB requests in the kernel itself if it's supported by MMC
+> > >> driver (you need a similar hook in the kernel as we have in u-boot
+> > >> [1]). All other OP-TEE RPC requests unhandled by the kernel can be
+> > >> forwarded to the user-mode tee-supplicant.
+> > >
+> > >
+> > > Correct but please keep in mind that we have RPMB emulation code inside=
+ tee-supplicant, which is quite useful for testing. Therefore any "fast path"=
+ to the MMC driver inside the OP-TEE driver should probably be opt-out.
+> > >
+> >
+> > Agree.
+> >
+> > -Sumit
+> >
+> > > --
+> > > Jerome
+
+--===============7826895650045560314==--
 
