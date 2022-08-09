@@ -1,116 +1,111 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Issue related to mempool allocation
-Date: Mon, 08 Aug 2022 15:34:46 +0200
+Subject: Re: [EXTERNAL] Re: Current design of tee-supplicant can't support
+ ftpm requests during kernel space bootup
+Date: Tue, 09 Aug 2022 18:16:59 +0530
 Message-ID: 
- <CA+Eyddbk=k8AkFd24s768dsd7FO8DEYkq7p23KQRqafE-JTEoQ@mail.gmail.com>
+ <CAFA6WYNezhvpT5y+xnSSLRxq6G2KDOxsJCOVEkbkaxoLFUMXJA@mail.gmail.com>
 In-Reply-To: <
- <CAEf7q6OFuC1A9-EkO=8od5KMbTEZ3BonYbgKPqXFoNvuUKfiww@mail.gmail.com>>
+ <CAHUa44Fv=N3RfVLzg8qKL3ch_yMeukz_oxy-c4sWbDgO7JaKog@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0601411041153301800=="
+Content-Type: multipart/mixed; boundary="===============0267717145214285855=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0601411041153301800==
+--===============0267717145214285855==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ramakanth,
+On Mon, 8 Aug 2022 at 14:17, Jens Wiklander <jens.wiklander@linaro.org> wro=
+te:
+>
+> Hi,
+>
+> On Wed, Jul 27, 2022 at 7:28 AM Sumit Garg <sumit.garg@linaro.org> wrote:
+> >
+> > On Wed, 27 Jul 2022 at 07:47, Judy Wang <wangjudy@microsoft.com> wrote:
+> > >
+> > > If a fast path to the MMC driver isn't an option due to concerns of aff=
+ecting RPMB emulation codes.
+> >
+> > RPMB emulation in user-mode supplicant is just there for testing
+> > purposes before switching to real RPMB partition. So a fast path to
+> > MMC driver for RPMB access should be the default option with an
+> > opt-out choice via a config option like CONFIG_OPTEE_RPMB_EMULATION
+> > which should be disabled by default.
+>
+> I agree, but the name of the config option can be discussed. I'd
+> prefer something that describes what it does from a kernel point of
+> view, perhaps CONFIG_OPTEE_RPMB_FASTPATH.
+>
+> So far we have considered the problem of selecting the correct RPMB
+> device (out of many) a user space problem, but with the fast-path
+> option, we're moving the problem into kernel space. Tee-supplicant has
+> a --rpmb-cid option as one way of addressing this problem. I'm not
+> sure what's the best approach for the kernel driver.
 
-On Mon, 8 Aug 2022 at 15:20, ramakanth varala <ramakanth.varala@gmail.com>
-wrote:
+I think a kernel module parameter should suffice the RPMB selection
+problem. It should tell which RPMB partition is assigned to OP-TEE.
 
-> Hi All,
->
-> The above issue got closed.
->
-You can always re-open a ticket if you want to.
-
+-Sumit
 
 >
-> Need some more suggestions as mentioned below.
+> Cheers,
+> Jens
 >
-I believe Jerome did give a couple of suggestions in the ticket [1], have
-you tried any of those?
+> >
+> > -Sumit
+> >
+> > > Any other suggestions we could solve this issue?
+> > > Thank you.
+> > >
+> > > Judy.
+> > >
+> > > -----Original Message-----
+> > > From: Sumit Garg <sumit.garg@linaro.org>
+> > > Sent: Tuesday, July 26, 2022 12:37 PM
+> > > To: J=C3=A9r=C3=B4me Forissier <jerome@forissier.org>
+> > > Cc: Judy Wang <wangjudy@microsoft.com>; op-tee(a)lists.trustedfirmwar=
+e.org; Carl Lamb <Carl.Lamb@microsoft.com>; Tyler Hicks <Tyler.Hicks@micr=
+osoft.com>
+> > > Subject: Re: [EXTERNAL] Re: Current design of tee-supplicant can't supp=
+ort ftpm requests during kernel space bootup
+> > >
+> > > [You don't often get email from sumit.garg(a)linaro.org. Learn why this=
+ is important at https://aka.ms/LearnAboutSenderIdentification ]
+> > >
+> > > On Mon, 25 Jul 2022 at 19:44, J=C3=A9r=C3=B4me Forissier <jerome@fori=
+ssier.org> wrote:
+> > > >
+> > > >
+> > > > On Thu, Jul 21, 2022 at 11:46 AM Sumit Garg <sumit.garg@linaro.org>=
+ wrote:
+> > > >>
+> > > >> On Thu, 21 Jul 2022 at 14:41, Judy Wang <wangjudy@microsoft.com> w=
+rote:
+> > > >>
+> > > >> > I can see the whole design is rooted with the idea of having tee-s=
+upplicant as the servant, don't think it's worth to flip the whole design jus=
+t to fill the gap before user space is up. We haven't really come up with a d=
+esign so will keep you posted.
+> > > >>
+> > > >> You don't need to flip the tee-supplicant design but rather just
+> > > >> handle RPMB requests in the kernel itself if it's supported by MMC
+> > > >> driver (you need a similar hook in the kernel as we have in u-boot
+> > > >> [1]). All other OP-TEE RPC requests unhandled by the kernel can be
+> > > >> forwarded to the user-mode tee-supplicant.
+> > > >
+> > > >
+> > > > Correct but please keep in mind that we have RPMB emulation code insi=
+de tee-supplicant, which is quite useful for testing. Therefore any "fast pat=
+h" to the MMC driver inside the OP-TEE driver should probably be opt-out.
+> > > >
+> > >
+> > > Agree.
+> > >
+> > > -Sumit
+> > >
+> > > > --
+> > > > Jerome
 
-[1] https://github.com/OP-TEE/optee_os/issues/5466#issuecomment-1202408119
-
-
->
-> I am trying to get a CSR using mbedtls.
->
-> This CSR needs rsa key as one of it's parameter, as of now using the
-> mbedTLS api (mbedtls_rsa_gen_key ) for rsa key generation.
->
-> I want rsa to be stored in TEE secure storage. This I guess can be done in
-> two ways.
->
-> 1. Use TEE_Generatekey for generating rsa key pair. Give this required key
-> parameter to mbeldTLS API's to get the CSR workdone . Though I can store
-> the rsa key , but as of now I don't know how to pass TEE generated RSA key
-> pair to mbedTLS API's.
->
-> Else
->
-> 2. Use mbedTLS API's to  generate rsa key  and get CSR generation done.. In
-> this method also , don't know how mbedTLS rsa key can be stored in the TEE
-> secure storage
->
-> Any inputs on this would be really appreciated.
->
-> Thanks
->
->
-> On Tue, Aug 2, 2022 at 12:41 PM ramakanth varala <
-> ramakanth.varala(a)gmail.com>
-> wrote:
->
-> > Hi All,
-> >
-> >
-> > I want to generate a rsa key pair with 4096 bits.
-> >
-> > Using below mbedTLS api , inside my TEE server side implementation.
-> >
-> >
-> > ret = mbedtls_rsa_gen_key( mbedtls_pk_rsa( key ),
-> mbedtls_ctr_drbg_random,
-> > &ctr_drbg, 4096, 65537 );
-> >
-> >
-> > This is resulting in the below error.
-> > mempool_alloc:197Failed to allocate 288 bytes, please tune the pool
-> > size failed
-> >
-> >
-> >
-> > Mines is arm64 infrastructure, with kernel 4.19.183 and optee_os 3.7.0
-> >
-> >
-> > We tried doing below change (courtesy:
-> > https://github.com/OP-TEE/optee_os/issues/3328) and recompiling tomcrypt
-> > library
-> >
-> >
-> > In core/lib/libtomcrypt/mpi_desc.c, we changed MPI_MEMPOOL_SIZE
-> >
-> >       #define MPI_MEMPOOL_SIZE        (42 * 1024)
-> >
-> > to    #define MPI_MEMPOOL_SIZE        (82 * 1024)
-> >
-> >
-> > This didn’t help, kindly provide your inputs.
-> >
-> >
-> > Thanks
-> >
-> >
-> >
->
-
-
--- 
-Regards,
-Joakim
-
---===============0601411041153301800==--
+--===============0267717145214285855==--
 
