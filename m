@@ -1,74 +1,50 @@
-From: kernel test robot <lkp@intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 1/1] tee: new ioctl to a register tee_shm from a dmabuf
- file descriptor
-Date: Sun, 14 Aug 2022 09:13:00 +0800
-Message-ID: <202208140900.TNSQFBzy-lkp@intel.com>
-In-Reply-To: <20220812143055.12938-2-olivier.masse@nxp.com>
+Subject: Re: [PATCH v2 0/1] tee: Add tee_shm_register_fd
+Date: Tue, 16 Aug 2022 10:17:56 +0200
+Message-ID: 
+ <CAHUa44EgA1btRyj2ByooyLr9Q+8AmW=9EfjtQFxyr7DuCXASvA@mail.gmail.com>
+In-Reply-To: <20220812143055.12938-1-olivier.masse@nxp.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2014772376564849457=="
+Content-Type: multipart/mixed; boundary="===============1411236216568227497=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2014772376564849457==
+--===============1411236216568227497==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
 Hi Olivier,
 
-Thank you for the patch! Yet something to improve:
+On Fri, Aug 12, 2022 at 4:31 PM Olivier Masse <olivier.masse@nxp.com> wrote:
+>
+> Add a new ioctl called TEE_IOC_SHM_REGISTER_FD to register a
+> shared memory from a dmabuf file descriptor.
+> This new ioctl will allow the Linux Kernel to register a buffer
+> to be used by the Secure Data Path OPTEE OS feature.
+>
+> Please find more information here:
+> https://static.linaro.org/connect/san19/presentations/san19-107.pdf
+>
+> Patch tested on Hikey 6220.
 
-[auto build test ERROR on drm-misc/drm-misc-next]
-[also build test ERROR on drm-tip/drm-tip linus/master v5.19 next-20220812]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+What's new in this V2?
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Olivier-Masse/tee-Add-=
-tee_shm_register_fd/20220812-223302
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-config: arm-randconfig-r026-20220814 (https://download.01.org/0day-ci/archive=
-/20220814/202208140900.TNSQFBzy-lkp(a)intel.com/config)
-compiler: clang version 16.0.0 (https://github.com/llvm/llvm-project 3329cec2=
-f79185bafd678f310fafadba2a8c76d2)
-reproduce (this is a W=3D1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/ma=
-ke.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install arm cross compiling tool for clang build
-        # apt-get install binutils-arm-linux-gnueabi
-        # https://github.com/intel-lab-lkp/linux/commit/994ce362c3244904f79f1=
-e7d4cb436ea162421d1
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Olivier-Masse/tee-Add-tee_shm_regist=
-er_fd/20220812-223302
-        git checkout 994ce362c3244904f79f1e7d4cb436ea162421d1
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dclang make.cross W=3D1 =
-O=3Dbuild_dir ARCH=3Darm SHELL=3D/bin/bash
+Thanks,
+Jens
 
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
+>
+> Etienne Carriere (1):
+>   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+>
+>  drivers/tee/tee_core.c   | 38 +++++++++++++++
+>  drivers/tee/tee_shm.c    | 99 +++++++++++++++++++++++++++++++++++++++-
+>  include/linux/tee_drv.h  | 11 +++++
+>  include/uapi/linux/tee.h | 29 ++++++++++++
+>  4 files changed, 175 insertions(+), 2 deletions(-)
+>
+> --
+> 2.25.0
+>
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
-
-ERROR: modpost: "__aeabi_uldivmod" [drivers/mtd/mtdswap.ko] undefined!
->> ERROR: modpost: module tee uses symbol dma_buf_get from namespace DMA_BUF,=
- but does not import it.
->> ERROR: modpost: module tee uses symbol dma_buf_attach from namespace DMA_B=
-UF, but does not import it.
->> ERROR: modpost: module tee uses symbol dma_buf_map_attachment from namespa=
-ce DMA_BUF, but does not import it.
->> ERROR: modpost: module tee uses symbol dma_buf_unmap_attachment from names=
-pace DMA_BUF, but does not import it.
->> ERROR: modpost: module tee uses symbol dma_buf_detach from namespace DMA_B=
-UF, but does not import it.
->> ERROR: modpost: module tee uses symbol dma_buf_put from namespace DMA_BUF,=
- but does not import it.
-
---=20
-0-DAY CI Kernel Test Service
-https://01.org/lkp
-
---===============2014772376564849457==--
+--===============1411236216568227497==--
 
