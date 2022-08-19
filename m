@@ -1,62 +1,55 @@
-From: Linus Torvalds <torvalds@linuxfoundation.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2] tee: add overflow check in register_shm_helper()
-Date: Thu, 18 Aug 2022 09:38:14 -0700
+Subject: Re: [PATCH v2 0/1] tee: Add tee_shm_register_fd
+Date: Fri, 19 Aug 2022 13:54:31 +0530
 Message-ID: 
- <CAHk-=wiEqhzrMskE=7_q4E+X+zPyxm6xvuADhaBxh8gD5p57kA@mail.gmail.com>
-In-Reply-To: <20220818110859.1918035-1-jens.wiklander@linaro.org>
+ <CAFA6WYM89+SrW2Br-fnFke4djt4GgGHXn7JS3=rxvAa7dAAY7w@mail.gmail.com>
+In-Reply-To: <20220812143055.12938-1-olivier.masse@nxp.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0314775903501621620=="
+Content-Type: multipart/mixed; boundary="===============3501985062384335888=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0314775903501621620==
+--===============3501985062384335888==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 18, 2022 at 4:09 AM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
+Hi Olivier,
+
+On Fri, 12 Aug 2022 at 20:01, Olivier Masse <olivier.masse@nxp.com> wrote:
 >
-> Fix this by adding an overflow check when calculating the end of the
-> memory range. Also add an explicit call to access_ok() in
-> tee_shm_register_user_buf() to catch an invalid user space address
-> early.
+> Add a new ioctl called TEE_IOC_SHM_REGISTER_FD to register a
+> shared memory from a dmabuf file descriptor.
+> This new ioctl will allow the Linux Kernel to register a buffer
+> to be used by the Secure Data Path OPTEE OS feature.
+>
+> Please find more information here:
+> https://static.linaro.org/connect/san19/presentations/san19-107.pdf
+>
+> Patch tested on Hikey 6220.
+>
 
-I applied the access_ok() part of this which was clearly missing.
+AFAIU, for the OP-TEE SDP feature to work you need to have a DMA-BUF
+heap driver for allocating secure buffers through exposed chardev:
+"/dev/dma_heap/sdp". Have you tested it with some out-of-tree driver
+as I can't find it upstream? Also, do you plan to push that upstream
+as well?
 
-The check_add_overflow() should be pointless with that.
+BTW, please add a changelog while sending newer patch-set versions.
 
-And the "roundup() overflows" check should just check for a zero
-result - if it is actually needed. Which I don't think it is on any
-relevant platform (the TEE subsystem only works on arm and x86).
+-Sumit
 
-I do think it might be worth discussing whether
-ALTERNATE_USER_ADDRESS_SPACE (and no-MMU) architectures should still
-have access_ok() check that it doesn't actually wrap around in the
-address space, so I've added linux-arch here.
+> Etienne Carriere (1):
+>   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+>
+>  drivers/tee/tee_core.c   | 38 +++++++++++++++
+>  drivers/tee/tee_shm.c    | 99 +++++++++++++++++++++++++++++++++++++++-
+>  include/linux/tee_drv.h  | 11 +++++
+>  include/uapi/linux/tee.h | 29 ++++++++++++
+>  4 files changed, 175 insertions(+), 2 deletions(-)
+>
+> --
+> 2.25.0
+>
 
-That's m68k, PA-RISC, S390 and sparc.
-
-In fact, I wonder if some or all of those might want to have the
-TASK_SIZE limit anyway - they may have a separate user address space,
-but several ones have some limits even then, and probably should have
-access_ok() check them rather than depend on the hardware then giving
-page fault.
-
-For example, sparc32 has a user address space, but defines TASK_SIZE
-to 0xF0000000. m68k has several different case. parisc also has an
-actual limit.
-
-And s390 uses
-
-    #define TASK_SIZE_MAX         (-PAGE_SIZE)
-
-which is a good value and leaves a guard page at the top.
-
-So I think the "roundup overflows" would probably be best fixed by
-just admitting that every architecture in practice has a TASK_SIZE_MAX
-anyway, and we should just make access_ok() check it.
-
-              Linus
-
---===============0314775903501621620==--
+--===============3501985062384335888==--
 
