@@ -1,29 +1,24 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Greg KH <gregkh@linuxfoundation.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v3] tee: add overflow check in register_shm_helper()
-Date: Fri, 19 Aug 2022 15:49:28 +0530
-Message-ID: 
- <CAFA6WYOaKmcdU8ZAOsno9N8znCeg3QTu=LhSwJf-5J2P9ud4Vw@mail.gmail.com>
+Date: Fri, 19 Aug 2022 12:36:31 +0200
+Message-ID: <Yv9nr4/XQI0Tl4XO@kroah.com>
 In-Reply-To: <20220819094952.2602066-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1710165159175294606=="
+Content-Type: multipart/mixed; boundary="===============2594293756167957887=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1710165159175294606==
+--===============2594293756167957887==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
-
-On Fri, 19 Aug 2022 at 15:20, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
+On Fri, Aug 19, 2022 at 11:49:52AM +0200, Jens Wiklander wrote:
 > With special lengths supplied by user space, register_shm_helper() has
 > an integer overflow when calculating the number of pages covered by a
 > supplied user space memory region. This causes
 > internal_get_user_pages_fast() a helper function of
 > pin_user_pages_fast() to do a NULL pointer dereference.
->
+>=20
 > [   14.141620] Unable to handle kernel NULL pointer dereference at virtual =
 address 0000000000000010
 > [   14.142556] Mem abort info:
@@ -83,12 +78,12 @@ eec60
 > [   14.166258]  el0t_64_sync+0x18c/0x190
 > [   14.166878] Code: 91002318 11000401 b900f7e1 f9403be1 (f820d839)
 > [   14.167666] ---[ end trace 0000000000000000 ]---
->
+>=20
 > Fix this by adding an overflow check when calculating the end of the
 > memory range. Also add an explicit call to access_ok() in
 > tee_shm_register_user_buf() to catch an invalid user space address
 > early.
->
+>=20
 > Fixes: 033ddf12bcf5 ("tee: add register user memory")
 > Cc: stable(a)vger.kernel.org
 > Reported-by: Nimish Mishra <neelam.nimish@gmail.com>
@@ -96,81 +91,10 @@ eec60
 > Reported-by: Debdeep Mukhopadhyay <debdeep.mukhopadhyay@gmail.com>
 > Suggested-by: Linus Torvalds <torvalds@linuxfoundation.org>
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
-> v2 -> v3:
-> - Public review
-> - Relies entirely on access_ok() for overflow checks as suggested
 
-Linus has already applied this fix here [1].
+This conflicts with 573ae4f13f63 ("tee: add overflow check in
+register_shm_helper()") in Linus's tree :(
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
-/?id=3D573ae4f13f630d6660008f1974c0a8a29c30e18a
 
-> - Check against zero registersted pages is kept
-
-Do you think this alone fixes any other scenario? If not then I would
-suggest sending it as a regular improvement patch.
-
--Sumit
-
-> - Replaced Suggested-by tag
->
-> v1 -> v2:
-> - Non-public review
-> - Added access_ok() and overflow check with roundup()
->
->  drivers/tee/tee_shm.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index f2b1bcefcadd..a88669d6ea68 100644
-> --- a/drivers/tee/tee_shm.c
-> +++ b/drivers/tee/tee_shm.c
-> @@ -240,6 +240,14 @@ register_shm_helper(struct tee_context *ctx, unsigned =
-long addr,
->         void *ret;
->         int rc;
->
-> +       addr =3D untagged_addr(addr);
-> +       start =3D rounddown(addr, PAGE_SIZE);
-> +       num_pages =3D (roundup(addr + length, PAGE_SIZE) - start) / PAGE_SI=
-ZE;
-> +
-> +       /* Error out early if no pages are to be registered */
-> +       if (!num_pages)
-> +               return ERR_PTR(-EINVAL);
-> +
->         if (!tee_device_get(teedev))
->                 return ERR_PTR(-EINVAL);
->
-> @@ -261,11 +269,8 @@ register_shm_helper(struct tee_context *ctx, unsigned =
-long addr,
->         shm->flags =3D flags;
->         shm->ctx =3D ctx;
->         shm->id =3D id;
-> -       addr =3D untagged_addr(addr);
-> -       start =3D rounddown(addr, PAGE_SIZE);
->         shm->offset =3D addr - start;
->         shm->size =3D length;
-> -       num_pages =3D (roundup(addr + length, PAGE_SIZE) - start) / PAGE_SI=
-ZE;
->         shm->pages =3D kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
->         if (!shm->pages) {
->                 ret =3D ERR_PTR(-ENOMEM);
-> @@ -326,6 +331,9 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_co=
-ntext *ctx,
->         void *ret;
->         int id;
->
-> +       if (!access_ok((void __user *)addr, length))
-> +               return ERR_PTR(-EFAULT);
-> +
->         mutex_lock(&teedev->mutex);
->         id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
->         mutex_unlock(&teedev->mutex);
-> --
-> 2.31.1
->
-
---===============1710165159175294606==--
+--===============2594293756167957887==--
 
