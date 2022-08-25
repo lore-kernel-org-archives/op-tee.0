@@ -1,65 +1,46 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: fix compiler warning in tee_shm_register()
-Date: Thu, 25 Aug 2022 10:43:55 +0200
-Message-ID: 
- <CAHUa44EpnrsYaoLTgwzSOTT=V2XRB5=e_zEJ3gx1jZvYuvGjuw@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYMytTKk_Z5u=6cd6JWCGp==jA9jDhC+oBboeZODGa+EOQ@mail.gmail.com>>
+Subject: [GIT PULL] Fix TEE system compiler warning fo4r v6.0
+Date: Thu, 25 Aug 2022 11:57:05 +0200
+Message-ID: <YwdHcdEUib7obbbW@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3113037494304435577=="
+Content-Type: multipart/mixed; boundary="===============6992508155400648471=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3113037494304435577==
+--===============6992508155400648471==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Aug 22, 2022 at 10:39 AM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Mon, 22 Aug 2022 at 13:58, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > Include <linux/uaccess.h> to avoid the warning:
-> >    drivers/tee/tee_shm.c: In function 'tee_shm_register':
-> > >> drivers/tee/tee_shm.c:242:14: error: implicit declaration of function =
-'access_ok' [-Werror=3Dimplicit-function-declaration]
-> >      242 |         if (!access_ok((void __user *)addr, length))
-> >          |              ^~~~~~~~~
-> >    cc1: some warnings being treated as errors
-> >
-> > Fixes: 573ae4f13f63 ("tee: add overflow check in register_shm_helper()")
-> > Reported-by: kernel test robot <lkp@intel.com>
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/tee_shm.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Hello arm-soc maintainers,
 
-Thanks, I'm picking this up now.
+Please pull this small patch which fixes a recently introduced compiler
+warning the TEE subsystem.
 
-Cheers,
+Thanks,
 Jens
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index 1175f3a46859..27295bda3e0b 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -9,6 +9,7 @@
-> >  #include <linux/sched.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/tee_drv.h>
-> > +#include <linux/uaccess.h>
-> >  #include <linux/uio.h>
-> >  #include "tee_private.h"
-> >
-> > --
-> > 2.31.1
-> >
+The following changes since commit 1c23f9e627a7b412978b4e852793c5e3c3efc555:
 
---===============3113037494304435577==--
+  Linux 6.0-rc2 (2022-08-21 17:32:54 -0700)
+
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/tee-fix-for=
+-v6.0
+
+for you to fetch changes up to eccd7439709810127563e7e3e49b8b44c7b2791d:
+
+  tee: fix compiler warning in tee_shm_register() (2022-08-25 11:40:06 +0200)
+
+----------------------------------------------------------------
+Add a missing include in the TEE subsystem
+
+----------------------------------------------------------------
+Jens Wiklander (1):
+      tee: fix compiler warning in tee_shm_register()
+
+ drivers/tee/tee_shm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+--===============6992508155400648471==--
 
