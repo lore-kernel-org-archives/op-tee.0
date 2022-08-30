@@ -1,96 +1,142 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH 6/9] firmware: arm_ffa: Make memory apis ffa_device independent
-Date: Tue, 30 Aug 2022 11:06:57 +0100
-Message-ID: <20220830100700.344594-7-sudeep.holla@arm.com>
+Subject: [PATCH 7/9] firmware: arm_ffa: Add v1.1 get_partition_info support
+Date: Tue, 30 Aug 2022 11:06:58 +0100
+Message-ID: <20220830100700.344594-8-sudeep.holla@arm.com>
 In-Reply-To: <20220830100700.344594-1-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6524495583714344143=="
+Content-Type: multipart/mixed; boundary="===============8423886514452917906=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6524495583714344143==
+--===============8423886514452917906==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-There is a requirement to make memory APIs independent of the ffa_device.
-One of the use-case is to have a common memory driver that manages the
-memory for all the ffa_devices. That commom memory driver won't be a
-ffa_driver or won't have any ffa_device associated with it. So having
-these memory APIs accessible without a ffa_device is needed and should
-be possible as most of these are handled by the partition manager(SPM
-or hypervisor).
+FF-A v1.1 adds support to discovery the UUIDs of the partitions that was
+missing in v1.0 and which the driver workarounds by using UUIDs supplied
+by the ffa_drivers.
 
-Drop the ffa_device argument to the memory APIs and make them ffa_device
-independent.
+Add the v1.1 get_partition_info support and disable the workaround if
+the detected FF-A version is greater than v1.0.
 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/firmware/arm_ffa/driver.c | 6 ++----
- drivers/tee/optee/ffa_abi.c       | 2 +-
- include/linux/arm_ffa.h           | 6 ++----
- 3 files changed, 5 insertions(+), 9 deletions(-)
+ drivers/firmware/arm_ffa/driver.c | 39 ++++++++++++++++++++++++-------
+ include/linux/arm_ffa.h           |  1 +
+ 2 files changed, 32 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/dri=
 ver.c
-index 5f02b670e964..5c8484b05c50 100644
+index 5c8484b05c50..6822241168d6 100644
 --- a/drivers/firmware/arm_ffa/driver.c
 +++ b/drivers/firmware/arm_ffa/driver.c
-@@ -640,8 +640,7 @@ static int ffa_sync_send_receive(struct ffa_device *dev,
- 				       dev->mode_32bit, data);
+@@ -264,18 +264,24 @@ static int ffa_rxtx_unmap(u16 vm_id)
+ 	return 0;
  }
 =20
--static int
--ffa_memory_share(struct ffa_device *dev, struct ffa_mem_ops_args *args)
-+static int ffa_memory_share(struct ffa_mem_ops_args *args)
++#define PARTITION_INFO_GET_RETURN_COUNT_ONLY	BIT(0)
++
+ /* buffer must be sizeof(struct ffa_partition_info) * num_partitions */
+ static int
+ __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2, u32 uuid3,
+ 			 struct ffa_partition_info *buffer, int num_partitions)
  {
- 	if (drv_info->mem_ops_native)
- 		return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
-@@ -649,8 +648,7 @@ ffa_memory_share(struct ffa_device *dev, struct ffa_mem_o=
-ps_args *args)
- 	return ffa_memory_ops(FFA_MEM_SHARE, args);
- }
+-	int count;
++	int idx, count, flags =3D 0, size;
+ 	ffa_value_t partition_info;
 =20
--static int
--ffa_memory_lend(struct ffa_device *dev, struct ffa_mem_ops_args *args)
-+static int ffa_memory_lend(struct ffa_mem_ops_args *args)
++	if (!buffer || !num_partitions) /* Just get the count for now */
++		flags =3D PARTITION_INFO_GET_RETURN_COUNT_ONLY;
++
+ 	mutex_lock(&drv_info->rx_lock);
+ 	invoke_ffa_fn((ffa_value_t){
+ 		      .a0 =3D FFA_PARTITION_INFO_GET,
+ 		      .a1 =3D uuid0, .a2 =3D uuid1, .a3 =3D uuid2, .a4 =3D uuid3,
++		      .a5 =3D flags,
+ 		      }, &partition_info);
+=20
+ 	if (partition_info.a0 =3D=3D FFA_ERROR) {
+@@ -285,8 +291,15 @@ __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2=
+, u32 uuid3,
+=20
+ 	count =3D partition_info.a2;
+=20
++	if (drv_info->version > FFA_VERSION_1_0)
++		size =3D partition_info.a3;
++	else
++		size =3D 8; /* FFA_VERSION_1_0 lacks size in the response */
++
+ 	if (buffer && count <=3D num_partitions)
+-		memcpy(buffer, drv_info->rx_buffer, sizeof(*buffer) * count);
++		for (idx =3D 0; idx < count; idx++)
++			memcpy(buffer + idx, drv_info->rx_buffer + idx * size,
++			       size);
+=20
+ 	ffa_rx_release();
+=20
+@@ -678,6 +691,14 @@ void ffa_device_match_uuid(struct ffa_device *ffa_dev, c=
+onst uuid_t *uuid)
+ 	int count, idx;
+ 	struct ffa_partition_info *pbuf, *tpbuf;
+=20
++	/*
++	 * FF-A v1.1 provides UUID for each partition as part of the discovery
++	 * API, the discovered UUID must be populated in the device's UUID and
++	 * there is no need to copy the same from the driver table.
++	 */
++	if (drv_info->version > FFA_VERSION_1_0)
++		return;
++
+ 	count =3D ffa_partition_probe(uuid, &pbuf);
+ 	if (count <=3D 0)
+ 		return;
+@@ -691,6 +712,7 @@ void ffa_device_match_uuid(struct ffa_device *ffa_dev, co=
+nst uuid_t *uuid)
+ static void ffa_setup_partitions(void)
  {
- 	/* Note that upon a successful MEM_LEND request the caller
- 	 * must ensure that the memory region specified is not accessed
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index 4c3b5d0008dd..7ec0a2f9a63b 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -294,7 +294,7 @@ static int optee_ffa_shm_register(struct tee_context *ctx=
-, struct tee_shm *shm,
- 	if (rc)
- 		return rc;
- 	args.sg =3D sgt.sgl;
--	rc =3D ffa_ops->memory_share(ffa_dev, &args);
-+	rc =3D ffa_ops->memory_share(&args);
- 	sg_free_table(&sgt);
- 	if (rc)
- 		return rc;
+ 	int count, idx;
++	uuid_t uuid;
+ 	struct ffa_device *ffa_dev;
+ 	struct ffa_partition_info *pbuf, *tpbuf;
+=20
+@@ -701,14 +723,15 @@ static void ffa_setup_partitions(void)
+ 	}
+=20
+ 	for (idx =3D 0, tpbuf =3D pbuf; idx < count; idx++, tpbuf++) {
+-		/* Note that the &uuid_null parameter will require
++		import_uuid(&uuid, (u8 *)tpbuf->uuid);
++
++		/* Note that the UUID will be uuid_null and that will require
+ 		 * ffa_device_match() to find the UUID of this partition id
+-		 * with help of ffa_device_match_uuid(). Once the FF-A spec
+-		 * is updated to provide correct UUID here for each partition
+-		 * as part of the discovery API, we need to pass the
+-		 * discovered UUID here instead.
++		 * with help of ffa_device_match_uuid(). FF-A v1.1 and above
++		 * provides UUID here for each partition as part of the
++		 * discovery API and the same is passed.
+ 		 */
+-		ffa_dev =3D ffa_device_register(&uuid_null, tpbuf->id, &ffa_ops);
++		ffa_dev =3D ffa_device_register(&uuid, tpbuf->id, &ffa_ops);
+ 		if (!ffa_dev) {
+ 			pr_err("%s: failed to register partition ID 0x%x\n",
+ 			       __func__, tpbuf->id);
 diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
-index 556f50f27fb1..eafab07c9f58 100644
+index eafab07c9f58..b40afa7933dc 100644
 --- a/include/linux/arm_ffa.h
 +++ b/include/linux/arm_ffa.h
-@@ -262,10 +262,8 @@ struct ffa_dev_ops {
- 	int (*sync_send_receive)(struct ffa_device *dev,
- 				 struct ffa_send_direct_data *data);
- 	int (*memory_reclaim)(u64 g_handle, u32 flags);
--	int (*memory_share)(struct ffa_device *dev,
--			    struct ffa_mem_ops_args *args);
--	int (*memory_lend)(struct ffa_device *dev,
--			   struct ffa_mem_ops_args *args);
-+	int (*memory_share)(struct ffa_mem_ops_args *args);
-+	int (*memory_lend)(struct ffa_mem_ops_args *args);
+@@ -107,6 +107,7 @@ struct ffa_partition_info {
+ /* partition can send and receive indirect messages. */
+ #define FFA_PARTITION_INDIRECT_MSG	BIT(2)
+ 	u32 properties;
++	u32 uuid[4];
  };
 =20
- #endif /* _LINUX_ARM_FFA_H */
+ /* For use with FFA_MSG_SEND_DIRECT_{REQ,RESP} which pass data via registers=
+ */
 --=20
 2.37.2
 
 
---===============6524495583714344143==--
+--===============8423886514452917906==--
 
