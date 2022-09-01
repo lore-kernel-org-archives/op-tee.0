@@ -1,85 +1,118 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 3/9] firmware: arm_ffa: Remove ffa_dev_ops_get()
-Date: Thu, 01 Sep 2022 09:39:13 +0200
+Subject: Re: [PATCH 1/9] firmware: arm_ffa: Add pointer to the ffa_dev_ops in
+ struct ffa_dev
+Date: Thu, 01 Sep 2022 09:42:55 +0200
 Message-ID: 
- <CAHUa44Fiunh_Ubk96+91p2+SW49xGGJ3MKoRfOVwTHU9AbuCHg@mail.gmail.com>
-In-Reply-To: <20220830100700.344594-4-sudeep.holla@arm.com>
+ <CAHUa44E8q27hy2i+sckuWd5GahGg=QxgLUWLAMQwCrxhUGNrNQ@mail.gmail.com>
+In-Reply-To: <20220830100700.344594-2-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0585627078181147944=="
+Content-Type: multipart/mixed; boundary="===============2046102292162278569=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0585627078181147944==
+--===============2046102292162278569==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Tue, Aug 30, 2022 at 12:07 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> The only user of this exported ffa_dev_ops_get() was OPTEE driver which
-> now uses ffa_dev->ops directly, there are no other users for this.
+> Currently ffa_dev_ops_get() is the way to fetch the ffa_dev_ops pointer.
+> It checks if the ffa_dev structure pointer is valid before returning the
+> ffa_dev_ops pointer.
 >
-> Also, since any ffa driver can use ffa_dev->ops directly, there will be
-> no need for ffa_dev_ops_get(), so just remove ffa_dev_ops_get().
+> Instead, the pointer can be made part of the ffa_dev structure and since
+> the core driver is incharge of creating ffa_device for each identified
+> partition, there is no need to check for the validity explicitly if the
+> pointer is embedded in the structure.
+>
+> Add the pointer to the ffa_dev_ops in the ffa_dev structure itself and
+> initialise the same as part of creation of the device.
 >
 > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > ---
->  drivers/firmware/arm_ffa/driver.c | 9 ---------
->  include/linux/arm_ffa.h           | 6 ------
->  2 files changed, 15 deletions(-)
+>  drivers/firmware/arm_ffa/bus.c    | 4 +++-
+>  drivers/firmware/arm_ffa/driver.c | 2 +-
+>  include/linux/arm_ffa.h           | 7 +++++--
+>  3 files changed, 9 insertions(+), 4 deletions(-)
 
 Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 
 >
+> diff --git a/drivers/firmware/arm_ffa/bus.c b/drivers/firmware/arm_ffa/bus.c
+> index 641a91819088..69328041fbc3 100644
+> --- a/drivers/firmware/arm_ffa/bus.c
+> +++ b/drivers/firmware/arm_ffa/bus.c
+> @@ -167,7 +167,8 @@ bool ffa_device_is_valid(struct ffa_device *ffa_dev)
+>         return valid;
+>  }
+>
+> -struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id)
+> +struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id,
+> +                                      const struct ffa_dev_ops *ops)
+>  {
+>         int ret;
+>         struct device *dev;
+> @@ -183,6 +184,7 @@ struct ffa_device *ffa_device_register(const uuid_t *uu=
+id, int vm_id)
+>         dev_set_name(&ffa_dev->dev, "arm-ffa-%04x", vm_id);
+>
+>         ffa_dev->vm_id =3D vm_id;
+> +       ffa_dev->ops =3D ops;
+>         uuid_copy(&ffa_dev->uuid, uuid);
+>
+>         ret =3D device_register(&ffa_dev->dev);
 > diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/d=
 river.c
-> index 213665e5ad0e..04e7cbb1b9aa 100644
+> index ec731e9e942b..213665e5ad0e 100644
 > --- a/drivers/firmware/arm_ffa/driver.c
 > +++ b/drivers/firmware/arm_ffa/driver.c
-> @@ -644,15 +644,6 @@ static const struct ffa_dev_ops ffa_ops =3D {
->         .memory_lend =3D ffa_memory_lend,
->  };
->
-> -const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_device *dev)
-> -{
-> -       if (ffa_device_is_valid(dev))
-> -               return &ffa_ops;
-> -
-> -       return NULL;
-> -}
-> -EXPORT_SYMBOL_GPL(ffa_dev_ops_get);
-> -
->  void ffa_device_match_uuid(struct ffa_device *ffa_dev, const uuid_t *uuid)
->  {
->         int count, idx;
+> @@ -688,7 +688,7 @@ static void ffa_setup_partitions(void)
+>                  * as part of the discovery API, we need to pass the
+>                  * discovered UUID here instead.
+>                  */
+> -               ffa_dev =3D ffa_device_register(&uuid_null, tpbuf->id);
+> +               ffa_dev =3D ffa_device_register(&uuid_null, tpbuf->id, &ffa=
+_ops);
+>                 if (!ffa_dev) {
+>                         pr_err("%s: failed to register partition ID 0x%x\n",
+>                                __func__, tpbuf->id);
 > diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
-> index 91b47e42b73d..556f50f27fb1 100644
+> index e5c76c1ef9ed..91b47e42b73d 100644
 > --- a/include/linux/arm_ffa.h
 > +++ b/include/linux/arm_ffa.h
-> @@ -55,7 +55,6 @@ int ffa_driver_register(struct ffa_driver *driver, struct=
- module *owner,
+> @@ -17,6 +17,7 @@ struct ffa_device {
+>         bool mode_32bit;
+>         uuid_t uuid;
+>         struct device dev;
+> +       const struct ffa_dev_ops *ops;
+>  };
+>
+>  #define to_ffa_dev(d) container_of(d, struct ffa_device, dev)
+> @@ -47,7 +48,8 @@ static inline void *ffa_dev_get_drvdata(struct ffa_device=
+ *fdev)
+>  }
+>
+>  #if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
+> -struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id);
+> +struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id,
+> +                                      const struct ffa_dev_ops *ops);
+>  void ffa_device_unregister(struct ffa_device *ffa_dev);
+>  int ffa_driver_register(struct ffa_driver *driver, struct module *owner,
 >                         const char *mod_name);
->  void ffa_driver_unregister(struct ffa_driver *driver);
->  bool ffa_device_is_valid(struct ffa_device *ffa_dev);
-> -const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_device *dev);
+> @@ -57,7 +59,8 @@ const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_devi=
+ce *dev);
 >
 >  #else
 >  static inline
-> @@ -79,11 +78,6 @@ static inline void ffa_driver_unregister(struct ffa_driv=
-er *driver) {}
->  static inline
->  bool ffa_device_is_valid(struct ffa_device *ffa_dev) { return false; }
->
-> -static inline
-> -const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_device *dev)
-> -{
-> -       return NULL;
-> -}
->  #endif /* CONFIG_ARM_FFA_TRANSPORT */
->
->  #define ffa_register(driver) \
+> -struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id)
+> +struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id,
+> +                                      const struct ffa_dev_ops *ops)
+>  {
+>         return NULL;
+>  }
 > --
 > 2.37.2
 >
 
---===============0585627078181147944==--
+--===============2046102292162278569==--
 
