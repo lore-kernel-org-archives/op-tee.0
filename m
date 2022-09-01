@@ -1,105 +1,90 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH 7/9] firmware: arm_ffa: Add v1.1 get_partition_info support
-Date: Thu, 01 Sep 2022 11:37:42 +0200
+ Re: [PATCH 4/9] firmware: arm_ffa: Add support for querying FF-A features
+Date: Thu, 01 Sep 2022 13:32:10 +0200
 Message-ID: 
- <CAHUa44EswTNmyApBT2jNfkAT2T8Efw0M8NAvimqsT3Vt8oMbNQ@mail.gmail.com>
-In-Reply-To: <20220901085756.ymk3rd7zjqvjpaj6@bogus>
+ <CAHUa44GdfJgzbfowY1ZMEZyM8B_hh4h-bYxsZ3h9mtgfj=bYSw@mail.gmail.com>
+In-Reply-To: <20220901090416.25riofko2m5mrlnt@bogus>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0192935354063393431=="
+Content-Type: multipart/mixed; boundary="===============1952442588380573177=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0192935354063393431==
+--===============1952442588380573177==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 1, 2022 at 10:58 AM Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Thu, Sep 1, 2022 at 11:04 AM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> On Thu, Sep 01, 2022 at 10:43:58AM +0200, Jens Wiklander wrote:
+> On Thu, Sep 01, 2022 at 09:56:41AM +0200, Jens Wiklander wrote:
 > > On Tue, Aug 30, 2022 at 12:07 PM Sudeep Holla <sudeep.holla@arm.com> wr=
 ote:
 > > >
-> > > FF-A v1.1 adds support to discovery the UUIDs of the partitions that was
-> > > missing in v1.0 and which the driver workarounds by using UUIDs supplied
-> > > by the ffa_drivers.
-> > >
-> > > Add the v1.1 get_partition_info support and disable the workaround if
-> > > the detected FF-A version is greater than v1.0.
+> > > Add support for FFA_FEATURES to discover properties supported at the
+> > > FF-A interface. This interface can be used to query:
+> > >  - If an FF-A interface is implemented by the component at the higher E=
+L,
+> > >  - If an implemented FF-A interface also implements any optional featur=
+es
+> > >    described in its interface definition, and
+> > >  - Any implementation details exported by an implemented FF-A interface
+> > >    as described in its interface definition.
 > > >
 > > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > > > ---
-> > >  drivers/firmware/arm_ffa/driver.c | 39 ++++++++++++++++++++++++-------
-> > >  include/linux/arm_ffa.h           |  1 +
-> > >  2 files changed, 32 insertions(+), 8 deletions(-)
+> > >  drivers/firmware/arm_ffa/driver.c | 23 +++++++++++++++++++++++
+> > >  1 file changed, 23 insertions(+)
 > > >
 > > > diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_f=
 fa/driver.c
-> > > index 5c8484b05c50..6822241168d6 100644
+> > > index 04e7cbb1b9aa..de94073f4109 100644
 > > > --- a/drivers/firmware/arm_ffa/driver.c
 > > > +++ b/drivers/firmware/arm_ffa/driver.c
-> > > @@ -264,18 +264,24 @@ static int ffa_rxtx_unmap(u16 vm_id)
+> > > @@ -571,6 +571,29 @@ static int ffa_memory_reclaim(u64 g_handle, u32 fl=
+ags)
 > > >         return 0;
 > > >  }
 > > >
-> > > +#define PARTITION_INFO_GET_RETURN_COUNT_ONLY   BIT(0)
+> > > +static int ffa_features(u32 func_feat_id, u32 input_props, u32 *if_pro=
+ps)
+> > > +{
+> > > +       ffa_value_t id;
 > > > +
-> > >  /* buffer must be sizeof(struct ffa_partition_info) * num_partitions */
-> > >  static int
-> > >  __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2, u32 uuid3,
-> > >                          struct ffa_partition_info *buffer, int num_par=
-titions)
-> > >  {
-> > > -       int count;
-> > > +       int idx, count, flags =3D 0, size;
-> > >         ffa_value_t partition_info;
-> > >
-> > > +       if (!buffer || !num_partitions) /* Just get the count for now */
-> > > +               flags =3D PARTITION_INFO_GET_RETURN_COUNT_ONLY;
+> > > +       if (!ARM_SMCCC_IS_FAST_CALL(func_feat_id) && input_props) {
+> > > +               pr_err("%s: Invalid Parameters: %x, %x", __func__,
+> > > +                      func_feat_id, input_props);
+> > > +               return ffa_to_linux_errno(FFA_RET_INVALID_PARAMETERS);
+> > > +       }
 > > > +
-> > >         mutex_lock(&drv_info->rx_lock);
-> > >         invoke_ffa_fn((ffa_value_t){
-> > >                       .a0 =3D FFA_PARTITION_INFO_GET,
-> > >                       .a1 =3D uuid0, .a2 =3D uuid1, .a3 =3D uuid2, .a4 =
-=3D uuid3,
-> > > +                     .a5 =3D flags,
-> > >                       }, &partition_info);
-> > >
-> > >         if (partition_info.a0 =3D=3D FFA_ERROR) {
-> > > @@ -285,8 +291,15 @@ __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32=
- uuid2, u32 uuid3,
-> > >
-> > >         count =3D partition_info.a2;
-> > >
-> > > +       if (drv_info->version > FFA_VERSION_1_0)
-> > > +               size =3D partition_info.a3;
+> > > +       invoke_ffa_fn((ffa_value_t){
+> > > +               .a0 =3D FFA_FEATURES, .a1 =3D func_feat_id, .a2 =3D inp=
+ut_props,
+> > > +               }, &id);
+> > > +
+> > > +       if (id.a0 =3D=3D FFA_ERROR)
+> > > +               return ffa_to_linux_errno((int)id.a2);
+> > > +
+> > > +       if (if_props)
+> > > +               *if_props =3D id.a2;
 > >
-> > What happens if this value is larger than sizeof(struct ffa_partition_inf=
-o)?
+> > w3 (id.a3) also contains a value when querying for
+> > FFA_MEM_RETRIEVE_REQ. I see that in "[PATCH 5/9] firmware: arm_ffa:
+> > Use FFA_FEATURES to detect if native versions are supported" you're
+> > using this function with if_props =3D NULL. So I guess that at the
+> > moment we have more than needed, but in case you need to add another
+> > parameter to this function you'll need to update all the call sites
+> > too.
 > >
 >
-> Right, I had the check for both 0 size and size > struct size. I removed
-> both at once instead of just dropping 0 size. I assume 0 size is non
-> compliant or do you prefer to keep that check as well.
+> Right, I clearly missed to observe that. I am fine either way. Do you
+> have any preference ? As long as the callers are with this driver, it
+> shouldn't be much of an issue to change all, but happy to update to
+> accommodate w3 as well in v2.
 
-The purpose with this size field is to be able to read the known part
-of each element in the array.
-So I believe that memcpy() below should copy MIN(size, sizeof(struct
-ffa_partition_info)), assuming that we update struct
-ffa_partition_info if we need to when bumping our reported FF-A
-version.
-
-I'm not sure if we need more checks for compliance or not.
+Either way is fine, it was more of an observation.
 
 Cheers,
 Jens
 
->
-> Thanks a lot for the reviews.
->
-> --
-> Regards,
-> Sudeep
-
---===============0192935354063393431==--
+--===============1952442588380573177==--
 
