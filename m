@@ -1,85 +1,110 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH 4/9] firmware: arm_ffa: Add support for querying FF-A features
-Date: Thu, 01 Sep 2022 09:56:41 +0200
+Subject: Re: [PATCH 5/9] firmware: arm_ffa: Use FFA_FEATURES to detect if
+ native versions are supported
+Date: Thu, 01 Sep 2022 10:18:01 +0200
 Message-ID: 
- <CAHUa44HL5g-b+oGpYg=jne1MPNJSGLYbeW8_nx7a40=26ehQ1A@mail.gmail.com>
-In-Reply-To: <20220830100700.344594-5-sudeep.holla@arm.com>
+ <CAHUa44ETTyP+4ydNZ+A7y_vRuUsfDQtxox1Ox06aM5rcgLgYZA@mail.gmail.com>
+In-Reply-To: <20220830100700.344594-6-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2728403916065577832=="
+Content-Type: multipart/mixed; boundary="===============5325019202139959235=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2728403916065577832==
+--===============5325019202139959235==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Tue, Aug 30, 2022 at 12:07 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> Add support for FFA_FEATURES to discover properties supported at the
-> FF-A interface. This interface can be used to query:
->  - If an FF-A interface is implemented by the component at the higher EL,
->  - If an implemented FF-A interface also implements any optional features
->    described in its interface definition, and
->  - Any implementation details exported by an implemented FF-A interface
->    as described in its interface definition.
+> Currently, the ffa_dev->mode_32bit is use to detect if the native 64-bit
+> or 32-bit versions of FF-A ABI needs to be used. However for the FF-A
+> memory ABIs, it is not dependent on the ffa_device(i.e. the partition)
+> itself, but the partition manager(SPM).
+>
+> So, the FFA_FEATURES can be use to detect if the native 64bit ABIs are
+> supported or not and appropriate calls can be made based on that.
+>
+> Use FFA_FEATURES to detect if native versions of MEM_LEND or MEM_SHARE
+> are implemented and make of the same to use native memory ABIs later on.
 >
 > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > ---
->  drivers/firmware/arm_ffa/driver.c | 23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
+>  drivers/firmware/arm_ffa/driver.c | 22 ++++++++++++++++------
+>  1 file changed, 16 insertions(+), 6 deletions(-)
+
+Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+
 >
 > diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/d=
 river.c
-> index 04e7cbb1b9aa..de94073f4109 100644
+> index de94073f4109..5f02b670e964 100644
 > --- a/drivers/firmware/arm_ffa/driver.c
 > +++ b/drivers/firmware/arm_ffa/driver.c
-> @@ -571,6 +571,29 @@ static int ffa_memory_reclaim(u64 g_handle, u32 flags)
+> @@ -163,6 +163,7 @@ struct ffa_drv_info {
+>         struct mutex tx_lock; /* lock to protect Tx buffer */
+>         void *rx_buffer;
+>         void *tx_buffer;
+> +       bool mem_ops_native;
+>  };
+>
+>  static struct ffa_drv_info *drv_info;
+> @@ -594,6 +595,13 @@ static int ffa_features(u32 func_feat_id, u32 input_pr=
+ops, u32 *if_props)
 >         return 0;
 >  }
 >
-> +static int ffa_features(u32 func_feat_id, u32 input_props, u32 *if_props)
+> +static void ffa_set_up_mem_ops_native_flag(void)
 > +{
-> +       ffa_value_t id;
-> +
-> +       if (!ARM_SMCCC_IS_FAST_CALL(func_feat_id) && input_props) {
-> +               pr_err("%s: Invalid Parameters: %x, %x", __func__,
-> +                      func_feat_id, input_props);
-> +               return ffa_to_linux_errno(FFA_RET_INVALID_PARAMETERS);
-> +       }
-> +
-> +       invoke_ffa_fn((ffa_value_t){
-> +               .a0 =3D FFA_FEATURES, .a1 =3D func_feat_id, .a2 =3D input_p=
-rops,
-> +               }, &id);
-> +
-> +       if (id.a0 =3D=3D FFA_ERROR)
-> +               return ffa_to_linux_errno((int)id.a2);
-> +
-> +       if (if_props)
-> +               *if_props =3D id.a2;
-
-w3 (id.a3) also contains a value when querying for
-FFA_MEM_RETRIEVE_REQ. I see that in "[PATCH 5/9] firmware: arm_ffa:
-Use FFA_FEATURES to detect if native versions are supported" you're
-using this function with if_props =3D NULL. So I guess that at the
-moment we have more than needed, but in case you need to add another
-parameter to this function you'll need to update all the call sites
-too.
-
-Cheers,
-Jens
-
-> +
-> +       return 0;
+> +       if (!ffa_features(FFA_FN_NATIVE(MEM_LEND), 0, NULL) ||
+> +           !ffa_features(FFA_FN_NATIVE(MEM_SHARE), 0, NULL))
+> +               drv_info->mem_ops_native =3D true;
 > +}
 > +
 >  static u32 ffa_api_version_get(void)
 >  {
 >         return drv_info->version;
+> @@ -635,10 +643,10 @@ static int ffa_sync_send_receive(struct ffa_device *d=
+ev,
+>  static int
+>  ffa_memory_share(struct ffa_device *dev, struct ffa_mem_ops_args *args)
+>  {
+> -       if (dev->mode_32bit)
+> -               return ffa_memory_ops(FFA_MEM_SHARE, args);
+> +       if (drv_info->mem_ops_native)
+> +               return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
+>
+> -       return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
+> +       return ffa_memory_ops(FFA_MEM_SHARE, args);
+>  }
+>
+>  static int
+> @@ -651,10 +659,10 @@ ffa_memory_lend(struct ffa_device *dev, struct ffa_me=
+m_ops_args *args)
+>          * however on systems without a hypervisor the responsibility
+>          * falls to the calling kernel driver to prevent access.
+>          */
+> -       if (dev->mode_32bit)
+> -               return ffa_memory_ops(FFA_MEM_LEND, args);
+> +       if (drv_info->mem_ops_native)
+> +               return ffa_memory_ops(FFA_FN_NATIVE(MEM_LEND), args);
+>
+> -       return ffa_memory_ops(FFA_FN_NATIVE(MEM_LEND), args);
+> +       return ffa_memory_ops(FFA_MEM_LEND, args);
+>  }
+>
+>  static const struct ffa_dev_ops ffa_ops =3D {
+> @@ -765,6 +773,8 @@ static int __init ffa_init(void)
+>
+>         ffa_setup_partitions();
+>
+> +       ffa_set_up_mem_ops_native_flag();
+> +
+>         return 0;
+>  free_pages:
+>         if (drv_info->tx_buffer)
 > --
 > 2.37.2
 >
 
---===============2728403916065577832==--
+--===============5325019202139959235==--
 
