@@ -1,110 +1,164 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 5/9] firmware: arm_ffa: Use FFA_FEATURES to detect if
- native versions are supported
-Date: Thu, 01 Sep 2022 10:18:01 +0200
+Subject: 
+ Re: [PATCH 7/9] firmware: arm_ffa: Add v1.1 get_partition_info support
+Date: Thu, 01 Sep 2022 10:43:58 +0200
 Message-ID: 
- <CAHUa44ETTyP+4ydNZ+A7y_vRuUsfDQtxox1Ox06aM5rcgLgYZA@mail.gmail.com>
-In-Reply-To: <20220830100700.344594-6-sudeep.holla@arm.com>
+ <CAHUa44Fmr=vDLbST5qwTDOtSZJq4RYqO+Y4Pij64VeBU-0BgrQ@mail.gmail.com>
+In-Reply-To: <20220830100700.344594-8-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5325019202139959235=="
+Content-Type: multipart/mixed; boundary="===============3741469840414823543=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5325019202139959235==
+--===============3741469840414823543==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Tue, Aug 30, 2022 at 12:07 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> Currently, the ffa_dev->mode_32bit is use to detect if the native 64-bit
-> or 32-bit versions of FF-A ABI needs to be used. However for the FF-A
-> memory ABIs, it is not dependent on the ffa_device(i.e. the partition)
-> itself, but the partition manager(SPM).
+> FF-A v1.1 adds support to discovery the UUIDs of the partitions that was
+> missing in v1.0 and which the driver workarounds by using UUIDs supplied
+> by the ffa_drivers.
 >
-> So, the FFA_FEATURES can be use to detect if the native 64bit ABIs are
-> supported or not and appropriate calls can be made based on that.
->
-> Use FFA_FEATURES to detect if native versions of MEM_LEND or MEM_SHARE
-> are implemented and make of the same to use native memory ABIs later on.
+> Add the v1.1 get_partition_info support and disable the workaround if
+> the detected FF-A version is greater than v1.0.
 >
 > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > ---
->  drivers/firmware/arm_ffa/driver.c | 22 ++++++++++++++++------
->  1 file changed, 16 insertions(+), 6 deletions(-)
-
-Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
-
+>  drivers/firmware/arm_ffa/driver.c | 39 ++++++++++++++++++++++++-------
+>  include/linux/arm_ffa.h           |  1 +
+>  2 files changed, 32 insertions(+), 8 deletions(-)
 >
 > diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/d=
 river.c
-> index de94073f4109..5f02b670e964 100644
+> index 5c8484b05c50..6822241168d6 100644
 > --- a/drivers/firmware/arm_ffa/driver.c
 > +++ b/drivers/firmware/arm_ffa/driver.c
-> @@ -163,6 +163,7 @@ struct ffa_drv_info {
->         struct mutex tx_lock; /* lock to protect Tx buffer */
->         void *rx_buffer;
->         void *tx_buffer;
-> +       bool mem_ops_native;
+> @@ -264,18 +264,24 @@ static int ffa_rxtx_unmap(u16 vm_id)
+>         return 0;
+>  }
+>
+> +#define PARTITION_INFO_GET_RETURN_COUNT_ONLY   BIT(0)
+> +
+>  /* buffer must be sizeof(struct ffa_partition_info) * num_partitions */
+>  static int
+>  __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2, u32 uuid3,
+>                          struct ffa_partition_info *buffer, int num_partiti=
+ons)
+>  {
+> -       int count;
+> +       int idx, count, flags =3D 0, size;
+>         ffa_value_t partition_info;
+>
+> +       if (!buffer || !num_partitions) /* Just get the count for now */
+> +               flags =3D PARTITION_INFO_GET_RETURN_COUNT_ONLY;
+> +
+>         mutex_lock(&drv_info->rx_lock);
+>         invoke_ffa_fn((ffa_value_t){
+>                       .a0 =3D FFA_PARTITION_INFO_GET,
+>                       .a1 =3D uuid0, .a2 =3D uuid1, .a3 =3D uuid2, .a4 =3D =
+uuid3,
+> +                     .a5 =3D flags,
+>                       }, &partition_info);
+>
+>         if (partition_info.a0 =3D=3D FFA_ERROR) {
+> @@ -285,8 +291,15 @@ __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uui=
+d2, u32 uuid3,
+>
+>         count =3D partition_info.a2;
+>
+> +       if (drv_info->version > FFA_VERSION_1_0)
+> +               size =3D partition_info.a3;
+
+What happens if this value is larger than sizeof(struct ffa_partition_info)?
+
+> +       else
+> +               size =3D 8; /* FFA_VERSION_1_0 lacks size in the response */
+> +
+>         if (buffer && count <=3D num_partitions)
+> -               memcpy(buffer, drv_info->rx_buffer, sizeof(*buffer) * count=
+);
+> +               for (idx =3D 0; idx < count; idx++)
+> +                       memcpy(buffer + idx, drv_info->rx_buffer + idx * si=
+ze,
+> +                              size);
+>
+>         ffa_rx_release();
+>
+> @@ -678,6 +691,14 @@ void ffa_device_match_uuid(struct ffa_device *ffa_dev,=
+ const uuid_t *uuid)
+>         int count, idx;
+>         struct ffa_partition_info *pbuf, *tpbuf;
+>
+> +       /*
+> +        * FF-A v1.1 provides UUID for each partition as part of the discov=
+ery
+> +        * API, the discovered UUID must be populated in the device's UUID =
+and
+> +        * there is no need to copy the same from the driver table.
+> +        */
+> +       if (drv_info->version > FFA_VERSION_1_0)
+> +               return;
+> +
+>         count =3D ffa_partition_probe(uuid, &pbuf);
+>         if (count <=3D 0)
+>                 return;
+> @@ -691,6 +712,7 @@ void ffa_device_match_uuid(struct ffa_device *ffa_dev, =
+const uuid_t *uuid)
+>  static void ffa_setup_partitions(void)
+>  {
+>         int count, idx;
+> +       uuid_t uuid;
+>         struct ffa_device *ffa_dev;
+>         struct ffa_partition_info *pbuf, *tpbuf;
+>
+> @@ -701,14 +723,15 @@ static void ffa_setup_partitions(void)
+>         }
+>
+>         for (idx =3D 0, tpbuf =3D pbuf; idx < count; idx++, tpbuf++) {
+> -               /* Note that the &uuid_null parameter will require
+> +               import_uuid(&uuid, (u8 *)tpbuf->uuid);
+> +
+> +               /* Note that the UUID will be uuid_null and that will requi=
+re
+
+Note that if the UUID is uuid_null, that will require ...
+
+Cheers,
+Jen s
+
+>                  * ffa_device_match() to find the UUID of this partition id
+> -                * with help of ffa_device_match_uuid(). Once the FF-A spec
+> -                * is updated to provide correct UUID here for each partiti=
+on
+> -                * as part of the discovery API, we need to pass the
+> -                * discovered UUID here instead.
+> +                * with help of ffa_device_match_uuid(). FF-A v1.1 and above
+> +                * provides UUID here for each partition as part of the
+> +                * discovery API and the same is passed.
+>                  */
+> -               ffa_dev =3D ffa_device_register(&uuid_null, tpbuf->id, &ffa=
+_ops);
+> +               ffa_dev =3D ffa_device_register(&uuid, tpbuf->id, &ffa_ops);
+>                 if (!ffa_dev) {
+>                         pr_err("%s: failed to register partition ID 0x%x\n",
+>                                __func__, tpbuf->id);
+> diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
+> index eafab07c9f58..b40afa7933dc 100644
+> --- a/include/linux/arm_ffa.h
+> +++ b/include/linux/arm_ffa.h
+> @@ -107,6 +107,7 @@ struct ffa_partition_info {
+>  /* partition can send and receive indirect messages. */
+>  #define FFA_PARTITION_INDIRECT_MSG     BIT(2)
+>         u32 properties;
+> +       u32 uuid[4];
 >  };
 >
->  static struct ffa_drv_info *drv_info;
-> @@ -594,6 +595,13 @@ static int ffa_features(u32 func_feat_id, u32 input_pr=
-ops, u32 *if_props)
->         return 0;
->  }
->
-> +static void ffa_set_up_mem_ops_native_flag(void)
-> +{
-> +       if (!ffa_features(FFA_FN_NATIVE(MEM_LEND), 0, NULL) ||
-> +           !ffa_features(FFA_FN_NATIVE(MEM_SHARE), 0, NULL))
-> +               drv_info->mem_ops_native =3D true;
-> +}
-> +
->  static u32 ffa_api_version_get(void)
->  {
->         return drv_info->version;
-> @@ -635,10 +643,10 @@ static int ffa_sync_send_receive(struct ffa_device *d=
-ev,
->  static int
->  ffa_memory_share(struct ffa_device *dev, struct ffa_mem_ops_args *args)
->  {
-> -       if (dev->mode_32bit)
-> -               return ffa_memory_ops(FFA_MEM_SHARE, args);
-> +       if (drv_info->mem_ops_native)
-> +               return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
->
-> -       return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
-> +       return ffa_memory_ops(FFA_MEM_SHARE, args);
->  }
->
->  static int
-> @@ -651,10 +659,10 @@ ffa_memory_lend(struct ffa_device *dev, struct ffa_me=
-m_ops_args *args)
->          * however on systems without a hypervisor the responsibility
->          * falls to the calling kernel driver to prevent access.
->          */
-> -       if (dev->mode_32bit)
-> -               return ffa_memory_ops(FFA_MEM_LEND, args);
-> +       if (drv_info->mem_ops_native)
-> +               return ffa_memory_ops(FFA_FN_NATIVE(MEM_LEND), args);
->
-> -       return ffa_memory_ops(FFA_FN_NATIVE(MEM_LEND), args);
-> +       return ffa_memory_ops(FFA_MEM_LEND, args);
->  }
->
->  static const struct ffa_dev_ops ffa_ops =3D {
-> @@ -765,6 +773,8 @@ static int __init ffa_init(void)
->
->         ffa_setup_partitions();
->
-> +       ffa_set_up_mem_ops_native_flag();
-> +
->         return 0;
->  free_pages:
->         if (drv_info->tx_buffer)
+>  /* For use with FFA_MSG_SEND_DIRECT_{REQ,RESP} which pass data via registe=
+rs */
 > --
 > 2.37.2
 >
 
---===============5325019202139959235==--
+--===============3741469840414823543==--
 
