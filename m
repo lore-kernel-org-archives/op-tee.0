@@ -1,62 +1,85 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 8/9] tee: optee: Drop ffa_ops in optee_ffa structure
-Date: Thu, 01 Sep 2022 09:26:00 +0200
+Subject: Re: [PATCH 3/9] firmware: arm_ffa: Remove ffa_dev_ops_get()
+Date: Thu, 01 Sep 2022 09:39:13 +0200
 Message-ID: 
- <CAHUa44E6nMEw+w6fA71X7oGdcXnBEroDHfNODCxHSZLxsLaPCg@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYP9UF8qLcBkWVdAOyb_EArDHX6ihPf_6GqbkoZYkdNrPQ@mail.gmail.com>>
+ <CAHUa44Fiunh_Ubk96+91p2+SW49xGGJ3MKoRfOVwTHU9AbuCHg@mail.gmail.com>
+In-Reply-To: <20220830100700.344594-4-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6066821095325520803=="
+Content-Type: multipart/mixed; boundary="===============0585627078181147944=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6066821095325520803==
+--===============0585627078181147944==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 31, 2022 at 1:29 PM Sumit Garg <sumit.garg@linaro.org> wrote:
+On Tue, Aug 30, 2022 at 12:07 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> On Wed, 31 Aug 2022 at 16:57, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> > On Wed, Aug 31, 2022 at 04:28:01PM +0530, Sumit Garg wrote:
-> > > On Tue, 30 Aug 2022 at 15:40, Sudeep Holla <sudeep.holla@arm.com> wro=
-te:
-> > > >
-> > > > Since the ffa_device itself carries ffa_dev_ops now, there is no need
-> > > > to keep a copy in optee_ffa structure.
-> > > >
-> > > > Drop ffa_ops in the optee_ffa structure as it is not needed anymore.
-> > > >
-> > > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> > > > ---
-> > > >  drivers/tee/optee/ffa_abi.c       | 9 ++++-----
-> > > >  drivers/tee/optee/optee_private.h | 1 -
-> > > >  2 files changed, 4 insertions(+), 6 deletions(-)
-> > > >
-> > >
-> > > Is this patch doing anything different from patch #2? If not then I
-> > > think both should be squashed.
-> > >
-> >
-> > Indeed, I thought about squashing them and forgot before getting there.
-> > Does the review tag still apply for 2/9 after I squash this into it.
-> >
+> The only user of this exported ffa_dev_ops_get() was OPTEE driver which
+> now uses ffa_dev->ops directly, there are no other users for this.
 >
-> Yeah, feel free to apply my review tag.
+> Also, since any ffa driver can use ffa_dev->ops directly, there will be
+> no need for ffa_dev_ops_get(), so just remove ffa_dev_ops_get().
+>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/firmware/arm_ffa/driver.c | 9 ---------
+>  include/linux/arm_ffa.h           | 6 ------
+>  2 files changed, 15 deletions(-)
 
-Same for me.
-
-Cheers,
-Jens
+Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 
 >
-> -Sumit
+> diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/d=
+river.c
+> index 213665e5ad0e..04e7cbb1b9aa 100644
+> --- a/drivers/firmware/arm_ffa/driver.c
+> +++ b/drivers/firmware/arm_ffa/driver.c
+> @@ -644,15 +644,6 @@ static const struct ffa_dev_ops ffa_ops =3D {
+>         .memory_lend =3D ffa_memory_lend,
+>  };
 >
-> > Thanks for the review.
-> >
-> > --
-> > Regards,
-> > Sudeep
+> -const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_device *dev)
+> -{
+> -       if (ffa_device_is_valid(dev))
+> -               return &ffa_ops;
+> -
+> -       return NULL;
+> -}
+> -EXPORT_SYMBOL_GPL(ffa_dev_ops_get);
+> -
+>  void ffa_device_match_uuid(struct ffa_device *ffa_dev, const uuid_t *uuid)
+>  {
+>         int count, idx;
+> diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
+> index 91b47e42b73d..556f50f27fb1 100644
+> --- a/include/linux/arm_ffa.h
+> +++ b/include/linux/arm_ffa.h
+> @@ -55,7 +55,6 @@ int ffa_driver_register(struct ffa_driver *driver, struct=
+ module *owner,
+>                         const char *mod_name);
+>  void ffa_driver_unregister(struct ffa_driver *driver);
+>  bool ffa_device_is_valid(struct ffa_device *ffa_dev);
+> -const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_device *dev);
+>
+>  #else
+>  static inline
+> @@ -79,11 +78,6 @@ static inline void ffa_driver_unregister(struct ffa_driv=
+er *driver) {}
+>  static inline
+>  bool ffa_device_is_valid(struct ffa_device *ffa_dev) { return false; }
+>
+> -static inline
+> -const struct ffa_dev_ops *ffa_dev_ops_get(struct ffa_device *dev)
+> -{
+> -       return NULL;
+> -}
+>  #endif /* CONFIG_ARM_FFA_TRANSPORT */
+>
+>  #define ffa_register(driver) \
+> --
+> 2.37.2
+>
 
---===============6066821095325520803==--
+--===============0585627078181147944==--
 
