@@ -1,146 +1,81 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v2 08/10] firmware: arm_ffa: Add v1.1 get_partition_info support
-Date: Fri, 02 Sep 2022 13:40:30 +0100
-Message-ID: <20220902124032.788488-9-sudeep.holla@arm.com>
+Subject: [PATCH v2 09/10] firmware: arm_ffa: Set up 32bit execution mode flag
+ using partiion property
+Date: Fri, 02 Sep 2022 13:40:31 +0100
+Message-ID: <20220902124032.788488-10-sudeep.holla@arm.com>
 In-Reply-To: <20220902124032.788488-1-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2563347928881931463=="
+Content-Type: multipart/mixed; boundary="===============2937629940344231349=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2563347928881931463==
+--===============2937629940344231349==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-FF-A v1.1 adds support to discovery the UUIDs of the partitions that was
-missing in v1.0 and which the driver workarounds by using UUIDs supplied
-by the ffa_drivers.
-
-Add the v1.1 get_partition_info support and disable the workaround if
-the detected FF-A version is greater than v1.0.
+FF-A v1.1 adds a flag in the partition properties to indicate if the
+partition runs in the AArch32 or AArch64 execution state. Use the same
+to set-up the 32-bit execution flag mode in the ffa_dev automatically
+and ignore any requests to do the same from the ffa_driver.
 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/firmware/arm_ffa/driver.c | 42 +++++++++++++++++++++++++------
- include/linux/arm_ffa.h           |  1 +
- 2 files changed, 35 insertions(+), 8 deletions(-)
+ drivers/firmware/arm_ffa/driver.c | 13 ++++++++++++-
+ include/linux/arm_ffa.h           |  2 ++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/dri=
 ver.c
-index 2532e0f16cc9..dd6ab2f81580 100644
+index dd6ab2f81580..dbbe15592173 100644
 --- a/drivers/firmware/arm_ffa/driver.c
 +++ b/drivers/firmware/arm_ffa/driver.c
-@@ -264,18 +264,24 @@ static int ffa_rxtx_unmap(u16 vm_id)
+@@ -647,11 +647,19 @@ static int ffa_partition_info_get(const char *uuid_str,
  	return 0;
  }
 =20
-+#define PARTITION_INFO_GET_RETURN_COUNT_ONLY	BIT(0)
-+
- /* buffer must be sizeof(struct ffa_partition_info) * num_partitions */
- static int
- __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2, u32 uuid3,
- 			 struct ffa_partition_info *buffer, int num_partitions)
+-static void ffa_mode_32bit_set(struct ffa_device *dev)
++static void _ffa_mode_32bit_set(struct ffa_device *dev)
  {
--	int count;
-+	int idx, count, flags =3D 0, size;
- 	ffa_value_t partition_info;
+ 	dev->mode_32bit =3D true;
+ }
 =20
-+	if (!buffer || !num_partitions) /* Just get the count for now */
-+		flags =3D PARTITION_INFO_GET_RETURN_COUNT_ONLY;
-+
- 	mutex_lock(&drv_info->rx_lock);
- 	invoke_ffa_fn((ffa_value_t){
- 		      .a0 =3D FFA_PARTITION_INFO_GET,
- 		      .a1 =3D uuid0, .a2 =3D uuid1, .a3 =3D uuid2, .a4 =3D uuid3,
-+		      .a5 =3D flags,
- 		      }, &partition_info);
-=20
- 	if (partition_info.a0 =3D=3D FFA_ERROR) {
-@@ -285,8 +291,18 @@ __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2=
-, u32 uuid3,
-=20
- 	count =3D partition_info.a2;
-=20
-+	if (drv_info->version > FFA_VERSION_1_0) {
-+		size =3D partition_info.a3;
-+		if (size > sizeof(*buffer))
-+			size =3D sizeof(*buffer);
-+	} else {
-+		size =3D 8; /* FFA_VERSION_1_0 lacks size in the response */
-+	}
-+
- 	if (buffer && count <=3D num_partitions)
--		memcpy(buffer, drv_info->rx_buffer, sizeof(*buffer) * count);
-+		for (idx =3D 0; idx < count; idx++)
-+			memcpy(buffer + idx, drv_info->rx_buffer + idx * size,
-+			       size);
-=20
- 	ffa_rx_release();
-=20
-@@ -681,6 +697,14 @@ void ffa_device_match_uuid(struct ffa_device *ffa_dev, c=
-onst uuid_t *uuid)
- 	int count, idx;
- 	struct ffa_partition_info *pbuf, *tpbuf;
-=20
-+	/*
-+	 * FF-A v1.1 provides UUID for each partition as part of the discovery
-+	 * API, the discovered UUID must be populated in the device's UUID and
-+	 * there is no need to copy the same from the driver table.
-+	 */
++static void ffa_mode_32bit_set(struct ffa_device *dev)
++{
 +	if (drv_info->version > FFA_VERSION_1_0)
 +		return;
 +
- 	count =3D ffa_partition_probe(uuid, &pbuf);
- 	if (count <=3D 0)
- 		return;
-@@ -694,6 +718,7 @@ void ffa_device_match_uuid(struct ffa_device *ffa_dev, co=
-nst uuid_t *uuid)
- static void ffa_setup_partitions(void)
- {
- 	int count, idx;
-+	uuid_t uuid;
- 	struct ffa_device *ffa_dev;
- 	struct ffa_partition_info *pbuf, *tpbuf;
-=20
-@@ -704,14 +729,15 @@ static void ffa_setup_partitions(void)
- 	}
-=20
- 	for (idx =3D 0, tpbuf =3D pbuf; idx < count; idx++, tpbuf++) {
--		/* Note that the &uuid_null parameter will require
-+		import_uuid(&uuid, (u8 *)tpbuf->uuid);
++	_ffa_mode_32bit_set(dev);
++}
 +
-+		/* Note that if the UUID will be uuid_null, that will require
- 		 * ffa_device_match() to find the UUID of this partition id
--		 * with help of ffa_device_match_uuid(). Once the FF-A spec
--		 * is updated to provide correct UUID here for each partition
--		 * as part of the discovery API, we need to pass the
--		 * discovered UUID here instead.
-+		 * with help of ffa_device_match_uuid(). FF-A v1.1 and above
-+		 * provides UUID here for each partition as part of the
-+		 * discovery API and the same is passed.
- 		 */
--		ffa_dev =3D ffa_device_register(&uuid_null, tpbuf->id, &ffa_ops);
-+		ffa_dev =3D ffa_device_register(&uuid, tpbuf->id, &ffa_ops);
- 		if (!ffa_dev) {
- 			pr_err("%s: failed to register partition ID 0x%x\n",
+ static int ffa_sync_send_receive(struct ffa_device *dev,
+ 				 struct ffa_send_direct_data *data)
+ {
+@@ -743,6 +751,9 @@ static void ffa_setup_partitions(void)
  			       __func__, tpbuf->id);
+ 			continue;
+ 		}
++
++		if (tpbuf->properties & FFA_PARTITION_AARCH64_EXEC)
++			_ffa_mode_32bit_set(ffa_dev);
+ 	}
+ 	kfree(pbuf);
+ }
 diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
-index 4c4b06783035..09567ffd1f49 100644
+index 09567ffd1f49..5964b6104996 100644
 --- a/include/linux/arm_ffa.h
 +++ b/include/linux/arm_ffa.h
-@@ -107,6 +107,7 @@ struct ffa_partition_info {
+@@ -106,6 +106,8 @@ struct ffa_partition_info {
+ #define FFA_PARTITION_DIRECT_SEND	BIT(1)
  /* partition can send and receive indirect messages. */
  #define FFA_PARTITION_INDIRECT_MSG	BIT(2)
++/* partition runs in the AArch64 execution state. */
++#define FFA_PARTITION_AARCH64_EXEC	BIT(8)
  	u32 properties;
-+	u32 uuid[4];
+ 	u32 uuid[4];
  };
-=20
- /* For use with FFA_MSG_SEND_DIRECT_{REQ,RESP} which pass data via registers=
- */
 --=20
 2.37.3
 
 
---===============2563347928881931463==--
+--===============2937629940344231349==--
 
