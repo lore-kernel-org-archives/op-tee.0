@@ -1,100 +1,185 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH 0/4] firmware: Add support for Qualcomm UEFI Secure Application
-Date: Mon, 05 Sep 2022 12:20:50 +0530
+Subject: Re: [PATCH v2 07/10] firmware: arm_ffa: Rename ffa_dev_ops as ffa_ops
+Date: Mon, 05 Sep 2022 12:50:51 +0530
 Message-ID: 
- <CAFA6WYOS6iw+4e6TW9NLO2-Bk37rZFN_S2J3dyOVvgOcd9CtXA@mail.gmail.com>
-In-Reply-To: <312ede16-f0a9-9b9e-a0d6-fb6e37d9f1bb@gmail.com>
+ <CAFA6WYOxBm-TYC4sOqWE__oJeimjmZDNZZW_h3X5CV-8bXhtMg@mail.gmail.com>
+In-Reply-To: <20220902124032.788488-8-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6951515855399417325=="
+Content-Type: multipart/mixed; boundary="===============5168130991663292466=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6951515855399417325==
+--===============5168130991663292466==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-+ TEE ML
-
-On Fri, 2 Sept 2022 at 18:48, Maximilian Luz <luzmaximilian@gmail.com> wrot=
-e:
+On Fri, 2 Sept 2022 at 18:10, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> Hi,
+> Except the message APIs, all other APIs are ffa_device independent and can
+> be used without any associated ffa_device from a non ffa_driver.
 >
-> On 9/2/22 09:26, Sumit Garg wrote:
-> > Hi Maximilian,
-> >
-> > On 02/08/22 18:52, Maximilian Luz wrote:
+> In order to reflect the same, just rename ffa_dev_ops as ffa_ops to
+> avoid any confusion or to keep it simple.
 >
-> [...]
->
-> >> Thanks for this information! So as far as I understand it, this is curre=
-ntly an
-> >> interface to user-space only, i.e. does not allow in-kernel drivers for =
-apps?
-> >
-> > The Linux TEE framework already provides an in-kernel interface to TEE as=
- well via TEE bus [1]. There are already multiple kernel drivers [2] [3] [4] =
-[5] [6] [7] using it. So an EFI driver can be an addition to that.
-> >
-> > Now coming on to TEE implementations, the drivers I mentioned are based o=
-n OP-TEE where devices are queried/enumerated during OP-TEE probe here [8]. S=
-o in similar manner QTEE smcinvoke driver should be able to register devices =
-on the TEE bus.
-> >
-> > [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tr=
-ee/Documentation/staging/tee.rst#n56
-> >
-> > [2] drivers/char/tpm/tpm_ftpm_tee.c
-> >
-> > [3] drivers/char/hw_random/optee-rng.c
-> >
-> > [4] drivers/firmware/arm_scmi/optee.c
-> >
-> > [5] security/keys/trusted-keys/trusted_tee.c
-> >
-> > [6] drivers/firmware/broadcom/tee_bnxt_fw.c
-> >
-> > [7] drivers/rtc/rtc-optee.c
-> >
-> > [8] drivers/tee/optee/device.c
->
-> Thanks for those links!
->
-> I think it would indeed be good if we could make it work via that
-> interface and I guess that should generally be possible. As far as I can
-> see, the biggest problem might be that the current firmware doesn't seem
-> to use UUIDs, so I guess we might need to emulate them somehow.
+> Suggested-by: Sumit Garg <sumit.garg@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/firmware/arm_ffa/bus.c    |  2 +-
+>  drivers/firmware/arm_ffa/driver.c |  2 +-
+>  drivers/tee/optee/ffa_abi.c       | 14 +++++++-------
+>  include/linux/arm_ffa.h           |  8 ++++----
+>  4 files changed, 13 insertions(+), 13 deletions(-)
 >
 
-Okay, so I had a brief look at your driver to get an idea how QTEE
-identifies its trusted/secure applications. AFAIU, it uses constant
-strings as follows:
-
-#define QCTEE_UEFISEC_APP_NAME "qcom.tz.uefisecapp"
-
-I think we should be able to extend the TEE bus concept to accept
-constant strings as device IDs as well. So if a driver wants to
-support both OP-TEE and QTEE based apps then it can put corresponding
-identifiers (UUID or a constant string) in the TEE device match ID
-table. This way we should be able to support other TEE implementations
-as I think any other identifier apart from UUID can be represented as
-a constant string.
-
-If anyone else has any better then feel free to discuss.
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
 -Sumit
 
-> It would be great if someone with some actual knowledge of the firmware
-> used on those devices could have a look at this and provide some
-> insights.
+> diff --git a/drivers/firmware/arm_ffa/bus.c b/drivers/firmware/arm_ffa/bus.c
+> index 69328041fbc3..99d439480612 100644
+> --- a/drivers/firmware/arm_ffa/bus.c
+> +++ b/drivers/firmware/arm_ffa/bus.c
+> @@ -168,7 +168,7 @@ bool ffa_device_is_valid(struct ffa_device *ffa_dev)
+>  }
 >
-> My plan for now is to hold off on the UEFI variable driver until we have
-> a (proper) TEE driver, which unfortunately might be a bit out of my
-> depth. I'm happy to help out in any way I can though.
+>  struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id,
+> -                                      const struct ffa_dev_ops *ops)
+> +                                      const struct ffa_ops *ops)
+>  {
+>         int ret;
+>         struct device *dev;
+> diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/d=
+river.c
+> index e4fd35773071..2532e0f16cc9 100644
+> --- a/drivers/firmware/arm_ffa/driver.c
+> +++ b/drivers/firmware/arm_ffa/driver.c
+> @@ -666,7 +666,7 @@ static int ffa_memory_lend(struct ffa_mem_ops_args *arg=
+s)
+>         return ffa_memory_ops(FFA_MEM_LEND, args);
+>  }
 >
-> Regards,
-> Max
+> -static const struct ffa_dev_ops ffa_ops =3D {
+> +static const struct ffa_ops ffa_ops =3D {
+>         .api_version_get =3D ffa_api_version_get,
+>         .partition_info_get =3D ffa_partition_info_get,
+>         .mode_32bit_set =3D ffa_mode_32bit_set,
+> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> index 7257b42d0545..2ce5b87dfb27 100644
+> --- a/drivers/tee/optee/ffa_abi.c
+> +++ b/drivers/tee/optee/ffa_abi.c
+> @@ -272,7 +272,7 @@ static int optee_ffa_shm_register(struct tee_context *c=
+tx, struct tee_shm *shm,
+>  {
+>         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+>         struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
+> -       const struct ffa_dev_ops *ffa_ops =3D ffa_dev->ops;
+> +       const struct ffa_ops *ffa_ops =3D ffa_dev->ops;
+>         struct ffa_mem_region_attributes mem_attr =3D {
+>                 .receiver =3D ffa_dev->vm_id,
+>                 .attrs =3D FFA_MEM_RW,
+> @@ -315,7 +315,7 @@ static int optee_ffa_shm_unregister(struct tee_context =
+*ctx,
+>  {
+>         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+>         struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
+> -       const struct ffa_dev_ops *ffa_ops =3D ffa_dev->ops;
+> +       const struct ffa_ops *ffa_ops =3D ffa_dev->ops;
+>         u64 global_handle =3D shm->sec_world_id;
+>         struct ffa_send_direct_data data =3D {
+>                 .data0 =3D OPTEE_FFA_UNREGISTER_SHM,
+> @@ -342,7 +342,7 @@ static int optee_ffa_shm_unregister_supp(struct tee_con=
+text *ctx,
+>                                          struct tee_shm *shm)
+>  {
+>         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> -       const struct ffa_dev_ops *ffa_ops =3D optee->ffa.ffa_dev->ops;
+> +       const struct ffa_ops *ffa_ops =3D optee->ffa.ffa_dev->ops;
+>         u64 global_handle =3D shm->sec_world_id;
+>         int rc;
+>
+> @@ -530,7 +530,7 @@ static int optee_ffa_yielding_call(struct tee_context *=
+ctx,
+>  {
+>         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+>         struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
+> -       const struct ffa_dev_ops *ffa_ops =3D ffa_dev->ops;
+> +       const struct ffa_ops *ffa_ops =3D ffa_dev->ops;
+>         struct optee_call_waiter w;
+>         u32 cmd =3D data->data0;
+>         u32 w4 =3D data->data1;
+> @@ -652,7 +652,7 @@ static int optee_ffa_do_call_with_arg(struct tee_contex=
+t *ctx,
+>   */
+>
+>  static bool optee_ffa_api_is_compatbile(struct ffa_device *ffa_dev,
+> -                                       const struct ffa_dev_ops *ops)
+> +                                       const struct ffa_ops *ops)
+>  {
+>         struct ffa_send_direct_data data =3D { OPTEE_FFA_GET_API_VERSION };
+>         int rc;
+> @@ -687,7 +687,7 @@ static bool optee_ffa_api_is_compatbile(struct ffa_devi=
+ce *ffa_dev,
+>  }
+>
+>  static bool optee_ffa_exchange_caps(struct ffa_device *ffa_dev,
+> -                                   const struct ffa_dev_ops *ops,
+> +                                   const struct ffa_ops *ops,
+>                                     u32 *sec_caps,
+>                                     unsigned int *rpc_param_count)
+>  {
+> @@ -783,7 +783,7 @@ static void optee_ffa_remove(struct ffa_device *ffa_dev)
+>
+>  static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>  {
+> -       const struct ffa_dev_ops *ffa_ops;
+> +       const struct ffa_ops *ffa_ops;
+>         unsigned int rpc_param_count;
+>         struct tee_shm_pool *pool;
+>         struct tee_device *teedev;
+> diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
+> index eafab07c9f58..4c4b06783035 100644
+> --- a/include/linux/arm_ffa.h
+> +++ b/include/linux/arm_ffa.h
+> @@ -17,7 +17,7 @@ struct ffa_device {
+>         bool mode_32bit;
+>         uuid_t uuid;
+>         struct device dev;
+> -       const struct ffa_dev_ops *ops;
+> +       const struct ffa_ops *ops;
+>  };
+>
+>  #define to_ffa_dev(d) container_of(d, struct ffa_device, dev)
+> @@ -49,7 +49,7 @@ static inline void *ffa_dev_get_drvdata(struct ffa_device=
+ *fdev)
+>
+>  #if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
+>  struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id,
+> -                                      const struct ffa_dev_ops *ops);
+> +                                      const struct ffa_ops *ops);
+>  void ffa_device_unregister(struct ffa_device *ffa_dev);
+>  int ffa_driver_register(struct ffa_driver *driver, struct module *owner,
+>                         const char *mod_name);
+> @@ -59,7 +59,7 @@ bool ffa_device_is_valid(struct ffa_device *ffa_dev);
+>  #else
+>  static inline
+>  struct ffa_device *ffa_device_register(const uuid_t *uuid, int vm_id,
+> -                                      const struct ffa_dev_ops *ops)
+> +                                      const struct ffa_ops *ops)
+>  {
+>         return NULL;
+>  }
+> @@ -254,7 +254,7 @@ struct ffa_mem_ops_args {
+>         struct ffa_mem_region_attributes *attrs;
+>  };
+>
+> -struct ffa_dev_ops {
+> +struct ffa_ops {
+>         u32 (*api_version_get)(void);
+>         int (*partition_info_get)(const char *uuid_str,
+>                                   struct ffa_partition_info *buffer);
+> --
+> 2.37.3
+>
 
---===============6951515855399417325==--
+--===============5168130991663292466==--
 
