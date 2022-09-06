@@ -1,60 +1,69 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Daniel Vetter <daniel@ffwll.ch>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 00/10] firmware: arm_ffa: Refactoring and initial/minor
- v1.1 update
-Date: Thu, 08 Sep 2022 12:24:16 +0100
-Message-ID: <166263613429.1889754.11330926190281757716.b4-ty@arm.com>
-In-Reply-To: <20220907145240.1683088-1-sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 0/1] tee: Add tee_shm_register_fd
+Date: Tue, 06 Sep 2022 19:59:26 +0000
+Message-ID: <YxemmVxh5F0fXEPJ@phenom.ffwll.local>
+In-Reply-To: <
+ <CAFA6WYM89+SrW2Br-fnFke4djt4GgGHXn7JS3=rxvAa7dAAY7w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2050772089373557302=="
+Content-Type: multipart/mixed; boundary="===============4752592601004102799=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2050772089373557302==
+--===============4752592601004102799==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Wed, 7 Sep 2022 15:52:30 +0100, Sudeep Holla wrote:
-> This series is just some refactoring in preparation to add FF-A v1.1
-> support. It doesn't have any memory layout or notification changes
-> supported in v1.1 yet.
->=20
-> Regards,
-> Sudeep
->=20
-> [...]
+On Fri, Aug 19, 2022 at 01:54:31PM +0530, Sumit Garg wrote:
+> Hi Olivier,
+> 
+> On Fri, 12 Aug 2022 at 20:01, Olivier Masse <olivier.masse@nxp.com> wrote:
+> >
+> > Add a new ioctl called TEE_IOC_SHM_REGISTER_FD to register a
+> > shared memory from a dmabuf file descriptor.
+> > This new ioctl will allow the Linux Kernel to register a buffer
+> > to be used by the Secure Data Path OPTEE OS feature.
+> >
+> > Please find more information here:
+> > https://static.linaro.org/connect/san19/presentations/san19-107.pdf
+> >
+> > Patch tested on Hikey 6220.
+> >
+> 
+> AFAIU, for the OP-TEE SDP feature to work you need to have a DMA-BUF
+> heap driver for allocating secure buffers through exposed chardev:
+> "/dev/dma_heap/sdp". Have you tested it with some out-of-tree driver
+> as I can't find it upstream? Also, do you plan to push that upstream
+> as well?
+> 
+> BTW, please add a changelog while sending newer patch-set versions.
 
-Applied to sudeep.holla/linux (for-next/ffa), thanks!
+Also after the huge discussion last year dma-buf are agreed to be under
+the "you need an open source userspace for any new uapi using them" rule
+that all gpu drivers are under.
 
-[01/10] firmware: arm_ffa: Add pointer to the ffa_dev_ops in struct ffa_dev
-        https://git.kernel.org/sudeep.holla/c/d01387fc1642
-[02/10] tee: optee: Drop ffa_ops in optee_ffa structure using ffa_dev->ops di=
-rectly
-        https://git.kernel.org/sudeep.holla/c/320c3fa38c51
-[03/10] firmware: arm_ffa: Remove ffa_dev_ops_get()
-        https://git.kernel.org/sudeep.holla/c/55bf84fd0a76
-[04/10] firmware: arm_ffa: Add support for querying FF-A features
-        https://git.kernel.org/sudeep.holla/c/cb1f4c2c15bb
-[05/10] firmware: arm_ffa: Use FFA_FEATURES to detect if native versions are =
-supported
-        https://git.kernel.org/sudeep.holla/c/e57fba9105fa
-[06/10] firmware: arm_ffa: Make memory apis ffa_device independent
-        https://git.kernel.org/sudeep.holla/c/8c3812c8f74f
-[07/10] firmware: arm_ffa: Rename ffa_dev_ops as ffa_ops
-        https://git.kernel.org/sudeep.holla/c/7aa7a9798955
-[08/10] firmware: arm_ffa: Add v1.1 get_partition_info support
-        https://git.kernel.org/sudeep.holla/c/bb1be7498500
-[09/10] firmware: arm_ffa: Set up 32bit execution mode flag using partiion pr=
-operty
-	(with the additional version check as discussed on the list)
-        https://git.kernel.org/sudeep.holla/c/106b11b1ccd5
-[10/10] firmware: arm_ffa: Split up ffa_ops into info, message and memory ope=
-rations
-        https://git.kernel.org/sudeep.holla/c/5b0c6328e47d
+Does this exist here?
+-Daniel
 
---
-Regards,
-Sudeep
+> 
+> -Sumit
+> 
+> > Etienne Carriere (1):
+> >   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+> >
+> >  drivers/tee/tee_core.c   | 38 +++++++++++++++
+> >  drivers/tee/tee_shm.c    | 99 +++++++++++++++++++++++++++++++++++++++-
+> >  include/linux/tee_drv.h  | 11 +++++
+> >  include/uapi/linux/tee.h | 29 ++++++++++++
+> >  4 files changed, 175 insertions(+), 2 deletions(-)
+> >
+> > --
+> > 2.25.0
+> >
 
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
 
---===============2050772089373557302==--
+--===============4752592601004102799==--
 
