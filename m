@@ -1,73 +1,104 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v3 04/10] firmware: arm_ffa: Add support for querying FF-A features
-Date: Wed, 07 Sep 2022 15:52:34 +0100
-Message-ID: <20220907145240.1683088-5-sudeep.holla@arm.com>
+Subject: [PATCH v3 05/10] firmware: arm_ffa: Use FFA_FEATURES to detect if
+ native versions are supported
+Date: Wed, 07 Sep 2022 15:52:35 +0100
+Message-ID: <20220907145240.1683088-6-sudeep.holla@arm.com>
 In-Reply-To: <20220907145240.1683088-1-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4220671165289941052=="
+Content-Type: multipart/mixed; boundary="===============1466633202835637161=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4220671165289941052==
+--===============1466633202835637161==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add support for FFA_FEATURES to discover properties supported at the
-FF-A interface. This interface can be used to query:
- - If an FF-A interface is implemented by the component at the higher EL,
- - If an implemented FF-A interface also implements any optional features
-   described in its interface definition, and
- - Any implementation details exported by an implemented FF-A interface
-   as described in its interface definition.
+Currently, the ffa_dev->mode_32bit is use to detect if the native 64-bit
+or 32-bit versions of FF-A ABI needs to be used. However for the FF-A
+memory ABIs, it is not dependent on the ffa_device(i.e. the partition)
+itself, but the partition manager(SPM).
+
+So, the FFA_FEATURES can be use to detect if the native 64bit ABIs are
+supported or not and appropriate calls can be made based on that.
+
+Use FFA_FEATURES to detect if native versions of MEM_LEND or MEM_SHARE
+are implemented and make of the same to use native memory ABIs later on.
 
 Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/firmware/arm_ffa/driver.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/firmware/arm_ffa/driver.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/dri=
 ver.c
-index 04e7cbb1b9aa..81b8d578b6ea 100644
+index 81b8d578b6ea..37a8ee304508 100644
 --- a/drivers/firmware/arm_ffa/driver.c
 +++ b/drivers/firmware/arm_ffa/driver.c
-@@ -571,6 +571,32 @@ static int ffa_memory_reclaim(u64 g_handle, u32 flags)
+@@ -163,6 +163,7 @@ struct ffa_drv_info {
+ 	struct mutex tx_lock; /* lock to protect Tx buffer */
+ 	void *rx_buffer;
+ 	void *tx_buffer;
++	bool mem_ops_native;
+ };
+=20
+ static struct ffa_drv_info *drv_info;
+@@ -597,6 +598,13 @@ static int ffa_features(u32 func_feat_id, u32 input_prop=
+s,
  	return 0;
  }
 =20
-+static int ffa_features(u32 func_feat_id, u32 input_props,
-+			u32 *if_props_1, u32 *if_props_2)
++static void ffa_set_up_mem_ops_native_flag(void)
 +{
-+	ffa_value_t id;
-+
-+	if (!ARM_SMCCC_IS_FAST_CALL(func_feat_id) && input_props) {
-+		pr_err("%s: Invalid Parameters: %x, %x", __func__,
-+		       func_feat_id, input_props);
-+		return ffa_to_linux_errno(FFA_RET_INVALID_PARAMETERS);
-+	}
-+
-+	invoke_ffa_fn((ffa_value_t){
-+		.a0 =3D FFA_FEATURES, .a1 =3D func_feat_id, .a2 =3D input_props,
-+		}, &id);
-+
-+	if (id.a0 =3D=3D FFA_ERROR)
-+		return ffa_to_linux_errno((int)id.a2);
-+
-+	if (if_props_1)
-+		*if_props_1 =3D id.a2;
-+	if (if_props_2)
-+		*if_props_2 =3D id.a3;
-+
-+	return 0;
++	if (!ffa_features(FFA_FN_NATIVE(MEM_LEND), 0, NULL, NULL) ||
++	    !ffa_features(FFA_FN_NATIVE(MEM_SHARE), 0, NULL, NULL))
++		drv_info->mem_ops_native =3D true;
 +}
 +
  static u32 ffa_api_version_get(void)
  {
  	return drv_info->version;
+@@ -638,10 +646,10 @@ static int ffa_sync_send_receive(struct ffa_device *dev,
+ static int
+ ffa_memory_share(struct ffa_device *dev, struct ffa_mem_ops_args *args)
+ {
+-	if (dev->mode_32bit)
+-		return ffa_memory_ops(FFA_MEM_SHARE, args);
++	if (drv_info->mem_ops_native)
++		return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
+=20
+-	return ffa_memory_ops(FFA_FN_NATIVE(MEM_SHARE), args);
++	return ffa_memory_ops(FFA_MEM_SHARE, args);
+ }
+=20
+ static int
+@@ -654,10 +662,10 @@ ffa_memory_lend(struct ffa_device *dev, struct ffa_mem_=
+ops_args *args)
+ 	 * however on systems without a hypervisor the responsibility
+ 	 * falls to the calling kernel driver to prevent access.
+ 	 */
+-	if (dev->mode_32bit)
+-		return ffa_memory_ops(FFA_MEM_LEND, args);
++	if (drv_info->mem_ops_native)
++		return ffa_memory_ops(FFA_FN_NATIVE(MEM_LEND), args);
+=20
+-	return ffa_memory_ops(FFA_FN_NATIVE(MEM_LEND), args);
++	return ffa_memory_ops(FFA_MEM_LEND, args);
+ }
+=20
+ static const struct ffa_dev_ops ffa_ops =3D {
+@@ -768,6 +776,8 @@ static int __init ffa_init(void)
+=20
+ 	ffa_setup_partitions();
+=20
++	ffa_set_up_mem_ops_native_flag();
++
+ 	return 0;
+ free_pages:
+ 	if (drv_info->tx_buffer)
 --=20
 2.37.3
 
 
---===============4220671165289941052==--
+--===============1466633202835637161==--
 
