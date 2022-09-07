@@ -1,80 +1,89 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 09/10] firmware: arm_ffa: Set up 32bit execution mode
- flag using partiion property
-Date: Wed, 07 Sep 2022 12:01:42 +0100
-Message-ID: <20220907110142.go33wifjqz7byji6@bogus>
+Subject: 
+ Re: [PATCH v2 08/10] firmware: arm_ffa: Add v1.1 get_partition_info support
+Date: Wed, 07 Sep 2022 12:04:33 +0100
+Message-ID: <20220907110433.rnuhlrtjm32w63qz@bogus>
 In-Reply-To: <
- <CAHUa44Gq+7_XT2+ccAMxC=ZFh4vV=YuUGLGx0MMYrZ1wne83bw@mail.gmail.com>>
+ <CAHUa44FR7PN99CK6Qq4tSoKWm7uEgctJOLEW5F3jhZhSV19QXg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3458365321074325920=="
+Content-Type: multipart/mixed; boundary="===============6434863046557369291=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3458365321074325920==
+--===============6434863046557369291==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 07, 2022 at 11:01:27AM +0200, Jens Wiklander wrote:
+On Wed, Sep 07, 2022 at 10:38:05AM +0200, Jens Wiklander wrote:
 > On Fri, Sep 2, 2022 at 2:40 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 > >
-> > FF-A v1.1 adds a flag in the partition properties to indicate if the
-> > partition runs in the AArch32 or AArch64 execution state. Use the same
-> > to set-up the 32-bit execution flag mode in the ffa_dev automatically
-> > and ignore any requests to do the same from the ffa_driver.
+> > FF-A v1.1 adds support to discovery the UUIDs of the partitions that was
+> > missing in v1.0 and which the driver workarounds by using UUIDs supplied
+> > by the ffa_drivers.
+> >
+> > Add the v1.1 get_partition_info support and disable the workaround if
+> > the detected FF-A version is greater than v1.0.
 > >
 > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > > ---
-> >  drivers/firmware/arm_ffa/driver.c | 13 ++++++++++++-
-> >  include/linux/arm_ffa.h           |  2 ++
-> >  2 files changed, 14 insertions(+), 1 deletion(-)
+> >  drivers/firmware/arm_ffa/driver.c | 42 +++++++++++++++++++++++++------
+> >  include/linux/arm_ffa.h           |  1 +
+> >  2 files changed, 35 insertions(+), 8 deletions(-)
 > >
 > > diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa=
 /driver.c
-> > index dd6ab2f81580..dbbe15592173 100644
+> > index 2532e0f16cc9..dd6ab2f81580 100644
 > > --- a/drivers/firmware/arm_ffa/driver.c
 > > +++ b/drivers/firmware/arm_ffa/driver.c
-> > @@ -647,11 +647,19 @@ static int ffa_partition_info_get(const char *uuid_=
-str,
+> > @@ -264,18 +264,24 @@ static int ffa_rxtx_unmap(u16 vm_id)
 > >         return 0;
 > >  }
 > >
-> > -static void ffa_mode_32bit_set(struct ffa_device *dev)
-> > +static void _ffa_mode_32bit_set(struct ffa_device *dev)
+> > +#define PARTITION_INFO_GET_RETURN_COUNT_ONLY   BIT(0)
+> > +
+> >  /* buffer must be sizeof(struct ffa_partition_info) * num_partitions */
+> >  static int
+> >  __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 uuid2, u32 uuid3,
+> >                          struct ffa_partition_info *buffer, int num_parti=
+tions)
 > >  {
-> >         dev->mode_32bit =3D true;
-> >  }
+> > -       int count;
+> > +       int idx, count, flags =3D 0, size;
+> >         ffa_value_t partition_info;
 > >
-> > +static void ffa_mode_32bit_set(struct ffa_device *dev)
-> > +{
-> > +       if (drv_info->version > FFA_VERSION_1_0)
-> > +               return;
+> > +       if (!buffer || !num_partitions) /* Just get the count for now */
+> > +               flags =3D PARTITION_INFO_GET_RETURN_COUNT_ONLY;
 > > +
-> > +       _ffa_mode_32bit_set(dev);
-> > +}
-> > +
-> >  static int ffa_sync_send_receive(struct ffa_device *dev,
-> >                                  struct ffa_send_direct_data *data)
-> >  {
-> > @@ -743,6 +751,9 @@ static void ffa_setup_partitions(void)
-> >                                __func__, tpbuf->id);
-> >                         continue;
-> >                 }
-> > +
-> > +               if (tpbuf->properties & FFA_PARTITION_AARCH64_EXEC)
+> >         mutex_lock(&drv_info->rx_lock);
+> >         invoke_ffa_fn((ffa_value_t){
+> >                       .a0 =3D FFA_PARTITION_INFO_GET,
+> >                       .a1 =3D uuid0, .a2 =3D uuid1, .a3 =3D uuid2, .a4 =
+=3D uuid3,
+> > +                     .a5 =3D flags,
+> >                       }, &partition_info);
+> >
+> >         if (partition_info.a0 =3D=3D FFA_ERROR) {
+> > @@ -285,8 +291,18 @@ __ffa_partition_info_get(u32 uuid0, u32 uuid1, u32 u=
+uid2, u32 uuid3,
+> >
+> >         count =3D partition_info.a2;
+> >
+> > +       if (drv_info->version > FFA_VERSION_1_0) {
+> > +               size =3D partition_info.a3;
+> > +               if (size > sizeof(*buffer))
+> > +                       size =3D sizeof(*buffer);
 >=20
-> Shouldn't this be !(tpbuf->properties & FFA_PARTITION_AARCH64_EXEC)?
->=20
-> Before this, we used 64-bit calling convention by default for FF-A
-> v1.0. I suppose we would like to keep that behaviour.
->=20
+> Below when calculating the address in the source buffer with
+> "drv_info->rx_buffer + idx * size" you should use the size from
+> partition_info.a3 even if it's larger than sizeof(*buffer). The amount
+> of bytes to copy looks correct though. Does that make sense?
+>
 
-Correct, it is stupid mistake on my part. I did notice this but somehow
-messed up not to add the change I made to test with OPTEE. Thanks for
-noticing this.
+Good spot, I missed to see that. It makes complete sense. I will fix it.
 
 --=20
 Regards,
 Sudeep
 
---===============3458365321074325920==--
+--===============6434863046557369291==--
 
