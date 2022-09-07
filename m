@@ -1,79 +1,67 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 04/10] firmware: arm_ffa: Add support for querying FF-A
- features
-Date: Wed, 07 Sep 2022 14:10:28 +0200
-Message-ID: 
- <CAHUa44GPKpezKvybSbNHNm+NcLk9JzC4mtheFL0n0niAhZmP2w@mail.gmail.com>
-In-Reply-To: <20220902124032.788488-5-sudeep.holla@arm.com>
+Subject: 
+ [PATCH v3 00/10] firmware: arm_ffa: Refactoring and initial/minor v1.1 update
+Date: Wed, 07 Sep 2022 15:52:30 +0100
+Message-ID: <20220907145240.1683088-1-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1111713769582137339=="
+Content-Type: multipart/mixed; boundary="===============6924938782177841626=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1111713769582137339==
+--===============6924938782177841626==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 2, 2022 at 2:40 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> Add support for FFA_FEATURES to discover properties supported at the
-> FF-A interface. This interface can be used to query:
->  - If an FF-A interface is implemented by the component at the higher EL,
->  - If an implemented FF-A interface also implements any optional features
->    described in its interface definition, and
->  - Any implementation details exported by an implemented FF-A interface
->    as described in its interface definition.
->
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/firmware/arm_ffa/driver.c | 26 ++++++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
+Hi All,
 
-Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+This series is just some refactoring in preparation to add FF-A v1.1
+support. It doesn't have any memory layout or notification changes
+supported in v1.1 yet.
 
->
-> diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/d=
-river.c
-> index 04e7cbb1b9aa..81b8d578b6ea 100644
-> --- a/drivers/firmware/arm_ffa/driver.c
-> +++ b/drivers/firmware/arm_ffa/driver.c
-> @@ -571,6 +571,32 @@ static int ffa_memory_reclaim(u64 g_handle, u32 flags)
->         return 0;
->  }
->
-> +static int ffa_features(u32 func_feat_id, u32 input_props,
-> +                       u32 *if_props_1, u32 *if_props_2)
-> +{
-> +       ffa_value_t id;
-> +
-> +       if (!ARM_SMCCC_IS_FAST_CALL(func_feat_id) && input_props) {
-> +               pr_err("%s: Invalid Parameters: %x, %x", __func__,
-> +                      func_feat_id, input_props);
-> +               return ffa_to_linux_errno(FFA_RET_INVALID_PARAMETERS);
-> +       }
-> +
-> +       invoke_ffa_fn((ffa_value_t){
-> +               .a0 =3D FFA_FEATURES, .a1 =3D func_feat_id, .a2 =3D input_p=
-rops,
-> +               }, &id);
-> +
-> +       if (id.a0 =3D=3D FFA_ERROR)
-> +               return ffa_to_linux_errno((int)id.a2);
-> +
-> +       if (if_props_1)
-> +               *if_props_1 =3D id.a2;
-> +       if (if_props_2)
-> +               *if_props_2 =3D id.a3;
-> +
-> +       return 0;
-> +}
-> +
->  static u32 ffa_api_version_get(void)
->  {
->         return drv_info->version;
-> --
-> 2.37.3
->
+Regards,
+Sudeep
 
---===============1111713769582137339==--
+v2[2]->v3:
+	- Fixed the logic to set 32bit mode which was wrong.
+	- Ensured that we advance each partition info size by returned
+	  size even if the size is greater than the partition_info structure,
+	  we will still just copy the right size.
+
+v1[1]->v2[2]:
+	- Merged dropping of ffa_ops in optee_ffa structure and using
+	  ffa_dev->ops into single patch
+	- Added separate patch(didn't fit any patch strictly to fit in)
+	  to rename ffa_dev_ops as ffa_ops as suggested by Sumit
+	- Fixed some minor comments, handling size > structure size in
+	  partition_info_get and added extra parameter to ffa_features
+	  to get both possible output/interface properties.
+
+[1] https://lore.kernel.org/all/20220830100700.344594-1-sudeep.holla(a)arm.com
+[2] https://lore.kernel.org/all/20220902124032.788488-1-sudeep.holla(a)arm.com
+
+Sudeep Holla (10):
+  firmware: arm_ffa: Add pointer to the ffa_dev_ops in struct ffa_dev
+  tee: optee: Drop ffa_ops in optee_ffa structure using ffa_dev->ops directly
+  firmware: arm_ffa: Remove ffa_dev_ops_get()
+  firmware: arm_ffa: Add support for querying FF-A features
+  firmware: arm_ffa: Use FFA_FEATURES to detect if native versions are suppor=
+ted
+  firmware: arm_ffa: Make memory apis ffa_device independent
+  firmware: arm_ffa: Rename ffa_dev_ops as ffa_ops
+  firmware: arm_ffa: Add v1.1 get_partition_info support
+  firmware: arm_ffa: Set up 32bit execution mode flag using partiion property
+  firmware: arm_ffa: Split up ffa_ops into info, message and memory operations
+
+ drivers/firmware/arm_ffa/bus.c    |   4 +-
+ drivers/firmware/arm_ffa/driver.c | 131 +++++++++++++++++++++++-------
+ drivers/tee/optee/ffa_abi.c       |  46 +++++------
+ drivers/tee/optee/optee_private.h |   1 -
+ include/linux/arm_ffa.h           |  36 +++++---
+ 5 files changed, 151 insertions(+), 67 deletions(-)
+
+--
+2.37.3
+
+
+--===============6924938782177841626==--
 
