@@ -1,40 +1,46 @@
-From: Jerome Forissier <jerome@forissier.org>
+From: ira.weiny@intel.com
 To: op-tee@lists.trustedfirmware.org
-Subject: Preparing for OP-TEE 3.14.0
-Date: Fri, 25 Jun 2021 15:17:57 +0200
-Message-ID: <e97ec5e1-7b74-2106-03ff-77d58c414f14@forissier.org>
+Subject: [PATCH 0/4] Remove get_kernel_pages()
+Date: Sat, 01 Oct 2022 17:23:22 -0700
+Message-ID: <20221002002326.946620-1-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1332743412535224331=="
+Content-Type: multipart/mixed; boundary="===============4155406200978654778=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1332743412535224331==
+--===============4155406200978654778==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-[CC all OP-TEE maintainers]
+From: Ira Weiny <ira.weiny@intel.com>
 
-Hi OP-TEE maintainers & contributors,
+get_kernel_pages() only had one caller [shm_get_kernel_pages()] which did not
+need the functionality it provided.  Furthermore, it called kmap_to_page()
+which we are looking to removed.
 
-OP-TEE v3.14.0 is scheduled to be released on 2021-07-16. So, now is
-a good time to start testing the master branch on the various platforms
-and report/fix any bugs.
+Alter shm_get_kernel_pages() to no longer call get_kernel_pages() and remove
+get_kernel_pages().  Along the way it was noted that shm_get_kernel_pages()
+does not have any need to support vmalloc'ed addresses either.  Remove that
+functionality to clean up the logic.
 
-The GitHub pull request for collecting Tested-by tags or any other
-comments is https://github.com/OP-TEE/optee_os/pull/4704.
+This series also fixes and uses is_kmap_addr().
 
-As usual, we will create a release candidate tag one week before the
-release date for final testing.
+Ira Weiny (4):
+  highmem: Enhance is_kmap_addr() to check kmap_local_page() mappings
+  tee: Remove vmalloc page support
+  tee: Remove call to get_kernel_pages()
+  mm: Remove get_kernel_pages()
 
-In addition to that you can find some additional information related to
-releases here:
-https://optee.readthedocs.io/en/latest/general/releases.html
+ drivers/tee/tee_shm.c            | 41 ++++++++++++--------------------
+ include/linux/highmem-internal.h |  5 +++-
+ include/linux/mm.h               |  2 --
+ mm/swap.c                        | 30 -----------------------
+ 4 files changed, 19 insertions(+), 59 deletions(-)
 
-Regards,
+
+base-commit: 274d7803837da78dfc911bcda0d593412676fc20
 -- 
-Jerome
+2.37.2
 
 
-
-
---===============1332743412535224331==--
+--===============4155406200978654778==--
 
