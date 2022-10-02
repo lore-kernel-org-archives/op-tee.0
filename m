@@ -1,46 +1,57 @@
 From: ira.weiny@intel.com
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 0/4] Remove get_kernel_pages()
-Date: Sat, 01 Oct 2022 17:23:22 -0700
-Message-ID: <20221002002326.946620-1-ira.weiny@intel.com>
+Subject: [PATCH 1/4] highmem: Enhance is_kmap_addr() to check
+ kmap_local_page() mappings
+Date: Sat, 01 Oct 2022 17:23:23 -0700
+Message-ID: <20221002002326.946620-2-ira.weiny@intel.com>
+In-Reply-To: <20221002002326.946620-1-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4155406200978654778=="
+Content-Type: multipart/mixed; boundary="===============7836189228553331099=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4155406200978654778==
+--===============7836189228553331099==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-get_kernel_pages() only had one caller [shm_get_kernel_pages()] which did not
-need the functionality it provided.  Furthermore, it called kmap_to_page()
-which we are looking to removed.
+is_kmap_addr() is only looking at the kmap() address range which may
+cause check_heap_object() to miss checking an overflow on a
+kmap_local_page() page.
 
-Alter shm_get_kernel_pages() to no longer call get_kernel_pages() and remove
-get_kernel_pages().  Along the way it was noted that shm_get_kernel_pages()
-does not have any need to support vmalloc'ed addresses either.  Remove that
-functionality to clean up the logic.
+Add a check for the kmap_local_page() address range to is_kmap_addr().
 
-This series also fixes and uses is_kmap_addr().
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+---
+ include/linux/highmem-internal.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Ira Weiny (4):
-  highmem: Enhance is_kmap_addr() to check kmap_local_page() mappings
-  tee: Remove vmalloc page support
-  tee: Remove call to get_kernel_pages()
-  mm: Remove get_kernel_pages()
-
- drivers/tee/tee_shm.c            | 41 ++++++++++++--------------------
- include/linux/highmem-internal.h |  5 +++-
- include/linux/mm.h               |  2 --
- mm/swap.c                        | 30 -----------------------
- 4 files changed, 19 insertions(+), 59 deletions(-)
-
-
-base-commit: 274d7803837da78dfc911bcda0d593412676fc20
--- 
+diff --git a/include/linux/highmem-internal.h b/include/linux/highmem-interna=
+l.h
+index 034b1106d022..5fd5cb58f109 100644
+--- a/include/linux/highmem-internal.h
++++ b/include/linux/highmem-internal.h
+@@ -152,7 +152,10 @@ static inline void totalhigh_pages_add(long count)
+ static inline bool is_kmap_addr(const void *x)
+ {
+ 	unsigned long addr =3D (unsigned long)x;
+-	return addr >=3D PKMAP_ADDR(0) && addr < PKMAP_ADDR(LAST_PKMAP);
++
++	return (addr >=3D PKMAP_ADDR(0) && addr < PKMAP_ADDR(LAST_PKMAP)) ||
++		(addr >=3D __fix_to_virt(FIX_KMAP_END) &&
++		 addr < __fix_to_virt(FIX_KMAP_BEGIN));
+ }
+ #else /* CONFIG_HIGHMEM */
+=20
+--=20
 2.37.2
 
 
---===============4155406200978654778==--
+--===============7836189228553331099==--
 
