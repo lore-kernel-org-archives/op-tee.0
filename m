@@ -1,57 +1,112 @@
 From: ira.weiny@intel.com
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 1/4] highmem: Enhance is_kmap_addr() to check
- kmap_local_page() mappings
-Date: Sat, 01 Oct 2022 17:23:23 -0700
-Message-ID: <20221002002326.946620-2-ira.weiny@intel.com>
+Subject: [PATCH 2/4] tee: Remove vmalloc page support
+Date: Sat, 01 Oct 2022 17:23:24 -0700
+Message-ID: <20221002002326.946620-3-ira.weiny@intel.com>
 In-Reply-To: <20221002002326.946620-1-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7836189228553331099=="
+Content-Type: multipart/mixed; boundary="===============6260684832590352313=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7836189228553331099==
+--===============6260684832590352313==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-is_kmap_addr() is only looking at the kmap() address range which may
-cause check_heap_object() to miss checking an overflow on a
-kmap_local_page() page.
+The kernel pages used by shm_get_kernel_pages() are allocated using
+GFP_KERNEL through the following call stack:
 
-Add a check for the kmap_local_page() address range to is_kmap_addr().
+trusted_instantiate()
+	trusted_payload_alloc() -> GFP_KERNEL
+	<trusted key op>
+		tee_shm_register_kernel_buf()
+			register_shm_helper()
+				shm_get_kernel_pages()
 
-Cc: Matthew Wilcox <willy@infradead.org>
+Where <trusted key op> is one of:
+
+	trusted_key_unseal()
+	trusted_key_get_random()
+	trusted_key_seal()
+
+Remove the vmalloc page support from shm_get_kernel_pages().  Replace
+with a warn on once.
+
+Cc: Jens Wiklander <jens.wiklander@linaro.org>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Christoph Hellwig <hch@lst.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
----
- include/linux/highmem-internal.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/highmem-internal.h b/include/linux/highmem-interna=
-l.h
-index 034b1106d022..5fd5cb58f109 100644
---- a/include/linux/highmem-internal.h
-+++ b/include/linux/highmem-internal.h
-@@ -152,7 +152,10 @@ static inline void totalhigh_pages_add(long count)
- static inline bool is_kmap_addr(const void *x)
+---
+Jens I went with the suggestion from Linus and Christoph and rejected
+vmalloc addresses.  I did not hear back from you regarding Linus'
+question if the vmalloc page support was required by an up coming patch
+set or not.  So I assumed it was something out of tree.
+---
+ drivers/tee/tee_shm.c | 36 ++++++++++++------------------------
+ 1 file changed, 12 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 27295bda3e0b..527a6eabc03e 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -24,37 +24,25 @@ static void shm_put_kernel_pages(struct page **pages, siz=
+e_t page_count)
+ static int shm_get_kernel_pages(unsigned long start, size_t page_count,
+ 				struct page **pages)
  {
- 	unsigned long addr =3D (unsigned long)x;
--	return addr >=3D PKMAP_ADDR(0) && addr < PKMAP_ADDR(LAST_PKMAP);
++	struct kvec *kiov;
+ 	size_t n;
+ 	int rc;
+=20
+-	if (is_vmalloc_addr((void *)start)) {
+-		struct page *page;
+-
+-		for (n =3D 0; n < page_count; n++) {
+-			page =3D vmalloc_to_page((void *)(start + PAGE_SIZE * n));
+-			if (!page)
+-				return -ENOMEM;
+-
+-			get_page(page);
+-			pages[n] =3D page;
+-		}
+-		rc =3D page_count;
+-	} else {
+-		struct kvec *kiov;
+-
+-		kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
+-		if (!kiov)
+-			return -ENOMEM;
++	if (WARN_ON_ONCE(is_vmalloc_addr((void *)start)))
++		return -EINVAL;
+=20
+-		for (n =3D 0; n < page_count; n++) {
+-			kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
+-			kiov[n].iov_len =3D PAGE_SIZE;
+-		}
++	kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
++	if (!kiov)
++		return -ENOMEM;
+=20
+-		rc =3D get_kernel_pages(kiov, page_count, 0, pages);
+-		kfree(kiov);
++	for (n =3D 0; n < page_count; n++) {
++		kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
++		kiov[n].iov_len =3D PAGE_SIZE;
+ 	}
+=20
++	rc =3D get_kernel_pages(kiov, page_count, 0, pages);
++	kfree(kiov);
 +
-+	return (addr >=3D PKMAP_ADDR(0) && addr < PKMAP_ADDR(LAST_PKMAP)) ||
-+		(addr >=3D __fix_to_virt(FIX_KMAP_END) &&
-+		 addr < __fix_to_virt(FIX_KMAP_BEGIN));
+ 	return rc;
  }
- #else /* CONFIG_HIGHMEM */
 =20
 --=20
 2.37.2
 
 
---===============7836189228553331099==--
+--===============6260684832590352313==--
 
