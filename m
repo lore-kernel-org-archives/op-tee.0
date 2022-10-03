@@ -1,51 +1,67 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contributions (LOC) monthly meeting
-Date: Mon, 03 Oct 2022 09:52:43 +0200
+Subject: Re: [PATCH 0/4] Remove get_kernel_pages()
+Date: Mon, 03 Oct 2022 14:55:02 +0530
 Message-ID: 
- <CAHUa44FS0TwwB2qnSWXjC2o=d6Cn_9-rBEGJCCGRgfQWKcEC2Q@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44Gf-SULgabKSPnqTPcMNKjOi0bmWJuSQEQqbBypVJmVDA@mail.gmail.com>>
+ <CAFA6WYN+3inY6MYrMFY0qhmifCYtj_immFMFN6jC1BamQCYGWQ@mail.gmail.com>
+In-Reply-To: <20221002002326.946620-1-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5525486639531385337=="
+Content-Type: multipart/mixed; boundary="===============5841801645042276187=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5525486639531385337==
+--===============5841801645042276187==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Ira,
 
-On Thu, Sep 22, 2022 at 11:07 AM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
+On Sun, 2 Oct 2022 at 05:53, <ira.weiny@intel.com> wrote:
 >
-> Hi,
+> From: Ira Weiny <ira.weiny@intel.com>
 >
-> We don't have any topics for the meeting today, so let's cancel it.
+> get_kernel_pages() only had one caller [shm_get_kernel_pages()] which did n=
+ot
+> need the functionality it provided.  Furthermore, it called kmap_to_page()
+> which we are looking to removed.
 >
-> The time slot we've allocated for this meeting is either bad or worse
-> for me so I'd like to try and find a new time slot. Please use the
-> doodle link [1] below to record your preferences. The doodle poll is
-> public so feel free to email me directly instead in case you're more
-> comfortable with that. This is my first time creating a doodle poll,
-> so apologies if I've made a mess of it.
+> Alter shm_get_kernel_pages() to no longer call get_kernel_pages() and remove
+> get_kernel_pages().  Along the way it was noted that shm_get_kernel_pages()
+> does not have any need to support vmalloc'ed addresses either.  Remove that
+> functionality to clean up the logic.
 >
-> As noted in the poll we're looking for a day and time in the fourth
-> week of the month. We're using the CET time zone as many of us are in
-> the time zone.
->
-> If you can't find any time that works for you please send me a mail
-> with more suitable times and I'll try to work out something. Let's
-> give this a week or so to possibly settle on a new time slot.
->
-> [1] https://doodle.com/meeting/participate/id/dJqR4Eyb
+> This series also fixes and uses is_kmap_addr().
 
-Thank you to everyone who has responded, so far it seems like Tuesdays
-at 10.00 CET is the best slot. I'll close this in a few days in case
-someone has forgotten to update with the doodle link above.
+From the above description, I am failing to see the motivation behind
+this change. Can you elaborate here?
 
-Thanks,
-Jens
+Also, since you are targeting to remove kmap_to_page(), is there any
+alternative way to support highmem for future TEE bus drivers? As I
+can see higmem being enabled for multiple Arm defconfigs [1] which can
+also support TEE (an example which already does it:
+arch/arm/configs/imx_v6_v7_defconfig).
 
---===============5525486639531385337==--
+[1] git grep CONFIG_HIGHMEM arch/arm/
+
+-Sumit
+
+>
+> Ira Weiny (4):
+>   highmem: Enhance is_kmap_addr() to check kmap_local_page() mappings
+>   tee: Remove vmalloc page support
+>   tee: Remove call to get_kernel_pages()
+>   mm: Remove get_kernel_pages()
+>
+>  drivers/tee/tee_shm.c            | 41 ++++++++++++--------------------
+>  include/linux/highmem-internal.h |  5 +++-
+>  include/linux/mm.h               |  2 --
+>  mm/swap.c                        | 30 -----------------------
+>  4 files changed, 19 insertions(+), 59 deletions(-)
+>
+>
+> base-commit: 274d7803837da78dfc911bcda0d593412676fc20
+> --
+> 2.37.2
+>
+
+--===============5841801645042276187==--
 
