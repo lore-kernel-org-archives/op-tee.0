@@ -1,21 +1,23 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 2/4] tee: Remove vmalloc page support
-Date: Mon, 03 Oct 2022 08:41:33 +0200
+Date: Mon, 03 Oct 2022 12:27:07 +0530
 Message-ID: 
- <CAHUa44FeMb09_ix0p+cQsZdch1TO3zWi3yVYG6=4TQyP3bmm7w@mail.gmail.com>
+ <CAFA6WYOGT1sJLA4c_B88NaXgxv4fm-idi5QMYvXdXB0acCF3sw@mail.gmail.com>
 In-Reply-To: <20221002002326.946620-3-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7347191169050927360=="
+Content-Type: multipart/mixed; boundary="===============5788969521003127111=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7347191169050927360==
+--===============5788969521003127111==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
++ Phil
+
 Hi Ira,
 
-On Sun, Oct 2, 2022 at 2:23 AM <ira.weiny@intel.com> wrote:
+On Sun, 2 Oct 2022 at 05:53, <ira.weiny@intel.com> wrote:
 >
 > From: Ira Weiny <ira.weiny@intel.com>
 >
@@ -51,12 +53,15 @@ On Sun, Oct 2, 2022 at 2:23 AM <ira.weiny@intel.com> wrote:
 > question if the vmalloc page support was required by an up coming patch
 > set or not.  So I assumed it was something out of tree.
 
-Yes, that's correctly assumed, sorry for not confirming that earlier.
+It looks like I wasn't CC'd to that conversation. IIRC, support for
+vmalloc addresses was added recently by Phil here [1]. So I would like
+to give him a chance if he is planning to post a corresponding kernel
+driver upstream.
 
-Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+[1] https://lists.trustedfirmware.org/archives/list/op-tee(a)lists.trustedfir=
+mware.org/thread/M7HI3P2M66V27SK35CGQRICZ7DJZ5J2W/
 
-Thanks,
-Jens
+-Sumit
 
 > ---
 >  drivers/tee/tee_shm.c | 36 ++++++++++++------------------------
@@ -123,5 +128,5 @@ ize_t page_count)
 > 2.37.2
 >
 
---===============7347191169050927360==--
+--===============5788969521003127111==--
 
