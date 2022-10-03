@@ -1,58 +1,127 @@
-From: Ira Weiny <ira.weiny@intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 3/4] tee: Remove call to get_kernel_pages()
-Date: Sat, 01 Oct 2022 19:30:15 -0700
-Message-ID: <Yzj3t6PDIFNPyI35@iweiny-mobl>
-In-Reply-To: <YzjfcW6OGcPP075q@ZenIV>
+Subject: Re: [PATCH 2/4] tee: Remove vmalloc page support
+Date: Mon, 03 Oct 2022 08:41:33 +0200
+Message-ID: 
+ <CAHUa44FeMb09_ix0p+cQsZdch1TO3zWi3yVYG6=4TQyP3bmm7w@mail.gmail.com>
+In-Reply-To: <20221002002326.946620-3-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8042993023795073324=="
+Content-Type: multipart/mixed; boundary="===============7347191169050927360=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8042993023795073324==
+--===============7347191169050927360==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Oct 02, 2022 at 01:46:41AM +0100, Al Viro wrote:
-> On Sat, Oct 01, 2022 at 05:23:25PM -0700, ira.weiny(a)intel.com wrote:
->=20
-> >  	kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
-> > @@ -38,12 +39,12 @@ static int shm_get_kernel_pages(unsigned long start, =
-size_t page_count,
-> >  	for (n =3D 0; n < page_count; n++) {
-> >  		kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
-> >  		kiov[n].iov_len =3D PAGE_SIZE;
-> > +		pages[n] =3D virt_to_page(kiov[n].iov_base);
-> > +		get_page(pages[n]);
-> >  	}
-> > -
-> > -	rc =3D get_kernel_pages(kiov, page_count, 0, pages);
-> >  	kfree(kiov);
->=20
-> IDGI.  The only thing in kiov[...] you are every reading is
-> ->iov_base.  And you fetch it once, right after the assignment.
+Hi Ira,
 
-:-(  Good point.  Thanks for catching that.  I was too focused on just
-replacing get_kernel_pages() with get_page() and I should have refactored
-more.
+On Sun, Oct 2, 2022 at 2:23 AM <ira.weiny@intel.com> wrote:
+>
+> From: Ira Weiny <ira.weiny@intel.com>
+>
+> The kernel pages used by shm_get_kernel_pages() are allocated using
+> GFP_KERNEL through the following call stack:
+>
+> trusted_instantiate()
+>         trusted_payload_alloc() -> GFP_KERNEL
+>         <trusted key op>
+>                 tee_shm_register_kernel_buf()
+>                         register_shm_helper()
+>                                 shm_get_kernel_pages()
+>
+> Where <trusted key op> is one of:
+>
+>         trusted_key_unseal()
+>         trusted_key_get_random()
+>         trusted_key_seal()
+>
+> Remove the vmalloc page support from shm_get_kernel_pages().  Replace
+> with a warn on once.
+>
+> Cc: Jens Wiklander <jens.wiklander@linaro.org>
+> Cc: Al Viro <viro@zeniv.linux.org.uk>
+> Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+>
+> ---
+> Jens I went with the suggestion from Linus and Christoph and rejected
+> vmalloc addresses.  I did not hear back from you regarding Linus'
+> question if the vmalloc page support was required by an up coming patch
+> set or not.  So I assumed it was something out of tree.
 
->=20
-> Why bother with allocating the array at all?
-> 		pages[n] =3D virt_to_page((void *)start + n * PAGE_SIZE);
-> would do just as well, not to mention the fact that since you reject
-> vmalloc and kmap, you might simply do
->=20
-> 	page =3D virt_to_page(start);
-> 	for (int n =3D 0; n < page_count; n++)
-> 		get_page(pages[n] =3D page + n);
+Yes, that's correctly assumed, sorry for not confirming that earlier.
 
-I think I'd avoid the assignment in the parameter as I would miss that if I
-came back and looked at this code later.
+Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 
-I'll get rid of the kiov in v2.
+Thanks,
+Jens
 
-Sorry for not cleaning it up more and thanks for the review!
+> ---
+>  drivers/tee/tee_shm.c | 36 ++++++++++++------------------------
+>  1 file changed, 12 insertions(+), 24 deletions(-)
+>
+> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> index 27295bda3e0b..527a6eabc03e 100644
+> --- a/drivers/tee/tee_shm.c
+> +++ b/drivers/tee/tee_shm.c
+> @@ -24,37 +24,25 @@ static void shm_put_kernel_pages(struct page **pages, s=
+ize_t page_count)
+>  static int shm_get_kernel_pages(unsigned long start, size_t page_count,
+>                                 struct page **pages)
+>  {
+> +       struct kvec *kiov;
+>         size_t n;
+>         int rc;
+>
+> -       if (is_vmalloc_addr((void *)start)) {
+> -               struct page *page;
+> -
+> -               for (n =3D 0; n < page_count; n++) {
+> -                       page =3D vmalloc_to_page((void *)(start + PAGE_SIZE=
+ * n));
+> -                       if (!page)
+> -                               return -ENOMEM;
+> -
+> -                       get_page(page);
+> -                       pages[n] =3D page;
+> -               }
+> -               rc =3D page_count;
+> -       } else {
+> -               struct kvec *kiov;
+> -
+> -               kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
+> -               if (!kiov)
+> -                       return -ENOMEM;
+> +       if (WARN_ON_ONCE(is_vmalloc_addr((void *)start)))
+> +               return -EINVAL;
+>
+> -               for (n =3D 0; n < page_count; n++) {
+> -                       kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE=
+);
+> -                       kiov[n].iov_len =3D PAGE_SIZE;
+> -               }
+> +       kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
+> +       if (!kiov)
+> +               return -ENOMEM;
+>
+> -               rc =3D get_kernel_pages(kiov, page_count, 0, pages);
+> -               kfree(kiov);
+> +       for (n =3D 0; n < page_count; n++) {
+> +               kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
+> +               kiov[n].iov_len =3D PAGE_SIZE;
+>         }
+>
+> +       rc =3D get_kernel_pages(kiov, page_count, 0, pages);
+> +       kfree(kiov);
+> +
+>         return rc;
+>  }
+>
+> --
+> 2.37.2
+>
 
-Ira
-
---===============8042993023795073324==--
+--===============7347191169050927360==--
 
