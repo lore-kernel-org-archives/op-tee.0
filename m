@@ -1,43 +1,35 @@
-From: Ira Weiny <ira.weiny@intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 2/4] tee: Remove vmalloc page support
-Date: Thu, 06 Oct 2022 11:19:07 -0700
-Message-ID: <Yz8cG6OAXvK48vc/@iweiny-desk3>
+Date: Thu, 06 Oct 2022 11:20:16 -0700
+Message-ID: 
+ <CAHk-=whVyH-wSWLd=Zn4rwo+91T+qzRvfMPC2yFX98GxykOqOw@mail.gmail.com>
 In-Reply-To: <
  <CAFA6WYMT9S1Di6DN_UXc823f0ZTkqerE1PB=oG6wmfx28vEbDg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2669655533259097176=="
+Content-Type: multipart/mixed; boundary="===============0093557125096530297=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2669655533259097176==
+--===============0093557125096530297==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 06, 2022 at 11:53:55AM +0530, Sumit Garg wrote:
-> Hi Phil,
->=20
-> Please don't top-post in the OSS mailing list.
->=20
-> On Wed, 5 Oct 2022 at 08:59, Phil Chang (=E5=BC=B5=E4=B8=96=E5=8B=B3) <Phil=
-.Chang@mediatek.com> wrote:
-> >
-> > Hi Sumit
-> >
-> > Thanks for mentioning that, in fact, our product is low memory devices, a=
-nd continuous pages are extremely valuable.
-> > Although our driver is not upstream yet but highly dependent on tee shm v=
-malloc support,
->=20
+On Wed, Oct 5, 2022 at 11:24 PM Sumit Garg <sumit.garg@linaro.org> wrote:
+>
 > Sorry but you need to get your driver mainline in order to support
-> vmalloc interface. As otherwise it's a maintenance nightmare to
-> support interfaces in the mainline for out-of-tree drivers.
+> vmalloc interface.
 
-I agree.  It sounds like this driver is not going to be submitted any time
-soon.  So I'll respin this series as is.  But I do have a couple of other
-things to deal with first.  So if I'm wrong let me know soon.
+Actually, I think even then we shouldn't support vmalloc - and
+register_shm_helper() just needs to be changed to pass in an array of
+actual page pointers instead.
 
-Thanks,
-Ira
+At that point TEE_SHM_USER_MAPPED should also go away, because then
+it's the caller that should just do either the user space page
+pinning, or pass in the kernel page pointer.
 
---===============2669655533259097176==--
+JensW, is there some reason that wouldn't work?
+
+                 Linus
+
+--===============0093557125096530297==--
 
