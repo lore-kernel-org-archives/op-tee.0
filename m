@@ -1,35 +1,40 @@
-From: Jérôme Forissier <jerome.forissier@linaro.org>
+From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 3.19.0 has been released
-Date: Fri, 14 Oct 2022 21:10:38 +0200
-Message-ID: 
- <CA+NB=mZa57LvvVOEFkXyPbYdio80EpipH42UX_7tWYBCpgwHSg@mail.gmail.com>
+Subject: OP-TEE 3.19 SPMC status
+Date: Tue, 18 Oct 2022 12:49:00 +0200
+Message-ID: <DED8C1F4-8EA9-4CB6-9A59-4FF037341A7D@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5123855279076823680=="
+Content-Type: multipart/mixed; boundary="===============3312016281604979779=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5123855279076823680==
+--===============3312016281604979779==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi All,
 
-I'm pleased to announce that OP-TEE version 3.19.0 is now available.
-As usual, the list of changes can be found in the changelog [1].
-A blog post will be published soon on trustedfirmware.org [3].
+This is a follow-up email to the OP-TEE 3.19 release, highlighting the
+updates to the SPMC and related components.
 
-A big thank you to everyone who participated with contributions and
-helping out with testing the release [2].
+Short summary of introduced changes:
+  - Added support for running SPs loaded from the FIP (by TF-A). This is
+    an alternative to the current embedded SP loading mechanism [1].
+  - Added a new suite to xtest (ffa_spmc) to enable testing the SPMC as
+    part of the normal OP-TEE test procedure [2].
 
-[1] https://github.com/OP-TEE/optee_os/blob/master/CHANGELOG.md
-[2]
-https://github.com/OP-TEE/optee_os/commit/afacf356f9593a7f83cae9f96026824ec24=
-2ff52
-[3] https://www.trustedfirmware.org/blog/
+For more details on how to get, build and test the SPMC, please see [3].
+Our 3.19 release related test results are captured on this page [4].
 
 Regards,
---=20
-Jerome
+Balint
 
---===============5123855279076823680==--
+[1] https://optee.readthedocs.io/en/latest/architecture/spmc.html#sp-loading-=
+mechanism
+[2] https://github.com/OP-TEE/optee_test/blob/3.19.0/host/xtest/ffa_spmc_1000=
+.c
+[3] https://developer.trustedfirmware.org/w/trusted-services/op-tee-spmc
+[4] https://developer.trustedfirmware.org/w/trusted-services/op-tee-spmc/rele=
+ase-testing-3-19
+
+--===============3312016281604979779==--
 
