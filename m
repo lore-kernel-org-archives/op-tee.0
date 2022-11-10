@@ -1,57 +1,58 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH] tee: optee: fix possible memory leak in optee_register_device()
-Date: Thu, 10 Nov 2022 15:52:53 +0530
+Subject: Re: [PATCH] tee: optee: Populate child nodes in probe function
+Date: Thu, 10 Nov 2022 16:23:56 +0530
 Message-ID: 
- <CAFA6WYNntm-C9SfDQNQxriVr_CKAn4HGNFk5mMLWzvfkbWFJ1g@mail.gmail.com>
-In-Reply-To: <20221109140124.3288803-1-yangyingliang@huawei.com>
+ <CAFA6WYPxTET4mUQ4YHosbPN1o0UthP6PU=t8bAp91GZL+5rjRA@mail.gmail.com>
+In-Reply-To: <20221109160708.507481-1-ludvig.parsson@axis.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4030399957630340975=="
+Content-Type: multipart/mixed; boundary="===============4900835104308846889=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4030399957630340975==
+--===============4900835104308846889==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 9 Nov 2022 at 19:32, Yang Yingliang <yangyingliang@huawei.com> wrot=
-e:
+On Wed, 9 Nov 2022 at 21:37, Ludvig P=C3=A4rsson <ludvig.parsson@axis.com> =
+wrote:
 >
-> If device_register() returns error in optee_register_device(),
-> the name allocated by dev_set_name() need be freed. As comment
-> of device_register() says, it should use put_device() to give
-> up the reference in the error path. So fix this by calling
-> put_device(), then the name can be freed in kobject_cleanup(),
-> and optee_device is freed in optee_release_device().
->
-> Fixes: c3fa24af9244 ("tee: optee: add TEE bus device enumeration support")
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
-> ---
->  drivers/tee/optee/device.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Currently there is no dependency between the "linaro,scmi-optee" driver
+> and the tee_core. If the scmi-optee driver gets probed before the
+> tee_bus_type is initialized, then we will get an unwanted error print.
 >
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+What error print do you observe? I suppose this case is already
+handled by scmi optee driver via -EPROBE_DEFER.
 
 -Sumit
 
-> diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-> index f3947be13e2e..64f0e047c23d 100644
-> --- a/drivers/tee/optee/device.c
-> +++ b/drivers/tee/optee/device.c
-> @@ -80,7 +80,7 @@ static int optee_register_device(const uuid_t *device_uui=
-d)
->         rc =3D device_register(&optee_device->dev);
->         if (rc) {
->                 pr_err("device registration failed, err: %d\n", rc);
-> -               kfree(optee_device);
-> +               put_device(&optee_device->dev);
->         }
+> This patch enables putting scmi-optee nodes as children to the optee
+> node in devicetree, which indirectly creates the missing dependency.
 >
->         return rc;
+> Signed-off-by: Ludvig P=C3=A4rsson <ludvig.parsson@axis.com>
+> ---
+>  drivers/tee/optee/smc_abi.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index a1c1fa1a9c28..be6f02fd5a7f 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1533,6 +1533,11 @@ static int optee_probe(struct platform_device *pdev)
+>         if (rc)
+>                 goto err_disable_shm_cache;
+>
+> +       /* Populate any dependent child node (if any) */
+> +       rc =3D devm_of_platform_populate(&pdev->dev);
+> +       if (rc)
+> +               goto err_disable_shm_cache;
+> +
+>         pr_info("initialized driver\n");
+>         return 0;
+>
 > --
-> 2.25.1
+> 2.30.2
 >
 
---===============4030399957630340975==--
+--===============4900835104308846889==--
 
