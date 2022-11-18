@@ -1,66 +1,47 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH] tee: optee: fix possible memory leak in optee_register_device()
-Date: Fri, 18 Nov 2022 13:11:05 +0100
-Message-ID: 
- <CAHUa44G0QokypxV3U_ucjRfGmA8DTh+pWDm20h9EQv5Si8pw8Q@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYNntm-C9SfDQNQxriVr_CKAn4HGNFk5mMLWzvfkbWFJ1g@mail.gmail.com>>
+Subject: [GIT PULL] Add __init/__exit annotations OP-TEE driver for v6.2
+Date: Fri, 18 Nov 2022 13:18:16 +0100
+Message-ID: <Y3d4CHWl3Ofx5OrX@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0162040522064219633=="
+Content-Type: multipart/mixed; boundary="===============5772902443702439717=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0162040522064219633==
+--===============5772902443702439717==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 10, 2022 at 11:23 AM Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> On Wed, 9 Nov 2022 at 19:32, Yang Yingliang <yangyingliang@huawei.com> wr=
-ote:
-> >
-> > If device_register() returns error in optee_register_device(),
-> > the name allocated by dev_set_name() need be freed. As comment
-> > of device_register() says, it should use put_device() to give
-> > up the reference in the error path. So fix this by calling
-> > put_device(), then the name can be freed in kobject_cleanup(),
-> > and optee_device is freed in optee_release_device().
-> >
-> > Fixes: c3fa24af9244 ("tee: optee: add TEE bus device enumeration support")
-> > Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
-> > ---
-> >  drivers/tee/optee/device.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Hello arm-soc maintainers,
 
-I'm picking up this.
+Please pull this small patch which adds __init/__exit annotations to the
+OP-TEE driver module.
 
 Thanks,
 Jens
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-> > index f3947be13e2e..64f0e047c23d 100644
-> > --- a/drivers/tee/optee/device.c
-> > +++ b/drivers/tee/optee/device.c
-> > @@ -80,7 +80,7 @@ static int optee_register_device(const uuid_t *device_u=
-uid)
-> >         rc =3D device_register(&optee_device->dev);
-> >         if (rc) {
-> >                 pr_err("device registration failed, err: %d\n", rc);
-> > -               kfree(optee_device);
-> > +               put_device(&optee_device->dev);
-> >         }
-> >
-> >         return rc;
-> > --
-> > 2.25.1
-> >
+The following changes since commit 4fe89d07dcc2804c8b562f6c7896a45643d34b2f:
 
---===============0162040522064219633==--
+  Linux 6.0 (2022-10-02 14:09:07 -0700)
+
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-for-6=
+.2
+
+for you to fetch changes up to bd52407221b4702af690456b2b6006fa6440e893:
+
+  optee: Add __init/__exit annotations to module init/exit funcs (2022-10-11 =
+11:20:16 +0200)
+
+----------------------------------------------------------------
+Add missing __init/__exit annotations to OP-TEE driver
+
+----------------------------------------------------------------
+Xiu Jianfeng (1):
+      optee: Add __init/__exit annotations to module init/exit funcs
+
+ drivers/tee/optee/core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--===============5772902443702439717==--
 
