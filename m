@@ -1,184 +1,26 @@
-From: Yoochan Lee <yoochan1026@gmail.com>
+From: Christoph Hellwig <hch@lst.de>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: smc_abi: Fix use-after-free in optee_smc_open
-Date: Sat, 31 Dec 2022 05:41:40 +0000
-Message-ID: 
- <CALQpDLd1pXnikMpAfwfucXGTCLhy8-ip7-EwCspJ6GRmLwkybw@mail.gmail.com>
-In-Reply-To: <20221231051954.2038772-1-yoochan1026@gmail.com>
+Subject: Re: [PATCH 2/4] tee: Remove vmalloc page support
+Date: Fri, 16 Dec 2022 07:06:27 +0000
+Message-ID: <20221216070621.GA24832@lst.de>
+In-Reply-To: <Y5u+oOLkJs6jehik@iweiny-desk3>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1272616603935074213=="
+Content-Type: multipart/mixed; boundary="===============3186045511178923311=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1272616603935074213==
+--===============3186045511178923311==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-I missed the initialization of kref.
-So please add the following patch.
+On Thu, Dec 15, 2022 at 04:41:04PM -0800, Ira Weiny wrote:
+> Overall I feel like submitting this series again with Christoph and Al's
+> comments addressed is the best way forward to get rid of kmap_to_page().  I
+> would really like to get moving on that to avoid any further issues with the
+> kmap conversions.
 
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 4fbec2acc255..f17532f811e1 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1478,6 +1478,7 @@ static int optee_probe(struct platform_device *pdev)
-        optee->smc.invoke_fn =3D invoke_fn;
-        optee->smc.sec_caps =3D sec_caps;
-        optee->rpc_param_count =3D rpc_param_count;
-+       kref_init(&optee->refcnt);
+Yes.  While the flag is really odd, killing kmap_to_page should be the
+priority.
 
-        teedev =3D tee_device_alloc(&optee_clnt_desc, NULL, pool, optee);
-        if (IS_ERR(teedev)) {
 
-2022=EB=85=84 12=EC=9B=94 31=EC=9D=BC (=ED=86=A0) =EC=98=A4=ED=9B=84 2:19, Yo=
-ochan Lee <yoochan1026@gmail.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=B1:
-
-> A race condition may occur if the user physically removes the
-> smc_abi device while calling open().
->
-> This is a race condition between optee_smc_open() function and
-> the optee_smc_remove() function, which may lead to Use-After-Free.
->
-> Therefore, add a refcount check to optee_smc_remove() function
-> to free the "optee" structure after the device is close()d.
->
-> ---------------CPU 0--------------------CPU 1-----------------
->          optee_smc_open()     |     optee_smc_remove()
-> --------------------------------------------------------------
-> struct optee *optee =3D tee_get_|
-> drvdata(ctx->teedev); =E2=80=94 (1)   |
->                               | struct optee *optee =3D platform_
->                               | get_drvdata(pdev);
->                               | ...
->                               | kfree(optee); =E2=80=94 (2)
-> u32 sec_caps =3D optee->smc.sec_|
-> caps; =E2=80=94 (3)
->
-> Signed-off-by: Yoochan Lee <yoochan1026@gmail.com>
-> ---
->  drivers/tee/optee/optee_private.h |  1 +
->  drivers/tee/optee/smc_abi.c       | 66 ++++++++++++++++++++++---------
->  2 files changed, 48 insertions(+), 19 deletions(-)
->
-> diff --git a/drivers/tee/optee/optee_private.h
-> b/drivers/tee/optee/optee_private.h
-> index 04ae58892608..f52b1cf20eab 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -175,6 +175,7 @@ struct optee {
->         bool   scan_bus_done;
->         struct workqueue_struct *scan_bus_wq;
->         struct work_struct scan_bus_work;
-> +       struct kref refcnt;
->  };
->
->  struct optee_session {
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index a1c1fa1a9c28..4fbec2acc255 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -1077,18 +1077,61 @@ static void optee_get_version(struct tee_device
-> *teedev,
->         *vers =3D v;
->  }
->
-> +static void optee_smc_delete(struct kref *kref)
-> +{
-> +       struct optee *optee =3D container_of(kref, struct optee, refcnt);
-> +
-> +       /*
-> +        * Ask OP-TEE to free all cached shared memory objects to decrease
-> +        * reference counters and also avoid wild pointers in secure world
-> +        * into the old shared memory range.
-> +        */
-> +       if (!optee->rpc_param_count)
-> +               optee_disable_shm_cache(optee);
-> +
-> +       optee_smc_notif_uninit_irq(optee);
-> +
-> +       optee_remove_common(optee);
-> +
-> +       if (optee->smc.memremaped_shm)
-> +               memunmap(optee->smc.memremaped_shm);
-> +
-> +       kfree(optee);
-> +}
-> +
-> +static void optee_smc_release_supp(struct tee_context *ctx)
-> +{
-> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> +
-> +       optee_release_helper(ctx, optee_close_session_helper);
-> +       if (optee->scan_bus_wq) {
-> +               destroy_workqueue(optee->scan_bus_wq);
-> +               optee->scan_bus_wq =3D NULL;
-> +       }
-> +       optee_supp_release(&optee->supp);
-> +       kref_put(&optee->refcnt, optee_smc_delete);
-> +}
-> +
-> +static void optee_smc_release(struct tee_context *ctx)
-> +{
-> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> +
-> +       optee_release_helper(ctx, optee_close_session_helper);
-> +       kref_put(&optee->refcnt, optee_smc_delete);
-> +}
-> +
->  static int optee_smc_open(struct tee_context *ctx)
->  {
->         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
->         u32 sec_caps =3D optee->smc.sec_caps;
-> -
-> +       kref_get(&optee->refcnt);
->         return optee_open(ctx, sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL);
->  }
->
->  static const struct tee_driver_ops optee_clnt_ops =3D {
->         .get_version =3D optee_get_version,
->         .open =3D optee_smc_open,
-> -       .release =3D optee_release,
-> +       .release =3D optee_smc_release,
->         .open_session =3D optee_open_session,
->         .close_session =3D optee_close_session,
->         .invoke_func =3D optee_invoke_func,
-> @@ -1106,7 +1149,7 @@ static const struct tee_desc optee_clnt_desc =3D {
->  static const struct tee_driver_ops optee_supp_ops =3D {
->         .get_version =3D optee_get_version,
->         .open =3D optee_smc_open,
-> -       .release =3D optee_release_supp,
-> +       .release =3D optee_smc_release_supp,
->         .supp_recv =3D optee_supp_recv,
->         .supp_send =3D optee_supp_send,
->         .shm_register =3D optee_shm_register_supp,
-> @@ -1319,22 +1362,7 @@ static int optee_smc_remove(struct platform_device
-> *pdev)
->  {
->         struct optee *optee =3D platform_get_drvdata(pdev);
->
-> -       /*
-> -        * Ask OP-TEE to free all cached shared memory objects to decrease
-> -        * reference counters and also avoid wild pointers in secure world
-> -        * into the old shared memory range.
-> -        */
-> -       if (!optee->rpc_param_count)
-> -               optee_disable_shm_cache(optee);
-> -
-> -       optee_smc_notif_uninit_irq(optee);
-> -
-> -       optee_remove_common(optee);
-> -
-> -       if (optee->smc.memremaped_shm)
-> -               memunmap(optee->smc.memremaped_shm);
-> -
-> -       kfree(optee);
-> +       kref_put(&optee->refcnt, optee_smc_delete);
->
->         return 0;
->  }
-> --
-> 2.39.0
->
->
-
---===============1272616603935074213==--
+--===============3186045511178923311==--
 
