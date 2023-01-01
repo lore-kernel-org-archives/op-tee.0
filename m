@@ -1,14 +1,14 @@
 From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: ffa_abi: Fix use-after-free in optee_ffa_open
-Date: Sun, 01 Jan 2023 20:12:00 +0000
-Message-ID: <202301020326.pzL5zDsa-lkp@intel.com>
-In-Reply-To: <20221231053421.2039591-1-yoochan1026@gmail.com>
+Subject: Re: [PATCH] tee: optee: smc_abi: Fix use-after-free in optee_smc_open
+Date: Sun, 01 Jan 2023 21:43:08 +0000
+Message-ID: <202301020540.wMrbqIkY-lkp@intel.com>
+In-Reply-To: <20221231051954.2038772-1-yoochan1026@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6745411206791061001=="
+Content-Type: multipart/mixed; boundary="===============7264826287117085199=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6745411206791061001==
+--===============7264826287117085199==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -23,10 +23,10 @@ And when submitting patch, we suggest to use '--base' as documented in
 https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Yoochan-Lee/tee-optee-=
-ffa_abi-Fix-use-after-free-in-optee_ffa_open/20221231-133611
-patch link:    https://lore.kernel.org/r/20221231053421.2039591-1-yoochan1026=
+smc_abi-Fix-use-after-free-in-optee_smc_open/20221231-132046
+patch link:    https://lore.kernel.org/r/20221231051954.2038772-1-yoochan1026=
 %40gmail.com
-patch subject: [PATCH] tee: optee: ffa_abi: Fix use-after-free in optee_ffa_o=
+patch subject: [PATCH] tee: optee: smc_abi: Fix use-after-free in optee_smc_o=
 pen
 config: arm-randconfig-c002-20221231
 compiler: clang version 16.0.0 (https://github.com/llvm/llvm-project f5700e7b=
@@ -37,12 +37,12 @@ ke.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
         # install arm cross compiling tool for clang build
         # apt-get install binutils-arm-linux-gnueabi
-        # https://github.com/intel-lab-lkp/linux/commit/3fe68a00d912f9e5dbec5=
-002a7d30cf2a0868679
+        # https://github.com/intel-lab-lkp/linux/commit/6d3d5f78a2463a577c1a9=
+08cdedda61affba9c01
         git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Yoochan-Lee/tee-optee-ffa_abi-Fix-us=
-e-after-free-in-optee_ffa_open/20221231-133611
-        git checkout 3fe68a00d912f9e5dbec5002a7d30cf2a0868679
+        git fetch --no-tags linux-review Yoochan-Lee/tee-optee-smc_abi-Fix-us=
+e-after-free-in-optee_smc_open/20221231-132046
+        git checkout 6d3d5f78a2463a577c1a908cdedda61affba9c01
         # save the config file
         mkdir build_dir && cp config build_dir/.config
         COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dclang make.cross W=3D1 =
@@ -53,67 +53,43 @@ O=3Dbuild_dir ARCH=3Darm SHELL=3D/bin/bash drivers/tee/optee/
 If you fix the issue, kindly add following tag where applicable
 | Reported-by: kernel test robot <lkp@intel.com>
 
-All error/warnings (new ones prefixed by >>):
+All errors (new ones prefixed by >>):
 
->> drivers/tee/optee/ffa_abi.c:744:40: error: use of undeclared identifier 't=
-eedev'
-           struct optee *optee =3D tee_get_drvdata(teedev);
-                                                 ^
->> drivers/tee/optee/ffa_abi.c:746:2: error: call to undeclared function 'opt=
-ee_release_helper'; ISO C99 and later do not support implicit function declar=
-ations [-Wimplicit-function-declaration]
+>> drivers/tee/optee/smc_abi.c:1106:2: error: call to undeclared function 'op=
+tee_release_helper'; ISO C99 and later do not support implicit function decla=
+rations [-Wimplicit-function-declaration]
            optee_release_helper(ctx, optee_close_session_helper);
            ^
-   drivers/tee/optee/ffa_abi.c:746:2: note: did you mean 'optee_release_supp'?
+   drivers/tee/optee/smc_abi.c:1106:2: note: did you mean 'optee_release_supp=
+'?
    drivers/tee/optee/optee_private.h:258:6: note: 'optee_release_supp' declar=
 ed here
    void optee_release_supp(struct tee_context *ctx);
         ^
-   drivers/tee/optee/ffa_abi.c:754:2: error: call to undeclared function 'opt=
-ee_release_helper'; ISO C99 and later do not support implicit function declar=
-ations [-Wimplicit-function-declaration]
+   drivers/tee/optee/smc_abi.c:1119:2: error: call to undeclared function 'op=
+tee_release_helper'; ISO C99 and later do not support implicit function decla=
+rations [-Wimplicit-function-declaration]
            optee_release_helper(ctx, optee_close_session_helper);
            ^
->> drivers/tee/optee/ffa_abi.c:750:6: warning: no previous prototype for func=
-tion 'optee_ffa_release_supp' [-Wmissing-prototypes]
-   void optee_ffa_release_supp(struct tee_context *ctx)
-        ^
-   drivers/tee/optee/ffa_abi.c:750:1: note: declare 'static' if the function =
-is not intended to be used outside of this translation unit
-   void optee_ffa_release_supp(struct tee_context *ctx)
-   ^
-   static=20
-   drivers/tee/optee/ffa_abi.c:765:40: error: use of undeclared identifier 't=
-eedev'
-           struct optee *optee =3D tee_get_drvdata(teedev);
-                                                 ^
-   1 warning and 4 errors generated.
+   2 errors generated.
 
 
-vim +/teedev +744 drivers/tee/optee/ffa_abi.c
+vim +/optee_release_helper +1106 drivers/tee/optee/smc_abi.c
 
-   741=09
-   742	static void optee_ffa_release(struct tee_context *ctx)
-   743	{
- > 744		struct optee *optee =3D tee_get_drvdata(teedev);
-   745=09
- > 746		optee_release_helper(ctx, optee_close_session_helper);
-   747		kref_put(&optee->refcnt, optee_ffa_delete);
-   748	}
-   749=09
- > 750	void optee_ffa_release_supp(struct tee_context *ctx)
-   751	{
-   752		struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-   753=09
-   754		optee_release_helper(ctx, optee_close_session_helper);
-   755		if (optee->scan_bus_wq) {
-   756			destroy_workqueue(optee->scan_bus_wq);
-   757			optee->scan_bus_wq =3D NULL;
-   758		}
-   759		optee_supp_release(&optee->supp);
-   760		kref_put(&optee->refcnt, optee_ffa_delete);
-   761	}
-   762=09
+  1101=09
+  1102	static void optee_smc_release_supp(struct tee_context *ctx)
+  1103	{
+  1104		struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+  1105=09
+> 1106		optee_release_helper(ctx, optee_close_session_helper);
+  1107		if (optee->scan_bus_wq) {
+  1108			destroy_workqueue(optee->scan_bus_wq);
+  1109			optee->scan_bus_wq =3D NULL;
+  1110		}
+  1111		optee_supp_release(&optee->supp);
+  1112		kref_put(&optee->refcnt, optee_smc_delete);
+  1113	}
+  1114=09
 
 --=20
 0-DAY CI Kernel Test Service
@@ -121,7 +97,7 @@ https://01.org/lkp
 
 
 
---===============6745411206791061001==
+--===============7264826287117085199==
 Content-Type: text/plain
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="config.txt"
@@ -3187,5 +3163,5 @@ IEtlcm5lbCBUZXN0aW5nIGFuZCBDb3ZlcmFnZQoKIwojIFJ1c3QgaGFja2luZwojCiMgZW5kIG9m
 IFJ1c3QgaGFja2luZwoKQ09ORklHX1dBUk5fTUlTU0lOR19ET0NVTUVOVFM9eQojIENPTkZJR19X
 QVJOX0FCSV9FUlJPUlMgaXMgbm90IHNldAojIGVuZCBvZiBLZXJuZWwgaGFja2luZwo=
 
---===============6745411206791061001==--
+--===============7264826287117085199==--
 
