@@ -1,158 +1,83 @@
-From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
+From: Julius Werner <jwerner@chromium.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: =?utf-8?b?5Zue5aSN77yab3B0ZWU=?= device tree and tee driver
-Date: Mon, 09 Jan 2023 22:50:54 +0800
+Subject: Re: Post-boot loading of OP-TEE
+Date: Mon, 09 Jan 2023 18:04:34 +0100
 Message-ID: 
- <df81ecb2-90ec-434b-85fb-ddd530e5b394.meijianqiang.mjq@alibaba-inc.com>
+ <CAODwPW_b9Ew2sp6mR_R8zx1Qc7g2YhkJmS5kwTbn0OaaVw+gwA@mail.gmail.com>
 In-Reply-To: <
- <CAHUa44FJjwsd_F2Kd+j7gOieWv+9QWtnBUeq2DsbHnHp+eHV7Q@mail.gmail.com>>
+ <CAHUa44Eq7u2jQD-AinskV6RRbiRhb1gO-KmR562VzCC0fYqoag@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6511198733597796379=="
+Content-Type: multipart/mixed; boundary="===============1516938713237661934=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6511198733597796379==
+--===============1516938713237661934==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello expert,
-We compiled the OP-TEE to use the FFA ABI. And we have recognized the problem=
- you have pointed out.=20
-It is a FF-A case for that REE OS kernel communicates with optee_os with Hafn=
-ium as SPMC. And in the FF-A case, it is hard to get optee api uid via arm_sm=
-ccc_smc function.
-You are right.
-Now, we try to make some adaptation changes to the REE OS kernel about FFA co=
-nfiguration.
-regards,
-yuye
-------------------------------------------------------------------
-=E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander <jens.wiklander@linaro.o=
-rg>
-=E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B41=E6=9C=889=E6=97=
-=A5(=E6=98=9F=E6=9C=9F=E4=B8=80) 16:03
-=E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=
-=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-=E6=8A=84=E3=80=80=E9=80=81=EF=BC=9Aop-tee <op-tee@lists.trustedfirmware.or=
-g>; =E9=AB=98=E6=B5=B7=E6=BA=90(=E7=A0=81=E6=BA=90) <haiyuan.ghy@alibaba-in=
-c.com>; =E7=8E=8B=E4=B8=80=E8=92=99(=E5=8C=97=E8=A7=81) <wym389994@alibaba-=
-inc.com>; =E8=B5=B5=E5=93=B2(=E4=B8=BA=E5=93=B2) <weizhe.zz@alibaba-inc.com>
-=E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9ARe: optee device tree and tee driver
-Hi,
-On Sat, Jan 7, 2023 at 10:00 AM =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=
-=9C)
-<meijianqiang.mjq@alibaba-inc.com> wrote:
->
-> Hello expert,
->
-> Glad to see you emailed back!
-> Before asking you any more questions, I need to explain the problem in our =
-development environment.
->
-> The optee driver provied by linaro/linux supports FF-A which depends on tha=
-t the REE OS kernel supports FF-A.
-> We are currently using kernel 5.10 which does not support FF-A, while it is=
- difficult to change from kernel 5.19 to 5.10 due to the platform limitations.
-So you are not using FF-A after all? What are you doing with Hafnium as SPMC?
-> In consideration of that devices on which the kernel starts are managed by =
-ACPI in the current server environment, we prefer to add an ACPI DSDT table f=
-or optee and report it to the kernel as a platform device.
-OK
->
-> Now, we have independently installed the optee.ko compiled by optee driver =
-into kernel 5.10, and we found that optee api uid mismatch when optee driver =
-probing for its device. It seems that the optee driver tried to get the optee=
- api uid from secure world via optee_smccc_smc, but failed.
->
-> dmseg log is as follows:
->
-> [ 82.121488] tee: loading out-of-tree module taints kernel.
->
-> [ 82.121578] tee: module verification failed: signature and/or required key=
- missing - tainting kernel
-> [ 83.206160] optee: probing for conduit method.
-> [ 83.206166] optee: optee_compatible string: linaro,optee-tz
-> [ 83.206171] optee:
-> res.a0: 0xffffffffffffffff
-> res.a1: 0x0
-> res.a2: 0x0
-> res.a3: 0x0
-> [ 83.206172] optee: api uid mismatch
-> [ 83.206264] optee: probe of LNRO0020:00 failed with error -22
->
-> Do you know how to solve this problem? Looking forward to your reply. Thank=
-s for support.
-The module you have compiled for the kernel seems to use the SMC ABI.
-Did you compile OP-TEE to use the SMC ABI too? Or do you expect to use
-the FF-A ABI? I'm a bit confused by the earlier mail where you say
-that you're using Hafnium as SPMC, which suggests using the FF-A ABI.
-Cheers,
-Jens
->
-> regards,
-> yuye
->
->
->
->
->
-> ------------------------------------------------------------------
-> =E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander <jens.wiklander@linaro=
-.org>
-> =E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B41=E6=9C=885=E6=97=
-=A5(=E6=98=9F=E6=9C=9F=E5=9B=9B) 20:29
-> =E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=
-=E5=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-> =E6=8A=84 =E9=80=81=EF=BC=9Aop-tee <op-tee@lists.trustedfirmware.org>; =
-=E9=AB=98=E6=B5=B7=E6=BA=90(=E7=A0=81=E6=BA=90) <haiyuan.ghy@alibaba-inc.co=
-m>; =E7=8E=8B=E4=B8=80=E8=92=99(=E5=8C=97=E8=A7=81) <wym389994@alibaba-inc.=
-com>; =E8=B5=B5=E5=93=B2(=E4=B8=BA=E5=93=B2) <weizhe.zz@alibaba-inc.com>
-> =E4=B8=BB =E9=A2=98=EF=BC=9ARe: optee device tree and tee driver
->
-> Hi Yuye,
->
-> On Wed, Jan 4, 2023 at 6:10 PM =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=
-=9C) <meijianqiang.mjq@alibaba-inc.com> wrote:
-> >
-> > Hello expert,
-> >
-> > I have a few questions about the optee device tree and tee driver.
-> > In our environment, optee uses version 3.19 vexpress-fvp and runs on top =
-of hafnium as SPMC. Here's my question.
-> >
-> > 1. Does the current optee version support adding ACPI table iterm for opt=
-ee to enable REE to identify the installed optee driver so that TA and CA can=
- establish communication?
->
-> Since you mention SPMC I assume you're using FF-A also. With FF-A
-> there is no need for OP-TEE to have anything in DTB or ACPI. The FF-A
-> framework is able to tell if there's an OP-TEE available to
-> communicate with or not.
->
-> > (I raise this question because I cannot find the corresponding optee node=
- in "/sys/devices/platform" in the current linux environment.
-> > While in the QEMU runtime environment, the corresponding optee node is in=
- "/proc/device-tree/firmware", i.e. "linaro,optee-tz".)
->
-> Yes, but only in the non-FF-A case.
->
-> >
-> > 2. If I want to transfer dtb file which includes a device tree node writt=
-en by optee to linux, How to configure CFG_DT, CFG_DT_ADDR, and CFG_EXTERNAL_=
-DTB_OVERLAY?
-> > (I understand that this method should be independent from the method in q=
-uestion 1. If it is not, look forward your explain.)
->
-> In the FF-A case, this isn't necessary or even possible in an easy way.
->
-> Cheers,
-> Jens
->
-> > Looking forward to your reply. Thanks.
-> >
-> > regards,
-> > yuye
->
->
+Hi Jens,
 
---===============6511198733597796379==--
+As I already argued in that older thread, I think the whole TrustZone
+/ secure world mechanism is fundamentally just a sort of security
+toolkit that allows the platform implementer to enforce certain
+security guarantees and isolate certain execution contexts from
+another. What you actually want to do with that, what threats you're
+trying to protect against, what secrets or resources you're actually
+trying to protect from whom, are all questions that only make sense to
+ask for the platform as a whole, not for EL3 in isolation, and thus
+can only be answered by the platform implementer. As such, I don't
+think you can really say things like this seems very "risky" or gives
+up a "critical level of defense" without actually looking at the
+platform in question.
+
+Of course I know that the majority of TF-A users have security models
+that are incompatible with this sort of post-boot loading, because
+they do not secure their operating system with the same level of trust
+as EL3 firmware. But our system is different -- we have firmware,
+kernel and userland all owned by the same entity and secured with a
+single chain of trust from the first boot firmware components down to
+the OS root file system. We have tight control over our early userland
+initialization and can actually ensure that the OS doesn't open any
+external attack vectors before it loads OP-TEE from the verified file
+system and sends it to EL3. I understand that this is not a common
+situation but it is the case for us, and all we're asking is that we
+can contribute this as an optional, default-off compile time setting
+so that we aren't forced to either implement a (for us) vastly
+inferior solution or fork the whole project, just because we have a
+less common case. (I also don't think it is fair to say this code
+would set a "bad example", because there's nothing actually bad about
+it for our use case. Security models always take the whole platform
+into account, and TF-A was not designed with a single "default
+security model" that needs to be forced upon every platform running
+it. We are happy to work with you on ways to ensure the implications
+and limitations of this compile-time option are clearly labeled so
+that nobody would turn it on without knowing what they're doing and
+create an insecure situation by accident.)
+
+As for the alternative proposals, they're all implying large drawbacks
+for our use case which is why we decided on this kind of solution in
+the first place. Of course there are a dozen different ways to get a
+system that somehow "works", but there are more constraints here that
+we need to be aware of since we're trying to ship an efficient and
+maintainable production system. Our BL2 (which is not part of TF-A) is
+not designed to stay resident, and any runtime verification in
+firmware (whether in BL2 or a stub OP-TEE) would require us to create
+and maintain a whole separate key infrastructure just to verify that
+one component (and add the code bloat of all those crypto routines to
+firmware components which would otherwise not need them, and the boot
+time cost of verifying them, and add new headaches about key
+revocation for this separate verification system, and...). Why would
+we do all of that if we already have a key infrastructure in place
+that verifies our root file system to begin with, and we know that our
+system encounters no additional attack vectors between initial BL31
+loading time and the time when the kernel would load the OP-TEE binary
+from that verified file system? It just doesn't make any sense for our
+case.
+
+I do hope that we can continue the exiting TF-A design pattern of
+offering platforms different options for different use cases here,
+rather than trying to force everyone on a single model which just
+isn't going to work out well for a project that gets embedded into so
+many different systems with different constraints.
+
+--===============1516938713237661934==--
 
