@@ -1,56 +1,84 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Rob Herring <robh@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Preparing for OP-TEE 3.20.0
-Date: Fri, 13 Jan 2023 17:38:57 +0100
-Message-ID: <Y8GJIRDa+KNsgj2C@jade>
-In-Reply-To: <Y7wiZgVACBl+44Zc@jade>
+Subject: 
+ Re: [PATCH 2/3] dt-bindings: arm: optee: add interrupt controller properties
+Date: Fri, 13 Jan 2023 14:42:31 -0600
+Message-ID: <20230113204231.GA2873887-robh@kernel.org>
+In-Reply-To: <20230112145424.3791276-3-etienne.carriere@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0718028178962972747=="
+Content-Type: multipart/mixed; boundary="===============8907838357457725143=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0718028178962972747==
+--===============8907838357457725143==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-[BCC all OP-TEE maintainers]
+On Thu, Jan 12, 2023 at 03:54:23PM +0100, Etienne Carriere wrote:
+> Adds optional interrupt controller properties used when OP-TEE generates
+> interrupt events optee driver shall notified to its registered
+> interrupt consumer. The example shows how OP-TEE can trigger a wakeup
+> interrupt event consumed by a gpio-keys compatible device.
 
-Hi,
+Why do we need this in DT? It's not a GPIO key, but an abuse of the=20
+binding. It looks like unnecessary abstraction to me.
 
-I've now added the tag 3.20.0-rc1 to the following repositories:
-build
-optee_benchmark
-optee_client
-optee_docs
-optee_examples
-optee_os
-optee_test
 
-The 3.20.0 release is scheduled for Friday 2023-01-20.
+>=20
+> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+> ---
+>  .../arm/firmware/linaro,optee-tz.yaml         | 19 ++++++++++++++++++-
+>  1 file changed, 18 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz=
+.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> index d4dc0749f9fd..42874ca21b7e 100644
+> --- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> +++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> @@ -40,6 +40,11 @@ properties:
+>        HVC #0, register assignments
+>        register assignments are specified in drivers/tee/optee/optee_smc.h
+> =20
+> +  interrupt-controller: true
+> +
+> +  "#interrupt-cells":
+> +    const: 1
+> +
+>  required:
+>    - compatible
+>    - method
+> @@ -48,12 +53,24 @@ additionalProperties: false
+> =20
+>  examples:
+>    - |
+> +    #include <dt-bindings/input/input.h>
+>      #include <dt-bindings/interrupt-controller/arm-gic.h>
+>      firmware  {
+> -        optee  {
+> +        optee: optee {
+>              compatible =3D "linaro,optee-tz";
+>              method =3D "smc";
+>              interrupts =3D <GIC_SPI 187 IRQ_TYPE_EDGE_RISING>;
+> +            interrupt-controller;
+> +            #interrupt-cells =3D <1>;
+> +        };
+> +    };
+> +
+> +    wake_up {
+> +        compatible =3D "gpio-keys";
+> +
+> +        button {
+> +            linux,code =3D <KEY_WAKEUP>;
+> +            interrupts-extended =3D <&optee 0>;
 
-Thanks,
-Jens
+In the end, you just need optee IRQ #0 to generate KEY_WAKEUP. Does=20
+either the optee interrupt number or the key code need to be=20
+configurable? If so, why? Why isn't #0 just wakeup and the driver can=20
+send KEY_WAKEUP?
 
-On Mon, Jan 09, 2023 at 03:19:18PM +0100, Jens Wiklander wrote:
-> [BCC all OP-TEE maintainers]
-> 
-> Hi OP-TEE maintainers & contributors,
-> 
-> OP-TEE v3.20.0 is scheduled to be released on 2023-01-20. So, now is a
-> good time to start testing the master branch on the various platforms
-> and report/fix any bugs.
-> 
-> The GitHub pull request for collecting Tested-by tags or any other
-> comments is https://github.com/OP-TEE/optee_os/pull/5751
-> 
-> As usual, we will create a release candidate tag one week before the
-> release date for final testing.
-> 
-> In addition to that you can find some additional information related to
-> releases here:
-> https://optee.readthedocs.io/en/latest/general/releases.html
-> 
-> Thanks,
-> Jens
+DT is for non-discoverable hardware that we can't fix. Why repeat that=20
+for software interfaces to firmware?
 
---===============0718028178962972747==--
+Rob
+
+--===============8907838357457725143==--
 
