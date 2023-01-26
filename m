@@ -1,47 +1,46 @@
-From: Ivan Khoronzhuk <ivan.khoronzhuk@gmail.com>
+From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] ta: avb: fix object leakage at lock state write
-Date: Sat, 21 Jan 2023 05:45:23 +0000
-Message-ID: <20230121054516.3979073-1-ivan.khoronzhuk@gmail.com>
+Subject: [RFC PATCH 0/2] introduce op-tee based EFI Runtime Variable Service
+Date: Thu, 26 Jan 2023 22:21:17 +0900
+Message-ID: <20230126132120.1661-1-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0187111337010761201=="
+Content-Type: multipart/mixed; boundary="===============1080364939850518083=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0187111337010761201==
+--===============1080364939850518083==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-From: Ivan Khoronzhuk <ivan.khoronzhuk@globallogic.com>
+This RFC series introduces the op-tee based EFI Runtime Variable
+Service.
 
-Should close object created for reading, so better use seek
-and then close the object.
+The eMMC device is typically owned by the non-secure world(linux in
+this case). There is an existing solution utilizing eMMC RPMB partition
+for EFI Variables, it is implemented by interacting with
+OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
+and tee-supplicant. The last piece is the tee-based variable access
+driver to interact with OP-TEE and StandaloneMM.
 
-Fixes: b29b41950 ("ta: add AVB TA")
-Signed-off-by: Ivan Khoronzhuk <ivan.khoronzhuk@globallogic.com>
----
- ta/avb/entry.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Masahisa Kojima (2):
+  efi: expose efivar generic ops register function
+  tee: Add op-tee helper functions for variable access
 
-diff --git a/ta/avb/entry.c b/ta/avb/entry.c
-index 4e57003e..a6e01035 100644
---- a/ta/avb/entry.c
-+++ b/ta/avb/entry.c
-@@ -239,7 +239,11 @@ static TEE_Result write_lock_state(uint32_t pt,
- 	if (count == sizeof(lock_state) && lock_state == wlock_state)
- 		goto out;
- 
--	res = create_rb_state(wlock_state, &h);
-+	res = TEE_SeekObjectData(h, 0, TEE_DATA_SEEK_SET);
-+	if (res)
-+		goto out;
-+
-+	res = TEE_WriteObjectData(h, &wlock_state, sizeof(wlock_state));
- out:
- 	TEE_CloseObject(h);
- 	return res;
+ drivers/firmware/efi/efi.c           |  12 +
+ drivers/tee/optee/Kconfig            |  10 +
+ drivers/tee/optee/Makefile           |   1 +
+ drivers/tee/optee/mm_communication.h | 249 +++++++++++
+ drivers/tee/optee/optee_private.h    |   5 +-
+ drivers/tee/optee/optee_stmm_efi.c   | 598 +++++++++++++++++++++++++++
+ drivers/tee/tee_core.c               |  23 ++
+ include/linux/efi.h                  |   4 +
+ include/linux/tee_drv.h              |  23 ++
+ 9 files changed, 924 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/tee/optee/mm_communication.h
+ create mode 100644 drivers/tee/optee/optee_stmm_efi.c
+
 -- 
-2.34.1
+2.30.2
 
 
---===============0187111337010761201==--
+--===============1080364939850518083==--
 
