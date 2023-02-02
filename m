@@ -1,18 +1,57 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Cyrille Fleury <cyrille.fleury@nxp.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm from a dmabuf
- file descriptor
-Date: Wed, 01 Feb 2023 11:03:58 +0530
-Message-ID: 
- <CAFA6WYOMCswgHHxsgc9Hgi7rmTPaZDqce=BixvYoFTfL0bTFDQ@mail.gmail.com>
-In-Reply-To: <30534fadb8172088eddef46ae71d87c167cbf32e.camel@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm
+ from a dmabuf file descriptor
+Date: Thu, 02 Feb 2023 07:56:24 +0000
+Message-ID: <PA4PR04MB75204E8D2B959893A04D55F388D69@PA4PR04MB7520.eurprd04.prod.outlook.com>
+In-Reply-To: <
+ <CAFA6WYOMCswgHHxsgc9Hgi7rmTPaZDqce=BixvYoFTfL0bTFDQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4832009093419330517=="
+Content-Type: multipart/mixed; boundary="===============9172917568039904331=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4832009093419330517==
+--===============9172917568039904331==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi Sumit, all
+
+Upstream OP-TEE should support registering a dmabuf since a while, given how =
+widely dmabuf is used in Linux for passing buffers around between devices.
+
+Purpose of the new register_tee_shm ioctl is to allow OPTEE to use memory all=
+ocated from the exiting linux dma buffer. We don't need to have secure dma-he=
+ap up streamed.=20
+
+You mentioned secure dma-buffer, but secure dma-buffer is a dma-buffer, so th=
+e work to be done for secure or "regular" dma buffers by the register_tee_shm=
+ ioctl is 100% the same.
+
+The scope of this ioctl is limited to what existing upstream dma-buffers are:
+        -> sharing buffers for hardware (DMA) access across multiple device d=
+rivers and subsystems, and for synchronizing asynchronous hardware access.
+       -> It means continuous memory only.=20
+
+So if we reduce the scope of register tee_shm to exiting dma-buffer area, the=
+ current patch does the job. =20
+
+Regards.
+
+-----Original Message-----
+From: Sumit Garg <sumit.garg@linaro.org>=20
+Sent: Wednesday, February 1, 2023 6:34 AM
+To: Olivier Masse <olivier.masse@nxp.com>
+Cc: fredgc(a)google.com; linux-media(a)vger.kernel.org; linaro-mm-sig(a)lists=
+.linaro.org; afd(a)ti.com; op-tee(a)lists.trustedfirmware.org; jens.wiklander=
+(a)linaro.org; joakim.bech(a)linaro.org; sumit.semwal(a)linaro.org; Peter Gri=
+ffin <peter.griffin@linaro.org>; linux-kernel(a)vger.kernel.org; etienne.ca=
+rriere(a)linaro.org; dri-devel(a)lists.freedesktop.org; christian.koenig(a)am=
+d.com; Cl=C3=A9ment Faure <clement.faure@nxp.com>; Cyrille Fleury <cyrille.=
+fleury@nxp.com>
+Subject: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm from a=
+ dmabuf file descriptor
+
+Caution: EXT Email
 
 Hi Olivier,
 
@@ -27,41 +66,42 @@ On Fri, 27 Jan 2023 at 16:24, Olivier Masse <olivier.masse@nxp.com> wrote:
 > From Christian:
 > > Just two comments:
 > >
-> > 1. Dmitry is working on a change which renames some functions and
-> > makes
-> > it mandatory to call them with the dma_resv lock held.
+> > 1. Dmitry is working on a change which renames some functions and=20
+> > makes it mandatory to call them with the dma_resv lock held.
 > >
-> > Depending on how you want to upstream this change you will certainly
-> > run
-> > into conflicts with that.
+> > Depending on how you want to upstream this change you will certainly=20
+> > run into conflicts with that.
 >
 > Is there any update on these changes ?
 >
 > >
-> > 2. Would it be possible to do this dynamically? In other words does
-> > the
-> > tee driver has a concept of buffers moving around?
+> > 2. Would it be possible to do this dynamically? In other words does=20
+> > the tee driver has a concept of buffers moving around?
 >
 > We do not support dynamic secure memory heap.
 >
 > From Sumit:
-> > What limits you to extend this feature to non-contiguous memory
-> > buffers? I believe that should be possible with OP-TEE dynamic shared
-> > memory which gives you the granularity to register a list of pages.
+> > What limits you to extend this feature to non-contiguous memory=20
+> > buffers? I believe that should be possible with OP-TEE dynamic=20
+> > shared memory which gives you the granularity to register a list of pages.
 >
-> Our solution use a fixed protected reserved memory region and do not
+> Our solution use a fixed protected reserved memory region and do not=20
 > rely on a dynamic protection managed in secure.
 >
-> The scope of this implementation rely on a static memory region handled
-> by a specific DMA Heap type.
+> The scope of this implementation rely on a static memory region=20
+> handled by a specific DMA Heap type.
 >
 
-AFAIR, the last review for v2 is here [1]. So we need to have this
-secure DMA heap upstream in order for ioctl added by this patch to be
-usable.
+AFAIR, the last review for v2 is here [1]. So we need to have this secure DMA=
+ heap upstream in order for ioctl added by this patch to be usable.
 
-[1] https://lists.trustedfirmware.org/archives/list/op-tee(a)lists.trustedfir=
-mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
+[1] https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flists=
+.trustedfirmware.org%2Farchives%2Flist%2Fop-tee%40lists.trustedfirmware.org%2=
+Fmessage%2FM3WLO7RNG22OR4744BY6XNG2GLIYMNHN%2F&data=3D05%7C01%7Ccyrille.fleur=
+y%40nxp.com%7Cb24461a4e7284314dff408db0415f23e%7C686ea1d3bc2b4c6fa92cd99c5c30=
+1635%7C0%7C0%7C638108264533221384%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDA=
+iLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D6pRAq=
+nMlJ0TX000YmlgTkPKn411VBC%2Bj29O9KhJjJOg%3D&reserved=3D0
 
 -Sumit
 
@@ -72,42 +112,48 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > On ven., 2022-08-12 at 16:30 +0200, Olivier Masse wrote:
 > > From: Etienne Carriere <etienne.carriere@linaro.org>
 > >
-> > This change allows userland to create a tee_shm object that refers
+> > This change allows userland to create a tee_shm object that refers=20
 > > to a dmabuf reference.
 > >
 > > Userland provides a dmabuf file descriptor as buffer reference.
-> > The created tee_shm object exported as a brand new dmabuf reference
-> > used to provide a clean fd to userland. Userland shall closed this
-> > new
-> > fd to release the tee_shm object resources. The initial dmabuf
-> > resources
-> > are tracked independently through original dmabuf file descriptor.
+> > The created tee_shm object exported as a brand new dmabuf reference=20
+> > used to provide a clean fd to userland. Userland shall closed this=20
+> > new fd to release the tee_shm object resources. The initial dmabuf=20
+> > resources are tracked independently through original dmabuf file=20
+> > descriptor.
 > >
-> > Once the buffer is registered and until it is released, TEE driver
+> > Once the buffer is registered and until it is released, TEE driver=20
 > > keeps a refcount on the registered dmabuf structure.
 > >
-> > This change only support dmabuf references that relates to physically
-> > contiguous memory buffers.
+> > This change only support dmabuf references that relates to=20
+> > physically contiguous memory buffers.
 > >
 > > New tee_shm flag to identify tee_shm objects built from a registered
-> > dmabuf: TEE_SHM_EXT_DMA_BUF. Such tee_shm structures are flagged with
-> > TEE_SHM_EXT_DMA_BUF.
+> > dmabuf: TEE_SHM_EXT_DMA_BUF. Such tee_shm structures are flagged=20
+> > with TEE_SHM_EXT_DMA_BUF.
 > >
 > > Co-Developed-by: Etienne Carriere <etienne.carriere@linaro.org>
 > > Signed-off-by: Olivier Masse <olivier.masse@nxp.com>
 > > Reported-by: kernel test robot <lkp@intel.com>
-> > From: https://github.com/linaro-swg/linux.git
-> > (cherry picked from commit 41e21e5c405530590dc2dd10b2a8dbe64589840f)
+> > From:=20
+> > https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgi
+> > thub.com%2Flinaro-swg%2Flinux.git&data=3D05%7C01%7Ccyrille.fleury%40nx
+> > p.com%7Cb24461a4e7284314dff408db0415f23e%7C686ea1d3bc2b4c6fa92cd99c5
+> > c301635%7C0%7C0%7C638108264533221384%7CUnknown%7CTWFpbGZsb3d8eyJWIjo
+> > iMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7
+> > C%7C%7C&sdata=3D8jbFPaF%2B5JBed4Uvo1hsJiB%2BP71KUgJmnW%2BIi3zLfok%3D&r
+> > eserved=3D0 (cherry picked from commit=20
+> > 41e21e5c405530590dc2dd10b2a8dbe64589840f)
 > > ---
 > >  drivers/tee/tee_core.c   | 38 +++++++++++++++
 > >  drivers/tee/tee_shm.c    | 99
 > > +++++++++++++++++++++++++++++++++++++++-
-> >  include/linux/tee_drv.h  | 11 +++++
-> >  include/uapi/linux/tee.h | 29 ++++++++++++
+> >  include/linux/tee_drv.h  | 11 +++++  include/uapi/linux/tee.h | 29=20
+> > ++++++++++++
 > >  4 files changed, 175 insertions(+), 2 deletions(-)
 > >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index 8aa1a4836b92..7c45cbf85eb9 100644
+> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c index=20
+> > 8aa1a4836b92..7c45cbf85eb9 100644
 > > --- a/drivers/tee/tee_core.c
 > > +++ b/drivers/tee/tee_core.c
 > > @@ -355,6 +355,42 @@ tee_ioctl_shm_register(struct tee_context *ctx,
@@ -151,11 +197,11 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > > +     return ret;
 > > +}
 > > +
-> >  static int params_from_user(struct tee_context *ctx, struct
+> >  static int params_from_user(struct tee_context *ctx, struct=20
 > > tee_param *params,
 > >                           size_t num_params,
-> >                           struct tee_ioctl_param __user *uparams)
-> > @@ -829,6 +865,8 @@ static long tee_ioctl(struct file *filp, unsigned
+> >                           struct tee_ioctl_param __user *uparams) @@=20
+> > -829,6 +865,8 @@ static long tee_ioctl(struct file *filp, unsigned=20
 > > int cmd, unsigned long arg)
 > >               return tee_ioctl_shm_alloc(ctx, uarg);
 > >       case TEE_IOC_SHM_REGISTER:
@@ -165,8 +211,8 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > >       case TEE_IOC_OPEN_SESSION:
 > >               return tee_ioctl_open_session(ctx, uarg);
 > >       case TEE_IOC_INVOKE:
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index 836872467dc6..55a3fbbb022e 100644
+> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c index=20
+> > 836872467dc6..55a3fbbb022e 100644
 > > --- a/drivers/tee/tee_shm.c
 > > +++ b/drivers/tee/tee_shm.c
 > > @@ -4,6 +4,7 @@
@@ -194,12 +240,11 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > > page_count)
 > >  {
 > >       size_t n;
-> > @@ -71,7 +80,16 @@ static void release_registered_pages(struct
+> > @@ -71,7 +80,16 @@ static void release_registered_pages(struct=20
 > > tee_shm *shm)
 > >
-> >  static void tee_shm_release(struct tee_device *teedev, struct
-> > tee_shm *shm)
-> >  {
+> >  static void tee_shm_release(struct tee_device *teedev, struct=20
+> > tee_shm *shm)  {
 > > -     if (shm->flags & TEE_SHM_POOL) {
 > > +     if (shm->flags & TEE_SHM_EXT_DMA_BUF) {
 > > +             struct tee_shm_dmabuf_ref *ref;
@@ -216,26 +261,24 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > >       } else if (shm->flags & TEE_SHM_DYNAMIC) {
 > >               int rc =3D teedev->desc->ops->shm_unregister(shm->ctx,
 > > shm);
-> > @@ -195,7 +213,7 @@ struct tee_shm *tee_shm_alloc_user_buf(struct
+> > @@ -195,7 +213,7 @@ struct tee_shm *tee_shm_alloc_user_buf(struct=20
 > > tee_context *ctx, size_t size)
-> >   * tee_client_invoke_func(). The memory allocated is later freed
+> >   * tee_client_invoke_func(). The memory allocated is later freed=20
 > > with a
 > >   * call to tee_shm_free().
 > >   *
 > > - * @returns a pointer to 'struct tee_shm'
-> > + * @returns a pointer to 'struct tee_shm' on success, and ERR_PTR on
+> > + * @returns a pointer to 'struct tee_shm' on success, and ERR_PTR=20
+> > + on
 > > failure
 > >   */
-> >  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx,
-> > size_t size)
-> >  {
-> > @@ -229,6 +247,83 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct
-> > tee_context *ctx, size_t size)
-> >  }
-> >  EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
+> >  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx,=20
+> > size_t size)  { @@ -229,6 +247,83 @@ struct tee_shm=20
+> > *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size)  } =20
+> > EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
 > >
-> > +struct tee_shm *tee_shm_register_fd(struct tee_context *ctx, int fd)
-> > +{
+> > +struct tee_shm *tee_shm_register_fd(struct tee_context *ctx, int=20
+> > +fd) {
 > > +     struct tee_shm_dmabuf_ref *ref;
 > > +     int rc;
 > > +
@@ -316,13 +359,13 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > > +
 > >  static struct tee_shm *
 > >  register_shm_helper(struct tee_context *ctx, unsigned long addr,
-> >                   size_t length, u32 flags, int id)
-> > diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> > index 911cad324acc..40ddd5376c2d 100644
+> >                   size_t length, u32 flags, int id) diff --git=20
+> > a/include/linux/tee_drv.h b/include/linux/tee_drv.h index=20
+> > 911cad324acc..40ddd5376c2d 100644
 > > --- a/include/linux/tee_drv.h
 > > +++ b/include/linux/tee_drv.h
 > > @@ -25,6 +25,7 @@
-> >  #define TEE_SHM_USER_MAPPED  BIT(1)  /* Memory mapped in user space
+> >  #define TEE_SHM_USER_MAPPED  BIT(1)  /* Memory mapped in user space=20
 > > */
 > >  #define TEE_SHM_POOL         BIT(2)  /* Memory allocated from pool
 > > */
@@ -333,10 +376,11 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > >
 > >  struct device;
 > >  struct tee_device;
-> > @@ -276,6 +277,16 @@ struct tee_shm *tee_shm_alloc_kernel_buf(struct
-> > tee_context *ctx, size_t size);
-> >  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
-> >                                           void *addr, size_t length);
+> > @@ -276,6 +277,16 @@ struct tee_shm *tee_shm_alloc_kernel_buf(struct=20
+> > tee_context *ctx, size_t size);  struct tee_shm=20
+> > *tee_shm_register_kernel_buf(struct tee_context *ctx,
+> >                                           void *addr, size_t=20
+> > length);
 > >
 > > +/**
 > > + * tee_shm_register_fd() - Register shared memory from file
@@ -345,17 +389,18 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > > + * @ctx:     Context that allocates the shared memory
 > > + * @fd:              Shared memory file descriptor reference
 > > + *
-> > + * @returns a pointer to 'struct tee_shm' on success, and ERR_PTR on
+> > + * @returns a pointer to 'struct tee_shm' on success, and ERR_PTR=20
+> > + on
 > > failure
 > > + */
 > > +struct tee_shm *tee_shm_register_fd(struct tee_context *ctx, int
 > > fd);
 > > +
 > >  /**
-> >   * tee_shm_is_dynamic() - Check if shared memory object is of the
+> >   * tee_shm_is_dynamic() - Check if shared memory object is of the=20
 > > dynamic kind
 > >   * @shm:     Shared memory handle
-> > diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
+> > diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h=20
 > > index 25a6c534beb1..baf3cd7cfdac 100644
 > > --- a/include/uapi/linux/tee.h
 > > +++ b/include/uapi/linux/tee.h
@@ -365,7 +410,8 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > >                                    struct tee_ioctl_shm_alloc_data)
 > >
 > > +/**
-> > + * struct tee_ioctl_shm_register_fd_data - Shared memory registering
+> > + * struct tee_ioctl_shm_register_fd_data - Shared memory=20
+> > +registering
 > > argument
 > > + * @fd:              [in] File descriptor identifying the shared
 > > memory
@@ -373,7 +419,8 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > > + * @flags:   [in] Flags to/from allocation.
 > > + * @id:              [out] Identifier of the shared memory
 > > + *
-> > + * The flags field should currently be zero as input. Updated by the
+> > + * The flags field should currently be zero as input. Updated by=20
+> > + the
 > > call
 > > + * with actual flags as defined by TEE_IOCTL_SHM_* above.
 > > + * This structure is used as argument for TEE_IOC_SHM_REGISTER_FD
@@ -405,5 +452,5 @@ mware.org/message/M3WLO7RNG22OR4744BY6XNG2GLIYMNHN/
 > >   * struct tee_ioctl_buf_data - Variable sized buffer
 > >   * @buf_ptr: [in] A __user pointer to a buffer
 
---===============4832009093419330517==--
+--===============9172917568039904331==--
 
