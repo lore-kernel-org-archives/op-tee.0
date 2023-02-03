@@ -1,24 +1,20 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm
  from a dmabuf file descriptor
-Date: Fri, 03 Feb 2023 12:37:07 +0100
+Date: Fri, 03 Feb 2023 17:22:17 +0530
 Message-ID: 
- <CAN5uoS-A8EovbnxvcXqiYHcy95d-PTYUZvnNr3=kf84AGkG8Kw@mail.gmail.com>
+ <CAFA6WYMtDkRdqLW=k8hFisQFTqBic59NHufxLDywPkF9d_TNPw@mail.gmail.com>
 In-Reply-To: <c86d1a46af6e076038b3f0c2dd68213ff1e8b254.camel@nxp.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1690922509530080677=="
+Content-Type: multipart/mixed; boundary="===============3727749615344867484=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1690922509530080677==
+--===============3727749615344867484==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hell all,
-
-+jerome f.
-
-On Fri, 3 Feb 2023 at 12:01, Olivier Masse <olivier.masse@nxp.com> wrote:
+On Fri, 3 Feb 2023 at 16:31, Olivier Masse <olivier.masse@nxp.com> wrote:
 >
 > On jeu., 2023-02-02 at 10:58 +0100, Etienne Carriere wrote:
 > > Caution: EXT Email
@@ -61,13 +57,24 @@ On Fri, 3 Feb 2023 at 12:01, Olivier Masse <olivier.masse@nxp.com> wrote:
 > > > supported in OP-TEE upstream but without secure dmabuf heap [1]
 > > > available, the new ioctl can't be exercised.
 > > >
-> > > [1] https://github.com/OP-TEE/optee_test/blob/master/host/xtest/sdp_bas=
-ic.h#L15
+> > > [1]
+> > > https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgit=
+hub.com%2FOP-TEE%2Foptee_test%2Fblob%2Fmaster%2Fhost%2Fxtest%2Fsdp_basic.h%23=
+L15&data=3D05%7C01%7Colivier.masse%40nxp.com%7Ca27f690d9d7244c2bcff08db05040f=
+11%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638109287211847995%7CUnknown%=
+7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0=
+%3D%7C3000%7C%7C%7C&sdata=3DeNUbc0uaKjfmxau8L7ZB8u%2BtYdUxT4pIS%2Fht29uwRKg%3=
+D&reserved=3D0
 > >
 > > OP-TEE has some SDP test taht can exercice SDP: 'xtest
 > > regression_1014'.
-> > https://github.com/OP-TEE/optee_test/blob/3.20.0/host/xtest/regression_10=
-00.c#L1256
+> > https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgithu=
+b.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fregression_1000.=
+c%23L1256&data=3D05%7C01%7Colivier.masse%40nxp.com%7Ca27f690d9d7244c2bcff08db=
+05040f11%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638109287211847995%7CUn=
+known%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXV=
+CI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D%2BOtAlVOq7%2Fi6SloSTZuwa5VtlC5RqtcJ4fGtio0=
+YI8A%3D&reserved=3D0
 > >
 > > The test relies on old staged ION + local secure dmabuf heaps no more
 > > maintained, so this test is currently not functional.
@@ -75,8 +82,13 @@ ic.h#L15
 > > change discussed here, we should be able to regularly test SDP in
 > > OP-TEE project CI.
 > > The part to update is the userland allocation of the dmabuf:
-> > https://github.com/OP-TEE/optee_test/blob/3.20.0/host/xtest/sdp_basic.c#L=
-91
+> > https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgithu=
+b.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fsdp_basic.c%23L9=
+1&data=3D05%7C01%7Colivier.masse%40nxp.com%7Ca27f690d9d7244c2bcff08db05040f11=
+%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638109287211847995%7CUnknown%7C=
+TWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3=
+D%7C3000%7C%7C%7C&sdata=3DK2NB2Bj7V3CXNsM9fZy95OEjF3EzqU4mgmM1PTY3J1Y%3D&rese=
+rved=3D0
 > >
 > >
 >
@@ -84,24 +96,17 @@ ic.h#L15
 > version 5.11 and higher. the userland allocation could be find here:
 > https://github.com/OP-TEE/optee_test/blob/3.20.0/host/xtest/sdp_basic.c#L153
 >
-
-Oh, right. So fine, optee_test is ready for the new flavor of secure
-buffer fd's.
-
-
 > This upgrade need a Linux dma-buf patch:
 > https://lore.kernel.org/all/20220805154139.2qkqxwklufjpsfdx(a)000377403353/=
 T/
-
-@Jens, @Jerome, do we want to pick the 2 necessary Linux patches in
-our Linux kernel fork (github.com/linaro-swg/linux.git) to exercise
-SDP in our CI and be ready if dma-buf secure heaps (ref right above)
-is accepted and merged in mainline kernel?.
-
-Br,
-etienne
-
 >
+
+I would suggest you to club this new ioctl patch with this secure
+dmabuf heap series so that you can provide a complete SDP use-case
+picture with a working SDP xtest case.
+
+-Sumit
+
 >
 > > br,
 > > etienne
@@ -597,5 +602,5 @@ I6Mn0%3D%7C3000%7C%7C%7C&sdata=3D7LNWTr4TWQoB0OLqasXT05o%2BUkodxsOqpcUcvoeiZ7=
 > > > > > >   * struct tee_ioctl_buf_data - Variable sized buffer
 > > > > > >   * @buf_ptr: [in] A __user pointer to a buffer
 
---===============1690922509530080677==--
+--===============3727749615344867484==--
 
