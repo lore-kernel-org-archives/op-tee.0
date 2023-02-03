@@ -1,177 +1,215 @@
-From: Cyrille Fleury <cyrille.fleury@nxp.com>
+From: Jeffrey Kardatzke <jkardatzke@google.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm
- from a dmabuf file descriptor
-Date: Fri, 03 Feb 2023 14:13:53 +0000
-Message-ID: <PA4PR04MB75207FF08A6C2EEC1944FFFE88D79@PA4PR04MB7520.eurprd04.prod.outlook.com>
-In-Reply-To: <f3ccd7ad-0bbb-be39-c989-765552e2c6af@linaro.org>
+Subject: [PATCH] tee: optee: Add SMC for loading OP-TEE image
+Date: Fri, 03 Feb 2023 13:43:50 -0800
+Message-ID: 
+ <CA+ddPcNthsDKnm3n382j1HzwxdRhykKSB-2KH93GkMKnbgo8Ag@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5823251096826552607=="
+Content-Type: multipart/mixed; boundary="===============6373048227245867972=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5823251096826552607==
+--===============6373048227245867972==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+This is the kernel patch corresponding to the change landed in TF-A
+here: https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/18635
 
+This appears to be the right place to post this, let me know if not please.
 
------Original Message-----
-From: Jerome Forissier <jerome.forissier@linaro.org>
-Sent: Friday, February 3, 2023 1:32 PM
-To: Etienne Carriere <etienne.carriere@linaro.org>; Olivier Masse <olivier.=
-masse@nxp.com>
-Cc: sumit.garg(a)linaro.org; linux-media(a)vger.kernel.org; fredgc(a)google.c=
-om; linaro-mm-sig(a)lists.linaro.org; afd(a)ti.com; op-tee(a)lists.trustedfir=
-mware.org; jens.wiklander(a)linaro.org; joakim.bech(a)linaro.org; sumit.semwa=
-l(a)linaro.org; Cyrille Fleury <cyrille.fleury@nxp.com>; Peter Griffin <pet=
-er.griffin@linaro.org>; linux-kernel(a)vger.kernel.org; dri-devel(a)lists.f=
-reedesktop.org; Cl=C3=A9ment Faure <clement.faure@nxp.com>; christian.koeni=
-g(a)amd.com
-Subject: Re: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm fr=
-om a dmabuf file descriptor
+From 81d97a06a48d01eb53661b41905768271f07b870 Mon Sep 17 00:00:00 2001
+From: Jeffrey Kardatzke <jkardatzke@google.com>
+Date: Fri, 3 Feb 2023 11:33:17 -0800
+Subject: [PATCH] tee: optee: Add SMC for loading OP-TEE image
 
-On 2/3/23 15:12, Cyrille Fleury wrote:
-Hi all,
+Adds an SMC call that will pass an OP-TEE binary image to EL3 and
+instruct it to load it as the BL32 payload. This works in conjunction
+with a feature added to Trusted Firmware for ARM that supports this.
 
->On 2/3/23 12:37, Etienne Carriere wrote:
->> Hell all,
->>
->> +jerome f.
->>
->> On Fri, 3 Feb 2023 at 12:01, Olivier Masse <olivier.masse@nxp.com> wrote:
->>>
->>> On jeu., 2023-02-02 at 10:58 +0100, Etienne Carriere wrote:
->>>> Caution: EXT Email
->>>>
->>>> On Thu, 2 Feb 2023 at 09:35, Sumit Garg <sumit.garg@linaro.org>
->>>> wrote:
->>>>> Hi Cyrille,
->>>>>
->>>>> Please don't top post as it makes it harder to follow-up.
->>>>>
->>>>> On Thu, 2 Feb 2023 at 13:26, Cyrille Fleury <cyrille.fleury@nxp.com
->>>>>> wrote:
->>>>>> Hi Sumit, all
->>>>>>
->>>>>> Upstream OP-TEE should support registering a dmabuf since a while,=20
->>>>>> given how widely dmabuf is used in Linux for passing buffers=20
->>>>>> around between devices.
->>>>>>
->>>>>> Purpose of the new register_tee_shm ioctl is to allow OPTEE to use=20
->>>>>> memory allocated from the exiting linux dma buffer. We don't need=20
->>>>>> to have secure dma-heap up streamed.
->>>>>>
->>>>>> You mentioned secure dma-buffer, but secure dma-buffer is a dma-=20
->>>>>> buffer, so the work to be done for secure or "regular" dma buffers=20
->>>>>> by the register_tee_shm ioctl is 100% the same.
->>>>>>
->>>>>> The scope of this ioctl is limited to what existing upstream dma-=20
->>>>>> buffers are:
->>>>>>         -> sharing buffers for hardware (DMA) access across=20
->>>>>> multiple device drivers and subsystems, and for synchronizing=20
->>>>>> asynchronous hardware access.
->>>>>>        -> It means continuous memory only.
->>>>>>
->>>>>> So if we reduce the scope of register tee_shm to exiting dma-=20
->>>>>> buffer area, the current patch does the job.
->>>>>
->>>>> Do you have a corresponding real world use-case supported by=20
->>>>> upstream OP-TEE? AFAIK, the Secure Data Path (SDP) use-case is the=20
->>>>> one supported in OP-TEE upstream but without secure dmabuf heap [1]=20
->>>>> available, the new ioctl can't be exercised.
->>>>>
->>>>> [1]=20
->>>>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fg
->>>>> ithub.com%2FOP-TEE%2Foptee_test%2Fblob%2Fmaster%2Fhost%2Fxtest%2Fsd
->>>>> p_basic.h%23L15&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb5
->>>>> 8f6401c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%
->>>>> 7C638110243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLC
->>>>> JQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D
->>>>> UNB88rvmhQ5qRoIGN%2FpS4cQTES5joM8AjoyAAYzPKl0%3D&reserved=3D0
->>>>
->>>> OP-TEE has some SDP test taht can exercice SDP: 'xtest=20
->>>> regression_1014'.
->>>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgi
->>>> thub.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fregr
->>>> ession_1000.c%23L1256&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff9
->>>> 62fb58f6401c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%
->>>> 7C0%7C638110243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDA
->>>> iLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdat
->>>> a=3De%2B40rwWvtvVFG8aWZNeu%2FgjMXXvZ3pRhJfHLkdurovs%3D&reserved=3D0
->>>>
->>>> The test relies on old staged ION + local secure dmabuf heaps no=20
->>>> more maintained, so this test is currently not functional.
->>>> If we upgrade the test to mainline dmabuf alloc means, and apply the=20
->>>> change discussed here, we should be able to regularly test SDP in=20
->>>> OP-TEE project CI.
->>>> The part to update is the userland allocation of the dmabuf:
->>>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgi
->>>> thub.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fsdp_
->>>> basic.c%23L91&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb58f6
->>>> 401c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C63
->>>> 8110243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjo
->>>> iV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D5rPV1j
->>>> qzqjVh2N5pdUW41YwF6EkgIDwfhyfYkgmtdZI%3D&reserved=3D0
->>>>
->>>>
->>>
->>> the test was already updated to support secure dma heap with Kernel=20
->>> version 5.11 and higher. the userland allocation could be find here:
->>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fgit
->>> hub.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fsdp_ba
->>> sic.c%23L153&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb58f640
->>> 1c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C63811
->>> 0243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2l
->>> uMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D01H96n47K6R
->>> mBKZQhRdcqX3nE5VBHOXNfGuMmmkVSvc%3D&reserved=3D0
->>>
->>
->> Oh, right. So fine, optee_test is ready for the new flavor of secure=20
->> buffer fd's.
->>
->>
->>> This upgrade need a Linux dma-buf patch:
->>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flor
->>> e.kernel.org%2Fall%2F20220805154139.2qkqxwklufjpsfdx%40000377403353%2
->>> FT%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb58f6401c59780
->>> 8db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638110243232
->>> 457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLC
->>> JBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3DyCS%2BDcuGp%2BafAL
->>> tpw74O1bI0K%2Fwnt%2FOw5ob1ngfDA0E%3D&reserved=3D0
->>
->> @Jens, @Jerome, do we want to pick the 2 necessary Linux patches in=20
->> our Linux kernel fork (github.com/linaro-swg/linux.git) to exercise=20
->> SDP in our CI and be ready if dma-buf secure heaps (ref right above)=20
->> is accepted and merged in mainline kernel?.
->
->How would that help? I mean, when the kernel patches are merged and if thing=
-s break we can make the necessary adjustments in the optee_test app or whatev=
-er, but in the meantime I don't see much point. I suppose the people who are =
-actively developing the patches do make sure it works with OP-TEE ;-)
->
->Regards,
->--
->Jerome
+Signed-off-by: Jeffrey Kardatzke <jkardatzke@google.com>
+---
+ drivers/tee/optee/Kconfig     |  9 +++++
+ drivers/tee/optee/optee_msg.h | 14 +++++++
+ drivers/tee/optee/optee_smc.h | 22 +++++++++++
+ drivers/tee/optee/smc_abi.c   | 70 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 115 insertions(+)
 
-As mentioned in the cover letter, this IOCTL got tested by Jens Wiklander <je=
-ns.wiklander@linaro.org>, using Linaro reference board from Hikey 6620:
-https://lists.trustedfirmware.org/archives/list/op-tee(a)lists.trustedfirmwar=
-e.org/thread/I3TZN4TBDOUVE567VMMN2TAXGWZNY7S3/
-It also works on i.MX8M EVK boards.
+diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
+index f121c224e682..b96b5db52b37 100644
+--- a/drivers/tee/optee/Kconfig
++++ b/drivers/tee/optee/Kconfig
+@@ -7,3 +7,12 @@ config OPTEE
+  help
+    This implements the OP-TEE Trusted Execution Environment (TEE)
+    driver.
++
++config OPTEE_LOAD_IMAGE
++ bool "Load Op-Tee image as firmware"
++ default n
++ depends on OPTEE
++ help
++   This loads the BL32 image for OP-TEE as firmware when the driver is probe=
+d.
++   This returns -EPROBE_DEFER until the firmware is loadable from the
++   filesystem.
+diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+index 70e9cc2ee96b..84c1b15032a9 100644
+--- a/drivers/tee/optee/optee_msg.h
++++ b/drivers/tee/optee/optee_msg.h
+@@ -284,6 +284,20 @@ struct optee_msg_arg {
+  */
+ #define OPTEE_MSG_FUNCID_GET_OS_REVISION 0x0001
 
-My understanding today is we are good to upstream this patch, knowing:
-     - Upstream OPTEE driver should support registering a dmabuf since a whil=
-e, given how widely dmabuf is used in Linux for passing buffers around betwee=
-n devices.
-     - review is OK=20
-     - test environment is already available in optee-test
-     - it has been tested on 2 different platforms
-     - the scope of the new ioctl is limited to existing feature in dma-buffer
-    =20
-What is missing from this list preventing to upstream ?=20
-Who do we still need to convince ?
++/*
++ * Load Trusted OS from optee/tee.bin in the Linux firmware.
++ *
++ * WARNING: Use this cautiously as it could lead to insecure loading of the
++ * Trusted OS.
++ * This SMC instructs EL3 to load a binary and excute it as the Trusted OS.
++ * The first two params are the high and low 32 bits of the size of the payl=
+oad
++ * and the third and fourth params are the high and low 32 bits of the physi=
+cal
++ * address of the payload. The payload is in the OP-TEE image format.
++ *
++ * Returns 0 on success and an error code otherwise.
++ */
++#define OPTEE_MSG_FUNCID_LOAD_IMAGE   0x0002
++
+ /*
+  * Do a secure call with struct optee_msg_arg as argument
+  * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg::cmd
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index 73b5e7760d10..908b1005e9db 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -104,6 +104,28 @@ struct optee_smc_call_get_os_revision_result {
+  unsigned long reserved1;
+ };
 
-Regards.
++/*
++ * Load Trusted OS from optee/tee.bin in the Linux firmware.
++ *
++ * WARNING: Use this cautiously as it could lead to insecure loading of the
++ * Trusted OS.
++ * This SMC instructs EL3 to load a binary and excute it as the Trusted OS.
++ *
++ * Call register usage:
++ * a0 SMC Function ID, OPTEE_SMC_CALL_LOAD_IMAGE
++ * a1 Upper 32bit of a 64bit size for the payload
++ * a2 Lower 32bit of a 64bit size for the payload
++ * a3 Upper 32bit of the physical address for the payload
++ * a4 Lower 32bit of the physical address for the payload
++ *
++ * The payload is in the OP-TEE image format.
++ *
++ * Returns result in a0, 0 on success and an error code otherwise.
++ */
++#define OPTEE_SMC_FUNCID_LOAD_IMAGE OPTEE_MSG_FUNCID_LOAD_IMAGE
++#define OPTEE_SMC_CALL_LOAD_IMAGE \
++ OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_LOAD_IMAGE)
++
+ /*
+  * Call with struct optee_msg_arg as argument
+  *
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index a1c1fa1a9c28..b1e6c4a807db 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -8,6 +8,7 @@
 
---===============5823251096826552607==--
+ #include <linux/arm-smccc.h>
+ #include <linux/errno.h>
++#include <linux/firmware.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/irqdomain.h>
+@@ -1354,6 +1355,69 @@ static void optee_shutdown(struct platform_device *pde=
+v)
+  optee_disable_shm_cache(optee);
+ }
+
++#ifdef CONFIG_OPTEE_LOAD_IMAGE
++
++#define OPTEE_FW_IMAGE "optee/tee.bin"
++
++static int optee_load_fw(struct platform_device *pdev,
++ optee_invoke_fn *invoke_fn)
++{
++ const struct firmware *fw =3D NULL;
++ struct arm_smccc_res res;
++ phys_addr_t data_pa;
++ u8 *data_buf =3D NULL;
++ u64 data_size;
++ u32 data_pa_high, data_pa_low;
++ u32 data_size_high, data_size_low;
++ int rc;
++
++ rc =3D request_firmware(&fw, OPTEE_FW_IMAGE, &pdev->dev);
++ if (rc)
++ return -EPROBE_DEFER;
++
++ data_size =3D fw->size;
++ /*
++ * This uses the GFP_DMA flag to ensure we are allocated memory in the
++ * 32-bit space since TF-A cannot map memory beyond the 32-bit boundary.
++ */
++ data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
++ if (!data_buf) {
++ rc =3D -ENOMEM;
++ goto fw_err;
++ }
++ memcpy(data_buf, fw->data, fw->size);
++ data_pa =3D virt_to_phys(data_buf);
++ reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
++ reg_pair_from_64(&data_size_high, &data_size_low, data_size);
++ goto fw_load;
++
++fw_err:
++ pr_warn("image loading failed\n");
++ data_pa_high =3D data_pa_low =3D data_size_high =3D data_size_low =3D 0;
++
++fw_load:
++ /*
++ * Always invoke the SMC, even if loading the image fails, to indicate
++ * to EL3 that we have passed the point where it should allow invoking
++ * this SMC.
++ */
++ invoke_fn(OPTEE_SMC_CALL_LOAD_IMAGE, data_size_high, data_size_low,
++   data_pa_high, data_pa_low, 0, 0, 0, &res);
++ if (!rc)
++ rc =3D res.a0;
++ if (fw)
++ release_firmware(fw);
++ kfree(data_buf);
++
++ return rc;
++}
++#else
++static inline int optee_load_fw(struct platform_device *__unused,
++ optee_invoke_fn *__unused) {
++ return 0;
++}
++#endif
++
+ static int optee_probe(struct platform_device *pdev)
+ {
+  optee_invoke_fn *invoke_fn;
+@@ -1372,6 +1436,12 @@ static int optee_probe(struct platform_device *pdev)
+  if (IS_ERR(invoke_fn))
+  return PTR_ERR(invoke_fn);
+
++ rc =3D optee_load_fw(pdev, invoke_fn);
++ if (rc) {
++ pr_warn("image loading failed\n");
++ return rc;
++ }
++
+  if (!optee_msg_api_uid_is_optee_api(invoke_fn)) {
+  pr_warn("api uid mismatch\n");
+  return -EINVAL;
+--=20
+2.39.1.519.gcb327c4b5f-goog
+
+--===============6373048227245867972==--
 
