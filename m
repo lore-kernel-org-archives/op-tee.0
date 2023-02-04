@@ -1,81 +1,104 @@
 From: Ira Weiny <ira.weiny@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 0/4] Remove get_kernel_pages()
-Date: Fri, 03 Feb 2023 20:06:32 -0800
-Message-ID: <20230203-get_kernel_pages-v2-0-f1dc4af273f1@intel.com>
+Subject: [PATCH v2 2/4] tee: Remove vmalloc page support
+Date: Fri, 03 Feb 2023 20:06:33 -0800
+Message-ID: <20230203-get_kernel_pages-v2-2-f1dc4af273f1@intel.com>
+In-Reply-To: <20230203-get_kernel_pages-v2-0-f1dc4af273f1@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0676933566339837090=="
+Content-Type: multipart/mixed; boundary="===============8637779915035580011=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0676933566339837090==
+--===============8637779915035580011==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Sumit,
+The kernel pages used by shm_get_kernel_pages() are allocated using
+GFP_KERNEL through the following call stack:
 
-I did not see a follow up on this series per your last email.[1]  I'd like to
-move forward with getting rid of kmap_to_page().  So Hopefully this can land
-and you can build on this rather than the other way around?
+trusted_instantiate()
+	trusted_payload_alloc() -> GFP_KERNEL
+	<trusted key op>
+		tee_shm_register_kernel_buf()
+			register_shm_helper()
+				shm_get_kernel_pages()
 
-All,
+Where <trusted key op> is one of:
 
-Al Viro found[2] that kmap_to_page() is broken.  But not only is it broken, it
-presents confusion over how highmem should be used because kmap() and friends
-should not be used for 'long term' mappings.
+	trusted_key_unseal()
+	trusted_key_get_random()
+	trusted_key_seal()
 
-get_kernel_pages() is a caller of kmap_to_page().  It only has one caller
-[shm_get_kernel_pages()] which does not need the functionality.
+Remove the vmalloc page support from shm_get_kernel_pages().  Replace
+with a warn on once.
 
-Alter shm_get_kernel_pages() to no longer call get_kernel_pages() and remove
-get_kernel_pages().  Along the way it was noted that shm_get_kernel_pages()
-does not have any need to support vmalloc'ed addresses either.  Remove that
-functionality to clean up the logic.
-
-This series also fixes is_kmap_addr() and uses it to ensure no kmap addresses
-slip in later.
-
-[1] https://lore.kernel.org/all/CAFA6WYMqEVDVW-ifoh-V9ni1zntYdes8adQKf2XXAUpq=
-daW53w(a)mail.gmail.com/
-[2] https://lore.kernel.org/lkml/YzSSl1ItVlARDvG3(a)ZenIV
-
-To: Sumit Garg <sumit.garg@linaro.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Al Viro" <viro@zeniv.linux.org.uk>
-Cc: "Christoph Hellwig" <hch@lst.de>
-Cc: linux-kernel(a)vger.kernel.org
-Cc: op-tee(a)lists.trustedfirmware.org
-Cc: linux-mm(a)kvack.org
-Cc: Jens Wiklander <jens.wiklander@linaro.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
-
 ---
-Changes in v2:
-- Al Viro: Avoid allocating the kiov.
-- Sumit: Update cover letter to clarify the motivation behind removing
-  get_kernel_pages()
-- Link to v1: https://lore.kernel.org/r/20221002002326.946620-1-ira.weiny(a)i=
-ntel.com
+ drivers/tee/tee_shm.c | 36 ++++++++++++------------------------
+ 1 file changed, 12 insertions(+), 24 deletions(-)
 
----
-Ira Weiny (4):
-      highmem: Enhance is_kmap_addr() to check kmap_local_page() mappings
-      tee: Remove vmalloc page support
-      tee: Remove call to get_kernel_pages()
-      mm: Remove get_kernel_pages()
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 27295bda3e0b..527a6eabc03e 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -24,37 +24,25 @@ static void shm_put_kernel_pages(struct page **pages, siz=
+e_t page_count)
+ static int shm_get_kernel_pages(unsigned long start, size_t page_count,
+ 				struct page **pages)
+ {
++	struct kvec *kiov;
+ 	size_t n;
+ 	int rc;
+=20
+-	if (is_vmalloc_addr((void *)start)) {
+-		struct page *page;
+-
+-		for (n =3D 0; n < page_count; n++) {
+-			page =3D vmalloc_to_page((void *)(start + PAGE_SIZE * n));
+-			if (!page)
+-				return -ENOMEM;
+-
+-			get_page(page);
+-			pages[n] =3D page;
+-		}
+-		rc =3D page_count;
+-	} else {
+-		struct kvec *kiov;
+-
+-		kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
+-		if (!kiov)
+-			return -ENOMEM;
++	if (WARN_ON_ONCE(is_vmalloc_addr((void *)start)))
++		return -EINVAL;
+=20
+-		for (n =3D 0; n < page_count; n++) {
+-			kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
+-			kiov[n].iov_len =3D PAGE_SIZE;
+-		}
++	kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
++	if (!kiov)
++		return -ENOMEM;
+=20
+-		rc =3D get_kernel_pages(kiov, page_count, 0, pages);
+-		kfree(kiov);
++	for (n =3D 0; n < page_count; n++) {
++		kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
++		kiov[n].iov_len =3D PAGE_SIZE;
+ 	}
+=20
++	rc =3D get_kernel_pages(kiov, page_count, 0, pages);
++	kfree(kiov);
++
+ 	return rc;
+ }
+=20
 
- drivers/tee/tee_shm.c            | 37 ++++++++++---------------------------
- include/linux/highmem-internal.h |  5 ++++-
- include/linux/mm.h               |  2 --
- mm/swap.c                        | 30 ------------------------------
- 4 files changed, 14 insertions(+), 60 deletions(-)
----
-base-commit: 0136d86b78522bbd5755f8194c97a987f0586ba5
-change-id: 20230203-get_kernel_pages-199342cfba79
-
-Best regards,
 --=20
-Ira Weiny <ira.weiny@intel.com>
+2.39.1
 
---===============0676933566339837090==--
+--===============8637779915035580011==--
 
