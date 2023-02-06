@@ -1,15 +1,15 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 2/4] tee: Remove vmalloc page support
-Date: Mon, 06 Feb 2023 11:46:45 +0530
+Subject: Re: [PATCH v2 3/4] tee: Remove call to get_kernel_pages()
+Date: Mon, 06 Feb 2023 11:47:07 +0530
 Message-ID: 
- <CAFA6WYMoVHWvzSBeR9xTayqqCXqRqsvMZS7WW0rCXX_VsOVWoA@mail.gmail.com>
-In-Reply-To: <20230203-get_kernel_pages-v2-2-f1dc4af273f1@intel.com>
+ <CAFA6WYPKpk=YmHdt1RKUKroji0ky457snsfndCjbqm=_kQw+7A@mail.gmail.com>
+In-Reply-To: <20230203-get_kernel_pages-v2-3-f1dc4af273f1@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3703905059193951222=="
+Content-Type: multipart/mixed; boundary="===============0299773278678969188=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3703905059193951222==
+--===============0299773278678969188==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -31,18 +31,27 @@ On Sat, 4 Feb 2023 at 09:36, Ira Weiny <ira.weiny@intel.com> wrote:
 >         trusted_key_get_random()
 >         trusted_key_seal()
 >
-> Remove the vmalloc page support from shm_get_kernel_pages().  Replace
-> with a warn on once.
+> Because the pages can't be from highmem get_kernel_pages() boils down to
+> a get_page() call.
 >
+> Remove the get_kernel_pages() call and open code the get_page().
+>
+> In case a highmem page does slip through warn on once for a kmap'ed
+> address.
+>
+> Cc: Jens Wiklander <jens.wiklander@linaro.org>
 > Cc: Al Viro <viro@zeniv.linux.org.uk>
 > Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
 > Cc: Christoph Hellwig <hch@lst.de>
 > Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
 > Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+>
 > ---
->  drivers/tee/tee_shm.c | 36 ++++++++++++------------------------
->  1 file changed, 12 insertions(+), 24 deletions(-)
+> Changes from v1:
+>         Al/Christoph: Remove kiov altogether
+> ---
+>  drivers/tee/tee_shm.c | 21 ++++++++-------------
+>  1 file changed, 8 insertions(+), 13 deletions(-)
 >
 
 Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
@@ -50,65 +59,55 @@ Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 -Sumit
 
 > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index 27295bda3e0b..527a6eabc03e 100644
+> index 527a6eabc03e..b1c6231defad 100644
 > --- a/drivers/tee/tee_shm.c
 > +++ b/drivers/tee/tee_shm.c
-> @@ -24,37 +24,25 @@ static void shm_put_kernel_pages(struct page **pages, s=
+> @@ -11,6 +11,7 @@
+>  #include <linux/tee_drv.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/uio.h>
+> +#include <linux/highmem.h>
+>  #include "tee_private.h"
+>
+>  static void shm_put_kernel_pages(struct page **pages, size_t page_count)
+> @@ -24,26 +25,20 @@ static void shm_put_kernel_pages(struct page **pages, s=
 ize_t page_count)
 >  static int shm_get_kernel_pages(unsigned long start, size_t page_count,
 >                                 struct page **pages)
 >  {
-> +       struct kvec *kiov;
+> -       struct kvec *kiov;
+> +       struct page *page;
 >         size_t n;
->         int rc;
+> -       int rc;
 >
-> -       if (is_vmalloc_addr((void *)start)) {
-> -               struct page *page;
-> -
-> -               for (n =3D 0; n < page_count; n++) {
-> -                       page =3D vmalloc_to_page((void *)(start + PAGE_SIZE=
- * n));
-> -                       if (!page)
-> -                               return -ENOMEM;
-> -
-> -                       get_page(page);
-> -                       pages[n] =3D page;
-> -               }
-> -               rc =3D page_count;
-> -       } else {
-> -               struct kvec *kiov;
-> -
-> -               kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
-> -               if (!kiov)
-> -                       return -ENOMEM;
-> +       if (WARN_ON_ONCE(is_vmalloc_addr((void *)start)))
-> +               return -EINVAL;
+> -       if (WARN_ON_ONCE(is_vmalloc_addr((void *)start)))
+> +       if (WARN_ON_ONCE(is_vmalloc_addr((void *)start) ||
+> +                        is_kmap_addr((void *)start)))
+>                 return -EINVAL;
 >
-> -               for (n =3D 0; n < page_count; n++) {
-> -                       kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE=
-);
-> -                       kiov[n].iov_len =3D PAGE_SIZE;
-> -               }
-> +       kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
-> +       if (!kiov)
-> +               return -ENOMEM;
->
-> -               rc =3D get_kernel_pages(kiov, page_count, 0, pages);
-> -               kfree(kiov);
-> +       for (n =3D 0; n < page_count; n++) {
-> +               kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
-> +               kiov[n].iov_len =3D PAGE_SIZE;
+> -       kiov =3D kcalloc(page_count, sizeof(*kiov), GFP_KERNEL);
+> -       if (!kiov)
+> -               return -ENOMEM;
+> -
+> +       page =3D virt_to_page(start);
+>         for (n =3D 0; n < page_count; n++) {
+> -               kiov[n].iov_base =3D (void *)(start + n * PAGE_SIZE);
+> -               kiov[n].iov_len =3D PAGE_SIZE;
+> +               pages[n] =3D page + n;
+> +               get_page(pages[n]);
 >         }
 >
-> +       rc =3D get_kernel_pages(kiov, page_count, 0, pages);
-> +       kfree(kiov);
-> +
->         return rc;
+> -       rc =3D get_kernel_pages(kiov, page_count, 0, pages);
+> -       kfree(kiov);
+> -
+> -       return rc;
+> +       return page_count;
 >  }
 >
+>  static void release_registered_pages(struct tee_shm *shm)
 >
 > --
 > 2.39.1
 
---===============3703905059193951222==--
+--===============0299773278678969188==--
 
