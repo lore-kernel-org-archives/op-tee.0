@@ -1,113 +1,26 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Ard Biesheuvel <ardb@kernel.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [RFC PATCH 0/2] introduce op-tee based EFI Runtime Variable Service
-Date: Mon, 06 Feb 2023 08:47:52 +0100
+Date: Mon, 06 Feb 2023 10:22:28 +0100
 Message-ID: 
- <CAHUa44ForNvjpAhMrVyTX-KzEyQoLHcuyU71tLaJGeiXi9i=Ug@mail.gmail.com>
+ <CAMj1kXGg3wwhJFRjAGEP2fDLcbHpiuHuiaW2y+oVgjwULqVTZg@mail.gmail.com>
 In-Reply-To: <
  <CAFA6WYPLeN5tUY8JA=J9T3XVNfq5jAQ62i=qSk-6eesM-9_K=Q@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3253475731967028294=="
+Content-Type: multipart/mixed; boundary="===============8408169447343870993=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3253475731967028294==
+--===============8408169447343870993==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 6, 2023 at 7:44 AM Sumit Garg <sumit.garg@linaro.org> wrote:
+On Mon, 6 Feb 2023 at 07:44, Sumit Garg <sumit.garg@linaro.org> wrote:
 >
 > On Fri, 3 Feb 2023 at 16:25, Jens Wiklander <jens.wiklander@linaro.org> w=
 rote:
 > >
-> > On Fri, Feb 03, 2023 at 03:03:34PM +0530, Sumit Garg wrote:
-> > > Hi Jens,
-> > >
-> > > On Fri, 3 Feb 2023 at 13:59, Jens Wiklander <jens.wiklander@linaro.or=
-g> wrote:
-> > > >
-> > > > Hi Sumit,
-> > > >
-> > > > On Thu, Feb 02, 2023 at 05:35:49PM +0530, Sumit Garg wrote:
-> > > > > Hi Masahisa,
-> > > > >
-> > > > > On Thu, 26 Jan 2023 at 18:52, Masahisa Kojima
-> > > > > <masahisa.kojima@linaro.org> wrote:
-> > > > > >
-> > > > > > This RFC series introduces the op-tee based EFI Runtime Variable
-> > > > > > Service.
-> > > > > >
-> > > > > > The eMMC device is typically owned by the non-secure world(linux =
-in
-> > > > > > this case). There is an existing solution utilizing eMMC RPMB par=
-tition
-> > > > > > for EFI Variables, it is implemented by interacting with
-> > > > > > OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC dri=
-ver
-> > > > > > and tee-supplicant. The last piece is the tee-based variable acce=
-ss
-> > > > > > driver to interact with OP-TEE and StandaloneMM.
-> > > > > >
-> > > > >
-> > > > > After an overall look at the APIs, following are some initial comme=
-nts:
-> > > > > - Is there any reason to have the edk2 specific StandaloneMM stack =
-in
-> > > > > Linux to communicate with OP-TEE pseudo TA?
-> > > > > - I think the OP-TEE pseudo TA should be able to expose a rather
-> > > > > generic invoke commands such as:
-> > > > >      TEE_EFI_GET_VARIABLE
-> > > > >      TEE_EFI_GET_NEXT_VARIABLE
-> > > > >      TEE_EFI_SET_VARIABLE
-> > > > >   So it should no longer be tied to StMM stack and other TEE
-> > > > > implementations can re-use the abstracted interface to communicate
-> > > > > with its corresponding secure storage TA.
-> > > >
-> > > > In the current setup we have the following layers in the kernel:
-> > > > 1. efivar_operations
-> > > > 2. MM
-> > > > 3. PTA_STMM
-> > > > 4. OP-TEE MSG
-> > > >
-> > > > and in the secure world:
-> > > > S1. internal to StMM
-> > > > S2. MM interface to StMM
-> > > > S3. PTA_STMM
-> > > > S4. OP-TEE MSG
-> > > >
-> > > > If I understand you correctly you'd like to see this instead:
-> > > > Kernel:
-> > > > 1. efivar_operations
-> > > > 2. PTA_EFIVAR
-> > > > 4. OP-TEE MSG
-> > > >
-> > > > Since we still have the MM interface with StMM we'd have this in the =
-secure
-> > > > world:
-> > > > S1. internal to StMM
-> > > > S2. MM interface to StMM
-> > > > S3. PTA_EFIVAR
-> > > > S4. OP-TEE MSG
-> > > >
-> > > > At S3 we'd have to convert between EFIVAR and MM messages. The
-> > > > difference is that we're moving the EFIVAR <-> MM conversion from the
-> > > > non-secure world into the secure world. We're still using OP-TEE
-> > > > specific communication at the fourth layer. So we're only moving prob=
-lem
-> > > > around, I'd rather avoid growing the OP-TEE part in the secure world.
-> > > >
-> > >
-> > > If you look carefully, we are essentially defining an ABI towards the
-> > > secure world. The approach in this patch-set adds the MM interface as
-> > > a redundant ABI layer which makes it complex to maintain. Now think
-> > > about if every TEE implementation would propose such a complex ABI. It
-> > > looks like a maintenance nightmare to me.
-> > >
-> > > The concerns you are highlighting about OP-TEE size, I think those are
-> > > implementation details which can be simplified later but once you have
-> > > defined an ABI then you are stuck with its maintainability.
-> >
-> > You have a point, but keep in mind that it's StMM that matters here.
+..
 > > StMM uses the MM protocol. It was originially using raw SMCs as a
 > > conduit, but with the need for OP-TEE accessing RPMB that's not usable.
 > > So instead we use OP-TEE MSG as a conduit. Seen from that perspective
@@ -115,28 +28,14 @@ lem
 > > new.
 >
 > Aren't we already adding PTA_STMM?
-
-Yes, something is need to recieve those messages and forward the MM
-stuff to secure user space.
-
 >
 > Isn't the StMM specific to Arm as you already mentioned it was
 > designed to specifically use raw SMCs? So if in future AMD TEE wants
 > to implement EFI services, can we suggest they reuse the MM interface?
-
-I wouldn't suggest anything until I understood that problem better.
-
 >
 > I am not sure why we need to redirect EFI variables via MM interface
 > communication buffers rather than directly using the TEE shared memory
 > approach.
-
-I allways assumed that was done in order to keep the changes in StMM
-at a mininum compared to non-TEE configurations.
-
-Cheers,
-Jens
-
 >
 > Ard,
 >
@@ -144,42 +43,76 @@ Jens
 > be implemented, can you share your opinion here? It may be something I
 > am missing here.
 >
-> -Sumit
->
-> >
-> > Cheers,
-> > Jens
-> >
-> > >
-> > > -Sumit
-> > >
-> > > > Cheers,
-> > > > Jens
-> > > >
-> > > > >
-> > > > > -Sumit
-> > > > >
-> > > > > > Masahisa Kojima (2):
-> > > > > >   efi: expose efivar generic ops register function
-> > > > > >   tee: Add op-tee helper functions for variable access
-> > > > > >
-> > > > > >  drivers/firmware/efi/efi.c           |  12 +
-> > > > > >  drivers/tee/optee/Kconfig            |  10 +
-> > > > > >  drivers/tee/optee/Makefile           |   1 +
-> > > > > >  drivers/tee/optee/mm_communication.h | 249 +++++++++++
-> > > > > >  drivers/tee/optee/optee_private.h    |   5 +-
-> > > > > >  drivers/tee/optee/optee_stmm_efi.c   | 598 +++++++++++++++++++++=
-++++++
-> > > > > >  drivers/tee/tee_core.c               |  23 ++
-> > > > > >  include/linux/efi.h                  |   4 +
-> > > > > >  include/linux/tee_drv.h              |  23 ++
-> > > > > >  9 files changed, 924 insertions(+), 1 deletion(-)
-> > > > > >  create mode 100644 drivers/tee/optee/mm_communication.h
-> > > > > >  create mode 100644 drivers/tee/optee/optee_stmm_efi.c
-> > > > > >
-> > > > > > --
-> > > > > > 2.30.2
-> > > > > >
 
---===============3253475731967028294==--
+Hello Sumit,
+
+I'm not sure I understand what you are asking me here. Allow me to
+reiterate, apologies if I am stating the obvious:
+
+The EFI spec describes how the OS should expose the EFI runtime
+services, but this is difficult to implement when access to the
+underlying storage requires arbitration between accesses by the OS
+itself and accesses made by the firmware.
+
+On systems where this issue is absent, the EFI runtime service
+implementation for the variable services are very thin wrappers around
+calls into standalone MM, which are not standardized, but are also not
+ARM specific (standalone MM is being used on other architectures as
+well, and 'classic' SMM uses the same protocol but dispatches the call
+into the secure/SMM world in a different way)
+
+On systems where arbitration is needed, the standalone MM payload
+needs to call back up into the OS to request access to the flash
+storage. OP-TEE is a suitable vehicle for this, as it already does the
+same thing for other reasons, and is already set up to dispatch SMC
+calls that are taken to S-EL1.
+
+All of his is uncharted territory as far as the EFI spec is concerned,
+as it occurs inside the StMM pseudo-API call, which itself normally
+occurs inside the EFI runtime service call. Given that we cannot use
+the latter (as the firmware does not provide a working get/setvariable
+at OS runtime [0]), we need to provide some plumbing to call the StMM
+pseudo-API directly, and expose it as an alternative efivars
+implementation. (Note that this should mean that other implementations
+of the StMM pseudo-API that do not require this arbitration may
+potentially be accessed in the same way, although I don't see a reason
+to use it like that.)
+
+If I am understanding you correctly, your question is whether OP-TEE
+should expose the StMM pseudo-API in the usual way as well, and make
+the OS rely on the usual discovery mechanisms etc to bind to it?
+
+If that is indeed your question: what purpose would that serve,
+exactly? In principle, the OS piece that implements efivars on top of
+the StMM pseudo-API should not be specific to any TEE implementation
+or API, and I think the fact that OP-TEE is the provider in this case
+is an implementation detail.
+
+If you feel that OP-TEE should not expose this interface directly to
+begin with, and rely on some marshalling layer to expose the StMM
+pseudo-API on top of its ordinary exposed API, that is really an
+OP-TEE internal matter (which I think is what you discussed with Jens
+up in the thread?) Since StMM calls are defined in terms of SMC
+instructions + arguments, this would require more code inside OP-TEE
+to translate access to an API that it already exposes directly as
+well, so I'm not sure what the gain would be.
+
+The thing to remember is that, even though the wrappers are very thin,
+it is fundamentally the StMM API that is being exposed, not the EFI
+runtime services API, and so whether or not a use case may materialize
+that wants to expose a different API via efivars is out of scope here,
+even if they are roughly shaped like get/setvariable.
+
+
+
+--=20
+Ard.
+
+
+[0] It is permitted for implementations of, e.g., Get/SetTime or
+ResetSystem to use Get/SetVariable internally, and this is quite
+clearly broken if the EFI variable services cannot be used. However,
+firmware implementations would presumably avoid that situation.
+
+--===============8408169447343870993==--
 
