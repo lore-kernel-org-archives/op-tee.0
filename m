@@ -1,102 +1,97 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 4/4] mm: Remove get_kernel_pages()
-Date: Mon, 06 Feb 2023 11:47:32 +0530
+Subject: Re: [PATCH v2 0/4] Remove get_kernel_pages()
+Date: Mon, 06 Feb 2023 11:52:43 +0530
 Message-ID: 
- <CAFA6WYMSF+GPdhx6oTDPmdBgam+GvCKJ5pcb3GFTDXe7W0yMEA@mail.gmail.com>
-In-Reply-To: <20230203-get_kernel_pages-v2-4-f1dc4af273f1@intel.com>
+ <CAFA6WYM5tzs3T1tDgspA=R=VxfWrknm2YPHMCZihx405pF-ftA@mail.gmail.com>
+In-Reply-To: <20230203-get_kernel_pages-v2-0-f1dc4af273f1@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9163752508962128164=="
+Content-Type: multipart/mixed; boundary="===============8284764036570785910=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9163752508962128164==
+--===============8284764036570785910==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Sat, 4 Feb 2023 at 09:36, Ira Weiny <ira.weiny@intel.com> wrote:
 >
-> The only caller to get_kernel_pages() [shm_get_kernel_pages()] has been
-> updated to not need it.
+> Sumit,
 >
-> Remove get_kernel_pages().
->
-> Cc: Mel Gorman <mgorman@suse.de>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Acked-by: John Hubbard <jhubbard@nvidia.com>
-> Signed-off-by: Ira Weiny <ira.weiny@intel.com>
-> ---
->  include/linux/mm.h |  2 --
->  mm/swap.c          | 30 ------------------------------
->  2 files changed, 32 deletions(-)
->
+> I did not see a follow up on this series per your last email.[1]  I'd like =
+to
+> move forward with getting rid of kmap_to_page().  So Hopefully this can land
+> and you can build on this rather than the other way around?
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Apologies Ira for keeping you waiting. Actually I was fully involved
+with other high priority work with my upstream review backlog
+increasing. So I wasn't able to devote time to this work. Sure I will
+rebase my work on top of your changes.
 
 -Sumit
 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 8f857163ac89..2041e6d4fa27 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -2095,8 +2095,6 @@ int __account_locked_vm(struct mm_struct *mm, unsigne=
-d long pages, bool inc,
->                         struct task_struct *task, bool bypass_rlim);
 >
->  struct kvec;
-> -int get_kernel_pages(const struct kvec *iov, int nr_pages, int write,
-> -                       struct page **pages);
->  struct page *get_dump_page(unsigned long addr);
+> All,
 >
->  bool folio_mark_dirty(struct folio *folio);
-> diff --git a/mm/swap.c b/mm/swap.c
-> index 70e2063ef43a..4c03ecab698e 100644
-> --- a/mm/swap.c
-> +++ b/mm/swap.c
-> @@ -158,36 +158,6 @@ void put_pages_list(struct list_head *pages)
->  }
->  EXPORT_SYMBOL(put_pages_list);
+> Al Viro found[2] that kmap_to_page() is broken.  But not only is it broken,=
+ it
+> presents confusion over how highmem should be used because kmap() and frien=
+ds
+> should not be used for 'long term' mappings.
 >
-> -/*
-> - * get_kernel_pages() - pin kernel pages in memory
-> - * @kiov:      An array of struct kvec structures
-> - * @nr_segs:   number of segments to pin
-> - * @write:     pinning for read/write, currently ignored
-> - * @pages:     array that receives pointers to the pages pinned.
-> - *             Should be at least nr_segs long.
-> - *
-> - * Returns number of pages pinned. This may be fewer than the number reque=
-sted.
-> - * If nr_segs is 0 or negative, returns 0.  If no pages were pinned, retur=
-ns 0.
-> - * Each page returned must be released with a put_page() call when it is
-> - * finished with.
-> - */
-> -int get_kernel_pages(const struct kvec *kiov, int nr_segs, int write,
-> -               struct page **pages)
-> -{
-> -       int seg;
-> -
-> -       for (seg =3D 0; seg < nr_segs; seg++) {
-> -               if (WARN_ON(kiov[seg].iov_len !=3D PAGE_SIZE))
-> -                       return seg;
-> -
-> -               pages[seg] =3D kmap_to_page(kiov[seg].iov_base);
-> -               get_page(pages[seg]);
-> -       }
-> -
-> -       return seg;
-> -}
-> -EXPORT_SYMBOL_GPL(get_kernel_pages);
-> -
->  typedef void (*move_fn_t)(struct lruvec *lruvec, struct folio *folio);
+> get_kernel_pages() is a caller of kmap_to_page().  It only has one caller
+> [shm_get_kernel_pages()] which does not need the functionality.
 >
->  static void lru_add_fn(struct lruvec *lruvec, struct folio *folio)
+> Alter shm_get_kernel_pages() to no longer call get_kernel_pages() and remove
+> get_kernel_pages().  Along the way it was noted that shm_get_kernel_pages()
+> does not have any need to support vmalloc'ed addresses either.  Remove that
+> functionality to clean up the logic.
 >
+> This series also fixes is_kmap_addr() and uses it to ensure no kmap address=
+es
+> slip in later.
+>
+> [1] https://lore.kernel.org/all/CAFA6WYMqEVDVW-ifoh-V9ni1zntYdes8adQKf2XXAU=
+pqdaW53w(a)mail.gmail.com/
+> [2] https://lore.kernel.org/lkml/YzSSl1ItVlARDvG3(a)ZenIV
+>
+> To: Sumit Garg <sumit.garg@linaro.org>
+> To: Andrew Morton <akpm@linux-foundation.org>
+> Cc: "Al Viro" <viro@zeniv.linux.org.uk>
+> Cc: "Christoph Hellwig" <hch@lst.de>
+> Cc: linux-kernel(a)vger.kernel.org
+> Cc: op-tee(a)lists.trustedfirmware.org
+> Cc: linux-mm(a)kvack.org
+> Cc: Jens Wiklander <jens.wiklander@linaro.org>
+> Cc: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+> Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+>
+> ---
+> Changes in v2:
+> - Al Viro: Avoid allocating the kiov.
+> - Sumit: Update cover letter to clarify the motivation behind removing
+>   get_kernel_pages()
+> - Link to v1: https://lore.kernel.org/r/20221002002326.946620-1-ira.weiny(a=
+)intel.com
+>
+> ---
+> Ira Weiny (4):
+>       highmem: Enhance is_kmap_addr() to check kmap_local_page() mappings
+>       tee: Remove vmalloc page support
+>       tee: Remove call to get_kernel_pages()
+>       mm: Remove get_kernel_pages()
+>
+>  drivers/tee/tee_shm.c            | 37 ++++++++++---------------------------
+>  include/linux/highmem-internal.h |  5 ++++-
+>  include/linux/mm.h               |  2 --
+>  mm/swap.c                        | 30 ------------------------------
+>  4 files changed, 14 insertions(+), 60 deletions(-)
+> ---
+> base-commit: 0136d86b78522bbd5755f8194c97a987f0586ba5
+> change-id: 20230203-get_kernel_pages-199342cfba79
+>
+> Best regards,
 > --
-> 2.39.1
+> Ira Weiny <ira.weiny@intel.com>
 
---===============9163752508962128164==--
+--===============8284764036570785910==--
 
