@@ -1,62 +1,63 @@
-From: Jeffrey Kardatzke <jkardatzke@google.com>
+From: Mario Limonciello <mario.limonciello@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: State of logging to REE
-Date: Tue, 07 Feb 2023 10:23:45 -0800
-Message-ID: 
- <CA+ddPcObCpg11TexWvGp9sHTfHHDOXdXmUFmuS2kprM6Yp-qKg@mail.gmail.com>
-In-Reply-To: <
- <CAA-cTWaB6wNv3_bJtXiz_k4jCkqbPziKpRZWSbATr_NZuNPVMQ@mail.gmail.com>>
+Subject: [PATCH 0/6] Export platform features from ccp driver
+Date: Thu, 09 Feb 2023 16:38:02 -0600
+Message-ID: <20230209223811.4993-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7124897612731822493=="
+Content-Type: multipart/mixed; boundary="===============3710489422023726208=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7124897612731822493==
+--===============3710489422023726208==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-OK thanks. The existing syslog plugin also doesn't seem ideal for this
-situation as you'd need to specifically invoke that (and I recall reading
-other issues about it not working from all contexts).
+The i2c-designware-amdpsp driver communicates with a platform
+features mailbox provided by the PSP.  The address used for
+communication is discovered via a non-architecturally
+guaranteed mechanism.
 
-I'll continue with my original plan to add my own logging functionality for
-our platform (logging to the coreboot console since we already have access
-to that data in the REE). Thanks for the feedback.
+To better scale, export a feature for communication with platform
+features directly from the ccp driver.
 
-On Tue, Feb 7, 2023 at 8:33 AM Jérôme Forissier <jerome@forissier.org>
-wrote:
+Mario Limonciello (6):
+  crypto: ccp: Drop TEE support for IRQ handler
+  crypto: ccp: Add a header for multiple drivers to use `__psp_pa`
+  crypto: ccp: Move some PSP mailbox bit definitions into common header
+  crypto: ccp: Add support for an interface for platform features
+  crypto: ccp: Enable platform access interface on client PSP parts
+  i2c: designware: Use PCI PSP driver for communication
 
-> Hi Jeffrey,
->
-> On Mon, Feb 6, 2023 at 9:46 PM Jeffrey Kardatzke via OP-TEE <
-> op-tee(a)lists.trustedfirmware.org> wrote:
->
->> What's the current state of being able to log to the REE using components
->> that already exist in OP-TEE today?  I've seen various issues relating to
->> it in GitHub: https://github.com/OP-TEE/optee_os/issues/4230 and
->> https://github.com/OP-TEE/optee_os/pull/810, but both ended up being
->> closed
->> before I can see anything relating to logging to integrated. Did something
->> like this end up getting implemented yet?
->>
->
-> Unfortunately, no. The tee-supplicant plugin mechanism was introduced with
-> that
-> use case in mind (see https://github.com/OP-TEE/optee_client/issues/219)
-> but no
-> logging-specific code was further upstreamed.
->
-> Thanks,
-> --
-> Jerome
->
-> Cheers,
->>
->> --
->> Jeffrey Kardatzke
->> jkardatzke(a)google.com
->> Google, Inc.
->>
->
+ arch/x86/kvm/svm/sev.c                      |   1 +
+ drivers/crypto/ccp/Makefile                 |   3 +-
+ drivers/crypto/ccp/platform-access.c        | 166 ++++++++++++++++++++
+ drivers/crypto/ccp/platform-access.h        |  34 ++++
+ drivers/crypto/ccp/psp-dev.c                |  32 ++--
+ drivers/crypto/ccp/psp-dev.h                |  11 +-
+ drivers/crypto/ccp/sev-dev.c                |  16 +-
+ drivers/crypto/ccp/sev-dev.h                |   2 +-
+ drivers/crypto/ccp/sp-dev.h                 |   7 +
+ drivers/crypto/ccp/sp-pci.c                 |   7 +
+ drivers/crypto/ccp/tee-dev.c                |  17 +-
+ drivers/i2c/busses/Kconfig                  |   2 +-
+ drivers/i2c/busses/i2c-designware-amdpsp.c  | 149 +-----------------
+ drivers/i2c/busses/i2c-designware-core.h    |   1 -
+ drivers/i2c/busses/i2c-designware-platdrv.c |   1 -
+ drivers/tee/amdtee/call.c                   |   2 +-
+ drivers/tee/amdtee/shm_pool.c               |   2 +-
+ include/linux/psp-platform-access.h         |  50 ++++++
+ include/linux/psp-sev.h                     |   8 -
+ include/linux/psp.h                         |  26 +++
+ 20 files changed, 340 insertions(+), 197 deletions(-)
+ create mode 100644 drivers/crypto/ccp/platform-access.c
+ create mode 100644 drivers/crypto/ccp/platform-access.h
+ create mode 100644 include/linux/psp-platform-access.h
+ create mode 100644 include/linux/psp.h
 
---===============7124897612731822493==--
+
+base-commit: c7410b425de40e9b163eef781e1bdacf1bf2962e
+-- 
+2.34.1
+
+
+--===============3710489422023726208==--
 
