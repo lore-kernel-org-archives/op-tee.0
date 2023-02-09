@@ -1,63 +1,157 @@
 From: Mario Limonciello <mario.limonciello@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 0/6] Export platform features from ccp driver
-Date: Thu, 09 Feb 2023 16:38:02 -0600
-Message-ID: <20230209223811.4993-1-mario.limonciello@amd.com>
+Subject: 
+ [PATCH 2/6] crypto: ccp: Add a header for multiple drivers to use `__psp_pa`
+Date: Thu, 09 Feb 2023 16:38:04 -0600
+Message-ID: <20230209223811.4993-3-mario.limonciello@amd.com>
+In-Reply-To: <20230209223811.4993-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3710489422023726208=="
+Content-Type: multipart/mixed; boundary="===============7434416157588140357=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3710489422023726208==
+--===============7434416157588140357==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-The i2c-designware-amdpsp driver communicates with a platform
-features mailbox provided by the PSP.  The address used for
-communication is discovered via a non-architecturally
-guaranteed mechanism.
+The TEE subdriver for CCP, the amdtee driver and the i2c-designware-amdpsp
+drivers all include `psp-sev.h` even though they don't use SEV
+functionality.
 
-To better scale, export a feature for communication with platform
-features directly from the ccp driver.
+Move the definition of `__psp_pa` into a common header to be included
+by all of these drivers.
 
-Mario Limonciello (6):
-  crypto: ccp: Drop TEE support for IRQ handler
-  crypto: ccp: Add a header for multiple drivers to use `__psp_pa`
-  crypto: ccp: Move some PSP mailbox bit definitions into common header
-  crypto: ccp: Add support for an interface for platform features
-  crypto: ccp: Enable platform access interface on client PSP parts
-  i2c: designware: Use PCI PSP driver for communication
-
- arch/x86/kvm/svm/sev.c                      |   1 +
- drivers/crypto/ccp/Makefile                 |   3 +-
- drivers/crypto/ccp/platform-access.c        | 166 ++++++++++++++++++++
- drivers/crypto/ccp/platform-access.h        |  34 ++++
- drivers/crypto/ccp/psp-dev.c                |  32 ++--
- drivers/crypto/ccp/psp-dev.h                |  11 +-
- drivers/crypto/ccp/sev-dev.c                |  16 +-
- drivers/crypto/ccp/sev-dev.h                |   2 +-
- drivers/crypto/ccp/sp-dev.h                 |   7 +
- drivers/crypto/ccp/sp-pci.c                 |   7 +
- drivers/crypto/ccp/tee-dev.c                |  17 +-
- drivers/i2c/busses/Kconfig                  |   2 +-
- drivers/i2c/busses/i2c-designware-amdpsp.c  | 149 +-----------------
- drivers/i2c/busses/i2c-designware-core.h    |   1 -
- drivers/i2c/busses/i2c-designware-platdrv.c |   1 -
- drivers/tee/amdtee/call.c                   |   2 +-
- drivers/tee/amdtee/shm_pool.c               |   2 +-
- include/linux/psp-platform-access.h         |  50 ++++++
- include/linux/psp-sev.h                     |   8 -
- include/linux/psp.h                         |  26 +++
- 20 files changed, 340 insertions(+), 197 deletions(-)
- create mode 100644 drivers/crypto/ccp/platform-access.c
- create mode 100644 drivers/crypto/ccp/platform-access.h
- create mode 100644 include/linux/psp-platform-access.h
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ arch/x86/kvm/svm/sev.c                     |  1 +
+ drivers/crypto/ccp/sev-dev.c               |  1 +
+ drivers/crypto/ccp/tee-dev.c               |  2 +-
+ drivers/i2c/busses/i2c-designware-amdpsp.c |  2 +-
+ drivers/tee/amdtee/call.c                  |  2 +-
+ drivers/tee/amdtee/shm_pool.c              |  2 +-
+ include/linux/psp-sev.h                    |  8 --------
+ include/linux/psp.h                        | 14 ++++++++++++++
+ 8 files changed, 20 insertions(+), 12 deletions(-)
  create mode 100644 include/linux/psp.h
 
-
-base-commit: c7410b425de40e9b163eef781e1bdacf1bf2962e
--- 
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 86d6897f48068..ee8e9053f4468 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -11,6 +11,7 @@
+ #include <linux/kvm_host.h>
+ #include <linux/kernel.h>
+ #include <linux/highmem.h>
++#include <linux/psp.h>
+ #include <linux/psp-sev.h>
+ #include <linux/pagemap.h>
+ #include <linux/swap.h>
+diff --git a/drivers/crypto/ccp/sev-dev.c b/drivers/crypto/ccp/sev-dev.c
+index e2f25926eb514..28945ca7c8563 100644
+--- a/drivers/crypto/ccp/sev-dev.c
++++ b/drivers/crypto/ccp/sev-dev.c
+@@ -24,6 +24,7 @@
+ #include <linux/cpufeature.h>
+ #include <linux/fs.h>
+ #include <linux/fs_struct.h>
++#include <linux/psp.h>
+=20
+ #include <asm/smp.h>
+ #include <asm/cacheflush.h>
+diff --git a/drivers/crypto/ccp/tee-dev.c b/drivers/crypto/ccp/tee-dev.c
+index 5c9d47f3be375..f24fc953718a0 100644
+--- a/drivers/crypto/ccp/tee-dev.c
++++ b/drivers/crypto/ccp/tee-dev.c
+@@ -13,7 +13,7 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/gfp.h>
+-#include <linux/psp-sev.h>
++#include <linux/psp.h>
+ #include <linux/psp-tee.h>
+=20
+ #include "psp-dev.h"
+diff --git a/drivers/i2c/busses/i2c-designware-amdpsp.c b/drivers/i2c/busses/=
+i2c-designware-amdpsp.c
+index 8f36167bce624..80f28a1bbbef6 100644
+--- a/drivers/i2c/busses/i2c-designware-amdpsp.c
++++ b/drivers/i2c/busses/i2c-designware-amdpsp.c
+@@ -4,7 +4,7 @@
+ #include <linux/bits.h>
+ #include <linux/i2c.h>
+ #include <linux/io-64-nonatomic-lo-hi.h>
+-#include <linux/psp-sev.h>
++#include <linux/psp.h>
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+=20
+diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
+index cec6e70f0ac92..e8cd9aaa34675 100644
+--- a/drivers/tee/amdtee/call.c
++++ b/drivers/tee/amdtee/call.c
+@@ -8,7 +8,7 @@
+ #include <linux/tee_drv.h>
+ #include <linux/psp-tee.h>
+ #include <linux/slab.h>
+-#include <linux/psp-sev.h>
++#include <linux/psp.h>
+ #include "amdtee_if.h"
+ #include "amdtee_private.h"
+=20
+diff --git a/drivers/tee/amdtee/shm_pool.c b/drivers/tee/amdtee/shm_pool.c
+index f87f96a291c99..f0303126f199d 100644
+--- a/drivers/tee/amdtee/shm_pool.c
++++ b/drivers/tee/amdtee/shm_pool.c
+@@ -5,7 +5,7 @@
+=20
+ #include <linux/slab.h>
+ #include <linux/tee_drv.h>
+-#include <linux/psp-sev.h>
++#include <linux/psp.h>
+ #include "amdtee_private.h"
+=20
+ static int pool_op_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
+diff --git a/include/linux/psp-sev.h b/include/linux/psp-sev.h
+index 1595088c428b4..7fd17e82bab43 100644
+--- a/include/linux/psp-sev.h
++++ b/include/linux/psp-sev.h
+@@ -14,14 +14,6 @@
+=20
+ #include <uapi/linux/psp-sev.h>
+=20
+-#ifdef CONFIG_X86
+-#include <linux/mem_encrypt.h>
+-
+-#define __psp_pa(x)	__sme_pa(x)
+-#else
+-#define __psp_pa(x)	__pa(x)
+-#endif
+-
+ #define SEV_FW_BLOB_MAX_SIZE	0x4000	/* 16KB */
+=20
+ /**
+diff --git a/include/linux/psp.h b/include/linux/psp.h
+new file mode 100644
+index 0000000000000..202162487ec3b
+--- /dev/null
++++ b/include/linux/psp.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#ifndef __PSP_H
++#define __PSP_H
++
++#ifdef CONFIG_X86
++#include <linux/mem_encrypt.h>
++
++#define __psp_pa(x)	__sme_pa(x)
++#else
++#define __psp_pa(x)	__pa(x)
++#endif
++
++#endif /* __PSP_H */
+--=20
 2.34.1
 
 
---===============3710489422023726208==--
+--===============7434416157588140357==--
 
