@@ -1,26 +1,30 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 4/4] mm: Remove get_kernel_pages()
-Date: Fri, 10 Feb 2023 21:59:30 +0000
-Message-ID: <20230210135926.f0c86a21d5b4862d4d897b25@linux-foundation.org>
-In-Reply-To: <20230203-get_kernel_pages-v2-4-f1dc4af273f1@intel.com>
+Subject: Re: [PATCH v2 0/4] Remove get_kernel_pages()
+Date: Mon, 13 Feb 2023 19:03:13 +0000
+Message-ID: 
+ <CAHk-=wh3+moi98rbiMnwnxPNZcYBaVY57TM2EP6NgXgNwFeP7Q@mail.gmail.com>
+In-Reply-To: <
+ <CAHUa44GAM=meibiSDjjWb0wKmHzud6JddE3W=zG3XCFfgP+Sag@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4891521023469222583=="
+Content-Type: multipart/mixed; boundary="===============5401538258799375118=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4891521023469222583==
+--===============5401538258799375118==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 03 Feb 2023 20:06:35 -0800 Ira Weiny <ira.weiny@intel.com> wrote:
+On Mon, Feb 13, 2023 at 7:02 AM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> Sure, I'll take it. The timing is a bit unfortunate, it's likely too
+> close to the merge window to be included there. However, I'll pick it
+> up and add it to linux-next so it's ready for the 6.4 merge window.
 
-> The only caller to get_kernel_pages() [shm_get_kernel_pages()] has been
-> updated to not need it.
-> 
-> Remove get_kernel_pages().
+With this boeing almost all code removal, I'm perfectly fine taking it
+in the upcoming merge window.
 
-Acked-by: Andrew Morton <akpm@linux-foudation.org>
+           Linus
 
-
---===============4891521023469222583==--
+--===============5401538258799375118==--
 
