@@ -1,212 +1,268 @@
-From: Olivier Deprez <Olivier.Deprez@arm.com>
+From: Cyrille Fleury <cyrille.fleury@nxp.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Dynamic Shared Memory
-Date: Mon, 13 Feb 2023 12:07:04 +0000
-Message-ID: <VE1PR08MB4976DA117F7DEED9876B320A9BDD9@VE1PR08MB4976.eurprd08.prod.outlook.com>
-In-Reply-To: <Y+obQMuOoo67vU4U@jade>
+Subject: RE: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register tee_shm
+ from a dmabuf file descriptor
+Date: Mon, 13 Feb 2023 12:41:14 +0000
+Message-ID: <PA4PR04MB752097BD63A2151DC5658D4688DD9@PA4PR04MB7520.eurprd04.prod.outlook.com>
+In-Reply-To: <Y+oYundNEN9TDiQ8@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8932302647867339024=="
+Content-Type: multipart/mixed; boundary="===============7872925610079389078=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8932302647867339024==
+--===============7872925610079389078==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-Yes, noticed the same as Jens with the qemu setup where this optee example te=
-st passes.
+>>
+>>
+>> -----Original Message-----
+>> From: Jerome Forissier <jerome.forissier@linaro.org>
+>> Sent: Friday, February 3, 2023 1:32 PM
+>> To: Etienne Carriere <etienne.carriere@linaro.org>; Olivier Masse=20
+>> <olivier.masse@nxp.com>
+>> Cc: sumit.garg(a)linaro.org; linux-media(a)vger.kernel.org;=20
+>> fredgc(a)google.com; linaro-mm-sig(a)lists.linaro.org; afd(a)ti.com;=20
+>> op-tee(a)lists.trustedfirmware.org; jens.wiklander(a)linaro.org;=20
+>> joakim.bech(a)linaro.org; sumit.semwal(a)linaro.org; Cyrille Fleury=20
+>> <cyrille.fleury@nxp.com>; Peter Griffin <peter.griffin@linaro.org>;=20
+>> linux-kernel(a)vger.kernel.org; dri-devel(a)lists.freedesktop.org; Cl=C3=
+=A9ment=20
+>> Faure <clement.faure@nxp.com>; christian.koenig(a)amd.com
+>> Subject: Re: [EXT] Re: [PATCH v2 1/1] tee: new ioctl to a register=20
+>> tee_shm from a dmabuf file descriptor
+>>
+>> On 2/3/23 15:12, Cyrille Fleury wrote:
+>> Hi all,
+>>
+>> >On 2/3/23 12:37, Etienne Carriere wrote:
+>> >> Hell all,
+>> >>
+>> >> +jerome f.
+>> >>
+>> >> On Fri, 3 Feb 2023 at 12:01, Olivier Masse <olivier.masse@nxp.com> wr=
+ote:
+>> >>>
+>> >>> On jeu., 2023-02-02 at 10:58 +0100, Etienne Carriere wrote:
+>> >>>> Caution: EXT Email
+>> >>>>
+>> >>>> On Thu, 2 Feb 2023 at 09:35, Sumit Garg <sumit.garg@linaro.org>
+>> >>>> wrote:
+>> >>>>> Hi Cyrille,
+>> >>>>>
+>> >>>>> Please don't top post as it makes it harder to follow-up.
+>> >>>>>
+>> >>>>> On Thu, 2 Feb 2023 at 13:26, Cyrille Fleury=20
+>> >>>>> <cyrille.fleury@nxp.com
+>> >>>>>> wrote:
+>> >>>>>> Hi Sumit, all
+>> >>>>>>
+>> >>>>>> Upstream OP-TEE should support registering a dmabuf since a=20
+>> >>>>>> while, given how widely dmabuf is used in Linux for passing=20
+>> >>>>>> buffers around between devices.
+>> >>>>>>
+>> >>>>>> Purpose of the new register_tee_shm ioctl is to allow OPTEE to=20
+>> >>>>>> use memory allocated from the exiting linux dma buffer. We=20
+>> >>>>>> don't need to have secure dma-heap up streamed.
+>> >>>>>>
+>> >>>>>> You mentioned secure dma-buffer, but secure dma-buffer is a=20
+>> >>>>>> dma- buffer, so the work to be done for secure or "regular" dma=20
+>> >>>>>> buffers by the register_tee_shm ioctl is 100% the same.
+>> >>>>>>
+>> >>>>>> The scope of this ioctl is limited to what existing upstream=20
+>> >>>>>> dma- buffers are:
+>> >>>>>>         -> sharing buffers for hardware (DMA) access across=20
+>> >>>>>> multiple device drivers and subsystems, and for synchronizing=20
+>> >>>>>> asynchronous hardware access.
+>> >>>>>>        -> It means continuous memory only.
+>> >>>>>>
+>> >>>>>> So if we reduce the scope of register tee_shm to exiting dma-=20
+>> >>>>>> buffer area, the current patch does the job.
+>> >>>>>
+>> >>>>> Do you have a corresponding real world use-case supported by=20
+>> >>>>> upstream OP-TEE? AFAIK, the Secure Data Path (SDP) use-case is=20
+>> >>>>> the one supported in OP-TEE upstream but without secure dmabuf=20
+>> >>>>> heap [1] available, the new ioctl can't be exercised.
+>> >>>>>
+>> >>>>> [1]
+>> >>>>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%
+>> >>>>> 2Fg%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C057d956d144a41e
+>> >>>>> dd81808db0db1c7f9%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C6
+>> >>>>> 38118829451030288%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLC
+>> >>>>> JQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sda
+>> >>>>> ta=3DtBh3qNiinzTn%2BgqE8IvGw%2BYvRvo8ztDt4W4O0noEkk8%3D&reserved=3D0
+>> >>>>> ithub.com%2FOP-TEE%2Foptee_test%2Fblob%2Fmaster%2Fhost%2Fxtest%2
+>> >>>>> Fsd
+>> >>>>> p_basic.h%23L15&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962
+>> >>>>> fb5=20
+>> >>>>> 8f6401c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7
+>> >>>>> C0%=20
+>> >>>>> 7C638110243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDA
+>> >>>>> iLC=20
+>> >>>>> JQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sda
+>> >>>>> ta=3D
+>> >>>>> UNB88rvmhQ5qRoIGN%2FpS4cQTES5joM8AjoyAAYzPKl0%3D&reserved=3D0
+>> >>>>
+>> >>>> OP-TEE has some SDP test taht can exercice SDP: 'xtest=20
+>> >>>> regression_1014'.
+>> >>>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2
+>> >>>> Fgi%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C057d956d144a41ed
+>> >>>> d81808db0db1c7f9%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638
+>> >>>> 118829451030288%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQI
+>> >>>> joiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D%
+>> >>>> 2FDGLzwTOc5%2F30%2BLy4bBVckK0fRJRsvuGcUvp6bfW9Tg%3D&reserved=3D0
+>> >>>> thub.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fr
+>> >>>> egr
+>> >>>> ession_1000.c%23L1256&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9
+>> >>>> ff9=20
+>> >>>> 62fb58f6401c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7
+>> >>>> C0%=20
+>> >>>> 7C0%7C638110243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAw
+>> >>>> MDA=20
+>> >>>> iLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&s
+>> >>>> dat
+>> >>>> a=3De%2B40rwWvtvVFG8aWZNeu%2FgjMXXvZ3pRhJfHLkdurovs%3D&reserved=3D0
+>> >>>>
+>> >>>> The test relies on old staged ION + local secure dmabuf heaps no=20
+>> >>>> more maintained, so this test is currently not functional.
+>> >>>> If we upgrade the test to mainline dmabuf alloc means, and apply=20
+>> >>>> the change discussed here, we should be able to regularly test=20
+>> >>>> SDP in OP-TEE project CI.
+>> >>>> The part to update is the userland allocation of the dmabuf:
+>> >>>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2
+>> >>>> Fgi%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C057d956d144a41ed
+>> >>>> d81808db0db1c7f9%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638
+>> >>>> 118829451030288%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQI
+>> >>>> joiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D%
+>> >>>> 2FDGLzwTOc5%2F30%2BLy4bBVckK0fRJRsvuGcUvp6bfW9Tg%3D&reserved=3D0
+>> >>>> thub.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fs
+>> >>>> dp_
+>> >>>> basic.c%23L91&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb5
+>> >>>> 8f6
+>> >>>> 401c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7
+>> >>>> C63=20
+>> >>>> 8110243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQ
+>> >>>> Ijo=20
+>> >>>> iV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D5rP
+>> >>>> V1j
+>> >>>> qzqjVh2N5pdUW41YwF6EkgIDwfhyfYkgmtdZI%3D&reserved=3D0
+>> >>>>
+>> >>>>
+>> >>>
+>> >>> the test was already updated to support secure dma heap with=20
+>> >>> Kernel version 5.11 and higher. the userland allocation could be find =
+here:
+>> >>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2F
+>> >>> git%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C057d956d144a41edd
+>> >>> 81808db0db1c7f9%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C63811
+>> >>> 8829451030288%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoi
+>> >>> V2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3DdUNus
+>> >>> R9w0TlzTRiqUUhU8yo%2BUF7QPhsx5t8GQuAA1SU%3D&reserved=3D0
+>> >>> hub.com%2FOP-TEE%2Foptee_test%2Fblob%2F3.20.0%2Fhost%2Fxtest%2Fsdp
+>> >>> _ba
+>> >>> sic.c%23L153&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb58f
+>> >>> 640
+>> >>> 1c597808db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C63
+>> >>> 811=20
+>> >>> 0243232457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoi
+>> >>> V2l=20
+>> >>> uMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D01H96n47
+>> >>> K6R
+>> >>> mBKZQhRdcqX3nE5VBHOXNfGuMmmkVSvc%3D&reserved=3D0
+>> >>>
+>> >>
+>> >> Oh, right. So fine, optee_test is ready for the new flavor of=20
+>> >> secure buffer fd's.
+>> >>
+>> >>
+>> >>> This upgrade need a Linux dma-buf patch:
+>> >>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2F
+>> >>> lor%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C057d956d144a41edd
+>> >>> 81808db0db1c7f9%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C63811
+>> >>> 8829451030288%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoi
+>> >>> V2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3D4iomH
+>> >>> K4kPt6A4OmyioiIFD360bGh39o0d2%2BJGyI3WYM%3D&reserved=3D0
+>> >>> e.kernel.org%2Fall%2F20220805154139.2qkqxwklufjpsfdx%4000037740335
+>> >>> 3%2
+>> >>> FT%2F&data=3D05%7C01%7Ccyrille.fleury%40nxp.com%7C9ff962fb58f6401c59
+>> >>> 780
+>> >>> 8db05e2a64b%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C638110243
+>> >>> 232=20
+>> >>> 457377%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzI
+>> >>> iLC=20
+>> >>> JBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=3DyCS%2BDcuGp%2Ba
+>> >>> fAL
+>> >>> tpw74O1bI0K%2Fwnt%2FOw5ob1ngfDA0E%3D&reserved=3D0
+>> >>
+>> >> @Jens, @Jerome, do we want to pick the 2 necessary Linux patches in=20
+>> >> our Linux kernel fork (github.com/linaro-swg/linux.git) to exercise=20
+>> >> SDP in our CI and be ready if dma-buf secure heaps (ref right=20
+>> >> above) is accepted and merged in mainline kernel?.
+>> >
+>> >How would that help? I mean, when the kernel patches are merged and=20
+>> >if things break we can make the necessary adjustments in the=20
+>> >optee_test app or whatever, but in the meantime I don't see much=20
+>> >point. I suppose the people who are actively developing the patches=20
+>> >do make sure it works with OP-TEE ;-)
+>> >
+>> >Regards,
+>> >--
+>> >Jerome
+>>
+>> As mentioned in the cover letter, this IOCTL got tested by Jens Wiklander =
+<jens.wiklander@linaro.org>, using Linaro reference board from Hikey 6620:
+>> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flist
+>> s.trustedfirmware.org%2Farchives%2Flist%2Fop-tee%40lists.trustedfirmwa
+>> re.org%2Fthread%2FI3TZN4TBDOUVE567VMMN2TAXGWZNY7S3%2F&data=3D05%7C01%7Cc
+>> yrille.fleury%40nxp.com%7C057d956d144a41edd81808db0db1c7f9%7C686ea1d3b
+>> c2b4c6fa92cd99c5c301635%7C0%7C0%7C638118829451030288%7CUnknown%7CTWFpb
+>> GZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0
+>> %3D%7C3000%7C%7C%7C&sdata=3DEHEVIdfHacDVq%2BCdSYg0Tkm1ekQLEI6Vra4elN0%2F
+>> %2F6I%3D&reserved=3D0
+>> It also works on i.MX8M EVK boards.
+>>
+>> My understanding today is we are good to upstream this patch, knowing:
+>>      - Upstream OPTEE driver should support registering a dmabuf since a w=
+hile, given how widely dmabuf is used in Linux for passing buffers around bet=
+ween devices.
+>>      - review is OK
+>>      - test environment is already available in optee-test
+>>      - it has been tested on 2 different platforms
+>>      - the scope of the new ioctl is limited to existing feature in=20
+>> dma-buffer
+>>
+>> What is missing from this list preventing to upstream ?
+>
+>Please address the comments from Etienne and post a new version of the patch=
+ based on the latest kernel. Please try to improve the language in the commit=
+ message.
+>
+>Is it possible to update the tests so this can be tested on QEMU in our CI l=
+oop? That should help to get the review restarted.
+>
+>Thanks,
+>Jens
+>
 
-Can you share the commit hashes used for Hafnium/OP-TEE?
-Is Hafnium running from high addresses (e.g. >34G like you mentioned before)?
-Is it possible to share the Hafnium boot log (or an extract of it)?
-What is the start address and size of the OP-TEE secure partition declared in=
- the SPMC manifest?
-Is this page @ 0x8a8474000 reported in the S2 PF, located in a region marked =
-non secure in the TZC400?
+Hi Jens
+ Could you point the Etienne comment(s) not addressed by the pull request to =
+add register tee_shm ioctl to linux optee-driver?=20
+  Last comments from Etienne:
+        -> Oh, right. So fine, optee_test is ready for the new flavor of secu=
+re buffer fd's.
+        -> @Jens, @Jerome, do we want to pick the 2 necessary Linux patches i=
+n our Linux kernel fork (github.com/linaro-swg/linux.git) to exercise SDP in =
+our CI and be ready if dma-buf secure heaps (ref right above) is accepted and=
+ merged in mainline kernel?.
 
-Aso I'm surprised by the log
-E/LD: region 6: va 0x40020000 pa 0x8a1262340 size 0x002000 flags rw-- (param)
-E/LD: region 7: va 0x40022000 pa 0x8a84749f0 size 0x001000 flags rw-- (param)
-All other regions report 4K aligned PA but those ones (that may be ok, but I'=
-m not versed enough into OP-TEE code base to say).
-
-Regards,
-Olivier.
+Regards.
+Cyrille.
 
 
+>> Who do we still need to convince ?
+>>
+>> Regards.
 
-________________________________
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Sent: 13 February 2023 12:13
-To: =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=9C) <meijianqiang.mjq@aliba=
-ba-inc.com>
-Cc: hafnium <hafnium@lists.trustedfirmware.org>; Olivier Deprez <Olivier.De=
-prez@arm.com>; op-tee <op-tee@lists.trustedfirmware.org>; =E8=B5=B5=E5=93=
-=B2(=E4=B8=BA=E5=93=B2) <weizhe.zz@alibaba-inc.com>
-Subject: Re: Dynamic Shared Memory
-
-Hi Yuye,
-
-On Mon, Feb 13, 2023 at 02:24:10PM +0800, =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=
-=B9=E5=A4=9C) wrote:
-> Hi, expert
-> Regarding the use of optee dynamic shared memory,
-> we have encountered some problems that cannot be solved recently.
-> Debug log is as follows:
-> REE OS kenrel->TEE SPMC (FFA_MEM_SHARE)
-> WARNING: SPM(5): 0x84000073 0x50 0x50 0x0 0x0 0x0 0x0 0x0
-> VERBOSE: hafnium ffa_handler func:0x84000073
-> VERBOSE: hafnium allow for one memory region to be shared to the TEE.
-> VERBOSE: ffa_memory_send
-> VERBOSE: share_states->memory_region->sender:0x0
-> VERBOSE: share_states->memory_region->attributes:0x2f
-> VERBOSE: share_states->share_func:0x84000073
-> VERBOSE: share_states->fragment_count:0x1
-> VERBOSE: share_states->sending_complete:0x1
-> VERBOSE: hanfium fragment_count:1
-> VERBOSE: hanfium fragment_constituent_counts[i]:1
-> VERBOSE: hanfium max pa_range bits:0x30
-> VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
-> VERBOSE: hanfium fragment_count:1
-> VERBOSE: hanfium fragment_constituent_counts[i]:1
-> VERBOSE: hanfium max pa_range bits:0x30
-> VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
-> VERBOSE: Marked sending complete.
-> Current share states:
-> SHARE 0x0 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x1 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x2 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> WARNING: SPM(5): 0x84000061 0x0 0x1 0x0 0x0 0x0 0x0 0x0
-> ......
-> REE OS kenrel->TEE SP (OPTEE_FFA_YEILDING_CALL_WITH_ARG(cookie))
-> WARNING: SPM(5): 0x8400006f 0x8001 0x0 0x80000000 0x0 0x0 0x0 0x0
-> VERBOSE: hafnium ffa_handler func:0x8400006f
-> D/TC:005 0 mobj_ffa_get_by_cookie:382 cookie 0 resurrecting
-> E/TC:005 0 mobj_ffa_get_by_cookie:385 Populating mobj from rx buffer, cooki=
-e 0x1
-> TEE SPMC->TEE SPMC (FFA_MEM_RETRIEVE_REQ(cookie))
-> VERBOSE: hafnium ffa_handler func:0x84000074
-> Current share states:
-> SHARE 0x0 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x1 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x2 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x3 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, send=
-er's original mode: 0x7
-> VERBOSE: hanfium fragment_count:1
-> VERBOSE: hanfium fragment_constituent_counts[i]:1
-> VERBOSE: hanfium max pa_range bits:0x30
-> VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
-> VERBOSE: hanfium fragment_count:1
-> VERBOSE: hanfium fragment_constituent_counts[i]:1
-> VERBOSE: hanfium max pa_range bits:0x30
-> VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
-> Current share states:
-> SHARE 0x0 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x1 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x2 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, send=
-er's original mode: 0x7
-> SHARE 0x3 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients =
-[VM 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, send=
-er's original mode: 0x7
-> VERBOSE: hafnium ffa_handler func:0x84000065
-> ......
-> ERROR LOG
-> I/TA: read_raw_object enter
-> I/TA: obj_id_sz:0x8
-> I/TA: obj_id in tee va:0x40086348
-> I/TA: obj_id in ree va:0x400229f0
-> I/TA: TEE_MemMove:323 TEE_MemMove enter
-> WARNING: Stage-2 page fault: pc=3D0x4007a3ce, vmid=3D0x8001, vcpu=3D5, vadd=
-r=3D0x400229f0, ipaddr=3D0x8a84749f0, mode=3D0x81 0x63
-> NOTICE: Injecting Data Abort exception into VM 0x8001.
-> D/TC:005 0 abort_handler:550 [abort] abort in User mode (TA will panic)
-> E/TC:??? 0
-> E/TC:??? 0 User mode data-abort at address 0x400229f0 (translation fault)
-> E/TC:??? 0 esr 0x94020007 ttbr0 0x20000f03180a0 ttbr1 0x00000000 cidr 0x0
-> E/TC:??? 0 cpu #5 <https://github.com/OP-TEE/optee_os/pull/5 > cpsr 0x00000=
-130
-> E/TC:??? 0 x0 0000000040086348 x1 0000000040086349
-> E/TC:??? 0 x2 00000000400229f0 x3 0000000040086348
-> E/TC:??? 0 x4 000000004007e088 x5 0000000000000000
-> E/TC:??? 0 x6 0000000000000000 x7 000000004001fe60
-> E/TC:??? 0 x8 0000000000000000 x9 0000000000000000
-> E/TC:??? 0 x10 0000000000000000 x11 0000000000000000
-> E/TC:??? 0 x12 0000000000000000 x13 000000004001fe60
-> E/TC:??? 0 x14 00000000400695ad x15 0000000000000000
-> E/TC:??? 0 x16 00000000f0240370 x17 0000000000000000
-> E/TC:??? 0 x18 0000000000000000 x19 0000000000000000
-> E/TC:??? 0 x20 0000000000000000 x21 0000000000000000
-> E/TC:??? 0 x22 0000000000000000 x23 0000000000000000
-> E/TC:??? 0 x24 0000000000000000 x25 0000000000000000
-> E/TC:??? 0 x26 0000000000000000 x27 0000000000000000
-> E/TC:??? 0 x28 0000000000000000 x29 0000000000000000
-> E/TC:??? 0 x30 0000000000000000 elr 000000004007a3ce
-> E/TC:??? 0 sp_el0 000000004001ff80
-> E/LD: Status of TA f4e750bb-1437-4fbf-8785-8d3580c34994
-> E/LD: arch: arm
-> E/LD: region 0: va 0x40006000 pa 0xf0404000 size 0x002000 flags rw-s (ldelf)
-> E/LD: region 1: va 0x40008000 pa 0xf0406000 size 0x011000 flags r-xs (ldelf)
-> E/LD: region 2: va 0x40019000 pa 0xf0417000 size 0x001000 flags rw-s (ldelf)
-> E/LD: region 3: va 0x4001a000 pa 0xf0418000 size 0x004000 flags rw-s (ldelf)
-> E/LD: region 4: va 0x4001e000 pa 0xf041c000 size 0x001000 flags r--s
-> E/LD: region 5: va 0x4001f000 pa 0xf0440000 size 0x001000 flags rw-s (stack)
-> E/LD: region 6: va 0x40020000 pa 0x8a1262340 size 0x002000 flags rw-- (para=
-m)
-> E/LD: region 7: va 0x40022000 pa 0x8a84749f0 size 0x001000 flags rw-- (para=
-m)
-> E/LD: region 8: va 0x40067000 pa 0x00001000 size 0x017000 flags r-xs [0]
-> E/LD: region 9: va 0x4007e000 pa 0x00018000 size 0x00c000 flags rw-s [0]
-> E/LD: [0] f4e750bb-1437-4fbf-8785-8d3580c34994 @ 0x40067000
-> ERROR CODE
-> "optee_examples/secure_storage/ta/secure_storage_ta.c"
-> static TEE_Result read_raw_object(uint32_t param_types, TEE_Param params[4]=
-) { const uint32_t exp_param_types =3D TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_=
-INPUT, TEE_PARAM_TYPE_MEMREF_OUTPUT, TEE_PARAM_TYPE_NONE, TEE_PARAM_TYPE_NONE=
-); char *obj_id; size_t obj_id_sz; IMSG("read_raw_object enter\n"); \/* * Saf=
-ely get the invocation parameters *\/ if (param_types !=3D exp_param_types) r=
-eturn TEE_ERROR_BAD_PARAMETERS; obj_id_sz =3D params[0].memref.size; obj_id =
-=3D TEE_Malloc(obj_id_sz, 0); IMSG("obj_id_sz:%#x\n",obj_id_sz); IMSG("obj_id=
- in tee va:%p\n",obj_id); IMSG("obj_id in ree va:%p\n",params[0].memref.buffe=
-r); if (!obj_id) return TEE_ERROR_OUT_OF_MEMORY; TEE_MemMove(obj_id, params[0=
-].memref.buffer, obj_id_sz); //<-- ERROR OCCURED TEE_Free(obj_id); return TEE=
-_SUCCESS; }
-> It seems that OP-TEE tries to use an IPA which isn't mapped by Hafnium.
-> Can anyone figure out what the problem is and give some debugging direction=
-s? Thanks!
-
-I have recently updated my setup on QEMU with Hafnium and OP-TEE. I just
-tested optee_example_secure_storage on that and it works for me.
-Perhaps you can compare what you're using with that? My setup is
-duplicated with:
-repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
-        -b qemu_sel2
-repo sync -j8
-cd build
-make -j8 toolchains
-make -j8 all
-make run-only
-
-Cheers,
-Jens
-
---===============8932302647867339024==--
+--===============7872925610079389078==--
 
