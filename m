@@ -1,25 +1,58 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Olivier Deprez <Olivier.Deprez@arm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: Dynamic Shared Memory
-Date: Mon, 13 Feb 2023 12:13:04 +0100
-Message-ID: <Y+obQMuOoo67vU4U@jade>
-In-Reply-To: <
- <3e8e4c7d-ed5c-4b2a-9d3c-ab64945218f9.meijianqiang.mjq@alibaba-inc.com>>
+Date: Mon, 13 Feb 2023 12:07:04 +0000
+Message-ID: <VE1PR08MB4976DA117F7DEED9876B320A9BDD9@VE1PR08MB4976.eurprd08.prod.outlook.com>
+In-Reply-To: <Y+obQMuOoo67vU4U@jade>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5753786156424005163=="
+Content-Type: multipart/mixed; boundary="===============8932302647867339024=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5753786156424005163==
+--===============8932302647867339024==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+Yes, noticed the same as Jens with the qemu setup where this optee example te=
+st passes.
+
+Can you share the commit hashes used for Hafnium/OP-TEE?
+Is Hafnium running from high addresses (e.g. >34G like you mentioned before)?
+Is it possible to share the Hafnium boot log (or an extract of it)?
+What is the start address and size of the OP-TEE secure partition declared in=
+ the SPMC manifest?
+Is this page @ 0x8a8474000 reported in the S2 PF, located in a region marked =
+non secure in the TZC400?
+
+Aso I'm surprised by the log
+E/LD: region 6: va 0x40020000 pa 0x8a1262340 size 0x002000 flags rw-- (param)
+E/LD: region 7: va 0x40022000 pa 0x8a84749f0 size 0x001000 flags rw-- (param)
+All other regions report 4K aligned PA but those ones (that may be ok, but I'=
+m not versed enough into OP-TEE code base to say).
+
+Regards,
+Olivier.
+
+
+
+________________________________
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Sent: 13 February 2023 12:13
+To: =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=9C) <meijianqiang.mjq@aliba=
+ba-inc.com>
+Cc: hafnium <hafnium@lists.trustedfirmware.org>; Olivier Deprez <Olivier.De=
+prez@arm.com>; op-tee <op-tee@lists.trustedfirmware.org>; =E8=B5=B5=E5=93=
+=B2(=E4=B8=BA=E5=93=B2) <weizhe.zz@alibaba-inc.com>
+Subject: Re: Dynamic Shared Memory
 
 Hi Yuye,
 
 On Mon, Feb 13, 2023 at 02:24:10PM +0800, =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=
 =B9=E5=A4=9C) wrote:
 > Hi, expert
-> Regarding the use of optee dynamic shared memory,=20
-> we have encountered some problems that cannot be solved recently.=20
+> Regarding the use of optee dynamic shared memory,
+> we have encountered some problems that cannot be solved recently.
 > Debug log is as follows:
 > REE OS kenrel->TEE SPMC (FFA_MEM_SHARE)
 > WARNING: SPM(5): 0x84000073 0x50 0x50 0x0 0x0 0x0 0x0 0x0
@@ -175,5 +208,5 @@ make run-only
 Cheers,
 Jens
 
---===============5753786156424005163==--
+--===============8932302647867339024==--
 
