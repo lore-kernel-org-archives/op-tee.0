@@ -1,45 +1,160 @@
-From: Ira Weiny <ira.weiny@intel.com>
+From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/4] Remove get_kernel_pages()
-Date: Fri, 10 Feb 2023 12:27:35 -0800
-Message-ID: <63e6a8b798a_145760294a6@iweiny-mobl.notmuch>
-In-Reply-To: <63e279f730612_104ce22946f@iweiny-mobl.notmuch>
+Subject: Dynamic Shared Memory
+Date: Mon, 13 Feb 2023 14:24:10 +0800
+Message-ID: 
+ <3e8e4c7d-ed5c-4b2a-9d3c-ab64945218f9.meijianqiang.mjq@alibaba-inc.com>
+In-Reply-To: <
+ <9b2eaaf2-1e15-4449-ba3d-3974fab1c54a.meijianqiang.mjq@alibaba-inc.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8881890009001166304=="
+Content-Type: multipart/mixed; boundary="===============7771586105529870976=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8881890009001166304==
+--===============7771586105529870976==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Ira Weiny wrote:
-> Sumit Garg wrote:
-> > On Sat, 4 Feb 2023 at 09:36, Ira Weiny <ira.weiny@intel.com> wrote:
-> > >
-> > > Sumit,
-> > >
-> > > I did not see a follow up on this series per your last email.[1]  I'd l=
-ike to
-> > > move forward with getting rid of kmap_to_page().  So Hopefully this can=
- land
-> > > and you can build on this rather than the other way around?
-> >=20
-> > Apologies Ira for keeping you waiting. Actually I was fully involved
-> > with other high priority work with my upstream review backlog
-> > increasing. So I wasn't able to devote time to this work. Sure I will
-> > rebase my work on top of your changes.
->=20
-> No problem on my end.  I just wanted to ensure that I did not miss
-> something.
+Hi, expert
+Regarding the use of optee dynamic shared memory,=20
+we have encountered some problems that cannot be solved recently.=20
+Debug log is as follows:
+REE OS kenrel->TEE SPMC (FFA_MEM_SHARE)
+WARNING: SPM(5): 0x84000073 0x50 0x50 0x0 0x0 0x0 0x0 0x0
+VERBOSE: hafnium ffa_handler func:0x84000073
+VERBOSE: hafnium allow for one memory region to be shared to the TEE.
+VERBOSE: ffa_memory_send
+VERBOSE: share_states->memory_region->sender:0x0
+VERBOSE: share_states->memory_region->attributes:0x2f
+VERBOSE: share_states->share_func:0x84000073
+VERBOSE: share_states->fragment_count:0x1
+VERBOSE: share_states->sending_complete:0x1
+VERBOSE: hanfium fragment_count:1
+VERBOSE: hanfium fragment_constituent_counts[i]:1
+VERBOSE: hanfium max pa_range bits:0x30
+VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
+VERBOSE: hanfium fragment_count:1
+VERBOSE: hanfium fragment_constituent_counts[i]:1
+VERBOSE: hanfium max pa_range bits:0x30
+VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
+VERBOSE: Marked sending complete.
+Current share states:
+SHARE 0x0 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x1 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x2 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+WARNING: SPM(5): 0x84000061 0x0 0x1 0x0 0x0 0x0 0x0 0x0
+......
+REE OS kenrel->TEE SP (OPTEE_FFA_YEILDING_CALL_WITH_ARG(cookie))
+WARNING: SPM(5): 0x8400006f 0x8001 0x0 0x80000000 0x0 0x0 0x0 0x0
+VERBOSE: hafnium ffa_handler func:0x8400006f
+D/TC:005 0 mobj_ffa_get_by_cookie:382 cookie 0 resurrecting
+E/TC:005 0 mobj_ffa_get_by_cookie:385 Populating mobj from rx buffer, cookie =
+0x1
+TEE SPMC->TEE SPMC (FFA_MEM_RETRIEVE_REQ(cookie))
+VERBOSE: hafnium ffa_handler func:0x84000074
+Current share states:
+SHARE 0x0 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x1 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x2 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x3 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, sender=
+'s original mode: 0x7
+VERBOSE: hanfium fragment_count:1
+VERBOSE: hanfium fragment_constituent_counts[i]:1
+VERBOSE: hanfium max pa_range bits:0x30
+VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
+VERBOSE: hanfium fragment_count:1
+VERBOSE: hanfium fragment_constituent_counts[i]:1
+VERBOSE: hanfium max pa_range bits:0x30
+VERBOSE: hanfium pa_begin:0x8a8474000, pa_end:0x8a8475000
+Current share states:
+SHARE 0x0 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x1 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x2 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 1 retrieved, sender=
+'s original mode: 0x7
+SHARE 0x3 (from VM 0x0, attributes 0x2f, flags 0x8, tag 0, to 1 recipients [V=
+M 0x8001: 0x6 (offset 48)]): fully sent with 1 fragments, 0 retrieved, sender=
+'s original mode: 0x7
+VERBOSE: hafnium ffa_handler func:0x84000065
+......
+ERROR LOG
+I/TA: read_raw_object enter
+I/TA: obj_id_sz:0x8
+I/TA: obj_id in tee va:0x40086348
+I/TA: obj_id in ree va:0x400229f0
+I/TA: TEE_MemMove:323 TEE_MemMove enter
+WARNING: Stage-2 page fault: pc=3D0x4007a3ce, vmid=3D0x8001, vcpu=3D5, vaddr=
+=3D0x400229f0, ipaddr=3D0x8a84749f0, mode=3D0x81 0x63
+NOTICE: Injecting Data Abort exception into VM 0x8001.
+D/TC:005 0 abort_handler:550 [abort] abort in User mode (TA will panic)
+E/TC:??? 0
+E/TC:??? 0 User mode data-abort at address 0x400229f0 (translation fault)
+E/TC:??? 0 esr 0x94020007 ttbr0 0x20000f03180a0 ttbr1 0x00000000 cidr 0x0
+E/TC:??? 0 cpu #5 <https://github.com/OP-TEE/optee_os/pull/5 > cpsr 0x00000130
+E/TC:??? 0 x0 0000000040086348 x1 0000000040086349
+E/TC:??? 0 x2 00000000400229f0 x3 0000000040086348
+E/TC:??? 0 x4 000000004007e088 x5 0000000000000000
+E/TC:??? 0 x6 0000000000000000 x7 000000004001fe60
+E/TC:??? 0 x8 0000000000000000 x9 0000000000000000
+E/TC:??? 0 x10 0000000000000000 x11 0000000000000000
+E/TC:??? 0 x12 0000000000000000 x13 000000004001fe60
+E/TC:??? 0 x14 00000000400695ad x15 0000000000000000
+E/TC:??? 0 x16 00000000f0240370 x17 0000000000000000
+E/TC:??? 0 x18 0000000000000000 x19 0000000000000000
+E/TC:??? 0 x20 0000000000000000 x21 0000000000000000
+E/TC:??? 0 x22 0000000000000000 x23 0000000000000000
+E/TC:??? 0 x24 0000000000000000 x25 0000000000000000
+E/TC:??? 0 x26 0000000000000000 x27 0000000000000000
+E/TC:??? 0 x28 0000000000000000 x29 0000000000000000
+E/TC:??? 0 x30 0000000000000000 elr 000000004007a3ce
+E/TC:??? 0 sp_el0 000000004001ff80
+E/LD: Status of TA f4e750bb-1437-4fbf-8785-8d3580c34994
+E/LD: arch: arm
+E/LD: region 0: va 0x40006000 pa 0xf0404000 size 0x002000 flags rw-s (ldelf)
+E/LD: region 1: va 0x40008000 pa 0xf0406000 size 0x011000 flags r-xs (ldelf)
+E/LD: region 2: va 0x40019000 pa 0xf0417000 size 0x001000 flags rw-s (ldelf)
+E/LD: region 3: va 0x4001a000 pa 0xf0418000 size 0x004000 flags rw-s (ldelf)
+E/LD: region 4: va 0x4001e000 pa 0xf041c000 size 0x001000 flags r--s
+E/LD: region 5: va 0x4001f000 pa 0xf0440000 size 0x001000 flags rw-s (stack)
+E/LD: region 6: va 0x40020000 pa 0x8a1262340 size 0x002000 flags rw-- (param)
+E/LD: region 7: va 0x40022000 pa 0x8a84749f0 size 0x001000 flags rw-- (param)
+E/LD: region 8: va 0x40067000 pa 0x00001000 size 0x017000 flags r-xs [0]
+E/LD: region 9: va 0x4007e000 pa 0x00018000 size 0x00c000 flags rw-s [0]
+E/LD: [0] f4e750bb-1437-4fbf-8785-8d3580c34994 @ 0x40067000
+ERROR CODE
+"optee_examples/secure_storage/ta/secure_storage_ta.c"
+static TEE_Result read_raw_object(uint32_t param_types, TEE_Param params[4]) =
+{ const uint32_t exp_param_types =3D TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_IN=
+PUT, TEE_PARAM_TYPE_MEMREF_OUTPUT, TEE_PARAM_TYPE_NONE, TEE_PARAM_TYPE_NONE);=
+ char *obj_id; size_t obj_id_sz; IMSG("read_raw_object enter\n"); \/* * Safel=
+y get the invocation parameters *\/ if (param_types !=3D exp_param_types) ret=
+urn TEE_ERROR_BAD_PARAMETERS; obj_id_sz =3D params[0].memref.size; obj_id =3D=
+ TEE_Malloc(obj_id_sz, 0); IMSG("obj_id_sz:%#x\n",obj_id_sz); IMSG("obj_id in=
+ tee va:%p\n",obj_id); IMSG("obj_id in ree va:%p\n",params[0].memref.buffer);=
+ if (!obj_id) return TEE_ERROR_OUT_OF_MEMORY; TEE_MemMove(obj_id, params[0].m=
+emref.buffer, obj_id_sz); //<-- ERROR OCCURED TEE_Free(obj_id); return TEE_SU=
+CCESS; }
+It seems that OP-TEE tries to use an IPA which isn't mapped by Hafnium.
+Can anyone figure out what the problem is and give some debugging directions?=
+ Thanks!
+regards,
+yuye
 
-Andrew, can I get an ack on patches 1 and 4 for this series?  I realized
-that perhaps I was not clear on my expectations of this series.  I was
-thinking this would be easiest to go through the tee subsystem tree.
-
-Sumit or Jens, is that ok with you all?
-
-Thanks,
-Ira
-
---===============8881890009001166304==--
+--===============7771586105529870976==--
 
