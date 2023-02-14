@@ -1,57 +1,33 @@
-From: Ira Weiny <ira.weiny@intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2 0/4] Remove get_kernel_pages()
-Date: Mon, 13 Feb 2023 10:53:50 -0800
-Message-ID: <63ea873eafd82_14e70a2944c@iweiny-mobl.notmuch>
+Date: Tue, 14 Feb 2023 09:53:17 +0100
+Message-ID: <Y+tL/aPwD3ElBhLQ@jade>
 In-Reply-To: <
- <CAHUa44GAM=meibiSDjjWb0wKmHzud6JddE3W=zG3XCFfgP+Sag@mail.gmail.com>>
+ <CAHk-=wh3+moi98rbiMnwnxPNZcYBaVY57TM2EP6NgXgNwFeP7Q@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4068998788874758699=="
+Content-Type: multipart/mixed; boundary="===============5139888738042826100=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4068998788874758699==
+--===============5139888738042826100==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Jens Wiklander wrote:
-> Hi Ira,
->=20
-> On Fri, Feb 10, 2023 at 9:28 PM Ira Weiny <ira.weiny@intel.com> wrote:
+On Mon, Feb 13, 2023 at 11:02:52AM -0800, Linus Torvalds wrote:
+> On Mon, Feb 13, 2023 at 7:02 AM Jens Wiklander
+> <jens.wiklander@linaro.org> wrote:
 > >
-> > Ira Weiny wrote:
-> > > Sumit Garg wrote:
-> > > > On Sat, 4 Feb 2023 at 09:36, Ira Weiny <ira.weiny@intel.com> wrote:
-> > > > >
-> > > > > Sumit,
-> > > > >
-> > > > > I did not see a follow up on this series per your last email.[1]  I=
-'d like to
-> > > > > move forward with getting rid of kmap_to_page().  So Hopefully this=
- can land
-> > > > > and you can build on this rather than the other way around?
-> > > >
-> > > > Apologies Ira for keeping you waiting. Actually I was fully involved
-> > > > with other high priority work with my upstream review backlog
-> > > > increasing. So I wasn't able to devote time to this work. Sure I will
-> > > > rebase my work on top of your changes.
-> > >
-> > > No problem on my end.  I just wanted to ensure that I did not miss
-> > > something.
-> >
-> > Andrew, can I get an ack on patches 1 and 4 for this series?  I realized
-> > that perhaps I was not clear on my expectations of this series.  I was
-> > thinking this would be easiest to go through the tee subsystem tree.
-> >
-> > Sumit or Jens, is that ok with you all?
->=20
-> Sure, I'll take it. The timing is a bit unfortunate, it's likely too
-> close to the merge window to be included there. However, I'll pick it
-> up and add it to linux-next so it's ready for the 6.4 merge window.
+> > Sure, I'll take it. The timing is a bit unfortunate, it's likely too
+> > close to the merge window to be included there. However, I'll pick it
+> > up and add it to linux-next so it's ready for the 6.4 merge window.
+> 
+> With this boeing almost all code removal, I'm perfectly fine taking it
+> in the upcoming merge window.
 
-6.4 is fine with me.
+OK, thank you.
 
-Thanks everyone!
-Ira
+Cheers,
+Jens
 
---===============4068998788874758699==--
+--===============5139888738042826100==--
 
