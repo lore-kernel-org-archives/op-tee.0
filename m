@@ -1,30 +1,29 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Jan Dąbroś <jsd@semihalf.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/4] Remove get_kernel_pages()
-Date: Mon, 13 Feb 2023 19:03:13 +0000
+Subject: Re: [PATCH 2/6] crypto: ccp: Add a header for multiple drivers to use
+ `__psp_pa`
+Date: Tue, 14 Feb 2023 08:40:47 +0000
 Message-ID: 
- <CAHk-=wh3+moi98rbiMnwnxPNZcYBaVY57TM2EP6NgXgNwFeP7Q@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44GAM=meibiSDjjWb0wKmHzud6JddE3W=zG3XCFfgP+Sag@mail.gmail.com>>
+ <CAOtMz3OfGFsiThY7hQYG2oh1=HKg7N56cuA28e+dhB4EtZsz=Q@mail.gmail.com>
+In-Reply-To: <20230209223811.4993-3-mario.limonciello@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5401538258799375118=="
+Content-Type: multipart/mixed; boundary="===============5181082556409631466=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5401538258799375118==
+--===============5181082556409631466==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 13, 2023 at 7:02 AM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
+> The TEE subdriver for CCP, the amdtee driver and the i2c-designware-amdpsp
+> drivers all include `psp-sev.h` even though they don't use SEV
+> functionality.
 >
-> Sure, I'll take it. The timing is a bit unfortunate, it's likely too
-> close to the merge window to be included there. However, I'll pick it
-> up and add it to linux-next so it's ready for the 6.4 merge window.
+> Move the definition of `__psp_pa` into a common header to be included
+> by all of these drivers.
+>
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 
-With this boeing almost all code removal, I'm perfectly fine taking it
-in the upcoming merge window.
+Reviewed-by: Jan Dabros <jsd@semihalf.com>
 
-           Linus
-
---===============5401538258799375118==--
+--===============5181082556409631466==--
 
