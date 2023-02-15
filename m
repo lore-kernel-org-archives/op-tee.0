@@ -1,13 +1,13 @@
 From: Etienne Carriere <etienne.carriere@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 1/2] tee: system invocation
-Date: Tue, 14 Feb 2023 16:20:46 +0100
-Message-ID: <20230214152047.1143106-1-etienne.carriere@linaro.org>
+Subject: [PATCH v3 1/2] tee: system invocation
+Date: Wed, 15 Feb 2023 12:04:35 +0100
+Message-ID: <20230215110436.1454781-1-etienne.carriere@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5393598124307432337=="
+Content-Type: multipart/mixed; boundary="===============6827142315447051056=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5393598124307432337==
+--===============6827142315447051056==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -25,6 +25,8 @@ the eMMC device is supplied by an OP-TEE SCMI regulator.
 
 Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
 ---
+No change since v2
+
 Change since v1
 - Addressed comment on Linux client to claim reservation on TEE context.
   This brings 2 new operations from client to TEE to request and release
@@ -317,5 +319,5 @@ ext
 2.25.1
 
 
---===============5393598124307432337==--
+--===============6827142315447051056==--
 
