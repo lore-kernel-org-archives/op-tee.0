@@ -1,92 +1,62 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 2/2] firmware: arm_scmi: optee: use optee system invocation
-Date: Wed, 15 Feb 2023 18:02:38 +0100
-Message-ID: <20230215170238.1864311-2-etienne.carriere@linaro.org>
-In-Reply-To: <20230215170238.1864311-1-etienne.carriere@linaro.org>
+Subject: [GIT PULL] Remove get_kernel_pages() for v6.3
+Date: Sun, 19 Feb 2023 21:35:16 +0100
+Message-ID: <Y/KIBDu3BiHdIsX7@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1014775315184951732=="
+Content-Type: multipart/mixed; boundary="===============6280774811082242021=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1014775315184951732==
+--===============6280774811082242021==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Changes SCMI optee transport to request an OP-TEE system invocation
-context per SCMI channel. This prevents possible deadlock when many
-Linux clients invoke OP-TEE are all suspended waiting for an OP-TEE
-RPC request access an SCMI resource through the SCMI OP-TEE PTA service.
+Hi Linus,
 
-Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
----
-No change since v3
+Please pull these patches which clean up shm_get_kernel_pages() in the TEE
+subsystem and ultimately remove get_kernel_pages(). The patches have only
+been in linux-next for close to a week but you told me it was OK to send
+them anyway.
 
-Changes since v2:
-- Fixed syntax issues (missing ';' chars), reported by kernel test robot.
+I'm normally sending my pull requests to arm-soc, but with the short
+time in linux-next and everything I decided to send it directly to you
+this time.
 
-Changes since v1:
-- Updated to use new tee API functions tee_client_request_system_context()
-  and tee_client_release_system_context().
----
- drivers/firmware/arm_scmi/optee.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+Thanks,
+Jens
 
-diff --git a/drivers/firmware/arm_scmi/optee.c b/drivers/firmware/arm_scmi/op=
-tee.c
-index 2a7aeab40e54..28a006348e1c 100644
---- a/drivers/firmware/arm_scmi/optee.c
-+++ b/drivers/firmware/arm_scmi/optee.c
-@@ -119,6 +119,7 @@ struct scmi_optee_channel {
- 	u32 tee_session;
- 	u32 caps;
- 	u32 rx_len;
-+	bool sys_thread;
- 	struct mutex mu;
- 	struct scmi_chan_info *cinfo;
- 	union {
-@@ -432,9 +433,15 @@ static int scmi_optee_chan_setup(struct scmi_chan_info *=
-cinfo, struct device *de
- 	channel->channel_id =3D channel_id;
- 	mutex_init(&channel->mu);
-=20
-+	ret =3D tee_client_request_system_context(scmi_optee_private->tee_ctx);
-+	if (ret)
-+		dev_warn(dev, "Couldn't provision an OP-TEE system context\n");
-+	else
-+		channel->sys_thread =3D true;
-+
- 	ret =3D setup_shmem(dev, cinfo, channel);
- 	if (ret)
--		return ret;
-+		goto err_release_sysctx;
-=20
- 	ret =3D open_session(scmi_optee_private, &channel->tee_session);
- 	if (ret)
-@@ -458,6 +465,9 @@ static int scmi_optee_chan_setup(struct scmi_chan_info *c=
-info, struct device *de
- err_free_shm:
- 	if (channel->tee_shm)
- 		tee_shm_free(channel->tee_shm);
-+err_release_sysctx:
-+	if (channel->sys_thread)
-+		tee_client_release_system_context(scmi_optee_private->tee_ctx);
-=20
- 	return ret;
- }
-@@ -483,6 +493,9 @@ static int scmi_optee_chan_free(int id, void *p, void *da=
-ta)
-=20
- 	scmi_free_channel(cinfo, data, id);
-=20
-+	if (channel->sys_thread)
-+		tee_client_release_system_context(scmi_optee_private->tee_ctx);
-+
- 	return 0;
- }
-=20
---=20
-2.25.1
+The following changes since commit ceaa837f96adb69c0df0397937cd74991d5d821a:
 
+  Linux 6.2-rc8 (2023-02-12 14:10:17 -0800)
 
---===============1014775315184951732==--
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/remove-get_=
+kernel_pages-for-6.3
+
+for you to fetch changes up to 816477edfba6e7ab9411acec5f07cfa00e0882f7:
+
+  mm: Remove get_kernel_pages() (2023-02-13 14:16:41 +0100)
+
+----------------------------------------------------------------
+Remove get_kernel_pages()
+
+Vmalloc page support is removed from shm_get_kernel_pages() and the
+get_kernel_pages() call is replaced by calls to get_page(). With no
+remaining callers of get_kernel_pages() the function is removed.
+
+----------------------------------------------------------------
+Ira Weiny (4):
+      highmem: Enhance is_kmap_addr() to check kmap_local_page() mappings
+      tee: Remove vmalloc page support
+      tee: Remove call to get_kernel_pages()
+      mm: Remove get_kernel_pages()
+
+ drivers/tee/tee_shm.c            | 37 ++++++++++---------------------------
+ include/linux/highmem-internal.h |  5 ++++-
+ include/linux/mm.h               |  2 --
+ mm/swap.c                        | 30 ------------------------------
+ 4 files changed, 14 insertions(+), 60 deletions(-)
+
+--===============6280774811082242021==--
 
