@@ -1,14 +1,14 @@
 From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2 3/4] tee: expose tee efivar register function
-Date: Mon, 20 Feb 2023 15:54:31 +0800
-Message-ID: <202302201500.rOtaNOWt-lkp@intel.com>
+Date: Mon, 20 Feb 2023 15:54:33 +0800
+Message-ID: <202302201500.w7nKUwV7-lkp@intel.com>
 In-Reply-To: <20230220051723.1257-4-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2987321064209702428=="
+Content-Type: multipart/mixed; boundary="===============0827486684075538283=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2987321064209702428==
+--===============0827486684075538283==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -29,9 +29,9 @@ base:   https://git.kernel.org/pub/scm/linux/kernel/git/efi/efi.git next
 patch link:    https://lore.kernel.org/r/20230220051723.1257-4-masahisa.kojim=
 a%40linaro.org
 patch subject: [PATCH v2 3/4] tee: expose tee efivar register function
-config: nios2-randconfig-r036-20230220 (https://download.01.org/0day-ci/archi=
-ve/20230220/202302201500.rOtaNOWt-lkp(a)intel.com/config)
-compiler: nios2-linux-gcc (GCC) 12.1.0
+config: arm64-randconfig-r034-20230220 (https://download.01.org/0day-ci/archi=
+ve/20230220/202302201500.w7nKUwV7-lkp(a)intel.com/config)
+compiler: aarch64-linux-gcc (GCC) 12.1.0
 reproduce (this is a W=3D1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/ma=
 ke.cross -O ~/bin/make.cross
@@ -45,43 +45,28 @@ neric-ops-register-function/20230220-132235
         # save the config file
         mkdir build_dir && cp config build_dir/.config
         COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dgcc-12.1.0 make.cross W=
-=3D1 O=3Dbuild_dir ARCH=3Dnios2 olddefconfig
+=3D1 O=3Dbuild_dir ARCH=3Darm64 olddefconfig
         COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dgcc-12.1.0 make.cross W=
-=3D1 O=3Dbuild_dir ARCH=3Dnios2 SHELL=3D/bin/bash
+=3D1 O=3Dbuild_dir ARCH=3Darm64 SHELL=3D/bin/bash
 
 If you fix the issue, kindly add following tag where applicable
 | Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202302201500.rOtaNOWt-lkp(a)int=
+| Link: https://lore.kernel.org/oe-kbuild-all/202302201500.w7nKUwV7-lkp(a)int=
 el.com/
 
-All errors (new ones prefixed by >>):
+All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-   nios2-linux-ld: drivers/tee/tee_core.o: in function `tee_register_efivar_o=
-ps':
->> tee_core.c:(.text+0x2634): undefined reference to `efivar_supports_writes'
-   tee_core.c:(.text+0x2634): relocation truncated to fit: R_NIOS2_CALL26 aga=
-inst `efivar_supports_writes'
->> nios2-linux-ld: tee_core.c:(.text+0x2654): undefined reference to `efivars=
-_generic_ops_unregister'
-   tee_core.c:(.text+0x2654): relocation truncated to fit: R_NIOS2_CALL26 aga=
-inst `efivars_generic_ops_unregister'
->> nios2-linux-ld: tee_core.c:(.text+0x2674): undefined reference to `efivars=
-_register'
-   tee_core.c:(.text+0x2674): relocation truncated to fit: R_NIOS2_CALL26 aga=
-inst `efivars_register'
-   nios2-linux-ld: drivers/tee/tee_core.o: in function `tee_unregister_efivar=
-_ops':
->> tee_core.c:(.text+0x2684): undefined reference to `efivars_unregister'
-   tee_core.c:(.text+0x2684): relocation truncated to fit: R_NIOS2_CALL26 aga=
-inst `efivars_unregister'
->> nios2-linux-ld: tee_core.c:(.text+0x2688): undefined reference to `efivars=
-_generic_ops_register'
-   tee_core.c:(.text+0x2688): relocation truncated to fit: R_NIOS2_CALL26 aga=
-inst `efivars_generic_ops_register'
+>> ERROR: modpost: "efivar_supports_writes" [drivers/tee/tee.ko] undefined!
+>> ERROR: modpost: "efivars_register" [drivers/tee/tee.ko] undefined!
+>> ERROR: modpost: "efivars_generic_ops_register" [drivers/tee/tee.ko] undefi=
+ned!
+>> ERROR: modpost: "efivars_unregister" [drivers/tee/tee.ko] undefined!
+>> ERROR: modpost: "efivars_generic_ops_unregister" [drivers/tee/tee.ko] unde=
+fined!
 
 --=20
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests
 
---===============2987321064209702428==--
+--===============0827486684075538283==--
 
