@@ -1,479 +1,341 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: Add SMC for loading OP-TEE image
-Date: Wed, 22 Feb 2023 11:50:40 +0530
+Subject: Re: [PATCH v3 1/2] tee: system invocation
+Date: Wed, 22 Feb 2023 14:30:30 +0530
 Message-ID: 
- <CAFA6WYO1zSt0sVMU8oOkExSvjvV8DTTbrodFsuSwd10xM71J_Q@mail.gmail.com>
-In-Reply-To: <
- <CA+ddPcNZoi6jjfG4CeEt6Se8nO3Oav36zBFB5KfeZ3goqgU=2w@mail.gmail.com>>
+ <CAFA6WYO5pAjQZ3W8ZTiNZi=LVByvo=FGCtss__tK8CT7n_vXcg@mail.gmail.com>
+In-Reply-To: <20230215110436.1454781-1-etienne.carriere@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5038889308616739715=="
+Content-Type: multipart/mixed; boundary="===============9177793792444712482=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5038889308616739715==
+--===============9177793792444712482==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jeffrey,
-
-On Wed, 22 Feb 2023 at 00:15, Jeffrey Kardatzke via OP-TEE
-<op-tee@lists.trustedfirmware.org> wrote:
+On Wed, 15 Feb 2023 at 16:34, Etienne Carriere
+<etienne.carriere@linaro.org> wrote:
 >
-> Is there more I need to do to get this kernel patch reviewed?
+> Adds TEE system invocation context provisioning for a Linux driver
+> to provision execution contexts for invocation of system service
+> hosted in TEE. OP-TEE SMC ABI implements such invocation context
+> provisioning.
 >
-
-First of all I would suggest you to go through this doc [1] in order
-for you to construct a proper Linux kernel patch and send it to
-intended recipients (scripts/get_maintainer.pl is your friend here).
-
-[1] https://www.kernel.org/doc/html/latest/process/submitting-patches.html
-
-> Thanks,
-> Jeff
+> This feature is needed when a TEE invocation cannot afford to wait for
+> a free TEE thread when all TEE threads context are used and suspended
+> as these may be suspended waiting for a system service, as an SCMI clock
+> or voltage regulator, to be enabled. An example is when OP-TEE invokes
+> a Linux OS remote service (RPC) to access an eMMC RPMB partition and
+> the eMMC device is supplied by an OP-TEE SCMI regulator.
 >
+> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+> ---
+> No change since v2
 >
-> On Mon, Feb 6, 2023 at 12:11=E2=80=AFPM Jeffrey Kardatzke <jkardatzke@goo=
-gle.com> wrote:
-> >
-> > v2 update where we check the system_state before returning EPROBE_DEFER s=
-o the SMC hole won't stay open if the FW isn't present in the rootfs.
+> Change since v1
+> - Addressed comment on Linux client to claim reservation on TEE context.
+>   This brings 2 new operations from client to TEE to request and release
+>   system thread contexts: 2 new tee_drv.h API functions, 2 new ops
+>   functions in struct tee_driver_ops. The OP-TEE implement shall implement
+>   2 new fastcall SMC funcIDs.
+> - Fixed typos in commit message.
+> ---
+>  drivers/tee/optee/optee_smc.h | 60 +++++++++++++++++++++++++++++++++--
+>  drivers/tee/optee/smc_abi.c   | 34 +++++++++++++++++++-
+>  drivers/tee/tee_core.c        | 30 ++++++++++++++++++
+>  include/linux/tee_drv.h       | 21 ++++++++++++
+>  4 files changed, 141 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+> index 73b5e7760d10..75b19e1bd185 100644
+> --- a/drivers/tee/optee/optee_smc.h
+> +++ b/drivers/tee/optee/optee_smc.h
+> @@ -108,7 +108,8 @@ struct optee_smc_call_get_os_revision_result {
+>   * Call with struct optee_msg_arg as argument
+>   *
+>   * When called with OPTEE_SMC_CALL_WITH_RPC_ARG or
+> - * OPTEE_SMC_CALL_WITH_REGD_ARG in a0 there is one RPC struct optee_msg_arg
+> + * OPTEE_SMC_CALL_WITH_REGD_ARG or OPTEE_SMC_FUNCID_CALL_SYSTEM_WITH_REGD_=
+ARG
+> + * in a0 there is one RPC struct optee_msg_arg
+>   * following after the first struct optee_msg_arg. The RPC struct
+>   * optee_msg_arg has reserved space for the number of RPC parameters as
+>   * returned by OPTEE_SMC_EXCHANGE_CAPABILITIES.
+> @@ -130,8 +131,8 @@ struct optee_smc_call_get_os_revision_result {
+>   * a4-6        Not used
+>   * a7  Hypervisor Client ID register
+>   *
+> - * Call register usage, OPTEE_SMC_CALL_WITH_REGD_ARG:
+> - * a0  SMC Function ID, OPTEE_SMC_CALL_WITH_REGD_ARG
+> + * Call register usage, OPTEE_SMC_CALL_WITH_REGD_ARG and OPTEE_SMC_FUNCID_=
+CALL_SYSTEM_WITH_REGD_ARG:
+> + * a0  SMC Function ID, OPTEE_SMC_CALL_WITH_REGD_ARG or OPTEE_SMC_FUNCID_C=
+ALL_SYSTEM_WITH_REGD_ARG
+>   * a1  Upper 32 bits of a 64-bit shared memory cookie
+>   * a2  Lower 32 bits of a 64-bit shared memory cookie
+>   * a3  Offset of the struct optee_msg_arg in the shared memory with the
+> @@ -175,6 +176,8 @@ struct optee_smc_call_get_os_revision_result {
+>         OPTEE_SMC_STD_CALL_VAL(OPTEE_SMC_FUNCID_CALL_WITH_RPC_ARG)
+>  #define OPTEE_SMC_CALL_WITH_REGD_ARG \
+>         OPTEE_SMC_STD_CALL_VAL(OPTEE_SMC_FUNCID_CALL_WITH_REGD_ARG)
+> +#define OPTEE_SMC_CALL_SYSTEM_WITH_REGD_ARG \
+> +       OPTEE_SMC_STD_CALL_VAL(OPTEE_SMC_FUNCID_CALL_SYSTEM_WITH_REGD_ARG)
+>
+>  /*
+>   * Get Shared Memory Config
+> @@ -254,6 +257,8 @@ struct optee_smc_get_shm_config_result {
+>  #define OPTEE_SMC_SEC_CAP_ASYNC_NOTIF          BIT(5)
+>  /* Secure world supports pre-allocating RPC arg struct */
+>  #define OPTEE_SMC_SEC_CAP_RPC_ARG              BIT(6)
+> +/* Secure world provisions thread for system service invocation */
+> +#define OPTEE_SMC_SEC_CAP_SYSTEM_THREAD                BIT(7)
+>
+>  #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES 9
+>  #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
+> @@ -426,6 +431,55 @@ struct optee_smc_disable_shm_cache_result {
+>  /* See OPTEE_SMC_CALL_WITH_REGD_ARG above */
+>  #define OPTEE_SMC_FUNCID_CALL_WITH_REGD_ARG    19
+>
+> +/* See OPTEE_SMC_CALL_SYSTEM_WITH_REGD_ARG above */
+> +#define OPTEE_SMC_FUNCID_CALL_SYSTEM_WITH_REGD_ARG     20
+> +
 
-Changelog doesn't belong here but rather...
+Just for the record, this is being parallely discussed here [1]. So we
+need to handle all the OP-TEE SMC call cases as per Jens suggestion
+here [1].
 
-> >
-> > From ff8990ca1568139c8c0bab4512aef3cc35a26466 Mon Sep 17 00:00:00 2001
-> > From: Jeffrey Kardatzke <jkardatzke@google.com>
-> > Date: Fri, 3 Feb 2023 11:33:17 -0800
-> > Subject: [PATCH v2] tee: optee: Add SMC for loading OP-TEE image
-> >
-> > Adds an SMC call that will pass an OP-TEE binary image to EL3 and
-> > instruct it to load it as the BL32 payload. This works in conjunction
-> > with a feature added to Trusted Firmware for ARM that supports this.
-> >
-> > Signed-off-by: Jeffrey Kardatzke <jkardatzke@google.com>
-> > ---
-
-...here.
-
-> >  drivers/tee/optee/Kconfig     |  9 ++++
-> >  drivers/tee/optee/optee_msg.h | 14 +++++++
-> >  drivers/tee/optee/optee_smc.h | 22 ++++++++++
-> >  drivers/tee/optee/smc_abi.c   | 77 +++++++++++++++++++++++++++++++++++
-> >  4 files changed, 122 insertions(+)
-> >
-> > diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
-> > index f121c224e682..b96b5db52b37 100644
-> > --- a/drivers/tee/optee/Kconfig
-> > +++ b/drivers/tee/optee/Kconfig
-> > @@ -7,3 +7,12 @@ config OPTEE
-> >   help
-> >    This implements the OP-TEE Trusted Execution Environment (TEE)
-> >    driver.
-> > +
-> > +config OPTEE_LOAD_IMAGE
-> > + bool "Load Op-Tee image as firmware"
-> > + default n
-> > + depends on OPTEE
-> > + help
-> > +  This loads the BL32 image for OP-TEE as firmware when the driver is pr=
-obed.
-> > +  This returns -EPROBE_DEFER until the firmware is loadable from the
-> > +  filesystem.
-
-The formatting for your overall patch looks broken,
-scripts/checkpatch.pl is your friend here. I would stop the review
-here.
+[1] https://github.com/OP-TEE/optee_os/pull/5789#discussion_r1106922714
 
 -Sumit
 
-> > diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
-> > index 70e9cc2ee96b..84c1b15032a9 100644
-> > --- a/drivers/tee/optee/optee_msg.h
-> > +++ b/drivers/tee/optee/optee_msg.h
-> > @@ -284,6 +284,20 @@ struct optee_msg_arg {
-> >   */
-> >  #define OPTEE_MSG_FUNCID_GET_OS_REVISION 0x0001
-> >
-> > +/*
-> > + * Load Trusted OS from optee/tee.bin in the Linux firmware.
-> > + *
-> > + * WARNING: Use this cautiously as it could lead to insecure loading of =
-the
-> > + * Trusted OS.
-> > + * This SMC instructs EL3 to load a binary and excute it as the Trusted =
-OS.
-> > + * The first two params are the high and low 32 bits of the size of the =
-payload
-> > + * and the third and fourth params are the high and low 32 bits of the p=
-hysical
-> > + * address of the payload. The payload is in the OP-TEE image format.
-> > + *
-> > + * Returns 0 on success and an error code otherwise.
-> > + */
-> > +#define OPTEE_MSG_FUNCID_LOAD_IMAGE   0x0002
-> > +
-> >  /*
-> >   * Do a secure call with struct optee_msg_arg as argument
-> >   * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg::=
-cmd
-> > diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
-> > index 73b5e7760d10..908b1005e9db 100644
-> > --- a/drivers/tee/optee/optee_smc.h
-> > +++ b/drivers/tee/optee/optee_smc.h
-> > @@ -104,6 +104,28 @@ struct optee_smc_call_get_os_revision_result {
-> >   unsigned long reserved1;
-> >  };
-> >
-> > +/*
-> > + * Load Trusted OS from optee/tee.bin in the Linux firmware.
-> > + *
-> > + * WARNING: Use this cautiously as it could lead to insecure loading of =
-the
-> > + * Trusted OS.
-> > + * This SMC instructs EL3 to load a binary and excute it as the Trusted =
-OS.
-> > + *
-> > + * Call register usage:
-> > + * a0 SMC Function ID, OPTEE_SMC_CALL_LOAD_IMAGE
-> > + * a1 Upper 32bit of a 64bit size for the payload
-> > + * a2 Lower 32bit of a 64bit size for the payload
-> > + * a3 Upper 32bit of the physical address for the payload
-> > + * a4 Lower 32bit of the physical address for the payload
-> > + *
-> > + * The payload is in the OP-TEE image format.
-> > + *
-> > + * Returns result in a0, 0 on success and an error code otherwise.
-> > + */
-> > +#define OPTEE_SMC_FUNCID_LOAD_IMAGE OPTEE_MSG_FUNCID_LOAD_IMAGE
-> > +#define OPTEE_SMC_CALL_LOAD_IMAGE \
-> > + OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_LOAD_IMAGE)
-> > +
-> >  /*
-> >   * Call with struct optee_msg_arg as argument
-> >   *
-> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > index a1c1fa1a9c28..c1abbee86b39 100644
-> > --- a/drivers/tee/optee/smc_abi.c
-> > +++ b/drivers/tee/optee/smc_abi.c
-> > @@ -8,9 +8,11 @@
-> >
-> >  #include <linux/arm-smccc.h>
-> >  #include <linux/errno.h>
-> > +#include <linux/firmware.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/io.h>
-> >  #include <linux/irqdomain.h>
-> > +#include <linux/kernel.h>
-> >  #include <linux/mm.h>
-> >  #include <linux/module.h>
-> >  #include <linux/of.h>
-> > @@ -1354,6 +1356,77 @@ static void optee_shutdown(struct platform_device =
-*pdev)
-> >   optee_disable_shm_cache(optee);
-> >  }
-> >
-> > +#ifdef CONFIG_OPTEE_LOAD_IMAGE
-> > +
-> > +#define OPTEE_FW_IMAGE "optee/tee.bin"
-> > +
-> > +static int optee_load_fw(struct platform_device *pdev,
-> > + optee_invoke_fn *invoke_fn)
-> > +{
-> > + const struct firmware *fw =3D NULL;
-> > + struct arm_smccc_res res;
-> > + phys_addr_t data_pa;
-> > + u8 *data_buf =3D NULL;
-> > + u64 data_size;
-> > + u32 data_pa_high, data_pa_low;
-> > + u32 data_size_high, data_size_low;
-> > + int rc;
-> > +
-> > + rc =3D request_firmware(&fw, OPTEE_FW_IMAGE, &pdev->dev);
-> > + if (rc) {
-> > + /*
-> > + * The firmware in the rootfs will not be accessible until we
-> > + * are in the SYSTEM_RUNNING state, so return EPROBE_DEFER until
-> > + * that point.
-> > + */
-> > + if (system_state < SYSTEM_RUNNING)
-> > + return -EPROBE_DEFER;
-> > + goto fw_err;
-> > + }
-> > +
-> > + data_size =3D fw->size;
-> > + /*
-> > + * This uses the GFP_DMA flag to ensure we are allocated memory in the
-> > + * 32-bit space since TF-A cannot map memory beyond the 32-bit boundary.
-> > + */
-> > + data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
-> > + if (!data_buf) {
-> > + rc =3D -ENOMEM;
-> > + goto fw_err;
-> > + }
-> > + memcpy(data_buf, fw->data, fw->size);
-> > + data_pa =3D virt_to_phys(data_buf);
-> > + reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
-> > + reg_pair_from_64(&data_size_high, &data_size_low, data_size);
-> > + goto fw_load;
-> > +
-> > +fw_err:
-> > + pr_warn("image loading failed\n");
-> > + data_pa_high =3D data_pa_low =3D data_size_high =3D data_size_low =3D 0;
-> > +
-> > +fw_load:
-> > + /*
-> > + * Always invoke the SMC, even if loading the image fails, to indicate
-> > + * to EL3 that we have passed the point where it should allow invoking
-> > + * this SMC.
-> > + */
-> > + invoke_fn(OPTEE_SMC_CALL_LOAD_IMAGE, data_size_high, data_size_low,
-> > +  data_pa_high, data_pa_low, 0, 0, 0, &res);
-> > + if (!rc)
-> > + rc =3D res.a0;
-> > + if (fw)
-> > + release_firmware(fw);
-> > + kfree(data_buf);
-> > +
-> > + return rc;
-> > +}
-> > +#else
-> > +static inline int optee_load_fw(struct platform_device *__unused,
-> > + optee_invoke_fn *__unused) {
-> > + return 0;
-> > +}
-> > +#endif
-> > +
-> >  static int optee_probe(struct platform_device *pdev)
-> >  {
-> >   optee_invoke_fn *invoke_fn;
-> > @@ -1372,6 +1445,10 @@ static int optee_probe(struct platform_device *pde=
-v)
-> >   if (IS_ERR(invoke_fn))
-> >   return PTR_ERR(invoke_fn);
-> >
-> > + rc =3D optee_load_fw(pdev, invoke_fn);
-> > + if (rc)
-> > + return rc;
-> > +
-> >   if (!optee_msg_api_uid_is_optee_api(invoke_fn)) {
-> >   pr_warn("api uid mismatch\n");
-> >   return -EINVAL;
-> > --
-> > 2.39.1.519.gcb327c4b5f-goog
-> >
-> >
-> > On Fri, Feb 3, 2023 at 1:43 PM Jeffrey Kardatzke <jkardatzke@google.com=
-> wrote:
-> >>
-> >> This is the kernel patch corresponding to the change landed in TF-A
-> >> here: https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/186=
-35
-> >>
-> >> This appears to be the right place to post this, let me know if not plea=
-se.
-> >>
-> >> From 81d97a06a48d01eb53661b41905768271f07b870 Mon Sep 17 00:00:00 2001
-> >> From: Jeffrey Kardatzke <jkardatzke@google.com>
-> >> Date: Fri, 3 Feb 2023 11:33:17 -0800
-> >> Subject: [PATCH] tee: optee: Add SMC for loading OP-TEE image
-> >>
-> >> Adds an SMC call that will pass an OP-TEE binary image to EL3 and
-> >> instruct it to load it as the BL32 payload. This works in conjunction
-> >> with a feature added to Trusted Firmware for ARM that supports this.
-> >>
-> >> Signed-off-by: Jeffrey Kardatzke <jkardatzke@google.com>
-> >> ---
-> >>  drivers/tee/optee/Kconfig     |  9 +++++
-> >>  drivers/tee/optee/optee_msg.h | 14 +++++++
-> >>  drivers/tee/optee/optee_smc.h | 22 +++++++++++
-> >>  drivers/tee/optee/smc_abi.c   | 70 +++++++++++++++++++++++++++++++++++
-> >>  4 files changed, 115 insertions(+)
-> >>
-> >> diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
-> >> index f121c224e682..b96b5db52b37 100644
-> >> --- a/drivers/tee/optee/Kconfig
-> >> +++ b/drivers/tee/optee/Kconfig
-> >> @@ -7,3 +7,12 @@ config OPTEE
-> >>   help
-> >>     This implements the OP-TEE Trusted Execution Environment (TEE)
-> >>     driver.
-> >> +
-> >> +config OPTEE_LOAD_IMAGE
-> >> + bool "Load Op-Tee image as firmware"
-> >> + default n
-> >> + depends on OPTEE
-> >> + help
-> >> +   This loads the BL32 image for OP-TEE as firmware when the driver is =
-probed.
-> >> +   This returns -EPROBE_DEFER until the firmware is loadable from the
-> >> +   filesystem.
-> >> diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg=
-.h
-> >> index 70e9cc2ee96b..84c1b15032a9 100644
-> >> --- a/drivers/tee/optee/optee_msg.h
-> >> +++ b/drivers/tee/optee/optee_msg.h
-> >> @@ -284,6 +284,20 @@ struct optee_msg_arg {
-> >>   */
-> >>  #define OPTEE_MSG_FUNCID_GET_OS_REVISION 0x0001
-> >>
-> >> +/*
-> >> + * Load Trusted OS from optee/tee.bin in the Linux firmware.
-> >> + *
-> >> + * WARNING: Use this cautiously as it could lead to insecure loading of=
- the
-> >> + * Trusted OS.
-> >> + * This SMC instructs EL3 to load a binary and excute it as the Trusted=
- OS.
-> >> + * The first two params are the high and low 32 bits of the size of the=
- payload
-> >> + * and the third and fourth params are the high and low 32 bits of the =
-physical
-> >> + * address of the payload. The payload is in the OP-TEE image format.
-> >> + *
-> >> + * Returns 0 on success and an error code otherwise.
-> >> + */
-> >> +#define OPTEE_MSG_FUNCID_LOAD_IMAGE   0x0002
-> >> +
-> >>  /*
-> >>   * Do a secure call with struct optee_msg_arg as argument
-> >>   * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg:=
-:cmd
-> >> diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc=
-.h
-> >> index 73b5e7760d10..908b1005e9db 100644
-> >> --- a/drivers/tee/optee/optee_smc.h
-> >> +++ b/drivers/tee/optee/optee_smc.h
-> >> @@ -104,6 +104,28 @@ struct optee_smc_call_get_os_revision_result {
-> >>   unsigned long reserved1;
-> >>  };
-> >>
-> >> +/*
-> >> + * Load Trusted OS from optee/tee.bin in the Linux firmware.
-> >> + *
-> >> + * WARNING: Use this cautiously as it could lead to insecure loading of=
- the
-> >> + * Trusted OS.
-> >> + * This SMC instructs EL3 to load a binary and excute it as the Trusted=
- OS.
-> >> + *
-> >> + * Call register usage:
-> >> + * a0 SMC Function ID, OPTEE_SMC_CALL_LOAD_IMAGE
-> >> + * a1 Upper 32bit of a 64bit size for the payload
-> >> + * a2 Lower 32bit of a 64bit size for the payload
-> >> + * a3 Upper 32bit of the physical address for the payload
-> >> + * a4 Lower 32bit of the physical address for the payload
-> >> + *
-> >> + * The payload is in the OP-TEE image format.
-> >> + *
-> >> + * Returns result in a0, 0 on success and an error code otherwise.
-> >> + */
-> >> +#define OPTEE_SMC_FUNCID_LOAD_IMAGE OPTEE_MSG_FUNCID_LOAD_IMAGE
-> >> +#define OPTEE_SMC_CALL_LOAD_IMAGE \
-> >> + OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_LOAD_IMAGE)
-> >> +
-> >>  /*
-> >>   * Call with struct optee_msg_arg as argument
-> >>   *
-> >> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> >> index a1c1fa1a9c28..b1e6c4a807db 100644
-> >> --- a/drivers/tee/optee/smc_abi.c
-> >> +++ b/drivers/tee/optee/smc_abi.c
-> >> @@ -8,6 +8,7 @@
-> >>
-> >>  #include <linux/arm-smccc.h>
-> >>  #include <linux/errno.h>
-> >> +#include <linux/firmware.h>
-> >>  #include <linux/interrupt.h>
-> >>  #include <linux/io.h>
-> >>  #include <linux/irqdomain.h>
-> >> @@ -1354,6 +1355,69 @@ static void optee_shutdown(struct platform_device=
- *pdev)
-> >>   optee_disable_shm_cache(optee);
-> >>  }
-> >>
-> >> +#ifdef CONFIG_OPTEE_LOAD_IMAGE
-> >> +
-> >> +#define OPTEE_FW_IMAGE "optee/tee.bin"
-> >> +
-> >> +static int optee_load_fw(struct platform_device *pdev,
-> >> + optee_invoke_fn *invoke_fn)
-> >> +{
-> >> + const struct firmware *fw =3D NULL;
-> >> + struct arm_smccc_res res;
-> >> + phys_addr_t data_pa;
-> >> + u8 *data_buf =3D NULL;
-> >> + u64 data_size;
-> >> + u32 data_pa_high, data_pa_low;
-> >> + u32 data_size_high, data_size_low;
-> >> + int rc;
-> >> +
-> >> + rc =3D request_firmware(&fw, OPTEE_FW_IMAGE, &pdev->dev);
-> >> + if (rc)
-> >> + return -EPROBE_DEFER;
-> >> +
-> >> + data_size =3D fw->size;
-> >> + /*
-> >> + * This uses the GFP_DMA flag to ensure we are allocated memory in the
-> >> + * 32-bit space since TF-A cannot map memory beyond the 32-bit boundary.
-> >> + */
-> >> + data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
-> >> + if (!data_buf) {
-> >> + rc =3D -ENOMEM;
-> >> + goto fw_err;
-> >> + }
-> >> + memcpy(data_buf, fw->data, fw->size);
-> >> + data_pa =3D virt_to_phys(data_buf);
-> >> + reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
-> >> + reg_pair_from_64(&data_size_high, &data_size_low, data_size);
-> >> + goto fw_load;
-> >> +
-> >> +fw_err:
-> >> + pr_warn("image loading failed\n");
-> >> + data_pa_high =3D data_pa_low =3D data_size_high =3D data_size_low =3D =
-0;
-> >> +
-> >> +fw_load:
-> >> + /*
-> >> + * Always invoke the SMC, even if loading the image fails, to indicate
-> >> + * to EL3 that we have passed the point where it should allow invoking
-> >> + * this SMC.
-> >> + */
-> >> + invoke_fn(OPTEE_SMC_CALL_LOAD_IMAGE, data_size_high, data_size_low,
-> >> +   data_pa_high, data_pa_low, 0, 0, 0, &res);
-> >> + if (!rc)
-> >> + rc =3D res.a0;
-> >> + if (fw)
-> >> + release_firmware(fw);
-> >> + kfree(data_buf);
-> >> +
-> >> + return rc;
-> >> +}
-> >> +#else
-> >> +static inline int optee_load_fw(struct platform_device *__unused,
-> >> + optee_invoke_fn *__unused) {
-> >> + return 0;
-> >> +}
-> >> +#endif
-> >> +
-> >>  static int optee_probe(struct platform_device *pdev)
-> >>  {
-> >>   optee_invoke_fn *invoke_fn;
-> >> @@ -1372,6 +1436,12 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> >>   if (IS_ERR(invoke_fn))
-> >>   return PTR_ERR(invoke_fn);
-> >>
-> >> + rc =3D optee_load_fw(pdev, invoke_fn);
-> >> + if (rc) {
-> >> + pr_warn("image loading failed\n");
-> >> + return rc;
-> >> + }
-> >> +
-> >>   if (!optee_msg_api_uid_is_optee_api(invoke_fn)) {
-> >>   pr_warn("api uid mismatch\n");
-> >>   return -EINVAL;
-> >> --
-> >> 2.39.1.519.gcb327c4b5f-goog
+> +/*
+> + * Request reservation of a system invocation thread context in OP-TEE
+> + *
+> + * Call register usage:
+> + * a0  SMC Function ID: OPTEE_SMC_CALL_RESERVE_SYS_THREAD
+> + * a1-6        Not used
+> + * a7  Hypervisor Client ID register
+> + *
+> + * Normal return register usage:
+> + * a0  Return value, OPTEE_SMC_RETURN_*
+> + * a1-3        Not used
+> + * a4-7        Preserved
+> + *
+> + * Possible return values:
+> + * OPTEE_SMC_RETURN_UNKNOWN_FUNCTION   Trusted OS does not recognize this
+> + *                                      function.
+> + * OPTEE_SMC_RETURN_OK                 Call successfully completed.
+> + * OPTEE_SMC_RETURN_ETHREAD_LIMIT      Number of Trusted OS threads exceed=
+ed
+> + *                                      for the request.
+> + */
+> +#define OPTEE_SMC_FUNCID_CALL_RESERVE_SYS_THREAD       21
+> +#define OPTEE_SMC_CALL_RESERVE_SYS_THREAD \
+> +       OPTEE_SMC_STD_CALL_VAL(OPTEE_SMC_FUNCID_CALL_RESERVE_SYS_THREAD)
+> +
+> +/*
+> + * Unregister reservation of a system invocation thread context in OP-TEE
+> + *
+> + * Call register usage:
+> + * a0  SMC Function ID: OPTEE_SMC_CALL_UNRESERVE_SYS_THREAD
+> + * a1-6        Not used
+> + * a7  Hypervisor Client ID register
+> + *
+> + * Normal return register usage:
+> + * a0  Return value, OPTEE_SMC_RETURN_*
+> + * a1-3        Not used
+> + * a4-7        Preserved
+> + *
+> + * Possible return values:
+> + * OPTEE_SMC_RETURN_UNKNOWN_FUNCTION   Trusted OS does not recognize this
+> + *                                      function.
+> + * OPTEE_SMC_RETURN_OK                 Call successfully completed.
+> + */
+> +#define OPTEE_SMC_FUNCID_CALL_UNRESERVE_SYS_THREAD     22
+> +#define OPTEE_SMC_CALL_UNRESERVE_SYS_THREAD \
+> +       OPTEE_SMC_STD_CALL_VAL(OPTEE_SMC_FUNCID_CALL_UNRESERVE_SYS_THREAD)
+> +
+>  /*
+>   * Resume from RPC (for example after processing a foreign interrupt)
+>   *
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index a1c1fa1a9c28..013b5ae31c0e 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -889,7 +889,10 @@ static int optee_smc_do_call_with_arg(struct tee_conte=
+xt *ctx,
+>         }
+>
+>         if  (rpc_arg && tee_shm_is_dynamic(shm)) {
+> -               param.a0 =3D OPTEE_SMC_CALL_WITH_REGD_ARG;
+> +               if (ctx->system_ctx_count)
+> +                       param.a0 =3D OPTEE_SMC_CALL_SYSTEM_WITH_REGD_ARG;
+> +               else
+> +                       param.a0 =3D OPTEE_SMC_CALL_WITH_REGD_ARG;
+>                 reg_pair_from_64(&param.a1, &param.a2, (u_long)shm);
+>                 param.a3 =3D offs;
+>         } else {
+> @@ -1085,6 +1088,33 @@ static int optee_smc_open(struct tee_context *ctx)
+>         return optee_open(ctx, sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL);
+>  }
+>
+> +static int optee_request_sys_ctx(struct tee_context *ctx)
+> +{
+> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> +       struct arm_smccc_res res;
+> +
+> +       if (!(optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SYSTEM_THREAD))
+> +               return -EINVAL;
+> +
+> +       optee->smc.invoke_fn(OPTEE_SMC_CALL_RESERVE_SYS_THREAD,
+> +                            0, 0, 0, 0, 0, 0, 0, &res);
+> +
+> +       if (res.a0 !=3D OPTEE_SMC_RETURN_OK)
+> +               return -EINVAL;
+> +
+> +       return 0;
+> +}
+> +
+> +static void optee_release_sys_ctx(struct tee_context *ctx)
+> +{
+> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> +       struct arm_smccc_res res;
+> +
+> +       if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SYSTEM_THREAD)
+> +               optee->smc.invoke_fn(OPTEE_SMC_CALL_UNRESERVE_SYS_THREAD,
+> +                                    0, 0, 0, 0, 0, 0, 0, &res);
+> +}
+> +
+>  static const struct tee_driver_ops optee_clnt_ops =3D {
+>         .get_version =3D optee_get_version,
+>         .open =3D optee_smc_open,
+> @@ -1095,6 +1125,8 @@ static const struct tee_driver_ops optee_clnt_ops =3D=
+ {
+>         .cancel_req =3D optee_cancel_req,
+>         .shm_register =3D optee_shm_register,
+>         .shm_unregister =3D optee_shm_unregister,
+> +       .system_ctx_request =3D optee_request_sys_ctx,
+> +       .system_ctx_release =3D optee_release_sys_ctx,
+>  };
+>
+>  static const struct tee_desc optee_clnt_desc =3D {
+> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> index 98da206cd761..a7dfdea5d85b 100644
+> --- a/drivers/tee/tee_core.c
+> +++ b/drivers/tee/tee_core.c
+> @@ -5,6 +5,7 @@
+>
+>  #define pr_fmt(fmt) "%s: " fmt, __func__
+>
+> +#include <linux/bug.h>
+>  #include <linux/cdev.h>
+>  #include <linux/cred.h>
+>  #include <linux/fs.h>
+> @@ -1141,10 +1142,39 @@ EXPORT_SYMBOL_GPL(tee_client_open_context);
+>
+>  void tee_client_close_context(struct tee_context *ctx)
+>  {
+> +       while (ctx->system_ctx_count)
+> +               tee_client_release_system_context(ctx);
+> +
+>         teedev_close_context(ctx);
+>  }
+>  EXPORT_SYMBOL_GPL(tee_client_close_context);
+>
+> +int tee_client_request_system_context(struct tee_context *ctx)
+> +{
+> +       int ret;
+> +
+> +       if (!ctx->teedev->desc->ops->system_ctx_request ||
+> +           !ctx->teedev->desc->ops->system_ctx_release)
+> +               return -EINVAL;
+> +
+> +       ret =3D ctx->teedev->desc->ops->system_ctx_request(ctx);
+> +       if (!ret)
+> +               ctx->system_ctx_count++;
+> +
+> +       return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(tee_client_request_system_context);
+> +
+> +void tee_client_release_system_context(struct tee_context *ctx)
+> +{
+> +       if (ctx->system_ctx_count &&
+> +           ctx->teedev->desc->ops->system_ctx_release) {
+> +               ctx->teedev->desc->ops->system_ctx_release(ctx);
+> +               ctx->system_ctx_count--;
+> +       }
+> +}
+> +EXPORT_SYMBOL_GPL(tee_client_release_system_context);
+> +
+>  void tee_client_get_version(struct tee_context *ctx,
+>                             struct tee_ioctl_version_data *vers)
+>  {
+> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> index 17eb1c5205d3..45577256bb71 100644
+> --- a/include/linux/tee_drv.h
+> +++ b/include/linux/tee_drv.h
+> @@ -47,6 +47,8 @@ struct tee_shm_pool;
+>   *              non-blocking in nature.
+>   * @cap_memref_null: flag indicating if the TEE Client support shared
+>   *                   memory buffer with a NULL pointer.
+> + * @system_ctx_count: Number of system invocation contexts provisioned for
+> + *                    this TEE client or 0.
+>   */
+>  struct tee_context {
+>         struct tee_device *teedev;
+> @@ -55,6 +57,7 @@ struct tee_context {
+>         bool releasing;
+>         bool supp_nowait;
+>         bool cap_memref_null;
+> +       unsigned int system_ctx_count;
+>  };
+>
+>  struct tee_param_memref {
+> @@ -90,6 +93,8 @@ struct tee_param {
+>   * @supp_send:         called for supplicant to send a response
+>   * @shm_register:      register shared memory buffer in TEE
+>   * @shm_unregister:    unregister shared memory buffer in TEE
+> + * @system_ctx_request:        Request provisioning of a new system contex=
+t in TEE
+> + * @system_ctx_release:        Release a provisioned system context in TEE
+>   */
+>  struct tee_driver_ops {
+>         void (*get_version)(struct tee_device *teedev,
+> @@ -112,6 +117,8 @@ struct tee_driver_ops {
+>                             struct page **pages, size_t num_pages,
+>                             unsigned long start);
+>         int (*shm_unregister)(struct tee_context *ctx, struct tee_shm *shm);
+> +       int (*system_ctx_request)(struct tee_context *ctx);
+> +       void (*system_ctx_release)(struct tee_context *ctx);
+>  };
+>
+>  /**
+> @@ -397,6 +404,20 @@ tee_client_open_context(struct tee_context *start,
+>   */
+>  void tee_client_close_context(struct tee_context *ctx);
+>
+> +/**
+> + * tee_client_request_system_context() - Close a TEE context
+> + * @ctx:       TEE context to close
+> + *
+> + * @return 0 on success else an error code
+> + */
+> +int tee_client_request_system_context(struct tee_context *ctx);
+> +
+> +/**
+> + * tee_client_release_system_context() - Release a reserved system exec co=
+ntext
+> + * @ctx:       TEE context reference
+> + */
+> +void tee_client_release_system_context(struct tee_context *ctx);
+> +
+>  /**
+>   * tee_client_get_version() - Query version of TEE
+>   * @ctx:       TEE context to TEE to query
+> --
+> 2.25.1
+>
 
---===============5038889308616739715==--
+--===============9177793792444712482==--
 
