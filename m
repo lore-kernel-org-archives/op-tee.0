@@ -1,66 +1,70 @@
 From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 0/3] introduce tee-based EFI Runtime Variable Service
-Date: Wed, 22 Feb 2023 14:38:21 +0900
-Message-ID: <20230222053825.992-1-masahisa.kojima@linaro.org>
+Subject: [PATCH v3 1/3] efi: expose efivar generic ops register function
+Date: Wed, 22 Feb 2023 14:38:22 +0900
+Message-ID: <20230222053825.992-2-masahisa.kojima@linaro.org>
+In-Reply-To: <20230222053825.992-1-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6110980748836496014=="
+Content-Type: multipart/mixed; boundary="===============8893815244525993780=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6110980748836496014==
+--===============8893815244525993780==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-This series introduces the tee based EFI Runtime Variable Service.
+This is a preparation for supporting efivar operations
+provided by other than efi subsystem.
+Both register and unregister functions are exposed
+so that non-efi subsystem can revert the efi generic
+operation.
 
-The eMMC device is typically owned by the non-secure world(linux in
-this case). There is an existing solution utilizing eMMC RPMB partition
-for EFI Variables, it is implemented by interacting with
-OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
-and tee-supplicant. The last piece is the tee-based variable access
-driver to interact with OP-TEE and StandaloneMM.
+Co-developed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+---
+ drivers/firmware/efi/efi.c | 12 ++++++++++++
+ include/linux/efi.h        |  3 +++
+ 2 files changed, 15 insertions(+)
 
-Changelog:
-v2 -> v3:
-- add CONFIG_EFI dependency to TEE_STMM_EFI
-- add missing return code check for tee_client_invoke_func()
-- directly call efivars_register/unregister from tee_stmm_efi.c
-
-rfc v1 -> v2:
-- split patch into three patches, one for drivers/tee,
-  one for include/linux/efi.h, and one for the driver/firmware/efi/stmm
-- context/session management into probe() and remove() same as other tee
-client driver
-- StMM variable driver is moved from driver/tee/optee to driver/firmware/efi
-- use "tee" prefix instead of "optee" in driver/firmware/efi/stmm/tee_stmm_ef=
-i.c,
-  this file does not contain op-tee specific code, abstracted by tee layer and
-  StMM variable driver will work on other tee implementation.
-- PTA_STMM_CMD_COMMUNICATE -> PTA_STMM_CMD_COMMUNICATE
-- implement query_variable_store() but currently not used
-- no use of TEEC_SUCCESS, it is defined in driver/tee/optee/optee_private.h.
-  Other tee client drivers use 0 instead of using TEEC_SUCCESS
-- remove TEEC_ERROR_EXCESS_DATA status, it is refered just to output
-error message
-
-Masahisa Kojima (3):
-  efi: expose efivar generic ops register function
-  efi: Add EFI_ACCESS_DENIED status code
-  efi: Add tee-based EFI variable driver
-
- drivers/firmware/efi/Kconfig                 |  15 +
- drivers/firmware/efi/Makefile                |   1 +
- drivers/firmware/efi/efi.c                   |  12 +
- drivers/firmware/efi/stmm/mm_communication.h | 249 ++++++++
- drivers/firmware/efi/stmm/tee_stmm_efi.c     | 626 +++++++++++++++++++
- include/linux/efi.h                          |   4 +
- 6 files changed, 907 insertions(+)
- create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
- create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
-
+diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
+index 4bb30434ee4a..abaf77773bdd 100644
+--- a/drivers/firmware/efi/efi.c
++++ b/drivers/firmware/efi/efi.c
+@@ -227,6 +227,18 @@ static void generic_ops_unregister(void)
+ 	efivars_unregister(&generic_efivars);
+ }
+=20
++void efivars_generic_ops_register(void)
++{
++	generic_ops_register();
++}
++EXPORT_SYMBOL_GPL(efivars_generic_ops_register);
++
++void efivars_generic_ops_unregister(void)
++{
++	generic_ops_unregister();
++}
++EXPORT_SYMBOL_GPL(efivars_generic_ops_unregister);
++
+ #ifdef CONFIG_EFI_CUSTOM_SSDT_OVERLAYS
+ #define EFIVAR_SSDT_NAME_MAX	16UL
+ static char efivar_ssdt[EFIVAR_SSDT_NAME_MAX] __initdata;
+diff --git a/include/linux/efi.h b/include/linux/efi.h
+index df88786b5947..7e5239da87bf 100644
+--- a/include/linux/efi.h
++++ b/include/linux/efi.h
+@@ -1336,4 +1336,7 @@ bool efi_config_table_is_usable(const efi_guid_t *guid,=
+ unsigned long table)
+ 	return xen_efi_config_table_is_usable(guid, table);
+ }
+=20
++void efivars_generic_ops_register(void);
++void efivars_generic_ops_unregister(void);
++
+ #endif /* _LINUX_EFI_H */
 --=20
 2.30.2
 
 
---===============6110980748836496014==--
+--===============8893815244525993780==--
 
