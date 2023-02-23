@@ -1,148 +1,259 @@
-From: kernel test robot <lkp@intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH] tee: optee: Add SMC for loading OP-TEE image
-Date: Thu, 23 Feb 2023 15:51:36 +0800
-Message-ID: <202302231536.Vn2DNHd4-lkp@intel.com>
+Date: Thu, 23 Feb 2023 10:28:29 +0100
+Message-ID: 
+ <CAHUa44GUEtN4J_PKaeM4YEfL8dGBpCcSWw1C_pobwh9VFpWKTw@mail.gmail.com>
 In-Reply-To: <
  <20230222092409.1.I8e7f9b01d9ac940507d78e15368e200a6a69bedb@changeid>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7334412409590593114=="
+Content-Type: multipart/mixed; boundary="===============4322319826660635707=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7334412409590593114==
+--===============4322319826660635707==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jeffrey,
+Hi,
 
-Thank you for the patch! Yet something to improve:
+On Wed, Feb 22, 2023 at 6:24 PM Jeffrey Kardatzke
+<jkardatzke@chromium.org> wrote:
+>
+> Adds an SMC call that will pass an OP-TEE binary image to EL3 and
+> instruct it to load it as the BL32 payload. This works in conjunction
+> with a feature added to Trusted Firmware for ARM that supports this.
+>
+> Signed-off-by: Jeffrey Kardatzke <jkardatzke@chromium.org>
+> Signed-off-by: Jeffrey Kardatzke <jkardatzke@google.com>
+> ---
+>
+>  drivers/tee/optee/Kconfig     | 10 +++++
+>  drivers/tee/optee/optee_msg.h | 14 +++++++
+>  drivers/tee/optee/optee_smc.h | 22 ++++++++++
+>  drivers/tee/optee/smc_abi.c   | 77 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 123 insertions(+)
+>
+> diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
+> index f121c224e682..5ffbeb3eaac0 100644
+> --- a/drivers/tee/optee/Kconfig
+> +++ b/drivers/tee/optee/Kconfig
+> @@ -7,3 +7,13 @@ config OPTEE
+>         help
+>           This implements the OP-TEE Trusted Execution Environment (TEE)
+>           driver.
+> +
+> +config OPTEE_LOAD_IMAGE
+> +       bool "Load Op-Tee image as firmware"
 
-[auto build test ERROR on linus/master]
-[also build test ERROR on v6.2 next-20230223]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+OP-TEE
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jeffrey-Kardatzke/tee-=
-optee-Add-SMC-for-loading-OP-TEE-image/20230223-012817
-patch link:    https://lore.kernel.org/r/20230222092409.1.I8e7f9b01d9ac940507=
-d78e15368e200a6a69bedb%40changeid
-patch subject: [PATCH] tee: optee: Add SMC for loading OP-TEE image
-config: arm64-defconfig (https://download.01.org/0day-ci/archive/20230223/202=
-302231536.Vn2DNHd4-lkp(a)intel.com/config)
-compiler: aarch64-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=3D1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/ma=
-ke.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/c19d72729a3c17aefd43e=
-283bbfe3dd5abd2b26b
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Jeffrey-Kardatzke/tee-optee-Add-SMC-=
-for-loading-OP-TEE-image/20230223-012817
-        git checkout c19d72729a3c17aefd43e283bbfe3dd5abd2b26b
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dgcc-12.1.0 make.cross W=
-=3D1 O=3Dbuild_dir ARCH=3Darm64 olddefconfig
-        COMPILER_INSTALL_PATH=3D$HOME/0day COMPILER=3Dgcc-12.1.0 make.cross W=
-=3D1 O=3Dbuild_dir ARCH=3Darm64 SHELL=3D/bin/bash
+> +       default n
+> +       depends on OPTEE
+> +       help
+> +         This loads the BL32 image for OP-TEE as firmware when the driver =
+is probed.
+> +         This returns -EPROBE_DEFER until the firmware is loadable from the
+> +         filesystem which is determined by checking the system_state until=
+ it is in
+> +         SYSTEM_RUNNING.
+> diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+> index 70e9cc2ee96b..84c1b15032a9 100644
+> --- a/drivers/tee/optee/optee_msg.h
+> +++ b/drivers/tee/optee/optee_msg.h
+> @@ -284,6 +284,20 @@ struct optee_msg_arg {
+>   */
+>  #define OPTEE_MSG_FUNCID_GET_OS_REVISION       0x0001
+>
+> +/*
+> + * Load Trusted OS from optee/tee.bin in the Linux firmware.
+> + *
+> + * WARNING: Use this cautiously as it could lead to insecure loading of the
+> + * Trusted OS.
+> + * This SMC instructs EL3 to load a binary and excute it as the Trusted OS.
+> + * The first two params are the high and low 32 bits of the size of the pa=
+yload
+> + * and the third and fourth params are the high and low 32 bits of the phy=
+sical
+> + * address of the payload. The payload is in the OP-TEE image format.
+> + *
+> + * Returns 0 on success and an error code otherwise.
+> + */
+> +#define OPTEE_MSG_FUNCID_LOAD_IMAGE   0x0002
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202302231536.Vn2DNHd4-lkp(a)int=
-el.com/
+There's no need to add anything to this file, you can define
+OPTEE_SMC_FUNCID_LOAD_IMAGE to 2 directly in optee_smc.h below.
 
-All errors (new ones prefixed by >>):
+> +
+>  /*
+>   * Do a secure call with struct optee_msg_arg as argument
+>   * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg::cmd
+> diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+> index 73b5e7760d10..908b1005e9db 100644
+> --- a/drivers/tee/optee/optee_smc.h
+> +++ b/drivers/tee/optee/optee_smc.h
+> @@ -104,6 +104,28 @@ struct optee_smc_call_get_os_revision_result {
+>         unsigned long reserved1;
+>  };
+>
+> +/*
+> + * Load Trusted OS from optee/tee.bin in the Linux firmware.
+> + *
+> + * WARNING: Use this cautiously as it could lead to insecure loading of the
+> + * Trusted OS.
+> + * This SMC instructs EL3 to load a binary and excute it as the Trusted OS.
 
->> drivers/tee/optee/smc_abi.c:1425:34: error: conflicting types for '__unuse=
-d'; have 'void (*)(long unsigned int,  long unsigned int,  long unsigned int,=
-  long unsigned int,  long unsigned int,  long unsigned int,  long unsigned i=
-nt,  long unsigned int,  struct arm_smccc_res *)'
-    1425 |                 optee_invoke_fn *__unused) {
-         |                 ~~~~~~~~~~~~~~~~~^~~~~~~~
-   drivers/tee/optee/smc_abi.c:1424:57: note: previous definition of '__unuse=
-d' with type 'struct platform_device *'
-    1424 | static inline int optee_load_fw(struct platform_device *__unused,
-         |                                 ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+execute
 
+> + *
+> + * Call register usage:
+> + * a0 SMC Function ID, OPTEE_SMC_CALL_LOAD_IMAGE
+> + * a1 Upper 32bit of a 64bit size for the payload
+> + * a2 Lower 32bit of a 64bit size for the payload
+> + * a3 Upper 32bit of the physical address for the payload
+> + * a4 Lower 32bit of the physical address for the payload
+> + *
+> + * The payload is in the OP-TEE image format.
+> + *
+> + * Returns result in a0, 0 on success and an error code otherwise.
+> + */
+> +#define OPTEE_SMC_FUNCID_LOAD_IMAGE OPTEE_MSG_FUNCID_LOAD_IMAGE
+> +#define OPTEE_SMC_CALL_LOAD_IMAGE \
+> +       OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_LOAD_IMAGE)
+> +
+>  /*
+>   * Call with struct optee_msg_arg as argument
+>   *
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index a1c1fa1a9c28..c1abbee86b39 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -8,9 +8,11 @@
+>
+>  #include <linux/arm-smccc.h>
+>  #include <linux/errno.h>
+> +#include <linux/firmware.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/io.h>
+>  #include <linux/irqdomain.h>
+> +#include <linux/kernel.h>
+>  #include <linux/mm.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> @@ -1354,6 +1356,77 @@ static void optee_shutdown(struct platform_device *p=
+dev)
+>                 optee_disable_shm_cache(optee);
+>  }
+>
+> +#ifdef CONFIG_OPTEE_LOAD_IMAGE
+> +
+> +#define OPTEE_FW_IMAGE "optee/tee.bin"
+> +
+> +static int optee_load_fw(struct platform_device *pdev,
+> +                        optee_invoke_fn *invoke_fn)
+> +{
+> +       const struct firmware *fw =3D NULL;
+> +       struct arm_smccc_res res;
+> +       phys_addr_t data_pa;
+> +       u8 *data_buf =3D NULL;
+> +       u64 data_size;
+> +       u32 data_pa_high, data_pa_low;
+> +       u32 data_size_high, data_size_low;
+> +       int rc;
+> +
+> +       rc =3D request_firmware(&fw, OPTEE_FW_IMAGE, &pdev->dev);
+> +       if (rc) {
+> +               /*
+> +                * The firmware in the rootfs will not be accessible until =
+we
+> +                * are in the SYSTEM_RUNNING state, so return EPROBE_DEFER =
+until
+> +                * that point.
+> +                */
+> +               if (system_state < SYSTEM_RUNNING)
+> +                       return -EPROBE_DEFER;
+> +               goto fw_err;
+> +       }
+> +
+> +       data_size =3D fw->size;
+> +       /*
+> +        * This uses the GFP_DMA flag to ensure we are allocated memory in =
+the
+> +        * 32-bit space since TF-A cannot map memory beyond the 32-bit boun=
+dary.
+> +        */
+> +       data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
+> +       if (!data_buf) {
+> +               rc =3D -ENOMEM;
+> +               goto fw_err;
+> +       }
+> +       memcpy(data_buf, fw->data, fw->size);
+> +       data_pa =3D virt_to_phys(data_buf);
+> +       reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
+> +       reg_pair_from_64(&data_size_high, &data_size_low, data_size);
+> +       goto fw_load;
+> +
+> +fw_err:
+> +       pr_warn("image loading failed\n");
+> +       data_pa_high =3D data_pa_low =3D data_size_high =3D data_size_low =
+=3D 0;
+> +
+> +fw_load:
+> +       /*
+> +        * Always invoke the SMC, even if loading the image fails, to indic=
+ate
+> +        * to EL3 that we have passed the point where it should allow invok=
+ing
+> +        * this SMC.
+> +        */
+> +       invoke_fn(OPTEE_SMC_CALL_LOAD_IMAGE, data_size_high, data_size_low,
+> +                 data_pa_high, data_pa_low, 0, 0, 0, &res);
 
-vim +1425 drivers/tee/optee/smc_abi.c
+Prior to this, you've done nothing to check that the firmware might do
+what you're expecting. optee_msg_api_uid_is_optee_api() does this
+under normal circumstances as that SMC function is defined in the SMC
+Calling Convention. I'm not sure what is the best approach here
+though.
 
-  1362=09
-  1363	static int optee_load_fw(struct platform_device *pdev,
-  1364				 optee_invoke_fn *invoke_fn)
-  1365	{
-  1366		const struct firmware *fw =3D NULL;
-  1367		struct arm_smccc_res res;
-  1368		phys_addr_t data_pa;
-  1369		u8 *data_buf =3D NULL;
-  1370		u64 data_size;
-  1371		u32 data_pa_high, data_pa_low;
-  1372		u32 data_size_high, data_size_low;
-  1373		int rc;
-  1374=09
-  1375		rc =3D request_firmware(&fw, OPTEE_FW_IMAGE, &pdev->dev);
-  1376		if (rc) {
-  1377			/*
-  1378			 * The firmware in the rootfs will not be accessible until we
-  1379			 * are in the SYSTEM_RUNNING state, so return EPROBE_DEFER until
-  1380			 * that point.
-  1381			 */
-  1382			if (system_state < SYSTEM_RUNNING)
-  1383				return -EPROBE_DEFER;
-  1384			goto fw_err;
-  1385		}
-  1386=09
-  1387		data_size =3D fw->size;
-  1388		/*
-  1389		 * This uses the GFP_DMA flag to ensure we are allocated memory in the
-  1390		 * 32-bit space since TF-A cannot map memory beyond the 32-bit bounda=
-ry.
-  1391		 */
-  1392		data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
-  1393		if (!data_buf) {
-  1394			rc =3D -ENOMEM;
-  1395			goto fw_err;
-  1396		}
-  1397		memcpy(data_buf, fw->data, fw->size);
-  1398		data_pa =3D virt_to_phys(data_buf);
-  1399		reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
-  1400		reg_pair_from_64(&data_size_high, &data_size_low, data_size);
-  1401		goto fw_load;
-  1402=09
-  1403	fw_err:
-  1404		pr_warn("image loading failed\n");
-  1405		data_pa_high =3D data_pa_low =3D data_size_high =3D data_size_low =3D=
- 0;
-  1406=09
-  1407	fw_load:
-  1408		/*
-  1409		 * Always invoke the SMC, even if loading the image fails, to indicate
-  1410		 * to EL3 that we have passed the point where it should allow invoking
-  1411		 * this SMC.
-  1412		 */
-  1413		invoke_fn(OPTEE_SMC_CALL_LOAD_IMAGE, data_size_high, data_size_low,
-  1414			  data_pa_high, data_pa_low, 0, 0, 0, &res);
-  1415		if (!rc)
-  1416			rc =3D res.a0;
-  1417		if (fw)
-  1418			release_firmware(fw);
-  1419		kfree(data_buf);
-  1420=09
-  1421		return rc;
-  1422	}
-  1423	#else
-  1424	static inline int optee_load_fw(struct platform_device *__unused,
-> 1425			optee_invoke_fn *__unused) {
-  1426		return 0;
-  1427	}
-  1428	#endif
-  1429=09
+> +       if (!rc)
+> +               rc =3D res.a0;
+> +       if (fw)
+> +               release_firmware(fw);
+> +       kfree(data_buf);
+> +
+> +       return rc;
+> +}
+> +#else
+> +static inline int optee_load_fw(struct platform_device *__unused,
+> +               optee_invoke_fn *__unused) {
+> +       return 0;
+> +}
+> +#endif
+> +
+>  static int optee_probe(struct platform_device *pdev)
+>  {
+>         optee_invoke_fn *invoke_fn;
+> @@ -1372,6 +1445,10 @@ static int optee_probe(struct platform_device *pdev)
+>         if (IS_ERR(invoke_fn))
+>                 return PTR_ERR(invoke_fn);
+>
+> +       rc =3D optee_load_fw(pdev, invoke_fn);
+> +       if (rc)
+> +               return rc;
 
---=20
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+What if OP-TEE already was loaded?
+This also causes trouble if unloading and loading the driver again.
+I think we need a way of telling if OP-TEE must be loaded first or not.
 
---===============7334412409590593114==--
+Thanks,
+Jens
+
+> +
+>         if (!optee_msg_api_uid_is_optee_api(invoke_fn)) {
+>                 pr_warn("api uid mismatch\n");
+>                 return -EINVAL;
+> --
+> 2.39.2.637.g21b0678d19-goog
+>
+
+--===============4322319826660635707==--
 
