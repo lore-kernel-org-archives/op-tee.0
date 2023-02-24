@@ -1,39 +1,30 @@
-From: Jules Maselbas <jmaselbas@kalray.eu>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] tee: optee: Fix typo Unuspported -> Unsupported
-Date: Wed, 22 Feb 2023 17:30:14 +0000
-Message-ID: <20230222173009.19874-1-jmaselbas@kalray.eu>
+Subject: Linaro OP-TEE Contribution (LOC) monthly meeting February 28
+Date: Fri, 24 Feb 2023 15:03:32 +0100
+Message-ID: 
+ <CAHUa44Fj8sVuiTxWtxZZ3oPOkWDd79zGzQQStYZs_gM+U3EeGQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6668301777624606563=="
+Content-Type: multipart/mixed; boundary="===============8636750946458976894=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6668301777624606563==
+--===============8636750946458976894==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Fix typo Unuspported -> Unsupported
+Hi,
 
-Signed-off-by: Jules Maselbas <jmaselbas@kalray.eu>
----
- drivers/tee/optee/call.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+It's soon time for another LOC monthly meeting. For time and connection
+details see the calendar at https://www.trustedfirmware.org/meetings/
 
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index 290b1bb0e9cd..df5fb5410b72 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -488,7 +488,7 @@ static bool is_normal_memory(pgprot_t p)
- #elif defined(CONFIG_ARM64)
- 	return (pgprot_val(p) & PTE_ATTRINDX_MASK) == PTE_ATTRINDX(MT_NORMAL);
- #else
--#error "Unuspported architecture"
-+#error "Unsupported architecture"
- #endif
- }
- 
--- 
-2.17.1
+I have recently seen interest in OP-TEE and S-EL2. As you may know, we
+have a working setup with OP-TEE and Hafnium with most of the needed
+patches upstream.
 
+Any other topics?
 
---===============6668301777624606563==--
+Thanks,
+Jens
+
+--===============8636750946458976894==--
 
