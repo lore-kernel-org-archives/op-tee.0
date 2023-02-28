@@ -1,41 +1,93 @@
-From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
+From: Rijo Thomas <Rijo-john.Thomas@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Hafnium Dynamic Shared Memory
-Date: Sat, 25 Feb 2023 23:19:18 +0800
-Message-ID: 
- <91d2699f-c02a-47f2-addc-6cd8e3ff8a9e.meijianqiang.mjq@alibaba-inc.com>
+Subject: [PATCH 1/1] tee: amdtee: fix race condition in amdtee_open_session
+Date: Tue, 28 Feb 2023 15:11:20 +0530
+Message-ID: <5bf4f1d679e2f80814d07937309602877afd02c6.1677577036.git.Rijo-john.Thomas@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8630835405954099903=="
+Content-Type: multipart/mixed; boundary="===============5791779065182092560=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8630835405954099903==
+--===============5791779065182092560==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi, experts
-Here are the comments I saw in the Hafnium code.
- /*
- * Hafnium doesn't support fragmentation of memory retrieve requests
- * (because it doesn't support caller-specified mappings, so a request
- * will never be larger than a single page), so this must be part of a
- * memory send (i.e. donate, lend or share) request.
- *
- * We can tell from the handle whether the memory transaction is for the
- * TEE or not.
- */
-I have a few questions about this description.
-1. In the case of Hafnium as SPMC, optee should register memory fragments all=
-ocated by linux.=20
-What does Hafnium do with these memory fragments since doesn't support fragme=
-ntation of memory retrieve requests?
-2. How does Hafnium map the page tables of stage-2 in dynamic shared memory f=
-or CA/TA,=20
-and are these page tables stored in the heap, or where?
-3. What does HF_MAILBOX for dynamic shared memory mean? How does it relate to=
- RX/TX buffer?
-Where can I see the related introduction in detail?
-Regards,
-Yuye
+There is a potential race condition in amdtee_open_session that may
+lead to use-after-free. For instance, in amdtee_open_session() after
+sess->sess_mask is set, and before setting:
 
---===============8630835405954099903==--
+    sess->session_info[i] = session_info;
+
+if amdtee_close_session() closes this same session, then 'sess' data
+structure will be released, causing kernel panic when 'sess' is
+accessed within amdtee_open_session().
+
+The solution is to set the bit sess->sess_mask as the last step in
+amdtee_open_session().
+
+Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+Cc: stable(a)vger.kernel.org
+Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
+---
+ drivers/tee/amdtee/core.c | 29 ++++++++++++++---------------
+ 1 file changed, 14 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
+index 297dc62bca29..372d64756ed6 100644
+--- a/drivers/tee/amdtee/core.c
++++ b/drivers/tee/amdtee/core.c
+@@ -267,35 +267,34 @@ int amdtee_open_session(struct tee_context *ctx,
+ 		goto out;
+ 	}
+ 
++	/* Open session with loaded TA */
++	handle_open_session(arg, &session_info, param);
++	if (arg->ret != TEEC_SUCCESS) {
++		pr_err("open_session failed %d\n", arg->ret);
++		handle_unload_ta(ta_handle);
++		kref_put(&sess->refcount, destroy_session);
++		goto out;
++	}
++
+ 	/* Find an empty session index for the given TA */
+ 	spin_lock(&sess->lock);
+ 	i = find_first_zero_bit(sess->sess_mask, TEE_NUM_SESSIONS);
+-	if (i < TEE_NUM_SESSIONS)
++	if (i < TEE_NUM_SESSIONS) {
++		sess->session_info[i] = session_info;
++		set_session_id(ta_handle, i, &arg->session);
+ 		set_bit(i, sess->sess_mask);
++	}
+ 	spin_unlock(&sess->lock);
+ 
+ 	if (i >= TEE_NUM_SESSIONS) {
+ 		pr_err("reached maximum session count %d\n", TEE_NUM_SESSIONS);
++		handle_close_session(ta_handle, session_info);
+ 		handle_unload_ta(ta_handle);
+ 		kref_put(&sess->refcount, destroy_session);
+ 		rc = -ENOMEM;
+ 		goto out;
+ 	}
+ 
+-	/* Open session with loaded TA */
+-	handle_open_session(arg, &session_info, param);
+-	if (arg->ret != TEEC_SUCCESS) {
+-		pr_err("open_session failed %d\n", arg->ret);
+-		spin_lock(&sess->lock);
+-		clear_bit(i, sess->sess_mask);
+-		spin_unlock(&sess->lock);
+-		handle_unload_ta(ta_handle);
+-		kref_put(&sess->refcount, destroy_session);
+-		goto out;
+-	}
+-
+-	sess->session_info[i] = session_info;
+-	set_session_id(ta_handle, i, &arg->session);
+ out:
+ 	free_pages((u64)ta, get_order(ta_size));
+ 	return rc;
+-- 
+2.25.1
+
+
+--===============5791779065182092560==--
 
