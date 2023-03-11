@@ -1,168 +1,74 @@
-From: Mario Limonciello <mario.limonciello@amd.com>
+From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 2/8] crypto: ccp: Add a header for multiple drivers to use
- `__psp_pa`
-Date: Fri, 10 Mar 2023 15:19:45 -0600
-Message-ID: <20230310211954.2490-3-mario.limonciello@amd.com>
-In-Reply-To: <20230310211954.2490-1-mario.limonciello@amd.com>
+Subject: =?utf-8?b?5Zue5aSN77yaUG9zdC1ib290?= loading of OP-TEE
+Date: Sat, 11 Mar 2023 21:43:38 +0800
+Message-ID: 
+ <e9efe183-3917-4594-abfa-17090d770a74.meijianqiang.mjq@alibaba-inc.com>
+In-Reply-To: <
+ <CAHUa44Eq7u2jQD-AinskV6RRbiRhb1gO-KmR562VzCC0fYqoag@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4836388471070574711=="
+Content-Type: multipart/mixed; boundary="===============7920873601978767496=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4836388471070574711==
+--===============7920873601978767496==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The TEE subdriver for CCP, the amdtee driver and the i2c-designware-amdpsp
-drivers all include `psp-sev.h` even though they don't use SEV
-functionality.
+Hi, experts,
+If I want to apply the code to the S-EL2 framework (Hafnium as SPMC),=20
+What special processing should be added to spmd_handle_smc_load function or o=
+ther function, such as context restore and save?=20
+I'm not clear about the details of the process, can you give me some help?
+Regards,
+Yuye.
+------------------------------------------------------------------
+=E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander <jens.wiklander@linaro.o=
+rg>
+=E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B41=E6=9C=889=E6=97=
+=A5(=E6=98=9F=E6=9C=9F=E4=B8=80) 15:39
+=E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9Atf-a <tf-a@lists.trustedfirmware.org>; =
+OP-TEE TrustedFirmware <op-tee@lists.trustedfirmware.org>
+=E6=8A=84=E3=80=80=E9=80=81=EF=BC=9ADan Handley <Dan.Handley@arm.com>; Jeff=
+rey Kardatzke <jkardatzke@google.com>; jwerner <jwerner@chromium.org>; ra=
+ghu.ncstate <raghu.ncstate@icloud.com>; Ilias Apalodimas <ilias.apalodimas(=
+a)linaro.org>
+=E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9APost-boot loading of OP-TEE
+Hi,
+The recent patch [1] for the OP-TEE Dispatcher in TF-A proposes a way
+of post-boot loading OP-TEE by the Linux kernel with signature
+verification in the normal world only. This has previously been
+discussed in this mail thread [2] about half a year ago. Ultimately,
+it was concluded that this should in principle be accepted upstream as
+a platform choice to allow this or not. There are concerns that what
+we have in upstream TF-A should serve as good examples, and trusting
+the normal world to verify secure world software might not meet that
+criterion. There are also concerns about adding signature verification
+to BL31
+Leaving the secure world wide open until the Linux kernel has been
+able to successfully load and verify an OP-TEE binary seems very
+risky. Even if it's claimed that the normal world can be trusted at
+this point, we're still giving up a critical level of defense without
+a good reason.
+I've started to review [1], but it should not be accepted for merging
+without support and approval from other maintainers.
+I would like to explore other options in this mail thread. In [2] it
+was suggested that a remnant of bl2 could be kept to verify OP-TEE
+before starting to execute it. This could be taken one step further
+and load a limited OP-TEE at boot which later is updated live, almost
+like what's discussed in [3]. This should minimize the impact on TF-A
+and also leave OP-TEE in charge of accepting an update instead of a
+divided responsibility between the normal world and TF-A.
+[1] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/18635 <htt=
+ps://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/18635 >
+[2] https://lists.trustedfirmware.org/archives/list/tf-a(a)lists.trustedfirmw=
+are.org/thread/D2HEKDEGRBLMMLAQ6OKC3AQDM4ELSJPL/#D2HEKDEGRBLMMLAQ6OKC3AQDM4EL=
+SJPL <https://lists.trustedfirmware.org/archives/list/tf-a@lists.trustedfir=
+mware.org/thread/D2HEKDEGRBLMMLAQ6OKC3AQDM4ELSJPL/#D2HEKDEGRBLMMLAQ6OKC3AQDM4=
+ELSJPL >
+[3] https://github.com/OP-TEE/optee_os/issues/5699 <https://github.com/OP-TEE=
+/optee_os/issues/5699 >
+Thanks,
+Jens
 
-Move the definition of `__psp_pa` into a common header to be included
-by all of these drivers.
-
-Reviewed-by: Jan Dabros <jsd@semihalf.com>
-Acked-by: Jarkko Nikula <jarkko.nikula@linux.intel.com> # For the drivers/i=
-2c/busses/i2c-designware-amdpsp.c
-Acked-by: Sumit Garg <sumit.garg@linaro.org> # For TEE subsystem bits
-Acked-by: Tom Lendacky <thomas.lendacky@amd.com>
-Acked-by: Sean Christopherson <seanjc@google.com> # KVM
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
-v3->v4:
- * Pick up tags
-v1->v2:
- * Add tags
----
- arch/x86/kvm/svm/sev.c                     |  1 +
- drivers/crypto/ccp/sev-dev.c               |  1 +
- drivers/crypto/ccp/tee-dev.c               |  2 +-
- drivers/i2c/busses/i2c-designware-amdpsp.c |  2 +-
- drivers/tee/amdtee/call.c                  |  2 +-
- drivers/tee/amdtee/shm_pool.c              |  2 +-
- include/linux/psp-sev.h                    |  8 --------
- include/linux/psp.h                        | 14 ++++++++++++++
- 8 files changed, 20 insertions(+), 12 deletions(-)
- create mode 100644 include/linux/psp.h
-
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index c25aeb550cd9..ec18a756b7c9 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -12,6 +12,7 @@
- #include <linux/kvm_host.h>
- #include <linux/kernel.h>
- #include <linux/highmem.h>
-+#include <linux/psp.h>
- #include <linux/psp-sev.h>
- #include <linux/pagemap.h>
- #include <linux/swap.h>
-diff --git a/drivers/crypto/ccp/sev-dev.c b/drivers/crypto/ccp/sev-dev.c
-index e2f25926eb51..28945ca7c856 100644
---- a/drivers/crypto/ccp/sev-dev.c
-+++ b/drivers/crypto/ccp/sev-dev.c
-@@ -24,6 +24,7 @@
- #include <linux/cpufeature.h>
- #include <linux/fs.h>
- #include <linux/fs_struct.h>
-+#include <linux/psp.h>
-=20
- #include <asm/smp.h>
- #include <asm/cacheflush.h>
-diff --git a/drivers/crypto/ccp/tee-dev.c b/drivers/crypto/ccp/tee-dev.c
-index 5c9d47f3be37..f24fc953718a 100644
---- a/drivers/crypto/ccp/tee-dev.c
-+++ b/drivers/crypto/ccp/tee-dev.c
-@@ -13,7 +13,7 @@
- #include <linux/delay.h>
- #include <linux/slab.h>
- #include <linux/gfp.h>
--#include <linux/psp-sev.h>
-+#include <linux/psp.h>
- #include <linux/psp-tee.h>
-=20
- #include "psp-dev.h"
-diff --git a/drivers/i2c/busses/i2c-designware-amdpsp.c b/drivers/i2c/busses/=
-i2c-designware-amdpsp.c
-index 8f36167bce62..80f28a1bbbef 100644
---- a/drivers/i2c/busses/i2c-designware-amdpsp.c
-+++ b/drivers/i2c/busses/i2c-designware-amdpsp.c
-@@ -4,7 +4,7 @@
- #include <linux/bits.h>
- #include <linux/i2c.h>
- #include <linux/io-64-nonatomic-lo-hi.h>
--#include <linux/psp-sev.h>
-+#include <linux/psp.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
-=20
-diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
-index cec6e70f0ac9..e8cd9aaa3467 100644
---- a/drivers/tee/amdtee/call.c
-+++ b/drivers/tee/amdtee/call.c
-@@ -8,7 +8,7 @@
- #include <linux/tee_drv.h>
- #include <linux/psp-tee.h>
- #include <linux/slab.h>
--#include <linux/psp-sev.h>
-+#include <linux/psp.h>
- #include "amdtee_if.h"
- #include "amdtee_private.h"
-=20
-diff --git a/drivers/tee/amdtee/shm_pool.c b/drivers/tee/amdtee/shm_pool.c
-index f87f96a291c9..f0303126f199 100644
---- a/drivers/tee/amdtee/shm_pool.c
-+++ b/drivers/tee/amdtee/shm_pool.c
-@@ -5,7 +5,7 @@
-=20
- #include <linux/slab.h>
- #include <linux/tee_drv.h>
--#include <linux/psp-sev.h>
-+#include <linux/psp.h>
- #include "amdtee_private.h"
-=20
- static int pool_op_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
-diff --git a/include/linux/psp-sev.h b/include/linux/psp-sev.h
-index 1595088c428b..7fd17e82bab4 100644
---- a/include/linux/psp-sev.h
-+++ b/include/linux/psp-sev.h
-@@ -14,14 +14,6 @@
-=20
- #include <uapi/linux/psp-sev.h>
-=20
--#ifdef CONFIG_X86
--#include <linux/mem_encrypt.h>
--
--#define __psp_pa(x)	__sme_pa(x)
--#else
--#define __psp_pa(x)	__pa(x)
--#endif
--
- #define SEV_FW_BLOB_MAX_SIZE	0x4000	/* 16KB */
-=20
- /**
-diff --git a/include/linux/psp.h b/include/linux/psp.h
-new file mode 100644
-index 000000000000..202162487ec3
---- /dev/null
-+++ b/include/linux/psp.h
-@@ -0,0 +1,14 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+
-+#ifndef __PSP_H
-+#define __PSP_H
-+
-+#ifdef CONFIG_X86
-+#include <linux/mem_encrypt.h>
-+
-+#define __psp_pa(x)	__sme_pa(x)
-+#else
-+#define __psp_pa(x)	__pa(x)
-+#endif
-+
-+#endif /* __PSP_H */
---=20
-2.34.1
-
-
---===============4836388471070574711==--
+--===============7920873601978767496==--
 
