@@ -1,16 +1,14 @@
 From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: =?utf-8?b?5Zue5aSN77yaUG9zdC1ib290?= loading of OP-TEE
-Date: Sat, 11 Mar 2023 21:43:38 +0800
+Subject: Re: Post-boot loading of OP-TEE
+Date: Sat, 11 Mar 2023 21:44:13 +0800
 Message-ID: 
- <e9efe183-3917-4594-abfa-17090d770a74.meijianqiang.mjq@alibaba-inc.com>
-In-Reply-To: <
- <CAHUa44Eq7u2jQD-AinskV6RRbiRhb1gO-KmR562VzCC0fYqoag@mail.gmail.com>>
+ <750fa1f7-56d9-4ff2-9004-112fdbbdb940.meijianqiang.mjq@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7920873601978767496=="
+Content-Type: multipart/mixed; boundary="===============2908058814409267699=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7920873601978767496==
+--===============2908058814409267699==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -70,5 +68,5 @@ ELSJPL >
 Thanks,
 Jens
 
---===============7920873601978767496==--
+--===============2908058814409267699==--
 
