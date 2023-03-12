@@ -1,17 +1,41 @@
 From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: Post-boot loading of OP-TEE
-Date: Sat, 11 Mar 2023 21:44:13 +0800
+Date: Sun, 12 Mar 2023 17:14:43 +0800
 Message-ID: 
- <750fa1f7-56d9-4ff2-9004-112fdbbdb940.meijianqiang.mjq@alibaba-inc.com>
+ <7f633631-de65-463c-91a9-a3a43bf18506.meijianqiang.mjq@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2908058814409267699=="
+Content-Type: multipart/mixed; boundary="===============7900925388096485795=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2908058814409267699==
+--===============7900925388096485795==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hi, experts,
+I have another two other questions about this issue.=20
+(1) What should I do if the current optee to load already exists or I want to=
+ update optee?=20
+The most straightforward way I could think of is to reclaim the memory curren=
+tly used by optee, then reload the optee image and initialize it.=20
+(2) optee may use multiple cores. When and how to process the initialization =
+of multiple cores?
+Do you have any solutions or ideas?
+Regards,
+Yuye.
+------------------------------------------------------------------
+=E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=
+=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
+=E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B43=E6=9C=8811=E6=97=
+=A5(=E6=98=9F=E6=9C=9F=E5=85=AD) 21:44
+=E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander <jens.wiklander@linaro.o=
+rg>; tf-a <tf-a@lists.trustedfirmware.org>; OP-TEE TrustedFirmware <op-tee(=
+a)lists.trustedfirmware.org>
+=E6=8A=84=E3=80=80=E9=80=81=EF=BC=9ADan Handley <Dan.Handley@arm.com>; Jeff=
+rey Kardatzke <jkardatzke@google.com>; jwerner <jwerner@chromium.org>; ra=
+ghu.ncstate <raghu.ncstate@icloud.com>; Ilias Apalodimas <ilias.apalodimas(=
+a)linaro.org>
+=E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9ARe: Post-boot loading of OP-TEE
 Hi, experts,
 If I want to apply the code to the S-EL2 framework (Hafnium as SPMC),=20
 What special processing should be added to spmd_handle_smc_load function or o=
@@ -68,5 +92,5 @@ ELSJPL >
 Thanks,
 Jens
 
---===============2908058814409267699==--
+--===============7900925388096485795==--
 
