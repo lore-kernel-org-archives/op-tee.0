@@ -1,37 +1,106 @@
-From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: load optee at 36bit address
-Date: Wed, 22 Mar 2023 11:50:24 +0800
+Subject: Re: [Hafnium] Boot arguments for S-EL1 with SPMC at S-EL2
+Date: Wed, 22 Mar 2023 10:32:59 +0100
 Message-ID: 
- <21294832-a043-42f2-add3-1159810c38a6.meijianqiang.mjq@alibaba-inc.com>
+ <CAHUa44Gh4WT78MDh7Qft-Bwxsf=wOiVwZmfdOa4+k2sUpx=xFQ@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3CDB9PR08MB6796BA639A087CC0F501B8969B819=40DB9PR08MB?=
+ =?utf-8?q?6796=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8534355885238615619=="
+Content-Type: multipart/mixed; boundary="===============0550759221809483447=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8534355885238615619==
+--===============0550759221809483447==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi, experts,
-We are currently moving optee to a 36bit address to boot with environment=20
-that hafnium runs at sel2 as spmc and optee runs at sel1 as sp.
-Now we have moved hafnium to 0x880000000 and run successfully.
-Then we tried moving optee to a 36bit address (0x89000000) as well.
-Although hafnium and optee were successfully initialized on the primary cpu, =
+Hi Olivier,
 
-psci_cpu_on does not seem to be entered into when the secondary cpu is starte=
-d.
-The error is as follows:
-https://github.com/OP-TEE/optee_os/issues/5895 <https://github.com/OP-TEE/opt=
-ee_os/issues/5895 >
-Is there any difference between the two cases=20
-where hafnium and optee initialize the secondary cpu with different load_addr=
-ess?
-The log print shows that the secondary cpu has not entered hafnium.
-Could Hafnium be affected by the 36bit address when dealing with psci related=
- transactions?
-Regards,
-Yuye.
+Comments below.
 
---===============8534355885238615619==--
+On Tue, Mar 21, 2023 at 3:36=E2=80=AFPM Olivier Deprez <Olivier.Deprez@arm.=
+com> wrote:
+>
+> Hi Jens,
+>
+> See comments inline [OD].
+>
+> Regards,
+> Olivier.
+>
+>
+> ________________________________
+> From: Jens Wiklander via Hafnium <hafnium@lists.trustedfirmware.org>
+> Sent: 21 March 2023 09:30
+> To: Olivier Deprez <Olivier.Deprez@arm.com>
+> Cc: hafnium(a)lists.trustedfirmware.org <hafnium@lists.trustedfirmware.or=
+g>; OP-TEE TrustedFirmware <op-tee@lists.trustedfirmware.org>
+> Subject: [Hafnium] Boot arguments for S-EL1 with SPMC at S-EL2
+>
+> Hi Olivier,
+>
+> I'm trying to implement a relocatable OP-TEE binary so it can be
+> loaded at different physical addresses without the need to recompile
+> it. This means that in the case with Hafnium when changing
+> "load-address" or "entrypoint-offset" in the OP-TEE SP manifest
+> there's no need to recompile OP-TEE. For this to work OP-TEE must be
+> able to figure out which memory range it's supposed to reside in.
+>
+> [OD] Fair enough, I believe that would conflate into some generic PIE suppo=
+rt?
+> I can see how this helps with the multi OP-TEE instances use case, perhaps?
+
+Yes, it should help with that too.
+
+>
+> Currently, OP-TEE knows the entry point address from PC and "memory
+> size" from X0. However, the "memory size" is from the "load-address"
+> so "entrypoint-offset" must be subtracted from PC in order to know the
+> allocated memory range.
+>
+> Do you have ideas on how OP-TEE at runtime can determine the allocated
+> memory range?
+>
+> [OD] The standard way would be to use the FF-A boot protocol e.g. if you ad=
+d this to OP-TEE's SP manifest:
+> +       /* Boot protocol */
+> +       gp-register-num =3D <0x0>;
+> +
+> +       /* Boot Info */
+> +       boot-info {
+> +               compatible =3D "arm,ffa-manifest-boot-info";
+> +               ffa_manifest;
+> +       };
+
+Great! That does the trick.
+
+Thanks,
+Jens
+
+>
+> See https://trustedfirmware-a.readthedocs.io/en/latest/components/secure-pa=
+rtition-manager.html#passing-boot-data-to-the-sp
+> At SP entry, x0 contains the address of a 'Boot Information Blob' (FF-A v1.=
+1 REL0 section 5.4.2) starting with a Boot Information Header (Table 5.9).
+> The SP manifest DT address can be extracted from a Boot Information Descrip=
+tor (Table 5.8).
+> Eventually the SP is able to parse its own SP manifest, into which it finds=
+ FF-A standard fields (load-address...) in addition to any impdef field added.
+> Note the partition size is not standarded (it should probably be), so for s=
+tarters you can add your own memsize field.
+> There is some sample usage in TF-a-tests:
+> https://git.trustedfirmware.org/TF-A/tf-a-tests.git/tree/spm/cactus/cactus_=
+main.c#n146
+> and also in context of EDKII/StMM:
+> https://github.com/odeprez/edk2/commit/7066c913cb227056d68ea99de5e92f2067fe=
+787e
+>
+>
+> Thanks,
+> Jens
+> --
+> Hafnium mailing list -- hafnium(a)lists.trustedfirmware.org
+> To unsubscribe send an email to hafnium-leave(a)lists.trustedfirmware.org
+
+--===============0550759221809483447==--
 
