@@ -1,16 +1,14 @@
 From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: =?utf-8?b?5Zue5aSN77yabG9hZA==?= optee at 36bit address
-Date: Thu, 23 Mar 2023 17:58:08 +0800
+Subject: load optee at 36bit address
+Date: Thu, 23 Mar 2023 17:59:03 +0800
 Message-ID: 
- <227559d8-1fe5-4184-b6d3-c5fc82c571e9.meijianqiang.mjq@alibaba-inc.com>
-In-Reply-To: <
- <21294832-a043-42f2-add3-1159810c38a6.meijianqiang.mjq@alibaba-inc.com>>
+ <0e5266ef-f2b2-4667-9554-e3aab5b0926f.meijianqiang.mjq@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2793542851202473383=="
+Content-Type: multipart/mixed; boundary="===============6356459308885653567=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2793542851202473383==
+--===============6356459308885653567==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -52,5 +50,5 @@ Could Hafnium be affected by the 36bit address when dealing with psci related=
 Regards,
 Yuye.
 
---===============2793542851202473383==--
+--===============6356459308885653567==--
 
