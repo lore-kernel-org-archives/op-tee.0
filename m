@@ -1,47 +1,38 @@
-From: Linus Walleij <linus.walleij@linaro.org>
+From: Jérôme Forissier <jerome.forissier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] tee: Pass a pointer to virt_to_page()
-Date: Fri, 24 Mar 2023 11:15:31 +0100
-Message-ID: <20230324101531.711735-1-linus.walleij@linaro.org>
+Subject: Preparing for OP-TEE 3.21.0
+Date: Fri, 24 Mar 2023 16:57:24 +0100
+Message-ID: 
+ <CA+NB=mY2Mq_TTmQMDYp_uTW7Gd8zd4qRSoBXP7L0i+2NxZLQwQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6248703723798844223=="
+Content-Type: multipart/mixed; boundary="===============3632515228940738885=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6248703723798844223==
+--===============3632515228940738885==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Like the other calls in this function virt_to_page() expects
-a pointer, not an integer.
+[BCC all OP-TEE maintainers]
 
-However since many architectures implement virt_to_pfn() as
-a macro, this function becomes polymorphic and accepts both a
-(unsigned long) and a (void *).
+Hi OP-TEE maintainers & contributors,
 
-Fix this up with an explicit cast.
+OP-TEE v3.21.0 is scheduled to be released on 2023-04-14. So, now is a
+good time to start testing the master branch on the various platforms
+and report/fix any bugs.
 
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/tee/tee_shm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The GitHub pull request for collecting Tested-by tags or any other
+comments is https://github.com/OP-TEE/optee_os/pull/5908
 
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index b1c6231defad..673cf0359494 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -32,7 +32,7 @@ static int shm_get_kernel_pages(unsigned long start, size_t=
- page_count,
- 			 is_kmap_addr((void *)start)))
- 		return -EINVAL;
-=20
--	page =3D virt_to_page(start);
-+	page =3D virt_to_page((void *)start);
- 	for (n =3D 0; n < page_count; n++) {
- 		pages[n] =3D page + n;
- 		get_page(pages[n]);
---=20
-2.34.1
+As usual, we will create a release candidate tag one week before the
+release date for final testing.
 
+In addition to that you can find some additional information related
+to releases here:
+https://optee.readthedocs.io/en/latest/general/releases.html
 
---===============6248703723798844223==--
+Thanks,
+-- 
+Jerome
+
+--===============3632515228940738885==--
 
