@@ -1,27 +1,47 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Linaro OP-TEE Contribution (LOC) monthly meeting March 28
-Date: Fri, 24 Mar 2023 10:51:04 +0100
-Message-ID: 
- <CAHUa44F6DdiJL1WOWw+y+4_c5tsoxtRhjf-gJqejxH9312PggQ@mail.gmail.com>
+Subject: [PATCH] tee: Pass a pointer to virt_to_page()
+Date: Fri, 24 Mar 2023 11:15:31 +0100
+Message-ID: <20230324101531.711735-1-linus.walleij@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7311154649047350547=="
+Content-Type: multipart/mixed; boundary="===============6248703723798844223=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7311154649047350547==
+--===============6248703723798844223==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Like the other calls in this function virt_to_page() expects
+a pointer, not an integer.
 
-It's soon time for another LOC monthly meeting. For time and connection
-details see the calendar at https://www.trustedfirmware.org/meetings/
+However since many architectures implement virt_to_pfn() as
+a macro, this function becomes polymorphic and accepts both a
+(unsigned long) and a (void *).
 
-If you have any topics you'd like to discuss, please let us know and
-we can schedule them.
+Fix this up with an explicit cast.
 
-Thanks,
-Jens
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/tee/tee_shm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---===============7311154649047350547==--
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index b1c6231defad..673cf0359494 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -32,7 +32,7 @@ static int shm_get_kernel_pages(unsigned long start, size_t=
+ page_count,
+ 			 is_kmap_addr((void *)start)))
+ 		return -EINVAL;
+=20
+-	page =3D virt_to_page(start);
++	page =3D virt_to_page((void *)start);
+ 	for (n =3D 0; n < page_count; n++) {
+ 		pages[n] =3D page + n;
+ 		get_page(pages[n]);
+--=20
+2.34.1
+
+
+--===============6248703723798844223==--
 
