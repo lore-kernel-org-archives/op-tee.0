@@ -1,55 +1,33 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE load for v6.4
-Date: Wed, 05 Apr 2023 08:27:01 +0200
-Message-ID: <20230405062701.GA3391925@rayden>
+Subject: 
+ Linaro OP-TEE Contribution (LOC) monthly meeting in April is cancelled
+Date: Wed, 05 Apr 2023 10:28:06 +0200
+Message-ID: 
+ <CA+Eyddaqu_C3dfnv57r25RW7rZYXOva-3mD9kPFL6b1Hyvo3=A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3249741937415524681=="
+Content-Type: multipart/mixed; boundary="===============5371846871953676849=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3249741937415524681==
+--===============5371846871953676849==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+Hi,
 
-Please pull this patch to enable loading of OP-TEE by the kernel.
+April's LOC meeting overlaps with Linaro Connect [1], hence we're unable to
+run the meeting and therefore the meeting will be cancelled.
 
-This feature is by default disabled and should probably always be so since
-it requires a quite specific security model to be secure.
+For people attending Linaro Connect. Jens, Jerome and myself will host an
+OP-TEE Open Hour where we encourage anyone who would like to discuss OP-TEE
+to show up in person. The OP-TEE Open Hour takes place Thursday 27th,
+12.00-1:00 UK time in meeting room 2.
 
-Thanks,
-Jens
+[1] https://www.linaro.org/connect
 
-The following changes since commit eeac8ede17557680855031c6f305ece2378af326:
+-- 
+Regards,
+Joakim on behalf of the OP-TEE team
 
-  Linux 6.3-rc2 (2023-03-12 16:36:44 -0700)
-
-are available in the Git repository at:
-
-  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-load-=
-for-v6.4
-
-for you to fetch changes up to f3040daab8104ac68e2b241bc93288f63b88a3c7:
-
-  tee: optee: Add SMC for loading OP-TEE image (2023-04-03 08:57:49 +0200)
-
-----------------------------------------------------------------
-Add SMC for OP-TEE image loading
-
-Adds an SMC call for loading OP-TEE by the kernel.
-
-----------------------------------------------------------------
-Jeffrey Kardatzke (1):
-      tee: optee: Add SMC for loading OP-TEE image
-
- Documentation/staging/tee.rst |  53 ++++++++++++++++
- drivers/tee/optee/Kconfig     |  17 ++++++
- drivers/tee/optee/optee_msg.h |  12 ++++
- drivers/tee/optee/optee_smc.h |  24 ++++++++
- drivers/tee/optee/smc_abi.c   | 137 ++++++++++++++++++++++++++++++++++++++++=
-++
- 5 files changed, 243 insertions(+)
-
---===============3249741937415524681==--
+--===============5371846871953676849==--
 
