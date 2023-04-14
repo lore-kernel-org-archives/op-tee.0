@@ -1,23 +1,55 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: fragment transmission while retrieving memory
-Date: Fri, 14 Apr 2023 08:22:51 +0200
+Subject: fragment transmission while retrieving memory
+Date: Fri, 14 Apr 2023 17:06:50 +0800
 Message-ID: 
- <CAHUa44HjTvYrvsQsj6POvw-fOtX+UjYfQ+tZwLjBiG0PjwwGcA@mail.gmail.com>
-In-Reply-To: <
- <17bfccdb-1368-4ec1-9e6e-f9343ee6fff2.meijianqiang.mjq@alibaba-inc.com>>
+ <5e1aba9b-a9d2-48c3-b0c9-ada69f6c34d7.meijianqiang.mjq@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2754728457885222445=="
+Content-Type: multipart/mixed; boundary="===============8238670372501598844=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2754728457885222445==
+--===============8238670372501598844==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hi, Jens, Olivier,
+Is it possible to solve this problem by increasing the buffer size such as 64=
+k?=20
+We plan to adopt this temporary scheme first and then implement the standard =
+retrieve process later.=20
+If this scheme is feasible, I have a few questions.=20
+1. Should the RXTX buffer between tee driver and hafnium the same as the one =
+between hafnium and optee?
+2. Which FFA instance is currently allocating these buffers?
+3. For Hafnium, I want to increase the HF_MAILBOX_SIZE in Hafnium, but there =
+seem to be two restrictions:
+static_assert(HF_MAILBOX_SIZE =3D=3D PAGE_SIZE,
+ "Currently, a page is mapped for the send and receive buffers so "
+ "the maximum request is the size of a page.");
+static_assert(MM_PPOOL_ENTRY_SIZE >=3D HF_MAILBOX_SIZE,
+ "The page pool entry size must be at least as big as the mailbox "
+ "size, so that memory region descriptors can be copied from the "
+ "mailbox for memory sharing.");
+I tried to increase the MM_PPOOL_ENTRY_SIZE,=20
+but optee doesn't seem to be booted properly.
+Do you know how to avoid the impact of these restrictions?
+Regards,
+Yuye.
+------------------------------------------------------------------
+=E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander via Hafnium <hafnium@lis=
+ts.trustedfirmware.org>
+=E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B44=E6=9C=8814=E6=97=
+=A5(=E6=98=9F=E6=9C=9F=E4=BA=94) 14:23
+=E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=
+=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
+=E6=8A=84=E3=80=80=E9=80=81=EF=BC=9AOlivier Deprez <Olivier.Deprez@arm.com>=
+; hafnium <hafnium@lists.trustedfirmware.org>; op-tee <op-tee@lists.trust=
+edfirmware.org>
+=E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9A[Hafnium] Re: fragment transmission while=
+ retrieving memory
 Hi Yuye,
-
-On Fri, Apr 14, 2023 at 4:29=E2=80=AFAM =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=
-=E5=A4=9C)
+On Fri, Apr 14, 2023 at 4:29 AM =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=
+=9C)
 <meijianqiang.mjq@alibaba-inc.com> wrote:
 >
 >
@@ -30,7 +62,7 @@ spec.
 >
 > As I saw in the optee code, the retrieve mechanism would start with this co=
 de:
->     retrieve_desc =3D spmc_retrieve_req(cookie);
+> retrieve_desc =3D spmc_retrieve_req(cookie);
 > And in the function spmc_retrieve_req,
 > optee sets the total length to the same size as fragment0 length before sen=
 ding FFA_MEM_FRAG_REQ to hafnium,
@@ -43,12 +75,12 @@ ding FFA_MEM_FRAG_REQ to hafnium,
 > How should optee calculate this quantity?
 >
 > Hafnium then receives the FFA_MEM_FRAG_REQ.
-> As I saw in the hafnium code,  hafnium blocks the case that total length>fr=
-agment length.
->     if (fragment_length !=3D length) {
->         dlog_verbose("Fragmentation not yet supported.\n");
->         return ffa_error(FFA_INVALID_PARAMETERS);
->     }
+> As I saw in the hafnium code, hafnium blocks the case that total length>fra=
+gment length.
+> if (fragment_length !=3D length) {
+> dlog_verbose("Fragmentation not yet supported.\n");
+> return ffa_error(FFA_INVALID_PARAMETERS);
+> }
 > Obviously it is not what we expected.
 > Then following the example process, hafnium should allocate handle and use =
 it to associate fragments.
@@ -61,20 +93,16 @@ RAG_TX ABI in CFG_CORE_SEL2_SPMC enable case.
 > Is there any support plan for the implementation of fragmented memory retri=
 eve in the optee community?
 > Does the hafnium community have a plan to implement it cooperatively?
-
 If I've understood this correctly we have two different cases of
 eventual fragmentation of descriptors. The first is the descriptor
 passed with FFA_MEM_RETRIEVE_REQ_32, this one is not likely to need
 fragmentation support soon. The other is the descriptor received with
 FFA_MEM_RETRIEVE_RESP, I believe this is where you've run into
 trouble.
-
 From OP-TEE point of view, it would make sense if you took lead on
 implementing this. I can help with review etc.
-
 Thanks,
 Jens
-
 >
 > Thanks a lot for your support.
 >
@@ -92,10 +120,10 @@ m>
 =97=A5(=E6=98=9F=E6=9C=9F=E5=9B=9B) 15:52
 > =E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=
 =E5=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-> =E6=8A=84=E3=80=80=E9=80=81=EF=BC=9Ahafnium <hafnium@lists.trustedfirmwar=
-e.org>; Jens Wiklander <jens.wiklander@linaro.org>
-> =E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9ARe: fragment transmission while retriev=
-ing memory
+> =E6=8A=84 =E9=80=81=EF=BC=9Ahafnium <hafnium@lists.trustedfirmware.org>; =
+Jens Wiklander <jens.wiklander@linaro.org>
+> =E4=B8=BB =E9=A2=98=EF=BC=9ARe: fragment transmission while retrieving memo=
+ry
 >
 > Hi Yuye, Jens,
 >
@@ -138,10 +166,10 @@ m>
 =97=A5(=E6=98=9F=E6=9C=9F=E4=B8=89) 15:22
 > =E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=
 =E5=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-> =E6=8A=84=E3=80=80=E9=80=81=EF=BC=9Ahafnium <hafnium@lists.trustedfirmwar=
-e.org>; Jens Wiklander <jens.wiklander@linaro.org>
-> =E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9ARe: fragment transmission while retriev=
-ing memory
+> =E6=8A=84 =E9=80=81=EF=BC=9Ahafnium <hafnium@lists.trustedfirmware.org>; =
+Jens Wiklander <jens.wiklander@linaro.org>
+> =E4=B8=BB =E9=A2=98=EF=BC=9ARe: fragment transmission while retrieving memo=
+ry
 >
 > Hi Yuye,
 >
@@ -177,7 +205,8 @@ lander@linaro.org>
 > Hi, Olivier,
 >
 > Recently, I've been working on this issue.
-> https://github.com/OP-TEE/optee_os/issues/5943
+> https://github.com/OP-TEE/optee_os/issues/5943 <https://github.com/OP-TEE/o=
+ptee_os/issues/5943 >
 > Do you know any differences between hafnium's current implementation of fra=
 gment transmission while retrieving memory and the example process described =
 in FF-A 1.1 Figure 18.4?
@@ -186,6 +215,9 @@ in FF-A 1.1 Figure 18.4?
 > Yuye.
 >
 >
+--=20
+Hafnium mailing list -- hafnium(a)lists.trustedfirmware.org
+To unsubscribe send an email to hafnium-leave(a)lists.trustedfirmware.org
 
---===============2754728457885222445==--
+--===============8238670372501598844==--
 
