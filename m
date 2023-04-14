@@ -1,40 +1,75 @@
-From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
+From: Olivier Deprez <Olivier.Deprez@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: fragment transmission while retrieving memory
-Date: Fri, 14 Apr 2023 17:06:50 +0800
-Message-ID: 
- <5e1aba9b-a9d2-48c3-b0c9-ada69f6c34d7.meijianqiang.mjq@alibaba-inc.com>
+Subject: Re: fragment transmission while retrieving memory
+Date: Fri, 14 Apr 2023 09:13:59 +0000
+Message-ID: <DB9PR08MB6796B45D70A66B8826A58D429B999@DB9PR08MB6796.eurprd08.prod.outlook.com>
+In-Reply-To: <
+ <5e1aba9b-a9d2-48c3-b0c9-ada69f6c34d7.meijianqiang.mjq@alibaba-inc.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8238670372501598844=="
+Content-Type: multipart/mixed; boundary="===============4034112235640009990=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8238670372501598844==
+--===============4034112235640009990==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hi Yuye,
+
+At first sight, I wouldn't recommend this path of increasing RX/TX buffer siz=
+es (even though the spec permits it), as there are a lot of assumptions in ma=
+ny places for such buffers to be a 4K+4K pair. The would require adapting man=
+y components (kernel driver, hafnium, OP-TEE etc.)
+
+The fastest and more reasonable path affecting only OP-TEE to my understandin=
+g, would be with implementing the missing support for fragmented mem retrieve=
+ response as Jens suggested.
+
+Regards,
+Olivier.
+
+________________________________
+From: =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=9C) <meijianqiang.mjq@ali=
+baba-inc.com>
+Sent: 14 April 2023 11:06
+To: Jens Wiklander <jens.wiklander@linaro.org>; Olivier Deprez <Olivier.Dep=
+rez@arm.com>
+Cc: op-tee <op-tee@lists.trustedfirmware.org>; hafnium <hafnium@lists.tru=
+stedfirmware.org>
+Subject: fragment transmission while retrieving memory
+
+
+
+
 Hi, Jens, Olivier,
+
 Is it possible to solve this problem by increasing the buffer size such as 64=
-k?=20
+k?
 We plan to adopt this temporary scheme first and then implement the standard =
-retrieve process later.=20
-If this scheme is feasible, I have a few questions.=20
+retrieve process later.
+If this scheme is feasible, I have a few questions.
 1. Should the RXTX buffer between tee driver and hafnium the same as the one =
 between hafnium and optee?
 2. Which FFA instance is currently allocating these buffers?
 3. For Hafnium, I want to increase the HF_MAILBOX_SIZE in Hafnium, but there =
 seem to be two restrictions:
 static_assert(HF_MAILBOX_SIZE =3D=3D PAGE_SIZE,
- "Currently, a page is mapped for the send and receive buffers so "
- "the maximum request is the size of a page.");
+          "Currently, a page is mapped for the send and receive buffers so "
+          "the maximum request is the size of a page.");
 static_assert(MM_PPOOL_ENTRY_SIZE >=3D HF_MAILBOX_SIZE,
- "The page pool entry size must be at least as big as the mailbox "
- "size, so that memory region descriptors can be copied from the "
- "mailbox for memory sharing.");
-I tried to increase the MM_PPOOL_ENTRY_SIZE,=20
+          "The page pool entry size must be at least as big as the mailbox "
+          "size, so that memory region descriptors can be copied from the "
+          "mailbox for memory sharing.");
+I tried to increase the MM_PPOOL_ENTRY_SIZE,
 but optee doesn't seem to be booted properly.
 Do you know how to avoid the impact of these restrictions?
+
 Regards,
 Yuye.
+
+
+
+
+
 ------------------------------------------------------------------
 =E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander via Hafnium <hafnium@lis=
 ts.trustedfirmware.org>
@@ -47,7 +82,9 @@ ts.trustedfirmware.org>
 edfirmware.org>
 =E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9A[Hafnium] Re: fragment transmission while=
  retrieving memory
+
 Hi Yuye,
+
 On Fri, Apr 14, 2023 at 4:29 AM =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=
 =9C)
 <meijianqiang.mjq@alibaba-inc.com> wrote:
@@ -62,7 +99,7 @@ spec.
 >
 > As I saw in the optee code, the retrieve mechanism would start with this co=
 de:
-> retrieve_desc =3D spmc_retrieve_req(cookie);
+>     retrieve_desc =3D spmc_retrieve_req(cookie);
 > And in the function spmc_retrieve_req,
 > optee sets the total length to the same size as fragment0 length before sen=
 ding FFA_MEM_FRAG_REQ to hafnium,
@@ -75,12 +112,12 @@ ding FFA_MEM_FRAG_REQ to hafnium,
 > How should optee calculate this quantity?
 >
 > Hafnium then receives the FFA_MEM_FRAG_REQ.
-> As I saw in the hafnium code, hafnium blocks the case that total length>fra=
-gment length.
-> if (fragment_length !=3D length) {
-> dlog_verbose("Fragmentation not yet supported.\n");
-> return ffa_error(FFA_INVALID_PARAMETERS);
-> }
+> As I saw in the hafnium code,  hafnium blocks the case that total length>fr=
+agment length.
+>     if (fragment_length !=3D length) {
+>         dlog_verbose("Fragmentation not yet supported.\n");
+>         return ffa_error(FFA_INVALID_PARAMETERS);
+>     }
 > Obviously it is not what we expected.
 > Then following the example process, hafnium should allocate handle and use =
 it to associate fragments.
@@ -93,16 +130,20 @@ RAG_TX ABI in CFG_CORE_SEL2_SPMC enable case.
 > Is there any support plan for the implementation of fragmented memory retri=
 eve in the optee community?
 > Does the hafnium community have a plan to implement it cooperatively?
+
 If I've understood this correctly we have two different cases of
 eventual fragmentation of descriptors. The first is the descriptor
 passed with FFA_MEM_RETRIEVE_REQ_32, this one is not likely to need
 fragmentation support soon. The other is the descriptor received with
 FFA_MEM_RETRIEVE_RESP, I believe this is where you've run into
 trouble.
+
 From OP-TEE point of view, it would make sense if you took lead on
 implementing this. I can help with review etc.
+
 Thanks,
 Jens
+
 >
 > Thanks a lot for your support.
 >
@@ -205,8 +246,7 @@ lander@linaro.org>
 > Hi, Olivier,
 >
 > Recently, I've been working on this issue.
-> https://github.com/OP-TEE/optee_os/issues/5943 <https://github.com/OP-TEE/o=
-ptee_os/issues/5943 >
+> https://github.com/OP-TEE/optee_os/issues/5943
 > Do you know any differences between hafnium's current implementation of fra=
 gment transmission while retrieving memory and the example process described =
 in FF-A 1.1 Figure 18.4?
@@ -215,9 +255,10 @@ in FF-A 1.1 Figure 18.4?
 > Yuye.
 >
 >
---=20
+--
 Hafnium mailing list -- hafnium(a)lists.trustedfirmware.org
 To unsubscribe send an email to hafnium-leave(a)lists.trustedfirmware.org
 
---===============8238670372501598844==--
+
+--===============4034112235640009990==--
 
