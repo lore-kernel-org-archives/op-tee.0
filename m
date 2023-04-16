@@ -1,210 +1,122 @@
 From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: fragment transmission while retrieving memory
-Date: Sat, 15 Apr 2023 21:15:31 +0800
+Date: Mon, 17 Apr 2023 02:16:28 +0800
 Message-ID: 
- <35812435-fdec-4db7-94e4-27ba020b1fd1.meijianqiang.mjq@alibaba-inc.com>
+ <b304514a-9afe-4757-b984-5e6c87e2b502.meijianqiang.mjq@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2072006429155028674=="
+Content-Type: multipart/mixed; boundary="===============8471037358016112418=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2072006429155028674==
+--===============8471037358016112418==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 
-Hi, Jens,
->The first is the descriptor passed with FFA_MEM_RETRIEVE_REQ_32,=20
->this one is not likely to need fragmentation support soon.
-Could you tell me why? I'm a little unclear.=20
-Could you describe the difference between the retrieve process you mean and F=
-FA-spec figure 18.4 in detail?=20
-I need to make sure that I really understand what you mean,
-so that I can implement the missing support for fragmented mem retrieve respo=
-nse as you said.
-Or do you mean that we just need to implement the action done by optee after =
-it receives FFA_MEM_RETRIEVE_RESP_32?
-Regards,
-Yuye.
-------------------------------------------------------------------
-=E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AJens Wiklander <jens.wiklander@linaro.o=
-rg>
-=E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B44=E6=9C=8814=E6=97=
-=A5(=E6=98=9F=E6=9C=9F=E4=BA=94) 14:23
-=E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=
-=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-=E6=8A=84=E3=80=80=E9=80=81=EF=BC=9AOlivier Deprez <Olivier.Deprez@arm.com>=
-; hafnium <hafnium@lists.trustedfirmware.org>; op-tee <op-tee@lists.trust=
-edfirmware.org>
-=E4=B8=BB=E3=80=80=E9=A2=98=EF=BC=9ARe: fragment transmission while retrievin=
-g memory
-Hi Yuye,
-On Fri, Apr 14, 2023 at 4:29 AM =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=
-=9C)
-<meijianqiang.mjq@alibaba-inc.com> wrote:
->
->
-> Hi, Jens, Olivier,
->
-> If I understand properly, for this specific issue both optee and hafnium ne=
-ed to do further fix.
-> The following discussion and questions are based on figure 18.4 in the FFA =
-spec.
->
-> As I saw in the optee code, the retrieve mechanism would start with this co=
-de:
-> retrieve_desc =3D spmc_retrieve_req(cookie);
-> And in the function spmc_retrieve_req,
-> optee sets the total length to the same size as fragment0 length before sen=
-ding FFA_MEM_FRAG_REQ to hafnium,
-> which means hafnium will only retrieve the fragment0 memory region.
->
-> In the example process,
-> optee will determines the number of TX sized fragments of descriptor before=
- sending FFA_MEM_FRAG_REQ to hafnium.
-> I have a question here.
-> How should optee calculate this quantity?
->
-> Hafnium then receives the FFA_MEM_FRAG_REQ.
-> As I saw in the hafnium code, hafnium blocks the case that total length>fra=
-gment length.
-> if (fragment_length !=3D length) {
-> dlog_verbose("Fragmentation not yet supported.\n");
-> return ffa_error(FFA_INVALID_PARAMETERS);
-> }
-> Obviously it is not what we expected.
-> Then following the example process, hafnium should allocate handle and use =
-it to associate fragments.
-> I didn't find the corresponding implementation in hafnium code for this ste=
-p.
-> And I want to know how to implement the associate action here.
->
-> After that, optee lacks the implementation of FFA_MEM_FRAG_RX and FFA_MEM_F=
-RAG_TX ABI in CFG_CORE_SEL2_SPMC enable case.
-> Is there any support plan for the implementation of fragmented memory retri=
-eve in the optee community?
-> Does the hafnium community have a plan to implement it cooperatively?
-If I've understood this correctly we have two different cases of
-eventual fragmentation of descriptors. The first is the descriptor
-passed with FFA_MEM_RETRIEVE_REQ_32, this one is not likely to need
-fragmentation support soon. The other is the descriptor received with
-FFA_MEM_RETRIEVE_RESP, I believe this is where you've run into
-trouble.
-From OP-TEE point of view, it would make sense if you took lead on
-implementing this. I can help with review etc.
-Thanks,
-Jens
->
-> Thanks a lot for your support.
->
-> Regards,
-> Yuye.
->
->
->
->
->
-> ------------------------------------------------------------------
-> =E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AOlivier Deprez <Olivier.Deprez@arm.co=
-m>
-> =E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B44=E6=9C=8813=E6=
-=97=A5(=E6=98=9F=E6=9C=9F=E5=9B=9B) 15:52
-> =E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=
-=E5=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-> =E6=8A=84 =E9=80=81=EF=BC=9Ahafnium <hafnium@lists.trustedfirmware.org>; =
-Jens Wiklander <jens.wiklander@linaro.org>
-> =E4=B8=BB =E9=A2=98=EF=BC=9ARe: fragment transmission while retrieving memo=
-ry
->
-> Hi Yuye, Jens,
->
-> For the record, and If I understand properly the last comment in the github=
- issue:
-> OP-TEE is missing the implementation for receipt of a fragmented retrieve r=
-esponse
-> There is no further fix to be done in Hafnium for this specific issue at th=
-is moment, please let me know otherwise.
->
-> Thanks, Olivier.
->
->
-> ________________________________
-> From: =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=9C) <meijianqiang.mjq@a=
-libaba-inc.com>
-> Sent: 12 April 2023 09:27
-> To: Olivier Deprez <Olivier.Deprez@arm.com>
-> Cc: hafnium <hafnium@lists.trustedfirmware.org>; Jens Wiklander <jens.wik=
-lander@linaro.org>
-> Subject: Re: fragment transmission while retrieving memory
->
->
->
->
-> Hi, Olivier,
->
-> In our setup,
-> Hafnium commit: 997476a74571aec4f1a23590d45edf516f3934f4
-> optee version: 3.20.0
-> Thanks.
->
-> Regards,
-> Yuye.
->
-> ------------------------------------------------------------------
-> =E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AOlivier Deprez <Olivier.Deprez@arm.co=
-m>
-> =E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A2023=E5=B9=B44=E6=9C=8812=E6=
-=97=A5(=E6=98=9F=E6=9C=9F=E4=B8=89) 15:22
-> =E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A=E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=
-=E5=A4=9C) <meijianqiang.mjq@alibaba-inc.com>
-> =E6=8A=84 =E9=80=81=EF=BC=9Ahafnium <hafnium@lists.trustedfirmware.org>; =
-Jens Wiklander <jens.wiklander@linaro.org>
-> =E4=B8=BB =E9=A2=98=EF=BC=9ARe: fragment transmission while retrieving memo=
-ry
->
-> Hi Yuye,
->
-> AFAIK concerning Hafnium, fragmented mem sharing is supported for FFA_MEM_S=
-HARE/LEND/DONATE and FFA_MEM_RETRIEVE_RESP.
-> (For the sake of clarity, this isn't supported for FFA_MEM_RETRIEVE_REQ but=
- this shouldn't be a concern as this limitation only exists in the case of me=
-m sharing to multiple borrowers. In your case of a single borrower the mem re=
-trieve req. shouldn't have to be fragmented).
->
-> Can you tell which hafnium commit hash is used in your setup?
->
-> At the moment, I cannot tell if the issue described concern a miss in Hafni=
-um or OP-TEE.
-> I need to dig a bit further into both implementations and I'll let you know.
->
-> Regards,
-> Olivier.
->
->
-> ________________________________
-> From: =E6=A2=85=E5=BB=BA=E5=BC=BA(=E7=A6=B9=E5=A4=9C) <meijianqiang.mjq@a=
-libaba-inc.com>
-> Sent: 12 April 2023 08:21
-> To: Olivier Deprez <Olivier.Deprez@arm.com>
-> Cc: hafnium <hafnium@lists.trustedfirmware.org>; Jens Wiklander <jens.wik=
-lander@linaro.org>
-> Subject: fragment transmission while retrieving memory
->
->
->
->
-> Hi, Olivier,
->
-> Recently, I've been working on this issue.
-> https://github.com/OP-TEE/optee_os/issues/5943 <https://github.com/OP-TEE/o=
-ptee_os/issues/5943 >
-> Do you know any differences between hafnium's current implementation of fra=
-gment transmission while retrieving memory and the example process described =
-in FF-A 1.1 Figure 18.4?
->
-> Regards,
-> Yuye.
->
->
+SGksIEplbnMsCkkgaGF2ZSBpbXBsZW1lbnQgdGhlIG1pc3Npbmcgc3VwcG9ydCBmb3IgZnJhZ21l
+bnRlZCBtZW0gcmV0cmlldmUgcmVzcG9uc2UgYXMgeW91IHN1Z2dlc3RlZC4KSSB3aWxsIHB1c2gg
+Zml4IGludG8gdGhlIGNvbW11bml0eSBjb2RlIHNvb24gYW5kIHBsZWFzZSBoZWxwIHJldmlldyBp
+dCBsYXRlci4KVGhhbmtzLgpSZWdhcmRzLApZdXllLgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K5Y+R5Lu25Lq677yaSmVu
+cyBXaWtsYW5kZXIgPGplbnMud2lrbGFuZGVyKGEpbGluYXJvLm9yZz4K5Y+R6YCB5pe26Ze077ya
+MjAyM+W5tDTmnIgxNOaXpSjmmJ/mnJ/kupQpIDE0OjIzCuaUtuS7tuS6uu+8muaiheW7uuW8uijn
+prnlpJwpIDxtZWlqaWFucWlhbmcubWpxKGEpYWxpYmFiYS1pbmMuY29tPgrmioTjgIDpgIHvvJpP
+bGl2aWVyIERlcHJleiA8T2xpdmllci5EZXByZXooYSlhcm0uY29tPjsgaGFmbml1bSA8aGFmbml1
+bShhKWxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc+OyBvcC10ZWUgPG9wLXRlZShhKWxpc3RzLnRy
+dXN0ZWRmaXJtd2FyZS5vcmc+CuS4u+OAgOmimO+8mlJlOiBmcmFnbWVudCB0cmFuc21pc3Npb24g
+d2hpbGUgcmV0cmlldmluZyBtZW1vcnkKSGkgWXV5ZSwKT24gRnJpLCBBcHIgMTQsIDIwMjMgYXQg
+NDoyOSBBTSDmooXlu7rlvLoo56a55aScKQo8bWVpamlhbnFpYW5nLm1qcShhKWFsaWJhYmEtaW5j
+LmNvbT4gd3JvdGU6Cj4KPgo+IEhpLCBKZW5zLCBPbGl2aWVyLAo+Cj4gSWYgSSB1bmRlcnN0YW5k
+IHByb3Blcmx5LCBmb3IgdGhpcyBzcGVjaWZpYyBpc3N1ZSBib3RoIG9wdGVlIGFuZCBoYWZuaXVt
+IG5lZWQgdG8gZG8gZnVydGhlciBmaXguCj4gVGhlIGZvbGxvd2luZyBkaXNjdXNzaW9uIGFuZCBx
+dWVzdGlvbnMgYXJlIGJhc2VkIG9uIGZpZ3VyZSAxOC40IGluIHRoZSBGRkEgc3BlYy4KPgo+IEFz
+IEkgc2F3IGluIHRoZSBvcHRlZSBjb2RlLCB0aGUgcmV0cmlldmUgbWVjaGFuaXNtIHdvdWxkIHN0
+YXJ0IHdpdGggdGhpcyBjb2RlOgo+IHJldHJpZXZlX2Rlc2MgPSBzcG1jX3JldHJpZXZlX3JlcShj
+b29raWUpOwo+IEFuZCBpbiB0aGUgZnVuY3Rpb24gc3BtY19yZXRyaWV2ZV9yZXEsCj4gb3B0ZWUg
+c2V0cyB0aGUgdG90YWwgbGVuZ3RoIHRvIHRoZSBzYW1lIHNpemUgYXMgZnJhZ21lbnQwIGxlbmd0
+aCBiZWZvcmUgc2VuZGluZyBGRkFfTUVNX0ZSQUdfUkVRIHRvIGhhZm5pdW0sCj4gd2hpY2ggbWVh
+bnMgaGFmbml1bSB3aWxsIG9ubHkgcmV0cmlldmUgdGhlIGZyYWdtZW50MCBtZW1vcnkgcmVnaW9u
+Lgo+Cj4gSW4gdGhlIGV4YW1wbGUgcHJvY2VzcywKPiBvcHRlZSB3aWxsIGRldGVybWluZXMgdGhl
+IG51bWJlciBvZiBUWCBzaXplZCBmcmFnbWVudHMgb2YgZGVzY3JpcHRvciBiZWZvcmUgc2VuZGlu
+ZyBGRkFfTUVNX0ZSQUdfUkVRIHRvIGhhZm5pdW0uCj4gSSBoYXZlIGEgcXVlc3Rpb24gaGVyZS4K
+PiBIb3cgc2hvdWxkIG9wdGVlIGNhbGN1bGF0ZSB0aGlzIHF1YW50aXR5Pwo+Cj4gSGFmbml1bSB0
+aGVuIHJlY2VpdmVzIHRoZSBGRkFfTUVNX0ZSQUdfUkVRLgo+IEFzIEkgc2F3IGluIHRoZSBoYWZu
+aXVtIGNvZGUsIGhhZm5pdW0gYmxvY2tzIHRoZSBjYXNlIHRoYXQgdG90YWwgbGVuZ3RoPmZyYWdt
+ZW50IGxlbmd0aC4KPiBpZiAoZnJhZ21lbnRfbGVuZ3RoICE9IGxlbmd0aCkgewo+IGRsb2dfdmVy
+Ym9zZSgiRnJhZ21lbnRhdGlvbiBub3QgeWV0IHN1cHBvcnRlZC5cbiIpOwo+IHJldHVybiBmZmFf
+ZXJyb3IoRkZBX0lOVkFMSURfUEFSQU1FVEVSUyk7Cj4gfQo+IE9idmlvdXNseSBpdCBpcyBub3Qg
+d2hhdCB3ZSBleHBlY3RlZC4KPiBUaGVuIGZvbGxvd2luZyB0aGUgZXhhbXBsZSBwcm9jZXNzLCBo
+YWZuaXVtIHNob3VsZCBhbGxvY2F0ZSBoYW5kbGUgYW5kIHVzZSBpdCB0byBhc3NvY2lhdGUgZnJh
+Z21lbnRzLgo+IEkgZGlkbid0IGZpbmQgdGhlIGNvcnJlc3BvbmRpbmcgaW1wbGVtZW50YXRpb24g
+aW4gaGFmbml1bSBjb2RlIGZvciB0aGlzIHN0ZXAuCj4gQW5kIEkgd2FudCB0byBrbm93IGhvdyB0
+byBpbXBsZW1lbnQgdGhlIGFzc29jaWF0ZSBhY3Rpb24gaGVyZS4KPgo+IEFmdGVyIHRoYXQsIG9w
+dGVlIGxhY2tzIHRoZSBpbXBsZW1lbnRhdGlvbiBvZiBGRkFfTUVNX0ZSQUdfUlggYW5kIEZGQV9N
+RU1fRlJBR19UWCBBQkkgaW4gQ0ZHX0NPUkVfU0VMMl9TUE1DIGVuYWJsZSBjYXNlLgo+IElzIHRo
+ZXJlIGFueSBzdXBwb3J0IHBsYW4gZm9yIHRoZSBpbXBsZW1lbnRhdGlvbiBvZiBmcmFnbWVudGVk
+IG1lbW9yeSByZXRyaWV2ZSBpbiB0aGUgb3B0ZWUgY29tbXVuaXR5Pwo+IERvZXMgdGhlIGhhZm5p
+dW0gY29tbXVuaXR5IGhhdmUgYSBwbGFuIHRvIGltcGxlbWVudCBpdCBjb29wZXJhdGl2ZWx5PwpJ
+ZiBJJ3ZlIHVuZGVyc3Rvb2QgdGhpcyBjb3JyZWN0bHkgd2UgaGF2ZSB0d28gZGlmZmVyZW50IGNh
+c2VzIG9mCmV2ZW50dWFsIGZyYWdtZW50YXRpb24gb2YgZGVzY3JpcHRvcnMuIFRoZSBmaXJzdCBp
+cyB0aGUgZGVzY3JpcHRvcgpwYXNzZWQgd2l0aCBGRkFfTUVNX1JFVFJJRVZFX1JFUV8zMiwgdGhp
+cyBvbmUgaXMgbm90IGxpa2VseSB0byBuZWVkCmZyYWdtZW50YXRpb24gc3VwcG9ydCBzb29uLiBU
+aGUgb3RoZXIgaXMgdGhlIGRlc2NyaXB0b3IgcmVjZWl2ZWQgd2l0aApGRkFfTUVNX1JFVFJJRVZF
+X1JFU1AsIEkgYmVsaWV2ZSB0aGlzIGlzIHdoZXJlIHlvdSd2ZSBydW4gaW50bwp0cm91YmxlLgpG
+cm9tIE9QLVRFRSBwb2ludCBvZiB2aWV3LCBpdCB3b3VsZCBtYWtlIHNlbnNlIGlmIHlvdSB0b29r
+IGxlYWQgb24KaW1wbGVtZW50aW5nIHRoaXMuIEkgY2FuIGhlbHAgd2l0aCByZXZpZXcgZXRjLgpU
+aGFua3MsCkplbnMKPgo+IFRoYW5rcyBhIGxvdCBmb3IgeW91ciBzdXBwb3J0Lgo+Cj4gUmVnYXJk
+cywKPiBZdXllLgo+Cj4KPgo+Cj4KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiDlj5Hku7bkurrvvJpPbGl2aWVyIERl
+cHJleiA8T2xpdmllci5EZXByZXooYSlhcm0uY29tPgo+IOWPkemAgeaXtumXtO+8mjIwMjPlubQ0
+5pyIMTPml6Uo5pif5pyf5ZubKSAxNTo1Mgo+IOaUtuS7tuS6uu+8muaiheW7uuW8uijnprnlpJwp
+IDxtZWlqaWFucWlhbmcubWpxKGEpYWxpYmFiYS1pbmMuY29tPgo+IOaKhCDpgIHvvJpoYWZuaXVt
+IDxoYWZuaXVtKGEpbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZz47IEplbnMgV2lrbGFuZGVyIDxq
+ZW5zLndpa2xhbmRlcihhKWxpbmFyby5vcmc+Cj4g5Li7IOmimO+8mlJlOiBmcmFnbWVudCB0cmFu
+c21pc3Npb24gd2hpbGUgcmV0cmlldmluZyBtZW1vcnkKPgo+IEhpIFl1eWUsIEplbnMsCj4KPiBG
+b3IgdGhlIHJlY29yZCwgYW5kIElmIEkgdW5kZXJzdGFuZCBwcm9wZXJseSB0aGUgbGFzdCBjb21t
+ZW50IGluIHRoZSBnaXRodWIgaXNzdWU6Cj4gT1AtVEVFIGlzIG1pc3NpbmcgdGhlIGltcGxlbWVu
+dGF0aW9uIGZvciByZWNlaXB0IG9mIGEgZnJhZ21lbnRlZCByZXRyaWV2ZSByZXNwb25zZQo+IFRo
+ZXJlIGlzIG5vIGZ1cnRoZXIgZml4IHRvIGJlIGRvbmUgaW4gSGFmbml1bSBmb3IgdGhpcyBzcGVj
+aWZpYyBpc3N1ZSBhdCB0aGlzIG1vbWVudCwgcGxlYXNlIGxldCBtZSBrbm93IG90aGVyd2lzZS4K
+Pgo+IFRoYW5rcywgT2xpdmllci4KPgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KPiBGcm9tOiDmooXlu7rlvLoo56a55aScKSA8bWVpamlhbnFpYW5nLm1qcShhKWFsaWJhYmEt
+aW5jLmNvbT4KPiBTZW50OiAxMiBBcHJpbCAyMDIzIDA5OjI3Cj4gVG86IE9saXZpZXIgRGVwcmV6
+IDxPbGl2aWVyLkRlcHJleihhKWFybS5jb20+Cj4gQ2M6IGhhZm5pdW0gPGhhZm5pdW0oYSlsaXN0
+cy50cnVzdGVkZmlybXdhcmUub3JnPjsgSmVucyBXaWtsYW5kZXIgPGplbnMud2lrbGFuZGVyKGEp
+bGluYXJvLm9yZz4KPiBTdWJqZWN0OiBSZTogZnJhZ21lbnQgdHJhbnNtaXNzaW9uIHdoaWxlIHJl
+dHJpZXZpbmcgbWVtb3J5Cj4KPgo+Cj4KPiBIaSwgT2xpdmllciwKPgo+IEluIG91ciBzZXR1cCwK
+PiBIYWZuaXVtIGNvbW1pdDogOTk3NDc2YTc0NTcxYWVjNGYxYTIzNTkwZDQ1ZWRmNTE2ZjM5MzRm
+NAo+IG9wdGVlIHZlcnNpb246IDMuMjAuMAo+IFRoYW5rcy4KPgo+IFJlZ2FyZHMsCj4gWXV5ZS4K
+Pgo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQo+IOWPkeS7tuS6uu+8mk9saXZpZXIgRGVwcmV6IDxPbGl2aWVyLkRlcHJl
+eihhKWFybS5jb20+Cj4g5Y+R6YCB5pe26Ze077yaMjAyM+W5tDTmnIgxMuaXpSjmmJ/mnJ/kuIkp
+IDE1OjIyCj4g5pS25Lu25Lq677ya5qKF5bu65by6KOemueWknCkgPG1laWppYW5xaWFuZy5tanEo
+YSlhbGliYWJhLWluYy5jb20+Cj4g5oqEIOmAge+8mmhhZm5pdW0gPGhhZm5pdW0oYSlsaXN0cy50
+cnVzdGVkZmlybXdhcmUub3JnPjsgSmVucyBXaWtsYW5kZXIgPGplbnMud2lrbGFuZGVyKGEpbGlu
+YXJvLm9yZz4KPiDkuLsg6aKY77yaUmU6IGZyYWdtZW50IHRyYW5zbWlzc2lvbiB3aGlsZSByZXRy
+aWV2aW5nIG1lbW9yeQo+Cj4gSGkgWXV5ZSwKPgo+IEFGQUlLIGNvbmNlcm5pbmcgSGFmbml1bSwg
+ZnJhZ21lbnRlZCBtZW0gc2hhcmluZyBpcyBzdXBwb3J0ZWQgZm9yIEZGQV9NRU1fU0hBUkUvTEVO
+RC9ET05BVEUgYW5kIEZGQV9NRU1fUkVUUklFVkVfUkVTUC4KPiAoRm9yIHRoZSBzYWtlIG9mIGNs
+YXJpdHksIHRoaXMgaXNuJ3Qgc3VwcG9ydGVkIGZvciBGRkFfTUVNX1JFVFJJRVZFX1JFUSBidXQg
+dGhpcyBzaG91bGRuJ3QgYmUgYSBjb25jZXJuIGFzIHRoaXMgbGltaXRhdGlvbiBvbmx5IGV4aXN0
+cyBpbiB0aGUgY2FzZSBvZiBtZW0gc2hhcmluZyB0byBtdWx0aXBsZSBib3Jyb3dlcnMuIEluIHlv
+dXIgY2FzZSBvZiBhIHNpbmdsZSBib3Jyb3dlciB0aGUgbWVtIHJldHJpZXZlIHJlcS4gc2hvdWxk
+bid0IGhhdmUgdG8gYmUgZnJhZ21lbnRlZCkuCj4KPiBDYW4geW91IHRlbGwgd2hpY2ggaGFmbml1
+bSBjb21taXQgaGFzaCBpcyB1c2VkIGluIHlvdXIgc2V0dXA/Cj4KPiBBdCB0aGUgbW9tZW50LCBJ
+IGNhbm5vdCB0ZWxsIGlmIHRoZSBpc3N1ZSBkZXNjcmliZWQgY29uY2VybiBhIG1pc3MgaW4gSGFm
+bml1bSBvciBPUC1URUUuCj4gSSBuZWVkIHRvIGRpZyBhIGJpdCBmdXJ0aGVyIGludG8gYm90aCBp
+bXBsZW1lbnRhdGlvbnMgYW5kIEknbGwgbGV0IHlvdSBrbm93Lgo+Cj4gUmVnYXJkcywKPiBPbGl2
+aWVyLgo+Cj4KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IEZyb206IOaiheW7
+uuW8uijnprnlpJwpIDxtZWlqaWFucWlhbmcubWpxKGEpYWxpYmFiYS1pbmMuY29tPgo+IFNlbnQ6
+IDEyIEFwcmlsIDIwMjMgMDg6MjEKPiBUbzogT2xpdmllciBEZXByZXogPE9saXZpZXIuRGVwcmV6
+KGEpYXJtLmNvbT4KPiBDYzogaGFmbml1bSA8aGFmbml1bShhKWxpc3RzLnRydXN0ZWRmaXJtd2Fy
+ZS5vcmc+OyBKZW5zIFdpa2xhbmRlciA8amVucy53aWtsYW5kZXIoYSlsaW5hcm8ub3JnPgo+IFN1
+YmplY3Q6IGZyYWdtZW50IHRyYW5zbWlzc2lvbiB3aGlsZSByZXRyaWV2aW5nIG1lbW9yeQo+Cj4K
+Pgo+Cj4gSGksIE9saXZpZXIsCj4KPiBSZWNlbnRseSwgSSd2ZSBiZWVuIHdvcmtpbmcgb24gdGhp
+cyBpc3N1ZS4KPiBodHRwczovL2dpdGh1Yi5jb20vT1AtVEVFL29wdGVlX29zL2lzc3Vlcy81OTQz
+IDxodHRwczovL2dpdGh1Yi5jb20vT1AtVEVFL29wdGVlX29zL2lzc3Vlcy81OTQzID4KPiBEbyB5
+b3Uga25vdyBhbnkgZGlmZmVyZW5jZXMgYmV0d2VlbiBoYWZuaXVtJ3MgY3VycmVudCBpbXBsZW1l
+bnRhdGlvbiBvZiBmcmFnbWVudCB0cmFuc21pc3Npb24gd2hpbGUgcmV0cmlldmluZyBtZW1vcnkg
+YW5kIHRoZSBleGFtcGxlIHByb2Nlc3MgZGVzY3JpYmVkIGluIEZGLUEgMS4xIEZpZ3VyZSAxOC40
+Pwo+Cj4gUmVnYXJkcywKPiBZdXllLgo+Cj4K
 
---===============2072006429155028674==--
+--===============8471037358016112418==--
 
