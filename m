@@ -1,127 +1,321 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Etienne Carriere <etienne.carriere@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2 1/1] tee: amdtee: Add return_origin to 'struct tee_cmd_load_ta'
-Date: Wed, 10 May 2023 16:49:03 +0530
+Subject: Re: [PATCH v6 1/4] tee: optee: system call property
+Date: Wed, 10 May 2023 17:02:53 +0200
 Message-ID: 
- <CAFA6WYNOjkU_4Kg=khuki3qv95f+bUB5hJUjRy2CoPXDvqW0Sw@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3Ca52cd6075f806eed82d577a6d437c705c7f36a26=2E1683617?=
- =?utf-8?q?412=2Egit=2ERijo-john=2EThomas=40amd=2Ecom=3E?=>
+ <CAN5uoS9QZCRiN=USbSNm1vz34vg_9+msT0NP9B3mCAx9evesYQ@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYMGw5Dh09BfZwmYtdWQOLGvft4DPuQt4mUByk55vQwjJg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1204024020950170121=="
+Content-Type: multipart/mixed; boundary="===============8231214022245953532=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1204024020950170121==
+--===============8231214022245953532==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 9 May 2023 at 13:03, Rijo Thomas <Rijo-john.Thomas@amd.com> wrote:
->
-> After TEE has completed processing of TEE_CMD_ID_LOAD_TA, set proper
-> value in 'return_origin' argument passed by open_session() call. To do
-> so, add 'return_origin' field to the structure tee_cmd_load_ta. The
-> Trusted OS shall update return_origin as part of TEE processing.
->
-> This change to 'struct tee_cmd_load_ta' interface requires a similar update
-> in AMD-TEE Trusted OS's TEE_CMD_ID_LOAD_TA interface.
->
-> This patch has been verified on Phoenix Birman setup. On older APUs,
-> return_origin value will be 0.
->
-> Cc: stable(a)vger.kernel.org
-> Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
-> Tested-by: Sourabh Das <sourabh.das@amd.com>
-> Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
-> ---
-> v2:
->  * Added Fixes tag.
->
->  drivers/tee/amdtee/amdtee_if.h | 10 ++++++----
->  drivers/tee/amdtee/call.c      | 30 +++++++++++++++++-------------
->  2 files changed, 23 insertions(+), 17 deletions(-)
->
+Hello Sumit,
 
-Acked-by: Sumit Garg <sumit.garg@linaro.org>
-
--Sumit
-
-> diff --git a/drivers/tee/amdtee/amdtee_if.h b/drivers/tee/amdtee/amdtee_if.h
-> index ff48c3e47375..e2014e21530a 100644
-> --- a/drivers/tee/amdtee/amdtee_if.h
-> +++ b/drivers/tee/amdtee/amdtee_if.h
-> @@ -118,16 +118,18 @@ struct tee_cmd_unmap_shared_mem {
+On Wed, 10 May 2023 at 10:22, Sumit Garg <sumit.garg@linaro.org> wrote:
 >
->  /**
->   * struct tee_cmd_load_ta - load Trusted Application (TA) binary into TEE
-> - * @low_addr:    [in] bits [31:0] of the physical address of the TA binary
-> - * @hi_addr:     [in] bits [63:32] of the physical address of the TA binary
-> - * @size:        [in] size of TA binary in bytes
-> - * @ta_handle:   [out] return handle of the loaded TA
-> + * @low_addr:       [in] bits [31:0] of the physical address of the TA bin=
-ary
-> + * @hi_addr:        [in] bits [63:32] of the physical address of the TA bi=
-nary
-> + * @size:           [in] size of TA binary in bytes
-> + * @ta_handle:      [out] return handle of the loaded TA
-> + * @return_origin:  [out] origin of return code after TEE processing
->   */
->  struct tee_cmd_load_ta {
->         u32 low_addr;
->         u32 hi_addr;
->         u32 size;
->         u32 ta_handle;
-> +       u32 return_origin;
->  };
+> Hi Etienne,
 >
->  /**
-> diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
-> index e8cd9aaa3467..e9b63dcb3194 100644
-> --- a/drivers/tee/amdtee/call.c
-> +++ b/drivers/tee/amdtee/call.c
-> @@ -423,19 +423,23 @@ int handle_load_ta(void *data, u32 size, struct tee_i=
-octl_open_session_arg *arg)
->         if (ret) {
->                 arg->ret_origin =3D TEEC_ORIGIN_COMMS;
->                 arg->ret =3D TEEC_ERROR_COMMUNICATION;
-> -       } else if (arg->ret =3D=3D TEEC_SUCCESS) {
-> -               ret =3D get_ta_refcount(load_cmd.ta_handle);
-> -               if (!ret) {
-> -                       arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> -                       arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
-> -
-> -                       /* Unload the TA on error */
-> -                       unload_cmd.ta_handle =3D load_cmd.ta_handle;
-> -                       psp_tee_process_cmd(TEE_CMD_ID_UNLOAD_TA,
-> -                                           (void *)&unload_cmd,
-> -                                           sizeof(unload_cmd), &ret);
-> -               } else {
-> -                       set_session_id(load_cmd.ta_handle, 0, &arg->session=
+> Apologies for the late re-review for this patchset. It has been quite
+> a busy last month for me.
+>
+> As a side note, I would appreciate it if you add a cover letter to
+> your patchset. A cover letter is generally preferred if there is a
+> patchset containing 2 or more patches.
+
+Ok, I'll do in patch v7.
+
+>
+> On Fri, 5 May 2023 at 23:01, Etienne Carriere
+> <etienne.carriere@linaro.org> wrote:
+> >
+> > Adds an argument to do_call_with_arg() handler to tell whether the call
+> > is a system call or nor. This change always sets this info to false
+> > hence no functional change.
+> >
+> > This change prepares management of system invocation proposed in a later
+> > change.
+> >
+> > Co-developed-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+> > ---
+> > No changes since v5
+> >
+> > Changes since v4:
+> > - New change, extracted from PATCH v4 1/2 (tee: system invocation") and
+> >   revised to cover preparatory changes in optee driver for system session
+> >   support with contribution from Jens.
+> > ---
+> >  drivers/tee/optee/call.c          | 22 ++++++++++++++++------
+> >  drivers/tee/optee/core.c          |  5 +++--
+> >  drivers/tee/optee/ffa_abi.c       |  3 ++-
+> >  drivers/tee/optee/optee_private.h |  7 +++++--
+> >  drivers/tee/optee/smc_abi.c       |  9 +++++----
+> >  5 files changed, 31 insertions(+), 15 deletions(-)
+> >
+> > diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+> > index df5fb5410b72..dba5339b61ae 100644
+> > --- a/drivers/tee/optee/call.c
+> > +++ b/drivers/tee/optee/call.c
+> > @@ -328,7 +328,8 @@ int optee_open_session(struct tee_context *ctx,
+> >                 goto out;
+> >         }
+> >
+> > -       if (optee->ops->do_call_with_arg(ctx, shm, offs)) {
+> > +       if (optee->ops->do_call_with_arg(ctx, shm, offs,
+> > +                                        sess->use_sys_thread)) {
+> >                 msg_arg->ret =3D TEEC_ERROR_COMMUNICATION;
+> >                 msg_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> >         }
+> > @@ -360,7 +361,8 @@ int optee_open_session(struct tee_context *ctx,
+> >         return rc;
+> >  }
+> >
+> > -int optee_close_session_helper(struct tee_context *ctx, u32 session)
+> > +int optee_close_session_helper(struct tee_context *ctx, u32 session,
+> > +                              bool system_thread)
+> >  {
+> >         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> >         struct optee_shm_arg_entry *entry;
+> > @@ -374,7 +376,7 @@ int optee_close_session_helper(struct tee_context *ct=
+x, u32 session)
+> >
+> >         msg_arg->cmd =3D OPTEE_MSG_CMD_CLOSE_SESSION;
+> >         msg_arg->session =3D session;
+> > -       optee->ops->do_call_with_arg(ctx, shm, offs);
+> > +       optee->ops->do_call_with_arg(ctx, shm, offs, system_thread);
+> >
+> >         optee_free_msg_arg(ctx, entry, offs);
+> >
+> > @@ -385,6 +387,7 @@ int optee_close_session(struct tee_context *ctx, u32 =
+session)
+> >  {
+> >         struct optee_context_data *ctxdata =3D ctx->data;
+> >         struct optee_session *sess;
+> > +       bool system_thread;
+> >
+> >         /* Check that the session is valid and remove it from the list */
+> >         mutex_lock(&ctxdata->mutex);
+> > @@ -394,9 +397,10 @@ int optee_close_session(struct tee_context *ctx, u32=
+ session)
+> >         mutex_unlock(&ctxdata->mutex);
+> >         if (!sess)
+> >                 return -EINVAL;
+> > +       system_thread =3D sess->use_sys_thread;
+> >         kfree(sess);
+> >
+> > -       return optee_close_session_helper(ctx, session);
+> > +       return optee_close_session_helper(ctx, session, system_thread);
+> >  }
+> >
+> >  int optee_invoke_func(struct tee_context *ctx, struct tee_ioctl_invoke_a=
+rg *arg,
+> > @@ -408,12 +412,15 @@ int optee_invoke_func(struct tee_context *ctx, stru=
+ct tee_ioctl_invoke_arg *arg,
+> >         struct optee_msg_arg *msg_arg;
+> >         struct optee_session *sess;
+> >         struct tee_shm *shm;
+> > +       bool system_thread;
+> >         u_int offs;
+> >         int rc;
+> >
+> >         /* Check that the session is valid */
+> >         mutex_lock(&ctxdata->mutex);
+> >         sess =3D find_session(ctxdata, arg->session);
+> > +       if (sess)
+>
+> This check is redundant if we move the assignment below...
+
+Here we change the sesssion attribute while the mutex is locked, in
+case some equivalent call with that session is issued.
+Below we return to caller once mutex is unlocked.
+I think it is the safer behavior. What do you think?
+
+Best regards,
+Etienne
+
+>
+> > +               system_thread =3D sess->use_sys_thread;
+> >         mutex_unlock(&ctxdata->mutex);
+> >         if (!sess)
+> >                 return -EINVAL;
+>
+> ...here as:
+>            system_thread =3D sess->use_sys_thread;
+>
+> > @@ -432,7 +439,7 @@ int optee_invoke_func(struct tee_context *ctx, struct=
+ tee_ioctl_invoke_arg *arg,
+> >         if (rc)
+> >                 goto out;
+> >
+> > -       if (optee->ops->do_call_with_arg(ctx, shm, offs)) {
+> > +       if (optee->ops->do_call_with_arg(ctx, shm, offs, system_thread)) {
+> >                 msg_arg->ret =3D TEEC_ERROR_COMMUNICATION;
+> >                 msg_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> >         }
+> > @@ -457,12 +464,15 @@ int optee_cancel_req(struct tee_context *ctx, u32 c=
+ancel_id, u32 session)
+> >         struct optee_shm_arg_entry *entry;
+> >         struct optee_msg_arg *msg_arg;
+> >         struct optee_session *sess;
+> > +       bool system_thread;
+> >         struct tee_shm *shm;
+> >         u_int offs;
+> >
+> >         /* Check that the session is valid */
+> >         mutex_lock(&ctxdata->mutex);
+> >         sess =3D find_session(ctxdata, session);
+> > +       if (sess)
+>
+> Ditto.
+>
+> -Sumit
+>
+> > +               system_thread =3D sess->use_sys_thread;
+> >         mutex_unlock(&ctxdata->mutex);
+> >         if (!sess)
+> >                 return -EINVAL;
+> > @@ -474,7 +484,7 @@ int optee_cancel_req(struct tee_context *ctx, u32 can=
+cel_id, u32 session)
+> >         msg_arg->cmd =3D OPTEE_MSG_CMD_CANCEL;
+> >         msg_arg->session =3D session;
+> >         msg_arg->cancel_id =3D cancel_id;
+> > -       optee->ops->do_call_with_arg(ctx, shm, offs);
+> > +       optee->ops->do_call_with_arg(ctx, shm, offs, system_thread);
+> >
+> >         optee_free_msg_arg(ctx, entry, offs);
+> >         return 0;
+> > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> > index 2a258bd3b6b5..d01ca47f7bde 100644
+> > --- a/drivers/tee/optee/core.c
+> > +++ b/drivers/tee/optee/core.c
+> > @@ -129,7 +129,8 @@ int optee_open(struct tee_context *ctx, bool cap_memr=
+ef_null)
+> >
+> >  static void optee_release_helper(struct tee_context *ctx,
+> >                                  int (*close_session)(struct tee_context =
+*ctx,
+> > -                                                     u32 session))
+> > +                                                     u32 session,
+> > +                                                     bool system_thread))
+> >  {
+> >         struct optee_context_data *ctxdata =3D ctx->data;
+> >         struct optee_session *sess;
+> > @@ -141,7 +142,7 @@ static void optee_release_helper(struct tee_context *=
+ctx,
+> >         list_for_each_entry_safe(sess, sess_tmp, &ctxdata->sess_list,
+> >                                  list_node) {
+> >                 list_del(&sess->list_node);
+> > -               close_session(ctx, sess->session_id);
+> > +               close_session(ctx, sess->session_id, sess->use_sys_thread=
 );
-> +       } else {
-> +               arg->ret_origin =3D load_cmd.return_origin;
-> +
-> +               if (arg->ret =3D=3D TEEC_SUCCESS) {
-> +                       ret =3D get_ta_refcount(load_cmd.ta_handle);
-> +                       if (!ret) {
-> +                               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +                               arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
-> +
-> +                               /* Unload the TA on error */
-> +                               unload_cmd.ta_handle =3D load_cmd.ta_handle;
-> +                               psp_tee_process_cmd(TEE_CMD_ID_UNLOAD_TA,
-> +                                                   (void *)&unload_cmd,
-> +                                                   sizeof(unload_cmd), &re=
-t);
-> +                       } else {
-> +                               set_session_id(load_cmd.ta_handle, 0, &arg-=
->session);
-> +                       }
->                 }
->         }
->         mutex_unlock(&ta_refcount_mutex);
-> --
-> 2.25.1
->
+> >                 kfree(sess);
+> >         }
+> >         kfree(ctxdata);
+> > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> > index 0828240f27e6..52cec9d06041 100644
+> > --- a/drivers/tee/optee/ffa_abi.c
+> > +++ b/drivers/tee/optee/ffa_abi.c
+> > @@ -612,7 +612,8 @@ static int optee_ffa_yielding_call(struct tee_context=
+ *ctx,
+> >   */
+> >
+> >  static int optee_ffa_do_call_with_arg(struct tee_context *ctx,
+> > -                                     struct tee_shm *shm, u_int offs)
+> > +                                     struct tee_shm *shm, u_int offs,
+> > +                                     bool system_thread)
+> >  {
+> >         struct ffa_send_direct_data data =3D {
+> >                 .data0 =3D OPTEE_FFA_YIELDING_CALL_WITH_ARG,
+> > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_=
+private.h
+> > index 72685ee0d53f..3da7960ab34a 100644
+> > --- a/drivers/tee/optee/optee_private.h
+> > +++ b/drivers/tee/optee/optee_private.h
+> > @@ -154,7 +154,8 @@ struct optee;
+> >   */
+> >  struct optee_ops {
+> >         int (*do_call_with_arg)(struct tee_context *ctx,
+> > -                               struct tee_shm *shm_arg, u_int offs);
+> > +                               struct tee_shm *shm_arg, u_int offs,
+> > +                               bool system_thread);
+> >         int (*to_msg_param)(struct optee *optee,
+> >                             struct optee_msg_param *msg_params,
+> >                             size_t num_params, const struct tee_param *pa=
+rams);
+> > @@ -204,6 +205,7 @@ struct optee {
+> >  struct optee_session {
+> >         struct list_head list_node;
+> >         u32 session_id;
+> > +       bool use_sys_thread;
+> >  };
+> >
+> >  struct optee_context_data {
+> > @@ -252,7 +254,8 @@ int optee_supp_send(struct tee_context *ctx, u32 ret,=
+ u32 num_params,
+> >  int optee_open_session(struct tee_context *ctx,
+> >                        struct tee_ioctl_open_session_arg *arg,
+> >                        struct tee_param *param);
+> > -int optee_close_session_helper(struct tee_context *ctx, u32 session);
+> > +int optee_close_session_helper(struct tee_context *ctx, u32 session,
+> > +                              bool system_thread);
+> >  int optee_close_session(struct tee_context *ctx, u32 session);
+> >  int optee_invoke_func(struct tee_context *ctx, struct tee_ioctl_invoke_a=
+rg *arg,
+> >                       struct tee_param *param);
+> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> > index 49702cb08f4f..56ebbb96ac97 100644
+> > --- a/drivers/tee/optee/smc_abi.c
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -507,7 +507,7 @@ static int optee_shm_register(struct tee_context *ctx=
+, struct tee_shm *shm,
+> >         msg_arg->params->u.tmem.buf_ptr =3D virt_to_phys(pages_list) |
+> >           (tee_shm_get_page_offset(shm) & (OPTEE_MSG_NONCONTIG_PAGE_SIZE =
+- 1));
+> >
+> > -       if (optee->ops->do_call_with_arg(ctx, shm_arg, 0) ||
+> > +       if (optee->ops->do_call_with_arg(ctx, shm_arg, 0, false) ||
+> >             msg_arg->ret !=3D TEEC_SUCCESS)
+> >                 rc =3D -EINVAL;
+> >
+> > @@ -550,7 +550,7 @@ static int optee_shm_unregister(struct tee_context *c=
+tx, struct tee_shm *shm)
+> >         msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT;
+> >         msg_arg->params[0].u.rmem.shm_ref =3D (unsigned long)shm;
+> >
+> > -       if (optee->ops->do_call_with_arg(ctx, shm_arg, 0) ||
+> > +       if (optee->ops->do_call_with_arg(ctx, shm_arg, 0, false) ||
+> >             msg_arg->ret !=3D TEEC_SUCCESS)
+> >                 rc =3D -EINVAL;
+> >  out:
+> > @@ -885,7 +885,8 @@ static void optee_handle_rpc(struct tee_context *ctx,
+> >   * Returns return code from secure world, 0 is OK
+> >   */
+> >  static int optee_smc_do_call_with_arg(struct tee_context *ctx,
+> > -                                     struct tee_shm *shm, u_int offs)
+> > +                                     struct tee_shm *shm, u_int offs,
+> > +                                     bool system_thread)
+> >  {
+> >         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> >         struct optee_call_waiter w;
+> > @@ -977,7 +978,7 @@ static int simple_call_with_arg(struct tee_context *c=
+tx, u32 cmd)
+> >                 return PTR_ERR(msg_arg);
+> >
+> >         msg_arg->cmd =3D cmd;
+> > -       optee_smc_do_call_with_arg(ctx, shm, offs);
+> > +       optee_smc_do_call_with_arg(ctx, shm, offs, false);
+> >
+> >         optee_free_msg_arg(ctx, entry, offs);
+> >         return 0;
+> > --
+> > 2.25.1
+> >
 
---===============1204024020950170121==--
+--===============8231214022245953532==--
 
