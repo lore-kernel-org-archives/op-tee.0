@@ -1,146 +1,127 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v6 2/4] tee: system session
-Date: Wed, 10 May 2023 15:44:25 +0530
+Subject: 
+ Re: [PATCH v2 1/1] tee: amdtee: Add return_origin to 'struct tee_cmd_load_ta'
+Date: Wed, 10 May 2023 16:49:03 +0530
 Message-ID: 
- <CAFA6WYPC36vqQLzOfArvy2GnVJAXLwbDGenhBARzJ7-Fri-sVA@mail.gmail.com>
-In-Reply-To: <20230505173012.881083-2-etienne.carriere@linaro.org>
+ <CAFA6WYNOjkU_4Kg=khuki3qv95f+bUB5hJUjRy2CoPXDvqW0Sw@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3Ca52cd6075f806eed82d577a6d437c705c7f36a26=2E1683617?=
+ =?utf-8?q?412=2Egit=2ERijo-john=2EThomas=40amd=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7203011585225602131=="
+Content-Type: multipart/mixed; boundary="===============1204024020950170121=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7203011585225602131==
+--===============1204024020950170121==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 5 May 2023 at 23:01, Etienne Carriere
-<etienne.carriere@linaro.org> wrote:
+On Tue, 9 May 2023 at 13:03, Rijo Thomas <Rijo-john.Thomas@amd.com> wrote:
 >
-> Adds kernel client API function tee_client_system_session() for a client
-> to request a system service entry in TEE context.
+> After TEE has completed processing of TEE_CMD_ID_LOAD_TA, set proper
+> value in 'return_origin' argument passed by open_session() call. To do
+> so, add 'return_origin' field to the structure tee_cmd_load_ta. The
+> Trusted OS shall update return_origin as part of TEE processing.
 >
-> This feature is needed to prevent a system deadlock when several TEE
-> client applications invoke TEE, consuming all TEE thread contexts
-> available in the secure world. The deadlock can happen in the OP-TEE
-> driver for example if all these TEE threads issue an RPC call from TEE
-> to Linux OS to access an eMMC RPMB partition (TEE secure storage) which
-> device clock or regulator controller is accessed through an OP-TEE SCMI
-> services. In that case, Linux SCMI driver must reach OP-TEE SCMI service
-> without waiting one of the consumed TEE thread is freed.
+> This change to 'struct tee_cmd_load_ta' interface requires a similar update
+> in AMD-TEE Trusted OS's TEE_CMD_ID_LOAD_TA interface.
 >
-
-s/waiting one/waiting until one/
-s/thread/threads/
-
-> Co-developed-by: Jens Wiklander <jens.wiklander@linaro.org>
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+> This patch has been verified on Phoenix Birman setup. On older APUs,
+> return_origin value will be 0.
+>
+> Cc: stable(a)vger.kernel.org
+> Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+> Tested-by: Sourabh Das <sourabh.das@amd.com>
+> Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
 > ---
-> No change since v5
+> v2:
+>  * Added Fixes tag.
+>
+>  drivers/tee/amdtee/amdtee_if.h | 10 ++++++----
+>  drivers/tee/amdtee/call.c      | 30 +++++++++++++++++-------------
+>  2 files changed, 23 insertions(+), 17 deletions(-)
 >
 
-With above typos fixes, feel free to add:
-
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Acked-by: Sumit Garg <sumit.garg@linaro.org>
 
 -Sumit
 
-> Changes since v4:
-> - Changes extracted from "[PATCH v4 1/2] tee: system invocation" and
->   revised with Jens contribution to cover only definition of tee driver
->   new API function tee_client_system_session() for kernel clients to
->   register their session as a system session.
-> - Commit message rephrased, including header line changed from
->   "tee: system invocation" to "tee: system session" has the feature
->   relates to system attributes of tee sessions.
+> diff --git a/drivers/tee/amdtee/amdtee_if.h b/drivers/tee/amdtee/amdtee_if.h
+> index ff48c3e47375..e2014e21530a 100644
+> --- a/drivers/tee/amdtee/amdtee_if.h
+> +++ b/drivers/tee/amdtee/amdtee_if.h
+> @@ -118,16 +118,18 @@ struct tee_cmd_unmap_shared_mem {
 >
-> Changes since v3:
-> - Fixed new SMC funcIDs to reserved/unreserve OP-TEE thread contexts:
->   minor renaming + define as fastcall funcIDs.
-> - Moved system_ctx_count from generic struct tee_context to optee's
->   private struct optee_context_data. This changes optee smc_abi.c
->   to release reserved thread contexts when the optee device is released.
-> - Fixed inline description comments.
->
-> No change since v2
->
-> Change since v1
-> - Addressed comment on Linux client to claim reservation on TEE context.
->   This brings 2 new operations from client to TEE to request and release
->   system thread contexts: 2 new tee_drv.h API functions, 2 new ops
->   functions in struct tee_driver_ops. The OP-TEE implement shall implement
->   2 new fastcall SMC funcIDs.
-> - Fixed typos in commit message.
-> ---
->  drivers/tee/tee_core.c  |  8 ++++++++
->  include/linux/tee_drv.h | 16 ++++++++++++++++
->  2 files changed, 24 insertions(+)
->
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index 0eb342de0b00..91932835d0f7 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -1170,6 +1170,14 @@ int tee_client_close_session(struct tee_context *ctx=
-, u32 session)
->  }
->  EXPORT_SYMBOL_GPL(tee_client_close_session);
->
-> +int tee_client_system_session(struct tee_context *ctx, u32 session)
-> +{
-> +       if (!ctx->teedev->desc->ops->system_session)
-> +               return -EINVAL;
-> +       return ctx->teedev->desc->ops->system_session(ctx, session);
-> +}
-> +EXPORT_SYMBOL_GPL(tee_client_system_session);
-> +
->  int tee_client_invoke_func(struct tee_context *ctx,
->                            struct tee_ioctl_invoke_arg *arg,
->                            struct tee_param *param)
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index 17eb1c5205d3..911ddf92dcee 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -84,6 +84,7 @@ struct tee_param {
->   * @release:           release this open file
->   * @open_session:      open a new session
->   * @close_session:     close a session
-> + * @system_session:    declare session as a system session
->   * @invoke_func:       invoke a trusted function
->   * @cancel_req:                request cancel of an ongoing invoke or open
->   * @supp_recv:         called for supplicant to get a command
-> @@ -100,6 +101,7 @@ struct tee_driver_ops {
->                             struct tee_ioctl_open_session_arg *arg,
->                             struct tee_param *param);
->         int (*close_session)(struct tee_context *ctx, u32 session);
-> +       int (*system_session)(struct tee_context *ctx, u32 session);
->         int (*invoke_func)(struct tee_context *ctx,
->                            struct tee_ioctl_invoke_arg *arg,
->                            struct tee_param *param);
-> @@ -429,6 +431,20 @@ int tee_client_open_session(struct tee_context *ctx,
->   */
->  int tee_client_close_session(struct tee_context *ctx, u32 session);
->
-> +/**
-> + * tee_client_system_session() - Declare session as a system session
-> + * @ctx:       TEE Context
-> + * @session:   Session id
-> + *
-> + * This function requests TEE to provision an entry context ready to use f=
-or
-> + * that session only. The provisioned entry context is used for command
-> + * invocation and session closure, not for command cancelling requests.
-> + * TEE releases the provisioned context upon session closure.
-> + *
-> + * Return < 0 on error else 0 if an entry context has been provisioned.
-> + */
-> +int tee_client_system_session(struct tee_context *ctx, u32 session);
-> +
 >  /**
->   * tee_client_invoke_func() - Invoke a function in a Trusted Application
->   * @ctx:       TEE Context
+>   * struct tee_cmd_load_ta - load Trusted Application (TA) binary into TEE
+> - * @low_addr:    [in] bits [31:0] of the physical address of the TA binary
+> - * @hi_addr:     [in] bits [63:32] of the physical address of the TA binary
+> - * @size:        [in] size of TA binary in bytes
+> - * @ta_handle:   [out] return handle of the loaded TA
+> + * @low_addr:       [in] bits [31:0] of the physical address of the TA bin=
+ary
+> + * @hi_addr:        [in] bits [63:32] of the physical address of the TA bi=
+nary
+> + * @size:           [in] size of TA binary in bytes
+> + * @ta_handle:      [out] return handle of the loaded TA
+> + * @return_origin:  [out] origin of return code after TEE processing
+>   */
+>  struct tee_cmd_load_ta {
+>         u32 low_addr;
+>         u32 hi_addr;
+>         u32 size;
+>         u32 ta_handle;
+> +       u32 return_origin;
+>  };
+>
+>  /**
+> diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
+> index e8cd9aaa3467..e9b63dcb3194 100644
+> --- a/drivers/tee/amdtee/call.c
+> +++ b/drivers/tee/amdtee/call.c
+> @@ -423,19 +423,23 @@ int handle_load_ta(void *data, u32 size, struct tee_i=
+octl_open_session_arg *arg)
+>         if (ret) {
+>                 arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+>                 arg->ret =3D TEEC_ERROR_COMMUNICATION;
+> -       } else if (arg->ret =3D=3D TEEC_SUCCESS) {
+> -               ret =3D get_ta_refcount(load_cmd.ta_handle);
+> -               if (!ret) {
+> -                       arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> -                       arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
+> -
+> -                       /* Unload the TA on error */
+> -                       unload_cmd.ta_handle =3D load_cmd.ta_handle;
+> -                       psp_tee_process_cmd(TEE_CMD_ID_UNLOAD_TA,
+> -                                           (void *)&unload_cmd,
+> -                                           sizeof(unload_cmd), &ret);
+> -               } else {
+> -                       set_session_id(load_cmd.ta_handle, 0, &arg->session=
+);
+> +       } else {
+> +               arg->ret_origin =3D load_cmd.return_origin;
+> +
+> +               if (arg->ret =3D=3D TEEC_SUCCESS) {
+> +                       ret =3D get_ta_refcount(load_cmd.ta_handle);
+> +                       if (!ret) {
+> +                               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> +                               arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
+> +
+> +                               /* Unload the TA on error */
+> +                               unload_cmd.ta_handle =3D load_cmd.ta_handle;
+> +                               psp_tee_process_cmd(TEE_CMD_ID_UNLOAD_TA,
+> +                                                   (void *)&unload_cmd,
+> +                                                   sizeof(unload_cmd), &re=
+t);
+> +                       } else {
+> +                               set_session_id(load_cmd.ta_handle, 0, &arg-=
+>session);
+> +                       }
+>                 }
+>         }
+>         mutex_unlock(&ta_refcount_mutex);
 > --
 > 2.25.1
 >
 
---===============7203011585225602131==--
+--===============1204024020950170121==--
 
