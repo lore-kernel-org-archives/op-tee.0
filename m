@@ -1,23 +1,20 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v6 3/4] tee: optee: support tracking system threads
-Date: Thu, 11 May 2023 09:23:53 +0200
+Date: Thu, 11 May 2023 12:57:14 +0530
 Message-ID: 
- <CAN5uoS_mo89aK62wS5qbqqSeAVYVatzr7bC8Y8gE56EvixhAeA@mail.gmail.com>
+ <CAFA6WYPUWjK97H5DL-eOT2bjsa79Zrvk4wet2AW0Qb0NOVqt7Q@mail.gmail.com>
 In-Reply-To: <
  <CAN5uoS99hfjE404_UCm+F4bdVgSfB6Eg_3d1JvHCc2GgSzdUog@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6769993623196187624=="
+Content-Type: multipart/mixed; boundary="===============2782094552773268852=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6769993623196187624==
+--===============2782094552773268852==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit,
-
-
-On Wed, 10 May 2023 at 19:38, Etienne Carriere
+On Wed, 10 May 2023 at 23:08, Etienne Carriere
 <etienne.carriere@linaro.org> wrote:
 >
 > On Wed, 10 May 2023 at 17:15, Etienne Carriere
@@ -44,6 +41,11 @@ On Wed, 10 May 2023 at 19:38, Etienne Carriere
 > > Caller driver can still use SMC/OP-TEE transport without this support
 > > yet with some limitation of course.
 > >
+
+IMHO, it would be better if we enable ABIs agnostic features for all
+ABIs from a maintainability perspective. But I don't have a strong
+opinion here.
+
 > > >
 > > > >
 > > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
@@ -111,14 +113,6 @@ ave to
 > After a second look, I understand your comment.
 > Right, i'll move this function ABI change to patch #1 and ditto for
 > the other places your pointed out.
-
-Actually, after making changes, it does not look better.
-Nevertheless, I'll post a patch v7 with your comment address. You will
-see if it makes changes more clear.
-
-br,
-etienne
-
 >
 > >
 > >
@@ -267,6 +261,10 @@ hread */
 > > a system thread.
 > > Only SCMI does because it needs to by construction.
 > >
+
+Yes that's true but what prevents future/current kernel TEE drivers
+from requesting a system thread once we have this patch-set landed.
+
 > >
 > > > So I would rather suggest we only allow a
 > > > single system thread to be reserved as a starting point which is
@@ -286,9 +284,38 @@ hread */
 > > Note that the implementation proposed here prevents Linux kernel from
 > > exhausting TEE threads so user space always has at least a TEE thread
 > > context left available.
+
+Yeah but on the other hand user-space clients which are comparatively
+larger in number than kernel clients. So they will be starved for
+OP-TEE thread availability. Consider a user-space client which needs
+to serve a lot of TLS connections just waiting for OP-TEE thread
+availability.
+
 > >
 > > Note that an OP-TEE thread is not bound to a TEE session but rather
 > > bound to a yielded call to OP-TEE.
+
+tee_client_open_session()
+  -> optee_open_session()
+
+tee_client_system_session()
+  -> optee_system_session()
+    -> optee_cq_inc_sys_thread_count()       <- At this point you
+reserve a system thread corresponding to a particular kernel client
+session
+
+All tee_client_invoke_func() invocations with a system thread capable
+session will use that reserved thread.
+
+tee_client_close_session()
+  -> optee_close_session()
+    -> optee_close_session_helper()
+      -> optee_cq_dec_sys_thread_count()    <- At this point the
+reserved system thread is released
+
+Haven't this tied the system thread to a particular TEE session? Or am
+I missing something?
+
 > >
 > >
 > > >
@@ -483,6 +510,13 @@ e,
 > > Calling optee_cq_wait_init(&optee->call_queue, &w, false); is less readab=
 le.
 > >
+
+The function declaration is always there to read about the arguments.
+IMO, variables with a constant value which are only used once don't
+add any value.
+
+-Sumit
+
 > > >
 > > > >
 > > > >         /* We need to retry until secure world isn't busy. */
@@ -597,5 +631,5 @@ pdev)
 > > > > 2.25.1
 > > > >
 
---===============6769993623196187624==--
+--===============2782094552773268852==--
 
