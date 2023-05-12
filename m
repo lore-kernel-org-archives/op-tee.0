@@ -1,69 +1,43 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Ralph Siemsen <ralph.siemsen@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v7 4/4] firmware: arm_scmi: optee: use optee system invocation
-Date: Fri, 12 May 2023 07:42:22 +0200
-Message-ID: <20230512054222.2088837-5-etienne.carriere@linaro.org>
-In-Reply-To: <20230512054222.2088837-1-etienne.carriere@linaro.org>
+Subject: [PATCH] plat-rzn1: increase DDR size to 1GB
+Date: Fri, 12 May 2023 13:05:55 -0400
+Message-ID: <20230512170555.2252017-1-ralph.siemsen@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1491244098253488828=="
+Content-Type: multipart/mixed; boundary="===============3658425972197131508=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1491244098253488828==
+--===============3658425972197131508==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Changes SCMI optee transport to call tee_client_system_session()
-to request optee driver to provision an entry context in OP-TEE
-for processing OP-TEE messages. This prevents possible deadlock
-in case OP-TEE threads are all consumed while these may be waiting
-for a clock or regulator to be enable which SCMI OP-TEE service which
-requires a free thread context to execute.
+There are now some RZ/N1 devices with 1GB rather than 256MB. The
+first-stage bootloader does not support passing a DT to OP-TEE, so
+static values are set at compile time. Increase the DDR size so as to
+avoid OP-TEE calls failing with TEEC_ERROR_OUT_OF_MEMORY.
 
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+Signed-off-by: Ralph Siemsen <ralph.siemsen@linaro.org>
 ---
-No change since v6
+ core/arch/arm/plat-rzn1/platform_config.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes since v5:
-- Applied Sudeep's review tag
-
-Changes since v4:
-- Updated to new API function tee_client_system_session() introduced
-  in patch v5 2/3.
-
-No change since v3
-
-Changes since v2:
-- Fixed syntax issues (missing ';' chars), reported by kernel test robot.
-
-Changes since v1:
-- Updated to use new tee API functions tee_client_request_system_context()
-  and tee_client_release_system_context().
----
- drivers/firmware/arm_scmi/optee.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/firmware/arm_scmi/optee.c b/drivers/firmware/arm_scmi/op=
-tee.c
-index e123de6e8c67..25bfb465484d 100644
---- a/drivers/firmware/arm_scmi/optee.c
-+++ b/drivers/firmware/arm_scmi/optee.c
-@@ -440,6 +440,10 @@ static int scmi_optee_chan_setup(struct scmi_chan_info *=
-cinfo, struct device *de
- 	if (ret)
- 		goto err_free_shm;
+diff --git a/core/arch/arm/plat-rzn1/platform_config.h b/core/arch/arm/plat-r=
+zn1/platform_config.h
+index a6340bb33..eb709c62f 100644
+--- a/core/arch/arm/plat-rzn1/platform_config.h
++++ b/core/arch/arm/plat-rzn1/platform_config.h
+@@ -11,7 +11,7 @@
 =20
-+	ret =3D tee_client_system_session(scmi_optee_private->tee_ctx, channel->tee=
-_session);
-+	if (ret)
-+		dev_warn(dev, "Could not switch to system session, do best effort\n");
-+
- 	ret =3D get_channel(channel);
- 	if (ret)
- 		goto err_close_sess;
+ /* DRAM */
+ #define DRAM_BASE			0x80000000
+-#define DRAM_SIZE			0x10000000
++#define DRAM_SIZE			0x40000000
+=20
+ /* GIC */
+ #define GIC_BASE			0x44100000
 --=20
 2.25.1
 
 
---===============1491244098253488828==--
+--===============3658425972197131508==--
 
