@@ -1,66 +1,58 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+From: Etienne Carriere <etienne.carriere@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 1/2] dt-bindings: arm: optee: add interrupt controller
- properties
-Date: Tue, 16 May 2023 10:03:46 +0200
-Message-ID: <4529262a-59c2-1610-2d7f-d2e3529bf867@linaro.org>
-In-Reply-To: <
- <CAN5uoS-U1h_Fx1K4PtnK3vHmyfUUS6wqCcSfhoaV=idgEOC04Q@mail.gmail.com>>
+Subject: [PATCH v8 0/4] tee: introduce TEE system session
+Date: Tue, 16 May 2023 14:51:07 +0200
+Message-ID: <20230516125111.2690204-1-etienne.carriere@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8612084837825536790=="
+Content-Type: multipart/mixed; boundary="===============0236388868920180197=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8612084837825536790==
+--===============0236388868920180197==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On 16/05/2023 08:02, Etienne Carriere wrote:
-> Dear all,
-> 
-> On Sat, 6 May 2023 at 09:33, Etienne Carriere
-> <etienne.carriere@linaro.org> wrote:
->>
->> Adds an optional interrupt controller property to optee firmware node
->> in the DT bindings. Optee driver may embeds an irqchip exposing
->> OP-TEE interrupt events notified by the TEE world. Optee registers up
->> to 1 interrupt controller and identifies each line with a line
->> number from 0 to UINT16_MAX.
->>
->> The identifiers and meaning of the interrupt line number are specific
->> to the platform and shall be found in the OP-TEE platform documentation.
->>
->> In the example shown in optee DT binding documentation, the platform SCMI
->> device controlled by Linux scmi driver uses optee interrupt irq 5 as
->> signal to trigger processing of an asynchronous incoming SCMI message
->> in the scope of a CPU DVFS control. A platform can have several SCMI
->> channels driven this way. Optee irqs also permit small embedded devices
->> to share e.g. a gpio expander, a group of wakeup sources, etc... between
->> OP-TEE world (for sensitive services) and Linux world (for non-sensitive
->> services). The physical controller is driven from the TEE which exposes
->> some controls to Linux kernel.
->>
->> Cc: Jens Wiklander <jens.wiklander@linaro.org>
->> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
->> Cc: Marc Zyngier <maz@kernel.org>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Sumit Garg <sumit.garg@linaro.org>
->> Co-developed-by: Pascal Paillet <p.paillet@foss.st.com>
->> Signed-off-by: Pascal Paillet <p.paillet@foss.st.com>
->> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
->> ---
-> 
-> Any feedback on this change proposal?
+This series introduces TEE system sessions for TEE service sessions that
+require TEE to provision resources to prevent deadlock when clients call
+the TEE.
 
-Rob had here several comments, so I will defer it to him.
+This deadlock situation can happen when a TEE service is used by low
+level system resources as for example when Linux kernel uses SCMI
+service embedded in TEE for clock, reset, regulator, etc... controls.
+This case is detailled in patch 3/4:
 
-I don't get why this is not part of linaro,scmi-optee driver directly. I
-think it's the only valid use case because the others like GPIO
-expanders seem  a stretch.
+> This feature is needed to prevent a system deadlock when several TEE
+> client applications invoke TEE, consuming all TEE thread contexts
+> available in the secure world. The deadlock can happen in the OP-TEE
+> driver for example if all these TEE threads issue an RPC call from TEE
+> to Linux OS to access an eMMC RPMB partition (TEE secure storage) which
+> device clock or regulator controller is accessed through an OP-TEE SCMI
+> services. In that case, Linux SCMI driver must reach OP-TEE SCMI
+> service without waiting until one of the consumed TEE threads is freed.
 
+Etienne Carriere (4):
+  tee: optee: system call property
+  tee: system session
+  tee: optee: support tracking system threads
+  firmware: arm_scmi: optee: use optee system invocation
 
-Best regards,
-Krzysztof
+ drivers/firmware/arm_scmi/optee.c |   4 +
+ drivers/tee/optee/call.c          | 155 +++++++++++++++++++++++++++---
+ drivers/tee/optee/core.c          |   5 +-
+ drivers/tee/optee/ffa_abi.c       |  13 +--
+ drivers/tee/optee/optee_private.h |  39 +++++++-
+ drivers/tee/optee/smc_abi.c       |  31 ++++--
+ drivers/tee/tee_core.c            |   8 ++
+ include/linux/tee_drv.h           |  16 +++
+ 8 files changed, 235 insertions(+), 36 deletions(-)
+---
+No change since v7
+
+Changes since v6:
+- Added this cover letter missing in previous patch series revisions.
+
+-- 
+2.25.1
 
 
---===============8612084837825536790==--
+--===============0236388868920180197==--
 
