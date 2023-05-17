@@ -1,71 +1,57 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Xiaoming Ding <xiaoming.ding@mediatek.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 4/4] firmware: arm_scmi: optee: use optee system invocation
-Date: Tue, 16 May 2023 14:51:11 +0200
-Message-ID: <20230516125111.2690204-5-etienne.carriere@linaro.org>
-In-Reply-To: <20230516125111.2690204-1-etienne.carriere@linaro.org>
+Subject: [PATCH] tee: add FOLL_LONGTERM for CMA case when alloc shm
+Date: Wed, 17 May 2023 11:18:56 +0800
+Message-ID: <20230517031856.19660-1-xiaoming.ding@mediatek.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5669642612075318574=="
+Content-Type: multipart/mixed; boundary="===============7416267822603927199=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5669642612075318574==
+--===============7416267822603927199==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Changes SCMI optee transport to call tee_client_system_session()
-to request optee driver to provision an entry context in OP-TEE
-for processing OP-TEE messages. This prevents possible deadlock
-in case OP-TEE threads are all consumed while these may be waiting
-for a clock or regulator to be enable which SCMI OP-TEE service which
-requires a free thread context to execute.
+FOLL_LONGTERM will avoid share memory alloc from CMA region,
+which may be used in secure playback case.
+if part of CMA region taken by share memory for long term usage,
+CMA will failed to get whole buffer back.
 
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+Signed-off-by: Xiaoming Ding <xiaoming.ding@mediatek.com>
 ---
-No change since v7
+ drivers/tee/tee_shm.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-No change since v6
-
-Changes since v5:
-- Applied Sudeep's review tag
-
-Changes since v4:
-- Updated to new API function tee_client_system_session() introduced
-  in patch v5 2/3.
-
-No change since v3
-
-Changes since v2:
-- Fixed syntax issues (missing ';' chars), reported by kernel test robot.
-
-Changes since v1:
-- Updated to use new tee API functions tee_client_request_system_context()
-  and tee_client_release_system_context().
----
- drivers/firmware/arm_scmi/optee.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/firmware/arm_scmi/optee.c b/drivers/firmware/arm_scmi/op=
-tee.c
-index e123de6e8c67..25bfb465484d 100644
---- a/drivers/firmware/arm_scmi/optee.c
-+++ b/drivers/firmware/arm_scmi/optee.c
-@@ -440,6 +440,10 @@ static int scmi_optee_chan_setup(struct scmi_chan_info *=
-cinfo, struct device *de
- 	if (ret)
- 		goto err_free_shm;
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 673cf0359494..ddd3947e2229 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -223,6 +223,7 @@ register_shm_helper(struct tee_context *ctx, unsigned lon=
+g addr,
+ 	size_t num_pages;
+ 	void *ret;
+ 	int rc;
++	u32 page_flag =3D FOLL_WRITE;
 =20
-+	ret =3D tee_client_system_session(scmi_optee_private->tee_ctx, channel->tee=
-_session);
-+	if (ret)
-+		dev_warn(dev, "Could not switch to system session, do best effort\n");
-+
- 	ret =3D get_channel(channel);
- 	if (ret)
- 		goto err_close_sess;
+ 	if (!tee_device_get(teedev))
+ 		return ERR_PTR(-EINVAL);
+@@ -255,9 +256,11 @@ register_shm_helper(struct tee_context *ctx, unsigned lo=
+ng addr,
+ 		ret =3D ERR_PTR(-ENOMEM);
+ 		goto err_free_shm;
+ 	}
+-
++#if IS_ENABLED(CONFIG_CMA)
++	page_flag |=3D FOLL_LONGTERM;
++#endif
+ 	if (flags & TEE_SHM_USER_MAPPED)
+-		rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
++		rc =3D pin_user_pages_fast(start, num_pages, page_flag,
+ 					 shm->pages);
+ 	else
+ 		rc =3D shm_get_kernel_pages(start, num_pages, shm->pages);
 --=20
-2.25.1
+2.18.0
 
 
---===============5669642612075318574==--
+--===============7416267822603927199==--
 
