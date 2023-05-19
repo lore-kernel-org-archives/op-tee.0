@@ -1,59 +1,78 @@
 From: David Hildenbrand <david@redhat.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: FOLL_LONGTERM vs FOLL_EPHEMERAL Re: [PATCH] tee: add
- FOLL_LONGTERM for CMA case when alloc shm
-Date: Thu, 18 May 2023 15:56:09 +0200
-Message-ID: <8b898768-a3c0-198d-a70c-9aa96b7f4a29@redhat.com>
-In-Reply-To: <
- <CAFA6WYPgvifYcj_MT7BBcC0BtQDWXV0u+HY8qv0M9nNyiCgkow@mail.gmail.com>>
+Subject: Re: [PATCH] tee: add FOLL_LONGTERM for CMA case when alloc shm
+Date: Fri, 19 May 2023 12:01:21 +0200
+Message-ID: <83a846a9-8f88-3f66-b840-e84d072bb0fb@redhat.com>
+In-Reply-To: <781d993204fbbdf30a6ca495b59b3b0aa7a2e496.camel@mediatek.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3702104188848386745=="
+Content-Type: multipart/mixed; boundary="===============1620644848168577672=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3702104188848386745==
+--===============1620644848168577672==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On 18.05.23 08:08, Sumit Garg wrote:
-> On Thu, 18 May 2023 at 09:51, Christoph Hellwig <hch@infradead.org> wrote:
->>
->> On Wed, May 17, 2023 at 08:23:33PM +0200, David Hildenbrand wrote:
->>> In general: if user space controls it -> possibly forever -> long-term. E=
-ven
->>> if in most cases it's a short delay: there is no trusting on user space.
->>>
->>> For example, iouring fixed buffers keep pages pinned until user space
->>> decides to unregistered the buffers -> long-term.
->>>
->>> Short-term is, for example, something like O_DIRECT where we pin -> DMA ->
->>> unpin in essentially one operation.
->>
->> Btw, one thing that's been on my mind is that I think we got the
->> polarity on FOLL_LONGTERM wrong.  Instead of opting into the long term
->> behavior it really should be the default, with a FOLL_EPHEMERAL flag
->> to opt out of it.  And every users of this flag is required to have
->> a comment explaining the life time rules for the pin..
->=20
-> It does look like a better approach to me given the very nature of
-> user space pages.
+On 18.05.23 08:40, Xiaoming Ding (丁晓明) wrote:
+>  From 35fd062d5cbc4d182eee0183843cd6350d126788 Mon Sep 17 00:00:00 2001
+> From: Xiaoming Ding <xiaoming.ding@mediatek.com>
+> Date: Wed, 10 May 2023 10:15:23 +0800
+> Subject: [PATCH v2] tee: add FOLL_LONGTERM for CMA case when alloc shm
+> 
+> CMA is widely used on insufficient memory platform for
+> secure media playback case, and FOLL_LONGTERM will
+> avoid tee_shm alloc pages from CMA region.
+> without FOLL_LONGTERM, CMA region may alloc failed since
+> tee_shm has a chance to use it in advance.
+> 
+> modify is verified on OPTEE XTEST and kinds of secure + clear playback
+> 
+> 
+> Fixes: 033ddf12bcf5 ("tee: add register user memory")
+> Signed-off-by: Xiaoming Ding <xiaoming.ding@mediatek.com>
+> ---
+> v1 -> v2: take off the ifdef and apply FOLL_LONGTERM by default
+> 
+>   drivers/tee/tee_shm.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> index 673cf0359494..38878e549ca4 100644
+> --- a/drivers/tee/tee_shm.c
+> +++ b/drivers/tee/tee_shm.c
+> @@ -257,7 +257,7 @@ register_shm_helper(struct tee_context *ctx,
+> unsigned long addr,
+>   	}
+>   
+>   	if (flags & TEE_SHM_USER_MAPPED)
+> -		rc = pin_user_pages_fast(start, num_pages, FOLL_WRITE,
+> +		rc = pin_user_pages_fast(start, num_pages, FOLL_WRITE |
+> FOLL_LONGTERM,
+>   					 shm->pages);
+>   	else
+>   		rc = shm_get_kernel_pages(start, num_pages, shm-
+>> pages);
 
-Yeah, there is a lot of historical baggage. For example, FOLL_GET should=20
-be inaccessible to kernel modules completely at one point, to be only=20
-used by selected core-mm pieces.
+I didn't dive deeply into that code, but I can spot that we can end up 
+long-term pinning multiple pages -- possibly unbound or is there any 
+sane limit on the number of pages?
 
-Maybe we should even disallow passing in FOLL_LONGTERM as a flag and=20
-only provide functions like pin_user_pages() vs.=20
-pin_user_pages_longterm(). Then, discussions about conditional=20
-flag-setting are no more :)
+Take a look at io_uring/rsrc.c and how we account long-term pinned pages 
+against user->locked_vm/ctx->mm_account->pinned_vm in io_account_mem().
 
-... or even use pin_user_pages_shortterm() vs. pin_user_pages() ... to=20
-make the default be longterm.
+If user space could only end up pinning one or two pages via that 
+interface, ok. But it looks like this interface could be abused to 
+create real real trouble by unprivileged users that should be able to 
+long-term pin that many pages.
 
---=20
+Am I missing something important (i.e., interface is only accessible by 
+privileged users) or should there be proper accounting and 
+RLIMIT_MEMLOCK checks?
+
+-- 
 Thanks,
 
 David / dhildenb
 
 
---===============3702104188848386745==--
+--===============1620644848168577672==--
 
