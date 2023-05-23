@@ -1,77 +1,141 @@
-From: John Hubbard <jhubbard@nvidia.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: FOLL_LONGTERM vs FOLL_EPHEMERAL Re: [PATCH] tee: add
- FOLL_LONGTERM for CMA case when alloc shm
-Date: Mon, 22 May 2023 18:54:29 -0700
-Message-ID: <1ced7f32-553e-2a5b-eec9-f794d7983d56@nvidia.com>
-In-Reply-To: <8b898768-a3c0-198d-a70c-9aa96b7f4a29@redhat.com>
+Subject: 
+ Re: [PATCH v2 1/1] tee: amdtee: Add return_origin to 'struct tee_cmd_load_ta'
+Date: Tue, 23 May 2023 08:07:12 +0200
+Message-ID: 
+ <CAHUa44EStHOWapDrbunf-vazBUVdObEXj+gAm6ShWUwx8AUr9g@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYNOjkU_4Kg=khuki3qv95f+bUB5hJUjRy2CoPXDvqW0Sw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0530130134263687162=="
+Content-Type: multipart/mixed; boundary="===============6920537558034523609=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0530130134263687162==
+--===============6920537558034523609==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 5/18/23 06:56, David Hildenbrand wrote:
-> On 18.05.23 08:08, Sumit Garg wrote:
->> On Thu, 18 May 2023 at 09:51, Christoph Hellwig <hch@infradead.org> wrot=
-e:
->>>
->>> On Wed, May 17, 2023 at 08:23:33PM +0200, David Hildenbrand wrote:
->>>> In general: if user space controls it -> possibly forever -> long-term. =
-Even
->>>> if in most cases it's a short delay: there is no trusting on user space.
->>>>
->>>> For example, iouring fixed buffers keep pages pinned until user space
->>>> decides to unregistered the buffers -> long-term.
->>>>
->>>> Short-term is, for example, something like O_DIRECT where we pin -> DMA =
-->
->>>> unpin in essentially one operation.
->>>
->>> Btw, one thing that's been on my mind is that I think we got the
->>> polarity on FOLL_LONGTERM wrong.=C2=A0 Instead of opting into the long te=
-rm
->>> behavior it really should be the default, with a FOLL_EPHEMERAL flag
->>> to opt out of it.=C2=A0 And every users of this flag is required to have
->>> a comment explaining the life time rules for the pin..
+On Wed, May 10, 2023 at 1:19=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org> =
+wrote:
+>
+> On Tue, 9 May 2023 at 13:03, Rijo Thomas <Rijo-john.Thomas@amd.com> wrote:
+> >
+> > After TEE has completed processing of TEE_CMD_ID_LOAD_TA, set proper
+> > value in 'return_origin' argument passed by open_session() call. To do
+> > so, add 'return_origin' field to the structure tee_cmd_load_ta. The
+> > Trusted OS shall update return_origin as part of TEE processing.
+> >
+> > This change to 'struct tee_cmd_load_ta' interface requires a similar upda=
+te
+> > in AMD-TEE Trusted OS's TEE_CMD_ID_LOAD_TA interface.
+> >
+> > This patch has been verified on Phoenix Birman setup. On older APUs,
+> > return_origin value will be 0.
+> >
+> > Cc: stable(a)vger.kernel.org
+> > Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+> > Tested-by: Sourabh Das <sourabh.das@amd.com>
+> > Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
+> > ---
+> > v2:
+> >  * Added Fixes tag.
+> >
+> >  drivers/tee/amdtee/amdtee_if.h | 10 ++++++----
+> >  drivers/tee/amdtee/call.c      | 30 +++++++++++++++++-------------
+> >  2 files changed, 23 insertions(+), 17 deletions(-)
+> >
+>
+> Acked-by: Sumit Garg <sumit.garg@linaro.org>
 
-I see maybe 10 or 20 call sites today. So it is definitely feasible to add
-documentation at each, explaining the why it wants a long term pin.
+I'm picking up this.
 
->>
->> It does look like a better approach to me given the very nature of
->> user space pages.
->=20
-> Yeah, there is a lot of historical baggage. For example, FOLL_GET should be=
- inaccessible to kernel modules completely at one point, to be only used by s=
-elected core-mm pieces.
+Thanks,
+Jens
 
-Yes. When I first mass-converted call sites from gup to pup, I just
-preserved FOLL_GET behavior in order to keep from changing too much at
-once. But I agree that that it would be nice to make FOLL_GET an
-mm internal-only flag like FOLL_PIN.
+>
+> -Sumit
+>
+> > diff --git a/drivers/tee/amdtee/amdtee_if.h b/drivers/tee/amdtee/amdtee_i=
+f.h
+> > index ff48c3e47375..e2014e21530a 100644
+> > --- a/drivers/tee/amdtee/amdtee_if.h
+> > +++ b/drivers/tee/amdtee/amdtee_if.h
+> > @@ -118,16 +118,18 @@ struct tee_cmd_unmap_shared_mem {
+> >
+> >  /**
+> >   * struct tee_cmd_load_ta - load Trusted Application (TA) binary into TEE
+> > - * @low_addr:    [in] bits [31:0] of the physical address of the TA bina=
+ry
+> > - * @hi_addr:     [in] bits [63:32] of the physical address of the TA bin=
+ary
+> > - * @size:        [in] size of TA binary in bytes
+> > - * @ta_handle:   [out] return handle of the loaded TA
+> > + * @low_addr:       [in] bits [31:0] of the physical address of the TA b=
+inary
+> > + * @hi_addr:        [in] bits [63:32] of the physical address of the TA =
+binary
+> > + * @size:           [in] size of TA binary in bytes
+> > + * @ta_handle:      [out] return handle of the loaded TA
+> > + * @return_origin:  [out] origin of return code after TEE processing
+> >   */
+> >  struct tee_cmd_load_ta {
+> >         u32 low_addr;
+> >         u32 hi_addr;
+> >         u32 size;
+> >         u32 ta_handle;
+> > +       u32 return_origin;
+> >  };
+> >
+> >  /**
+> > diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
+> > index e8cd9aaa3467..e9b63dcb3194 100644
+> > --- a/drivers/tee/amdtee/call.c
+> > +++ b/drivers/tee/amdtee/call.c
+> > @@ -423,19 +423,23 @@ int handle_load_ta(void *data, u32 size, struct tee=
+_ioctl_open_session_arg *arg)
+> >         if (ret) {
+> >                 arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> >                 arg->ret =3D TEEC_ERROR_COMMUNICATION;
+> > -       } else if (arg->ret =3D=3D TEEC_SUCCESS) {
+> > -               ret =3D get_ta_refcount(load_cmd.ta_handle);
+> > -               if (!ret) {
+> > -                       arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> > -                       arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
+> > -
+> > -                       /* Unload the TA on error */
+> > -                       unload_cmd.ta_handle =3D load_cmd.ta_handle;
+> > -                       psp_tee_process_cmd(TEE_CMD_ID_UNLOAD_TA,
+> > -                                           (void *)&unload_cmd,
+> > -                                           sizeof(unload_cmd), &ret);
+> > -               } else {
+> > -                       set_session_id(load_cmd.ta_handle, 0, &arg->sessi=
+on);
+> > +       } else {
+> > +               arg->ret_origin =3D load_cmd.return_origin;
+> > +
+> > +               if (arg->ret =3D=3D TEEC_SUCCESS) {
+> > +                       ret =3D get_ta_refcount(load_cmd.ta_handle);
+> > +                       if (!ret) {
+> > +                               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
+> > +                               arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
+> > +
+> > +                               /* Unload the TA on error */
+> > +                               unload_cmd.ta_handle =3D load_cmd.ta_hand=
+le;
+> > +                               psp_tee_process_cmd(TEE_CMD_ID_UNLOAD_TA,
+> > +                                                   (void *)&unload_cmd,
+> > +                                                   sizeof(unload_cmd), &=
+ret);
+> > +                       } else {
+> > +                               set_session_id(load_cmd.ta_handle, 0, &ar=
+g->session);
+> > +                       }
+> >                 }
+> >         }
+> >         mutex_unlock(&ta_refcount_mutex);
+> > --
+> > 2.25.1
+> >
 
->=20
-> Maybe we should even disallow passing in FOLL_LONGTERM as a flag and only p=
-rovide functions like pin_user_pages() vs. pin_user_pages_longterm(). Then, d=
-iscussions about conditional flag-setting are no more :)
->=20
-> ... or even use pin_user_pages_shortterm() vs. pin_user_pages() ... to make=
- the default be longterm.
->=20
-
-Yes, it is true that having most gup flags be internal to mm does tend
-to avoid some bugs. But it's also a lot of churn. I'm still on the fence
-as to whether it's really a good move to do this for FOLL_LONGTERM or
-not. But it's really easy to push me off of fences. :)
-
-thanks,
---=20
-John Hubbard
-NVIDIA
-
-
---===============0530130134263687162==--
+--===============6920537558034523609==--
 
