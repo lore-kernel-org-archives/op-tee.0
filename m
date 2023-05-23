@@ -1,330 +1,1088 @@
-From: Etienne Carriere <etienne.carriere@linaro.org>
+From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 3/4] tee: optee: support tracking system threads
-Date: Tue, 23 May 2023 09:11:34 +0200
+Subject: Re: [PATCH v3 3/3] efi: Add tee-based EFI variable driver
+Date: Tue, 23 May 2023 17:36:46 +0900
 Message-ID: 
- <CAN5uoS9h6OmO-SZWmBdRUkT+ih9QK+mTo8Kvmn3ePQ4NrKriBw@mail.gmail.com>
-In-Reply-To: <20230517143311.585080-1-sumit.garg@linaro.org>
+ <CADQ0-X9rokv4Aw_NGsTW9e-asM_6WPxsRSsaZs17TRmHJiqFpA@mail.gmail.com>
+In-Reply-To: <
+ <CAHUa44G_=BDd4AfsaqwYCSSCWLC89iBWmRGkzh6Pa3iOtOCTpQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1186448638600921539=="
+Content-Type: multipart/mixed; boundary="===============5223406794028590690=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1186448638600921539==
+--===============5223406794028590690==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello Sumit,
+Hi Jens,
 
+On Mon, 8 May 2023 at 18:45, Jens Wiklander <jens.wiklander@linaro.org> wro=
+te:
+>
+> Hi,
+>
+> On Wed, Feb 22, 2023 at 6:40=E2=80=AFAM Masahisa Kojima
+> <masahisa.kojima@linaro.org> wrote:
+> >
+> > When the flash is not owned by the non-secure world, accessing the EFI
+> > variables is straightforward and done via EFI Runtime Variable Services.
+> > In this case, critical variables for system integrity and security
+> > are normally stored in the dedicated secure storage and only accessible
+> > from the secure world.
+> >
+> > On the other hand, the small embedded devices don't have the special
+> > dedicated secure storage. The eMMC device with an RPMB partition is
+> > becoming more common, we can use an RPMB partition to store the
+> > EFI Variables.
+> >
+> > The eMMC device is typically owned by the non-secure world(linux in
+> > this case). There is an existing solution utilizing eMMC RPMB partition
+> > for EFI Variables, it is implemented by interacting with
+> > TEE(OP-TEE in this case), StandaloneMM(as EFI Variable Service Pseudo TA),
+> > eMMC driver and tee-supplicant. The last piece is the tee-based
+> > variable access driver to interact with TEE and StandaloneMM.
+> >
+> > So let's add the kernel functions needed.
+> >
+> > This feature is implemented as a kernel module.
+> > StMM PTA has TA_FLAG_DEVICE_ENUM_SUPP flag when registered to OP-TEE
+> > so that this tee_stmm_efi module is probed after tee-supplicant starts,
+> > since "SetVariable" EFI Runtime Variable Service requires to
+> > interact with tee-supplicant.
+> >
+> > Co-developed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+> > Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+> > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+> > ---
+> >  drivers/firmware/efi/Kconfig                 |  15 +
+> >  drivers/firmware/efi/Makefile                |   1 +
+> >  drivers/firmware/efi/stmm/mm_communication.h | 249 ++++++++
+> >  drivers/firmware/efi/stmm/tee_stmm_efi.c     | 626 +++++++++++++++++++
+> >  4 files changed, 891 insertions(+)
+> >  create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
+> >  create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
+> >
+> > diff --git a/drivers/firmware/efi/Kconfig b/drivers/firmware/efi/Kconfig
+> > index 043ca31c114e..aa38089d1e4a 100644
+> > --- a/drivers/firmware/efi/Kconfig
+> > +++ b/drivers/firmware/efi/Kconfig
+> > @@ -287,3 +287,18 @@ config UEFI_CPER_X86
+> >         bool
+> >         depends on UEFI_CPER && X86
+> >         default y
+> > +
+> > +config TEE_STMM_EFI
+> > +       tristate "TEE based EFI runtime variable service driver"
+> > +       depends on EFI && OPTEE && !EFI_VARS_PSTORE
+> > +       help
+> > +         Select this config option if TEE is compiled to include StandAl=
+oneMM
+> > +         as a separate secure partition it has the ability to check and =
+store
+> > +         EFI variables on an RPMB or any other non-volatile medium used =
+by
+> > +         StandAloneMM.
+> > +
+> > +         Enabling this will change the EFI runtime services from the fir=
+mware
+> > +         provided functions to TEE calls.
+> > +
+> > +         To compile this driver as a module, choose M here: the module
+> > +         will be called tee_stmm_efi.
+> > diff --git a/drivers/firmware/efi/Makefile b/drivers/firmware/efi/Makefile
+> > index b51f2a4c821e..2ca8ee6ab490 100644
+> > --- a/drivers/firmware/efi/Makefile
+> > +++ b/drivers/firmware/efi/Makefile
+> > @@ -41,3 +41,4 @@ obj-$(CONFIG_EFI_CAPSULE_LOADER)      +=3D capsule-load=
+er.o
+> >  obj-$(CONFIG_EFI_EARLYCON)             +=3D earlycon.o
+> >  obj-$(CONFIG_UEFI_CPER_ARM)            +=3D cper-arm.o
+> >  obj-$(CONFIG_UEFI_CPER_X86)            +=3D cper-x86.o
+> > +obj-$(CONFIG_TEE_STMM_EFI)             +=3D stmm/tee_stmm_efi.o
+> > diff --git a/drivers/firmware/efi/stmm/mm_communication.h b/drivers/firmw=
+are/efi/stmm/mm_communication.h
+> > new file mode 100644
+> > index 000000000000..a7fa6723d56e
+> > --- /dev/null
+> > +++ b/drivers/firmware/efi/stmm/mm_communication.h
+> > @@ -0,0 +1,249 @@
+> > +/* SPDX-License-Identifier: GPL-2.0+ */
+> > +/*
+> > + *  Headers for EFI variable service via StandAloneMM, EDK2 application =
+running
+> > + *  in OP-TEE
+> > + *
+> > + *  Copyright (c) 2017, Intel Corporation. All rights reserved.
+> > + *  Copyright (C) 2020 Linaro Ltd.
+> > + */
+> > +
+> > +#ifndef _MM_COMMUNICATION_H_
+> > +#define _MM_COMMUNICATION_H_
+> > +
+> > +/*
+> > + * Interface to the pseudo Trusted Application (TA), which provides a
+> > + * communication channel with the Standalone MM (Management Mode)
+> > + * Secure Partition running at Secure-EL0
+> > + */
+> > +
+> > +#define PTA_STMM_CMD_COMMUNICATE 0
+> > +
+> > +/* OP-TEE is using big endian GUIDs while UEFI uses little endian ones */
+> > +#define PTA_STMM_UUID \
+> > +       UUID_INIT(0xed32d533, 0x99e6, 0x4209, \
+> > +                 0x9c, 0xc0, 0x2d, 0x72, 0xcd, 0xd9, 0x98, 0xa7)
+> > +
+> > +#define EFI_MM_VARIABLE_GUID \
+> > +       EFI_GUID(0xed32d533, 0x99e6, 0x4209, \
+> > +                0x9c, 0xc0, 0x2d, 0x72, 0xcd, 0xd9, 0x98, 0xa7)
+> > +
+> > +/* Defined in EDK2 MdePkg/Include/Protocol/MmCommunication.h */
+> > +
+> > +/**
+> > + * struct efi_mm_communicate_header - Header used for SMM variable commu=
+nication
+> > +
+> > + * @header_guid:  header use for disambiguation of content
+> > + * @message_len:  length of the message. Does not include the size of the
+> > + *                header
+> > + * @data:         payload of the message
+> > + *
+> > + * Defined in EDK2 as EFI_MM_COMMUNICATE_HEADER.
+> > + * To avoid confusion in interpreting frames, the communication buffer s=
+hould
+> > + * always begin with efi_mm_communicate_header.
+> > + */
+> > +struct efi_mm_communicate_header {
+> > +       efi_guid_t header_guid;
+> > +       size_t     message_len;
+> > +       u8         data[];
+> > +} __packed;
+> > +
+> > +#define MM_COMMUNICATE_HEADER_SIZE \
+> > +       (sizeof(struct efi_mm_communicate_header))
+> > +
+> > +/* Defined in EDK2 ArmPkg/Include/IndustryStandard/ArmMmSvc.h */
+> > +
+> > +/* SPM return error codes */
+> > +#define ARM_SVC_SPM_RET_SUCCESS               0
+> > +#define ARM_SVC_SPM_RET_NOT_SUPPORTED        -1
+> > +#define ARM_SVC_SPM_RET_INVALID_PARAMS       -2
+> > +#define ARM_SVC_SPM_RET_DENIED               -3
+> > +#define ARM_SVC_SPM_RET_NO_MEMORY            -5
+> > +
+> > +/* Defined in EDK2 MdeModulePkg/Include/Guid/SmmVariableCommon.h */
+> > +
+> > +#define SMM_VARIABLE_FUNCTION_GET_VARIABLE  1
+> > +/*
+> > + * The payload for this function is
+> > + * SMM_VARIABLE_COMMUNICATE_GET_NEXT_VARIABLE_NAME.
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_GET_NEXT_VARIABLE_NAME  2
+> > +/*
+> > + * The payload for this function is SMM_VARIABLE_COMMUNICATE_ACCESS_VARI=
+ABLE.
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_SET_VARIABLE  3
+> > +/*
+> > + * The payload for this function is
+> > + * SMM_VARIABLE_COMMUNICATE_QUERY_VARIABLE_INFO.
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_QUERY_VARIABLE_INFO  4
+> > +/*
+> > + * It is a notify event, no extra payload for this function.
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_READY_TO_BOOT  5
+> > +/*
+> > + * It is a notify event, no extra payload for this function.
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_EXIT_BOOT_SERVICE  6
+> > +/*
+> > + * The payload for this function is VARIABLE_INFO_ENTRY.
+> > + * The GUID in EFI_SMM_COMMUNICATE_HEADER is gEfiSmmVariableProtocolGuid.
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_GET_STATISTICS  7
+> > +/*
+> > + * The payload for this function is SMM_VARIABLE_COMMUNICATE_LOCK_VARIAB=
+LE
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_LOCK_VARIABLE   8
+> > +
+> > +#define SMM_VARIABLE_FUNCTION_VAR_CHECK_VARIABLE_PROPERTY_SET  9
+> > +
+> > +#define SMM_VARIABLE_FUNCTION_VAR_CHECK_VARIABLE_PROPERTY_GET  10
+> > +
+> > +#define SMM_VARIABLE_FUNCTION_GET_PAYLOAD_SIZE  11
+> > +/*
+> > + * The payload for this function is
+> > + * SMM_VARIABLE_COMMUNICATE_RUNTIME_VARIABLE_CACHE_CONTEXT
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_INIT_RUNTIME_VARIABLE_CACHE_CONTEXT 12
+> > +
+> > +#define SMM_VARIABLE_FUNCTION_SYNC_RUNTIME_CACHE  13
+> > +/*
+> > + * The payload for this function is
+> > + * SMM_VARIABLE_COMMUNICATE_GET_RUNTIME_CACHE_INFO
+> > + */
+> > +#define SMM_VARIABLE_FUNCTION_GET_RUNTIME_CACHE_INFO  14
+> > +
+> > +/**
+> > + * struct smm_variable_communicate_header - Used for SMM variable commun=
+ication
+> > +
+> > + * @function:     function to call in Smm.
+> > + * @ret_status:   return status
+> > + * @data:         payload
+> > + *
+> > + * Defined in EDK2 as SMM_VARIABLE_COMMUNICATE_HEADER.
+> > + */
+> > +struct smm_variable_communicate_header {
+> > +       size_t  function;
+> > +       efi_status_t ret_status;
+> > +       u8 data[];
+> > +};
+> > +
+> > +#define MM_VARIABLE_COMMUNICATE_SIZE \
+> > +       (sizeof(struct smm_variable_communicate_header))
+> > +
+> > +/**
+> > + * struct smm_variable_access - Used to communicate with StMM by
+> > + *                              SetVariable and GetVariable.
+> > +
+> > + * @guid:         vendor GUID
+> > + * @data_size:    size of EFI variable data
+> > + * @name_size:    size of EFI name
+> > + * @attr:         attributes
+> > + * @name:         variable name
+> > + *
+> > + * Defined in EDK2 as SMM_VARIABLE_COMMUNICATE_ACCESS_VARIABLE.
+> > + *
+> > + */
+> > +struct smm_variable_access {
+> > +       efi_guid_t  guid;
+> > +       size_t data_size;
+> > +       size_t name_size;
+> > +       u32 attr;
+> > +       u16 name[];
+> > +};
+> > +
+> > +#define MM_VARIABLE_ACCESS_HEADER_SIZE \
+> > +       (sizeof(struct smm_variable_access))
+> > +/**
+> > + * struct smm_variable_payload_size - Used to get the max allowed
+> > + *                                    payload used in StMM.
+> > + *
+> > + * @size:  size to fill in
+> > + *
+> > + * Defined in EDK2 as SMM_VARIABLE_COMMUNICATE_GET_PAYLOAD_SIZE.
+> > + *
+> > + */
+> > +struct smm_variable_payload_size {
+> > +       size_t size;
+> > +};
+> > +
+> > +/**
+> > + * struct smm_variable_getnext - Used to communicate with StMM for
+> > + *                               GetNextVariableName.
+> > + *
+> > + * @guid:       vendor GUID
+> > + * @name_size:  size of the name of the variable
+> > + * @name:       variable name
+> > + *
+> > + * Defined in EDK2 as SMM_VARIABLE_COMMUNICATE_GET_NEXT_VARIABLE_NAME.
+> > + */
+> > +struct smm_variable_getnext {
+> > +       efi_guid_t  guid;
+> > +       size_t name_size;
+> > +       u16         name[];
+> > +};
+> > +
+> > +#define MM_VARIABLE_GET_NEXT_HEADER_SIZE \
+> > +       (sizeof(struct smm_variable_getnext))
+> > +
+> > +/**
+> > + * struct smm_variable_query_info - Used to communicate with StMM for
+> > + *                                  QueryVariableInfo.
+> > + *
+> > + * @max_variable_storage:        max available storage
+> > + * @remaining_variable_storage:  remaining available storage
+> > + * @max_variable_size:           max variable supported size
+> > + * @attr:                        attributes to query storage for
+> > + *
+> > + * Defined in EDK2 as SMM_VARIABLE_COMMUNICATE_QUERY_VARIABLE_INFO.
+> > + */
+> > +struct smm_variable_query_info {
+> > +       u64 max_variable_storage;
+> > +       u64 remaining_variable_storage;
+> > +       u64 max_variable_size;
+> > +       u32 attr;
+> > +};
+> > +
+> > +#define VAR_CHECK_VARIABLE_PROPERTY_REVISION 0x0001
+> > +#define VAR_CHECK_VARIABLE_PROPERTY_READ_ONLY BIT(0)
+> > +/**
+> > + * struct var_check_property - Used to store variable properties in StMM
+> > + *
+> > + * @revision:   magic revision number for variable property checking
+> > + * @property:   properties mask for the variable used in StMM.
+> > + *              Currently RO flag is supported
+> > + * @attributes: variable attributes used in StMM checking when properties
+> > + *              for a variable are enabled
+> > + * @minsize:    minimum allowed size for variable payload checked against
+> > + *              smm_variable_access->datasize in StMM
+> > + * @maxsize:    maximum allowed size for variable payload checked against
+> > + *              smm_variable_access->datasize in StMM
+> > + *
+> > + * Defined in EDK2 as VAR_CHECK_VARIABLE_PROPERTY.
+> > + */
+> > +struct var_check_property {
+> > +       u16 revision;
+> > +       u16 property;
+> > +       u32 attributes;
+> > +       size_t minsize;
+> > +       size_t maxsize;
+> > +};
+> > +
+> > +/**
+> > + * struct smm_variable_var_check_property - Used to communicate variable
+> > + *                                          properties with StMM
+> > + *
+> > + * @guid:       vendor GUID
+> > + * @name_size:  size of EFI name
+> > + * @property:   variable properties struct
+> > + * @name:       variable name
+> > + *
+> > + * Defined in EDK2 as SMM_VARIABLE_COMMUNICATE_VAR_CHECK_VARIABLE_PROPER=
+TY.
+> > + */
+> > +struct smm_variable_var_check_property {
+> > +       efi_guid_t guid;
+> > +       size_t name_size;
+> > +       struct var_check_property property;
+> > +       u16 name[];
+> > +};
+> > +
+> > +#endif /* _MM_COMMUNICATION_H_ */
+> > diff --git a/drivers/firmware/efi/stmm/tee_stmm_efi.c b/drivers/firmware/=
+efi/stmm/tee_stmm_efi.c
+> > new file mode 100644
+> > index 000000000000..da4bc447f515
+> > --- /dev/null
+> > +++ b/drivers/firmware/efi/stmm/tee_stmm_efi.c
+> > @@ -0,0 +1,626 @@
+> > +// SPDX-License-Identifier: GPL-2.0+
+> > +/*
+> > + *  EFI variable service via TEE
+> > + *
+> > + *  Copyright (C) 2022 Linaro
+> > + */
+> > +
+> > +#include <linux/efi.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/tee.h>
+> > +#include <linux/tee_drv.h>
+> > +#include <linux/ucs2_string.h>
+> > +#include "mm_communication.h"
+> > +
+> > +static struct efivars tee_efivars;
+> > +static struct efivar_operations tee_efivar_ops;
+> > +
+> > +static size_t max_buffer_size; /* comm + var + func + data */
+> > +static size_t max_payload_size; /* func + data */
+> > +
+> > +struct tee_stmm_efi_private {
+> > +       struct tee_context *ctx;
+> > +       u32 session;
+> > +       struct device *dev;
+> > +};
+> > +
+> > +static struct tee_stmm_efi_private pvt_data;
+> > +
+> > +/* UUID of the stmm PTA */
+> > +static const struct tee_client_device_id tee_stmm_efi_id_table[] =3D {
+> > +       {PTA_STMM_UUID},
+> > +       {}
+> > +};
+> > +
+> > +static int tee_ctx_match(struct tee_ioctl_version_data *ver, const void =
+*data)
+> > +{
+> > +       /* currently only OP-TEE is supported as a communication path */
+> > +       if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE)
+> > +               return 1;
+> > +       else
+> > +               return 0;
+> > +}
+> > +
+> > +/**
+> > + * tee_mm_communicate() - Pass a buffer to StandaloneMM running in TEE
+> > + *
+> > + * @comm_buf:          locally allocated communication buffer
+> > + * @dsize:             buffer size
+> > + * Return:             status code
+> > + */
+> > +static efi_status_t tee_mm_communicate(void *comm_buf, size_t dsize)
+> > +{
+> > +       size_t buf_size;
+> > +       efi_status_t ret;
+> > +       struct efi_mm_communicate_header *mm_hdr;
+> > +       struct tee_ioctl_invoke_arg arg;
+> > +       struct tee_param param[4];
+> > +       struct tee_shm *shm =3D NULL;
+> > +       int rc;
+> > +
+> > +       if (!comm_buf)
+> > +               return EFI_INVALID_PARAMETER;
+> > +
+> > +       mm_hdr =3D (struct efi_mm_communicate_header *)comm_buf;
+> > +       buf_size =3D mm_hdr->message_len + sizeof(efi_guid_t) + sizeof(si=
+ze_t);
+> > +
+> > +       if (dsize !=3D buf_size)
+> > +               return EFI_INVALID_PARAMETER;
+>
+> I don't see why tee_mm_communicate() should need to look inside the
+> communication buffer. If we need this sanity check it's better done in
+> mm_communicate() below.
 
-On Wed, 17 May 2023 at 16:33, Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> From: Etienne Carriere <etienne.carriere@linaro.org>
->
-> Adds support in the OP-TEE driver to keep track of reserved system
-> threads. The optee_cq_*() functions are updated to handle this if
-> enabled. The SMC ABI part of the driver enables this tracking, but the
-> FF-A ABI part does not.
->
-> The logic allows atleast 1 OP-TEE thread can be reserved to TEE system
-> sessions. For sake of simplicity, initialization of call queue
-> management is factorized into new helper function optee_cq_init().
->
-> Co-developed-by: Jens Wiklander <jens.wiklander@linaro.org>
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
-> Co-developed-by: Sumit Garg <sumit.garg@linaro.org>
-> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> ---
->
-> Disclaimer: Compile tested only
->
-> Hi Etienne,
->
-> Overall the idea we agreed upon was okay but the implementation looked
-> complex to me. So I thought it would be harder to explain that via
-> review and I decided myself to give a try at simplification. I would
-> like you to test it if this still addresses the SCMI deadlock problem or
-> not. Also, feel free to include this in your patchset if all goes fine
-> wrt testing.
-
-With these changes, there is no more a specific waiting list for TEE
-system threads hence when a waiting queue can complete, we'll pick any
-TEE thread, not a TEE system thread first..
-Also, as stated in a below answer, these change unconditionally
-reserve a TEE thread for TEE system calls even if no TEE client
-reserved such.
+I think this check is redundant and we could remove it.
 
 >
-> -Sumit
+> > +
+> > +       shm =3D tee_shm_register_kernel_buf(pvt_data.ctx, comm_buf, buf_s=
+ize);
+> > +       if (IS_ERR(shm)) {
+> > +               dev_err(pvt_data.dev, "Unable to register shared memory\n=
+");
+> > +               return EFI_UNSUPPORTED;
+> > +       }
+> > +
+> > +       memset(&arg, 0, sizeof(arg));
+> > +       arg.func =3D PTA_STMM_CMD_COMMUNICATE;
+> > +       arg.session =3D pvt_data.session;
+> > +       arg.num_params =3D 4;
+> > +
+> > +       memset(param, 0, sizeof(param));
+> > +       param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT;
+> > +       param[0].u.memref.size =3D buf_size;
+> > +       param[0].u.memref.shm =3D shm;
+> > +       param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
+> > +       param[2].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
+> > +       param[3].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
+> > +
+> > +       rc =3D tee_client_invoke_func(pvt_data.ctx, &arg, param);
+> > +       tee_shm_free(shm);
+> > +
+> > +       if (rc < 0 || arg.ret !=3D 0) {
+> > +               dev_err(pvt_data.dev,
+> > +                       "PTA_STMM_CMD_COMMUNICATE invoke error: 0x%x\n", =
+arg.ret);
+> > +               return EFI_DEVICE_ERROR;
+> > +       }
+> > +
+> > +       switch (param[1].u.value.a) {
+> > +       case ARM_SVC_SPM_RET_SUCCESS:
+> > +               ret =3D EFI_SUCCESS;
+> > +               break;
+> > +
+> > +       case ARM_SVC_SPM_RET_INVALID_PARAMS:
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               break;
+> > +
+> > +       case ARM_SVC_SPM_RET_DENIED:
+> > +               ret =3D EFI_ACCESS_DENIED;
+> > +               break;
+> > +
+> > +       case ARM_SVC_SPM_RET_NO_MEMORY:
+> > +               ret =3D EFI_OUT_OF_RESOURCES;
+> > +               break;
+> > +
+> > +       default:
+> > +               ret =3D EFI_ACCESS_DENIED;
+> > +       }
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +/**
+> > + * mm_communicate() - Adjust the communication buffer to StandAlonneMM a=
+nd send
+> > + * it to TEE
+> > + *
+> > + * @comm_buf:          locally allocated communication buffer
+> > + * @dsize:             buffer size
 >
-> Changes since v8:
-> - Simplified system threads tracking implementation.
->
->  drivers/tee/optee/call.c          | 72 +++++++++++++++++++++++++++++--
->  drivers/tee/optee/ffa_abi.c       |  3 +-
->  drivers/tee/optee/optee_private.h | 16 +++++++
->  drivers/tee/optee/smc_abi.c       | 16 ++++++-
->  4 files changed, 99 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> index 42e478ac6ce1..09e824e4dcaf 100644
-> --- a/drivers/tee/optee/call.c
-> +++ b/drivers/tee/optee/call.c
-> @@ -39,9 +39,27 @@ struct optee_shm_arg_entry {
->         DECLARE_BITMAP(map, MAX_ARG_COUNT_PER_ENTRY);
->  };
->
-> +void optee_cq_init(struct optee_call_queue *cq, int thread_count)
-> +{
-> +       mutex_init(&cq->mutex);
-> +       INIT_LIST_HEAD(&cq->waiters);
-> +       /*
-> +        * If cq->total_thread_count is 0 then we're not trying to keep
-> +        * track of how many free threads we have, instead we're relying on
-> +        * the secure world to tell us when we're out of thread and have to
-> +        * wait for another thread to become available.
-> +        */
-> +       cq->total_thread_count =3D thread_count;
-> +       cq->free_thread_count =3D thread_count;
-> +}
-> +
->  void optee_cq_wait_init(struct optee_call_queue *cq,
->                         struct optee_call_waiter *w, bool sys_thread)
->  {
-> +       bool need_wait =3D false;
-> +
-> +       memset(w, 0, sizeof(*w));
-> +
->         /*
->          * We're preparing to make a call to secure world. In case we can't
->          * allocate a thread in secure world we'll end up waiting in
-> @@ -53,15 +71,43 @@ void optee_cq_wait_init(struct optee_call_queue *cq,
->         mutex_lock(&cq->mutex);
->
->         /*
-> -        * We add ourselves to the queue, but we don't wait. This
-> -        * guarantees that we don't lose a completion if secure world
-> -        * returns busy and another thread just exited and try to complete
-> -        * someone.
-> +        * We add ourselves to a queue, but we don't wait. This guarantees
-> +        * that we don't lose a completion if secure world returns busy and
-> +        * another thread just exited and try to complete someone.
->          */
->         init_completion(&w->c);
->         list_add_tail(&w->list_node, &cq->waiters);
->
-> +       if (cq->total_thread_count && sys_thread) {
-> +               if (cq->free_thread_count > 0)
-> +                       cq->free_thread_count--;
-> +               else
-> +                       need_wait =3D true;
-> +       } else if (cq->total_thread_count) {
-> +               if (cq->free_thread_count > 1)
+> This is confusing, comm_buf points to the mm header, while dsize tells
+> the payload size. So the arguments to this function aren't the normal
+> buffer pointer and length tuple. When looking at how this function is
+> called it makes sense, but we should clarify the relationship here.
 
-This unconditionally reserves a TEE thread for TEE system calls, even
-if no client has claimed such system thread reservation.
+I will rename dsize argument to payload_size, then add some comments
+for comm_buf.
 
+>
+> > + * Return:             status code
+> > + */
+> > +static efi_status_t mm_communicate(u8 *comm_buf, size_t dsize)
+> > +{
+> > +       efi_status_t ret;
+> > +       struct efi_mm_communicate_header *mm_hdr;
+> > +       struct smm_variable_communicate_header *var_hdr;
+> > +
+> > +       dsize +=3D MM_COMMUNICATE_HEADER_SIZE + MM_VARIABLE_COMMUNICATE_S=
+IZE;
+> > +       mm_hdr =3D (struct efi_mm_communicate_header *)comm_buf;
+> > +       var_hdr =3D (struct smm_variable_communicate_header *)mm_hdr->dat=
+a;
+> > +
+> > +       ret =3D tee_mm_communicate(comm_buf, dsize);
+> > +       if (ret !=3D EFI_SUCCESS) {
+> > +               dev_err(pvt_data.dev, "%s failed!\n", __func__);
+> > +               return ret;
+> > +       }
+> > +
+> > +       return var_hdr->ret_status;
+> > +}
+> > +
+> > +/**
+> > + * setup_mm_hdr() -    Allocate a buffer for StandAloneMM and initialize=
+ the
+> > + *                     header data.
+> > + *
+> > + * @dptr:              pointer address of the corresponding StandAloneMM
+> > + *                     function
+> > + * @payload_size:      buffer size
+> > + * @func:              standAloneMM function number
+> > + * @ret:               EFI return code
+> > + * Return:             buffer or NULL
+> > + */
+> > +static u8 *setup_mm_hdr(void **dptr, size_t payload_size, size_t func,
+> > +                       efi_status_t *ret)
+> > +{
+> > +       const efi_guid_t mm_var_guid =3D EFI_MM_VARIABLE_GUID;
+> > +       struct efi_mm_communicate_header *mm_hdr;
+> > +       struct smm_variable_communicate_header *var_hdr;
+> > +       u8 *comm_buf;
+> > +
+> > +       /* In the init function we initialize max_buffer_size with
+> > +        * get_max_payload(). So skip the test if max_buffer_size is init=
+ialized
+> > +        * StandAloneMM will perform similar checks and drop the buffer i=
+f it's
+> > +        * too long
+> > +        */
+> > +       if (max_buffer_size &&
+> > +           max_buffer_size < (MM_COMMUNICATE_HEADER_SIZE +
+> > +                              MM_VARIABLE_COMMUNICATE_SIZE + payload_siz=
+e)) {
+> > +               *ret =3D EFI_INVALID_PARAMETER;
+> > +               return NULL;
+> > +       }
+> > +
+> > +       comm_buf =3D kzalloc(MM_COMMUNICATE_HEADER_SIZE +
+> > +                                  MM_VARIABLE_COMMUNICATE_SIZE + payload=
+_size,
+> > +                          GFP_KERNEL);
+> > +       if (!comm_buf) {
+> > +               *ret =3D EFI_OUT_OF_RESOURCES;
+> > +               return NULL;
+> > +       }
+> > +
+> > +       mm_hdr =3D (struct efi_mm_communicate_header *)comm_buf;
+> > +       memcpy(&mm_hdr->header_guid, &mm_var_guid, sizeof(mm_hdr->header_=
+guid));
+> > +       mm_hdr->message_len =3D MM_VARIABLE_COMMUNICATE_SIZE + payload_si=
+ze;
+> > +
+> > +       var_hdr =3D (struct smm_variable_communicate_header *)mm_hdr->dat=
+a;
+> > +       var_hdr->function =3D func;
+> > +       if (dptr)
+> > +               *dptr =3D var_hdr->data;
+> > +       *ret =3D EFI_SUCCESS;
+> > +
+> > +       return comm_buf;
+> > +}
+> > +
+> > +/**
+> > + * get_max_payload() - Get variable payload size from StandAloneMM.
+> > + *
+> > + * @size:    size of the variable in storage
+> > + * Return:   status code
+> > + */
+> > +static efi_status_t get_max_payload(size_t *size)
+> > +{
+> > +       struct smm_variable_payload_size *var_payload =3D NULL;
+> > +       size_t payload_size;
+> > +       u8 *comm_buf =3D NULL;
+> > +       efi_status_t ret;
+> > +
+> > +       if (!size) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       payload_size =3D sizeof(*var_payload);
+> > +       comm_buf =3D setup_mm_hdr((void **)&var_payload, payload_size,
+> > +                               SMM_VARIABLE_FUNCTION_GET_PAYLOAD_SIZE, &=
+ret);
+>
+> The (void **) cast is a bit ugly. If instead the payload buffer was
+> returned in the return value and &comm_buf was the first argument we
+> wouldn't need to cast at all.
 
-> +                       cq->free_thread_count--;
-> +               else
-> +                       need_wait =3D true;
-> +       }
-> +
->         mutex_unlock(&cq->mutex);
-> +
-> +       while (need_wait) {
-> +               optee_cq_wait_for_completion(cq, w);
-> +               mutex_lock(&cq->mutex);
-> +               if (sys_thread) {
-> +                       if (cq->free_thread_count > 0) {
-> +                               cq->free_thread_count--;
-> +                               need_wait =3D false;
-> +                       }
-> +               } else {
-> +                       if (cq->free_thread_count > 1) {
-> +                               cq->free_thread_count--;
-> +                               need_wait =3D false;
-> +                       }
-> +               }
-> +               mutex_unlock(&cq->mutex);
-> +       }
->  }
->
->  void optee_cq_wait_for_completion(struct optee_call_queue *cq,
-> @@ -104,6 +150,8 @@ void optee_cq_wait_final(struct optee_call_queue *cq,
->         /* Get out of the list */
->         list_del(&w->list_node);
->
-> +       cq->free_thread_count++;
-> +
->         /* Wake up one eventual waiting task */
->         optee_cq_complete_one(cq);
->
-> @@ -361,6 +409,22 @@ int optee_open_session(struct tee_context *ctx,
->         return rc;
->  }
->
-> +int optee_system_session(struct tee_context *ctx, u32 session)
-> +{
-> +       struct optee_context_data *ctxdata =3D ctx->data;
-> +       struct optee_session *sess;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +
-> +       sess =3D find_session(ctxdata, session);
-> +       if (sess && !sess->use_sys_thread)
-> +               sess->use_sys_thread =3D true;
-> +
-> +       mutex_unlock(&ctxdata->mutex);
-> +
-> +       return 0;
+Thank you, I will fix it.
 
-Nitpicking: should rather return 0 only upon session is valid
-(sess!=3DNULL here)  and system thread reservation is supported
-(total_thread_count > 0).
-But that's not a big deal I guess, can be addressed.
+Sorry for the late reply.
 
-Etienne
+Regards,
+Masahisa Kojima
 
+>
+> > +       if (!comm_buf)
+> > +               goto out;
+> > +
+> > +       ret =3D mm_communicate(comm_buf, payload_size);
+> > +       if (ret !=3D EFI_SUCCESS)
+> > +               goto out;
+> > +
+> > +       /* Make sure the buffer is big enough for storing variables */
+> > +       if (var_payload->size < MM_VARIABLE_ACCESS_HEADER_SIZE + 0x20) {
+> > +               ret =3D EFI_DEVICE_ERROR;
+> > +               goto out;
+> > +       }
+> > +       *size =3D var_payload->size;
+> > +       /*
+> > +        * There seems to be a bug in EDK2 miscalculating the boundaries =
+and
+> > +        * size checks, so deduct 2 more bytes to fulfill this requiremen=
+t. Fix
+> > +        * it up here to ensure backwards compatibility with older versio=
+ns
+> > +        * (cf. StandaloneMmPkg/Drivers/StandaloneMmCpu/AArch64/EventHand=
+le.c.
+> > +        * sizeof (EFI_MM_COMMUNICATE_HEADER) instead the size minus the
+> > +        * flexible array member).
+> > +        *
+> > +        * size is guaranteed to be > 2 due to checks on the beginning.
+> > +        */
+> > +       *size -=3D 2;
+> > +out:
+> > +       kfree(comm_buf);
+> > +       return ret;
+> > +}
+> > +
+> > +static efi_status_t get_property_int(u16 *name, size_t name_size,
+> > +                                    const efi_guid_t *vendor,
+> > +                                    struct var_check_property *var_prope=
+rty)
+> > +{
+> > +       struct smm_variable_var_check_property *smm_property;
+> > +       size_t payload_size;
+> > +       u8 *comm_buf =3D NULL;
+> > +       efi_status_t ret;
+> > +
+> > +       memset(var_property, 0, sizeof(*var_property));
+> > +       payload_size =3D sizeof(*smm_property) + name_size;
+> > +       if (payload_size > max_payload_size) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +       comm_buf =3D setup_mm_hdr(
+> > +               (void **)&smm_property, payload_size,
+> > +               SMM_VARIABLE_FUNCTION_VAR_CHECK_VARIABLE_PROPERTY_GET, &r=
+et);
+> > +       if (!comm_buf)
+> > +               goto out;
+> > +
+> > +       memcpy(&smm_property->guid, vendor, sizeof(smm_property->guid));
+> > +       smm_property->name_size =3D name_size;
+> > +       memcpy(smm_property->name, name, name_size);
+> > +
+> > +       ret =3D mm_communicate(comm_buf, payload_size);
+> > +       /*
+> > +        * Currently only R/O property is supported in StMM.
+> > +        * Variables that are not set to R/O will not set the property in=
+ StMM
+> > +        * and the call will return EFI_NOT_FOUND. We are setting the
+> > +        * properties to 0x0 so checking against that is enough for the
+> > +        * EFI_NOT_FOUND case.
+> > +        */
+> > +       if (ret =3D=3D EFI_NOT_FOUND)
+> > +               ret =3D EFI_SUCCESS;
+> > +       if (ret !=3D EFI_SUCCESS)
+> > +               goto out;
+> > +       memcpy(var_property, &smm_property->property, sizeof(*var_propert=
+y));
+> > +
+> > +out:
+> > +       kfree(comm_buf);
+> > +       return ret;
+> > +}
+> > +
+> > +static efi_status_t tee_get_variable(u16 *name, efi_guid_t *vendor,
+> > +                                    u32 *attributes, unsigned long *data=
+_size,
+> > +                                    void *data)
+> > +{
+> > +       struct var_check_property var_property;
+> > +       struct smm_variable_access *var_acc;
+> > +       size_t payload_size;
+> > +       size_t name_size;
+> > +       size_t tmp_dsize;
+> > +       u8 *comm_buf =3D NULL;
+> > +       efi_status_t ret;
+> > +
+> > +       if (!name || !vendor || !data_size) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       name_size =3D (ucs2_strnlen(name, EFI_VAR_NAME_LEN) + 1) * sizeof=
+(u16);
+> > +       if (name_size > max_payload_size - MM_VARIABLE_ACCESS_HEADER_SIZE=
+) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       /* Trim output buffer size */
+> > +       tmp_dsize =3D *data_size;
+> > +       if (name_size + tmp_dsize >
+> > +           max_payload_size - MM_VARIABLE_ACCESS_HEADER_SIZE) {
+> > +               tmp_dsize =3D max_payload_size - MM_VARIABLE_ACCESS_HEADE=
+R_SIZE -
+> > +                           name_size;
+> > +       }
+> > +
+> > +       /* Get communication buffer and initialize header */
+> > +       payload_size =3D MM_VARIABLE_ACCESS_HEADER_SIZE + name_size + tmp=
+_dsize;
+> > +       comm_buf =3D setup_mm_hdr((void **)&var_acc, payload_size,
+> > +                               SMM_VARIABLE_FUNCTION_GET_VARIABLE, &ret);
+> > +       if (!comm_buf)
+> > +               goto out;
+> > +
+> > +       /* Fill in contents */
+> > +       memcpy(&var_acc->guid, vendor, sizeof(var_acc->guid));
+> > +       var_acc->data_size =3D tmp_dsize;
+> > +       var_acc->name_size =3D name_size;
+> > +       var_acc->attr =3D attributes ? *attributes : 0;
+> > +       memcpy(var_acc->name, name, name_size);
+> > +
+> > +       /* Communicate */
+> > +       ret =3D mm_communicate(comm_buf, payload_size);
+> > +       if (ret =3D=3D EFI_SUCCESS || ret =3D=3D EFI_BUFFER_TOO_SMALL)
+> > +               /* Update with reported data size for trimmed case */
+> > +               *data_size =3D var_acc->data_size;
+> > +       if (ret !=3D EFI_SUCCESS)
+> > +               goto out;
+> > +
+> > +       ret =3D get_property_int(name, name_size, vendor, &var_property);
+> > +       if (ret !=3D EFI_SUCCESS)
+> > +               goto out;
+> > +
+> > +       if (attributes)
+> > +               *attributes =3D var_acc->attr;
+> > +
+> > +       if (data)
+> > +               memcpy(data, (u8 *)var_acc->name + var_acc->name_size,
+> > +                      var_acc->data_size);
+> > +       else
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +
+> > +out:
+> > +       kfree(comm_buf);
+> > +       return ret;
+> > +}
+> > +
+> > +static efi_status_t tee_get_next_variable(unsigned long *name_size,
+> > +                                         efi_char16_t *name, efi_guid_t =
+*guid)
+> > +{
+> > +       struct smm_variable_getnext *var_getnext;
+> > +       size_t payload_size;
+> > +       size_t out_name_size;
+> > +       size_t in_name_size;
+> > +       u8 *comm_buf =3D NULL;
+> > +       efi_status_t ret;
+> > +
+> > +       if (!name_size || !name || !guid) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       out_name_size =3D *name_size;
+> > +       in_name_size =3D (ucs2_strnlen(name, EFI_VAR_NAME_LEN) + 1) * siz=
+eof(u16);
+> > +
+> > +       if (out_name_size < in_name_size) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       if (in_name_size >
+> > +           max_payload_size - MM_VARIABLE_GET_NEXT_HEADER_SIZE) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       /* Trim output buffer size */
+> > +       if (out_name_size > max_payload_size - MM_VARIABLE_GET_NEXT_HEADE=
+R_SIZE)
+> > +               out_name_size =3D
+> > +                       max_payload_size - MM_VARIABLE_GET_NEXT_HEADER_SI=
+ZE;
+> > +
+> > +       payload_size =3D MM_VARIABLE_GET_NEXT_HEADER_SIZE + out_name_size;
+> > +       comm_buf =3D setup_mm_hdr((void **)&var_getnext, payload_size,
+> > +                               SMM_VARIABLE_FUNCTION_GET_NEXT_VARIABLE_N=
+AME,
+> > +                               &ret);
+> > +       if (!comm_buf)
+> > +               goto out;
+> > +
+> > +       /* Fill in contents */
+> > +       memcpy(&var_getnext->guid, guid, sizeof(var_getnext->guid));
+> > +       var_getnext->name_size =3D out_name_size;
+> > +       memcpy(var_getnext->name, name, in_name_size);
+> > +       memset((u8 *)var_getnext->name + in_name_size, 0x0,
+> > +              out_name_size - in_name_size);
+> > +
+> > +       /* Communicate */
+> > +       ret =3D mm_communicate(comm_buf, payload_size);
+> > +       if (ret =3D=3D EFI_SUCCESS || ret =3D=3D EFI_BUFFER_TOO_SMALL) {
+> > +               /* Update with reported data size for trimmed case */
+> > +               *name_size =3D var_getnext->name_size;
+> > +       }
+> > +       if (ret !=3D EFI_SUCCESS)
+> > +               goto out;
+> > +
+> > +       memcpy(guid, &var_getnext->guid, sizeof(*guid));
+> > +       memcpy(name, var_getnext->name, var_getnext->name_size);
+> > +
+> > +out:
+> > +       kfree(comm_buf);
+> > +       return ret;
+> > +}
+> > +
+> > +static efi_status_t tee_set_variable(efi_char16_t *name, efi_guid_t *ven=
+dor,
+> > +                                    u32 attributes, unsigned long data_s=
+ize,
+> > +                                    void *data)
+> > +{
+> > +       efi_status_t ret;
+> > +       struct var_check_property var_property;
+> > +       struct smm_variable_access *var_acc;
+> > +       size_t payload_size;
+> > +       size_t name_size;
+> > +       u8 *comm_buf =3D NULL;
+> > +
+> > +       if (!name || name[0] =3D=3D 0 || !vendor) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +       if (data_size > 0 && !data) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +       /* Check payload size */
+> > +       name_size =3D (ucs2_strnlen(name, EFI_VAR_NAME_LEN) + 1) * sizeof=
+(u16);
+> > +       payload_size =3D MM_VARIABLE_ACCESS_HEADER_SIZE + name_size + dat=
+a_size;
+> > +       if (payload_size > max_payload_size) {
+> > +               ret =3D EFI_INVALID_PARAMETER;
+> > +               goto out;
+> > +       }
+> > +
+> > +       /*
+> > +        * Allocate the buffer early, before switching to RW (if needed)
+> > +        * so we won't need to account for any failures in reading/setting
+> > +        * the properties, if the allocation fails
+> > +        */
+> > +       comm_buf =3D setup_mm_hdr((void **)&var_acc, payload_size,
+> > +                               SMM_VARIABLE_FUNCTION_SET_VARIABLE, &ret);
+> > +       if (!comm_buf)
+> > +               goto out;
+> > +
+> > +       /*
+> > +        * The API has the ability to override RO flags. If no RO check w=
+as
+> > +        * requested switch the variable to RW for the duration of this c=
+all
+> > +        */
+> > +       ret =3D get_property_int(name, name_size, vendor, &var_property);
+> > +       if (ret !=3D EFI_SUCCESS) {
+> > +               dev_err(pvt_data.dev, "Getting variable property failed\n=
+");
+> > +               goto out;
+> > +       }
+> > +
+> > +       if (var_property.property & VAR_CHECK_VARIABLE_PROPERTY_READ_ONLY=
+) {
+> > +               ret =3D EFI_WRITE_PROTECTED;
+> > +               goto out;
+> > +       }
+> > +
+> > +       /* Fill in contents */
+> > +       memcpy(&var_acc->guid, vendor, sizeof(var_acc->guid));
+> > +       var_acc->data_size =3D data_size;
+> > +       var_acc->name_size =3D name_size;
+> > +       var_acc->attr =3D attributes;
+> > +       memcpy(var_acc->name, name, name_size);
+> > +       memcpy((u8 *)var_acc->name + name_size, data, data_size);
+> > +
+> > +
+> > +       /* Communicate */
+> > +       ret =3D mm_communicate(comm_buf, payload_size);
+> > +       dev_dbg(pvt_data.dev, "Set Variable %s %d %lx\n", __FILE__, __LIN=
+E__, ret);
+> > +out:
+> > +       kfree(comm_buf);
+> > +       return ret;
+> > +}
+> > +
+> > +static efi_status_t __maybe_unused tee_query_variable_info(u32 attribute=
+s,
+> > +                                           u64 *max_variable_storage_siz=
+e,
+> > +                                           u64 *remain_variable_storage_=
+size,
+> > +                                           u64 *max_variable_size)
+> > +{
+> > +       struct smm_variable_query_info *mm_query_info;
+> > +       size_t payload_size;
+> > +       efi_status_t ret;
+> > +       u8 *comm_buf;
+> > +
+> > +       payload_size =3D sizeof(*mm_query_info);
+> > +       comm_buf =3D setup_mm_hdr((void **)&mm_query_info, payload_size,
+> > +                               SMM_VARIABLE_FUNCTION_QUERY_VARIABLE_INFO,
+> > +                               &ret);
+> > +       if (!comm_buf)
+> > +               goto out;
+> > +
+> > +       mm_query_info->attr =3D attributes;
+> > +       ret =3D mm_communicate(comm_buf, payload_size);
+> > +       if (ret !=3D EFI_SUCCESS)
+> > +               goto out;
+> > +       *max_variable_storage_size =3D mm_query_info->max_variable_storag=
+e;
+> > +       *remain_variable_storage_size =3D
+> > +               mm_query_info->remaining_variable_storage;
+> > +       *max_variable_size =3D mm_query_info->max_variable_size;
+> > +
+> > +out:
+> > +       kfree(comm_buf);
+> > +       return ret;
+> > +}
+> > +
+> > +static int tee_stmm_efi_probe(struct device *dev)
+> > +{
+> > +       struct tee_ioctl_open_session_arg sess_arg;
+> > +       efi_status_t ret;
+> > +       int rc;
+> > +
+> > +       /* Open context with TEE driver */
+> > +       pvt_data.ctx =3D tee_client_open_context(NULL, tee_ctx_match, NUL=
+L, NULL);
+> > +       if (IS_ERR(pvt_data.ctx))
+> > +               return -ENODEV;
+> > +
+> > +       /* Open session with StMM PTA */
+> > +       memset(&sess_arg, 0, sizeof(sess_arg));
+> > +       export_uuid(sess_arg.uuid, &tee_stmm_efi_id_table[0].uuid);
+> > +       rc =3D tee_client_open_session(pvt_data.ctx, &sess_arg, NULL);
+> > +       if ((rc < 0) || (sess_arg.ret !=3D 0)) {
+> > +               dev_err(dev, "tee_client_open_session failed, err: %x\n",
+> > +                       sess_arg.ret);
+> > +               rc =3D -EINVAL;
+> > +               goto out_ctx;
+> > +       }
+> > +       pvt_data.session =3D sess_arg.session;
+> > +       pvt_data.dev =3D dev;
+> > +
+> > +       ret =3D get_max_payload(&max_payload_size);
+> > +       if (ret !=3D EFI_SUCCESS) {
+> > +               rc =3D -EIO;
+> > +               goto out_sess;
+> > +       }
+> > +
+> > +       max_buffer_size =3D MM_COMMUNICATE_HEADER_SIZE +
+> > +                         MM_VARIABLE_COMMUNICATE_SIZE +
+> > +                         max_payload_size;
+> > +
+> > +       tee_efivar_ops.get_variable =3D tee_get_variable;
+> > +       tee_efivar_ops.get_next_variable =3D tee_get_next_variable;
+> > +       tee_efivar_ops.set_variable =3D tee_set_variable;
+> > +       /* TODO: support non-blocking variant */
+> > +       tee_efivar_ops.set_variable_nonblocking =3D NULL;
+> > +       tee_efivar_ops.query_variable_store =3D efi_query_variable_store;
+> > +
+> > +       efivars_generic_ops_unregister();
+> > +       pr_info("Use tee-based EFI runtime variable services\n");
+> > +       efivars_register(&tee_efivars, &tee_efivar_ops);
+> > +
+> > +       return 0;
+> > +
+> > +out_sess:
+> > +       tee_client_close_session(pvt_data.ctx, pvt_data.session);
+> > +out_ctx:
+> > +       tee_client_close_context(pvt_data.ctx);
+> > +
+> > +       return rc;
+> > +}
+> > +
+> > +static int tee_stmm_efi_remove(struct device *dev)
+> > +{
+> > +       efivars_unregister(&tee_efivars);
+> > +       efivars_generic_ops_register();
+> > +
+> > +       tee_client_close_session(pvt_data.ctx, pvt_data.session);
+> > +       tee_client_close_context(pvt_data.ctx);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +MODULE_DEVICE_TABLE(tee, tee_stmm_efi_id_table);
+> > +
+> > +static struct tee_client_driver tee_stmm_efi_driver =3D {
+> > +       .id_table       =3D tee_stmm_efi_id_table,
+> > +       .driver         =3D {
+> > +               .name           =3D "tee-stmm-efi",
+> > +               .bus            =3D &tee_bus_type,
+> > +               .probe          =3D tee_stmm_efi_probe,
+> > +               .remove         =3D tee_stmm_efi_remove,
+> > +       },
+> > +};
+> > +
+> > +static int __init tee_stmm_efi_mod_init(void)
+> > +{
+> > +       return driver_register(&tee_stmm_efi_driver.driver);
+> > +}
+> > +
+> > +static void __exit tee_stmm_efi_mod_exit(void)
+> > +{
+> > +       driver_unregister(&tee_stmm_efi_driver.driver);
+> > +}
+> > +
+> > +module_init(tee_stmm_efi_mod_init);
+> > +module_exit(tee_stmm_efi_mod_exit);
+> > +
+> > +MODULE_LICENSE("GPL");
+> > +MODULE_AUTHOR("Ilias Apalodimas <ilias.apalodimas@linaro.org>");
+> > +MODULE_AUTHOR("Masahisa Kojima <masahisa.kojima@linaro.org>");
+> > +MODULE_DESCRIPTION("TEE based EFI runtime variable service driver");
+> > --
+> > 2.30.2
+> >
+>
+> The TEE API usage looks OK in this patch.
+>
+> Cheers,
+> Jens
 
-
-
-> +}
-> +
->  int optee_close_session_helper(struct tee_context *ctx, u32 session,
->                                bool system_thread)
->  {
-> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> index 5fde9d4100e3..0c9055691343 100644
-> --- a/drivers/tee/optee/ffa_abi.c
-> +++ b/drivers/tee/optee/ffa_abi.c
-> @@ -852,8 +852,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
->         if (rc)
->                 goto err_unreg_supp_teedev;
->         mutex_init(&optee->ffa.mutex);
-> -       mutex_init(&optee->call_queue.mutex);
-> -       INIT_LIST_HEAD(&optee->call_queue.waiters);
-> +       optee_cq_init(&optee->call_queue, 0);
->         optee_supp_init(&optee->supp);
->         optee_shm_arg_cache_init(optee, arg_cache_flags);
->         ffa_dev_set_drvdata(ffa_dev, optee);
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
-ivate.h
-> index b68273051454..6dcecb83c893 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -40,15 +40,29 @@ typedef void (optee_invoke_fn)(unsigned long, unsigned =
-long, unsigned long,
->                                 unsigned long, unsigned long,
->                                 struct arm_smccc_res *);
->
-> +/*
-> + * struct optee_call_waiter - TEE entry may need to wait for a free TEE th=
-read
-> + * @list_node          Reference in waiters list
-> + * @c                  Waiting completion reference
-> + */
->  struct optee_call_waiter {
->         struct list_head list_node;
->         struct completion c;
->  };
->
-> +/*
-> + * struct optee_call_queue - OP-TEE call queue management
-> + * @mutex                      Serializes access to this struct
-> + * @waiters                    List of threads waiting to enter OP-TEE
-> + * @total_thread_count         Overall number of thread context in OP-TEE =
-or 0
-> + * @free_thread_count          Number of threads context free in OP-TEE
-> + */
->  struct optee_call_queue {
->         /* Serializes access to this struct */
->         struct mutex mutex;
->         struct list_head waiters;
-> +       int total_thread_count;
-> +       int free_thread_count;
->  };
->
->  struct optee_notif {
-> @@ -254,6 +268,7 @@ int optee_supp_send(struct tee_context *ctx, u32 ret, u=
-32 num_params,
->  int optee_open_session(struct tee_context *ctx,
->                        struct tee_ioctl_open_session_arg *arg,
->                        struct tee_param *param);
-> +int optee_system_session(struct tee_context *ctx, u32 session);
->  int optee_close_session_helper(struct tee_context *ctx, u32 session,
->                                bool system_thread);
->  int optee_close_session(struct tee_context *ctx, u32 session);
-> @@ -303,6 +318,7 @@ static inline void optee_to_msg_param_value(struct opte=
-e_msg_param *mp,
->         mp->u.value.c =3D p->u.value.c;
->  }
->
-> +void optee_cq_init(struct optee_call_queue *cq, int thread_count);
->  void optee_cq_wait_init(struct optee_call_queue *cq,
->                         struct optee_call_waiter *w, bool sys_thread);
->  void optee_cq_wait_for_completion(struct optee_call_queue *cq,
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index e2763cdcf111..3314ffeb91c8 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -1209,6 +1209,7 @@ static const struct tee_driver_ops optee_clnt_ops =3D=
- {
->         .release =3D optee_release,
->         .open_session =3D optee_open_session,
->         .close_session =3D optee_close_session,
-> +       .system_session =3D optee_system_session,
->         .invoke_func =3D optee_invoke_func,
->         .cancel_req =3D optee_cancel_req,
->         .shm_register =3D optee_shm_register,
-> @@ -1356,6 +1357,16 @@ static bool optee_msg_exchange_capabilities(optee_in=
-voke_fn *invoke_fn,
->         return true;
->  }
->
-> +static unsigned int optee_msg_get_thread_count(optee_invoke_fn *invoke_fn)
-> +{
-> +       struct arm_smccc_res res;
-> +
-> +       invoke_fn(OPTEE_SMC_GET_THREAD_COUNT, 0, 0, 0, 0, 0, 0, 0, &res);
-> +       if (res.a0)
-> +               return 0;
-> +       return res.a1;
-> +}
-> +
->  static struct tee_shm_pool *
->  optee_config_shm_memremap(optee_invoke_fn *invoke_fn, void **memremaped_sh=
-m)
->  {
-> @@ -1609,6 +1620,7 @@ static int optee_probe(struct platform_device *pdev)
->         struct optee *optee =3D NULL;
->         void *memremaped_shm =3D NULL;
->         unsigned int rpc_param_count;
-> +       unsigned int thread_count;
->         struct tee_device *teedev;
->         struct tee_context *ctx;
->         u32 max_notif_value;
-> @@ -1636,6 +1648,7 @@ static int optee_probe(struct platform_device *pdev)
->                 return -EINVAL;
->         }
->
-> +       thread_count =3D optee_msg_get_thread_count(invoke_fn);
->         if (!optee_msg_exchange_capabilities(invoke_fn, &sec_caps,
->                                              &max_notif_value,
->                                              &rpc_param_count)) {
-> @@ -1725,8 +1738,7 @@ static int optee_probe(struct platform_device *pdev)
->         if (rc)
->                 goto err_unreg_supp_teedev;
->
-> -       mutex_init(&optee->call_queue.mutex);
-> -       INIT_LIST_HEAD(&optee->call_queue.waiters);
-> +       optee_cq_init(&optee->call_queue, thread_count);
->         optee_supp_init(&optee->supp);
->         optee->smc.memremaped_shm =3D memremaped_shm;
->         optee->pool =3D pool;
-> --
-> 2.34.1
->
-
---===============1186448638600921539==--
+--===============5223406794028590690==--
 
