@@ -1,55 +1,96 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RFC PATCH 0/4] introduction of a remoteproc tee to load signed
- firmware images
-Date: Tue, 23 May 2023 09:14:37 +0000
-Message-ID: <20230523091350.292221-1-arnaud.pouliquen@foss.st.com>
+Subject: 
+ [RFC PATCH 3/4] dt-bindings: remoteproc: add compatibility for TEE support
+Date: Tue, 23 May 2023 09:14:38 +0000
+Message-ID: <20230523091350.292221-4-arnaud.pouliquen@foss.st.com>
+In-Reply-To: <20230523091350.292221-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2716053346511522595=="
+Content-Type: multipart/mixed; boundary="===============1902335671916848642=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2716053346511522595==
+--===============1902335671916848642==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-This RFC proposes an implementation of a remoteproc tee driver to
-communicate with a TEE trusted application in charge of authenticating
-and loading remoteproc firmware image in an Arm secure context.
+Rework compatibility description according to the support of
+the authenticated firmware relying on OP-TEE authentication.
 
-The services implemented are the same as those offered by the Linux
-remoteproc framework:
-- load of a signed firmware
-- start/stop of a coprocessor
-- get the resource table
+The expected behavior is:
+- with legacy compatible "st,stm32mp1-m4" the Linux kernel loads a
+  non-signed (ELF) firmware image,
+- with compatible "st,stm32mp1-m4-tee" the Linux kernel load a signed
+  firmware image. In this case it calls TEE services to manage the firmware
+  loading and the remoteproc life-cycle.
 
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+ .../bindings/remoteproc/st,stm32-rproc.yaml   | 33 +++++++++++++++++--
+ 1 file changed, 30 insertions(+), 3 deletions(-)
 
-The OP-TEE code in charge of providing the service in a trusted application
-is proposed for upstream here:
-https://github.com/OP-TEE/optee_os/pull/6027
-
-For more details on the implementation a presentation is available here:
-https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
-
-Arnaud Pouliquen (4):
-  tee: Re-enable vmalloc page support for shared memory
-  remoteproc: Add TEE support
-  dt-bindings: remoteproc: add compatibility for TEE support
-  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
-
- .../bindings/remoteproc/st,stm32-rproc.yaml   |  33 +-
- drivers/remoteproc/Kconfig                    |   9 +
- drivers/remoteproc/Makefile                   |   1 +
- drivers/remoteproc/stm32_rproc.c              | 234 +++++++++--
- drivers/remoteproc/tee_remoteproc.c           | 397 ++++++++++++++++++
- drivers/tee/tee_shm.c                         |  24 +-
- include/linux/tee_remoteproc.h                | 101 +++++
- 7 files changed, 753 insertions(+), 46 deletions(-)
- create mode 100644 drivers/remoteproc/tee_remoteproc.c
- create mode 100644 include/linux/tee_remoteproc.h
-
--- 
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
+ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 959a56f1b6c7..1671a90d5974 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -16,7 +16,12 @@ maintainers:
+=20
+ properties:
+   compatible:
+-    const: st,stm32mp1-m4
++    enum:
++      - st,stm32mp1-m4
++      - st,stm32mp1-m4-tee
++    description:
++      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by Linux
++      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by O=
+PTEE
+=20
+   reg:
+     description:
+@@ -135,8 +140,28 @@ required:
+   - compatible
+   - reg
+   - resets
+-  - st,syscfg-holdboot
+-  - st,syscfg-tz
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          enum:
++            - st,stm32mp1-m4
++    then:
++      required:
++        - memory-region
++        - st,syscfg-holdboot
++        - st,syscfg-tz
++        - resets
++  - if:
++      properties:
++        compatible:
++          enum:
++            - st,stm32mp1-m4-tee
++    then:
++      required:
++        - memory-region
++
+=20
+ additionalProperties: false
+=20
+@@ -148,6 +173,8 @@ examples:
+       reg =3D <0x10000000 0x40000>,
+             <0x30000000 0x40000>,
+             <0x38000000 0x10000>;
++      memory-region =3D <&retram>, <&mcuram>, <&mcuram2>, <&vdev0vring0>,
++                      <&m_ipc_shm>, <&vdev0vring1>, <&vdev0buffer>;
+       resets =3D <&rcc MCU_R>;
+       st,syscfg-holdboot =3D <&rcc 0x10C 0x1>;
+       st,syscfg-tz =3D <&rcc 0x000 0x1>;
+--=20
 2.25.1
 
 
---===============2716053346511522595==--
+--===============1902335671916848642==--
 
