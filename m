@@ -1,25 +1,32 @@
 From: Christoph Hellwig <hch@infradead.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [RFC PATCH 1/4] tee: Re-enable vmalloc page support for shared memory
-Date: Tue, 23 May 2023 23:46:27 -0700
-Message-ID: <ZG2yw0xZ6XGGp9E5@infradead.org>
-In-Reply-To: <20230523091350.292221-2-arnaud.pouliquen@foss.st.com>
+Subject: Re: [RFC PATCH 2/4] remoteproc: Add TEE support
+Date: Tue, 23 May 2023 23:50:47 -0700
+Message-ID: <ZG2zx+ARLO1a7wh5@infradead.org>
+In-Reply-To: <20230523091350.292221-3-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5955116677447528222=="
+Content-Type: multipart/mixed; boundary="===============8158496578867390832=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5955116677447528222==
+--===============8158496578867390832==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 23, 2023 at 11:13:47AM +0200, Arnaud Pouliquen wrote:
-> This patch revert commit c83900393aa1 ("tee: Remove vmalloc page support")
+On Tue, May 23, 2023 at 11:13:48AM +0200, Arnaud Pouliquen wrote:
+> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMB];
+> +	struct tee_shm *fw_shm;
+> +	int ret;
+> +
+> +	fw_shm =3D tee_shm_register_kernel_buf(tee_rproc_ctx->tee_ctx, (void *)fw=
+->data, fw->size);
+> +	if (IS_ERR(fw_shm)) {
+> +		/* Fallback: Try to allocate memory in OP-TEE space */
+> +		fw_shm =3D tee_shm_alloc_kernel_buf(tee_rproc_ctx->tee_ctx, fw->size);
 
-As per the discussion back then: don't just blindly do the same dumb
-thing again and fix the interfae to actually pass in a page array,
-or iov_iter or an actually useful container that fits.
+> +EXPORT_SYMBOL(tee_rproc_load_fw);
 
+Please stick to the EXPORT_SYMBOL_GPL of the underlying tee
+infrastructure.
 
---===============5955116677447528222==--
+--===============8158496578867390832==--
 
