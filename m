@@ -1,258 +1,71 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Ard Biesheuvel <ardb@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 3/4] tee: optee: support tracking system threads
-Date: Thu, 25 May 2023 17:20:24 +0200
+Subject: Re: [PATCH v4 0/3] introduce tee-based EFI Runtime Variable Service
+Date: Thu, 25 May 2023 18:11:14 +0200
 Message-ID: 
- <CAHUa44FDs-cukERVwev88i855Y-ZaAkLUt=bVxah=GdW+JKVLQ@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CPAXPR10MB468715EB2B1DFE080F380266FD469=40PAXPR10MB?=
- =?utf-8?q?4687=2EEURPRD10=2EPROD=2EOUTLOOK=2ECOM=3E?=>
+ <CAMj1kXGxTcsWxwKayf8YDy_iocPJu2reWgMBtRfs8ZNin4fPpg@mail.gmail.com>
+In-Reply-To: <
+ <CAC_iWjKxXrEgpqgnpt8g0ummdb1mFbwgMVTSVqfRTNbXOwhz2w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2541119570015829636=="
+Content-Type: multipart/mixed; boundary="===============6811871939933604693=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2541119570015829636==
+--===============6811871939933604693==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Thu, May 25, 2023 at 1:48=E2=80=AFPM Etienne CARRIERE
-<etienne.carriere@st.com> wrote:
+On Wed, 24 May 2023 at 10:01, Ilias Apalodimas
+<ilias.apalodimas@linaro.org> wrote:
 >
-> >
-> > De : Sumit Garg <sumit.garg@linaro.org>
-> > Envoy=C3=A9 : mercredi 24 mai 2023 09:31
-> > > On Tue, 23 May 2023 at 12:41, Etienne Carriere
-> > <etienne.carriere@linaro.org> wrote:
-> > > Hello Sumit,
-> > >
-> > >
-> > > On Wed, 17 May 2023 at 16:33, Sumit Garg <sumit.garg@linaro.org> wrot=
-e:
-> > > >
-> > > > From: Etienne Carriere <etienne.carriere@linaro.org>
-> > > >
-> > > > Adds support in the OP-TEE driver to keep track of reserved system
-> > > > threads. The optee_cq_*() functions are updated to handle this if
-> > > > enabled. The SMC ABI part of the driver enables this tracking, but the
-> > > > FF-A ABI part does not.
-> > > >
-> > > > The logic allows atleast 1 OP-TEE thread can be reserved to TEE system
-> > > > sessions. For sake of simplicity, initialization of call queue
-> > > > management is factorized into new helper function optee_cq_init().
-> > > >
-> > > > Co-developed-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
-> > > > Co-developed-by: Sumit Garg <sumit.garg@linaro.org>
-> > > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> > > > ---
-> > > >
-> > > > Disclaimer: Compile tested only
-> > > >
-> > > > Hi Etienne,
-> > > >
-> > > > Overall the idea we agreed upon was okay but the implementation looked
-> > > > complex to me. So I thought it would be harder to explain that via
-> > > > review and I decided myself to give a try at simplification. I would
-> > > > like you to test it if this still addresses the SCMI deadlock problem=
- or
-> > > > not. Also, feel free to include this in your patchset if all goes fine
-> > > > wrt testing.
-> > >
-> > > With these changes, there is no more a specific waiting list for TEE
-> > > system threads hence when a waiting queue can complete, we'll pick any
-> > > TEE thread, not a TEE system thread first..
-> >
-> > I had thought about this but I can't see any value in having a
-> > separate wait queue for system threads. Here we only need to provide
-> > an extra privileged thread for system sessions (kernel clients) such
-> > that user-space doesn't contend for that thread. This prevents kernel
-> > client's starvation or deadlock like in the SCMI case.
-> >
-> > > Also, as stated in a below answer, these change unconditionally
-> > > reserve a TEE thread for TEE system calls even if no TEE client
-> > > reserved such.
-> >
-> > I don't think we should make thread reservations based on the presence
-> > of TEE clients. You never know how much user-space or kernel TEE
-> > clients you are dealing with. And reserving a single privileged thread
-> > unconditionally for system sessions shouldn't be much of a burden for
-> > memory constrained devices too.
-> >
-> > Also, this way we would enable every kernel TEE client to leverage
-> > system sessions as it's very likely they wouldn't like to compete with
-> > user-space for thread availability. Two other kernel TEE clients that
-> > are on top of my head are HWRNG and Trusted Keys which can benefit
-> > from this feature.
+> Hi Sumit,
 >
-> Trusted Keys is an interesting use case. When OP-TEE accesses Trusted Keys,=
- it may need to access the eMMC/RPMB using the Linux OS tee-supplicant whichj=
- may repuire an eMMC clock or voltage regulator to be enabled. If that clock =
-or regulator is under an SCMI control, then we need 2 reserved TEE thread: on=
-e for invoking the Trusted Key TA and another for the SCMI request to reach t=
-he TEE will the Trusted Key TA invocation still consumes a thread.
-
-Why would the Trusted Keys session need a system thread? To me, it
-seems that the session could use the normal client priority.
-
-Thanks,
-Jens
-
+> On Wed, 24 May 2023 at 10:56, Sumit Garg <sumit.garg@linaro.org> wrote:
+> >
+> > On Tue, 23 May 2023 at 14:36, Masahisa Kojima
+> > <masahisa.kojima@linaro.org> wrote:
+> > >
+> > > This series introduces the tee based EFI Runtime Variable Service.
+> > >
+> > > The eMMC device is typically owned by the non-secure world(linux in
+> > > this case). There is an existing solution utilizing eMMC RPMB partition
+> > > for EFI Variables, it is implemented by interacting with
+> > > OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
+> > > and tee-supplicant. The last piece is the tee-based variable access
+> > > driver to interact with OP-TEE and StandaloneMM.
+> > >
+> > > Changelog:
+> > > v3 -> v4:
+> > > - replace the reference from EDK2 to PI Specification
+> > > - remove EDK2 source code reference comments
+> > > - prepare nonblocking variant of set_variable, it just returns
+> > >   EFI_UNSUPPORTED
+> > > - remove redundant buffer size check
+> > > - argument name change in mm_communicate
+> > > - function interface changes in setup_mm_hdr to remove (void **) cast
+> >
+> > I don't have detailed insights into how EFI spec mandates StandaloneMM
+> > should be implemented. But utilizing OP-TEE as the underlying
+> > transport here looks fine to me. FWIW,
+> >
+> > For the series:
+> > Acked-by: Sumit Garg <sumit.garg@linaro.org>
 >
-> BR,
-> Etienne
+> Thanks!
 >
-> >
-> > > >
-> > > > Changes since v8:
-> > > > - Simplified system threads tracking implementation.
-> > > >
-> > > >  drivers/tee/optee/call.c          | 72 +++++++++++++++++++++++++++++=
---
-> > > >  drivers/tee/optee/ffa_abi.c       |  3 +-
-> > > >  drivers/tee/optee/optee_private.h | 16 +++++++
-> > > >  drivers/tee/optee/smc_abi.c       | 16 ++++++-
-> > > >  4 files changed, 99 insertions(+), 8 deletions(-)
-> > > >
-> > > > diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> > > > index 42e478ac6ce1..09e824e4dcaf 100644
-> > > > --- a/drivers/tee/optee/call.c
-> > > > +++ b/drivers/tee/optee/call.c
-> > > > @@ -39,9 +39,27 @@ struct optee_shm_arg_entry {
-> > > >         DECLARE_BITMAP(map, MAX_ARG_COUNT_PER_ENTRY);
-> > > >  };
-> > > >
-> > > > +void optee_cq_init(struct optee_call_queue *cq, int thread_count)
-> > > > +{
-> > > > +       mutex_init(&cq->mutex);
-> > > > +       INIT_LIST_HEAD(&cq->waiters);
-> > > > +       /*
-> > > > +        * If cq->total_thread_count is 0 then we're not trying to ke=
-ep
-> > > > +        * track of how many free threads we have, instead we're rely=
-ing on
-> > > > +        * the secure world to tell us when we're out of thread and h=
-ave to
-> > > > +        * wait for another thread to become available.
-> > > > +        */
-> > > > +       cq->total_thread_count =3D thread_count;
-> > > > +       cq->free_thread_count =3D thread_count;
-> > > > +}
-> > > > +
-> > > >  void optee_cq_wait_init(struct optee_call_queue *cq,
-> > > >                         struct optee_call_waiter *w, bool sys_thread)
-> > > >  {
-> > > > +       bool need_wait =3D false;
-> > > > +
-> > > > +       memset(w, 0, sizeof(*w));
-> > > > +
-> > > >         /*
-> > > >          * We're preparing to make a call to secure world. In case we=
- can't
-> > > >          * allocate a thread in secure world we'll end up waiting in
-> > > > @@ -53,15 +71,43 @@ void optee_cq_wait_init(struct optee_call_queue *=
-cq,
-> > > >         mutex_lock(&cq->mutex);
-> > > >
-> > > >         /*
-> > > > -        * We add ourselves to the queue, but we don't wait. This
-> > > > -        * guarantees that we don't lose a completion if secure world
-> > > > -        * returns busy and another thread just exited and try to com=
-plete
-> > > > -        * someone.
-> > > > +        * We add ourselves to a queue, but we don't wait. This guara=
-ntees
-> > > > +        * that we don't lose a completion if secure world returns bu=
-sy and
-> > > > +        * another thread just exited and try to complete someone.
-> > > >          */
-> > > >         init_completion(&w->c);
-> > > >         list_add_tail(&w->list_node, &cq->waiters);
-> > > >
-> > > > +       if (cq->total_thread_count && sys_thread) {
-> > > > +               if (cq->free_thread_count > 0)
-> > > > +                       cq->free_thread_count--;
-> > > > +               else
-> > > > +                       need_wait =3D true;
-> > > > +       } else if (cq->total_thread_count) {
-> > > > +               if (cq->free_thread_count > 1)
-> > >
-> > > This unconditionally reserves a TEE thread for TEE system calls, even
-> > > if no client has claimed such system thread reservation.
-> >
-> > See my response above.
-> >
-> > >
-> > >
-> > > > +                       cq->free_thread_count--;
-> > > > +               else
-> > > > +                       need_wait =3D true;
-> > > > +       }
-> > > > +
-> > > >         mutex_unlock(&cq->mutex);
-> > > > +
-> > > > +       while (need_wait) {
-> > > > +               optee_cq_wait_for_completion(cq, w);
-> > > > +               mutex_lock(&cq->mutex);
-> > > > +               if (sys_thread) {
-> > > > +                       if (cq->free_thread_count > 0) {
-> > > > +                               cq->free_thread_count--;
-> > > > +                               need_wait =3D false;
-> > > > +                       }
-> > > > +               } else {
-> > > > +                       if (cq->free_thread_count > 1) {
-> > > > +                               cq->free_thread_count--;
-> > > > +                               need_wait =3D false;
-> > > > +                       }
-> > > > +               }
-> > > > +               mutex_unlock(&cq->mutex);
-> > > > +       }
-> > > >  }
-> > > >
-> > > >  void optee_cq_wait_for_completion(struct optee_call_queue *cq,
-> > > > @@ -104,6 +150,8 @@ void optee_cq_wait_final(struct optee_call_queue =
-*cq,
-> > > >         /* Get out of the list */
-> > > >         list_del(&w->list_node);
-> > > >
-> > > > +       cq->free_thread_count++;
-> > > > +
-> > > >         /* Wake up one eventual waiting task */
-> > > >         optee_cq_complete_one(cq);
-> > > >
-> > > > @@ -361,6 +409,22 @@ int optee_open_session(struct tee_context *ctx,
-> > > >         return rc;
-> > > >  }
-> > > >
-> > > > +int optee_system_session(struct tee_context *ctx, u32 session)
-> > > > +{
-> > > > +       struct optee_context_data *ctxdata =3D ctx->data;
-> > > > +       struct optee_session *sess;
-> > > > +
-> > > > +       mutex_lock(&ctxdata->mutex);
-> > > > +
-> > > > +       sess =3D find_session(ctxdata, session);
-> > > > +       if (sess && !sess->use_sys_thread)
-> > > > +               sess->use_sys_thread =3D true;
-> > > > +
-> > > > +       mutex_unlock(&ctxdata->mutex);
-> > > > +
-> > > > +       return 0;
-> > >
-> > > Nitpicking: should rather return 0 only upon session is valid
-> > > (sess!=3DNULL here)  and system thread reservation is supported
-> > > (total_thread_count > 0).
-> > > But that's not a big deal I guess, can be addressed.
-> >
-> > Thanks for pointing it out. If this approach works for you then it can
-> > be addressed while integrating in your patch-set.
-> >
-> > -Sumit
-> >
-> > > (snip)
+>  FWIW the PI spec describes some of the functionality and how that
+> should be accessed.
+> There's a EFI_MM_COMMUNICATION_PROTOCOL which is not used here.
+> Instead the entry point is via an SMC to op-tee and the payload
+> adheres to what the PI spec describes in its EFI_MM_COMMUNICATE_HEADER
 >
-> ST Restricted
 
---===============2541119570015829636==--
+Thanks for the resend
+
+Could you please double check whether this needs any changes in
+relation to this patch?
+
+https://git.kernel.org/pub/scm/linux/kernel/git/efi/efi.git/commit/?id=3Dd86f=
+f3333cb1d5f4
+
+--===============6811871939933604693==--
 
