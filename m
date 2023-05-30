@@ -1,47 +1,48 @@
-From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: optee_benchmark pmccfiltr_el0
-Date: Tue, 30 May 2023 16:38:33 +0800
-Message-ID: 
- <0323e485-5803-4eed-8a44-86cf4d704d47.meijianqiang.mjq@alibaba-inc.com>
+Subject: Re: [RFC PATCH 3/4] dt-bindings: remoteproc: add compatibility for
+ TEE support
+Date: Tue, 30 May 2023 13:50:48 +0200
+Message-ID: <1b4eba7e-2771-b0c8-ec23-2ed882374e5d@kernel.org>
+In-Reply-To: <20230523091350.292221-4-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8181310036882335890=="
+Content-Type: multipart/mixed; boundary="===============5070198561427291679=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8181310036882335890==
+--===============5070198561427291679==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 
-SGksCkl0IGlzIGNvbmZpcm1lZCB0aGF0IHRoZSBwcm9ibGVtIGlzIHJlbGF0ZWQgdG8gdGhlIHBt
-dSByZWdpc3RlciBjb25maWd1cmF0aW9uIGFuZCB0aGF0IHBtY2NudHJfZWwwIGNhbiBiZSByZWFk
-IGF0IGFueSBleGNlcHRpb24gbGV2ZWwuClJlZ2FyZHMsCll1eWUuCi0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQrlj5Hku7bk
-urrvvJrmooXlu7rlvLoo56a55aScKSA8bWVpamlhbnFpYW5nLm1qcShhKWFsaWJhYmEtaW5jLmNv
-bT4K5Y+R6YCB5pe26Ze077yaMjAyM+W5tDXmnIgyNuaXpSjmmJ/mnJ/kupQpIDE2OjU5CuaUtuS7
-tuS6uu+8mkplbnMgV2lrbGFuZGVyIDxqZW5zLndpa2xhbmRlcihhKWxpbmFyby5vcmc+OyBPbGl2
-aWVyIERlcHJleiA8b2xpdmllci5kZXByZXooYSlhcm0uY29tPgrmioTjgIDpgIHvvJpvcC10ZWUg
-PG9wLXRlZShhKWxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc+OyBoYWZuaXVtIDxoYWZuaXVtKGEp
-bGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZz47IOm7hOaYjijov57kuIApIDxobTI4MTM4NShhKWFs
-aWJhYmEtaW5jLmNvbT4K5Li744CA6aKY77yab3B0ZWVfYmVuY2htYXJrIHBtY2NmaWx0cl9lbDAK
-SGksIEplbnMsIE9saXZpZXIsCkluIGNhc2Ugb2YgdGhhdCBvcHRlZSBydW5zIGF0IHNlbDEgYW5k
-IGhhZm5pdW0gcnVucyBhdCBzZWwyLCB3ZSB3YW50IHRvIHRlc3QgYmVuY2htYXJrIGJ5IGV4ZWN1
-dGluZyB0aGUgZm9sbG93aW5nIGNvbW1hbmQgYXQgb3B0ZWVfYmVuY2htYXJrIHBhdGg6Ci4vb3V0
-L2JlbmNobWFyayAuLi9vcHRlZV9leGFtcGxlcy9vdXQvY2Evb3B0ZWVfZXhhbXBsZV9oZWxsb193
-b3JsZApBZnRlciBlbnRlcmluZyBpbnRvIHRoZSBiZW5jaG1hcmsgcHRhLCB0aGUgYm1fdGltZXN0
-YW1wIGZ1bmN0aW9uIGF0dGVtcHRzIHRvIHJlYWQgdGhlIHBtY2NmaWx0cl9lbDAgcmVnaXN0ZXIu
-IApJbiBjb2xkIGJvb3QsIHRoZSBmb2xsb3dpbmcgY29kZSB3aWxsIGJlIGV4ZWN1dGVkIGR1cmlu
-ZyBoYWZuaXVtIGluaXRpYWxpemF0aW9uOgp2bS0+YXJjaC50cmFwcGVkX2ZlYXR1cmVzIHw9IEhG
-X0ZFQVRVUkVfUEVSRk1PTjsKVGhpcyB3aWxsIHByZXZlbnQgdGhlIHNlY29uZGFyeSB2bSBmcm9t
-IGFjY2Vzc2luZyB0aGUgcGVyZm9ybWFuY2UgY291bnRlciByZWdpc3RlcnMuIApXZSByZW1vdmUg
-dGhlIGNvZGUsIHRoZSBibV90aW1lc3RhbXAgZnVuY3Rpb24gY2FuIHJlYWQgcG1jY2ZpbHRyX2Vs
-MCB3aXRob3V0IHRyYXBwaW5nIGludG8gaGFmbml1bS4KQnV0IHRoZSB2YWx1ZSBvZiBwbWNjZmls
-dHJfZWwwIHJlbWFpbnMgdW5jaGFuZ2VkIGFuZCBjYW5ub3QgYmUgY291bnRlZC4gCldlIHRyaWVk
-IHRvIHJlYWQgdGhlIHJlZ2lzdGVyIGluIGhhZm5pdW0gYW5kIGZvdW5kIHRoYXQgdGhlcmUgd2Fz
-IG5vIGNoYW5nZSBlaXRoZXIuCkluIGNvbnRyYXN0LCBpbiB0aGUgbm9ybWFsIHdvcmxkLCBwbWNj
-ZmlsdHJfZWwwIGNvdW50cyBub3JtYWxseS4gCklzIGl0IHJlbGF0ZWQgdG8gdGhlIHBtdSByZWdp
-c3RlciBjb25maWd1cmF0aW9uIG9yIGRvZXMgc2VsMSBub3Qgc3VwcG9ydCB0aGUgcG1jY2ZpbHRy
-X2VsMCBjb3VudCBhdCBwcmVzZW50PwpUaGFua3MgZm9yIHRoZSBzdXBwb3J0LgpSZWdhcmRzLApZ
-dXllLgo=
+On 23/05/2023 11:13, Arnaud Pouliquen wrote:
+> Rework compatibility description according to the support of
+> the authenticated firmware relying on OP-TEE authentication.
+> 
+> The expected behavior is:
+> - with legacy compatible "st,stm32mp1-m4" the Linux kernel loads a
+>   non-signed (ELF) firmware image,
+> - with compatible "st,stm32mp1-m4-tee" the Linux kernel load a signed
+>   firmware image. In this case it calls TEE services to manage the firmware
+>   loading and the remoteproc life-cycle.
+> 
+> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+> ---
+>  .../bindings/remoteproc/st,stm32-rproc.yaml   | 33 +++++++++++++++++--
+>  1 file changed, 30 insertions(+), 3 deletions(-)
 
---===============8181310036882335890==--
+Please use scripts/get_maintainers.pl to get a list of necessary people
+and lists to CC.  It might happen, that command when run on an older
+kernel, gives you outdated entries.  Therefore please be sure you base
+your patches on recent Linux kernel.
+
+You missed at least DT list (maybe more), so this won't be tested.
+Please resend and include all necessary entries.
+
+Because of above and RFC, I assume there is no need for review. Just to
+be clear - that's a no.
+
+Best regards,
+Krzysztof
+
+
+--===============5070198561427291679==--
 
