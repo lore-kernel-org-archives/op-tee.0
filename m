@@ -1,72 +1,65 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH 3/4] dt-bindings: remoteproc: add compatibility for
- TEE support
-Date: Tue, 30 May 2023 17:12:28 +0200
-Message-ID: <7bdb0e44-eaf7-8085-2ea5-6bb06b01ef35@kernel.org>
-In-Reply-To: <d4a98500-5cb0-b3fd-7f40-8b56a2258619@foss.st.com>
+Subject: Re: [RFC PATCH 0/4] introduction of a remoteproc tee to load signed
+ firmware images
+Date: Tue, 30 May 2023 10:20:48 -0600
+Message-ID: <ZHYiYGMHdqxBaDzc@p14s>
+In-Reply-To: <20230523091350.292221-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3726129692975947432=="
+Content-Type: multipart/mixed; boundary="===============4060918675908171104=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3726129692975947432==
+--===============4060918675908171104==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On 30/05/2023 17:00, Arnaud POULIQUEN wrote:
-> Hello Krzysztof,
->=20
-> On 5/30/23 13:50, Krzysztof Kozlowski wrote:
->> On 23/05/2023 11:13, Arnaud Pouliquen wrote:
->>> Rework compatibility description according to the support of
->>> the authenticated firmware relying on OP-TEE authentication.
->>>
->>> The expected behavior is:
->>> - with legacy compatible "st,stm32mp1-m4" the Linux kernel loads a
->>>   non-signed (ELF) firmware image,
->>> - with compatible "st,stm32mp1-m4-tee" the Linux kernel load a signed
->>>   firmware image. In this case it calls TEE services to manage the firmwa=
-re
->>>   loading and the remoteproc life-cycle.
->>>
->>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
->>> ---
->>>  .../bindings/remoteproc/st,stm32-rproc.yaml   | 33 +++++++++++++++++--
->>>  1 file changed, 30 insertions(+), 3 deletions(-)
->>
->> Please use scripts/get_maintainers.pl to get a list of necessary people
->> and lists to CC.  It might happen, that command when run on an older
->> kernel, gives you outdated entries.  Therefore please be sure you base
->> your patches on recent Linux kernel.
->>
->> You missed at least DT list (maybe more), so this won't be tested.
->> Please resend and include all necessary entries.
->>
->> Because of above and RFC, I assume there is no need for review. Just to
->> be clear - that's a no.
->=20
-> I did not add DT list and maintainers intentionally to avoid that you
-> review it.
-> As in a first step the associated OP-TEE pull request has to be reviewed.
-> And my plan was just to share the Linux implementation part until the
-> OP-TEE review cycle is finished.
+On Tue, May 23, 2023 at 11:13:46AM +0200, Arnaud Pouliquen wrote:
+> This RFC proposes an implementation of a remoteproc tee driver to
+> communicate with a TEE trusted application in charge of authenticating
+> and loading remoteproc firmware image in an Arm secure context.
+> 
+> The services implemented are the same as those offered by the Linux
+> remoteproc framework:
+> - load of a signed firmware
+> - start/stop of a coprocessor
+> - get the resource table
+> 
+> 
+> The OP-TEE code in charge of providing the service in a trusted application
+> is proposed for upstream here:
+> https://github.com/OP-TEE/optee_os/pull/6027
+> 
+> For more details on the implementation a presentation is available here:
+> https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+> 
+> Arnaud Pouliquen (4):
+>   tee: Re-enable vmalloc page support for shared memory
+>   remoteproc: Add TEE support
+>   dt-bindings: remoteproc: add compatibility for TEE support
+>   remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
+> 
+>  .../bindings/remoteproc/st,stm32-rproc.yaml   |  33 +-
+>  drivers/remoteproc/Kconfig                    |   9 +
+>  drivers/remoteproc/Makefile                   |   1 +
+>  drivers/remoteproc/stm32_rproc.c              | 234 +++++++++--
+>  drivers/remoteproc/tee_remoteproc.c           | 397 ++++++++++++++++++
+>  drivers/tee/tee_shm.c                         |  24 +-
+>  include/linux/tee_remoteproc.h                | 101 +++++
+>  7 files changed, 753 insertions(+), 46 deletions(-)
+>  create mode 100644 drivers/remoteproc/tee_remoteproc.c
+>  create mode 100644 include/linux/tee_remoteproc.h
 
-Sure, that's fine. I just don't know whether this is intentional or not.
-Many people skip list without such reason...
+Looking at comments from Christoph, there seems to be a good refactoring
+exercise in store for this pathset.  As such I will wait for the next revision
+to look at it.
 
->=20
-> Now regarding your mail (and very interesting feedback from Christoph Hellw=
-ig),
-> it was clearly not the good strategy.
-> So my apologize and next time whatever the objective of the series I will a=
-dd
-> all peoples and lists in the loop.
+Thanks,
+Mathieu
 
-No worries! Thanks.
+> 
+> -- 
+> 2.25.1
+> 
 
-Best regards,
-Krzysztof
-
-
---===============3726129692975947432==--
+--===============4060918675908171104==--
 
