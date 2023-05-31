@@ -1,80 +1,44 @@
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
+From: Shyam Saini <shyamsaini@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH 0/4] introduction of a remoteproc tee to load signed
- firmware images
-Date: Tue, 30 May 2023 17:12:58 +0000
-Message-ID: <fc7fcb92-dec6-413a-7b08-1083a444f6fc@foss.st.com>
-In-Reply-To: <ZHYiYGMHdqxBaDzc@p14s>
+Subject: [PATCH  v2 0/4] rpmb subsystem, uapi and virtio-rpmb driver
+Date: Wed, 31 May 2023 12:10:07 -0700
+Message-ID: <20230531191007.13460-1-shyamsaini@linux.microsoft.com>
+In-Reply-To: <20220405093759.1126835-1-alex.bennee@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1616539645494240505=="
+Content-Type: multipart/mixed; boundary="===============7430167351773752480=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1616539645494240505==
+--===============7430167351773752480==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hello Mathieu,
+Hi Alex,
 
-On 5/30/23 18:20, Mathieu Poirier wrote:
-> On Tue, May 23, 2023 at 11:13:46AM +0200, Arnaud Pouliquen wrote:
->> This RFC proposes an implementation of a remoteproc tee driver to
->> communicate with a TEE trusted application in charge of authenticating
->> and loading remoteproc firmware image in an Arm secure context.
->>
->> The services implemented are the same as those offered by the Linux
->> remoteproc framework:
->> - load of a signed firmware
->> - start/stop of a coprocessor
->> - get the resource table
->>
->>
->> The OP-TEE code in charge of providing the service in a trusted application
->> is proposed for upstream here:
->> https://github.com/OP-TEE/optee_os/pull/6027
->>
->> For more details on the implementation a presentation is available here:
->> https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
->>
->> Arnaud Pouliquen (4):
->>   tee: Re-enable vmalloc page support for shared memory
->>   remoteproc: Add TEE support
->>   dt-bindings: remoteproc: add compatibility for TEE support
->>   remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
->>
->>  .../bindings/remoteproc/st,stm32-rproc.yaml   |  33 +-
->>  drivers/remoteproc/Kconfig                    |   9 +
->>  drivers/remoteproc/Makefile                   |   1 +
->>  drivers/remoteproc/stm32_rproc.c              | 234 +++++++++--
->>  drivers/remoteproc/tee_remoteproc.c           | 397 ++++++++++++++++++
->>  drivers/tee/tee_shm.c                         |  24 +-
->>  include/linux/tee_remoteproc.h                | 101 +++++
->>  7 files changed, 753 insertions(+), 46 deletions(-)
->>  create mode 100644 drivers/remoteproc/tee_remoteproc.c
->>  create mode 100644 include/linux/tee_remoteproc.h
-> 
-> Looking at comments from Christoph, there seems to be a good refactoring
-> exercise in store for this pathset. 
+[ Resending, Sorry for the noise ]
+=20
+Are you still working on it or planning to resubmit it ?
 
-Yes, a good opportunity to ramp-up on kernel memory management :)
+[1] The current optee tee kernel driver implementation doesn't work when IMA =
+is used with optee implemented ftpm.
 
-As such I will wait for the next revision
-> to look at it.
+The ftpm has dependency on tee-supplicant which comes once the user space is =
+up and running and IMA attestation happens at boot time and it requires to ex=
+tend ftpm PCRs.=20
 
-That's fair. More than that I would prefer to focus first on OP-TEE part that
-provides the service. The OP-TEE pull request review could have significant
-impacts on the kernel implementation...
+But IMA can't use PCRs if ftpm use secure emmc RPMB partition. As optee can o=
+nly access RPMB via tee-supplicant(user space). So, there should be a fast pa=
+th to allow optee os to access the RPMB parititon without waiting for user-sp=
+ace tee supplicant.
 
-Thanks,
-Arnaud
+To achieve this fast path linux optee driver and mmc driver needs some work a=
+nd finally it will need RPMB driver which you posted.
+=20
+Please let me know what's your plan on this.
+=20
+[1] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html
 
-> 
-> Thanks,
-> Mathieu
-> 
->>
->> -- 
->> 2.25.1
->>
+Best Regards,
+Shyam
 
---===============1616539645494240505==--
+--===============7430167351773752480==--
 
