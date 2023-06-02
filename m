@@ -1,98 +1,83 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/4] rpmb subsystem, uapi and virtio-rpmb driver
-Date: Thu, 01 Jun 2023 11:18:54 +0530
+Subject: optee_benchmark pmccfiltr_el0
+Date: Fri, 02 Jun 2023 14:21:36 +0800
 Message-ID: 
- <CAFA6WYPKeJYTzvnZkoL_dw6uXSkhAh6uxoEOWHYU7oLNRDRWaA@mail.gmail.com>
-In-Reply-To: <
- <CAC_iWjKAdimEH0SsC_z9QuFS4sGLp2BVzx03s+RKvcLXY25kuQ@mail.gmail.com>>
+ <3e036105-1e89-464c-b92f-746efcbd9f45.meijianqiang.mjq@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6657043534693483568=="
+Content-Type: multipart/mixed; boundary="===============1200551353390644140=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6657043534693483568==
+--===============1200551353390644140==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 
-On Thu, 1 Jun 2023 at 11:02, Ilias Apalodimas
-<ilias.apalodimas@linaro.org> wrote:
->
-> Hi Bing
->
-> On Thu, 1 Jun 2023 at 04:03, Zhu, Bing <bing.zhu@intel.com> wrote:
-> >
-> > As an alternative, Is it possible to change ftpm design not to depend on =
-RPMB access at the earlier/boot stage? Because to my understanding, typically=
- PCRs don't require persistent/NV storage (for example, before RPMB or tee-su=
-pplicant is ready, use TEE memory instead as temporary storage)
->
-> I am not entirely sure this will solve our problem here.  You are
-> right that we shouldn't depend on the supplicant to extend PCRs. But
-> what happens if an object is sealed against certain PCR values?  We
-> are back to the same problem
+SGksIE9saXZpZXIsClRoYXQgbWFrZXMgaXQgY2xlYXJlciB0byBtZS4gVGhhbmtzIGEgbG90LgpS
+ZWdhcmRzLApZdXllLgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K5Y+R5Lu25Lq677yaT2xpdmllciBEZXByZXogPE9saXZp
+ZXIuRGVwcmV6KGEpYXJtLmNvbT4K5Y+R6YCB5pe26Ze077yaMjAyM+W5tDXmnIgzMOaXpSjmmJ/m
+nJ/kuowpIDIxOjA3CuaUtuS7tuS6uu+8mkplbnMgV2lrbGFuZGVyIDxqZW5zLndpa2xhbmRlcihh
+KWxpbmFyby5vcmc+OyDmooXlu7rlvLoo56a55aScKSA8bWVpamlhbnFpYW5nLm1qcShhKWFsaWJh
+YmEtaW5jLmNvbT4K5oqE44CA6YCB77yab3AtdGVlIDxvcC10ZWUoYSlsaXN0cy50cnVzdGVkZmly
+bXdhcmUub3JnPjsgaGFmbml1bSA8aGFmbml1bShhKWxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc+
+OyDpu4TmmI4o6L+e5LiAKSA8aG0yODEzODUoYSlhbGliYWJhLWluYy5jb20+CuS4u+OAgOmimO+8
+mlJlOiBvcHRlZV9iZW5jaG1hcmsgcG1jY2ZpbHRyX2VsMAogSGkgWXV5ZSwKIEluIGdlbmVyYWwg
+dGhlIGNvbnNlbnN1cyBpcyB0aGF0IFBNVSBjeWNsZSBhbmQgZXZlbnQgY291bnRpbmcgaW4gRUwz
+ICYgc2VjdXJlIHdvcmxkIGhhcyB0byBiZSBkaXNhYmxlZC4gSSBnYXRoZXIgdGhpcyBpcyB0byBh
+dm9pZCBwcm9iaW5nIGNyeXB0byBhbGdvcml0aG1zIHRpbWluZ3MsIG9yIGxldmVyYWdlIGNhY2hl
+LWJhc2VkIHRpbWluZyBzaWRlIGNoYW5uZWxzIChlLmcuIHNwZWN0cmUpLgogU2VlIEFybSBBUk0g
+RDExLjUuMyBQcm9oaWJpdGluZyBldmVudCBhbmQgY3ljbGUgY291bnRpbmcKIEN5Y2xlIGFuZCBl
+dmVudCBjb3VudGluZyBpcyBkaXNhYmxlZCBieToKaHR0cHM6Ly9naXQudHJ1c3RlZGZpcm13YXJl
+Lm9yZy9URi1BL3RydXN0ZWQtZmlybXdhcmUtYS5naXQvdHJlZS9pbmNsdWRlL2FyY2gvYWFyY2g2
+NC9lbDNfY29tbW9uX21hY3Jvcy5TI24xMjIgPGh0dHBzOi8vZ2l0LnRydXN0ZWRmaXJtd2FyZS5v
+cmcvVEYtQS90cnVzdGVkLWZpcm13YXJlLWEuZ2l0L3RyZWUvaW5jbHVkZS9hcmNoL2FhcmNoNjQv
+ZWwzX2NvbW1vbl9tYWNyb3MuUyNuMTIyID4KIFNlZSBhbHNvICBodHRwczovL3RydXN0ZWRmaXJt
+d2FyZS1hLnJlYWR0aGVkb2NzLmlvL2VuL2xhdGVzdC9wcm9jZXNzL3NlY3VyaXR5LWhhcmRlbmlu
+Zy5odG1sI3NlY3VyZS13b3JsZC1taXRpZ2F0aW9uLXN0cmF0ZWdpZXMgPGh0dHBzOi8vdHJ1c3Rl
+ZGZpcm13YXJlLWEucmVhZHRoZWRvY3MuaW8vZW4vbGF0ZXN0L3Byb2Nlc3Mvc2VjdXJpdHktaGFy
+ZGVuaW5nLmh0bWwjc2VjdXJlLXdvcmxkLW1pdGlnYXRpb24tc3RyYXRlZ2llcyA+CiBOb3RlIHRo
+ZXJlIGFyZSB2YXJpb3VzIGtub2JzIGRlcGVuZGluZyBvbiBpbXBsZW1lbnRlZCBhcmNoaXRlY3R1
+cmUgZXh0ZW5zaW9ucyBGRUFUX1BNVXYzIC8gRkVBVF9QTVV2M3BYIC8gRkVBVF9EZWJ1Z3Y4cDIK
+IFlvdSBjb3VsZCB0cnkgdG8gcGVybWl0IGN5Y2xlIGNvdW50aW5nIGluIHRoZSBzZWN1cmUgd29y
+bGQgZm9yIHRoZSBzYWtlIG9mIGEgb25lIHNob3QgZXhwZXJpbWVudCwKIGJ1dCBub3RlIHRoYXQg
+dGhpcyBoYXMgbmV2ZXIgYmVlbiB0cmllZCwgYW5kIHRoaXMgc2hvdWxkIHByb2JhYmx5IG5vdCBi
+ZSBwcm9kdWN0aXplZCBhcyB0aGluZ3Mgc3RhbmQuCiBSZWdhcmRzLAogT2xpdmllci4KRnJvbTog
+5qKF5bu65by6KOemueWknCkgPG1laWppYW5xaWFuZy5tanEoYSlhbGliYWJhLWluYy5jb20+ClNl
+bnQ6IDMwIE1heSAyMDIzIDEwOjM4ClRvOiBKZW5zIFdpa2xhbmRlciA8amVucy53aWtsYW5kZXIo
+YSlsaW5hcm8ub3JnPjsgT2xpdmllciBEZXByZXogPE9saXZpZXIuRGVwcmV6KGEpYXJtLmNvbT4K
+Q2M6IG9wLXRlZSA8b3AtdGVlKGEpbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZz47IGhhZm5pdW0g
+PGhhZm5pdW0oYSlsaXN0cy50cnVzdGVkZmlybXdhcmUub3JnPjsg6buE5piOKOi/nuS4gCkgPGht
+MjgxMzg1KGEpYWxpYmFiYS1pbmMuY29tPgpTdWJqZWN0OiBvcHRlZV9iZW5jaG1hcmsgcG1jY2Zp
+bHRyX2VsMApIaSwKSXQgaXMgY29uZmlybWVkIHRoYXQgdGhlIHByb2JsZW0gaXMgcmVsYXRlZCB0
+byB0aGUgcG11IHJlZ2lzdGVyIGNvbmZpZ3VyYXRpb24gYW5kIHRoYXQgcG1jY250cl9lbDAgY2Fu
+IGJlIHJlYWQgYXQgYW55IGV4Y2VwdGlvbiBsZXZlbC4KUmVnYXJkcywKWXV5ZS4KLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+CuWPkeS7tuS6uu+8muaiheW7uuW8uijnprnlpJwpIDxtZWlqaWFucWlhbmcubWpxKGEpYWxpYmFi
+YS1pbmMuY29tPgrlj5HpgIHml7bpl7TvvJoyMDIz5bm0NeaciDI25pelKOaYn+acn+S6lCkgMTY6
+NTkK5pS25Lu25Lq677yaSmVucyBXaWtsYW5kZXIgPGplbnMud2lrbGFuZGVyKGEpbGluYXJvLm9y
+Zz47IE9saXZpZXIgRGVwcmV6IDxvbGl2aWVyLmRlcHJleihhKWFybS5jb20+CuaKhOOAgOmAge+8
+mm9wLXRlZSA8b3AtdGVlKGEpbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZz47IGhhZm5pdW0gPGhh
+Zm5pdW0oYSlsaXN0cy50cnVzdGVkZmlybXdhcmUub3JnPjsg6buE5piOKOi/nuS4gCkgPGhtMjgx
+Mzg1KGEpYWxpYmFiYS1pbmMuY29tPgrkuLvjgIDpopjvvJpvcHRlZV9iZW5jaG1hcmsgcG1jY2Zp
+bHRyX2VsMApIaSwgSmVucywgT2xpdmllciwKSW4gY2FzZSBvZiB0aGF0IG9wdGVlIHJ1bnMgYXQg
+c2VsMSBhbmQgaGFmbml1bSBydW5zIGF0IHNlbDIsIHdlIHdhbnQgdG8gdGVzdCBiZW5jaG1hcmsg
+YnkgZXhlY3V0aW5nIHRoZSBmb2xsb3dpbmcgY29tbWFuZCBhdCBvcHRlZV9iZW5jaG1hcmsgcGF0
+aDoKLi9vdXQvYmVuY2htYXJrIC4uL29wdGVlX2V4YW1wbGVzL291dC9jYS9vcHRlZV9leGFtcGxl
+X2hlbGxvX3dvcmxkCkFmdGVyIGVudGVyaW5nIGludG8gdGhlIGJlbmNobWFyayBwdGEsIHRoZSBi
+bV90aW1lc3RhbXAgZnVuY3Rpb24gYXR0ZW1wdHMgdG8gcmVhZCB0aGUgcG1jY2ZpbHRyX2VsMCBy
+ZWdpc3Rlci4gCkluIGNvbGQgYm9vdCwgdGhlIGZvbGxvd2luZyBjb2RlIHdpbGwgYmUgZXhlY3V0
+ZWQgZHVyaW5nIGhhZm5pdW0gaW5pdGlhbGl6YXRpb246CnZtLT5hcmNoLnRyYXBwZWRfZmVhdHVy
+ZXMgfD0gSEZfRkVBVFVSRV9QRVJGTU9OOwpUaGlzIHdpbGwgcHJldmVudCB0aGUgc2Vjb25kYXJ5
+IHZtIGZyb20gYWNjZXNzaW5nIHRoZSBwZXJmb3JtYW5jZSBjb3VudGVyIHJlZ2lzdGVycy4gCldl
+IHJlbW92ZSB0aGUgY29kZSwgdGhlIGJtX3RpbWVzdGFtcCBmdW5jdGlvbiBjYW4gcmVhZCBwbWNj
+ZmlsdHJfZWwwIHdpdGhvdXQgdHJhcHBpbmcgaW50byBoYWZuaXVtLgpCdXQgdGhlIHZhbHVlIG9m
+IHBtY2NmaWx0cl9lbDAgcmVtYWlucyB1bmNoYW5nZWQgYW5kIGNhbm5vdCBiZSBjb3VudGVkLiAK
+V2UgdHJpZWQgdG8gcmVhZCB0aGUgcmVnaXN0ZXIgaW4gaGFmbml1bSBhbmQgZm91bmQgdGhhdCB0
+aGVyZSB3YXMgbm8gY2hhbmdlIGVpdGhlci4KSW4gY29udHJhc3QsIGluIHRoZSBub3JtYWwgd29y
+bGQsIHBtY2NmaWx0cl9lbDAgY291bnRzIG5vcm1hbGx5LiAKSXMgaXQgcmVsYXRlZCB0byB0aGUg
+cG11IHJlZ2lzdGVyIGNvbmZpZ3VyYXRpb24gb3IgZG9lcyBzZWwxIG5vdCBzdXBwb3J0IHRoZSBw
+bWNjZmlsdHJfZWwwIGNvdW50IGF0IHByZXNlbnQ/ClRoYW5rcyBmb3IgdGhlIHN1cHBvcnQuClJl
+Z2FyZHMsCll1eWUuCg==
 
-+1
-
-Temporary storage may be a stop gap solution for some use-cases but
-having a fast path access to RPMB via kernel should be our final goal.
-I would suggest we start small with the MMC subsystem to expose RPMB
-access APIs for OP-TEE driver rather than a complete RPMB subsystem.
-
--Sumit
-
->
-> Thanks
-> /Ilias
-> >
-> > Bing
-> >
-> > IPAS Security Brown Belt (https://www.credly.com/badges/69ea809f-3a96-4bc=
-7-bb2f-442c1b17af26)
-> > System Software Engineering
-> > Software and Advanced Technology Group
-> > Zizhu Science Park, Shanghai, China
-> >
-> > -----Original Message-----
-> > From: Shyam Saini <shyamsaini@linux.microsoft.com>
-> > Sent: Thursday, June 1, 2023 3:10 AM
-> > To: alex.bennee(a)linaro.org
-> > Cc: code(a)tyhicks.com; Matti.Moell(a)opensynergy.com; arnd(a)linaro.org;=
- Zhu, Bing <bing.zhu@intel.com>; hmo(a)opensynergy.com; ilias.apalodimas(a)=
-linaro.org; joakim.bech(a)linaro.org; linux-kernel(a)vger.kernel.org; linux-m=
-mc(a)vger.kernel.org; linux-scsi(a)vger.kernel.org; maxim.uvarov(a)linaro.org=
-; ruchika.gupta(a)linaro.org; Winkler, Tomas <tomas.winkler@intel.com>; ulf=
-.hansson(a)linaro.org; Huang, Yang <yang.huang@intel.com>; sumit.garg(a)lin=
-aro.org; jens.wiklander(a)linaro.org; op-tee(a)lists.trustedfirmware.org
-> > Subject: [PATCH v2 0/4] rpmb subsystem, uapi and virtio-rpmb driver
-> >
-> > Hi Alex,
-> >
-> > [ Resending, Sorry for the noise ]
-> >
-> > Are you still working on it or planning to resubmit it ?
-> >
-> > [1] The current optee tee kernel driver implementation doesn't work when =
-IMA is used with optee implemented ftpm.
-> >
-> > The ftpm has dependency on tee-supplicant which comes once the user space=
- is up and running and IMA attestation happens at boot time and it requires t=
-o extend ftpm PCRs.
-> >
-> > But IMA can't use PCRs if ftpm use secure emmc RPMB partition. As optee c=
-an only access RPMB via tee-supplicant(user space). So, there should be a fas=
-t path to allow optee os to access the RPMB parititon without waiting for use=
-r-space tee supplicant.
-> >
-> > To achieve this fast path linux optee driver and mmc driver needs some wo=
-rk and finally it will need RPMB driver which you posted.
-> >
-> > Please let me know what's your plan on this.
-> >
-> > [1] https://optee.readthedocs.io/en/latest/architecture/secure_storage.ht=
-ml
-> >
-> > Best Regards,
-> > Shyam
-
---===============6657043534693483568==--
+--===============1200551353390644140==--
 
