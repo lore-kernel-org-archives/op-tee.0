@@ -1,118 +1,40 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
-Date: Wed, 07 Jun 2023 11:25:40 +0300
-Message-ID: 
- <CAC_iWj+E7-XK6dCeSn4205K0O3EZCLxCaC+adu-14ST6sdudfA@mail.gmail.com>
+Subject: Re: [GIT PULL] AMDTEE fix for v6.5
+Date: Wed, 07 Jun 2023 15:58:41 +0200
+Message-ID: <3ef35dd4-0c05-4705-823f-85e96a5a9b99@app.fastmail.com>
 In-Reply-To: <
- <CAFA6WYNFYB1LiOFB_iwTsdD5PmnDdSbtDSH2J4FVFPx3uik8rQ@mail.gmail.com>>
+ <CAHUa44E5RjMqeTp1Sr_7=Eavu3T+q2YVg-V-_gLWpO5sjJ-Vhg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4170878390649514258=="
+Content-Type: multipart/mixed; boundary="===============0950159536248958584=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4170878390649514258==
+--===============0950159536248958584==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Sumit,
+On Wed, Jun 7, 2023, at 08:53, Jens Wiklander wrote:
+> On Tue, Jun 6, 2023 at 1:47 PM Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Tue, Jun 6, 2023, at 09:58, Jens Wiklander wrote:
+>> > Hello arm-soc maintainers,
+>> >
+>> > Please pull this AMDTEE driver fix to add a return origin field to the
+>> > struct tee_cmd_load_ta used when loading a Trusted Application into the
+>> > AMDTEE. This change is backward compatible.
+>> >
+>> > Note that this isn't a usual Arm driver update. This targets AMD instead,
+>> > but is part of the TEE subsystem.
+>> >
+>>
+>> I see there is only one patch here, and it is marked as 'Cc: stable',
+>> so I assume  you meant this to be include in v6.4, not 6.5. Can you
+>> confirm that?
+>
+> If you don't mind taking it for v6.4 that's even better.
 
-On Wed, 7 Jun 2023 at 10:25, Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> Hi Ilias,
->
-> On Wed, 7 Jun 2023 at 12:05, Ilias Apalodimas
-> <ilias.apalodimas@linaro.org> wrote:
-> >
-> > Hi Jan,
-> >
-> > [...]
-> >
-> > > >>>>
-> > > > ...
-> > > >>>
-> > > >>> I think we have a probe ordering issue with this driver:
-> > > >>> efivarfs_fill_super() may be called before the TEE bus was probed, =
-thus
-> > > >>> with the default efivar ops still registered. And that means
-> > > >>> efivar_supports_writes() will return false, and the fs declares its=
-elf
-> > > >>> as readonly. I've seen systemd mounting it r/o initialling, and you=
- need
-> > > >>> to remount the fs to enable writability.
-> > > >>>
-> > > >>> Is there anything that could be done to re-order things reliably, p=
-robe
-> > > >>> the tee bus earlier etc.?
-> > > >>
-> > > >> This driver has a dependency on user-space daemon: tee-supplicant to
-> > > >> be running for RPMB access. So once you start that daemon the
-> > > >> corresponding device will be enumerated on the TEE bus and this driv=
-er
-> > > >> probe will be invoked. So I would suggest you to load this daemon ve=
-ry
-> > > >> early in the boot process or better to make it a part of initramfs.
-> > > >>
-> > > >
-> > > > That is not the point, really.
-> > > >
-> > > > If this dependency exists, the code should be aware of that, and made
-> > > > to work correctly in spite of it. Requiring a module to be part of
-> > > > initramfs is not a reasonable fix.
-> > >
-> > > In fact, I've tested a non-modularized build as well, just to exclude
-> > > that issue. The daemon dependency is more likely the problem here.
-> > >
-> > > >
-> > > > IIUC, this also means that the efivar ops are updated while there is
-> > > > already a client. This seems less than ideal as well
-> >
-> > As Sumit pointed out, the 'device' won't be available from OP-TEE
-> > until the supplicant is up and running and as a result, the module
-> > _probe() function won't run.  Unfortunately, this isn't something we
-> > can avoid since the supplicant is responsible for the RPMB writes.
-> > The only thing I can think of is moving parts of the supplicant to the
-> > kernel and wiring up the RPC calls for reading/writing data to the
-> > eMMC subsystem.  There was another discussion here [0] requesting the
-> > same thing for different reasons. But unless I am missing something
-> > this won't solve the problem completely either.  You still have a
-> > timing dependency of "when did the RT callbacks change" -- "when was
-> > my efivarfs mounted".
->
-> With the RPMB writes wired through the kernel [1], the only dependency
-> left is when do you load the tee-stmm-efi driver to have real EFI
-> runtime variables support. IMO, tee-stmm-efi driver should be built-in
-> to support systems without initramfs. The distro installers may choose
-> to bundle it in initramfs. Do you still see a timing dependency with
-> this approach?
+Yes, done that now. 
 
-No I don't, this will work reliably without the need to remount the efivarfs.
-As you point out you will still have this dependency if you end up
-building them as modules and you manage to mount the efivarfs before
-those get inserted.  Does anyone see a reasonable workaround?
-Deceiving the kernel and making the bootloader set the RT property bit
-to force the filesystem being mounted as rw is a nasty hack that we
-should avoid.  Maybe adding a kernel command line parameter that says
-"Ignore the RTPROP I know what I am doing"?  I don't particularly love
-this either, but it's not unreasonable.
+       Arnd
 
-Thanks
-/Ilias
->
-> [1] Of Course here we need the eMMC and TEE/OPTEE drivers to be built-in to=
-o.
->
-> -Sumit
->
-> >
-> > Thanks
-> > /Ilias
-> > >
-> > > Jan
-> > >
-> > > --
-> > > Siemens AG, Technology
-> > > Competence Center Embedded Linux
-> > >
-
---===============4170878390649514258==--
+--===============0950159536248958584==--
 
