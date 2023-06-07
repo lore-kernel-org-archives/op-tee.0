@@ -1,174 +1,276 @@
 From: Jan Kiszka <jan.kiszka@siemens.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
-Date: Wed, 07 Jun 2023 16:04:23 +0000
-Message-ID: <cc6bd203-83ea-c247-0986-7fec6f327ee8@siemens.com>
-In-Reply-To: <
- <CAFA6WYPCDRjFzsUMU=SNzEt88nT7Fcm1eOFL8z4HiQO+=2JeVA@mail.gmail.com>>
+Subject: Re: [PATCH] tee: optee: Fix supplicant based device enumeration
+Date: Wed, 07 Jun 2023 17:12:33 +0000
+Message-ID: <452472c5-ef30-ac30-6e4e-954f53b48315@siemens.com>
+In-Reply-To: <20230607151435.92654-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1504826581483635712=="
+Content-Type: multipart/mixed; boundary="===============6750983652644262768=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1504826581483635712==
+--===============6750983652644262768==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 07.06.23 17:18, Sumit Garg wrote:
-> On Wed, 7 Jun 2023 at 18:10, Jan Kiszka <jan.kiszka@siemens.com> wrote:
->>
->> On 07.06.23 10:25, Ilias Apalodimas wrote:
->>> Hi Sumit,
->>>
->>> On Wed, 7 Jun 2023 at 10:25, Sumit Garg <sumit.garg@linaro.org> wrote:
->>>>
->>>> Hi Ilias,
->>>>
->>>> On Wed, 7 Jun 2023 at 12:05, Ilias Apalodimas
->>>> <ilias.apalodimas@linaro.org> wrote:
->>>>>
->>>>> Hi Jan,
->>>>>
->>>>> [...]
->>>>>
->>>>>>>>>>
->>>>>>> ...
->>>>>>>>>
->>>>>>>>> I think we have a probe ordering issue with this driver:
->>>>>>>>> efivarfs_fill_super() may be called before the TEE bus was probed, =
-thus
->>>>>>>>> with the default efivar ops still registered. And that means
->>>>>>>>> efivar_supports_writes() will return false, and the fs declares its=
-elf
->>>>>>>>> as readonly. I've seen systemd mounting it r/o initialling, and you=
- need
->>>>>>>>> to remount the fs to enable writability.
->>>>>>>>>
->>>>>>>>> Is there anything that could be done to re-order things reliably, p=
-robe
->>>>>>>>> the tee bus earlier etc.?
->>>>>>>>
->>>>>>>> This driver has a dependency on user-space daemon: tee-supplicant to
->>>>>>>> be running for RPMB access. So once you start that daemon the
->>>>>>>> corresponding device will be enumerated on the TEE bus and this driv=
-er
->>>>>>>> probe will be invoked. So I would suggest you to load this daemon ve=
-ry
->>>>>>>> early in the boot process or better to make it a part of initramfs.
->>>>>>>>
->>>>>>>
->>>>>>> That is not the point, really.
->>>>>>>
->>>>>>> If this dependency exists, the code should be aware of that, and made
->>>>>>> to work correctly in spite of it. Requiring a module to be part of
->>>>>>> initramfs is not a reasonable fix.
->>>>>>
->>>>>> In fact, I've tested a non-modularized build as well, just to exclude
->>>>>> that issue. The daemon dependency is more likely the problem here.
->>>>>>
->>>>>>>
->>>>>>> IIUC, this also means that the efivar ops are updated while there is
->>>>>>> already a client. This seems less than ideal as well
->>>>>
->>>>> As Sumit pointed out, the 'device' won't be available from OP-TEE
->>>>> until the supplicant is up and running and as a result, the module
->>>>> _probe() function won't run.  Unfortunately, this isn't something we
->>>>> can avoid since the supplicant is responsible for the RPMB writes.
->>>>> The only thing I can think of is moving parts of the supplicant to the
->>>>> kernel and wiring up the RPC calls for reading/writing data to the
->>>>> eMMC subsystem.  There was another discussion here [0] requesting the
->>>>> same thing for different reasons. But unless I am missing something
->>>>> this won't solve the problem completely either.  You still have a
->>>>> timing dependency of "when did the RT callbacks change" -- "when was
->>>>> my efivarfs mounted".
->>>>
->>>> With the RPMB writes wired through the kernel [1], the only dependency
->>>> left is when do you load the tee-stmm-efi driver to have real EFI
->>>> runtime variables support. IMO, tee-stmm-efi driver should be built-in
->>>> to support systems without initramfs. The distro installers may choose
->>>> to bundle it in initramfs. Do you still see a timing dependency with
->>>> this approach?
->>>
->>> No I don't, this will work reliably without the need to remount the efiva=
-rfs.
->>> As you point out you will still have this dependency if you end up
->>> building them as modules and you manage to mount the efivarfs before
->>> those get inserted.  Does anyone see a reasonable workaround?
->>> Deceiving the kernel and making the bootloader set the RT property bit
->>> to force the filesystem being mounted as rw is a nasty hack that we
->>> should avoid.  Maybe adding a kernel command line parameter that says
->>> "Ignore the RTPROP I know what I am doing"?  I don't particularly love
->>> this either, but it's not unreasonable.
->>
->> In the context of https://github.com/OP-TEE/optee_os/issues/6094,
->> basically this issue mapped on reboot/shutdown, I would really love to
->> see the unhandy tee-supplicant daemon to be overcome.
+On 07.06.23 17:14, Sumit Garg wrote:
+> Currently supplicant dependent optee device enumeration only registers
+> devices whenever tee-supplicant is invoked for the first time. But it
+> forgets to remove devices when tee-supplicant daemon stops running and
+> closes its context gracefully. This leads to following splats for fTPM
+> driver during reboot/shutdown:
 >=20
-> I have seen this error before and it has been on my todo list. So I
-> have tried to fix it here [1]. Feel free to test it and let me know if
-> you see any further issues.
+> [   73.466791] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error:=
+ 0xffff3024
+> [   73.474497] ------------[ cut here ]------------
+> [   73.479119] WARNING: CPU: 1 PID: 1 at drivers/char/tpm/tpm_ftpm_tee.c:13=
+5 ftpm_tee_tpm_op_send+0x200/0x25c
+> <snip>
+> [   73.539952] pstate: 60000005 (nZCv daif -PAN -UAO -TCO BTYPE=3D--)
+> [   73.545946] pc : ftpm_tee_tpm_op_send+0x200/0x25c
+> [   73.550640] lr : ftpm_tee_tpm_op_send+0x200/0x25c
+> [   73.555331] sp : ffff80001129baa0
+> [   73.558635] x29: ffff80001129baa0 x28: ffff00000646f000
+> [   73.563938] x27: ffff8000110f7000 x26: 0000000000000016
+> [   73.569241] x25: 0000000000000145 x24: ffff000005395000
+> [   73.574544] x23: ffff0000065a7280 x22: ffff00000646f000
+> [   73.579847] x21: ffff000006422080 x20: 000000000000000c
+> [   73.585149] x19: 0000000000000000 x18: 0000000000000000
+> [   73.590450] x17: 0000000000000000 x16: 0000000000000000
+> [   73.595753] x15: 0000000000000030 x14: ffffffffffffffff
+> [   73.601055] x13: ffff80001110e838 x12: 00000000000006d2
+> [   73.606357] x11: 0000000000000246 x10: ffff800011166838
+> [   73.611659] x9 : 00000000fffff000 x8 : ffff80001110e838
+> [   73.616962] x7 : ffff800011166838 x6 : 0000000000000000
+> [   73.622263] x5 : 0000000000000000 x4 : 0000000000000000
+> [   73.627565] x3 : 0000000000000000 x2 : 0000000000000000
+> [   73.632867] x1 : 0000000000000000 x0 : ffff0000000e8000
+> [   73.638170] Call trace:
+> [   73.640610]  ftpm_tee_tpm_op_send+0x200/0x25c
+> [   73.644960]  tpm_transmit+0xc8/0x33c
+> [   73.648528]  tpm_transmit_cmd+0x30/0xc0
+> [   73.652353]  tpm2_shutdown+0xa4/0x100
+> [   73.656007]  tpm_class_shutdown+0x60/0x90
+> [   73.660009]  device_shutdown+0x138/0x330
+> [   73.663926]  __do_sys_reboot+0x218/0x2a0
+> [   73.667839]  __arm64_sys_reboot+0x24/0x30
+> [   73.671842]  el0_svc_common.constprop.0+0x78/0x1c4
+> [   73.676622]  do_el0_svc+0x24/0x8c
+> [   73.679932]  el0_svc+0x14/0x20
+> [   73.682978]  el0_sync_handler+0xb0/0xb4
+> [   73.686806]  el0_sync+0x180/0x1c0
 >=20
-> [1] https://lkml.org/lkml/2023/6/7/927
+> Fix this properly by removing supplicant dependent devices when the
+> supplicant closes gracefully. While at it use the global system
+> workqueue for OP-TEE bus scanning work rather than our own custom one.
 >=20
+> Reported-by: Jan Kiszka <jan.kiszka@siemens.com>
+> Link: https://github.com/OP-TEE/optee_os/issues/6094
+> Fixes: 5f178bb71e3a ("optee: enable support for multi-stage bus enumeration=
+")
+> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> ---
+>  drivers/tee/optee/core.c          | 26 +++++++++++---------------
+>  drivers/tee/optee/device.c        | 27 ++++++++++++++++++++++++---
+>  drivers/tee/optee/optee_private.h |  7 ++-----
+>  3 files changed, 37 insertions(+), 23 deletions(-)
+>=20
+> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> index d01ca47f7bde..e0f2c9cb0073 100644
+> --- a/drivers/tee/optee/core.c
+> +++ b/drivers/tee/optee/core.c
+> @@ -15,7 +15,6 @@
+>  #include <linux/string.h>
+>  #include <linux/tee_drv.h>
+>  #include <linux/types.h>
+> -#include <linux/workqueue.h>
+>  #include "optee_private.h"
+> =20
+>  int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_shm *=
+shm,
+> @@ -84,6 +83,11 @@ static void optee_bus_scan(struct work_struct *work)
+>  	WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
+>  }
+> =20
+> +static void optee_bus_remove(struct work_struct *work)
+> +{
+> +	optee_unregister_supp_devices();
+> +}
+> +
+>  int optee_open(struct tee_context *ctx, bool cap_memref_null)
+>  {
+>  	struct optee_context_data *ctxdata;
+> @@ -108,16 +112,8 @@ int optee_open(struct tee_context *ctx, bool cap_memre=
+f_null)
+>  			return -EBUSY;
+>  		}
+> =20
+> -		if (!optee->scan_bus_done) {
+> -			INIT_WORK(&optee->scan_bus_work, optee_bus_scan);
+> -			optee->scan_bus_wq =3D create_workqueue("optee_bus_scan");
+> -			if (!optee->scan_bus_wq) {
+> -				kfree(ctxdata);
+> -				return -ECHILD;
+> -			}
+> -			queue_work(optee->scan_bus_wq, &optee->scan_bus_work);
+> -			optee->scan_bus_done =3D true;
+> -		}
+> +		INIT_WORK(&optee->scan_bus_work, optee_bus_scan);
+> +		schedule_work(&optee->scan_bus_work);
+>  	}
+>  	mutex_init(&ctxdata->mutex);
+>  	INIT_LIST_HEAD(&ctxdata->sess_list);
+> @@ -159,10 +155,10 @@ void optee_release_supp(struct tee_context *ctx)
+>  	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> =20
+>  	optee_release_helper(ctx, optee_close_session_helper);
+> -	if (optee->scan_bus_wq) {
+> -		destroy_workqueue(optee->scan_bus_wq);
+> -		optee->scan_bus_wq =3D NULL;
+> -	}
+> +
+> +	INIT_WORK(&optee->scan_bus_work, optee_bus_remove);
+> +	schedule_work(&optee->scan_bus_work);
+> +
+>  	optee_supp_release(&optee->supp);
+>  }
+> =20
+> diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
+> index 64f0e047c23d..88e1c3feb15d 100644
+> --- a/drivers/tee/optee/device.c
+> +++ b/drivers/tee/optee/device.c
+> @@ -60,9 +60,10 @@ static void optee_release_device(struct device *dev)
+>  	kfree(optee_device);
+>  }
+> =20
+> -static int optee_register_device(const uuid_t *device_uuid)
+> +static int optee_register_device(const uuid_t *device_uuid, u32 func)
+>  {
+>  	struct tee_client_device *optee_device =3D NULL;
+> +	const char *dev_name_fmt =3D NULL;
+>  	int rc;
+> =20
+>  	optee_device =3D kzalloc(sizeof(*optee_device), GFP_KERNEL);
+> @@ -71,7 +72,13 @@ static int optee_register_device(const uuid_t *device_uu=
+id)
+> =20
+>  	optee_device->dev.bus =3D &tee_bus_type;
+>  	optee_device->dev.release =3D optee_release_device;
+> -	if (dev_set_name(&optee_device->dev, "optee-ta-%pUb", device_uuid)) {
+> +
+> +	if (func =3D=3D PTA_CMD_GET_DEVICES_SUPP)
+> +		dev_name_fmt =3D "optee-ta-supp-%pUb";
+> +	else
+> +		dev_name_fmt =3D "optee-ta-%pUb";
+> +
+> +	if (dev_set_name(&optee_device->dev, dev_name_fmt, device_uuid)) {
+>  		kfree(optee_device);
+>  		return -ENOMEM;
+>  	}
+> @@ -142,7 +149,7 @@ static int __optee_enumerate_devices(u32 func)
+>  	num_devices =3D shm_size / sizeof(uuid_t);
+> =20
+>  	for (idx =3D 0; idx < num_devices; idx++) {
+> -		rc =3D optee_register_device(&device_uuid[idx]);
+> +		rc =3D optee_register_device(&device_uuid[idx], func);
+>  		if (rc)
+>  			goto out_shm;
+>  	}
+> @@ -175,3 +182,17 @@ void optee_unregister_devices(void)
+>  	bus_for_each_dev(&tee_bus_type, NULL, NULL,
+>  			 __optee_unregister_device);
+>  }
+> +
+> +static int __optee_unregister_supp_device(struct device *dev, void *data)
+> +{
+> +	if (!strncmp(dev_name(dev), "optee-ta-supp", strlen("optee-ta-supp")))
+> +		device_unregister(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +void optee_unregister_supp_devices(void)
+> +{
+> +	bus_for_each_dev(&tee_bus_type, NULL, NULL,
+> +			 __optee_unregister_supp_device);
+> +}
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index 6dcecb83c893..cb5eae6f797d 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+> @@ -192,9 +192,7 @@ struct optee_ops {
+>   * @supp:		supplicant synchronization struct for RPC to supplicant
+>   * @pool:		shared memory pool
+>   * @rpc_param_count:	If > 0 number of RPC parameters to make room for
+> - * @scan_bus_done	flag if device registation was already done.
+> - * @scan_bus_wq		workqueue to scan optee bus and register optee drivers
+> - * @scan_bus_work	workq to scan optee bus and register optee drivers
+> + * @scan_bus_work	work to scan optee bus and register optee drivers
+>   */
+>  struct optee {
+>  	struct tee_device *supp_teedev;
+> @@ -211,8 +209,6 @@ struct optee {
+>  	struct optee_supp supp;
+>  	struct tee_shm_pool *pool;
+>  	unsigned int rpc_param_count;
+> -	bool   scan_bus_done;
+> -	struct workqueue_struct *scan_bus_wq;
+>  	struct work_struct scan_bus_work;
+>  };
+> =20
+> @@ -280,6 +276,7 @@ int optee_cancel_req(struct tee_context *ctx, u32 cance=
+l_id, u32 session);
+>  #define PTA_CMD_GET_DEVICES_SUPP	0x1
+>  int optee_enumerate_devices(u32 func);
+>  void optee_unregister_devices(void);
+> +void optee_unregister_supp_devices(void);
+> =20
+>  int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_shm *=
+shm,
+>  			       size_t size, size_t align,
 
-Ah, nice, will test ASAP!
+I had to backport to 5.10 to use this, but maybe this is still generic:
 
-Meanwhile more food: I managed to build a firmware that was missing=20
-STMM. But the driver loaded, and I got this:
+[  201.223833] Unregistered efivars operations
+[  201.228081] Registered efivars operations
+[  OK  ] Stopped TEE Supplicant.
+E/TC:? 0 get_rpc_alloc_res:645 RPC allocation failed. Non-secure world result=
+: ret=3D0xffff000c ret_origin=3D0x2
+E/TC:? 0 get_rpc_alloc_res:645 RPC allocation failed. Non-secure world result=
+: ret=3D0xffff000c ret_origin=3D0x2
+E/TC:? 0=20
+E/TC:? 0 TA panicked with code 0xffff000c
+E/LD:  Status of TA bc50d971-d4c9-42c4-82cb-343fb7f37896
+E/LD:   arch: aarch64
+E/LD:  region  0: va 0x40004000 pa 0x9ee1a000 size 0x002000 flags rw-s (ldelf)
+E/LD:  region  1: va 0x40006000 pa 0x9ee1c000 size 0x008000 flags r-xs (ldelf)
+E/LD:  region  2: va 0x4000e000 pa 0x9ee24000 size 0x001000 flags rw-s (ldelf)
+E/LD:  region  3: va 0x4000f000 pa 0x9ee25000 size 0x004000 flags rw-s (ldelf)
+[  OK  ] Stopped Modem Manager.
+E/LD:  region  4: va 0x40013000 pa 0x9ee29000 size 0x001000 flags r--s
+E/LD:  region  5: va 0x40014000 pa 0x9eeb0000 size 0x011000 flags rw-s (stack)
+E/LD:  region  6: va 0x40025000 pa 0x8592e000 size 0x002000 flags rw-- (param)
+E/LD:  region  7: va 0x4004d000 pa 0x00001000 size 0x067000 flags r-xs [0]
+E/LD:  region  8: va 0x400b4000 pa 0x00068000 size 0x01f000 flags rw-s [0]
+E/LD:   [0] bc50d971-d4c9-42c4-82cb-343fb7f37896 @ 0x4004d000
+E/LD:  Call stack:
+E/LD:   0x4008af50
+E/LD:   0x4004dbb4
+E/LD:   0x4004e238
+E/LD:   0x4006cd5c
+E/LD:   0x40086014
+E/LD:   0x4004eae4
+E/LD:   0x4009109c
+E/LD:   0x400861c4
+[  201.359311] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error: 0=
+xffff3024
+[  201.367031] tpm tpm0: tpm_try_transmit: send(): error -53212
 
-root(a)iot2050-debian:~# efi-updatevar -f PK.auth PK
-[  243.407097] Unable to handle kernel NULL pointer dereference at virtual ad=
-dress 0000000000000000
-[  243.415959] Mem abort info:
-[  243.418801]   ESR =3D 0x86000004
-[  243.422099]   EC =3D 0x21: IABT (current EL), IL =3D 32 bits
-[  243.427529]   SET =3D 0, FnV =3D 0
-[  243.430755]   EA =3D 0, S1PTW =3D 0
-[  243.433931] user pgtable: 4k pages, 48-bit VAs, pgdp=3D000000008b74e000
-[  243.440438] [0000000000000000] pgd=3D0000000000000000, p4d=3D0000000000000=
-000
-[  243.447274] Internal error: Oops: 86000004 [#1] PREEMPT SMP
-[  243.452835] Modules linked in: ctr ccm mt7601u mac80211 cfg80211 rfkill li=
-barc4 cp210x usbserial pci_endpoint_test ti_k3_r5_remoteproc optee_rng rng_co=
-re ti_cal ti_am335x_adc videobuf2_dma_contig kfifo_buf v4l2_fwnode videobuf2_=
-memops videobuf2_v4l2 videobuf2_common irq_pruss_intc at24 fuse ip_tables x_t=
-ables ipv6 tpm_ftpm_tee icssg_prueth pru_rproc icss_iep ptp pps_core ti_am335=
-x_tscadc pruss
-[  243.487733] CPU: 0 PID: 875 Comm: efi-updatevar Not tainted 5.10.162-cip24=
- #1
-[  243.494851] Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2=
-023.07-rc3-00018-g0afdaac6505 07/01/2023
-[  243.505180] pstate: 00000005 (nzcv daif -PAN -UAO -TCO BTYPE=3D--)
-[  243.511179] pc : 0x0
-[  243.513366] lr : efivar_entry_set_get_size+0xd4/0x1e0
-[  243.518404] sp : ffff8000127a3d00
-[  243.521708] x29: ffff8000127a3d00 x28: 0000000000000f87=20
-[  243.527012] x27: ffff000005bae400 x26: ffff800011254000=20
-[  243.532315] x25: ffff000005baf000 x24: ffff800011254aa0=20
-[  243.537618] x23: ffff8000127a3dab x22: ffff8000111d0268=20
-[  243.542921] x21: ffff8000127a3db0 x20: 0000000000000000=20
-[  243.548224] x19: ffff000005bae000 x18: 0000000000000000=20
-[  243.553527] x17: 0000000000000000 x16: 0000000000000000=20
-[  243.558829] x15: 0000aaab0876f264 x14: 35cd6a1025d11a20=20
-[  243.564132] x13: ac6f8dda3945638d x12: fb482642e3487f2d=20
-[  243.569435] x11: 0000000000000003 x10: ffff00000b792a80=20
-[  243.574738] x9 : a098e2bf989ff097 x8 : 0000000000000010=20
-[  243.580041] x7 : ffff800010e35c00 x6 : 4ddcbe2ecfc8fc79=20
-[  243.585345] x5 : 0000000000000000 x4 : ffff000005baf000=20
-[  243.590647] x3 : 0000000000000f87 x2 : 0000000000000027=20
-[  243.595950] x1 : ffff000005bae400 x0 : ffff000005bae000=20
-[  243.601254] Call trace:
-[  243.603695]  0x0
-[  243.605531]  efivarfs_file_write+0xa4/0x170
-[  243.609709]  vfs_write+0xf0/0x2a4
-[  243.613016]  ksys_write+0x68/0xf4
-[  243.616323]  __arm64_sys_write+0x1c/0x2c
-[  243.620241]  el0_svc_common.constprop.0+0x78/0x1c4
-[  243.625022]  do_el0_svc+0x24/0x8c
-[  243.628331]  el0_svc+0x14/0x20
-[  243.631378]  el0_sync_handler+0xb0/0xb4
-[  243.635206]  el0_sync+0x180/0x1c0
-[  243.638523] Code: bad PC value
-[  243.641573] ---[ end trace 369e4632cb003adc ]---
+tpm_ftpm_tee was built into the kernel, I dropped the rmmod workaround.
+
+If you suspect backporting issues, I need to look into getting upstream=20
+running again (it does on our board but it's not commonly tested yet due=20
+to some missing feature called Ethernet).
 
 Jan
 
@@ -177,5 +279,5 @@ Siemens AG, Technology
 Competence Center Embedded Linux
 
 
---===============1504826581483635712==--
+--===============6750983652644262768==--
 
