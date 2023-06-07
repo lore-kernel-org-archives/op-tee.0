@@ -1,88 +1,58 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
-Date: Wed, 07 Jun 2023 09:35:21 +0300
+Subject: Re: [GIT PULL] AMDTEE fix for v6.5
+Date: Wed, 07 Jun 2023 08:53:51 +0200
 Message-ID: 
- <CAC_iWjLm-2GVOn4QpoLBiCYLM1+zuQHttzEvrpNo1qt9AqXaUQ@mail.gmail.com>
-In-Reply-To: <
- <CAC_iWjJJ5E9Q1or5yTiDynzv_WAYH-g+N24aRdu9rvcsbWqnrg@mail.gmail.com>>
+ <CAHUa44E5RjMqeTp1Sr_7=Eavu3T+q2YVg-V-_gLWpO5sjJ-Vhg@mail.gmail.com>
+In-Reply-To: <0fac8e65-fe05-4dbf-a634-4620f764e2bd@app.fastmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1740589479801041883=="
+Content-Type: multipart/mixed; boundary="===============6589676985562513045=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1740589479801041883==
+--===============6589676985562513045==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 7 Jun 2023 at 09:34, Ilias Apalodimas
-<ilias.apalodimas@linaro.org> wrote:
->
-> Hi Jan,
->
-> [...]
->
-> > >>>>
-> > > ...
-> > >>>
-> > >>> I think we have a probe ordering issue with this driver:
-> > >>> efivarfs_fill_super() may be called before the TEE bus was probed, th=
-us
-> > >>> with the default efivar ops still registered. And that means
-> > >>> efivar_supports_writes() will return false, and the fs declares itself
-> > >>> as readonly. I've seen systemd mounting it r/o initialling, and you n=
-eed
-> > >>> to remount the fs to enable writability.
-> > >>>
-> > >>> Is there anything that could be done to re-order things reliably, pro=
-be
-> > >>> the tee bus earlier etc.?
-> > >>
-> > >> This driver has a dependency on user-space daemon: tee-supplicant to
-> > >> be running for RPMB access. So once you start that daemon the
-> > >> corresponding device will be enumerated on the TEE bus and this driver
-> > >> probe will be invoked. So I would suggest you to load this daemon very
-> > >> early in the boot process or better to make it a part of initramfs.
-> > >>
-> > >
-> > > That is not the point, really.
-> > >
-> > > If this dependency exists, the code should be aware of that, and made
-> > > to work correctly in spite of it. Requiring a module to be part of
-> > > initramfs is not a reasonable fix.
-> >
-> > In fact, I've tested a non-modularized build as well, just to exclude
-> > that issue. The daemon dependency is more likely the problem here.
-> >
-> > >
-> > > IIUC, this also means that the efivar ops are updated while there is
-> > > already a client. This seems less than ideal as well
->
-> As Sumit pointed out, the 'device' won't be available from OP-TEE
-> until the supplicant is up and running and as a result, the module
-> _probe() function won't run.  Unfortunately, this isn't something we
-> can avoid since the supplicant is responsible for the RPMB writes.
-> The only thing I can think of is moving parts of the supplicant to the
-> kernel and wiring up the RPC calls for reading/writing data to the
-> eMMC subsystem.  There was another discussion here [0] requesting the
-> same thing for different reasons. But unless I am missing something
-> this won't solve the problem completely either.  You still have a
-> timing dependency of "when did the RT callbacks change" -- "when was
-> my efivarfs mounted".
->
+Hi Arnd,
 
-Forgot to attach the link... apologies for the noise.
-[0] https://lore.kernel.org/all/CAC_iWjLOhUvp5ggCCkHN5MRNfB_h6FZ2Z14yrtR3aqGn=
-0Ovxig(a)mail.gmail.com/
+On Tue, Jun 6, 2023 at 1:47=E2=80=AFPM Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> On Tue, Jun 6, 2023, at 09:58, Jens Wiklander wrote:
+> > Hello arm-soc maintainers,
+> >
+> > Please pull this AMDTEE driver fix to add a return origin field to the
+> > struct tee_cmd_load_ta used when loading a Trusted Application into the
+> > AMDTEE. This change is backward compatible.
+> >
+> > Note that this isn't a usual Arm driver update. This targets AMD instead,
+> > but is part of the TEE subsystem.
+> >
+> > Thanks,
+> > Jens
+> >
+> > The following changes since commit f1fcbaa18b28dec10281551dfe6ed3a3ed80e3=
+d6:
+> >
+> >   Linux 6.4-rc2 (2023-05-14 12:51:40 -0700)
+> >
+> > are available in the Git repository at:
+> >
+> >   https://git.linaro.org/people/jens.wiklander/linux-tee.git
+> > tags/amdtee-fix-for-v6.5
+> >
+> > for you to fetch changes up to 436eeae0411acdfc54521ddea80ee76d4ae8a7ea:
+>
+> I see there is only one patch here, and it is marked as 'Cc: stable',
+> so I assume  you meant this to be include in v6.4, not 6.5. Can you
+> confirm that?
 
-> Thanks
-> /Ilias
-> >
-> > Jan
-> >
-> > --
-> > Siemens AG, Technology
-> > Competence Center Embedded Linux
-> >
+If you don't mind taking it for v6.4 that's even better.
 
---===============1740589479801041883==--
+Thanks,
+Jens
+
+>
+>      Arnd
+
+--===============6589676985562513045==--
 
