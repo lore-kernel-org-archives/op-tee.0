@@ -1,120 +1,158 @@
-From: Ard Biesheuvel <ardb@kernel.org>
+From: Rob Herring <robh@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
-Date: Thu, 08 Jun 2023 15:52:04 +0200
-Message-ID: 
- <CAMj1kXGbXdbDr6DbyuziSFuxMgAimjNnkhqy8C-S5AbxdnixuQ@mail.gmail.com>
-In-Reply-To: <
- <CAC_iWjKgCJWgKU8tC3Nfn-0CgwGhw89B3JpTgsjkjDDOcWZEdw@mail.gmail.com>>
+Subject: Re: [PATCH v5 1/2] dt-bindings: arm: optee: add interrupt controller
+ properties
+Date: Thu, 08 Jun 2023 11:43:26 -0600
+Message-ID: <20230608174326.GA2791381-robh@kernel.org>
+In-Reply-To: <20230506073235.2770292-1-etienne.carriere@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1965499902816637752=="
+Content-Type: multipart/mixed; boundary="===============4703755535229964515=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1965499902816637752==
+--===============4703755535229964515==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 8 Jun 2023 at 08:22, Ilias Apalodimas
-<ilias.apalodimas@linaro.org> wrote:
->
-> Hi Jan
->
->
-> On Wed, 7 Jun 2023 at 22:46, Jan Kiszka <jan.kiszka@siemens.com> wrote:
-> >
-> > On 07.06.23 20:17, Ilias Apalodimas wrote:
-> > > On Wed, 7 Jun 2023 at 20:14, Jan Kiszka <jan.kiszka@siemens.com> wrot=
-e:
-> > >>
-> > >> On 07.06.23 18:59, Ilias Apalodimas wrote:
-> > >>> On Wed, 7 Jun 2023 at 19:09, Ilias Apalodimas
-> > >>> <ilias.apalodimas@linaro.org> wrote:
-> > >>>>
-> > >>>> Hi Jan,
-> > >>>>
-> > >>>> [...]
-> > >>>>>>>> No I don't, this will work reliably without the need to remount =
-the efivarfs.
-> > >>>>>>>> As you point out you will still have this dependency if you end =
-up
-> > >>>>>>>> building them as modules and you manage to mount the efivarfs be=
-fore
-> > >>>>>>>> those get inserted.  Does anyone see a reasonable workaround?
-> > >>>>>>>> Deceiving the kernel and making the bootloader set the RT proper=
-ty bit
-> > >>>>>>>> to force the filesystem being mounted as rw is a nasty hack that=
- we
-> > >>>>>>>> should avoid.  Maybe adding a kernel command line parameter that=
- says
-> > >>>>>>>> "Ignore the RTPROP I know what I am doing"?  I don't particularl=
-y love
-> > >>>>>>>> this either, but it's not unreasonable.
-> > >>>>>>>
-> > >>>>>>> In the context of https://github.com/OP-TEE/optee_os/issues/6094,
-> > >>>>>>> basically this issue mapped on reboot/shutdown, I would really lo=
-ve to
-> > >>>>>>> see the unhandy tee-supplicant daemon to be overcome.
-> > >>>>>>
-> > >>>>>> I have seen this error before and it has been on my todo list. So I
-> > >>>>>> have tried to fix it here [1]. Feel free to test it and let me kno=
-w if
-> > >>>>>> you see any further issues.
-> > >>>>>>
-> > >>>>>> [1] https://lkml.org/lkml/2023/6/7/927
-> > >>>>>>
-> > >>>>>
-> > >>>>> Ah, nice, will test ASAP!
-> > >>>>>
-> > >>>>> Meanwhile more food: I managed to build a firmware that was missing
-> > >>>>> STMM. But the driver loaded, and I got this:
-> > >>>>
-> > >>>> Thanks for the testing. I'll try to reproduce it locally and get bac=
-k to you
-> > >>>
-> > >>> Can you provide a bit more info on how that was triggered btw? I would
-> > >>> be helpful to know
-> > >>>
-> > >>> - OP-TEE version
-> > >>
-> > >> Today's master, 145953d55.
-> > >>
-> > >>> - was it compiled as a module or built-in?
-> > >>
-> > >> Sorry, not sure anymore, switching back and forth right now. I think it
-> > >> was built-in.
-> > >>
-> > >>> - was the supplicant running?
-> > >>
-> > >> Yes.
-> > >>
-> > >
-> > > Ok thanks, that helps.  I guess this also means U-Boot was compiled to
-> > > store the variables in a file in the ESP instead of the RPMB right?
-> > > Otherwise, I can't see how the device booted in the first place.
-> >
-> > U-Boot was not configured to perform secure booting in this case. It had
-> > RPMB support enabled, just didn't have to use it.
->
-> In your initial mail you said you managed to build a firmware without
-> StMM.  If U-boot isn't reconfigured accordingly -- iow skip the EFI
-> variable storage in an RPMB, the EFI subsystem will fail to start.
->
-> In any case, I don't think the ooops you are seeing is not connected
-> to this patchset.  Looking at the kernel EFI stub we only set the
-> SetVariableRT if the RTPROP table is set accordingly by the firmware.
-> U-Boot never sets the EFI_RT_SUPPORTED_SET_VARIABLE property since it
-> can't support it.  What you are doing is remount the efivarfs as rw
-> and then trying to set a variable, but the callback for it is  NULL.
-> I think you'll be able to replicate the same behavior on the kernel
-> without even inserting the new module.
->
++Sudeep, again...
 
-I have dropped this series from efi/next for now, given that it
-obviously has problems in its current state.
+Sudeep, you may want to look at v2 again.
 
-The risk of merging this now and fixing it later is that it may cause
-regressions for early adopters that rely on the behavior we are
-introducing here. Better to get this in shape first.
+On Sat, May 06, 2023 at 09:32:34AM +0200, Etienne Carriere wrote:
+> Adds an optional interrupt controller property to optee firmware node
+> in the DT bindings. Optee driver may embeds an irqchip exposing
+> OP-TEE interrupt events notified by the TEE world. Optee registers up
 
---===============1965499902816637752==--
+optee, Optee, or OP-TEE?
+
+> to 1 interrupt controller and identifies each line with a line
+> number from 0 to UINT16_MAX.
+>=20
+> The identifiers and meaning of the interrupt line number are specific
+> to the platform and shall be found in the OP-TEE platform documentation.
+
+Why can't you standardize the interrupt numbering for standard events=20
+like SCMI?
+
+
+I think there's still concern as to why this can't all be discoverable.=20
+The Optee driver should know or discover from Optee that it is an=20
+interrupt controller and can register itself as such. Likewise, the=20
+SCMI driver knows for scmi-optee, the interrupt comes from the Optee=20
+node. It can find that node (by compatible) and then find the=20
+irqchip/domain provider for that node.
+
+OTOH, SCMI already supports interrupts in the binding, so this isn't=20
+too big of a deal. I'm more concerned that once you have Optee=20
+interrupts, then you are going to want a node for every Optee=20
+sub-function with an interrupt. Then we're back to the very first Optee=20
+binding with a child node for every sub-function. Using it for gpio-keys=20
+as you did in the first version for example.
+
+If Sudeep is okay with this from an SCMI perspective and Marc is from an=20
+irqchip perspective, then I'm okay with it too.
+
+> In the example shown in optee DT binding documentation, the platform SCMI
+> device controlled by Linux scmi driver uses optee interrupt irq 5 as
+> signal to trigger processing of an asynchronous incoming SCMI message
+> in the scope of a CPU DVFS control. A platform can have several SCMI
+> channels driven this way. Optee irqs also permit small embedded devices
+> to share e.g. a gpio expander, a group of wakeup sources, etc... between
+> OP-TEE world (for sensitive services) and Linux world (for non-sensitive
+> services). The physical controller is driven from the TEE which exposes
+> some controls to Linux kernel.
+>=20
+> Cc: Jens Wiklander <jens.wiklander@linaro.org>
+> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> Cc: Marc Zyngier <maz@kernel.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Sumit Garg <sumit.garg@linaro.org>
+> Co-developed-by: Pascal Paillet <p.paillet@foss.st.com>
+> Signed-off-by: Pascal Paillet <p.paillet@foss.st.com>
+> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+> ---
+> Changes since v4:
+> - Removed empty line between Cc: tags and S-o-b tags.
+>=20
+> No changes since v3
+>=20
+> Changes since v2:
+> - Added a sentence on optee irq line number values and meaning, in
+>   DT binding doc and commit message.
+> - Updated example in DT binding doc from comment, fixed misplaced
+>   interrupt-parent property and removed gic and sram shm nodes.
+>=20
+> Changes since v1:
+> - Added a description to #interrupt-cells property.
+> - Changed of example. Linux wakeup event was subject to discussion and
+>   i don't know much about input events in Linux. So move to SCMI.
+>   In the example, an SCMI server in OP-TEE world raises optee irq 5
+>   so that Linux scmi optee channel &scmi_cpu_dvfs pushed in the incoming
+>   SCMI message in the scmi device for liekly later processing in threaded
+>   context. The example includes all parties: optee, scmi, sram, gic.
+> - Obviously rephrased the commit message.
+> ---
+>  .../arm/firmware/linaro,optee-tz.yaml         | 38 +++++++++++++++++++
+>  1 file changed, 38 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz=
+.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> index 5d033570b57b..9d9a797a6b2f 100644
+> --- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> +++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> @@ -41,6 +41,16 @@ properties:
+>        HVC #0, register assignments
+>        register assignments are specified in drivers/tee/optee/optee_smc.h
+> =20
+> +  interrupt-controller: true
+> +
+> +  "#interrupt-cells":
+> +    const: 1
+> +    description: |
+> +      OP-TEE exposes irq for irp chip controllers from OP-TEE world. Each
+> +      irq is assigned a single line number identifier used as first argume=
+nt.
+> +      Line number identifiers and their meaning shall be found in the OP-T=
+EE
+> +      firmware platform documentation.
+> +
+>  required:
+>    - compatible
+>    - method
+> @@ -65,3 +75,31 @@ examples:
+>              method =3D "hvc";
+>          };
+>      };
+> +
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    firmware  {
+> +        optee: optee {
+> +            compatible =3D "linaro,optee-tz";
+> +            method =3D "smc";
+> +            interrupt-parent =3D <&gic>;
+> +            interrupts =3D <GIC_SPI 187 IRQ_TYPE_EDGE_RISING>;
+> +            interrupt-controller;
+> +            #interrupt-cells =3D <1>;
+> +        };
+> +
+> +        scmi {
+> +            compatible =3D "linaro,scmi-optee";
+> +            linaro,optee-channel-id =3D <0>;
+> +            shmem =3D <&scmi_shm_tx>, <&scmi_shm_rx>;
+> +            interrupts-extended =3D <&optee 5>;
+> +            interrupt-names =3D "a2p";
+> +            #address-cells =3D <1>;
+> +            #size-cells =3D <0>;
+> +
+> +            scmi_cpu_dvfs: protocol(a)13 {
+> +                reg =3D <0x13>;
+> +                #clock-cells =3D <1>;
+> +            };
+> +        };
+> +    };
+> --=20
+> 2.25.1
+>=20
+
+--===============4703755535229964515==--
 
