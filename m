@@ -1,158 +1,296 @@
-From: Rob Herring <robh@kernel.org>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v5 1/2] dt-bindings: arm: optee: add interrupt controller
- properties
-Date: Thu, 08 Jun 2023 11:43:26 -0600
-Message-ID: <20230608174326.GA2791381-robh@kernel.org>
-In-Reply-To: <20230506073235.2770292-1-etienne.carriere@linaro.org>
+Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
+Date: Thu, 08 Jun 2023 22:38:56 +0300
+Message-ID: 
+ <CAC_iWjJ0uw_p9=6C+U+q8BNQgnDBgbDpcu8s8c80oB25i9y77w@mail.gmail.com>
+In-Reply-To: <
+ <CAMj1kXGbXdbDr6DbyuziSFuxMgAimjNnkhqy8C-S5AbxdnixuQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4703755535229964515=="
+Content-Type: multipart/mixed; boundary="===============3581335341331945379=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4703755535229964515==
+--===============3581335341331945379==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-+Sudeep, again...
+On Thu, 8 Jun 2023 at 16:52, Ard Biesheuvel <ardb@kernel.org> wrote:
+>
+> On Thu, 8 Jun 2023 at 08:22, Ilias Apalodimas
+> <ilias.apalodimas@linaro.org> wrote:
+> >
+> > Hi Jan
+> >
+> >
+> > On Wed, 7 Jun 2023 at 22:46, Jan Kiszka <jan.kiszka@siemens.com> wrote:
+> > >
+> > > On 07.06.23 20:17, Ilias Apalodimas wrote:
+> > > > On Wed, 7 Jun 2023 at 20:14, Jan Kiszka <jan.kiszka@siemens.com> wr=
+ote:
+> > > >>
+> > > >> On 07.06.23 18:59, Ilias Apalodimas wrote:
+> > > >>> On Wed, 7 Jun 2023 at 19:09, Ilias Apalodimas
+> > > >>> <ilias.apalodimas@linaro.org> wrote:
+> > > >>>>
+> > > >>>> Hi Jan,
+> > > >>>>
+> > > >>>> [...]
+> > > >>>>>>>> No I don't, this will work reliably without the need to remoun=
+t the efivarfs.
+> > > >>>>>>>> As you point out you will still have this dependency if you en=
+d up
+> > > >>>>>>>> building them as modules and you manage to mount the efivarfs =
+before
+> > > >>>>>>>> those get inserted.  Does anyone see a reasonable workaround?
+> > > >>>>>>>> Deceiving the kernel and making the bootloader set the RT prop=
+erty bit
+> > > >>>>>>>> to force the filesystem being mounted as rw is a nasty hack th=
+at we
+> > > >>>>>>>> should avoid.  Maybe adding a kernel command line parameter th=
+at says
+> > > >>>>>>>> "Ignore the RTPROP I know what I am doing"?  I don't particula=
+rly love
+> > > >>>>>>>> this either, but it's not unreasonable.
+> > > >>>>>>>
+> > > >>>>>>> In the context of https://github.com/OP-TEE/optee_os/issues/609=
+4,
+> > > >>>>>>> basically this issue mapped on reboot/shutdown, I would really =
+love to
+> > > >>>>>>> see the unhandy tee-supplicant daemon to be overcome.
+> > > >>>>>>
+> > > >>>>>> I have seen this error before and it has been on my todo list. S=
+o I
+> > > >>>>>> have tried to fix it here [1]. Feel free to test it and let me k=
+now if
+> > > >>>>>> you see any further issues.
+> > > >>>>>>
+> > > >>>>>> [1] https://lkml.org/lkml/2023/6/7/927
+> > > >>>>>>
+> > > >>>>>
+> > > >>>>> Ah, nice, will test ASAP!
+> > > >>>>>
+> > > >>>>> Meanwhile more food: I managed to build a firmware that was missi=
+ng
+> > > >>>>> STMM. But the driver loaded, and I got this:
+> > > >>>>
+> > > >>>> Thanks for the testing. I'll try to reproduce it locally and get b=
+ack to you
+> > > >>>
+> > > >>> Can you provide a bit more info on how that was triggered btw? I wo=
+uld
+> > > >>> be helpful to know
+> > > >>>
+> > > >>> - OP-TEE version
+> > > >>
+> > > >> Today's master, 145953d55.
+> > > >>
+> > > >>> - was it compiled as a module or built-in?
+> > > >>
+> > > >> Sorry, not sure anymore, switching back and forth right now. I think=
+ it
+> > > >> was built-in.
+> > > >>
+> > > >>> - was the supplicant running?
+> > > >>
+> > > >> Yes.
+> > > >>
+> > > >
+> > > > Ok thanks, that helps.  I guess this also means U-Boot was compiled to
+> > > > store the variables in a file in the ESP instead of the RPMB right?
+> > > > Otherwise, I can't see how the device booted in the first place.
+> > >
+> > > U-Boot was not configured to perform secure booting in this case. It had
+> > > RPMB support enabled, just didn't have to use it.
+> >
+> > In your initial mail you said you managed to build a firmware without
+> > StMM.  If U-boot isn't reconfigured accordingly -- iow skip the EFI
+> > variable storage in an RPMB, the EFI subsystem will fail to start.
+> >
+> > In any case, I don't think the ooops you are seeing is not connected
+> > to this patchset.  Looking at the kernel EFI stub we only set the
+> > SetVariableRT if the RTPROP table is set accordingly by the firmware.
+> > U-Boot never sets the EFI_RT_SUPPORTED_SET_VARIABLE property since it
+> > can't support it.  What you are doing is remount the efivarfs as rw
+> > and then trying to set a variable, but the callback for it is  NULL.
+> > I think you'll be able to replicate the same behavior on the kernel
+> > without even inserting the new module.
+> >
+>
+> I have dropped this series from efi/next for now, given that it
+> obviously has problems in its current state.
+>
+> The risk of merging this now and fixing it later is that it may cause
+> regressions for early adopters that rely on the behavior we are
+> introducing here. Better to get this in shape first.
 
-Sudeep, you may want to look at v2 again.
+The ooops Jan was seeing is reproducible in the current code with
+$ sudo mount -o remount,rw /sys/firmware/efi/efivars
+$ sudo efi-updatevar -f PK.auth PK
 
-On Sat, May 06, 2023 at 09:32:34AM +0200, Etienne Carriere wrote:
-> Adds an optional interrupt controller property to optee firmware node
-> in the DT bindings. Optee driver may embeds an irqchip exposing
-> OP-TEE interrupt events notified by the TEE world. Optee registers up
+So the only real problem we are discussing here is users having to
+remount the efivarfs once the module is inserted and the supplicant is
+running right?  We could do something along the lines of the patch
+below. That would solve both of the problems.
 
-optee, Optee, or OP-TEE?
+However, the patch changes the way efivarfs is mounted -- it's now
+always mounted as RW.  What I am worried about is userspace tools that
+rely on this.  I know fwupd uses it and looks for a RO mounted
+efivarfs on it's initial checking, but since userspace apps are
+already dealing with firmware that exposes SetVariableRT but always
+returns EFI_UNSUPPORTED this should be safe ?(famous last words)
 
-> to 1 interrupt controller and identifies each line with a line
-> number from 0 to UINT16_MAX.
->=20
-> The identifiers and meaning of the interrupt line number are specific
-> to the platform and shall be found in the OP-TEE platform documentation.
+Jan can you please apply this and see if it solves your problem?
 
-Why can't you standardize the interrupt numbering for standard events=20
-like SCMI?
+diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
+index 4cc8d0e7d0fd..37accd9e885c 100644
+--- a/drivers/firmware/efi/efi.c
++++ b/drivers/firmware/efi/efi.c
+@@ -206,6 +206,13 @@ static bool generic_ops_supported(void)
+        return true;
+ }
 
++efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
++                             u32 attributes, unsigned long data_size,
++                             void *data)
++{
++       return EFI_UNSUPPORTED;
++}
++
+ static int generic_ops_register(void)
+ {
+        if (!generic_ops_supported())
+@@ -219,6 +226,9 @@ static int generic_ops_register(void)
+        if (efi_rt_services_supported(EFI_RT_SUPPORTED_SET_VARIABLE)) {
+                generic_ops.set_variable =3D efi.set_variable;
+                generic_ops.set_variable_nonblocking =3D
+efi.set_variable_nonblocking;
++       } else {
++               generic_ops.set_variable =3D set_variable_int;
++               generic_ops.set_variable_nonblocking =3D set_variable_int;
+        }
+        return efivars_register(&generic_efivars, &generic_ops);
+ }
+diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
+index e9dc7116daf1..c75eff3f409d 100644
+--- a/drivers/firmware/efi/vars.c
++++ b/drivers/firmware/efi/vars.c
+@@ -123,7 +123,7 @@ EXPORT_SYMBOL_GPL(efivars_unregister);
 
-I think there's still concern as to why this can't all be discoverable.=20
-The Optee driver should know or discover from Optee that it is an=20
-interrupt controller and can register itself as such. Likewise, the=20
-SCMI driver knows for scmi-optee, the interrupt comes from the Optee=20
-node. It can find that node (by compatible) and then find the=20
-irqchip/domain provider for that node.
+ bool efivar_supports_writes(void)
+ {
+-       return __efivars && __efivars->ops->set_variable;
++       return __efivars && __efivars->ops->set_variable !=3D set_variable_in=
+t;
+ }
+ EXPORT_SYMBOL_GPL(efivar_supports_writes);
 
-OTOH, SCMI already supports interrupts in the binding, so this isn't=20
-too big of a deal. I'm more concerned that once you have Optee=20
-interrupts, then you are going to want a node for every Optee=20
-sub-function with an interrupt. Then we're back to the very first Optee=20
-binding with a child node for every sub-function. Using it for gpio-keys=20
-as you did in the first version for example.
+diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+index e028fafa04f3..e40b5c4c5106 100644
+--- a/fs/efivarfs/super.c
++++ b/fs/efivarfs/super.c
+@@ -242,9 +242,6 @@ static int efivarfs_fill_super(struct super_block
+*sb, struct fs_context *fc)
+        sb->s_d_op              =3D &efivarfs_d_ops;
+        sb->s_time_gran         =3D 1;
 
-If Sudeep is okay with this from an SCMI perspective and Marc is from an=20
-irqchip perspective, then I'm okay with it too.
+-       if (!efivar_supports_writes())
+-               sb->s_flags |=3D SB_RDONLY;
+-
+        inode =3D efivarfs_get_inode(sb, NULL, S_IFDIR | 0755, 0, true);
+        if (!inode)
+                return -ENOMEM;
+diff --git a/include/linux/efi.h b/include/linux/efi.h
+index 58d1c271d3b0..ec0ac6ef50a3 100644
+--- a/include/linux/efi.h
++++ b/include/linux/efi.h
+@@ -1084,6 +1084,10 @@ int efivars_register(struct efivars *efivars,
+                     const struct efivar_operations *ops);
+ int efivars_unregister(struct efivars *efivars);
 
-> In the example shown in optee DT binding documentation, the platform SCMI
-> device controlled by Linux scmi driver uses optee interrupt irq 5 as
-> signal to trigger processing of an asynchronous incoming SCMI message
-> in the scope of a CPU DVFS control. A platform can have several SCMI
-> channels driven this way. Optee irqs also permit small embedded devices
-> to share e.g. a gpio expander, a group of wakeup sources, etc... between
-> OP-TEE world (for sensitive services) and Linux world (for non-sensitive
-> services). The physical controller is driven from the TEE which exposes
-> some controls to Linux kernel.
->=20
-> Cc: Jens Wiklander <jens.wiklander@linaro.org>
-> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-> Cc: Marc Zyngier <maz@kernel.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Sumit Garg <sumit.garg@linaro.org>
-> Co-developed-by: Pascal Paillet <p.paillet@foss.st.com>
-> Signed-off-by: Pascal Paillet <p.paillet@foss.st.com>
-> Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
-> ---
-> Changes since v4:
-> - Removed empty line between Cc: tags and S-o-b tags.
->=20
-> No changes since v3
->=20
-> Changes since v2:
-> - Added a sentence on optee irq line number values and meaning, in
->   DT binding doc and commit message.
-> - Updated example in DT binding doc from comment, fixed misplaced
->   interrupt-parent property and removed gic and sram shm nodes.
->=20
-> Changes since v1:
-> - Added a description to #interrupt-cells property.
-> - Changed of example. Linux wakeup event was subject to discussion and
->   i don't know much about input events in Linux. So move to SCMI.
->   In the example, an SCMI server in OP-TEE world raises optee irq 5
->   so that Linux scmi optee channel &scmi_cpu_dvfs pushed in the incoming
->   SCMI message in the scmi device for liekly later processing in threaded
->   context. The example includes all parties: optee, scmi, sram, gic.
-> - Obviously rephrased the commit message.
-> ---
->  .../arm/firmware/linaro,optee-tz.yaml         | 38 +++++++++++++++++++
->  1 file changed, 38 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz=
-.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-> index 5d033570b57b..9d9a797a6b2f 100644
-> --- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-> +++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
-> @@ -41,6 +41,16 @@ properties:
->        HVC #0, register assignments
->        register assignments are specified in drivers/tee/optee/optee_smc.h
-> =20
-> +  interrupt-controller: true
-> +
-> +  "#interrupt-cells":
-> +    const: 1
-> +    description: |
-> +      OP-TEE exposes irq for irp chip controllers from OP-TEE world. Each
-> +      irq is assigned a single line number identifier used as first argume=
-nt.
-> +      Line number identifiers and their meaning shall be found in the OP-T=
-EE
-> +      firmware platform documentation.
-> +
->  required:
->    - compatible
->    - method
-> @@ -65,3 +75,31 @@ examples:
->              method =3D "hvc";
->          };
->      };
-> +
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    firmware  {
-> +        optee: optee {
-> +            compatible =3D "linaro,optee-tz";
-> +            method =3D "smc";
-> +            interrupt-parent =3D <&gic>;
-> +            interrupts =3D <GIC_SPI 187 IRQ_TYPE_EDGE_RISING>;
-> +            interrupt-controller;
-> +            #interrupt-cells =3D <1>;
-> +        };
-> +
-> +        scmi {
-> +            compatible =3D "linaro,scmi-optee";
-> +            linaro,optee-channel-id =3D <0>;
-> +            shmem =3D <&scmi_shm_tx>, <&scmi_shm_rx>;
-> +            interrupts-extended =3D <&optee 5>;
-> +            interrupt-names =3D "a2p";
-> +            #address-cells =3D <1>;
-> +            #size-cells =3D <0>;
-> +
-> +            scmi_cpu_dvfs: protocol(a)13 {
-> +                reg =3D <0x13>;
-> +                #clock-cells =3D <1>;
-> +            };
-> +        };
-> +    };
-> --=20
-> 2.25.1
->=20
++efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
++                             u32 attributes, unsigned long data_size,
++                             void *data);
++
+ void efivars_generic_ops_register(void);
+ void efivars_generic_ops_unregister(void);
 
---===============4703755535229964515==--
+apalos(a)hades:~/work/linux-next>;
+apalos(a)hades:~/work/linux-next>git diff
+diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
+index 4cc8d0e7d0fd..37accd9e885c 100644
+--- a/drivers/firmware/efi/efi.c
++++ b/drivers/firmware/efi/efi.c
+@@ -206,6 +206,13 @@ static bool generic_ops_supported(void)
+        return true;
+ }
+
++efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
++                             u32 attributes, unsigned long data_size,
++                             void *data)
++{
++       return EFI_UNSUPPORTED;
++}
++
+ static int generic_ops_register(void)
+ {
+        if (!generic_ops_supported())
+@@ -219,6 +226,9 @@ static int generic_ops_register(void)
+        if (efi_rt_services_supported(EFI_RT_SUPPORTED_SET_VARIABLE)) {
+                generic_ops.set_variable =3D efi.set_variable;
+                generic_ops.set_variable_nonblocking =3D
+efi.set_variable_nonblocking;
++       } else {
++               generic_ops.set_variable =3D set_variable_int;
++               generic_ops.set_variable_nonblocking =3D set_variable_int;
+        }
+        return efivars_register(&generic_efivars, &generic_ops);
+ }
+diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
+index e9dc7116daf1..c75eff3f409d 100644
+--- a/drivers/firmware/efi/vars.c
++++ b/drivers/firmware/efi/vars.c
+@@ -123,7 +123,7 @@ EXPORT_SYMBOL_GPL(efivars_unregister);
+
+ bool efivar_supports_writes(void)
+ {
+-       return __efivars && __efivars->ops->set_variable;
++       return __efivars && __efivars->ops->set_variable !=3D set_variable_in=
+t;
+ }
+ EXPORT_SYMBOL_GPL(efivar_supports_writes);
+
+diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+index e028fafa04f3..e40b5c4c5106 100644
+--- a/fs/efivarfs/super.c
++++ b/fs/efivarfs/super.c
+@@ -242,9 +242,6 @@ static int efivarfs_fill_super(struct super_block
+*sb, struct fs_context *fc)
+        sb->s_d_op              =3D &efivarfs_d_ops;
+        sb->s_time_gran         =3D 1;
+
+-       if (!efivar_supports_writes())
+-               sb->s_flags |=3D SB_RDONLY;
+-
+        inode =3D efivarfs_get_inode(sb, NULL, S_IFDIR | 0755, 0, true);
+        if (!inode)
+                return -ENOMEM;
+diff --git a/include/linux/efi.h b/include/linux/efi.h
+index 58d1c271d3b0..ec0ac6ef50a3 100644
+--- a/include/linux/efi.h
++++ b/include/linux/efi.h
+@@ -1084,6 +1084,10 @@ int efivars_register(struct efivars *efivars,
+                     const struct efivar_operations *ops);
+ int efivars_unregister(struct efivars *efivars);
+
++efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
++                             u32 attributes, unsigned long data_size,
++                             void *data);
++
+ void efivars_generic_ops_register(void);
+ void efivars_generic_ops_unregister(void);
+
+Thanks
+/Ilias
+
+--===============3581335341331945379==--
 
