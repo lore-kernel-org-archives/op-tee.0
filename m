@@ -1,156 +1,85 @@
 From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
-Date: Fri, 09 Jun 2023 09:22:26 +0300
+Date: Fri, 09 Jun 2023 09:34:45 +0300
 Message-ID: 
- <CAC_iWjJs7pw-iF-tRL6MpJ7O1PL0riJ7aD2DkpB0F9cDMaxuiw@mail.gmail.com>
-In-Reply-To: <e0c71d88-ec5d-a348-0a53-ec6cea298b60@siemens.com>
+ <CAC_iWjLdmmQ4+BVt_mOP5Ht9jDHQqoVV+-ATR-nDrmG37raGjQ@mail.gmail.com>
+In-Reply-To: <3eb9bf84-4cf0-6cfe-9ad3-f7eef7d775fb@siemens.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8723528429229736164=="
+Content-Type: multipart/mixed; boundary="===============3882971303935233603=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8723528429229736164==
+--===============3882971303935233603==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hi Jan,
 
-On Fri, 9 Jun 2023 at 09:16, Jan Kiszka <jan.kiszka@siemens.com> wrote:
->
-> On 08.06.23 15:52, Ard Biesheuvel wrote:
-> > On Thu, 8 Jun 2023 at 08:22, Ilias Apalodimas
-> > <ilias.apalodimas@linaro.org> wrote:
-> >>
-> >> Hi Jan
-> >>
-> >>
-> >> On Wed, 7 Jun 2023 at 22:46, Jan Kiszka <jan.kiszka@siemens.com> wrote:
-> >>>
-> >>> On 07.06.23 20:17, Ilias Apalodimas wrote:
-> >>>> On Wed, 7 Jun 2023 at 20:14, Jan Kiszka <jan.kiszka@siemens.com> wro=
-te:
-> >>>>>
-> >>>>> On 07.06.23 18:59, Ilias Apalodimas wrote:
-> >>>>>> On Wed, 7 Jun 2023 at 19:09, Ilias Apalodimas
-> >>>>>> <ilias.apalodimas@linaro.org> wrote:
-> >>>>>>>
-> >>>>>>> Hi Jan,
-> >>>>>>>
-> >>>>>>> [...]
-> >>>>>>>>>>> No I don't, this will work reliably without the need to remount=
- the efivarfs.
-> >>>>>>>>>>> As you point out you will still have this dependency if you end=
- up
-> >>>>>>>>>>> building them as modules and you manage to mount the efivarfs b=
-efore
-> >>>>>>>>>>> those get inserted.  Does anyone see a reasonable workaround?
-> >>>>>>>>>>> Deceiving the kernel and making the bootloader set the RT prope=
-rty bit
-> >>>>>>>>>>> to force the filesystem being mounted as rw is a nasty hack tha=
-t we
-> >>>>>>>>>>> should avoid.  Maybe adding a kernel command line parameter tha=
-t says
-> >>>>>>>>>>> "Ignore the RTPROP I know what I am doing"?  I don't particular=
-ly love
-> >>>>>>>>>>> this either, but it's not unreasonable.
-> >>>>>>>>>>
-> >>>>>>>>>> In the context of https://github.com/OP-TEE/optee_os/issues/6094,
-> >>>>>>>>>> basically this issue mapped on reboot/shutdown, I would really l=
-ove to
-> >>>>>>>>>> see the unhandy tee-supplicant daemon to be overcome.
-> >>>>>>>>>
-> >>>>>>>>> I have seen this error before and it has been on my todo list. So=
- I
-> >>>>>>>>> have tried to fix it here [1]. Feel free to test it and let me kn=
-ow if
-> >>>>>>>>> you see any further issues.
-> >>>>>>>>>
-> >>>>>>>>> [1] https://lkml.org/lkml/2023/6/7/927
-> >>>>>>>>>
-> >>>>>>>>
-> >>>>>>>> Ah, nice, will test ASAP!
-> >>>>>>>>
-> >>>>>>>> Meanwhile more food: I managed to build a firmware that was missing
-> >>>>>>>> STMM. But the driver loaded, and I got this:
-> >>>>>>>
-> >>>>>>> Thanks for the testing. I'll try to reproduce it locally and get ba=
-ck to you
-> >>>>>>
-> >>>>>> Can you provide a bit more info on how that was triggered btw? I wou=
-ld
-> >>>>>> be helpful to know
-> >>>>>>
-> >>>>>> - OP-TEE version
-> >>>>>
-> >>>>> Today's master, 145953d55.
-> >>>>>
-> >>>>>> - was it compiled as a module or built-in?
-> >>>>>
-> >>>>> Sorry, not sure anymore, switching back and forth right now. I think =
-it
-> >>>>> was built-in.
-> >>>>>
-> >>>>>> - was the supplicant running?
-> >>>>>
-> >>>>> Yes.
-> >>>>>
-> >>>>
-> >>>> Ok thanks, that helps.  I guess this also means U-Boot was compiled to
-> >>>> store the variables in a file in the ESP instead of the RPMB right?
-> >>>> Otherwise, I can't see how the device booted in the first place.
-> >>>
-> >>> U-Boot was not configured to perform secure booting in this case. It had
-> >>> RPMB support enabled, just didn't have to use it.
-> >>
-> >> In your initial mail you said you managed to build a firmware without
-> >> StMM.  If U-boot isn't reconfigured accordingly -- iow skip the EFI
-> >> variable storage in an RPMB, the EFI subsystem will fail to start.
-> >>
-> >> In any case, I don't think the ooops you are seeing is not connected
-> >> to this patchset.  Looking at the kernel EFI stub we only set the
-> >> SetVariableRT if the RTPROP table is set accordingly by the firmware.
-> >> U-Boot never sets the EFI_RT_SUPPORTED_SET_VARIABLE property since it
-> >> can't support it.  What you are doing is remount the efivarfs as rw
-> >> and then trying to set a variable, but the callback for it is  NULL.
-> >> I think you'll be able to replicate the same behavior on the kernel
-> >> without even inserting the new module.
->
-> Might be true. I'll try to look into that again when the other dust settled.
->
+[...]
+
+> > --- a/drivers/firmware/efi/vars.c
+> > +++ b/drivers/firmware/efi/vars.c
+> > @@ -123,7 +123,7 @@ EXPORT_SYMBOL_GPL(efivars_unregister);
 > >
-> > I have dropped this series from efi/next for now, given that it
-> > obviously has problems in its current state.
+> >  bool efivar_supports_writes(void)
+> >  {
+> > -       return __efivars && __efivars->ops->set_variable;
+> > +       return __efivars && __efivars->ops->set_variable !=3D set_variabl=
+e_int;
+> >  }
+> >  EXPORT_SYMBOL_GPL(efivar_supports_writes);
 > >
-> > The risk of merging this now and fixing it later is that it may cause
-> > regressions for early adopters that rely on the behavior we are
-> > introducing here. Better to get this in shape first.
+> > diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+> > index e028fafa04f3..e40b5c4c5106 100644
+> > --- a/fs/efivarfs/super.c
+> > +++ b/fs/efivarfs/super.c
+> > @@ -242,9 +242,6 @@ static int efivarfs_fill_super(struct super_block
+> > *sb, struct fs_context *fc)
+> >         sb->s_d_op              =3D &efivarfs_d_ops;
+> >         sb->s_time_gran         =3D 1;
+> >
+> > -       if (!efivar_supports_writes())
+> > -               sb->s_flags |=3D SB_RDONLY;
+> > -
+> >         inode =3D efivarfs_get_inode(sb, NULL, S_IFDIR | 0755, 0, true);
+> >         if (!inode)
+> >                 return -ENOMEM;
+> > diff --git a/include/linux/efi.h b/include/linux/efi.h
+> > index 58d1c271d3b0..ec0ac6ef50a3 100644
+> > --- a/include/linux/efi.h
+> > +++ b/include/linux/efi.h
+> > @@ -1084,6 +1084,10 @@ int efivars_register(struct efivars *efivars,
+> >                      const struct efivar_operations *ops);
+> >  int efivars_unregister(struct efivars *efivars);
+> >
+> > +efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
+> > +                             u32 attributes, unsigned long data_size,
+> > +                             void *data);
+> > +
+> >  void efivars_generic_ops_register(void);
+> >  void efivars_generic_ops_unregister(void);
+> >
+> > Thanks
+> > /Ilias
 >
-> On the one side, I'm sorry having ruined the merge, but my gut feeling
-> is as well that this really needs to be reworked to get rid of the
-> unfortunate tee-supplicant daemon. So far, we have to start the daemon
-> from initrd, write a systemd service to adopt that instance, and make
-> ftpm modular to remove it before terminating tee-supplicant (e.g. on
-> system shutdown) - Sumit's patch didn't help there.
->
+> As just written in my other reply: The root cause is the dependency on
+> tee-supplicant daemon. That needs to be resolved, and then also r/w
+> mounting will just work.
 
-No worries, the whole functionality is intrusive, so I prefer going
-through some iterations until everyone is happy.  OTOH the
-'supplicant' problem isn't going away soon.  We will try to move it to
-the kernel but that has some difficulties as well and it's going to
-take some time.  In any case, we've lived with the supplicant for
-quite some time and the ftpm module has a similar set of problems.
-IOW there are kernel modules that depend on it.
-From a functionality point of view nothing will change if the
-supplicant gets moved to kernel space.  It  will just make distros
-life easier and remove the supplicant dependency.  I've attached a
-patch that solves both the kernel panic and the fortunate side-effect
-is that you don't have to remount the efivarfs.  If people like it, I
-can send it as a fix
+That's partially true.  If we solve the dependency your problem will
+go away only if everything gets compiled as built in.  But if you have
+them as modules there's still a chance you mount the efivarfs before
+installing all the modules.  In that case, you'll end up with the same
+problem no?
 
-
+That's why I think this patch (or a variation of it) is useful.  It
+solves the kernel panic you are seeing if you remount the efivarfs as
+RW and It unifies the way the kernel responds to userspace no matter
+what the firmware does with its setvariableRT service.
 
 Thanks
 /Ilias
+>
 > Jan
 >
 > --
@@ -158,5 +87,5 @@ Thanks
 > Competence Center Embedded Linux
 >
 
---===============8723528429229736164==--
+--===============3882971303935233603==--
 
