@@ -1,50 +1,168 @@
-From: dourlent cédric <cedric.dourlent@gmail.com>
+From: Jan Kiszka <jan.kiszka@siemens.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: PKCS11 TA: MR https://github.com/OP-TEE/optee_os/pull/5166
-Date: Thu, 08 Jun 2023 15:46:02 +0000
-Message-ID: 
- <CA+yr+0-ifyaK_Rz4-M-vHojNzCEvJrAckUms3HeqSYPF3SiQSg@mail.gmail.com>
+Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
+Date: Fri, 09 Jun 2023 06:37:01 +0000
+Message-ID: <2efa7342-360c-a643-ac1f-ae89835b443d@siemens.com>
+In-Reply-To: <
+ <CAC_iWjJs7pw-iF-tRL6MpJ7O1PL0riJ7aD2DkpB0F9cDMaxuiw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0530363968968030885=="
+Content-Type: multipart/mixed; boundary="===============1130826834810760444=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0530363968968030885==
+--===============1130826834810760444==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On 09.06.23 08:22, Ilias Apalodimas wrote:
+> Hi Jan,
+>=20
+> On Fri, 9 Jun 2023 at 09:16, Jan Kiszka <jan.kiszka@siemens.com> wrote:
+>>
+>> On 08.06.23 15:52, Ard Biesheuvel wrote:
+>>> On Thu, 8 Jun 2023 at 08:22, Ilias Apalodimas
+>>> <ilias.apalodimas@linaro.org> wrote:
+>>>>
+>>>> Hi Jan
+>>>>
+>>>>
+>>>> On Wed, 7 Jun 2023 at 22:46, Jan Kiszka <jan.kiszka@siemens.com> wrote:
+>>>>>
+>>>>> On 07.06.23 20:17, Ilias Apalodimas wrote:
+>>>>>> On Wed, 7 Jun 2023 at 20:14, Jan Kiszka <jan.kiszka@siemens.com> wro=
+te:
+>>>>>>>
+>>>>>>> On 07.06.23 18:59, Ilias Apalodimas wrote:
+>>>>>>>> On Wed, 7 Jun 2023 at 19:09, Ilias Apalodimas
+>>>>>>>> <ilias.apalodimas@linaro.org> wrote:
+>>>>>>>>>
+>>>>>>>>> Hi Jan,
+>>>>>>>>>
+>>>>>>>>> [...]
+>>>>>>>>>>>>> No I don't, this will work reliably without the need to remount=
+ the efivarfs.
+>>>>>>>>>>>>> As you point out you will still have this dependency if you end=
+ up
+>>>>>>>>>>>>> building them as modules and you manage to mount the efivarfs b=
+efore
+>>>>>>>>>>>>> those get inserted.  Does anyone see a reasonable workaround?
+>>>>>>>>>>>>> Deceiving the kernel and making the bootloader set the RT prope=
+rty bit
+>>>>>>>>>>>>> to force the filesystem being mounted as rw is a nasty hack tha=
+t we
+>>>>>>>>>>>>> should avoid.  Maybe adding a kernel command line parameter tha=
+t says
+>>>>>>>>>>>>> "Ignore the RTPROP I know what I am doing"?  I don't particular=
+ly love
+>>>>>>>>>>>>> this either, but it's not unreasonable.
+>>>>>>>>>>>>
+>>>>>>>>>>>> In the context of https://github.com/OP-TEE/optee_os/issues/6094,
+>>>>>>>>>>>> basically this issue mapped on reboot/shutdown, I would really l=
+ove to
+>>>>>>>>>>>> see the unhandy tee-supplicant daemon to be overcome.
+>>>>>>>>>>>
+>>>>>>>>>>> I have seen this error before and it has been on my todo list. So=
+ I
+>>>>>>>>>>> have tried to fix it here [1]. Feel free to test it and let me kn=
+ow if
+>>>>>>>>>>> you see any further issues.
+>>>>>>>>>>>
+>>>>>>>>>>> [1] https://lkml.org/lkml/2023/6/7/927
+>>>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>> Ah, nice, will test ASAP!
+>>>>>>>>>>
+>>>>>>>>>> Meanwhile more food: I managed to build a firmware that was missing
+>>>>>>>>>> STMM. But the driver loaded, and I got this:
+>>>>>>>>>
+>>>>>>>>> Thanks for the testing. I'll try to reproduce it locally and get ba=
+ck to you
+>>>>>>>>
+>>>>>>>> Can you provide a bit more info on how that was triggered btw? I wou=
+ld
+>>>>>>>> be helpful to know
+>>>>>>>>
+>>>>>>>> - OP-TEE version
+>>>>>>>
+>>>>>>> Today's master, 145953d55.
+>>>>>>>
+>>>>>>>> - was it compiled as a module or built-in?
+>>>>>>>
+>>>>>>> Sorry, not sure anymore, switching back and forth right now. I think =
+it
+>>>>>>> was built-in.
+>>>>>>>
+>>>>>>>> - was the supplicant running?
+>>>>>>>
+>>>>>>> Yes.
+>>>>>>>
+>>>>>>
+>>>>>> Ok thanks, that helps.  I guess this also means U-Boot was compiled to
+>>>>>> store the variables in a file in the ESP instead of the RPMB right?
+>>>>>> Otherwise, I can't see how the device booted in the first place.
+>>>>>
+>>>>> U-Boot was not configured to perform secure booting in this case. It had
+>>>>> RPMB support enabled, just didn't have to use it.
+>>>>
+>>>> In your initial mail you said you managed to build a firmware without
+>>>> StMM.  If U-boot isn't reconfigured accordingly -- iow skip the EFI
+>>>> variable storage in an RPMB, the EFI subsystem will fail to start.
+>>>>
+>>>> In any case, I don't think the ooops you are seeing is not connected
+>>>> to this patchset.  Looking at the kernel EFI stub we only set the
+>>>> SetVariableRT if the RTPROP table is set accordingly by the firmware.
+>>>> U-Boot never sets the EFI_RT_SUPPORTED_SET_VARIABLE property since it
+>>>> can't support it.  What you are doing is remount the efivarfs as rw
+>>>> and then trying to set a variable, but the callback for it is  NULL.
+>>>> I think you'll be able to replicate the same behavior on the kernel
+>>>> without even inserting the new module.
+>>
+>> Might be true. I'll try to look into that again when the other dust settle=
+d.
+>>
+>>>
+>>> I have dropped this series from efi/next for now, given that it
+>>> obviously has problems in its current state.
+>>>
+>>> The risk of merging this now and fixing it later is that it may cause
+>>> regressions for early adopters that rely on the behavior we are
+>>> introducing here. Better to get this in shape first.
+>>
+>> On the one side, I'm sorry having ruined the merge, but my gut feeling
+>> is as well that this really needs to be reworked to get rid of the
+>> unfortunate tee-supplicant daemon. So far, we have to start the daemon
+>> from initrd, write a systemd service to adopt that instance, and make
+>> ftpm modular to remove it before terminating tee-supplicant (e.g. on
+>> system shutdown) - Sumit's patch didn't help there.
+>>
+>=20
+> No worries, the whole functionality is intrusive, so I prefer going
+> through some iterations until everyone is happy.  OTOH the
+> 'supplicant' problem isn't going away soon.  We will try to move it to
+> the kernel but that has some difficulties as well and it's going to
+> take some time.  In any case, we've lived with the supplicant for
+> quite some time and the ftpm module has a similar set of problems.
+> IOW there are kernel modules that depend on it.
+> From a functionality point of view nothing will change if the
+> supplicant gets moved to kernel space.  It  will just make distros
+> life easier and remove the supplicant dependency.  I've attached a
+> patch that solves both the kernel panic and the fortunate side-effect
+> is that you don't have to remount the efivarfs.  If people like it, I
+> can send it as a fix
+>=20
 
-I contact you about the merge request
-https://github.com/OP-TEE/optee_os/pull/5166 that is mandatory to be able
-to use ECC private key imported in PKCS11 TA and not generate by the TA.
+Distro friendliness is the key aspect here. If we were just continuing
+with the classic embedded customization hell, we could also continue to
+live with all those vendor-specific ways of booting, validating,
+encrypting etc. so that distros will widely stay away from embedded
+boards. That's why you invested into the UEFI way of doing things, to
+change that.
 
-Currently the status is
-Attribute on generated ECC private key are
-- EC_PARAMS
-- VALUE
-- EC_POINT
-=> This object can be use for crypto operation
+Jan
 
-Attribute on imported ECC private key are
-- EC_PARAMS
-- VALUE
-=> PKCS11 TA can not use it because TA expect EC_POINTS attributes on ECC
-Private key.
+--=20
+Siemens AG, Technology
+Competence Center Embedded Linux
 
-Could you accept the merge request and have a coherence between generated
-and imported object even if for the moment it's doesn't respect PKCS11
-standard ?
 
-Two options for the next step.
-- check with PKCS11 editors to upgrade the spec and have a same behavior
-between RSA Private object and ECC Private object.
-- rework the code of the TA for ECC to link Private and public object but
-that mean that ECC Private and Public object must be present in the same
-slot to be able to perform crypto operation.
-
-Best regards,
-
-Cédric Dourlent,
-
---===============0530363968968030885==--
+--===============1130826834810760444==--
 
