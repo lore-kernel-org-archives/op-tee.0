@@ -1,296 +1,162 @@
 From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v5 3/3] efi: Add tee-based EFI variable driver
-Date: Thu, 08 Jun 2023 22:38:56 +0300
+Date: Fri, 09 Jun 2023 09:22:26 +0300
 Message-ID: 
- <CAC_iWjJ0uw_p9=6C+U+q8BNQgnDBgbDpcu8s8c80oB25i9y77w@mail.gmail.com>
-In-Reply-To: <
- <CAMj1kXGbXdbDr6DbyuziSFuxMgAimjNnkhqy8C-S5AbxdnixuQ@mail.gmail.com>>
+ <CAC_iWjJs7pw-iF-tRL6MpJ7O1PL0riJ7aD2DkpB0F9cDMaxuiw@mail.gmail.com>
+In-Reply-To: <e0c71d88-ec5d-a348-0a53-ec6cea298b60@siemens.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3581335341331945379=="
+Content-Type: multipart/mixed; boundary="===============8723528429229736164=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3581335341331945379==
+--===============8723528429229736164==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 8 Jun 2023 at 16:52, Ard Biesheuvel <ardb@kernel.org> wrote:
+Hi Jan,
+
+On Fri, 9 Jun 2023 at 09:16, Jan Kiszka <jan.kiszka@siemens.com> wrote:
 >
-> On Thu, 8 Jun 2023 at 08:22, Ilias Apalodimas
-> <ilias.apalodimas@linaro.org> wrote:
-> >
-> > Hi Jan
-> >
-> >
-> > On Wed, 7 Jun 2023 at 22:46, Jan Kiszka <jan.kiszka@siemens.com> wrote:
-> > >
-> > > On 07.06.23 20:17, Ilias Apalodimas wrote:
-> > > > On Wed, 7 Jun 2023 at 20:14, Jan Kiszka <jan.kiszka@siemens.com> wr=
-ote:
-> > > >>
-> > > >> On 07.06.23 18:59, Ilias Apalodimas wrote:
-> > > >>> On Wed, 7 Jun 2023 at 19:09, Ilias Apalodimas
-> > > >>> <ilias.apalodimas@linaro.org> wrote:
-> > > >>>>
-> > > >>>> Hi Jan,
-> > > >>>>
-> > > >>>> [...]
-> > > >>>>>>>> No I don't, this will work reliably without the need to remoun=
-t the efivarfs.
-> > > >>>>>>>> As you point out you will still have this dependency if you en=
-d up
-> > > >>>>>>>> building them as modules and you manage to mount the efivarfs =
-before
-> > > >>>>>>>> those get inserted.  Does anyone see a reasonable workaround?
-> > > >>>>>>>> Deceiving the kernel and making the bootloader set the RT prop=
-erty bit
-> > > >>>>>>>> to force the filesystem being mounted as rw is a nasty hack th=
-at we
-> > > >>>>>>>> should avoid.  Maybe adding a kernel command line parameter th=
-at says
-> > > >>>>>>>> "Ignore the RTPROP I know what I am doing"?  I don't particula=
-rly love
-> > > >>>>>>>> this either, but it's not unreasonable.
-> > > >>>>>>>
-> > > >>>>>>> In the context of https://github.com/OP-TEE/optee_os/issues/609=
-4,
-> > > >>>>>>> basically this issue mapped on reboot/shutdown, I would really =
-love to
-> > > >>>>>>> see the unhandy tee-supplicant daemon to be overcome.
-> > > >>>>>>
-> > > >>>>>> I have seen this error before and it has been on my todo list. S=
-o I
-> > > >>>>>> have tried to fix it here [1]. Feel free to test it and let me k=
-now if
-> > > >>>>>> you see any further issues.
-> > > >>>>>>
-> > > >>>>>> [1] https://lkml.org/lkml/2023/6/7/927
-> > > >>>>>>
-> > > >>>>>
-> > > >>>>> Ah, nice, will test ASAP!
-> > > >>>>>
-> > > >>>>> Meanwhile more food: I managed to build a firmware that was missi=
-ng
-> > > >>>>> STMM. But the driver loaded, and I got this:
-> > > >>>>
-> > > >>>> Thanks for the testing. I'll try to reproduce it locally and get b=
-ack to you
-> > > >>>
-> > > >>> Can you provide a bit more info on how that was triggered btw? I wo=
-uld
-> > > >>> be helpful to know
-> > > >>>
-> > > >>> - OP-TEE version
-> > > >>
-> > > >> Today's master, 145953d55.
-> > > >>
-> > > >>> - was it compiled as a module or built-in?
-> > > >>
-> > > >> Sorry, not sure anymore, switching back and forth right now. I think=
- it
-> > > >> was built-in.
-> > > >>
-> > > >>> - was the supplicant running?
-> > > >>
-> > > >> Yes.
-> > > >>
-> > > >
-> > > > Ok thanks, that helps.  I guess this also means U-Boot was compiled to
-> > > > store the variables in a file in the ESP instead of the RPMB right?
-> > > > Otherwise, I can't see how the device booted in the first place.
-> > >
-> > > U-Boot was not configured to perform secure booting in this case. It had
-> > > RPMB support enabled, just didn't have to use it.
-> >
-> > In your initial mail you said you managed to build a firmware without
-> > StMM.  If U-boot isn't reconfigured accordingly -- iow skip the EFI
-> > variable storage in an RPMB, the EFI subsystem will fail to start.
-> >
-> > In any case, I don't think the ooops you are seeing is not connected
-> > to this patchset.  Looking at the kernel EFI stub we only set the
-> > SetVariableRT if the RTPROP table is set accordingly by the firmware.
-> > U-Boot never sets the EFI_RT_SUPPORTED_SET_VARIABLE property since it
-> > can't support it.  What you are doing is remount the efivarfs as rw
-> > and then trying to set a variable, but the callback for it is  NULL.
-> > I think you'll be able to replicate the same behavior on the kernel
-> > without even inserting the new module.
-> >
+> On 08.06.23 15:52, Ard Biesheuvel wrote:
+> > On Thu, 8 Jun 2023 at 08:22, Ilias Apalodimas
+> > <ilias.apalodimas@linaro.org> wrote:
+> >>
+> >> Hi Jan
+> >>
+> >>
+> >> On Wed, 7 Jun 2023 at 22:46, Jan Kiszka <jan.kiszka@siemens.com> wrote:
+> >>>
+> >>> On 07.06.23 20:17, Ilias Apalodimas wrote:
+> >>>> On Wed, 7 Jun 2023 at 20:14, Jan Kiszka <jan.kiszka@siemens.com> wro=
+te:
+> >>>>>
+> >>>>> On 07.06.23 18:59, Ilias Apalodimas wrote:
+> >>>>>> On Wed, 7 Jun 2023 at 19:09, Ilias Apalodimas
+> >>>>>> <ilias.apalodimas@linaro.org> wrote:
+> >>>>>>>
+> >>>>>>> Hi Jan,
+> >>>>>>>
+> >>>>>>> [...]
+> >>>>>>>>>>> No I don't, this will work reliably without the need to remount=
+ the efivarfs.
+> >>>>>>>>>>> As you point out you will still have this dependency if you end=
+ up
+> >>>>>>>>>>> building them as modules and you manage to mount the efivarfs b=
+efore
+> >>>>>>>>>>> those get inserted.  Does anyone see a reasonable workaround?
+> >>>>>>>>>>> Deceiving the kernel and making the bootloader set the RT prope=
+rty bit
+> >>>>>>>>>>> to force the filesystem being mounted as rw is a nasty hack tha=
+t we
+> >>>>>>>>>>> should avoid.  Maybe adding a kernel command line parameter tha=
+t says
+> >>>>>>>>>>> "Ignore the RTPROP I know what I am doing"?  I don't particular=
+ly love
+> >>>>>>>>>>> this either, but it's not unreasonable.
+> >>>>>>>>>>
+> >>>>>>>>>> In the context of https://github.com/OP-TEE/optee_os/issues/6094,
+> >>>>>>>>>> basically this issue mapped on reboot/shutdown, I would really l=
+ove to
+> >>>>>>>>>> see the unhandy tee-supplicant daemon to be overcome.
+> >>>>>>>>>
+> >>>>>>>>> I have seen this error before and it has been on my todo list. So=
+ I
+> >>>>>>>>> have tried to fix it here [1]. Feel free to test it and let me kn=
+ow if
+> >>>>>>>>> you see any further issues.
+> >>>>>>>>>
+> >>>>>>>>> [1] https://lkml.org/lkml/2023/6/7/927
+> >>>>>>>>>
+> >>>>>>>>
+> >>>>>>>> Ah, nice, will test ASAP!
+> >>>>>>>>
+> >>>>>>>> Meanwhile more food: I managed to build a firmware that was missing
+> >>>>>>>> STMM. But the driver loaded, and I got this:
+> >>>>>>>
+> >>>>>>> Thanks for the testing. I'll try to reproduce it locally and get ba=
+ck to you
+> >>>>>>
+> >>>>>> Can you provide a bit more info on how that was triggered btw? I wou=
+ld
+> >>>>>> be helpful to know
+> >>>>>>
+> >>>>>> - OP-TEE version
+> >>>>>
+> >>>>> Today's master, 145953d55.
+> >>>>>
+> >>>>>> - was it compiled as a module or built-in?
+> >>>>>
+> >>>>> Sorry, not sure anymore, switching back and forth right now. I think =
+it
+> >>>>> was built-in.
+> >>>>>
+> >>>>>> - was the supplicant running?
+> >>>>>
+> >>>>> Yes.
+> >>>>>
+> >>>>
+> >>>> Ok thanks, that helps.  I guess this also means U-Boot was compiled to
+> >>>> store the variables in a file in the ESP instead of the RPMB right?
+> >>>> Otherwise, I can't see how the device booted in the first place.
+> >>>
+> >>> U-Boot was not configured to perform secure booting in this case. It had
+> >>> RPMB support enabled, just didn't have to use it.
+> >>
+> >> In your initial mail you said you managed to build a firmware without
+> >> StMM.  If U-boot isn't reconfigured accordingly -- iow skip the EFI
+> >> variable storage in an RPMB, the EFI subsystem will fail to start.
+> >>
+> >> In any case, I don't think the ooops you are seeing is not connected
+> >> to this patchset.  Looking at the kernel EFI stub we only set the
+> >> SetVariableRT if the RTPROP table is set accordingly by the firmware.
+> >> U-Boot never sets the EFI_RT_SUPPORTED_SET_VARIABLE property since it
+> >> can't support it.  What you are doing is remount the efivarfs as rw
+> >> and then trying to set a variable, but the callback for it is  NULL.
+> >> I think you'll be able to replicate the same behavior on the kernel
+> >> without even inserting the new module.
 >
-> I have dropped this series from efi/next for now, given that it
-> obviously has problems in its current state.
+> Might be true. I'll try to look into that again when the other dust settled.
 >
-> The risk of merging this now and fixing it later is that it may cause
-> regressions for early adopters that rely on the behavior we are
-> introducing here. Better to get this in shape first.
+> >
+> > I have dropped this series from efi/next for now, given that it
+> > obviously has problems in its current state.
+> >
+> > The risk of merging this now and fixing it later is that it may cause
+> > regressions for early adopters that rely on the behavior we are
+> > introducing here. Better to get this in shape first.
+>
+> On the one side, I'm sorry having ruined the merge, but my gut feeling
+> is as well that this really needs to be reworked to get rid of the
+> unfortunate tee-supplicant daemon. So far, we have to start the daemon
+> from initrd, write a systemd service to adopt that instance, and make
+> ftpm modular to remove it before terminating tee-supplicant (e.g. on
+> system shutdown) - Sumit's patch didn't help there.
+>
 
-The ooops Jan was seeing is reproducible in the current code with
-$ sudo mount -o remount,rw /sys/firmware/efi/efivars
-$ sudo efi-updatevar -f PK.auth PK
+No worries, the whole functionality is intrusive, so I prefer going
+through some iterations until everyone is happy.  OTOH the
+'supplicant' problem isn't going away soon.  We will try to move it to
+the kernel but that has some difficulties as well and it's going to
+take some time.  In any case, we've lived with the supplicant for
+quite some time and the ftpm module has a similar set of problems.
+IOW there are kernel modules that depend on it.
+From a functionality point of view nothing will change if the
+supplicant gets moved to kernel space.  It  will just make distros
+life easier and remove the supplicant dependency.  I've attached a
+patch that solves both the kernel panic and the fortunate side-effect
+is that you don't have to remount the efivarfs.  If people like it, I
+can send it as a fix
 
-So the only real problem we are discussing here is users having to
-remount the efivarfs once the module is inserted and the supplicant is
-running right?  We could do something along the lines of the patch
-below. That would solve both of the problems.
 
-However, the patch changes the way efivarfs is mounted -- it's now
-always mounted as RW.  What I am worried about is userspace tools that
-rely on this.  I know fwupd uses it and looks for a RO mounted
-efivarfs on it's initial checking, but since userspace apps are
-already dealing with firmware that exposes SetVariableRT but always
-returns EFI_UNSUPPORTED this should be safe ?(famous last words)
-
-Jan can you please apply this and see if it solves your problem?
-
-diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-index 4cc8d0e7d0fd..37accd9e885c 100644
---- a/drivers/firmware/efi/efi.c
-+++ b/drivers/firmware/efi/efi.c
-@@ -206,6 +206,13 @@ static bool generic_ops_supported(void)
-        return true;
- }
-
-+efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
-+                             u32 attributes, unsigned long data_size,
-+                             void *data)
-+{
-+       return EFI_UNSUPPORTED;
-+}
-+
- static int generic_ops_register(void)
- {
-        if (!generic_ops_supported())
-@@ -219,6 +226,9 @@ static int generic_ops_register(void)
-        if (efi_rt_services_supported(EFI_RT_SUPPORTED_SET_VARIABLE)) {
-                generic_ops.set_variable =3D efi.set_variable;
-                generic_ops.set_variable_nonblocking =3D
-efi.set_variable_nonblocking;
-+       } else {
-+               generic_ops.set_variable =3D set_variable_int;
-+               generic_ops.set_variable_nonblocking =3D set_variable_int;
-        }
-        return efivars_register(&generic_efivars, &generic_ops);
- }
-diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
-index e9dc7116daf1..c75eff3f409d 100644
---- a/drivers/firmware/efi/vars.c
-+++ b/drivers/firmware/efi/vars.c
-@@ -123,7 +123,7 @@ EXPORT_SYMBOL_GPL(efivars_unregister);
-
- bool efivar_supports_writes(void)
- {
--       return __efivars && __efivars->ops->set_variable;
-+       return __efivars && __efivars->ops->set_variable !=3D set_variable_in=
-t;
- }
- EXPORT_SYMBOL_GPL(efivar_supports_writes);
-
-diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-index e028fafa04f3..e40b5c4c5106 100644
---- a/fs/efivarfs/super.c
-+++ b/fs/efivarfs/super.c
-@@ -242,9 +242,6 @@ static int efivarfs_fill_super(struct super_block
-*sb, struct fs_context *fc)
-        sb->s_d_op              =3D &efivarfs_d_ops;
-        sb->s_time_gran         =3D 1;
-
--       if (!efivar_supports_writes())
--               sb->s_flags |=3D SB_RDONLY;
--
-        inode =3D efivarfs_get_inode(sb, NULL, S_IFDIR | 0755, 0, true);
-        if (!inode)
-                return -ENOMEM;
-diff --git a/include/linux/efi.h b/include/linux/efi.h
-index 58d1c271d3b0..ec0ac6ef50a3 100644
---- a/include/linux/efi.h
-+++ b/include/linux/efi.h
-@@ -1084,6 +1084,10 @@ int efivars_register(struct efivars *efivars,
-                     const struct efivar_operations *ops);
- int efivars_unregister(struct efivars *efivars);
-
-+efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
-+                             u32 attributes, unsigned long data_size,
-+                             void *data);
-+
- void efivars_generic_ops_register(void);
- void efivars_generic_ops_unregister(void);
-
-apalos(a)hades:~/work/linux-next>;
-apalos(a)hades:~/work/linux-next>git diff
-diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-index 4cc8d0e7d0fd..37accd9e885c 100644
---- a/drivers/firmware/efi/efi.c
-+++ b/drivers/firmware/efi/efi.c
-@@ -206,6 +206,13 @@ static bool generic_ops_supported(void)
-        return true;
- }
-
-+efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
-+                             u32 attributes, unsigned long data_size,
-+                             void *data)
-+{
-+       return EFI_UNSUPPORTED;
-+}
-+
- static int generic_ops_register(void)
- {
-        if (!generic_ops_supported())
-@@ -219,6 +226,9 @@ static int generic_ops_register(void)
-        if (efi_rt_services_supported(EFI_RT_SUPPORTED_SET_VARIABLE)) {
-                generic_ops.set_variable =3D efi.set_variable;
-                generic_ops.set_variable_nonblocking =3D
-efi.set_variable_nonblocking;
-+       } else {
-+               generic_ops.set_variable =3D set_variable_int;
-+               generic_ops.set_variable_nonblocking =3D set_variable_int;
-        }
-        return efivars_register(&generic_efivars, &generic_ops);
- }
-diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
-index e9dc7116daf1..c75eff3f409d 100644
---- a/drivers/firmware/efi/vars.c
-+++ b/drivers/firmware/efi/vars.c
-@@ -123,7 +123,7 @@ EXPORT_SYMBOL_GPL(efivars_unregister);
-
- bool efivar_supports_writes(void)
- {
--       return __efivars && __efivars->ops->set_variable;
-+       return __efivars && __efivars->ops->set_variable !=3D set_variable_in=
-t;
- }
- EXPORT_SYMBOL_GPL(efivar_supports_writes);
-
-diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-index e028fafa04f3..e40b5c4c5106 100644
---- a/fs/efivarfs/super.c
-+++ b/fs/efivarfs/super.c
-@@ -242,9 +242,6 @@ static int efivarfs_fill_super(struct super_block
-*sb, struct fs_context *fc)
-        sb->s_d_op              =3D &efivarfs_d_ops;
-        sb->s_time_gran         =3D 1;
-
--       if (!efivar_supports_writes())
--               sb->s_flags |=3D SB_RDONLY;
--
-        inode =3D efivarfs_get_inode(sb, NULL, S_IFDIR | 0755, 0, true);
-        if (!inode)
-                return -ENOMEM;
-diff --git a/include/linux/efi.h b/include/linux/efi.h
-index 58d1c271d3b0..ec0ac6ef50a3 100644
---- a/include/linux/efi.h
-+++ b/include/linux/efi.h
-@@ -1084,6 +1084,10 @@ int efivars_register(struct efivars *efivars,
-                     const struct efivar_operations *ops);
- int efivars_unregister(struct efivars *efivars);
-
-+efi_status_t set_variable_int(efi_char16_t *name, efi_guid_t *vendor,
-+                             u32 attributes, unsigned long data_size,
-+                             void *data);
-+
- void efivars_generic_ops_register(void);
- void efivars_generic_ops_unregister(void);
 
 Thanks
 /Ilias
+> Jan
+>
+> --
+> Siemens AG, Technology
+> Competence Center Embedded Linux
+>
 
---===============3581335341331945379==--
+--===============8723528429229736164==--
 
