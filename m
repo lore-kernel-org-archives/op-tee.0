@@ -1,55 +1,74 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: reference keymint & gatekeeper TAs
-Date: Wed, 14 Jun 2023 14:23:59 +0200
+Subject: Re: [PATCH v2] tee: optee: Use kmemdup() to replace kmalloc + memcpy
+Date: Thu, 15 Jun 2023 14:57:28 +0200
 Message-ID: 
- <CA+EyddZDkbnUpUcDTV3o9G59-unPxCzE0KvObUcZw3Yjou6wZQ@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CPH7PR15MB6164373F61F46C09CFBEBF7DCC54A=40PH7PR15MB?=
- =?utf-8?q?6164=2Enamprd15=2Eprod=2Eoutlook=2Ecom=3E?=>
+ <CAHUa44G69uobzWEWUBtncViH-Xf4aXYot=y+XvQJZwqqbs-otw@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYO1dr_Se9AWyToZCwbxDA10D2bM_ADXLCLi8Acx+sxspQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6006743246396367904=="
+Content-Type: multipart/mixed; boundary="===============8064675251638668553=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6006743246396367904==
+--===============8064675251638668553==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi Nagendra,
-
-On Mon, Jun 12, 2023 at 6:52 PM Nagendra Modadugu via OP-TEE <
-op-tee@lists.trustedfirmware.org> wrote:
-
-> I'm writing to get further information regarding the support roadmap for
-> OP-TEE based TA's - specifically keymint and gatekeeper.
+On Tue, Jun 13, 2023 at 10:42=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org>=
+ wrote:
 >
-> The implementations I could find are here:
-> https://github.com/linaro-swg/kmgk, and was wondering whether these are
-> supported?
+> On Tue, 13 Jun 2023 at 06:49, Jiapeng Chong
+> <jiapeng.chong@linux.alibaba.com> wrote:
+> >
+> > Use kmemdup rather than duplicating its implementation.
+> >
+> > ./drivers/tee/optee/smc_abi.c:1542:12-19: WARNING opportunity for kmemdup.
+> >
+> > Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> > Closes: https://bugzilla.openanolis.cn/show_bug.cgi?id=3D5480
+> > Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+> > ---
+> > Changes in v2:
+> >   -Add one commit message.
+> >
+> >  drivers/tee/optee/smc_abi.c | 3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> >
 >
-Yes, this is the (official) Keymaster & Gatekeeper implementation for
-OP-TEE. Having said that, it's not maintained any longer and as you can see
-in the git comments, it dates back to roughly 2021 when we last put efforts
-into this code base. In addition to that, there are newer revisions of
-KM&GK as well (
-https://source.android.com/docs/security/features/authentication), so there
-would need to be some time spent on updating the code to adhere to newer
-revisions.
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-I just want to stress that the reason we aren't maintaining it isn't
-because we don't want to. Other factors also come into play in this
-scenario, ... priorities, staffing, interest from community etc.
+I'm picking up this.
 
+Thanks,
+Jens
 
 >
-> Please respond off list if you find that would be more appropriate for
-> discussion.
+> -Sumit
 >
-> thanks.
->
->
--- 
-Regards,
-Joakim
+> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> > index 3861ae06d902..d5b28fd35d66 100644
+> > --- a/drivers/tee/optee/smc_abi.c
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -1541,12 +1541,11 @@ static int optee_load_fw(struct platform_device *=
+pdev,
+> >          * This uses the GFP_DMA flag to ensure we are allocated memory i=
+n the
+> >          * 32-bit space since TF-A cannot map memory beyond the 32-bit bo=
+undary.
+> >          */
+> > -       data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
+> > +       data_buf =3D kmemdup(fw->data, fw->size, GFP_KERNEL | GFP_DMA);
+> >         if (!data_buf) {
+> >                 rc =3D -ENOMEM;
+> >                 goto fw_err;
+> >         }
+> > -       memcpy(data_buf, fw->data, fw->size);
+> >         data_pa =3D virt_to_phys(data_buf);
+> >         reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
+> >         reg_pair_from_64(&data_size_high, &data_size_low, data_size);
+> > --
+> > 2.20.1.7.g153144c
+> >
 
---===============6006743246396367904==--
+--===============8064675251638668553==--
 
