@@ -1,74 +1,47 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2] tee: optee: Use kmemdup() to replace kmalloc + memcpy
-Date: Thu, 15 Jun 2023 14:57:28 +0200
-Message-ID: 
- <CAHUa44G69uobzWEWUBtncViH-Xf4aXYot=y+XvQJZwqqbs-otw@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYO1dr_Se9AWyToZCwbxDA10D2bM_ADXLCLi8Acx+sxspQ@mail.gmail.com>>
+Subject: [GIT PULL] Use kmemdup() in OP-TEE driver for v6.5
+Date: Thu, 15 Jun 2023 15:00:49 +0200
+Message-ID: <20230615130049.GA979203@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8064675251638668553=="
+Content-Type: multipart/mixed; boundary="===============6905102498418768937=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8064675251638668553==
+--===============6905102498418768937==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 13, 2023 at 10:42=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org>=
- wrote:
->
-> On Tue, 13 Jun 2023 at 06:49, Jiapeng Chong
-> <jiapeng.chong@linux.alibaba.com> wrote:
-> >
-> > Use kmemdup rather than duplicating its implementation.
-> >
-> > ./drivers/tee/optee/smc_abi.c:1542:12-19: WARNING opportunity for kmemdup.
-> >
-> > Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> > Closes: https://bugzilla.openanolis.cn/show_bug.cgi?id=3D5480
-> > Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-> > ---
-> > Changes in v2:
-> >   -Add one commit message.
-> >
-> >  drivers/tee/optee/smc_abi.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Hello arm-soc maintainers,
 
-I'm picking up this.
+Please pull this small patch to the OP-TEE driver that replaces
+kmalloc() + memcpy() with kmemdup() at one place.
 
 Thanks,
 Jens
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > index 3861ae06d902..d5b28fd35d66 100644
-> > --- a/drivers/tee/optee/smc_abi.c
-> > +++ b/drivers/tee/optee/smc_abi.c
-> > @@ -1541,12 +1541,11 @@ static int optee_load_fw(struct platform_device *=
-pdev,
-> >          * This uses the GFP_DMA flag to ensure we are allocated memory i=
-n the
-> >          * 32-bit space since TF-A cannot map memory beyond the 32-bit bo=
-undary.
-> >          */
-> > -       data_buf =3D kmalloc(fw->size, GFP_KERNEL | GFP_DMA);
-> > +       data_buf =3D kmemdup(fw->data, fw->size, GFP_KERNEL | GFP_DMA);
-> >         if (!data_buf) {
-> >                 rc =3D -ENOMEM;
-> >                 goto fw_err;
-> >         }
-> > -       memcpy(data_buf, fw->data, fw->size);
-> >         data_pa =3D virt_to_phys(data_buf);
-> >         reg_pair_from_64(&data_pa_high, &data_pa_low, data_pa);
-> >         reg_pair_from_64(&data_size_high, &data_size_low, data_size);
-> > --
-> > 2.20.1.7.g153144c
-> >
+The following changes since commit f1fcbaa18b28dec10281551dfe6ed3a3ed80e3d6:
 
---===============8064675251638668553==--
+  Linux 6.4-rc2 (2023-05-14 12:51:40 -0700)
+
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-use-k=
+memdup-for-6.5
+
+for you to fetch changes up to 6a8b7e80105416cc7324fda295608ea2d3f98862:
+
+  tee: optee: Use kmemdup() to replace kmalloc + memcpy (2023-06-15 08:49:55 =
++0200)
+
+----------------------------------------------------------------
+Use kmemdup() in OP-TEE driver
+
+----------------------------------------------------------------
+Jiapeng Chong (1):
+      tee: optee: Use kmemdup() to replace kmalloc + memcpy
+
+ drivers/tee/optee/smc_abi.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--===============6905102498418768937==--
 
