@@ -1,47 +1,38 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] Use kmemdup() in OP-TEE driver for v6.5
-Date: Thu, 15 Jun 2023 15:00:49 +0200
-Message-ID: <20230615130049.GA979203@rayden>
+Subject: Preparing for OP-TEE 3.22.0
+Date: Mon, 19 Jun 2023 15:41:45 +0200
+Message-ID: 
+ <CA+Eyddb-ReG_Sry7+aUuGLmE_Cgag6+0thgVXwMg60U02gW2sw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6905102498418768937=="
+Content-Type: multipart/mixed; boundary="===============2490259556094343318=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6905102498418768937==
+--===============2490259556094343318==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hello arm-soc maintainers,
+[BCC all OP-TEE maintainers]
 
-Please pull this small patch to the OP-TEE driver that replaces
-kmalloc() + memcpy() with kmemdup() at one place.
+Hi OP-TEE maintainers & contributors,
 
-Thanks,
-Jens
+OP-TEE v3.22.0 is scheduled to be released at 2023-07-07 (*). So, now is
+a good time to start testing the master branch on the various platforms
+and report/fix any bugs.
 
-The following changes since commit f1fcbaa18b28dec10281551dfe6ed3a3ed80e3d6:
+The GitHub pull request for collecting Tested-by tags or any other
+comments is https://github.com/OP-TEE/optee_os/pull/6125.
 
-  Linux 6.4-rc2 (2023-05-14 12:51:40 -0700)
+As usual, we will create a release candidate tag one week before the
+release date for final testing.
 
-are available in the Git repository at:
+In addition to that you can find some additional information related to
+releases here: https://optee.readthedocs.io/en/latest/general/releases.html
 
-  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-use-k=
-memdup-for-6.5
+Regards,
+Joakim Bech
+(*) We moved this from July 14th to July 7th due to vacation and holiday
+schedules.
 
-for you to fetch changes up to 6a8b7e80105416cc7324fda295608ea2d3f98862:
-
-  tee: optee: Use kmemdup() to replace kmalloc + memcpy (2023-06-15 08:49:55 =
-+0200)
-
-----------------------------------------------------------------
-Use kmemdup() in OP-TEE driver
-
-----------------------------------------------------------------
-Jiapeng Chong (1):
-      tee: optee: Use kmemdup() to replace kmalloc + memcpy
-
- drivers/tee/optee/smc_abi.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
---===============6905102498418768937==--
+--===============2490259556094343318==--
 
