@@ -1,111 +1,63 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+From: 高海源(码源) <haiyuan.ghy@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v6 0/4] introduce tee-based EFI Runtime Variable Service
-Date: Fri, 23 Jun 2023 12:31:07 +0300
-Message-ID: <ZJVmW6aa87swMy82@hera>
-In-Reply-To: <8318ced2-9a4a-c0f3-f4ca-f56bf8beaa20@siemens.com>
+Subject: optee_benchmark found optee_os function vm_set_ctx() spent much time
+Date: Sun, 25 Jun 2023 12:46:40 +0800
+Message-ID: <340d3dce-a2c5-4c0d-8e95-3e56d8b6eb16.haiyuan.ghy@alibaba-inc.com>
+In-Reply-To: <
+ <5471e77a-a3ce-44f2-b24b-9627507e37e8.haiyuan.ghy@alibaba-inc.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2276876220776101491=="
+Content-Type: multipart/mixed; boundary="===============5497724619491630165=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2276876220776101491==
+--===============5497724619491630165==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hi, experts:
+ I am doing optee benchmark and performance optimization.
+ I use optee_os/optee_client/optee_examples/optee_benchmark version 3.20.0
+ I think the host API TEEC_InvokeCommand() is sensitive of delay, namely TEE =
+framework like OpenEnclave called ECALL.
+ So I remove all prints in hello_world_ta.c 's TA_InvokeCommandEntryPoint(), =
+host test TEEC_InvokeCommand() 10k times to calculate average time cost.
+ I tested on an ArmV9 data-center server, and I got average time is about 20 =
+us.
+ After using optee_benchmark tool, we found optee_os function user_ta_enter()=
+ took most of time.
+ Specially, user_ta_enter() calls ts_push_current_session() and ts_pop_curren=
+t_session(), then calls vm_set_ctx() twice, which spend 7 us and 2 us respect=
+ively, mostly of 20 us delay.
+ I added logs to print some pointers, following is 'git diff' in update_curre=
+nt_ctx()
+diff --git a/core/kernel/ts_manager.c b/core/kernel/ts_manager.c
+index b2794634..9a221138 100644
+--- a/core/kernel/ts_manager.c
++++ b/core/kernel/ts_manager.c
+@@ -26,6 +26,7 @@ static void update_current_ctx(struct thread_specific_data =
+*tsd)
+ ctx =3D s->ctx;
+ }
++ EMSG("session %p tsd %p tsd->ctx %p ctx %p", s, tsd, tsd->ctx, ctx);
+ if (tsd->ctx !=3D ctx)
+ vm_set_ctx(ctx);
+ /*
+I found that many InvokeCommand repeat following pattern
+E/TC:??? 000 user_ta_enter:155 =3D=3D=3D=3D=3D=3D session 0x8940b5d80 func 2 =
+cmd 4, call ts_push_current_session
+E/TC:??? 000 update_current_ctx:29 session 0x8940b5d80 tsd 0x89008dd38 tsd->c=
+tx 0x0 ctx 0x8940b5d28
+E/TC:??? 000 user_ta_enter:199 =3D=3D=3D=3D=3D=3D session 0x8940b5d80 func 2 =
+cmd 4, call ts_pop_current_session
+E/TC:??? 000 update_current_ctx:29 session 0x0 tsd 0x89008dd38 tsd->ctx 0x894=
+0b5d28 ctx 0x0
+I noticed many InvokeCommand use the same ctx pointer like 0x8940b5d28
+My question is:=20
+ Can many InvokeCommand avoid setting tsd->ctx to Non-NULL ctx, then setting =
+tsd->ctx to NULL ctx, to remove the vm_set_ctx() cost of time ?
+ Is there any optimization method, likely many InvokeCommand in the same sess=
+ion reuse the same Non-NULL ctx, to reduce average delay of 10k times InvokeC=
+ommand ?
+Thanks.
 
-[...]
-
-> >>>>
-> >>>> But that is not yet resolving the architectural problem with that
-> >>>> userspace daemon dependency. What are the next steps for that now?
-> >>>
-> >>> We are trying to find some cycles to work on that, however, I don't
-> >>> have a time estimate on that.  But the question is different here.
-> >>> Since this addresses the problems distros have wrt to SetVariableRT
-> >>> (even for a limited set of platforms) are we ok pulling this in?  I
-> >>> can't think of a technical reason we shouldn't.  The supplicant
-> >>> limitations are known and the firrmwareTPM has a similar set of
-> >>> problems.
-> >>
-> >> It will not change we have to do on the distro side because we have to
-> >> deal not only with the startup issue and StMM but also with fTPM and
-> >> with shutdown. Only an in-kernel supplicant for RPMB would resolve that
-> >> according to my understanding.
-> >>
-> >
-> > Exactly and it's worth noting that even that will come with some minor
-> > limitations.  E.g the randomseed variables set by the efistub currently
-> > won't be supported as the modules will come alive way later.  But it's all
-> > reasonable compromises for hardware that wasn't designed to have a
-> > dedicated storage in the secure world and support runtime variables sanel=
-y.
->
-> My feeling is that such simpler setups will be the minority, simply
-> because eMMCs with RPMBs are standardized, often included anyway, so
-> come "for free".
->
-
-Yea maybe, I always have the (maybe false) hope that hardware will evolve
-sanely.
-
-> >
-> >> But the question is fair if we can evolve from this stage here to an
-> >> in-kernel approach without causing breakages or other headache to
-> >> distros adopting it (too early). That's why I asked for the roadmap.
-> >
-> > Exactly and this is my point as well.  I can't see a technical difference
-> > other than 'you won't need to launch the supplicant'.  The only thing we
-> > need to keep in mind is introduce the fallback between the supplicant and
-> > the (future) kernel supplicant gracefully.  People might still need to run
-> > the supplicant for other reasons.  But if we design it with the kernel
-> > module taking precedence over the supplicant we should be fine.
-> >
-> > So since we lived with it a for a few years, I suggest we let it soak a b=
-it
-> > and get tested while we try to move the supplicant bits needed over to the
-> > kernel. In the meantime patch #4 needs some adjustments, so I'll rethink
-> > the supplicant vs kernel module scenario in case I missed something.
->
-> Were there distros adopting all this already? I thought this was a
-> privilege of custom integrations where you can evolve things simply in
-> lock-step? At least Debian wasn't considering all these dependencies
-> yet, even though now providing tee-supplicant. We are patching it for
-> now [1].
-
-I've been working with Fedora and the OP-TEE community to get some of the
-pieces in place. As a result, Fedora already compiles the TEE client without
-RPMB emulation support [0]. We've also fixed the optee-client and removed the
-compile time dependency of choosing the right RPMB.  The device the
-supplicant now binds to is selectable at runtime [1]. With these two
-already merged the user-space tee client is hardware agnostic (as it should
-be).
-
-There's two things missing from distros
-- Lift the !PSTORE Kconfig limitation this patchset carries so distros can
-  unconditionally enable the module in their builds.  But we can do this
-  later while coordinating with distros that build the userspace packages
-  correctly.
-- Distros needs to scan for the rpmb they want to control in sysfs and
-  launch the supplicant with the appropriate --rpmb-cid option
-
-[0] https://src.fedoraproject.org/rpms/optee_client/blob/rawhide/f/optee_clie=
-nt.spec
-[1] commit 5a69d55d6596 ("tee-supplicant: add --rpmb-cid command line option")
-    in the optee_client repo
-
-Thanks
-/Ilias
->
-> Jan
->
-> [1]
-> https://github.com/BaochengSu/isar/commit/d7646e3bb9d882b26eaf2517fece62401=
-0cdd46e
->
-> --
-> Siemens AG, Technology
-> Competence Center Embedded Linux
->
-
---===============2276876220776101491==--
+--===============5497724619491630165==--
 
