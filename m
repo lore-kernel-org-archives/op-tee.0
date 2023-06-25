@@ -1,21 +1,20 @@
 From: 高海源(码源) <haiyuan.ghy@alibaba-inc.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: optee_benchmark found optee_os function vm_set_ctx() spent much time
-Date: Fri, 23 Jun 2023 01:27:48 +0000
-Message-ID: <aa387d95-8163-4d9f-b96f-7c41b572c75e.haiyuan.ghy@alibaba-inc.com>
+Date: Sun, 25 Jun 2023 04:34:44 +0000
+Message-ID: <5471e77a-a3ce-44f2-b24b-9627507e37e8.haiyuan.ghy@alibaba-inc.com>
 In-Reply-To: <
- <88d54731-d577-45f7-aca0-9d0ef1059cef.haiyuan.ghy@alibaba-inc.com>>
+ <aa387d95-8163-4d9f-b96f-7c41b572c75e.haiyuan.ghy@alibaba-inc.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1605558494642368764=="
+Content-Type: multipart/mixed; boundary="===============0203541356862281417=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1605558494642368764==
+--===============0203541356862281417==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi, Jens, Olivier:
- I'm a colleague of Yuye, and we are doing optee benchmark and performance op=
-timization.
+Hi, experts:
+ We are doing optee benchmark and performance optimization.
  We are using optee_os/optee_client/optee_examples/optee_benchmark version 3.=
 20.0
  We think the host API TEEC_InvokeCommand() is sensitive of delay, namely TEE=
@@ -47,7 +46,7 @@ tsd->ctx to NULL ctx, to remove the vm_set_ctx() cost of time ?
  Is there any optimization method, likely many InvokeCommand in the same sess=
 ion reuse the same Non-NULL ctx, to reduce average delay of 10k times InvokeC=
 ommand ?
-Thanks. Best wishes.
+Thanks.
 ------------------------------------------------------------------
 =E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9AOlivier Deprez<Olivier.Deprez@arm.com>
 =E6=97=A5=E3=80=80=E6=9C=9F=EF=BC=9A2023=E5=B9=B405=E6=9C=8830=E6=97=A5 21:07=
@@ -128,5 +127,5 @@ Thanks for the support.
 Regards,
 Yuye.
 
---===============1605558494642368764==--
+--===============0203541356862281417==--
 
