@@ -1,56 +1,41 @@
-From: 梅建强(禹夜) <meijianqiang.mjq@alibaba-inc.com>
+From: Joakim Bech <joakim.bech@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: core: fix fragmented memory retrieve
-Date: Tue, 04 Jul 2023 10:37:35 +0800
+Subject: OP-TEE 3.22.0 has been released
+Date: Fri, 07 Jul 2023 14:28:27 +0200
 Message-ID: 
- <ccb6d37b-881f-4c14-aef2-8b9295e0db50.meijianqiang.mjq@alibaba-inc.com>
+ <CA+Eydda3fEaMwN=s9JMJrHNcx83S=ujAHkU7-bZXeopTo2LwVg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0583949615122397320=="
+Content-Type: multipart/mixed; boundary="===============5045609330236357109=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0583949615122397320==
+--===============5045609330236357109==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 
-SGksIEplbnMsClRoZSBQUiBoYXMgYmVlbiB1cGRhdGVkIGFzIHJlcXVlc3RlZC4KaHR0cHM6Ly9n
-aXRodWIuY29tL09QLVRFRS9vcHRlZV9vcy9wdWxsLzU5NjYgPGh0dHBzOi8vZ2l0aHViLmNvbS9P
-UC1URUUvb3B0ZWVfb3MvcHVsbC81OTY2ID4KUmVnYXJkcywKWXV5ZS4KLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCuWPkeS7
-tuS6uu+8mkplbnMgV2lrbGFuZGVyIDxqZW5zLndpa2xhbmRlcihhKWxpbmFyby5vcmc+CuWPkemA
-geaXtumXtO+8mjIwMjPlubQ35pyIM+aXpSjmmJ/mnJ/kuIApIDE1OjIwCuaUtuS7tuS6uu+8muai
-heW7uuW8uijnprnlpJwpIDxtZWlqaWFucWlhbmcubWpxKGEpYWxpYmFiYS1pbmMuY29tPgrmioTj
-gIDpgIHvvJpvcC10ZWUgPG9wLXRlZShhKWxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc+CuS4u+OA
-gOmimO+8mlJlOiBjb3JlOiBmaXggZnJhZ21lbnRlZCBtZW1vcnkgcmV0cmlldmUKSGkgWXV5ZSwK
-T24gTW9uLCBKdWwgMywgMjAyMyBhdCA4OjMwIEFNIOaiheW7uuW8uijnprnlpJwpIDxtZWlqaWFu
-cWlhbmcubWpxKGEpYWxpYmFiYS1pbmMuY29tPiB3cm90ZToKPgo+Cj4KPgo+IEhpLCBKZW5zLAo+
-Cj4gVGhlIHByZXZpb3VzIGZpeCB3YXMgYmFzZWQgb24gZmZhX21lbV90cmFuc2FjdGlvbiB3aXRo
-IGZmYSB2ZXJzaW9uIDEuMCwKPiBub3cgb3B0ZWUgYW5kIEhhZm5pdW0gaGF2ZSB1cGRhdGVkIGZm
-YV9tZW1fdHJhbnNhY3Rpb24gdG8gZmZhIDEuMS4KPiBCdXQgb3B0ZWUtZHJpdmVyIGluIGxpbmFy
-by1zd2cvbGludXggc2VlbXMgdG8gYmUgdXNpbmcgZmZhIHZlcnNpb24gMS4wLAo+IHdoaWNoIGNh
-dXNlcyBpbmNvcnJlY3QgZGF0YSByZWFkaW5nIHdoZW4gdGhlIGRyaXZlciBpcyBkb2luZyBtZW1f
-c2hhcmUgdG8gSGFmbml1bS4KPiBJIG5lZWQgdG8gZGVidWcgbXkgcHJldmlvdXMgY29kZS4KPiBX
-aGVuIHdpbGwgb3B0ZWUtZHJpdmVyIHN5bmNocm9uaXplIHRoaXMgdmVyc2lvbiBjaGFuZ2U/ClVw
-ZGF0aW5nIHRoZSBTUE1DIHZlcnNpb24gaW4gdGhlIFNQTUMgbWFuaWZlc3Qgc2hvdWxkIGZpeCB0
-aGUgaXNzdWUgb2YKbWlzbWF0Y2hpbmcgdmVyc2lvbnMuCkJ5IHRoZSB3YXksIEkndmUgc3RhcnRl
-ZCB0byB1cGRhdGUgbXkgUUVNVSBTLUVMMiBzZXR1cCB0byB1c2UgdXBzdHJlYW0Kb25seS4gSSds
-bCBwcm9wb3NlIHVwZGF0ZXMgZm9yIHRoZSBtYW5pZmVzdCBhbmQgYnVpbGQgZ2l0cyB0byBiZQpt
-ZXJnZWQgYWZ0ZXIgdGhlIHVwY29taW5nIE9QLVRFRSByZWxlYXNlLgpDaGVlcnMsCkplbnMKPgo+
-IFJlZ2FyZHMsCj4gWXV5ZS4KPgo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+IOWPkeS7tuS6uu+8mkplbnMgV2lrbGFu
-ZGVyIDxqZW5zLndpa2xhbmRlcihhKWxpbmFyby5vcmc+Cj4g5Y+R6YCB5pe26Ze077yaMjAyM+W5
-tDbmnIgyOOaXpSjmmJ/mnJ/kuIkpIDE3OjU0Cj4g5pS25Lu25Lq677ya5qKF5bu65by6KOemueWk
-nCkgPG1laWppYW5xaWFuZy5tanEoYSlhbGliYWJhLWluYy5jb20+Cj4g5oqEIOmAge+8mm9wLXRl
-ZSA8b3AtdGVlKGEpbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZz4KPiDkuLsg6aKY77yaUmU6IGNv
-cmU6IGZpeCBmcmFnbWVudGVkIG1lbW9yeSByZXRyaWV2ZQo+Cj4gSGkgWXV5ZSwKPgo+IE9uIFdl
-ZCwgSnVuIDI4LCAyMDIzIGF0IDExOjUwIEFNIOaiheW7uuW8uijnprnlpJwpCj4gPG1laWppYW5x
-aWFuZy5tanEoYSlhbGliYWJhLWluYy5jb20+IHdyb3RlOgo+ID4KPiA+Cj4gPgo+ID4KPiA+IEhp
-LCBKZW5zLAo+ID4KPiA+IFNvcnJ5IGZvciBmb3JnZXR0aW5nIHRvIHJldmlzZSB0aGUgUFIgaW4g
-dGltZSwgYmVjYXVzZSBteSBnaXRodWIgZW1haWwgY2hhbmdlZCBzbyBJIGhhdmVuJ3QgcmVjZWl2
-ZWQgYW55IGNvbW1lbnRzLgo+ID4gQ291bGQgeW91IGhlbHAgbWUgcmVvcGVuIHRoZSBQUiBzaW5j
-ZSBJIGRvbid0IGhhdmUgdGhlIHJpZ2h0PyBJIHdpbGwgcmUtZml4IHRoZSBwcm9ibGVtIGFzIHJl
-cXVlc3RlZC4KPiA+IFRoYW5rcy4KPiA+IGh0dHBzOi8vZ2l0aHViLmNvbS9PUC1URUUvb3B0ZWVf
-b3MvcHVsbC81OTY2IDxodHRwczovL2dpdGh1Yi5jb20vT1AtVEVFL29wdGVlX29zL3B1bGwvNTk2
-NiA+Cj4KPiBJJ3ZlIHJlb3BlbmVkIGl0Lgo+Cj4gQ2hlZXJzLAo+IEplbnMK
+Hi,
 
---===============0583949615122397320==--
+I'm pleased to announce that OP-TEE version 3.22.0 is now available.
+The list of changes can be found in the changelog [1]. The branch for
+stable can be found here [2]. Tested platforms in this release can be
+found here [3].
+
+Many thanks to everyone who has contributed in any form to this release.
+
+Let me also highlight that because many people are on vacation over the
+summer, we cancelled the Linaro OP-TEE call for the month of July.
+Having said that, we have coverage for maintenance tasks and security
+issues. However, due to the reduced workforce, getting attention for
+reviewing and merging may take a little longer in the coming weeks.
+
+[1] https://github.com/OP-TEE/optee_os/blob/master/CHANGELOG.md
+[2] https://github.com/OP-TEE/manifest/tree/3.22.0
+[3]
+https://github.com/OP-TEE/optee_os/commit/001ace6655dd6bb9cbe31aa31b4ba69746e=
+1a1d9
+
+--=20
+Regards,
+Joakim
+
+--===============5045609330236357109==--
 
