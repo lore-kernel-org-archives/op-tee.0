@@ -1,52 +1,57 @@
-From: Randy Dunlap <rdunlap@infradead.org>
+From: Shyam Saini <shyamsaini@linux.microsoft.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 3/5] efi: Add tee-based EFI variable driver
-Date: Mon, 31 Jul 2023 08:05:18 -0700
-Message-ID: <a6d9857c-fcbd-74d0-bc97-fc86a8c1b820@infradead.org>
-In-Reply-To: <20230731065041.1447-4-masahisa.kojima@linaro.org>
+Subject: [RFC, PATCH 0/1] Replay Protected Memory Block (RPMB) driver
+Date: Sat, 22 Jul 2023 01:41:11 +0000
+Message-ID: <20230722014037.42647-1-shyamsaini@linux.microsoft.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3609527124258964332=="
+Content-Type: multipart/mixed; boundary="===============1189838852557195210=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3609527124258964332==
+--===============1189838852557195210==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+
+Hi everyone,
+
+This is yet another attempt to come up with an RPMB API for the kernel.
+This patch is based on patch 1 of last submission except few minor changes.
+The last discussion of this was in the thread:
+
+  Subject: [PATCH  v2 1/4] rpmb: add Replay Protected Memory Block (RPMB) sub=
+system
+  Date: Tue,  5 Apr 2022 10:37:56 +0100 [thread overview]
+  Message-ID: <20220405093759.1126835-2-alex.bennee@linaro.org>
+
+The patch provides a simple RPMB driver. This is a RFC version and this
+single driver can't be used by its own. It would require further work to
+make use of API's provided by this driver.
+
+Changes since the last posting:
+  drop RPMB char driver
+  drop virtio rpmb frontend driver
+  drop rpmb: add RPBM access tool
+  Rename get_write_count to get_write_counter
+  Make return type for rpmb_set_key() function explicit
+
+Alex Benn=C3=A9e (1):
+  rpmb: add Replay Protected Memory Block (RPMB) driver
+
+ MAINTAINERS           |   7 +
+ drivers/Kconfig       |   1 +
+ drivers/Makefile      |   2 +
+ drivers/rpmb/Kconfig  |  11 ++
+ drivers/rpmb/Makefile |   7 +
+ drivers/rpmb/core.c   | 439 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/rpmb.h  | 182 +++++++++++++++++
+ 7 files changed, 649 insertions(+)
+ create mode 100644 drivers/rpmb/Kconfig
+ create mode 100644 drivers/rpmb/Makefile
+ create mode 100644 drivers/rpmb/core.c
+ create mode 100644 include/linux/rpmb.h
+
+--=20
+2.34.1
 
 
-
-On 7/30/23 23:50, Masahisa Kojima wrote:
-> diff --git a/drivers/firmware/efi/Kconfig b/drivers/firmware/efi/Kconfig
-> index 043ca31c114e..aa38089d1e4a 100644
-> --- a/drivers/firmware/efi/Kconfig
-> +++ b/drivers/firmware/efi/Kconfig
-> @@ -287,3 +287,18 @@ config UEFI_CPER_X86
->  	bool
->  	depends on UEFI_CPER && X86
->  	default y
-> +
-> +config TEE_STMM_EFI
-> +	tristate "TEE based EFI runtime variable service driver"
-
-	          TEE-based
-
-> +	depends on EFI && OPTEE && !EFI_VARS_PSTORE
-> +	help
-> +	  Select this config option if TEE is compiled to include StandAloneMM
-> +	  as a separate secure partition it has the ability to check and store
-
-	                       partition. It has the ability
-
-> +	  EFI variables on an RPMB or any other non-volatile medium used by
-> +	  StandAloneMM.
-> +
-> +	  Enabling this will change the EFI runtime services from the firmware
-> +	  provided functions to TEE calls.
-> +
-> +	  To compile this driver as a module, choose M here: the module
-> +	  will be called tee_stmm_efi.
-
--- 
-~Randy
-
---===============3609527124258964332==--
+--===============1189838852557195210==--
 
