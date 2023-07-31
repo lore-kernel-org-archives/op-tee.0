@@ -1,182 +1,118 @@
 From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2] tee: optee: Fix supplicant based device enumeration
-Date: Mon, 31 Jul 2023 15:21:22 +0900
-Message-ID: 
- <CADQ0-X-k0w67sKw3XMQsgtc96KcZTbaCX-pEuZ_YCmp9Mf9zxQ@mail.gmail.com>
-In-Reply-To: <20230728134832.326467-1-sumit.garg@linaro.org>
+Subject: [PATCH v7 0/5] introduce tee-based EFI Runtime Variable Service
+Date: Mon, 31 Jul 2023 15:50:35 +0900
+Message-ID: <20230731065041.1447-1-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0931582851674117918=="
+Content-Type: multipart/mixed; boundary="===============6788523962763147710=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0931582851674117918==
+--===============6788523962763147710==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 28 Jul 2023 at 22:48, Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> Currently supplicant dependent optee device enumeration only registers
-> devices whenever tee-supplicant is invoked for the first time. But it
-> forgets to remove devices when tee-supplicant daemon stops running and
-> closes its context gracefully. This leads to following error for fTPM
-> driver during reboot/shutdown:
->
-> [   73.466791] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error:=
- 0xffff3024
->
-> Fix this by separating supplicant dependent devices so that the
-> user-space service can detach supplicant devices before closing the
-> supplicant. While at it use the global system workqueue for OP-TEE bus
-> scanning work rather than our own custom one.
->
-> Reported-by: Jan Kiszka <jan.kiszka@siemens.com>
-> Link: https://github.com/OP-TEE/optee_os/issues/6094
-> Fixes: 5f178bb71e3a ("optee: enable support for multi-stage bus enumeration=
-")
-> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> ---
->
-> Changes in v2:
->
-> Apologies for taking it too long push this v2. Actually I did brainstorm
-> how to best fix this tee-supplicant dependent device probing. Its hard
-> to predict the lifetime of user-space daemon from kernel space. So
-> following is the least intrusive approach:
->
-> - Use device names to seperate out tee-supplicant dependent devices via
->   this patch.
-> - Since user-space service is aware about tee-supplicant lifespan, so
->   allow the user-space service to unbind tee-supplicant dependent
->   devices before killing the supplicant. Following command has to be
->   added to the tee-supplicant service file.
->
->   $ for dev in /sys/bus/tee/devices/*; do if [[ "$dev" =3D=3D *"optee-ta-su=
-pp-"* ]]; \
->         then echo $(basename "$dev") > $dev/driver/unbind; fi done
->
->  drivers/tee/optee/core.c          | 13 ++-----------
->  drivers/tee/optee/device.c        | 13 ++++++++++---
->  drivers/tee/optee/optee_private.h |  2 --
->  3 files changed, 12 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index d01ca47f7bde..8ee3c71bd989 100644
-> --- a/drivers/tee/optee/core.c
-> +++ b/drivers/tee/optee/core.c
-> @@ -15,7 +15,6 @@
->  #include <linux/string.h>
->  #include <linux/tee_drv.h>
->  #include <linux/types.h>
-> -#include <linux/workqueue.h>
->  #include "optee_private.h"
->
->  int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_shm *=
-shm,
-> @@ -110,12 +109,7 @@ int optee_open(struct tee_context *ctx, bool cap_memre=
-f_null)
->
->                 if (!optee->scan_bus_done) {
->                         INIT_WORK(&optee->scan_bus_work, optee_bus_scan);
-> -                       optee->scan_bus_wq =3D create_workqueue("optee_bus_=
-scan");
-> -                       if (!optee->scan_bus_wq) {
-> -                               kfree(ctxdata);
-> -                               return -ECHILD;
-> -                       }
-> -                       queue_work(optee->scan_bus_wq, &optee->scan_bus_wor=
-k);
-> +                       schedule_work(&optee->scan_bus_work);
->                         optee->scan_bus_done =3D true;
->                 }
->         }
-> @@ -159,10 +153,7 @@ void optee_release_supp(struct tee_context *ctx)
->         struct optee *optee =3D tee_get_drvdata(ctx->teedev);
->
->         optee_release_helper(ctx, optee_close_session_helper);
-> -       if (optee->scan_bus_wq) {
-> -               destroy_workqueue(optee->scan_bus_wq);
-> -               optee->scan_bus_wq =3D NULL;
-> -       }
-> +
->         optee_supp_release(&optee->supp);
->  }
->
-> diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-> index 64f0e047c23d..78fc0a15c463 100644
-> --- a/drivers/tee/optee/device.c
-> +++ b/drivers/tee/optee/device.c
-> @@ -60,9 +60,10 @@ static void optee_release_device(struct device *dev)
->         kfree(optee_device);
->  }
->
-> -static int optee_register_device(const uuid_t *device_uuid)
-> +static int optee_register_device(const uuid_t *device_uuid, u32 func)
->  {
->         struct tee_client_device *optee_device =3D NULL;
-> +       const char *dev_name_fmt =3D NULL;
->         int rc;
->
->         optee_device =3D kzalloc(sizeof(*optee_device), GFP_KERNEL);
-> @@ -71,7 +72,13 @@ static int optee_register_device(const uuid_t *device_uu=
-id)
->
->         optee_device->dev.bus =3D &tee_bus_type;
->         optee_device->dev.release =3D optee_release_device;
-> -       if (dev_set_name(&optee_device->dev, "optee-ta-%pUb", device_uuid))=
- {
-> +
-> +       if (func =3D=3D PTA_CMD_GET_DEVICES_SUPP)
-> +               dev_name_fmt =3D "optee-ta-supp-%pUb";
-> +       else
-> +               dev_name_fmt =3D "optee-ta-%pUb";
-> +
-> +       if (dev_set_name(&optee_device->dev, dev_name_fmt, device_uuid)) {
->                 kfree(optee_device);
->                 return -ENOMEM;
->         }
-> @@ -142,7 +149,7 @@ static int __optee_enumerate_devices(u32 func)
->         num_devices =3D shm_size / sizeof(uuid_t);
->
->         for (idx =3D 0; idx < num_devices; idx++) {
-> -               rc =3D optee_register_device(&device_uuid[idx]);
-> +               rc =3D optee_register_device(&device_uuid[idx], func);
->                 if (rc)
->                         goto out_shm;
->         }
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
-ivate.h
-> index 6dcecb83c893..af4aa266c3fb 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -193,7 +193,6 @@ struct optee_ops {
->   * @pool:              shared memory pool
->   * @rpc_param_count:   If > 0 number of RPC parameters to make room for
->   * @scan_bus_done      flag if device registation was already done.
-> - * @scan_bus_wq                workqueue to scan optee bus and register op=
-tee drivers
->   * @scan_bus_work      workq to scan optee bus and register optee drivers
->   */
->  struct optee {
-> @@ -212,7 +211,6 @@ struct optee {
->         struct tee_shm_pool *pool;
->         unsigned int rpc_param_count;
->         bool   scan_bus_done;
-> -       struct workqueue_struct *scan_bus_wq;
->         struct work_struct scan_bus_work;
->  };
->
+This series introduces the tee based EFI Runtime Variable Service.
 
-It works for me, I tested with a 6.4.0-based kernel on the Developerbox.
-Both fTPM and tee-based EFI variable service are shutdown successfully.
+The eMMC device is typically owned by the non-secure world(linux in
+this case). There is an existing solution utilizing eMMC RPMB partition
+for EFI Variables, it is implemented by interacting with
+OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
+and tee-supplicant. The last piece is the tee-based variable access
+driver to interact with OP-TEE and StandaloneMM.
 
-Tested-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+Changelog:
+v6 -> v7
 
-Thanks,
-Masahisa Kojima
+Patch #1-#4 are not updated.
+Patch #5 is added into this series, original patch is here:
+https://lore.kernel.org/all/20230609094532.562934-1-ilias.apalodimas(a)linaro=
+.org/
 
-> --
-> 2.34.1
->
+There are two issues in the v6 series and v7 series addresses those.
 
---===============0931582851674117918==--
+1) efivar ops is not restored when the tee-supplicant daemon terminates.
+ -> As the following patch says, user must remove the device before
+    terminating tee-supplicant daemon.
+    https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)linaro.o=
+rg/
+
+2) cause panic when someone remounts the efivarfs as RW even if
+SetVariable is not supported
+ -> The fifth patch addresses this issue.
+   "[PATCH v7 5/5] efivarfs: force RO when remounting if SetVariable is
+    not supported"
+
+Changelog:
+v5 -> v6
+- new patch #4 is added in this series, #1-#3 patches are unchanged.
+  automatically update super block flag when the efivarops support
+  SetVariable runtime service, so that user does not need to manually
+  remount the efivarfs as RW.
+
+v4 -> v5
+- rebase to efi-next based on v6.4-rc1
+- set generic_ops.query_variable_info, it works as expected as follows.
+$ df -h /sys/firmware/efi/efivars/
+Filesystem      Size  Used Avail Use% Mounted on
+efivarfs         16K  1.3K   15K   8% /sys/firmware/efi/efivars
+
+v3 -> v4:
+- replace the reference from EDK2 to PI Specification
+- remove EDK2 source code reference comments
+- prepare nonblocking variant of set_variable, it just returns
+  EFI_UNSUPPORTED
+- remove redundant buffer size check
+- argument name change in mm_communicate
+- function interface changes in setup_mm_hdr to remove (void **) cast
+
+v2 -> v3:
+- add CONFIG_EFI dependency to TEE_STMM_EFI
+- add missing return code check for tee_client_invoke_func()
+- directly call efivars_register/unregister from tee_stmm_efi.c
+
+rfc v1 -> v2:
+- split patch into three patches, one for drivers/tee,
+  one for include/linux/efi.h, and one for the driver/firmware/efi/stmm
+- context/session management into probe() and remove() same as other tee
+client driver
+- StMM variable driver is moved from driver/tee/optee to driver/firmware/efi
+- use "tee" prefix instead of "optee" in driver/firmware/efi/stmm/tee_stmm_ef=
+i.c,
+  this file does not contain op-tee specific code, abstracted by tee layer and
+  StMM variable driver will work on other tee implementation.
+- PTA_STMM_CMD_COMMUNICATE -> PTA_STMM_CMD_COMMUNICATE
+- implement query_variable_store() but currently not used
+- no use of TEEC_SUCCESS, it is defined in driver/tee/optee/optee_private.h.
+  Other tee client drivers use 0 instead of using TEEC_SUCCESS
+- remove TEEC_ERROR_EXCESS_DATA status, it is referred just to output
+error message
+
+Ilias Apalodimas (1):
+  efivarfs: force RO when remounting if SetVariable is not supported
+
+Masahisa Kojima (4):
+  efi: expose efivar generic ops register function
+  efi: Add EFI_ACCESS_DENIED status code
+  efi: Add tee-based EFI variable driver
+  efivarfs: automatically update super block flag
+
+ drivers/firmware/efi/Kconfig                 |  15 +
+ drivers/firmware/efi/Makefile                |   1 +
+ drivers/firmware/efi/efi.c                   |  18 +
+ drivers/firmware/efi/stmm/mm_communication.h | 236 +++++++
+ drivers/firmware/efi/stmm/tee_stmm_efi.c     | 638 +++++++++++++++++++
+ drivers/firmware/efi/vars.c                  |   8 +
+ fs/efivarfs/super.c                          |  45 ++
+ include/linux/efi.h                          |  12 +
+ 8 files changed, 973 insertions(+)
+ create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
+ create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
+
+
+base-commit: 2e28a798c3092ea42b968fa16ac835969d124898
+--=20
+2.30.2
+
+
+--===============6788523962763147710==--
 
