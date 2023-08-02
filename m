@@ -1,24 +1,24 @@
 From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v7 3/5] efi: Add tee-based EFI variable driver
-Date: Wed, 02 Aug 2023 12:01:18 +0900
+Date: Wed, 02 Aug 2023 12:12:35 +0900
 Message-ID: 
- <CADQ0-X_97QwRxdwgrXipxm-3cwVp7q8j01t2ydDRLPyMdE5H=w@mail.gmail.com>
-In-Reply-To: <e1e9a9c1-db6f-c2f6-1ac0-fd368f79aec6@canonical.com>
+ <CADQ0-X_ohh++HHFSt+0P9ys=2P+CKdwVvwqBwyEG0ZHrgydrKw@mail.gmail.com>
+In-Reply-To: <20230801173418.00007337@Huawei.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2650037987885373250=="
+Content-Type: multipart/mixed; boundary="===============5674097309846024707=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2650037987885373250==
+--===============5674097309846024707==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Heinrich,
-
-On Wed, 2 Aug 2023 at 00:23, Heinrich Schuchardt
-<heinrich.schuchardt@canonical.com> wrote:
+On Wed, 2 Aug 2023 at 01:34, Jonathan Cameron
+<Jonathan.Cameron@huawei.com> wrote:
 >
-> On 31.07.23 08:50, Masahisa Kojima wrote:
+> On Mon, 31 Jul 2023 15:50:38 +0900
+> Masahisa Kojima <masahisa.kojima@linaro.org> wrote:
+>
 > > When the flash is not owned by the non-secure world, accessing the EFI
 > > variables is straightforward and done via EFI Runtime Variable Services.
 > > In this case, critical variables for system integrity and security
@@ -49,352 +49,26 @@ On Wed, 2 Aug 2023 at 00:23, Heinrich Schuchardt
 > > Co-developed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 > > Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 > > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
-> > ---
-> >   drivers/firmware/efi/Kconfig                 |  15 +
-> >   drivers/firmware/efi/Makefile                |   1 +
-> >   drivers/firmware/efi/stmm/mm_communication.h | 236 +++++++
-> >   drivers/firmware/efi/stmm/tee_stmm_efi.c     | 638 +++++++++++++++++++
-> >   4 files changed, 890 insertions(+)
-> >   create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
-> >   create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
-> >
-> > diff --git a/drivers/firmware/efi/Kconfig b/drivers/firmware/efi/Kconfig
-> > index 043ca31c114e..aa38089d1e4a 100644
-> > --- a/drivers/firmware/efi/Kconfig
-> > +++ b/drivers/firmware/efi/Kconfig
-> > @@ -287,3 +287,18 @@ config UEFI_CPER_X86
-> >       bool
-> >       depends on UEFI_CPER && X86
-> >       default y
-> > +
-> > +config TEE_STMM_EFI
-> > +     tristate "TEE based EFI runtime variable service driver"
-> > +     depends on EFI && OPTEE && !EFI_VARS_PSTORE
-> > +     help
-> > +       Select this config option if TEE is compiled to include StandAlon=
-eMM
-> > +       as a separate secure partition it has the ability to check and st=
-ore
-> > +       EFI variables on an RPMB or any other non-volatile medium used by
-> > +       StandAloneMM.
-> > +
-> > +       Enabling this will change the EFI runtime services from the firmw=
-are
-> > +       provided functions to TEE calls.
-> > +
-> > +       To compile this driver as a module, choose M here: the module
-> > +       will be called tee_stmm_efi.
-> > diff --git a/drivers/firmware/efi/Makefile b/drivers/firmware/efi/Makefile
-> > index b51f2a4c821e..2ca8ee6ab490 100644
-> > --- a/drivers/firmware/efi/Makefile
-> > +++ b/drivers/firmware/efi/Makefile
-> > @@ -41,3 +41,4 @@ obj-$(CONFIG_EFI_CAPSULE_LOADER)    +=3D capsule-loader=
-.o
-> >   obj-$(CONFIG_EFI_EARLYCON)          +=3D earlycon.o
-> >   obj-$(CONFIG_UEFI_CPER_ARM)         +=3D cper-arm.o
-> >   obj-$(CONFIG_UEFI_CPER_X86)         +=3D cper-x86.o
-> > +obj-$(CONFIG_TEE_STMM_EFI)           +=3D stmm/tee_stmm_efi.o
-> > diff --git a/drivers/firmware/efi/stmm/mm_communication.h b/drivers/firmw=
-are/efi/stmm/mm_communication.h
-> > new file mode 100644
-> > index 000000000000..52a1f32cd1eb
-> > --- /dev/null
-> > +++ b/drivers/firmware/efi/stmm/mm_communication.h
-> > @@ -0,0 +1,236 @@
-> > +/* SPDX-License-Identifier: GPL-2.0+ */
-> > +/*
-> > + *  Headers for EFI variable service via StandAloneMM, EDK2 application =
-running
-> > + *  in OP-TEE. Most of the structs and defines resemble the EDK2 naming.
-> > + *
-> > + *  Copyright (c) 2017, Intel Corporation. All rights reserved.
-> > + *  Copyright (C) 2020 Linaro Ltd.
-> > + */
-> > +
-> > +#ifndef _MM_COMMUNICATION_H_
-> > +#define _MM_COMMUNICATION_H_
-> > +
-> > +/*
-> > + * Interface to the pseudo Trusted Application (TA), which provides a
-> > + * communication channel with the Standalone MM (Management Mode)
-> > + * Secure Partition running at Secure-EL0
-> > + */
-> > +
-> > +#define PTA_STMM_CMD_COMMUNICATE 0
-> > +
-> > +/*
-> > + * Defined in OP-TEE, this UUID is used to identify the pseudo-TA.
-> > + * OP-TEE is using big endian GUIDs while UEFI uses little endian ones
-> > + */
-> > +#define PTA_STMM_UUID \
-> > +     UUID_INIT(0xed32d533, 0x99e6, 0x4209, \
-> > +               0x9c, 0xc0, 0x2d, 0x72, 0xcd, 0xd9, 0x98, 0xa7)
-> > +
-> > +#define EFI_MM_VARIABLE_GUID \
-> > +     EFI_GUID(0xed32d533, 0x99e6, 0x4209, \
-> > +              0x9c, 0xc0, 0x2d, 0x72, 0xcd, 0xd9, 0x98, 0xa7)
-> > +
-> > +/**
-> > + * struct efi_mm_communicate_header - Header used for SMM variable commu=
-nication
-> > +
-> > + * @header_guid:  header use for disambiguation of content
-> > + * @message_len:  length of the message. Does not include the size of the
-> > + *                header
-> > + * @data:         payload of the message
-> > + *
-> > + * Defined in the PI spec as EFI_MM_COMMUNICATE_HEADER.
-> > + * To avoid confusion in interpreting frames, the communication buffer s=
-hould
-> > + * always begin with efi_mm_communicate_header.
-> > + */
-> > +struct efi_mm_communicate_header {
-> > +     efi_guid_t header_guid;
-> > +     size_t     message_len;
-> > +     u8         data[];
-> > +} __packed;
-> > +
-> > +#define MM_COMMUNICATE_HEADER_SIZE \
-> > +     (sizeof(struct efi_mm_communicate_header))
-> > +
-> > +/* SPM return error codes */
-> > +#define ARM_SVC_SPM_RET_SUCCESS               0
-> > +#define ARM_SVC_SPM_RET_NOT_SUPPORTED        -1
-> > +#define ARM_SVC_SPM_RET_INVALID_PARAMS       -2
-> > +#define ARM_SVC_SPM_RET_DENIED               -3
-> > +#define ARM_SVC_SPM_RET_NO_MEMORY            -5
-> > +
-> > +#define SMM_VARIABLE_FUNCTION_GET_VARIABLE  1
-> > +/*
-> > + * The payload for this function is
-> > + * SMM_VARIABLE_COMMUNICATE_GET_NEXT_VARIABLE_NAME.
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_GET_NEXT_VARIABLE_NAME  2
-> > +/*
-> > + * The payload for this function is SMM_VARIABLE_COMMUNICATE_ACCESS_VARI=
-ABLE.
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_SET_VARIABLE  3
-> > +/*
-> > + * The payload for this function is
-> > + * SMM_VARIABLE_COMMUNICATE_QUERY_VARIABLE_INFO.
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_QUERY_VARIABLE_INFO  4
-> > +/*
-> > + * It is a notify event, no extra payload for this function.
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_READY_TO_BOOT  5
-> > +/*
-> > + * It is a notify event, no extra payload for this function.
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_EXIT_BOOT_SERVICE  6
-> > +/*
-> > + * The payload for this function is VARIABLE_INFO_ENTRY.
-> > + * The GUID in EFI_SMM_COMMUNICATE_HEADER is gEfiSmmVariableProtocolGuid.
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_GET_STATISTICS  7
-> > +/*
-> > + * The payload for this function is SMM_VARIABLE_COMMUNICATE_LOCK_VARIAB=
-LE
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_LOCK_VARIABLE   8
-> > +
-> > +#define SMM_VARIABLE_FUNCTION_VAR_CHECK_VARIABLE_PROPERTY_SET  9
-> > +
-> > +#define SMM_VARIABLE_FUNCTION_VAR_CHECK_VARIABLE_PROPERTY_GET  10
-> > +
-> > +#define SMM_VARIABLE_FUNCTION_GET_PAYLOAD_SIZE  11
-> > +/*
-> > + * The payload for this function is
-> > + * SMM_VARIABLE_COMMUNICATE_RUNTIME_VARIABLE_CACHE_CONTEXT
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_INIT_RUNTIME_VARIABLE_CACHE_CONTEXT 12
-> > +
-> > +#define SMM_VARIABLE_FUNCTION_SYNC_RUNTIME_CACHE  13
-> > +/*
-> > + * The payload for this function is
-> > + * SMM_VARIABLE_COMMUNICATE_GET_RUNTIME_CACHE_INFO
-> > + */
-> > +#define SMM_VARIABLE_FUNCTION_GET_RUNTIME_CACHE_INFO  14
-> > +
-> > +/**
-> > + * struct smm_variable_communicate_header - Used for SMM variable commun=
-ication
-> > +
-> > + * @function:     function to call in Smm.
-> > + * @ret_status:   return status
-> > + * @data:         payload
-> > + */
-> > +struct smm_variable_communicate_header {
-> > +     size_t  function;
-> > +     efi_status_t ret_status;
-> > +     u8 data[];
-> > +};
-> > +
-> > +#define MM_VARIABLE_COMMUNICATE_SIZE \
-> > +     (sizeof(struct smm_variable_communicate_header))
-> > +
-> > +/**
-> > + * struct smm_variable_access - Used to communicate with StMM by
-> > + *                              SetVariable and GetVariable.
-> > +
-> > + * @guid:         vendor GUID
-> > + * @data_size:    size of EFI variable data
-> > + * @name_size:    size of EFI name
-> > + * @attr:         attributes
-> > + * @name:         variable name
-> > + *
-> > + */
-> > +struct smm_variable_access {
-> > +     efi_guid_t  guid;
-> > +     size_t data_size;
-> > +     size_t name_size;
-> > +     u32 attr;
-> > +     u16 name[];
-> > +};
-> > +
-> > +#define MM_VARIABLE_ACCESS_HEADER_SIZE \
-> > +     (sizeof(struct smm_variable_access))
-> > +/**
-> > + * struct smm_variable_payload_size - Used to get the max allowed
-> > + *                                    payload used in StMM.
-> > + *
-> > + * @size:  size to fill in
-> > + *
-> > + */
-> > +struct smm_variable_payload_size {
-> > +     size_t size;
-> > +};
-> > +
-> > +/**
-> > + * struct smm_variable_getnext - Used to communicate with StMM for
-> > + *                               GetNextVariableName.
-> > + *
-> > + * @guid:       vendor GUID
-> > + * @name_size:  size of the name of the variable
-> > + * @name:       variable name
-> > + *
-> > + */
-> > +struct smm_variable_getnext {
-> > +     efi_guid_t  guid;
-> > +     size_t name_size;
-> > +     u16         name[];
-> > +};
-> > +
-> > +#define MM_VARIABLE_GET_NEXT_HEADER_SIZE \
-> > +     (sizeof(struct smm_variable_getnext))
-> > +
-> > +/**
-> > + * struct smm_variable_query_info - Used to communicate with StMM for
-> > + *                                  QueryVariableInfo.
-> > + *
-> > + * @max_variable_storage:        max available storage
-> > + * @remaining_variable_storage:  remaining available storage
-> > + * @max_variable_size:           max variable supported size
-> > + * @attr:                        attributes to query storage for
-> > + *
-> > + */
-> > +struct smm_variable_query_info {
-> > +     u64 max_variable_storage;
-> > +     u64 remaining_variable_storage;
-> > +     u64 max_variable_size;
-> > +     u32 attr;
-> > +};
-> > +
-> > +#define VAR_CHECK_VARIABLE_PROPERTY_REVISION 0x0001
-> > +#define VAR_CHECK_VARIABLE_PROPERTY_READ_ONLY BIT(0)
-> > +/**
-> > + * struct var_check_property - Used to store variable properties in StMM
-> > + *
-> > + * @revision:   magic revision number for variable property checking
-> > + * @property:   properties mask for the variable used in StMM.
-> > + *              Currently RO flag is supported
-> > + * @attributes: variable attributes used in StMM checking when properties
-> > + *              for a variable are enabled
-> > + * @minsize:    minimum allowed size for variable payload checked against
-> > + *              smm_variable_access->datasize in StMM
-> > + * @maxsize:    maximum allowed size for variable payload checked against
-> > + *              smm_variable_access->datasize in StMM
-> > + *
-> > + */
-> > +struct var_check_property {
-> > +     u16 revision;
-> > +     u16 property;
-> > +     u32 attributes;
-> > +     size_t minsize;
-> > +     size_t maxsize;
-> > +};
-> > +
-> > +/**
-> > + * struct smm_variable_var_check_property - Used to communicate variable
-> > + *                                          properties with StMM
-> > + *
-> > + * @guid:       vendor GUID
-> > + * @name_size:  size of EFI name
-> > + * @property:   variable properties struct
-> > + * @name:       variable name
-> > + *
-> > + */
-> > +struct smm_variable_var_check_property {
-> > +     efi_guid_t guid;
-> > +     size_t name_size;
-> > +     struct var_check_property property;
-> > +     u16 name[];
-> > +};
-> > +
-> > +#endif /* _MM_COMMUNICATION_H_ */
+>
+> I was curious - so drive by review. Feel free to ignore :)
+> All general code readability stuff and a suggestion for the subsystem to
+> get rid of boilerplate (like most large subsystems did years ago!)
+
+Thank you for your review.
+
+>
+> Jonathan
+>
+>
 > > diff --git a/drivers/firmware/efi/stmm/tee_stmm_efi.c b/drivers/firmware/=
 efi/stmm/tee_stmm_efi.c
 > > new file mode 100644
 > > index 000000000000..f6623171ae04
 > > --- /dev/null
 > > +++ b/drivers/firmware/efi/stmm/tee_stmm_efi.c
-> > @@ -0,0 +1,638 @@
-> > +// SPDX-License-Identifier: GPL-2.0+
-> > +/*
-> > + *  EFI variable service via TEE
-> > + *
-> > + *  Copyright (C) 2022 Linaro
-> > + */
-> > +
-> > +#include <linux/efi.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/tee.h>
-> > +#include <linux/tee_drv.h>
-> > +#include <linux/ucs2_string.h>
-> > +#include "mm_communication.h"
-> > +
-> > +static struct efivars tee_efivars;
-> > +static struct efivar_operations tee_efivar_ops;
-> > +
-> > +static size_t max_buffer_size; /* comm + var + func + data */
-> > +static size_t max_payload_size; /* func + data */
-> > +
-> > +struct tee_stmm_efi_private {
-> > +     struct tee_context *ctx;
-> > +     u32 session;
-> > +     struct device *dev;
-> > +};
-> > +
-> > +static struct tee_stmm_efi_private pvt_data;
-> > +
-> > +/* UUID of the stmm PTA */
-> > +static const struct tee_client_device_id tee_stmm_efi_id_table[] =3D {
-> > +     {PTA_STMM_UUID},
-> > +     {}
-> > +};
-> > +
-> > +static int tee_ctx_match(struct tee_ioctl_version_data *ver, const void =
-*data)
-> > +{
-> > +     /* currently only OP-TEE is supported as a communication path */
-> > +     if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE)
-> > +             return 1;
-> > +     else
-> > +             return 0;
-> > +}
-> > +
+>
+> ...
+>
 > > +/**
 > > + * tee_mm_communicate() - Pass a buffer to StandaloneMM running in TEE
 > > + *
@@ -474,198 +148,21 @@ g.ret);
 > > +     }
 > > +
 > > +     return ret;
+>
+> Direct returns both shorter and easier to review!
+
+OK, I agree.
+
+>
 > > +}
 > > +
-> > +/**
-> > + * mm_communicate() - Adjust the communication buffer to StandAlonneMM a=
-nd send
-> > + * it to TEE
-> > + *
-> > + * @comm_buf:                locally allocated communication buffer, buf=
-fer should
-> > + *                   be enough big to have some headers and payload
-> > + * @payload_size:    payload size
-> > + * Return:           status code
-> > + */
-> > +static efi_status_t mm_communicate(u8 *comm_buf, size_t payload_size)
-> > +{
-> > +     size_t dsize;
-> > +     efi_status_t ret;
-> > +     struct efi_mm_communicate_header *mm_hdr;
-> > +     struct smm_variable_communicate_header *var_hdr;
-> > +
-> > +     dsize =3D payload_size + MM_COMMUNICATE_HEADER_SIZE +
-> > +             MM_VARIABLE_COMMUNICATE_SIZE;
-> > +     mm_hdr =3D (struct efi_mm_communicate_header *)comm_buf;
-> > +     var_hdr =3D (struct smm_variable_communicate_header *)mm_hdr->data;
-> > +
-> > +     ret =3D tee_mm_communicate(comm_buf, dsize);
-> > +     if (ret !=3D EFI_SUCCESS) {
-> > +             dev_err(pvt_data.dev, "%s failed!\n", __func__);
-> > +             return ret;
-> > +     }
-> > +
-> > +     return var_hdr->ret_status;
-> > +}
-> > +
-> > +/**
-> > + * setup_mm_hdr() -  Allocate a buffer for StandAloneMM and initialize t=
-he
-> > + *                   header data.
-> > + *
-> > + * @dptr:            pointer address to store allocated buffer
-> > + * @payload_size:    payload size
-> > + * @func:            standAloneMM function number
-> > + * @ret:             EFI return code
-> > + * Return:           pointer to corresponding StandAloneMM function buff=
-er or NULL
-> > + */
-> > +static void *setup_mm_hdr(u8 **dptr, size_t payload_size, size_t func,
-> > +                       efi_status_t *ret)
-> > +{
-> > +     const efi_guid_t mm_var_guid =3D EFI_MM_VARIABLE_GUID;
-> > +     struct efi_mm_communicate_header *mm_hdr;
-> > +     struct smm_variable_communicate_header *var_hdr;
-> > +     u8 *comm_buf;
-> > +
-> > +     /* In the init function we initialize max_buffer_size with
-> > +      * get_max_payload(). So skip the test if max_buffer_size is initia=
-lized
-> > +      * StandAloneMM will perform similar checks and drop the buffer if =
-it's
-> > +      * too long
-> > +      */
-> > +     if (max_buffer_size &&
-> > +         max_buffer_size < (MM_COMMUNICATE_HEADER_SIZE +
-> > +                            MM_VARIABLE_COMMUNICATE_SIZE + payload_size)=
-) {
-> > +             *ret =3D EFI_INVALID_PARAMETER;
-> > +             return NULL;
-> > +     }
-> > +
-> > +     comm_buf =3D kzalloc(MM_COMMUNICATE_HEADER_SIZE +
-> > +                                MM_VARIABLE_COMMUNICATE_SIZE + payload_s=
-ize,
-> > +                        GFP_KERNEL);
-> > +     if (!comm_buf) {
-> > +             *ret =3D EFI_OUT_OF_RESOURCES;
-> > +             return NULL;
-> > +     }
-> > +
-> > +     mm_hdr =3D (struct efi_mm_communicate_header *)comm_buf;
-> > +     memcpy(&mm_hdr->header_guid, &mm_var_guid, sizeof(mm_hdr->header_gu=
-id));
-> > +     mm_hdr->message_len =3D MM_VARIABLE_COMMUNICATE_SIZE + payload_size;
-> > +
-> > +     var_hdr =3D (struct smm_variable_communicate_header *)mm_hdr->data;
-> > +     var_hdr->function =3D func;
-> > +     if (dptr)
-> > +             *dptr =3D comm_buf;
-> > +     *ret =3D EFI_SUCCESS;
-> > +
-> > +     return var_hdr->data;
-> > +}
-> > +
-> > +/**
-> > + * get_max_payload() - Get variable payload size from StandAloneMM.
-> > + *
-> > + * @size:    size of the variable in storage
-> > + * Return:   status code
-> > + */
-> > +static efi_status_t get_max_payload(size_t *size)
-> > +{
-> > +     struct smm_variable_payload_size *var_payload =3D NULL;
-> > +     size_t payload_size;
-> > +     u8 *comm_buf =3D NULL;
-> > +     efi_status_t ret;
-> > +
-> > +     if (!size) {
-> > +             ret =3D EFI_INVALID_PARAMETER;
-> > +             goto out;
-> > +     }
-> > +
-> > +     payload_size =3D sizeof(*var_payload);
-> > +     var_payload =3D setup_mm_hdr(&comm_buf, payload_size,
-> > +                                SMM_VARIABLE_FUNCTION_GET_PAYLOAD_SIZE,
-> > +                                &ret);
-> > +     if (!comm_buf)
-> > +             goto out;
-> > +
-> > +     ret =3D mm_communicate(comm_buf, payload_size);
-> > +     if (ret !=3D EFI_SUCCESS)
-> > +             goto out;
-> > +
-> > +     /* Make sure the buffer is big enough for storing variables */
-> > +     if (var_payload->size < MM_VARIABLE_ACCESS_HEADER_SIZE + 0x20) {
-> > +             ret =3D EFI_DEVICE_ERROR;
-> > +             goto out;
-> > +     }
-> > +     *size =3D var_payload->size;
-> > +     /*
-> > +      * There seems to be a bug in EDK2 miscalculating the boundaries and
-> > +      * size checks, so deduct 2 more bytes to fulfill this requirement.=
- Fix
-> > +      * it up here to ensure backwards compatibility with older versions
-> > +      * (cf. StandaloneMmPkg/Drivers/StandaloneMmCpu/AArch64/EventHandle=
-.c.
-> > +      * sizeof (EFI_MM_COMMUNICATE_HEADER) instead the size minus the
-> > +      * flexible array member).
-> > +      *
-> > +      * size is guaranteed to be > 2 due to checks on the beginning.
-> > +      */
-> > +     *size -=3D 2;
-> > +out:
-> > +     kfree(comm_buf);
-> > +     return ret;
-> > +}
-> > +
-> > +static efi_status_t get_property_int(u16 *name, size_t name_size,
-> > +                                  const efi_guid_t *vendor,
-> > +                                  struct var_check_property *var_propert=
-y)
-> > +{
-> > +     struct smm_variable_var_check_property *smm_property;
-> > +     size_t payload_size;
-> > +     u8 *comm_buf =3D NULL;
-> > +     efi_status_t ret;
-> > +
-> > +     memset(var_property, 0, sizeof(*var_property));
-> > +     payload_size =3D sizeof(*smm_property) + name_size;
-> > +     if (payload_size > max_payload_size) {
-> > +             ret =3D EFI_INVALID_PARAMETER;
-> > +             goto out;
-> > +     }
-> > +     smm_property =3D setup_mm_hdr(
-> > +             &comm_buf, payload_size,
-> > +             SMM_VARIABLE_FUNCTION_VAR_CHECK_VARIABLE_PROPERTY_GET, &ret=
-);
-> > +     if (!comm_buf)
-> > +             goto out;
-> > +
-> > +     memcpy(&smm_property->guid, vendor, sizeof(smm_property->guid));
-> > +     smm_property->name_size =3D name_size;
-> > +     memcpy(smm_property->name, name, name_size);
-> > +
-> > +     ret =3D mm_communicate(comm_buf, payload_size);
-> > +     /*
-> > +      * Currently only R/O property is supported in StMM.
-> > +      * Variables that are not set to R/O will not set the property in S=
-tMM
-> > +      * and the call will return EFI_NOT_FOUND. We are setting the
-> > +      * properties to 0x0 so checking against that is enough for the
-> > +      * EFI_NOT_FOUND case.
-> > +      */
-> > +     if (ret =3D=3D EFI_NOT_FOUND)
-> > +             ret =3D EFI_SUCCESS;
-> > +     if (ret !=3D EFI_SUCCESS)
-> > +             goto out;
-> > +     memcpy(var_property, &smm_property->property, sizeof(*var_property)=
-);
-> > +
-> > +out:
-> > +     kfree(comm_buf);
-> > +     return ret;
-> > +}
+>
+> Lots of similar stuff to below...
+
+Yes, I will fix similar cases.
+
+>
+>
 > > +
 > > +static efi_status_t tee_get_variable(u16 *name, efi_guid_t *vendor,
 > > +                                  u32 *attributes, unsigned long *data_s=
@@ -717,6 +214,15 @@ size;
 > > +     memcpy(var_acc->name, name, name_size);
 > > +
 > > +     /* Communicate */
+>
+> Comment seems a bit obvious.  General rule, don't comment the obvious. It j=
+ust
+> provides places where the comments might become wrong during future refacto=
+rs.
+
+OK, I remove the obvious comment.
+
+>
 > > +     ret =3D mm_communicate(comm_buf, payload_size);
 > > +     if (ret =3D=3D EFI_SUCCESS || ret =3D=3D EFI_BUFFER_TOO_SMALL)
 > > +             /* Update with reported data size for trimmed case */
@@ -736,6 +242,19 @@ size;
 > > +                    var_acc->data_size);
 > > +     else
 > > +             ret =3D EFI_INVALID_PARAMETER;
+>
+> Keep to a simple out of line error flow as it's more readable even when it
+> is a line or 2 more code.
+>
+>         if (!data) {
+>                 ret =3D EFI_INVALID_PARAMETER;
+>                 goto out;
+>         }
+>         memcpy()...
+
+OK.
+
+
 > > +
 > > +out:
 > > +     kfree(comm_buf);
@@ -756,6 +275,10 @@ uid)
 > > +     if (!name_size || !name || !guid) {
 > > +             ret =3D EFI_INVALID_PARAMETER;
 > > +             goto out;
+>
+> As below.  Direct returns make it clear nothing to do and generally
+> give easier code to review.
+>
 > > +     }
 > > +
 > > +     out_name_size =3D *name_size;
@@ -785,6 +308,9 @@ SIZE)
 NAME,
 > > +                                &ret);
 > > +     if (!comm_buf)
+>
+> As below (I'm reviewing up the code)
+>
 > > +             goto out;
 > > +
 > > +     /* Fill in contents */
@@ -827,10 +353,21 @@ e,
 > > +     if (!name || name[0] =3D=3D 0 || !vendor) {
 > > +             ret =3D EFI_INVALID_PARAMETER;
 > > +             goto out;
+>
+> Nothing to do so why not return here?
+OK.
+
+>
 > > +     }
 > > +     if (data_size > 0 && !data) {
 > > +             ret =3D EFI_INVALID_PARAMETER;
 > > +             goto out;
+>
+> Also return here?
+
+OK.
+
+>
 > > +     }
 > > +     /* Check payload size */
 > > +     name_size =3D (ucs2_strnlen(name, EFI_VAR_NAME_LEN) + 1) * sizeof(u=
@@ -840,6 +377,11 @@ size;
 > > +     if (payload_size > max_payload_size) {
 > > +             ret =3D EFI_INVALID_PARAMETER;
 > > +             goto out;
+> and here.
+
+OK.
+
+>
 > > +     }
 > > +
 > > +     /*
@@ -850,6 +392,14 @@ size;
 > > +     var_acc =3D setup_mm_hdr(&comm_buf, payload_size,
 > > +                            SMM_VARIABLE_FUNCTION_SET_VARIABLE, &ret);
 > > +     if (!comm_buf)
+>
+> In this case still nothing to do. Return here - plus ideally check ret
+> rather than comm_buf so it's clear that an error is being returned without
+> us having to look in setup_mm_hdr()
+
+Yes, the return value of setup_mm_hdr() should be checked.
+
+>
 > > +             goto out;
 > > +
 > > +     /*
@@ -875,6 +425,12 @@ size;
 > > +     memcpy(var_acc->name, name, name_size);
 > > +     memcpy((u8 *)var_acc->name + name_size, data, data_size);
 > > +
+>
+> Not sure why 2 blank lines here. One probably fine.
+
+I will fix it.
+
+>
 > > +
 > > +     /* Communicate */
 > > +     ret =3D mm_communicate(comm_buf, payload_size);
@@ -911,6 +467,16 @@ ze,
 > > +                             &ret);
 > > +     if (!comm_buf)
 > > +             goto out;
+>
+> if (!comm_buf) nothing to do (which is good as I'd not expect setup_mm_hdr
+> to have side effects if it fails.  So return ret.  Which is a little odd.
+> Can we just use ret as the check instead? That way it's clear the error ret=
+urned
+> isn't an accidental success.
+
+Yes, I agree.
+
+>
 > > +
 > > +     mm_query_info->attr =3D attributes;
 > > +     ret =3D mm_communicate(comm_buf, payload_size);
@@ -947,6 +513,17 @@ ze,
 > > +                     sess_arg.ret);
 > > +             rc =3D -EINVAL;
 > > +             goto out_ctx;
+>
+> Up to you, but I'd be tempted to take this all devm_ managed
+> via devm_add_action_or_reset() and suitable callbacks.
+>
+> Marginal benefit in lines of code but makes it much harder to forget
+> to tidy something up in some future refactoring / reordering of code.
+
+Thank you, I will try to call  devm_add_action_or_reset(), and also
+update remove() callback.
+
+>
 > > +     }
 > > +     pvt_data.session =3D sess_arg.session;
 > > +     pvt_data.dev =3D dev;
@@ -1009,31 +586,6 @@ cking;
 > > +static int __init tee_stmm_efi_mod_init(void)
 > > +{
 > > +     return driver_register(&tee_stmm_efi_driver.driver);
->
-> Assuming that multiple drivers supplying EFI runtime services may be
-> available in future, e.g.
->
-> * generic, using EFI runtime function supplied by UEFI firmware
-> * TEE-STMM
-> * Qualcomm driver as needed for Lenovo X13s
-> * ubootefi.var file in ESP
->
-> further assuming that multiple driver probe functions succeed:
->
-> How do you identify which driver to activate?
-
-Yes, we should consider this.
-We will probably need to describe the desired UEFI variable service in
-the device tree.
-
-Regards,
-Masahisa Kojima
-
->
-> Best regards
->
-> Heinrich
->
 > > +}
 > > +
 > > +static void __exit tee_stmm_efi_mod_exit(void)
@@ -1043,6 +595,19 @@ Masahisa Kojima
 > > +
 > > +module_init(tee_stmm_efi_mod_init);
 > > +module_exit(tee_stmm_efi_mod_exit);
+>
+> Looks like tee client drivers could benefit from a
+> #define module_tee_client_driver(__tee_client_driver)
+> similar to module_platform_driver() and similar.
+
+Yes, it simplifies the driver definition of tee client driver.
+Anyway, this modification should be different from this series,
+it is better to be modified together with other tee client drivers.
+
+Thanks,
+Masahisa Kojima
+
+>
 > > +
 > > +MODULE_LICENSE("GPL");
 > > +MODULE_AUTHOR("Ilias Apalodimas <ilias.apalodimas@linaro.org>");
@@ -1050,5 +615,5 @@ Masahisa Kojima
 > > +MODULE_DESCRIPTION("TEE based EFI runtime variable service driver");
 >
 
---===============2650037987885373250==--
+--===============5674097309846024707==--
 
