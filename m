@@ -1,182 +1,135 @@
 From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 4/5] efivarfs: automatically update super block flag
-Date: Mon, 07 Aug 2023 11:53:41 +0900
-Message-ID: <20230807025343.1939-5-masahisa.kojima@linaro.org>
+Subject: [PATCH v8 5/5] efivarfs: force RO when remounting if SetVariable is
+ not supported
+Date: Mon, 07 Aug 2023 11:53:42 +0900
+Message-ID: <20230807025343.1939-6-masahisa.kojima@linaro.org>
 In-Reply-To: <20230807025343.1939-1-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1134454968713622542=="
+Content-Type: multipart/mixed; boundary="===============8897971535049212821=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1134454968713622542==
+--===============8897971535049212821==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-efivar operation is updated when the tee_stmm_efi module is probed.
-tee_stmm_efi module supports SetVariable runtime service,
-but user needs to manually remount the efivarfs as RW to enable
-the write access if the previous efivar operation does not support
-SerVariable and efivarfs is mounted as read-only.
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 
-This commit notifies the update of efivar operation to
-efivarfs subsystem, then drops SB_RDONLY flag if the efivar
-operation supports SetVariable.
+If SetVariable at runtime is not supported by the firmware we never assign
+a callback for that function. At the same time mount the efivarfs as
+RO so no one can call that.  However, we never check the permission flags
+when someone remounts the filesystem as RW. As a result this leads to a
+crash looking like this:
 
-Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+$ mount -o remount,rw /sys/firmware/efi/efivars
+$ efi-updatevar -f PK.auth PK
+
+[  303.279166] Unable to handle kernel NULL pointer dereference at virtual ad=
+dress 0000000000000000
+[  303.280482] Mem abort info:
+[  303.280854]   ESR =3D 0x0000000086000004
+[  303.281338]   EC =3D 0x21: IABT (current EL), IL =3D 32 bits
+[  303.282016]   SET =3D 0, FnV =3D 0
+[  303.282414]   EA =3D 0, S1PTW =3D 0
+[  303.282821]   FSC =3D 0x04: level 0 translation fault
+[  303.283771] user pgtable: 4k pages, 48-bit VAs, pgdp=3D000000004258c000
+[  303.284913] [0000000000000000] pgd=3D0000000000000000, p4d=3D0000000000000=
+000
+[  303.286076] Internal error: Oops: 0000000086000004 [#1] PREEMPT SMP
+[  303.286936] Modules linked in: qrtr tpm_tis tpm_tis_core crct10dif_ce arm_=
+smccc_trng rng_core drm fuse ip_tables x_tables ipv6
+[  303.288586] CPU: 1 PID: 755 Comm: efi-updatevar Not tainted 6.3.0-rc1-0010=
+8-gc7d0c4695c68 #1
+[  303.289748] Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2=
+023.04-00627-g88336918701d 04/01/2023
+[  303.291150] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=3D=
+--)
+[  303.292123] pc : 0x0
+[  303.292443] lr : efivar_set_variable_locked+0x74/0xec
+[  303.293156] sp : ffff800008673c10
+[  303.293619] x29: ffff800008673c10 x28: ffff0000037e8000 x27: 0000000000000=
+000
+[  303.294592] x26: 0000000000000800 x25: ffff000002467400 x24: 0000000000000=
+027
+[  303.295572] x23: ffffd49ea9832000 x22: ffff0000020c9800 x21: ffff000002467=
+000
+[  303.296566] x20: 0000000000000001 x19: 00000000000007fc x18: 0000000000000=
+000
+[  303.297531] x17: 0000000000000000 x16: 0000000000000000 x15: 0000aaaac807a=
+b54
+[  303.298495] x14: ed37489f673633c0 x13: 71c45c606de13f80 x12: 47464259e219a=
+cf4
+[  303.299453] x11: ffff000002af7b01 x10: 0000000000000003 x9 : 0000000000000=
+002
+[  303.300431] x8 : 0000000000000010 x7 : ffffd49ea8973230 x6 : 0000000000a85=
+201
+[  303.301412] x5 : 0000000000000000 x4 : ffff0000020c9800 x3 : 0000000000000=
+7fc
+[  303.302370] x2 : 0000000000000027 x1 : ffff000002467400 x0 : ffff000002467=
+000
+[  303.303341] Call trace:
+[  303.303679]  0x0
+[  303.303938]  efivar_entry_set_get_size+0x98/0x16c
+[  303.304585]  efivarfs_file_write+0xd0/0x1a4
+[  303.305148]  vfs_write+0xc4/0x2e4
+[  303.305601]  ksys_write+0x70/0x104
+[  303.306073]  __arm64_sys_write+0x1c/0x28
+[  303.306622]  invoke_syscall+0x48/0x114
+[  303.307156]  el0_svc_common.constprop.0+0x44/0xec
+[  303.307803]  do_el0_svc+0x38/0x98
+[  303.308268]  el0_svc+0x2c/0x84
+[  303.308702]  el0t_64_sync_handler+0xf4/0x120
+[  303.309293]  el0t_64_sync+0x190/0x194
+[  303.309794] Code: ???????? ???????? ???????? ???????? (????????)
+[  303.310612] ---[ end trace 0000000000000000 ]---
+
+Fix this by adding a .reconfigure() function to the fs operations which
+we can use to check the requested flags and deny anything that's not RO
+if the firmware doesn't implement SetVariable at runtime.
+
+Fixes: f88814cc2578 ("efi/efivars: Expose RT service availability via efivars=
+ abstraction")
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 ---
- drivers/firmware/efi/efi.c  |  6 ++++++
- drivers/firmware/efi/vars.c |  8 ++++++++
- fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
- include/linux/efi.h         |  8 ++++++++
- 4 files changed, 55 insertions(+)
+ fs/efivarfs/super.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-index 53ae25bbb6ac..d2eec5ed8e5e 100644
---- a/drivers/firmware/efi/efi.c
-+++ b/drivers/firmware/efi/efi.c
-@@ -32,6 +32,7 @@
- #include <linux/ucs2_string.h>
- #include <linux/memblock.h>
- #include <linux/security.h>
-+#include <linux/notifier.h>
-=20
- #include <asm/early_ioremap.h>
-=20
-@@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_attr_group=
- =3D {
- 	.is_visible =3D efi_attr_is_visible,
- };
-=20
-+struct blocking_notifier_head efivar_ops_nh;
-+EXPORT_SYMBOL_GPL(efivar_ops_nh);
-+
- static struct efivars generic_efivars;
- static struct efivar_operations generic_ops;
-=20
-@@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
- 		platform_device_register_simple("efivars", 0, NULL, 0);
- 	}
-=20
-+	BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
-+
- 	error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_group);
- 	if (error) {
- 		pr_err("efi: Sysfs attribute export failed with error %d.\n",
-diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
-index e9dc7116daf1..f654e6f6af87 100644
---- a/drivers/firmware/efi/vars.c
-+++ b/drivers/firmware/efi/vars.c
-@@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
- 		     const struct efivar_operations *ops)
- {
- 	int rv;
-+	int event;
-=20
- 	if (down_interruptible(&efivars_lock))
- 		return -EINTR;
-@@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
-=20
- 	__efivars =3D efivars;
-=20
-+	if (efivar_supports_writes())
-+		event =3D EFIVAR_OPS_RDWR;
-+	else
-+		event =3D EFIVAR_OPS_RDONLY;
-+
-+	blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
-+
- 	pr_info("Registered efivars operations\n");
- 	rv =3D 0;
- out:
 diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-index e028fafa04f3..0f6e4d223aea 100644
+index 0f6e4d223aea..942e748a4e03 100644
 --- a/fs/efivarfs/super.c
 +++ b/fs/efivarfs/super.c
-@@ -14,11 +14,36 @@
- #include <linux/slab.h>
+@@ -15,6 +15,7 @@
  #include <linux/magic.h>
  #include <linux/statfs.h>
-+#include <linux/notifier.h>
+ #include <linux/notifier.h>
++#include <linux/printk.h>
 =20
  #include "internal.h"
 =20
- LIST_HEAD(efivarfs_list);
+@@ -300,8 +301,19 @@ static int efivarfs_get_tree(struct fs_context *fc)
+ 	return get_tree_single(fc, efivarfs_fill_super);
+ }
 =20
-+struct efivarfs_info {
-+	struct super_block *sb;
-+	struct notifier_block nb;
-+};
-+
-+static struct efivarfs_info info;
-+
-+static int efivarfs_ops_notifier(struct notifier_block *nb, unsigned long ev=
-ent,
-+				 void *data)
++static int efivarfs_reconfigure(struct fs_context *fc)
 +{
-+	switch (event) {
-+	case EFIVAR_OPS_RDONLY:
-+		info.sb->s_flags |=3D SB_RDONLY;
-+		break;
-+	case EFIVAR_OPS_RDWR:
-+		info.sb->s_flags &=3D ~SB_RDONLY;
-+		break;
-+	default:
-+		return NOTIFY_DONE;
++	if (!efivar_supports_writes() && !(fc->sb_flags & SB_RDONLY)) {
++		pr_err("Firmware does not support SetVariableRT. Can not remount with rw\n=
+");
++		return -EINVAL;
 +	}
 +
-+	return NOTIFY_OK;
++	return 0;
 +}
 +
- static void efivarfs_evict_inode(struct inode *inode)
- {
- 	clear_inode(inode);
-@@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_block *sb, s=
-truct fs_context *fc)
- 	if (!root)
- 		return -ENOMEM;
+ static const struct fs_context_operations efivarfs_context_ops =3D {
+ 	.get_tree	=3D efivarfs_get_tree,
++	.reconfigure	=3D efivarfs_reconfigure,
+ };
 =20
-+	info.sb =3D sb;
-+	info.nb.notifier_call =3D efivarfs_ops_notifier;
-+	err =3D blocking_notifier_chain_register(&efivar_ops_nh, &info.nb);
-+	if (err)
-+		return err;
-+
- 	INIT_LIST_HEAD(&efivarfs_list);
-=20
- 	err =3D efivar_init(efivarfs_callback, (void *)sb, true, &efivarfs_list);
-@@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_context *fc)
-=20
- static void efivarfs_kill_sb(struct super_block *sb)
- {
-+	blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb);
-+	info.sb =3D NULL;
- 	kill_litter_super(sb);
-=20
- 	if (!efivar_is_available())
-diff --git a/include/linux/efi.h b/include/linux/efi.h
-index 603bba2d6437..17cd628b5c42 100644
---- a/include/linux/efi.h
-+++ b/include/linux/efi.h
-@@ -1365,6 +1365,14 @@ bool efi_config_table_is_usable(const efi_guid_t *guid=
-, unsigned long table)
-=20
- umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute *attr, in=
-t n);
-=20
-+/*
-+ * efivar ops event type
-+ */
-+#define EFIVAR_OPS_RDONLY 0
-+#define EFIVAR_OPS_RDWR 1
-+
-+extern struct blocking_notifier_head efivar_ops_nh;
-+
- void efivars_generic_ops_register(void);
- void efivars_generic_ops_unregister(void);
-=20
+ static int efivarfs_init_fs_context(struct fs_context *fc)
 --=20
 2.30.2
 
 
---===============1134454968713622542==--
+--===============8897971535049212821==--
 
