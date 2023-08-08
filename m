@@ -1,251 +1,256 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [RFC, PATCH 1/1] rpmb: add Replay Protected Memory Block (RPMB) driver
-Date: Mon, 07 Aug 2023 17:00:48 +0200
+Subject: Re: [PATCH] KEYS: trusted: tee: use tee_shm_register_alloc_buf()
+Date: Tue, 08 Aug 2023 11:07:21 +0200
 Message-ID: 
- <CAPDyKFoBC+GaGerGDEAjg9q4ayV9mMBKkfFk3nO-zcQzOZ_H6Q@mail.gmail.com>
-In-Reply-To: <20230722014037.42647-2-shyamsaini@linux.microsoft.com>
+ <CAHUa44ET3Oqc4Yq8E4ouAjn5dF9ygxoXyWh0sjFF_vPoooxrnA@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYMzBJTNUxh6b-y=a_NND8FX65YjEP4i-HPS4tQ-Qfm+0w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6808264492356911873=="
+Content-Type: multipart/mixed; boundary="===============5933304535371530469=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6808264492356911873==
+--===============5933304535371530469==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 22 Jul 2023 at 03:41, Shyam Saini
-<shyamsaini@linux.microsoft.com> wrote:
+Hi Sumit,
+
+On Mon, Aug 7, 2023 at 9:58=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org> w=
+rote:
 >
-> From: Alex Benn=C3=A9e <alex.bennee@linaro.org>
+> Hi Jens,
 >
-> [This is patch 1 from [1] Alex's submission and this RPMB layer was
-> originally proposed by [2]Thomas Winkler ]
+> On Thu, 3 Aug 2023 at 18:05, Jens Wiklander <jens.wiklander@linaro.org> w=
+rote:
+> >
+> > Prior to this patch was trusted_tee_seal() and trusted_tee_get_random()
+> > relying on tee_shm_register_kernel_buf() to share memory with the TEE.
+> > Depending on the memory allocation pattern the pages holding the
+> > registered buffers overlap with other buffers also shared with the TEE.
+> >
 >
-> A number of storage technologies support a specialised hardware
-> partition designed to be resistant to replay attacks. The underlying
-> HW protocols differ but the operations are common. The RPMB partition
-> cannot be accessed via standard block layer, but by a set of specific
-> commands: WRITE, READ, GET_WRITE_COUNTER, and PROGRAM_KEY. Such a
-> partition provides authenticated and replay protected access, hence
-> suitable as a secure storage.
+> The overlap here is due to the fact that we are registering two array
+> members of the same struct. This overlap can be removed by registering
+> the overall structure at once. But that sounds unnecessary data
+> structure type sharing with trusted keys TA.
 >
-> The initial aim of this patch is to provide a simple RPMB Driver which
-> can be accessed by Linux's optee driver to facilitate fast-path for
-> RPMB access to optee OS(secure OS) during the boot time. [1] Currently,
-> Optee OS relies on user-tee supplicant to access eMMC RPMB partition.
+> > The OP-TEE driver using the old SMC based ABI permits overlapping shared
+> > buffers, but with the new FF-A based ABI each physical page may only
+> > be registered once.
 >
-> A TEE device driver can claim the RPMB interface, for example, via
-> class_interface_register(). The RPMB driver provides a series of
-> operations for interacting with the device.
+> Would it be possible for OP-TEE FF-A ABI to check if a page is already
+> registered?
 
-I don't quite follow this. More exactly, how will the TEE driver know
-what RPMB device it should use?
+No, there's no such ABI in the FF-A specification.
+
+> If it is then just return success with appropriate page
+> offset.
+
+It's more complicated than that. What if only there's a partial registration?
+
+> As otherwise this sounds like an unnecessary restriction for
+> users. I don't think the problem is only particular to the trusted
+> keys driver but can be reproduced for user-space clients as well.
+
+Indeed, we're dealing with it by using a temporary buffer in the client lib.
 
 >
->   * program_key - a one time operation for setting up a new device
->   * get_capacity - introspect the device capacity
->   * get_write_counter - check the write counter
->   * write_blocks - write a series of blocks to the RPMB device
->   * read_blocks - read a series of blocks from the RPMB device
+> >
+> > Fix this problem by allocating a temporary page aligned shared memory
+> > buffer to be used as a bounce buffer for the needed data buffers.
+> >
+> > Since TEE trusted keys doesn't depend on registered shared memory
+> > support any longer remove that explicit dependency when opening a
+> > context to the TEE.
+> >
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> >  security/keys/trusted-keys/trusted_tee.c | 68 +++++++++++++-----------
+> >  1 file changed, 36 insertions(+), 32 deletions(-)
+> >
+> > diff --git a/security/keys/trusted-keys/trusted_tee.c b/security/keys/tru=
+sted-keys/trusted_tee.c
+> > index ac3e270ade69..3085343c489a 100644
+> > --- a/security/keys/trusted-keys/trusted_tee.c
+> > +++ b/security/keys/trusted-keys/trusted_tee.c
+> > @@ -8,6 +8,7 @@
+> >
+> >  #include <linux/err.h>
+> >  #include <linux/key-type.h>
+> > +#include <linux/minmax.h>
+> >  #include <linux/module.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/string.h>
+> > @@ -65,38 +66,37 @@ static int trusted_tee_seal(struct trusted_key_payloa=
+d *p, char *datablob)
+> >         int ret;
+> >         struct tee_ioctl_invoke_arg inv_arg;
+> >         struct tee_param param[4];
+> > -       struct tee_shm *reg_shm_in =3D NULL, *reg_shm_out =3D NULL;
+> > +       struct tee_shm *shm;
+> > +       uint8_t *buf;
+> >
+> >         memset(&inv_arg, 0, sizeof(inv_arg));
+> >         memset(&param, 0, sizeof(param));
+> >
+> > -       reg_shm_in =3D tee_shm_register_kernel_buf(pvt_data.ctx, p->key,
+> > -                                                p->key_len);
+> > -       if (IS_ERR(reg_shm_in)) {
+> > -               dev_err(pvt_data.dev, "key shm register failed\n");
+> > -               return PTR_ERR(reg_shm_in);
+> > +       shm =3D tee_shm_alloc_kernel_buf(pvt_data.ctx,
+> > +                                      p->key_len + sizeof(p->blob));
+> > +       if (IS_ERR(shm)) {
+> > +               dev_err(pvt_data.dev, "key shm alloc failed\n");
+> > +               return PTR_ERR(shm);
+> >         }
+> > -
+> > -       reg_shm_out =3D tee_shm_register_kernel_buf(pvt_data.ctx, p->blob,
+> > -                                                 sizeof(p->blob));
+> > -       if (IS_ERR(reg_shm_out)) {
+> > -               dev_err(pvt_data.dev, "blob shm register failed\n");
+> > -               ret =3D PTR_ERR(reg_shm_out);
+> > +       buf =3D tee_shm_get_va(shm, 0);
+> > +       if (IS_ERR(buf)) {
+> > +               ret =3D PTR_ERR(buf);
+> >                 goto out;
+> >         }
+> > +       memcpy(buf, p->key, p->key_len);
 >
-> The detailed operation of implementing the access is left to the TEE
-> device driver itself.
+> These memcpy()'s here and below are undue overheads if we change to
+> tee_shm_alloc_kernel_buf().
+
+There's a bit of overhead when entering and exiting the secure world
+too, just to save and restore registers. Anyway, trusted_tee_seal()
+doesn't together with FF-A without this patch.
+
+Thanks,
+Jens
+
 >
-> The framing details and HW specific bits (JDEC vs NVME frames) are
-> left to the lower level TEE driver to worry about.
+> -Sumit
 >
-> Without kernel fast path to RPMB access doesn't work when IMA try to
-> extend ftpm's PCR registers.
->
-> This fast-path would require additional work in linux optee driver and
-> as well as in MMC driver.
->
-> [1] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)lin=
-aro.org/
-> [2] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-toma=
-s.winkler(a)intel.com/
-> [3] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html
->
-> Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
->
+> >
+> >         inv_arg.func =3D TA_CMD_SEAL;
+> >         inv_arg.session =3D pvt_data.session_id;
+> >         inv_arg.num_params =3D 4;
+> >
+> >         param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
+> > -       param[0].u.memref.shm =3D reg_shm_in;
+> > +       param[0].u.memref.shm =3D shm;
+> >         param[0].u.memref.size =3D p->key_len;
+> >         param[0].u.memref.shm_offs =3D 0;
+> >         param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
+> > -       param[1].u.memref.shm =3D reg_shm_out;
+> > +       param[1].u.memref.shm =3D shm;
+> >         param[1].u.memref.size =3D sizeof(p->blob);
+> > -       param[1].u.memref.shm_offs =3D 0;
+> > +       param[1].u.memref.shm_offs =3D p->key_len;
+> >
+> >         ret =3D tee_client_invoke_func(pvt_data.ctx, &inv_arg, param);
+> >         if ((ret < 0) || (inv_arg.ret !=3D 0)) {
+> > @@ -104,14 +104,13 @@ static int trusted_tee_seal(struct trusted_key_payl=
+oad *p, char *datablob)
+> >                         inv_arg.ret);
+> >                 ret =3D -EFAULT;
+> >         } else {
+> > +               memcpy(p->blob, buf + p->key_len,
+> > +                      min(param[1].u.memref.size, sizeof(p->blob)));
+> >                 p->blob_len =3D param[1].u.memref.size;
+> >         }
+> >
+> >  out:
+> > -       if (reg_shm_out)
+> > -               tee_shm_free(reg_shm_out);
+> > -       if (reg_shm_in)
+> > -               tee_shm_free(reg_shm_in);
+> > +       tee_shm_free(shm);
+> >
+> >         return ret;
+> >  }
+> > @@ -166,11 +165,9 @@ static int trusted_tee_unseal(struct trusted_key_pay=
+load *p, char *datablob)
+> >                 p->key_len =3D param[1].u.memref.size;
+> >         }
+> >
+> > +       tee_shm_free(reg_shm_out);
+> >  out:
+> > -       if (reg_shm_out)
+> > -               tee_shm_free(reg_shm_out);
+> > -       if (reg_shm_in)
+> > -               tee_shm_free(reg_shm_in);
+> > +       tee_shm_free(reg_shm_in);
+> >
+> >         return ret;
+> >  }
+> > @@ -183,15 +180,21 @@ static int trusted_tee_get_random(unsigned char *ke=
+y, size_t key_len)
+> >         int ret;
+> >         struct tee_ioctl_invoke_arg inv_arg;
+> >         struct tee_param param[4];
+> > -       struct tee_shm *reg_shm =3D NULL;
+> > +       struct tee_shm *shm;
+> > +       void *buf;
+> >
+> >         memset(&inv_arg, 0, sizeof(inv_arg));
+> >         memset(&param, 0, sizeof(param));
+> >
+> > -       reg_shm =3D tee_shm_register_kernel_buf(pvt_data.ctx, key, key_le=
+n);
+> > -       if (IS_ERR(reg_shm)) {
+> > -               dev_err(pvt_data.dev, "key shm register failed\n");
+> > -               return PTR_ERR(reg_shm);
+> > +       shm =3D tee_shm_alloc_kernel_buf(pvt_data.ctx, key_len);
+> > +       if (IS_ERR(shm)) {
+> > +               dev_err(pvt_data.dev, "key shm alloc failed\n");
+> > +               return PTR_ERR(shm);
+> > +       }
+> > +       buf =3D tee_shm_get_va(shm, 0);
+> > +       if (IS_ERR(buf)) {
+> > +               ret =3D PTR_ERR(buf);
+> > +               goto out;
+> >         }
+> >
+> >         inv_arg.func =3D TA_CMD_GET_RANDOM;
+> > @@ -199,7 +202,7 @@ static int trusted_tee_get_random(unsigned char *key,=
+ size_t key_len)
+> >         inv_arg.num_params =3D 4;
+> >
+> >         param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
+> > -       param[0].u.memref.shm =3D reg_shm;
+> > +       param[0].u.memref.shm =3D shm;
+> >         param[0].u.memref.size =3D key_len;
+> >         param[0].u.memref.shm_offs =3D 0;
+> >
+> > @@ -209,18 +212,19 @@ static int trusted_tee_get_random(unsigned char *ke=
+y, size_t key_len)
+> >                         inv_arg.ret);
+> >                 ret =3D -EFAULT;
+> >         } else {
+> > +               memcpy(key, buf, min(param[0].u.memref.size, key_len));
+> >                 ret =3D param[0].u.memref.size;
+> >         }
+> >
+> > -       tee_shm_free(reg_shm);
+> > +out:
+> > +       tee_shm_free(shm);
+> >
+> >         return ret;
+> >  }
+> >
+> >  static int optee_ctx_match(struct tee_ioctl_version_data *ver, const voi=
+d *data)
+> >  {
+> > -       if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE &&
+> > -           ver->gen_caps & TEE_GEN_CAP_REG_MEM)
+> > +       if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE)
+> >                 return 1;
+> >         else
+> >                 return 0;
+> > --
+> > 2.34.1
+> >
 
-[...]
-
-> +/**
-> + * rpmb_dev_find_device() - return first matching rpmb device
-> + * @data: data for the match function
-> + * @match: the matching function
-> + *
-> + * Return: matching rpmb device or NULL on failure
-> + */
-> +static
-> +struct rpmb_dev *rpmb_dev_find_device(const void *data,
-> +                                     int (*match)(struct device *dev,
-> +                                                  const void *data))
-> +{
-> +       struct device *dev;
-> +
-> +       dev =3D class_find_device(&rpmb_class, NULL, data, match);
-> +
-> +       return dev ? to_rpmb_dev(dev) : NULL;
-> +}
-> +
-> +struct device_with_target {
-> +       const struct device *dev;
-> +       u8 target;
-> +};
-> +
-> +static int match_by_parent(struct device *dev, const void *data)
-> +{
-> +       const struct device_with_target *d =3D data;
-> +       struct rpmb_dev *rdev =3D to_rpmb_dev(dev);
-> +
-> +       return (d->dev && dev->parent =3D=3D d->dev && rdev->target =3D=3D =
-d->target);
-> +}
-> +
-> +/**
-> + * rpmb_dev_find_by_device() - retrieve rpmb device from the parent device
-> + * @parent: parent device of the rpmb device
-> + * @target: RPMB target/region within the physical device
-> + *
-> + * Return: NULL if there is no rpmb device associated with the parent devi=
-ce
-> + */
-> +struct rpmb_dev *rpmb_dev_find_by_device(struct device *parent, u8 target)
-> +{
-> +       struct device_with_target t;
-> +
-> +       if (!parent)
-> +               return NULL;
-> +
-> +       t.dev =3D parent;
-> +       t.target =3D target;
-> +
-> +       return rpmb_dev_find_device(&t, match_by_parent);
-> +}
-> +EXPORT_SYMBOL_GPL(rpmb_dev_find_by_device);
-
-Is this what the TEE driver would be calling to find the rpmb device/partitio=
-n?
-
-> +
-> +/**
-> + * rpmb_dev_unregister() - unregister RPMB partition from the RPMB subsyst=
-em
-> + * @rdev: the rpmb device to unregister
-> + * Return:
-> + * *        0 on success
-> + * *        -EINVAL on wrong parameters
-> + */
-> +int rpmb_dev_unregister(struct rpmb_dev *rdev)
-> +{
-> +       if (!rdev)
-> +               return -EINVAL;
-> +
-> +       mutex_lock(&rdev->lock);
-> +       rpmb_cdev_del(rdev);
-
-I can't find the function above. I guess it should be included as a
-part of the patch too?
-
-> +       device_del(&rdev->dev);
-> +       mutex_unlock(&rdev->lock);
-> +
-> +       rpmb_dev_put(rdev);
-> +
-> +       return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(rpmb_dev_unregister);
-
-[...]
-
-> +/**
-> + * rpmb_dev_register - register RPMB partition with the RPMB subsystem
-> + * @dev: storage device of the rpmb device
-> + * @target: RPMB target/region within the physical device
-> + * @ops: device specific operations
-> + *
-> + * Return: a pointer to rpmb device
-> + */
-> +struct rpmb_dev *rpmb_dev_register(struct device *dev, u8 target,
-> +                                  const struct rpmb_ops *ops)
-> +{
-> +       struct rpmb_dev *rdev;
-> +       int id;
-> +       int ret;
-> +
-> +       if (!dev || !ops)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       if (!ops->program_key)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       if (!ops->get_capacity)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       if (!ops->get_write_counter)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       if (!ops->write_blocks)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       if (!ops->read_blocks)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       rdev =3D kzalloc(sizeof(*rdev), GFP_KERNEL);
-> +       if (!rdev)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       id =3D ida_simple_get(&rpmb_ida, 0, 0, GFP_KERNEL);
-> +       if (id < 0) {
-> +               ret =3D id;
-> +               goto exit;
-> +       }
-> +
-> +       mutex_init(&rdev->lock);
-> +       rdev->ops =3D ops;
-> +       rdev->id =3D id;
-> +       rdev->target =3D target;
-> +
-> +       dev_set_name(&rdev->dev, "rpmb%d", id);
-> +       rdev->dev.class =3D &rpmb_class;
-> +       rdev->dev.parent =3D dev;
-> +
-> +       rpmb_cdev_prepare(rdev);
-
-Ditto.
-
-> +
-> +       ret =3D device_register(&rdev->dev);
-> +       if (ret)
-> +               goto exit;
-> +
-> +       rpmb_cdev_add(rdev);
-
-Ditto.
-
-> +
-> +       dev_dbg(&rdev->dev, "registered device\n");
-> +
-> +       return rdev;
-> +
-> +exit:
-> +       if (id >=3D 0)
-> +               ida_simple_remove(&rpmb_ida, id);
-> +       kfree(rdev);
-> +       return ERR_PTR(ret);
-> +}
-> +EXPORT_SYMBOL_GPL(rpmb_dev_register);
-> +
-
-[...]
-
-Kind regards
-Uffe
-
---===============6808264492356911873==--
+--===============5933304535371530469==--
 
