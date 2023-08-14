@@ -1,57 +1,46 @@
-From: Yue Haibing <yuehaibing@huawei.com>
+From: Ruth Glushkin <rutigl@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH -next] tee: Remove unused declarations
-Date: Thu, 10 Aug 2023 22:49:43 +0800
-Message-ID: <20230810144943.34976-1-yuehaibing@huawei.com>
+Subject: tpm2 device fail on u-boot
+Date: Mon, 14 Aug 2023 10:52:52 +0300
+Message-ID: 
+ <CALDRwioa8N+2xK53F0i0E6gaPQXEucJbiYP6=kzyVuVu5LbM1A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5198133435478032700=="
+Content-Type: multipart/mixed; boundary="===============2315543573465875707=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5198133435478032700==
+--===============2315543573465875707==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Commit 4fb0a5eb364d ("tee: add OP-TEE driver") declared but never implemented
-optee_supp_read()/optee_supp_write().
-Commit 967c9cca2cc5 ("tee: generic TEE subsystem") never implemented tee_shm_=
-init().
-
-Signed-off-by: Yue Haibing <yuehaibing@huawei.com>
----
- drivers/tee/optee/optee_private.h | 2 --
- drivers/tee/tee_private.h         | 2 --
- 2 files changed, 4 deletions(-)
-
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index 72685ee0d53f..6bb5cae09688 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -238,8 +238,6 @@ int optee_notif_send(struct optee *optee, u_int key);
- u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
- 			struct tee_param *param);
-=20
--int optee_supp_read(struct tee_context *ctx, void __user *buf, size_t len);
--int optee_supp_write(struct tee_context *ctx, void __user *buf, size_t len);
- void optee_supp_init(struct optee_supp *supp);
- void optee_supp_uninit(struct optee_supp *supp);
- void optee_supp_release(struct optee_supp *supp);
-diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
-index 409cadcc1cff..754e11dcb240 100644
---- a/drivers/tee/tee_private.h
-+++ b/drivers/tee/tee_private.h
-@@ -47,8 +47,6 @@ struct tee_device {
- 	struct tee_shm_pool *pool;
- };
-=20
--int tee_shm_init(void);
+Hi,
+I have u-boot based on u-boot 2021.04
+I have configuration with fTPM of Microsoft enabled.
+I have a EVB board with Nuvoton chip.
+OPTee-OS is based on latest 3.22 upstream version with Nuvoton npcm
+platform configuration.
+If I take OPTee-OS without reading HUK from our PCR0 field from
+non-secured memory,
+the command works fine.
+If I add reading HUK, the command fails.
+Here is the error log:
 -
- int tee_shm_get_fd(struct tee_shm *shm);
-=20
- bool tee_device_get(struct tee_device *teedev);
---=20
-2.34.1
+U-Boot>tpm2 device
+optee optee: OP-TEE: revision 3.22 (a012b992)
+I/TC: Reserved shared memory is enabled
+I/TC: Dynamic shared memory is enabled
+I/TC: Normal World virtualization support is disabled
+I/TC: Asynchronous notifications are disabled
+E/TC:0 0 std_entry_with_parg:235 Bad arg address 0x7fce2000
+Couldn't set TPM 0 (rc = 1)
+-
 
+All other commands of tpm2 that are not connected to fTPM works OK.
+After loading Linux, xtest works OK.
 
---===============5198133435478032700==--
+Could you please help me?
+
+Thank you in advance,
+Margarita Glushkin
+
+--===============2315543573465875707==--
 
