@@ -1,69 +1,76 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Ruth Glushkin <rutigl@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH -next] tee: Remove unused declarations
-Date: Thu, 17 Aug 2023 15:40:39 +0530
+Subject: Re: tpm2 device fail on u-boot
+Date: Thu, 17 Aug 2023 13:13:35 +0300
 Message-ID: 
- <CAFA6WYPsaJdGT9kS4ygHNRYDpX8bRaY__EwZWuCF-x-DgWUDhQ@mail.gmail.com>
-In-Reply-To: <20230810144943.34976-1-yuehaibing@huawei.com>
+ <CALDRwioqPLFxr7Js+a4_FNhTA=hPJc0h6uJ5n-Z-PtFr2VMJyg@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYP1_pECXuP9_rBP-dR2EkUC72enb=-rad7iffBedsbvzQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8608163032775940718=="
+Content-Type: multipart/mixed; boundary="===============0755684016340741735=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8608163032775940718==
+--===============0755684016340741735==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 10 Aug 2023 at 20:19, Yue Haibing <yuehaibing@huawei.com> wrote:
+Thank you very much, Sumit.
+
+I should find a way to provision eMMC RPMB partition with our HUK.
+
+With full respect,
+Margarita
+
+2023-08-17 13:06 GMT+03:00, Sumit Garg <sumit.garg@linaro.org>:
+> On Mon, 14 Aug 2023 at 13:23, Ruth Glushkin <rutigl@gmail.com> wrote:
+>>
+>> Hi,
+>> I have u-boot based on u-boot 2021.04
+>> I have configuration with fTPM of Microsoft enabled.
+>> I have a EVB board with Nuvoton chip.
+>> OPTee-OS is based on latest 3.22 upstream version with Nuvoton npcm
+>> platform configuration.
+>> If I take OPTee-OS without reading HUK from our PCR0 field from
+>> non-secured memory,
+>> the command works fine.
+>> If I add reading HUK, the command fails.
 >
-> Commit 4fb0a5eb364d ("tee: add OP-TEE driver") declared but never implement=
-ed
-> optee_supp_read()/optee_supp_write().
-> Commit 967c9cca2cc5 ("tee: generic TEE subsystem") never implemented tee_sh=
-m_init().
+> The likely reason for this behaviour is that your eMMC RPMB partition
+> is already provisioned using a key derived from default HUK. So later
+> on when you update the HUK to be platform specific, all eMMC RPMB
+> accesses are going to fail as the key changed. Now it will only work
+> with default HUK as corresponding derived key has been provisioned
+> into eMMC RPMB.
 >
-> Signed-off-by: Yue Haibing <yuehaibing@huawei.com>
-> ---
->  drivers/tee/optee/optee_private.h | 2 --
->  drivers/tee/tee_private.h         | 2 --
->  2 files changed, 4 deletions(-)
+> Please go through this doc [1] carefully before provisioning the eMMC RPMB
+> key.
+>
+> [1]
+> https://optee.readthedocs.io/en/latest/architecture/secure_storage.html?hig=
+hlight=3DRPMB#security-considerations
+>
+> -Sumit
+>
+>> Here is the error log:
+>> -
+>> U-Boot>tpm2 device
+>> optee optee: OP-TEE: revision 3.22 (a012b992)
+>> I/TC: Reserved shared memory is enabled
+>> I/TC: Dynamic shared memory is enabled
+>> I/TC: Normal World virtualization support is disabled
+>> I/TC: Asynchronous notifications are disabled
+>> E/TC:0 0 std_entry_with_parg:235 Bad arg address 0x7fce2000
+>> Couldn't set TPM 0 (rc =3D 1)
+>> -
+>>
+>> All other commands of tpm2 that are not connected to fTPM works OK.
+>> After loading Linux, xtest works OK.
+>>
+>> Could you please help me?
+>>
+>> Thank you in advance,
+>> Margarita Glushkin
 >
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-
--Sumit
-
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
-ivate.h
-> index 72685ee0d53f..6bb5cae09688 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -238,8 +238,6 @@ int optee_notif_send(struct optee *optee, u_int key);
->  u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_para=
-ms,
->                         struct tee_param *param);
->
-> -int optee_supp_read(struct tee_context *ctx, void __user *buf, size_t len);
-> -int optee_supp_write(struct tee_context *ctx, void __user *buf, size_t len=
-);
->  void optee_supp_init(struct optee_supp *supp);
->  void optee_supp_uninit(struct optee_supp *supp);
->  void optee_supp_release(struct optee_supp *supp);
-> diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
-> index 409cadcc1cff..754e11dcb240 100644
-> --- a/drivers/tee/tee_private.h
-> +++ b/drivers/tee/tee_private.h
-> @@ -47,8 +47,6 @@ struct tee_device {
->         struct tee_shm_pool *pool;
->  };
->
-> -int tee_shm_init(void);
-> -
->  int tee_shm_get_fd(struct tee_shm *shm);
->
->  bool tee_device_get(struct tee_device *teedev);
-> --
-> 2.34.1
->
-
---===============8608163032775940718==--
+--===============0755684016340741735==--
 
