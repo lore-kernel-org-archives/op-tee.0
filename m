@@ -1,431 +1,340 @@
-From: Alexey Kardashevskiy <aik@amd.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: amdtee: add support for use of cma region
-Date: Sat, 19 Aug 2023 20:33:47 +1000
-Message-ID: <cd226133-ed18-101b-6401-a6dcd89a1db8@amd.com>
-In-Reply-To: <=?utf-8?q?=3C7531423fcb3b18ff78737ae5eabc84b0e3cb2909=2E1692369?=
- =?utf-8?q?704=2Egit=2EDevaraj=2ERangasamy=40amd=2Ecom=3E?=>
+Subject: Re: [PATCH] KEYS: trusted: tee: use tee_shm_register_alloc_buf()
+Date: Mon, 21 Aug 2023 09:45:11 +0200
+Message-ID: 
+ <CAHUa44HpkxDPgdh1B_bFOVPSOETk3F_ZicdnhmuVOux+5fd7sA@mail.gmail.com>
+In-Reply-To: <
+ <CAHUa44ET3Oqc4Yq8E4ouAjn5dF9ygxoXyWh0sjFF_vPoooxrnA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5125331354783431590=="
+Content-Type: multipart/mixed; boundary="===============7857530138947714318=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5125331354783431590==
+--===============7857530138947714318==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 19/8/23 00:42, Devaraj Rangasamy wrote:
-> In systems with low memory configuration, memory gets fragmented
-> easily, and any bigger size contiguous memory allocations are likely
-> to fail.
-> Contiguous Memory Allocator (CMA) is used to overcome this
-> limitation, and to guarantee memory allocations.
->=20
-> This patch adds support for CMA area exclusive to amdtee.
-> The support can be enabled if kernel have CONFIG_CMA enabled.
-> The size can be set via the AMDTEE_CMA_SIZE config option
-> at compile time or with the "amdtee_cma" kernel parameter.
-> (e.g. "amdtee_cma=3D32 for 32MB").
->=20
-> Also, cma zone is utilized only for buffer allocation bigger than
-> 64k bytes. When such allocation fails, there is a fallback to the
-> buddy allocator. Since CMA requires a boot time initialization,
-> it is enabled only when amdtee is built as an inbuilt driver.
->=20
-> Signed-off-by: Devaraj Rangasamy <Devaraj.Rangasamy@amd.com>
-> Co-developed-by: SivaSangeetha SK <SivaSangeetha.SK@amd.com>
-> Signed-off-by: SivaSangeetha SK <SivaSangeetha.SK@amd.com>
-> Reviewed-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
-> ---
->   .../admin-guide/kernel-parameters.txt         |  7 ++
->   arch/x86/include/asm/setup.h                  |  6 ++
->   arch/x86/kernel/setup.c                       |  2 +
->   drivers/tee/amdtee/Kconfig                    |  9 +++
->   drivers/tee/amdtee/Makefile                   |  1 +
->   drivers/tee/amdtee/amdtee_private.h           |  6 +-
->   drivers/tee/amdtee/core.c                     |  6 +-
->   drivers/tee/amdtee/shm_pool.c                 | 32 ++++++--
->   drivers/tee/amdtee/shm_pool_cma.c             | 78 +++++++++++++++++++
->   drivers/tee/amdtee/shm_pool_cma.h             | 38 +++++++++
->   10 files changed, 176 insertions(+), 9 deletions(-)
->   create mode 100644 drivers/tee/amdtee/shm_pool_cma.c
->   create mode 100644 drivers/tee/amdtee/shm_pool_cma.h
->=20
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentatio=
-n/admin-guide/kernel-parameters.txt
-> index 722b6eca2e93..5e38423f3d53 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -363,6 +363,13 @@
->   			  selects a performance level in this range and appropriate
->   			  to the current workload.
->  =20
-> +	amdtee_cma=3Dnn	[HW,TEE]
-> +			Sets the memory size reserved for contiguous memory
-> +			allocations, to be used by amdtee device driver.
-> +			Value is in MB and can range from 4 to 128 (MBs)
-> +			CMA will be active only when CMA is enabled, and amdtee is
-> +			built as inbuilt driver, and not loaded as module.
-> +
->   	amijoy.map=3D	[HW,JOY] Amiga joystick support
->   			Map of devices attached to JOY0DAT and JOY1DAT
->   			Format: <a>,<b>
-> diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-> index f3495623ac99..bb5e4b7134a2 100644
-> --- a/arch/x86/include/asm/setup.h
-> +++ b/arch/x86/include/asm/setup.h
-> @@ -66,6 +66,12 @@ extern void x86_ce4100_early_setup(void);
->   static inline void x86_ce4100_early_setup(void) { }
->   #endif
->  =20
-> +#if IS_BUILTIN(CONFIG_AMDTEE) && IS_ENABLED(CONFIG_CMA)
-> +void amdtee_cma_reserve(void);
-> +#else
-> +static inline void amdtee_cma_reserve(void) { }
-> +#endif
-> +
->   #ifndef _SETUP
->  =20
->   #include <asm/espfix.h>
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index fd975a4a5200..e73433af3bfa 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -1223,6 +1223,8 @@ void __init setup_arch(char **cmdline_p)
->   	initmem_init();
->   	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);
->  =20
-> +	amdtee_cma_reserve();
-> +
->   	if (boot_cpu_has(X86_FEATURE_GBPAGES))
->   		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
->  =20
-> diff --git a/drivers/tee/amdtee/Kconfig b/drivers/tee/amdtee/Kconfig
-> index 191f9715fa9a..5843c739a7b8 100644
-> --- a/drivers/tee/amdtee/Kconfig
-> +++ b/drivers/tee/amdtee/Kconfig
-> @@ -6,3 +6,12 @@ config AMDTEE
->   	depends on CRYPTO_DEV_SP_PSP && CRYPTO_DEV_CCP_DD
->   	help
->   	  This implements AMD's Trusted Execution Environment (TEE) driver.
-> +
-> +config AMDTEE_CMA_SIZE
-> +	int "Size of Memory in MiB reserved in CMA for AMD-TEE"
-> +	default "0"
-> +	depends on CMA && (AMDTEE=3Dy)
-> +	help
-> +	  Specify the default amount of memory in MiB reserved in CMA for AMD-TEE=
- driver
-> +	  Any amdtee shm buffer allocation larger than 64k will allocate memory f=
-rom the CMA
-> +	  The default can be overridden with the kernel commandline parameter "am=
-dtee_cma".
-> \ No newline at end of file
-> diff --git a/drivers/tee/amdtee/Makefile b/drivers/tee/amdtee/Makefile
-> index ff1485266117..a197839cfcf3 100644
-> --- a/drivers/tee/amdtee/Makefile
-> +++ b/drivers/tee/amdtee/Makefile
-> @@ -3,3 +3,4 @@ obj-$(CONFIG_AMDTEE) +=3D amdtee.o
->   amdtee-objs +=3D core.o
->   amdtee-objs +=3D call.o
->   amdtee-objs +=3D shm_pool.o
-> +amdtee-objs +=3D shm_pool_cma.o
-> diff --git a/drivers/tee/amdtee/amdtee_private.h b/drivers/tee/amdtee/amdte=
-e_private.h
-> index 6d0f7062bb87..9ba47795adb6 100644
-> --- a/drivers/tee/amdtee/amdtee_private.h
-> +++ b/drivers/tee/amdtee/amdtee_private.h
-> @@ -87,11 +87,13 @@ struct shmem_desc {
->    * struct amdtee_shm_data - Shared memory data
->    * @kaddr:	Kernel virtual address of shared memory
->    * @buf_id:	Buffer id of memory mapped by TEE_CMD_ID_MAP_SHARED_MEM
-> + * @is_cma:	Indicates whether memory is allocated from cma region or not
->    */
->   struct amdtee_shm_data {
->   	struct  list_head shm_node;
->   	void    *kaddr;
->   	u32     buf_id;
-> +	bool    is_cma;
->   };
->  =20
->   /**
-> @@ -145,9 +147,9 @@ int amdtee_invoke_func(struct tee_context *ctx,
->  =20
->   int amdtee_cancel_req(struct tee_context *ctx, u32 cancel_id, u32 session=
-);
->  =20
-> -int amdtee_map_shmem(struct tee_shm *shm);
-> +int amdtee_map_shmem(struct tee_shm *shm, bool is_cma);
->  =20
-> -void amdtee_unmap_shmem(struct tee_shm *shm);
-> +void amdtee_unmap_shmem(struct tee_shm *shm, bool *is_cma);
->  =20
->   int handle_load_ta(void *data, u32 size,
->   		   struct tee_ioctl_open_session_arg *arg);
-> diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
-> index 372d64756ed6..448802dccf13 100644
-> --- a/drivers/tee/amdtee/core.c
-> +++ b/drivers/tee/amdtee/core.c
-> @@ -336,7 +336,7 @@ int amdtee_close_session(struct tee_context *ctx, u32 s=
-ession)
->   	return 0;
->   }
->  =20
-> -int amdtee_map_shmem(struct tee_shm *shm)
-> +int amdtee_map_shmem(struct tee_shm *shm, bool is_cma)
->   {
->   	struct amdtee_context_data *ctxdata;
->   	struct amdtee_shm_data *shmnode;
-> @@ -368,6 +368,7 @@ int amdtee_map_shmem(struct tee_shm *shm)
->  =20
->   	shmnode->kaddr =3D shm->kaddr;
->   	shmnode->buf_id =3D buf_id;
-> +	shmnode->is_cma =3D is_cma;
->   	ctxdata =3D shm->ctx->data;
->   	mutex_lock(&ctxdata->shm_mutex);
->   	list_add(&shmnode->shm_node, &ctxdata->shm_list);
-> @@ -378,7 +379,7 @@ int amdtee_map_shmem(struct tee_shm *shm)
->   	return 0;
->   }
->  =20
-> -void amdtee_unmap_shmem(struct tee_shm *shm)
-> +void amdtee_unmap_shmem(struct tee_shm *shm, bool *is_cma)
->   {
->   	struct amdtee_context_data *ctxdata;
->   	struct amdtee_shm_data *shmnode;
-> @@ -395,6 +396,7 @@ void amdtee_unmap_shmem(struct tee_shm *shm)
->   	mutex_lock(&ctxdata->shm_mutex);
->   	list_for_each_entry(shmnode, &ctxdata->shm_list, shm_node)
->   		if (buf_id =3D=3D shmnode->buf_id) {
-> +			*is_cma =3D shmnode->is_cma;
->   			list_del(&shmnode->shm_node);
->   			kfree(shmnode);
->   			break;
-> diff --git a/drivers/tee/amdtee/shm_pool.c b/drivers/tee/amdtee/shm_pool.c
-> index f0303126f199..9aad401387be 100644
-> --- a/drivers/tee/amdtee/shm_pool.c
-> +++ b/drivers/tee/amdtee/shm_pool.c
-> @@ -7,19 +7,30 @@
->   #include <linux/tee_drv.h>
->   #include <linux/psp.h>
->   #include "amdtee_private.h"
-> +#include "shm_pool_cma.h"
->  =20
->   static int pool_op_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
->   			 size_t size, size_t align)
->   {
->   	unsigned int order =3D get_order(size);
->   	unsigned long va;
-> +	bool is_cma =3D false;
->   	int rc;
->  =20
->   	/*
->   	 * Ignore alignment since this is already going to be page aligned
->   	 * and there's no need for any larger alignment.
->   	 */
-> -	va =3D __get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
-> +
-> +	/* if CMA is available, use it for higher order allocation */
-> +	if (amdtee_get_cma_size() && order > 6)
-> +		va =3D amdtee_alloc_from_cma(shm, order);
-> +
-> +	if (va)
-> +		is_cma =3D true;
-> +	else
-> +		va =3D __get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
-> +
->   	if (!va)
->   		return -ENOMEM;
->  =20
-> @@ -28,9 +39,13 @@ static int pool_op_alloc(struct tee_shm_pool *pool, stru=
-ct tee_shm *shm,
->   	shm->size =3D PAGE_SIZE << order;
->  =20
->   	/* Map the allocated memory in to TEE */
-> -	rc =3D amdtee_map_shmem(shm);
-> +	rc =3D amdtee_map_shmem(shm, is_cma);
->   	if (rc) {
-> -		free_pages(va, order);
-> +		if (is_cma)
-> +			amdtee_free_from_cma(shm);
-> +		else
-> +			free_pages(va, order);
-> +
->   		shm->kaddr =3D NULL;
->   		return rc;
->   	}
-> @@ -40,9 +55,16 @@ static int pool_op_alloc(struct tee_shm_pool *pool, stru=
-ct tee_shm *shm,
->  =20
->   static void pool_op_free(struct tee_shm_pool *pool, struct tee_shm *shm)
->   {
-> +	bool is_cma =3D false;
-> +
->   	/* Unmap the shared memory from TEE */
-> -	amdtee_unmap_shmem(shm);
-> -	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> +	amdtee_unmap_shmem(shm, &is_cma);
-> +
-> +	if (is_cma)
+Hi,
 
-No need in is_cma here and other places.
+On Tue, Aug 8, 2023 at 11:07=E2=80=AFAM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> Hi Sumit,
+>
+> On Mon, Aug 7, 2023 at 9:58=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org>=
+ wrote:
+> >
+> > Hi Jens,
+> >
+> > On Thu, 3 Aug 2023 at 18:05, Jens Wiklander <jens.wiklander@linaro.org>=
+ wrote:
+> > >
+> > > Prior to this patch was trusted_tee_seal() and trusted_tee_get_random()
+> > > relying on tee_shm_register_kernel_buf() to share memory with the TEE.
+> > > Depending on the memory allocation pattern the pages holding the
+> > > registered buffers overlap with other buffers also shared with the TEE.
+> > >
+> >
+> > The overlap here is due to the fact that we are registering two array
+> > members of the same struct. This overlap can be removed by registering
+> > the overall structure at once. But that sounds unnecessary data
+> > structure type sharing with trusted keys TA.
+> >
+> > > The OP-TEE driver using the old SMC based ABI permits overlapping shared
+> > > buffers, but with the new FF-A based ABI each physical page may only
+> > > be registered once.
+> >
+> > Would it be possible for OP-TEE FF-A ABI to check if a page is already
+> > registered?
+>
+> No, there's no such ABI in the FF-A specification.
+>
+> > If it is then just return success with appropriate page
+> > offset.
+>
+> It's more complicated than that. What if only there's a partial registratio=
+n?
+>
+> > As otherwise this sounds like an unnecessary restriction for
+> > users. I don't think the problem is only particular to the trusted
+> > keys driver but can be reproduced for user-space clients as well.
+>
+> Indeed, we're dealing with it by using a temporary buffer in the client lib.
+>
+> >
+> > >
+> > > Fix this problem by allocating a temporary page aligned shared memory
+> > > buffer to be used as a bounce buffer for the needed data buffers.
+> > >
+> > > Since TEE trusted keys doesn't depend on registered shared memory
+> > > support any longer remove that explicit dependency when opening a
+> > > context to the TEE.
+> > >
+> > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > > ---
+> > >  security/keys/trusted-keys/trusted_tee.c | 68 +++++++++++++-----------
+> > >  1 file changed, 36 insertions(+), 32 deletions(-)
+> > >
+> > > diff --git a/security/keys/trusted-keys/trusted_tee.c b/security/keys/t=
+rusted-keys/trusted_tee.c
+> > > index ac3e270ade69..3085343c489a 100644
+> > > --- a/security/keys/trusted-keys/trusted_tee.c
+> > > +++ b/security/keys/trusted-keys/trusted_tee.c
+> > > @@ -8,6 +8,7 @@
+> > >
+> > >  #include <linux/err.h>
+> > >  #include <linux/key-type.h>
+> > > +#include <linux/minmax.h>
+> > >  #include <linux/module.h>
+> > >  #include <linux/slab.h>
+> > >  #include <linux/string.h>
+> > > @@ -65,38 +66,37 @@ static int trusted_tee_seal(struct trusted_key_payl=
+oad *p, char *datablob)
+> > >         int ret;
+> > >         struct tee_ioctl_invoke_arg inv_arg;
+> > >         struct tee_param param[4];
+> > > -       struct tee_shm *reg_shm_in =3D NULL, *reg_shm_out =3D NULL;
+> > > +       struct tee_shm *shm;
+> > > +       uint8_t *buf;
+> > >
+> > >         memset(&inv_arg, 0, sizeof(inv_arg));
+> > >         memset(&param, 0, sizeof(param));
+> > >
+> > > -       reg_shm_in =3D tee_shm_register_kernel_buf(pvt_data.ctx, p->key,
+> > > -                                                p->key_len);
+> > > -       if (IS_ERR(reg_shm_in)) {
+> > > -               dev_err(pvt_data.dev, "key shm register failed\n");
+> > > -               return PTR_ERR(reg_shm_in);
+> > > +       shm =3D tee_shm_alloc_kernel_buf(pvt_data.ctx,
+> > > +                                      p->key_len + sizeof(p->blob));
+> > > +       if (IS_ERR(shm)) {
+> > > +               dev_err(pvt_data.dev, "key shm alloc failed\n");
+> > > +               return PTR_ERR(shm);
+> > >         }
+> > > -
+> > > -       reg_shm_out =3D tee_shm_register_kernel_buf(pvt_data.ctx, p->bl=
+ob,
+> > > -                                                 sizeof(p->blob));
+> > > -       if (IS_ERR(reg_shm_out)) {
+> > > -               dev_err(pvt_data.dev, "blob shm register failed\n");
+> > > -               ret =3D PTR_ERR(reg_shm_out);
+> > > +       buf =3D tee_shm_get_va(shm, 0);
+> > > +       if (IS_ERR(buf)) {
+> > > +               ret =3D PTR_ERR(buf);
+> > >                 goto out;
+> > >         }
+> > > +       memcpy(buf, p->key, p->key_len);
+> >
+> > These memcpy()'s here and below are undue overheads if we change to
+> > tee_shm_alloc_kernel_buf().
+>
+> There's a bit of overhead when entering and exiting the secure world
+> too, just to save and restore registers. Anyway, trusted_tee_seal()
+> doesn't together with FF-A without this patch.
 
+By the way, without this patch the kernel fails with:
+[   12.642071] trusted-key-tee
+optee-ta-f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c: blob shm register
+failed
+[   12.642576] Unable to handle kernel paging request at virtual
+address fffffffffffffff3
+[   12.642668] Mem abort info:
+[   12.642701]   ESR =3D 0x0000000096000004
+[   12.642764]   EC =3D 0x25: DABT (current EL), IL =3D 32 bits
+[   12.642821]   SET =3D 0, FnV =3D 0
+[   12.642864]   EA =3D 0, S1PTW =3D 0
+[   12.642910]   FSC =3D 0x04: level 0 translation fault
+[   12.642960] Data abort info:
+[   12.643006]   ISV =3D 0, ISS =3D 0x00000004
+[   12.643049]   CM =3D 0, WnR =3D 0
+[   12.643104] swapper pgtable: 4k pages, 48-bit VAs, pgdp=3D0000000043bfb000
+[   12.643197] [fffffffffffffff3] pgd=3D0000000000000000, p4d=3D0000000000000=
+000
+[   12.643654] Internal error: Oops: 0000000096000004 [#1] PREEMPT SMP
+[   12.643821] Modules linked in:
+[   12.647781] CPU: 0 PID: 134 Comm: keyctl Not tainted 6.4.0 #1
+[   12.647990] Hardware name: linux,dummy-virt (DT)
+[   12.648146] pstate: 63400009 (nZCv daif +PAN -UAO +TCO +DIT -SSBS BTYPE=3D=
+--)
+[   12.648280] pc : tee_shm_put+0x1c/0x180
+[   12.648715] lr : tee_shm_free+0x10/0x1c
+[   12.648773] sp : ffff80000aa33aa0
+[   12.648822] x29: ffff80000aa33aa0 x28: ffff0000002b7900 x27: ffff80000a2f7=
+750
+[   12.648980] x26: ffff80000aa33cf8 x25: ffff80000a2f76f0 x24: 0000000000000=
+020
+[   12.649088] x23: ffff80000a6b2000 x22: 00000000fffffff3 x21: fffffffffffff=
+ff3
+[   12.649199] x20: fffffffffffffff3 x19: fffffffffffffff3 x18: fffffffffffff=
+fff
+[   12.649307] x17: 62203a6338656334 x16: 623538623931362d x15: 376662612d623=
+962
+[   12.649414] x14: 342d643566312d37 x13: ffff80000a271ac8 x12: 0000000000000=
+363
+[   12.649523] x11: 0000000000000121 x10: ffff80000a2c9ac8 x9 : ffff80000a271=
+ac8
+[   12.649667] x8 : 00000000ffffefff x7 : ffff80000a2c9ac8 x6 : 0000000000000=
+000
+[   12.649797] x5 : ffff000041ea0c48 x4 : 0000000000000000 x3 : 0000000000000=
+000
+[   12.649912] x2 : 0000000000000000 x1 : 0000000000000000 x0 : fffffffffffff=
+ff3
+[   12.650074] Call trace:
+[   12.650212]  tee_shm_put+0x1c/0x180
+[   12.650361]  tee_shm_free+0x10/0x1c
+[   12.650437]  trusted_tee_seal+0xf4/0x17c
+[   12.650503]  trusted_instantiate+0x16c/0x1fc
+[   12.650564]  __key_instantiate_and_link+0x60/0x1f8
+[   12.650629]  __key_create_or_update+0x2a4/0x460
+[   12.650691]  key_create_or_update+0x14/0x20
+[   12.650757]  __arm64_sys_add_key+0xe4/0x244
+[   12.650822]  invoke_syscall+0x48/0x114
+[   12.650886]  el0_svc_common.constprop.0+0x44/0xf4
+[   12.650958]  do_el0_svc+0x3c/0xa8
+[   12.651015]  el0_svc+0x2c/0x84
+[   12.651074]  el0t_64_sync_handler+0xbc/0x138
+[   12.651144]  el0t_64_sync+0x190/0x194
+[   12.651341] Code: a90153f3 aa0003f4 aa0003f3 a9025bf5 (f8438680)
+[   12.651654] ---[ end trace 0000000000000000 ]---
+Segmentation fault
 
-> +		amdtee_free_from_cma(shm);
-> +	else
-> +		free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> +
->   	shm->kaddr =3D NULL;
->   }
->  =20
-> diff --git a/drivers/tee/amdtee/shm_pool_cma.c b/drivers/tee/amdtee/shm_poo=
-l_cma.c
-> new file mode 100644
-> index 000000000000..99dda9adb1c6
-> --- /dev/null
-> +++ b/drivers/tee/amdtee/shm_pool_cma.c
-> @@ -0,0 +1,78 @@
-> +// SPDX-License-Identifier: MIT
-> +/*
-> + * Copyright 2023 Advanced Micro Devices, Inc.
-> + */
-> +
-> +#if IS_BUILTIN(CONFIG_AMDTEE) && IS_ENABLED(CONFIG_CMA)
-> +
-> +#define pr_fmt(fmt) "%s: " fmt, __func__
-> +
-> +#include <linux/cma.h>
-> +#include <linux/mm.h>
-> +#include <linux/tee_drv.h>
-> +#include "shm_pool_cma.h"
-> +
-> +static struct cma *amdtee_cma;
-> +unsigned long amdtee_cma_size __initdata =3D CONFIG_AMDTEE_CMA_SIZE * SZ_1=
-M;
-> +
-> +static int __init early_parse_amdtee_cma(char *p)
-> +{
-> +	int cmd_size;
+So clearly something needs to be done since there's a bug in the error path.
 
-Not int but unsigned long long.
+I'm not overly concerned about the overhead with memcpy(), since we're
+using relatively small buffers. Kernel clients using large buffers
+will need a different approach, for example by using page-aligned
+buffers.
 
-> +
-> +	if (!p)
-> +		return 1;
-> +
-> +	cmd_size =3D memparse(p, NULL);
-> +	if (cmd_size >=3D 4 && cmd_size <=3D 256)
-> +		amdtee_cma_size =3D cmd_size * SZ_1M;
+Thanks,
+Jens
 
-Change the doc to use 4M and 256M instead of plain 4 and 256. Or stop=20
-using memparse().
+>
+> Thanks,
+> Jens
+>
+> >
+> > -Sumit
+> >
+> > >
+> > >         inv_arg.func =3D TA_CMD_SEAL;
+> > >         inv_arg.session =3D pvt_data.session_id;
+> > >         inv_arg.num_params =3D 4;
+> > >
+> > >         param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
+> > > -       param[0].u.memref.shm =3D reg_shm_in;
+> > > +       param[0].u.memref.shm =3D shm;
+> > >         param[0].u.memref.size =3D p->key_len;
+> > >         param[0].u.memref.shm_offs =3D 0;
+> > >         param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
+> > > -       param[1].u.memref.shm =3D reg_shm_out;
+> > > +       param[1].u.memref.shm =3D shm;
+> > >         param[1].u.memref.size =3D sizeof(p->blob);
+> > > -       param[1].u.memref.shm_offs =3D 0;
+> > > +       param[1].u.memref.shm_offs =3D p->key_len;
+> > >
+> > >         ret =3D tee_client_invoke_func(pvt_data.ctx, &inv_arg, param);
+> > >         if ((ret < 0) || (inv_arg.ret !=3D 0)) {
+> > > @@ -104,14 +104,13 @@ static int trusted_tee_seal(struct trusted_key_pa=
+yload *p, char *datablob)
+> > >                         inv_arg.ret);
+> > >                 ret =3D -EFAULT;
+> > >         } else {
+> > > +               memcpy(p->blob, buf + p->key_len,
+> > > +                      min(param[1].u.memref.size, sizeof(p->blob)));
+> > >                 p->blob_len =3D param[1].u.memref.size;
+> > >         }
+> > >
+> > >  out:
+> > > -       if (reg_shm_out)
+> > > -               tee_shm_free(reg_shm_out);
+> > > -       if (reg_shm_in)
+> > > -               tee_shm_free(reg_shm_in);
+> > > +       tee_shm_free(shm);
+> > >
+> > >         return ret;
+> > >  }
+> > > @@ -166,11 +165,9 @@ static int trusted_tee_unseal(struct trusted_key_p=
+ayload *p, char *datablob)
+> > >                 p->key_len =3D param[1].u.memref.size;
+> > >         }
+> > >
+> > > +       tee_shm_free(reg_shm_out);
+> > >  out:
+> > > -       if (reg_shm_out)
+> > > -               tee_shm_free(reg_shm_out);
+> > > -       if (reg_shm_in)
+> > > -               tee_shm_free(reg_shm_in);
+> > > +       tee_shm_free(reg_shm_in);
+> > >
+> > >         return ret;
+> > >  }
+> > > @@ -183,15 +180,21 @@ static int trusted_tee_get_random(unsigned char *=
+key, size_t key_len)
+> > >         int ret;
+> > >         struct tee_ioctl_invoke_arg inv_arg;
+> > >         struct tee_param param[4];
+> > > -       struct tee_shm *reg_shm =3D NULL;
+> > > +       struct tee_shm *shm;
+> > > +       void *buf;
+> > >
+> > >         memset(&inv_arg, 0, sizeof(inv_arg));
+> > >         memset(&param, 0, sizeof(param));
+> > >
+> > > -       reg_shm =3D tee_shm_register_kernel_buf(pvt_data.ctx, key, key_=
+len);
+> > > -       if (IS_ERR(reg_shm)) {
+> > > -               dev_err(pvt_data.dev, "key shm register failed\n");
+> > > -               return PTR_ERR(reg_shm);
+> > > +       shm =3D tee_shm_alloc_kernel_buf(pvt_data.ctx, key_len);
+> > > +       if (IS_ERR(shm)) {
+> > > +               dev_err(pvt_data.dev, "key shm alloc failed\n");
+> > > +               return PTR_ERR(shm);
+> > > +       }
+> > > +       buf =3D tee_shm_get_va(shm, 0);
+> > > +       if (IS_ERR(buf)) {
+> > > +               ret =3D PTR_ERR(buf);
+> > > +               goto out;
+> > >         }
+> > >
+> > >         inv_arg.func =3D TA_CMD_GET_RANDOM;
+> > > @@ -199,7 +202,7 @@ static int trusted_tee_get_random(unsigned char *ke=
+y, size_t key_len)
+> > >         inv_arg.num_params =3D 4;
+> > >
+> > >         param[0].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT;
+> > > -       param[0].u.memref.shm =3D reg_shm;
+> > > +       param[0].u.memref.shm =3D shm;
+> > >         param[0].u.memref.size =3D key_len;
+> > >         param[0].u.memref.shm_offs =3D 0;
+> > >
+> > > @@ -209,18 +212,19 @@ static int trusted_tee_get_random(unsigned char *=
+key, size_t key_len)
+> > >                         inv_arg.ret);
+> > >                 ret =3D -EFAULT;
+> > >         } else {
+> > > +               memcpy(key, buf, min(param[0].u.memref.size, key_len));
+> > >                 ret =3D param[0].u.memref.size;
+> > >         }
+> > >
+> > > -       tee_shm_free(reg_shm);
+> > > +out:
+> > > +       tee_shm_free(shm);
+> > >
+> > >         return ret;
+> > >  }
+> > >
+> > >  static int optee_ctx_match(struct tee_ioctl_version_data *ver, const v=
+oid *data)
+> > >  {
+> > > -       if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE &&
+> > > -           ver->gen_caps & TEE_GEN_CAP_REG_MEM)
+> > > +       if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE)
+> > >                 return 1;
+> > >         else
+> > >                 return 0;
+> > > --
+> > > 2.34.1
+> > >
 
-/me sad.
-
-
-> +	else
-> +		pr_err("invalid amdtee_cma size: %lu\n", amdtee_cma_size);
-> +
-> +	return 0;
-> +}
-> +early_param("amdtee_cma", early_parse_amdtee_cma);
-> +
-> +void __init amdtee_cma_reserve(void)
-> +{
-> +	int ret;
-> +
-> +	ret =3D cma_declare_contiguous(0, amdtee_cma_size, 0, 0, 0, false, "amdte=
-e", &amdtee_cma);
-> +	if (ret)
-> +		pr_err("Failed to reserve CMA region of size %lu\n", amdtee_cma_size);
-> +	else
-> +		pr_info("Reserved %lu bytes CMA for amdtee\n", amdtee_cma_size);
-> +}
-> +
-> +unsigned long amdtee_alloc_from_cma(struct tee_shm *shm, unsigned int orde=
-r)
-> +{
-> +	struct page *page =3D NULL;
-> +	unsigned long va =3D 0;
-> +	int nr_pages =3D 0;
-> +
-> +	if (amdtee_cma) {
-> +		nr_pages =3D 1 << order;
-> +		page =3D cma_alloc(amdtee_cma, nr_pages, 0, false);
-> +		if (page)
-> +			va =3D (unsigned long)page_to_virt(page);
-> +		else
-> +			pr_debug("failed to allocate from CMA region\n");
-> +	} else {
-> +		pr_debug("CMA region is not available\n");
-> +	}
-> +	return va;
-> +}
-> +
-> +void amdtee_free_from_cma(struct tee_shm *shm)
-> +{
-> +	struct page *page;
-> +	int nr_pages =3D 0;
-> +
-> +	if (amdtee_cma) {
-> +		nr_pages =3D 1 << get_order(shm->size);
-> +		page =3D virt_to_page(shm->kaddr);
-> +		cma_release(amdtee_cma, page, nr_pages);
-> +	} else {
-> +		pr_err("CMA region is not available\n");
-> +	}
-> +}
-> +#endif /* IS_BUILTIN(CONFIG_AMDTEE) && IS_ENABLED(CONFIG_CMA) */
-> diff --git a/drivers/tee/amdtee/shm_pool_cma.h b/drivers/tee/amdtee/shm_poo=
-l_cma.h
-> new file mode 100644
-> index 000000000000..d1cde11cbede
-> --- /dev/null
-> +++ b/drivers/tee/amdtee/shm_pool_cma.h
-> @@ -0,0 +1,38 @@
-> +/* SPDX-License-Identifier: MIT */
-> +
-> +/*
-> + * Copyright 2023 Advanced Micro Devices, Inc.
-> + */
-> +
-> +#ifndef SHM_POOL_CMA_H
-> +#define SHM_POOL_CMA_H
-> +
-> +#if IS_BUILTIN(CONFIG_AMDTEE) && IS_ENABLED(CONFIG_CMA)
-> +
-> +extern unsigned long amdtee_cma_size;
-> +
-> +static inline unsigned long amdtee_get_cma_size(void)
-> +{
-> +	return amdtee_cma_size;
-> +}
-> +
-> +unsigned long amdtee_alloc_from_cma(struct tee_shm *shm, unsigned int orde=
-r);
-> +
-> +void amdtee_free_from_cma(struct tee_shm *shm);
-> +
-> +#else /* IS_BUILTIN(CONFIG_AMDTEE) && IS_ENABLED(CONFIG_CMA) */
-> +
-> +static inline unsigned long amdtee_get_cma_size(void)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline unsigned long amdtee_alloc_from_cma(struct tee_shm *shm, uns=
-igned int order)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void amdtee_free_from_cma(struct tee_shm *shm) { }
-> +
-> +#endif /* IS_BUILTIN(CONFIG_AMDTEE) && IS_ENABLED(CONFIG_CMA) */
-> +#endif /* SHM_POOL_CMA_H */
-
---=20
-Alexey
-
-
---===============5125331354783431590==--
+--===============7857530138947714318==--
 
