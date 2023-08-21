@@ -1,21 +1,21 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [RFC, PATCH 1/1] rpmb: add Replay Protected Memory Block (RPMB) driver
-Date: Mon, 21 Aug 2023 17:24:59 +0530
+Date: Mon, 21 Aug 2023 14:55:51 +0300
 Message-ID: 
- <CAFA6WYMLuvmXcc3FVoT_mOPsBrjPc3ucSoLK6qY_5995+ygHDw@mail.gmail.com>
+ <CAC_iWjKKap47PhiCi=BfPZC_wJhVDB10WSf9oWMgdwSgWCfO_A@mail.gmail.com>
 In-Reply-To: <
  <CAHUa44Ek0k2b-igA6Gd1ZXVzibTh2sNDMnE-weQwFFKEZ_1jOA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7422830325418672213=="
+Content-Type: multipart/mixed; boundary="===============4173943018882189563=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7422830325418672213==
+--===============4173943018882189563==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 21 Aug 2023 at 16:49, Jens Wiklander <jens.wiklander@linaro.org> wr=
+On Mon, 21 Aug 2023 at 14:19, Jens Wiklander <jens.wiklander@linaro.org> wr=
 ote:
 >
 > On Mon, Aug 21, 2023 at 12:03=E2=80=AFPM Sumit Garg <sumit.garg@linaro.or=
@@ -104,28 +104,19 @@ id
 > > the RPMB CID which is allocated to the secure world.
 >
 > Another option is for OP-TEE to iterate over all RPMBs with a
-> programmed key and test if the key OP-TEE would use works.
-
-That would require intercepting OP-TEE RPMB frames such that any
-"write key" frame is blocked. As we don't want OP-TEE to occupy
-unprovisioned RPMB partitions.
-
-> That should
-> avoid the problem of provisioning a device-unique secure DTB.
-
-Okay I see the scalability concerns. So how about instead we have a
-UFS/eMMC/NVMe controller specific boolean secure RPMB DT property?
-
-> I'd
+> programmed key and test if the key OP-TEE would use works. That should
+> avoid the problem of provisioning a device-unique secure DTB. I'd
 > expect that the RPMB key is programmed by a trusted provisioning tool
 > since allowing OP-TEE to program the RPMB key has never been secure,
 > not unless the OP-TEE binary is rollback protected.
 
-Agree but any such RPMB key provisioning tool should either belong to
-OP-TEE, u-boot or Linux.
++1 to that.  Overall we shound't 'trust' to do the programming. For
+example, in OP-TEE if you compile it with device programming
+capabilities, you can easily convince OP-TEE to send you the symmetric
+key by swapping the supplicant with a malicious application.
 
--Sumit
-
+Thanks
+/Ilias
 >
 > Cheers,
 > Jens
@@ -137,5 +128,5 @@ OP-TEE, u-boot or Linux.
 > > > --
 > > > Jerome
 
---===============7422830325418672213==--
+--===============4173943018882189563==--
 
