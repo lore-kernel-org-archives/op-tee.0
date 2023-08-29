@@ -1,75 +1,94 @@
 From: Devaraj Rangasamy <Devaraj.Rangasamy@amd.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH] tee: amdtee: add support for use of cma region
-Date: Tue, 29 Aug 2023 22:17:06 +0530
-Message-ID: <b04ac070-2149-4d61-ad90-75401e173b29@amd.com>
-In-Reply-To: <b908433c-0924-fbf7-f555-532e438ff050@intel.com>
+Date: Tue, 29 Aug 2023 22:17:36 +0530
+Message-ID: <92ed14f5-d999-4d54-915b-0a3449da44f8@amd.com>
+In-Reply-To: <0f16dd5a-bce7-0e36-3827-f713e90fb843@infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4455446051756352023=="
+Content-Type: multipart/mixed; boundary="===============7955159106044033159=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4455446051756352023==
+--===============7955159106044033159==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
 
-On 8/18/2023 8:56 PM, Dave Hansen wrote:
+On 8/19/2023 4:34 AM, Randy Dunlap wrote:
+> Hi--
+>
 > On 8/18/23 07:42, Devaraj Rangasamy wrote:
->> --- a/arch/x86/kernel/setup.c
->> +++ b/arch/x86/kernel/setup.c
->> @@ -1223,6 +1223,8 @@ void __init setup_arch(char **cmdline_p)
->>   	initmem_init();
->>   	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);
->>   
->> +	amdtee_cma_reserve();
+>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentati=
+on/admin-guide/kernel-parameters.txt
+>> index 722b6eca2e93..5e38423f3d53 100644
+>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>> @@ -363,6 +363,13 @@
+>>   			  selects a performance level in this range and appropriate
+>>   			  to the current workload.
+>>  =20
+>> +	amdtee_cma=3Dnn	[HW,TEE]
+>> +			Sets the memory size reserved for contiguous memory
+>> +			allocations, to be used by amdtee device driver.
+>> +			Value is in MB and can range from 4 to 128 (MBs)
+> 			                                       128 (MBs).
+Ack.
+In updated patch, we dont use new custom kernel command line parameter,=20
+and resorted to generic cma zone.
+>
+>> +			CMA will be active only when CMA is enabled, and amdtee is
+> 	That could use some improvement. How about:
+>
+> 			AMD-TEE CMA will be active only when CONFIG_CMA is enabled,
+> 			and amdtee is
+Ack, as above.
+>
+>> +			built as inbuilt driver, and not loaded as module.
 >> +
->>   	if (boot_cpu_has(X86_FEATURE_GBPAGES))
->>   		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
-> Right now, we have *A* global CMA pool set up in
-> dma_contiguous_reserve() that everyone shares.
+>>   	amijoy.map=3D	[HW,JOY] Amiga joystick support
+>>   			Map of devices attached to JOY0DAT and JOY1DAT
+>>   			Format: <a>,<b>
+>> diff --git a/drivers/tee/amdtee/Kconfig b/drivers/tee/amdtee/Kconfig
+>> index 191f9715fa9a..5843c739a7b8 100644
+>> --- a/drivers/tee/amdtee/Kconfig
+>> +++ b/drivers/tee/amdtee/Kconfig
+>> @@ -6,3 +6,12 @@ config AMDTEE
+>>   	depends on CRYPTO_DEV_SP_PSP && CRYPTO_DEV_CCP_DD
+>>   	help
+>>   	  This implements AMD's Trusted Execution Environment (TEE) driver.
+>> +
+>> +config AMDTEE_CMA_SIZE
+>> +	int "Size of Memory in MiB reserved in CMA for AMD-TEE"
+>> +	default "0"
+> Why won't this default value cause an allocation error message?
+> Maybe I'm just not following the call paths correctly.
 >
-> Why does this *one* driver deserve to be a special snowflake and get its
-> own private CMA area and own command-line options?
+> It looks to me like this causes a call to
+> cma_declare_contiguous_nid() with @size =3D 0, and that function says:
 >
-> It seems to me like you should just tell users to set
-> CONFIG_CMA_SIZE_MBYTES or use cma=size on the command-line and just use
-> the global pool.  If you want to make it a special snowflake, there's a
-> much higher bar to clear, and there's zero justification for that right now.
-
+> 	if (!size)
+> 		return -EINVAL;
 Ack.
-
-We had exclusive cma zone due to concern over contention for generic cma 
-zone, and to guarentee buffer allocation. We profiled and migrated to 
-generic cma zone.
-
-> Oh, and this:
->
->>   static int pool_op_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
->>   			 size_t size, size_t align)
->>   {
->>   	unsigned int order = get_order(size);
->>   	unsigned long va;
->>   	int rc;
->>   
->>   	/*
->>   	 * Ignore alignment since this is already going to be page aligned
->>   	 * and there's no need for any larger alignment.
->>   	 */
->> 	va = __get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
-> is goofy.  It either only needs powers-of-2 and can take "order" as an
-> argument instead of 'size', or it should be using alloc_pages_exact() to
-> avoid wasting memory.
-
+It did resulted in error message. We have revoked new exclusive cma zone=20
+now.
+>> +	depends on CMA && (AMDTEE=3Dy)
+>> +	help
+>> +	  Specify the default amount of memory in MiB reserved in CMA for AMD-TE=
+E driver
+> 	                                                                          =
+driver.
 Ack.
-This was inherently introduced by __get_free_pages() requirement, and 
-constly indeed.
-alloc_pages_exact() do call __get_free_pages() internally, and doesnot 
-prevent memory fragmentation. but at least unnecessary pages are 
-returned back to free pool.
+>> +	  Any amdtee shm buffer allocation larger than 64k will allocate memory =
+from the CMA
+> 	                                                                          =
+       CMA.
+Ack.
+>> +	  The default can be overridden with the kernel commandline parameter "a=
+mdtee_cma".
+>> \ No newline at end of file
+> Please fix that ^^^ warning.
+Ack, as above. Thanks for the review.
+>
+> Thanks.
 
-We will update the section accordingly, and post updated patch. Thanks 
-for the review.
-
-
---===============4455446051756352023==--
+--===============7955159106044033159==--
 
