@@ -1,67 +1,88 @@
-From: jorge@foundries.io
+From: Devaraj Rangasamy <Devaraj.Rangasamy@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Optee + OpenSSH/OpenSSL
-Date: Tue, 29 Aug 2023 20:28:02 +0200
-Message-ID: <449D8B6D-97A9-4AE3-9FDB-CAB4D7D6F117@foundries.io>
-In-Reply-To: <
- <CAFA6WYMSFc153i+r=yV3G0MW3FyfBgwoGsz+ma4Pg9E9190Tvg@mail.gmail.com>>
+Subject: 
+ [PATCH v2 1/2] tee: amdtee: use page_alloc_exact() for memory allocations
+Date: Wed, 30 Aug 2023 01:49:42 +0530
+Message-ID: <fe6fd7781d77ea32064e5b861f33150b28768278.1693340098.git.Devaraj.Rangasamy@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0140661959090752224=="
+Content-Type: multipart/mixed; boundary="===============8134800535587107360=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0140661959090752224==
+--===============8134800535587107360==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-     On 29 Aug 2023, at 11:56, Sumit Garg <sumit.garg@linaro.org> wrote:
+Use page_alloc_exact() to get buffers, instead of
+get_free_pages(), so as to avoid wastage of memory.
+Currently get_free_pages() is allocating at next order,
+while page_alloc_exact() will free the unused pages.
 
-   ﻿Hi Hareesh,
-   On Tue, 29 Aug 2023 at 13:35, Hareesh Das Ulleri
-   <hareesh.ulleri@ovt.com> wrote:
+Signed-off-by: Devaraj Rangasamy <Devaraj.Rangasamy@amd.com>
+---
+ v2:
+ * Replaced __get_free_pages() with alloc_pages_exact().
 
-     Hello all,
+ drivers/tee/amdtee/shm_pool.c | 18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
 
-       We are started using Op-tee in our project.
+diff --git a/drivers/tee/amdtee/shm_pool.c b/drivers/tee/amdtee/shm_pool.c
+index f0303126f199..156e8a6f631f 100644
+--- a/drivers/tee/amdtee/shm_pool.c
++++ b/drivers/tee/amdtee/shm_pool.c
+@@ -4,6 +4,7 @@
+  */
+=20
+ #include <linux/slab.h>
++#include <linux/mm.h>
+ #include <linux/tee_drv.h>
+ #include <linux/psp.h>
+ #include "amdtee_private.h"
+@@ -11,26 +12,23 @@
+ static int pool_op_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
+ 			 size_t size, size_t align)
+ {
+-	unsigned int order =3D get_order(size);
+-	unsigned long va;
++	void *va;
+ 	int rc;
+=20
+-	/*
+-	 * Ignore alignment since this is already going to be page aligned
+-	 * and there's no need for any larger alignment.
+-	 */
+-	va =3D __get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
++	size =3D PAGE_ALIGN(size);
++
++	va =3D alloc_pages_exact(size, GFP_KERNEL | __GFP_ZERO);
+ 	if (!va)
+ 		return -ENOMEM;
+=20
+ 	shm->kaddr =3D (void *)va;
+ 	shm->paddr =3D __psp_pa((void *)va);
+-	shm->size =3D PAGE_SIZE << order;
++	shm->size =3D size;
+=20
+ 	/* Map the allocated memory in to TEE */
+ 	rc =3D amdtee_map_shmem(shm);
+ 	if (rc) {
+-		free_pages(va, order);
++		free_pages_exact(va, size);
+ 		shm->kaddr =3D NULL;
+ 		return rc;
+ 	}
+@@ -42,7 +40,7 @@ static void pool_op_free(struct tee_shm_pool *pool, struct =
+tee_shm *shm)
+ {
+ 	/* Unmap the shared memory from TEE */
+ 	amdtee_unmap_shmem(shm);
+-	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
++	free_pages_exact(shm->kaddr, shm->size);
+ 	shm->kaddr =3D NULL;
+ }
+=20
+--=20
+2.25.1
 
-       Since we are new to Op-tee, could someone please confirm whether
-     anyone has already tried below in their project or is it possible to
-     use along with OpenSSH/OpenSSL ?
 
-       What we try to accomplish is:  application/sshd -> openssl
-     (libcrypto/provider) -> Optee (client/TA) -> (HW or SW cipher
-     algorithm) for data encryption/decryption.
-
-   I would rather suggest you to use the existing OP-TEE based PKCS#11
-   engine for openssl. For detailed information, I would suggest you to
-   go through [1].
-   [1]
-   https://optee.readthedocs.io/en/latest/building/userland_integration.ht
-   ml#pkcs-11-driver
-
-   check the architecture overview here
-
-   [1]Over the Air Updates — FoundriesFactory 91 documentation
-   [2]docs.foundries.io
-   [3][4Lv1BGB9IcexDbd4RksnM0HENlhnGRZrCGudkEvjaT4eyY6TVqBjHOG6uD5pxvUcCqr
-   418ATq2ZauthinRNayDSZbZ4J4tLIS6JIYj0+4vF2JlyT3yky1pfwfGQWy7GIC6VefTaYL7
-   XTPHfsKNnOYBYTckon+D9aD2MnPuBZyagcx0xx1jqJAVp2sqUx5Bt0qsVPcQXiCsQViCsQV
-   yCuQFyBuAJxBeIKxBWIKxBXIK5AXAHzCvwH9WAIYRB4imoAAAAASUVORK5CYII=]
-
-   -Sumit
-
-     Thanks,
-
-     Hareesh
-
-References
-
-   Visible links:
-   1. https://docs.foundries.io/latest/reference-manual/ota/ota.html
-   2. https://docs.foundries.io/latest/reference-manual/ota/ota.html
-   3. https://docs.foundries.io/latest/reference-manual/ota/ota.html
-
-   Hidden links:
-   5. https://docs.foundries.io/latest/reference-manual/ota/ota.html
-
---===============0140661959090752224==--
+--===============8134800535587107360==--
 
