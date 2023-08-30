@@ -1,17 +1,44 @@
-From: "Jorge Ramirez-Ortiz, Foundries" <jorge@foundries.io>
+From: Hareesh Das Ulleri <hareesh.ulleri@ovt.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Optee + OpenSSH/OpenSSL
-Date: Wed, 30 Aug 2023 10:51:46 +0200
-Message-ID: <ZO8DIhS/ZuZSAKm6@trax>
-In-Reply-To: <
- <CAFA6WYMSFc153i+r=yV3G0MW3FyfBgwoGsz+ma4Pg9E9190Tvg@mail.gmail.com>>
+Subject: RE: Optee + OpenSSH/OpenSSL
+Date: Wed, 30 Aug 2023 10:11:34 +0000
+Message-ID: <SN7PR22MB37629A8713C53FAD769066719DE6A@SN7PR22MB3762.namprd22.prod.outlook.com>
+In-Reply-To: <ZO8DIhS/ZuZSAKm6@trax>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5940267951170659738=="
+Content-Type: multipart/mixed; boundary="===============0830307678382842506=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5940267951170659738==
+--===============0830307678382842506==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Thank you all for your prompt responses and links you shared.
+
+   In our earlier system, we tried openssh + openssl 3.x custom provider + HW=
+ crypto (without OP_TEE) and it works.
+
+   In this new system we have OP_TEE and try to port earlier approach. But wh=
+at we could foresee is some potential issue on how OpenSSH handling with OP_T=
+EE file handlers.
+
+   whether anybody tried before or knows OpenSSH + OP_TEE implementation? I a=
+m not sure whether we need PKCS#11 implementation, as per my understanding no=
+t needed !
+
+Regards,
+Hareesh =20
+
+
+-----Original Message-----
+From: Jorge Ramirez-Ortiz, Foundries <jorge@foundries.io>=20
+Sent: Wednesday, August 30, 2023 4:52 PM
+To: Sumit Garg <sumit.garg@linaro.org>
+Cc: Hareesh Das Ulleri <hareesh.ulleri@ovt.com>; op-tee(a)lists.trustedfirm=
+ware.org
+Subject: Re: Optee + OpenSSH/OpenSSL
+
+[CAUTION]: EXTERNAL EMAIL
+
 
 On 29/08/23 15:25:42, Sumit Garg wrote:
 > Hi Hareesh,
@@ -32,24 +59,27 @@ provider) -> Optee (client/TA) -> (HW or SW cipher algorithm) for data encryp=
 tion/decryption.
 > >
 >
-> I would rather suggest you to use the existing OP-TEE based PKCS#11
-> engine for openssl. For detailed information, I would suggest you to
+> I would rather suggest you to use the existing OP-TEE based PKCS#11=20
+> engine for openssl. For detailed information, I would suggest you to=20
 > go through [1].
 
 +1
 
 >
-> [1] https://optee.readthedocs.io/en/latest/building/userland_integration.ht=
-ml#pkcs-11-driver
+> [1]=20
+> https://urldefense.com/v3/__https://optee.readthedocs.io/en/latest/bui
+> lding/userland_integration.html*pkcs-11-driver__;Iw!!AYUVhIwY!5CEUbRG2
+> _XfcFjd9qMKwDuxEY3bwTdRTQOm0dG-unCC52ylg2npsi4CLlZ74Ncm5BBrSdDm6osheiU
+> JyNrQ$
 
 
-If you use an openssl provider you will be developing on the edge so I
-will be interested in your commits upstream if you are using it to
-access a TPM (last time I checked the tpm2-pkcs11 implementation was not
-working with an openssl provider - just the engine)
+If you use an openssl provider you will be developing on the edge so I will b=
+e interested in your commits upstream if you are using it to access a TPM (la=
+st time I checked the tpm2-pkcs11 implementation was not working with an open=
+ssl provider - just the engine)
 
-what we did at foundries was to use the engine interface and from there
-plug the different pkcs11 implementations (op-tee being one, tpm2 being
+what we did at foundries was to use the engine interface and from there plug =
+the different pkcs11 implementations (op-tee being one, tpm2 being
 another)
 
 >
@@ -59,5 +89,5 @@ another)
 > > Hareesh
 > >
 
---===============5940267951170659738==--
+--===============0830307678382842506==--
 
