@@ -1,40 +1,47 @@
-From: Don Harbin <don.harbin@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: New TrustedFirmware Discord Server
-Date: Fri, 08 Sep 2023 15:25:13 -0700
-Message-ID: 
- <CA+HB5jB5Ow=2KH-XW2J36ZCiLt4N8UXfnOx1O=6wBvWAw_hpbw@mail.gmail.com>
+Subject: [GIT PULL] TEE fix for v6.6
+Date: Wed, 13 Sep 2023 10:39:09 +0200
+Message-ID: <20230913083909.GA473533@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4454237729187701294=="
+Content-Type: multipart/mixed; boundary="===============4777238425548294076=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4454237729187701294==
+--===============4777238425548294076==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi All,
-Note you may have received another instance of this note but when I
-attempted to send to all TF ML's simultaneously it seemed to fail, so
-sending to each one at a time.  Sorry about that. :/
+Hello arm-soc maintainers,
 
-We've created a Discord Server for real time chats/sharing. This solution
-comes at no cost to the project, is set up with channels for each project,
-includes a #general channel, and supports direct 1-1 chats between members,
-all with the goal of improving collaboration between trustedfirmware.org
- developers.
+Please pull this small fix that removes a few unused function declarations
+in the TEE subsystem.
 
-We encourage all to join! :)  Instructions for joining can be found on
-the TF.org
-FAQ page <https://www.trustedfirmware.org/faq/>.
+Thanks,
+Jens
 
-See you all there and please don't hesitate to reach out if you have any
-questions!
+The following changes since commit 2dde18cd1d8fac735875f2e4987f11817cc0bc2c:
 
-Don Harbin
+  Linux 6.5 (2023-08-27 14:49:51 -0700)
 
-TrustedFirmware Community Manager
+are available in the Git repository at:
 
-don.harbin(a)linaro.org
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git/ tags/optee-for-=
+for-v6.6
 
---===============4454237729187701294==--
+for you to fetch changes up to 069969d6c5264d2348fd6cf0cedc00fd87ff3cee:
+
+  tee: Remove unused declarations (2023-09-13 08:16:24 +0200)
+
+----------------------------------------------------------------
+Remove a few unused declarations in TEE subsystem
+
+----------------------------------------------------------------
+Yue Haibing (1):
+      tee: Remove unused declarations
+
+ drivers/tee/optee/optee_private.h | 2 --
+ drivers/tee/tee_private.h         | 2 --
+ 2 files changed, 4 deletions(-)
+
+--===============4777238425548294076==--
 
