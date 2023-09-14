@@ -1,80 +1,43 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Robert Delien <r.delien@payter.nl>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH -next] tee: Remove unused declarations
-Date: Wed, 13 Sep 2023 10:39:28 +0200
+Subject: TA access to its own checksum
+Date: Thu, 14 Sep 2023 11:58:22 +0200
 Message-ID: 
- <CAHUa44Gfz8OBm6WEROeKt00O-vj6FtM5f5GXVRHXxF1Vs+i5mQ@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYPsaJdGT9kS4ygHNRYDpX8bRaY__EwZWuCF-x-DgWUDhQ@mail.gmail.com>>
+ <CAEhEOQnvkuNo4HRYoS-JErLPzcRqxvu7sbNn1Hp1YAVyqKGKbA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5841443944522955639=="
+Content-Type: multipart/mixed; boundary="===============0922635202441434227=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5841443944522955639==
+--===============0922635202441434227==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 17, 2023 at 12:11=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org>=
- wrote:
->
-> On Thu, 10 Aug 2023 at 20:19, Yue Haibing <yuehaibing@huawei.com> wrote:
-> >
-> > Commit 4fb0a5eb364d ("tee: add OP-TEE driver") declared but never impleme=
-nted
-> > optee_supp_read()/optee_supp_write().
-> > Commit 967c9cca2cc5 ("tee: generic TEE subsystem") never implemented tee_=
-shm_init().
-> >
-> > Signed-off-by: Yue Haibing <yuehaibing@huawei.com>
-> > ---
-> >  drivers/tee/optee/optee_private.h | 2 --
-> >  drivers/tee/tee_private.h         | 2 --
-> >  2 files changed, 4 deletions(-)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Hi,
 
-I'm picking up this.
+For legislative purposes, one of our Trusted Applications needs to show a
+checksum to the end-user on our secure screen, to allow verification.
+Albeit a bit unconventional use of it, we thought that the TA's own
+checksum would be ideal for that, but we're having difficulties figuring
+how to access that, if at all possible.
 
-Thanks,
-Jens
+So I have to turn to you guys here: Is there any way for a TA to access its
+own checksum? And if yes, could somebody please give me some pointers on
+how to do this?
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_=
-private.h
-> > index 72685ee0d53f..6bb5cae09688 100644
-> > --- a/drivers/tee/optee/optee_private.h
-> > +++ b/drivers/tee/optee/optee_private.h
-> > @@ -238,8 +238,6 @@ int optee_notif_send(struct optee *optee, u_int key);
-> >  u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_pa=
-rams,
-> >                         struct tee_param *param);
-> >
-> > -int optee_supp_read(struct tee_context *ctx, void __user *buf, size_t le=
-n);
-> > -int optee_supp_write(struct tee_context *ctx, void __user *buf, size_t l=
-en);
-> >  void optee_supp_init(struct optee_supp *supp);
-> >  void optee_supp_uninit(struct optee_supp *supp);
-> >  void optee_supp_release(struct optee_supp *supp);
-> > diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
-> > index 409cadcc1cff..754e11dcb240 100644
-> > --- a/drivers/tee/tee_private.h
-> > +++ b/drivers/tee/tee_private.h
-> > @@ -47,8 +47,6 @@ struct tee_device {
-> >         struct tee_shm_pool *pool;
-> >  };
-> >
-> > -int tee_shm_init(void);
-> > -
-> >  int tee_shm_get_fd(struct tee_shm *shm);
-> >
-> >  bool tee_device_get(struct tee_device *teedev);
-> > --
-> > 2.34.1
-> >
+With kind regards,
 
---===============5841443944522955639==--
+        Robert.
+
+-- 
+DISCLAIMER
+De informatie, verzonden in of met dit e-mailbericht, is 
+vertrouwelijk en uitsluitend voor de geadresseerde(n) bestemd. Het gebruik 
+van de informatie in dit bericht, de openbaarmaking, vermenigvuldiging, 
+verspreiding en|of verstrekking daarvan aan derden is niet toegestaan. 
+Gebruik van deze informatie door anderen dan geadresseerde(n) is strikt 
+verboden. Aan deze informatie kunnen geen rechten worden ontleend. U wordt 
+verzocht bij onjuiste adressering de afzender direct te informeren door het 
+bericht te retourneren en het bericht uit uw computersysteem te verwijderen.
+
+--===============0922635202441434227==--
 
