@@ -1,124 +1,96 @@
-From: Jérôme Forissier <jerome.forissier@linaro.org>
+From: Rijo Thomas <Rijo-john.Thomas@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: TA access to its own checksum
-Date: Thu, 14 Sep 2023 16:45:06 +0200
-Message-ID: 
- <CA+NB=mZCqFDNi0cSgOXG5M914vQ3UHZMboty82X9cUN6HzDGUg@mail.gmail.com>
-In-Reply-To: <
- <CA+EyddaRkcvjCLKLfbuOtthp9FB9hTgeyYgS4hwFoKbcVdN4Mw@mail.gmail.com>>
+Subject: [PATCH 1/1] tee: amdtee: fix use-after-free vulnerability in
+ amdtee_close_session
+Date: Fri, 22 Sep 2023 12:25:13 +0530
+Message-ID: <6a829fb24c6b680275a08edf883ee458a9cab011.1695365438.git.Rijo-john.Thomas@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3016576867755733023=="
+Content-Type: multipart/mixed; boundary="===============8581808874418225654=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3016576867755733023==
+--===============8581808874418225654==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 14 Sept 2023 at 12:47, Joakim Bech <joakim.bech@linaro.org> wrote:
+There is a potential race condition in amdtee_close_session that may
+cause use-after-free in amdtee_open_session. For instance, if a session
+has refcount =3D=3D 1, and one thread tries to free this session via:
 
-> Hi Robert,
->
-> On Thu, Sep 14, 2023 at 11:58=E2=80=AFAM Robert Delien <r.delien@payter.n=
-l> wrote:
->
-> > Hi,
-> >
-> > For legislative purposes, one of our Trusted Applications needs to show a
-> > checksum to the end-user on our secure screen, to allow verification.
-> > Albeit a bit unconventional use of it, we thought that the TA's own
-> > checksum would be ideal for that, but we're having difficulties figuring
-> > how to access that, if at all possible.
-> >
-> > So I have to turn to you guys here: Is there any way for a TA to access
-> its
-> > own checksum? And if yes, could somebody please give me some pointers on
-> > how to do this?
-> >
-> TEE core could compute the checksum as part of loading the TA, the crux
-> would
-> be how to expose that to others. A possible solution would be to store it
-> in memory
-> as a dictionary containing the uuid and checksum. Then a pseudo TA [1]
-> could hand
-> out this information to clients, like other TA's or even normal world
-> clients, when
-> needed. I.e., pseudo TA implements and exposes a function (in pseudo code),
-> looking something like this :
->    TEE_Result get_checksum_for_ta(uuid, *checksum) {
->       // Get checksum from memory
->       *checksum =3D checksum_list[uuid];
->      return ...
->    }
->
-> [1]
->
-> https://optee.readthedocs.io/en/latest/faq/faq.html?#q-what-is-a-pseudo-ta-=
-and-how-do-i-write-one
->
+    kref_put(&sess->refcount, destroy_session);
 
-A related topic is TA attestation, for which we do have some code already,
-see [2] [3]. It involves signing the requested data with a per-device keyt
-though, which may not be needed in the above use case.
+the reference count will get decremented, and the next step would be to
+call destroy_session(). However, if in another thread,
+amdtee_open_session() is called before destroy_session() has completed
+execution, alloc_session() may return 'sess' that will be freed up
+later in destroy_session() leading to use-after-free in
+amdtee_open_session.
 
-If a simpler PTA is implemented, I suppose the checksum could be extracted
-the same way as [4]. That's the same value reported in the "hash:" line in
-the output of "sign_encrypt.py display":
+To fix this issue, treat decrement of sess->refcount and invocation of
+destroy_session() as a single critical section, so that it is executed
+atomically.
 
-$ ./optee_os/scripts/sign_encrypt.py display --in
-out-br/build/optee_test_ext-1.0/ta/crypt/out/cb3e5ba0-adf1-11e0-998b-0002a5d5=
-c51b.ta
-Bootstrap TA
- struct shdr
-  magic:      0x4f545348
-  img_type:   1 (SHDR_BOOTSTRAP_TA)
-  img_size:   357800 bytes
-  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
-  hash_size:  32 bytes
-  sig_size:   256 bytes
-  hash:
-a80c7a9d85faf23087a300d979ce3fd87f745fc34cbd6732de868528f194d7eb
- struct shdr_bootstrap_ta
-  uuid:       cb3e5ba0-adf1-11e0-998b-0002a5d5c51b
-  ta_version: 0
- TA offset:  328 (0x148) bytes
- TA size:    357800 (0x575a8) bytes
+Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+Cc: stable(a)vger.kernel.org
+Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
+---
+ drivers/tee/amdtee/core.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-[2]
-https://github.com/OP-TEE/optee_os/blob/3.22.0/lib/libutee/include/pta_attest=
-ation.h
-[3] https://github.com/OP-TEE/optee_os/blob/3.22.0/core/pta/attestation.c
-[4]
-https://github.com/OP-TEE/optee_os/blob/3.22.0/core/pta/attestation.c#L414
-
+diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
+index 372d64756ed6..04cee03bec9d 100644
+--- a/drivers/tee/amdtee/core.c
++++ b/drivers/tee/amdtee/core.c
+@@ -217,14 +217,13 @@ static int copy_ta_binary(struct tee_context *ctx, void=
+ *ptr, void **ta,
+ 	return rc;
+ }
+=20
++/* mutex must be held by caller */
+ static void destroy_session(struct kref *ref)
+ {
+ 	struct amdtee_session *sess =3D container_of(ref, struct amdtee_session,
+ 						   refcount);
+=20
+-	mutex_lock(&session_list_mutex);
+ 	list_del(&sess->list_node);
+-	mutex_unlock(&session_list_mutex);
+ 	kfree(sess);
+ }
+=20
+@@ -272,7 +271,9 @@ int amdtee_open_session(struct tee_context *ctx,
+ 	if (arg->ret !=3D TEEC_SUCCESS) {
+ 		pr_err("open_session failed %d\n", arg->ret);
+ 		handle_unload_ta(ta_handle);
++		mutex_lock(&session_list_mutex);
+ 		kref_put(&sess->refcount, destroy_session);
++		mutex_unlock(&session_list_mutex);
+ 		goto out;
+ 	}
+=20
+@@ -290,7 +291,9 @@ int amdtee_open_session(struct tee_context *ctx,
+ 		pr_err("reached maximum session count %d\n", TEE_NUM_SESSIONS);
+ 		handle_close_session(ta_handle, session_info);
+ 		handle_unload_ta(ta_handle);
++		mutex_lock(&session_list_mutex);
+ 		kref_put(&sess->refcount, destroy_session);
++		mutex_unlock(&session_list_mutex);
+ 		rc =3D -ENOMEM;
+ 		goto out;
+ 	}
+@@ -331,7 +334,9 @@ int amdtee_close_session(struct tee_context *ctx, u32 ses=
+sion)
+ 	handle_close_session(ta_handle, session_info);
+ 	handle_unload_ta(ta_handle);
+=20
++	mutex_lock(&session_list_mutex);
+ 	kref_put(&sess->refcount, destroy_session);
++	mutex_unlock(&session_list_mutex);
+=20
+ 	return 0;
+ }
 --=20
-Jerome
+2.25.1
 
->
-> > With kind regards,
-> >
-> >         Robert.
-> >
-> > --
-> > DISCLAIMER
-> > De informatie, verzonden in of met dit e-mailbericht, is
-> > vertrouwelijk en uitsluitend voor de geadresseerde(n) bestemd. Het
-> gebruik
-> > van de informatie in dit bericht, de openbaarmaking, vermenigvuldiging,
-> > verspreiding en|of verstrekking daarvan aan derden is niet toegestaan.
-> > Gebruik van deze informatie door anderen dan geadresseerde(n) is strikt
-> > verboden. Aan deze informatie kunnen geen rechten worden ontleend. U
-> wordt
-> > verzocht bij onjuiste adressering de afzender direct te informeren door
-> > het
-> > bericht te retourneren en het bericht uit uw computersysteem te
-> > verwijderen.
-> >
->
->
-> --
-> Regards,
-> Joakim
->
 
---===============3016576867755733023==--
+--===============8581808874418225654==--
 
