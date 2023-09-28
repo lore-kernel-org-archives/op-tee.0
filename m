@@ -1,66 +1,117 @@
-From: jeshwank <JESHWANTHKUMAR.NK@amd.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3] virtio-tee: Reserve device ID 46 for TEE device
-Date: Thu, 28 Sep 2023 11:42:30 +0530
-Message-ID: <cf8eee37bb9f5c2408f0ed8f4798e87b3c01f39c.1695881523.git.JESHWANTHKUMAR.NK@amd.com>
+Subject: Re: [PATCH 1/1] tee: amdtee: fix use-after-free vulnerability in
+ amdtee_close_session
+Date: Thu, 28 Sep 2023 20:35:14 +0530
+Message-ID: 
+ <CAFA6WYOk3M1EH1KPf4w=qYaQRF6Y_cnNWimJGTyiAdEokiNMKQ@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3C6a829fb24c6b680275a08edf883ee458a9cab011=2E1695365?=
+ =?utf-8?q?438=2Egit=2ERijo-john=2EThomas=40amd=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2713114184397847305=="
+Content-Type: multipart/mixed; boundary="===============7935319000309138277=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2713114184397847305==
+--===============7935319000309138277==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-In a virtual environment, an application running in guest VM may want
-to delegate security sensitive tasks to a Trusted Application (TA)
-running within a Trusted Execution Environment (TEE). A TEE is a trusted
-OS running in some secure environment, for example, TrustZone on ARM
-CPUs, or a separate secure co-processor etc.
+Hi Rijo,
 
-A virtual TEE device emulates a TEE within a guest VM. Such a virtual
-TEE device supports multiple operations such as:
+On Fri, 22 Sept 2023 at 12:26, Rijo Thomas <Rijo-john.Thomas@amd.com> wrote:
+>
+> There is a potential race condition in amdtee_close_session that may
+> cause use-after-free in amdtee_open_session. For instance, if a session
+> has refcount =3D=3D 1, and one thread tries to free this session via:
+>
+>     kref_put(&sess->refcount, destroy_session);
+>
+> the reference count will get decremented, and the next step would be to
+> call destroy_session(). However, if in another thread,
+> amdtee_open_session() is called before destroy_session() has completed
+> execution, alloc_session() may return 'sess' that will be freed up
+> later in destroy_session() leading to use-after-free in
+> amdtee_open_session.
+>
+> To fix this issue, treat decrement of sess->refcount and invocation of
+> destroy_session() as a single critical section, so that it is executed
+> atomically.
+>
+> Fixes: 757cc3e9ff1d ("tee: add AMD-TEE driver")
+> Cc: stable(a)vger.kernel.org
+> Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
+> ---
+>  drivers/tee/amdtee/core.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
+> index 372d64756ed6..04cee03bec9d 100644
+> --- a/drivers/tee/amdtee/core.c
+> +++ b/drivers/tee/amdtee/core.c
+> @@ -217,14 +217,13 @@ static int copy_ta_binary(struct tee_context *ctx, vo=
+id *ptr, void **ta,
+>         return rc;
+>  }
+>
+> +/* mutex must be held by caller */
+>  static void destroy_session(struct kref *ref)
+>  {
+>         struct amdtee_session *sess =3D container_of(ref, struct amdtee_ses=
+sion,
+>                                                    refcount);
+>
+> -       mutex_lock(&session_list_mutex);
+>         list_del(&sess->list_node);
+> -       mutex_unlock(&session_list_mutex);
+>         kfree(sess);
+>  }
+>
+> @@ -272,7 +271,9 @@ int amdtee_open_session(struct tee_context *ctx,
+>         if (arg->ret !=3D TEEC_SUCCESS) {
+>                 pr_err("open_session failed %d\n", arg->ret);
+>                 handle_unload_ta(ta_handle);
+> +               mutex_lock(&session_list_mutex);
+>                 kref_put(&sess->refcount, destroy_session);
 
-VIRTIO_TEE_CMD_OPEN_DEVICE – Open a communication channel with virtio
-                             TEE device.
-VIRTIO_TEE_CMD_CLOSE_DEVICE – Close communication channel with virtio
-                              TEE device.
-VIRTIO_TEE_CMD_GET_VERSION – Get version of virtio TEE.
-VIRTIO_TEE_CMD_OPEN_SESSION – Open a session to communicate with
-                              trusted application running in TEE.
-VIRTIO_TEE_CMD_CLOSE_SESSION – Close a session to end communication
-                               with trusted application running in TEE.
-VIRTIO_TEE_CMD_INVOKE_FUNC – Invoke a command or function in trusted
-                             application running in TEE.
-VIRTIO_TEE_CMD_CANCEL_REQ – Cancel an ongoing command within TEE.
-VIRTIO_TEE_CMD_REGISTER_MEM - Register shared memory with TEE.
-VIRTIO_TEE_CMD_UNREGISTER_MEM - Unregister shared memory from TEE.
+How about you rather use kref_put_mutex() here and then keep the
+mutex_unlock() within the destroy_session()?
 
-We would like to reserve device ID 46 for Virtio-TEE device.
+> +               mutex_unlock(&session_list_mutex);
+>                 goto out;
+>         }
+>
+> @@ -290,7 +291,9 @@ int amdtee_open_session(struct tee_context *ctx,
+>                 pr_err("reached maximum session count %d\n", TEE_NUM_SESSIO=
+NS);
+>                 handle_close_session(ta_handle, session_info);
+>                 handle_unload_ta(ta_handle);
+> +               mutex_lock(&session_list_mutex);
+>                 kref_put(&sess->refcount, destroy_session);
 
-Signed-off-by: Jeshwanth Kumar <jeshwanthkumar.nk@amd.com>
-Reviewed-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
-Reviewed-by: Parav Pandit <parav@nvidia.com>
-Acked-by: Sumit Garg <sumit.garg@linaro.org>
----
- content.tex | 2 ++
- 1 file changed, 2 insertions(+)
+Ditto.
 
-diff --git a/content.tex b/content.tex
-index 0a62dce..644aa4a 100644
---- a/content.tex
-+++ b/content.tex
-@@ -739,6 +739,8 @@ \chapter{Device Types}\label{sec:Device Types}
- \hline
- 45         &   SPI master \\
- \hline
-+46         &   TEE device \\
-+\hline
- \end{tabular}
- 
- Some of the devices above are unspecified by this document,
--- 
-2.25.1
+> +               mutex_unlock(&session_list_mutex);
+>                 rc =3D -ENOMEM;
+>                 goto out;
+>         }
+> @@ -331,7 +334,9 @@ int amdtee_close_session(struct tee_context *ctx, u32 s=
+ession)
+>         handle_close_session(ta_handle, session_info);
+>         handle_unload_ta(ta_handle);
+>
+> +       mutex_lock(&session_list_mutex);
+>         kref_put(&sess->refcount, destroy_session);
 
+Ditto.
 
---===============2713114184397847305==--
+-Sumit
+
+> +       mutex_unlock(&session_list_mutex);
+>
+>         return 0;
+>  }
+> --
+> 2.25.1
+>
+
+--===============7935319000309138277==--
 
