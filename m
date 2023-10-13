@@ -1,908 +1,243 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Fri, 13 Oct 2023 18:17:01 +0530
+Subject: Re: [PATCH v8 4/5] efivarfs: automatically update super block flag
+Date: Fri, 13 Oct 2023 17:25:48 +0200
 Message-ID: 
- <CAFA6WYNbP7F0fYAQmqfQ6keBVk-qJaoAueg0eUc1A5FhP8rU-w@mail.gmail.com>
-In-Reply-To: <20230927152145.111777-1-balint.dobszay@arm.com>
+ <CAC_iWj+P110h2cK=4tbCTq2c9aktox-EATOQgH_1wshRMKg4PQ@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYN_E=4nN1-j2-nQ_pi+b083UmKPNO9Saub7aZLAx4PCww@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5053861387937076920=="
+Content-Type: multipart/mixed; boundary="===============6053027546955787861=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5053861387937076920==
+--===============6053027546955787861==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.com> wrot=
-e:
->
-> The Trusted Services project provides a framework for developing and
-> deploying device Root Of Trust services in FF-A Secure Partitions. The
-> FF-A SPs are accessible through the FF-A driver, but this doesn't
-> provide a user space interface. The goal of this TEE driver is to make
-> Trusted Services SPs accessible for user space clients.
->
-> All TS SPs have the same FF-A UUID, it identifies the RPC protocol used
-> by TS. A TS SP can host one or more services, a service is identified by
-> its service UUID. The same type of service cannot be present twice in
-> the same SP. During SP boot each service in the SP gets assigned an
-> interface ID, this is just a short ID to simplify message addressing.
-> There is 1:1 mapping between TS SPs and TEE devices, i.e. a TEE device
-> gets registered for each Trusted Services compatible FF-A device found
-> on the FF-A bus. Opening the SP corresponds to opening the TEE dev and
-> creating a TEE context. A TS SP hosts one or more services, opening a
-> service corresponds to opening a session in the given tee_context.
->
-> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
-> ---
->
-> Hi All,
->
-> This is an initial TEE driver implementation for Trusted Services [1].
-> Trusted Services is a TrustedFirmware.org project that provides a
-> framework for developing and deploying device Root Of Trust services in
-> FF-A Secure Partitions. The project hosts the reference implementation
-> of Arm Platform Security Architecture [2] for Arm A-profile devices.
->
-> The FF-A Secure Partitions (SPs) are accessible through the FF-A driver
-> in Linux. However, the FF-A driver doesn't have a user space interface
-> so user space clients currently cannot access Trusted Services. The goal
-> of this TEE driver is to bridge this gap and make Trusted Services
-> functionality accessible from user space.
->
-> The predecessor of this driver is an out-of-tree kernel module that we
-> have been using for prototyping [3]. An integration of Trusted Services,
-> OP-TEE as a S-EL1 SPMC, TF-A, Linux and this out-of-tree module is
-> available as part of the OP-TEE project, please find the manifest file
-> at [4].
->
-> Some key points about the structure of Trusted Services (for more
-> details please see the documentation at [5]):
-> - A Trusted Services SP can host one or multiple services. All TS SPs
->   have the same FF-A UUID, it identifies the RPC protocol used by TS.
->   The protocol's register ABI definition is available at [6] and is
->   implemented in tstee_private.h.
-> - A service hosted by an SP is identified by its service UUID. The
->   same type of service can be present in multiple SPs, but not twice in
->   the same SP. During SP boot each service in the SP gets assigned an
->   interface ID, this is just a short ID to simplify message addressing.
-> - There is 1:1 mapping between TS SPs and TEE devices, i.e. a TEE device
->   gets registered for each Trusted Services compatible FF-A device found
->   on the FF-A bus.
-> - Opening the SP corresponds to opening the TEE dev and creating a TEE
->   context. A TS SP hosts one or more services, opening a service
->   corresponds to opening a session in the given tee_context.
->
-> Regards,
-> Balint
->
-> [1] https://www.trustedfirmware.org/projects/trusted-services/
-> [2] https://www.arm.com/architecture/security-features/platform-security
-> [3] https://gitlab.arm.com/linux-arm/linux-trusted-services
-> [4] https://github.com/OP-TEE/manifest/blob/master/fvp-ts.xml
-> [5] https://trusted-services.readthedocs.io
-> [6] https://trusted-services.readthedocs.io/en/integration/developer/servic=
-e-access-protocols.html#abi
->
->  drivers/tee/Kconfig               |   1 +
->  drivers/tee/Makefile              |   1 +
->  drivers/tee/tstee/Kconfig         |  11 +
->  drivers/tee/tstee/Makefile        |   3 +
->  drivers/tee/tstee/core.c          | 473 ++++++++++++++++++++++++++++++
->  drivers/tee/tstee/shm_pool.c      |  91 ++++++
->  drivers/tee/tstee/tstee_private.h |  97 ++++++
->  include/uapi/linux/tee.h          |   1 +
->  8 files changed, 678 insertions(+)
->  create mode 100644 drivers/tee/tstee/Kconfig
->  create mode 100644 drivers/tee/tstee/Makefile
->  create mode 100644 drivers/tee/tstee/core.c
->  create mode 100644 drivers/tee/tstee/shm_pool.c
->  create mode 100644 drivers/tee/tstee/tstee_private.h
->
-> diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
-> index 73a147202e88..61b507c18780 100644
-> --- a/drivers/tee/Kconfig
-> +++ b/drivers/tee/Kconfig
-> @@ -15,5 +15,6 @@ if TEE
->
->  source "drivers/tee/optee/Kconfig"
->  source "drivers/tee/amdtee/Kconfig"
-> +source "drivers/tee/tstee/Kconfig"
->
->  endif
-> diff --git a/drivers/tee/Makefile b/drivers/tee/Makefile
-> index 68da044afbfa..5488cba30bd2 100644
-> --- a/drivers/tee/Makefile
-> +++ b/drivers/tee/Makefile
-> @@ -5,3 +5,4 @@ tee-objs +=3D tee_shm.o
->  tee-objs +=3D tee_shm_pool.o
->  obj-$(CONFIG_OPTEE) +=3D optee/
->  obj-$(CONFIG_AMDTEE) +=3D amdtee/
-> +obj-$(CONFIG_ARM_TSTEE) +=3D tstee/
-> diff --git a/drivers/tee/tstee/Kconfig b/drivers/tee/tstee/Kconfig
-> new file mode 100644
-> index 000000000000..cd8d32586a77
-> --- /dev/null
-> +++ b/drivers/tee/tstee/Kconfig
-> @@ -0,0 +1,11 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +config ARM_TSTEE
-> +       tristate "Arm Trusted Services TEE driver"
-> +       depends on ARM_FFA_TRANSPORT
-> +       default n
-> +       help
-> +         The Trusted Services project provides a framework for developing =
-and
-> +         deploying device Root Of Trust services in FF-A Secure Partitions.
-> +         This driver provides an interface to make Trusted Services Secure
-> +         Partitions accessible for user space clients, since the FF-A driv=
-er
-> +         doesn't implement a user space interface directly.
-> diff --git a/drivers/tee/tstee/Makefile b/drivers/tee/tstee/Makefile
-> new file mode 100644
-> index 000000000000..dd54b1f88652
-> --- /dev/null
-> +++ b/drivers/tee/tstee/Makefile
-> @@ -0,0 +1,3 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +arm-tstee-objs :=3D core.o shm_pool.o
-> +obj-$(CONFIG_ARM_TSTEE) =3D arm-tstee.o
-> diff --git a/drivers/tee/tstee/core.c b/drivers/tee/tstee/core.c
-> new file mode 100644
-> index 000000000000..c0194638b7da
-> --- /dev/null
-> +++ b/drivers/tee/tstee/core.c
-> @@ -0,0 +1,473 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2023, Arm Limited
-> + */
-> +
-> +#define DRIVER_NAME "Arm TSTEE"
-> +#define pr_fmt(fmt) DRIVER_NAME ": " fmt
-> +
-> +#include <linux/arm_ffa.h>
-> +#include <linux/err.h>
-> +#include <linux/errno.h>
-> +#include <linux/kernel.h>
-> +#include <linux/limits.h>
-> +#include <linux/list.h>
-> +#include <linux/mm.h>
-> +#include <linux/module.h>
-> +#include <linux/scatterlist.h>
-> +#include <linux/slab.h>
-> +#include <linux/stat.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/types.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include "tstee_private.h"
-> +
-> +#define FFA_INVALID_MEM_HANDLE U64_MAX
-> +
-> +static void arg_list_to_ffa_data(const u32 *args, struct ffa_send_direct_d=
-ata *data)
-> +{
-> +       data->data0 =3D args[0];
-> +       data->data1 =3D args[1];
-> +       data->data2 =3D args[2];
-> +       data->data3 =3D args[3];
-> +       data->data4 =3D args[4];
-> +}
-> +
-> +static void arg_list_from_ffa_data(const struct ffa_send_direct_data *data=
-, u32 *args)
-> +{
-> +       args[0] =3D lower_32_bits(data->data0);
-> +       args[1] =3D lower_32_bits(data->data1);
-> +       args[2] =3D lower_32_bits(data->data2);
-> +       args[3] =3D lower_32_bits(data->data3);
-> +       args[4] =3D lower_32_bits(data->data4);
-> +}
-> +
-> +static void tstee_get_version(struct tee_device *teedev, struct tee_ioctl_=
-version_data *vers)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(teedev);
-> +       struct tee_ioctl_version_data v =3D {
-> +               .impl_id =3D TEE_IMPL_ID_TSTEE,
-> +               .impl_caps =3D tstee->ffa_dev->vm_id,
+Hi Sumit
 
-So while exploring the user-space interface, I observed an anomaly
-here. The ".impl_caps" refers to "Implementation specific
-capabilities" meant to support backwards compatibility of a particular
-TEE implementation. But here I observe you are using it instead for
-endpoint_id. Can you provide the reasoning behind it? Also, do you
-plan to support multiple endpoints via this driver?
-
-> +               .gen_caps =3D 0,
-
-Do you plan to support TEE_GEN_CAP_REG_MEM? IOW, do you expect
-user-space to leverage TEE_IOC_SHM_REGISTER? I can see this driver
-already provides tstee_shm_register() and tstee_shm_unregister()
-callbacks.
-
-> +       };
-> +
-> +       *vers =3D v;
-> +}
-> +
-> +static int tstee_open(struct tee_context *ctx)
-> +{
-> +       struct ts_context_data *ctxdata;
-> +
-> +       ctxdata =3D kzalloc(sizeof(*ctxdata), GFP_KERNEL);
-> +       if (!ctxdata)
-> +               return -ENOMEM;
-> +
-> +       mutex_init(&ctxdata->mutex);
-> +       idr_init(&ctxdata->sess_ids);
-> +       INIT_LIST_HEAD(&ctxdata->sess_list);
-> +
-> +       ctx->data =3D ctxdata;
-> +
-> +       return 0;
-> +}
-> +
-> +static void tstee_release(struct tee_context *ctx)
-> +{
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ts_session *sess, *sess_tmp;
-> +
-> +       if (!ctxdata)
-> +               return;
-> +
-> +       list_for_each_entry_safe(sess, sess_tmp, &ctxdata->sess_list, list_=
-node) {
-> +               list_del(&sess->list_node);
-> +               idr_remove(&ctxdata->sess_ids, sess->session_id);
-> +               kfree(sess);
-> +       }
-> +
-> +       idr_destroy(&ctxdata->sess_ids);
-> +       mutex_destroy(&ctxdata->mutex);
-> +
-> +       kfree(ctxdata);
-> +       ctx->data =3D NULL;
-> +}
-> +
-> +static struct ts_session *find_session(struct ts_context_data *ctxdata, u3=
-2 session_id)
-> +{
-> +       struct ts_session *sess;
-> +
-> +       list_for_each_entry(sess, &ctxdata->sess_list, list_node)
-> +               if (sess->session_id =3D=3D session_id)
-> +                       return sess;
-> +
-> +       return NULL;
-> +}
-> +
-> +static int tstee_open_session(struct tee_context *ctx, struct tee_ioctl_op=
-en_session_arg *arg,
-> +                             struct tee_param *param __always_unused)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ffa_send_direct_data ffa_data;
-> +       struct ts_session *sess =3D NULL;
-> +       u32 ffa_args[5] =3D {};
-
-Please don't use magic numbers.
-
-> +       int sess_id;
-> +       int rc;
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_=
-MGMT_IFACE_ID,
-> +                                                                 TS_RPC_OP=
-_SERVICE_INFO);
-> +
-> +       memcpy((u8 *)(ffa_args + TS_RPC_SERVICE_INFO_UUID0), arg->uuid, UUI=
-D_SIZE);
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc)
-> +               return rc;
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_SERVICE_INFO_RPC_STATUS] !=3D TS_RPC_OK)
-> +               return -ENODEV;
-> +
-> +       if (ffa_args[TS_RPC_SERVICE_INFO_IFACE] > U8_MAX)
-> +               return -EINVAL;
-> +
-> +       sess =3D kzalloc(sizeof(*sess), GFP_KERNEL);
-> +       if (!sess)
-> +               return -ENOMEM;
-> +
-> +       sess_id =3D idr_alloc(&ctxdata->sess_ids, sess, 1, 0, GFP_KERNEL);
-> +       if (sess_id < 0) {
-> +               kfree(sess);
-> +               return sess_id;
-> +       }
-> +
-> +       sess->session_id =3D sess_id;
-> +       sess->iface_id =3D ffa_args[TS_RPC_SERVICE_INFO_IFACE];
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       list_add(&sess->list_node, &ctxdata->sess_list);
-> +       mutex_unlock(&ctxdata->mutex);
-> +
-> +       arg->session =3D sess_id;
-> +       arg->ret =3D 0;
-> +
-> +       return 0;
-> +}
-> +
-> +static int tstee_close_session(struct tee_context *ctx, u32 session)
-> +{
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ts_session *sess;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D find_session(ctxdata, session);
-> +       if (sess)
-> +               list_del(&sess->list_node);
-> +
-> +       mutex_unlock(&ctxdata->mutex);
-> +
-> +       if (!sess)
-> +               return -EINVAL;
-> +
-> +       idr_remove(&ctxdata->sess_ids, sess->session_id);
-> +       kfree(sess);
-> +
-> +       return 0;
-> +}
-> +
-> +static int tstee_invoke_func(struct tee_context *ctx, struct tee_ioctl_inv=
-oke_arg *arg,
-> +                            struct tee_param *param)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ffa_send_direct_data ffa_data;
-> +       struct tee_shm *shm =3D NULL;
-> +       struct ts_session *sess;
-> +       u32 req_len, ffa_args[5] =3D {};
-
-ditto.
-
--Sumit
-
-> +       int shm_id, rc;
-> +       u8 iface_id;
-> +       u64 handle;
-> +       u16 opcode;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D find_session(ctxdata, arg->session);
-> +
-> +       /* Do this while holding the mutex to make sure that the session wa=
-sn't closed meanwhile */
-> +       if (sess)
-> +               iface_id =3D sess->iface_id;
-> +
-> +       mutex_unlock(&ctxdata->mutex);
-> +       if (!sess)
-> +               return -EINVAL;
-> +
-> +       opcode =3D lower_16_bits(arg->func);
-> +       shm_id =3D lower_32_bits(param[0].u.value.a);
-> +       req_len =3D lower_32_bits(param[0].u.value.b);
-> +
-> +       if (shm_id !=3D 0) {
-> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
-> +               if (IS_ERR(shm))
-> +                       return PTR_ERR(shm);
-> +
-> +               if (shm->size < req_len) {
-> +                       pr_err("request doesn't fit into shared memory buff=
-er\n");
-> +                       rc =3D -EINVAL;
-> +                       goto out;
-> +               }
-> +
-> +               handle =3D shm->sec_world_id;
-> +       } else {
-> +               handle =3D FFA_INVALID_MEM_HANDLE;
-> +       }
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(iface_i=
-d, opcode);
-> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_bits(handle);
-> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_bits(handle);
-> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
-> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc)
-> +               goto out;
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_SERVICE_RPC_STATUS] !=3D TS_RPC_OK) {
-> +               pr_err("invoke_func rpc status: %d\n", ffa_args[TS_RPC_SERV=
-ICE_RPC_STATUS]);
-> +               rc =3D -EINVAL;
-> +               goto out;
-> +       }
-> +
-> +       arg->ret =3D ffa_args[TS_RPC_SERVICE_STATUS];
-> +       if (shm && shm->size >=3D ffa_args[TS_RPC_SERVICE_RESP_LEN])
-> +               param[0].u.value.a =3D ffa_args[TS_RPC_SERVICE_RESP_LEN];
-> +
-> +out:
-> +       if (shm)
-> +               tee_shm_put(shm);
-> +
-> +       return rc;
-> +}
-> +
-> +static int tstee_cancel_req(struct tee_context *ctx __always_unused, u32 c=
-ancel_id __always_unused,
-> +                           u32 session __always_unused)
-> +{
-> +       return -EINVAL;
-> +}
-> +
-> +int tstee_shm_register(struct tee_context *ctx, struct tee_shm *shm, struc=
-t page **pages,
-> +                      size_t num_pages, unsigned long start __always_unuse=
-d)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ffa_mem_region_attributes mem_attr =3D {
-> +               .receiver =3D tstee->ffa_dev->vm_id,
-> +               .attrs =3D FFA_MEM_RW,
-> +               .flag =3D 0,
-> +       };
-> +       struct ffa_mem_ops_args mem_args =3D {
-> +               .attrs =3D &mem_attr,
-> +               .use_txbuf =3D true,
-> +               .nattrs =3D 1,
-> +               .flags =3D 0,
-> +       };
-> +       struct ffa_send_direct_data ffa_data;
-> +       struct sg_table sgt;
-> +       u32 ffa_args[5] =3D {};
-> +       int rc;
-> +
-> +       rc =3D sg_alloc_table_from_pages(&sgt, pages, num_pages, 0, num_pag=
-es * PAGE_SIZE,
-> +                                      GFP_KERNEL);
-> +       if (rc)
-> +               return rc;
-> +
-> +       mem_args.sg =3D sgt.sgl;
-> +       rc =3D ffa_dev->ops->mem_ops->memory_share(&mem_args);
-> +       sg_free_table(&sgt);
-> +       if (rc)
-> +               return rc;
-> +
-> +       shm->sec_world_id =3D mem_args.g_handle;
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_=
-MGMT_IFACE_ID,
-> +                                                                 TS_RPC_OP=
-_RETRIEVE_MEM);
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_HANDLE_LSW] =3D lower_32_bits(shm->sec=
-_world_id);
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_HANDLE_MSW] =3D upper_32_bits(shm->sec=
-_world_id);
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_TAG_LSW] =3D 0;
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_TAG_MSW] =3D 0;
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc) {
-> +               (void)ffa_dev->ops->mem_ops->memory_reclaim(shm->sec_world_=
-id, 0);
-> +               return rc;
-> +       }
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_RETRIEVE_MEM_RPC_STATUS] !=3D TS_RPC_OK) {
-> +               pr_err("shm_register rpc status: %d\n", ffa_args[TS_RPC_RET=
-RIEVE_MEM_RPC_STATUS]);
-> +               ffa_dev->ops->mem_ops->memory_reclaim(shm->sec_world_id, 0);
-> +               return -EINVAL;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +int tstee_shm_unregister(struct tee_context *ctx, struct tee_shm *shm)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ffa_send_direct_data ffa_data;
-> +       u32 ffa_args[5] =3D {};
-> +       int rc;
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_=
-MGMT_IFACE_ID,
-> +                                                                 TS_RPC_OP=
-_RELINQ_MEM);
-> +       ffa_args[TS_RPC_RELINQ_MEM_HANDLE_LSW] =3D lower_32_bits(shm->sec_w=
-orld_id);
-> +       ffa_args[TS_RPC_RELINQ_MEM_HANDLE_MSW] =3D upper_32_bits(shm->sec_w=
-orld_id);
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc)
-> +               return rc;
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_RELINQ_MEM_RPC_STATUS] !=3D TS_RPC_OK) {
-> +               pr_err("shm_unregister rpc status: %d\n", ffa_args[TS_RPC_R=
-ELINQ_MEM_RPC_STATUS]);
-> +               return -EINVAL;
-> +       }
-> +
-> +       rc =3D ffa_dev->ops->mem_ops->memory_reclaim(shm->sec_world_id, 0);
-> +
-> +       return rc;
-> +}
-> +
-> +static const struct tee_driver_ops tstee_ops =3D {
-> +       .get_version =3D tstee_get_version,
-> +       .open =3D tstee_open,
-> +       .release =3D tstee_release,
-> +       .open_session =3D tstee_open_session,
-> +       .close_session =3D tstee_close_session,
-> +       .invoke_func =3D tstee_invoke_func,
-> +       .cancel_req =3D tstee_cancel_req,
-> +       .shm_register =3D tstee_shm_register,
-> +       .shm_unregister =3D tstee_shm_unregister,
-> +};
-> +
-> +static const struct tee_desc tstee_desc =3D {
-> +       .name =3D "tstee-clnt",
-> +       .ops =3D &tstee_ops,
-> +       .owner =3D THIS_MODULE,
-> +};
-> +
-> +static bool tstee_check_rpc_compatible(struct ffa_device *ffa_dev)
-> +{
-> +       struct ffa_send_direct_data ffa_data;
-> +       u32 ffa_args[5] =3D {};
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_=
-MGMT_IFACE_ID,
-> +                                                                 TS_RPC_OP=
-_GET_VERSION);
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       if (ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data))
-> +               return false;
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       return ffa_args[TS_RPC_GET_VERSION_RESP] =3D=3D TS_RPC_PROTOCOL_VER=
-SION;
-> +}
-> +
-> +static void tstee_deinit_common(struct tstee *tstee)
-> +{
-> +       tee_device_unregister(tstee->teedev);
-> +       if (tstee->pool)
-> +               tee_shm_pool_free(tstee->pool);
-> +
-> +       kfree(tstee);
-> +}
-> +
-> +static int tstee_probe(struct ffa_device *ffa_dev)
-> +{
-> +       struct tstee *tstee;
-> +       int rc;
-> +
-> +       ffa_dev->ops->msg_ops->mode_32bit_set(ffa_dev);
-> +
-> +       if (!tstee_check_rpc_compatible(ffa_dev))
-> +               return -EINVAL;
-> +
-> +       tstee =3D kzalloc(sizeof(*tstee), GFP_KERNEL);
-> +       if (!tstee)
-> +               return -ENOMEM;
-> +
-> +       tstee->ffa_dev =3D ffa_dev;
-> +
-> +       tstee->pool =3D tstee_create_shm_pool();
-> +       if (IS_ERR(tstee->pool)) {
-> +               rc =3D PTR_ERR(tstee->pool);
-> +               tstee->pool =3D NULL;
-> +               goto err;
-> +       }
-> +
-> +       tstee->teedev =3D tee_device_alloc(&tstee_desc, NULL, tstee->pool, =
-tstee);
-> +       if (IS_ERR(tstee->teedev)) {
-> +               rc =3D PTR_ERR(tstee->teedev);
-> +               tstee->teedev =3D NULL;
-> +               goto err;
-> +       }
-> +
-> +       rc =3D tee_device_register(tstee->teedev);
-> +       if (rc)
-> +               goto err;
-> +
-> +       ffa_dev_set_drvdata(ffa_dev, tstee);
-> +
-> +       pr_info("driver initialized for endpoint 0x%x\n", ffa_dev->vm_id);
-> +
-> +       return 0;
-> +
-> +err:
-> +       tstee_deinit_common(tstee);
-> +       return rc;
-> +}
-> +
-> +static void tstee_remove(struct ffa_device *ffa_dev)
-> +{
-> +       tstee_deinit_common(ffa_dev->dev.driver_data);
-> +}
-> +
-> +static const struct ffa_device_id tstee_device_ids[] =3D {
-> +       /* TS RPC protocol UUID: bdcd76d7-825e-4751-963b-86d4f84943ac */
-> +       { TS_RPC_UUID },
-> +       {}
-> +};
-> +
-> +static struct ffa_driver tstee_driver =3D {
-> +       .name =3D "arm_tstee",
-> +       .probe =3D tstee_probe,
-> +       .remove =3D tstee_remove,
-> +       .id_table =3D tstee_device_ids,
-> +};
-> +
-> +static int __init mod_init(void)
-> +{
-> +       return ffa_register(&tstee_driver);
-> +}
-> +module_init(mod_init)
-> +
-> +static void __exit mod_exit(void)
-> +{
-> +       ffa_unregister(&tstee_driver);
-> +}
-> +module_exit(mod_exit)
-> +
-> +MODULE_ALIAS("arm-tstee");
-> +MODULE_AUTHOR("Balint Dobszay <balint.dobszay@arm.com>");
-> +MODULE_DESCRIPTION("Arm Trusted Services TEE driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/tee/tstee/shm_pool.c b/drivers/tee/tstee/shm_pool.c
-> new file mode 100644
-> index 000000000000..518c10dd0735
-> --- /dev/null
-> +++ b/drivers/tee/tstee/shm_pool.c
-> @@ -0,0 +1,91 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2023, Arm Limited
-> + */
-> +
-> +#include <linux/arm_ffa.h>
-> +#include <linux/device.h>
-> +#include <linux/dma-buf.h>
-> +#include <linux/genalloc.h>
-> +#include <linux/slab.h>
-> +#include <linux/tee_drv.h>
-> +
-> +#include "tstee_private.h"
-> +
-> +static int pool_op_alloc(struct tee_shm_pool *pool __always_unused, struct=
- tee_shm *shm,
-> +                        size_t size, size_t align __always_unused)
-> +{
-> +       unsigned int order, nr_pages, i;
-> +       struct page *page, **pages;
-> +       int rc;
-> +
-> +       if (size =3D=3D 0)
-> +               return -EINVAL;
-> +
-> +       order =3D get_order(size);
-> +       nr_pages =3D 1 << order;
-> +
-> +       page =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
-> +       if (!page)
-> +               return -ENOMEM;
-> +
-> +       shm->kaddr =3D page_address(page);
-> +       shm->paddr =3D page_to_phys(page);
-> +       shm->size =3D PAGE_SIZE << order;
-> +
-> +       pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
-> +       if (!pages) {
-> +               rc =3D -ENOMEM;
-> +               goto err;
-> +       }
-> +
-> +       for (i =3D 0; i < nr_pages; i++)
-> +               pages[i] =3D page + i;
-> +
-> +       rc =3D tstee_shm_register(shm->ctx, shm, pages, nr_pages, (unsigned=
- long)shm->kaddr);
-> +       kfree(pages);
-> +       if (rc)
-> +               goto err;
-> +
-> +       return 0;
-> +
-> +err:
-> +       __free_pages(page, order);
-> +       return rc;
-> +}
-> +
-> +static void pool_op_free(struct tee_shm_pool *pool __always_unused, struct=
- tee_shm *shm)
-> +{
-> +       int rc;
-> +
-> +       rc =3D tstee_shm_unregister(shm->ctx, shm);
-> +       if (rc)
-> +               pr_err("shm id 0x%llx unregister rc %d\n", shm->sec_world_i=
-d, rc);
-> +
-> +       free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> +       shm->kaddr =3D NULL;
-> +}
-> +
-> +static void pool_op_destroy_pool(struct tee_shm_pool *pool)
-> +{
-> +       kfree(pool);
-> +}
-> +
-> +static const struct tee_shm_pool_ops pool_ops =3D {
-> +       .alloc =3D pool_op_alloc,
-> +       .free =3D pool_op_free,
-> +       .destroy_pool =3D pool_op_destroy_pool,
-> +};
-> +
-> +struct tee_shm_pool *tstee_create_shm_pool(void)
-> +{
-> +       struct tee_shm_pool *pool;
-> +
-> +       pool =3D kzalloc(sizeof(*pool), GFP_KERNEL);
-> +       if (!pool)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       pool->ops =3D &pool_ops;
-> +
-> +       return pool;
-> +}
-> diff --git a/drivers/tee/tstee/tstee_private.h b/drivers/tee/tstee/tstee_pr=
-ivate.h
-> new file mode 100644
-> index 000000000000..2ea266804ccf
-> --- /dev/null
-> +++ b/drivers/tee/tstee/tstee_private.h
-> @@ -0,0 +1,97 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (c) 2023, Arm Limited
-> + */
-> +
-> +#ifndef TSTEE_PRIVATE_H
-> +#define TSTEE_PRIVATE_H
-> +
-> +#include <linux/arm_ffa.h>
-> +#include <linux/bitops.h>
-> +#include <linux/idr.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/types.h>
-> +#include <linux/uuid.h>
-> +
-> +/* UUID of this protocol */
-> +#define TS_RPC_UUID UUID_INIT(0xbdcd76d7, 0x825e, 0x4751, \
-> +                             0x96, 0x3b, 0x86, 0xd4, 0xf8, 0x49, 0x43, 0xa=
-c)
-> +
-> +/* Protocol version*/
-> +#define TS_RPC_PROTOCOL_VERSION                (1)
-> +
-> +/* Status codes */
-> +#define TS_RPC_OK                      (0)
-> +
-> +/* RPC control register */
-> +#define TS_RPC_CTRL_REG                        (0)
-> +#define OPCODE_MASK                    GENMASK(15, 0)
-> +#define IFACE_ID_MASK                  GENMASK(23, 16)
-> +#define TS_RPC_CTRL_OPCODE(x)          ((u16)(FIELD_GET(OPCODE_MASK, (x))))
-> +#define TS_RPC_CTRL_IFACE_ID(x)                ((u8)(FIELD_GET(IFACE_ID_MA=
-SK, (x))))
-> +#define TS_RPC_CTRL_PACK_IFACE_OPCODE(i, o)    \
-> +       (FIELD_PREP(IFACE_ID_MASK, (i)) | FIELD_PREP(OPCODE_MASK, (o)))
-> +#define TS_RPC_CTRL_SAP_RC             BIT(30)
-> +#define TS_RPC_CTRL_SAP_ERR            BIT(31)
-> +
-> +/* Interface ID for RPC management operations */
-> +#define TS_RPC_MGMT_IFACE_ID           (0xff)
-> +
-> +/* Management calls */
-> +#define TS_RPC_OP_GET_VERSION          (0x0000)
-> +#define TS_RPC_GET_VERSION_RESP                (1)
-> +
-> +#define TS_RPC_OP_RETRIEVE_MEM         (0x0001)
-> +#define TS_RPC_RETRIEVE_MEM_HANDLE_LSW (1)
-> +#define TS_RPC_RETRIEVE_MEM_HANDLE_MSW (2)
-> +#define TS_RPC_RETRIEVE_MEM_TAG_LSW    (3)
-> +#define TS_RPC_RETRIEVE_MEM_TAG_MSW    (4)
-> +#define TS_RPC_RETRIEVE_MEM_RPC_STATUS (1)
-> +
-> +#define TS_RPC_OP_RELINQ_MEM           (0x0002)
-> +#define TS_RPC_RELINQ_MEM_HANDLE_LSW   (1)
-> +#define TS_RPC_RELINQ_MEM_HANDLE_MSW   (2)
-> +#define TS_RPC_RELINQ_MEM_RPC_STATUS   (1)
-> +
-> +#define TS_RPC_OP_SERVICE_INFO         (0x0003)
-> +#define TS_RPC_SERVICE_INFO_UUID0      (1)
-> +#define TS_RPC_SERVICE_INFO_UUID1      (2)
-> +#define TS_RPC_SERVICE_INFO_UUID2      (3)
-> +#define TS_RPC_SERVICE_INFO_UUID3      (4)
-> +#define TS_RPC_SERVICE_INFO_RPC_STATUS (1)
-> +#define TS_RPC_SERVICE_INFO_IFACE      (2)
-> +
-> +/* Service call */
-> +#define TS_RPC_SERVICE_MEM_HANDLE_LSW  (1)
-> +#define TS_RPC_SERVICE_MEM_HANDLE_MSW  (2)
-> +#define TS_RPC_SERVICE_REQ_LEN         (3)
-> +#define TS_RPC_SERVICE_CLIENT_ID       (4)
-> +#define TS_RPC_SERVICE_RPC_STATUS      (1)
-> +#define TS_RPC_SERVICE_STATUS          (2)
-> +#define TS_RPC_SERVICE_RESP_LEN                (3)
-> +
-> +struct tstee {
-> +       struct ffa_device *ffa_dev;
-> +       struct tee_device *teedev;
-> +       struct tee_shm_pool *pool;
-> +};
-> +
-> +struct ts_session {
-> +       struct list_head list_node;
-> +       u32 session_id;
-> +       u8 iface_id;
-> +};
-> +
-> +struct ts_context_data {
-> +       struct list_head sess_list;
-> +       struct idr sess_ids;
-> +       /* Serializes access to this struct */
-> +       struct mutex mutex;
-> +};
-> +
-> +struct tee_shm_pool *tstee_create_shm_pool(void);
-> +int tstee_shm_register(struct tee_context *ctx, struct tee_shm *shm, struc=
-t page **pages,
-> +                      size_t num_pages, unsigned long start);
-> +int tstee_shm_unregister(struct tee_context *ctx, struct tee_shm *shm);
-> +
-> +#endif /* TSTEE_PRIVATE_H */
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index 23e57164693c..d0430bee8292 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -56,6 +56,7 @@
->   */
->  #define TEE_IMPL_ID_OPTEE      1
->  #define TEE_IMPL_ID_AMDTEE     2
-> +#define TEE_IMPL_ID_TSTEE      3
+On Fri, 13 Oct 2023 at 09:53, Sumit Garg <sumit.garg@linaro.org> wrote:
 >
->  /*
->   * OP-TEE specific capabilities
-> --
-> 2.34.1
+> Hi Ilias,
+>
+> On Wed, 11 Oct 2023 at 22:30, Ilias Apalodimas
+> <ilias.apalodimas@linaro.org> wrote:
+> >
+> > Kojima-san
+> > Apologies for the late reply, I just found some to test this.
+> >
+> > On Sun, 6 Aug 2023 at 19:55, Masahisa Kojima <masahisa.kojima@linaro.or=
+g> wrote:
+> > >
+> > > efivar operation is updated when the tee_stmm_efi module is probed.
+> > > tee_stmm_efi module supports SetVariable runtime service,
+> > > but user needs to manually remount the efivarfs as RW to enable
+> > > the write access if the previous efivar operation does not support
+> > > SerVariable and efivarfs is mounted as read-only.
+> > >
+> > > This commit notifies the update of efivar operation to
+> > > efivarfs subsystem, then drops SB_RDONLY flag if the efivar
+> > > operation supports SetVariable.
+> >
+> > The RO->RW transition works fine and I did manage to test basic stuff
+> > like setting up efibootmgr options.  IIUC the RW->RO should be covered
+> > by this patchset [0] ?
+>
+> Yeah.
+>
+> > Wouldn't it be better to detect that the tee device of the supplicant
+> > closes and use that to switch the permissions?  I get why we need that
+> > for the TPM, the entire subsystem needs to send TPM commands *before*
+> > the supplicant dies.   But this is not needed for the EFI variables
+> > case, we could just remount the FS as RO the moment the supplicant
+> > dies.
+>
+> As we discussed offline, we should have a unified approach to notify
+> kernel TEE client drivers. So the approach implemented as part of [0]
+> should address the needs for fTPM as well as EFI.
 
---===============5053861387937076920==--
+Ideally yes, we should have a unified approach.  But this is a bit
+different IMHO. In the majority of the cases, the supplicant goes
+away,  we lose access to storage and that's the only thing we care
+about.  Only the TPM subsystem is 'special' because it has to perform
+a shutdown of the device as well.  On top of that, I think we should
+try to avoid the kernel depending on userspace apps as much as
+possible.  I think it's best if we support both of these and add
+documentation on why this is happening. Would it be hard to have a
+combination of both of your patches?
+
+Thanks
+/Ilias
+
+>
+> -Sumit
+>
+> >
+> > [0] https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)lina=
+ro.org/
+> >
+> > Regards
+> > /Ilias
+> > >
+> > > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+> > > ---
+> > >  drivers/firmware/efi/efi.c  |  6 ++++++
+> > >  drivers/firmware/efi/vars.c |  8 ++++++++
+> > >  fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
+> > >  include/linux/efi.h         |  8 ++++++++
+> > >  4 files changed, 55 insertions(+)
+> > >
+> > > diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
+> > > index 53ae25bbb6ac..d2eec5ed8e5e 100644
+> > > --- a/drivers/firmware/efi/efi.c
+> > > +++ b/drivers/firmware/efi/efi.c
+> > > @@ -32,6 +32,7 @@
+> > >  #include <linux/ucs2_string.h>
+> > >  #include <linux/memblock.h>
+> > >  #include <linux/security.h>
+> > > +#include <linux/notifier.h>
+> > >
+> > >  #include <asm/early_ioremap.h>
+> > >
+> > > @@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_attr=
+_group =3D {
+> > >         .is_visible =3D efi_attr_is_visible,
+> > >  };
+> > >
+> > > +struct blocking_notifier_head efivar_ops_nh;
+> > > +EXPORT_SYMBOL_GPL(efivar_ops_nh);
+> > > +
+> > >  static struct efivars generic_efivars;
+> > >  static struct efivar_operations generic_ops;
+> > >
+> > > @@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
+> > >                 platform_device_register_simple("efivars", 0, NULL, 0);
+> > >         }
+> > >
+> > > +       BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
+> > > +
+> > >         error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_group);
+> > >         if (error) {
+> > >                 pr_err("efi: Sysfs attribute export failed with error %=
+d.\n",
+> > > diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
+> > > index e9dc7116daf1..f654e6f6af87 100644
+> > > --- a/drivers/firmware/efi/vars.c
+> > > +++ b/drivers/firmware/efi/vars.c
+> > > @@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
+> > >                      const struct efivar_operations *ops)
+> > >  {
+> > >         int rv;
+> > > +       int event;
+> > >
+> > >         if (down_interruptible(&efivars_lock))
+> > >                 return -EINTR;
+> > > @@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
+> > >
+> > >         __efivars =3D efivars;
+> > >
+> > > +       if (efivar_supports_writes())
+> > > +               event =3D EFIVAR_OPS_RDWR;
+> > > +       else
+> > > +               event =3D EFIVAR_OPS_RDONLY;
+> > > +
+> > > +       blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
+> > > +
+> > >         pr_info("Registered efivars operations\n");
+> > >         rv =3D 0;
+> > >  out:
+> > > diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+> > > index e028fafa04f3..0f6e4d223aea 100644
+> > > --- a/fs/efivarfs/super.c
+> > > +++ b/fs/efivarfs/super.c
+> > > @@ -14,11 +14,36 @@
+> > >  #include <linux/slab.h>
+> > >  #include <linux/magic.h>
+> > >  #include <linux/statfs.h>
+> > > +#include <linux/notifier.h>
+> > >
+> > >  #include "internal.h"
+> > >
+> > >  LIST_HEAD(efivarfs_list);
+> > >
+> > > +struct efivarfs_info {
+> > > +       struct super_block *sb;
+> > > +       struct notifier_block nb;
+> > > +};
+> > > +
+> > > +static struct efivarfs_info info;
+> > > +
+> > > +static int efivarfs_ops_notifier(struct notifier_block *nb, unsigned l=
+ong event,
+> > > +                                void *data)
+> > > +{
+> > > +       switch (event) {
+> > > +       case EFIVAR_OPS_RDONLY:
+> > > +               info.sb->s_flags |=3D SB_RDONLY;
+> > > +               break;
+> > > +       case EFIVAR_OPS_RDWR:
+> > > +               info.sb->s_flags &=3D ~SB_RDONLY;
+> > > +               break;
+> > > +       default:
+> > > +               return NOTIFY_DONE;
+> > > +       }
+> > > +
+> > > +       return NOTIFY_OK;
+> > > +}
+> > > +
+> > >  static void efivarfs_evict_inode(struct inode *inode)
+> > >  {
+> > >         clear_inode(inode);
+> > > @@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_block =
+*sb, struct fs_context *fc)
+> > >         if (!root)
+> > >                 return -ENOMEM;
+> > >
+> > > +       info.sb =3D sb;
+> > > +       info.nb.notifier_call =3D efivarfs_ops_notifier;
+> > > +       err =3D blocking_notifier_chain_register(&efivar_ops_nh, &info.=
+nb);
+> > > +       if (err)
+> > > +               return err;
+> > > +
+> > >         INIT_LIST_HEAD(&efivarfs_list);
+> > >
+> > >         err =3D efivar_init(efivarfs_callback, (void *)sb, true, &efiva=
+rfs_list);
+> > > @@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_conte=
+xt *fc)
+> > >
+> > >  static void efivarfs_kill_sb(struct super_block *sb)
+> > >  {
+> > > +       blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb);
+> > > +       info.sb =3D NULL;
+> > >         kill_litter_super(sb);
+> > >
+> > >         if (!efivar_is_available())
+> > > diff --git a/include/linux/efi.h b/include/linux/efi.h
+> > > index 603bba2d6437..17cd628b5c42 100644
+> > > --- a/include/linux/efi.h
+> > > +++ b/include/linux/efi.h
+> > > @@ -1365,6 +1365,14 @@ bool efi_config_table_is_usable(const efi_guid_t=
+ *guid, unsigned long table)
+> > >
+> > >  umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute *at=
+tr, int n);
+> > >
+> > > +/*
+> > > + * efivar ops event type
+> > > + */
+> > > +#define EFIVAR_OPS_RDONLY 0
+> > > +#define EFIVAR_OPS_RDWR 1
+> > > +
+> > > +extern struct blocking_notifier_head efivar_ops_nh;
+> > > +
+> > >  void efivars_generic_ops_register(void);
+> > >  void efivars_generic_ops_unregister(void);
+> > >
+> > > --
+> > > 2.30.2
+> > >
+
+--===============6053027546955787861==--
 
