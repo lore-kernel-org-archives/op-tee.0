@@ -1,243 +1,62 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+From: Jérôme Forissier <jerome.forissier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 4/5] efivarfs: automatically update super block flag
-Date: Fri, 13 Oct 2023 17:25:48 +0200
+Subject: Re: Preparing for OP-TEE 4.0.0
+Date: Sat, 14 Oct 2023 00:20:57 +0200
 Message-ID: 
- <CAC_iWj+P110h2cK=4tbCTq2c9aktox-EATOQgH_1wshRMKg4PQ@mail.gmail.com>
+ <CA+NB=maP_xvaj38VrtH5Bxd6E40xykteefq4OgVaGni7tE7jHw@mail.gmail.com>
 In-Reply-To: <
- <CAFA6WYN_E=4nN1-j2-nQ_pi+b083UmKPNO9Saub7aZLAx4PCww@mail.gmail.com>>
+ <CA+NB=mZKwtaz4Mwg547XVvr485tzyEkEzKA+dBXZ9BHivjhqUg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6053027546955787861=="
+Content-Type: multipart/mixed; boundary="===============2036189976697850137=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6053027546955787861==
+--===============2036189976697850137==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit
+Hi,
 
-On Fri, 13 Oct 2023 at 09:53, Sumit Garg <sumit.garg@linaro.org> wrote:
->
-> Hi Ilias,
->
-> On Wed, 11 Oct 2023 at 22:30, Ilias Apalodimas
-> <ilias.apalodimas@linaro.org> wrote:
-> >
-> > Kojima-san
-> > Apologies for the late reply, I just found some to test this.
-> >
-> > On Sun, 6 Aug 2023 at 19:55, Masahisa Kojima <masahisa.kojima@linaro.or=
-g> wrote:
-> > >
-> > > efivar operation is updated when the tee_stmm_efi module is probed.
-> > > tee_stmm_efi module supports SetVariable runtime service,
-> > > but user needs to manually remount the efivarfs as RW to enable
-> > > the write access if the previous efivar operation does not support
-> > > SerVariable and efivarfs is mounted as read-only.
-> > >
-> > > This commit notifies the update of efivar operation to
-> > > efivarfs subsystem, then drops SB_RDONLY flag if the efivar
-> > > operation supports SetVariable.
-> >
-> > The RO->RW transition works fine and I did manage to test basic stuff
-> > like setting up efibootmgr options.  IIUC the RW->RO should be covered
-> > by this patchset [0] ?
->
-> Yeah.
->
-> > Wouldn't it be better to detect that the tee device of the supplicant
-> > closes and use that to switch the permissions?  I get why we need that
-> > for the TPM, the entire subsystem needs to send TPM commands *before*
-> > the supplicant dies.   But this is not needed for the EFI variables
-> > case, we could just remount the FS as RO the moment the supplicant
-> > dies.
->
-> As we discussed offline, we should have a unified approach to notify
-> kernel TEE client drivers. So the approach implemented as part of [0]
-> should address the needs for fTPM as well as EFI.
+I have now created the 4.0.0-rc1 tag in the various OP-TEE Git repositories.
 
-Ideally yes, we should have a unified approach.  But this is a bit
-different IMHO. In the majority of the cases, the supplicant goes
-away,  we lose access to storage and that's the only thing we care
-about.  Only the TPM subsystem is 'special' because it has to perform
-a shutdown of the device as well.  On top of that, I think we should
-try to avoid the kernel depending on userspace apps as much as
-possible.  I think it's best if we support both of these and add
-documentation on why this is happening. Would it be hard to have a
-combination of both of your patches?
+Regards,
+--=20
+Jerome Forissier
 
-Thanks
-/Ilias
+On Wed, 4 Oct 2023 at 15:35, J=C3=A9r=C3=B4me Forissier <jerome.forissier@l=
+inaro.org>
+wrote:
 
+> [BCC all OP-TEE maintainers]
 >
-> -Sumit
+> Hi OP-TEE maintainers & contributors,
 >
-> >
-> > [0] https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)lina=
-ro.org/
-> >
-> > Regards
-> > /Ilias
-> > >
-> > > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
-> > > ---
-> > >  drivers/firmware/efi/efi.c  |  6 ++++++
-> > >  drivers/firmware/efi/vars.c |  8 ++++++++
-> > >  fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
-> > >  include/linux/efi.h         |  8 ++++++++
-> > >  4 files changed, 55 insertions(+)
-> > >
-> > > diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-> > > index 53ae25bbb6ac..d2eec5ed8e5e 100644
-> > > --- a/drivers/firmware/efi/efi.c
-> > > +++ b/drivers/firmware/efi/efi.c
-> > > @@ -32,6 +32,7 @@
-> > >  #include <linux/ucs2_string.h>
-> > >  #include <linux/memblock.h>
-> > >  #include <linux/security.h>
-> > > +#include <linux/notifier.h>
-> > >
-> > >  #include <asm/early_ioremap.h>
-> > >
-> > > @@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_attr=
-_group =3D {
-> > >         .is_visible =3D efi_attr_is_visible,
-> > >  };
-> > >
-> > > +struct blocking_notifier_head efivar_ops_nh;
-> > > +EXPORT_SYMBOL_GPL(efivar_ops_nh);
-> > > +
-> > >  static struct efivars generic_efivars;
-> > >  static struct efivar_operations generic_ops;
-> > >
-> > > @@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
-> > >                 platform_device_register_simple("efivars", 0, NULL, 0);
-> > >         }
-> > >
-> > > +       BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
-> > > +
-> > >         error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_group);
-> > >         if (error) {
-> > >                 pr_err("efi: Sysfs attribute export failed with error %=
-d.\n",
-> > > diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
-> > > index e9dc7116daf1..f654e6f6af87 100644
-> > > --- a/drivers/firmware/efi/vars.c
-> > > +++ b/drivers/firmware/efi/vars.c
-> > > @@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
-> > >                      const struct efivar_operations *ops)
-> > >  {
-> > >         int rv;
-> > > +       int event;
-> > >
-> > >         if (down_interruptible(&efivars_lock))
-> > >                 return -EINTR;
-> > > @@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
-> > >
-> > >         __efivars =3D efivars;
-> > >
-> > > +       if (efivar_supports_writes())
-> > > +               event =3D EFIVAR_OPS_RDWR;
-> > > +       else
-> > > +               event =3D EFIVAR_OPS_RDONLY;
-> > > +
-> > > +       blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
-> > > +
-> > >         pr_info("Registered efivars operations\n");
-> > >         rv =3D 0;
-> > >  out:
-> > > diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-> > > index e028fafa04f3..0f6e4d223aea 100644
-> > > --- a/fs/efivarfs/super.c
-> > > +++ b/fs/efivarfs/super.c
-> > > @@ -14,11 +14,36 @@
-> > >  #include <linux/slab.h>
-> > >  #include <linux/magic.h>
-> > >  #include <linux/statfs.h>
-> > > +#include <linux/notifier.h>
-> > >
-> > >  #include "internal.h"
-> > >
-> > >  LIST_HEAD(efivarfs_list);
-> > >
-> > > +struct efivarfs_info {
-> > > +       struct super_block *sb;
-> > > +       struct notifier_block nb;
-> > > +};
-> > > +
-> > > +static struct efivarfs_info info;
-> > > +
-> > > +static int efivarfs_ops_notifier(struct notifier_block *nb, unsigned l=
-ong event,
-> > > +                                void *data)
-> > > +{
-> > > +       switch (event) {
-> > > +       case EFIVAR_OPS_RDONLY:
-> > > +               info.sb->s_flags |=3D SB_RDONLY;
-> > > +               break;
-> > > +       case EFIVAR_OPS_RDWR:
-> > > +               info.sb->s_flags &=3D ~SB_RDONLY;
-> > > +               break;
-> > > +       default:
-> > > +               return NOTIFY_DONE;
-> > > +       }
-> > > +
-> > > +       return NOTIFY_OK;
-> > > +}
-> > > +
-> > >  static void efivarfs_evict_inode(struct inode *inode)
-> > >  {
-> > >         clear_inode(inode);
-> > > @@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_block =
-*sb, struct fs_context *fc)
-> > >         if (!root)
-> > >                 return -ENOMEM;
-> > >
-> > > +       info.sb =3D sb;
-> > > +       info.nb.notifier_call =3D efivarfs_ops_notifier;
-> > > +       err =3D blocking_notifier_chain_register(&efivar_ops_nh, &info.=
-nb);
-> > > +       if (err)
-> > > +               return err;
-> > > +
-> > >         INIT_LIST_HEAD(&efivarfs_list);
-> > >
-> > >         err =3D efivar_init(efivarfs_callback, (void *)sb, true, &efiva=
-rfs_list);
-> > > @@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_conte=
-xt *fc)
-> > >
-> > >  static void efivarfs_kill_sb(struct super_block *sb)
-> > >  {
-> > > +       blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb);
-> > > +       info.sb =3D NULL;
-> > >         kill_litter_super(sb);
-> > >
-> > >         if (!efivar_is_available())
-> > > diff --git a/include/linux/efi.h b/include/linux/efi.h
-> > > index 603bba2d6437..17cd628b5c42 100644
-> > > --- a/include/linux/efi.h
-> > > +++ b/include/linux/efi.h
-> > > @@ -1365,6 +1365,14 @@ bool efi_config_table_is_usable(const efi_guid_t=
- *guid, unsigned long table)
-> > >
-> > >  umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute *at=
-tr, int n);
-> > >
-> > > +/*
-> > > + * efivar ops event type
-> > > + */
-> > > +#define EFIVAR_OPS_RDONLY 0
-> > > +#define EFIVAR_OPS_RDWR 1
-> > > +
-> > > +extern struct blocking_notifier_head efivar_ops_nh;
-> > > +
-> > >  void efivars_generic_ops_register(void);
-> > >  void efivars_generic_ops_unregister(void);
-> > >
-> > > --
-> > > 2.30.2
-> > >
+> OP-TEE v4.0.0 is scheduled to be released on 2023-10-20. So, now is
+> a good time to start testing the master branch on the various platforms
+> and report/fix any bugs.
+>
+> The GitHub pull request for collecting Tested-by tags or any other
+> comments is https://github.com/OP-TEE/optee_os/pull/6341.
+>
+> As usual, we will create a release candidate tag one week before the
+> release date for final testing.
+>
+> Note that this is a major version update. We will be merging some pull
+> requests that may break backward compatibility in some (limited) way
+> just before creating the 4.0.0-rc1 tag. These pull requests have "[v4]" in
+> their title and can be found here:
+>
+> https://github.com/OP-TEE/optee_os/pulls?q=3Dis%3Apr+is%3Aopen+in%3Atitle+%=
+5Bv4%5D
+>
+> In addition to that you can find some additional information related to
+> releases here:
+> https://optee.readthedocs.io/en/latest/general/releases.html
+>
+> Regards,
+> --
+> Jerome Forissier
+>
+>
 
---===============6053027546955787861==--
+--===============2036189976697850137==--
 
