@@ -1,528 +1,132 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v10 3/4] tee: optee: support tracking system threads
-Date: Fri, 13 Oct 2023 12:51:35 +0530
-Message-ID: 
- <CAFA6WYMKrB7xkOaef41LyVKHGAt8Dk0hbFUkiqubeZbJVY=9kw@mail.gmail.com>
-In-Reply-To: <bbb5ca0809954bee94c5f2886427f886@foss.st.com>
+Subject: [PATCH v9 0/6] introduce tee-based EFI Runtime Variable Service
+Date: Fri, 13 Oct 2023 16:45:33 +0900
+Message-ID: <20231013074540.8980-1-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4294157350394344133=="
+Content-Type: multipart/mixed; boundary="===============2631693135248307839=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4294157350394344133==
+--===============2631693135248307839==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 11 Oct 2023 at 12:41, Etienne CARRIERE - foss
-<etienne.carriere@foss.st.com> wrote:
->
-> > From: Sumit Garg <sumit.garg@linaro.org>
-> > Sent: Friday, October 6, 2023 11:33 AM
-> >
-> > On Tue, 3 Oct 2023 at 19:36, Etienne Carriere
-> > <etienne.carriere@foss.st.com> wrote:
-> > >
-> > > Adds support in the OP-TEE driver to keep track of reserved system
-> > > threads. The logic allows one OP-TEE thread to be reserved to TEE system
-> > > sessions.
-> > >
-> > > The optee_cq_*() functions are updated to handle this if enabled,
-> > > that is when TEE describes how many thread context it supports
-> > > and when at least 1 session has registered as a system session
-> > > (using tee_client_system_session()).
-> > >
-> > > For sake of simplicity, initialization of call queue management
-> > > is factorized into new helper function optee_cq_init().
-> > >
-> > > The SMC ABI part of the driver enables this tracking, but the
-> > > FF-A ABI part does not.
-> > >
-> > >
-> > > Co-developed-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > Co-developed-by: Sumit Garg <sumit.garg@linaro.org>
-> > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> > > Signed-off-by: Etienne Carriere <etienne.carriere@foss.st.com>
-> > > ---
-> > > Changes since v9:
-> > > - Add a reference counter for TEE system thread provisioning. We reserve
-> > >   a TEE thread context for system session only when there is at least
-> > >   1 opened system session.
-> > > - Use 2 wait queue lists, normal_waiters and sys_waiter, as proposed in
-> > >   patch v8. Using a single list can prevent a waiting system thread from
-> > >   being resumed if the executing system thread wakes a normal waiter in
-> > >   the list.
-> >
-> > How would that be possible? The system thread wakeup
-> > (free_thread_threshold =3D 0) is given priority over normal thread
-> > wakeup (free_thread_threshold =3D 1). I think a single queue list would
-> > be sufficient as demonstrated in v9.
-> >
->
-> Hello Sumit,
->
-> I think a system session can be trapped waiting when using a single queue l=
-ist.
-> To have a chance to reach the TEE, a waiting thread must wait that a TEE th=
-read comes out of the TEE and calls complete() on the waitqueue to wake next =
-waiter.
->
-> To illustrate, consider a 10 TEE threads configuration on TEE side (::total=
-_thread_count=3D10 at init),
-> and several TEE clients in Linux OS, including 2 system sessions, from 2 co=
-nsumer drivers (::sys_thread_req_count=3D2).
->
-> Imagine the 9 normal threads and the 1 system thread are in use. (::free_th=
-read_count=3D0),
-> Now comes the other system session: it goes to the waitqueue list.
-> Now comes a normal session invocation: it goes to the waitqueue list, 1st p=
-osition.
->
-> Now, TEE system thread returns to Linux:
-> It increments the counter, ::free_thread_count=3D1, and calls complete() fo=
-r the waitequeue.
-> The 1st element in the waitqueue list is the last entered normal session in=
-vocation.
-> However, that waiter won't switch local boolean 'need_wait'  to false becau=
-se ::free_thread_count=3D1 and ::sys_thread_req_count!=3D0.
-> So no attempt to reach TEE and wake another waiter on return.
-> At that point there is a system session in the waitqueue list that could en=
-ter TEE (::free_thread_count=3D1) but is waiting someone returns from the TEE.
+This series introduces the tee based EFI Runtime Variable Service.
 
-I suppose the following loop tries to wake-up every waiter to give
-them a chance to enter OP-TEE. So with that system session would
-always be prefered over normal session, right?
+The eMMC device is typically owned by the non-secure world(linux in
+this case). There is an existing solution utilizing eMMC RPMB partition
+for EFI Variables, it is implemented by interacting with
+OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
+and tee-supplicant. The last piece is the tee-based variable access
+driver to interact with OP-TEE and StandaloneMM.
 
-static void optee_cq_complete_one(struct optee_call_queue *cq)
-{
-        struct optee_call_waiter *w;
+Changelog:
+v8 -> v9
+- patch #6 "tee: optee: restore efivars ops when tee-supplicant stops"
+  is newly added
+- remove !EFI_VARS_PSTORE Kconfig dependency, we have added a non-blocking
+  set_variable and it just returns EFI_UNSUPPORTED.
+- remove obvious comments
 
-        list_for_each_entry(w, &cq->waiters, list_node) {
-                if (!completion_done(&w->c)) {
-                        complete(&w->c);
-                        break;
-                }
-        }
-}
+v7 -> v8
+Only patch #3 "efi: Add tee-based EFI variable driver" is updated.
+- fix typos
+- refactor error handling, direct return if applicable
+- use devm_add_action_or_reset() for closing of tee context/session
+- remove obvious comment
 
--Sumit
+v6 -> v7
+Patch #1-#4 are not updated.
+Patch #5 is added into this series, original patch is here:
+https://lore.kernel.org/all/20230609094532.562934-1-ilias.apalodimas(a)linaro=
+.org/
 
->
-> With 2 lists, we first treat system sessions to overcome that.
-> Am I missing something?
->
-> Best regards,
-> Etienne
->
-> > -Sumit
-> >
-> > > - Updated my e-mail address.
-> > > - Rephrased a bit the commit message.
-> > >
-> > > Changes since patch v8
-> > > - Patch v9 (reference below) attempted to simplify the implementation
-> > >   https://lore.kernel.org/lkml/20230517143311.585080-1-sumit.garg(a)lin=
-aro.org/#t
-> > >
-> > > Changes since v7:
-> > > - Changes the logic to reserve at most 1 call entry for system sessions
-> > >   as per patches v6 and v7 discussion threads (the 2 below bullets)
-> > >   and updates commit message accordingly.
-> > > - Field optee_call_queue::res_sys_thread_count is replaced with 2 field=
-s:
-> > >   sys_thread_req_count and boolean sys_thread_in_use.
-> > > - Field optee_call_waiter::sys_thread is replaced with 2 fields:
-> > >   sys_thread_req and sys_thread_used.
-> > > - Adds inline description comments for struct optee_call_queue and
-> > >   struct optee_call_waiter.
-> > >
-> > > Changes since v6:
-> > > - Moved out changes related to adding boolean system thread attribute
-> > >   into optee driver call queue and SMC/FF-A ABIs API functions. These
-> > >   changes were squashed into patch 1/4 of this patch v7 series.
-> > > - Comment about adding a specific commit for call queue refactoring
-> > >   was not addressed such a patch would only introduce function
-> > >   optee_cq_init()  with very little content in (mutex & list init).
-> > > - Added Co-developed-by tag for Jens contribution as he's not responsib=
-le
-> > >   for the changes I made in this patch v7.
-> > >
-> > > No change since v5
-> > >
-> > > Changes since v4:
-> > > - New change that supersedes implementation proposed in PATCH v4
-> > >   (tee: system invocation"). Thanks to Jens implementation we don't need
-> > >   the new OP-TEE services that my previous patch versions introduced to
-> > >   monitor system threads entry. Now, Linux optee SMC ABI driver gets TEE
-> > >   provisioned thread contexts count once and monitors thread entries in
-> > >   OP-TEE on that basis and the system thread capability of the related
-> > >   tee session. By the way, I dropped the WARN_ONCE() call I suggested
-> > >   on tee thread exhaustion as it does not provides useful information.
-> > > ---
-> > >  drivers/tee/optee/call.c          | 128 ++++++++++++++++++++++++++++--
-> > >  drivers/tee/optee/ffa_abi.c       |   3 +-
-> > >  drivers/tee/optee/optee_private.h |  24 +++++-
-> > >  drivers/tee/optee/smc_abi.c       |  16 +++-
-> > >  4 files changed, 159 insertions(+), 12 deletions(-)
-> > >
-> > > diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-> > > index 152ae9bb1785..38543538d77b 100644
-> > > --- a/drivers/tee/optee/call.c
-> > > +++ b/drivers/tee/optee/call.c
-> > > @@ -39,9 +39,31 @@ struct optee_shm_arg_entry {
-> > >         DECLARE_BITMAP(map, MAX_ARG_COUNT_PER_ENTRY);
-> > >  };
-> > >
-> > > +void optee_cq_init(struct optee_call_queue *cq, int thread_count)
-> > > +{
-> > > +       mutex_init(&cq->mutex);
-> > > +       INIT_LIST_HEAD(&cq->sys_waiters);
-> > > +       INIT_LIST_HEAD(&cq->normal_waiters);
-> > > +
-> > > +       /*
-> > > +        * If cq->total_thread_count is 0 then we're not trying to keep
-> > > +        * track of how many free threads we have, instead we're relyin=
-g on
-> > > +        * the secure world to tell us when we're out of thread and hav=
-e to
-> > > +        * wait for another thread to become available.
-> > > +        */
-> > > +       cq->total_thread_count =3D thread_count;
-> > > +       cq->free_thread_count =3D thread_count;
-> > > +}
-> > > +
-> > >  void optee_cq_wait_init(struct optee_call_queue *cq,
-> > >                         struct optee_call_waiter *w, bool sys_thread)
-> > >  {
-> > > +       unsigned int free_thread_threshold;
-> > > +       bool need_wait =3D false;
-> > > +
-> > > +       memset(w, 0, sizeof(*w));
-> > > +       w->sys_thread =3D sys_thread;
-> > > +
-> > >         /*
-> > >          * We're preparing to make a call to secure world. In case we c=
-an't
-> > >          * allocate a thread in secure world we'll end up waiting in
-> > > @@ -53,15 +75,47 @@ void optee_cq_wait_init(struct optee_call_queue *cq,
-> > >         mutex_lock(&cq->mutex);
-> > >
-> > >         /*
-> > > -        * We add ourselves to the queue, but we don't wait. This
-> > > -        * guarantees that we don't lose a completion if secure world
-> > > -        * returns busy and another thread just exited and try to compl=
-ete
-> > > -        * someone.
-> > > +        * We add ourselves to a queue, but we don't wait. This guarant=
-ees
-> > > +        * that we don't lose a completion if secure world returns busy=
- and
-> > > +        * another thread just exited and try to complete someone.
-> > >          */
-> > >         init_completion(&w->c);
-> > > -       list_add_tail(&w->list_node, &cq->waiters);
-> > > +
-> > > +       if (sys_thread)
-> > > +               list_add_tail(&w->list_node, &cq->sys_waiters);
-> > > +       else
-> > > +               list_add_tail(&w->list_node, &cq->normal_waiters);
-> > > +
-> > > +       if (cq->total_thread_count) {
-> > > +               if (sys_thread || !cq->sys_thread_req_count)
-> > > +                       free_thread_threshold =3D 0;
-> > > +               else
-> > > +                       free_thread_threshold =3D 1;
-> > > +
-> > > +               if (cq->free_thread_count > free_thread_threshold)
-> > > +                       cq->free_thread_count--;
-> > > +               else
-> > > +                       need_wait =3D true;
-> > > +       }
-> > >
-> > >         mutex_unlock(&cq->mutex);
-> > > +
-> > > +       while (need_wait) {
-> > > +               optee_cq_wait_for_completion(cq, w);
-> > > +               mutex_lock(&cq->mutex);
-> > > +
-> > > +               if (sys_thread || !cq->sys_thread_req_count)
-> > > +                       free_thread_threshold =3D 0;
-> > > +               else
-> > > +                       free_thread_threshold =3D 1;
-> > > +
-> > > +               if (cq->free_thread_count > free_thread_threshold) {
-> > > +                       cq->free_thread_count--;
-> > > +                       need_wait =3D false;
-> > > +               }
-> > > +
-> > > +               mutex_unlock(&cq->mutex);
-> > > +       }
-> > >  }
-> > >
-> > >  void optee_cq_wait_for_completion(struct optee_call_queue *cq,
-> > > @@ -74,7 +128,11 @@ void optee_cq_wait_for_completion(struct optee_call=
-_queue *cq,
-> > >         /* Move to end of list to get out of the way for other waiters =
-*/
-> > >         list_del(&w->list_node);
-> > >         reinit_completion(&w->c);
-> > > -       list_add_tail(&w->list_node, &cq->waiters);
-> > > +
-> > > +       if (w->sys_thread)
-> > > +               list_add_tail(&w->list_node, &cq->sys_waiters);
-> > > +       else
-> > > +               list_add_tail(&w->list_node, &cq->normal_waiters);
-> > >
-> > >         mutex_unlock(&cq->mutex);
-> > >  }
-> > > @@ -83,7 +141,15 @@ static void optee_cq_complete_one(struct optee_call=
-_queue *cq)
-> > >  {
-> > >         struct optee_call_waiter *w;
-> > >
-> > > -       list_for_each_entry(w, &cq->waiters, list_node) {
-> > > +       /* Wake waiting system session first */
-> > > +       list_for_each_entry(w, &cq->sys_waiters, list_node) {
-> > > +               if (!completion_done(&w->c)) {
-> > > +                       complete(&w->c);
-> > > +                       break;
-> > > +               }
-> > > +       }
-> > > +
-> > > +       list_for_each_entry(w, &cq->normal_waiters, list_node) {
-> > >                 if (!completion_done(&w->c)) {
-> > >                         complete(&w->c);
-> > >                         break;
-> > > @@ -104,6 +170,8 @@ void optee_cq_wait_final(struct optee_call_queue *c=
-q,
-> > >         /* Get out of the list */
-> > >         list_del(&w->list_node);
-> > >
-> > > +       cq->free_thread_count++;
-> > > +
-> > >         /* Wake up one eventual waiting task */
-> > >         optee_cq_complete_one(cq);
-> > >
-> > > @@ -119,6 +187,28 @@ void optee_cq_wait_final(struct optee_call_queue *=
-cq,
-> > >         mutex_unlock(&cq->mutex);
-> > >  }
-> > >
-> > > +/* Count registered system sessions to reserved a system thread or not=
- */
-> > > +static bool optee_cq_incr_sys_thread_count(struct optee_call_queue *cq)
-> > > +{
-> > > +       if (cq->total_thread_count <=3D 1)
-> > > +               return false;
-> > > +
-> > > +       mutex_lock(&cq->mutex);
-> > > +       cq->sys_thread_req_count++;
-> > > +       mutex_unlock(&cq->mutex);
-> > > +
-> > > +       return true;
-> > > +}
-> > > +
-> > > +static void optee_cq_decr_sys_thread_count(struct optee_call_queue *cq)
-> > > +{
-> > > +       mutex_lock(&cq->mutex);
-> > > +       cq->sys_thread_req_count--;
-> > > +       /* If there's someone waiting, let it resume */
-> > > +       optee_cq_complete_one(cq);
-> > > +       mutex_unlock(&cq->mutex);
-> > > +}
-> > > +
-> > >  /* Requires the filpstate mutex to be held */
-> > >  static struct optee_session *find_session(struct optee_context_data *c=
-txdata,
-> > >                                           u32 session_id)
-> > > @@ -361,6 +451,27 @@ int optee_open_session(struct tee_context *ctx,
-> > >         return rc;
-> > >  }
-> > >
-> > > +int optee_system_session(struct tee_context *ctx, u32 session)
-> > > +{
-> > > +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> > > +       struct optee_context_data *ctxdata =3D ctx->data;
-> > > +       struct optee_session *sess;
-> > > +       int rc =3D -EINVAL;
-> > > +
-> > > +       mutex_lock(&ctxdata->mutex);
-> > > +
-> > > +       sess =3D find_session(ctxdata, session);
-> > > +       if (sess && (sess->use_sys_thread ||
-> > > +                    optee_cq_incr_sys_thread_count(&optee->call_queue)=
-)) {
-> > > +               sess->use_sys_thread =3D true;
-> > > +               rc =3D 0;
-> > > +       }
-> > > +
-> > > +       mutex_unlock(&ctxdata->mutex);
-> > > +
-> > > +       return rc;
-> > > +}
-> > > +
-> > >  int optee_close_session_helper(struct tee_context *ctx, u32 session,
-> > >                                bool system_thread)
-> > >  {
-> > > @@ -380,6 +491,9 @@ int optee_close_session_helper(struct tee_context *=
-ctx, u32 session,
-> > >
-> > >         optee_free_msg_arg(ctx, entry, offs);
-> > >
-> > > +       if (system_thread)
-> > > +               optee_cq_decr_sys_thread_count(&optee->call_queue);
-> > > +
-> > >         return 0;
-> > >  }
-> > >
-> > > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> > > index 5fde9d4100e3..0c9055691343 100644
-> > > --- a/drivers/tee/optee/ffa_abi.c
-> > > +++ b/drivers/tee/optee/ffa_abi.c
-> > > @@ -852,8 +852,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_d=
-ev)
-> > >         if (rc)
-> > >                 goto err_unreg_supp_teedev;
-> > >         mutex_init(&optee->ffa.mutex);
-> > > -       mutex_init(&optee->call_queue.mutex);
-> > > -       INIT_LIST_HEAD(&optee->call_queue.waiters);
-> > > +       optee_cq_init(&optee->call_queue, 0);
-> > >         optee_supp_init(&optee->supp);
-> > >         optee_shm_arg_cache_init(optee, arg_cache_flags);
-> > >         ffa_dev_set_drvdata(ffa_dev, optee);
-> > > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/opte=
-e_private.h
-> > > index b68273051454..69f6397c3646 100644
-> > > --- a/drivers/tee/optee/optee_private.h
-> > > +++ b/drivers/tee/optee/optee_private.h
-> > > @@ -40,15 +40,35 @@ typedef void (optee_invoke_fn)(unsigned long, unsig=
-ned long, unsigned long,
-> > >                                 unsigned long, unsigned long,
-> > >                                 struct arm_smccc_res *);
-> > >
-> > > +/*
-> > > + * struct optee_call_waiter - TEE entry may need to wait for a free TE=
-E thread
-> > > + * @list_node          Reference in waiters list
-> > > + * @c                  Waiting completion reference
-> > > + * @sys_thread_req     True if waiter belongs to a system thread
-> > > + */
-> > >  struct optee_call_waiter {
-> > >         struct list_head list_node;
-> > >         struct completion c;
-> > > +       bool sys_thread;
-> > >  };
-> > >
-> > > +/*
-> > > + * struct optee_call_queue - OP-TEE call queue management
-> > > + * @mutex                      Serializes access to this struct
-> > > + * @sys_waiters                        List of system threads waiting =
-to enter OP-TEE
-> > > + * @normal_waiters             List of normal threads waiting to enter=
- OP-TEE
-> > > + * @total_thread_count         Overall number of thread context in OP-=
-TEE or 0
-> > > + * @free_thread_count          Number of threads context free in OP-TEE
-> > > + * @sys_thread_req_count       Number of registered system thread sess=
-ions
-> > > + */
-> > >  struct optee_call_queue {
-> > >         /* Serializes access to this struct */
-> > >         struct mutex mutex;
-> > > -       struct list_head waiters;
-> > > +       struct list_head sys_waiters;
-> > > +       struct list_head normal_waiters;
-> > > +       int total_thread_count;
-> > > +       int free_thread_count;
-> > > +       int sys_thread_req_count;
-> > >  };
-> > >
-> > >  struct optee_notif {
-> > > @@ -254,6 +274,7 @@ int optee_supp_send(struct tee_context *ctx, u32 re=
-t, u32 num_params,
-> > >  int optee_open_session(struct tee_context *ctx,
-> > >                        struct tee_ioctl_open_session_arg *arg,
-> > >                        struct tee_param *param);
-> > > +int optee_system_session(struct tee_context *ctx, u32 session);
-> > >  int optee_close_session_helper(struct tee_context *ctx, u32 session,
-> > >                                bool system_thread);
-> > >  int optee_close_session(struct tee_context *ctx, u32 session);
-> > > @@ -303,6 +324,7 @@ static inline void optee_to_msg_param_value(struct =
-optee_msg_param *mp,
-> > >         mp->u.value.c =3D p->u.value.c;
-> > >  }
-> > >
-> > > +void optee_cq_init(struct optee_call_queue *cq, int thread_count);
-> > >  void optee_cq_wait_init(struct optee_call_queue *cq,
-> > >                         struct optee_call_waiter *w, bool sys_thread);
-> > >  void optee_cq_wait_for_completion(struct optee_call_queue *cq,
-> > > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > > index 1033d7da03ea..5595028d6dae 100644
-> > > --- a/drivers/tee/optee/smc_abi.c
-> > > +++ b/drivers/tee/optee/smc_abi.c
-> > > @@ -1211,6 +1211,7 @@ static const struct tee_driver_ops optee_clnt_ops=
- =3D {
-> > >         .release =3D optee_release,
-> > >         .open_session =3D optee_open_session,
-> > >         .close_session =3D optee_close_session,
-> > > +       .system_session =3D optee_system_session,
-> > >         .invoke_func =3D optee_invoke_func,
-> > >         .cancel_req =3D optee_cancel_req,
-> > >         .shm_register =3D optee_shm_register,
-> > > @@ -1358,6 +1359,16 @@ static bool optee_msg_exchange_capabilities(opte=
-e_invoke_fn *invoke_fn,
-> > >         return true;
-> > >  }
-> > >
-> > > +static unsigned int optee_msg_get_thread_count(optee_invoke_fn *invoke=
-_fn)
-> > > +{
-> > > +       struct arm_smccc_res res;
-> > > +
-> > > +       invoke_fn(OPTEE_SMC_GET_THREAD_COUNT, 0, 0, 0, 0, 0, 0, 0, &res=
-);
-> > > +       if (res.a0)
-> > > +               return 0;
-> > > +       return res.a1;
-> > > +}
-> > > +
-> > >  static struct tee_shm_pool *
-> > >  optee_config_shm_memremap(optee_invoke_fn *invoke_fn, void **memremape=
-d_shm)
-> > >  {
-> > > @@ -1610,6 +1621,7 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> > >         struct optee *optee =3D NULL;
-> > >         void *memremaped_shm =3D NULL;
-> > >         unsigned int rpc_param_count;
-> > > +       unsigned int thread_count;
-> > >         struct tee_device *teedev;
-> > >         struct tee_context *ctx;
-> > >         u32 max_notif_value;
-> > > @@ -1637,6 +1649,7 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> > >                 return -EINVAL;
-> > >         }
-> > >
-> > > +       thread_count =3D optee_msg_get_thread_count(invoke_fn);
-> > >         if (!optee_msg_exchange_capabilities(invoke_fn, &sec_caps,
-> > >                                              &max_notif_value,
-> > >                                              &rpc_param_count)) {
-> > > @@ -1726,8 +1739,7 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> > >         if (rc)
-> > >                 goto err_unreg_supp_teedev;
-> > >
-> > > -       mutex_init(&optee->call_queue.mutex);
-> > > -       INIT_LIST_HEAD(&optee->call_queue.waiters);
-> > > +       optee_cq_init(&optee->call_queue, thread_count);
-> > >         optee_supp_init(&optee->supp);
-> > >         optee->smc.memremaped_shm =3D memremaped_shm;
-> > >         optee->pool =3D pool;
-> > > --
-> > > 2.25.1
-> > >
-> >
+There are two issues in the v6 series and v7 series addresses those.
 
---===============4294157350394344133==--
+1) efivar ops is not restored when the tee-supplicant daemon terminates.
+ -> As the following patch says, user must remove the device before
+    terminating tee-supplicant daemon.
+    https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)linaro.o=
+rg/
+
+2) cause panic when someone remounts the efivarfs as RW even if
+SetVariable is not supported
+ -> The fifth patch addresses this issue.
+   "[PATCH v7 5/5] efivarfs: force RO when remounting if SetVariable is
+    not supported"
+
+v5 -> v6
+- new patch #4 is added in this series, #1-#3 patches are unchanged.
+  automatically update super block flag when the efivarops support
+  SetVariable runtime service, so that user does not need to manually
+  remount the efivarfs as RW.
+
+v4 -> v5
+- rebase to efi-next based on v6.4-rc1
+- set generic_ops.query_variable_info, it works as expected as follows.
+$ df -h /sys/firmware/efi/efivars/
+Filesystem      Size  Used Avail Use% Mounted on
+efivarfs         16K  1.3K   15K   8% /sys/firmware/efi/efivars
+
+v3 -> v4:
+- replace the reference from EDK2 to PI Specification
+- remove EDK2 source code reference comments
+- prepare nonblocking variant of set_variable, it just returns
+  EFI_UNSUPPORTED
+- remove redundant buffer size check
+- argument name change in mm_communicate
+- function interface changes in setup_mm_hdr to remove (void **) cast
+
+v2 -> v3:
+- add CONFIG_EFI dependency to TEE_STMM_EFI
+- add missing return code check for tee_client_invoke_func()
+- directly call efivars_register/unregister from tee_stmm_efi.c
+
+rfc v1 -> v2:
+- split patch into three patches, one for drivers/tee,
+  one for include/linux/efi.h, and one for the driver/firmware/efi/stmm
+- context/session management into probe() and remove() same as other tee
+client driver
+- StMM variable driver is moved from driver/tee/optee to driver/firmware/efi
+- use "tee" prefix instead of "optee" in driver/firmware/efi/stmm/tee_stmm_ef=
+i.c,
+  this file does not contain op-tee specific code, abstracted by tee layer and
+  StMM variable driver will work on other tee implementation.
+- PTA_STMM_CMD_COMMUNICATE -> PTA_STMM_CMD_COMMUNICATE
+- implement query_variable_store() but currently not used
+- no use of TEEC_SUCCESS, it is defined in driver/tee/optee/optee_private.h.
+  Other tee client drivers use 0 instead of using TEEC_SUCCESS
+- remove TEEC_ERROR_EXCESS_DATA status, it is referred just to output
+error message
+
+Ilias Apalodimas (1):
+  efivarfs: force RO when remounting if SetVariable is not supported
+
+Masahisa Kojima (5):
+  efi: expose efivar generic ops register function
+  efi: Add EFI_ACCESS_DENIED status code
+  efi: Add tee-based EFI variable driver
+  efivarfs: automatically update super block flag
+  tee: optee: restore efivars ops when tee-supplicant stops
+
+ drivers/firmware/efi/Kconfig                 |  15 +
+ drivers/firmware/efi/Makefile                |   1 +
+ drivers/firmware/efi/efi.c                   |  18 +
+ drivers/firmware/efi/stmm/mm_communication.h | 236 +++++++
+ drivers/firmware/efi/stmm/tee_stmm_efi.c     | 617 +++++++++++++++++++
+ drivers/firmware/efi/vars.c                  |   8 +
+ drivers/tee/optee/supp.c                     |   4 +
+ fs/efivarfs/super.c                          |  45 ++
+ include/linux/efi.h                          |  13 +
+ 9 files changed, 957 insertions(+)
+ create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
+ create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
+
+
+base-commit: b691118f2c44d16b84fc65b8147b33620eb18cac
+--=20
+2.30.2
+
+
+--===============2631693135248307839==--
 
