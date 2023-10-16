@@ -1,156 +1,143 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Etienne Carriere <etienne.carriere@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Mon, 16 Oct 2023 09:57:42 +0200
-Message-ID: 
- <CAHUa44F9GQBLgFOiLNKSdSnULAHhG0UvLRkzF8nLnYx_+F6z0g@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYNzVspbsDtCFCCTvWtFRd0Ns+B6-V0U8qS3xhSLBNA3ZQ@mail.gmail.com>>
+Subject: [PATCH v11 2/4] tee: system session
+Date: Mon, 16 Oct 2023 11:04:26 +0200
+Message-ID: <20231016090428.1369071-3-etienne.carriere@foss.st.com>
+In-Reply-To: <20231016090428.1369071-1-etienne.carriere@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8690040387940920590=="
+Content-Type: multipart/mixed; boundary="===============3400085726259420678=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8690040387940920590==
+--===============3400085726259420678==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 13, 2023 at 1:38=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org> =
-wrote:
->
-> On Tue, 10 Oct 2023 at 21:11, Balint Dobszay <balint.dobszay@arm.com> wro=
-te:
-> >
-> > Hi Sumit,
-> >
-> > On 3 Oct 2023, at 17:42, Sumit Garg wrote:
-> > > On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.com=
-> wrote:
-> > >>
-> > >> The Trusted Services project provides a framework for developing and
-> > >> deploying device Root Of Trust services in FF-A Secure Partitions. The
-> > >> FF-A SPs are accessible through the FF-A driver, but this doesn't
-> > >> provide a user space interface. The goal of this TEE driver is to make
-> > >> Trusted Services SPs accessible for user space clients.
-> > >
-> > > I am interested in exploring the user space library/applications. Do
-> > > you have a standard library implementation and some example user-space
-> > > applications leveraging this driver interface?
-> >
-> > Yes we have a library reference implementation in Trusted Services using
-> > this driver called libts [1]. There are some test applications that rely
-> > on this library, e.g. ts-service-test [2]. Also, the Parsec project can
-> > use Trusted Services as backend through libts [3] (note, the version of
-> > TS currently integrated in Parsec is not recent, thus the libts in there
-> > still uses an earlier version of this driver).
->
-> Although I am currently exploring the user-space interface, I would
-> like to give it a hands-on. Is it possible to run this trusted
-> services setup on Qemu? If yes then can you share instructions how to
-> test them?
->
-> >
-> > [snip]
-> >
-> > >> +static int tstee_invoke_func(struct tee_context *ctx, struct tee_ioct=
-l_invoke_arg *arg,
-> > >> +                            struct tee_param *param)
-> > >> +{
-> > >> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> > >> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> > >> +       struct ts_context_data *ctxdata =3D ctx->data;
-> > >> +       struct ffa_send_direct_data ffa_data;
-> > >> +       struct tee_shm *shm =3D NULL;
-> > >> +       struct ts_session *sess;
-> > >> +       u32 req_len, ffa_args[5] =3D {};
-> > >> +       int shm_id, rc;
-> > >> +       u8 iface_id;
-> > >> +       u64 handle;
-> > >> +       u16 opcode;
-> > >> +
-> > >> +       mutex_lock(&ctxdata->mutex);
-> > >> +       sess =3D find_session(ctxdata, arg->session);
-> > >> +
-> > >> +       /* Do this while holding the mutex to make sure that the sessi=
-on wasn't closed meanwhile */
-> > >> +       if (sess)
-> > >> +               iface_id =3D sess->iface_id;
-> > >> +
-> > >> +       mutex_unlock(&ctxdata->mutex);
-> > >> +       if (!sess)
-> > >> +               return -EINVAL;
-> > >> +
-> > >> +       opcode =3D lower_16_bits(arg->func);
-> > >> +       shm_id =3D lower_32_bits(param[0].u.value.a);
-> > >> +       req_len =3D lower_32_bits(param[0].u.value.b);
-> > >> +
-> > >> +       if (shm_id !=3D 0) {
-> > >> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
-> > >> +               if (IS_ERR(shm))
-> > >> +                       return PTR_ERR(shm);
-> > >> +
-> > >> +               if (shm->size < req_len) {
-> > >> +                       pr_err("request doesn't fit into shared memory=
- buffer\n");
-> > >> +                       rc =3D -EINVAL;
-> > >> +                       goto out;
-> > >> +               }
-> > >> +
-> > >> +               handle =3D shm->sec_world_id;
-> > >> +       } else {
-> > >> +               handle =3D FFA_INVALID_MEM_HANDLE;
-> > >> +       }
-> > >> +
-> > >> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(if=
-ace_id, opcode);
-> > >> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_bits(hand=
-le);
-> > >> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_bits(hand=
-le);
-> > >> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
-> > >> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
-> > >> +
-> > >> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> > >> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_=
-data);
-> > >
-> > > I haven't dug deeper into the ABI yet, which is something I will look
-> > > into. But these RPC commands caught my attention. Are these RPC calls
-> > > blocking in nature? Is there a possibility that these could cause CPU
-> > > stalls? Do the Linux interrupts remain unhandled until the RPC calls
-> > > return?
-> >
-> > Yes, that is correct. We did encounter CPU stalls indeed, our solution
-> > was to enable preemption of S-EL0 SPs in OP-TEE [3] which solved the
-> > issue.
->
-> I would have preferred to unite FFA_INTERRUPT and
-> OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT since underneath both are
-> using FFA ABI.
->
-> Jens,
->
-> Can we change OP-TEE to use FFA_INTERRUPT as well when using FFA ABI?
+Adds kernel client API function tee_client_system_session() for a client
+to request a system service entry in TEE context.
 
-No, OP-TEE uses managed exit. Among other advantages, it allows
-resuming execution on a different CPU.
+This feature is needed to prevent a system deadlock when several TEE
+client applications invoke TEE, consuming all TEE thread contexts
+available in the secure world. The deadlock can happen in the OP-TEE
+driver for example if all these TEE threads issue an RPC call from TEE
+to Linux OS to access an eMMC RPMB partition (TEE secure storage) which
+device clock or regulator controller is accessed through an OP-TEE SCMI
+services. In that case, Linux SCMI driver must reach OP-TEE SCMI service
+without waiting until one of the consumed TEE threads is freed.
 
-Cheers,
-Jens
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+Co-developed-by: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: Etienne Carriere <etienne.carriere@foss.st.com>
+---
+No change since v10
 
->
-> -Sumit
->
-> >
-> > Regards,
-> > Balint
-> >
-> > [1] https://git.trustedfirmware.org/TS/trusted-services.git/tree/deployme=
-nts/libts/arm-linux?h=3Dv1.0.0
-> > [2] https://git.trustedfirmware.org/TS/trusted-services.git/tree/deployme=
-nts/ts-service-test/arm-linux?h=3Dv1.0.0
-> > [3] https://github.com/parallaxsecond/parsec/tree/3bcd732b92009612109517a=
-6c9075643ef648ca7/src/providers/trusted_service
-> > [4] https://github.com/OP-TEE/optee_os/pull/6002
+Changes since v9:
+- Updated my e-mail address.
 
---===============8690040387940920590==--
+No change since v8
+No change since v7
+
+Changes since v6:
+- Fixed commit message from review comments.
+- Applied Sumit's R-b tag.
+
+No change since v5
+
+Changes since v4:
+- Changes extracted from "[PATCH v4 1/2] tee: system invocation" and
+  revised with Jens contribution to cover only definition of tee driver
+  new API function tee_client_system_session() for kernel clients to
+  register their session as a system session.
+- Commit message rephrased, including header line changed from
+  "tee: system invocation" to "tee: system session" has the feature
+  relates to system attributes of tee sessions.
+
+Changes since v3:
+- Fixed new SMC funcIDs to reserved/unreserve OP-TEE thread contexts:
+  minor renaming + define as fastcall funcIDs.
+- Moved system_ctx_count from generic struct tee_context to optee's
+  private struct optee_context_data. This changes optee smc_abi.c
+  to release reserved thread contexts when the optee device is released.
+- Fixed inline description comments.
+
+No change since v2
+
+Change since v1
+- Addressed comment on Linux client to claim reservation on TEE context.
+  This brings 2 new operations from client to TEE to request and release
+  system thread contexts: 2 new tee_drv.h API functions, 2 new ops
+  functions in struct tee_driver_ops. The OP-TEE implement shall implement
+  2 new fastcall SMC funcIDs.
+- Fixed typos in commit message.
+---
+ drivers/tee/tee_core.c  |  8 ++++++++
+ include/linux/tee_drv.h | 16 ++++++++++++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index 0eb342de0b00..91932835d0f7 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -1170,6 +1170,14 @@ int tee_client_close_session(struct tee_context *ctx, =
+u32 session)
+ }
+ EXPORT_SYMBOL_GPL(tee_client_close_session);
+=20
++int tee_client_system_session(struct tee_context *ctx, u32 session)
++{
++	if (!ctx->teedev->desc->ops->system_session)
++		return -EINVAL;
++	return ctx->teedev->desc->ops->system_session(ctx, session);
++}
++EXPORT_SYMBOL_GPL(tee_client_system_session);
++
+ int tee_client_invoke_func(struct tee_context *ctx,
+ 			   struct tee_ioctl_invoke_arg *arg,
+ 			   struct tee_param *param)
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index 17eb1c5205d3..911ddf92dcee 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -84,6 +84,7 @@ struct tee_param {
+  * @release:		release this open file
+  * @open_session:	open a new session
+  * @close_session:	close a session
++ * @system_session:	declare session as a system session
+  * @invoke_func:	invoke a trusted function
+  * @cancel_req:		request cancel of an ongoing invoke or open
+  * @supp_recv:		called for supplicant to get a command
+@@ -100,6 +101,7 @@ struct tee_driver_ops {
+ 			    struct tee_ioctl_open_session_arg *arg,
+ 			    struct tee_param *param);
+ 	int (*close_session)(struct tee_context *ctx, u32 session);
++	int (*system_session)(struct tee_context *ctx, u32 session);
+ 	int (*invoke_func)(struct tee_context *ctx,
+ 			   struct tee_ioctl_invoke_arg *arg,
+ 			   struct tee_param *param);
+@@ -429,6 +431,20 @@ int tee_client_open_session(struct tee_context *ctx,
+  */
+ int tee_client_close_session(struct tee_context *ctx, u32 session);
+=20
++/**
++ * tee_client_system_session() - Declare session as a system session
++ * @ctx:	TEE Context
++ * @session:	Session id
++ *
++ * This function requests TEE to provision an entry context ready to use for
++ * that session only. The provisioned entry context is used for command
++ * invocation and session closure, not for command cancelling requests.
++ * TEE releases the provisioned context upon session closure.
++ *
++ * Return < 0 on error else 0 if an entry context has been provisioned.
++ */
++int tee_client_system_session(struct tee_context *ctx, u32 session);
++
+ /**
+  * tee_client_invoke_func() - Invoke a function in a Trusted Application
+  * @ctx:	TEE Context
+--=20
+2.25.1
+
+
+--===============3400085726259420678==--
 
