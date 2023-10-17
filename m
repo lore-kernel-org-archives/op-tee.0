@@ -1,55 +1,269 @@
-From: Etienne Carriere <etienne.carriere@foss.st.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v11 0/4] tee: introduce TEE system sssion
-Date: Mon, 16 Oct 2023 11:04:24 +0200
-Message-ID: <20231016090428.1369071-1-etienne.carriere@foss.st.com>
+Subject: Re: [PATCH v8 4/5] efivarfs: automatically update super block flag
+Date: Tue, 17 Oct 2023 16:28:22 +0530
+Message-ID: 
+ <CAFA6WYPc3ZL7C=t_i_VnYmJMHmgEM50aA=v4ZNC=FVAJgSAY=g@mail.gmail.com>
+In-Reply-To: <
+ <CAC_iWj+P110h2cK=4tbCTq2c9aktox-EATOQgH_1wshRMKg4PQ@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6416677980916766801=="
+Content-Type: multipart/mixed; boundary="===============7247028362417435916=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6416677980916766801==
+--===============7247028362417435916==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-This series introduces TEE system sessions for TEE service sessions that
-require TEE to provision resources to prevent deadlock when clients call
-the TEE.
+On Fri, 13 Oct 2023 at 20:56, Ilias Apalodimas
+<ilias.apalodimas@linaro.org> wrote:
+>
+> Hi Sumit
+>
+> On Fri, 13 Oct 2023 at 09:53, Sumit Garg <sumit.garg@linaro.org> wrote:
+> >
+> > Hi Ilias,
+> >
+> > On Wed, 11 Oct 2023 at 22:30, Ilias Apalodimas
+> > <ilias.apalodimas@linaro.org> wrote:
+> > >
+> > > Kojima-san
+> > > Apologies for the late reply, I just found some to test this.
+> > >
+> > > On Sun, 6 Aug 2023 at 19:55, Masahisa Kojima <masahisa.kojima@linaro.=
+org> wrote:
+> > > >
+> > > > efivar operation is updated when the tee_stmm_efi module is probed.
+> > > > tee_stmm_efi module supports SetVariable runtime service,
+> > > > but user needs to manually remount the efivarfs as RW to enable
+> > > > the write access if the previous efivar operation does not support
+> > > > SerVariable and efivarfs is mounted as read-only.
+> > > >
+> > > > This commit notifies the update of efivar operation to
+> > > > efivarfs subsystem, then drops SB_RDONLY flag if the efivar
+> > > > operation supports SetVariable.
+> > >
+> > > The RO->RW transition works fine and I did manage to test basic stuff
+> > > like setting up efibootmgr options.  IIUC the RW->RO should be covered
+> > > by this patchset [0] ?
+> >
+> > Yeah.
+> >
+> > > Wouldn't it be better to detect that the tee device of the supplicant
+> > > closes and use that to switch the permissions?  I get why we need that
+> > > for the TPM, the entire subsystem needs to send TPM commands *before*
+> > > the supplicant dies.   But this is not needed for the EFI variables
+> > > case, we could just remount the FS as RO the moment the supplicant
+> > > dies.
+> >
+> > As we discussed offline, we should have a unified approach to notify
+> > kernel TEE client drivers. So the approach implemented as part of [0]
+> > should address the needs for fTPM as well as EFI.
+>
+> Ideally yes, we should have a unified approach.  But this is a bit
+> different IMHO. In the majority of the cases, the supplicant goes
+> away,  we lose access to storage and that's the only thing we care
+> about.
 
-This deadlock situation can happen when a TEE service is used by low
-level system resources as for example when Linux kernel uses SCMI
-service embedded in TEE for clock, reset, regulator, etc... controls.
-This case is detailled in patch 2/4:
+What do you think about in-flight secure storage operations while the
+tee-supplicant goes away? They can fail abruptly if the tee-supplicant
+goes away without waiting for them to complete. IMO, the graceful
+handling should be that the tee-supplicant should be alive when the
+dependent devices are being closed.
 
-> This feature is needed to prevent a system deadlock when several TEE
-> client applications invoke TEE, consuming all TEE thread contexts
-> available in the secure world. The deadlock can happen in the OP-TEE
-> driver for example if all these TEE threads issue an RPC call from TEE
-> to Linux OS to access an eMMC RPMB partition (TEE secure storage) which
-> device clock or regulator controller is accessed through an OP-TEE SCMI
-> services. In that case, Linux SCMI driver must reach OP-TEE SCMI
-> service without waiting until one of the consumed TEE threads is freed.
+For an EFI variable store case as well isn't that a possible scenario?
 
-Etienne Carriere (4):
-  tee: optee: system call property
-  tee: system session
-  tee: optee: support tracking system threads
-  firmware: arm_scmi: optee: use optee system invocation
+> Only the TPM subsystem is 'special' because it has to perform
+> a shutdown of the device as well.  On top of that, I think we should
+> try to avoid the kernel depending on userspace apps as much as
+> possible.
 
- drivers/firmware/arm_scmi/optee.c |   4 +
- drivers/tee/optee/call.c          | 130 ++++++++++++++++++++++++++++--
- drivers/tee/optee/core.c          |   5 +-
- drivers/tee/optee/ffa_abi.c       |  13 +--
- drivers/tee/optee/optee_private.h |  29 ++++++-
- drivers/tee/optee/smc_abi.c       |  31 ++++---
- drivers/tee/tee_core.c            |   8 ++
- include/linux/tee_drv.h           |  16 ++++
- 8 files changed, 209 insertions(+), 27 deletions(-)
----
-Changes since v11:
-- Changes patch 3/4, other are unchanged.
--- 
-2.25.1
+There is only tee-supplicant user-space dependency which has to be
+handled carefully. I am very much up for RPMB fastpath via kernel and
+get rid of this dependency as well.
 
+>  I think it's best if we support both of these and add
+> documentation on why this is happening. Would it be hard to have a
+> combination of both of your patches?
+>
 
---===============6416677980916766801==--
+It won't be hard but there can be corner cases as mentioned above.
+
+-Sumit
+
+> Thanks
+> /Ilias
+>
+> >
+> > -Sumit
+> >
+> > >
+> > > [0] https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)li=
+naro.org/
+> > >
+> > > Regards
+> > > /Ilias
+> > > >
+> > > > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+> > > > ---
+> > > >  drivers/firmware/efi/efi.c  |  6 ++++++
+> > > >  drivers/firmware/efi/vars.c |  8 ++++++++
+> > > >  fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
+> > > >  include/linux/efi.h         |  8 ++++++++
+> > > >  4 files changed, 55 insertions(+)
+> > > >
+> > > > diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
+> > > > index 53ae25bbb6ac..d2eec5ed8e5e 100644
+> > > > --- a/drivers/firmware/efi/efi.c
+> > > > +++ b/drivers/firmware/efi/efi.c
+> > > > @@ -32,6 +32,7 @@
+> > > >  #include <linux/ucs2_string.h>
+> > > >  #include <linux/memblock.h>
+> > > >  #include <linux/security.h>
+> > > > +#include <linux/notifier.h>
+> > > >
+> > > >  #include <asm/early_ioremap.h>
+> > > >
+> > > > @@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_at=
+tr_group =3D {
+> > > >         .is_visible =3D efi_attr_is_visible,
+> > > >  };
+> > > >
+> > > > +struct blocking_notifier_head efivar_ops_nh;
+> > > > +EXPORT_SYMBOL_GPL(efivar_ops_nh);
+> > > > +
+> > > >  static struct efivars generic_efivars;
+> > > >  static struct efivar_operations generic_ops;
+> > > >
+> > > > @@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
+> > > >                 platform_device_register_simple("efivars", 0, NULL, 0=
+);
+> > > >         }
+> > > >
+> > > > +       BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
+> > > > +
+> > > >         error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_group=
+);
+> > > >         if (error) {
+> > > >                 pr_err("efi: Sysfs attribute export failed with error=
+ %d.\n",
+> > > > diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
+> > > > index e9dc7116daf1..f654e6f6af87 100644
+> > > > --- a/drivers/firmware/efi/vars.c
+> > > > +++ b/drivers/firmware/efi/vars.c
+> > > > @@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
+> > > >                      const struct efivar_operations *ops)
+> > > >  {
+> > > >         int rv;
+> > > > +       int event;
+> > > >
+> > > >         if (down_interruptible(&efivars_lock))
+> > > >                 return -EINTR;
+> > > > @@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
+> > > >
+> > > >         __efivars =3D efivars;
+> > > >
+> > > > +       if (efivar_supports_writes())
+> > > > +               event =3D EFIVAR_OPS_RDWR;
+> > > > +       else
+> > > > +               event =3D EFIVAR_OPS_RDONLY;
+> > > > +
+> > > > +       blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
+> > > > +
+> > > >         pr_info("Registered efivars operations\n");
+> > > >         rv =3D 0;
+> > > >  out:
+> > > > diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+> > > > index e028fafa04f3..0f6e4d223aea 100644
+> > > > --- a/fs/efivarfs/super.c
+> > > > +++ b/fs/efivarfs/super.c
+> > > > @@ -14,11 +14,36 @@
+> > > >  #include <linux/slab.h>
+> > > >  #include <linux/magic.h>
+> > > >  #include <linux/statfs.h>
+> > > > +#include <linux/notifier.h>
+> > > >
+> > > >  #include "internal.h"
+> > > >
+> > > >  LIST_HEAD(efivarfs_list);
+> > > >
+> > > > +struct efivarfs_info {
+> > > > +       struct super_block *sb;
+> > > > +       struct notifier_block nb;
+> > > > +};
+> > > > +
+> > > > +static struct efivarfs_info info;
+> > > > +
+> > > > +static int efivarfs_ops_notifier(struct notifier_block *nb, unsigned=
+ long event,
+> > > > +                                void *data)
+> > > > +{
+> > > > +       switch (event) {
+> > > > +       case EFIVAR_OPS_RDONLY:
+> > > > +               info.sb->s_flags |=3D SB_RDONLY;
+> > > > +               break;
+> > > > +       case EFIVAR_OPS_RDWR:
+> > > > +               info.sb->s_flags &=3D ~SB_RDONLY;
+> > > > +               break;
+> > > > +       default:
+> > > > +               return NOTIFY_DONE;
+> > > > +       }
+> > > > +
+> > > > +       return NOTIFY_OK;
+> > > > +}
+> > > > +
+> > > >  static void efivarfs_evict_inode(struct inode *inode)
+> > > >  {
+> > > >         clear_inode(inode);
+> > > > @@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_bloc=
+k *sb, struct fs_context *fc)
+> > > >         if (!root)
+> > > >                 return -ENOMEM;
+> > > >
+> > > > +       info.sb =3D sb;
+> > > > +       info.nb.notifier_call =3D efivarfs_ops_notifier;
+> > > > +       err =3D blocking_notifier_chain_register(&efivar_ops_nh, &inf=
+o.nb);
+> > > > +       if (err)
+> > > > +               return err;
+> > > > +
+> > > >         INIT_LIST_HEAD(&efivarfs_list);
+> > > >
+> > > >         err =3D efivar_init(efivarfs_callback, (void *)sb, true, &efi=
+varfs_list);
+> > > > @@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_con=
+text *fc)
+> > > >
+> > > >  static void efivarfs_kill_sb(struct super_block *sb)
+> > > >  {
+> > > > +       blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb);
+> > > > +       info.sb =3D NULL;
+> > > >         kill_litter_super(sb);
+> > > >
+> > > >         if (!efivar_is_available())
+> > > > diff --git a/include/linux/efi.h b/include/linux/efi.h
+> > > > index 603bba2d6437..17cd628b5c42 100644
+> > > > --- a/include/linux/efi.h
+> > > > +++ b/include/linux/efi.h
+> > > > @@ -1365,6 +1365,14 @@ bool efi_config_table_is_usable(const efi_guid=
+_t *guid, unsigned long table)
+> > > >
+> > > >  umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute *=
+attr, int n);
+> > > >
+> > > > +/*
+> > > > + * efivar ops event type
+> > > > + */
+> > > > +#define EFIVAR_OPS_RDONLY 0
+> > > > +#define EFIVAR_OPS_RDWR 1
+> > > > +
+> > > > +extern struct blocking_notifier_head efivar_ops_nh;
+> > > > +
+> > > >  void efivars_generic_ops_register(void);
+> > > >  void efivars_generic_ops_unregister(void);
+> > > >
+> > > > --
+> > > > 2.30.2
+> > > >
+
+--===============7247028362417435916==--
 
