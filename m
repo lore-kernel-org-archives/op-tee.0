@@ -1,265 +1,215 @@
 From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 4/5] efivarfs: automatically update super block flag
-Date: Tue, 17 Oct 2023 15:55:30 +0300
-Message-ID: 
- <CAC_iWj+pVrLoLDeWy9qQnoW_3vWeSm+4gyYs0m+WJTvUmFgiMA@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYPc3ZL7C=t_i_VnYmJMHmgEM50aA=v4ZNC=FVAJgSAY=g@mail.gmail.com>>
+Subject: Re: [PATCH v9 0/6] introduce tee-based EFI Runtime Variable Service
+Date: Wed, 18 Oct 2023 14:35:09 +0300
+Message-ID: <ZS_C7ej5jDNICLkA@hera>
+In-Reply-To: <20231013074540.8980-1-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7502960242939173463=="
+Content-Type: multipart/mixed; boundary="===============7785173399958225508=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7502960242939173463==
+--===============7785173399958225508==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit,
+Kojima-san,
 
-[...]
+I found some time to do some extended testing here's what I found
 
-> > >
-> > > > Wouldn't it be better to detect that the tee device of the supplicant
-> > > > closes and use that to switch the permissions?  I get why we need that
-> > > > for the TPM, the entire subsystem needs to send TPM commands *before*
-> > > > the supplicant dies.   But this is not needed for the EFI variables
-> > > > case, we could just remount the FS as RO the moment the supplicant
-> > > > dies.
-> > >
-> > > As we discussed offline, we should have a unified approach to notify
-> > > kernel TEE client drivers. So the approach implemented as part of [0]
-> > > should address the needs for fTPM as well as EFI.
-> >
-> > Ideally yes, we should have a unified approach.  But this is a bit
-> > different IMHO. In the majority of the cases, the supplicant goes
-> > away,  we lose access to storage and that's the only thing we care
-> > about.
->
-> What do you think about in-flight secure storage operations while the
-> tee-supplicant goes away? They can fail abruptly if the tee-supplicant
-> goes away without waiting for them to complete. IMO, the graceful
-> handling should be that the tee-supplicant should be alive when the
-> dependent devices are being closed.
->
-> For an EFI variable store case as well isn't that a possible scenario?
+Switching the permissions from RO->RW when the supplicant is started works
+correctly
+# mount | grep efiv
+efivarfs on /sys/firmware/efi/efivars type efivarfs (ro,nosuid,nodev,noexec,r=
+elatime)
+# tee-supplicant -d
+[   77.374878] efivars: Unregistered efivars operations
+[   77.381604] Use tee-based EFI runtime variable services
+[   77.386862] efivars: Registered efivars operations
+# mount | grep efiv
+efivarfs on /sys/firmware/efi/efivars type efivarfs (rw,nosuid,nodev,noexec,r=
+elatime)
+I didn't test unbinding yet, but I assume it's going to work fine and
+remove the efivar ops.
 
-I think it is, but that would involve issuing a write and then killing
-the supplicant immediately.
-But that would lead to a weird state as well with the graceful exit.
-IOW we don't block until the operation is finished, if you want to
-shoot yourself in the foot you can start a write and then unbind. That
-would lead to a partial EFI variable being written as well no?
+Reading an writing non-authenticated EFI variables seems to work fine.
+I verified this with U-Boot and the BootOrder changed correctly.
+# efibootmgr -o 0001,0002,0000
+BootCurrent: 0002
+BootOrder: 0001,0002,0000
+Boot0000* nvme 0:1
+Boot0001* nvme 0:2
+Boot0002* debian
+# efibootmgr -o 0002,0000,0001
+BootCurrent: 0002
+BootOrder: 0002,0000,0001
+Boot0000* nvme 0:1
+Boot0001* nvme 0:2
+Boot0002* debian
 
->
-> > Only the TPM subsystem is 'special' because it has to perform
-> > a shutdown of the device as well.  On top of that, I think we should
-> > try to avoid the kernel depending on userspace apps as much as
-> > possible.
->
-> There is only tee-supplicant user-space dependency which has to be
-> handled carefully. I am very much up for RPMB fastpath via kernel and
-> get rid of this dependency as well.
+Writing authenticated EFI variables works the first time.
+I also dumped those variables from both Linux and U-Boot and they matched
+# efi-updatevar -f PK.auth PK
+# efi-updatevar -f KEK.auth KEK
+# efi-updatevar -f db.auth db
 
-Yes, that is without a doubt our best solution.  Jens is already
-working on that, but the supplicant has an entire ecosystem built
-around it.  There might be cases where using the in-kernel replacement
-might not be possible.
+But removing the PK at runtime fails.
+# efi-updatevar -f noPK.auth PK
+# Failed to update PK: Operation not permitted
+My guess is that the EDK2 code prohibits that, but we need to check why
+this is happening.  I also got similar failures trying to update KEK and db.
 
->
-> >  I think it's best if we support both of these and add
-> > documentation on why this is happening. Would it be hard to have a
-> > combination of both of your patches?
-> >
->
-> It won't be hard but there can be corner cases as mentioned above.
+But the most worrying thing is this. From Linux program KEK and db
+# efi-updatevar -f KEK.auth KEK
+# efi-updatevar -f db.auth db
 
-TBH I am fine with merging it as-is. Both cases aren't ideal so it's
-mostly a matter of documenting them properly.  I can update the docs
-once we decide what to pull and mention the caveats in detail.
-I am mostly interested to see what Jan is thinking since he pointed
-out the behavior initially
+Reboot the machine and U-Boot complains when it tries to populate the
+runtime vars with:
+Loading Linux 6.6.0-rc2-00654-g82a013b37495 ...
+Loading initial ramdisk ...
+EFI stub: Booting Linux Kernel...
+EFI stub: Using DTB from configuration table
+EFI stub: Exiting boot services...
+Can't populate EFI variables. No runtime variables will be available <-- This
 
-Thanks
+If you rewrite those vars from the U-Boot shell everything seems to come
+back to normal
+=3D> tftp  $loadaddr 192.168.49.5:noKEK.auth && setenv -e -nv -bs -rt -at -i =
+$loadaddr:$filesize KEK
+=3D> tftp  $loadaddr 192.168.49.5:nodb.auth && setenv -e -nv -bs -rt -at -i $=
+loadaddr:$filesize db
+=3D> tftp  $loadaddr 192.168.49.5:KEK.auth && setenv -e -nv -bs -rt -at -i $l=
+oadaddr:$filesize KEK
+=3D> tftp  $loadaddr 192.168.49.5:db.auth && setenv -e -nv -bs -rt -at -i $lo=
+adaddr:$filesize db
+
+Loading Linux 6.6.0-rc2-00654-g82a013b37495 ...
+Loading initial ramdisk ...
+EFI stub: Booting Linux Kernel...
+EFI stub: Using DTB from configuration table
+EFI stub: Exiting boot services...
+
+Let me know if you need any more information
+
+Regards
 /Ilias
+On Fri, Oct 13, 2023 at 04:45:33PM +0900, Masahisa Kojima wrote:
+> This series introduces the tee based EFI Runtime Variable Service.
 >
-> -Sumit
+> The eMMC device is typically owned by the non-secure world(linux in
+> this case). There is an existing solution utilizing eMMC RPMB partition
+> for EFI Variables, it is implemented by interacting with
+> OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
+> and tee-supplicant. The last piece is the tee-based variable access
+> driver to interact with OP-TEE and StandaloneMM.
 >
-> > Thanks
-> > /Ilias
-> >
-> > >
-> > > -Sumit
-> > >
-> > > >
-> > > > [0] https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)=
-linaro.org/
-> > > >
-> > > > Regards
-> > > > /Ilias
-> > > > >
-> > > > > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
-> > > > > ---
-> > > > >  drivers/firmware/efi/efi.c  |  6 ++++++
-> > > > >  drivers/firmware/efi/vars.c |  8 ++++++++
-> > > > >  fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
-> > > > >  include/linux/efi.h         |  8 ++++++++
-> > > > >  4 files changed, 55 insertions(+)
-> > > > >
-> > > > > diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-> > > > > index 53ae25bbb6ac..d2eec5ed8e5e 100644
-> > > > > --- a/drivers/firmware/efi/efi.c
-> > > > > +++ b/drivers/firmware/efi/efi.c
-> > > > > @@ -32,6 +32,7 @@
-> > > > >  #include <linux/ucs2_string.h>
-> > > > >  #include <linux/memblock.h>
-> > > > >  #include <linux/security.h>
-> > > > > +#include <linux/notifier.h>
-> > > > >
-> > > > >  #include <asm/early_ioremap.h>
-> > > > >
-> > > > > @@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_=
-attr_group =3D {
-> > > > >         .is_visible =3D efi_attr_is_visible,
-> > > > >  };
-> > > > >
-> > > > > +struct blocking_notifier_head efivar_ops_nh;
-> > > > > +EXPORT_SYMBOL_GPL(efivar_ops_nh);
-> > > > > +
-> > > > >  static struct efivars generic_efivars;
-> > > > >  static struct efivar_operations generic_ops;
-> > > > >
-> > > > > @@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
-> > > > >                 platform_device_register_simple("efivars", 0, NULL,=
- 0);
-> > > > >         }
-> > > > >
-> > > > > +       BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
-> > > > > +
-> > > > >         error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_gro=
-up);
-> > > > >         if (error) {
-> > > > >                 pr_err("efi: Sysfs attribute export failed with err=
-or %d.\n",
-> > > > > diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/var=
-s.c
-> > > > > index e9dc7116daf1..f654e6f6af87 100644
-> > > > > --- a/drivers/firmware/efi/vars.c
-> > > > > +++ b/drivers/firmware/efi/vars.c
-> > > > > @@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
-> > > > >                      const struct efivar_operations *ops)
-> > > > >  {
-> > > > >         int rv;
-> > > > > +       int event;
-> > > > >
-> > > > >         if (down_interruptible(&efivars_lock))
-> > > > >                 return -EINTR;
-> > > > > @@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
-> > > > >
-> > > > >         __efivars =3D efivars;
-> > > > >
-> > > > > +       if (efivar_supports_writes())
-> > > > > +               event =3D EFIVAR_OPS_RDWR;
-> > > > > +       else
-> > > > > +               event =3D EFIVAR_OPS_RDONLY;
-> > > > > +
-> > > > > +       blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
-> > > > > +
-> > > > >         pr_info("Registered efivars operations\n");
-> > > > >         rv =3D 0;
-> > > > >  out:
-> > > > > diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-> > > > > index e028fafa04f3..0f6e4d223aea 100644
-> > > > > --- a/fs/efivarfs/super.c
-> > > > > +++ b/fs/efivarfs/super.c
-> > > > > @@ -14,11 +14,36 @@
-> > > > >  #include <linux/slab.h>
-> > > > >  #include <linux/magic.h>
-> > > > >  #include <linux/statfs.h>
-> > > > > +#include <linux/notifier.h>
-> > > > >
-> > > > >  #include "internal.h"
-> > > > >
-> > > > >  LIST_HEAD(efivarfs_list);
-> > > > >
-> > > > > +struct efivarfs_info {
-> > > > > +       struct super_block *sb;
-> > > > > +       struct notifier_block nb;
-> > > > > +};
-> > > > > +
-> > > > > +static struct efivarfs_info info;
-> > > > > +
-> > > > > +static int efivarfs_ops_notifier(struct notifier_block *nb, unsign=
-ed long event,
-> > > > > +                                void *data)
-> > > > > +{
-> > > > > +       switch (event) {
-> > > > > +       case EFIVAR_OPS_RDONLY:
-> > > > > +               info.sb->s_flags |=3D SB_RDONLY;
-> > > > > +               break;
-> > > > > +       case EFIVAR_OPS_RDWR:
-> > > > > +               info.sb->s_flags &=3D ~SB_RDONLY;
-> > > > > +               break;
-> > > > > +       default:
-> > > > > +               return NOTIFY_DONE;
-> > > > > +       }
-> > > > > +
-> > > > > +       return NOTIFY_OK;
-> > > > > +}
-> > > > > +
-> > > > >  static void efivarfs_evict_inode(struct inode *inode)
-> > > > >  {
-> > > > >         clear_inode(inode);
-> > > > > @@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_bl=
-ock *sb, struct fs_context *fc)
-> > > > >         if (!root)
-> > > > >                 return -ENOMEM;
-> > > > >
-> > > > > +       info.sb =3D sb;
-> > > > > +       info.nb.notifier_call =3D efivarfs_ops_notifier;
-> > > > > +       err =3D blocking_notifier_chain_register(&efivar_ops_nh, &i=
-nfo.nb);
-> > > > > +       if (err)
-> > > > > +               return err;
-> > > > > +
-> > > > >         INIT_LIST_HEAD(&efivarfs_list);
-> > > > >
-> > > > >         err =3D efivar_init(efivarfs_callback, (void *)sb, true, &e=
-fivarfs_list);
-> > > > > @@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_c=
-ontext *fc)
-> > > > >
-> > > > >  static void efivarfs_kill_sb(struct super_block *sb)
-> > > > >  {
-> > > > > +       blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb=
-);
-> > > > > +       info.sb =3D NULL;
-> > > > >         kill_litter_super(sb);
-> > > > >
-> > > > >         if (!efivar_is_available())
-> > > > > diff --git a/include/linux/efi.h b/include/linux/efi.h
-> > > > > index 603bba2d6437..17cd628b5c42 100644
-> > > > > --- a/include/linux/efi.h
-> > > > > +++ b/include/linux/efi.h
-> > > > > @@ -1365,6 +1365,14 @@ bool efi_config_table_is_usable(const efi_gu=
-id_t *guid, unsigned long table)
-> > > > >
-> > > > >  umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute=
- *attr, int n);
-> > > > >
-> > > > > +/*
-> > > > > + * efivar ops event type
-> > > > > + */
-> > > > > +#define EFIVAR_OPS_RDONLY 0
-> > > > > +#define EFIVAR_OPS_RDWR 1
-> > > > > +
-> > > > > +extern struct blocking_notifier_head efivar_ops_nh;
-> > > > > +
-> > > > >  void efivars_generic_ops_register(void);
-> > > > >  void efivars_generic_ops_unregister(void);
-> > > > >
-> > > > > --
-> > > > > 2.30.2
-> > > > >
+> Changelog:
+> v8 -> v9
+> - patch #6 "tee: optee: restore efivars ops when tee-supplicant stops"
+>   is newly added
+> - remove !EFI_VARS_PSTORE Kconfig dependency, we have added a non-blocking
+>   set_variable and it just returns EFI_UNSUPPORTED.
+> - remove obvious comments
+>
+> v7 -> v8
+> Only patch #3 "efi: Add tee-based EFI variable driver" is updated.
+> - fix typos
+> - refactor error handling, direct return if applicable
+> - use devm_add_action_or_reset() for closing of tee context/session
+> - remove obvious comment
+>
+> v6 -> v7
+> Patch #1-#4 are not updated.
+> Patch #5 is added into this series, original patch is here:
+> https://lore.kernel.org/all/20230609094532.562934-1-ilias.apalodimas(a)lina=
+ro.org/
+>
+> There are two issues in the v6 series and v7 series addresses those.
+>
+> 1) efivar ops is not restored when the tee-supplicant daemon terminates.
+>  -> As the following patch says, user must remove the device before
+>     terminating tee-supplicant daemon.
+>     https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)linaro=
+.org/
+>
+> 2) cause panic when someone remounts the efivarfs as RW even if
+> SetVariable is not supported
+>  -> The fifth patch addresses this issue.
+>    "[PATCH v7 5/5] efivarfs: force RO when remounting if SetVariable is
+>     not supported"
+>
+> v5 -> v6
+> - new patch #4 is added in this series, #1-#3 patches are unchanged.
+>   automatically update super block flag when the efivarops support
+>   SetVariable runtime service, so that user does not need to manually
+>   remount the efivarfs as RW.
+>
+> v4 -> v5
+> - rebase to efi-next based on v6.4-rc1
+> - set generic_ops.query_variable_info, it works as expected as follows.
+> $ df -h /sys/firmware/efi/efivars/
+> Filesystem      Size  Used Avail Use% Mounted on
+> efivarfs         16K  1.3K   15K   8% /sys/firmware/efi/efivars
+>
+> v3 -> v4:
+> - replace the reference from EDK2 to PI Specification
+> - remove EDK2 source code reference comments
+> - prepare nonblocking variant of set_variable, it just returns
+>   EFI_UNSUPPORTED
+> - remove redundant buffer size check
+> - argument name change in mm_communicate
+> - function interface changes in setup_mm_hdr to remove (void **) cast
+>
+> v2 -> v3:
+> - add CONFIG_EFI dependency to TEE_STMM_EFI
+> - add missing return code check for tee_client_invoke_func()
+> - directly call efivars_register/unregister from tee_stmm_efi.c
+>
+> rfc v1 -> v2:
+> - split patch into three patches, one for drivers/tee,
+>   one for include/linux/efi.h, and one for the driver/firmware/efi/stmm
+> - context/session management into probe() and remove() same as other tee
+> client driver
+> - StMM variable driver is moved from driver/tee/optee to driver/firmware/efi
+> - use "tee" prefix instead of "optee" in driver/firmware/efi/stmm/tee_stmm_=
+efi.c,
+>   this file does not contain op-tee specific code, abstracted by tee layer =
+and
+>   StMM variable driver will work on other tee implementation.
+> - PTA_STMM_CMD_COMMUNICATE -> PTA_STMM_CMD_COMMUNICATE
+> - implement query_variable_store() but currently not used
+> - no use of TEEC_SUCCESS, it is defined in driver/tee/optee/optee_private.h.
+>   Other tee client drivers use 0 instead of using TEEC_SUCCESS
+> - remove TEEC_ERROR_EXCESS_DATA status, it is referred just to output
+> error message
+>
+> Ilias Apalodimas (1):
+>   efivarfs: force RO when remounting if SetVariable is not supported
+>
+> Masahisa Kojima (5):
+>   efi: expose efivar generic ops register function
+>   efi: Add EFI_ACCESS_DENIED status code
+>   efi: Add tee-based EFI variable driver
+>   efivarfs: automatically update super block flag
+>   tee: optee: restore efivars ops when tee-supplicant stops
+>
+>  drivers/firmware/efi/Kconfig                 |  15 +
+>  drivers/firmware/efi/Makefile                |   1 +
+>  drivers/firmware/efi/efi.c                   |  18 +
+>  drivers/firmware/efi/stmm/mm_communication.h | 236 +++++++
+>  drivers/firmware/efi/stmm/tee_stmm_efi.c     | 617 +++++++++++++++++++
+>  drivers/firmware/efi/vars.c                  |   8 +
+>  drivers/tee/optee/supp.c                     |   4 +
+>  fs/efivarfs/super.c                          |  45 ++
+>  include/linux/efi.h                          |  13 +
+>  9 files changed, 957 insertions(+)
+>  create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
+>  create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
+>
+>
+> base-commit: b691118f2c44d16b84fc65b8147b33620eb18cac
+> --
+> 2.30.2
+>
 
---===============7502960242939173463==--
+--===============7785173399958225508==--
 
