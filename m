@@ -1,215 +1,146 @@
 From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 0/6] introduce tee-based EFI Runtime Variable Service
-Date: Wed, 18 Oct 2023 14:35:09 +0300
-Message-ID: <ZS_C7ej5jDNICLkA@hera>
-In-Reply-To: <20231013074540.8980-1-masahisa.kojima@linaro.org>
+Subject: Re: [PATCH v9 5/6] efivarfs: force RO when remounting if SetVariable
+ is not supported
+Date: Wed, 18 Oct 2023 14:51:31 +0300
+Message-ID: <ZS_Gw-eIKsGgm-Lf@hera>
+In-Reply-To: <20231013074540.8980-6-masahisa.kojima@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7785173399958225508=="
+Content-Type: multipart/mixed; boundary="===============2484990535416156514=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7785173399958225508==
+--===============2484990535416156514==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Kojima-san,
+Hi Ard,
 
-I found some time to do some extended testing here's what I found
+I found some more issues in the rest of the patches and Kojima-san will
+have to respin those.  This is a straight up fix though of an existing
+issue.  Any chance you can pick it up separately? If you need any changes
+let me know and I can respin it without the rest of the series
 
-Switching the permissions from RO->RW when the supplicant is started works
-correctly
-# mount | grep efiv
-efivarfs on /sys/firmware/efi/efivars type efivarfs (ro,nosuid,nodev,noexec,r=
-elatime)
-# tee-supplicant -d
-[   77.374878] efivars: Unregistered efivars operations
-[   77.381604] Use tee-based EFI runtime variable services
-[   77.386862] efivars: Registered efivars operations
-# mount | grep efiv
-efivarfs on /sys/firmware/efi/efivars type efivarfs (rw,nosuid,nodev,noexec,r=
-elatime)
-I didn't test unbinding yet, but I assume it's going to work fine and
-remove the efivar ops.
-
-Reading an writing non-authenticated EFI variables seems to work fine.
-I verified this with U-Boot and the BootOrder changed correctly.
-# efibootmgr -o 0001,0002,0000
-BootCurrent: 0002
-BootOrder: 0001,0002,0000
-Boot0000* nvme 0:1
-Boot0001* nvme 0:2
-Boot0002* debian
-# efibootmgr -o 0002,0000,0001
-BootCurrent: 0002
-BootOrder: 0002,0000,0001
-Boot0000* nvme 0:1
-Boot0001* nvme 0:2
-Boot0002* debian
-
-Writing authenticated EFI variables works the first time.
-I also dumped those variables from both Linux and U-Boot and they matched
-# efi-updatevar -f PK.auth PK
-# efi-updatevar -f KEK.auth KEK
-# efi-updatevar -f db.auth db
-
-But removing the PK at runtime fails.
-# efi-updatevar -f noPK.auth PK
-# Failed to update PK: Operation not permitted
-My guess is that the EDK2 code prohibits that, but we need to check why
-this is happening.  I also got similar failures trying to update KEK and db.
-
-But the most worrying thing is this. From Linux program KEK and db
-# efi-updatevar -f KEK.auth KEK
-# efi-updatevar -f db.auth db
-
-Reboot the machine and U-Boot complains when it tries to populate the
-runtime vars with:
-Loading Linux 6.6.0-rc2-00654-g82a013b37495 ...
-Loading initial ramdisk ...
-EFI stub: Booting Linux Kernel...
-EFI stub: Using DTB from configuration table
-EFI stub: Exiting boot services...
-Can't populate EFI variables. No runtime variables will be available <-- This
-
-If you rewrite those vars from the U-Boot shell everything seems to come
-back to normal
-=3D> tftp  $loadaddr 192.168.49.5:noKEK.auth && setenv -e -nv -bs -rt -at -i =
-$loadaddr:$filesize KEK
-=3D> tftp  $loadaddr 192.168.49.5:nodb.auth && setenv -e -nv -bs -rt -at -i $=
-loadaddr:$filesize db
-=3D> tftp  $loadaddr 192.168.49.5:KEK.auth && setenv -e -nv -bs -rt -at -i $l=
-oadaddr:$filesize KEK
-=3D> tftp  $loadaddr 192.168.49.5:db.auth && setenv -e -nv -bs -rt -at -i $lo=
-adaddr:$filesize db
-
-Loading Linux 6.6.0-rc2-00654-g82a013b37495 ...
-Loading initial ramdisk ...
-EFI stub: Booting Linux Kernel...
-EFI stub: Using DTB from configuration table
-EFI stub: Exiting boot services...
-
-Let me know if you need any more information
-
-Regards
+Thanks
 /Ilias
-On Fri, Oct 13, 2023 at 04:45:33PM +0900, Masahisa Kojima wrote:
-> This series introduces the tee based EFI Runtime Variable Service.
+
+On Fri, Oct 13, 2023 at 04:45:38PM +0900, Masahisa Kojima wrote:
+> From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 >
-> The eMMC device is typically owned by the non-secure world(linux in
-> this case). There is an existing solution utilizing eMMC RPMB partition
-> for EFI Variables, it is implemented by interacting with
-> OP-TEE, StandaloneMM(as EFI Variable Service Pseudo TA), eMMC driver
-> and tee-supplicant. The last piece is the tee-based variable access
-> driver to interact with OP-TEE and StandaloneMM.
+> If SetVariable at runtime is not supported by the firmware we never assign
+> a callback for that function. At the same time mount the efivarfs as
+> RO so no one can call that.  However, we never check the permission flags
+> when someone remounts the filesystem as RW. As a result this leads to a
+> crash looking like this:
 >
-> Changelog:
-> v8 -> v9
-> - patch #6 "tee: optee: restore efivars ops when tee-supplicant stops"
->   is newly added
-> - remove !EFI_VARS_PSTORE Kconfig dependency, we have added a non-blocking
->   set_variable and it just returns EFI_UNSUPPORTED.
-> - remove obvious comments
+> $ mount -o remount,rw /sys/firmware/efi/efivars
+> $ efi-updatevar -f PK.auth PK
 >
-> v7 -> v8
-> Only patch #3 "efi: Add tee-based EFI variable driver" is updated.
-> - fix typos
-> - refactor error handling, direct return if applicable
-> - use devm_add_action_or_reset() for closing of tee context/session
-> - remove obvious comment
+> [  303.279166] Unable to handle kernel NULL pointer dereference at virtual =
+address 0000000000000000
+> [  303.280482] Mem abort info:
+> [  303.280854]   ESR =3D 0x0000000086000004
+> [  303.281338]   EC =3D 0x21: IABT (current EL), IL =3D 32 bits
+> [  303.282016]   SET =3D 0, FnV =3D 0
+> [  303.282414]   EA =3D 0, S1PTW =3D 0
+> [  303.282821]   FSC =3D 0x04: level 0 translation fault
+> [  303.283771] user pgtable: 4k pages, 48-bit VAs, pgdp=3D000000004258c000
+> [  303.284913] [0000000000000000] pgd=3D0000000000000000, p4d=3D00000000000=
+00000
+> [  303.286076] Internal error: Oops: 0000000086000004 [#1] PREEMPT SMP
+> [  303.286936] Modules linked in: qrtr tpm_tis tpm_tis_core crct10dif_ce ar=
+m_smccc_trng rng_core drm fuse ip_tables x_tables ipv6
+> [  303.288586] CPU: 1 PID: 755 Comm: efi-updatevar Not tainted 6.3.0-rc1-00=
+108-gc7d0c4695c68 #1
+> [  303.289748] Hardware name: Unknown Unknown Product/Unknown Product, BIOS=
+ 2023.04-00627-g88336918701d 04/01/2023
+> [  303.291150] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=
+=3D--)
+> [  303.292123] pc : 0x0
+> [  303.292443] lr : efivar_set_variable_locked+0x74/0xec
+> [  303.293156] sp : ffff800008673c10
+> [  303.293619] x29: ffff800008673c10 x28: ffff0000037e8000 x27: 00000000000=
+00000
+> [  303.294592] x26: 0000000000000800 x25: ffff000002467400 x24: 00000000000=
+00027
+> [  303.295572] x23: ffffd49ea9832000 x22: ffff0000020c9800 x21: ffff0000024=
+67000
+> [  303.296566] x20: 0000000000000001 x19: 00000000000007fc x18: 00000000000=
+00000
+> [  303.297531] x17: 0000000000000000 x16: 0000000000000000 x15: 0000aaaac80=
+7ab54
+> [  303.298495] x14: ed37489f673633c0 x13: 71c45c606de13f80 x12: 47464259e21=
+9acf4
+> [  303.299453] x11: ffff000002af7b01 x10: 0000000000000003 x9 : 00000000000=
+00002
+> [  303.300431] x8 : 0000000000000010 x7 : ffffd49ea8973230 x6 : 0000000000a=
+85201
+> [  303.301412] x5 : 0000000000000000 x4 : ffff0000020c9800 x3 : 00000000000=
+007fc
+> [  303.302370] x2 : 0000000000000027 x1 : ffff000002467400 x0 : ffff0000024=
+67000
+> [  303.303341] Call trace:
+> [  303.303679]  0x0
+> [  303.303938]  efivar_entry_set_get_size+0x98/0x16c
+> [  303.304585]  efivarfs_file_write+0xd0/0x1a4
+> [  303.305148]  vfs_write+0xc4/0x2e4
+> [  303.305601]  ksys_write+0x70/0x104
+> [  303.306073]  __arm64_sys_write+0x1c/0x28
+> [  303.306622]  invoke_syscall+0x48/0x114
+> [  303.307156]  el0_svc_common.constprop.0+0x44/0xec
+> [  303.307803]  do_el0_svc+0x38/0x98
+> [  303.308268]  el0_svc+0x2c/0x84
+> [  303.308702]  el0t_64_sync_handler+0xf4/0x120
+> [  303.309293]  el0t_64_sync+0x190/0x194
+> [  303.309794] Code: ???????? ???????? ???????? ???????? (????????)
+> [  303.310612] ---[ end trace 0000000000000000 ]---
 >
-> v6 -> v7
-> Patch #1-#4 are not updated.
-> Patch #5 is added into this series, original patch is here:
-> https://lore.kernel.org/all/20230609094532.562934-1-ilias.apalodimas(a)lina=
-ro.org/
+> Fix this by adding a .reconfigure() function to the fs operations which
+> we can use to check the requested flags and deny anything that's not RO
+> if the firmware doesn't implement SetVariable at runtime.
 >
-> There are two issues in the v6 series and v7 series addresses those.
+> Fixes: f88814cc2578 ("efi/efivars: Expose RT service availability via efiva=
+rs abstraction")
+> Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+> ---
+>  fs/efivarfs/super.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 >
-> 1) efivar ops is not restored when the tee-supplicant daemon terminates.
->  -> As the following patch says, user must remove the device before
->     terminating tee-supplicant daemon.
->     https://lore.kernel.org/all/20230728134832.326467-1-sumit.garg(a)linaro=
-.org/
+> diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+> index 0f6e4d223aea..942e748a4e03 100644
+> --- a/fs/efivarfs/super.c
+> +++ b/fs/efivarfs/super.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/magic.h>
+>  #include <linux/statfs.h>
+>  #include <linux/notifier.h>
+> +#include <linux/printk.h>
 >
-> 2) cause panic when someone remounts the efivarfs as RW even if
-> SetVariable is not supported
->  -> The fifth patch addresses this issue.
->    "[PATCH v7 5/5] efivarfs: force RO when remounting if SetVariable is
->     not supported"
+>  #include "internal.h"
 >
-> v5 -> v6
-> - new patch #4 is added in this series, #1-#3 patches are unchanged.
->   automatically update super block flag when the efivarops support
->   SetVariable runtime service, so that user does not need to manually
->   remount the efivarfs as RW.
+> @@ -300,8 +301,19 @@ static int efivarfs_get_tree(struct fs_context *fc)
+>  	return get_tree_single(fc, efivarfs_fill_super);
+>  }
 >
-> v4 -> v5
-> - rebase to efi-next based on v6.4-rc1
-> - set generic_ops.query_variable_info, it works as expected as follows.
-> $ df -h /sys/firmware/efi/efivars/
-> Filesystem      Size  Used Avail Use% Mounted on
-> efivarfs         16K  1.3K   15K   8% /sys/firmware/efi/efivars
+> +static int efivarfs_reconfigure(struct fs_context *fc)
+> +{
+> +	if (!efivar_supports_writes() && !(fc->sb_flags & SB_RDONLY)) {
+> +		pr_err("Firmware does not support SetVariableRT. Can not remount with rw=
+\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static const struct fs_context_operations efivarfs_context_ops =3D {
+>  	.get_tree	=3D efivarfs_get_tree,
+> +	.reconfigure	=3D efivarfs_reconfigure,
+>  };
 >
-> v3 -> v4:
-> - replace the reference from EDK2 to PI Specification
-> - remove EDK2 source code reference comments
-> - prepare nonblocking variant of set_variable, it just returns
->   EFI_UNSUPPORTED
-> - remove redundant buffer size check
-> - argument name change in mm_communicate
-> - function interface changes in setup_mm_hdr to remove (void **) cast
->
-> v2 -> v3:
-> - add CONFIG_EFI dependency to TEE_STMM_EFI
-> - add missing return code check for tee_client_invoke_func()
-> - directly call efivars_register/unregister from tee_stmm_efi.c
->
-> rfc v1 -> v2:
-> - split patch into three patches, one for drivers/tee,
->   one for include/linux/efi.h, and one for the driver/firmware/efi/stmm
-> - context/session management into probe() and remove() same as other tee
-> client driver
-> - StMM variable driver is moved from driver/tee/optee to driver/firmware/efi
-> - use "tee" prefix instead of "optee" in driver/firmware/efi/stmm/tee_stmm_=
-efi.c,
->   this file does not contain op-tee specific code, abstracted by tee layer =
-and
->   StMM variable driver will work on other tee implementation.
-> - PTA_STMM_CMD_COMMUNICATE -> PTA_STMM_CMD_COMMUNICATE
-> - implement query_variable_store() but currently not used
-> - no use of TEEC_SUCCESS, it is defined in driver/tee/optee/optee_private.h.
->   Other tee client drivers use 0 instead of using TEEC_SUCCESS
-> - remove TEEC_ERROR_EXCESS_DATA status, it is referred just to output
-> error message
->
-> Ilias Apalodimas (1):
->   efivarfs: force RO when remounting if SetVariable is not supported
->
-> Masahisa Kojima (5):
->   efi: expose efivar generic ops register function
->   efi: Add EFI_ACCESS_DENIED status code
->   efi: Add tee-based EFI variable driver
->   efivarfs: automatically update super block flag
->   tee: optee: restore efivars ops when tee-supplicant stops
->
->  drivers/firmware/efi/Kconfig                 |  15 +
->  drivers/firmware/efi/Makefile                |   1 +
->  drivers/firmware/efi/efi.c                   |  18 +
->  drivers/firmware/efi/stmm/mm_communication.h | 236 +++++++
->  drivers/firmware/efi/stmm/tee_stmm_efi.c     | 617 +++++++++++++++++++
->  drivers/firmware/efi/vars.c                  |   8 +
->  drivers/tee/optee/supp.c                     |   4 +
->  fs/efivarfs/super.c                          |  45 ++
->  include/linux/efi.h                          |  13 +
->  9 files changed, 957 insertions(+)
->  create mode 100644 drivers/firmware/efi/stmm/mm_communication.h
->  create mode 100644 drivers/firmware/efi/stmm/tee_stmm_efi.c
->
->
-> base-commit: b691118f2c44d16b84fc65b8147b33620eb18cac
+>  static int efivarfs_init_fs_context(struct fs_context *fc)
 > --
 > 2.30.2
 >
 
---===============7785173399958225508==--
+--===============2484990535416156514==--
 
