@@ -1,146 +1,132 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 5/6] efivarfs: force RO when remounting if SetVariable
- is not supported
-Date: Wed, 18 Oct 2023 14:51:31 +0300
-Message-ID: <ZS_Gw-eIKsGgm-Lf@hera>
-In-Reply-To: <20231013074540.8980-6-masahisa.kojima@linaro.org>
+Subject: Re: [PATCH v11 1/4] tee: optee: system call property
+Date: Thu, 19 Oct 2023 20:49:57 +0800
+Message-ID: <202310192021.fvb6JDOY-lkp@intel.com>
+In-Reply-To: <20231016090428.1369071-2-etienne.carriere@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2484990535416156514=="
+Content-Type: multipart/mixed; boundary="===============3542853409869046879=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2484990535416156514==
+--===============3542853409869046879==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Ard,
+Hi Etienne,
 
-I found some more issues in the rest of the patches and Kojima-san will
-have to respin those.  This is a straight up fix though of an existing
-issue.  Any chance you can pick it up separately? If you need any changes
-let me know and I can respin it without the rest of the series
+kernel test robot noticed the following build warnings:
 
-Thanks
-/Ilias
+[auto build test WARNING on soc/for-next]
+[also build test WARNING on linus/master v6.6-rc6 next-20231019]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-On Fri, Oct 13, 2023 at 04:45:38PM +0900, Masahisa Kojima wrote:
-> From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
->
-> If SetVariable at runtime is not supported by the firmware we never assign
-> a callback for that function. At the same time mount the efivarfs as
-> RO so no one can call that.  However, we never check the permission flags
-> when someone remounts the filesystem as RW. As a result this leads to a
-> crash looking like this:
->
-> $ mount -o remount,rw /sys/firmware/efi/efivars
-> $ efi-updatevar -f PK.auth PK
->
-> [  303.279166] Unable to handle kernel NULL pointer dereference at virtual =
-address 0000000000000000
-> [  303.280482] Mem abort info:
-> [  303.280854]   ESR =3D 0x0000000086000004
-> [  303.281338]   EC =3D 0x21: IABT (current EL), IL =3D 32 bits
-> [  303.282016]   SET =3D 0, FnV =3D 0
-> [  303.282414]   EA =3D 0, S1PTW =3D 0
-> [  303.282821]   FSC =3D 0x04: level 0 translation fault
-> [  303.283771] user pgtable: 4k pages, 48-bit VAs, pgdp=3D000000004258c000
-> [  303.284913] [0000000000000000] pgd=3D0000000000000000, p4d=3D00000000000=
-00000
-> [  303.286076] Internal error: Oops: 0000000086000004 [#1] PREEMPT SMP
-> [  303.286936] Modules linked in: qrtr tpm_tis tpm_tis_core crct10dif_ce ar=
-m_smccc_trng rng_core drm fuse ip_tables x_tables ipv6
-> [  303.288586] CPU: 1 PID: 755 Comm: efi-updatevar Not tainted 6.3.0-rc1-00=
-108-gc7d0c4695c68 #1
-> [  303.289748] Hardware name: Unknown Unknown Product/Unknown Product, BIOS=
- 2023.04-00627-g88336918701d 04/01/2023
-> [  303.291150] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=
-=3D--)
-> [  303.292123] pc : 0x0
-> [  303.292443] lr : efivar_set_variable_locked+0x74/0xec
-> [  303.293156] sp : ffff800008673c10
-> [  303.293619] x29: ffff800008673c10 x28: ffff0000037e8000 x27: 00000000000=
-00000
-> [  303.294592] x26: 0000000000000800 x25: ffff000002467400 x24: 00000000000=
-00027
-> [  303.295572] x23: ffffd49ea9832000 x22: ffff0000020c9800 x21: ffff0000024=
-67000
-> [  303.296566] x20: 0000000000000001 x19: 00000000000007fc x18: 00000000000=
-00000
-> [  303.297531] x17: 0000000000000000 x16: 0000000000000000 x15: 0000aaaac80=
-7ab54
-> [  303.298495] x14: ed37489f673633c0 x13: 71c45c606de13f80 x12: 47464259e21=
-9acf4
-> [  303.299453] x11: ffff000002af7b01 x10: 0000000000000003 x9 : 00000000000=
-00002
-> [  303.300431] x8 : 0000000000000010 x7 : ffffd49ea8973230 x6 : 0000000000a=
-85201
-> [  303.301412] x5 : 0000000000000000 x4 : ffff0000020c9800 x3 : 00000000000=
-007fc
-> [  303.302370] x2 : 0000000000000027 x1 : ffff000002467400 x0 : ffff0000024=
-67000
-> [  303.303341] Call trace:
-> [  303.303679]  0x0
-> [  303.303938]  efivar_entry_set_get_size+0x98/0x16c
-> [  303.304585]  efivarfs_file_write+0xd0/0x1a4
-> [  303.305148]  vfs_write+0xc4/0x2e4
-> [  303.305601]  ksys_write+0x70/0x104
-> [  303.306073]  __arm64_sys_write+0x1c/0x28
-> [  303.306622]  invoke_syscall+0x48/0x114
-> [  303.307156]  el0_svc_common.constprop.0+0x44/0xec
-> [  303.307803]  do_el0_svc+0x38/0x98
-> [  303.308268]  el0_svc+0x2c/0x84
-> [  303.308702]  el0t_64_sync_handler+0xf4/0x120
-> [  303.309293]  el0t_64_sync+0x190/0x194
-> [  303.309794] Code: ???????? ???????? ???????? ???????? (????????)
-> [  303.310612] ---[ end trace 0000000000000000 ]---
->
-> Fix this by adding a .reconfigure() function to the fs operations which
-> we can use to check the requested flags and deny anything that's not RO
-> if the firmware doesn't implement SetVariable at runtime.
->
-> Fixes: f88814cc2578 ("efi/efivars: Expose RT service availability via efiva=
-rs abstraction")
-> Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-> ---
->  fs/efivarfs/super.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->
-> diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-> index 0f6e4d223aea..942e748a4e03 100644
-> --- a/fs/efivarfs/super.c
-> +++ b/fs/efivarfs/super.c
-> @@ -15,6 +15,7 @@
->  #include <linux/magic.h>
->  #include <linux/statfs.h>
->  #include <linux/notifier.h>
-> +#include <linux/printk.h>
->
->  #include "internal.h"
->
-> @@ -300,8 +301,19 @@ static int efivarfs_get_tree(struct fs_context *fc)
->  	return get_tree_single(fc, efivarfs_fill_super);
->  }
->
-> +static int efivarfs_reconfigure(struct fs_context *fc)
-> +{
-> +	if (!efivar_supports_writes() && !(fc->sb_flags & SB_RDONLY)) {
-> +		pr_err("Firmware does not support SetVariableRT. Can not remount with rw=
-\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static const struct fs_context_operations efivarfs_context_ops =3D {
->  	.get_tree	=3D efivarfs_get_tree,
-> +	.reconfigure	=3D efivarfs_reconfigure,
->  };
->
->  static int efivarfs_init_fs_context(struct fs_context *fc)
-> --
-> 2.30.2
->
+url:    https://github.com/intel-lab-lkp/linux/commits/Etienne-Carriere/tee-o=
+ptee-system-call-property/20231017-135906
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git for-next
+patch link:    https://lore.kernel.org/r/20231016090428.1369071-2-etienne.car=
+riere%40foss.st.com
+patch subject: [PATCH v11 1/4] tee: optee: system call property
+config: arm64-randconfig-001-20231019 (https://download.01.org/0day-ci/archiv=
+e/20231019/202310192021.fvb6JDOY-lkp(a)intel.com/config)
+compiler: aarch64-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0231019/202310192021.fvb6JDOY-lkp(a)intel.com/reproduce)
 
---===============2484990535416156514==--
+If you fix the issue in a separate patch/commit (i.e. not just a new version =
+of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202310192021.fvb6JDOY-lkp(a)i=
+ntel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/tee/optee/ffa_abi.c:618: warning: Function parameter or member 'sy=
+stem_thread' not described in 'optee_ffa_do_call_with_arg'
+--
+   drivers/tee/optee/smc_abi.c:818: warning: Function parameter or member 'rp=
+c_arg' not described in 'optee_handle_rpc'
+>> drivers/tee/optee/smc_abi.c:890: warning: Function parameter or member 'sy=
+stem_thread' not described in 'optee_smc_do_call_with_arg'
+
+
+vim +618 drivers/tee/optee/ffa_abi.c
+
+4615e5a34b95e0 Jens Wiklander   2021-07-21  602 =20
+4615e5a34b95e0 Jens Wiklander   2021-07-21  603  /**
+4615e5a34b95e0 Jens Wiklander   2021-07-21  604   * optee_ffa_do_call_with_ar=
+g() - Do a FF-A call to enter OP-TEE in secure world
+4615e5a34b95e0 Jens Wiklander   2021-07-21  605   * @ctx:	calling context
+4615e5a34b95e0 Jens Wiklander   2021-07-21  606   * @shm:	shared memory holdi=
+ng the message to pass to secure world
+5b4018b959149e Jens Wiklander   2022-01-25  607   * @offs:	offset of the mess=
+age in @shm
+4615e5a34b95e0 Jens Wiklander   2021-07-21  608   *
+4615e5a34b95e0 Jens Wiklander   2021-07-21  609   * Does a FF-A call to OP-TE=
+E in secure world and handles eventual resulting
+4615e5a34b95e0 Jens Wiklander   2021-07-21  610   * Remote Procedure Calls (R=
+PC) from OP-TEE.
+4615e5a34b95e0 Jens Wiklander   2021-07-21  611   *
+4615e5a34b95e0 Jens Wiklander   2021-07-21  612   * Returns return code from =
+FF-A, 0 is OK
+4615e5a34b95e0 Jens Wiklander   2021-07-21  613   */
+4615e5a34b95e0 Jens Wiklander   2021-07-21  614 =20
+4615e5a34b95e0 Jens Wiklander   2021-07-21  615  static int optee_ffa_do_call=
+_with_arg(struct tee_context *ctx,
+9f34a9d2a70d79 Etienne Carriere 2023-10-16  616  				      struct tee_shm *sh=
+m, u_int offs,
+9f34a9d2a70d79 Etienne Carriere 2023-10-16  617  				      bool system_thread)
+4615e5a34b95e0 Jens Wiklander   2021-07-21 @618  {
+4615e5a34b95e0 Jens Wiklander   2021-07-21  619  	struct ffa_send_direct_data=
+ data =3D {
+4615e5a34b95e0 Jens Wiklander   2021-07-21  620  		.data0 =3D OPTEE_FFA_YIELD=
+ING_CALL_WITH_ARG,
+4615e5a34b95e0 Jens Wiklander   2021-07-21  621  		.data1 =3D (u32)shm->sec_w=
+orld_id,
+4615e5a34b95e0 Jens Wiklander   2021-07-21  622  		.data2 =3D (u32)(shm->sec_=
+world_id >> 32),
+5b4018b959149e Jens Wiklander   2022-01-25  623  		.data3 =3D offs,
+4615e5a34b95e0 Jens Wiklander   2021-07-21  624  	};
+4064c461148ab1 Jens Wiklander   2021-12-28  625  	struct optee_msg_arg *arg;
+4064c461148ab1 Jens Wiklander   2021-12-28  626  	unsigned int rpc_arg_offs;
+4064c461148ab1 Jens Wiklander   2021-12-28  627  	struct optee_msg_arg *rpc_a=
+rg;
+4064c461148ab1 Jens Wiklander   2021-12-28  628 =20
+a639b2b18a240d Jens Wiklander   2022-01-12  629  	/*
+a639b2b18a240d Jens Wiklander   2022-01-12  630  	 * The shared memory object=
+ has to start on a page when passed as
+a639b2b18a240d Jens Wiklander   2022-01-12  631  	 * an argument struct. This=
+ is also what the shm pool allocator
+a639b2b18a240d Jens Wiklander   2022-01-12  632  	 * returns, but check this =
+before calling secure world to catch
+a639b2b18a240d Jens Wiklander   2022-01-12  633  	 * eventual errors early in=
+ case something changes.
+a639b2b18a240d Jens Wiklander   2022-01-12  634  	 */
+a639b2b18a240d Jens Wiklander   2022-01-12  635  	if (shm->offset)
+a639b2b18a240d Jens Wiklander   2022-01-12  636  		return -EINVAL;
+a639b2b18a240d Jens Wiklander   2022-01-12  637 =20
+5b4018b959149e Jens Wiklander   2022-01-25  638  	arg =3D tee_shm_get_va(shm,=
+ offs);
+4064c461148ab1 Jens Wiklander   2021-12-28  639  	if (IS_ERR(arg))
+4064c461148ab1 Jens Wiklander   2021-12-28  640  		return PTR_ERR(arg);
+4064c461148ab1 Jens Wiklander   2021-12-28  641 =20
+4064c461148ab1 Jens Wiklander   2021-12-28  642  	rpc_arg_offs =3D OPTEE_MSG_=
+GET_ARG_SIZE(arg->num_params);
+5b4018b959149e Jens Wiklander   2022-01-25  643  	rpc_arg =3D tee_shm_get_va(=
+shm, offs + rpc_arg_offs);
+4064c461148ab1 Jens Wiklander   2021-12-28  644  	if (IS_ERR(rpc_arg))
+4064c461148ab1 Jens Wiklander   2021-12-28  645  		return PTR_ERR(rpc_arg);
+4615e5a34b95e0 Jens Wiklander   2021-07-21  646 =20
+9f34a9d2a70d79 Etienne Carriere 2023-10-16  647  	return optee_ffa_yielding_c=
+all(ctx, &data, rpc_arg, system_thread);
+4615e5a34b95e0 Jens Wiklander   2021-07-21  648  }
+4615e5a34b95e0 Jens Wiklander   2021-07-21  649 =20
+
+--=20
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
+
+--===============3542853409869046879==--
 
