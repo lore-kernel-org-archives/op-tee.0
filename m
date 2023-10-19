@@ -1,132 +1,187 @@
-From: kernel test robot <lkp@intel.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v11 1/4] tee: optee: system call property
-Date: Thu, 19 Oct 2023 20:49:57 +0800
-Message-ID: <202310192021.fvb6JDOY-lkp@intel.com>
-In-Reply-To: <20231016090428.1369071-2-etienne.carriere@foss.st.com>
+Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
+Date: Thu, 19 Oct 2023 16:16:21 +0200
+Message-ID: 
+ <CAHUa44HxA=UQvTtnOnUfr7jGEr8a2XEGHJXUGZwWNtwoPNkX5g@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYPArh7UVips4NB0R3RatfV_RUUbkVUv=H3H=+GoJO6DTA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3542853409869046879=="
+Content-Type: multipart/mixed; boundary="===============7036451869637596796=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3542853409869046879==
+--===============7036451869637596796==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Etienne,
-
-kernel test robot noticed the following build warnings:
-
-[auto build test WARNING on soc/for-next]
-[also build test WARNING on linus/master v6.6-rc6 next-20231019]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Etienne-Carriere/tee-o=
-ptee-system-call-property/20231017-135906
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git for-next
-patch link:    https://lore.kernel.org/r/20231016090428.1369071-2-etienne.car=
-riere%40foss.st.com
-patch subject: [PATCH v11 1/4] tee: optee: system call property
-config: arm64-randconfig-001-20231019 (https://download.01.org/0day-ci/archiv=
-e/20231019/202310192021.fvb6JDOY-lkp(a)intel.com/config)
-compiler: aarch64-linux-gcc (GCC) 13.2.0
-reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0231019/202310192021.fvb6JDOY-lkp(a)intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version =
+On Tue, Oct 17, 2023 at 1:14=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org> =
+wrote:
+>
+> On Mon, 16 Oct 2023 at 13:27, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
+> >
+> > On Fri, Oct 13, 2023 at 1:38=E2=80=AFPM Sumit Garg <sumit.garg@linaro.o=
+rg> wrote:
+> > >
+> > > On Tue, 10 Oct 2023 at 21:11, Balint Dobszay <balint.dobszay@arm.com>=
+ wrote:
+> > > >
+> > > > Hi Sumit,
+> > > >
+> > > > On 3 Oct 2023, at 17:42, Sumit Garg wrote:
+> > > > > On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm=
+.com> wrote:
+> > > > >>
+> > > > >> The Trusted Services project provides a framework for developing a=
+nd
+> > > > >> deploying device Root Of Trust services in FF-A Secure Partitions.=
+ The
+> > > > >> FF-A SPs are accessible through the FF-A driver, but this doesn't
+> > > > >> provide a user space interface. The goal of this TEE driver is to =
+make
+> > > > >> Trusted Services SPs accessible for user space clients.
+> > > > >
+> > > > > I am interested in exploring the user space library/applications. Do
+> > > > > you have a standard library implementation and some example user-sp=
+ace
+> > > > > applications leveraging this driver interface?
+> > > >
+> > > > Yes we have a library reference implementation in Trusted Services us=
+ing
+> > > > this driver called libts [1]. There are some test applications that r=
+ely
+> > > > on this library, e.g. ts-service-test [2]. Also, the Parsec project c=
+an
+> > > > use Trusted Services as backend through libts [3] (note, the version =
 of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202310192021.fvb6JDOY-lkp(a)i=
-ntel.com/
+> > > > TS currently integrated in Parsec is not recent, thus the libts in th=
+ere
+> > > > still uses an earlier version of this driver).
+> > >
+> > > Although I am currently exploring the user-space interface, I would
+> > > like to give it a hands-on. Is it possible to run this trusted
+> > > services setup on Qemu? If yes then can you share instructions how to
+> > > test them?
+> > >
+> > > >
+> > > > [snip]
+> > > >
+> > > > >> +static int tstee_invoke_func(struct tee_context *ctx, struct tee_=
+ioctl_invoke_arg *arg,
+> > > > >> +                            struct tee_param *param)
+> > > > >> +{
+> > > > >> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
+> > > > >> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
+> > > > >> +       struct ts_context_data *ctxdata =3D ctx->data;
+> > > > >> +       struct ffa_send_direct_data ffa_data;
+> > > > >> +       struct tee_shm *shm =3D NULL;
+> > > > >> +       struct ts_session *sess;
+> > > > >> +       u32 req_len, ffa_args[5] =3D {};
+> > > > >> +       int shm_id, rc;
+> > > > >> +       u8 iface_id;
+> > > > >> +       u64 handle;
+> > > > >> +       u16 opcode;
+> > > > >> +
+> > > > >> +       mutex_lock(&ctxdata->mutex);
+> > > > >> +       sess =3D find_session(ctxdata, arg->session);
+> > > > >> +
+> > > > >> +       /* Do this while holding the mutex to make sure that the s=
+ession wasn't closed meanwhile */
+> > > > >> +       if (sess)
+> > > > >> +               iface_id =3D sess->iface_id;
+> > > > >> +
+> > > > >> +       mutex_unlock(&ctxdata->mutex);
+> > > > >> +       if (!sess)
+> > > > >> +               return -EINVAL;
+> > > > >> +
+> > > > >> +       opcode =3D lower_16_bits(arg->func);
+> > > > >> +       shm_id =3D lower_32_bits(param[0].u.value.a);
+> > > > >> +       req_len =3D lower_32_bits(param[0].u.value.b);
+> > > > >> +
+> > > > >> +       if (shm_id !=3D 0) {
+> > > > >> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
+> > > > >> +               if (IS_ERR(shm))
+> > > > >> +                       return PTR_ERR(shm);
+> > > > >> +
+> > > > >> +               if (shm->size < req_len) {
+> > > > >> +                       pr_err("request doesn't fit into shared me=
+mory buffer\n");
+> > > > >> +                       rc =3D -EINVAL;
+> > > > >> +                       goto out;
+> > > > >> +               }
+> > > > >> +
+> > > > >> +               handle =3D shm->sec_world_id;
+> > > > >> +       } else {
+> > > > >> +               handle =3D FFA_INVALID_MEM_HANDLE;
+> > > > >> +       }
+> > > > >> +
+> > > > >> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCOD=
+E(iface_id, opcode);
+> > > > >> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_bits(=
+handle);
+> > > > >> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_bits(=
+handle);
+> > > > >> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
+> > > > >> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
+> > > > >> +
+> > > > >> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
+> > > > >> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &=
+ffa_data);
+> > > > >
+> > > > > I haven't dug deeper into the ABI yet, which is something I will lo=
+ok
+> > > > > into. But these RPC commands caught my attention. Are these RPC cal=
+ls
+> > > > > blocking in nature? Is there a possibility that these could cause C=
+PU
+> > > > > stalls? Do the Linux interrupts remain unhandled until the RPC calls
+> > > > > return?
+> > > >
+> > > > Yes, that is correct. We did encounter CPU stalls indeed, our solution
+> > > > was to enable preemption of S-EL0 SPs in OP-TEE [3] which solved the
+> > > > issue.
+> > >
+> > > I would have preferred to unite FFA_INTERRUPT and
+> > > OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT since underneath both are
+> > > using FFA ABI.
+> > >
+> > > Jens,
+> > >
+> > > Can we change OP-TEE to use FFA_INTERRUPT as well when using FFA ABI?
+> >
+> > No, OP-TEE uses managed exit. Among other advantages, it allows
+> > resuming execution on a different CPU.
+> >
+>
+> I suppose that should be the case with FFA_INTERRUPT too. OP-TEE
+> should be able to resume SPs on different CPUs as well, right?
 
-All warnings (new ones prefixed by >>):
+Possibly, but I leave that to Balint and company to sort out if that's
+desired or not.
 
->> drivers/tee/optee/ffa_abi.c:618: warning: Function parameter or member 'sy=
-stem_thread' not described in 'optee_ffa_do_call_with_arg'
---
-   drivers/tee/optee/smc_abi.c:818: warning: Function parameter or member 'rp=
-c_arg' not described in 'optee_handle_rpc'
->> drivers/tee/optee/smc_abi.c:890: warning: Function parameter or member 'sy=
-stem_thread' not described in 'optee_smc_do_call_with_arg'
+Cheers,
+Jens
 
+>
+> -Sumit
+>
+> > Cheers,
+> > Jens
+> >
+> > >
+> > > -Sumit
+> > >
+> > > >
+> > > > Regards,
+> > > > Balint
+> > > >
+> > > > [1] https://git.trustedfirmware.org/TS/trusted-services.git/tree/depl=
+oyments/libts/arm-linux?h=3Dv1.0.0
+> > > > [2] https://git.trustedfirmware.org/TS/trusted-services.git/tree/depl=
+oyments/ts-service-test/arm-linux?h=3Dv1.0.0
+> > > > [3] https://github.com/parallaxsecond/parsec/tree/3bcd732b92009612109=
+517a6c9075643ef648ca7/src/providers/trusted_service
+> > > > [4] https://github.com/OP-TEE/optee_os/pull/6002
 
-vim +618 drivers/tee/optee/ffa_abi.c
-
-4615e5a34b95e0 Jens Wiklander   2021-07-21  602 =20
-4615e5a34b95e0 Jens Wiklander   2021-07-21  603  /**
-4615e5a34b95e0 Jens Wiklander   2021-07-21  604   * optee_ffa_do_call_with_ar=
-g() - Do a FF-A call to enter OP-TEE in secure world
-4615e5a34b95e0 Jens Wiklander   2021-07-21  605   * @ctx:	calling context
-4615e5a34b95e0 Jens Wiklander   2021-07-21  606   * @shm:	shared memory holdi=
-ng the message to pass to secure world
-5b4018b959149e Jens Wiklander   2022-01-25  607   * @offs:	offset of the mess=
-age in @shm
-4615e5a34b95e0 Jens Wiklander   2021-07-21  608   *
-4615e5a34b95e0 Jens Wiklander   2021-07-21  609   * Does a FF-A call to OP-TE=
-E in secure world and handles eventual resulting
-4615e5a34b95e0 Jens Wiklander   2021-07-21  610   * Remote Procedure Calls (R=
-PC) from OP-TEE.
-4615e5a34b95e0 Jens Wiklander   2021-07-21  611   *
-4615e5a34b95e0 Jens Wiklander   2021-07-21  612   * Returns return code from =
-FF-A, 0 is OK
-4615e5a34b95e0 Jens Wiklander   2021-07-21  613   */
-4615e5a34b95e0 Jens Wiklander   2021-07-21  614 =20
-4615e5a34b95e0 Jens Wiklander   2021-07-21  615  static int optee_ffa_do_call=
-_with_arg(struct tee_context *ctx,
-9f34a9d2a70d79 Etienne Carriere 2023-10-16  616  				      struct tee_shm *sh=
-m, u_int offs,
-9f34a9d2a70d79 Etienne Carriere 2023-10-16  617  				      bool system_thread)
-4615e5a34b95e0 Jens Wiklander   2021-07-21 @618  {
-4615e5a34b95e0 Jens Wiklander   2021-07-21  619  	struct ffa_send_direct_data=
- data =3D {
-4615e5a34b95e0 Jens Wiklander   2021-07-21  620  		.data0 =3D OPTEE_FFA_YIELD=
-ING_CALL_WITH_ARG,
-4615e5a34b95e0 Jens Wiklander   2021-07-21  621  		.data1 =3D (u32)shm->sec_w=
-orld_id,
-4615e5a34b95e0 Jens Wiklander   2021-07-21  622  		.data2 =3D (u32)(shm->sec_=
-world_id >> 32),
-5b4018b959149e Jens Wiklander   2022-01-25  623  		.data3 =3D offs,
-4615e5a34b95e0 Jens Wiklander   2021-07-21  624  	};
-4064c461148ab1 Jens Wiklander   2021-12-28  625  	struct optee_msg_arg *arg;
-4064c461148ab1 Jens Wiklander   2021-12-28  626  	unsigned int rpc_arg_offs;
-4064c461148ab1 Jens Wiklander   2021-12-28  627  	struct optee_msg_arg *rpc_a=
-rg;
-4064c461148ab1 Jens Wiklander   2021-12-28  628 =20
-a639b2b18a240d Jens Wiklander   2022-01-12  629  	/*
-a639b2b18a240d Jens Wiklander   2022-01-12  630  	 * The shared memory object=
- has to start on a page when passed as
-a639b2b18a240d Jens Wiklander   2022-01-12  631  	 * an argument struct. This=
- is also what the shm pool allocator
-a639b2b18a240d Jens Wiklander   2022-01-12  632  	 * returns, but check this =
-before calling secure world to catch
-a639b2b18a240d Jens Wiklander   2022-01-12  633  	 * eventual errors early in=
- case something changes.
-a639b2b18a240d Jens Wiklander   2022-01-12  634  	 */
-a639b2b18a240d Jens Wiklander   2022-01-12  635  	if (shm->offset)
-a639b2b18a240d Jens Wiklander   2022-01-12  636  		return -EINVAL;
-a639b2b18a240d Jens Wiklander   2022-01-12  637 =20
-5b4018b959149e Jens Wiklander   2022-01-25  638  	arg =3D tee_shm_get_va(shm,=
- offs);
-4064c461148ab1 Jens Wiklander   2021-12-28  639  	if (IS_ERR(arg))
-4064c461148ab1 Jens Wiklander   2021-12-28  640  		return PTR_ERR(arg);
-4064c461148ab1 Jens Wiklander   2021-12-28  641 =20
-4064c461148ab1 Jens Wiklander   2021-12-28  642  	rpc_arg_offs =3D OPTEE_MSG_=
-GET_ARG_SIZE(arg->num_params);
-5b4018b959149e Jens Wiklander   2022-01-25  643  	rpc_arg =3D tee_shm_get_va(=
-shm, offs + rpc_arg_offs);
-4064c461148ab1 Jens Wiklander   2021-12-28  644  	if (IS_ERR(rpc_arg))
-4064c461148ab1 Jens Wiklander   2021-12-28  645  		return PTR_ERR(rpc_arg);
-4615e5a34b95e0 Jens Wiklander   2021-07-21  646 =20
-9f34a9d2a70d79 Etienne Carriere 2023-10-16  647  	return optee_ffa_yielding_c=
-all(ctx, &data, rpc_arg, system_thread);
-4615e5a34b95e0 Jens Wiklander   2021-07-21  648  }
-4615e5a34b95e0 Jens Wiklander   2021-07-21  649 =20
-
---=20
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
-
---===============3542853409869046879==--
+--===============7036451869637596796==--
 
