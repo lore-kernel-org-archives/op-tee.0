@@ -1,16 +1,49 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Olivier Deprez <Olivier.Deprez@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Secure interrupt while sending direct response
-Date: Fri, 20 Oct 2023 14:46:39 +0200
-Message-ID: 
- <CAHUa44F3-Y1XdkECVg2Mx=mLjze0uQZj=9ZTCrX5ce+qO9TO8w@mail.gmail.com>
+Subject: Re: Secure interrupt while sending direct response
+Date: Fri, 20 Oct 2023 13:10:17 +0000
+Message-ID: <DB9PR08MB67963FEB5618C151D283D8E29BDBA@DB9PR08MB6796.eurprd08.prod.outlook.com>
+In-Reply-To: <
+ <CAHUa44F3-Y1XdkECVg2Mx=mLjze0uQZj=9ZTCrX5ce+qO9TO8w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5086162558443885332=="
+Content-Type: multipart/mixed; boundary="===============2602780691743666055=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5086162558443885332==
+--===============2602780691743666055==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi Jens,
+
+Yes this is an impdef solution for the case where the TEE exits while PSTATE.=
+I/F=3D1 and there's still a virtual interrupt pending.
+In this case the SPMC resumes the vCPU with the error code you mention becaus=
+e otherwise, the PE would return to the normal world while a virtual interrup=
+t is still pending for the TEE with no way for the normal world to know it an=
+d give back cycles to the TEE..
+
+In the notifications prototype I shared earlier, the interrupt is explicitly =
+masked in the GIC for the top half handling:
+https://github.com/odeprez/optee_os/commit/c2c401c16627caaf0291857f5a31134a9d=
+42c823#diff-5b10343fdf0b05e98f4c097d5df2823430d47090fc5531e8cd57f473777ed12eR=
+111
+
+In which case this situation cannot happen because an interrupt cannot be rai=
+sed again up until the bottom half handling has completed:
+https://github.com/odeprez/optee_os/commit/c2c401c16627caaf0291857f5a31134a9d=
+42c823#diff-5b10343fdf0b05e98f4c097d5df2823430d47090fc5531e8cd57f473777ed12eR=
+142
+
+Regards,
+Olivier.
+
+
+________________________________________
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Sent: 20 October 2023 14:46
+To: Olivier Deprez; hafnium(a)lists.trustedfirmware.org
+Cc: OP-TEE TrustedFirmware; Marc Bonnici
+Subject: Secure interrupt while sending direct response
 
 Hi all,
 
@@ -60,5 +93,5 @@ Thoughts?
 Thanks,
 Jens
 
---===============5086162558443885332==--
+--===============2602780691743666055==--
 
