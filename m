@@ -1,122 +1,282 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Secure interrupt while sending direct response
-Date: Fri, 20 Oct 2023 15:49:32 +0200
-Message-ID: 
- <CAHUa44GgPGR2A7J8qfG-n8XxQ-bAuAAm_nk==5JbjG3EMXvPZg@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CDB9PR08MB67963FEB5618C151D283D8E29BDBA=40DB9PR08MB?=
- =?utf-8?q?6796=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
+Date: Fri, 20 Oct 2023 15:52:20 +0200
+Message-ID: <8DD61032-21F1-45D1-9908-66792540BD5A@arm.com>
+In-Reply-To: <
+ <CAFA6WYNbP7F0fYAQmqfQ6keBVk-qJaoAueg0eUc1A5FhP8rU-w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0443027779905577292=="
+Content-Type: multipart/mixed; boundary="===============7119050144913917146=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0443027779905577292==
+--===============7119050144913917146==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Olivier,
+On 13 Oct 2023, at 14:47, Sumit Garg wrote:
+> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.com> wr=
+ote:
 
-On Fri, Oct 20, 2023 at 3:10=E2=80=AFPM Olivier Deprez <Olivier.Deprez@arm.=
-com> wrote:
->
-> Hi Jens,
->
-> Yes this is an impdef solution for the case where the TEE exits while PSTAT=
-E.I/F=3D1 and there's still a virtual interrupt pending.
-> In this case the SPMC resumes the vCPU with the error code you mention beca=
-use otherwise, the PE would return to the normal world while a virtual interr=
-upt is still pending for the TEE with no way for the normal world to know it =
-and give back cycles to the TEE..
+[snip]
 
-This impdef solution currently results in an infinite loop since
-OP-TEE responds with FFA_ERROR to an unexpected fid.
+>> diff --git a/drivers/tee/tstee/core.c b/drivers/tee/tstee/core.c
+>> new file mode 100644
+>> index 000000000000..c0194638b7da
+>> --- /dev/null
+>> +++ b/drivers/tee/tstee/core.c
+>> @@ -0,0 +1,473 @@
+>> +// SPDX-License-Identifier: GPL-2.0-only
+>> +/*
+>> + * Copyright (c) 2023, Arm Limited
+>> + */
+>> +
+>> +#define DRIVER_NAME "Arm TSTEE"
+>> +#define pr_fmt(fmt) DRIVER_NAME ": " fmt
+>> +
+>> +#include <linux/arm_ffa.h>
+>> +#include <linux/err.h>
+>> +#include <linux/errno.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/limits.h>
+>> +#include <linux/list.h>
+>> +#include <linux/mm.h>
+>> +#include <linux/module.h>
+>> +#include <linux/scatterlist.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/stat.h>
+>> +#include <linux/tee_drv.h>
+>> +#include <linux/types.h>
+>> +#include <linux/uaccess.h>
+>> +
+>> +#include "tstee_private.h"
+>> +
+>> +#define FFA_INVALID_MEM_HANDLE U64_MAX
+>> +
+>> +static void arg_list_to_ffa_data(const u32 *args, struct ffa_send_direct_=
+data *data)
+>> +{
+>> +       data->data0 =3D args[0];
+>> +       data->data1 =3D args[1];
+>> +       data->data2 =3D args[2];
+>> +       data->data3 =3D args[3];
+>> +       data->data4 =3D args[4];
+>> +}
+>> +
+>> +static void arg_list_from_ffa_data(const struct ffa_send_direct_data *dat=
+a, u32 *args)
+>> +{
+>> +       args[0] =3D lower_32_bits(data->data0);
+>> +       args[1] =3D lower_32_bits(data->data1);
+>> +       args[2] =3D lower_32_bits(data->data2);
+>> +       args[3] =3D lower_32_bits(data->data3);
+>> +       args[4] =3D lower_32_bits(data->data4);
+>> +}
+>> +
+>> +static void tstee_get_version(struct tee_device *teedev, struct tee_ioctl=
+_version_data *vers)
+>> +{
+>> +       struct tstee *tstee =3D tee_get_drvdata(teedev);
+>> +       struct tee_ioctl_version_data v =3D {
+>> +               .impl_id =3D TEE_IMPL_ID_TSTEE,
+>> +               .impl_caps =3D tstee->ffa_dev->vm_id,
+>
+> So while exploring the user-space interface, I observed an anomaly
+> here. The ".impl_caps" refers to "Implementation specific
+> capabilities" meant to support backwards compatibility of a particular
+> TEE implementation. But here I observe you are using it instead for
+> endpoint_id. Can you provide the reasoning behind it? Also, do you
+> plan to support multiple endpoints via this driver?
 
-Another option would be to return with FFA_INTERRUPT as I guess secure
-interrupts normally are delivered if the SP isn't active.
+The mapping between Trusted Services SPs and TEE devices is 1:1, i.e.
+each /dev/tee<n> device represents exactly one FF-A endpoint. To answer
+your second question, each instance of the driver represents a single
+endpoint, multiple endpoints are supported by having multiple instances
+of the driver. Therefore we always return a single endpoint ID in this
+field.
 
->
-> In the notifications prototype I shared earlier, the interrupt is explicitl=
-y masked in the GIC for the top half handling:
-> https://github.com/odeprez/optee_os/commit/c2c401c16627caaf0291857f5a31134a=
-9d42c823#diff-5b10343fdf0b05e98f4c097d5df2823430d47090fc5531e8cd57f473777ed12=
-eR111
->
-> In which case this situation cannot happen because an interrupt cannot be r=
-aised again up until the bottom half handling has completed:
-> https://github.com/odeprez/optee_os/commit/c2c401c16627caaf0291857f5a31134a=
-9d42c823#diff-5b10343fdf0b05e98f4c097d5df2823430d47090fc5531e8cd57f473777ed12=
-eR142
+The reason behind the usage of this field is that somehow user space has
+to be able to discover which TEE device represents which FF-A endpoint.
+This is required when a client wants to invoke an SP with a specific
+endpoint ID, e.g. in a system where the SP's endpoint IDs is static and
+known by the client.
 
-That's what I'm using except that I removed the
-itr_enable()/itr_disable() since I assumed that masking/unmasking
-should be enough.
+I understand this is not a conventional usage of this field, I couldn't
+find a better way to "fit" this information into the ABI. My
+understanding is this solution shouldn't cause any issues for other
+TEEs, since this implementation specific field should only be parsed by
+a client if it has already matched on the TEE implementation ID. Please
+correct me if this assumption is wrong, or if you have any suggestions
+on other ways to expose the endpoint ID to user space.
 
-In this case, I strongly suspect that we're actually processing a TA
-while this happens (with the interrupt unmasked). I can try to narrow
-it down further if you think that helps.
+>> +               .gen_caps =3D 0,
+>
+> Do you plan to support TEE_GEN_CAP_REG_MEM? IOW, do you expect
+> user-space to leverage TEE_IOC_SHM_REGISTER? I can see this driver
+> already provides tstee_shm_register() and tstee_shm_unregister()
+> callbacks.
 
-Cheers,
-Jens
+We didn't have a use case yet that would require this feature. I will
+give it some more thought, whether it's likely that it will be needed in
+the future.
 
+>> +       };
+>> +
+>> +       *vers =3D v;
+>> +}
+>> +
+>> +static int tstee_open(struct tee_context *ctx)
+>> +{
+>> +       struct ts_context_data *ctxdata;
+>> +
+>> +       ctxdata =3D kzalloc(sizeof(*ctxdata), GFP_KERNEL);
+>> +       if (!ctxdata)
+>> +               return -ENOMEM;
+>> +
+>> +       mutex_init(&ctxdata->mutex);
+>> +       idr_init(&ctxdata->sess_ids);
+>> +       INIT_LIST_HEAD(&ctxdata->sess_list);
+>> +
+>> +       ctx->data =3D ctxdata;
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static void tstee_release(struct tee_context *ctx)
+>> +{
+>> +       struct ts_context_data *ctxdata =3D ctx->data;
+>> +       struct ts_session *sess, *sess_tmp;
+>> +
+>> +       if (!ctxdata)
+>> +               return;
+>> +
+>> +       list_for_each_entry_safe(sess, sess_tmp, &ctxdata->sess_list, list=
+_node) {
+>> +               list_del(&sess->list_node);
+>> +               idr_remove(&ctxdata->sess_ids, sess->session_id);
+>> +               kfree(sess);
+>> +       }
+>> +
+>> +       idr_destroy(&ctxdata->sess_ids);
+>> +       mutex_destroy(&ctxdata->mutex);
+>> +
+>> +       kfree(ctxdata);
+>> +       ctx->data =3D NULL;
+>> +}
+>> +
+>> +static struct ts_session *find_session(struct ts_context_data *ctxdata, u=
+32 session_id)
+>> +{
+>> +       struct ts_session *sess;
+>> +
+>> +       list_for_each_entry(sess, &ctxdata->sess_list, list_node)
+>> +               if (sess->session_id =3D=3D session_id)
+>> +                       return sess;
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +static int tstee_open_session(struct tee_context *ctx, struct tee_ioctl_o=
+pen_session_arg *arg,
+>> +                             struct tee_param *param __always_unused)
+>> +{
+>> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
+>> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
+>> +       struct ts_context_data *ctxdata =3D ctx->data;
+>> +       struct ffa_send_direct_data ffa_data;
+>> +       struct ts_session *sess =3D NULL;
+>> +       u32 ffa_args[5] =3D {};
 >
-> Regards,
-> Olivier.
->
->
-> ________________________________________
-> From: Jens Wiklander <jens.wiklander@linaro.org>
-> Sent: 20 October 2023 14:46
-> To: Olivier Deprez; hafnium(a)lists.trustedfirmware.org
-> Cc: OP-TEE TrustedFirmware; Marc Bonnici
-> Subject: Secure interrupt while sending direct response
->
-> Hi all,
->
-> I'm testing FF-A notifications with OP-TEE and Hafnium. I'm using
-> interrupts from the secure uart as a trigger to set a notification for
-> the normal world. Sometimes when testing I run into:
-> VERBOSE: Secure virtual interrupt not yet serviced by SP 8001.
-> FFA_MSG_SEND_DIRECT_RESP interrupted
->
-> Hafnium then returns an FFA_ERROR (code -5) as a response to the
-> FFA_MSG_SEND_DIRECT_RESP OP-TEE was just exiting with. After some
-> digging in the code I find a comment at the top of
-> plat_ffa_is_direct_response_interrupted()
-> https://git.trustedfirmware.org/hafnium/hafnium.git/tree/src/arch/aarch64/p=
-lat/ffa/spmc.c#n2539
->
-> /*
-> * A secure interrupt might trigger while the target SP is currently
-> * running to send a direct response. SPMC would then inject virtual
-> * interrupt to vCPU of target SP and resume it.
-> * However, it is possible that the S-EL1 SP could have its interrupts
-> * masked and hence might not handle the virtual interrupt before
-> * sending direct response message. In such a scenario, SPMC must
-> * return an error with code FFA_INTERRUPTED to inform the S-EL1 SP of
-> * a pending interrupt and allow it to be handled before sending the
-> * direct response.
-> */
->
-> The specification doesn't mention this as a valid error code for
-> FFA_MSG_SEND_DIRECT_RESP. Is this something we can expect to be added
-> to the specification or at least something OP-TEE has to be prepared
-> to handle regardless?
->
-> As far as I can tell there's no way of guaranteeing that Hafnium will
-> not return this error for FFA_MSG_SEND_DIRECT_RESP. Even if we were
-> able to execute the smc instruction with secure interrupts unmasked,
-> what if the interrupt is raised just after the smc instruction has
-> been trapped in Hafnium?
-> It is a bit inconvenient as it means saving the registers passed to
-> the smc instruction to be able to restart the smc instruction with the
-> same arguments. It seems we may need to redesign the exit procedure.
-> It would be nice with an example of how an S-EL1 SP is supposed to
-> exit with FFA_MSG_SEND_DIRECT_RESP.
->
-> Thoughts?
->
-> Thanks,
-> Jens
+> Please don't use magic numbers.
 
---===============0443027779905577292==--
+Ack, will fix in the next version.
+
+>> +       int sess_id;
+>> +       int rc;
+>> +
+>> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC=
+_MGMT_IFACE_ID,
+>> +                                                                 TS_RPC_O=
+P_SERVICE_INFO);
+>> +
+>> +       memcpy((u8 *)(ffa_args + TS_RPC_SERVICE_INFO_UUID0), arg->uuid, UU=
+ID_SIZE);
+>> +
+>> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
+>> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data=
+);
+>> +       if (rc)
+>> +               return rc;
+>> +
+>> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
+>> +
+>> +       if (ffa_args[TS_RPC_SERVICE_INFO_RPC_STATUS] !=3D TS_RPC_OK)
+>> +               return -ENODEV;
+>> +
+>> +       if (ffa_args[TS_RPC_SERVICE_INFO_IFACE] > U8_MAX)
+>> +               return -EINVAL;
+>> +
+>> +       sess =3D kzalloc(sizeof(*sess), GFP_KERNEL);
+>> +       if (!sess)
+>> +               return -ENOMEM;
+>> +
+>> +       sess_id =3D idr_alloc(&ctxdata->sess_ids, sess, 1, 0, GFP_KERNEL);
+>> +       if (sess_id < 0) {
+>> +               kfree(sess);
+>> +               return sess_id;
+>> +       }
+>> +
+>> +       sess->session_id =3D sess_id;
+>> +       sess->iface_id =3D ffa_args[TS_RPC_SERVICE_INFO_IFACE];
+>> +
+>> +       mutex_lock(&ctxdata->mutex);
+>> +       list_add(&sess->list_node, &ctxdata->sess_list);
+>> +       mutex_unlock(&ctxdata->mutex);
+>> +
+>> +       arg->session =3D sess_id;
+>> +       arg->ret =3D 0;
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static int tstee_close_session(struct tee_context *ctx, u32 session)
+>> +{
+>> +       struct ts_context_data *ctxdata =3D ctx->data;
+>> +       struct ts_session *sess;
+>> +
+>> +       mutex_lock(&ctxdata->mutex);
+>> +       sess =3D find_session(ctxdata, session);
+>> +       if (sess)
+>> +               list_del(&sess->list_node);
+>> +
+>> +       mutex_unlock(&ctxdata->mutex);
+>> +
+>> +       if (!sess)
+>> +               return -EINVAL;
+>> +
+>> +       idr_remove(&ctxdata->sess_ids, sess->session_id);
+>> +       kfree(sess);
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static int tstee_invoke_func(struct tee_context *ctx, struct tee_ioctl_in=
+voke_arg *arg,
+>> +                            struct tee_param *param)
+>> +{
+>> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
+>> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
+>> +       struct ts_context_data *ctxdata =3D ctx->data;
+>> +       struct ffa_send_direct_data ffa_data;
+>> +       struct tee_shm *shm =3D NULL;
+>> +       struct ts_session *sess;
+>> +       u32 req_len, ffa_args[5] =3D {};
+>
+> ditto.
+
+Ack.
+
+Regards,
+Balint
+
+--===============7119050144913917146==--
 
