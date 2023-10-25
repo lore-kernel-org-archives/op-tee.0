@@ -1,59 +1,88 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH 0/3] Introduce DMA APIs to allocate and free TEE shared memory
-Date: Wed, 25 Oct 2023 19:01:31 +0530
-Message-ID: 
- <CAFA6WYPKXFftMzqJ4GnXT-zqu21_Jzn8aKti_wU-pQ4KpEVNrA@mail.gmail.com>
-In-Reply-To: <20231025065700.1556152-1-JESHWANTHKUMAR.NK@amd.com>
+Subject: Re: [PATCH 2/3] crypto: ccp - Use psp_tee_alloc_buffer() and
+ psp_tee_free_buffer()
+Date: Thu, 26 Oct 2023 05:26:13 +0800
+Message-ID: <202310260529.GEey5HQc-lkp@intel.com>
+In-Reply-To: <20231025065700.1556152-3-JESHWANTHKUMAR.NK@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6434370383335731041=="
+Content-Type: multipart/mixed; boundary="===============5378058798384428977=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6434370383335731041==
+--===============5378058798384428977==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi Jeshwank,
+Hi jeshwank,
 
-On Wed, 25 Oct 2023 at 12:27, jeshwank <JESHWANTHKUMAR.NK@amd.com> wrote:
->
-> From: Jeshwanth Kumar N K <JESHWANTHKUMAR.NK@amd.com>
->
-> At present, the shared memory for TEE ring buffer, command buffer and
-> data buffer is allocated using get_free_pages(). The driver shares the
-> physical address of these buffers with PSP so that it can be mapped by
-> the Trusted OS.
->
-> In this patch series we have replaced get_free_pages() with
-> dma_alloc_coherent() to allocate shared memory to cleanup the existing
-> allocation method.
+kernel test robot noticed the following build warnings:
 
-Thanks for putting this together but I can't find the reasoning behind
-this change neither in this commit message and nor in the patch
-descriptions. Care to explain why?
+[auto build test WARNING on herbert-crypto-2.6/master]
+[also build test WARNING on linus/master v6.6-rc7]
+[cannot apply to herbert-cryptodev-2.6/master next-20231025]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
--Sumit
+url:    https://github.com/intel-lab-lkp/linux/commits/jeshwank/crypto-ccp-Ad=
+d-function-to-allocate-and-free-memory-using-DMA-APIs/20231025-150420
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.gi=
+t master
+patch link:    https://lore.kernel.org/r/20231025065700.1556152-3-JESHWANTHKU=
+MAR.NK%40amd.com
+patch subject: [PATCH 2/3] crypto: ccp - Use psp_tee_alloc_buffer() and psp_t=
+ee_free_buffer()
+config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20231026=
+/202310260529.GEey5HQc-lkp(a)intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0231026/202310260529.GEey5HQc-lkp(a)intel.com/reproduce)
 
->
-> Rijo Thomas (3):
->   crypto: ccp - Add function to allocate and free memory using DMA APIs
->   crypto: ccp - Use psp_tee_alloc_buffer() and psp_tee_free_buffer()
->   tee: amdtee: Use psp_tee_alloc_buffer() and psp_tee_free_buffer()
->
->  drivers/crypto/ccp/psp-dev.c        |   3 +
->  drivers/crypto/ccp/tee-dev.c        | 119 ++++++++++++++++++----------
->  drivers/crypto/ccp/tee-dev.h        |  11 +--
->  drivers/tee/amdtee/amdtee_private.h |  18 ++---
->  drivers/tee/amdtee/call.c           |  74 ++++++++---------
->  drivers/tee/amdtee/core.c           |  72 ++++++++++-------
->  drivers/tee/amdtee/shm_pool.c       |  21 ++---
->  include/linux/psp-tee.h             |  47 +++++++++++
->  8 files changed, 221 insertions(+), 144 deletions(-)
->
-> --
-> 2.25.1
->
+If you fix the issue in a separate patch/commit (i.e. not just a new version =
+of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202310260529.GEey5HQc-lkp(a)i=
+ntel.com/
 
---===============6434370383335731041==--
+All warnings (new ones prefixed by >>):
+
+>> drivers/crypto/ccp/tee-dev.c:123:24: warning: no previous prototype for 't=
+ee_alloc_cmd_buffer' [-Wmissing-prototypes]
+     123 | struct psp_tee_buffer *tee_alloc_cmd_buffer(struct psp_tee_device =
+*tee)
+         |                        ^~~~~~~~~~~~~~~~~~~~
+
+
+vim +/tee_alloc_cmd_buffer +123 drivers/crypto/ccp/tee-dev.c
+
+   122=09
+ > 123	struct psp_tee_buffer *tee_alloc_cmd_buffer(struct psp_tee_device *tee)
+   124	{
+   125		struct tee_init_ring_cmd *cmd;
+   126		struct psp_tee_buffer *cmd_buffer;
+   127=09
+   128		cmd_buffer =3D psp_tee_alloc_buffer(sizeof(*cmd),
+   129						  GFP_KERNEL | __GFP_ZERO);
+   130		if (!cmd_buffer)
+   131			return NULL;
+   132=09
+   133		cmd =3D (struct tee_init_ring_cmd *)cmd_buffer->vaddr;
+   134		cmd->hi_addr =3D upper_32_bits(tee->rb_mgr.ring_buf->paddr);
+   135		cmd->low_addr =3D lower_32_bits(tee->rb_mgr.ring_buf->paddr);
+   136		cmd->size =3D tee->rb_mgr.ring_buf->size;
+   137=09
+   138		dev_dbg(tee->dev, "tee: ring address: high =3D 0x%x low =3D 0x%x size=
+ =3D %u\n",
+   139			cmd->hi_addr, cmd->low_addr, cmd->size);
+   140=09
+   141		return cmd_buffer;
+   142	}
+   143=09
+
+--=20
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
+
+--===============5378058798384428977==--
 
