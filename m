@@ -1,195 +1,235 @@
 From: jeshwank <JESHWANTHKUMAR.NK@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 1/3] crypto: ccp - Add function to allocate and free memory
- using DMA APIs
-Date: Wed, 25 Oct 2023 12:26:58 +0530
-Message-ID: <20231025065700.1556152-2-JESHWANTHKUMAR.NK@amd.com>
+Subject: [PATCH 2/3] crypto: ccp - Use psp_tee_alloc_buffer() and
+ psp_tee_free_buffer()
+Date: Wed, 25 Oct 2023 12:26:59 +0530
+Message-ID: <20231025065700.1556152-3-JESHWANTHKUMAR.NK@amd.com>
 In-Reply-To: <20231025065700.1556152-1-JESHWANTHKUMAR.NK@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1151869172711035251=="
+Content-Type: multipart/mixed; boundary="===============6770770613003617442=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1151869172711035251==
+--===============6770770613003617442==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 From: Rijo Thomas <Rijo-john.Thomas@amd.com>
 
+Allocate TEE ring buffer and command buffer using
+psp_tee_alloc_buffer(), and free TEE ring buffer and command buffer
+using psp_tee_free_buffer().
+
 As part of cleanup, memory allocation using get_free_pages() is replaced
 with DMA APIs.
 
-psp_tee_alloc_buffer() and psp_tee_free_buffer() has been introduced, so
-that DMA address can be shared with PSP Trusted OS for buffer mapping.
-In the presence of IOMMU, the address will be an IOVA. So, it must be
-converted into a physical address before sharing it with PSP Trusted OS.
-
 Signed-off-by: Rijo Thomas <Rijo-john.Thomas@amd.com>
+Co-developed-by: Jeshwanth Kumar <JESHWANTHKUMAR.NK@amd.com>
 Signed-off-by: Jeshwanth Kumar <JESHWANTHKUMAR.NK@amd.com>
 ---
- drivers/crypto/ccp/psp-dev.c |  3 +++
- drivers/crypto/ccp/tee-dev.c | 51 ++++++++++++++++++++++++++++++++++++
- include/linux/psp-tee.h      | 47 +++++++++++++++++++++++++++++++++
- 3 files changed, 101 insertions(+)
+ drivers/crypto/ccp/tee-dev.c | 68 ++++++++++++++----------------------
+ drivers/crypto/ccp/tee-dev.h | 11 +++---
+ 2 files changed, 31 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/crypto/ccp/psp-dev.c b/drivers/crypto/ccp/psp-dev.c
-index d42d7bc62352..049954d9984b 100644
---- a/drivers/crypto/ccp/psp-dev.c
-+++ b/drivers/crypto/ccp/psp-dev.c
-@@ -163,6 +163,9 @@ int psp_dev_init(struct sp_device *sp)
- 		goto e_err;
- 	}
-=20
-+	if (sp->set_psp_master_device)
-+		sp->set_psp_master_device(sp);
-+
- 	psp->io_regs =3D sp->io_map;
-=20
- 	ret =3D psp_get_capability(psp);
 diff --git a/drivers/crypto/ccp/tee-dev.c b/drivers/crypto/ccp/tee-dev.c
-index 5560bf8329a1..fa6f89572613 100644
+index fa6f89572613..f0a94191662d 100644
 --- a/drivers/crypto/ccp/tee-dev.c
 +++ b/drivers/crypto/ccp/tee-dev.c
-@@ -13,6 +13,8 @@
- #include <linux/mutex.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/dma-direct.h>
-+#include <linux/iommu.h>
- #include <linux/gfp.h>
- #include <linux/psp.h>
- #include <linux/psp-tee.h>
-@@ -22,6 +24,55 @@
-=20
- static bool psp_dead;
-=20
-+struct psp_tee_buffer *psp_tee_alloc_buffer(unsigned long size, gfp_t gfp)
-+{
-+	struct psp_device *psp =3D psp_get_master_device();
-+	struct psp_tee_buffer *tee_buf;
-+	struct iommu_domain *dom;
-+
-+	if (!psp || !size)
-+		return NULL;
-+
-+	tee_buf =3D kzalloc(sizeof(*tee_buf), GFP_KERNEL);
-+	if (!tee_buf)
-+		return NULL;
-+
-+	tee_buf->vaddr =3D dma_alloc_coherent(psp->dev, size, &tee_buf->dma, gfp);
-+	if (!tee_buf->vaddr || !tee_buf->dma) {
-+		kfree(tee_buf);
-+		return NULL;
-+	}
-+
-+	tee_buf->size =3D size;
-+
-+	/* Check whether IOMMU is present. If present, translate IOVA
-+	 * to physical address, else the dma handle is the physical
-+	 * address.
-+	 */
-+	dom =3D iommu_get_domain_for_dev(psp->dev);
-+	if (dom)
-+		tee_buf->paddr =3D iommu_iova_to_phys(dom, tee_buf->dma);
-+	else
-+		tee_buf->paddr =3D tee_buf->dma;
-+
-+	return tee_buf;
-+}
-+EXPORT_SYMBOL(psp_tee_alloc_buffer);
-+
-+void psp_tee_free_buffer(struct psp_tee_buffer *tee_buf)
-+{
-+	struct psp_device *psp =3D psp_get_master_device();
-+
-+	if (!psp || !tee_buf)
-+		return;
-+
-+	dma_free_coherent(psp->dev, tee_buf->size,
-+			  tee_buf->vaddr, tee_buf->dma);
-+
-+	kfree(tee_buf);
-+}
-+EXPORT_SYMBOL(psp_tee_free_buffer);
-+
+@@ -76,22 +76,16 @@ EXPORT_SYMBOL(psp_tee_free_buffer);
  static int tee_alloc_ring(struct psp_tee_device *tee, int ring_size)
  {
  	struct ring_buf_manager *rb_mgr =3D &tee->rb_mgr;
-diff --git a/include/linux/psp-tee.h b/include/linux/psp-tee.h
-index cb0c95d6d76b..c3db3f33d069 100644
---- a/include/linux/psp-tee.h
-+++ b/include/linux/psp-tee.h
-@@ -40,6 +40,20 @@ enum tee_cmd_id {
- 	TEE_CMD_ID_UNMAP_SHARED_MEM,
+-	void *start_addr;
+=20
+ 	if (!ring_size)
+ 		return -EINVAL;
+=20
+-	/* We need actual physical address instead of DMA address, since
+-	 * Trusted OS running on AMD Secure Processor will map this region
+-	 */
+-	start_addr =3D (void *)__get_free_pages(GFP_KERNEL, get_order(ring_size));
+-	if (!start_addr)
++	rb_mgr->ring_buf =3D psp_tee_alloc_buffer(ring_size,
++						GFP_KERNEL | __GFP_ZERO);
++	if (!rb_mgr->ring_buf) {
++		dev_err(tee->dev, "ring allocation failed\n");
+ 		return -ENOMEM;
+-
+-	memset(start_addr, 0x0, ring_size);
+-	rb_mgr->ring_start =3D start_addr;
+-	rb_mgr->ring_size =3D ring_size;
+-	rb_mgr->ring_pa =3D __psp_pa(start_addr);
++	}
+ 	mutex_init(&rb_mgr->mutex);
+=20
+ 	return 0;
+@@ -101,15 +95,8 @@ static void tee_free_ring(struct psp_tee_device *tee)
+ {
+ 	struct ring_buf_manager *rb_mgr =3D &tee->rb_mgr;
+=20
+-	if (!rb_mgr->ring_start)
+-		return;
++	psp_tee_free_buffer(rb_mgr->ring_buf);
+=20
+-	free_pages((unsigned long)rb_mgr->ring_start,
+-		   get_order(rb_mgr->ring_size));
+-
+-	rb_mgr->ring_start =3D NULL;
+-	rb_mgr->ring_size =3D 0;
+-	rb_mgr->ring_pa =3D 0;
+ 	mutex_destroy(&rb_mgr->mutex);
+ }
+=20
+@@ -133,35 +120,36 @@ static int tee_wait_cmd_poll(struct psp_tee_device *tee=
+, unsigned int timeout,
+ 	return -ETIMEDOUT;
+ }
+=20
+-static
+-struct tee_init_ring_cmd *tee_alloc_cmd_buffer(struct psp_tee_device *tee)
++struct psp_tee_buffer *tee_alloc_cmd_buffer(struct psp_tee_device *tee)
+ {
+ 	struct tee_init_ring_cmd *cmd;
++	struct psp_tee_buffer *cmd_buffer;
+=20
+-	cmd =3D kzalloc(sizeof(*cmd), GFP_KERNEL);
+-	if (!cmd)
++	cmd_buffer =3D psp_tee_alloc_buffer(sizeof(*cmd),
++					  GFP_KERNEL | __GFP_ZERO);
++	if (!cmd_buffer)
+ 		return NULL;
+=20
+-	cmd->hi_addr =3D upper_32_bits(tee->rb_mgr.ring_pa);
+-	cmd->low_addr =3D lower_32_bits(tee->rb_mgr.ring_pa);
+-	cmd->size =3D tee->rb_mgr.ring_size;
++	cmd =3D (struct tee_init_ring_cmd *)cmd_buffer->vaddr;
++	cmd->hi_addr =3D upper_32_bits(tee->rb_mgr.ring_buf->paddr);
++	cmd->low_addr =3D lower_32_bits(tee->rb_mgr.ring_buf->paddr);
++	cmd->size =3D tee->rb_mgr.ring_buf->size;
+=20
+ 	dev_dbg(tee->dev, "tee: ring address: high =3D 0x%x low =3D 0x%x size =3D %=
+u\n",
+ 		cmd->hi_addr, cmd->low_addr, cmd->size);
+=20
+-	return cmd;
++	return cmd_buffer;
+ }
+=20
+-static inline void tee_free_cmd_buffer(struct tee_init_ring_cmd *cmd)
++static inline void tee_free_cmd_buffer(struct psp_tee_buffer *cmd_buffer)
+ {
+-	kfree(cmd);
++	psp_tee_free_buffer(cmd_buffer);
+ }
+=20
+ static int tee_init_ring(struct psp_tee_device *tee)
+ {
+ 	int ring_size =3D MAX_RING_BUFFER_ENTRIES * sizeof(struct tee_ring_cmd);
+-	struct tee_init_ring_cmd *cmd;
+-	phys_addr_t cmd_buffer;
++	struct psp_tee_buffer *cmd_buffer;
+ 	unsigned int reg;
+ 	int ret;
+=20
+@@ -175,21 +163,19 @@ static int tee_init_ring(struct psp_tee_device *tee)
+=20
+ 	tee->rb_mgr.wptr =3D 0;
+=20
+-	cmd =3D tee_alloc_cmd_buffer(tee);
+-	if (!cmd) {
++	cmd_buffer =3D tee_alloc_cmd_buffer(tee);
++	if (!cmd_buffer) {
+ 		tee_free_ring(tee);
+ 		return -ENOMEM;
+ 	}
+=20
+-	cmd_buffer =3D __psp_pa((void *)cmd);
+-
+ 	/* Send command buffer details to Trusted OS by writing to
+ 	 * CPU-PSP message registers
+ 	 */
+=20
+-	iowrite32(lower_32_bits(cmd_buffer),
++	iowrite32(lower_32_bits(cmd_buffer->paddr),
+ 		  tee->io_regs + tee->vdata->cmdbuff_addr_lo_reg);
+-	iowrite32(upper_32_bits(cmd_buffer),
++	iowrite32(upper_32_bits(cmd_buffer->paddr),
+ 		  tee->io_regs + tee->vdata->cmdbuff_addr_hi_reg);
+ 	iowrite32(TEE_RING_INIT_CMD,
+ 		  tee->io_regs + tee->vdata->cmdresp_reg);
+@@ -209,7 +195,7 @@ static int tee_init_ring(struct psp_tee_device *tee)
+ 	}
+=20
+ free_buf:
+-	tee_free_cmd_buffer(cmd);
++	tee_free_cmd_buffer(cmd_buffer);
+=20
+ 	return ret;
+ }
+@@ -219,7 +205,7 @@ static void tee_destroy_ring(struct psp_tee_device *tee)
+ 	unsigned int reg;
+ 	int ret;
+=20
+-	if (!tee->rb_mgr.ring_start)
++	if (!tee->rb_mgr.ring_buf->vaddr)
+ 		return;
+=20
+ 	if (psp_dead)
+@@ -308,7 +294,7 @@ static int tee_submit_cmd(struct psp_tee_device *tee, enu=
+m tee_cmd_id cmd_id,
+ 	do {
+ 		/* Get pointer to ring buffer command entry */
+ 		cmd =3D (struct tee_ring_cmd *)
+-			(tee->rb_mgr.ring_start + tee->rb_mgr.wptr);
++			(tee->rb_mgr.ring_buf->vaddr + tee->rb_mgr.wptr);
+=20
+ 		rptr =3D ioread32(tee->io_regs + tee->vdata->ring_rptr_reg);
+=20
+@@ -357,7 +343,7 @@ static int tee_submit_cmd(struct psp_tee_device *tee, enu=
+m tee_cmd_id cmd_id,
+=20
+ 	/* Update local copy of write pointer */
+ 	tee->rb_mgr.wptr +=3D sizeof(struct tee_ring_cmd);
+-	if (tee->rb_mgr.wptr >=3D tee->rb_mgr.ring_size)
++	if (tee->rb_mgr.wptr >=3D tee->rb_mgr.ring_buf->size)
+ 		tee->rb_mgr.wptr =3D 0;
+=20
+ 	/* Trigger interrupt to Trusted OS */
+diff --git a/drivers/crypto/ccp/tee-dev.h b/drivers/crypto/ccp/tee-dev.h
+index 49d26158b71e..0e4398d15f93 100644
+--- a/drivers/crypto/ccp/tee-dev.h
++++ b/drivers/crypto/ccp/tee-dev.h
+@@ -16,6 +16,7 @@
+=20
+ #include <linux/device.h>
+ #include <linux/mutex.h>
++#include <linux/psp-tee.h>
+=20
+ #define TEE_DEFAULT_TIMEOUT		10
+ #define MAX_BUFFER_SIZE			988
+@@ -48,17 +49,13 @@ struct tee_init_ring_cmd {
+=20
+ /**
+  * struct ring_buf_manager - Helper structure to manage ring buffer.
+- * @ring_start:  starting address of ring buffer
+- * @ring_size:   size of ring buffer in bytes
+- * @ring_pa:     physical address of ring buffer
+  * @wptr:        index to the last written entry in ring buffer
++ * @ring_buf:    ring buffer allocated using DMA api
+  */
+ struct ring_buf_manager {
+-	struct mutex mutex;	/* synchronizes access to ring buffer */
+-	void *ring_start;
+-	u32 ring_size;
+-	phys_addr_t ring_pa;
++	struct mutex mutex;    /* synchronizes access to ring buffer */
+ 	u32 wptr;
++	struct psp_tee_buffer *ring_buf;
  };
 =20
-+/**
-+ * struct psp_tee_buffer - Structure of a TEE buffer shared with PSP.
-+ * @dma:    DMA buffer address
-+ * @paddr:  Physical address of DMA buffer
-+ * @vaddr:  CPU virtual address of DMA buffer
-+ * @size:   Size of DMA buffer in bytes
-+ */
-+struct psp_tee_buffer {
-+	dma_addr_t dma;
-+	phys_addr_t paddr;
-+	void *vaddr;
-+	unsigned long size;
-+};
-+
- #ifdef CONFIG_CRYPTO_DEV_SP_PSP
- /**
-  * psp_tee_process_cmd() - Process command in Trusted Execution Environment
-@@ -75,6 +89,28 @@ int psp_tee_process_cmd(enum tee_cmd_id cmd_id, void *buf,=
- size_t len,
-  */
- int psp_check_tee_status(void);
-=20
-+/**
-+ * psp_tee_alloc_buffer() - Allocates memory of requested size and flags usi=
-ng
-+ * dma_alloc_coherent() API.
-+ *
-+ * This function can be used to allocate a shared memory region between the
-+ * host and PSP TEE.
-+ *
-+ * Returns:
-+ * non-NULL   a valid pointer to struct psp_tee_buffer
-+ * NULL       on failure
-+ */
-+struct psp_tee_buffer *psp_tee_alloc_buffer(unsigned long size, gfp_t gfp);
-+
-+/**
-+ * psp_tee_free_buffer() - Deallocates memory using dma_free_coherent() API.
-+ *
-+ * This function can be used to release shared memory region between host
-+ * and PSP TEE.
-+ *
-+ */
-+void psp_tee_free_buffer(struct psp_tee_buffer *tee_buffer);
-+
- #else /* !CONFIG_CRYPTO_DEV_SP_PSP */
-=20
- static inline int psp_tee_process_cmd(enum tee_cmd_id cmd_id, void *buf,
-@@ -87,5 +123,16 @@ static inline int psp_check_tee_status(void)
- {
- 	return -ENODEV;
- }
-+
-+static inline
-+struct psp_tee_buffer *psp_tee_alloc_buffer(unsigned long size, gfp_t gfp)
-+{
-+	return NULL;
-+}
-+
-+static inline void psp_tee_free_buffer(struct psp_tee_buffer *tee_buffer)
-+{
-+}
-+
- #endif /* CONFIG_CRYPTO_DEV_SP_PSP */
- #endif /* __PSP_TEE_H_ */
+ struct psp_tee_device {
 --=20
 2.25.1
 
 
---===============1151869172711035251==--
+--===============6770770613003617442==--
 
