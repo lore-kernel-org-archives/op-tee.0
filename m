@@ -1,145 +1,70 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: "NK, JESHWANTHKUMAR" <jeshwanthkumar.nk@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Thu, 26 Oct 2023 15:06:21 +0530
-Message-ID: 
- <CAFA6WYNDKojP4EM5-UNXX82tYyUy7MjUi6yAztjhDC2PqzFPWw@mail.gmail.com>
-In-Reply-To: <860B526F-22A1-4230-90A6-3DF0F60E05EA@arm.com>
+Subject: 
+ Re: [PATCH 0/3] Introduce DMA APIs to allocate and free TEE shared memory
+Date: Thu, 26 Oct 2023 16:00:08 +0530
+Message-ID: <4a261870-03e0-49f8-b968-4cbcf646d9eb@amd.com>
+In-Reply-To: <
+ <CAFA6WYPKXFftMzqJ4GnXT-zqu21_Jzn8aKti_wU-pQ4KpEVNrA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5227633488577193465=="
+Content-Type: multipart/mixed; boundary="===============4351721901417433732=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5227633488577193465==
+--===============4351721901417433732==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Fri, 20 Oct 2023 at 19:29, Balint Dobszay <balint.dobszay@arm.com> wrote:
->
-> On 19 Oct 2023, at 16:16, Jens Wiklander wrote:
-> > On Tue, Oct 17, 2023 at 1:14 PM Sumit Garg <sumit.garg@linaro.org> wrot=
-e:
-> >> On Mon, 16 Oct 2023 at 13:27, Jens Wiklander <jens.wiklander@linaro.or=
-g> wrote:
-> >>> On Fri, Oct 13, 2023 at 1:38 PM Sumit Garg <sumit.garg@linaro.org> wr=
-ote:
-> >>>> On Tue, 10 Oct 2023 at 21:11, Balint Dobszay <balint.dobszay@arm.com=
-> wrote:
-> >>>>> On 3 Oct 2023, at 17:42, Sumit Garg wrote:
-> >>>>>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.=
-com> wrote:
->
-> [snip]
->
-> >>>>>>> +static int tstee_invoke_func(struct tee_context *ctx, struct tee_i=
-octl_invoke_arg *arg,
-> >>>>>>> +                            struct tee_param *param)
-> >>>>>>> +{
-> >>>>>>> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> >>>>>>> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> >>>>>>> +       struct ts_context_data *ctxdata =3D ctx->data;
-> >>>>>>> +       struct ffa_send_direct_data ffa_data;
-> >>>>>>> +       struct tee_shm *shm =3D NULL;
-> >>>>>>> +       struct ts_session *sess;
-> >>>>>>> +       u32 req_len, ffa_args[5] =3D {};
-> >>>>>>> +       int shm_id, rc;
-> >>>>>>> +       u8 iface_id;
-> >>>>>>> +       u64 handle;
-> >>>>>>> +       u16 opcode;
-> >>>>>>> +
-> >>>>>>> +       mutex_lock(&ctxdata->mutex);
-> >>>>>>> +       sess =3D find_session(ctxdata, arg->session);
-> >>>>>>> +
-> >>>>>>> +       /* Do this while holding the mutex to make sure that the se=
-ssion wasn't closed meanwhile */
-> >>>>>>> +       if (sess)
-> >>>>>>> +               iface_id =3D sess->iface_id;
-> >>>>>>> +
-> >>>>>>> +       mutex_unlock(&ctxdata->mutex);
-> >>>>>>> +       if (!sess)
-> >>>>>>> +               return -EINVAL;
-> >>>>>>> +
-> >>>>>>> +       opcode =3D lower_16_bits(arg->func);
-> >>>>>>> +       shm_id =3D lower_32_bits(param[0].u.value.a);
-> >>>>>>> +       req_len =3D lower_32_bits(param[0].u.value.b);
-> >>>>>>> +
-> >>>>>>> +       if (shm_id !=3D 0) {
-> >>>>>>> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
-> >>>>>>> +               if (IS_ERR(shm))
-> >>>>>>> +                       return PTR_ERR(shm);
-> >>>>>>> +
-> >>>>>>> +               if (shm->size < req_len) {
-> >>>>>>> +                       pr_err("request doesn't fit into shared mem=
-ory buffer\n");
-> >>>>>>> +                       rc =3D -EINVAL;
-> >>>>>>> +                       goto out;
-> >>>>>>> +               }
-> >>>>>>> +
-> >>>>>>> +               handle =3D shm->sec_world_id;
-> >>>>>>> +       } else {
-> >>>>>>> +               handle =3D FFA_INVALID_MEM_HANDLE;
-> >>>>>>> +       }
-> >>>>>>> +
-> >>>>>>> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE=
-(iface_id, opcode);
-> >>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_bits(h=
-andle);
-> >>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_bits(h=
-andle);
-> >>>>>>> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
-> >>>>>>> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
-> >>>>>>> +
-> >>>>>>> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> >>>>>>> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &f=
-fa_data);
-> >>>>>>
-> >>>>>> I haven't dug deeper into the ABI yet, which is something I will look
-> >>>>>> into. But these RPC commands caught my attention. Are these RPC calls
-> >>>>>> blocking in nature? Is there a possibility that these could cause CPU
-> >>>>>> stalls? Do the Linux interrupts remain unhandled until the RPC calls
-> >>>>>> return?
-> >>>>>
-> >>>>> Yes, that is correct. We did encounter CPU stalls indeed, our solution
-> >>>>> was to enable preemption of S-EL0 SPs in OP-TEE [3] which solved the
-> >>>>> issue.
-> >>>>
-> >>>> I would have preferred to unite FFA_INTERRUPT and
-> >>>> OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT since underneath both are
-> >>>> using FFA ABI.
-> >>>>
-> >>>> Jens,
-> >>>>
-> >>>> Can we change OP-TEE to use FFA_INTERRUPT as well when using FFA ABI?
-> >>>
-> >>> No, OP-TEE uses managed exit. Among other advantages, it allows
-> >>> resuming execution on a different CPU.
-> >>>
-> >>
-> >> I suppose that should be the case with FFA_INTERRUPT too. OP-TEE
-> >> should be able to resume SPs on different CPUs as well, right?
-> >
-> > Possibly, but I leave that to Balint and company to sort out if that's
-> > desired or not.
->
-> FF-A mandates that S-EL0 SPs have a single execution context, run only
-> on a single PE in the system at any point of time and are capable of
-> migrating. Also, FF-A allows resuming a S-EL0 SP on a different CPU
-> after it gets preempted by a NS interrupt. I think OP-TEE as S-EL1 SPMC
-> does support this, but I don't have a setup yet that would explicitly
-> test this scenario.
->
 
-You can try to add a few minutes loop within a secure partition and
-see if the Linux scheduler reschedules on a different CPUs. I suppose
-you need to keep the system loaded with other normal world apps too.
-
-> Managed exit is only available for S-EL1 SPs.
+On 25-Oct-23 7:01 PM, Sumit Garg wrote:
+> Hi Jeshwank,
 >
+> On Wed, 25 Oct 2023 at 12:27, jeshwank <JESHWANTHKUMAR.NK@amd.com> wrote:
+>> From: Jeshwanth Kumar N K <JESHWANTHKUMAR.NK@amd.com>
+>>
+>> At present, the shared memory for TEE ring buffer, command buffer and
+>> data buffer is allocated using get_free_pages(). The driver shares the
+>> physical address of these buffers with PSP so that it can be mapped by
+>> the Trusted OS.
+>>
+>> In this patch series we have replaced get_free_pages() with
+>> dma_alloc_coherent() to allocate shared memory to cleanup the existing
+>> allocation method.
+> Thanks for putting this together but I can't find the reasoning behind
+> this change neither in this commit message and nor in the patch
+> descriptions. Care to explain why?
+>
+> -Sumit
+Hi Sumit,
 
-So does that mean OP-TEE can use FF-A constructs like (FFA_INTERRUPT)
-for managed exit instead of custom
-OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT?
+We see that there is an advantage in using dma_alloc_coherent() over 
+get_free_pages(). The dma-ops associated with PSP PCIe device can be 
+overridden. This capability will be helpful when we enable 
+virtualization support. We plan to post a virtualization related patch 
+in future.
 
--Sumit
+Regards,
 
---===============5227633488577193465==--
+Jeshwanth
+
+>
+>> Rijo Thomas (3):
+>>    crypto: ccp - Add function to allocate and free memory using DMA APIs
+>>    crypto: ccp - Use psp_tee_alloc_buffer() and psp_tee_free_buffer()
+>>    tee: amdtee: Use psp_tee_alloc_buffer() and psp_tee_free_buffer()
+>>
+>>   drivers/crypto/ccp/psp-dev.c        |   3 +
+>>   drivers/crypto/ccp/tee-dev.c        | 119 ++++++++++++++++++----------
+>>   drivers/crypto/ccp/tee-dev.h        |  11 +--
+>>   drivers/tee/amdtee/amdtee_private.h |  18 ++---
+>>   drivers/tee/amdtee/call.c           |  74 ++++++++---------
+>>   drivers/tee/amdtee/core.c           |  72 ++++++++++-------
+>>   drivers/tee/amdtee/shm_pool.c       |  21 ++---
+>>   include/linux/psp-tee.h             |  47 +++++++++++
+>>   8 files changed, 221 insertions(+), 144 deletions(-)
+>>
+>> --
+>> 2.25.1
+>>
+
+--===============4351721901417433732==--
 
