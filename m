@@ -1,88 +1,132 @@
-From: kernel test robot <lkp@intel.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 2/3] crypto: ccp - Use psp_tee_alloc_buffer() and
- psp_tee_free_buffer()
-Date: Thu, 26 Oct 2023 05:26:13 +0800
-Message-ID: <202310260529.GEey5HQc-lkp@intel.com>
-In-Reply-To: <20231025065700.1556152-3-JESHWANTHKUMAR.NK@amd.com>
+Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
+Date: Thu, 26 Oct 2023 12:22:49 +0530
+Message-ID: 
+ <CAFA6WYMW9oYoJPkGZZzzortNmqAK4DaYU8WL-ciiS7ywsMsBXw@mail.gmail.com>
+In-Reply-To: <8DD61032-21F1-45D1-9908-66792540BD5A@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5378058798384428977=="
+Content-Type: multipart/mixed; boundary="===============9120430636710611791=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5378058798384428977==
+--===============9120430636710611791==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi jeshwank,
+On Fri, 20 Oct 2023 at 19:22, Balint Dobszay <balint.dobszay@arm.com> wrote:
+>
+> On 13 Oct 2023, at 14:47, Sumit Garg wrote:
+> > On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.com> =
+wrote:
+>
+> [snip]
+>
+> >> diff --git a/drivers/tee/tstee/core.c b/drivers/tee/tstee/core.c
+> >> new file mode 100644
+> >> index 000000000000..c0194638b7da
+> >> --- /dev/null
+> >> +++ b/drivers/tee/tstee/core.c
+> >> @@ -0,0 +1,473 @@
+> >> +// SPDX-License-Identifier: GPL-2.0-only
+> >> +/*
+> >> + * Copyright (c) 2023, Arm Limited
+> >> + */
+> >> +
+> >> +#define DRIVER_NAME "Arm TSTEE"
+> >> +#define pr_fmt(fmt) DRIVER_NAME ": " fmt
+> >> +
+> >> +#include <linux/arm_ffa.h>
+> >> +#include <linux/err.h>
+> >> +#include <linux/errno.h>
+> >> +#include <linux/kernel.h>
+> >> +#include <linux/limits.h>
+> >> +#include <linux/list.h>
+> >> +#include <linux/mm.h>
+> >> +#include <linux/module.h>
+> >> +#include <linux/scatterlist.h>
+> >> +#include <linux/slab.h>
+> >> +#include <linux/stat.h>
+> >> +#include <linux/tee_drv.h>
+> >> +#include <linux/types.h>
+> >> +#include <linux/uaccess.h>
+> >> +
+> >> +#include "tstee_private.h"
+> >> +
+> >> +#define FFA_INVALID_MEM_HANDLE U64_MAX
+> >> +
+> >> +static void arg_list_to_ffa_data(const u32 *args, struct ffa_send_direc=
+t_data *data)
+> >> +{
+> >> +       data->data0 =3D args[0];
+> >> +       data->data1 =3D args[1];
+> >> +       data->data2 =3D args[2];
+> >> +       data->data3 =3D args[3];
+> >> +       data->data4 =3D args[4];
+> >> +}
+> >> +
+> >> +static void arg_list_from_ffa_data(const struct ffa_send_direct_data *d=
+ata, u32 *args)
+> >> +{
+> >> +       args[0] =3D lower_32_bits(data->data0);
+> >> +       args[1] =3D lower_32_bits(data->data1);
+> >> +       args[2] =3D lower_32_bits(data->data2);
+> >> +       args[3] =3D lower_32_bits(data->data3);
+> >> +       args[4] =3D lower_32_bits(data->data4);
+> >> +}
+> >> +
+> >> +static void tstee_get_version(struct tee_device *teedev, struct tee_ioc=
+tl_version_data *vers)
+> >> +{
+> >> +       struct tstee *tstee =3D tee_get_drvdata(teedev);
+> >> +       struct tee_ioctl_version_data v =3D {
+> >> +               .impl_id =3D TEE_IMPL_ID_TSTEE,
+> >> +               .impl_caps =3D tstee->ffa_dev->vm_id,
+> >
+> > So while exploring the user-space interface, I observed an anomaly
+> > here. The ".impl_caps" refers to "Implementation specific
+> > capabilities" meant to support backwards compatibility of a particular
+> > TEE implementation. But here I observe you are using it instead for
+> > endpoint_id. Can you provide the reasoning behind it? Also, do you
+> > plan to support multiple endpoints via this driver?
+>
+> The mapping between Trusted Services SPs and TEE devices is 1:1, i.e.
+> each /dev/tee<n> device represents exactly one FF-A endpoint. To answer
+> your second question, each instance of the driver represents a single
+> endpoint, multiple endpoints are supported by having multiple instances
+> of the driver.
 
-kernel test robot noticed the following build warnings:
+I don't follow you here. How multiple instances of "arm_tstee" driver
+going to work? Also, I can only see a single FF-A based device:
+TS_RPC_UUID being probed here.
 
-[auto build test WARNING on herbert-crypto-2.6/master]
-[also build test WARNING on linus/master v6.6-rc7]
-[cannot apply to herbert-cryptodev-2.6/master next-20231025]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Do you have any working example for this?
 
-url:    https://github.com/intel-lab-lkp/linux/commits/jeshwank/crypto-ccp-Ad=
-d-function-to-allocate-and-free-memory-using-DMA-APIs/20231025-150420
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.gi=
-t master
-patch link:    https://lore.kernel.org/r/20231025065700.1556152-3-JESHWANTHKU=
-MAR.NK%40amd.com
-patch subject: [PATCH 2/3] crypto: ccp - Use psp_tee_alloc_buffer() and psp_t=
-ee_free_buffer()
-config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20231026=
-/202310260529.GEey5HQc-lkp(a)intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0231026/202310260529.GEey5HQc-lkp(a)intel.com/reproduce)
+> Therefore we always return a single endpoint ID in this
+> field.
+>
+> The reason behind the usage of this field is that somehow user space has
+> to be able to discover which TEE device represents which FF-A endpoint.
+> This is required when a client wants to invoke an SP with a specific
+> endpoint ID, e.g. in a system where the SP's endpoint IDs is static and
+> known by the client.
+>
+> I understand this is not a conventional usage of this field, I couldn't
+> find a better way to "fit" this information into the ABI. My
+> understanding is this solution shouldn't cause any issues for other
+> TEEs, since this implementation specific field should only be parsed by
+> a client if it has already matched on the TEE implementation ID. Please
+> correct me if this assumption is wrong, or if you have any suggestions
+> on other ways to expose the endpoint ID to user space.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version =
-of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202310260529.GEey5HQc-lkp(a)i=
-ntel.com/
+When you say "each /dev/tee<n> device represents exactly one FF-A
+endpoint" then "impl_id" should be sufficient to represent endpoint ID
+too. But I am still confused regarding how you are going to support
+multiple endpoints?
 
-All warnings (new ones prefixed by >>):
+Looking at this driver TEE_IMPL_ID_TSTEE represents an underlying FF-A
+based TS_RPC_UUID device.
 
->> drivers/crypto/ccp/tee-dev.c:123:24: warning: no previous prototype for 't=
-ee_alloc_cmd_buffer' [-Wmissing-prototypes]
-     123 | struct psp_tee_buffer *tee_alloc_cmd_buffer(struct psp_tee_device =
-*tee)
-         |                        ^~~~~~~~~~~~~~~~~~~~
+-Sumit
 
-
-vim +/tee_alloc_cmd_buffer +123 drivers/crypto/ccp/tee-dev.c
-
-   122=09
- > 123	struct psp_tee_buffer *tee_alloc_cmd_buffer(struct psp_tee_device *tee)
-   124	{
-   125		struct tee_init_ring_cmd *cmd;
-   126		struct psp_tee_buffer *cmd_buffer;
-   127=09
-   128		cmd_buffer =3D psp_tee_alloc_buffer(sizeof(*cmd),
-   129						  GFP_KERNEL | __GFP_ZERO);
-   130		if (!cmd_buffer)
-   131			return NULL;
-   132=09
-   133		cmd =3D (struct tee_init_ring_cmd *)cmd_buffer->vaddr;
-   134		cmd->hi_addr =3D upper_32_bits(tee->rb_mgr.ring_buf->paddr);
-   135		cmd->low_addr =3D lower_32_bits(tee->rb_mgr.ring_buf->paddr);
-   136		cmd->size =3D tee->rb_mgr.ring_buf->size;
-   137=09
-   138		dev_dbg(tee->dev, "tee: ring address: high =3D 0x%x low =3D 0x%x size=
- =3D %u\n",
-   139			cmd->hi_addr, cmd->low_addr, cmd->size);
-   140=09
-   141		return cmd_buffer;
-   142	}
-   143=09
-
---=20
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
-
---===============5378058798384428977==--
+--===============9120430636710611791==--
 
