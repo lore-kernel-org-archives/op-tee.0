@@ -1,216 +1,91 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Tom Lendacky <thomas.lendacky@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Thu, 26 Oct 2023 16:27:21 +0200
-Message-ID: 
- <CAHUa44HZHszcL0DW94GSuy581OqJMttCcWGu6XKLmadX5StvQg@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYMraPpsQXQo5Rt_YXD8t=5GcksXyf0DcOdxzThXZHaSjQ@mail.gmail.com>>
+Subject: 
+ Re: [PATCH 0/3] Introduce DMA APIs to allocate and free TEE shared memory
+Date: Thu, 26 Oct 2023 09:53:50 -0500
+Message-ID: <b743d759-8f6b-b4f8-afc6-d8f11a5562ff@amd.com>
+In-Reply-To: <4a261870-03e0-49f8-b968-4cbcf646d9eb@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7288114903588506231=="
+Content-Type: multipart/mixed; boundary="===============5424691094382104843=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7288114903588506231==
+--===============5424691094382104843==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 26, 2023 at 1:33=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org> =
-wrote:
->
-> On Thu, 26 Oct 2023 at 16:06, Jens Wiklander <jens.wiklander@linaro.org> =
-wrote:
-> >
-> > On Thu, Oct 26, 2023 at 11:36=E2=80=AFAM Sumit Garg <sumit.garg@linaro.=
-org> wrote:
-> > >
-> > > On Fri, 20 Oct 2023 at 19:29, Balint Dobszay <balint.dobszay@arm.com>=
- wrote:
-> > > >
-> > > > On 19 Oct 2023, at 16:16, Jens Wiklander wrote:
-> > > > > On Tue, Oct 17, 2023 at 1:14 PM Sumit Garg <sumit.garg@linaro.org=
-> wrote:
-> > > > >> On Mon, 16 Oct 2023 at 13:27, Jens Wiklander <jens.wiklander@lin=
-aro.org> wrote:
-> > > > >>> On Fri, Oct 13, 2023 at 1:38 PM Sumit Garg <sumit.garg@linaro.o=
-rg> wrote:
-> > > > >>>> On Tue, 10 Oct 2023 at 21:11, Balint Dobszay <balint.dobszay@a=
-rm.com> wrote:
-> > > > >>>>> On 3 Oct 2023, at 17:42, Sumit Garg wrote:
-> > > > >>>>>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay(=
-a)arm.com> wrote:
-> > > >
-> > > > [snip]
-> > > >
-> > > > >>>>>>> +static int tstee_invoke_func(struct tee_context *ctx, struct=
- tee_ioctl_invoke_arg *arg,
-> > > > >>>>>>> +                            struct tee_param *param)
-> > > > >>>>>>> +{
-> > > > >>>>>>> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> > > > >>>>>>> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> > > > >>>>>>> +       struct ts_context_data *ctxdata =3D ctx->data;
-> > > > >>>>>>> +       struct ffa_send_direct_data ffa_data;
-> > > > >>>>>>> +       struct tee_shm *shm =3D NULL;
-> > > > >>>>>>> +       struct ts_session *sess;
-> > > > >>>>>>> +       u32 req_len, ffa_args[5] =3D {};
-> > > > >>>>>>> +       int shm_id, rc;
-> > > > >>>>>>> +       u8 iface_id;
-> > > > >>>>>>> +       u64 handle;
-> > > > >>>>>>> +       u16 opcode;
-> > > > >>>>>>> +
-> > > > >>>>>>> +       mutex_lock(&ctxdata->mutex);
-> > > > >>>>>>> +       sess =3D find_session(ctxdata, arg->session);
-> > > > >>>>>>> +
-> > > > >>>>>>> +       /* Do this while holding the mutex to make sure that =
-the session wasn't closed meanwhile */
-> > > > >>>>>>> +       if (sess)
-> > > > >>>>>>> +               iface_id =3D sess->iface_id;
-> > > > >>>>>>> +
-> > > > >>>>>>> +       mutex_unlock(&ctxdata->mutex);
-> > > > >>>>>>> +       if (!sess)
-> > > > >>>>>>> +               return -EINVAL;
-> > > > >>>>>>> +
-> > > > >>>>>>> +       opcode =3D lower_16_bits(arg->func);
-> > > > >>>>>>> +       shm_id =3D lower_32_bits(param[0].u.value.a);
-> > > > >>>>>>> +       req_len =3D lower_32_bits(param[0].u.value.b);
-> > > > >>>>>>> +
-> > > > >>>>>>> +       if (shm_id !=3D 0) {
-> > > > >>>>>>> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
-> > > > >>>>>>> +               if (IS_ERR(shm))
-> > > > >>>>>>> +                       return PTR_ERR(shm);
-> > > > >>>>>>> +
-> > > > >>>>>>> +               if (shm->size < req_len) {
-> > > > >>>>>>> +                       pr_err("request doesn't fit into shar=
-ed memory buffer\n");
-> > > > >>>>>>> +                       rc =3D -EINVAL;
-> > > > >>>>>>> +                       goto out;
-> > > > >>>>>>> +               }
-> > > > >>>>>>> +
-> > > > >>>>>>> +               handle =3D shm->sec_world_id;
-> > > > >>>>>>> +       } else {
-> > > > >>>>>>> +               handle =3D FFA_INVALID_MEM_HANDLE;
-> > > > >>>>>>> +       }
-> > > > >>>>>>> +
-> > > > >>>>>>> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_=
-OPCODE(iface_id, opcode);
-> > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_=
-bits(handle);
-> > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_=
-bits(handle);
-> > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
-> > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
-> > > > >>>>>>> +
-> > > > >>>>>>> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> > > > >>>>>>> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_d=
-ev, &ffa_data);
-> > > > >>>>>>
-> > > > >>>>>> I haven't dug deeper into the ABI yet, which is something I wi=
-ll look
-> > > > >>>>>> into. But these RPC commands caught my attention. Are these RP=
-C calls
-> > > > >>>>>> blocking in nature? Is there a possibility that these could ca=
-use CPU
-> > > > >>>>>> stalls? Do the Linux interrupts remain unhandled until the RPC=
- calls
-> > > > >>>>>> return?
-> > > > >>>>>
-> > > > >>>>> Yes, that is correct. We did encounter CPU stalls indeed, our s=
-olution
-> > > > >>>>> was to enable preemption of S-EL0 SPs in OP-TEE [3] which solve=
-d the
-> > > > >>>>> issue.
-> > > > >>>>
-> > > > >>>> I would have preferred to unite FFA_INTERRUPT and
-> > > > >>>> OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT since underneath both a=
-re
-> > > > >>>> using FFA ABI.
-> > > > >>>>
-> > > > >>>> Jens,
-> > > > >>>>
-> > > > >>>> Can we change OP-TEE to use FFA_INTERRUPT as well when using FFA=
- ABI?
-> > > > >>>
-> > > > >>> No, OP-TEE uses managed exit. Among other advantages, it allows
-> > > > >>> resuming execution on a different CPU.
-> > > > >>>
-> > > > >>
-> > > > >> I suppose that should be the case with FFA_INTERRUPT too. OP-TEE
-> > > > >> should be able to resume SPs on different CPUs as well, right?
-> > > > >
-> > > > > Possibly, but I leave that to Balint and company to sort out if tha=
-t's
-> > > > > desired or not.
-> > > >
-> > > > FF-A mandates that S-EL0 SPs have a single execution context, run only
-> > > > on a single PE in the system at any point of time and are capable of
-> > > > migrating. Also, FF-A allows resuming a S-EL0 SP on a different CPU
-> > > > after it gets preempted by a NS interrupt. I think OP-TEE as S-EL1 SP=
-MC
-> > > > does support this, but I don't have a setup yet that would explicitly
-> > > > test this scenario.
-> > > >
-> > >
-> > > You can try to add a few minutes loop within a secure partition and
-> > > see if the Linux scheduler reschedules on a different CPUs. I suppose
-> > > you need to keep the system loaded with other normal world apps too.
-> > >
-> > > > Managed exit is only available for S-EL1 SPs.
-> > > >
-> > >
-> > > So does that mean OP-TEE can use FF-A constructs like (FFA_INTERRUPT)
-> > > for managed exit instead of custom
-> > > OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT?
-> >
-> > No, and to be clear OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT isn't a
-> > custom solution, it's fully within the specification.
->
-> I am not talking about it being out of specification. It's rather that
-> if the base FF-A layer provides you with a feature then we shouldn't
-> need to reimplement in every SP (OP-TEE or other trusted OS)
-> communication stack.
+On 10/26/23 05:30, NK, JESHWANTHKUMAR wrote:
+>=20
+> On 25-Oct-23 7:01 PM, Sumit Garg wrote:
+>> Hi Jeshwank,
+>>
+>> On Wed, 25 Oct 2023 at 12:27, jeshwank <JESHWANTHKUMAR.NK@amd.com> wrote:
+>>> From: Jeshwanth Kumar N K <JESHWANTHKUMAR.NK@amd.com>
+>>>
+>>> At present, the shared memory for TEE ring buffer, command buffer and
+>>> data buffer is allocated using get_free_pages(). The driver shares the
+>>> physical address of these buffers with PSP so that it can be mapped by
+>>> the Trusted OS.
+>>>
+>>> In this patch series we have replaced get_free_pages() with
+>>> dma_alloc_coherent() to allocate shared memory to cleanup the existing
+>>> allocation method.
+>> Thanks for putting this together but I can't find the reasoning behind
+>> this change neither in this commit message and nor in the patch
+>> descriptions. Care to explain why?
+>>
+>> -Sumit
+> Hi Sumit,
+>=20
+> We see that there is an advantage in using dma_alloc_coherent() over=20
+> get_free_pages(). The dma-ops associated with PSP PCIe device can be=20
+> overridden. This capability will be helpful when we enable virtualization=20
+> support. We plan to post a virtualization related patch in future.
 
-Let's take a look at the code we have in the OP-TEE driver for this:
-        case OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT:
-                /* Interrupt delivered by now */
-                break;
+To be specific, you are referring to Xen virtualization support, correct?=20
+Because I don't see how this works in a Qemu/KVM environment where you=20
+would get a GPA and not an SPA.
 
-The implementation is pretty small. We're of course piggy-backing on
-the rest of the RPC code, but that would still be needed even if the
-FF-A framework could handle the managed exits. From OP-TEE's point of
-view, there's nothing to gain.
+If that is the case, you should clearly specify that. Also, this looks=20
+like it should be introduced with the virtualization support that you=20
+submit in the future and not before.
 
->
-> > Returning via
-> > FFA_INTERRUPT is a simplified model where the SP has less control over
-> > the CPU.
->
-> I would like to understand which exact bits you are referring to. From
-> Linux point of view, I don't see any difference.
+Thanks,
+Tom
 
-Given how the ABI is defined we can't use FFA_INTERRUPT for managed
-exit. There's a vCPU field that is used by the SPMC, there's nothing
-for OP-TEE to suspend/resume a thread to let another thread use the
-CPU.
+>=20
+> Regards,
+>=20
+> Jeshwanth
+>=20
+>>
+>>> Rijo Thomas (3):
+>>> =C2=A0=C2=A0 crypto: ccp - Add function to allocate and free memory using=
+ DMA APIs
+>>> =C2=A0=C2=A0 crypto: ccp - Use psp_tee_alloc_buffer() and psp_tee_free_bu=
+ffer()
+>>> =C2=A0=C2=A0 tee: amdtee: Use psp_tee_alloc_buffer() and psp_tee_free_buf=
+fer()
+>>>
+>>> =C2=A0 drivers/crypto/ccp/psp-dev.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 |=C2=A0=C2=A0 3 +
+>>> =C2=A0 drivers/crypto/ccp/tee-dev.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 | 119 ++++++++++++++++++----------
+>>> =C2=A0 drivers/crypto/ccp/tee-dev.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 |=C2=A0 11 +--
+>>> =C2=A0 drivers/tee/amdtee/amdtee_private.h |=C2=A0 18 ++---
+>>> =C2=A0 drivers/tee/amdtee/call.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 74 ++++++++---------
+>>> =C2=A0 drivers/tee/amdtee/core.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 72 ++++++++++-------
+>>> =C2=A0 drivers/tee/amdtee/shm_pool.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+|=C2=A0 21 ++---
+>>> =C2=A0 include/linux/psp-tee.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 47 +++++++++++
+>>> =C2=A0 8 files changed, 221 insertions(+), 144 deletions(-)
+>>>
+>>> --=20
+>>> 2.25.1
+>>>
 
->
-> > I imagine that it wouldn't play very nicely with spinlocks.
->
-> Aren't interrupts disabled while spinlock is being held?
-
-Yes, but without managed exit that doesn't matter much since
-suspend/resume are transparent to the SP.
-
-Cheers,
-Jens
-
->
-> -Sumit
->
-> >
-> > Cheers,
-> > Jens
-> >
-> > >
-> > > -Sumit
-
---===============7288114903588506231==--
+--===============5424691094382104843==--
 
