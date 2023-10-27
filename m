@@ -1,230 +1,138 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Fri, 27 Oct 2023 18:22:56 +0530
+Subject: Re: [PATCH v9 0/6] introduce tee-based EFI Runtime Variable Service
+Date: Fri, 27 Oct 2023 16:06:04 +0300
 Message-ID: 
- <CAFA6WYN838QuBAAM_iV_1M_YG3fNcAQFfLEspwnB9d0nBK-PvQ@mail.gmail.com>
+ <CAC_iWjLQPL1a8Zu38+98PgDO8mGzZ=WzCaQxab9bZDrRJNTL7g@mail.gmail.com>
 In-Reply-To: <
- <CAHUa44HZHszcL0DW94GSuy581OqJMttCcWGu6XKLmadX5StvQg@mail.gmail.com>>
+ <CADQ0-X8fEUw2pkeWRKGsYs8cNfDnyM=ibj9emZ5Q0zL9btdz=A@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5892172527893157399=="
+Content-Type: multipart/mixed; boundary="===============8927414184923959070=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5892172527893157399==
+--===============8927414184923959070==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 26 Oct 2023 at 19:57, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
-> On Thu, Oct 26, 2023 at 1:33=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org=
-> wrote:
-> >
-> > On Thu, 26 Oct 2023 at 16:06, Jens Wiklander <jens.wiklander@linaro.org=
-> wrote:
-> > >
-> > > On Thu, Oct 26, 2023 at 11:36=E2=80=AFAM Sumit Garg <sumit.garg@linar=
-o.org> wrote:
-> > > >
-> > > > On Fri, 20 Oct 2023 at 19:29, Balint Dobszay <balint.dobszay@arm.co=
-m> wrote:
-> > > > >
-> > > > > On 19 Oct 2023, at 16:16, Jens Wiklander wrote:
-> > > > > > On Tue, Oct 17, 2023 at 1:14 PM Sumit Garg <sumit.garg@linaro.o=
-rg> wrote:
-> > > > > >> On Mon, 16 Oct 2023 at 13:27, Jens Wiklander <jens.wiklander@l=
-inaro.org> wrote:
-> > > > > >>> On Fri, Oct 13, 2023 at 1:38 PM Sumit Garg <sumit.garg@linaro=
-.org> wrote:
-> > > > > >>>> On Tue, 10 Oct 2023 at 21:11, Balint Dobszay <balint.dobszay(a=
-)arm.com> wrote:
-> > > > > >>>>> On 3 Oct 2023, at 17:42, Sumit Garg wrote:
-> > > > > >>>>>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobsza=
-y@arm.com> wrote:
-> > > > >
-> > > > > [snip]
-> > > > >
-> > > > > >>>>>>> +static int tstee_invoke_func(struct tee_context *ctx, stru=
-ct tee_ioctl_invoke_arg *arg,
-> > > > > >>>>>>> +                            struct tee_param *param)
-> > > > > >>>>>>> +{
-> > > > > >>>>>>> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev=
-);
-> > > > > >>>>>>> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> > > > > >>>>>>> +       struct ts_context_data *ctxdata =3D ctx->data;
-> > > > > >>>>>>> +       struct ffa_send_direct_data ffa_data;
-> > > > > >>>>>>> +       struct tee_shm *shm =3D NULL;
-> > > > > >>>>>>> +       struct ts_session *sess;
-> > > > > >>>>>>> +       u32 req_len, ffa_args[5] =3D {};
-> > > > > >>>>>>> +       int shm_id, rc;
-> > > > > >>>>>>> +       u8 iface_id;
-> > > > > >>>>>>> +       u64 handle;
-> > > > > >>>>>>> +       u16 opcode;
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       mutex_lock(&ctxdata->mutex);
-> > > > > >>>>>>> +       sess =3D find_session(ctxdata, arg->session);
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       /* Do this while holding the mutex to make sure tha=
-t the session wasn't closed meanwhile */
-> > > > > >>>>>>> +       if (sess)
-> > > > > >>>>>>> +               iface_id =3D sess->iface_id;
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       mutex_unlock(&ctxdata->mutex);
-> > > > > >>>>>>> +       if (!sess)
-> > > > > >>>>>>> +               return -EINVAL;
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       opcode =3D lower_16_bits(arg->func);
-> > > > > >>>>>>> +       shm_id =3D lower_32_bits(param[0].u.value.a);
-> > > > > >>>>>>> +       req_len =3D lower_32_bits(param[0].u.value.b);
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       if (shm_id !=3D 0) {
-> > > > > >>>>>>> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
-> > > > > >>>>>>> +               if (IS_ERR(shm))
-> > > > > >>>>>>> +                       return PTR_ERR(shm);
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +               if (shm->size < req_len) {
-> > > > > >>>>>>> +                       pr_err("request doesn't fit into sh=
-ared memory buffer\n");
-> > > > > >>>>>>> +                       rc =3D -EINVAL;
-> > > > > >>>>>>> +                       goto out;
-> > > > > >>>>>>> +               }
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +               handle =3D shm->sec_world_id;
-> > > > > >>>>>>> +       } else {
-> > > > > >>>>>>> +               handle =3D FFA_INVALID_MEM_HANDLE;
-> > > > > >>>>>>> +       }
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFAC=
-E_OPCODE(iface_id, opcode);
-> > > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_3=
-2_bits(handle);
-> > > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_3=
-2_bits(handle);
-> > > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
-> > > > > >>>>>>> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
-> > > > > >>>>>>> +
-> > > > > >>>>>>> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> > > > > >>>>>>> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa=
-_dev, &ffa_data);
-> > > > > >>>>>>
-> > > > > >>>>>> I haven't dug deeper into the ABI yet, which is something I =
-will look
-> > > > > >>>>>> into. But these RPC commands caught my attention. Are these =
-RPC calls
-> > > > > >>>>>> blocking in nature? Is there a possibility that these could =
-cause CPU
-> > > > > >>>>>> stalls? Do the Linux interrupts remain unhandled until the R=
-PC calls
-> > > > > >>>>>> return?
-> > > > > >>>>>
-> > > > > >>>>> Yes, that is correct. We did encounter CPU stalls indeed, our=
- solution
-> > > > > >>>>> was to enable preemption of S-EL0 SPs in OP-TEE [3] which sol=
-ved the
-> > > > > >>>>> issue.
-> > > > > >>>>
-> > > > > >>>> I would have preferred to unite FFA_INTERRUPT and
-> > > > > >>>> OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT since underneath both=
- are
-> > > > > >>>> using FFA ABI.
-> > > > > >>>>
-> > > > > >>>> Jens,
-> > > > > >>>>
-> > > > > >>>> Can we change OP-TEE to use FFA_INTERRUPT as well when using F=
-FA ABI?
-> > > > > >>>
-> > > > > >>> No, OP-TEE uses managed exit. Among other advantages, it allows
-> > > > > >>> resuming execution on a different CPU.
-> > > > > >>>
-> > > > > >>
-> > > > > >> I suppose that should be the case with FFA_INTERRUPT too. OP-TEE
-> > > > > >> should be able to resume SPs on different CPUs as well, right?
-> > > > > >
-> > > > > > Possibly, but I leave that to Balint and company to sort out if t=
-hat's
-> > > > > > desired or not.
-> > > > >
-> > > > > FF-A mandates that S-EL0 SPs have a single execution context, run o=
-nly
-> > > > > on a single PE in the system at any point of time and are capable of
-> > > > > migrating. Also, FF-A allows resuming a S-EL0 SP on a different CPU
-> > > > > after it gets preempted by a NS interrupt. I think OP-TEE as S-EL1 =
-SPMC
-> > > > > does support this, but I don't have a setup yet that would explicit=
-ly
-> > > > > test this scenario.
-> > > > >
-> > > >
-> > > > You can try to add a few minutes loop within a secure partition and
-> > > > see if the Linux scheduler reschedules on a different CPUs. I suppose
-> > > > you need to keep the system loaded with other normal world apps too.
-> > > >
-> > > > > Managed exit is only available for S-EL1 SPs.
-> > > > >
-> > > >
-> > > > So does that mean OP-TEE can use FF-A constructs like (FFA_INTERRUPT)
-> > > > for managed exit instead of custom
-> > > > OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT?
-> > >
-> > > No, and to be clear OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT isn't a
-> > > custom solution, it's fully within the specification.
-> >
-> > I am not talking about it being out of specification. It's rather that
-> > if the base FF-A layer provides you with a feature then we shouldn't
-> > need to reimplement in every SP (OP-TEE or other trusted OS)
-> > communication stack.
->
-> Let's take a look at the code we have in the OP-TEE driver for this:
->         case OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT:
->                 /* Interrupt delivered by now */
->                 break;
->
-> The implementation is pretty small. We're of course piggy-backing on
-> the rest of the RPC code, but that would still be needed even if the
-> FF-A framework could handle the managed exits. From OP-TEE's point of
-> view, there's nothing to gain.
->
-> >
-> > > Returning via
-> > > FFA_INTERRUPT is a simplified model where the SP has less control over
-> > > the CPU.
-> >
-> > I would like to understand which exact bits you are referring to. From
-> > Linux point of view, I don't see any difference.
->
-> Given how the ABI is defined we can't use FFA_INTERRUPT for managed
-> exit.
+Kojima-san,
 
-Okay I see that ABI issue. We have to be backwards compatible and that
-will cause more pain rather than reusing FFA_INTERRUPT here. I think I
-can live with that in mind.
+Thanks for looking into this
 
--Sumit
+On Fri, 27 Oct 2023 at 10:27, Masahisa Kojima
+<masahisa.kojima@linaro.org> wrote:
+>
+> Hi Ilias,
+>
+> On Wed, 18 Oct 2023 at 20:35, Ilias Apalodimas
+> <ilias.apalodimas@linaro.org> wrote:
+> >
+> > Kojima-san,
+> >
+> > I found some time to do some extended testing here's what I found
+> >
+> > Switching the permissions from RO->RW when the supplicant is started works
+> > correctly
+> > # mount | grep efiv
+> > efivarfs on /sys/firmware/efi/efivars type efivarfs (ro,nosuid,nodev,noex=
+ec,relatime)
+> > # tee-supplicant -d
+> > [   77.374878] efivars: Unregistered efivars operations
+> > [   77.381604] Use tee-based EFI runtime variable services
+> > [   77.386862] efivars: Registered efivars operations
+> > # mount | grep efiv
+> > efivarfs on /sys/firmware/efi/efivars type efivarfs (rw,nosuid,nodev,noex=
+ec,relatime)
+> > I didn't test unbinding yet, but I assume it's going to work fine and
+> > remove the efivar ops.
+> >
+> > Reading an writing non-authenticated EFI variables seems to work fine.
+> > I verified this with U-Boot and the BootOrder changed correctly.
+> > # efibootmgr -o 0001,0002,0000
+> > BootCurrent: 0002
+> > BootOrder: 0001,0002,0000
+> > Boot0000* nvme 0:1
+> > Boot0001* nvme 0:2
+> > Boot0002* debian
+> > # efibootmgr -o 0002,0000,0001
+> > BootCurrent: 0002
+> > BootOrder: 0002,0000,0001
+> > Boot0000* nvme 0:1
+> > Boot0001* nvme 0:2
+> > Boot0002* debian
+> >
+> > Writing authenticated EFI variables works the first time.
+> > I also dumped those variables from both Linux and U-Boot and they matched
+> > # efi-updatevar -f PK.auth PK
+> > # efi-updatevar -f KEK.auth KEK
+> > # efi-updatevar -f db.auth db
+> >
+> > But removing the PK at runtime fails.
+> > # efi-updatevar -f noPK.auth PK
+> > # Failed to update PK: Operation not permitted
+> > My guess is that the EDK2 code prohibits that, but we need to check why
+> > this is happening.  I also got similar failures trying to update KEK and =
+db.
+>
+> "# efi-updatevar -f noPK.auth PK" does not reach the kernel efivarfs code.
+> With strace, error occurs when efi-updatevar tries to open
+> /sys/firmware/efi/efivars/KEK-*** file.
+> I guess O_TRUNC option in open() is not required?
+>
+> openat(AT_FDCWD,
+> "/sys/firmware/efi/efivars/KEK-8be4df61-93ca-11d2-aa0d-00e098032b8c",
+> O_RDWR|O_CREAT|O_TRUNC, 0644) =3D -1 EPERM (Operation not permitted)
+> write(2, "Failed to update KEK: ", 22Failed to update KEK: )  =3D 22
+> write(2, "Operation not permitted\n", 24Operation not permitted
+> ) =3D 24
+> exit_group(1)                           =3D ?
+> +++ exited with 1 +++
+>
+> We can use "efivar" instead to remove the keys. It also works for KEK and d=
+b.
+> # efi-updatevar -f PK.auth PK
+> # efi-updatevar -f noPK.auth PK     <--- it does not work
+> # efivar -w -n 8be4df61-93ca-11d2-aa0d-00e098032b8c-PK -f noPK.auth
+> <--- it works
 
-> There's a vCPU field that is used by the SPMC, there's nothing
-> for OP-TEE to suspend/resume a thread to let another thread use the
-> CPU.
->
-> >
-> > > I imagine that it wouldn't play very nicely with spinlocks.
-> >
-> > Aren't interrupts disabled while spinlock is being held?
->
-> Yes, but without managed exit that doesn't matter much since
-> suspend/resume are transparent to the SP.
->
-> Cheers,
-> Jens
->
-> >
-> > -Sumit
-> >
-> > >
-> > > Cheers,
-> > > Jens
-> > >
-> > > >
-> > > > -Sumit
+Ok, that's fine then
 
---===============5892172527893157399==--
+>
+> >
+> > But the most worrying thing is this. From Linux program KEK and db
+> > # efi-updatevar -f KEK.auth KEK
+> > # efi-updatevar -f db.auth db
+> >
+> > Reboot the machine and U-Boot complains when it tries to populate the
+> > runtime vars with:
+> > Loading Linux 6.6.0-rc2-00654-g82a013b37495 ...
+> > Loading initial ramdisk ...
+> > EFI stub: Booting Linux Kernel...
+> > EFI stub: Using DTB from configuration table
+> > EFI stub: Exiting boot services...
+> > Can't populate EFI variables. No runtime variables will be available <-- =
+This
+>
+> I could not reproduce this issue.
+> I tried the following command then reboot the board. Linux boots fine.
+>  # efi-updatevar -f KEK.auth KEK
+>  # efi-updatevar -f db.auth db
+>
+> I also enroll the PK, then UEFI secure boot works.
+> Signed grub and signed kernel boot in UEFI secure boot enabled.
+>
+> Are there any additional steps to reproduce?
+
+Hmm, how big is that db? I think I have 2 signatures in mine, a custom
+one and the MS one.
+Can you test again with these certs [0]
+
+[...]
+
+[0] https://gitlab.com/Linaro/trustedsubstrate/meta-ts/-/blob/master/meta-tru=
+stedsubstrate/uefi-certificates/uefi_certs.tgz?ref_type=3Dheads
+
+Thanks
+/Ilias
+
+--===============8927414184923959070==--
 
