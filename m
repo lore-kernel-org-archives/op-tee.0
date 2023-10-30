@@ -1,73 +1,41 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: "NK, JESHWANTHKUMAR" <jeshwanthkumar.nk@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 0/2] OP-TEE FF-A notifications
-Date: Mon, 30 Oct 2023 11:32:47 +0530
-Message-ID: 
- <CAFA6WYOYRQ4BgyUE90EwAVULsa=qDkZ4C=0rX49e-E3LOvyz6Q@mail.gmail.com>
-In-Reply-To: <20231026080409.4149616-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH 1/3] crypto: ccp - Add function to allocate and free
+ memory using DMA APIs
+Date: Mon, 30 Oct 2023 11:35:57 +0530
+Message-ID: <be7a774e-54d7-4ebf-8476-de137c47f020@amd.com>
+In-Reply-To: <ZTtJdU5a/P4kg/Ss@infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0085649786095331851=="
+Content-Type: multipart/mixed; boundary="===============5047326750877414498=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0085649786095331851==
+--===============5047326750877414498==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi Jens,
+Hi Christoph,
 
-On Thu, 26 Oct 2023 at 13:34, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
-> Hi all,
->
-> This patchset adds support for using FF-A notifications as a delivery
-> mechanism of asynchronous notifications from OP-TEE running in the secure
-> world. Support for asynchronous notifications via the SMC ABI was added in
-> [1], here we add the counterpart needed when using the the FF-A ABI.
->
-> Support for FF-A notifications is added with [2] and this patch set is based
-> on Sudeeps tree at [3].
+On 27-Oct-23 10:54 AM, Christoph Hellwig wrote:
+> On Wed, Oct 25, 2023 at 12:26:58PM +0530, jeshwank wrote:
+>> +	tee_buf->vaddr = dma_alloc_coherent(psp->dev, size, &tee_buf->dma, gfp);
+>> +	if (!tee_buf->vaddr || !tee_buf->dma) {
+>> +		kfree(tee_buf);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	tee_buf->size = size;
+>> +
+>> +	/* Check whether IOMMU is present. If present, translate IOVA
+>> +	 * to physical address, else the dma handle is the physical
+>> +	 * address.
+>> +	 */
+>> +	dom = iommu_get_domain_for_dev(psp->dev);
+>> +	if (dom)
+>> +		tee_buf->paddr = iommu_iova_to_phys(dom, tee_buf->dma);
+>> +	else
+> No, you can't mix the DMA API and iommu API.  You need to stick to one
+> or the other.
+Can you please elaborate?
 
-It's good to see FF-A notifications support coming through. The good
-aspect here is that FF-A uses a common secure world SGI for
-notifications and doesn't have to deal with platform specific reserved
-SPI for notifications.
-
-From OP-TEE point of view I think most of the secure SGI donation base
-would be common, so can we switch the SMC ABI to use this donated
-secure world SGI for notifications too?
-
--Sumit
-
->
-> [1] https://lore.kernel.org/lkml/20211103090255.998070-1-jens.wiklander(a)l=
-inaro.org/
-> [2] https://lore.kernel.org/linux-arm-kernel/20231005-ffa_v1-1_notif-v4-0-c=
-ddd3237809c(a)arm.com/
-> [3] https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.git/=
-tag/?h=3Dffa-updates-6.7
->     commit bcefd1bf63b1 ("firmware: arm_ffa: Upgrade the driver version to =
-v1.1")
->
-> Thanks,
-> Jens
->
-> Jens Wiklander (2):
->   optee: provide optee_do_bottom_half() as a common function
->   optee: ffa_abi: add asynchronous notifications
->
->  drivers/tee/optee/call.c          | 31 ++++++++++-
->  drivers/tee/optee/ffa_abi.c       | 91 ++++++++++++++++++++++++++++++-
->  drivers/tee/optee/optee_ffa.h     | 28 ++++++++--
->  drivers/tee/optee/optee_private.h |  9 ++-
->  drivers/tee/optee/smc_abi.c       | 36 ++----------
->  5 files changed, 153 insertions(+), 42 deletions(-)
->
->
-> base-commit: bcefd1bf63b1ec9bb08067021cf47f0fad96f395
-> --
-> 2.34.1
->
-
---===============0085649786095331851==--
+--===============5047326750877414498==--
 
