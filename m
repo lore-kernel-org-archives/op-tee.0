@@ -1,124 +1,142 @@
 From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Mon, 30 Oct 2023 19:32:43 +0100
-Message-ID: <40936AEC-17ED-43A3-B3BF-510CDD31073F@arm.com>
+Date: Mon, 30 Oct 2023 19:32:50 +0100
+Message-ID: <9EB818FB-B163-4161-B785-5EA663C02E45@arm.com>
 In-Reply-To: <
- <CAHUa44GAoZGJ=1hJxSY=A85Q73rGg840P_hUCKKum+eMHKi7ig@mail.gmail.com>>
+ <CAFA6WYNDKojP4EM5-UNXX82tYyUy7MjUi6yAztjhDC2PqzFPWw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6857093942538153788=="
+Content-Type: multipart/mixed; boundary="===============7979125044095526339=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6857093942538153788==
+--===============7979125044095526339==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 24 Oct 2023, at 8:22, Jens Wiklander wrote:
-> On Fri, Oct 20, 2023 at 3:52 PM Balint Dobszay <balint.dobszay@arm.com> w=
-rote:
->> On 13 Oct 2023, at 14:47, Sumit Garg wrote:
->>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.com> =
-wrote:
+On 26 Oct 2023, at 11:36, Sumit Garg wrote:
+> On Fri, 20 Oct 2023 at 19:29, Balint Dobszay <balint.dobszay@arm.com> wro=
+te:
+>> On 19 Oct 2023, at 16:16, Jens Wiklander wrote:
+>>> On Tue, Oct 17, 2023 at 1:14 PM Sumit Garg <sumit.garg@linaro.org> wrot=
+e:
+>>>> On Mon, 16 Oct 2023 at 13:27, Jens Wiklander <jens.wiklander@linaro.or=
+g> wrote:
+>>>>> On Fri, Oct 13, 2023 at 1:38 PM Sumit Garg <sumit.garg@linaro.org> wr=
+ote:
+>>>>>> On Tue, 10 Oct 2023 at 21:11, Balint Dobszay <balint.dobszay@arm.com=
+> wrote:
+>>>>>>> On 3 Oct 2023, at 17:42, Sumit Garg wrote:
+>>>>>>>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.=
+com> wrote:
 >>
 >> [snip]
 >>
->>>> diff --git a/drivers/tee/tstee/core.c b/drivers/tee/tstee/core.c
->>>> new file mode 100644
->>>> index 000000000000..c0194638b7da
->>>> --- /dev/null
->>>> +++ b/drivers/tee/tstee/core.c
->>>> @@ -0,0 +1,473 @@
->>>> +// SPDX-License-Identifier: GPL-2.0-only
->>>> +/*
->>>> + * Copyright (c) 2023, Arm Limited
->>>> + */
->>>> +
->>>> +#define DRIVER_NAME "Arm TSTEE"
->>>> +#define pr_fmt(fmt) DRIVER_NAME ": " fmt
->>>> +
->>>> +#include <linux/arm_ffa.h>
->>>> +#include <linux/err.h>
->>>> +#include <linux/errno.h>
->>>> +#include <linux/kernel.h>
->>>> +#include <linux/limits.h>
->>>> +#include <linux/list.h>
->>>> +#include <linux/mm.h>
->>>> +#include <linux/module.h>
->>>> +#include <linux/scatterlist.h>
->>>> +#include <linux/slab.h>
->>>> +#include <linux/stat.h>
->>>> +#include <linux/tee_drv.h>
->>>> +#include <linux/types.h>
->>>> +#include <linux/uaccess.h>
->>>> +
->>>> +#include "tstee_private.h"
->>>> +
->>>> +#define FFA_INVALID_MEM_HANDLE U64_MAX
->>>> +
->>>> +static void arg_list_to_ffa_data(const u32 *args, struct ffa_send_direc=
-t_data *data)
->>>> +{
->>>> +       data->data0 =3D args[0];
->>>> +       data->data1 =3D args[1];
->>>> +       data->data2 =3D args[2];
->>>> +       data->data3 =3D args[3];
->>>> +       data->data4 =3D args[4];
->>>> +}
->>>> +
->>>> +static void arg_list_from_ffa_data(const struct ffa_send_direct_data *d=
-ata, u32 *args)
->>>> +{
->>>> +       args[0] =3D lower_32_bits(data->data0);
->>>> +       args[1] =3D lower_32_bits(data->data1);
->>>> +       args[2] =3D lower_32_bits(data->data2);
->>>> +       args[3] =3D lower_32_bits(data->data3);
->>>> +       args[4] =3D lower_32_bits(data->data4);
->>>> +}
->>>> +
->>>> +static void tstee_get_version(struct tee_device *teedev, struct tee_ioc=
-tl_version_data *vers)
->>>> +{
->>>> +       struct tstee *tstee =3D tee_get_drvdata(teedev);
->>>> +       struct tee_ioctl_version_data v =3D {
->>>> +               .impl_id =3D TEE_IMPL_ID_TSTEE,
->>>> +               .impl_caps =3D tstee->ffa_dev->vm_id,
+>>>>>>>>> +static int tstee_invoke_func(struct tee_context *ctx, struct tee_i=
+octl_invoke_arg *arg,
+>>>>>>>>> +                            struct tee_param *param)
+>>>>>>>>> +{
+>>>>>>>>> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
+>>>>>>>>> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
+>>>>>>>>> +       struct ts_context_data *ctxdata =3D ctx->data;
+>>>>>>>>> +       struct ffa_send_direct_data ffa_data;
+>>>>>>>>> +       struct tee_shm *shm =3D NULL;
+>>>>>>>>> +       struct ts_session *sess;
+>>>>>>>>> +       u32 req_len, ffa_args[5] =3D {};
+>>>>>>>>> +       int shm_id, rc;
+>>>>>>>>> +       u8 iface_id;
+>>>>>>>>> +       u64 handle;
+>>>>>>>>> +       u16 opcode;
+>>>>>>>>> +
+>>>>>>>>> +       mutex_lock(&ctxdata->mutex);
+>>>>>>>>> +       sess =3D find_session(ctxdata, arg->session);
+>>>>>>>>> +
+>>>>>>>>> +       /* Do this while holding the mutex to make sure that the se=
+ssion wasn't closed meanwhile */
+>>>>>>>>> +       if (sess)
+>>>>>>>>> +               iface_id =3D sess->iface_id;
+>>>>>>>>> +
+>>>>>>>>> +       mutex_unlock(&ctxdata->mutex);
+>>>>>>>>> +       if (!sess)
+>>>>>>>>> +               return -EINVAL;
+>>>>>>>>> +
+>>>>>>>>> +       opcode =3D lower_16_bits(arg->func);
+>>>>>>>>> +       shm_id =3D lower_32_bits(param[0].u.value.a);
+>>>>>>>>> +       req_len =3D lower_32_bits(param[0].u.value.b);
+>>>>>>>>> +
+>>>>>>>>> +       if (shm_id !=3D 0) {
+>>>>>>>>> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
+>>>>>>>>> +               if (IS_ERR(shm))
+>>>>>>>>> +                       return PTR_ERR(shm);
+>>>>>>>>> +
+>>>>>>>>> +               if (shm->size < req_len) {
+>>>>>>>>> +                       pr_err("request doesn't fit into shared mem=
+ory buffer\n");
+>>>>>>>>> +                       rc =3D -EINVAL;
+>>>>>>>>> +                       goto out;
+>>>>>>>>> +               }
+>>>>>>>>> +
+>>>>>>>>> +               handle =3D shm->sec_world_id;
+>>>>>>>>> +       } else {
+>>>>>>>>> +               handle =3D FFA_INVALID_MEM_HANDLE;
+>>>>>>>>> +       }
+>>>>>>>>> +
+>>>>>>>>> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE=
+(iface_id, opcode);
+>>>>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_bits(h=
+andle);
+>>>>>>>>> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_bits(h=
+andle);
+>>>>>>>>> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
+>>>>>>>>> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
+>>>>>>>>> +
+>>>>>>>>> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
+>>>>>>>>> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &f=
+fa_data);
+>>>>>>>>
+>>>>>>>> I haven't dug deeper into the ABI yet, which is something I will look
+>>>>>>>> into. But these RPC commands caught my attention. Are these RPC calls
+>>>>>>>> blocking in nature? Is there a possibility that these could cause CPU
+>>>>>>>> stalls? Do the Linux interrupts remain unhandled until the RPC calls
+>>>>>>>> return?
+>>>>>>>
+>>>>>>> Yes, that is correct. We did encounter CPU stalls indeed, our solution
+>>>>>>> was to enable preemption of S-EL0 SPs in OP-TEE [3] which solved the
+>>>>>>> issue.
+>>>>>>
+>>>>>> I would have preferred to unite FFA_INTERRUPT and
+>>>>>> OPTEE_FFA_YIELDING_CALL_RETURN_INTERRUPT since underneath both are
+>>>>>> using FFA ABI.
+>>>>>>
+>>>>>> Jens,
+>>>>>>
+>>>>>> Can we change OP-TEE to use FFA_INTERRUPT as well when using FFA ABI?
+>>>>>
+>>>>> No, OP-TEE uses managed exit. Among other advantages, it allows
+>>>>> resuming execution on a different CPU.
+>>>>>
+>>>>
+>>>> I suppose that should be the case with FFA_INTERRUPT too. OP-TEE
+>>>> should be able to resume SPs on different CPUs as well, right?
 >>>
->>> So while exploring the user-space interface, I observed an anomaly
->>> here. The ".impl_caps" refers to "Implementation specific
->>> capabilities" meant to support backwards compatibility of a particular
->>> TEE implementation. But here I observe you are using it instead for
->>> endpoint_id. Can you provide the reasoning behind it? Also, do you
->>> plan to support multiple endpoints via this driver?
+>>> Possibly, but I leave that to Balint and company to sort out if that's
+>>> desired or not.
 >>
->> The mapping between Trusted Services SPs and TEE devices is 1:1, i.e.
->> each /dev/tee<n> device represents exactly one FF-A endpoint. To answer
->> your second question, each instance of the driver represents a single
->> endpoint, multiple endpoints are supported by having multiple instances
->> of the driver. Therefore we always return a single endpoint ID in this
->> field.
+>> FF-A mandates that S-EL0 SPs have a single execution context, run only
+>> on a single PE in the system at any point of time and are capable of
+>> migrating. Also, FF-A allows resuming a S-EL0 SP on a different CPU
+>> after it gets preempted by a NS interrupt. I think OP-TEE as S-EL1 SPMC
+>> does support this, but I don't have a setup yet that would explicitly
+>> test this scenario.
 >>
->> The reason behind the usage of this field is that somehow user space has
->> to be able to discover which TEE device represents which FF-A endpoint.
->> This is required when a client wants to invoke an SP with a specific
->> endpoint ID, e.g. in a system where the SP's endpoint IDs is static and
->> known by the client.
->>
->> I understand this is not a conventional usage of this field, I couldn't
->> find a better way to "fit" this information into the ABI. My
->> understanding is this solution shouldn't cause any issues for other
->> TEEs, since this implementation specific field should only be parsed by
->> a client if it has already matched on the TEE implementation ID. Please
->> correct me if this assumption is wrong, or if you have any suggestions
->> on other ways to expose the endpoint ID to user space.
 >
-> impl_caps is a u32 and an SP ID can never use more than 16 bits. How
-> about making this explicit so it's clear that the upper bits are still
-> free for other usage?
+> You can try to add a few minutes loop within a secure partition and
+> see if the Linux scheduler reschedules on a different CPUs. I suppose
+> you need to keep the system loaded with other normal world apps too.
 
-That's fine with me, if Sumit agrees too?
+Thanks, I'll give it a try.
 
 Regards,
 Balint
 
---===============6857093942538153788==--
+--===============7979125044095526339==--
 
