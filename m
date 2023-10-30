@@ -1,84 +1,59 @@
 From: Etienne Carriere <etienne.carriere@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v12 4/4] firmware: arm_scmi: optee: use optee system invocation
-Date: Mon, 30 Oct 2023 09:48:12 +0100
-Message-ID: <20231030084812.905549-5-etienne.carriere@foss.st.com>
-In-Reply-To: <20231030084812.905549-1-etienne.carriere@foss.st.com>
+Subject: [PATCH v12 0/4] tee: introduce TEE system sssion
+Date: Mon, 30 Oct 2023 09:48:08 +0100
+Message-ID: <20231030084812.905549-1-etienne.carriere@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7171087200652677350=="
+Content-Type: multipart/mixed; boundary="===============8934036143611414884=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7171087200652677350==
+--===============8934036143611414884==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Changes SCMI optee transport to call tee_client_system_session()
-to request optee driver to provision an entry context in OP-TEE
-for processing OP-TEE messages. This prevents possible deadlock
-in case OP-TEE threads are all consumed while these may be waiting
-for a clock or regulator to be enable which SCMI OP-TEE service which
-requires a free thread context to execute.
+This series introduces TEE system sessions for TEE service sessions that
+require TEE to provision resources to prevent deadlock when clients call
+the TEE.
 
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Cristian Marussi <cristian.marussi@arm.com>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-Signed-off-by: Etienne Carriere <etienne.carriere@foss.st.com>
+This deadlock situation can happen when a TEE service is used by low
+level system resources as for example when Linux kernel uses SCMI
+service embedded in TEE for clock, reset, regulator, etc... controls.
+This case is detailled in patch 2/4:
+
+> This feature is needed to prevent a system deadlock when several TEE
+> client applications invoke TEE, consuming all TEE thread contexts
+> available in the secure world. The deadlock can happen in the OP-TEE
+> driver for example if all these TEE threads issue an RPC call from TEE
+> to Linux OS to access an eMMC RPMB partition (TEE secure storage) which
+> device clock or regulator controller is accessed through an OP-TEE SCMI
+> services. In that case, Linux SCMI driver must reach OP-TEE SCMI
+> service without waiting until one of the consumed TEE threads is freed.
+
+Etienne Carriere (4):
+  tee: optee: system call property
+  tee: system session
+  tee: optee: support tracking system threads
+  firmware: arm_scmi: optee: use optee system invocation
+
+ drivers/firmware/arm_scmi/optee.c |   4 +
+ drivers/tee/optee/call.c          | 130 ++++++++++++++++++++++++++++--
+ drivers/tee/optee/core.c          |   5 +-
+ drivers/tee/optee/ffa_abi.c       |  14 ++--
+ drivers/tee/optee/optee_private.h |  29 ++++++-
+ drivers/tee/optee/smc_abi.c       |  32 +++++---
+ drivers/tee/tee_core.c            |   8 ++
+ include/linux/tee_drv.h           |  16 ++++
+ 8 files changed, 211 insertions(+), 27 deletions(-)
 ---
-No change since v11
-No change since v10
+Changes since v11:
+- Fixed inline description comments in patch 1/3 and 3/4, other patches
+  are unchanged.
 
-Changes since v9:
-- Applied Sumit R-b tag:
-  https://lore.kernel.org/lkml/CAFA6WYMyJrW25sdZRkQHDje72+tLDw4T+bjB6tmVf8XH0=
-De1RQ(a)mail.gmail.com/
-- Added Cc: tags and updated my e-mail address.
-
-No change since v8
-No change since v7
-No change since v6
-
-Changes since v5:
-- Applied Sudeep's review tag
-
-Changes since v4:
-- Updated to new API function tee_client_system_session() introduced
-  in patch v5 2/3.
-
-No change since v3
-
-Changes since v2:
-- Fixed syntax issues (missing ';' chars), reported by kernel test robot.
-
-Changes since v1:
-- Updated to use new tee API functions tee_client_request_system_context()
-  and tee_client_release_system_context().
----
- drivers/firmware/arm_scmi/optee.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/firmware/arm_scmi/optee.c b/drivers/firmware/arm_scmi/op=
-tee.c
-index e123de6e8c67..25bfb465484d 100644
---- a/drivers/firmware/arm_scmi/optee.c
-+++ b/drivers/firmware/arm_scmi/optee.c
-@@ -440,6 +440,10 @@ static int scmi_optee_chan_setup(struct scmi_chan_info *=
-cinfo, struct device *de
- 	if (ret)
- 		goto err_free_shm;
-=20
-+	ret =3D tee_client_system_session(scmi_optee_private->tee_ctx, channel->tee=
-_session);
-+	if (ret)
-+		dev_warn(dev, "Could not switch to system session, do best effort\n");
-+
- 	ret =3D get_channel(channel);
- 	if (ret)
- 		goto err_close_sess;
---=20
+Changes since v10:
+- Changes patch 3/4, other are unchanged.
+-- 
 2.25.1
 
 
---===============7171087200652677350==--
+--===============8934036143611414884==--
 
