@@ -1,95 +1,187 @@
-From: "NK, JESHWANTHKUMAR" <jeshwanthkumar.nk@amd.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH 0/3] Introduce DMA APIs to allocate and free TEE shared memory
-Date: Mon, 30 Oct 2023 11:51:06 +0530
-Message-ID: <f21143fb-91d2-4186-938e-0d147e32aa76@amd.com>
-In-Reply-To: <b743d759-8f6b-b4f8-afc6-d8f11a5562ff@amd.com>
+ Re: [PATCH 1/2] optee: provide optee_do_bottom_half() as a common function
+Date: Mon, 30 Oct 2023 12:23:54 +0530
+Message-ID: 
+ <CAFA6WYO6tb+wvGnWLRHP73+ym4PpE3H=Srk1OWUtuHVPMteZiA@mail.gmail.com>
+In-Reply-To: <20231026080409.4149616-2-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6330158657995041623=="
+Content-Type: multipart/mixed; boundary="===============7103323799850903828=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6330158657995041623==
+--===============7103323799850903828==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi Tom,
-
-On 26-Oct-23 8:23 PM, Tom Lendacky wrote:
-> On 10/26/23 05:30, NK, JESHWANTHKUMAR wrote:
->>
->> On 25-Oct-23 7:01 PM, Sumit Garg wrote:
->>> Hi Jeshwank,
->>>
->>> On Wed, 25 Oct 2023 at 12:27, jeshwank <JESHWANTHKUMAR.NK@amd.com> 
->>> wrote:
->>>> From: Jeshwanth Kumar N K <JESHWANTHKUMAR.NK@amd.com>
->>>>
->>>> At present, the shared memory for TEE ring buffer, command buffer and
->>>> data buffer is allocated using get_free_pages(). The driver shares the
->>>> physical address of these buffers with PSP so that it can be mapped by
->>>> the Trusted OS.
->>>>
->>>> In this patch series we have replaced get_free_pages() with
->>>> dma_alloc_coherent() to allocate shared memory to cleanup the existing
->>>> allocation method.
->>> Thanks for putting this together but I can't find the reasoning behind
->>> this change neither in this commit message and nor in the patch
->>> descriptions. Care to explain why?
->>>
->>> -Sumit
->> Hi Sumit,
->>
->> We see that there is an advantage in using dma_alloc_coherent() over 
->> get_free_pages(). The dma-ops associated with PSP PCIe device can be 
->> overridden. This capability will be helpful when we enable 
->> virtualization support. We plan to post a virtualization related 
->> patch in future.
+On Thu, 26 Oct 2023 at 13:34, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
 >
-> To be specific, you are referring to Xen virtualization support, 
-> correct? Because I don't see how this works in a Qemu/KVM environment 
-> where you would get a GPA and not an SPA.
-
-The patch is not specific to Xen. We have verified it in Qemu/KVM and 
-Xen PV mode. Support for Xen PVH mode will be added as a separate patch.
-
+> Provides optee_do_bottom_half() and optee_stop_async_notif() as common
+> functions callable from the FF-A ABI part of the driver too.
 >
-> If that is the case, you should clearly specify that. Also, this looks 
-> like it should be introduced with the virtualization support that you 
-> submit in the future and not before.
-
-I will update the commit message in the next version of the patch series 
-to include these details.
-
-> Thanks,
-> Tom
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  drivers/tee/optee/call.c          | 31 +++++++++++++++++++++++++-
+>  drivers/tee/optee/optee_private.h |  5 ++++-
+>  drivers/tee/optee/smc_abi.c       | 36 ++++---------------------------
+>  3 files changed, 38 insertions(+), 34 deletions(-)
 >
->>
->> Regards,
->>
->> Jeshwanth
->>
->>>
->>>> Rijo Thomas (3):
->>>>    crypto: ccp - Add function to allocate and free memory using DMA 
->>>> APIs
->>>>    crypto: ccp - Use psp_tee_alloc_buffer() and psp_tee_free_buffer()
->>>>    tee: amdtee: Use psp_tee_alloc_buffer() and psp_tee_free_buffer()
->>>>
->>>>   drivers/crypto/ccp/psp-dev.c        |   3 +
->>>>   drivers/crypto/ccp/tee-dev.c        | 119 
->>>> ++++++++++++++++++----------
->>>>   drivers/crypto/ccp/tee-dev.h        |  11 +--
->>>>   drivers/tee/amdtee/amdtee_private.h |  18 ++---
->>>>   drivers/tee/amdtee/call.c           |  74 ++++++++---------
->>>>   drivers/tee/amdtee/core.c           |  72 ++++++++++-------
->>>>   drivers/tee/amdtee/shm_pool.c       |  21 ++---
->>>>   include/linux/psp-tee.h             |  47 +++++++++++
->>>>   8 files changed, 221 insertions(+), 144 deletions(-)
->>>>
->>>> -- 
->>>> 2.25.1
->>>>
 
---===============6330158657995041623==--
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+
+-Sumit
+
+> diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+> index df5fb5410b72..5afc759794ce 100644
+> --- a/drivers/tee/optee/call.c
+> +++ b/drivers/tee/optee/call.c
+> @@ -1,6 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /*
+> - * Copyright (c) 2015-2021, Linaro Limited
+> + * Copyright (c) 2015-2021, 2023 Linaro Limited
+>   */
+>  #include <linux/device.h>
+>  #include <linux/err.h>
+> @@ -524,3 +524,32 @@ int optee_check_mem_type(unsigned long start, size_t n=
+um_pages)
+>
+>         return rc;
+>  }
+> +
+> +static int simple_call_with_arg(struct tee_context *ctx, u32 cmd)
+> +{
+> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> +       struct optee_shm_arg_entry *entry;
+> +       struct optee_msg_arg *msg_arg;
+> +       struct tee_shm *shm;
+> +       u_int offs;
+> +
+> +       msg_arg =3D optee_get_msg_arg(ctx, 0, &entry, &shm, &offs);
+> +       if (IS_ERR(msg_arg))
+> +               return PTR_ERR(msg_arg);
+> +
+> +       msg_arg->cmd =3D cmd;
+> +       optee->ops->do_call_with_arg(ctx, shm, offs);
+> +
+> +       optee_free_msg_arg(ctx, entry, offs);
+> +       return 0;
+> +}
+> +
+> +int optee_do_bottom_half(struct tee_context *ctx)
+> +{
+> +       return simple_call_with_arg(ctx, OPTEE_MSG_CMD_DO_BOTTOM_HALF);
+> +}
+> +
+> +int optee_stop_async_notif(struct tee_context *ctx)
+> +{
+> +       return simple_call_with_arg(ctx, OPTEE_MSG_CMD_STOP_ASYNC_NOTIF);
+> +}
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index 72685ee0d53f..2165bd11e6ac 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+> @@ -1,6 +1,6 @@
+>  /* SPDX-License-Identifier: GPL-2.0-only */
+>  /*
+> - * Copyright (c) 2015-2021, Linaro Limited
+> + * Copyright (c) 2015-2021, 2023 Linaro Limited
+>   */
+>
+>  #ifndef OPTEE_PRIVATE_H
+> @@ -325,6 +325,9 @@ void optee_rpc_cmd_free_suppl(struct tee_context *ctx, =
+struct tee_shm *shm);
+>  void optee_rpc_cmd(struct tee_context *ctx, struct optee *optee,
+>                    struct optee_msg_arg *arg);
+>
+> +int optee_do_bottom_half(struct tee_context *ctx);
+> +int optee_stop_async_notif(struct tee_context *ctx);
+> +
+>  /*
+>   * Small helpers
+>   */
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index d5b28fd35d66..94e96803a722 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1,6 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /*
+> - * Copyright (c) 2015-2021, Linaro Limited
+> + * Copyright (c) 2015-2021, 2023 Linaro Limited
+>   * Copyright (c) 2016, EPAM Systems
+>   */
+>
+> @@ -965,34 +965,6 @@ static int optee_smc_do_call_with_arg(struct tee_conte=
+xt *ctx,
+>         return rc;
+>  }
+>
+> -static int simple_call_with_arg(struct tee_context *ctx, u32 cmd)
+> -{
+> -       struct optee_shm_arg_entry *entry;
+> -       struct optee_msg_arg *msg_arg;
+> -       struct tee_shm *shm;
+> -       u_int offs;
+> -
+> -       msg_arg =3D optee_get_msg_arg(ctx, 0, &entry, &shm, &offs);
+> -       if (IS_ERR(msg_arg))
+> -               return PTR_ERR(msg_arg);
+> -
+> -       msg_arg->cmd =3D cmd;
+> -       optee_smc_do_call_with_arg(ctx, shm, offs);
+> -
+> -       optee_free_msg_arg(ctx, entry, offs);
+> -       return 0;
+> -}
+> -
+> -static int optee_smc_do_bottom_half(struct tee_context *ctx)
+> -{
+> -       return simple_call_with_arg(ctx, OPTEE_MSG_CMD_DO_BOTTOM_HALF);
+> -}
+> -
+> -static int optee_smc_stop_async_notif(struct tee_context *ctx)
+> -{
+> -       return simple_call_with_arg(ctx, OPTEE_MSG_CMD_STOP_ASYNC_NOTIF);
+> -}
+> -
+>  /*
+>   * 5. Asynchronous notification
+>   */
+> @@ -1048,7 +1020,7 @@ static irqreturn_t notif_irq_thread_fn(int irq, void =
+*dev_id)
+>  {
+>         struct optee *optee =3D dev_id;
+>
+> -       optee_smc_do_bottom_half(optee->ctx);
+> +       optee_do_bottom_half(optee->ctx);
+>
+>         return IRQ_HANDLED;
+>  }
+> @@ -1086,7 +1058,7 @@ static void notif_pcpu_irq_work_fn(struct work_struct=
+ *work)
+>                                                    notif_pcpu_work);
+>         struct optee *optee =3D container_of(optee_smc, struct optee, smc);
+>
+> -       optee_smc_do_bottom_half(optee->ctx);
+> +       optee_do_bottom_half(optee->ctx);
+>  }
+>
+>  static int init_pcpu_irq(struct optee *optee, u_int irq)
+> @@ -1158,7 +1130,7 @@ static void uninit_pcpu_irq(struct optee *optee)
+>  static void optee_smc_notif_uninit_irq(struct optee *optee)
+>  {
+>         if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_ASYNC_NOTIF) {
+> -               optee_smc_stop_async_notif(optee->ctx);
+> +               optee_stop_async_notif(optee->ctx);
+>                 if (optee->smc.notif_irq) {
+>                         if (irq_is_percpu_devid(optee->smc.notif_irq))
+>                                 uninit_pcpu_irq(optee);
+> --
+> 2.34.1
+>
+
+--===============7103323799850903828==--
 
