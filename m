@@ -1,21 +1,21 @@
 From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Mon, 30 Oct 2023 19:32:35 +0100
-Message-ID: <8FF4167B-4EBF-4C39-B054-93F129E08046@arm.com>
+Date: Mon, 30 Oct 2023 19:32:43 +0100
+Message-ID: <40936AEC-17ED-43A3-B3BF-510CDD31073F@arm.com>
 In-Reply-To: <
- <CAFA6WYMW9oYoJPkGZZzzortNmqAK4DaYU8WL-ciiS7ywsMsBXw@mail.gmail.com>>
+ <CAHUa44GAoZGJ=1hJxSY=A85Q73rGg840P_hUCKKum+eMHKi7ig@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8399512412773452882=="
+Content-Type: multipart/mixed; boundary="===============6857093942538153788=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8399512412773452882==
+--===============6857093942538153788==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 26 Oct 2023, at 8:52, Sumit Garg wrote:
-> On Fri, 20 Oct 2023 at 19:22, Balint Dobszay <balint.dobszay@arm.com> wro=
-te:
+On 24 Oct 2023, at 8:22, Jens Wiklander wrote:
+> On Fri, Oct 20, 2023 at 3:52 PM Balint Dobszay <balint.dobszay@arm.com> w=
+rote:
 >> On 13 Oct 2023, at 14:47, Sumit Garg wrote:
 >>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.com> =
 wrote:
@@ -94,46 +94,7 @@ tl_version_data *vers)
 >> each /dev/tee<n> device represents exactly one FF-A endpoint. To answer
 >> your second question, each instance of the driver represents a single
 >> endpoint, multiple endpoints are supported by having multiple instances
->> of the driver.
->
-> I don't follow you here. How multiple instances of "arm_tstee" driver
-> going to work? Also, I can only see a single FF-A based device:
-> TS_RPC_UUID being probed here.
-
-My terminology regarding "multiple instances of the driver" was
-incorrect, apologies. What I meant was that tstee_probe() gets called
-multiple times, thus allocating multiple instances of "struct tstee".
-
-All of the Trusted Services SPs use the same FF-A UUID (TS_RPC_UUID).
-These will show up on the FF-A bus in Linux as multiple devices, having
-the same FF-A UUID, but different endpoint IDs, e.g.
-
-Name            FF-A EP ID    FF-A UUID
-------------    ----------    -----------------------------------
-OP-TEE          0x8001        486178e0-e7f8-11e3-bc5e0002a5d5c51b
-TS ITS SP       0x8002        bdcd76d7-825e-4751-963b86d4f84943ac
-TS Crypto SP    0x8003        bdcd76d7-825e-4751-963b86d4f84943ac
-TS Attest SP    0x8003        bdcd76d7-825e-4751-963b86d4f84943ac
-
-Each of the Trusted Services FF-A devices will match the single UUID
-present in tstee_device_ids[], so tstee_probe() will be called multiple
-times, each time with a different FF-A device as argument. In the probe
-function a new TEE device is allocated, and a new "struct tstee" which
-represents the connection between a particular ffa_device and
-tee_device.
-
-I think a similar scenario would be if we had e.g. Hafnium as S-EL2 SPMC
-and two OP-TEE instances as S-EL1 SPs running under Hafnium. In this
-case the FF-A devices representing the OP-TEE instances would have the
-same FF-A UUID but different endpoint IDs. The OP-TEE driver in Linux
-would register two TEE devices for the two OP-TEE SPs.
-
-> Do you have any working example for this?
-
-The end-to-end integration for FVP I mentioned earlier does build, boot
-and test multiple endpoints.
-
->> Therefore we always return a single endpoint ID in this
+>> of the driver. Therefore we always return a single endpoint ID in this
 >> field.
 >>
 >> The reason behind the usage of this field is that somehow user space has
@@ -150,24 +111,14 @@ and test multiple endpoints.
 >> correct me if this assumption is wrong, or if you have any suggestions
 >> on other ways to expose the endpoint ID to user space.
 >
-> When you say "each /dev/tee<n> device represents exactly one FF-A
-> endpoint" then "impl_id" should be sufficient to represent endpoint ID
-> too. But I am still confused regarding how you are going to support
-> multiple endpoints?
+> impl_caps is a u32 and an SP ID can never use more than 16 bits. How
+> about making this explicit so it's clear that the upper bits are still
+> free for other usage?
 
-Hopefully my answer above covers this question too.
-
-> Looking at this driver TEE_IMPL_ID_TSTEE represents an underlying FF-A
-> based TS_RPC_UUID device.
-
-Yes, that is correct. The FF-A UUID here acts as a protocol identifier,
-multiple FF-A endpoints can implement the same protocol, therefore can
-have the same UUID. The mechanism to discover what services a particular
-TS SP provides is not defined by FF-A, in this case it's done by the TS
-RPC protocol which is one layer above FF-A.
+That's fine with me, if Sumit agrees too?
 
 Regards,
 Balint
 
---===============8399512412773452882==--
+--===============6857093942538153788==--
 
