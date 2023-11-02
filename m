@@ -1,109 +1,92 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 1/2] tee: optee: Fix supplicant based device enumeration
-Date: Thu, 02 Nov 2023 13:00:55 +0530
-Message-ID: <20231102073056.174480-2-sumit.garg@linaro.org>
+Subject: [PATCH v4 2/2] tee: optee: Remove redundant custom workqueue
+Date: Thu, 02 Nov 2023 13:00:56 +0530
+Message-ID: <20231102073056.174480-3-sumit.garg@linaro.org>
 In-Reply-To: <20231102073056.174480-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5348353661050569599=="
+Content-Type: multipart/mixed; boundary="===============5682612141681533769=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5348353661050569599==
+--===============5682612141681533769==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Currently supplicant dependent optee device enumeration only registers
-devices whenever tee-supplicant is invoked for the first time. But it
-forgets to remove devices when tee-supplicant daemon stops running and
-closes its context gracefully. This leads to following error for fTPM
-driver during reboot/shutdown:
+Global system workqueue is sufficient to suffice OP-TEE bus scanning work
+needs. So drop redundant usage of the custom workqueue.
 
-[   73.466791] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error: 0=
-xffff3024
-
-Fix this by adding an attribute for supplicant dependent devices so that
-the user-space service can detect and detach supplicant devices before
-closing the supplicant:
-
-$ for dev in /sys/bus/tee/devices/*; do if [[ -f "$dev/need_supplicant" && -f=
- "$dev/driver/unbind" ]]; \
-      then echo $(basename "$dev") > $dev/driver/unbind; fi done
-
-Reported-by: Jan Kiszka <jan.kiszka@siemens.com>
-Link: https://github.com/OP-TEE/optee_os/issues/6094
-Fixes: 5f178bb71e3a ("optee: enable support for multi-stage bus enumeration")
+Tested-by: Jan Kiszka <jan.kiszka@siemens.com>
+Tested-by: Masahisa Kojima <masahisa.kojima@linaro.org>
 Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 ---
- .../ABI/testing/sysfs-bus-optee-devices         |  9 +++++++++
- drivers/tee/optee/device.c                      | 17 +++++++++++++++--
- 2 files changed, 24 insertions(+), 2 deletions(-)
+ drivers/tee/optee/core.c          | 13 ++-----------
+ drivers/tee/optee/optee_private.h |  2 --
+ 2 files changed, 2 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-optee-devices b/Documentatio=
-n/ABI/testing/sysfs-bus-optee-devices
-index 0f58701367b6..d914f6629662 100644
---- a/Documentation/ABI/testing/sysfs-bus-optee-devices
-+++ b/Documentation/ABI/testing/sysfs-bus-optee-devices
-@@ -6,3 +6,12 @@ Description:
- 		OP-TEE bus provides reference to registered drivers under this directory. =
-The <uuid>
- 		matches Trusted Application (TA) driver and corresponding TA in secure OS.=
- Drivers
- 		are free to create needed API under optee-ta-<uuid> directory.
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 2a258bd3b6b5..1eaa191b6ff6 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -15,7 +15,6 @@
+ #include <linux/string.h>
+ #include <linux/tee_drv.h>
+ #include <linux/types.h>
+-#include <linux/workqueue.h>
+ #include "optee_private.h"
+=20
+ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_shm *sh=
+m,
+@@ -110,12 +109,7 @@ int optee_open(struct tee_context *ctx, bool cap_memref_=
+null)
+=20
+ 		if (!optee->scan_bus_done) {
+ 			INIT_WORK(&optee->scan_bus_work, optee_bus_scan);
+-			optee->scan_bus_wq =3D create_workqueue("optee_bus_scan");
+-			if (!optee->scan_bus_wq) {
+-				kfree(ctxdata);
+-				return -ECHILD;
+-			}
+-			queue_work(optee->scan_bus_wq, &optee->scan_bus_work);
++			schedule_work(&optee->scan_bus_work);
+ 			optee->scan_bus_done =3D true;
+ 		}
+ 	}
+@@ -158,10 +152,7 @@ void optee_release_supp(struct tee_context *ctx)
+ 	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+=20
+ 	optee_release_helper(ctx, optee_close_session_helper);
+-	if (optee->scan_bus_wq) {
+-		destroy_workqueue(optee->scan_bus_wq);
+-		optee->scan_bus_wq =3D NULL;
+-	}
 +
-+What:		/sys/bus/tee/devices/optee-ta-<uuid>/need_supplicant
-+Date:		July 2008
-+KernelVersion:	6.7
-+Contact:	op-tee(a)lists.trustedfirmware.org
-+Description:
-+		Allows to distinguish whether an OP-TEE based TA/device requires user-space
-+		tee-supplicant to function properly or not. This attribute will be present=
- for
-+		devices which depend on tee-supplicant to be running.
-diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-index 64f0e047c23d..4b1092127694 100644
---- a/drivers/tee/optee/device.c
-+++ b/drivers/tee/optee/device.c
-@@ -60,7 +60,16 @@ static void optee_release_device(struct device *dev)
- 	kfree(optee_device);
+ 	optee_supp_release(&optee->supp);
  }
 =20
--static int optee_register_device(const uuid_t *device_uuid)
-+static ssize_t need_supplicant_show(struct device *dev,
-+				    struct device_attribute *attr,
-+				    char *buf)
-+{
-+	return 0;
-+}
-+
-+static DEVICE_ATTR_RO(need_supplicant);
-+
-+static int optee_register_device(const uuid_t *device_uuid, u32 func)
- {
- 	struct tee_client_device *optee_device =3D NULL;
- 	int rc;
-@@ -83,6 +92,10 @@ static int optee_register_device(const uuid_t *device_uuid)
- 		put_device(&optee_device->dev);
- 	}
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+index 6bb5cae09688..94c0ee381894 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -178,7 +178,6 @@ struct optee_ops {
+  * @pool:		shared memory pool
+  * @rpc_param_count:	If > 0 number of RPC parameters to make room for
+  * @scan_bus_done	flag if device registation was already done.
+- * @scan_bus_wq		workqueue to scan optee bus and register optee drivers
+  * @scan_bus_work	workq to scan optee bus and register optee drivers
+  */
+ struct optee {
+@@ -197,7 +196,6 @@ struct optee {
+ 	struct tee_shm_pool *pool;
+ 	unsigned int rpc_param_count;
+ 	bool   scan_bus_done;
+-	struct workqueue_struct *scan_bus_wq;
+ 	struct work_struct scan_bus_work;
+ };
 =20
-+	if (func =3D=3D PTA_CMD_GET_DEVICES_SUPP)
-+		device_create_file(&optee_device->dev,
-+				   &dev_attr_need_supplicant);
-+
- 	return rc;
- }
-=20
-@@ -142,7 +155,7 @@ static int __optee_enumerate_devices(u32 func)
- 	num_devices =3D shm_size / sizeof(uuid_t);
-=20
- 	for (idx =3D 0; idx < num_devices; idx++) {
--		rc =3D optee_register_device(&device_uuid[idx]);
-+		rc =3D optee_register_device(&device_uuid[idx], func);
- 		if (rc)
- 			goto out_shm;
- 	}
 --=20
 2.34.1
 
 
---===============5348353661050569599==--
+--===============5682612141681533769==--
 
