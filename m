@@ -1,13 +1,14 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 0/2] tee: optee: Fixes for supplicant dependent enumeration
-Date: Thu, 02 Nov 2023 13:00:54 +0530
-Message-ID: <20231102073056.174480-1-sumit.garg@linaro.org>
+Subject: [PATCH v4 1/2] tee: optee: Fix supplicant based device enumeration
+Date: Thu, 02 Nov 2023 13:00:55 +0530
+Message-ID: <20231102073056.174480-2-sumit.garg@linaro.org>
+In-Reply-To: <20231102073056.174480-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4024820263509033876=="
+Content-Type: multipart/mixed; boundary="===============5348353661050569599=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4024820263509033876==
+--===============5348353661050569599==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -28,47 +29,81 @@ $ for dev in /sys/bus/tee/devices/*; do if [[ -f "$dev/need_supplicant" && -f=
  "$dev/driver/unbind" ]]; \
       then echo $(basename "$dev") > $dev/driver/unbind; fi done
 
-While at it use the global system workqueue for OP-TEE bus scanning work
-rather than our own custom one.
-
-Changes in v4:
-- Changing the device name would be an ABI break, rather switch to
-  additional device attribute: "need_supplicant" to distinguish for ABI
-  compatibility.
-- Dropped tested-by for patch #1, I would encourage folks to retest
-  this.
-
-Changes in v3:
-
-- Split patch into 2 separate ones, one for supplicant fix and other for
-  the workqueue.
-
-Changes in v2:
-
-- Use device names to separate out tee-supplicant dependent devices via
-  this patch.
-- Since user-space service is aware about tee-supplicant lifespan, so
-  allow the user-space service to unbind tee-supplicant dependent
-  devices before killing the supplicant. Following command has to be
-  added to the tee-supplicant service file.
-
-  $ for dev in /sys/bus/tee/devices/*; do if [[ "$dev" =3D=3D *"optee-ta-supp=
--"* ]]; \
-        then echo $(basename "$dev") > $dev/driver/unbind; fi done
-
-Sumit Garg (2):
-  tee: optee: Fix supplicant based device enumeration
-  tee: optee: Remove redundant custom workqueue
-
+Reported-by: Jan Kiszka <jan.kiszka@siemens.com>
+Link: https://github.com/OP-TEE/optee_os/issues/6094
+Fixes: 5f178bb71e3a ("optee: enable support for multi-stage bus enumeration")
+Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+---
  .../ABI/testing/sysfs-bus-optee-devices         |  9 +++++++++
- drivers/tee/optee/core.c                        | 13 ++-----------
  drivers/tee/optee/device.c                      | 17 +++++++++++++++--
- drivers/tee/optee/optee_private.h               |  2 --
- 4 files changed, 26 insertions(+), 15 deletions(-)
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
+diff --git a/Documentation/ABI/testing/sysfs-bus-optee-devices b/Documentatio=
+n/ABI/testing/sysfs-bus-optee-devices
+index 0f58701367b6..d914f6629662 100644
+--- a/Documentation/ABI/testing/sysfs-bus-optee-devices
++++ b/Documentation/ABI/testing/sysfs-bus-optee-devices
+@@ -6,3 +6,12 @@ Description:
+ 		OP-TEE bus provides reference to registered drivers under this directory. =
+The <uuid>
+ 		matches Trusted Application (TA) driver and corresponding TA in secure OS.=
+ Drivers
+ 		are free to create needed API under optee-ta-<uuid> directory.
++
++What:		/sys/bus/tee/devices/optee-ta-<uuid>/need_supplicant
++Date:		July 2008
++KernelVersion:	6.7
++Contact:	op-tee(a)lists.trustedfirmware.org
++Description:
++		Allows to distinguish whether an OP-TEE based TA/device requires user-space
++		tee-supplicant to function properly or not. This attribute will be present=
+ for
++		devices which depend on tee-supplicant to be running.
+diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
+index 64f0e047c23d..4b1092127694 100644
+--- a/drivers/tee/optee/device.c
++++ b/drivers/tee/optee/device.c
+@@ -60,7 +60,16 @@ static void optee_release_device(struct device *dev)
+ 	kfree(optee_device);
+ }
+=20
+-static int optee_register_device(const uuid_t *device_uuid)
++static ssize_t need_supplicant_show(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
++{
++	return 0;
++}
++
++static DEVICE_ATTR_RO(need_supplicant);
++
++static int optee_register_device(const uuid_t *device_uuid, u32 func)
+ {
+ 	struct tee_client_device *optee_device =3D NULL;
+ 	int rc;
+@@ -83,6 +92,10 @@ static int optee_register_device(const uuid_t *device_uuid)
+ 		put_device(&optee_device->dev);
+ 	}
+=20
++	if (func =3D=3D PTA_CMD_GET_DEVICES_SUPP)
++		device_create_file(&optee_device->dev,
++				   &dev_attr_need_supplicant);
++
+ 	return rc;
+ }
+=20
+@@ -142,7 +155,7 @@ static int __optee_enumerate_devices(u32 func)
+ 	num_devices =3D shm_size / sizeof(uuid_t);
+=20
+ 	for (idx =3D 0; idx < num_devices; idx++) {
+-		rc =3D optee_register_device(&device_uuid[idx]);
++		rc =3D optee_register_device(&device_uuid[idx], func);
+ 		if (rc)
+ 			goto out_shm;
+ 	}
 --=20
 2.34.1
 
 
---===============4024820263509033876==--
+--===============5348353661050569599==--
 
