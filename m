@@ -1,217 +1,344 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 0/2] OP-TEE FF-A notifications
-Date: Mon, 06 Nov 2023 16:21:58 +0530
+Subject: Re: [PATCH 2/2] optee: ffa_abi: add asynchronous notifications
+Date: Mon, 06 Nov 2023 16:38:40 +0530
 Message-ID: 
- <CAFA6WYPNX20+rmDPfPbp-zhjsFeS-i6gCNfB-=S3oTYKOkN5hA@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44E3ju=jp2d8wFu57Gv3ayoQuvAW+WQKD_iTby9t77CBeQ@mail.gmail.com>>
+ <CAFA6WYNKpbtSNFigvzc4WSV0PV+0pTJPykMLmX8f-Vuw8xNs=w@mail.gmail.com>
+In-Reply-To: <20231026080409.4149616-3-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1413169851051159529=="
+Content-Type: multipart/mixed; boundary="===============3082907920893834309=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1413169851051159529==
+--===============3082907920893834309==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 6 Nov 2023 at 14:09, Jens Wiklander <jens.wiklander@linaro.org> wro=
-te:
+On Thu, 26 Oct 2023 at 13:34, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
 >
-> On Fri, Nov 3, 2023 at 9:53=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org>=
- wrote:
-> >
-> > On Fri, 3 Nov 2023 at 13:32, Jens Wiklander <jens.wiklander@linaro.org>=
- wrote:
-> > >
-> > > On Thu, Nov 2, 2023 at 3:05=E2=80=AFPM Sumit Garg <sumit.garg@linaro.=
-org> wrote:
-> > > >
-> > > > On Thu, 2 Nov 2023 at 18:46, Jens Wiklander <jens.wiklander@linaro.=
-org> wrote:
-> > > > >
-> > > > > On Thu, Nov 02, 2023 at 05:46:55PM +0530, Sumit Garg wrote:
-> > > > > > On Thu, 2 Nov 2023 at 17:29, Jens Wiklander <jens.wiklander@lin=
-aro.org> wrote:
-> > > > > > >
-> > > > > > > Hi Sumit,
-> > > > > > >
-> > > > > > > On Mon, Oct 30, 2023 at 11:32:47AM +0530, Sumit Garg wrote:
-> > > > > > > > Hi Jens,
-> > > > > > > >
-> > > > > > > > On Thu, 26 Oct 2023 at 13:34, Jens Wiklander <jens.wiklander(=
-a)linaro.org> wrote:
-> > > > > > > > >
-> > > > > > > > > Hi all,
-> > > > > > > > >
-> > > > > > > > > This patchset adds support for using FF-A notifications as =
-a delivery
-> > > > > > > > > mechanism of asynchronous notifications from OP-TEE running=
- in the secure
-> > > > > > > > > world. Support for asynchronous notifications via the SMC A=
-BI was added in
-> > > > > > > > > [1], here we add the counterpart needed when using the the =
-FF-A ABI.
-> > > > > > > > >
-> > > > > > > > > Support for FF-A notifications is added with [2] and this p=
-atch set is based
-> > > > > > > > > on Sudeeps tree at [3].
-> > > > > > > >
-> > > > > > > > It's good to see FF-A notifications support coming through. T=
-he good
-> > > > > > > > aspect here is that FF-A uses a common secure world SGI for
-> > > > > > > > notifications and doesn't have to deal with platform specific=
- reserved
-> > > > > > > > SPI for notifications.
-> > > > > > > >
-> > > > > > > > From OP-TEE point of view I think most of the secure SGI dona=
-tion base
-> > > > > > > > would be common, so can we switch the SMC ABI to use this don=
-ated
-> > > > > > > > secure world SGI for notifications too?
-> > > > > > >
-> > > > > > > The SMC ABI driver picks up the interrupt used for notification=
- from
-> > > > > > > device-tree, so there's a chance that it just works if a donate=
-d SGI is
-> > > > > > > supplied instead. We'll need some changes in the secure world s=
-ide of
-> > > > > > > OP-TEE, but they wouldn't affect the ABI.
-> > > > > >
-> > > > > > AFAIK, a secure world donated SGIs doesn't support IRQ mapping vi=
-a DT.
-> > > > > > The FF-A driver explicitly creates that mapping here [1].
-> > > > >
-> > > > > That looks a lot like what platform_get_irq() does via of_irq_get().
-> > > > >
-> > > >
-> > > > There is GIC_SPI or GIC_PPI but nothing like GIC_SGI in DT bindings [=
-1].
-> > > >
-> > > > [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.gi=
-t/tree/include/dt-bindings/interrupt-controller/arm-gic.h
-> > > >
-> > > > > > Moreover
-> > > > > > it's better to detect it via an SMC call rather than hard coded v=
-ia DT
-> > > > > > as FF-A driver does.
-> > > > >
-> > > > > Typo? I guess you mean that you prefer that way the FF-A driver doe=
-s it
-> > > > > rather than having it set in the DT.
-> > > >
-> > > > Yeah sorry about that. We shouldn't use DT if OP-TEE features are dis=
-coverable.
-> > > >
-> > > > >
-> > > > > Assuming that you only care about "arm,gic-v3". The SGI will likely
-> > > > > always be the same so it shouldn't be too hard to keep the correct
-> > > > > configuration in DT.
-> > > >
-> > > > See above, DT looks like it does not support SGI.
-> > >
-> > > You're right.
-> > >
-> > > >
-> > > > >
-> > > > > >
-> > > > > > So the ABI should dynamically detect if there is a donated SGI th=
-en
-> > > > > > use it otherwise fallback to SPI/PPI detection via DT. This would=
- make
-> > > > > > the notifications feature platform agnostic and we can drop legac=
-y DT
-> > > > > > methods from optee-os entirely but still need to maintain them in=
- the
-> > > > > > kernel for backwards compatibility.
-> > > > >
-> > > > > We care about compatibility in both directions so we'd need to keep=
- it
-> > > > > in OP-TEE too, but perhaps under a config flag.
-> > > >
-> > > > Isn't it just supported on Qemu right now in OP-TEE? I hope dropping a
-> > > > feature won't be a problem there compared with the maintenance burden.
-> > >
-> > > I'd rather not remove this since I believe it can support more
-> > > configurations (different interrupt controllers), but feel free to
-> > > propose a patch with the new ABI.
-> >
-> > Having a second thought here, I think adding further ABIs (redundant
-> > ABIs become maintenance burden overtime) don't make sense until we see
-> > real users of notifications. Have you been able to discover real users
-> > of this asynchronous notifications feature in OP-TEE?
+> Adds support for asynchronous notifications from OP-TEE in secure world
+> when communicating via FF-A. In principle from OP-TEE and kernel driver
+> point of view this works in the same way as for the SMC ABI based
+> implementation.
 >
-> No, not upstream. There have been questions about a feature like this
-> from time to time in the past and I guess non-trivial interrupt
-> handling will soon need it.
+> The OP-TEE FF-A ABI is expanded in OPTEE_FFA_EXCHANGE_CAPABILITIES with
+> the capability OPTEE_FFA_SEC_CAP_ASYNC_NOTIF to indicate that OP-TEE
+> supports asynchronous notifications. OPTEE_FFA_ENABLE_ASYNC_NOTIF is
+> also added to tell that the driver has successfully initialized these
+> notifications.
+>
+> Notification capability is negotiated while the driver is initialized.
+> If both sides supports these notifications then they are enabled.
+>
+> The notification concept in this driver is merged with the FF-A concept,
+> the lower 64 values are reserved for FF-A as asynchronous notifications
+> while the synchronous notifications uses the higher values.
 
-Okay let's keep the way it is today unless we really need support for SGIs to=
-o.
+s/uses/use/
+
+>
+> So a FF-A notification has to be allocated for each discrete
+> asynchronous notification value needed. Only one asynchronous
+> notification value is used at the moment, the "do bottom half"
+> notification.
+>
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  drivers/tee/optee/ffa_abi.c       | 91 ++++++++++++++++++++++++++++++-
+>  drivers/tee/optee/optee_ffa.h     | 28 ++++++++--
+>  drivers/tee/optee/optee_private.h |  4 +-
+>  3 files changed, 115 insertions(+), 8 deletions(-)
+>
+
+Apart from nits below, feel free to add:
+
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+
+> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> index 0828240f27e6..e68acc42db65 100644
+> --- a/drivers/tee/optee/ffa_abi.c
+> +++ b/drivers/tee/optee/ffa_abi.c
+> @@ -1,6 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /*
+> - * Copyright (c) 2021, Linaro Limited
+> + * Copyright (c) 2021, 2023 Linaro Limited
+>   */
+>
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> @@ -692,7 +692,8 @@ static bool optee_ffa_api_is_compatbile(struct ffa_devi=
+ce *ffa_dev,
+>  static bool optee_ffa_exchange_caps(struct ffa_device *ffa_dev,
+>                                     const struct ffa_ops *ops,
+>                                     u32 *sec_caps,
+> -                                   unsigned int *rpc_param_count)
+> +                                   unsigned int *rpc_param_count,
+> +                                   unsigned int *max_notif_value)
+>  {
+>         struct ffa_send_direct_data data =3D { OPTEE_FFA_EXCHANGE_CAPABILIT=
+IES };
+>         int rc;
+> @@ -709,10 +710,39 @@ static bool optee_ffa_exchange_caps(struct ffa_device=
+ *ffa_dev,
+>
+>         *rpc_param_count =3D (u8)data.data1;
+>         *sec_caps =3D data.data2;
+> +       if (data.data3)
+> +               *max_notif_value =3D data.data3;
+> +       else
+> +               *max_notif_value =3D OPTEE_DEFAULT_MAX_NOTIF_VALUE;
+>
+>         return true;
+>  }
+>
+> +static void notif_callback(int notify_id, void *cb_data)
+> +{
+> +       struct optee *optee =3D cb_data;
+> +
+> +       if (notify_id =3D=3D optee->ffa.bottom_half_value)
+> +               optee_do_bottom_half(optee->ctx);
+> +       else
+> +               optee_notif_send(optee, notify_id);
+> +}
+> +
+> +static int enable_async_notif(struct optee *optee)
+> +{
+> +       struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
+> +       struct ffa_send_direct_data data =3D {
+> +               .data0 =3D OPTEE_FFA_ENABLE_ASYNC_NOTIF,
+> +               .data1 =3D optee->ffa.bottom_half_value,
+> +       };
+> +       int rc;
+> +
+> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &data);
+> +       if (rc)
+> +               return rc;
+> +       return data.data0;
+> +}
+> +
+>  static void optee_ffa_get_version(struct tee_device *teedev,
+>                                   struct tee_ioctl_version_data *vers)
+>  {
+> @@ -775,7 +805,11 @@ static const struct optee_ops optee_ffa_ops =3D {
+>  static void optee_ffa_remove(struct ffa_device *ffa_dev)
+>  {
+>         struct optee *optee =3D ffa_dev_get_drvdata(ffa_dev);
+> +       const struct ffa_notifier_ops *ops =3D ffa_dev->ops->notifier_ops;
+> +       u32 bottom_half_id =3D optee->ffa.bottom_half_value;
+>
+> +       if (bottom_half_id !=3D U32_MAX)
+> +               ops->notify_relinquish(ffa_dev, bottom_half_id);
+
+nit: I would have preferred to keep common convention among FF-A calls
+here being:
+
+ffa_dev->ops->notifier_ops->notify_relinquish()
+
+similar to:
+
+ffa_dev->ops->msg_ops->sync_send_receive()
+
+>         optee_remove_common(optee);
+>
+>         mutex_destroy(&optee->ffa.mutex);
+> @@ -784,9 +818,49 @@ static void optee_ffa_remove(struct ffa_device *ffa_de=
+v)
+>         kfree(optee);
+>  }
+>
+> +static int optee_ffa_async_notif_init(struct ffa_device *ffa_dev,
+> +                                     struct optee *optee)
+> +{
+> +       const struct ffa_notifier_ops *ops =3D ffa_dev->ops->notifier_ops;
+> +       bool is_per_vcpu =3D false;
+> +       u32 notif_id =3D 0;
+> +       int rc;
+> +
+> +       while (true) {
+> +               rc =3D ops->notify_request(ffa_dev, is_per_vcpu,
+> +                                              notif_callback, optee,
+> +                                              notif_id);
+
+Ditto.
+
+> +               if (!rc)
+> +                       break;
+> +               /*
+> +                * -EACCES means that the notification ID was
+> +                * already bound, try the next one as long as we
+> +                * haven't reached the max. Any other error is a
+> +                * permanent error, so skip asynchronous
+> +                * notifications in that case.
+> +                */
+> +               if (rc !=3D -EACCES)
+> +                       return rc;
+> +               notif_id++;
+> +               if (notif_id >=3D OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE)
+> +                       return rc;
+> +       }
+> +       optee->ffa.bottom_half_value =3D notif_id;
+> +
+> +       rc =3D enable_async_notif(optee);
+> +       if (rc < 0) {
+> +               ops->notify_relinquish(ffa_dev, notif_id);
+
+Ditto.
+
+> +               optee->ffa.bottom_half_value =3D U32_MAX;
+> +       }
+> +
+> +       return rc;
+> +}
+> +
+>  static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>  {
+> +       const struct ffa_notifier_ops *notif_ops;
+>         const struct ffa_ops *ffa_ops;
+> +       unsigned int max_notif_value;
+>         unsigned int rpc_param_count;
+>         struct tee_shm_pool *pool;
+>         struct tee_device *teedev;
+> @@ -797,12 +871,13 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>         int rc;
+>
+>         ffa_ops =3D ffa_dev->ops;
+> +       notif_ops =3D ffa_ops->notifier_ops;
+>
+>         if (!optee_ffa_api_is_compatbile(ffa_dev, ffa_ops))
+>                 return -EINVAL;
+>
+>         if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,
+> -                                    &rpc_param_count))
+> +                                    &rpc_param_count, &max_notif_value))
+>                 return -EINVAL;
+>         if (sec_caps & OPTEE_FFA_SEC_CAP_ARG_OFFSET)
+>                 arg_cache_flags |=3D OPTEE_SHM_ARG_SHARED;
+> @@ -820,6 +895,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>
+>         optee->ops =3D &optee_ffa_ops;
+>         optee->ffa.ffa_dev =3D ffa_dev;
+> +       optee->ffa.bottom_half_value =3D U32_MAX;
+>         optee->rpc_param_count =3D rpc_param_count;
+>
+>         teedev =3D tee_device_alloc(&optee_ffa_clnt_desc, NULL, optee->pool,
+> @@ -864,6 +940,12 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>         rc =3D optee_notif_init(optee, OPTEE_DEFAULT_MAX_NOTIF_VALUE);
+>         if (rc)
+>                 goto err_close_ctx;
+> +       if (sec_caps & OPTEE_FFA_SEC_CAP_ASYNC_NOTIF) {
+> +               rc =3D optee_ffa_async_notif_init(ffa_dev, optee);
+> +               if (rc < 0)
+> +                       pr_err("Failed to initialize async notifications: %=
+d",
+> +                              rc);
+> +       }
+>
+>         rc =3D optee_enumerate_devices(PTA_CMD_GET_DEVICES);
+>         if (rc)
+> @@ -874,6 +956,9 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+>
+>  err_unregister_devices:
+>         optee_unregister_devices();
+> +       if (optee->ffa.bottom_half_value !=3D U32_MAX)
+> +               notif_ops->notify_relinquish(ffa_dev,
+> +                                            optee->ffa.bottom_half_value);
+>         optee_notif_uninit(optee);
+>  err_close_ctx:
+>         teedev_close_context(ctx);
+> diff --git a/drivers/tee/optee/optee_ffa.h b/drivers/tee/optee/optee_ffa.h
+> index 97266243deaa..fa14d931af8a 100644
+> --- a/drivers/tee/optee/optee_ffa.h
+> +++ b/drivers/tee/optee/optee_ffa.h
+> @@ -1,6 +1,6 @@
+>  /* SPDX-License-Identifier: BSD-2-Clause */
+>  /*
+> - * Copyright (c) 2019-2021, Linaro Limited
+> + * Copyright (c) 2019-2021, 2023 Linaro Limited
+>   */
+>
+>  /*
+> @@ -73,7 +73,7 @@
+>   *
+>   * Call register usage:
+>   * w3:    Service ID, OPTEE_FFA_EXCHANGE_CAPABILITIES
+> - * w4-w7: Note used (MBZ)
+> + * w4-w7: Not used (MBZ)
+>   *
+>   * Return register usage:
+>   * w3:    Error code, 0 on success
+> @@ -82,14 +82,16 @@
+>   *                   OPTEE_FFA_YIELDING_CALL_WITH_ARG.
+>   *        Bit[31:8]: Reserved (MBZ)
+>   * w5:   Bitfield of secure world capabilities OPTEE_FFA_SEC_CAP_* below,
+> - *       unused bits MBZ.
+> - * w6-w7: Not used (MBZ)
+> + * w6:   The maximum secure world notification number
+> + * w7:   Not used (MBZ)
+>   */
+>  /*
+>   * Secure world supports giving an offset into the argument shared memory
+>   * object, see also OPTEE_FFA_YIELDING_CALL_WITH_ARG
+>   */
+>  #define OPTEE_FFA_SEC_CAP_ARG_OFFSET   BIT(0)
+> +/* OP-TEE supports asynchronous notification via FF-A */
+> +#define OPTEE_FFA_SEC_CAP_ASYNC_NOTIF  BIT(1)
+>
+>  #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
+>
+> @@ -108,6 +110,24 @@
+>   */
+>  #define OPTEE_FFA_UNREGISTER_SHM       OPTEE_FFA_BLOCKING_CALL(3)
+>
+> +/*
+> + * Inform OP-TEE that normal world is able to receive asynchronous
+
+s/that normal/that the normal/
 
 -Sumit
 
+> + * notifications.
+> + *
+> + * Call register usage:
+> + * w3:    Service ID, OPTEE_FFA_ENABLE_ASYNC_NOTIF
+> + * w4:   Notification value to request bottom half processing, should be
+> + *       less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE.
+> + * w5-w7: Not used (MBZ)
+> + *
+> + * Return register usage:
+> + * w3:    Error code, 0 on success
+> + * w4-w7: Note used (MBZ)
+> + */
+> +#define OPTEE_FFA_ENABLE_ASYNC_NOTIF   OPTEE_FFA_BLOCKING_CALL(5)
+> +
+> +#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE 64
+> +
+>  /*
+>   * Call with struct optee_msg_arg as argument in the supplied shared memory
+>   * with a zero internal offset and normal cached memory attributes.
+> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_pr=
+ivate.h
+> index 2165bd11e6ac..91f4ec45e388 100644
+> --- a/drivers/tee/optee/optee_private.h
+> +++ b/drivers/tee/optee/optee_private.h
+> @@ -129,12 +129,14 @@ struct optee_smc {
+>   * struct optee_ffa_data -  FFA communication struct
+>   * @ffa_dev            FFA device, contains the destination id, the id of
+>   *                     OP-TEE in secure world
+> - * @ffa_ops            FFA operations
+> + * @bottom_half_value  Notification ID used for bottom half signalling or
+> + *                     U32_MAX if unused
+>   * @mutex              Serializes access to @global_ids
+>   * @global_ids         FF-A shared memory global handle translation
+>   */
+>  struct optee_ffa {
+>         struct ffa_device *ffa_dev;
+> +       u32 bottom_half_value;
+>         /* Serializes access to @global_ids */
+>         struct mutex mutex;
+>         struct rhashtable global_ids;
+> --
+> 2.34.1
 >
-> Cheers,
-> Jens
->
-> >
-> > -Sumit
-> >
-> > >
-> > > Cheers,
-> > > Jens
-> > >
-> > > >
-> > > > -Sumit
-> > > >
-> > > > >
-> > > > > Thanks,
-> > > > > Jens
-> > > > >
-> > > > > >
-> > > > > > [1] https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/=
-linux.git/tree/drivers/firmware/arm_ffa/driver.c?h=3Dffa-updates-6.7#n1283
-> > > > > > [2] https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/=
-linux.git/tree/drivers/firmware/arm_ffa/driver.c?h=3Dffa-updates-6.7#n1275
-> > > > > >
-> > > > > > -Sumit
-> > > > > >
-> > > > > > >
-> > > > > > > Cheers,
-> > > > > > > Jens
-> > > > > > >
-> > > > > > > >
-> > > > > > > > -Sumit
-> > > > > > > >
-> > > > > > > > >
-> > > > > > > > > [1] https://lore.kernel.org/lkml/20211103090255.998070-1-je=
-ns.wiklander(a)linaro.org/
-> > > > > > > > > [2] https://lore.kernel.org/linux-arm-kernel/20231005-ffa_v=
-1-1_notif-v4-0-cddd3237809c(a)arm.com/
-> > > > > > > > > [3] https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.=
-holla/linux.git/tag/?h=3Dffa-updates-6.7
-> > > > > > > > >     commit bcefd1bf63b1 ("firmware: arm_ffa: Upgrade the dr=
-iver version to v1.1")
-> > > > > > > > >
-> > > > > > > > > Thanks,
-> > > > > > > > > Jens
-> > > > > > > > >
-> > > > > > > > > Jens Wiklander (2):
-> > > > > > > > >   optee: provide optee_do_bottom_half() as a common function
-> > > > > > > > >   optee: ffa_abi: add asynchronous notifications
-> > > > > > > > >
-> > > > > > > > >  drivers/tee/optee/call.c          | 31 ++++++++++-
-> > > > > > > > >  drivers/tee/optee/ffa_abi.c       | 91 +++++++++++++++++++=
-+++++++++++-
-> > > > > > > > >  drivers/tee/optee/optee_ffa.h     | 28 ++++++++--
-> > > > > > > > >  drivers/tee/optee/optee_private.h |  9 ++-
-> > > > > > > > >  drivers/tee/optee/smc_abi.c       | 36 ++----------
-> > > > > > > > >  5 files changed, 153 insertions(+), 42 deletions(-)
-> > > > > > > > >
-> > > > > > > > >
-> > > > > > > > > base-commit: bcefd1bf63b1ec9bb08067021cf47f0fad96f395
-> > > > > > > > > --
-> > > > > > > > > 2.34.1
-> > > > > > > > >
 
---===============1413169851051159529==--
+--===============3082907920893834309==--
 
