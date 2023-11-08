@@ -1,56 +1,63 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 0/2] OP-TEE FF-A notifications
-Date: Tue, 07 Nov 2023 18:06:45 +0100
+Subject: Re: [PATCH] optee: add missing description of RPC argument reference
+Date: Wed, 08 Nov 2023 08:54:28 +0100
 Message-ID: 
- <CAHUa44FfnUbQVE_+R-wU+fKE=v_ZhTb49VBM5bP7tdgYAT2nTQ@mail.gmail.com>
-In-Reply-To: <20231107114630.GE954129@bogus>
+ <CAHUa44G2=tVXTqJxSx_bBf22FDp2LVBP1zk2bzGp+EvcUkTUrQ@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYO4m5n9oTzP1zJdJXASCwXdhVaa_tMN2EhDTNDMmxwaJg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3697180999104146371=="
+Content-Type: multipart/mixed; boundary="===============5384063528653585317=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3697180999104146371==
+--===============5384063528653585317==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 7, 2023 at 12:48=E2=80=AFPM Sudeep Holla <sudeep.holla@arm.com>=
+On Mon, Oct 30, 2023 at 10:06=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org>=
  wrote:
 >
-> On Thu, Oct 26, 2023 at 10:04:07AM +0200, Jens Wiklander wrote:
-> > Hi all,
+> On Mon, 30 Oct 2023 at 14:25, Etienne Carriere
+> <etienne.carriere@foss.st.com> wrote:
 > >
-> > This patchset adds support for using FF-A notifications as a delivery
-> > mechanism of asynchronous notifications from OP-TEE running in the secure
-> > world. Support for asynchronous notifications via the SMC ABI was added in
-> > [1], here we add the counterpart needed when using the the FF-A ABI.
+> > Adds missing inline description comment for RPC optional arguments
+> > reference.
 > >
-> > Support for FF-A notifications is added with [2] and this patch set is ba=
-sed
-> > on Sudeeps tree at [3].
-> >
-> > [1] https://lore.kernel.org/lkml/20211103090255.998070-1-jens.wiklander(a=
-)linaro.org/
-> > [2] https://lore.kernel.org/linux-arm-kernel/20231005-ffa_v1-1_notif-v4-0=
--cddd3237809c(a)arm.com/
-> > [3] https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.gi=
-t/tag/?h=3Dffa-updates-6.7
-> >     commit bcefd1bf63b1 ("firmware: arm_ffa: Upgrade the driver version t=
-o v1.1")
+> > Reported-by: kernel test robot <lkp@intel.com>
+> > Closes: https://lore.kernel.org/lkml/202310192021.fvb6JDOY-lkp(a)intel.co=
+m/
+> > Signed-off-by: Etienne Carriere <etienne.carriere@foss.st.com>
+> > ---
+> >  drivers/tee/optee/smc_abi.c | 1 +
+> >  1 file changed, 1 insertion(+)
 > >
 >
-> FWIW:
->
-> Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-Thanks, much appreciated.
+I'm picking up this.
 
-Cheers,
+Thanks,
 Jens
 
 >
-> --
-> Regards,
-> Sudeep
+> -Sumit
+>
+> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> > index d5b28fd35d66..67bfa25d6302 100644
+> > --- a/drivers/tee/optee/smc_abi.c
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -806,6 +806,7 @@ static void handle_rpc_func_cmd(struct tee_context *c=
+tx, struct optee *optee,
+> >  /**
+> >   * optee_handle_rpc() - handle RPC from secure world
+> >   * @ctx:       context doing the RPC
+> > + * @rpc_arg:   pointer to RPC arguments if any, or NULL if none
+> >   * @param:     value of registers for the RPC
+> >   * @call_ctx:  call context. Preserved during one OP-TEE invocation
+> >   *
+> > --
+> > 2.25.1
+> >
 
---===============3697180999104146371==--
+--===============5384063528653585317==--
 
