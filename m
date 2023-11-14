@@ -1,95 +1,180 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Olivier Deprez <Olivier.Deprez@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 2/2] optee: allocate shared memory with alloc_pages_exact()
-Date: Tue, 14 Nov 2023 10:52:17 +0100
-Message-ID: <20231114095217.1142360-3-jens.wiklander@linaro.org>
-In-Reply-To: <20231114095217.1142360-1-jens.wiklander@linaro.org>
+Subject: 
+ Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
+Date: Tue, 14 Nov 2023 10:47:21 +0000
+Message-ID: <DB9PR08MB6796CABC939964A3C47286029BB2A@DB9PR08MB6796.eurprd08.prod.outlook.com>
+In-Reply-To: <43d950dc2ae648ea87b8234123a40633@analog.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6443047495068154647=="
+Content-Type: multipart/mixed; boundary="===============0867401145542951730=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6443047495068154647==
+--===============0867401145542951730==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Allocate memory to share with the secure using alloc_pages_exact()
-instead of alloc_pages() for more efficient memory usage.
+Hi,
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/core.c | 20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+Cc the OP-TEE mailing list, as I sense this might be more of an OP-TEE (/ OPT=
+EED) design question than TF-A generic.
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 38ea2fecfc2e..4a4b03b4fc7d 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -26,10 +26,8 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, =
-struct tee_shm *shm,
- 						   size_t num_pages,
- 						   unsigned long start))
- {
--	unsigned int order =3D get_order(size);
--	unsigned int nr_pages =3D 1 << order;
-+	size_t nr_pages =3D roundup(size, PAGE_SIZE) / PAGE_SIZE;
- 	struct page **pages;
--	struct page *page;
- 	unsigned int i;
- 	int rc =3D 0;
-=20
-@@ -37,13 +35,13 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool,=
- struct tee_shm *shm,
- 	 * Ignore alignment since this is already going to be page aligned
- 	 * and there's no need for any larger alignment.
- 	 */
--	page =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
--	if (!page)
-+	shm->kaddr =3D alloc_pages_exact(nr_pages * PAGE_SIZE,
-+				       GFP_KERNEL | __GFP_ZERO);
-+	if (!shm->kaddr)
- 		return -ENOMEM;
-=20
--	shm->kaddr =3D page_address(page);
--	shm->paddr =3D page_to_phys(page);
--	shm->size =3D PAGE_SIZE << order;
-+	shm->paddr =3D virt_to_phys(shm->kaddr);
-+	shm->size =3D nr_pages * PAGE_SIZE;
-=20
- 	pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
- 	if (!pages) {
-@@ -52,7 +50,7 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, s=
-truct tee_shm *shm,
- 	}
-=20
- 	for (i =3D 0; i < nr_pages; i++)
--		pages[i] =3D page + i;
-+		pages[i] =3D virt_to_page((u8 *)shm->kaddr + i * PAGE_SIZE);
-=20
- 	shm->pages =3D pages;
- 	shm->num_pages =3D nr_pages;
-@@ -66,7 +64,7 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool, s=
-truct tee_shm *shm,
-=20
- 	return 0;
- err:
--	free_pages((unsigned long)shm->kaddr, order);
-+	free_pages_exact(shm->kaddr, shm->size);
- 	shm->kaddr =3D NULL;
- 	return rc;
- }
-@@ -77,7 +75,7 @@ void optee_pool_op_free_helper(struct tee_shm_pool *pool, s=
-truct tee_shm *shm,
- {
- 	if (shm_unregister)
- 		shm_unregister(shm->ctx, shm);
--	free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-+	free_pages_exact(shm->kaddr, shm->size);
- 	shm->kaddr =3D NULL;
- 	kfree(shm->pages);
- 	shm->pages =3D NULL;
---=20
-2.34.1
+I agree with Manish/Achin the best way to eliminate the return by NS interrup=
+t while OP-TEE kernel runs handling a PSCI request is to mask interrupts glob=
+ally in the GIC e.g. from within opteed_system_reset?
+
+Additional questions:
+
+On https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psci/=
+psci_system_off.c#L44
+The PSCI layer calls into OP-TEE SPD and then resumes OP-TEE to handle the PS=
+CI call in a platform defined manner.
+
+As suggested here https://github.com/ARM-software/arm-trusted-firmware/blob/m=
+aster/services/spd/opteed/opteed_pm.c#L233 , it looks this invocation is not =
+supposed to return into TF-A?
+
+Did you redefine the weak psci_system_reset function within OP-TEE for your p=
+latform?
+Is this function designed to end up in a loop and never returns to TF-A?
+
+As a side question, is this an issue that the TF-A's PSCI platform hook is po=
+ssibly never called https://github.com/ARM-software/arm-trusted-firmware/blob=
+/master/lib/psci/psci_system_off.c#L50 ?
+
+Regards,
+Olivier.
 
 
---===============6443047495068154647==--
+________________________________
+From: Neely, Brian via TF-A <tf-a@lists.trustedfirmware.org>
+Sent: 13 November 2023 19:01
+To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware.o=
+rg <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@anal=
+og.com>
+Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
+
+
+Hi Manish,
+
+
+
+Just following up on your comment below. Are you planning to provide guidance=
+ as to which PSCI calls should have NS interrupts masked? Are these changes t=
+hat should go in the mainline TF-A repo, or do you believe they are specific =
+to our use case?
+
+
+
+Thanks,
+
+Brian
+
+
+
+From: Manish Pandey2 via TF-A <tf-a@lists.trustedfirmware.org>
+Sent: Friday, November 10, 2023 11:31 AM
+To: tf-a(a)lists.trustedfirmware.org; Ethridge, Caleb <Caleb.Ethridge@analo=
+g.com>
+Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
+
+
+
+[External]
+
+
+
+Hi Caleb,
+
+
+
+The quick answer to your query is to mask the NS interrupts in BL31 (option a=
+), You should not remove the callback to OPTEE as it may need to do its own s=
+tate maintained before system RESET.
+
+
+
+There are other scenarios in PSCI (e.g. CPU power down) path which need to co=
+nsider disabling NS interrupts before invoking Secure world hooks, will provi=
+de further analysis on those later.
+
+
+
+Thanks
+Manish Pandey
+
+
+
+________________________________
+
+From: Caleb Ethridge via TF-A <tf-a@lists.trustedfirmware.org<mailto:tf-a(a=
+)lists.trustedfirmware.org>>
+Sent: 10 November 2023 15:12
+To: tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.org>=
+ <tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.org>>
+Subject: [TF-A] Handling of normal world interrupts with BL31 PSCI handler
+
+
+
+Hello,
+
+If normal world interrupts are received while invoking TF-A's PSCI reset hand=
+ler, we have observed that the reset can be aborted.
+
+In TF-A's PSCI reset handler, a call out to OP-TEE is made before performing =
+the platform-specific reset:
+https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psci/psc=
+i_system_off.c#L44<https://urldefense.com/v3/__https:/github.com/ARM-software=
+/arm-trusted-firmware/blob/master/lib/psci/psci_system_off.c*L44__;Iw!!A3Ni8C=
+S0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyi=
+BgwAyngBZMHyWqcCFuQ$>
+https://github.com/ARM-software/arm-trusted-firmware/blob/master/services/spd=
+/opteed/opteed_pm.c#L233<https://urldefense.com/v3/__https:/github.com/ARM-so=
+ftware/arm-trusted-firmware/blob/master/services/spd/opteed/opteed_pm.c*L233_=
+_;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakF=
+saMwnp3xZzyiBgwAyngBZMHypZWQwUQ$>
+
+When OP-TEE is entered, it is possible to receive foreign (normal world) inte=
+rrupts, which invokes the procedure described here: https://optee.readthedocs=
+.io/en/3.16.0/architecture/core.html#deliver-non-secure-interrupts-to-normal-=
+world<https://urldefense.com/v3/__https:/optee.readthedocs.io/en/3.16.0/archi=
+tecture/core.html*deliver-non-secure-interrupts-to-normal-world__;Iw!!A3Ni8CS=
+0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiB=
+gwAyngBZMHzqKZ6_0Q$>
+When the SMC call is aborted as described above, this results in the reboot f=
+ailing. Linux does not retry the PSCI reset (https://github.com/torvalds/linu=
+x/blob/master/drivers/firmware/psci/psci.c#L308<https://urldefense.com/v3/__h=
+ttps:/github.com/torvalds/linux/blob/master/drivers/firmware/psci/psci.c*L308=
+__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3Kak=
+FsaMwnp3xZzyiBgwAyngBZMHwH0cQx8g$>). This makes sense because it is not expec=
+ting the SMC call to fail (it expected to make an uninterruptable SMC call in=
+to the secure monitor, not a call into OP-TEE).
+
+If OP-TEE itself is setup to handle PSCI reset calls, it also handles them in=
+ (uninterruptable) SMC context:
+https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/psci.c#L140<h=
+ttps://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/core=
+/arch/arm/sm/psci.c*L140__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimj=
+H1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHwHJcYAAQ$>
+https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/sm_a32.S#L96<=
+https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/cor=
+e/arch/arm/sm/sm_a32.S*L96__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoi=
+mjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHxqZFTGrA$>
+
+Based on this, we see two possible solutions:
+a) Masking the non-secure interrupts in BL31 while we are doing a reset
+b) Removing the call to OPTEE in the reset handler so that we never leave the=
+ SMC context
+
+Which option do you suggest? Or are we missing an important detail here?
+
+Thanks,
+
+Caleb
+--
+TF-A mailing list -- tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.tru=
+stedfirmware.org>
+To unsubscribe send an email to tf-a-leave(a)lists.trustedfirmware.org<mailto=
+:tf-a-leave@lists.trustedfirmware.org>
+
+--===============0867401145542951730==--
 
