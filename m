@@ -1,17 +1,57 @@
-From: Olivier Deprez <Olivier.Deprez@arm.com>
+From: Manish Pandey2 <Manish.Pandey2@arm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
-Date: Tue, 14 Nov 2023 10:47:21 +0000
-Message-ID: <DB9PR08MB6796CABC939964A3C47286029BB2A@DB9PR08MB6796.eurprd08.prod.outlook.com>
-In-Reply-To: <43d950dc2ae648ea87b8234123a40633@analog.com>
+Date: Tue, 14 Nov 2023 11:16:33 +0000
+Message-ID: <VI1PR08MB3472350286DC5E2EFC58107BC0B2A@VI1PR08MB3472.eurprd08.prod.outlook.com>
+In-Reply-To: <=?utf-8?q?=3CDB9PR08MB6796CABC939964A3C47286029BB2A=40DB9PR08MB?=
+ =?utf-8?q?6796=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0867401145542951730=="
+Content-Type: multipart/mixed; boundary="===============4494298910202309996=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0867401145542951730==
+--===============4494298910202309996==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi Brian,
+
+Your usecase is that you want to use SDEI framework to deliver some EL3 inter=
+rupts to NS and if your only concern is about system reset the easiest/temp s=
+olution would be to disable the G1NS interrupts in OP-TEE dispatcher's system=
+ RESET hook.
+
+The generic solution would take some time to implement as i need to analyse/d=
+iscuss following scenarios before making a decision
+
+1. Does secure world really needs EL3 interrupts or it can handle NS-interrup=
+ts as FIQ (pre-EHF, do not modify routing model for secure world). Notificati=
+on to EL3 can be done using some standard or IMPDEF mechanism. FFA has an ABI=
+ for this FFA_EL3_INTR_HANDLE. Current Hafnium implementation follows this fo=
+r G0 interrupts.
+2. The PSCI calls for CPU power down/up, migrate, system reset/off do invoke =
+SPD hooks. It need to be carefully analysed whether we really need to disable=
+ G1NS interrupts in these paths or not ? For e.g in CPU power down path the P=
+SCI spec mandates that its caller's responsbility to migrate interrupts from =
+the core (so we don't need to do anything special in TF-A code). Similarly fo=
+r reset/off and migrate we need to analyse what should be the best way to avo=
+id this situation.
+
+Also, i need to work on test infrastructure to simulate these scenarios. It w=
+ill be useful if your setup can be recreated using OP-TEE/TF-A ?
+
+Thanks
+Manish
+
+________________________________
+From: Olivier Deprez <Olivier.Deprez@arm.com>
+Sent: 14 November 2023 10:47
+To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware.o=
+rg <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@anal=
+og.com>; Neely, Brian <Brian.Neely@analog.com>
+Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
+Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI ha=
+ndler
 
 Hi,
 
@@ -176,5 +216,5 @@ stedfirmware.org>
 To unsubscribe send an email to tf-a-leave(a)lists.trustedfirmware.org<mailto=
 :tf-a-leave@lists.trustedfirmware.org>
 
---===============0867401145542951730==--
+--===============4494298910202309996==--
 
