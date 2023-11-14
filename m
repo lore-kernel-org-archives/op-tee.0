@@ -1,52 +1,85 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE fix for 6.7
-Date: Tue, 14 Nov 2023 16:31:13 +0100
-Message-ID: <20231114153113.GA1310615@rayden>
+Subject: 
+ Re: [PATCH v4 0/2] tee: optee: Fixes for supplicant dependent enumeration
+Date: Tue, 14 Nov 2023 16:42:51 +0100
+Message-ID: 
+ <CAHUa44FoiOinGHyB=P4EL+iMNA3KiLBzfCUw=wGpJuFzo_PMOA@mail.gmail.com>
+In-Reply-To: <20231102073056.174480-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4234547185146432559=="
+Content-Type: multipart/mixed; boundary="===============8134262316613128696=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4234547185146432559==
+--===============8134262316613128696==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello arm-soc maintainers,
+On Thu, Nov 2, 2023 at 8:31=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org> w=
+rote:
+>
+> Currently supplicant dependent optee device enumeration only registers
+> devices whenever tee-supplicant is invoked for the first time. But it
+> forgets to remove devices when tee-supplicant daemon stops running and
+> closes its context gracefully. This leads to following error for fTPM
+> driver during reboot/shutdown:
+>
+> [   73.466791] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error:=
+ 0xffff3024
+>
+> Fix this by adding an attribute for supplicant dependent devices so that
+> the user-space service can detect and detach supplicant devices before
+> closing the supplicant:
+>
+> $ for dev in /sys/bus/tee/devices/*; do if [[ -f "$dev/need_supplicant" && =
+-f "$dev/driver/unbind" ]]; \
+>       then echo $(basename "$dev") > $dev/driver/unbind; fi done
+>
+> While at it use the global system workqueue for OP-TEE bus scanning work
+> rather than our own custom one.
+>
+> Changes in v4:
+> - Changing the device name would be an ABI break, rather switch to
+>   additional device attribute: "need_supplicant" to distinguish for ABI
+>   compatibility.
+> - Dropped tested-by for patch #1, I would encourage folks to retest
+>   this.
+>
+> Changes in v3:
+>
+> - Split patch into 2 separate ones, one for supplicant fix and other for
+>   the workqueue.
+>
+> Changes in v2:
+>
+> - Use device names to separate out tee-supplicant dependent devices via
+>   this patch.
+> - Since user-space service is aware about tee-supplicant lifespan, so
+>   allow the user-space service to unbind tee-supplicant dependent
+>   devices before killing the supplicant. Following command has to be
+>   added to the tee-supplicant service file.
+>
+>   $ for dev in /sys/bus/tee/devices/*; do if [[ "$dev" =3D=3D *"optee-ta-su=
+pp-"* ]]; \
+>         then echo $(basename "$dev") > $dev/driver/unbind; fi done
+>
+> Sumit Garg (2):
+>   tee: optee: Fix supplicant based device enumeration
+>   tee: optee: Remove redundant custom workqueue
+>
+>  .../ABI/testing/sysfs-bus-optee-devices         |  9 +++++++++
+>  drivers/tee/optee/core.c                        | 13 ++-----------
+>  drivers/tee/optee/device.c                      | 17 +++++++++++++++--
+>  drivers/tee/optee/optee_private.h               |  2 --
+>  4 files changed, 26 insertions(+), 15 deletions(-)
+>
+> --
+> 2.34.1
+>
 
-Please pull this OP-TEE driver fix allowing supplicant dependent devices to
-be detached by user-space before the supplicant service is shut down.
+I'm picking up this.
 
 Thanks,
 Jens
 
-The following changes since commit ffc253263a1375a65fa6c9f62a893e9767fbebfa:
-
-  Linux 6.6 (2023-10-29 16:31:08 -1000)
-
-are available in the Git repository at:
-
-  git://git.linaro.org:/people/jens.wiklander/linux-tee.git tags/optee-suppli=
-cant-fix-for-v6.7
-
-for you to fetch changes up to 7269cba53d906cf257c139d3b3a53ad272176bca:
-
-  tee: optee: Fix supplicant based device enumeration (2023-11-03 09:27:20 +0=
-100)
-
-----------------------------------------------------------------
-OP-TEE fix for supplicant based device enumeration
-
-Adds a sysfs attribute for devices depending on supplicant services so
-that the user-space service can detect and detach those devices before
-closing the supplicant
-
-----------------------------------------------------------------
-Sumit Garg (1):
-      tee: optee: Fix supplicant based device enumeration
-
- Documentation/ABI/testing/sysfs-bus-optee-devices |  9 +++++++++
- drivers/tee/optee/device.c                        | 17 +++++++++++++++--
- 2 files changed, 24 insertions(+), 2 deletions(-)
-
---===============4234547185146432559==--
+--===============8134262316613128696==--
 
