@@ -1,29 +1,35 @@
 From: Jan Claußen <jan.claussen10@web.de>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: How to sign TAs with an HSM?
-Date: Wed, 15 Nov 2023 19:34:43 +0100
-Message-ID: <292BEFBD-A3EC-4AFF-99FB-4BBE9CEFD2CE@web.de>
-In-Reply-To: <EC3948BC-DD4F-4437-8F7E-8FE39784996E@getmailspring.com>
+Date: Wed, 15 Nov 2023 19:43:48 +0100
+Message-ID: <22295FD3-6EB0-4E2E-936A-B15770F89869@web.de>
+In-Reply-To: <292BEFBD-A3EC-4AFF-99FB-4BBE9CEFD2CE@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5835887720954027170=="
+Content-Type: multipart/mixed; boundary="===============1802456180927724806=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5835887720954027170==
+--===============1802456180927724806==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-I had no luck today with the HSM signing. Neither with the described solution=
- using the pkcs11-tool or openssl with the pkcs11 engine. I also wonder if th=
-e header in the documentation will be the same in any case or if I have to pr=
-epend my own header. This part is not documented. Would be great if some coul=
-d get back to me regarding this!
+I guess the pkcs11-tool is just an example for signing and I would have to co=
+me up with a way to calculate the digest and stitch everything back together =
+myself, don=E2=80=99t I?
 
-> Am 15.11.2023 um 17:56 schrieb Jan Clau=C3=9Fen <jan.claussen10@web.de>:
+> Am 15.11.2023 um 19:35 schrieb Jan Clau=C3=9Fen <jan.claussen10@web.de>:
 >=20
-> =EF=BB=BF
-> The example shell script for the pkcs11-tools does not work btw. This could=
- be fixed!
+> =EF=BB=BFI had no luck today with the HSM signing. Neither with the describ=
+ed solution using the pkcs11-tool or openssl with the pkcs11 engine. I also w=
+onder if the header in the documentation will be the same in any case or if I=
+ have to prepend my own header. This part is not documented. Would be great i=
+f some could get back to me regarding this!
+>=20
+>> Am 15.11.2023 um 17:56 schrieb Jan Clau=C3=9Fen <jan.claussen10@web.de>:
+>>=20
+>> =EF=BB=BF
+>> The example shell script for the pkcs11-tools does not work btw. This coul=
+d be fixed!
 
 
---===============5835887720954027170==--
+--===============1802456180927724806==--
 
