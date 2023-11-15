@@ -1,85 +1,29 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jan Claußen <jan.claussen10@web.de>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v4 0/2] tee: optee: Fixes for supplicant dependent enumeration
-Date: Tue, 14 Nov 2023 16:42:51 +0100
-Message-ID: 
- <CAHUa44FoiOinGHyB=P4EL+iMNA3KiLBzfCUw=wGpJuFzo_PMOA@mail.gmail.com>
-In-Reply-To: <20231102073056.174480-1-sumit.garg@linaro.org>
+Subject: How to sign TAs with an HSM?
+Date: Wed, 15 Nov 2023 14:35:53 +0100
+Message-ID: <4CCC8610-79B9-4890-AF1F-7A0AA56F0C20@getmailspring.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8134262316613128696=="
+Content-Type: multipart/mixed; boundary="===============0072686299421883846=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8134262316613128696==
+--===============0072686299421883846==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 2, 2023 at 8:31=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org> w=
-rote:
->
-> Currently supplicant dependent optee device enumeration only registers
-> devices whenever tee-supplicant is invoked for the first time. But it
-> forgets to remove devices when tee-supplicant daemon stops running and
-> closes its context gracefully. This leads to following error for fTPM
-> driver during reboot/shutdown:
->
-> [   73.466791] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error:=
- 0xffff3024
->
-> Fix this by adding an attribute for supplicant dependent devices so that
-> the user-space service can detect and detach supplicant devices before
-> closing the supplicant:
->
-> $ for dev in /sys/bus/tee/devices/*; do if [[ -f "$dev/need_supplicant" && =
--f "$dev/driver/unbind" ]]; \
->       then echo $(basename "$dev") > $dev/driver/unbind; fi done
->
-> While at it use the global system workqueue for OP-TEE bus scanning work
-> rather than our own custom one.
->
-> Changes in v4:
-> - Changing the device name would be an ABI break, rather switch to
->   additional device attribute: "need_supplicant" to distinguish for ABI
->   compatibility.
-> - Dropped tested-by for patch #1, I would encourage folks to retest
->   this.
->
-> Changes in v3:
->
-> - Split patch into 2 separate ones, one for supplicant fix and other for
->   the workqueue.
->
-> Changes in v2:
->
-> - Use device names to separate out tee-supplicant dependent devices via
->   this patch.
-> - Since user-space service is aware about tee-supplicant lifespan, so
->   allow the user-space service to unbind tee-supplicant dependent
->   devices before killing the supplicant. Following command has to be
->   added to the tee-supplicant service file.
->
->   $ for dev in /sys/bus/tee/devices/*; do if [[ "$dev" =3D=3D *"optee-ta-su=
-pp-"* ]]; \
->         then echo $(basename "$dev") > $dev/driver/unbind; fi done
->
-> Sumit Garg (2):
->   tee: optee: Fix supplicant based device enumeration
->   tee: optee: Remove redundant custom workqueue
->
->  .../ABI/testing/sysfs-bus-optee-devices         |  9 +++++++++
->  drivers/tee/optee/core.c                        | 13 ++-----------
->  drivers/tee/optee/device.c                      | 17 +++++++++++++++--
->  drivers/tee/optee/optee_private.h               |  2 --
->  4 files changed, 26 insertions(+), 15 deletions(-)
->
-> --
-> 2.34.1
->
+There is one thing I really don't understand about the offline signing proces=
+s for TAs using an HSM:
 
-I'm picking up this.
+In the documentation (https://link.getmailspring.com/link/4CCC8610-79B9-4890-=
+AF1F-7A0AA56F0C20(a)getmailspring.com/0?redirect=3Dhttps%3A%2F%2Foptee.readth=
+edocs.io%2Fen%2Flatest%2Fbuilding%2Ftrusted_applications.html%23signing-of-ta=
+s&recipient=3Db3AtdGVlQGxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc%3D) it says to gene=
+rate a keypair with openssl and sign the TAs using the public key as ${TA_SIG=
+N_KEY}. In point 4. the usage of an HSM is described, but since it is not pos=
+sible to extract the private key from an HSM, I wonder how steps 3.-5. are ev=
+en possible. Do you mix the previously generated RSA key with the one from th=
+e HSM? I cannot image that is as it should be.
+Can you please clarify this! Thank you
 
-Thanks,
-Jens
-
---===============8134262316613128696==--
+--===============0072686299421883846==--
 
