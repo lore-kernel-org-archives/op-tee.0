@@ -1,250 +1,122 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
-Date: Thu, 16 Nov 2023 14:46:33 +0530
+Subject: Re: How to sign TAs with an HSM?
+Date: Thu, 16 Nov 2023 16:08:08 +0530
 Message-ID: 
- <CAFA6WYNW7_yJ+f=OJ=16XsvDjkdujaMoa_KXAn36vFufZcX6Pg@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CVI1PR08MB3472350286DC5E2EFC58107BC0B2A=40VI1PR08MB?=
- =?utf-8?q?3472=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+ <CAFA6WYP=N27Up=02Jc=sf3Mtz3VGH0apAESuVnJNzztTVCkmkw@mail.gmail.com>
+In-Reply-To: <9b409109dfa04aebbb1ee34952bc4935@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5320454549672914601=="
+Content-Type: multipart/mixed; boundary="===============6827615990573773588=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5320454549672914601==
+--===============6827615990573773588==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Manish,
+Hi Etienne,
 
-On Tue, 14 Nov 2023 at 16:47, Manish Pandey2 <Manish.Pandey2@arm.com> wrote:
+On Thu, 16 Nov 2023 at 14:23, Etienne CARRIERE - foss
+<etienne.carriere@foss.st.com> wrote:
 >
-> Hi Brian,
+> Dear all,
 >
-> Your usecase is that you want to use SDEI framework to deliver some EL3 int=
-errupts to NS and if your only concern is about system reset the easiest/temp=
- solution would be to disable the G1NS interrupts in OP-TEE dispatcher's syst=
-em RESET hook.
->
-> The generic solution would take some time to implement as i need to analyse=
-/discuss following scenarios before making a decision
->
-> 1. Does secure world really needs EL3 interrupts or it can handle NS-interr=
-upts as FIQ (pre-EHF, do not modify routing model for secure world).
+> The method suggested by J=C3=A9r=C3=B4me is OP-TEE native way to stitch a s=
+ignature computed offline, possibly through a PKCS#11 token.
+> An alternate way was proposed in discussion thread [1]. We proposed to inte=
+grate use of python PKCS#11 support in OP-TEE's sign_encrypt.py script to aut=
+omate the signing process using a PKCS#11 token.
 
-I don't think secure world should handle any EL3 interrupts, the EL3
-firmware should directly trap and handle EL3 interrupts.
-
->  Notification to EL3 can be done using some standard or IMPDEF mechanism. F=
-FA has an ABI for this FFA_EL3_INTR_HANDLE. Current Hafnium implementation fo=
-llows this for G0 interrupts.
-> 2. The PSCI calls for CPU power down/up, migrate, system reset/off do invok=
-e SPD hooks. It need to be carefully analysed whether we really need to disab=
-le G1NS interrupts in these paths or not ? For e.g in CPU power down path the=
- PSCI spec mandates that its caller's responsbility to migrate interrupts fro=
-m the core (so we don't need to do anything special in TF-A code). Similarly =
-for reset/off and migrate we need to analyse what should be the best way to a=
-void this situation.
-
-As per SMCCC spec [1], PSCI calls are part of Standard Secure Service
-Calls which are essentially fast calls defined as below in the spec:
-
-"Fast Calls execute atomic operations. The call appears to be atomic
-from the perspective of the calling
-PE, and returns when the requested operation has completed"
-
-These are non-preemptible. So we should disable all interrupts (EL3 G0
-or EL1 G1NS or EL1 G1S) while handling PSCI calls. I don't think it's
-the responsibility of the OP-TEE dispatcher but rather the generic EL3
-firmware itself. However, if a particular platform is unmasking
-interrupts in OP-TEE while handling PSCI notifications then it's an
-issue which doesn't seem to be the case here.
-
-[1] https://developer.arm.com/documentation/den0028/f/?lang=3Den
+I think using OpenSSL for signing TAs should be a better alternative.
+It has a good concept of provider/engine which has support for
+PKCS#11, TPM etc. And even we can directly input the test key in
+OP-TEE OS tree.
 
 -Sumit
 
+> However, at the time there was demand for such support so I dropped it.
 >
-> Also, i need to work on test infrastructure to simulate these scenarios. It=
- will be useful if your setup can be recreated using OP-TEE/TF-A ?
+> Please tell us if you see an interest in rebasing the proposed change [1] i=
+n OP-TEE OS mainline repository.
+> If so, we could take a bit of time to do this but as usual, feel free to cr=
+eate a P-R and propose the required changes if you rather have them to be rev=
+iewed (eventually merged) in a short time frame.
 >
-> Thanks
-> Manish
->
-> ________________________________
-> From: Olivier Deprez <Olivier.Deprez@arm.com>
-> Sent: 14 November 2023 10:47
-> To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware=
-.org <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@an=
-alog.com>; Neely, Brian <Brian.Neely@analog.com>
-> Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
-> Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI =
-handler
->
-> Hi,
->
-> Cc the OP-TEE mailing list, as I sense this might be more of an OP-TEE (/ O=
-PTEED) design question than TF-A generic.
->
-> I agree with Manish/Achin the best way to eliminate the return by NS interr=
-upt while OP-TEE kernel runs handling a PSCI request is to mask interrupts gl=
-obally in the GIC e.g. from within opteed_system_reset?
->
-> Additional questions:
->
-> On https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psc=
-i/psci_system_off.c#L44
-> The PSCI layer calls into OP-TEE SPD and then resumes OP-TEE to handle the =
-PSCI call in a platform defined manner.
->
-> As suggested here https://github.com/ARM-software/arm-trusted-firmware/blob=
-/master/services/spd/opteed/opteed_pm.c#L233 , it looks this invocation is no=
-t supposed to return into TF-A?
->
-> Did you redefine the weak psci_system_reset function within OP-TEE for your=
- platform?
-> Is this function designed to end up in a loop and never returns to TF-A?
->
-> As a side question, is this an issue that the TF-A's PSCI platform hook is =
-possibly never called https://github.com/ARM-software/arm-trusted-firmware/bl=
-ob/master/lib/psci/psci_system_off.c#L50 ?
+> [1] https://github.com/OP-TEE/optee_os/issues/5284#issuecomment-1112173121
 >
 > Regards,
-> Olivier.
+> Etienne
 >
+> ________________________________________
+> From: J=C3=A9r=C3=B4me Forissier via OP-TEE <op-tee@lists.trustedfirmware=
+.org>
+> Sent: Thursday, November 16, 2023 12:21:25 AM
+> To: Jan Clau=C3=9Fen
+> Cc: op-tee(a)lists.trustedfirmware.org
+> Subject: Re: How to sign TAs with an HSM?
 >
-> ________________________________
-> From: Neely, Brian via TF-A <tf-a@lists.trustedfirmware.org>
-> Sent: 13 November 2023 19:01
-> To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware=
-.org <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@an=
-alog.com>
-> Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI hand=
-ler
+> Hello Jan,
 >
+> I believe the documentation at [1] has some issues and should be revised.
+> Please refer to the output of:
 >
-> Hi Manish,
+>   sign_encrypt.py --help
+>   sign_encrypt.py digest --help
+>   sign_encrypt.py stitch --help
 >
+> The script can be found in optee_os/scripts.
+> From the help text and my recollection if all this, here are some commands
+> that should hopefully help (untested):
 >
+> - To generate the digest (<UUID>.dig) you use "sign_encrypt.py digest":
+> $ sign_encrypt.py digest --uuid <UUID> --in path/to/<UUID>.stripped.elf
+> --key path/to/<your-public-key>.pem --dig <UUID>.dig
 >
-> Just following up on your comment below. Are you planning to provide guidan=
-ce as to which PSCI calls should have NS interrupts masked? Are these changes=
- that should go in the mainline TF-A repo, or do you believe they are specifi=
-c to our use case?
+> - Then you sign the digest with the HSM using pkcs11-tool:
+> $ pkcs11-tool --id <your-key-id> -s --login -m RSA-PKCS-PSS
+> --hash-algorithm SHA256 --mgf MGF1-SHA256 --input-file <UUID>.dig |  base64
+> > <UUID>.sig
 >
+> - Finally to create the signed TA you use "sign_encrypt.py stitch"
+> $ sign_encrypt.py stitch --uuid <UUID> --in path/to/<UUID>.stripped.elf
+> --key <your-public-key>.pem --sig <UUID>.sig --out <UUID>.ta
 >
+> Make sure OP-TEE is built with "make TA_PBLIC_KEY=3D<your-public-key>.pem" =
+as
+> documented in mk/config.mk.
 >
-> Thanks,
+> [1]
+> https://optee.readthedocs.io/en/latest/building/trusted_applications.html#o=
+ffline-signing-of-tas
 >
-> Brian
->
->
->
-> From: Manish Pandey2 via TF-A <tf-a@lists.trustedfirmware.org>
-> Sent: Friday, November 10, 2023 11:31 AM
-> To: tf-a(a)lists.trustedfirmware.org; Ethridge, Caleb <Caleb.Ethridge@ana=
-log.com>
-> Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI hand=
-ler
->
->
->
-> [External]
->
->
->
-> Hi Caleb,
->
->
->
-> The quick answer to your query is to mask the NS interrupts in BL31 (option=
- a), You should not remove the callback to OPTEE as it may need to do its own=
- state maintained before system RESET.
->
->
->
-> There are other scenarios in PSCI (e.g. CPU power down) path which need to =
-consider disabling NS interrupts before invoking Secure world hooks, will pro=
-vide further analysis on those later.
->
->
->
-> Thanks
-> Manish Pandey
->
->
->
-> ________________________________
->
-> From: Caleb Ethridge via TF-A <tf-a(a)lists.trustedfirmware.org<mailto:tf-a=
-@lists.trustedfirmware.org>>
-> Sent: 10 November 2023 15:12
-> To: tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.or=
-g> <tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.org>>
-> Subject: [TF-A] Handling of normal world interrupts with BL31 PSCI handler
->
->
->
-> Hello,
->
-> If normal world interrupts are received while invoking TF-A's PSCI reset ha=
-ndler, we have observed that the reset can be aborted.
->
-> In TF-A's PSCI reset handler, a call out to OP-TEE is made before performin=
-g the platform-specific reset:
-> https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psci/p=
-sci_system_off.c#L44<https://urldefense.com/v3/__https:/github.com/ARM-softwa=
-re/arm-trusted-firmware/blob/master/lib/psci/psci_system_off.c*L44__;Iw!!A3Ni=
-8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZz=
-yiBgwAyngBZMHyWqcCFuQ$>
-> https://github.com/ARM-software/arm-trusted-firmware/blob/master/services/s=
-pd/opteed/opteed_pm.c#L233<https://urldefense.com/v3/__https:/github.com/ARM-=
-software/arm-trusted-firmware/blob/master/services/spd/opteed/opteed_pm.c*L23=
-3__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3Ka=
-kFsaMwnp3xZzyiBgwAyngBZMHypZWQwUQ$>
->
-> When OP-TEE is entered, it is possible to receive foreign (normal world) in=
-terrupts, which invokes the procedure described here: https://optee.readthedo=
-cs.io/en/3.16.0/architecture/core.html#deliver-non-secure-interrupts-to-norma=
-l-world<https://urldefense.com/v3/__https:/optee.readthedocs.io/en/3.16.0/arc=
-hitecture/core.html*deliver-non-secure-interrupts-to-normal-world__;Iw!!A3Ni8=
-CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzy=
-iBgwAyngBZMHzqKZ6_0Q$>
-> When the SMC call is aborted as described above, this results in the reboot=
- failing. Linux does not retry the PSCI reset (https://github.com/torvalds/li=
-nux/blob/master/drivers/firmware/psci/psci.c#L308<https://urldefense.com/v3/_=
-_https:/github.com/torvalds/linux/blob/master/drivers/firmware/psci/psci.c*L3=
-08__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3K=
-akFsaMwnp3xZzyiBgwAyngBZMHwH0cQx8g$>). This makes sense because it is not exp=
-ecting the SMC call to fail (it expected to make an uninterruptable SMC call =
-into the secure monitor, not a call into OP-TEE).
->
-> If OP-TEE itself is setup to handle PSCI reset calls, it also handles them =
-in (uninterruptable) SMC context:
-> https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/psci.c#L140=
-<https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/co=
-re/arch/arm/sm/psci.c*L140__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoi=
-mjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHwHJcYAAQ$>
-> https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/sm_a32.S#L9=
-6<https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/c=
-ore/arch/arm/sm/sm_a32.S*L96__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJf=
-oimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHxqZFTGrA$>
->
-> Based on this, we see two possible solutions:
-> a) Masking the non-secure interrupts in BL31 while we are doing a reset
-> b) Removing the call to OPTEE in the reset handler so that we never leave t=
-he SMC context
->
-> Which option do you suggest? Or are we missing an important detail here?
->
-> Thanks,
->
-> Caleb
+> HTH,
 > --
-> TF-A mailing list -- tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.t=
-rustedfirmware.org>
-> To unsubscribe send an email to tf-a-leave(a)lists.trustedfirmware.org<mail=
-to:tf-a-leave@lists.trustedfirmware.org>
+> Jerome
+>
+> On Wed, Nov 15, 2023 at 7:44=E2=80=AFPM Jan Clau=C3=9Fen <jan.claussen10@=
+web.de> wrote:
+>
+> > I guess the pkcs11-tool is just an example for signing and I would have to
+> > come up with a way to calculate the digest and stitch everything back
+> > together myself, don=E2=80=99t I?
+> >
+> > > Am 15.11.2023 um 19:35 schrieb Jan Clau=C3=9Fen <jan.claussen10@web.d=
+e>:
+> > >
+> > > =EF=BB=BFI had no luck today with the HSM signing. Neither with the des=
+cribed
+> > solution using the pkcs11-tool or openssl with the pkcs11 engine. I also
+> > wonder if the header in the documentation will be the same in any case or
+> > if I have to prepend my own header. This part is not documented. Would be
+> > great if some could get back to me regarding this!
+> > >
+> > >> Am 15.11.2023 um 17:56 schrieb Jan Clau=C3=9Fen <jan.claussen10@web.=
+de>:
+> > >>
+> > >> =EF=BB=BF
+> > >> The example shell script for the pkcs11-tools does not work btw. This
+> > could be fixed!
+> >
+> >
 
---===============5320454549672914601==--
+--===============6827615990573773588==--
 
