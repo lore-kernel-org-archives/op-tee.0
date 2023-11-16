@@ -1,110 +1,61 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Don Harbin <don.harbin@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v3 2/2] optee: allocate shared memory with alloc_pages_exact()
-Date: Thu, 16 Nov 2023 18:06:47 +0530
+Subject: Re: How to sign TAs with an HSM?
+Date: Thu, 16 Nov 2023 08:14:33 -0700
 Message-ID: 
- <CAFA6WYPPrH02aDCiUD6FhC_CzbZaeps++X6yj3FAp9TMr3uLVA@mail.gmail.com>
-In-Reply-To: <20231114095217.1142360-3-jens.wiklander@linaro.org>
+ <CA+HB5jDg=UBdWYe01QynJnL0iC6n0w06OS8EiwD+9aBBBCPULA@mail.gmail.com>
+In-Reply-To: <73DDF5E9-B39C-4321-AA68-FE9EDE1D65B7@getmailspring.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4990418386410135470=="
+Content-Type: multipart/mixed; boundary="===============7509265932987805977=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4990418386410135470==
+--===============7509265932987805977==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, 14 Nov 2023 at 15:22, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
->
-> Allocate memory to share with the secure using alloc_pages_exact()
+Hi Jan,
+>  It works for me now..
+This great news, glad to hear it's working for you!
 
-s/with the secure using/with the secure world using/
+> It would just be great if the documentation could be changed accordingly.
+Agreed, and this is where it would be great if you could help out. ;).  It
+would be helpful if you could take this on since community docs are found
+to be most useful when the actual users contribute.  If you would be
+willing, here's a couple suggestions:
+- First, post this as a docs issue here:
+https://github.com/OP-TEE/optee_docs/issues
+- And second, it would be awesome if you could create a Pull Request
+against that issue for the changes you'd recommend to the docs in that same
+repo.
 
-> instead of alloc_pages() for more efficient memory usage.
->
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/optee/core.c | 20 +++++++++-----------
->  1 file changed, 9 insertions(+), 11 deletions(-)
->
+Thanks in advance and feel free to reach out to me if you have any
+questions,
 
-Apart from nit above, feel free to add:
+Don Harbin
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+TrustedFirmware Community Manager
 
--Sumit
+don.harbin(a)linaro.org
 
-> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index 38ea2fecfc2e..4a4b03b4fc7d 100644
-> --- a/drivers/tee/optee/core.c
-> +++ b/drivers/tee/optee/core.c
-> @@ -26,10 +26,8 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool=
-, struct tee_shm *shm,
->                                                    size_t num_pages,
->                                                    unsigned long start))
->  {
-> -       unsigned int order =3D get_order(size);
-> -       unsigned int nr_pages =3D 1 << order;
-> +       size_t nr_pages =3D roundup(size, PAGE_SIZE) / PAGE_SIZE;
->         struct page **pages;
-> -       struct page *page;
->         unsigned int i;
->         int rc =3D 0;
+
+On Thu, 16 Nov 2023 at 05:26, Jan Claußen <jan.claussen10@web.de> wrote:
+
+> @Jérome You solution worked well. Thank you!
 >
-> @@ -37,13 +35,13 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *poo=
-l, struct tee_shm *shm,
->          * Ignore alignment since this is already going to be page aligned
->          * and there's no need for any larger alignment.
->          */
-> -       page =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
-> -       if (!page)
-> +       shm->kaddr =3D alloc_pages_exact(nr_pages * PAGE_SIZE,
-> +                                      GFP_KERNEL | __GFP_ZERO);
-> +       if (!shm->kaddr)
->                 return -ENOMEM;
+> @Étienne It works for me now, so actually there is no need for me. I also
+> think that for the sake of transparency, it is letting the signing step be
+> done by official tools like openssl or pkcs11-tool is the better solution!
+> It would just be great if the documentation could be changed accordingly.
+> Make clear that the pubkey must be used for the digest and stitch steps
+> Fix the pkcs11-tool command example
 >
-> -       shm->kaddr =3D page_address(page);
-> -       shm->paddr =3D page_to_phys(page);
-> -       shm->size =3D PAGE_SIZE << order;
-> +       shm->paddr =3D virt_to_phys(shm->kaddr);
-> +       shm->size =3D nr_pages * PAGE_SIZE;
+> Maybe mention that the --ta-version flag must be set for some TAs e.g.
+> oemcrypto. This has taken me quite a while to find out. Had to look at the
+> make commands in Yocto.
 >
->         pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
->         if (!pages) {
-> @@ -52,7 +50,7 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool,=
- struct tee_shm *shm,
->         }
->
->         for (i =3D 0; i < nr_pages; i++)
-> -               pages[i] =3D page + i;
-> +               pages[i] =3D virt_to_page((u8 *)shm->kaddr + i * PAGE_SIZE);
->
->         shm->pages =3D pages;
->         shm->num_pages =3D nr_pages;
-> @@ -66,7 +64,7 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool,=
- struct tee_shm *shm,
->
->         return 0;
->  err:
-> -       free_pages((unsigned long)shm->kaddr, order);
-> +       free_pages_exact(shm->kaddr, shm->size);
->         shm->kaddr =3D NULL;
->         return rc;
->  }
-> @@ -77,7 +75,7 @@ void optee_pool_op_free_helper(struct tee_shm_pool *pool,=
- struct tee_shm *shm,
->  {
->         if (shm_unregister)
->                 shm_unregister(shm->ctx, shm);
-> -       free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> +       free_pages_exact(shm->kaddr, shm->size);
->         shm->kaddr =3D NULL;
->         kfree(shm->pages);
->         shm->pages =3D NULL;
-> --
-> 2.34.1
+> Cheers,
+> Jan
 >
 
---===============4990418386410135470==--
+--===============7509265932987805977==--
 
