@@ -1,17 +1,45 @@
-From: Jérôme Forissier <jerome@forissier.org>
+From: Etienne CARRIERE - foss <etienne.carriere@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: How to sign TAs with an HSM?
-Date: Thu, 16 Nov 2023 00:21:25 +0100
-Message-ID: 
- <CAA-cTWZKFYerFgQTQFBF6jFQ8QN7+jQT_6QqQcEJyFCFiHR1yg@mail.gmail.com>
-In-Reply-To: <22295FD3-6EB0-4E2E-936A-B15770F89869@web.de>
+Date: Thu, 16 Nov 2023 08:53:00 +0000
+Message-ID: <9b409109dfa04aebbb1ee34952bc4935@foss.st.com>
+In-Reply-To: <
+ <CAA-cTWZKFYerFgQTQFBF6jFQ8QN7+jQT_6QqQcEJyFCFiHR1yg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1254250773787390757=="
+Content-Type: multipart/mixed; boundary="===============3123481853559718266=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1254250773787390757==
+--===============3123481853559718266==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Dear all,
+
+The method suggested by J=C3=A9r=C3=B4me is OP-TEE native way to stitch a sig=
+nature computed offline, possibly through a PKCS#11 token.
+An alternate way was proposed in discussion thread [1]. We proposed to integr=
+ate use of python PKCS#11 support in OP-TEE's sign_encrypt.py script to autom=
+ate the signing process using a PKCS#11 token. However, at the time there was=
+ demand for such support so I dropped it.
+
+Please tell us if you see an interest in rebasing the proposed change [1] in =
+OP-TEE OS mainline repository.
+If so, we could take a bit of time to do this but as usual, feel free to crea=
+te a P-R and propose the required changes if you rather have them to be revie=
+wed (eventually merged) in a short time frame.
+
+[1] https://github.com/OP-TEE/optee_os/issues/5284#issuecomment-1112173121
+
+Regards,
+Etienne
+
+________________________________________
+From: J=C3=A9r=C3=B4me Forissier via OP-TEE <op-tee@lists.trustedfirmware.o=
+rg>
+Sent: Thursday, November 16, 2023 12:21:25 AM
+To: Jan Clau=C3=9Fen
+Cc: op-tee(a)lists.trustedfirmware.org
+Subject: Re: How to sign TAs with an HSM?
 
 Hello Jan,
 
@@ -47,7 +75,7 @@ https://optee.readthedocs.io/en/latest/building/trusted_applications.html#off=
 line-signing-of-tas
 
 HTH,
---=20
+--
 Jerome
 
 On Wed, Nov 15, 2023 at 7:44=E2=80=AFPM Jan Clau=C3=9Fen <jan.claussen10@we=
@@ -75,5 +103,5 @@ ibed
 >
 >
 
---===============1254250773787390757==--
+--===============3123481853559718266==--
 
