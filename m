@@ -1,201 +1,110 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH v3 1/2] optee: add page list to kernel private shared memory
-Date: Thu, 16 Nov 2023 17:58:35 +0530
+ Re: [PATCH v3 2/2] optee: allocate shared memory with alloc_pages_exact()
+Date: Thu, 16 Nov 2023 18:06:47 +0530
 Message-ID: 
- <CAFA6WYOUZBLtkoy6fpsARYN==Eqr7JymskYDTxbvxxkUjEprfg@mail.gmail.com>
-In-Reply-To: <20231114095217.1142360-2-jens.wiklander@linaro.org>
+ <CAFA6WYPPrH02aDCiUD6FhC_CzbZaeps++X6yj3FAp9TMr3uLVA@mail.gmail.com>
+In-Reply-To: <20231114095217.1142360-3-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3594918535994827278=="
+Content-Type: multipart/mixed; boundary="===============4990418386410135470=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3594918535994827278==
+--===============4990418386410135470==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Tue, 14 Nov 2023 at 15:22, Jens Wiklander <jens.wiklander@linaro.org> wr=
 ote:
 >
-> Until now has kernel private shared memory allocated as dynamic shared
-> memory (not from the static shared memory pool) been returned without a
-> list of physical pages on allocations via RPC. To support allocations
-> larger than one page add a list of physical pages.
+> Allocate memory to share with the secure using alloc_pages_exact()
 
-Although this patch looks like a good cleanup, I can't find an ABI
-change here. Wasn't a list of pages returned earlier too?
+s/with the secure using/with the secure world using/
 
--Sumit
-
+> instead of alloc_pages() for more efficient memory usage.
 >
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
->  drivers/tee/optee/core.c    | 28 +++++++++++++----------
->  drivers/tee/optee/smc_abi.c | 45 +++++++++++++++++--------------------
->  2 files changed, 37 insertions(+), 36 deletions(-)
+>  drivers/tee/optee/core.c | 20 +++++++++-----------
+>  1 file changed, 9 insertions(+), 11 deletions(-)
 >
+
+Apart from nit above, feel free to add:
+
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+
+-Sumit
+
 > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index 2a258bd3b6b5..38ea2fecfc2e 100644
+> index 38ea2fecfc2e..4a4b03b4fc7d 100644
 > --- a/drivers/tee/optee/core.c
 > +++ b/drivers/tee/optee/core.c
-> @@ -27,7 +27,10 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool=
+> @@ -26,10 +26,8 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool=
 , struct tee_shm *shm,
+>                                                    size_t num_pages,
 >                                                    unsigned long start))
 >  {
->         unsigned int order =3D get_order(size);
-> +       unsigned int nr_pages =3D 1 << order;
-> +       struct page **pages;
->         struct page *page;
-> +       unsigned int i;
+> -       unsigned int order =3D get_order(size);
+> -       unsigned int nr_pages =3D 1 << order;
+> +       size_t nr_pages =3D roundup(size, PAGE_SIZE) / PAGE_SIZE;
+>         struct page **pages;
+> -       struct page *page;
+>         unsigned int i;
 >         int rc =3D 0;
 >
->         /*
-> @@ -42,30 +45,29 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *poo=
+> @@ -37,13 +35,13 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *poo=
 l, struct tee_shm *shm,
->         shm->paddr =3D page_to_phys(page);
->         shm->size =3D PAGE_SIZE << order;
+>          * Ignore alignment since this is already going to be page aligned
+>          * and there's no need for any larger alignment.
+>          */
+> -       page =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
+> -       if (!page)
+> +       shm->kaddr =3D alloc_pages_exact(nr_pages * PAGE_SIZE,
+> +                                      GFP_KERNEL | __GFP_ZERO);
+> +       if (!shm->kaddr)
+>                 return -ENOMEM;
 >
-> -       if (shm_register) {
-> -               unsigned int nr_pages =3D 1 << order, i;
-> -               struct page **pages;
-> +       pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
-> +       if (!pages) {
-> +               rc =3D -ENOMEM;
-> +               goto err;
-> +       }
+> -       shm->kaddr =3D page_address(page);
+> -       shm->paddr =3D page_to_phys(page);
+> -       shm->size =3D PAGE_SIZE << order;
+> +       shm->paddr =3D virt_to_phys(shm->kaddr);
+> +       shm->size =3D nr_pages * PAGE_SIZE;
 >
-> -               pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
-> -               if (!pages) {
-> -                       rc =3D -ENOMEM;
-> -                       goto err;
-> -               }
-> +       for (i =3D 0; i < nr_pages; i++)
-> +               pages[i] =3D page + i;
->
-> -               for (i =3D 0; i < nr_pages; i++)
-> -                       pages[i] =3D page + i;
-> +       shm->pages =3D pages;
-> +       shm->num_pages =3D nr_pages;
->
-> +       if (shm_register) {
->                 rc =3D shm_register(shm->ctx, shm, pages, nr_pages,
->                                   (unsigned long)shm->kaddr);
-> -               kfree(pages);
->                 if (rc)
->                         goto err;
+>         pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
+>         if (!pages) {
+> @@ -52,7 +50,7 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool,=
+ struct tee_shm *shm,
 >         }
+>
+>         for (i =3D 0; i < nr_pages; i++)
+> -               pages[i] =3D page + i;
+> +               pages[i] =3D virt_to_page((u8 *)shm->kaddr + i * PAGE_SIZE);
+>
+>         shm->pages =3D pages;
+>         shm->num_pages =3D nr_pages;
+> @@ -66,7 +64,7 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *pool,=
+ struct tee_shm *shm,
 >
 >         return 0;
-> -
 >  err:
->         free_pages((unsigned long)shm->kaddr, order);
-> +       shm->kaddr =3D NULL;
+> -       free_pages((unsigned long)shm->kaddr, order);
+> +       free_pages_exact(shm->kaddr, shm->size);
+>         shm->kaddr =3D NULL;
 >         return rc;
 >  }
->
-> @@ -77,6 +79,8 @@ void optee_pool_op_free_helper(struct tee_shm_pool *pool,=
+> @@ -77,7 +75,7 @@ void optee_pool_op_free_helper(struct tee_shm_pool *pool,=
  struct tee_shm *shm,
->                 shm_unregister(shm->ctx, shm);
->         free_pages((unsigned long)shm->kaddr, get_order(shm->size));
->         shm->kaddr =3D NULL;
-> +       kfree(shm->pages);
-> +       shm->pages =3D NULL;
->  }
->
->  static void optee_bus_scan(struct work_struct *work)
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index d5b28fd35d66..b69410c7cc0a 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -678,10 +678,11 @@ static void handle_rpc_func_cmd_shm_alloc(struct tee_=
-context *ctx,
->                                           struct optee_msg_arg *arg,
->                                           struct optee_call_ctx *call_ctx)
 >  {
-> -       phys_addr_t pa;
->         struct tee_shm *shm;
->         size_t sz;
->         size_t n;
-> +       struct page **pages;
-> +       size_t page_count;
->
->         arg->ret_origin =3D TEEC_ORIGIN_COMMS;
->
-> @@ -716,32 +717,23 @@ static void handle_rpc_func_cmd_shm_alloc(struct tee_=
-context *ctx,
->                 return;
->         }
->
-> -       if (tee_shm_get_pa(shm, 0, &pa)) {
-> -               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> -               goto bad;
-> -       }
-> -
-> -       sz =3D tee_shm_get_size(shm);
-> -
-> -       if (tee_shm_is_dynamic(shm)) {
-> -               struct page **pages;
-> +       /*
-> +        * If there are pages it's dynamically allocated shared memory (not
-> +        * from the reserved shared memory pool) and needs to be
-> +        * registered.
-> +        */
-> +       pages =3D tee_shm_get_pages(shm, &page_count);
-> +       if (pages) {
->                 u64 *pages_list;
-> -               size_t page_num;
-> -
-> -               pages =3D tee_shm_get_pages(shm, &page_num);
-> -               if (!pages || !page_num) {
-> -                       arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
-> -                       goto bad;
-> -               }
->
-> -               pages_list =3D optee_allocate_pages_list(page_num);
-> +               pages_list =3D optee_allocate_pages_list(page_count);
->                 if (!pages_list) {
->                         arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
->                         goto bad;
->                 }
->
->                 call_ctx->pages_list =3D pages_list;
-> -               call_ctx->num_entries =3D page_num;
-> +               call_ctx->num_entries =3D page_count;
->
->                 arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT |
->                                       OPTEE_MSG_ATTR_NONCONTIG;
-> @@ -752,17 +744,22 @@ static void handle_rpc_func_cmd_shm_alloc(struct tee_=
-context *ctx,
->                 arg->params[0].u.tmem.buf_ptr =3D virt_to_phys(pages_list) |
->                         (tee_shm_get_page_offset(shm) &
->                          (OPTEE_MSG_NONCONTIG_PAGE_SIZE - 1));
-> -               arg->params[0].u.tmem.size =3D tee_shm_get_size(shm);
-> -               arg->params[0].u.tmem.shm_ref =3D (unsigned long)shm;
->
-> -               optee_fill_pages_list(pages_list, pages, page_num,
-> +               optee_fill_pages_list(pages_list, pages, page_count,
->                                       tee_shm_get_page_offset(shm));
->         } else {
-> +               phys_addr_t pa;
-> +
-> +               if (tee_shm_get_pa(shm, 0, &pa)) {
-> +                       arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> +                       goto bad;
-> +               }
-> +
->                 arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT;
->                 arg->params[0].u.tmem.buf_ptr =3D pa;
-> -               arg->params[0].u.tmem.size =3D sz;
-> -               arg->params[0].u.tmem.shm_ref =3D (unsigned long)shm;
->         }
-> +       arg->params[0].u.tmem.size =3D tee_shm_get_size(shm);
-> +       arg->params[0].u.tmem.shm_ref =3D (unsigned long)shm;
->
->         arg->ret =3D TEEC_SUCCESS;
->         return;
+>         if (shm_unregister)
+>                 shm_unregister(shm->ctx, shm);
+> -       free_pages((unsigned long)shm->kaddr, get_order(shm->size));
+> +       free_pages_exact(shm->kaddr, shm->size);
+>         shm->kaddr =3D NULL;
+>         kfree(shm->pages);
+>         shm->pages =3D NULL;
 > --
 > 2.34.1
 >
 
---===============3594918535994827278==--
+--===============4990418386410135470==--
 
