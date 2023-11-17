@@ -1,227 +1,69 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v3 1/2] optee: add page list to kernel private shared memory
-Date: Fri, 17 Nov 2023 19:40:16 +0530
+Subject: Re: [PATCH v2 0/2] OP-TEE FF-A notifications
+Date: Fri, 17 Nov 2023 15:42:41 +0100
 Message-ID: 
- <CAFA6WYPf86cP5WUzrTOagMzt3qFhfFSGbA6LEWvpZv_wc9Zm8A@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44GRL-vkXH6CKoL-JamJpk+XV8mWyO+VaE8VVdmqSVa6EQ@mail.gmail.com>>
+ <CAHUa44EXRjDqNjvf5dNVieopKvjVWgXh+NcEN=ec5W489fEORQ@mail.gmail.com>
+In-Reply-To: <20231107160657.3798803-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5653337951030272343=="
+Content-Type: multipart/mixed; boundary="===============5283099777251001998=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5653337951030272343==
+--===============5283099777251001998==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 17 Nov 2023 at 14:00, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
+On Tue, Nov 7, 2023 at 5:07=E2=80=AFPM Jens Wiklander <jens.wiklander@linar=
+o.org> wrote:
 >
-> On Thu, Nov 16, 2023 at 1:28=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org=
-> wrote:
-> >
-> > On Tue, 14 Nov 2023 at 15:22, Jens Wiklander <jens.wiklander@linaro.org=
-> wrote:
-> > >
-> > > Until now has kernel private shared memory allocated as dynamic shared
-> > > memory (not from the static shared memory pool) been returned without a
-> > > list of physical pages on allocations via RPC. To support allocations
-> > > larger than one page add a list of physical pages.
-> >
-> > Although this patch looks like a good cleanup, I can't find an ABI
-> > change here. Wasn't a list of pages returned earlier too?
+> Hi all,
 >
-> No, because handle_rpc_func_cmd_shm_alloc() didn't take the path where
-> optee_allocate_pages_list() is called.
-
-Ah I see, so it is tee_shm_is_dynamic() check being removed here that
-you are referring to. Feel free to add:
-
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
-
--Sumit
-
+> This patchset adds support for using FF-A notifications as a delivery
+> mechanism of asynchronous notifications from OP-TEE running in the secure
+> world. Support for asynchronous notifications via the SMC ABI was added in
+> [1], here we add the counterpart needed when using the the FF-A ABI.
 >
-> Cheers,
+> Support for FF-A notifications is added with [2] and this patch set is based
+> on Sudeeps tree at [3].
+>
+> [1] https://lore.kernel.org/lkml/20211103090255.998070-1-jens.wiklander(a)l=
+inaro.org/
+> [2] https://lore.kernel.org/linux-arm-kernel/20231005-ffa_v1-1_notif-v4-0-c=
+ddd3237809c(a)arm.com/
+> [3] https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux.git/=
+tag/?h=3Dffa-updates-6.7
+>     commit bcefd1bf63b1 ("firmware: arm_ffa: Upgrade the driver version to =
+v1.1")
+>
+> v1->v2:
+> * Applied Sumit's Reviewed-by
+> * Addressed Sumit's comment on "optee: ffa_abi: add asynchronous
+>   notifications"
+>
+> Thanks,
 > Jens
 >
-> >
-> > -Sumit
-> >
-> > >
-> > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > ---
-> > >  drivers/tee/optee/core.c    | 28 +++++++++++++----------
-> > >  drivers/tee/optee/smc_abi.c | 45 +++++++++++++++++--------------------
-> > >  2 files changed, 37 insertions(+), 36 deletions(-)
-> > >
-> > > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> > > index 2a258bd3b6b5..38ea2fecfc2e 100644
-> > > --- a/drivers/tee/optee/core.c
-> > > +++ b/drivers/tee/optee/core.c
-> > > @@ -27,7 +27,10 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool *=
-pool, struct tee_shm *shm,
-> > >                                                    unsigned long start))
-> > >  {
-> > >         unsigned int order =3D get_order(size);
-> > > +       unsigned int nr_pages =3D 1 << order;
-> > > +       struct page **pages;
-> > >         struct page *page;
-> > > +       unsigned int i;
-> > >         int rc =3D 0;
-> > >
-> > >         /*
-> > > @@ -42,30 +45,29 @@ int optee_pool_op_alloc_helper(struct tee_shm_pool =
-*pool, struct tee_shm *shm,
-> > >         shm->paddr =3D page_to_phys(page);
-> > >         shm->size =3D PAGE_SIZE << order;
-> > >
-> > > -       if (shm_register) {
-> > > -               unsigned int nr_pages =3D 1 << order, i;
-> > > -               struct page **pages;
-> > > +       pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
-> > > +       if (!pages) {
-> > > +               rc =3D -ENOMEM;
-> > > +               goto err;
-> > > +       }
-> > >
-> > > -               pages =3D kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
-> > > -               if (!pages) {
-> > > -                       rc =3D -ENOMEM;
-> > > -                       goto err;
-> > > -               }
-> > > +       for (i =3D 0; i < nr_pages; i++)
-> > > +               pages[i] =3D page + i;
-> > >
-> > > -               for (i =3D 0; i < nr_pages; i++)
-> > > -                       pages[i] =3D page + i;
-> > > +       shm->pages =3D pages;
-> > > +       shm->num_pages =3D nr_pages;
-> > >
-> > > +       if (shm_register) {
-> > >                 rc =3D shm_register(shm->ctx, shm, pages, nr_pages,
-> > >                                   (unsigned long)shm->kaddr);
-> > > -               kfree(pages);
-> > >                 if (rc)
-> > >                         goto err;
-> > >         }
-> > >
-> > >         return 0;
-> > > -
-> > >  err:
-> > >         free_pages((unsigned long)shm->kaddr, order);
-> > > +       shm->kaddr =3D NULL;
-> > >         return rc;
-> > >  }
-> > >
-> > > @@ -77,6 +79,8 @@ void optee_pool_op_free_helper(struct tee_shm_pool *p=
-ool, struct tee_shm *shm,
-> > >                 shm_unregister(shm->ctx, shm);
-> > >         free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> > >         shm->kaddr =3D NULL;
-> > > +       kfree(shm->pages);
-> > > +       shm->pages =3D NULL;
-> > >  }
-> > >
-> > >  static void optee_bus_scan(struct work_struct *work)
-> > > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > > index d5b28fd35d66..b69410c7cc0a 100644
-> > > --- a/drivers/tee/optee/smc_abi.c
-> > > +++ b/drivers/tee/optee/smc_abi.c
-> > > @@ -678,10 +678,11 @@ static void handle_rpc_func_cmd_shm_alloc(struct =
-tee_context *ctx,
-> > >                                           struct optee_msg_arg *arg,
-> > >                                           struct optee_call_ctx *call_c=
-tx)
-> > >  {
-> > > -       phys_addr_t pa;
-> > >         struct tee_shm *shm;
-> > >         size_t sz;
-> > >         size_t n;
-> > > +       struct page **pages;
-> > > +       size_t page_count;
-> > >
-> > >         arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> > >
-> > > @@ -716,32 +717,23 @@ static void handle_rpc_func_cmd_shm_alloc(struct =
-tee_context *ctx,
-> > >                 return;
-> > >         }
-> > >
-> > > -       if (tee_shm_get_pa(shm, 0, &pa)) {
-> > > -               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> > > -               goto bad;
-> > > -       }
-> > > -
-> > > -       sz =3D tee_shm_get_size(shm);
-> > > -
-> > > -       if (tee_shm_is_dynamic(shm)) {
-> > > -               struct page **pages;
-> > > +       /*
-> > > +        * If there are pages it's dynamically allocated shared memory =
-(not
-> > > +        * from the reserved shared memory pool) and needs to be
-> > > +        * registered.
-> > > +        */
-> > > +       pages =3D tee_shm_get_pages(shm, &page_count);
-> > > +       if (pages) {
-> > >                 u64 *pages_list;
-> > > -               size_t page_num;
-> > > -
-> > > -               pages =3D tee_shm_get_pages(shm, &page_num);
-> > > -               if (!pages || !page_num) {
-> > > -                       arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
-> > > -                       goto bad;
-> > > -               }
-> > >
-> > > -               pages_list =3D optee_allocate_pages_list(page_num);
-> > > +               pages_list =3D optee_allocate_pages_list(page_count);
-> > >                 if (!pages_list) {
-> > >                         arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
-> > >                         goto bad;
-> > >                 }
-> > >
-> > >                 call_ctx->pages_list =3D pages_list;
-> > > -               call_ctx->num_entries =3D page_num;
-> > > +               call_ctx->num_entries =3D page_count;
-> > >
-> > >                 arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT=
- |
-> > >                                       OPTEE_MSG_ATTR_NONCONTIG;
-> > > @@ -752,17 +744,22 @@ static void handle_rpc_func_cmd_shm_alloc(struct =
-tee_context *ctx,
-> > >                 arg->params[0].u.tmem.buf_ptr =3D virt_to_phys(pages_li=
-st) |
-> > >                         (tee_shm_get_page_offset(shm) &
-> > >                          (OPTEE_MSG_NONCONTIG_PAGE_SIZE - 1));
-> > > -               arg->params[0].u.tmem.size =3D tee_shm_get_size(shm);
-> > > -               arg->params[0].u.tmem.shm_ref =3D (unsigned long)shm;
-> > >
-> > > -               optee_fill_pages_list(pages_list, pages, page_num,
-> > > +               optee_fill_pages_list(pages_list, pages, page_count,
-> > >                                       tee_shm_get_page_offset(shm));
-> > >         } else {
-> > > +               phys_addr_t pa;
-> > > +
-> > > +               if (tee_shm_get_pa(shm, 0, &pa)) {
-> > > +                       arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> > > +                       goto bad;
-> > > +               }
-> > > +
-> > >                 arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT;
-> > >                 arg->params[0].u.tmem.buf_ptr =3D pa;
-> > > -               arg->params[0].u.tmem.size =3D sz;
-> > > -               arg->params[0].u.tmem.shm_ref =3D (unsigned long)shm;
-> > >         }
-> > > +       arg->params[0].u.tmem.size =3D tee_shm_get_size(shm);
-> > > +       arg->params[0].u.tmem.shm_ref =3D (unsigned long)shm;
-> > >
-> > >         arg->ret =3D TEEC_SUCCESS;
-> > >         return;
-> > > --
-> > > 2.34.1
-> > >
+> Jens Wiklander (2):
+>   optee: provide optee_do_bottom_half() as a common function
+>   optee: ffa_abi: add asynchronous notifications
+>
+>  drivers/tee/optee/call.c          | 31 ++++++++++-
+>  drivers/tee/optee/ffa_abi.c       | 93 ++++++++++++++++++++++++++++++-
+>  drivers/tee/optee/optee_ffa.h     | 28 ++++++++--
+>  drivers/tee/optee/optee_private.h |  9 ++-
+>  drivers/tee/optee/smc_abi.c       | 36 ++----------
+>  5 files changed, 155 insertions(+), 42 deletions(-)
+>
+>
+> base-commit: bcefd1bf63b1ec9bb08067021cf47f0fad96f395
+> --
+> 2.34.1
+>
 
---===============5653337951030272343==--
+I'm picking up this.
+
+Thanks,
+Jens
+
+--===============5283099777251001998==--
 
