@@ -1,268 +1,318 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Manish Pandey2 <Manish.Pandey2@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH] tee: tstee: Add initial Trusted Services TEE driver
-Date: Mon, 20 Nov 2023 13:31:56 +0530
-Message-ID: 
- <CAFA6WYOc2MdKTsUpJwQ3xrcQ3iDTCnhki9LdqgdfR8KsEC8TRQ@mail.gmail.com>
-In-Reply-To: <536A08FF-5E98-4BA9-B6BC-E817D4C3F5A2@arm.com>
+Subject: 
+ Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
+Date: Mon, 20 Nov 2023 12:34:57 +0000
+Message-ID: <AM6PR08MB34611001F145450D0053C92EC0B4A@AM6PR08MB3461.eurprd08.prod.outlook.com>
+In-Reply-To: <
+ <CAFA6WYNW7_yJ+f=OJ=16XsvDjkdujaMoa_KXAn36vFufZcX6Pg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7633843726918401855=="
+Content-Type: multipart/mixed; boundary="===============1247852968043030253=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7633843726918401855==
+--===============1247852968043030253==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 14 Nov 2023 at 20:02, Balint Dobszay <balint.dobszay@arm.com> wrote:
->
-> Hi Sumit,
->
-> Apologies for the delay.
->
-> On 31 Oct 2023, at 12:39, Sumit Garg wrote:
-> > On Tue, 31 Oct 2023 at 00:05, Balint Dobszay <balint.dobszay@arm.com> w=
-rote:
-> >> On 26 Oct 2023, at 8:52, Sumit Garg wrote:
-> >>> On Fri, 20 Oct 2023 at 19:22, Balint Dobszay <balint.dobszay@arm.com>=
- wrote:
-> >>>> On 13 Oct 2023, at 14:47, Sumit Garg wrote:
-> >>>>> On Wed, 27 Sept 2023 at 20:56, Balint Dobszay <balint.dobszay@arm.c=
-om> wrote:
-> >>>>
-> >>>> [snip]
-> >>>>
-> >>>>>> diff --git a/drivers/tee/tstee/core.c b/drivers/tee/tstee/core.c
-> >>>>>> new file mode 100644
-> >>>>>> index 000000000000..c0194638b7da
-> >>>>>> --- /dev/null
-> >>>>>> +++ b/drivers/tee/tstee/core.c
-> >>>>>> @@ -0,0 +1,473 @@
-> >>>>>> +// SPDX-License-Identifier: GPL-2.0-only
-> >>>>>> +/*
-> >>>>>> + * Copyright (c) 2023, Arm Limited
-> >>>>>> + */
-> >>>>>> +
-> >>>>>> +#define DRIVER_NAME "Arm TSTEE"
-> >>>>>> +#define pr_fmt(fmt) DRIVER_NAME ": " fmt
-> >>>>>> +
-> >>>>>> +#include <linux/arm_ffa.h>
-> >>>>>> +#include <linux/err.h>
-> >>>>>> +#include <linux/errno.h>
-> >>>>>> +#include <linux/kernel.h>
-> >>>>>> +#include <linux/limits.h>
-> >>>>>> +#include <linux/list.h>
-> >>>>>> +#include <linux/mm.h>
-> >>>>>> +#include <linux/module.h>
-> >>>>>> +#include <linux/scatterlist.h>
-> >>>>>> +#include <linux/slab.h>
-> >>>>>> +#include <linux/stat.h>
-> >>>>>> +#include <linux/tee_drv.h>
-> >>>>>> +#include <linux/types.h>
-> >>>>>> +#include <linux/uaccess.h>
-> >>>>>> +
-> >>>>>> +#include "tstee_private.h"
-> >>>>>> +
-> >>>>>> +#define FFA_INVALID_MEM_HANDLE U64_MAX
-> >>>>>> +
-> >>>>>> +static void arg_list_to_ffa_data(const u32 *args, struct ffa_send_d=
-irect_data *data)
-> >>>>>> +{
-> >>>>>> +       data->data0 =3D args[0];
-> >>>>>> +       data->data1 =3D args[1];
-> >>>>>> +       data->data2 =3D args[2];
-> >>>>>> +       data->data3 =3D args[3];
-> >>>>>> +       data->data4 =3D args[4];
-> >>>>>> +}
-> >>>>>> +
-> >>>>>> +static void arg_list_from_ffa_data(const struct ffa_send_direct_dat=
-a *data, u32 *args)
-> >>>>>> +{
-> >>>>>> +       args[0] =3D lower_32_bits(data->data0);
-> >>>>>> +       args[1] =3D lower_32_bits(data->data1);
-> >>>>>> +       args[2] =3D lower_32_bits(data->data2);
-> >>>>>> +       args[3] =3D lower_32_bits(data->data3);
-> >>>>>> +       args[4] =3D lower_32_bits(data->data4);
-> >>>>>> +}
-> >>>>>> +
-> >>>>>> +static void tstee_get_version(struct tee_device *teedev, struct tee=
-_ioctl_version_data *vers)
-> >>>>>> +{
-> >>>>>> +       struct tstee *tstee =3D tee_get_drvdata(teedev);
-> >>>>>> +       struct tee_ioctl_version_data v =3D {
-> >>>>>> +               .impl_id =3D TEE_IMPL_ID_TSTEE,
-> >>>>>> +               .impl_caps =3D tstee->ffa_dev->vm_id,
-> >>>>>
-> >>>>> So while exploring the user-space interface, I observed an anomaly
-> >>>>> here. The ".impl_caps" refers to "Implementation specific
-> >>>>> capabilities" meant to support backwards compatibility of a particular
-> >>>>> TEE implementation. But here I observe you are using it instead for
-> >>>>> endpoint_id. Can you provide the reasoning behind it? Also, do you
-> >>>>> plan to support multiple endpoints via this driver?
-> >>>>
-> >>>> The mapping between Trusted Services SPs and TEE devices is 1:1, i.e.
-> >>>> each /dev/tee<n> device represents exactly one FF-A endpoint. To answer
-> >>>> your second question, each instance of the driver represents a single
-> >>>> endpoint, multiple endpoints are supported by having multiple instances
-> >>>> of the driver.
-> >>>
-> >>> I don't follow you here. How multiple instances of "arm_tstee" driver
-> >>> going to work? Also, I can only see a single FF-A based device:
-> >>> TS_RPC_UUID being probed here.
-> >>
-> >> My terminology regarding "multiple instances of the driver" was
-> >> incorrect, apologies. What I meant was that tstee_probe() gets called
-> >> multiple times, thus allocating multiple instances of "struct tstee".
-> >>
-> >> All of the Trusted Services SPs use the same FF-A UUID (TS_RPC_UUID).
-> >> These will show up on the FF-A bus in Linux as multiple devices, having
-> >> the same FF-A UUID, but different endpoint IDs, e.g.
-> >>
-> >> Name            FF-A EP ID    FF-A UUID
-> >> ------------    ----------    -----------------------------------
-> >> OP-TEE          0x8001        486178e0-e7f8-11e3-bc5e0002a5d5c51b
-> >> TS ITS SP       0x8002        bdcd76d7-825e-4751-963b86d4f84943ac
-> >> TS Crypto SP    0x8003        bdcd76d7-825e-4751-963b86d4f84943ac
-> >> TS Attest SP    0x8003        bdcd76d7-825e-4751-963b86d4f84943ac
-> >>
-> >> Each of the Trusted Services FF-A devices will match the single UUID
-> >> present in tstee_device_ids[], so tstee_probe() will be called multiple
-> >> times, each time with a different FF-A device as argument. In the probe
-> >> function a new TEE device is allocated, and a new "struct tstee" which
-> >> represents the connection between a particular ffa_device and
-> >> tee_device.
-> >
-> > I can see now how it works but allocation of a tee_device for every
-> > ffa_device seems an overkill here. I suppose standalone secure
-> > partitions are somewhat analogous to trusted applications. I don't
-> > think we really need separate TEE devices in order to communicate with
-> > different secure partitions.
->
-> Makes sense, I was thinking about this too. In an earlier version of
-> this driver I implemented a similar approach to what you've suggested,
-> code available at [1]. However, there were some places where the single
-> TEE device solution had shortcomings, that's why I ended up with the
-> current version. I think from a layering point of view an SP is more
-> similar to a TEE. In Trusted Services an SP can host one or multiple
-> services, each one is identified by a service UUID and defines service
-> specific operations and parameters. IMO these services are analogous to
-> TAs and the collection of services accessible by a common RPC protocol
-> is analogous to a TEE.
->
-> > Based on whatever I have understood as of now regarding this
-> > interface, it should work with single TEE device as follows:
-> >
-> > - During tstee_probe(), create a list of FF-A devices (representing
-> > SPs) and create a single TEE device representing TSTEE RPC protocol.
->
-> This is fine, basically this is what I've implemented in [1].
->
-> > - During open session IOCTL, pass endpoint ID as an argument and check
-> > if corresponding FF-A device is present in the list. If present then
-> > you can return session ID derived from the endpoint ID to the
-> > user-space client.
->
-> There is an issue here: unless static endpoint IDs are used, user space
-> has to be able to discover the endpoint IDs assigned to this driver
-> first (i.e. currently using tee_ioctl_version_data.impl_caps that we've
-> been discussing in the other thread). If there is only a single TEE
-> device for all SPs, the impl_caps solution cannot be used. In [1] the
-> workaround I implemented for this was to have a special case in the
-> invoke_func() op that doesn't actually do a call to SWd, but just
-> gathers the list of available endpoint IDs and returns them to user
-> space. I think this is probably not in line with the intended usage of
-> this ioctl, but couldn't find a better way.
+Hi Sumit/Brian/Caleb
 
-Don't you think we need to provide unique static endpoint IDs for
-services supporting the RPC protocol? Are these currently dynamically
-allocated? How does user-space know if the endpoint ID belongs to
-attestation service or crypto service?
+This discussion started with the requirement mentioned here [1] and then the =
+side effect of it mentioned here [2]
 
->
-> Also, the current solution maps well to the TEE subsystem concepts of a
-> context and a session. The context represents a connection to an SP, one
-> or more services can be opened in the SP represented by sessions in that
-> context. In the future we plan to introduce some form of login/
-> authentication mechanism for services in TS SPs where the related fields
-> in open_session ioctl's argument would be useful. However, if a session
-> would represent a whole SP, a new solution would be needed - specific to
-> this driver - for representing the services inside the SP and passing
-> the login/authentication arguments in the ioctl.
->
-> > - For all further invoke commands IOCTL, you can retrieve endpoint ID
-> > from session ID and then talk to corresponding FF-A device.
->
-> There is an issue with the memory sharing operations. The SHM alloc
-> ioctl doesn't have a session ID field in its input argument struct, i.e.
-> the memory share operation is "context specific", not "session
-> specific". If a single TEE device is representing all TS SPs, when
-> invoking an SHM alloc ioctl on that device there is no way to convey
-> information about the destination endpoint ID to the driver.
+The question in [1] was "I'm seeing some strange behavior when NS interrupts =
+are routed to EL3 as FIQs (due to EHF)"
+I want to understand from Brian/Caleb that for your use case do you want to h=
+ave a different routing model for OP-TEE with your new requirement or you wan=
+t to keep it same. Just because you wanted to pull in EHF for NS world, you g=
+et side-effect in secure world?
 
-Okay I see that as a major limiting factor to the approach I proposed.
-The generic TEE driver design is to share memory at once with
-underlying TEE implementation (TSTEE in this case). It can then be
-further reused to communicate with multiple TAs.
+There are couple of things we are discussing in this thread
+1. Should interrupts be disabled when invoking SPD hooks in PSCI calls?
+  - It can be done in generic PSCI code (for RESET)
 
-However, in trusted services the user-space has to separately share
-memory with each trusted service using endpoint ID. That's the major
-reason I see that we have to create a separate TEE device for each
-trusted service. I would like to see that reasoning in the commit
-message description as well as the documentation for TSTEE.
+2. Is there a need for changing Secure OS routing model just because EHF has =
+been pulled in EL3 ? for e.g. OP-TEE running without EHF (in EL3) will have d=
+ifferent routing model for FIQs compared to OP-TEE on top of EL3 with EHF.  C=
+urrent OP-TEE must have a mechanism to route NS interrupts to NS world, which=
+ can be re-used.
+
+What EHF basically does is changes the routing model of foreign interrupts (S=
+CR_EL3.FIQ =3D 1) for both secure(except SPM/hafnium) and NS.
+For NS world it means : G1S and G0 interrupts are routed to EL3
+For Secure world it means : G1NS and G0 are routed to EL3
+The only two known use cases for EHF was to support Firmware First handling (=
+only for NS world) and SPM_MM (in secure world).
+
+What I am proposing is to change the EL3 code in such a way that we change FI=
+Q routing model just for known use cases (Always for NS world and for secure =
+world only if SPM_MM is present). This will require a change similar to [3].
+This is also inline with the design of Externa aborts routing to EL3 (SCR_EL3=
+.EA =3D 1). This routing selectively done for NS world (HANDLE_EA_EL3_FIRST_N=
+S) only as we do not have any use cases where Secure world needs it.
+
+On your comments Sumit:
+>I don't think secure world should handle any EL3 interrupts, the EL3 firmwar=
+e should directly trap and handle EL3 interrupts.
+  - I don't think the worry is about actual EL3 interrupts, I guess its NS in=
+terrupts which gets triggered as EL3 interrupt (after pulling in EHF)
+
+>Fast Calls execute atomic operations. The call appears to be atomic from the=
+ perspective of the calling PE, and returns when the requested operation has =
+completed
+   - This holds true even if the SMC calls gets interrupted but the control d=
+oes not goes back to the caller location.
+
+[1] https://lists.trustedfirmware.org/archives/list/tf-a(a)lists.trustedfirmw=
+are.org/thread/HDFDUBNCEHPV7VS7EOHZC6QH3ERZDHND/#2RLBVV34AAXWCHZZUTUICKC3TRWV=
+RFPM
+[2] https://lists.trustedfirmware.org/archives/list/tf-a(a)lists.trustedfirmw=
+are.org/thread/MU56V7FRNLC6DF7Q4KP2FHKOKEDZVP6E/
+[3] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/25034
+
+Thanks
+Manish
+
+________________________________
+From: Sumit Garg <sumit.garg@linaro.org>
+Sent: 16 November 2023 09:16
+To: Manish Pandey2 <Manish.Pandey2@arm.com>
+Cc: Olivier Deprez <Olivier.Deprez@arm.com>; tf-a(a)lists.trustedfirmware.o=
+rg <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@anal=
+og.com>; Neely, Brian <Brian.Neely@analog.com>; op-tee(a)lists.trustedfirmw=
+are.org <op-tee@lists.trustedfirmware.org>
+Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI ha=
+ndler
+
+Hi Manish,
+
+On Tue, 14 Nov 2023 at 16:47, Manish Pandey2 <Manish.Pandey2@arm.com> wrote:
+>
+> Hi Brian,
+>
+> Your usecase is that you want to use SDEI framework to deliver some EL3 int=
+errupts to NS and if your only concern is about system reset the easiest/temp=
+ solution would be to disable the G1NS interrupts in OP-TEE dispatcher's syst=
+em RESET hook.
+>
+> The generic solution would take some time to implement as i need to analyse=
+/discuss following scenarios before making a decision
+>
+> 1. Does secure world really needs EL3 interrupts or it can handle NS-interr=
+upts as FIQ (pre-EHF, do not modify routing model for secure world).
+
+I don't think secure world should handle any EL3 interrupts, the EL3
+firmware should directly trap and handle EL3 interrupts.
+
+>  Notification to EL3 can be done using some standard or IMPDEF mechanism. F=
+FA has an ABI for this FFA_EL3_INTR_HANDLE. Current Hafnium implementation fo=
+llows this for G0 interrupts.
+> 2. The PSCI calls for CPU power down/up, migrate, system reset/off do invok=
+e SPD hooks. It need to be carefully analysed whether we really need to disab=
+le G1NS interrupts in these paths or not ? For e.g in CPU power down path the=
+ PSCI spec mandates that its caller's responsbility to migrate interrupts fro=
+m the core (so we don't need to do anything special in TF-A code). Similarly =
+for reset/off and migrate we need to analyse what should be the best way to a=
+void this situation.
+
+As per SMCCC spec [1], PSCI calls are part of Standard Secure Service
+Calls which are essentially fast calls defined as below in the spec:
+
+"Fast Calls execute atomic operations. The call appears to be atomic
+from the perspective of the calling
+PE, and returns when the requested operation has completed"
+
+These are non-preemptible. So we should disable all interrupts (EL3 G0
+or EL1 G1NS or EL1 G1S) while handling PSCI calls. I don't think it's
+the responsibility of the OP-TEE dispatcher but rather the generic EL3
+firmware itself. However, if a particular platform is unmasking
+interrupts in OP-TEE while handling PSCI notifications then it's an
+issue which doesn't seem to be the case here.
+
+[1] https://developer.arm.com/documentation/den0028/f/?lang=3Den
 
 -Sumit
 
 >
-> In [1] the workaround I implemented for this was that only a single
-> session can be opened in a context, i.e.:
+> Also, i need to work on test infrastructure to simulate these scenarios. It=
+ will be useful if your setup can be recreated using OP-TEE/TF-A ?
 >
-> - Open the single TEE device, available endpoint IDs not known yet.
-> - Use the "special case" in invoke_func() to get the list of available
->   endpoint IDs.
-> - Open a session in the existing context, pass the selected endpoint ID
->   as an argument. This operation binds the context to this session, when
->   doing a memory share in this context the destination endpoint ID will
->   be the endpoint ID of the single session existing in this context.
-> - Opening a second session in the same context is not allowed. In order
->   to communicate with another endpoint the TEE device has to be opened
->   again, thus creating a new context.
+> Thanks
+> Manish
 >
-> This is working, but I think it's rather a workaround than a proper
-> solution, regarding the single session per context limitation.
+> ________________________________
+> From: Olivier Deprez <Olivier.Deprez@arm.com>
+> Sent: 14 November 2023 10:47
+> To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware=
+.org <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@an=
+alog.com>; Neely, Brian <Brian.Neely@analog.com>
+> Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
+> Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI =
+handler
 >
-> > IMO, this way it would be more scalable and efficient usage of a TEE devi=
-ce.
+> Hi,
 >
-> Yes, on one hand I see your concern and agree with your suggestion. On
-> the other hand because of the issues I've described above the single TEE
-> device solution IMHO is less ergonomic, i.e. requires more workarounds
-> and special cases than my current proposal. Also, based on my experience
-> so far the expected maximum number of SPs in a system is not huge (usually
-> less than 10, my guess is a few 10s at the very maximum in the future).
+> Cc the OP-TEE mailing list, as I sense this might be more of an OP-TEE (/ O=
+PTEED) design question than TF-A generic.
 >
-> > On a side note, I would suggest you document Trusted Services TEE for
-> > the next patch revision.
+> I agree with Manish/Achin the best way to eliminate the return by NS interr=
+upt while OP-TEE kernel runs handling a PSCI request is to mask interrupts gl=
+obally in the GIC e.g. from within opteed_system_reset?
 >
-> Sure, will do.
+> Additional questions:
 >
-> >> I think a similar scenario would be if we had e.g. Hafnium as S-EL2 SPMC
-> >> and two OP-TEE instances as S-EL1 SPs running under Hafnium. In this
-> >> case the FF-A devices representing the OP-TEE instances would have the
-> >> same FF-A UUID but different endpoint IDs. The OP-TEE driver in Linux
-> >> would register two TEE devices for the two OP-TEE SPs.
-> >
-> > Do you have any particular use-case where two or more OP-TEE instances
-> > will be required by a single VM (Linux)? Those different TEE devices
-> > are intended to represent different TEE implementations (following
-> > unique communication protocol stack).
+> On https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psc=
+i/psci_system_off.c#L44
+> The PSCI layer calls into OP-TEE SPD and then resumes OP-TEE to handle the =
+PSCI call in a platform defined manner.
 >
-> No, this was just a theoretical example. I think it is feasible from a
-> technical point of view, but probably not a useful setup in real life.
+> As suggested here https://github.com/ARM-software/arm-trusted-firmware/blob=
+/master/services/spd/opteed/opteed_pm.c#L233 , it looks this invocation is no=
+t supposed to return into TF-A?
+>
+> Did you redefine the weak psci_system_reset function within OP-TEE for your=
+ platform?
+> Is this function designed to end up in a loop and never returns to TF-A?
+>
+> As a side question, is this an issue that the TF-A's PSCI platform hook is =
+possibly never called https://github.com/ARM-software/arm-trusted-firmware/bl=
+ob/master/lib/psci/psci_system_off.c#L50 ?
 >
 > Regards,
-> Balint
+> Olivier.
 >
-> [1] https://gitlab.arm.com/linux-arm/linux-trusted-services/-/blob/tee-v1.1=
-.2/core.c?ref_type=3Dtags
+>
+> ________________________________
+> From: Neely, Brian via TF-A <tf-a@lists.trustedfirmware.org>
+> Sent: 13 November 2023 19:01
+> To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware=
+.org <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@an=
+alog.com>
+> Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI hand=
+ler
+>
+>
+> Hi Manish,
+>
+>
+>
+> Just following up on your comment below. Are you planning to provide guidan=
+ce as to which PSCI calls should have NS interrupts masked? Are these changes=
+ that should go in the mainline TF-A repo, or do you believe they are specifi=
+c to our use case?
+>
+>
+>
+> Thanks,
+>
+> Brian
+>
+>
+>
+> From: Manish Pandey2 via TF-A <tf-a@lists.trustedfirmware.org>
+> Sent: Friday, November 10, 2023 11:31 AM
+> To: tf-a(a)lists.trustedfirmware.org; Ethridge, Caleb <Caleb.Ethridge@ana=
+log.com>
+> Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI hand=
+ler
+>
+>
+>
+> [External]
+>
+>
+>
+> Hi Caleb,
+>
+>
+>
+> The quick answer to your query is to mask the NS interrupts in BL31 (option=
+ a), You should not remove the callback to OPTEE as it may need to do its own=
+ state maintained before system RESET.
+>
+>
+>
+> There are other scenarios in PSCI (e.g. CPU power down) path which need to =
+consider disabling NS interrupts before invoking Secure world hooks, will pro=
+vide further analysis on those later.
+>
+>
+>
+> Thanks
+> Manish Pandey
+>
+>
+>
+> ________________________________
+>
+> From: Caleb Ethridge via TF-A <tf-a(a)lists.trustedfirmware.org<mailto:tf-a=
+@lists.trustedfirmware.org>>
+> Sent: 10 November 2023 15:12
+> To: tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.or=
+g> <tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.org>>
+> Subject: [TF-A] Handling of normal world interrupts with BL31 PSCI handler
+>
+>
+>
+> Hello,
+>
+> If normal world interrupts are received while invoking TF-A's PSCI reset ha=
+ndler, we have observed that the reset can be aborted.
+>
+> In TF-A's PSCI reset handler, a call out to OP-TEE is made before performin=
+g the platform-specific reset:
+> https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psci/p=
+sci_system_off.c#L44<https://urldefense.com/v3/__https:/github.com/ARM-softwa=
+re/arm-trusted-firmware/blob/master/lib/psci/psci_system_off.c*L44__;Iw!!A3Ni=
+8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZz=
+yiBgwAyngBZMHyWqcCFuQ$>
+> https://github.com/ARM-software/arm-trusted-firmware/blob/master/services/s=
+pd/opteed/opteed_pm.c#L233<https://urldefense.com/v3/__https:/github.com/ARM-=
+software/arm-trusted-firmware/blob/master/services/spd/opteed/opteed_pm.c*L23=
+3__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3Ka=
+kFsaMwnp3xZzyiBgwAyngBZMHypZWQwUQ$>
+>
+> When OP-TEE is entered, it is possible to receive foreign (normal world) in=
+terrupts, which invokes the procedure described here: https://optee.readthedo=
+cs.io/en/3.16.0/architecture/core.html#deliver-non-secure-interrupts-to-norma=
+l-world<https://urldefense.com/v3/__https:/optee.readthedocs.io/en/3.16.0/arc=
+hitecture/core.html*deliver-non-secure-interrupts-to-normal-world__;Iw!!A3Ni8=
+CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzy=
+iBgwAyngBZMHzqKZ6_0Q$>
+> When the SMC call is aborted as described above, this results in the reboot=
+ failing. Linux does not retry the PSCI reset (https://github.com/torvalds/li=
+nux/blob/master/drivers/firmware/psci/psci.c#L308<https://urldefense.com/v3/_=
+_https:/github.com/torvalds/linux/blob/master/drivers/firmware/psci/psci.c*L3=
+08__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3K=
+akFsaMwnp3xZzyiBgwAyngBZMHwH0cQx8g$>). This makes sense because it is not exp=
+ecting the SMC call to fail (it expected to make an uninterruptable SMC call =
+into the secure monitor, not a call into OP-TEE).
+>
+> If OP-TEE itself is setup to handle PSCI reset calls, it also handles them =
+in (uninterruptable) SMC context:
+> https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/psci.c#L140=
+<https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/co=
+re/arch/arm/sm/psci.c*L140__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoi=
+mjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHwHJcYAAQ$>
+> https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/sm_a32.S#L9=
+6<https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/c=
+ore/arch/arm/sm/sm_a32.S*L96__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJf=
+oimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHxqZFTGrA$>
+>
+> Based on this, we see two possible solutions:
+> a) Masking the non-secure interrupts in BL31 while we are doing a reset
+> b) Removing the call to OPTEE in the reset handler so that we never leave t=
+he SMC context
+>
+> Which option do you suggest? Or are we missing an important detail here?
+>
+> Thanks,
+>
+> Caleb
+> --
+> TF-A mailing list -- tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.t=
+rustedfirmware.org>
+> To unsubscribe send an email to tf-a-leave(a)lists.trustedfirmware.org<mail=
+to:tf-a-leave@lists.trustedfirmware.org>
 
---===============7633843726918401855==--
+--===============1247852968043030253==--
 
