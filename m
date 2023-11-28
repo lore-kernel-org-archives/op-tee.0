@@ -1,14 +1,14 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- [PATCH v2] tee: Use iov_iter to better support shared buffer registration
-Date: Mon, 27 Nov 2023 17:12:22 +0000
-Message-ID: <20231127171207.285554-1-arnaud.pouliquen@foss.st.com>
+ [PATCH v3] tee: Use iov_iter to better support shared buffer registration
+Date: Tue, 28 Nov 2023 08:19:57 +0000
+Message-ID: <20231128081928.329420-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7121595105307365687=="
+Content-Type: multipart/mixed; boundary="===============7447707433640712248=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7121595105307365687==
+--===============7447707433640712248==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -20,7 +20,10 @@ Suggested-by: Christoph Hellwig <hch@infradead.org>
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
 
-update from V1 to V2:
+Update from V2 to V3:
+- break lines longer than 80 columns.
+
+Update from V1 to V2:
 - replace ITER_SOURCE by ITER_DEST flag in tee_shm_register_user_buf(),
 - replace IS_ERR_OR NULL(shm) by IS_ERR(shm) in tee_shm_register_user_buf().
 
@@ -43,14 +46,14 @@ nstructions
 [3] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47dd3=
 9fb2(a)foss.st.com/T/#maca0a1fc897aadd54c7deac432e11473fe970d1d
 ---
- drivers/tee/tee_shm.c | 72 +++++++++++++++++++++++--------------------
- 1 file changed, 38 insertions(+), 34 deletions(-)
+ drivers/tee/tee_shm.c | 77 ++++++++++++++++++++++++-------------------
+ 1 file changed, 43 insertions(+), 34 deletions(-)
 
 diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 673cf0359494..4a24b9942938 100644
+index 673cf0359494..fe0a205be7ef 100644
 --- a/drivers/tee/tee_shm.c
 +++ b/drivers/tee/tee_shm.c
-@@ -22,23 +22,13 @@ static void shm_put_kernel_pages(struct page **pages, siz=
+@@ -22,23 +22,16 @@ static void shm_put_kernel_pages(struct page **pages, siz=
 e_t page_count)
  		put_page(pages[n]);
  }
@@ -69,8 +72,10 @@ e_t page_count)
 -	page =3D virt_to_page((void *)start);
 -	for (n =3D 0; n < page_count; n++) {
 -		pages[n] =3D page + n;
-+	/* iov_iter_extract_kvec_pages does not get reference on the pages, get a p=
-in on them. */
++	/*
++	 * iov_iter_extract_kvec_pages does not get reference on the pages,
++	 * get a pin on them.
++	 */
 +	for (n =3D 0; n < page_count; n++)
  		get_page(pages[n]);
 -	}
@@ -79,7 +84,7 @@ in on them. */
  }
 =20
  static void release_registered_pages(struct tee_shm *shm)
-@@ -214,13 +204,12 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_conte=
+@@ -214,13 +207,13 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_conte=
 xt *ctx, size_t size)
  EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
 =20
@@ -87,7 +92,8 @@ xt *ctx, size_t size)
 -register_shm_helper(struct tee_context *ctx, unsigned long addr,
 -		    size_t length, u32 flags, int id)
 +register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flag=
-s, int id)
+s,
++		    int id)
  {
  	struct tee_device *teedev =3D ctx->teedev;
  	struct tee_shm *shm;
@@ -98,7 +104,7 @@ s, int id)
  	void *ret;
  	int rc;
 =20
-@@ -245,31 +234,31 @@ register_shm_helper(struct tee_context *ctx, unsigned l=
+@@ -245,31 +238,32 @@ register_shm_helper(struct tee_context *ctx, unsigned l=
 ong addr,
  	shm->flags =3D flags;
  	shm->ctx =3D ctx;
@@ -133,8 +139,8 @@ ong addr,
 -		if (rc >=3D 0)
 -			rc =3D -ENOMEM;
 -		ret =3D ERR_PTR(rc);
-+	len =3D iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0, &=
-off);
++	len =3D iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0,
++				     &off);
 +	if (len !=3D length) {
 +		ret =3D len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
  		goto err_put_shm_pages;
@@ -147,7 +153,7 @@ off);
  	rc =3D teedev->desc->ops->shm_register(ctx, shm, shm->pages,
  					     shm->num_pages, start);
  	if (rc) {
-@@ -307,6 +296,8 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_cont=
+@@ -307,6 +301,8 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_cont=
 ext *ctx,
  	u32 flags =3D TEE_SHM_USER_MAPPED | TEE_SHM_DYNAMIC;
  	struct tee_device *teedev =3D ctx->teedev;
@@ -157,7 +163,7 @@ ext *ctx,
  	void *ret;
  	int id;
 =20
-@@ -319,7 +310,10 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_con=
+@@ -319,7 +315,10 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_con=
 text *ctx,
  	if (id < 0)
  		return ERR_PTR(id);
@@ -170,7 +176,7 @@ text *ctx,
  	if (IS_ERR(shm)) {
  		mutex_lock(&teedev->mutex);
  		idr_remove(&teedev->idr, id);
-@@ -351,9 +345,19 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_con=
+@@ -351,9 +350,19 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_con=
 text *ctx,
  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
  					    void *addr, size_t length)
@@ -196,5 +202,5 @@ text *ctx,
 2.25.1
 
 
---===============7121595105307365687==--
+--===============7447707433640712248==--
 
