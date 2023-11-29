@@ -1,52 +1,231 @@
-From: Dnyanesh Warade <dnyanesh@dygnify.com>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Seeking information on TA development with OpTEE
-Date: Wed, 29 Nov 2023 16:02:51 +0000
-Message-ID: 
- <CANgx15ZVPOsXWOoqgW9tc_SENDJjtvwUDVtR3qRpX7DYfFQLVg@mail.gmail.com>
+Subject: 
+ [PATCH v4] tee: Use iov_iter to better support shared buffer registration
+Date: Wed, 29 Nov 2023 16:45:05 +0000
+Message-ID: <20231129164439.1130903-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1227893323341305973=="
+Content-Type: multipart/mixed; boundary="===============6463289118020709252=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1227893323341305973==
+--===============6463289118020709252==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Currently it's not possible to register kernel buffers with TEE
+which are allocated via vmalloc.
 
-I am Dnyanesh and am reaching out to understand a few specifics on Op TEE
-and custom TA  development and deployment of the same.
+Use iov_iter and associated helper functions to manage the page
+registration for all type of memories.
 
-The background is that we at Dygnify <https://linktr.ee/dygnify> were
-recently adjudged Winner
-<https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=3D56547> for
-Problem Statement 3: Exploring use cases/solutions for CBDC-R transactions,
-including transactions in offline mode, at Reserve bank of India(India's
-Central bank) second edition of its global hackathon - "HaRBInger 2023 -
-Innovation for Transformation=E2=80=9D with the theme =E2=80=98Inclusive Digi=
-tal Services=E2=80=99.
+Suggested-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+Update from V3 to V4:
+- improve commit message,
+- use import_ubuf() instead of iov_iter_init(),
+- move shm_get_kernel_pages in register_shm_helper,
+- put back untagged_addr in register_shm_helper(),
+- move the comment related to pin pages from shm_get_kernel_pages()
+  to register_shm_helper().
 
-Our solution, a mobile application on encrypted SMS rails for CBDC-Retail
-transactions works without the internet. It is an inclusive, affordable and
-safe solution as it caters to both banked and unbanked users, works on
-smartphones and feature phones, remote as well as proximity payments and
-large as well as small-ticket transactions.
+Update from V2 to V3:
+- break lines longer than 80 columns.
 
-In order to build an additional layer of security for our proposed
-application, we want to process some critical part of our application as TA
-in the TEE of the phone. For this, we want to understand OpTEE as on 2023,
-as the documentation seems quite old.
+Update from V1 to V2:
+- replace ITER_SOURCE by ITER_DEST flag in tee_shm_register_user_buf(),
+- replace IS_ERR_OR NULL(shm) by IS_ERR(shm) in tee_shm_register_user_buf().
 
-In this context, may we request you to kindly let us know on:
-1. How many processors currently as on 2023 supports the OpTEE?
-2. What is the current market size of android phones with OpTEE?
-3. Once developed done, how the deployment of TA can be achieved
-on different phones with android OS?
-4. Can we get any support in TA development apart from available
-documentation from trusted firmware side?
+V1:
+The support of buffer registration allocated with vmalloc is no more
+available since c83900393aa1 ("tee: Remove vmalloc page support").
 
-Regards,
-Dnyanesh
+This patch is an alternative to a revert and resulted from a discussion
+with Christopher Hellwig [1].
 
---===============1227893323341305973==--
+This patch has been tested using xtest tool in optee qemu environment [2]
+and using the series related to the remoteproc tee that should be
+proposed soon [3].
+
+References:
+[1] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47dd3=
+9fb2(a)foss.st.com/T/#m8ec683c44fcd9b69c2aee42eaed0793afac9dd18in
+[2] https://optee.readthedocs.io/en/latest/building/devices/qemu.html#build-i=
+nstructions
+[3] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47dd3=
+9fb2(a)foss.st.com/T/#maca0a1fc897aadd54c7deac432e11473fe970d1d
+---
+ drivers/tee/tee_shm.c | 83 ++++++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 673cf0359494..ac73e8143233 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -22,23 +22,12 @@ static void shm_put_kernel_pages(struct page **pages, siz=
+e_t page_count)
+ 		put_page(pages[n]);
+ }
+=20
+-static int shm_get_kernel_pages(unsigned long start, size_t page_count,
+-				struct page **pages)
++static void shm_get_kernel_pages(struct page **pages, size_t page_count)
+ {
+-	struct page *page;
+ 	size_t n;
+=20
+-	if (WARN_ON_ONCE(is_vmalloc_addr((void *)start) ||
+-			 is_kmap_addr((void *)start)))
+-		return -EINVAL;
+-
+-	page =3D virt_to_page((void *)start);
+-	for (n =3D 0; n < page_count; n++) {
+-		pages[n] =3D page + n;
++	for (n =3D 0; n < page_count; n++)
+ 		get_page(pages[n]);
+-	}
+-
+-	return page_count;
+ }
+=20
+ static void release_registered_pages(struct tee_shm *shm)
+@@ -214,13 +203,14 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_conte=
+xt *ctx, size_t size)
+ EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
+=20
+ static struct tee_shm *
+-register_shm_helper(struct tee_context *ctx, unsigned long addr,
+-		    size_t length, u32 flags, int id)
++register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flag=
+s,
++		    int id)
+ {
+ 	struct tee_device *teedev =3D ctx->teedev;
+ 	struct tee_shm *shm;
+-	unsigned long start;
+-	size_t num_pages;
++	unsigned long start, addr;
++	size_t num_pages, off;
++	ssize_t len;
+ 	void *ret;
+ 	int rc;
+=20
+@@ -245,31 +235,38 @@ register_shm_helper(struct tee_context *ctx, unsigned l=
+ong addr,
+ 	shm->flags =3D flags;
+ 	shm->ctx =3D ctx;
+ 	shm->id =3D id;
+-	addr =3D untagged_addr(addr);
++	addr =3D untagged_addr((unsigned long)iter_iov_addr(iter));
+ 	start =3D rounddown(addr, PAGE_SIZE);
+-	shm->offset =3D addr - start;
+-	shm->size =3D length;
+-	num_pages =3D (roundup(addr + length, PAGE_SIZE) - start) / PAGE_SIZE;
++	num_pages =3D iov_iter_npages(iter, INT_MAX);
++	if (!num_pages) {
++		ret =3D ERR_PTR(-ENOMEM);
++		goto err_ctx_put;
++	}
++
+ 	shm->pages =3D kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
+ 	if (!shm->pages) {
+ 		ret =3D ERR_PTR(-ENOMEM);
+ 		goto err_free_shm;
+ 	}
+=20
+-	if (flags & TEE_SHM_USER_MAPPED)
+-		rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
+-					 shm->pages);
+-	else
+-		rc =3D shm_get_kernel_pages(start, num_pages, shm->pages);
+-	if (rc > 0)
+-		shm->num_pages =3D rc;
+-	if (rc !=3D num_pages) {
+-		if (rc >=3D 0)
+-			rc =3D -ENOMEM;
+-		ret =3D ERR_PTR(rc);
+-		goto err_put_shm_pages;
++	len =3D iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0,
++				     &off);
++	if (unlikely(len <=3D 0)) {
++		ret =3D len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
++		goto err_free_shm_pages;
+ 	}
+=20
++	/*
++	 * iov_iter_extract_kvec_pages does not get reference on the pages,
++	 * get a pin on them.
++	 */
++	if (iov_iter_is_kvec(iter))
++		shm_get_kernel_pages(shm->pages, num_pages);
++
++	shm->offset =3D off;
++	shm->size =3D len;
++	shm->num_pages =3D num_pages;
++
+ 	rc =3D teedev->desc->ops->shm_register(ctx, shm, shm->pages,
+ 					     shm->num_pages, start);
+ 	if (rc) {
+@@ -279,10 +276,11 @@ register_shm_helper(struct tee_context *ctx, unsigned l=
+ong addr,
+=20
+ 	return shm;
+ err_put_shm_pages:
+-	if (flags & TEE_SHM_USER_MAPPED)
++	if (!iov_iter_is_kvec(iter))
+ 		unpin_user_pages(shm->pages, shm->num_pages);
+ 	else
+ 		shm_put_kernel_pages(shm->pages, shm->num_pages);
++err_free_shm_pages:
+ 	kfree(shm->pages);
+ err_free_shm:
+ 	kfree(shm);
+@@ -307,8 +305,9 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_cont=
+ext *ctx,
+ 	u32 flags =3D TEE_SHM_USER_MAPPED | TEE_SHM_DYNAMIC;
+ 	struct tee_device *teedev =3D ctx->teedev;
+ 	struct tee_shm *shm;
++	struct iov_iter iter;
+ 	void *ret;
+-	int id;
++	int id, err;
+=20
+ 	if (!access_ok((void __user *)addr, length))
+ 		return ERR_PTR(-EFAULT);
+@@ -319,7 +318,11 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_con=
+text *ctx,
+ 	if (id < 0)
+ 		return ERR_PTR(id);
+=20
+-	shm =3D register_shm_helper(ctx, addr, length, flags, id);
++	err =3D import_ubuf(ITER_DEST, (void __user *)addr, length, &iter);
++	if (err)
++		return ERR_PTR(err);
++
++	shm =3D register_shm_helper(ctx, &iter, flags, id);
+ 	if (IS_ERR(shm)) {
+ 		mutex_lock(&teedev->mutex);
+ 		idr_remove(&teedev->idr, id);
+@@ -352,8 +355,14 @@ struct tee_shm *tee_shm_register_kernel_buf(struct tee_c=
+ontext *ctx,
+ 					    void *addr, size_t length)
+ {
+ 	u32 flags =3D TEE_SHM_DYNAMIC;
++	struct kvec kvec;
++	struct iov_iter iter;
++
++	kvec.iov_base =3D addr;
++	kvec.iov_len =3D length;
++	iov_iter_kvec(&iter, ITER_DEST, &kvec, 1, length);
+=20
+-	return register_shm_helper(ctx, (unsigned long)addr, length, flags, -1);
++	return register_shm_helper(ctx, &iter, flags, -1);
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
+=20
+--=20
+2.25.1
+
+
+--===============6463289118020709252==--
 
