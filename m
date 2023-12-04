@@ -1,46 +1,81 @@
-From: Jerome Forissier <jerome.forissier@linaro.org>
+From: Randy Li <ayaka@soulik.info>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: optee: os: toolchains would include linux target macros likes __linux__
-Date: Mon, 04 Dec 2023 18:08:59 +0100
-Message-ID: <b66dc60e-78ad-46f6-9ad6-430f288af018@linaro.org>
+Subject: Re: Could secure monitor let op-tee handle secure interrupter?
+Date: Tue, 05 Dec 2023 01:09:26 +0800
+Message-ID: <1f282d44-7593-47f2-9572-131323f846a1@soulik.info>
 In-Reply-To: <
- <CAHUa44FEkdtA+4AuoQnNEnObKzcUX3qkFD8iV8Z_pGJ7ZPWw2A@mail.gmail.com>>
+ <CAFA6WYOUbix72jQ=UW8r_UspngBwVetnn89OdkN3skuzBqMhgg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3599784587892621199=="
+Content-Type: multipart/mixed; boundary="===============3866785494565667152=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3599784587892621199==
+--===============3866785494565667152==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
 
-
-On 12/4/23 17:34, Jens Wiklander wrote:
+On 2023/12/4 21:54, Sumit Garg wrote:
 > Hi Randy,
-> 
-> On Mon, Dec 4, 2023 at 2:39 PM Randy Li <ayaka@soulik.info> wrote:
->>
+>
+> On Mon, 27 Nov 2023 at 13:03, Randy Li via OP-TEE
+> <op-tee@lists.trustedfirmware.org> wrote:
 >> Hello
 >>
->> I wonder why Optee OS would use a linux target toolchains but not a bare
->> metal target(none os)?
-> 
-> I guess it started with that we didn't want to download both one Linux
-> and one bare metal toolchain. We need both AArch32 and AArch64
-> versions so it doubles up.
+>> I was wondering whether the current op-tee os support this that secure
+>> monitor would trigger the op-tee to handle the native interrupter
+>> without forwarding it to the REE?
+> I would suggest you to go through this doc [1] to see if it answers
+> all your questions. If not then let us know, we will help to clarify
+> further.
+>
+> [1] https://optee.readthedocs.io/en/latest/architecture/core.html#interrupt=
+-handling
+>
+> -Sumit
 
-To expand on this: when building a complete OP-TEE setup like we do with
-https://github.com/OP-TEE/manifest, there are many different runtime
-environments: the Linux kernel, client applications, OP-TEE OS, Trusted
-Applications, EL3 firmware... Some of them require a Linux toolchain
-(the OP-TEE client library, tee-supplicant as well as the client
-applications). So the idea was, if we could build all the software with a
-Linux toolchain, it would simplify things. Since then we found out there
-are caveats but it mostly works.
+"When a secure interrupt is signaled by the Arm GIC, it shall reach the=20
+OP-TEE OS interrupt exception vector. If the secure world is executing,=20
+OP-TEE OS will handle interrupt straight from its exception vector."
 
--- 
-Jerome
+And Section "Deliver secure interrupt to secure world when SCR_NS is set"
 
---===============3599784587892621199==--
+I think those are the answer to my initial question.
+
+But I didn't see such practice. In the recent changes to Linux kernel,=20
+likes OP-TEE notifications, I think the most of platforms would like not=20
+let the Secure OS handle the devices' interrupters? I didn't know such a=20
+driver in Linux kernel either.
+
+When a CPU core, which is holding a spinlock, have been restored to=20
+Secure context by monitor, would it halt the other cores which are=20
+waiting for the release of that spinlock?
+
+Besides, when we use a spinlock in the kernel, in the most of time, we=20
+except all IRQs are masked(spin_lock_irqsave), could this masked the=20
+secure interrupter?
+
+Also, I didn't see there is a guideline about how OP-TEE os should=20
+handle native interrupt in this case. If it took too much time, it may=20
+lead an innocent process be regarded as hardlockup (or softlockup if it=20
+turns to REE after all) in the linux kernel.
+
+>> If the answer is yes, could it lead to a dead lock when the linux kernel
+>> is holding a spinlock(usually irq is disabled in that CPU core) ?
+>>
+>> I didn't find much about how should we handle the secure interrupter
+>> from document, the general way seems to either forward it to REE or just
+>> don't use the secure interrupter at all.
+>>
+>> Let the REE handle the interrupter may not be a good idea, since the
+>> device could we should ack the interrupter in it, is protected by the
+>> trustzone, we need to switch CPU to secure mode to handle this tiny task.
+>>
+>> I wish I could know more solution about the interrupter here.
+>>
+>> Sincerely
+>>
+>> Randy
+>>
+
+--===============3866785494565667152==--
 
