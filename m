@@ -1,56 +1,59 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 0/2] OP-TEE kernel private shared memory optimizations
-Date: Mon, 04 Dec 2023 17:11:14 +0100
+Subject: 
+ Re: optee: os: toolchains would include linux target macros likes __linux__
+Date: Mon, 04 Dec 2023 17:34:10 +0100
 Message-ID: 
- <CAHUa44Hw5=91VpE9T_vtv=2+Pmy5=zH4yMnSiAAWFedxEihXPg@mail.gmail.com>
-In-Reply-To: <20231114095217.1142360-1-jens.wiklander@linaro.org>
+ <CAHUa44FEkdtA+4AuoQnNEnObKzcUX3qkFD8iV8Z_pGJ7ZPWw2A@mail.gmail.com>
+In-Reply-To: <bfba8d2c-646d-4d62-9f71-8e388e70f782@soulik.info>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1773262240184916106=="
+Content-Type: multipart/mixed; boundary="===============8930268645734130431=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1773262240184916106==
+--===============8930268645734130431==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 14, 2023 at 10:52 AM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
->
-> Hi,
->
-> This patch set optimizes OP-TEE driver private shared memory allocated as
-> dynamic shared memory (not from the static shared memory pool). The first
-> patch handles kernel private RPC allocatations larger than one page and the
-> second changes from alloc_pages_exact() instead of alloc_pages() for more
-> efficient memory usage.
->
-> v1->v2:
-> * Split into two patches as requested
->
-> v2->v3:
-> * Simplified optee_pool_op_alloc_helper() by always doing the same thing
->
-> Thanks,
-> Jens
->
-> Jens Wiklander (2):
->   optee: add page list to kernel private shared memory
->   optee: allocate shared memory with alloc_pages_exact()
->
->  drivers/tee/optee/core.c    | 44 +++++++++++++++++++-----------------
->  drivers/tee/optee/smc_abi.c | 45 +++++++++++++++++--------------------
->  2 files changed, 44 insertions(+), 45 deletions(-)
->
->
-> base-commit: 05d3ef8bba77c1b5f98d941d8b2d4aeab8118ef1
-> --
-> 2.34.1
->
+Hi Randy,
 
-I'm picking up this.
+On Mon, Dec 4, 2023 at 2:39=E2=80=AFPM Randy Li <ayaka@soulik.info> wrote:
+>
+> Hello
+>
+> I wonder why Optee OS would use a linux target toolchains but not a bare
+> metal target(none os)?
 
-Thanks,
+I guess it started with that we didn't want to download both one Linux
+and one bare metal toolchain. We need both AArch32 and AArch64
+versions so it doubles up.
+
+>
+> gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-g=
+nu-gcc
+> -dM -E - < /dev/null|grep linux
+> #define __linux 1
+> #define __gnu_linux__ 1
+> #define linux 1
+> #define __linux__ 1
+>
+> That makes hard to share a header files between Linux kernel and Optee.
+> We like to pass some structure in SHM, but optee don't have all those
+> Linux types likes <linux/types.h>.
+
+Surely you can define a .h file in a way that you can include it in
+both environments. We try to stick to ISO C.
+
+>
+> If optee didn't choose the toolchains for the Linux, we could easily
+> decide which part would use for Client Agent(Linux kernel) side or TEE
+> OS side.
+>
+> Why we don't use bare metal toolchains ?
+
+Feel free to do so.
+
+Cheers,
 Jens
 
---===============1773262240184916106==--
+--===============8930268645734130431==--
 
