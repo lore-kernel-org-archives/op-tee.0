@@ -1,56 +1,56 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Could secure monitor let op-tee handle secure interrupter?
-Date: Mon, 04 Dec 2023 19:24:32 +0530
+Subject: Re: [PATCH v3 0/2] OP-TEE kernel private shared memory optimizations
+Date: Mon, 04 Dec 2023 17:11:14 +0100
 Message-ID: 
- <CAFA6WYOUbix72jQ=UW8r_UspngBwVetnn89OdkN3skuzBqMhgg@mail.gmail.com>
-In-Reply-To: <de1c35aa-1cbf-450a-9953-eee557c8e8ce@soulik.info>
+ <CAHUa44Hw5=91VpE9T_vtv=2+Pmy5=zH4yMnSiAAWFedxEihXPg@mail.gmail.com>
+In-Reply-To: <20231114095217.1142360-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2745615026001543363=="
+Content-Type: multipart/mixed; boundary="===============1773262240184916106=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2745615026001543363==
+--===============1773262240184916106==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Randy,
-
-On Mon, 27 Nov 2023 at 13:03, Randy Li via OP-TEE
-<op-tee@lists.trustedfirmware.org> wrote:
+On Tue, Nov 14, 2023 at 10:52 AM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
 >
-> Hello
+> Hi,
 >
-> I was wondering whether the current op-tee os support this that secure
-> monitor would trigger the op-tee to handle the native interrupter
-> without forwarding it to the REE?
-
-I would suggest you to go through this doc [1] to see if it answers
-all your questions. If not then let us know, we will help to clarify
-further.
-
-[1] https://optee.readthedocs.io/en/latest/architecture/core.html#interrupt-h=
-andling
-
--Sumit
-
+> This patch set optimizes OP-TEE driver private shared memory allocated as
+> dynamic shared memory (not from the static shared memory pool). The first
+> patch handles kernel private RPC allocatations larger than one page and the
+> second changes from alloc_pages_exact() instead of alloc_pages() for more
+> efficient memory usage.
 >
-> If the answer is yes, could it lead to a dead lock when the linux kernel
-> is holding a spinlock(usually irq is disabled in that CPU core) ?
+> v1->v2:
+> * Split into two patches as requested
 >
-> I didn't find much about how should we handle the secure interrupter
-> from document, the general way seems to either forward it to REE or just
-> don't use the secure interrupter at all.
+> v2->v3:
+> * Simplified optee_pool_op_alloc_helper() by always doing the same thing
 >
-> Let the REE handle the interrupter may not be a good idea, since the
-> device could we should ack the interrupter in it, is protected by the
-> trustzone, we need to switch CPU to secure mode to handle this tiny task.
+> Thanks,
+> Jens
 >
-> I wish I could know more solution about the interrupter here.
+> Jens Wiklander (2):
+>   optee: add page list to kernel private shared memory
+>   optee: allocate shared memory with alloc_pages_exact()
 >
-> Sincerely
+>  drivers/tee/optee/core.c    | 44 +++++++++++++++++++-----------------
+>  drivers/tee/optee/smc_abi.c | 45 +++++++++++++++++--------------------
+>  2 files changed, 44 insertions(+), 45 deletions(-)
 >
-> Randy
+>
+> base-commit: 05d3ef8bba77c1b5f98d941d8b2d4aeab8118ef1
+> --
+> 2.34.1
 >
 
---===============2745615026001543363==--
+I'm picking up this.
+
+Thanks,
+Jens
+
+--===============1773262240184916106==--
 
