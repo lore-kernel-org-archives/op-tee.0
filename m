@@ -1,46 +1,56 @@
-From: Randy Li <ayaka@soulik.info>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- optee: os: toolchains would include linux target macros likes __linux__
-Date: Mon, 04 Dec 2023 21:39:14 +0800
-Message-ID: <bfba8d2c-646d-4d62-9f71-8e388e70f782@soulik.info>
+Subject: Re: Could secure monitor let op-tee handle secure interrupter?
+Date: Mon, 04 Dec 2023 19:24:32 +0530
+Message-ID: 
+ <CAFA6WYOUbix72jQ=UW8r_UspngBwVetnn89OdkN3skuzBqMhgg@mail.gmail.com>
+In-Reply-To: <de1c35aa-1cbf-450a-9953-eee557c8e8ce@soulik.info>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1300780907760153709=="
+Content-Type: multipart/mixed; boundary="===============2745615026001543363=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1300780907760153709==
+--===============2745615026001543363==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello
+Hi Randy,
 
-I wonder why Optee OS would use a linux target toolchains but not a bare=20
-metal target(none os)?
+On Mon, 27 Nov 2023 at 13:03, Randy Li via OP-TEE
+<op-tee@lists.trustedfirmware.org> wrote:
+>
+> Hello
+>
+> I was wondering whether the current op-tee os support this that secure
+> monitor would trigger the op-tee to handle the native interrupter
+> without forwarding it to the REE?
 
-gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu=
--gcc=20
--dM -E - < /dev/null|grep linux
-#define __linux 1
-#define __gnu_linux__ 1
-#define linux 1
-#define __linux__ 1
+I would suggest you to go through this doc [1] to see if it answers
+all your questions. If not then let us know, we will help to clarify
+further.
 
-That makes hard to share a header files between Linux kernel and Optee.=C2=A0=
-=20
-We like to pass some structure in SHM, but optee don't have all those=20
-Linux types likes <linux/types.h>.
+[1] https://optee.readthedocs.io/en/latest/architecture/core.html#interrupt-h=
+andling
 
-If optee didn't choose the toolchains for the Linux, we could easily=20
-decide which part would use for Client Agent(Linux kernel) side or TEE=20
-OS side.
+-Sumit
 
-Why we don't use bare metal toolchains ?
+>
+> If the answer is yes, could it lead to a dead lock when the linux kernel
+> is holding a spinlock(usually irq is disabled in that CPU core) ?
+>
+> I didn't find much about how should we handle the secure interrupter
+> from document, the general way seems to either forward it to REE or just
+> don't use the secure interrupter at all.
+>
+> Let the REE handle the interrupter may not be a good idea, since the
+> device could we should ack the interrupter in it, is protected by the
+> trustzone, we need to switch CPU to secure mode to handle this tiny task.
+>
+> I wish I could know more solution about the interrupter here.
+>
+> Sincerely
+>
+> Randy
+>
 
-
-Thank you
-
-Randy Li
-
-
---===============1300780907760153709==--
+--===============2745615026001543363==--
 
