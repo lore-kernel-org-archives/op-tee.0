@@ -1,229 +1,84 @@
-From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- [PATCH v5] tee: Use iov_iter to better support shared buffer registration
-Date: Tue, 05 Dec 2023 16:23:48 +0000
-Message-ID: <20231205162330.196259-1-arnaud.pouliquen@foss.st.com>
+ Re: [PATCH v4] tee: Use iov_iter to better support shared buffer registration
+Date: Tue, 05 Dec 2023 16:55:49 +0000
+Message-ID: <c9d5c8b8-ca5e-4593-b7ff-707f21dee91f@foss.st.com>
+In-Reply-To: <dfa547c0-e889-4ac6-94c5-344905a6644f@kernel.dk>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0675680248698308604=="
+Content-Type: multipart/mixed; boundary="===============3379512744036128099=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0675680248698308604==
+--===============3379512744036128099==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Currently it's not possible to register kernel buffers with TEE
-which are allocated via vmalloc.
+hi Jens Axboe, Al Viro,
 
-Use iov_iter and associated helper functions to manage the page
-registration for all type of memories.
-
-Suggested-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
----
-Update from V4 to V5:
-- replace import_ubuf() by iov_iter_ubuf(),
-- fix comment in register_shm_helper() function.
-
-Update from V3 to V4:
-- improve commit message,
-- use import_ubuf() instead of iov_iter_init(),
-- move shm_get_kernel_pages in register_shm_helper,
-- put back untagged_addr in register_shm_helper(),
-- move the comment related to pin pages from shm_get_kernel_pages()
-  to register_shm_helper().
-
-Update from V2 to V3:
-- break lines longer than 80 columns.
-
-Update from V1 to V2:
-- replace ITER_SOURCE by ITER_DEST flag in tee_shm_register_user_buf(),
-- replace IS_ERR_OR NULL(shm) by IS_ERR(shm) in tee_shm_register_user_buf().
-
-V1:
-The support of buffer registration allocated with vmalloc is no more
-available since c83900393aa1 ("tee: Remove vmalloc page support").
-
-This patch is an alternative to a revert and resulted from a discussion
-with Christopher Hellwig [1].
-
-This patch has been tested using xtest tool in optee qemu environment [2]
-and using the series related to the remoteproc tee that should be
-proposed soon [3].
-
-References:
-[1] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47dd3=
-9fb2(a)foss.st.com/T/#m8ec683c44fcd9b69c2aee42eaed0793afac9dd18in
-[2] https://optee.readthedocs.io/en/latest/building/devices/qemu.html#build-i=
-nstructions
-[3] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47dd3=
-9fb2(a)foss.st.com/T/#maca0a1fc897aadd54c7deac432e11473fe970d1d
----
- drivers/tee/tee_shm.c | 78 +++++++++++++++++++++++--------------------
- 1 file changed, 42 insertions(+), 36 deletions(-)
-
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 673cf0359494..731d9028b67f 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -22,23 +22,12 @@ static void shm_put_kernel_pages(struct page **pages, siz=
-e_t page_count)
- 		put_page(pages[n]);
- }
-=20
--static int shm_get_kernel_pages(unsigned long start, size_t page_count,
--				struct page **pages)
-+static void shm_get_kernel_pages(struct page **pages, size_t page_count)
- {
--	struct page *page;
- 	size_t n;
-=20
--	if (WARN_ON_ONCE(is_vmalloc_addr((void *)start) ||
--			 is_kmap_addr((void *)start)))
--		return -EINVAL;
--
--	page =3D virt_to_page((void *)start);
--	for (n =3D 0; n < page_count; n++) {
--		pages[n] =3D page + n;
-+	for (n =3D 0; n < page_count; n++)
- 		get_page(pages[n]);
--	}
--
--	return page_count;
- }
-=20
- static void release_registered_pages(struct tee_shm *shm)
-@@ -214,13 +203,14 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_conte=
-xt *ctx, size_t size)
- EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
-=20
- static struct tee_shm *
--register_shm_helper(struct tee_context *ctx, unsigned long addr,
--		    size_t length, u32 flags, int id)
-+register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flag=
-s,
-+		    int id)
- {
- 	struct tee_device *teedev =3D ctx->teedev;
- 	struct tee_shm *shm;
--	unsigned long start;
--	size_t num_pages;
-+	unsigned long start, addr;
-+	size_t num_pages, off;
-+	ssize_t len;
- 	void *ret;
- 	int rc;
-=20
-@@ -245,31 +235,38 @@ register_shm_helper(struct tee_context *ctx, unsigned l=
-ong addr,
- 	shm->flags =3D flags;
- 	shm->ctx =3D ctx;
- 	shm->id =3D id;
--	addr =3D untagged_addr(addr);
-+	addr =3D untagged_addr((unsigned long)iter_iov_addr(iter));
- 	start =3D rounddown(addr, PAGE_SIZE);
--	shm->offset =3D addr - start;
--	shm->size =3D length;
--	num_pages =3D (roundup(addr + length, PAGE_SIZE) - start) / PAGE_SIZE;
-+	num_pages =3D iov_iter_npages(iter, INT_MAX);
-+	if (!num_pages) {
-+		ret =3D ERR_PTR(-ENOMEM);
-+		goto err_ctx_put;
-+	}
-+
- 	shm->pages =3D kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
- 	if (!shm->pages) {
- 		ret =3D ERR_PTR(-ENOMEM);
- 		goto err_free_shm;
- 	}
-=20
--	if (flags & TEE_SHM_USER_MAPPED)
--		rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
--					 shm->pages);
--	else
--		rc =3D shm_get_kernel_pages(start, num_pages, shm->pages);
--	if (rc > 0)
--		shm->num_pages =3D rc;
--	if (rc !=3D num_pages) {
--		if (rc >=3D 0)
--			rc =3D -ENOMEM;
--		ret =3D ERR_PTR(rc);
--		goto err_put_shm_pages;
-+	len =3D iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0,
-+				     &off);
-+	if (unlikely(len <=3D 0)) {
-+		ret =3D len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
-+		goto err_free_shm_pages;
- 	}
-=20
-+	/*
-+	 * iov_iter_extract_kvec_pages does not get reference on the pages,
-+	 * get a reference on them.
-+	 */
-+	if (iov_iter_is_kvec(iter))
-+		shm_get_kernel_pages(shm->pages, num_pages);
-+
-+	shm->offset =3D off;
-+	shm->size =3D len;
-+	shm->num_pages =3D num_pages;
-+
- 	rc =3D teedev->desc->ops->shm_register(ctx, shm, shm->pages,
- 					     shm->num_pages, start);
- 	if (rc) {
-@@ -279,10 +276,11 @@ register_shm_helper(struct tee_context *ctx, unsigned l=
-ong addr,
-=20
- 	return shm;
- err_put_shm_pages:
--	if (flags & TEE_SHM_USER_MAPPED)
-+	if (!iov_iter_is_kvec(iter))
- 		unpin_user_pages(shm->pages, shm->num_pages);
- 	else
- 		shm_put_kernel_pages(shm->pages, shm->num_pages);
-+err_free_shm_pages:
- 	kfree(shm->pages);
- err_free_shm:
- 	kfree(shm);
-@@ -307,6 +305,7 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_cont=
-ext *ctx,
- 	u32 flags =3D TEE_SHM_USER_MAPPED | TEE_SHM_DYNAMIC;
- 	struct tee_device *teedev =3D ctx->teedev;
- 	struct tee_shm *shm;
-+	struct iov_iter iter;
- 	void *ret;
- 	int id;
-=20
-@@ -319,7 +318,8 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_cont=
-ext *ctx,
- 	if (id < 0)
- 		return ERR_PTR(id);
-=20
--	shm =3D register_shm_helper(ctx, addr, length, flags, id);
-+	iov_iter_ubuf(&iter, ITER_DEST,  (void __user *)addr, length);
-+	shm =3D register_shm_helper(ctx, &iter, flags, id);
- 	if (IS_ERR(shm)) {
- 		mutex_lock(&teedev->mutex);
- 		idr_remove(&teedev->idr, id);
-@@ -352,8 +352,14 @@ struct tee_shm *tee_shm_register_kernel_buf(struct tee_c=
-ontext *ctx,
- 					    void *addr, size_t length)
- {
- 	u32 flags =3D TEE_SHM_DYNAMIC;
-+	struct kvec kvec;
-+	struct iov_iter iter;
-+
-+	kvec.iov_base =3D addr;
-+	kvec.iov_len =3D length;
-+	iov_iter_kvec(&iter, ITER_DEST, &kvec, 1, length);
-=20
--	return register_shm_helper(ctx, (unsigned long)addr, length, flags, -1);
-+	return register_shm_helper(ctx, &iter, flags, -1);
- }
- EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
-=20
---=20
-2.25.1
+On 12/4/23 18:13, Jens Axboe wrote:
+> On 12/4/23 10:02 AM, Arnaud POULIQUEN wrote:
+>> Hi,
+>>
+>> On 12/4/23 17:40, Jens Axboe wrote:
+>>> On 12/4/23 9:36 AM, Jens Axboe wrote:
+>>>> On 12/4/23 5:42 AM, Sumit Garg wrote:
+>>>>> IMO, access_ok() should be the first thing that import_ubuf() or
+>>>>> import_single_range() should do, something as follows:
+>>>>>
+>>>>> diff --git a/lib/iov_iter.c b/lib/iov_iter.c
+>>>>> index 8ff6824a1005..4aee0371824c 100644
+>>>>> --- a/lib/iov_iter.c
+>>>>> +++ b/lib/iov_iter.c
+>>>>> @@ -1384,10 +1384,10 @@ EXPORT_SYMBOL(import_single_range);
+>>>>>
+>>>>>  int import_ubuf(int rw, void __user *buf, size_t len, struct iov_iter =
+*i)
+>>>>>  {
+>>>>> -       if (len > MAX_RW_COUNT)
+>>>>> -               len =3D MAX_RW_COUNT;
+>>>>>         if (unlikely(!access_ok(buf, len)))
+>>>>>                 return -EFAULT;
+>>>>> +       if (len > MAX_RW_COUNT)
+>>>>> +               len =3D MAX_RW_COUNT;
+>>>>>
+>>>>>         iov_iter_ubuf(i, rw, buf, len);
+>>>>>         return 0;
+>>>>>
+>>>>> Jens A., Al Viro,
+>>>>>
+>>>>> Was there any particular reason which I am unaware of to perform
+>>>>> access_ok() check on modified input length?
+>>>>
+>>>> This change makes sense to me, and seems consistent with what is done
+>>>> elsewhere too.
+>>>
+>>> For some reason I missed import_single_range(), which does it the same
+>>> way as import_ubuf() currently does - cap the range before the
+>>> access_ok() check. The vec variants sum as they go, but access_ok()
+>>> before the range.
+>>>
+>>> I think part of the issue here is that the single range imports return 0
+>>> for success and -ERROR otherwise. This means that the caller does not
+>>> know if the full range was imported or not. OTOH, we always cap any data
+>>> transfer at MAX_RW_COUNT, so may make more sense to fix up the caller
+>>> here.
+>>>
+>>
+>> Should we limit to MAX_RW_COUNT or return an error? Seems to me that
+>> limiting could generate side effect later that could be not simple to
+>> debug.
+>=20
+> We've traditionally just truncated the length, so principle of least
+> surprise says we should continue doing that.
+>=20
 
 
---===============0675680248698308604==--
+As Jens Wiklander has proposed using iov_iter_ubuf() instead of import_ubuf(),
+should I propose a patch updating import_ubuf() and import_single_range()?
+Or would you prefer that we keep the functions unchanged for the time being?
+
+Regards,
+Arnaud
+
+--===============3379512744036128099==--
 
