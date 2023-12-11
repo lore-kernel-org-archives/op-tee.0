@@ -1,63 +1,58 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [GIT PULL] OP-TEE reserved system thread for 6.8
-Date: Mon, 11 Dec 2023 11:26:00 +0100
-Message-ID: <20231211102600.GA571787@rayden>
+Subject: [GIT PULL] OP-TEE FF-A asynchronous notifications for 6.8
+Date: Mon, 11 Dec 2023 11:52:49 +0100
+Message-ID: <20231211105249.GA587253@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6360733485577338823=="
+Content-Type: multipart/mixed; boundary="===============8422508590770833098=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6360733485577338823==
+--===============8422508590770833098==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hello arm-soc maintainers,
 
-Please pull these patches that enables SCMI with OP-TEE transport to to
-reserve a thread in the secure world to guarentee that requests will not
-have to wait for a thread to become available.
+Please pull these patches that enables asynchronous notifications in
+OP-TEE FF-A driver. This pull request is on top of the
+"system_thread_for_v6.8" pull request to avoid a merge conflict.
 
 Thanks,
 Jens
 
-The following changes since commit b85ea95d086471afb4ad062012a4d73cd328fa86:
-
-  Linux 6.7-rc1 (2023-11-12 16:19:07 -0800)
-
-are available in the Git repository at:
-
-  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/system-thre=
-ad-for-v6.8
-
-for you to fetch changes up to 4b391c9c37646f25118355f414b9e6d9fefe782f:
+The following changes since commit 4b391c9c37646f25118355f414b9e6d9fefe782f:
 
   firmware: arm_scmi: optee: use optee system invocation (2023-11-17 15:48:03=
  +0100)
 
+are available in the Git repository at:
+
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/ffa-notif-f=
+or-v6.8
+
+for you to fetch changes up to d0476a59de064205f4aaa8f7c6d6f32bc28a44d4:
+
+  optee: ffa_abi: add asynchronous notifications (2023-11-17 15:55:41 +0100)
+
 ----------------------------------------------------------------
-OP-TEE add reserved system thread
+OP-TEE: asynchronous notifications with FF-A
 
-Add support for a reserved system thread in the SMC-ABI of the OP-TEE driver.
-SCMI with OP-TEE transport uses this to guarantee that it will always have
-a thread available in the secure world.
+Add support for asynchronous notifications in the OP-TEE FF-A driver. This
+is the FF-A counterpart to the asynchronous notifications already
+available in the OP-TEE SMC ABI.
 
 ----------------------------------------------------------------
-Etienne Carriere (4):
-      tee: optee: system thread call property
-      tee: system session
-      tee: optee: support tracking system threads
-      firmware: arm_scmi: optee: use optee system invocation
+Jens Wiklander (2):
+      optee: provide optee_do_bottom_half() as a common function
+      optee: ffa_abi: add asynchronous notifications
 
- drivers/firmware/arm_scmi/optee.c |   4 ++
- drivers/tee/optee/call.c          | 130 ++++++++++++++++++++++++++++++++++++=
+ drivers/tee/optee/call.c          | 31 ++++++++++++-
+ drivers/tee/optee/ffa_abi.c       | 93 +++++++++++++++++++++++++++++++++++++=
 --
- drivers/tee/optee/core.c          |   5 +-
- drivers/tee/optee/ffa_abi.c       |  14 ++--
- drivers/tee/optee/optee_private.h |  29 ++++++++-
- drivers/tee/optee/smc_abi.c       |  32 +++++++---
- drivers/tee/tee_core.c            |   8 +++
- include/linux/tee_drv.h           |  16 +++++
- 8 files changed, 211 insertions(+), 27 deletions(-)
+ drivers/tee/optee/optee_ffa.h     | 28 ++++++++++--
+ drivers/tee/optee/optee_private.h |  9 +++-
+ drivers/tee/optee/smc_abi.c       | 36 ++-------------
+ 5 files changed, 155 insertions(+), 42 deletions(-)
 
---===============6360733485577338823==--
+--===============8422508590770833098==--
 
