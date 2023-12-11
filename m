@@ -1,202 +1,63 @@
-From: Ard Biesheuvel <ardb@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 4/6] efivarfs: automatically update super block flag
-Date: Mon, 11 Dec 2023 11:02:25 +0100
-Message-ID: 
- <CAMj1kXEFPwqd=Ksc_HuoNSwRUyCNka4E7cWZgkgMq7XHcu2VFA@mail.gmail.com>
-In-Reply-To: <20231013074540.8980-5-masahisa.kojima@linaro.org>
+Subject: [GIT PULL] OP-TEE reserved system thread for 6.8
+Date: Mon, 11 Dec 2023 11:26:00 +0100
+Message-ID: <20231211102600.GA571787@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1093676413427724859=="
+Content-Type: multipart/mixed; boundary="===============6360733485577338823=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1093676413427724859==
+--===============6360733485577338823==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 13 Oct 2023 at 09:47, Masahisa Kojima
-<masahisa.kojima@linaro.org> wrote:
->
-> efivar operation is updated when the tee_stmm_efi module is probed.
-> tee_stmm_efi module supports SetVariable runtime service,
-> but user needs to manually remount the efivarfs as RW to enable
-> the write access if the previous efivar operation does not support
-> SerVariable and efivarfs is mounted as read-only.
->
-> This commit notifies the update of efivar operation to
-> efivarfs subsystem, then drops SB_RDONLY flag if the efivar
-> operation supports SetVariable.
->
-> Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+Hello arm-soc maintainers,
 
-Unfortunately, I have identified a problem with this approach.
+Please pull these patches that enables SCMI with OP-TEE transport to to
+reserve a thread in the secure world to guarentee that requests will not
+have to wait for a thread to become available.
 
-There are cases where there are multiple instances of struct
-superblock are associated with the efivarfs file system [0].
+Thanks,
+Jens
 
-So I reworked the patch a little - please take the time to double
-check that I did not make any mistakes here.
+The following changes since commit b85ea95d086471afb4ad062012a4d73cd328fa86:
 
-[0] https://lore.kernel.org/linux-efi/20231208163925.3225018-8-ardb(a)google.=
-com/T/#u
+  Linux 6.7-rc1 (2023-11-12 16:19:07 -0800)
 
+are available in the Git repository at:
 
-> ---
->  drivers/firmware/efi/efi.c  |  6 ++++++
->  drivers/firmware/efi/vars.c |  8 ++++++++
->  fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
->  include/linux/efi.h         |  8 ++++++++
->  4 files changed, 55 insertions(+)
->
-> diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-> index 53ae25bbb6ac..d2eec5ed8e5e 100644
-> --- a/drivers/firmware/efi/efi.c
-> +++ b/drivers/firmware/efi/efi.c
-> @@ -32,6 +32,7 @@
->  #include <linux/ucs2_string.h>
->  #include <linux/memblock.h>
->  #include <linux/security.h>
-> +#include <linux/notifier.h>
->
->  #include <asm/early_ioremap.h>
->
-> @@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_attr_gro=
-up =3D {
->         .is_visible =3D efi_attr_is_visible,
->  };
->
-> +struct blocking_notifier_head efivar_ops_nh;
-> +EXPORT_SYMBOL_GPL(efivar_ops_nh);
-> +
->  static struct efivars generic_efivars;
->  static struct efivar_operations generic_ops;
->
-> @@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
->                 platform_device_register_simple("efivars", 0, NULL, 0);
->         }
->
-> +       BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
-> +
->         error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_group);
->         if (error) {
->                 pr_err("efi: Sysfs attribute export failed with error %d.\n=
-",
-> diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
-> index e9dc7116daf1..f654e6f6af87 100644
-> --- a/drivers/firmware/efi/vars.c
-> +++ b/drivers/firmware/efi/vars.c
-> @@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
->                      const struct efivar_operations *ops)
->  {
->         int rv;
-> +       int event;
->
->         if (down_interruptible(&efivars_lock))
->                 return -EINTR;
-> @@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
->
->         __efivars =3D efivars;
->
-> +       if (efivar_supports_writes())
-> +               event =3D EFIVAR_OPS_RDWR;
-> +       else
-> +               event =3D EFIVAR_OPS_RDONLY;
-> +
-> +       blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
-> +
->         pr_info("Registered efivars operations\n");
->         rv =3D 0;
->  out:
-> diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-> index e028fafa04f3..0f6e4d223aea 100644
-> --- a/fs/efivarfs/super.c
-> +++ b/fs/efivarfs/super.c
-> @@ -14,11 +14,36 @@
->  #include <linux/slab.h>
->  #include <linux/magic.h>
->  #include <linux/statfs.h>
-> +#include <linux/notifier.h>
->
->  #include "internal.h"
->
->  LIST_HEAD(efivarfs_list);
->
-> +struct efivarfs_info {
-> +       struct super_block *sb;
-> +       struct notifier_block nb;
-> +};
-> +
-> +static struct efivarfs_info info;
-> +
-> +static int efivarfs_ops_notifier(struct notifier_block *nb, unsigned long =
-event,
-> +                                void *data)
-> +{
-> +       switch (event) {
-> +       case EFIVAR_OPS_RDONLY:
-> +               info.sb->s_flags |=3D SB_RDONLY;
-> +               break;
-> +       case EFIVAR_OPS_RDWR:
-> +               info.sb->s_flags &=3D ~SB_RDONLY;
-> +               break;
-> +       default:
-> +               return NOTIFY_DONE;
-> +       }
-> +
-> +       return NOTIFY_OK;
-> +}
-> +
->  static void efivarfs_evict_inode(struct inode *inode)
->  {
->         clear_inode(inode);
-> @@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_block *sb,=
- struct fs_context *fc)
->         if (!root)
->                 return -ENOMEM;
->
-> +       info.sb =3D sb;
-> +       info.nb.notifier_call =3D efivarfs_ops_notifier;
-> +       err =3D blocking_notifier_chain_register(&efivar_ops_nh, &info.nb);
-> +       if (err)
-> +               return err;
-> +
->         INIT_LIST_HEAD(&efivarfs_list);
->
->         err =3D efivar_init(efivarfs_callback, (void *)sb, true, &efivarfs_=
-list);
-> @@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_context *=
-fc)
->
->  static void efivarfs_kill_sb(struct super_block *sb)
->  {
-> +       blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb);
-> +       info.sb =3D NULL;
->         kill_litter_super(sb);
->
->         if (!efivar_is_available())
-> diff --git a/include/linux/efi.h b/include/linux/efi.h
-> index 4776a3dd9a72..489707b9b0b0 100644
-> --- a/include/linux/efi.h
-> +++ b/include/linux/efi.h
-> @@ -1355,6 +1355,14 @@ bool efi_config_table_is_usable(const efi_guid_t *gu=
-id, unsigned long table)
->
->  umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute *attr, =
-int n);
->
-> +/*
-> + * efivar ops event type
-> + */
-> +#define EFIVAR_OPS_RDONLY 0
-> +#define EFIVAR_OPS_RDWR 1
-> +
-> +extern struct blocking_notifier_head efivar_ops_nh;
-> +
->  void efivars_generic_ops_register(void);
->  void efivars_generic_ops_unregister(void);
->
-> --
-> 2.30.2
->
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/system-thre=
+ad-for-v6.8
 
---===============1093676413427724859==--
+for you to fetch changes up to 4b391c9c37646f25118355f414b9e6d9fefe782f:
+
+  firmware: arm_scmi: optee: use optee system invocation (2023-11-17 15:48:03=
+ +0100)
+
+----------------------------------------------------------------
+OP-TEE add reserved system thread
+
+Add support for a reserved system thread in the SMC-ABI of the OP-TEE driver.
+SCMI with OP-TEE transport uses this to guarantee that it will always have
+a thread available in the secure world.
+
+----------------------------------------------------------------
+Etienne Carriere (4):
+      tee: optee: system thread call property
+      tee: system session
+      tee: optee: support tracking system threads
+      firmware: arm_scmi: optee: use optee system invocation
+
+ drivers/firmware/arm_scmi/optee.c |   4 ++
+ drivers/tee/optee/call.c          | 130 ++++++++++++++++++++++++++++++++++++=
+--
+ drivers/tee/optee/core.c          |   5 +-
+ drivers/tee/optee/ffa_abi.c       |  14 ++--
+ drivers/tee/optee/optee_private.h |  29 ++++++++-
+ drivers/tee/optee/smc_abi.c       |  32 +++++++---
+ drivers/tee/tee_core.c            |   8 +++
+ include/linux/tee_drv.h           |  16 +++++
+ 8 files changed, 211 insertions(+), 27 deletions(-)
+
+--===============6360733485577338823==--
 
