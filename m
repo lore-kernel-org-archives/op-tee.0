@@ -1,242 +1,220 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Masahisa Kojima <masahisa.kojima@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v5] tee: Use iov_iter to better support shared buffer registration
-Date: Tue, 12 Dec 2023 10:55:05 +0530
+Subject: Re: [PATCH v9 4/6] efivarfs: automatically update super block flag
+Date: Tue, 12 Dec 2023 14:39:13 +0900
 Message-ID: 
- <CAFA6WYMYQDe-g9P_Gck2mH2Pn=B-8m2dzvK7of6djCp=wBjjUw@mail.gmail.com>
-In-Reply-To: <20231205162330.196259-1-arnaud.pouliquen@foss.st.com>
+ <CADQ0-X8DJk02oKabzQcMwqKFjr6A6LDWaQDCndKybC6D=9M7vg@mail.gmail.com>
+In-Reply-To: <
+ <CAMj1kXEFPwqd=Ksc_HuoNSwRUyCNka4E7cWZgkgMq7XHcu2VFA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6410128892335158967=="
+Content-Type: multipart/mixed; boundary="===============3885758305908166491=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6410128892335158967==
+--===============3885758305908166491==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 5 Dec 2023 at 21:53, Arnaud Pouliquen
-<arnaud.pouliquen@foss.st.com> wrote:
->
-> Currently it's not possible to register kernel buffers with TEE
-> which are allocated via vmalloc.
->
-> Use iov_iter and associated helper functions to manage the page
-> registration for all type of memories.
->
-> Suggested-by: Christoph Hellwig <hch@infradead.org>
-> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> ---
-> Update from V4 to V5:
-> - replace import_ubuf() by iov_iter_ubuf(),
-> - fix comment in register_shm_helper() function.
->
+Hi Ard,
 
-Looks good to me, feel free to add:
+On Mon, 11 Dec 2023 at 19:02, Ard Biesheuvel <ardb@kernel.org> wrote:
+>
+> On Fri, 13 Oct 2023 at 09:47, Masahisa Kojima
+> <masahisa.kojima@linaro.org> wrote:
+> >
+> > efivar operation is updated when the tee_stmm_efi module is probed.
+> > tee_stmm_efi module supports SetVariable runtime service,
+> > but user needs to manually remount the efivarfs as RW to enable
+> > the write access if the previous efivar operation does not support
+> > SerVariable and efivarfs is mounted as read-only.
+> >
+> > This commit notifies the update of efivar operation to
+> > efivarfs subsystem, then drops SB_RDONLY flag if the efivar
+> > operation supports SetVariable.
+> >
+> > Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+>
+> Unfortunately, I have identified a problem with this approach.
+>
+> There are cases where there are multiple instances of struct
+> superblock are associated with the efivarfs file system [0].
+>
+> So I reworked the patch a little - please take the time to double
+> check that I did not make any mistakes here.
+>
+> [0] https://lore.kernel.org/linux-efi/20231208163925.3225018-8-ardb(a)googl=
+e.com/T/#u
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+I think you are referring to this patch[1]?
+The modification should be OK, also I have tested it works as expected.
 
-> Update from V3 to V4:
-> - improve commit message,
-> - use import_ubuf() instead of iov_iter_init(),
-> - move shm_get_kernel_pages in register_shm_helper,
-> - put back untagged_addr in register_shm_helper(),
-> - move the comment related to pin pages from shm_get_kernel_pages()
->   to register_shm_helper().
->
-> Update from V2 to V3:
-> - break lines longer than 80 columns.
->
-> Update from V1 to V2:
-> - replace ITER_SOURCE by ITER_DEST flag in tee_shm_register_user_buf(),
-> - replace IS_ERR_OR NULL(shm) by IS_ERR(shm) in tee_shm_register_user_buf().
->
-> V1:
-> The support of buffer registration allocated with vmalloc is no more
-> available since c83900393aa1 ("tee: Remove vmalloc page support").
->
-> This patch is an alternative to a revert and resulted from a discussion
-> with Christopher Hellwig [1].
->
-> This patch has been tested using xtest tool in optee qemu environment [2]
-> and using the series related to the remoteproc tee that should be
-> proposed soon [3].
->
-> References:
-> [1] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47d=
-d39fb2(a)foss.st.com/T/#m8ec683c44fcd9b69c2aee42eaed0793afac9dd18in
-> [2] https://optee.readthedocs.io/en/latest/building/devices/qemu.html#build=
--instructions
-> [3] https://lore.kernel.org/linux-arm-kernel/18a8528d-7d9d-6ed0-0045-5ee47d=
-d39fb2(a)foss.st.com/T/#maca0a1fc897aadd54c7deac432e11473fe970d1d
-> ---
->  drivers/tee/tee_shm.c | 78 +++++++++++++++++++++++--------------------
->  1 file changed, 42 insertions(+), 36 deletions(-)
->
-> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index 673cf0359494..731d9028b67f 100644
-> --- a/drivers/tee/tee_shm.c
-> +++ b/drivers/tee/tee_shm.c
-> @@ -22,23 +22,12 @@ static void shm_put_kernel_pages(struct page **pages, s=
-ize_t page_count)
->                 put_page(pages[n]);
->  }
->
-> -static int shm_get_kernel_pages(unsigned long start, size_t page_count,
-> -                               struct page **pages)
-> +static void shm_get_kernel_pages(struct page **pages, size_t page_count)
->  {
-> -       struct page *page;
->         size_t n;
->
-> -       if (WARN_ON_ONCE(is_vmalloc_addr((void *)start) ||
-> -                        is_kmap_addr((void *)start)))
-> -               return -EINVAL;
-> -
-> -       page =3D virt_to_page((void *)start);
-> -       for (n =3D 0; n < page_count; n++) {
-> -               pages[n] =3D page + n;
-> +       for (n =3D 0; n < page_count; n++)
->                 get_page(pages[n]);
-> -       }
-> -
-> -       return page_count;
->  }
->
->  static void release_registered_pages(struct tee_shm *shm)
-> @@ -214,13 +203,14 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_con=
-text *ctx, size_t size)
->  EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
->
->  static struct tee_shm *
-> -register_shm_helper(struct tee_context *ctx, unsigned long addr,
-> -                   size_t length, u32 flags, int id)
-> +register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 fl=
-ags,
-> +                   int id)
->  {
->         struct tee_device *teedev =3D ctx->teedev;
->         struct tee_shm *shm;
-> -       unsigned long start;
-> -       size_t num_pages;
-> +       unsigned long start, addr;
-> +       size_t num_pages, off;
-> +       ssize_t len;
->         void *ret;
->         int rc;
->
-> @@ -245,31 +235,38 @@ register_shm_helper(struct tee_context *ctx, unsigned=
- long addr,
->         shm->flags =3D flags;
->         shm->ctx =3D ctx;
->         shm->id =3D id;
-> -       addr =3D untagged_addr(addr);
-> +       addr =3D untagged_addr((unsigned long)iter_iov_addr(iter));
->         start =3D rounddown(addr, PAGE_SIZE);
-> -       shm->offset =3D addr - start;
-> -       shm->size =3D length;
-> -       num_pages =3D (roundup(addr + length, PAGE_SIZE) - start) / PAGE_SI=
-ZE;
-> +       num_pages =3D iov_iter_npages(iter, INT_MAX);
-> +       if (!num_pages) {
-> +               ret =3D ERR_PTR(-ENOMEM);
-> +               goto err_ctx_put;
-> +       }
-> +
->         shm->pages =3D kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
->         if (!shm->pages) {
->                 ret =3D ERR_PTR(-ENOMEM);
->                 goto err_free_shm;
->         }
->
-> -       if (flags & TEE_SHM_USER_MAPPED)
-> -               rc =3D pin_user_pages_fast(start, num_pages, FOLL_WRITE,
-> -                                        shm->pages);
-> -       else
-> -               rc =3D shm_get_kernel_pages(start, num_pages, shm->pages);
-> -       if (rc > 0)
-> -               shm->num_pages =3D rc;
-> -       if (rc !=3D num_pages) {
-> -               if (rc >=3D 0)
-> -                       rc =3D -ENOMEM;
-> -               ret =3D ERR_PTR(rc);
-> -               goto err_put_shm_pages;
-> +       len =3D iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pag=
-es, 0,
-> +                                    &off);
-> +       if (unlikely(len <=3D 0)) {
-> +               ret =3D len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
-> +               goto err_free_shm_pages;
->         }
->
-> +       /*
-> +        * iov_iter_extract_kvec_pages does not get reference on the pages,
-> +        * get a reference on them.
-> +        */
-> +       if (iov_iter_is_kvec(iter))
-> +               shm_get_kernel_pages(shm->pages, num_pages);
-> +
-> +       shm->offset =3D off;
-> +       shm->size =3D len;
-> +       shm->num_pages =3D num_pages;
-> +
->         rc =3D teedev->desc->ops->shm_register(ctx, shm, shm->pages,
->                                              shm->num_pages, start);
->         if (rc) {
-> @@ -279,10 +276,11 @@ register_shm_helper(struct tee_context *ctx, unsigned=
- long addr,
->
->         return shm;
->  err_put_shm_pages:
-> -       if (flags & TEE_SHM_USER_MAPPED)
-> +       if (!iov_iter_is_kvec(iter))
->                 unpin_user_pages(shm->pages, shm->num_pages);
->         else
->                 shm_put_kernel_pages(shm->pages, shm->num_pages);
-> +err_free_shm_pages:
->         kfree(shm->pages);
->  err_free_shm:
->         kfree(shm);
-> @@ -307,6 +305,7 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_co=
-ntext *ctx,
->         u32 flags =3D TEE_SHM_USER_MAPPED | TEE_SHM_DYNAMIC;
->         struct tee_device *teedev =3D ctx->teedev;
->         struct tee_shm *shm;
-> +       struct iov_iter iter;
->         void *ret;
->         int id;
->
-> @@ -319,7 +318,8 @@ struct tee_shm *tee_shm_register_user_buf(struct tee_co=
-ntext *ctx,
->         if (id < 0)
->                 return ERR_PTR(id);
->
-> -       shm =3D register_shm_helper(ctx, addr, length, flags, id);
-> +       iov_iter_ubuf(&iter, ITER_DEST,  (void __user *)addr, length);
-> +       shm =3D register_shm_helper(ctx, &iter, flags, id);
->         if (IS_ERR(shm)) {
->                 mutex_lock(&teedev->mutex);
->                 idr_remove(&teedev->idr, id);
-> @@ -352,8 +352,14 @@ struct tee_shm *tee_shm_register_kernel_buf(struct tee=
-_context *ctx,
->                                             void *addr, size_t length)
->  {
->         u32 flags =3D TEE_SHM_DYNAMIC;
-> +       struct kvec kvec;
-> +       struct iov_iter iter;
-> +
-> +       kvec.iov_base =3D addr;
-> +       kvec.iov_len =3D length;
-> +       iov_iter_kvec(&iter, ITER_DEST, &kvec, 1, length);
->
-> -       return register_shm_helper(ctx, (unsigned long)addr, length, flags,=
- -1);
-> +       return register_shm_helper(ctx, &iter, flags, -1);
->  }
->  EXPORT_SYMBOL_GPL(tee_shm_register_kernel_buf);
->
-> --
-> 2.25.1
->
+Thank you very much for fixing this.
 
---===============6410128892335158967==--
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commi=
+t/fs/efivarfs?id=3D94f7f6182c72ba642c1f20111681f9cc8621c95f
+
+Thanks,
+Masahisa Kojima
+
+>
+>
+> > ---
+> >  drivers/firmware/efi/efi.c  |  6 ++++++
+> >  drivers/firmware/efi/vars.c |  8 ++++++++
+> >  fs/efivarfs/super.c         | 33 +++++++++++++++++++++++++++++++++
+> >  include/linux/efi.h         |  8 ++++++++
+> >  4 files changed, 55 insertions(+)
+> >
+> > diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
+> > index 53ae25bbb6ac..d2eec5ed8e5e 100644
+> > --- a/drivers/firmware/efi/efi.c
+> > +++ b/drivers/firmware/efi/efi.c
+> > @@ -32,6 +32,7 @@
+> >  #include <linux/ucs2_string.h>
+> >  #include <linux/memblock.h>
+> >  #include <linux/security.h>
+> > +#include <linux/notifier.h>
+> >
+> >  #include <asm/early_ioremap.h>
+> >
+> > @@ -187,6 +188,9 @@ static const struct attribute_group efi_subsys_attr_g=
+roup =3D {
+> >         .is_visible =3D efi_attr_is_visible,
+> >  };
+> >
+> > +struct blocking_notifier_head efivar_ops_nh;
+> > +EXPORT_SYMBOL_GPL(efivar_ops_nh);
+> > +
+> >  static struct efivars generic_efivars;
+> >  static struct efivar_operations generic_ops;
+> >
+> > @@ -427,6 +431,8 @@ static int __init efisubsys_init(void)
+> >                 platform_device_register_simple("efivars", 0, NULL, 0);
+> >         }
+> >
+> > +       BLOCKING_INIT_NOTIFIER_HEAD(&efivar_ops_nh);
+> > +
+> >         error =3D sysfs_create_group(efi_kobj, &efi_subsys_attr_group);
+> >         if (error) {
+> >                 pr_err("efi: Sysfs attribute export failed with error %d.=
+\n",
+> > diff --git a/drivers/firmware/efi/vars.c b/drivers/firmware/efi/vars.c
+> > index e9dc7116daf1..f654e6f6af87 100644
+> > --- a/drivers/firmware/efi/vars.c
+> > +++ b/drivers/firmware/efi/vars.c
+> > @@ -63,6 +63,7 @@ int efivars_register(struct efivars *efivars,
+> >                      const struct efivar_operations *ops)
+> >  {
+> >         int rv;
+> > +       int event;
+> >
+> >         if (down_interruptible(&efivars_lock))
+> >                 return -EINTR;
+> > @@ -77,6 +78,13 @@ int efivars_register(struct efivars *efivars,
+> >
+> >         __efivars =3D efivars;
+> >
+> > +       if (efivar_supports_writes())
+> > +               event =3D EFIVAR_OPS_RDWR;
+> > +       else
+> > +               event =3D EFIVAR_OPS_RDONLY;
+> > +
+> > +       blocking_notifier_call_chain(&efivar_ops_nh, event, NULL);
+> > +
+> >         pr_info("Registered efivars operations\n");
+> >         rv =3D 0;
+> >  out:
+> > diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+> > index e028fafa04f3..0f6e4d223aea 100644
+> > --- a/fs/efivarfs/super.c
+> > +++ b/fs/efivarfs/super.c
+> > @@ -14,11 +14,36 @@
+> >  #include <linux/slab.h>
+> >  #include <linux/magic.h>
+> >  #include <linux/statfs.h>
+> > +#include <linux/notifier.h>
+> >
+> >  #include "internal.h"
+> >
+> >  LIST_HEAD(efivarfs_list);
+> >
+> > +struct efivarfs_info {
+> > +       struct super_block *sb;
+> > +       struct notifier_block nb;
+> > +};
+> > +
+> > +static struct efivarfs_info info;
+> > +
+> > +static int efivarfs_ops_notifier(struct notifier_block *nb, unsigned lon=
+g event,
+> > +                                void *data)
+> > +{
+> > +       switch (event) {
+> > +       case EFIVAR_OPS_RDONLY:
+> > +               info.sb->s_flags |=3D SB_RDONLY;
+> > +               break;
+> > +       case EFIVAR_OPS_RDWR:
+> > +               info.sb->s_flags &=3D ~SB_RDONLY;
+> > +               break;
+> > +       default:
+> > +               return NOTIFY_DONE;
+> > +       }
+> > +
+> > +       return NOTIFY_OK;
+> > +}
+> > +
+> >  static void efivarfs_evict_inode(struct inode *inode)
+> >  {
+> >         clear_inode(inode);
+> > @@ -255,6 +280,12 @@ static int efivarfs_fill_super(struct super_block *s=
+b, struct fs_context *fc)
+> >         if (!root)
+> >                 return -ENOMEM;
+> >
+> > +       info.sb =3D sb;
+> > +       info.nb.notifier_call =3D efivarfs_ops_notifier;
+> > +       err =3D blocking_notifier_chain_register(&efivar_ops_nh, &info.nb=
+);
+> > +       if (err)
+> > +               return err;
+> > +
+> >         INIT_LIST_HEAD(&efivarfs_list);
+> >
+> >         err =3D efivar_init(efivarfs_callback, (void *)sb, true, &efivarf=
+s_list);
+> > @@ -281,6 +312,8 @@ static int efivarfs_init_fs_context(struct fs_context=
+ *fc)
+> >
+> >  static void efivarfs_kill_sb(struct super_block *sb)
+> >  {
+> > +       blocking_notifier_chain_unregister(&efivar_ops_nh, &info.nb);
+> > +       info.sb =3D NULL;
+> >         kill_litter_super(sb);
+> >
+> >         if (!efivar_is_available())
+> > diff --git a/include/linux/efi.h b/include/linux/efi.h
+> > index 4776a3dd9a72..489707b9b0b0 100644
+> > --- a/include/linux/efi.h
+> > +++ b/include/linux/efi.h
+> > @@ -1355,6 +1355,14 @@ bool efi_config_table_is_usable(const efi_guid_t *=
+guid, unsigned long table)
+> >
+> >  umode_t efi_attr_is_visible(struct kobject *kobj, struct attribute *attr=
+, int n);
+> >
+> > +/*
+> > + * efivar ops event type
+> > + */
+> > +#define EFIVAR_OPS_RDONLY 0
+> > +#define EFIVAR_OPS_RDWR 1
+> > +
+> > +extern struct blocking_notifier_head efivar_ops_nh;
+> > +
+> >  void efivars_generic_ops_register(void);
+> >  void efivars_generic_ops_unregister(void);
+> >
+> > --
+> > 2.30.2
+> >
+
+--===============3885758305908166491==--
 
