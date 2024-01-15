@@ -1,50 +1,123 @@
-From: Google Groups <noreply@groups.google.com>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: =?utf-8?b?2KrZhdiqINil2LbYp9mB2KrZgyDYpdmE2Ykg8J+UlCAg8J+UlCAgICA=?=
- =?utf-8?b?2KfZhNiv2KfYsSDYp9mE2LnYsdio2YrZhyDZhNmE2KrZhtmF2YrZhyDYp9mE2Kc=?=
- =?utf-8?b?2K/Yp9ix2YrZhyAyMDI0IPCflJQgIPCflJQ=?=
-Date: Fri, 19 Jan 2024 22:34:52 -0800
-Message-ID: <w11VbU73DdHOVlN5y4SO8A@notifications.google.com>
+Subject: 
+ [PATCH 2/4] dt-bindings: remoteproc: add compatibility for TEE support
+Date: Mon, 15 Jan 2024 13:54:16 +0000
+Message-ID: <20240115135249.296822-3-arnaud.pouliquen@foss.st.com>
+In-Reply-To: <20240115135249.296822-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4647755391899713322=="
+Content-Type: multipart/mixed; boundary="===============4359978208018359556=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4647755391899713322==
+--===============4359978208018359556==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 
-2YXYsdit2KjZi9inINmK2Kcgb3AtdGVlKGEpbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZ9iMCtiq
-2YXYqiDYpdi22KfZgdiq2YMg2YXZhiDZgtmQ2KjZhCBtYXJ3YS5oci5haGFkNDQoYSlnbWFpbC5j
-b20g2KXZhNmJINin2YTZhdis2YXZiNi52Kkg8J+UlCAg8J+UlCAgICDYp9mE2K/Yp9ixICAK2KfZ
-hNi52LHYqNmK2Ycg2YTZhNiq2YbZhdmK2Ycg2KfZhNin2K/Yp9ix2YrZhyAyMDI0IPCflJQgIPCf
-lJQuCmh0dHBzOi8vZ3JvdXBzLmdvb2dsZS5jb20vZC9mb3J1bS9yZWhhbjIxMgoK2KrYqtmK2K0g
-2YTZgyAi2YXYrNmF2YjYudin2KogR29vZ2xlIiDYpdmG2LTYp9ihINmF2YbYqtiv2YrYp9iqINi5
-2YTZiSDYp9mE2KXZhtiq2LHZhtiqINmI2YXYrNmF2YjYudin2Kog2YXYs9iq2YbYr9ipINil2YTZ
-iQrYp9mE2KjYsdmK2K8g2KfZhNil2YTZg9iq2LHZiNmG2Yog2YjYp9mE2YXYtNin2LHZg9ipINmB
-2YrZh9inINmF2Lkg2KfZhNin2LPYqtmF2KrYp9i5INio2KrYrNix2KjYqSDZhdmG2KrYr9mJINi6
-2YbZitipLiDZiNmK2YXZg9mG2YMgIArYo9mK2LbZi9inCtin2LPYqtiu2K/Yp9mFINin2YTZhdis
-2YXZiNi52Kkg2YTZhdi02KfYsdmD2Kkg2KfZhNmF2LPYqtmG2K/Yp9iqINmI2KfZhNi12YjYsSDZ
-iNin2YTYqtmC2KfZiNmK2YUg2YjYp9mE2K/YudmI2KfYqiDZiNi62YrYsdmH2Kcg2YXZhiAgCtin
-2YTZhdmI2KfYsdivLgoK2KXYsNinINmD2YbYqiDZhNinINiq2LHYutioINmB2Yog2KPZhiDYqtmD
-2YjZhiDYudi22YjZi9inINmB2Yog2YfYsNmHINin2YTZhdis2YXZiNi52Kkg2KPZiCDYqti52KrZ
-gtivINij2YbZh9inINmC2K8g2KrYqti22YXZhiAgCtmF2K3YqtmI2Ykg2LrZitixINmF2LHYutmI
-2Kgg2YHZitmHOgoqINmK2YXZg9mG2YMg2KXZhNi62KfYoSDYp9mE2KfYtNiq2LHYp9mDINmB2Yog
-2YfYsNmHINin2YTZhdis2YXZiNi52Kkg2LnZhNmJICAKaHR0cHM6Ly9ncm91cHMuZ29vZ2xlLmNv
-bS9kL2ZvcnVtL3JlaGFuMjEyL3Vuc3Vic2NyaWJlL0FIWjdLVk5mNGdxTDlMQmJycXlGSV8tRXpr
-ZmpWcjlsa2YxNktLa3V1RmlwZHlQQ09tVUlDaEtHaEJrak9PUFlnZndMYk0wdEpvU2pRM1R0d19O
-djJjNHg5WlVuTzZVdlZRICAK2KPZiCDYudmGINi32LHZitmCINil2LHYs9in2YQg2LHYs9in2YTY
-qSDYpdmE2YPYqtix2YjZhtmK2Kkg2KXZhNmJIHJlaGFuMjEyK3Vuc3Vic2NyaWJlKGEpZ29vZ2xl
-Z3JvdXBzLmNvbQoqINmK2YXZg9mG2YMg2KfZhNil2KjZhNin2Log2LnZhiDYp9mE2KXYs9in2KHY
-qSDZgdmKINmH2LDZhyDYp9mE2YXYrNmF2YjYudipINi52YTZiSAgCmh0dHBzOi8vZ3JvdXBzLmdv
-b2dsZS5jb20vZC9hYnVzZS9BSm1ybUN1bkU0eFM5YTRKeUQ2UThvaEx1aWZCRnExbEhZY3YzMU5K
-THJEcUFLR2lXNWZKRlRzUEdXRHQ4SVJPUXN1TW5XVjY0ZGFKdUI1U3drY0RRT285dlhUX0JRazUy
-Zmpfa2l1R29KcGE3aGl5cE9KZUxnb2YtUmVDeGE0dTkxWTZ2NS1COEFpcwoqINmK2YXZg9mG2YMg
-2KfYrtiq2YrYp9ixINi52K/ZhSDYqtmE2YLZkdmKINij2Yog2KXYtNi52KfYsdin2Kog2KjYtNij
-2YYg2KzZhdmK2Lkg2KPZhti02LfYqSAi2YXYrNmF2YjYudin2KogR29vZ2xlIiAgCtin2YTZhdiz
-2KrZgtio2YTZitipINi52YTZiSBodHRwczovL2dyb3Vwcy5nb29nbGUuY29tL2Qvb3B0b3V0CgrY
-stmK2KfYsdipINmF2LHZg9iyINmF2LPYp9i52K/YqSAi2YXYrNmF2YjYudin2KogR29vZ2xlIiDZ
-gdmKICAKaHR0cHM6Ly9zdXBwb3J0Lmdvb2dsZS5jb20vZ3JvdXBzL2Fuc3dlci80NjYwMT9obD1h
-ci4K
+The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+where the Cortex-M4 firmware is loaded by the Trusted execution Environment
+(TEE).
+This compatible is used in both the Linux and OP-TEE device-tree.
+- In OP-TEE, a node is defined in the device tree with the
+  st,stm32mp1-m4-tee to support signed remoteproc firmware.
+  Based on DT properties, OP-TEE authenticates, loads, starts, and stops
+  the firmware.
+- On Linux, when the compatibility is set, the Cortex-M resets should not
+  be declared in the device tree.
 
---===============4647755391899713322==--
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+ .../bindings/remoteproc/st,stm32-rproc.yaml   | 53 +++++++++++++++----
+ 1 file changed, 44 insertions(+), 9 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
+ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 370af61d8f28..9fdfa30eff20 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -16,7 +16,12 @@ maintainers:
+=20
+ properties:
+   compatible:
+-    const: st,stm32mp1-m4
++    enum:
++      - st,stm32mp1-m4
++      - st,stm32mp1-m4-tee
++    description:
++      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by Linux
++      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
+ecure context
+=20
+   reg:
+     description:
+@@ -142,21 +147,41 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - resets
+=20
+ allOf:
+   - if:
+       properties:
+-        reset-names:
+-          not:
+-            contains:
+-              const: hold_boot
++        compatible:
++          contains:
++            const: st,stm32mp1-m4
++    then:
++      if:
++        properties:
++          reset-names:
++            not:
++              contains:
++                const: hold_boot
++      then:
++        required:
++          - st,syscfg-holdboot
++          - resets
++      else:
++        properties:
++          st,syscfg-holdboot: false
++        required:
++          - reset-names
++          - resets
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: st,stm32mp1-m4-tee
+     then:
+-      required:
+-        - st,syscfg-holdboot
+-    else:
+       properties:
+         st,syscfg-holdboot: false
++        reset-names: false
++        resets: false
+=20
+ additionalProperties: false
+=20
+@@ -188,5 +213,15 @@ examples:
+       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+     };
++  - |
++    #include <dt-bindings/reset/stm32mp1-resets.h>
++    m4(a)10000000 {
++      compatible =3D "st,stm32mp1-m4-tee";
++      reg =3D <0x10000000 0x40000>,
++            <0x30000000 0x40000>,
++            <0x38000000 0x10000>;
++      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
++      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
++    };
+=20
+ ...
+--=20
+2.25.1
+
+
+--===============4359978208018359556==--
 
