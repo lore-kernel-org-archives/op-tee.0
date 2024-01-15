@@ -1,141 +1,286 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 3/4] remoteproc: stm32: create sub-functions to request
- shutdown and release
+Subject: [PATCH 4/4] remoteproc: stm32: Add support of an OP-TEE TA to load
+ the firmware
 Date: Mon, 15 Jan 2024 13:54:17 +0000
-Message-ID: <20240115135249.296822-4-arnaud.pouliquen@foss.st.com>
+Message-ID: <20240115135249.296822-5-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20240115135249.296822-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4820473436737325194=="
+Content-Type: multipart/mixed; boundary="===============4462384517135849438=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4820473436737325194==
+--===============4462384517135849438==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-To prepare for the support of TEE remoteproc, create sub-functions
-that can be used in both cases, with and without TEE support.
+The new TEE remoteproc device is used to manage remote firmware in a
+secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
+introduced to delegate the loading of the firmware to the trusted
+execution context. In such cases, the firmware should be signed and
+adhere to the image format defined by the TEE.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
- drivers/remoteproc/stm32_rproc.c | 84 +++++++++++++++++++-------------
- 1 file changed, 51 insertions(+), 33 deletions(-)
+ drivers/remoteproc/Kconfig       |   3 +-
+ drivers/remoteproc/stm32_rproc.c | 149 +++++++++++++++++++++++++++++--
+ 2 files changed, 146 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
+index 85299606806c..e5bb675b5fc5 100644
+--- a/drivers/remoteproc/Kconfig
++++ b/drivers/remoteproc/Kconfig
+@@ -316,6 +316,7 @@ config STM32_RPROC
+ 	depends on ARCH_STM32 || COMPILE_TEST
+ 	depends on REMOTEPROC
+ 	select MAILBOX
++	select TEE_REMOTEPROC
+ 	help
+ 	  Say y here to support STM32 MCU processors via the
+ 	  remote processor framework.
+@@ -367,7 +368,7 @@ config XLNX_R5_REMOTEPROC
+=20
+=20
+ config TEE_REMOTEPROC
+-	tristate "trusted firmware support by a TEE application"
++	tristate "trusted firmware support by a trusted application"
+ 	depends on OPTEE
+ 	help
+ 	  Support for trusted remote processors firmware. The firmware
 diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
 c.c
-index 4f469f0bcf8b..fcc0001e2657 100644
+index fcc0001e2657..16dcf36ceeb6 100644
 --- a/drivers/remoteproc/stm32_rproc.c
 +++ b/drivers/remoteproc/stm32_rproc.c
-@@ -209,6 +209,54 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, con=
-st unsigned char *name)
- 	return -EINVAL;
+@@ -20,6 +20,7 @@
+ #include <linux/remoteproc.h>
+ #include <linux/reset.h>
+ #include <linux/slab.h>
++#include <linux/tee_remoteproc.h>
+ #include <linux/workqueue.h>
+=20
+ #include "remoteproc_internal.h"
+@@ -49,6 +50,9 @@
+ #define M4_STATE_STANDBY	4
+ #define M4_STATE_CRASH		5
+=20
++/* Remote processor unique identifier aligned with the Trusted Execution Env=
+ironment definitions */
++#define STM32_MP1_M4_PROC_ID    0
++
+ struct stm32_syscon {
+ 	struct regmap *map;
+ 	u32 reg;
+@@ -90,6 +94,8 @@ struct stm32_rproc {
+ 	struct stm32_mbox mb[MBOX_NB_MBX];
+ 	struct workqueue_struct *workqueue;
+ 	bool hold_boot_smc;
++	bool fw_loaded;
++	struct tee_rproc *trproc;
+ 	void __iomem *rsc_va;
+ };
+=20
+@@ -257,6 +263,91 @@ static int stm32_rproc_release(struct rproc *rproc)
+ 	return err;
  }
 =20
-+static void stm32_rproc_request_shutdown(struct rproc *rproc)
++static int stm32_rproc_tee_elf_sanity_check(struct rproc *rproc,
++					    const struct firmware *fw)
 +{
 +	struct stm32_rproc *ddata =3D rproc->priv;
-+	int err, dummy_data, idx;
++	unsigned int ret =3D 0;
 +
-+	/* Request shutdown of the remote processor */
-+	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
-+		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
-+		if (idx >=3D 0 && ddata->mb[idx].chan) {
-+			/* A dummy data is sent to allow to block on transmit. */
-+			err =3D mbox_send_message(ddata->mb[idx].chan,
-+						&dummy_data);
-+			if (err < 0)
-+				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
-+		}
-+	}
++	if (rproc->state =3D=3D RPROC_DETACHED)
++		return 0;
++
++	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
++	if (!ret)
++		ddata->fw_loaded =3D true;
++
++	return ret;
 +}
 +
-+static int stm32_rproc_release(struct rproc *rproc)
++static int stm32_rproc_tee_elf_load(struct rproc *rproc,
++				    const struct firmware *fw)
 +{
 +	struct stm32_rproc *ddata =3D rproc->priv;
-+	unsigned int err =3D 0;
++	unsigned int ret;
 +
-+	/* To allow platform Standby power mode, set remote proc Deep Sleep. */
-+	if (ddata->pdds.map) {
-+		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
-+					 ddata->pdds.mask, 1);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set pdds\n");
-+			return err;
-+		}
++	/*
++	 * This function can be called by remote proc for recovery
++	 * without the sanity check. In this case we need to load the firmware
++	 * else nothing done here as the firmware has been preloaded for the
++	 * sanity check to be able to parse it for the resource table.
++	 */
++	if (ddata->fw_loaded)
++		return 0;
++
++	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
++	if (ret)
++		return ret;
++	ddata->fw_loaded =3D true;
++
++	/* Update the resource table parameters. */
++	if (rproc_tee_get_rsc_table(ddata->trproc)) {
++		/* No resource table: reset the related fields. */
++		rproc->cached_table =3D NULL;
++		rproc->table_ptr =3D NULL;
++		rproc->table_sz =3D 0;
 +	}
 +
-+	/* Update coprocessor state to OFF if available. */
-+	if (ddata->m4_state.map) {
-+		err =3D regmap_update_bits(ddata->m4_state.map,
-+					 ddata->m4_state.reg,
-+					 ddata->m4_state.mask,
-+					 M4_STATE_OFF);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set copro state\n");
-+			return err;
-+		}
-+	}
++	return 0;
++}
 +
-+	return err;
++static struct resource_table *
++stm32_rproc_tee_elf_find_loaded_rsc_table(struct rproc *rproc,
++					  const struct firmware *fw)
++{
++	struct stm32_rproc *ddata =3D rproc->priv;
++
++	return tee_rproc_get_loaded_rsc_table(ddata->trproc);
++}
++
++static int stm32_rproc_tee_start(struct rproc *rproc)
++{
++	struct stm32_rproc *ddata =3D rproc->priv;
++
++	return tee_rproc_start(ddata->trproc);
++}
++
++static int stm32_rproc_tee_attach(struct rproc *rproc)
++{
++	/* Nothing to do, remote proc already started by the secured context. */
++	return 0;
++}
++
++static int stm32_rproc_tee_stop(struct rproc *rproc)
++{
++	struct stm32_rproc *ddata =3D rproc->priv;
++	int err;
++
++	stm32_rproc_request_shutdown(rproc);
++
++	err =3D tee_rproc_stop(ddata->trproc);
++	if (err)
++		return err;
++
++	ddata->fw_loaded =3D false;
++
++	return stm32_rproc_release(rproc);
 +}
 +
  static int stm32_rproc_prepare(struct rproc *rproc)
  {
  	struct device *dev =3D rproc->dev.parent;
-@@ -519,17 +567,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
- static int stm32_rproc_stop(struct rproc *rproc)
+@@ -319,7 +410,14 @@ static int stm32_rproc_prepare(struct rproc *rproc)
+=20
+ static int stm32_rproc_parse_fw(struct rproc *rproc, const struct firmware *=
+fw)
  {
- 	struct stm32_rproc *ddata =3D rproc->priv;
--	int err, idx;
-+	int err;
+-	if (rproc_elf_load_rsc_table(rproc, fw))
++	struct stm32_rproc *ddata =3D rproc->priv;
++	int ret;
++
++	if (ddata->trproc)
++		ret =3D rproc_tee_get_rsc_table(ddata->trproc);
++	else
++		ret =3D rproc_elf_load_rsc_table(rproc, fw);
++	if (ret)
+ 		dev_warn(&rproc->dev, "no resource table found for this firmware\n");
 =20
--	/* request shutdown of the remote processor */
--	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
--		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
--		if (idx >=3D 0 && ddata->mb[idx].chan) {
--			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
--			if (err < 0)
--				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
--		}
--	}
-+	stm32_rproc_request_shutdown(rproc);
+ 	return 0;
+@@ -693,8 +791,22 @@ static const struct rproc_ops st_rproc_ops =3D {
+ 	.get_boot_addr	=3D rproc_elf_get_boot_addr,
+ };
 =20
- 	err =3D stm32_rproc_set_hold_boot(rproc, true);
- 	if (err)
-@@ -541,29 +581,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
- 		return err;
++static const struct rproc_ops st_rproc_tee_ops =3D {
++	.prepare	=3D stm32_rproc_prepare,
++	.start		=3D stm32_rproc_tee_start,
++	.stop		=3D stm32_rproc_tee_stop,
++	.attach		=3D stm32_rproc_tee_attach,
++	.kick		=3D stm32_rproc_kick,
++	.parse_fw	=3D stm32_rproc_parse_fw,
++	.find_loaded_rsc_table =3D stm32_rproc_tee_elf_find_loaded_rsc_table,
++	.get_loaded_rsc_table =3D stm32_rproc_get_loaded_rsc_table,
++	.sanity_check	=3D stm32_rproc_tee_elf_sanity_check,
++	.load		=3D stm32_rproc_tee_elf_load,
++};
++
+ static const struct of_device_id stm32_rproc_match[] =3D {
+-	{ .compatible =3D "st,stm32mp1-m4" },
++	{.compatible =3D "st,stm32mp1-m4",},
++	{.compatible =3D "st,stm32mp1-m4-tee",},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, stm32_rproc_match);
+@@ -853,6 +965,7 @@ static int stm32_rproc_probe(struct platform_device *pdev)
+ 	struct device *dev =3D &pdev->dev;
+ 	struct stm32_rproc *ddata;
+ 	struct device_node *np =3D dev->of_node;
++	struct tee_rproc *trproc;
+ 	struct rproc *rproc;
+ 	unsigned int state;
+ 	int ret;
+@@ -861,11 +974,31 @@ static int stm32_rproc_probe(struct platform_device *pd=
+ev)
+ 	if (ret)
+ 		return ret;
+=20
+-	rproc =3D rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*ddata));
+-	if (!rproc)
+-		return -ENOMEM;
++	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
++		trproc =3D tee_rproc_register(dev, STM32_MP1_M4_PROC_ID);
++		if (IS_ERR(trproc)) {
++			dev_err_probe(dev, PTR_ERR(trproc),
++				      "signed firmware not supported by TEE\n");
++			return PTR_ERR(trproc);
++		}
++		/*
++		 * Delegate the firmware management to the secure context.
++		 * The firmware loaded has to be signed.
++		 */
++		dev_info(dev, "Support of signed firmware only\n");
++	}
++	rproc =3D rproc_alloc(dev, np->name,
++			    trproc ? &st_rproc_tee_ops : &st_rproc_ops,
++			    NULL, sizeof(*ddata));
++	if (!rproc) {
++		ret =3D -ENOMEM;
++		goto free_tee;
++	}
+=20
+ 	ddata =3D rproc->priv;
++	ddata->trproc =3D trproc;
++	if (trproc)
++		trproc->rproc =3D rproc;
+=20
+ 	rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
+=20
+@@ -916,6 +1049,10 @@ static int stm32_rproc_probe(struct platform_device *pd=
+ev)
+ 		device_init_wakeup(dev, false);
  	}
-=20
--	/* to allow platform Standby power mode, set remote proc Deep Sleep */
--	if (ddata->pdds.map) {
--		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
--					 ddata->pdds.mask, 1);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set pdds\n");
--			return err;
--		}
--	}
--
--	/* update coprocessor state to OFF if available */
--	if (ddata->m4_state.map) {
--		err =3D regmap_update_bits(ddata->m4_state.map,
--					 ddata->m4_state.reg,
--					 ddata->m4_state.mask,
--					 M4_STATE_OFF);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set copro state\n");
--			return err;
--		}
--	}
--
--	return 0;
-+	return stm32_rproc_release(rproc);
+ 	rproc_free(rproc);
++free_tee:
++	if (trproc)
++		tee_rproc_unregister(trproc);
++
+ 	return ret;
  }
 =20
- static void stm32_rproc_kick(struct rproc *rproc, int vqid)
+@@ -937,6 +1074,8 @@ static void stm32_rproc_remove(struct platform_device *p=
+dev)
+ 		device_init_wakeup(dev, false);
+ 	}
+ 	rproc_free(rproc);
++	if (ddata->trproc)
++		tee_rproc_unregister(ddata->trproc);
+ }
+=20
+ static int stm32_rproc_suspend(struct device *dev)
 --=20
 2.25.1
 
 
---===============4820473436737325194==--
+--===============4462384517135849438==--
 
