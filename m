@@ -2,14 +2,14 @@ From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 4/4] remoteproc: stm32: Add support of an OP-TEE TA to
  load the firmware
-Date: Tue, 16 Jan 2024 16:15:40 +0800
-Message-ID: <202401161552.JWQXL1kD-lkp@intel.com>
+Date: Tue, 16 Jan 2024 16:46:21 +0800
+Message-ID: <202401161603.5dloSqiJ-lkp@intel.com>
 In-Reply-To: <20240115135249.296822-5-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3014381475912806716=="
+Content-Type: multipart/mixed; boundary="===============8777270652613889826=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3014381475912806716==
+--===============8777270652613889826==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -31,269 +31,145 @@ patch link:    https://lore.kernel.org/r/20240115135249.296822-5-arnaud.pouli=
 quen%40foss.st.com
 patch subject: [PATCH 4/4] remoteproc: stm32: Add support of an OP-TEE TA to =
 load the firmware
-config: um-randconfig-r113-20240116 (https://download.01.org/0day-ci/archive/=
-20240116/202401161552.JWQXL1kD-lkp(a)intel.com/config)
-compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
+config: arm64-allyesconfig (https://download.01.org/0day-ci/archive/20240116/=
+202401161603.5dloSqiJ-lkp(a)intel.com/config)
+compiler: clang version 18.0.0git (https://github.com/llvm/llvm-project 9bde5=
+becb44ea071f5e1fa1f5d4071dc8788b18c)
 reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0240116/202401161552.JWQXL1kD-lkp(a)intel.com/reproduce)
+0240116/202401161603.5dloSqiJ-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202401161552.JWQXL1kD-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202401161603.5dloSqiJ-lkp(a)i=
 ntel.com/
 
-sparse warnings: (new ones prefixed by >>)
->> drivers/remoteproc/tee_remoteproc.c:82:26: sparse: sparse: symbol 'tee_rpr=
-oc_ctx' was not declared. Should it be static?
->> drivers/remoteproc/tee_remoteproc.c:166:24: sparse: sparse: incorrect type=
- in assignment (different address spaces) @@     expected void *rsc_va @@    =
- got void [noderef] __iomem * @@
-   drivers/remoteproc/tee_remoteproc.c:166:24: sparse:     expected void *rsc=
-_va
-   drivers/remoteproc/tee_remoteproc.c:166:24: sparse:     got void [noderef]=
- __iomem *
->> drivers/remoteproc/tee_remoteproc.c:233:31: sparse: sparse: incorrect type=
- in argument 1 (different address spaces) @@     expected void volatile [node=
-ref] __iomem *addr @@     got void *rsc_va @@
-   drivers/remoteproc/tee_remoteproc.c:233:31: sparse:     expected void vola=
-tile [noderef] __iomem *addr
-   drivers/remoteproc/tee_remoteproc.c:233:31: sparse:     got void *rsc_va
-   drivers/remoteproc/tee_remoteproc.c: note: in included file (through inclu=
-de/linux/preempt.h, include/linux/spinlock.h, include/linux/mmzone.h, ...):
-   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluat=
-es to true
+All warnings (new ones prefixed by >>):
 
-vim +/tee_rproc_ctx +82 drivers/remoteproc/tee_remoteproc.c
+>> drivers/remoteproc/stm32_rproc.c:977:6: warning: variable 'trproc' is used=
+ uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+     977 |         if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
+         |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/remoteproc/stm32_rproc.c:991:8: note: uninitialized use occurs here
+     991 |                             trproc ? &st_rproc_tee_ops : &st_rproc=
+_ops,
+         |                             ^~~~~~
+   drivers/remoteproc/stm32_rproc.c:977:2: note: remove the 'if' if its condi=
+tion is always true
+     977 |         if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
+         |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/remoteproc/stm32_rproc.c:968:26: note: initialize the variable 'tr=
+proc' to silence this warning
+     968 |         struct tee_rproc *trproc;
+         |                                 ^
+         |                                  =3D NULL
+   1 warning generated.
 
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   81 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  @82  struct tee_rproc_context *te=
-e_rproc_ctx;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   83 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   84  static void prepare_args(str=
-uct tee_rproc *trproc, int cmd, struct tee_ioctl_invoke_arg *arg,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   85  			 struct tee_param *param,=
- unsigned int num_params)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   86  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   87  	memset(arg, 0, sizeof(*arg)=
-);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   88  	memset(param, 0, MAX_TEE_PA=
-RAM_ARRY_MEMBER * sizeof(*param));
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   89 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   90  	arg->func =3D cmd;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   91  	arg->session =3D trproc->se=
-ssion_id;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   92  	arg->num_params =3D num_par=
-ams + 1;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   93 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   94  	param[0] =3D (struct tee_pa=
-ram) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   95  		.attr =3D TEE_IOCTL_PARAM_=
-ATTR_TYPE_VALUE_INPUT,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   96  		.u.value.a =3D trproc->rpr=
-oc_id,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   97  	};
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   98  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15   99 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  100  int tee_rproc_load_fw(struct=
- tee_rproc *trproc, const struct firmware *fw)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  101  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  102  	struct tee_ioctl_invoke_arg=
- arg;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  103  	struct tee_param param[MAX_=
-TEE_PARAM_ARRY_MEMBER];
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  104  	struct tee_shm *fw_shm;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  105  	int ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  106 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  107  	fw_shm =3D tee_shm_register=
-_kernel_buf(tee_rproc_ctx->tee_ctx, (void *)fw->data, fw->size);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  108  	if (IS_ERR(fw_shm))
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  109  		return PTR_ERR(fw_shm);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  110 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  111  	prepare_args(trproc, TA_RPR=
-OC_FW_CMD_LOAD_FW, &arg, param, 1);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  112 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  113  	/* Provide the address of t=
-he firmware image */
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  114  	param[1] =3D (struct tee_pa=
-ram) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  115  		.attr =3D TEE_IOCTL_PARAM_=
-ATTR_TYPE_MEMREF_INPUT,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  116  		.u.memref =3D {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  117  			.shm =3D fw_shm,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  118  			.size =3D fw->size,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  119  			.shm_offs =3D 0,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  120  		},
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  121  	};
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  122 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  123  	ret =3D tee_client_invoke_f=
-unc(tee_rproc_ctx->tee_ctx, &arg, param);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  124  	if (ret < 0 || arg.ret !=3D=
- 0) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  125  		dev_err(tee_rproc_ctx->dev,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  126  			"TA_RPROC_FW_CMD_LOAD_FW =
-invoke failed TEE err: %x, ret:%x\n",
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  127  			arg.ret, ret);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  128  		if (!ret)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  129  			ret =3D -EIO;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  130  	}
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  131 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  132  	tee_shm_free(fw_shm);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  133 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  134  	return ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  135  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  136  EXPORT_SYMBOL_GPL(tee_rproc_=
-load_fw);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  137 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  138  int rproc_tee_get_rsc_table(=
-struct tee_rproc *trproc)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  139  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  140  	struct tee_ioctl_invoke_arg=
- arg;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  141  	struct tee_param param[MAX_=
-TEE_PARAM_ARRY_MEMBER];
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  142  	struct rproc *rproc =3D trp=
-roc->rproc;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  143  	size_t rsc_size;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  144  	int ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  145 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  146  	prepare_args(trproc, TA_RPR=
-OC_FW_CMD_GET_RSC_TABLE, &arg, param, 2);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  147 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  148  	param[1].attr =3D TEE_IOCTL=
-_PARAM_ATTR_TYPE_VALUE_OUTPUT;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  149  	param[2].attr =3D TEE_IOCTL=
-_PARAM_ATTR_TYPE_VALUE_OUTPUT;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  150 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  151  	ret =3D tee_client_invoke_f=
-unc(tee_rproc_ctx->tee_ctx, &arg, param);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  152  	if (ret < 0 || arg.ret !=3D=
- 0) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  153  		dev_err(tee_rproc_ctx->dev,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  154  			"TA_RPROC_FW_CMD_GET_RSC_=
-TABLE invoke failed TEE err: %x, ret:%x\n",
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  155  			arg.ret, ret);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  156  		return -EIO;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  157  	}
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  158 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  159  	rsc_size =3D param[2].u.val=
-ue.a;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  160 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  161  	/* If the size is null no r=
-esource table defined in the image */
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  162  	if (!rsc_size)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  163  		return 0;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  164 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  165  	/* Store the resource table=
- address that would be updated by the remote core . */
-6805d1065198e1 Arnaud Pouliquen 2024-01-15 @166  	trproc->rsc_va =3D ioremap_=
-wc(param[1].u.value.a, rsc_size);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  167  	if (IS_ERR_OR_NULL(trproc->=
-rsc_va)) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  168  		dev_err(tee_rproc_ctx->dev=
-, "Unable to map memory region: %lld+%zx\n",
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  169  			param[1].u.value.a, rsc_s=
-ize);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  170  		trproc->rsc_va =3D NULL;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  171  		return -ENOMEM;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  172  	}
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  173 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  174  	/*
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  175  	 * A cached table is reques=
-ted as the physical address is not mapped yet
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  176  	 * but remoteproc needs to =
-parse the table for resources.
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  177  	 */
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  178  	rproc->cached_table =3D kme=
-mdup(trproc->rsc_va, rsc_size, GFP_KERNEL);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  179  	if (!rproc->cached_table)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  180  		return -ENOMEM;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  181 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  182  	rproc->table_ptr =3D rproc-=
->cached_table;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  183  	rproc->table_sz =3D rsc_siz=
-e;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  184 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  185  	return 0;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  186  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  187  EXPORT_SYMBOL_GPL(rproc_tee_=
-get_rsc_table);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  188 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  189  struct resource_table *tee_r=
-proc_get_loaded_rsc_table(struct tee_rproc *trproc)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  190  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  191  	return (struct resource_tab=
-le *)trproc->rsc_va;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  192  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  193  EXPORT_SYMBOL_GPL(tee_rproc_=
-get_loaded_rsc_table);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  194 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  195  int tee_rproc_start(struct t=
-ee_rproc *trproc)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  196  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  197  	struct tee_ioctl_invoke_arg=
- arg;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  198  	struct tee_param param[MAX_=
-TEE_PARAM_ARRY_MEMBER];
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  199  	int ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  200 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  201  	prepare_args(trproc, TA_RPR=
-OC_FW_CMD_START_FW, &arg, param, 0);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  202 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  203  	ret =3D tee_client_invoke_f=
-unc(tee_rproc_ctx->tee_ctx, &arg, param);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  204  	if (ret < 0 || arg.ret !=3D=
- 0) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  205  		dev_err(tee_rproc_ctx->dev,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  206  			"TA_RPROC_FW_CMD_START_FW=
- invoke failed TEE err: %x, ret:%x\n",
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  207  			arg.ret, ret);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  208  		if (!ret)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  209  			ret =3D -EIO;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  210  	}
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  211 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  212  	return ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  213  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  214  EXPORT_SYMBOL_GPL(tee_rproc_=
-start);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  215 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  216  int tee_rproc_stop(struct te=
-e_rproc *trproc)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  217  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  218  	struct tee_ioctl_invoke_arg=
- arg;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  219  	struct tee_param param[MAX_=
-TEE_PARAM_ARRY_MEMBER];
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  220  	int ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  221 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  222  	prepare_args(trproc, TA_RPR=
-OC_FW_CMD_STOP_FW, &arg, param, 0);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  223 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  224  	ret =3D tee_client_invoke_f=
-unc(tee_rproc_ctx->tee_ctx, &arg, param);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  225  	if (ret < 0 || arg.ret !=3D=
- 0) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  226  		dev_err(tee_rproc_ctx->dev,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  227  			"TA_RPROC_FW_CMD_STOP_FW =
-invoke failed TEE err: %x, ret:%x\n",
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  228  			arg.ret, ret);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  229  		if (!ret)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  230  			ret =3D -EIO;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  231  	}
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  232  	if (trproc->rsc_va)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15 @233  		iounmap(trproc->rsc_va);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  234  	trproc->rsc_va =3D NULL;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  235 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  236  	return ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  237  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  238  EXPORT_SYMBOL_GPL(tee_rproc_=
-stop);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  239 =20
+
+vim +977 drivers/remoteproc/stm32_rproc.c
+
+   962=09
+   963	static int stm32_rproc_probe(struct platform_device *pdev)
+   964	{
+   965		struct device *dev =3D &pdev->dev;
+   966		struct stm32_rproc *ddata;
+   967		struct device_node *np =3D dev->of_node;
+   968		struct tee_rproc *trproc;
+   969		struct rproc *rproc;
+   970		unsigned int state;
+   971		int ret;
+   972=09
+   973		ret =3D dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
+   974		if (ret)
+   975			return ret;
+   976=09
+ > 977		if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
+   978			trproc =3D tee_rproc_register(dev, STM32_MP1_M4_PROC_ID);
+   979			if (IS_ERR(trproc)) {
+   980				dev_err_probe(dev, PTR_ERR(trproc),
+   981					      "signed firmware not supported by TEE\n");
+   982				return PTR_ERR(trproc);
+   983			}
+   984			/*
+   985			 * Delegate the firmware management to the secure context.
+   986			 * The firmware loaded has to be signed.
+   987			 */
+   988			dev_info(dev, "Support of signed firmware only\n");
+   989		}
+   990		rproc =3D rproc_alloc(dev, np->name,
+   991				    trproc ? &st_rproc_tee_ops : &st_rproc_ops,
+   992				    NULL, sizeof(*ddata));
+   993		if (!rproc) {
+   994			ret =3D -ENOMEM;
+   995			goto free_tee;
+   996		}
+   997=09
+   998		ddata =3D rproc->priv;
+   999		ddata->trproc =3D trproc;
+  1000		if (trproc)
+  1001			trproc->rproc =3D rproc;
+  1002=09
+  1003		rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
+  1004=09
+  1005		ret =3D stm32_rproc_parse_dt(pdev, ddata, &rproc->auto_boot);
+  1006		if (ret)
+  1007			goto free_rproc;
+  1008=09
+  1009		ret =3D stm32_rproc_of_memory_translations(pdev, ddata);
+  1010		if (ret)
+  1011			goto free_rproc;
+  1012=09
+  1013		ret =3D stm32_rproc_get_m4_status(ddata, &state);
+  1014		if (ret)
+  1015			goto free_rproc;
+  1016=09
+  1017		if (state =3D=3D M4_STATE_CRUN)
+  1018			rproc->state =3D RPROC_DETACHED;
+  1019=09
+  1020		rproc->has_iommu =3D false;
+  1021		ddata->workqueue =3D create_workqueue(dev_name(dev));
+  1022		if (!ddata->workqueue) {
+  1023			dev_err(dev, "cannot create workqueue\n");
+  1024			ret =3D -ENOMEM;
+  1025			goto free_resources;
+  1026		}
+  1027=09
+  1028		platform_set_drvdata(pdev, rproc);
+  1029=09
+  1030		ret =3D stm32_rproc_request_mbox(rproc);
+  1031		if (ret)
+  1032			goto free_wkq;
+  1033=09
+  1034		ret =3D rproc_add(rproc);
+  1035		if (ret)
+  1036			goto free_mb;
+  1037=09
+  1038		return 0;
+  1039=09
+  1040	free_mb:
+  1041		stm32_rproc_free_mbox(rproc);
+  1042	free_wkq:
+  1043		destroy_workqueue(ddata->workqueue);
+  1044	free_resources:
+  1045		rproc_resource_cleanup(rproc);
+  1046	free_rproc:
+  1047		if (device_may_wakeup(dev)) {
+  1048			dev_pm_clear_wake_irq(dev);
+  1049			device_init_wakeup(dev, false);
+  1050		}
+  1051		rproc_free(rproc);
+  1052	free_tee:
+  1053		if (trproc)
+  1054			tee_rproc_unregister(trproc);
+  1055=09
+  1056		return ret;
+  1057	}
+  1058=09
 
 --=20
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============3014381475912806716==--
+--===============8777270652613889826==--
 
