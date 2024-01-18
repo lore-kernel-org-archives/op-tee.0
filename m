@@ -1,147 +1,97 @@
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH 2/4] dt-bindings: remoteproc: add compatibility for TEE support
-Date: Wed, 17 Jan 2024 07:45:12 +0000
-Message-ID: <b4f21821-fbfc-42cc-8bfb-ee8d650b46e1@foss.st.com>
-In-Reply-To: <20240116192145.GA265232-robh@kernel.org>
+ [PATCH v2 0/4] Introduction of a remoteproc tee to load signed firmware
+Date: Thu, 18 Jan 2024 10:05:09 +0000
+Message-ID: <20240118100433.3984196-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7920016445584958333=="
+Content-Type: multipart/mixed; boundary="===============8905094414749098844=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7920016445584958333==
+--===============8905094414749098844==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Updates from the previous version [1]
+- fix issues reported by kernel test robot,
+- address Rob Herring comment on bindings.
+
+[1] https://lore.kernel.org/linux-arm-kernel/20240115135249.296822-1-arnaud.p=
+ouliquen(a)foss.st.com/T/
 
 
-On 1/16/24 20:21, Rob Herring wrote:
-> On Mon, Jan 15, 2024 at 02:52:47PM +0100, Arnaud Pouliquen wrote:
->> The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
->> where the Cortex-M4 firmware is loaded by the Trusted execution Environment
->> (TEE).
->> This compatible is used in both the Linux and OP-TEE device-tree.
->> - In OP-TEE, a node is defined in the device tree with the
->>   st,stm32mp1-m4-tee to support signed remoteproc firmware.
->>   Based on DT properties, OP-TEE authenticates, loads, starts, and stops
->>   the firmware.
->> - On Linux, when the compatibility is set, the Cortex-M resets should not
->>   be declared in the device tree.
->>
->> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
->> ---
->>  .../bindings/remoteproc/st,stm32-rproc.yaml   | 53 +++++++++++++++----
->>  1 file changed, 44 insertions(+), 9 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.y=
-aml b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
->> index 370af61d8f28..9fdfa30eff20 100644
->> --- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
->> +++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
->> @@ -16,7 +16,12 @@ maintainers:
->> =20
->>  properties:
->>    compatible:
->> -    const: st,stm32mp1-m4
->> +    enum:
->> +      - st,stm32mp1-m4
->> +      - st,stm32mp1-m4-tee
->> +    description:
->> +      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by Li=
-nux
->=20
-> What if other OSs want to manage the M4?
+This series proposes the implementation of a remoteproc tee driver to
+communicate with a TEE trusted application responsible for authenticating and
+loading the remoteproc firmware image in an Arm secure context.
 
-Right, for instance this compatibles are also used by U-boot. I will change
- "by Linux"  by "by non secure context"
+1) Principle:
+
+The remoteproc tee driver provides services to communicate with the OP-TEE
+trusted application running on the Trusted Execution Context (TEE).
+The trusted application in TEE manages the remote processor lifecycle:
+
+- authenticating and loading firmware images,
+- isolating and securing the remote processor memories,
+- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
+- managing the start and stop of the firmware by the TEE.
+
+2) Format of the signed image:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_c=
+ore.c#L18-L57
+
+3) OP-TEE trusted application API:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remot=
+eproc.h
+
+4) OP-TEE signature script
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
+
+Example of usage:
+sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key $=
+{OP-TEE_PATH}/keys/default.pem
 
 
->=20
->> +      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management b=
-y secure context
->> =20
->>    reg:
->>      description:
->> @@ -142,21 +147,41 @@ properties:
->>  required:
->>    - compatible
->>    - reg
->> -  - resets
->> =20
->>  allOf:
->>    - if:
->>        properties:
->> -        reset-names:
->> -          not:
->> -            contains:
->> -              const: hold_boot
->> +        compatible:
->> +          contains:
->> +            const: st,stm32mp1-m4
->> +    then:
->> +      if:
->> +        properties:
->> +          reset-names:
->> +            not:
->> +              contains:
->> +                const: hold_boot
->> +      then:
->> +        required:
->> +          - st,syscfg-holdboot
->> +          - resets
->> +      else:
->> +        properties:
->> +          st,syscfg-holdboot: false
->> +        required:
->> +          - reset-names
->=20
-> Looks like a new required property.
+5) Impact on User space Application
 
-I just realize that it does not make sense. We execute this
-only if "reset-names" contains "hold_boot".
-I will remove it
+No sysfs impact.the user only needs to provide the signed firmware image
+instead of the ELF image.
 
-Thanks!
-Arnaud
 
->=20
->> +          - resets
->> +
->> +  - if:
->> +      properties:
->> +        compatible:
->> +          contains:
->> +            const: st,stm32mp1-m4-tee
->>      then:
->> -      required:
->> -        - st,syscfg-holdboot
->> -    else:
->>        properties:
->>          st,syscfg-holdboot: false
->> +        reset-names: false
->> +        resets: false
->> =20
->>  additionalProperties: false
->> =20
->> @@ -188,5 +213,15 @@ examples:
->>        st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
->>        st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
->>      };
->> +  - |
->> +    #include <dt-bindings/reset/stm32mp1-resets.h>
->> +    m4(a)10000000 {
->> +      compatible =3D "st,stm32mp1-m4-tee";
->> +      reg =3D <0x10000000 0x40000>,
->> +            <0x30000000 0x40000>,
->> +            <0x38000000 0x10000>;
->> +      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
->> +      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
->> +    };
->> =20
->>  ...
->> --=20
->> 2.25.1
->>
+For more information about the implementation, a presentation is available he=
+re
+(note that the format of the signed image has evolved between the presentation
+and the integration in OP-TEE).
 
---===============7920016445584958333==--
+https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+
+Arnaud Pouliquen (4):
+  remoteproc: Add TEE support
+  dt-bindings: remoteproc: add compatibility for TEE support
+  remoteproc: stm32: create sub-functions to request shutdown and
+    release
+  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
+
+ .../bindings/remoteproc/st,stm32-rproc.yaml   |  52 ++-
+ drivers/remoteproc/Kconfig                    |   9 +
+ drivers/remoteproc/Makefile                   |   1 +
+ drivers/remoteproc/stm32_rproc.c              | 233 +++++++++--
+ drivers/remoteproc/tee_remoteproc.c           | 393 ++++++++++++++++++
+ include/linux/tee_remoteproc.h                |  99 +++++
+ 6 files changed, 740 insertions(+), 47 deletions(-)
+ create mode 100644 drivers/remoteproc/tee_remoteproc.c
+ create mode 100644 include/linux/tee_remoteproc.h
+
+
+base-commit: 0dd3ee31125508cd67f7e7172247f05b7fd1753a
+--=20
+2.25.1
+
+
+--===============8905094414749098844==--
 
