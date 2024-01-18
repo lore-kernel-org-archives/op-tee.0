@@ -2,23 +2,23 @@ From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 4/4] remoteproc: stm32: Add support of an OP-TEE TA to
  load the firmware
-Date: Thu, 18 Jan 2024 07:49:37 +0800
-Message-ID: <202401180740.1ud9PJYn-lkp@intel.com>
+Date: Thu, 18 Jan 2024 15:37:55 +0800
+Message-ID: <202401181522.bvg4EMU4-lkp@intel.com>
 In-Reply-To: <20240115135249.296822-5-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4750993836817765944=="
+Content-Type: multipart/mixed; boundary="===============3496067444427558690=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4750993836817765944==
+--===============3496067444427558690==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hi Arnaud,
 
-kernel test robot noticed the following build warnings:
+kernel test robot noticed the following build errors:
 
-[auto build test WARNING on remoteproc/rproc-next]
-[also build test WARNING on robh/for-next linus/master v6.7 next-20240117]
+[auto build test ERROR on remoteproc/rproc-next]
+[also build test ERROR on linus/master v6.7 next-20240117]
 [If your patch is applied to the wrong git tree, kindly drop us a note.
 And when submitting patch, we suggest to use '--base' as documented in
 https://git-scm.com/docs/git-format-patch#_base_tree_information]
@@ -31,80 +31,96 @@ patch link:    https://lore.kernel.org/r/20240115135249.296822-5-arnaud.pouli=
 quen%40foss.st.com
 patch subject: [PATCH 4/4] remoteproc: stm32: Add support of an OP-TEE TA to =
 load the firmware
-config: mips-randconfig-r112-20240117 (https://download.01.org/0day-ci/archiv=
-e/20240118/202401180740.1ud9PJYn-lkp(a)intel.com/config)
-compiler: clang version 18.0.0git (https://github.com/llvm/llvm-project 9bde5=
-becb44ea071f5e1fa1f5d4071dc8788b18c)
-reproduce: (https://download.01.org/0day-ci/archive/20240118/202401180740.1ud=
-9PJYn-lkp(a)intel.com/reproduce)
+config: arm64-randconfig-r081-20240118 (https://download.01.org/0day-ci/archi=
+ve/20240118/202401181522.bvg4EMU4-lkp(a)intel.com/config)
+compiler: aarch64-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0240118/202401181522.bvg4EMU4-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202401180740.1ud9PJYn-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202401181522.bvg4EMU4-lkp(a)i=
 ntel.com/
 
-sparse warnings: (new ones prefixed by >>)
-   drivers/remoteproc/tee_remoteproc.c:82:26: sparse: sparse: symbol 'tee_rpr=
-oc_ctx' was not declared. Should it be static?
-   drivers/remoteproc/tee_remoteproc.c:166:24: sparse: sparse: incorrect type=
- in assignment (different address spaces) @@     expected void *rsc_va @@    =
- got void [noderef] __iomem * @@
-   drivers/remoteproc/tee_remoteproc.c:166:24: sparse:     expected void *rsc=
-_va
-   drivers/remoteproc/tee_remoteproc.c:166:24: sparse:     got void [noderef]=
- __iomem *
->> drivers/remoteproc/tee_remoteproc.c:233:31: sparse: sparse: incorrect type=
- in argument 1 (different address spaces) @@     expected void const volatile=
- [noderef] __iomem *addr @@     got void *rsc_va @@
-   drivers/remoteproc/tee_remoteproc.c:233:31: sparse:     expected void cons=
-t volatile [noderef] __iomem *addr
-   drivers/remoteproc/tee_remoteproc.c:233:31: sparse:     got void *rsc_va
-   drivers/remoteproc/tee_remoteproc.c: note: in included file (through inclu=
-de/linux/preempt.h, include/linux/spinlock.h, include/linux/mmzone.h, ...):
-   include/linux/list.h:83:21: sparse: sparse: self-comparison always evaluat=
-es to true
+All errors (new ones prefixed by >>):
 
-vim +233 drivers/remoteproc/tee_remoteproc.c
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_load_fw':
+>> tee_remoteproc.c:(.text+0x138): undefined reference to `tee_shm_register_k=
+ernel_buf'
+>> tee_remoteproc.c:(.text+0x138): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_shm_register_kernel_buf'
+>> aarch64-linux-ld: tee_remoteproc.c:(.text+0x18c): undefined reference to `=
+tee_client_invoke_func'
+>> tee_remoteproc.c:(.text+0x18c): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_invoke_func'
+>> aarch64-linux-ld: tee_remoteproc.c:(.text+0x1ac): undefined reference to `=
+tee_shm_free'
+>> tee_remoteproc.c:(.text+0x1ac): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_shm_free'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_start':
+>> tee_remoteproc.c:(.text+0x240): undefined reference to `tee_client_invoke_=
+func'
+   tee_remoteproc.c:(.text+0x240): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_invoke_func'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `rproc_=
+tee_get_rsc_table':
+   tee_remoteproc.c:(.text+0x2dc): undefined reference to `tee_client_invoke_=
+func'
+   tee_remoteproc.c:(.text+0x2dc): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_invoke_func'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_stop':
+   tee_remoteproc.c:(.text+0x408): undefined reference to `tee_client_invoke_=
+func'
+   tee_remoteproc.c:(.text+0x408): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_invoke_func'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_register':
+>> tee_remoteproc.c:(.text+0x51c): undefined reference to `tee_client_open_se=
+ssion'
+>> tee_remoteproc.c:(.text+0x51c): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_open_session'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_unregister':
+>> tee_remoteproc.c:(.text+0x624): undefined reference to `tee_client_close_s=
+ession'
+>> tee_remoteproc.c:(.text+0x624): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_close_session'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_probe':
+>> tee_remoteproc.c:(.text+0x6b0): undefined reference to `tee_client_open_co=
+ntext'
+>> tee_remoteproc.c:(.text+0x6b0): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_open_context'
+>> aarch64-linux-ld: tee_remoteproc.c:(.text+0x6e0): undefined reference to `=
+tee_client_close_context'
+>> tee_remoteproc.c:(.text+0x6e0): relocation truncated to fit: R_AARCH64_CAL=
+L26 against undefined symbol `tee_client_close_context'
+   aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o: in function `tee_rp=
+roc_remove':
+   tee_remoteproc.c:(.text+0x78c): undefined reference to `tee_client_close_s=
+ession'
+   tee_remoteproc.c:(.text+0x78c): additional relocation overflows omitted fr=
+om the output
+   aarch64-linux-ld: tee_remoteproc.c:(.text+0x7dc): undefined reference to `=
+tee_client_close_context'
+>> aarch64-linux-ld: drivers/remoteproc/tee_remoteproc.o:(.data+0x10): undefi=
+ned reference to `tee_bus_type'
 
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  215 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  216  int tee_rproc_stop(struct te=
-e_rproc *trproc)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  217  {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  218  	struct tee_ioctl_invoke_arg=
- arg;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  219  	struct tee_param param[MAX_=
-TEE_PARAM_ARRY_MEMBER];
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  220  	int ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  221 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  222  	prepare_args(trproc, TA_RPR=
-OC_FW_CMD_STOP_FW, &arg, param, 0);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  223 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  224  	ret =3D tee_client_invoke_f=
-unc(tee_rproc_ctx->tee_ctx, &arg, param);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  225  	if (ret < 0 || arg.ret !=3D=
- 0) {
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  226  		dev_err(tee_rproc_ctx->dev,
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  227  			"TA_RPROC_FW_CMD_STOP_FW =
-invoke failed TEE err: %x, ret:%x\n",
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  228  			arg.ret, ret);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  229  		if (!ret)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  230  			ret =3D -EIO;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  231  	}
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  232  	if (trproc->rsc_va)
-6805d1065198e1 Arnaud Pouliquen 2024-01-15 @233  		iounmap(trproc->rsc_va);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  234  	trproc->rsc_va =3D NULL;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  235 =20
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  236  	return ret;
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  237  }
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  238  EXPORT_SYMBOL_GPL(tee_rproc_=
-stop);
-6805d1065198e1 Arnaud Pouliquen 2024-01-15  239 =20
+Kconfig warnings: (for reference only)
+   WARNING: unmet direct dependencies detected for TEE_REMOTEPROC
+   Depends on [m]: REMOTEPROC [=3Dy] && OPTEE [=3Dm]
+   Selected by [y]:
+   - STM32_RPROC [=3Dy] && (ARCH_STM32 [=3Dy] || COMPILE_TEST [=3Dy]) && REMO=
+TEPROC [=3Dy]
 
 --=20
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============4750993836817765944==--
+--===============3496067444427558690==--
 
