@@ -1,33 +1,50 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Google Groups <noreply@groups.google.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 4.1.0 has been released
-Date: Fri, 19 Jan 2024 18:49:17 +0100
-Message-ID: 
- <CAHUa44HQxMEmFJ5jpU6iaMHVCMFVm60+zG+Rdp7wfnmT5UvsUQ@mail.gmail.com>
+Subject: =?utf-8?b?2KrZhdiqINil2LbYp9mB2KrZgyDYpdmE2Ykg8J+UlCAg8J+UlCAgICA=?=
+ =?utf-8?b?2KfZhNiv2KfYsSDYp9mE2LnYsdio2YrZhyDZhNmE2KrZhtmF2YrZhyDYp9mE2Kc=?=
+ =?utf-8?b?2K/Yp9ix2YrZhyAyMDI0IPCflJQgIPCflJQ=?=
+Date: Fri, 19 Jan 2024 22:34:52 -0800
+Message-ID: <w11VbU73DdHOVlN5y4SO8A@notifications.google.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3412540565772435834=="
+Content-Type: multipart/mixed; boundary="===============4647755391899713322=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3412540565772435834==
+--===============4647755391899713322==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 
-Hi,
+2YXYsdit2KjZi9inINmK2Kcgb3AtdGVlKGEpbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZ9iMCtiq
+2YXYqiDYpdi22KfZgdiq2YMg2YXZhiDZgtmQ2KjZhCBtYXJ3YS5oci5haGFkNDQoYSlnbWFpbC5j
+b20g2KXZhNmJINin2YTZhdis2YXZiNi52Kkg8J+UlCAg8J+UlCAgICDYp9mE2K/Yp9ixICAK2KfZ
+hNi52LHYqNmK2Ycg2YTZhNiq2YbZhdmK2Ycg2KfZhNin2K/Yp9ix2YrZhyAyMDI0IPCflJQgIPCf
+lJQuCmh0dHBzOi8vZ3JvdXBzLmdvb2dsZS5jb20vZC9mb3J1bS9yZWhhbjIxMgoK2KrYqtmK2K0g
+2YTZgyAi2YXYrNmF2YjYudin2KogR29vZ2xlIiDYpdmG2LTYp9ihINmF2YbYqtiv2YrYp9iqINi5
+2YTZiSDYp9mE2KXZhtiq2LHZhtiqINmI2YXYrNmF2YjYudin2Kog2YXYs9iq2YbYr9ipINil2YTZ
+iQrYp9mE2KjYsdmK2K8g2KfZhNil2YTZg9iq2LHZiNmG2Yog2YjYp9mE2YXYtNin2LHZg9ipINmB
+2YrZh9inINmF2Lkg2KfZhNin2LPYqtmF2KrYp9i5INio2KrYrNix2KjYqSDZhdmG2KrYr9mJINi6
+2YbZitipLiDZiNmK2YXZg9mG2YMgIArYo9mK2LbZi9inCtin2LPYqtiu2K/Yp9mFINin2YTZhdis
+2YXZiNi52Kkg2YTZhdi02KfYsdmD2Kkg2KfZhNmF2LPYqtmG2K/Yp9iqINmI2KfZhNi12YjYsSDZ
+iNin2YTYqtmC2KfZiNmK2YUg2YjYp9mE2K/YudmI2KfYqiDZiNi62YrYsdmH2Kcg2YXZhiAgCtin
+2YTZhdmI2KfYsdivLgoK2KXYsNinINmD2YbYqiDZhNinINiq2LHYutioINmB2Yog2KPZhiDYqtmD
+2YjZhiDYudi22YjZi9inINmB2Yog2YfYsNmHINin2YTZhdis2YXZiNi52Kkg2KPZiCDYqti52KrZ
+gtivINij2YbZh9inINmC2K8g2KrYqti22YXZhiAgCtmF2K3YqtmI2Ykg2LrZitixINmF2LHYutmI
+2Kgg2YHZitmHOgoqINmK2YXZg9mG2YMg2KXZhNi62KfYoSDYp9mE2KfYtNiq2LHYp9mDINmB2Yog
+2YfYsNmHINin2YTZhdis2YXZiNi52Kkg2LnZhNmJICAKaHR0cHM6Ly9ncm91cHMuZ29vZ2xlLmNv
+bS9kL2ZvcnVtL3JlaGFuMjEyL3Vuc3Vic2NyaWJlL0FIWjdLVk5mNGdxTDlMQmJycXlGSV8tRXpr
+ZmpWcjlsa2YxNktLa3V1RmlwZHlQQ09tVUlDaEtHaEJrak9PUFlnZndMYk0wdEpvU2pRM1R0d19O
+djJjNHg5WlVuTzZVdlZRICAK2KPZiCDYudmGINi32LHZitmCINil2LHYs9in2YQg2LHYs9in2YTY
+qSDYpdmE2YPYqtix2YjZhtmK2Kkg2KXZhNmJIHJlaGFuMjEyK3Vuc3Vic2NyaWJlKGEpZ29vZ2xl
+Z3JvdXBzLmNvbQoqINmK2YXZg9mG2YMg2KfZhNil2KjZhNin2Log2LnZhiDYp9mE2KXYs9in2KHY
+qSDZgdmKINmH2LDZhyDYp9mE2YXYrNmF2YjYudipINi52YTZiSAgCmh0dHBzOi8vZ3JvdXBzLmdv
+b2dsZS5jb20vZC9hYnVzZS9BSm1ybUN1bkU0eFM5YTRKeUQ2UThvaEx1aWZCRnExbEhZY3YzMU5K
+THJEcUFLR2lXNWZKRlRzUEdXRHQ4SVJPUXN1TW5XVjY0ZGFKdUI1U3drY0RRT285dlhUX0JRazUy
+Zmpfa2l1R29KcGE3aGl5cE9KZUxnb2YtUmVDeGE0dTkxWTZ2NS1COEFpcwoqINmK2YXZg9mG2YMg
+2KfYrtiq2YrYp9ixINi52K/ZhSDYqtmE2YLZkdmKINij2Yog2KXYtNi52KfYsdin2Kog2KjYtNij
+2YYg2KzZhdmK2Lkg2KPZhti02LfYqSAi2YXYrNmF2YjYudin2KogR29vZ2xlIiAgCtin2YTZhdiz
+2KrZgtio2YTZitipINi52YTZiSBodHRwczovL2dyb3Vwcy5nb29nbGUuY29tL2Qvb3B0b3V0CgrY
+stmK2KfYsdipINmF2LHZg9iyINmF2LPYp9i52K/YqSAi2YXYrNmF2YjYudin2KogR29vZ2xlIiDZ
+gdmKICAKaHR0cHM6Ly9zdXBwb3J0Lmdvb2dsZS5jb20vZ3JvdXBzL2Fuc3dlci80NjYwMT9obD1h
+ci4K
 
-I'm pleased to announce that OP-TEE version 4.1.0 is now available.
-The list of changes can be found in the changelog [1]. A blog post will
-be published soon on trustedfirmware.org [2].
-
-A big thank you to everyone who participated with contributions and
-helping out with testing the release [3].
-
-[1] https://github.com/OP-TEE/optee_os/blob/master/CHANGELOG.md
-[2] https://www.trustedfirmware.org/blog/
-[3] https://github.com/OP-TEE/optee_os/commit/18b424c23aa5a798dfe2e4d20b4bde3=
-919dc4e99
-
-Regards,
-Jens
-
---===============3412540565772435834==--
+--===============4647755391899713322==--
 
