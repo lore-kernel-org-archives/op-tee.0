@@ -1,14 +1,14 @@
 From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2 1/4] remoteproc: Add TEE support
-Date: Fri, 26 Jan 2024 11:03:30 -0700
-Message-ID: <ZbPz8go/Oa0BAs72@p14s>
+Date: Mon, 29 Jan 2024 11:55:05 -0700
+Message-ID: <Zbf0iRITbLEsrHWq@p14s>
 In-Reply-To: <20240118100433.3984196-2-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7915228656563800077=="
+Content-Type: multipart/mixed; boundary="===============4289314326094643580=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7915228656563800077==
+--===============4289314326094643580==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -265,6 +265,11 @@ ore . */
 > +
 > +struct resource_table *tee_rproc_get_loaded_rsc_table(struct tee_rproc *tr=
 proc)
+
+Please change this to tee_rproc_find_loaded_rsc_table().  That way we know it
+should be correlated with ops::find_loaded_rsc_table() rather than
+ops::get_loaded_rsc_table().
+
 > +{
 > +	return (__force struct resource_table *)trproc->rsc_va;
 > +}
@@ -280,6 +285,11 @@ proc)
 > +
 > +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
 > +	if (ret < 0 || arg.ret !=3D 0) {
+
+Please split the conditions of this if() statement to make it easier to under=
+stand
+the correlation with the other if() below.  Same for tee_rproc_stop().
+
 > +		dev_err(tee_rproc_ctx->dev,
 > +			"TA_RPROC_FW_CMD_START_FW invoke failed TEE err: %x, ret:%x\n",
 > +			arg.ret, ret);
@@ -325,9 +335,6 @@ proc)
 c_id)
 > +{
 > +	struct tee_client_device *rproc_tee_device;
-
-This belongs to the TEE subsystem and as such would call it tee_device.
-
 > +	struct tee_ioctl_open_session_arg sess_arg;
 > +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
 > +	struct tee_rproc *trproc;
@@ -382,6 +389,10 @@ ld be not yet
 > +
 > +	if (!tee_rproc_ctx)
 > +		return -ENODEV;
+
+Not sure this check is needed since we can't be here if memory allocation for
+@tee_rproc_ctx failed in tee_rproc_probe().
+
 > +
 > +	ret =3D tee_client_close_session(tee_rproc_ctx->tee_ctx, trproc->session_=
 id);
@@ -397,9 +408,6 @@ t);
 > +
 > +static int tee_ctx_match(struct tee_ioctl_version_data *ver, const void *d=
 ata)
-
-tee_rproc_ctx_match()
-
 > +{
 > +	/* Today we support only the OP-TEE, could be extend to other tees */
 > +	return (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE);
@@ -416,6 +424,14 @@ tee_rproc_ctx_match()
 llowed\n");
 > +		return -EBUSY;
 > +	}
+
+Is this check needed? How can @tee_rproc_ctx be initialized twice?
+
+More comments tomorrow.
+
+Thanks,
+Mathieu
+
 > +
 > +	/* Open context with TEE driver */
 > +	tee_ctx =3D tee_client_open_context(NULL, tee_ctx_match, NULL, NULL);
@@ -424,14 +440,6 @@ llowed\n");
 > +
 > +	tee_rproc_ctx =3D devm_kzalloc(dev, sizeof(*tee_ctx), GFP_KERNEL);
 > +	if (!tee_ctx) {
-
-There is a big problem here...
-
-More comments on Monday.
-
-Thanks,
-Mathieu
-
 > +		ret =3D -ENOMEM;
 > +		goto err;
 > +	}
@@ -601,5 +609,5 @@ igned int rproc_id)
 > 2.25.1
 >=20
 
---===============7915228656563800077==--
+--===============4289314326094643580==--
 
