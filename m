@@ -1,424 +1,349 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 3/3] optee: probe RPMB device using RPMB subsystem
-Date: Wed, 31 Jan 2024 18:43:47 +0100
-Message-ID: <20240131174347.510961-4-jens.wiklander@linaro.org>
-In-Reply-To: <20240131174347.510961-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v2 4/4] remoteproc: stm32: Add support of an OP-TEE TA to
+ load the firmware
+Date: Wed, 31 Jan 2024 11:52:21 -0700
+Message-ID: <ZbqW5YfDmEWG4G1X@p14s>
+In-Reply-To: <7ec6c9e8-9267-4e7c-81a4-abcdb2ab4239@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0242772042632593600=="
+Content-Type: multipart/mixed; boundary="===============1468760235201102718=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0242772042632593600==
+--===============1468760235201102718==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe and
-use an RPMB device via the RPBM subsystem instead of passing the RPMB
-frames via tee-supplicant in user space. A fallback mechanism is kept to
-route RPMB frames via tee-supplicant if the RPMB subsystem isn't
-available.
+On Tue, Jan 30, 2024 at 10:13:48AM +0100, Arnaud POULIQUEN wrote:
+>=20
+>=20
+> On 1/26/24 18:11, Mathieu Poirier wrote:
+> > On Thu, Jan 18, 2024 at 11:04:33AM +0100, Arnaud Pouliquen wrote:
+> >> The new TEE remoteproc device is used to manage remote firmware in a
+> >> secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
+> >> introduced to delegate the loading of the firmware to the trusted
+> >> execution context. In such cases, the firmware should be signed and
+> >> adhere to the image format defined by the TEE.
+> >>
+> >> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+> >> ---
+> >> V1 to V2 update:
+> >> - remove the select "TEE_REMOTEPROC" in STM32_RPROC config as detected by
+> >>   the kernel test robot:
+> >>      WARNING: unmet direct dependencies detected for TEE_REMOTEPROC
+> >>      Depends on [n]: REMOTEPROC [=3Dy] && OPTEE [=3Dn]
+> >>      Selected by [y]:
+> >>      - STM32_RPROC [=3Dy] && (ARCH_STM32 || COMPILE_TEST [=3Dy]) && REMO=
+TEPROC [=3Dy]
+> >> - Fix initialized trproc variable in  stm32_rproc_probe
+> >> ---
+> >>  drivers/remoteproc/stm32_rproc.c | 149 +++++++++++++++++++++++++++++--
+> >>  1 file changed, 144 insertions(+), 5 deletions(-)
+> >>
+> >> diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32=
+_rproc.c
+> >> index fcc0001e2657..cf6a21bac945 100644
+> >> --- a/drivers/remoteproc/stm32_rproc.c
+> >> +++ b/drivers/remoteproc/stm32_rproc.c
+> >> @@ -20,6 +20,7 @@
+> >>  #include <linux/remoteproc.h>
+> >>  #include <linux/reset.h>
+> >>  #include <linux/slab.h>
+> >> +#include <linux/tee_remoteproc.h>
+> >>  #include <linux/workqueue.h>
+> >> =20
+> >>  #include "remoteproc_internal.h"
+> >> @@ -49,6 +50,9 @@
+> >>  #define M4_STATE_STANDBY	4
+> >>  #define M4_STATE_CRASH		5
+> >> =20
+> >> +/* Remote processor unique identifier aligned with the Trusted Executio=
+n Environment definitions */
+> >> +#define STM32_MP1_M4_PROC_ID    0
+> >> +
+> >>  struct stm32_syscon {
+> >>  	struct regmap *map;
+> >>  	u32 reg;
+> >> @@ -90,6 +94,8 @@ struct stm32_rproc {
+> >>  	struct stm32_mbox mb[MBOX_NB_MBX];
+> >>  	struct workqueue_struct *workqueue;
+> >>  	bool hold_boot_smc;
+> >> +	bool fw_loaded;
+> >> +	struct tee_rproc *trproc;
+> >>  	void __iomem *rsc_va;
+> >>  };
+> >> =20
+> >> @@ -257,6 +263,91 @@ static int stm32_rproc_release(struct rproc *rproc)
+> >>  	return err;
+> >>  }
+> >> =20
+> >> +static int stm32_rproc_tee_elf_sanity_check(struct rproc *rproc,
+> >> +					    const struct firmware *fw)
+> >> +{
+> >> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >> +	unsigned int ret =3D 0;
+> >> +
+> >> +	if (rproc->state =3D=3D RPROC_DETACHED)
+> >> +		return 0;
+> >> +
+> >> +	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
+> >> +	if (!ret)
+> >> +		ddata->fw_loaded =3D true;
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +
+> >> +static int stm32_rproc_tee_elf_load(struct rproc *rproc,
+> >> +				    const struct firmware *fw)
+> >> +{
+> >> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >> +	unsigned int ret;
+> >> +
+> >> +	/*
+> >> +	 * This function can be called by remote proc for recovery
+> >> +	 * without the sanity check. In this case we need to load the firmware
+> >> +	 * else nothing done here as the firmware has been preloaded for the
+> >> +	 * sanity check to be able to parse it for the resource table.
+> >> +	 */
+> >=20
+> > This comment is very confusing - please consider refactoring. =20
+> >=20
+> >> +	if (ddata->fw_loaded)
+> >> +		return 0;
+> >> +
+> >=20
+> > I'm not sure about keeping a flag to indicate the status of the loaded fi=
+rmware.
+> > It is not done for the non-secure method, I don't see why it would be nee=
+ded for
+> > the secure one.
+> >=20
+>=20
+> The difference is on the sanity check.
+> - in rproc_elf_sanity_check we  parse the elf file to verify that it is
+> valid.
+> - in stm32_rproc_tee_elf_sanity_check we have to do the same, that means to
+> authenticate it. the authentication is done during the load.
+>=20
+> So this flag is used to avoid to reload it twice time.
+> refactoring the comment should help to understand this flag
+>=20
+>=20
+> An alternative would be to bypass the sanity check. But this lead to same
+> limitation.
+> Before loading the firmware in remoteproc_core, we call rproc_parse_fw() th=
+at is
+> used to get the resource table address. To get it from tee we need to
+> authenticate the firmware so load it...
+>
 
-The OP-TEE RPC ABI is extended to support iterating over all RPMB
-devices until one is found with the expected RPMB key already
-programmed.
+I spent a long time thinking about this patchset.  Looking at the code as it
+is now, request_firmware() in rproc_boot() is called even when the TEE is
+responsible for loading the firmware.  There should be some conditional code
+that calls either request_firmware() or tee_rproc_load_fw().  The latter shou=
+ld
+also be renamed to tee_rproc_request_firmware() to avoid confusion.
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/core.c          |   1 +
- drivers/tee/optee/ffa_abi.c       |   2 +
- drivers/tee/optee/optee_private.h |   6 +
- drivers/tee/optee/optee_rpc_cmd.h |  33 +++++
- drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++++++
- drivers/tee/optee/smc_abi.c       |   2 +
- 6 files changed, 265 insertions(+)
+I touched on that before but please rename rproc_tee_get_rsc_table() to
+rproc_tee_elf_load_rsc_table().  I also suggest to introduce a new function,
+rproc_tee_get_loaded_rsc_table() that would be called from
+rproc_tee_elf_load_rsc_table().  That way we don't need trproc->rsc_va. =20
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 3aed554bc8d8..21bcccbe2207 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -177,6 +177,7 @@ void optee_remove_common(struct optee *optee)
- 	tee_shm_pool_free(optee->pool);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
-+	mutex_destroy(&optee->rpmb_dev_mutex);
- }
-=20
- static int smc_abi_rc;
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index ecb5eb079408..1d207a9d4f3b 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -934,6 +934,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	optee_cq_init(&optee->call_queue, 0);
- 	optee_supp_init(&optee->supp);
- 	optee_shm_arg_cache_init(optee, arg_cache_flags);
-+	mutex_init(&optee->rpmb_dev_mutex);
- 	ffa_dev_set_drvdata(ffa_dev, optee);
- 	ctx =3D teedev_open(optee->teedev);
- 	if (IS_ERR(ctx)) {
-@@ -968,6 +969,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	teedev_close_context(ctx);
- err_rhashtable_free:
- 	rhashtable_free_and_destroy(&optee->ffa.global_ids, rh_free_fn, NULL);
-+	mutex_destroy(&optee->rpmb_dev_mutex);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
- 	mutex_destroy(&optee->ffa.mutex);
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index 7a5243c78b55..3a87ad4ef1e2 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -20,6 +20,7 @@
- /* Some Global Platform error codes used in this driver */
- #define TEEC_SUCCESS			0x00000000
- #define TEEC_ERROR_BAD_PARAMETERS	0xFFFF0006
-+#define TEEC_ERROR_ITEM_NOT_FOUND	0xFFFF0008
- #define TEEC_ERROR_NOT_SUPPORTED	0xFFFF000A
- #define TEEC_ERROR_COMMUNICATION	0xFFFF000E
- #define TEEC_ERROR_OUT_OF_MEMORY	0xFFFF000C
-@@ -197,6 +198,8 @@ struct optee_ops {
-  * @notif:		notification synchronization struct
-  * @supp:		supplicant synchronization struct for RPC to supplicant
-  * @pool:		shared memory pool
-+ * @mutex:		mutex protecting @rpmb_dev
-+ * @rpmb_dev:		current RPMB device or NULL
-  * @rpc_param_count:	If > 0 number of RPC parameters to make room for
-  * @scan_bus_done	flag if device registation was already done.
-  * @scan_bus_work	workq to scan optee bus and register optee drivers
-@@ -215,6 +218,9 @@ struct optee {
- 	struct optee_notif notif;
- 	struct optee_supp supp;
- 	struct tee_shm_pool *pool;
-+	/* Protects rpmb_dev pointer */
-+	struct mutex rpmb_dev_mutex;
-+	struct rpmb_dev *rpmb_dev;
- 	unsigned int rpc_param_count;
- 	bool   scan_bus_done;
- 	struct work_struct scan_bus_work;
-diff --git a/drivers/tee/optee/optee_rpc_cmd.h b/drivers/tee/optee/optee_rpc_=
-cmd.h
-index f3f06e0994a7..672e5dcdf041 100644
---- a/drivers/tee/optee/optee_rpc_cmd.h
-+++ b/drivers/tee/optee/optee_rpc_cmd.h
-@@ -16,6 +16,14 @@
-  * and sends responses.
-  */
-=20
-+/*
-+ * Replay Protected Memory Block access
-+ *
-+ * [in]     memref[0]	    Frames to device
-+ * [out]    memref[1]	    Frames from device
-+ */
-+#define OPTEE_RPC_CMD_RPMB		1
-+
- /*
-  * Get time
-  *
-@@ -103,4 +111,29 @@
- /* I2C master control flags */
- #define OPTEE_RPC_I2C_FLAGS_TEN_BIT	BIT(0)
-=20
-+/*
-+ * Reset RPMB probing
-+ *
-+ * Releases an eventually already used RPMB devices and starts over searching
-+ * for RPMB devices. Returns the kind of shared memory to use in subsequent
-+ * OPTEE_RPC_CMD_RPMB_PROBE_NEXT and OPTEE_RPC_CMD_RPMB calls.
-+ *
-+ * [out]    value[0].a	    OPTEE_RPC_SHM_TYPE_*, the parameter for
-+ *			    OPTEE_RPC_CMD_SHM_ALLOC
-+ */
-+#define OPTEE_RPC_CMD_RPMB_PROBE_RESET	22
-+
-+/*
-+ * Probe next RPMB device
-+ *
-+ * [out]    value[0].a	    Must be OPTEE_RPC_RPMB_EMMC
-+ * [out]    value[0].b	    EXT CSD-slice 168 "RPMB Size"
-+ * [out]    value[0].c	    EXT CSD-slice 222 "Reliable Write Sector Count"
-+ * [out]    memref[1]       Buffer with the raw CID
-+ */
-+#define OPTEE_RPC_CMD_RPMB_PROBE_NEXT	23
-+
-+/* Type of RPMB device */
-+#define OPTEE_RPC_RPMB_EMMC		0
-+
- #endif /*__OPTEE_RPC_CMD_H*/
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index e69bc6380683..6fd6f99dafab 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -7,6 +7,7 @@
-=20
- #include <linux/delay.h>
- #include <linux/i2c.h>
-+#include <linux/rpmb.h>
- #include <linux/slab.h>
- #include <linux/tee_drv.h>
- #include "optee_private.h"
-@@ -255,6 +256,217 @@ void optee_rpc_cmd_free_suppl(struct tee_context *ctx, =
-struct tee_shm *shm)
- 	optee_supp_thrd_req(ctx, OPTEE_RPC_CMD_SHM_FREE, 1, &param);
- }
-=20
-+static void handle_rpc_func_rpmb_probe_reset(struct tee_context *ctx,
-+					     struct optee *optee,
-+					     struct optee_msg_arg *arg)
-+{
-+	struct tee_param params[1];
-+
-+	if (!IS_ENABLED(CONFIG_RPMB)) {
-+		handle_rpc_supp_cmd(ctx, optee, arg);
-+		return;
-+	}
-+
-+	if (arg->num_params !=3D ARRAY_SIZE(params) ||
-+	    optee->ops->from_msg_param(optee, params, arg->num_params,
-+				       arg->params) ||
-+	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	params[0].u.value.a =3D OPTEE_RPC_SHM_TYPE_KERNEL;
-+	params[0].u.value.b =3D 0;
-+	params[0].u.value.c =3D 0;
-+	if (optee->ops->to_msg_param(optee, arg->params,
-+				     arg->num_params, params)) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	mutex_lock(&optee->rpmb_dev_mutex);
-+	rpmb_dev_put(optee->rpmb_dev);
-+	optee->rpmb_dev =3D NULL;
-+	mutex_unlock(&optee->rpmb_dev_mutex);
-+
-+	arg->ret =3D TEEC_SUCCESS;
-+}
-+
-+static int rpc_rpmb_match(struct device *dev, const void *data)
-+{
-+	return 1;
-+}
-+
-+static void handle_rpc_func_rpmb_probe_next(struct tee_context *ctx,
-+					    struct optee *optee,
-+					    struct optee_msg_arg *arg)
-+{
-+	struct rpmb_dev *start_rdev;
-+	struct rpmb_dev *rdev;
-+	struct tee_param params[2];
-+	void *buf;
-+
-+	if (!IS_ENABLED(CONFIG_RPMB)) {
-+		handle_rpc_supp_cmd(ctx, optee, arg);
-+		return;
-+	}
-+
-+	if (arg->num_params !=3D ARRAY_SIZE(params) ||
-+	    optee->ops->from_msg_param(optee, params, arg->num_params,
-+				       arg->params) ||
-+	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
-+	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+	buf =3D tee_shm_get_va(params[1].u.memref.shm,
-+			     params[1].u.memref.shm_offs);
-+	if (!buf) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	mutex_lock(&optee->rpmb_dev_mutex);
-+	start_rdev =3D optee->rpmb_dev;
-+	rdev =3D rpmb_dev_find_device(NULL, start_rdev, rpc_rpmb_match);
-+	rpmb_dev_put(start_rdev);
-+	optee->rpmb_dev =3D rdev;
-+	mutex_unlock(&optee->rpmb_dev_mutex);
-+
-+	if (!rdev) {
-+		arg->ret =3D TEEC_ERROR_ITEM_NOT_FOUND;
-+		return;
-+	}
-+
-+	if (params[1].u.memref.size < rdev->dev_id_len) {
-+		arg->ret =3D TEEC_ERROR_SHORT_BUFFER;
-+		return;
-+	}
-+	memcpy(buf, rdev->dev_id, rdev->dev_id_len);
-+	params[1].u.memref.size =3D rdev->dev_id_len;
-+	params[0].u.value.a =3D OPTEE_RPC_RPMB_EMMC;
-+	params[0].u.value.b =3D rdev->capacity;
-+	params[0].u.value.c =3D rdev->reliable_wr_count;
-+	if (optee->ops->to_msg_param(optee, arg->params,
-+				     arg->num_params, params)) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	arg->ret =3D TEEC_SUCCESS;
-+}
-+
-+/* Request */
-+struct rpmb_req {
-+	u16 cmd;
-+#define RPMB_CMD_DATA_REQ      0x00
-+#define RPMB_CMD_GET_DEV_INFO  0x01
-+	u16 dev_id;
-+	u16 block_count;
-+	/* Optional data frames (rpmb_data_frame) follow */
-+};
-+
-+#define RPMB_REQ_DATA(req) ((void *)((struct rpmb_req *)(req) + 1))
-+
-+#define RPMB_CID_SZ 16
-+
-+/* Response to device info request */
-+struct rpmb_dev_info {
-+	u8 cid[RPMB_CID_SZ];
-+	u8 rpmb_size_mult;	/* EXT CSD-slice 168: RPMB Size */
-+	u8 rel_wr_sec_c;	/* EXT CSD-slice 222: Reliable Write Sector */
-+				/*                    Count */
-+	u8 ret_code;
-+#define RPMB_CMD_GET_DEV_INFO_RET_OK     0x00
-+#define RPMB_CMD_GET_DEV_INFO_RET_ERROR  0x01
-+};
-+
-+static int get_dev_info(struct rpmb_dev *rdev, void *rsp, size_t rsp_size)
-+{
-+	struct rpmb_dev_info *dev_info;
-+
-+	if (rsp_size !=3D sizeof(*dev_info))
-+		return TEEC_ERROR_BAD_PARAMETERS;
-+
-+	dev_info =3D rsp;
-+	memcpy(dev_info->cid, rdev->dev_id, sizeof(dev_info->cid));
-+	dev_info->rpmb_size_mult =3D rdev->capacity;
-+	dev_info->rel_wr_sec_c =3D rdev->reliable_wr_count;
-+	dev_info->ret_code =3D RPMB_CMD_GET_DEV_INFO_RET_OK;
-+
-+	return TEEC_SUCCESS;
-+}
-+
-+/*
-+ * req is one struct rpmb_req followed by one or more struct rpmb_data_frame
-+ * rsp is either one struct rpmb_dev_info or one or more struct rpmb_data_fr=
-ame
-+ */
-+static u32 rpmb_process_request(struct optee *optee, struct rpmb_dev *rdev,
-+				void *req, size_t req_size,
-+				void *rsp, size_t rsp_size)
-+{
-+	struct rpmb_req *sreq =3D req;
-+	int rc;
-+
-+	if (req_size < sizeof(*sreq))
-+		return TEEC_ERROR_BAD_PARAMETERS;
-+
-+	switch (sreq->cmd) {
-+	case RPMB_CMD_DATA_REQ:
-+		rc =3D rpmb_route_frames(rdev, RPMB_REQ_DATA(req),
-+				       req_size - sizeof(struct rpmb_req),
-+				       rsp, rsp_size);
-+		if (rc) // TODO translate error code
-+			return TEEC_ERROR_BAD_PARAMETERS;
-+		return TEEC_SUCCESS;
-+	case RPMB_CMD_GET_DEV_INFO:
-+		return get_dev_info(rdev, rsp, rsp_size);
-+	default:
-+		return TEEC_ERROR_BAD_PARAMETERS;
-+	}
-+}
-+
-+static void handle_rpc_func_rpmb(struct tee_context *ctx, struct optee *opte=
-e,
-+				 struct optee_msg_arg *arg)
-+{
-+	struct tee_param params[2];
-+	struct rpmb_dev *rdev;
-+	void *p0, *p1;
-+
-+	mutex_lock(&optee->rpmb_dev_mutex);
-+	rdev =3D rpmb_dev_get(optee->rpmb_dev);
-+	mutex_unlock(&optee->rpmb_dev_mutex);
-+	if (!rdev) {
-+		handle_rpc_supp_cmd(ctx, optee, arg);
-+		return;
-+	}
-+
-+	if (arg->num_params !=3D ARRAY_SIZE(params) ||
-+	    optee->ops->from_msg_param(optee, params, arg->num_params,
-+				       arg->params) ||
-+	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT ||
-+	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		goto out;
-+	}
-+
-+	p0 =3D tee_shm_get_va(params[0].u.memref.shm,
-+			    params[0].u.memref.shm_offs);
-+	p1 =3D tee_shm_get_va(params[1].u.memref.shm,
-+			    params[1].u.memref.shm_offs);
-+	arg->ret =3D rpmb_process_request(optee, rdev, p0,
-+					params[0].u.memref.size,
-+					p1, params[1].u.memref.size);
-+	if (arg->ret)
-+		goto out;
-+
-+	if (optee->ops->to_msg_param(optee, arg->params,
-+				     arg->num_params, params))
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+out:
-+	rpmb_dev_put(rdev);
-+}
-+
- void optee_rpc_cmd(struct tee_context *ctx, struct optee *optee,
- 		   struct optee_msg_arg *arg)
- {
-@@ -271,6 +483,15 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee=
- *optee,
- 	case OPTEE_RPC_CMD_I2C_TRANSFER:
- 		handle_rpc_func_cmd_i2c_transfer(ctx, arg);
- 		break;
-+	case OPTEE_RPC_CMD_RPMB_PROBE_RESET:
-+		handle_rpc_func_rpmb_probe_reset(ctx, optee, arg);
-+		break;
-+	case OPTEE_RPC_CMD_RPMB_PROBE_NEXT:
-+		handle_rpc_func_rpmb_probe_next(ctx, optee, arg);
-+		break;
-+	case OPTEE_RPC_CMD_RPMB:
-+		handle_rpc_func_rpmb(ctx, optee, arg);
-+		break;
- 	default:
- 		handle_rpc_supp_cmd(ctx, optee, arg);
- 	}
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index a37f87087e5c..8c85c3b8dbb4 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1715,6 +1715,7 @@ static int optee_probe(struct platform_device *pdev)
- 	optee->smc.memremaped_shm =3D memremaped_shm;
- 	optee->pool =3D pool;
- 	optee_shm_arg_cache_init(optee, arg_cache_flags);
-+	mutex_init(&optee->rpmb_dev_mutex);
-=20
- 	platform_set_drvdata(pdev, optee);
- 	ctx =3D teedev_open(optee->teedev);
-@@ -1782,6 +1783,7 @@ static int optee_probe(struct platform_device *pdev)
- err_close_ctx:
- 	teedev_close_context(ctx);
- err_supp_uninit:
-+	mutex_destroy(&optee->rpmb_dev_mutex);
- 	optee_shm_arg_cache_uninit(optee);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
---=20
-2.34.1
+I also think tee_rproc should be renamed to "rproc_tee_interface" and folded
+under struct rproc. =20
 
+With the above most of the problems with the current implementation should
+naturally go away.
 
---===============0242772042632593600==--
+Thanks,
+Mathieu
+
+>=20
+> >> +	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
+> >> +	if (ret)
+> >> +		return ret;
+> >> +	ddata->fw_loaded =3D true;
+> >> +
+> >> +	/* Update the resource table parameters. */
+> >> +	if (rproc_tee_get_rsc_table(ddata->trproc)) {
+> >> +		/* No resource table: reset the related fields. */
+> >> +		rproc->cached_table =3D NULL;
+> >> +		rproc->table_ptr =3D NULL;
+> >> +		rproc->table_sz =3D 0;
+> >> +	}
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static struct resource_table *
+> >> +stm32_rproc_tee_elf_find_loaded_rsc_table(struct rproc *rproc,
+> >> +					  const struct firmware *fw)
+> >> +{
+> >> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >> +
+> >> +	return tee_rproc_get_loaded_rsc_table(ddata->trproc);
+> >> +}
+> >> +
+> >> +static int stm32_rproc_tee_start(struct rproc *rproc)
+> >> +{
+> >> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >> +
+> >> +	return tee_rproc_start(ddata->trproc);
+> >> +}
+> >> +
+> >> +static int stm32_rproc_tee_attach(struct rproc *rproc)
+> >> +{
+> >> +	/* Nothing to do, remote proc already started by the secured context. =
+*/
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static int stm32_rproc_tee_stop(struct rproc *rproc)
+> >> +{
+> >> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >> +	int err;
+> >> +
+> >> +	stm32_rproc_request_shutdown(rproc);
+> >> +
+> >> +	err =3D tee_rproc_stop(ddata->trproc);
+> >> +	if (err)
+> >> +		return err;
+> >> +
+> >> +	ddata->fw_loaded =3D false;
+> >> +
+> >> +	return stm32_rproc_release(rproc);
+> >> +}
+> >> +
+> >>  static int stm32_rproc_prepare(struct rproc *rproc)
+> >>  {
+> >>  	struct device *dev =3D rproc->dev.parent;
+> >> @@ -319,7 +410,14 @@ static int stm32_rproc_prepare(struct rproc *rproc)
+> >> =20
+> >>  static int stm32_rproc_parse_fw(struct rproc *rproc, const struct firmw=
+are *fw)
+> >>  {
+> >> -	if (rproc_elf_load_rsc_table(rproc, fw))
+> >> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >> +	int ret;
+> >> +
+> >> +	if (ddata->trproc)
+> >> +		ret =3D rproc_tee_get_rsc_table(ddata->trproc);
+> >> +	else
+> >> +		ret =3D rproc_elf_load_rsc_table(rproc, fw);
+> >> +	if (ret)
+> >>  		dev_warn(&rproc->dev, "no resource table found for this firmware\n");
+> >> =20
+> >>  	return 0;
+> >> @@ -693,8 +791,22 @@ static const struct rproc_ops st_rproc_ops =3D {
+> >>  	.get_boot_addr	=3D rproc_elf_get_boot_addr,
+> >>  };
+> >> =20
+> >> +static const struct rproc_ops st_rproc_tee_ops =3D {
+> >> +	.prepare	=3D stm32_rproc_prepare,
+> >> +	.start		=3D stm32_rproc_tee_start,
+> >> +	.stop		=3D stm32_rproc_tee_stop,
+> >> +	.attach		=3D stm32_rproc_tee_attach,
+> >> +	.kick		=3D stm32_rproc_kick,
+> >> +	.parse_fw	=3D stm32_rproc_parse_fw,
+> >> +	.find_loaded_rsc_table =3D stm32_rproc_tee_elf_find_loaded_rsc_table,
+> >> +	.get_loaded_rsc_table =3D stm32_rproc_get_loaded_rsc_table,
+> >> +	.sanity_check	=3D stm32_rproc_tee_elf_sanity_check,
+> >> +	.load		=3D stm32_rproc_tee_elf_load,
+> >> +};
+> >> +
+> >>  static const struct of_device_id stm32_rproc_match[] =3D {
+> >> -	{ .compatible =3D "st,stm32mp1-m4" },
+> >> +	{.compatible =3D "st,stm32mp1-m4",},
+> >> +	{.compatible =3D "st,stm32mp1-m4-tee",},
+> >>  	{},
+> >>  };
+> >>  MODULE_DEVICE_TABLE(of, stm32_rproc_match);
+> >> @@ -853,6 +965,7 @@ static int stm32_rproc_probe(struct platform_device =
+*pdev)
+> >>  	struct device *dev =3D &pdev->dev;
+> >>  	struct stm32_rproc *ddata;
+> >>  	struct device_node *np =3D dev->of_node;
+> >> +	struct tee_rproc *trproc =3D NULL;
+> >>  	struct rproc *rproc;
+> >>  	unsigned int state;
+> >>  	int ret;
+> >> @@ -861,11 +974,31 @@ static int stm32_rproc_probe(struct platform_devic=
+e *pdev)
+> >>  	if (ret)
+> >>  		return ret;
+> >> =20
+> >> -	rproc =3D rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*ddat=
+a));
+> >> -	if (!rproc)
+> >> -		return -ENOMEM;
+> >> +	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
+> >> +		trproc =3D tee_rproc_register(dev, STM32_MP1_M4_PROC_ID);
+> >> +		if (IS_ERR(trproc)) {
+> >> +			dev_err_probe(dev, PTR_ERR(trproc),
+> >> +				      "signed firmware not supported by TEE\n");
+> >> +			return PTR_ERR(trproc);
+> >> +		}
+> >> +		/*
+> >> +		 * Delegate the firmware management to the secure context.
+> >> +		 * The firmware loaded has to be signed.
+> >> +		 */
+> >> +		dev_info(dev, "Support of signed firmware only\n");
+> >=20
+> > Not sure what this adds.  Please remove.
+>=20
+> This is used to inform the user that only a signed firmware can be loaded, =
+not
+> an ELF file.
+> I have a patch in my pipe to provide the supported format in the debugfs. I=
+n a
+> first step, I can suppress this message and we can revisit the issue when I=
+ push
+> the debugfs proposal.
+>=20
+> Thanks,
+> Arnaud
+>=20
+> >=20
+> >> +	}
+> >> +	rproc =3D rproc_alloc(dev, np->name,
+> >> +			    trproc ? &st_rproc_tee_ops : &st_rproc_ops,
+> >> +			    NULL, sizeof(*ddata));
+> >> +	if (!rproc) {
+> >> +		ret =3D -ENOMEM;
+> >> +		goto free_tee;
+> >> +	}
+> >> =20
+> >>  	ddata =3D rproc->priv;
+> >> +	ddata->trproc =3D trproc;
+> >> +	if (trproc)
+> >> +		trproc->rproc =3D rproc;
+> >> =20
+> >>  	rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
+> >> =20
+> >> @@ -916,6 +1049,10 @@ static int stm32_rproc_probe(struct platform_devic=
+e *pdev)
+> >>  		device_init_wakeup(dev, false);
+> >>  	}
+> >>  	rproc_free(rproc);
+> >> +free_tee:
+> >> +	if (trproc)
+> >> +		tee_rproc_unregister(trproc);
+> >> +
+> >>  	return ret;
+> >>  }
+> >> =20
+> >> @@ -937,6 +1074,8 @@ static void stm32_rproc_remove(struct platform_devi=
+ce *pdev)
+> >>  		device_init_wakeup(dev, false);
+> >>  	}
+> >>  	rproc_free(rproc);
+> >> +	if (ddata->trproc)
+> >> +		tee_rproc_unregister(ddata->trproc);
+> >>  }
+> >> =20
+> >>  static int stm32_rproc_suspend(struct device *dev)
+> >> --=20
+> >> 2.25.1
+> >>
+
+--===============1468760235201102718==--
 
