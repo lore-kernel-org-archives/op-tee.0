@@ -1,275 +1,424 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v2 2/3] mmc: block: register RPMB partition with the RPMB subsystem
-Date: Wed, 31 Jan 2024 18:43:46 +0100
-Message-ID: <20240131174347.510961-3-jens.wiklander@linaro.org>
+Subject: [PATCH v2 3/3] optee: probe RPMB device using RPMB subsystem
+Date: Wed, 31 Jan 2024 18:43:47 +0100
+Message-ID: <20240131174347.510961-4-jens.wiklander@linaro.org>
 In-Reply-To: <20240131174347.510961-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6624912468658812262=="
+Content-Type: multipart/mixed; boundary="===============0242772042632593600=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6624912468658812262==
+--===============0242772042632593600==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Register eMMC RPMB partition with the RPMB subsystem and provide
-an implementation for the RPMB access operations abstracting
-the actual multi step process.
+Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe and
+use an RPMB device via the RPBM subsystem instead of passing the RPMB
+frames via tee-supplicant in user space. A fallback mechanism is kept to
+route RPMB frames via tee-supplicant if the RPMB subsystem isn't
+available.
 
-Add callbacks for getting and putting the needed resources, that is, the
-RPMB data and the RPMB disk.
+The OP-TEE RPC ABI is extended to support iterating over all RPMB
+devices until one is found with the expected RPMB key already
+programmed.
 
-Add a callback to extract the needed device information at registration
-to avoid accessing the struct mmc_card at a later stage as we're not
-holding a reference counter for this struct.
-
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/mmc/core/block.c | 177 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 177 insertions(+)
+ drivers/tee/optee/core.c          |   1 +
+ drivers/tee/optee/ffa_abi.c       |   2 +
+ drivers/tee/optee/optee_private.h |   6 +
+ drivers/tee/optee/optee_rpc_cmd.h |  33 +++++
+ drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++++++
+ drivers/tee/optee/smc_abi.c       |   2 +
+ 6 files changed, 265 insertions(+)
 
-diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
-index 32d49100dff5..5286e0b3a5a2 100644
---- a/drivers/mmc/core/block.c
-+++ b/drivers/mmc/core/block.c
-@@ -33,6 +33,7 @@
- #include <linux/cdev.h>
- #include <linux/mutex.h>
- #include <linux/scatterlist.h>
-+#include <linux/string.h>
- #include <linux/string_helpers.h>
- #include <linux/delay.h>
- #include <linux/capability.h>
-@@ -40,6 +41,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/idr.h>
- #include <linux/debugfs.h>
-+#include <linux/rpmb.h>
-=20
- #include <linux/mmc/ioctl.h>
- #include <linux/mmc/card.h>
-@@ -163,6 +165,7 @@ struct mmc_rpmb_data {
- 	int id;
- 	unsigned int part_index;
- 	struct mmc_blk_data *md;
-+	struct rpmb_dev *rdev;
- 	struct list_head node;
- };
-=20
-@@ -2707,6 +2710,169 @@ static void mmc_blk_rpmb_device_release(struct device=
- *dev)
- 	kfree(rpmb);
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 3aed554bc8d8..21bcccbe2207 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -177,6 +177,7 @@ void optee_remove_common(struct optee *optee)
+ 	tee_shm_pool_free(optee->pool);
+ 	optee_supp_uninit(&optee->supp);
+ 	mutex_destroy(&optee->call_queue.mutex);
++	mutex_destroy(&optee->rpmb_dev_mutex);
  }
 =20
-+static void rpmb_op_mmc_get_resources(struct device *dev)
+ static int smc_abi_rc;
+diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+index ecb5eb079408..1d207a9d4f3b 100644
+--- a/drivers/tee/optee/ffa_abi.c
++++ b/drivers/tee/optee/ffa_abi.c
+@@ -934,6 +934,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ 	optee_cq_init(&optee->call_queue, 0);
+ 	optee_supp_init(&optee->supp);
+ 	optee_shm_arg_cache_init(optee, arg_cache_flags);
++	mutex_init(&optee->rpmb_dev_mutex);
+ 	ffa_dev_set_drvdata(ffa_dev, optee);
+ 	ctx =3D teedev_open(optee->teedev);
+ 	if (IS_ERR(ctx)) {
+@@ -968,6 +969,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ 	teedev_close_context(ctx);
+ err_rhashtable_free:
+ 	rhashtable_free_and_destroy(&optee->ffa.global_ids, rh_free_fn, NULL);
++	mutex_destroy(&optee->rpmb_dev_mutex);
+ 	optee_supp_uninit(&optee->supp);
+ 	mutex_destroy(&optee->call_queue.mutex);
+ 	mutex_destroy(&optee->ffa.mutex);
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+index 7a5243c78b55..3a87ad4ef1e2 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -20,6 +20,7 @@
+ /* Some Global Platform error codes used in this driver */
+ #define TEEC_SUCCESS			0x00000000
+ #define TEEC_ERROR_BAD_PARAMETERS	0xFFFF0006
++#define TEEC_ERROR_ITEM_NOT_FOUND	0xFFFF0008
+ #define TEEC_ERROR_NOT_SUPPORTED	0xFFFF000A
+ #define TEEC_ERROR_COMMUNICATION	0xFFFF000E
+ #define TEEC_ERROR_OUT_OF_MEMORY	0xFFFF000C
+@@ -197,6 +198,8 @@ struct optee_ops {
+  * @notif:		notification synchronization struct
+  * @supp:		supplicant synchronization struct for RPC to supplicant
+  * @pool:		shared memory pool
++ * @mutex:		mutex protecting @rpmb_dev
++ * @rpmb_dev:		current RPMB device or NULL
+  * @rpc_param_count:	If > 0 number of RPC parameters to make room for
+  * @scan_bus_done	flag if device registation was already done.
+  * @scan_bus_work	workq to scan optee bus and register optee drivers
+@@ -215,6 +218,9 @@ struct optee {
+ 	struct optee_notif notif;
+ 	struct optee_supp supp;
+ 	struct tee_shm_pool *pool;
++	/* Protects rpmb_dev pointer */
++	struct mutex rpmb_dev_mutex;
++	struct rpmb_dev *rpmb_dev;
+ 	unsigned int rpc_param_count;
+ 	bool   scan_bus_done;
+ 	struct work_struct scan_bus_work;
+diff --git a/drivers/tee/optee/optee_rpc_cmd.h b/drivers/tee/optee/optee_rpc_=
+cmd.h
+index f3f06e0994a7..672e5dcdf041 100644
+--- a/drivers/tee/optee/optee_rpc_cmd.h
++++ b/drivers/tee/optee/optee_rpc_cmd.h
+@@ -16,6 +16,14 @@
+  * and sends responses.
+  */
+=20
++/*
++ * Replay Protected Memory Block access
++ *
++ * [in]     memref[0]	    Frames to device
++ * [out]    memref[1]	    Frames from device
++ */
++#define OPTEE_RPC_CMD_RPMB		1
++
+ /*
+  * Get time
+  *
+@@ -103,4 +111,29 @@
+ /* I2C master control flags */
+ #define OPTEE_RPC_I2C_FLAGS_TEN_BIT	BIT(0)
+=20
++/*
++ * Reset RPMB probing
++ *
++ * Releases an eventually already used RPMB devices and starts over searching
++ * for RPMB devices. Returns the kind of shared memory to use in subsequent
++ * OPTEE_RPC_CMD_RPMB_PROBE_NEXT and OPTEE_RPC_CMD_RPMB calls.
++ *
++ * [out]    value[0].a	    OPTEE_RPC_SHM_TYPE_*, the parameter for
++ *			    OPTEE_RPC_CMD_SHM_ALLOC
++ */
++#define OPTEE_RPC_CMD_RPMB_PROBE_RESET	22
++
++/*
++ * Probe next RPMB device
++ *
++ * [out]    value[0].a	    Must be OPTEE_RPC_RPMB_EMMC
++ * [out]    value[0].b	    EXT CSD-slice 168 "RPMB Size"
++ * [out]    value[0].c	    EXT CSD-slice 222 "Reliable Write Sector Count"
++ * [out]    memref[1]       Buffer with the raw CID
++ */
++#define OPTEE_RPC_CMD_RPMB_PROBE_NEXT	23
++
++/* Type of RPMB device */
++#define OPTEE_RPC_RPMB_EMMC		0
++
+ #endif /*__OPTEE_RPC_CMD_H*/
+diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
+index e69bc6380683..6fd6f99dafab 100644
+--- a/drivers/tee/optee/rpc.c
++++ b/drivers/tee/optee/rpc.c
+@@ -7,6 +7,7 @@
+=20
+ #include <linux/delay.h>
+ #include <linux/i2c.h>
++#include <linux/rpmb.h>
+ #include <linux/slab.h>
+ #include <linux/tee_drv.h>
+ #include "optee_private.h"
+@@ -255,6 +256,217 @@ void optee_rpc_cmd_free_suppl(struct tee_context *ctx, =
+struct tee_shm *shm)
+ 	optee_supp_thrd_req(ctx, OPTEE_RPC_CMD_SHM_FREE, 1, &param);
+ }
+=20
++static void handle_rpc_func_rpmb_probe_reset(struct tee_context *ctx,
++					     struct optee *optee,
++					     struct optee_msg_arg *arg)
 +{
-+	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
++	struct tee_param params[1];
 +
-+	/*
-+	 * When the MMC card is removed rpmb_dev_unregister() is called
-+	 * from mmc_blk_remove_rpmb_part(). That removes references to the
-+	 * devices in struct mmc_rpmb_data and rpmb->md. Since struct
-+	 * rpmb_dev can still reach those structs we must hold a reference
-+	 * until struct rpmb_dev also is released.
-+	 *
-+	 * This is analogous to what's done in mmc_rpmb_chrdev_open() and
-+	 * mmc_rpmb_chrdev_release() below.
-+	 */
-+	get_device(dev);
-+	mmc_blk_get(rpmb->md->disk);
-+}
-+
-+static void rpmb_op_mmc_put_resources(struct device *dev)
-+{
-+	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
-+
-+	mmc_blk_put(rpmb->md);
-+	put_device(dev);
-+}
-+
-+static struct mmc_blk_ioc_data **alloc_idata(struct mmc_rpmb_data *rpmb,
-+					     unsigned int cmd_count)
-+{
-+	struct mmc_blk_ioc_data **idata;
-+	unsigned int n;
-+
-+	idata =3D kcalloc(cmd_count, sizeof(*idata), GFP_KERNEL);
-+	if (!idata)
-+		return NULL;
-+
-+	for (n =3D 0; n < cmd_count; n++) {
-+		idata[n] =3D kcalloc(1, sizeof(**idata), GFP_KERNEL);
-+		if (!idata[n]) {
-+			kfree(idata);
-+			return NULL;
-+		}
-+		idata[n]->rpmb =3D rpmb;
++	if (!IS_ENABLED(CONFIG_RPMB)) {
++		handle_rpc_supp_cmd(ctx, optee, arg);
++		return;
 +	}
 +
-+	return idata;
-+}
-+
-+static void set_idata(struct mmc_blk_ioc_data *idata, u32 opcode,
-+		      int write_flag, u8 *buf, unsigned int buf_bytes)
-+{
-+	idata->ic.opcode =3D opcode;
-+	idata->ic.flags =3D MMC_RSP_R1 | MMC_CMD_ADTC;
-+	idata->ic.write_flag =3D write_flag;
-+	idata->ic.blksz =3D sizeof(struct rpmb_frame);
-+	idata->ic.blocks =3D buf_bytes /  idata->ic.blksz;
-+	idata->buf =3D buf;
-+	idata->buf_bytes =3D buf_bytes;
-+}
-+
-+static void free_idata(struct mmc_blk_ioc_data **idata, unsigned int cmd_cou=
-nt)
-+{
-+	unsigned int n;
-+
-+	for (n =3D 0; n < cmd_count; n++)
-+		kfree(idata[n]);
-+	kfree(idata);
-+}
-+
-+static int rpmb_op_mmc_route_frames(struct device *dev, bool write, u8 *req,
-+				    unsigned int req_len, u8 *resp,
-+				    unsigned int resp_len)
-+{
-+	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
-+	struct mmc_blk_data *md =3D rpmb->md;
-+	struct mmc_blk_ioc_data **idata;
-+	unsigned int cmd_count;
-+	struct request *rq;
-+	int ret;
-+
-+	if (write)
-+		cmd_count =3D 3;
-+	else
-+		cmd_count =3D 2;
-+
-+	if (IS_ERR(md->queue.card))
-+		return PTR_ERR(md->queue.card);
-+
-+	idata =3D alloc_idata(rpmb, cmd_count);
-+	if (!idata)
-+		return -ENOMEM;
-+
-+	if (write) {
-+		struct rpmb_frame *frm =3D (struct rpmb_frame *)resp;
-+
-+		/* Send write request frame(s) */
-+		set_idata(idata[0], MMC_WRITE_MULTIPLE_BLOCK,
-+			  1 | MMC_CMD23_ARG_REL_WR, req, req_len);
-+
-+		/* Send result request frame */
-+		memset(frm, 0, sizeof(*frm));
-+		frm->req_resp =3D cpu_to_be16(RPMB_RESULT_READ);
-+		set_idata(idata[1], MMC_WRITE_MULTIPLE_BLOCK, 1, resp,
-+			  resp_len);
-+
-+		/* Read response frame */
-+		set_idata(idata[2], MMC_READ_MULTIPLE_BLOCK, 0, resp, resp_len);
-+	} else {
-+		/* Send write request frame(s) */
-+		set_idata(idata[0], MMC_WRITE_MULTIPLE_BLOCK, 1, req, req_len);
-+
-+		/* Read response frame */
-+		set_idata(idata[1], MMC_READ_MULTIPLE_BLOCK, 0, resp, resp_len);
++	if (arg->num_params !=3D ARRAY_SIZE(params) ||
++	    optee->ops->from_msg_param(optee, params, arg->num_params,
++				       arg->params) ||
++	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) {
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		return;
 +	}
 +
-+	rq =3D blk_mq_alloc_request(md->queue.queue, REQ_OP_DRV_OUT, 0);
-+	if (IS_ERR(rq)) {
-+		ret =3D PTR_ERR(rq);
++	params[0].u.value.a =3D OPTEE_RPC_SHM_TYPE_KERNEL;
++	params[0].u.value.b =3D 0;
++	params[0].u.value.c =3D 0;
++	if (optee->ops->to_msg_param(optee, arg->params,
++				     arg->num_params, params)) {
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		return;
++	}
++
++	mutex_lock(&optee->rpmb_dev_mutex);
++	rpmb_dev_put(optee->rpmb_dev);
++	optee->rpmb_dev =3D NULL;
++	mutex_unlock(&optee->rpmb_dev_mutex);
++
++	arg->ret =3D TEEC_SUCCESS;
++}
++
++static int rpc_rpmb_match(struct device *dev, const void *data)
++{
++	return 1;
++}
++
++static void handle_rpc_func_rpmb_probe_next(struct tee_context *ctx,
++					    struct optee *optee,
++					    struct optee_msg_arg *arg)
++{
++	struct rpmb_dev *start_rdev;
++	struct rpmb_dev *rdev;
++	struct tee_param params[2];
++	void *buf;
++
++	if (!IS_ENABLED(CONFIG_RPMB)) {
++		handle_rpc_supp_cmd(ctx, optee, arg);
++		return;
++	}
++
++	if (arg->num_params !=3D ARRAY_SIZE(params) ||
++	    optee->ops->from_msg_param(optee, params, arg->num_params,
++				       arg->params) ||
++	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
++	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		return;
++	}
++	buf =3D tee_shm_get_va(params[1].u.memref.shm,
++			     params[1].u.memref.shm_offs);
++	if (!buf) {
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		return;
++	}
++
++	mutex_lock(&optee->rpmb_dev_mutex);
++	start_rdev =3D optee->rpmb_dev;
++	rdev =3D rpmb_dev_find_device(NULL, start_rdev, rpc_rpmb_match);
++	rpmb_dev_put(start_rdev);
++	optee->rpmb_dev =3D rdev;
++	mutex_unlock(&optee->rpmb_dev_mutex);
++
++	if (!rdev) {
++		arg->ret =3D TEEC_ERROR_ITEM_NOT_FOUND;
++		return;
++	}
++
++	if (params[1].u.memref.size < rdev->dev_id_len) {
++		arg->ret =3D TEEC_ERROR_SHORT_BUFFER;
++		return;
++	}
++	memcpy(buf, rdev->dev_id, rdev->dev_id_len);
++	params[1].u.memref.size =3D rdev->dev_id_len;
++	params[0].u.value.a =3D OPTEE_RPC_RPMB_EMMC;
++	params[0].u.value.b =3D rdev->capacity;
++	params[0].u.value.c =3D rdev->reliable_wr_count;
++	if (optee->ops->to_msg_param(optee, arg->params,
++				     arg->num_params, params)) {
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		return;
++	}
++
++	arg->ret =3D TEEC_SUCCESS;
++}
++
++/* Request */
++struct rpmb_req {
++	u16 cmd;
++#define RPMB_CMD_DATA_REQ      0x00
++#define RPMB_CMD_GET_DEV_INFO  0x01
++	u16 dev_id;
++	u16 block_count;
++	/* Optional data frames (rpmb_data_frame) follow */
++};
++
++#define RPMB_REQ_DATA(req) ((void *)((struct rpmb_req *)(req) + 1))
++
++#define RPMB_CID_SZ 16
++
++/* Response to device info request */
++struct rpmb_dev_info {
++	u8 cid[RPMB_CID_SZ];
++	u8 rpmb_size_mult;	/* EXT CSD-slice 168: RPMB Size */
++	u8 rel_wr_sec_c;	/* EXT CSD-slice 222: Reliable Write Sector */
++				/*                    Count */
++	u8 ret_code;
++#define RPMB_CMD_GET_DEV_INFO_RET_OK     0x00
++#define RPMB_CMD_GET_DEV_INFO_RET_ERROR  0x01
++};
++
++static int get_dev_info(struct rpmb_dev *rdev, void *rsp, size_t rsp_size)
++{
++	struct rpmb_dev_info *dev_info;
++
++	if (rsp_size !=3D sizeof(*dev_info))
++		return TEEC_ERROR_BAD_PARAMETERS;
++
++	dev_info =3D rsp;
++	memcpy(dev_info->cid, rdev->dev_id, sizeof(dev_info->cid));
++	dev_info->rpmb_size_mult =3D rdev->capacity;
++	dev_info->rel_wr_sec_c =3D rdev->reliable_wr_count;
++	dev_info->ret_code =3D RPMB_CMD_GET_DEV_INFO_RET_OK;
++
++	return TEEC_SUCCESS;
++}
++
++/*
++ * req is one struct rpmb_req followed by one or more struct rpmb_data_frame
++ * rsp is either one struct rpmb_dev_info or one or more struct rpmb_data_fr=
+ame
++ */
++static u32 rpmb_process_request(struct optee *optee, struct rpmb_dev *rdev,
++				void *req, size_t req_size,
++				void *rsp, size_t rsp_size)
++{
++	struct rpmb_req *sreq =3D req;
++	int rc;
++
++	if (req_size < sizeof(*sreq))
++		return TEEC_ERROR_BAD_PARAMETERS;
++
++	switch (sreq->cmd) {
++	case RPMB_CMD_DATA_REQ:
++		rc =3D rpmb_route_frames(rdev, RPMB_REQ_DATA(req),
++				       req_size - sizeof(struct rpmb_req),
++				       rsp, rsp_size);
++		if (rc) // TODO translate error code
++			return TEEC_ERROR_BAD_PARAMETERS;
++		return TEEC_SUCCESS;
++	case RPMB_CMD_GET_DEV_INFO:
++		return get_dev_info(rdev, rsp, rsp_size);
++	default:
++		return TEEC_ERROR_BAD_PARAMETERS;
++	}
++}
++
++static void handle_rpc_func_rpmb(struct tee_context *ctx, struct optee *opte=
+e,
++				 struct optee_msg_arg *arg)
++{
++	struct tee_param params[2];
++	struct rpmb_dev *rdev;
++	void *p0, *p1;
++
++	mutex_lock(&optee->rpmb_dev_mutex);
++	rdev =3D rpmb_dev_get(optee->rpmb_dev);
++	mutex_unlock(&optee->rpmb_dev_mutex);
++	if (!rdev) {
++		handle_rpc_supp_cmd(ctx, optee, arg);
++		return;
++	}
++
++	if (arg->num_params !=3D ARRAY_SIZE(params) ||
++	    optee->ops->from_msg_param(optee, params, arg->num_params,
++				       arg->params) ||
++	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT ||
++	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
 +		goto out;
 +	}
 +
-+	req_to_mmc_queue_req(rq)->drv_op =3D MMC_DRV_OP_IOCTL_RPMB;
-+	req_to_mmc_queue_req(rq)->drv_op_result =3D -EIO;
-+	req_to_mmc_queue_req(rq)->drv_op_data =3D idata;
-+	req_to_mmc_queue_req(rq)->ioc_count =3D cmd_count;
-+	blk_execute_rq(rq, false);
-+	ret =3D req_to_mmc_queue_req(rq)->drv_op_result;
++	p0 =3D tee_shm_get_va(params[0].u.memref.shm,
++			    params[0].u.memref.shm_offs);
++	p1 =3D tee_shm_get_va(params[1].u.memref.shm,
++			    params[1].u.memref.shm_offs);
++	arg->ret =3D rpmb_process_request(optee, rdev, p0,
++					params[0].u.memref.size,
++					p1, params[1].u.memref.size);
++	if (arg->ret)
++		goto out;
 +
-+	blk_mq_free_request(rq);
-+
++	if (optee->ops->to_msg_param(optee, arg->params,
++				     arg->num_params, params))
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
 +out:
-+	free_idata(idata, cmd_count);
-+	return ret;
++	rpmb_dev_put(rdev);
 +}
 +
-+static int rpmb_op_mmc_set_dev_info(struct device *dev, struct rpmb_dev *rde=
-v)
-+{
-+	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
-+	struct mmc_card *card =3D rpmb->md->queue.card;
-+	unsigned int n;
-+	u32 cid[4];
-+
-+	for (n =3D 0; n < 4; n++)
-+		cid[n] =3D be32_to_cpu(card->raw_cid[n]);
-+
-+	rdev->dev_id =3D kmemdup(cid, sizeof(cid), GFP_KERNEL);
-+	if (!rdev->dev_id)
-+		return -ENOMEM;
-+	rdev->dev_id_len =3D sizeof(cid);
-+	rdev->reliable_wr_count =3D card->ext_csd.raw_rpmb_size_mult;
-+	rdev->capacity =3D card->ext_csd.rel_sectors;
-+
-+	return 0;
-+}
-+
-+static struct rpmb_ops rpmb_mmc_ops =3D {
-+	.type =3D RPMB_TYPE_EMMC,
-+	.get_resources =3D rpmb_op_mmc_get_resources,
-+	.put_resources =3D rpmb_op_mmc_put_resources,
-+	.route_frames =3D rpmb_op_mmc_route_frames,
-+	.set_dev_info =3D rpmb_op_mmc_set_dev_info,
-+};
-+
- static int mmc_blk_alloc_rpmb_part(struct mmc_card *card,
- 				   struct mmc_blk_data *md,
- 				   unsigned int part_index,
-@@ -2751,6 +2917,14 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *ca=
-rd,
- 		goto out_put_device;
- 	}
-=20
-+	rpmb->rdev =3D rpmb_dev_register(&rpmb->dev, &rpmb_mmc_ops);
-+	if (IS_ERR(rpmb->rdev)) {
-+		pr_err("%s: could not register RPMB device\n", rpmb_name);
-+		ret =3D PTR_ERR(rpmb->rdev);
-+		rpmb->rdev =3D NULL;
-+		goto out_cdev_device_del;
-+	}
-+
- 	list_add(&rpmb->node, &md->rpmbs);
-=20
- 	string_get_size((u64)size, 512, STRING_UNITS_2,
-@@ -2762,6 +2936,8 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *car=
-d,
-=20
- 	return 0;
-=20
-+out_cdev_device_del:
-+	cdev_device_del(&rpmb->chrdev, &rpmb->dev);
- out_put_device:
- 	put_device(&rpmb->dev);
- 	return ret;
-@@ -2770,6 +2946,7 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *car=
-d,
- static void mmc_blk_remove_rpmb_part(struct mmc_rpmb_data *rpmb)
-=20
+ void optee_rpc_cmd(struct tee_context *ctx, struct optee *optee,
+ 		   struct optee_msg_arg *arg)
  {
-+	rpmb_dev_unregister(rpmb->rdev);
- 	cdev_device_del(&rpmb->chrdev, &rpmb->dev);
- 	put_device(&rpmb->dev);
- }
+@@ -271,6 +483,15 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee=
+ *optee,
+ 	case OPTEE_RPC_CMD_I2C_TRANSFER:
+ 		handle_rpc_func_cmd_i2c_transfer(ctx, arg);
+ 		break;
++	case OPTEE_RPC_CMD_RPMB_PROBE_RESET:
++		handle_rpc_func_rpmb_probe_reset(ctx, optee, arg);
++		break;
++	case OPTEE_RPC_CMD_RPMB_PROBE_NEXT:
++		handle_rpc_func_rpmb_probe_next(ctx, optee, arg);
++		break;
++	case OPTEE_RPC_CMD_RPMB:
++		handle_rpc_func_rpmb(ctx, optee, arg);
++		break;
+ 	default:
+ 		handle_rpc_supp_cmd(ctx, optee, arg);
+ 	}
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index a37f87087e5c..8c85c3b8dbb4 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -1715,6 +1715,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	optee->smc.memremaped_shm =3D memremaped_shm;
+ 	optee->pool =3D pool;
+ 	optee_shm_arg_cache_init(optee, arg_cache_flags);
++	mutex_init(&optee->rpmb_dev_mutex);
+=20
+ 	platform_set_drvdata(pdev, optee);
+ 	ctx =3D teedev_open(optee->teedev);
+@@ -1782,6 +1783,7 @@ static int optee_probe(struct platform_device *pdev)
+ err_close_ctx:
+ 	teedev_close_context(ctx);
+ err_supp_uninit:
++	mutex_destroy(&optee->rpmb_dev_mutex);
+ 	optee_shm_arg_cache_uninit(optee);
+ 	optee_supp_uninit(&optee->supp);
+ 	mutex_destroy(&optee->call_queue.mutex);
 --=20
 2.34.1
 
 
---===============6624912468658812262==--
+--===============0242772042632593600==--
 
