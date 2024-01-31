@@ -1,139 +1,113 @@
-From: Rob Herring <robh@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2 2/4] dt-bindings: remoteproc: Add compatibility for TEE support
-Date: Tue, 30 Jan 2024 11:51:12 -0600
-Message-ID: <20240130175112.GA2040002-robh@kernel.org>
-In-Reply-To: <20240118100433.3984196-3-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v2 0/3] Replay Protected Memory Block (RPMB) subsystem
+Date: Wed, 31 Jan 2024 18:43:44 +0100
+Message-ID: <20240131174347.510961-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2168429655267008681=="
+Content-Type: multipart/mixed; boundary="===============3504525030688151493=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2168429655267008681==
+--===============3504525030688151493==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 18, 2024 at 11:04:31AM +0100, Arnaud Pouliquen wrote:
-> The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
-> where the Cortex-M4 firmware is loaded by the Trusted execution Environment
-> (TEE).
-> For instance, this compatible is used in both the Linux and OP-TEE
-> device-tree:
-> - In OP-TEE, a node is defined in the device tree with the
->   st,stm32mp1-m4-tee to support signed remoteproc firmware.
->   Based on DT properties, OP-TEE authenticates, loads, starts, and stops
->   the firmware.
-> - On Linux, when the compatibility is set, the Cortex-M resets should not
->   be declared in the device tree.
->=20
-> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> ---
-> V1 to V2 updates
-> - update "st,stm32mp1-m4" compatible description to generalize
-> - remove the 'reset-names' requirement in one conditional branch, as the
->   property is already part of the condition test.
-> ---
->  .../bindings/remoteproc/st,stm32-rproc.yaml   | 52 +++++++++++++++----
->  1 file changed, 43 insertions(+), 9 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.ya=
-ml b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-> index 370af61d8f28..6af821b15736 100644
-> --- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-> +++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-> @@ -16,7 +16,12 @@ maintainers:
-> =20
->  properties:
->    compatible:
-> -    const: st,stm32mp1-m4
-> +    enum:
-> +      - st,stm32mp1-m4
-> +      - st,stm32mp1-m4-tee
-> +    description:
-> +      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non=
--secure context
-> +      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by=
- secure context
-> =20
->    reg:
->      description:
-> @@ -142,21 +147,40 @@ properties:
->  required:
->    - compatible
->    - reg
-> -  - resets
-> =20
->  allOf:
->    - if:
->        properties:
-> -        reset-names:
-> -          not:
-> -            contains:
-> -              const: hold_boot
-> +        compatible:
-> +          contains:
-> +            const: st,stm32mp1-m4
-> +    then:
-> +      if:
-> +        properties:
-> +          reset-names:
-> +            not:
-> +              contains:
-> +                const: hold_boot
+Hi,
 
-Note that this is true when 'reset-names' is not present. If that is not=20
-desired, then you need 'required: [reset-names]'. Not really a new issue=20
-though.
+It's been a while since Shyam posted the last version [1] of this patch
+set. I've pinged Shyam, but so far I've had no reply so I'm trying to make
+another attempt with the RPMB subsystem. If Shyam has other changes in mind
+than what I'm adding here I hope we'll find a way to cover that too. I'm
+calling it version two of the patchset since I'm trying to address all
+feedback on the previous version even if I'm starting a new thread.
 
-> +      then:
-> +        required:
-> +          - st,syscfg-holdboot
-> +          - resets
-> +      else:
-> +        properties:
-> +          st,syscfg-holdboot: false
-> +        required:
-> +          - resets
+This patch set introduces a new RPMB subsystem, based on patches from [1],
+[2], and [3]. The RPMB subsystem aims at providing access to RPMB
+partitions to other kernel drivers, in particular the OP-TEE driver. A new
+user space ABI isn't needed, we can instead continue using the already
+present ABI when writing the RPMB key during production.
 
-'resets' is always required within the outer 'then' schema, so you can=20
-move this up a level.
+I've added and removed things to keep only what is needed by the OP-TEE
+driver. Since the posting of [3], there has been major changes in the MMC
+subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+is in practice completely rewritten.
 
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            const: st,stm32mp1-m4-tee
->      then:
-> -      required:
-> -        - st,syscfg-holdboot
-> -    else:
->        properties:
->          st,syscfg-holdboot: false
-> +        reset-names: false
-> +        resets: false
-> =20
->  additionalProperties: false
-> =20
-> @@ -188,5 +212,15 @@ examples:
->        st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
->        st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
->      };
-> +  - |
-> +    #include <dt-bindings/reset/stm32mp1-resets.h>
-> +    m4(a)10000000 {
-> +      compatible =3D "st,stm32mp1-m4-tee";
-> +      reg =3D <0x10000000 0x40000>,
-> +            <0x30000000 0x40000>,
-> +            <0x38000000 0x10000>;
-> +      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-> +      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-> +    };
-> =20
->  ...
-> --=20
-> 2.25.1
->=20
+With this OP-TEE can access RPMB during early boot instead of having to
+wait for user space to become available as in the current design [4].
+This will benefit the efi variables [5] since we wont rely on userspace as
+well as some TPM issues [6] that were solved.
 
---===============2168429655267008681==--
+The OP-TEE driver finds the correct RPMB device to interact with by
+iterating over available devices until one is found with a programmed
+authentication matching the one OP-TEE is using. This enables coexisting
+users of other RPMBs since the owner can be determined by who knows the
+authentication key.
+
+I've put myself as a maintainer for the RPMB subsystem as I have an
+interest in the OP-TEE driver to keep this in good shape. However, if you'd
+rather see someone else taking the maintainership that's fine too. I'll
+help keep the subsystem updated regardless.
+
+[1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.mi=
+crosoft.com/
+[2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)linar=
+o.org/
+[3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-tomas.=
+winkler(a)intel.com/
+[4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html#r=
+pmb-secure-storage
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+[6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+
+Thanks,
+Jens
+
+Changes since Shyam's RFC:
+* Removed the remaining leftover rpmb_cdev_*() function calls
+* Refactored the struct rpmb_ops with all the previous ops replaced, in
+  some sense closer to [3] with the route_frames() op
+* Added rpmb_route_frames()
+* Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
+* Removed all functions not needed in the OP-TEE use case
+* Added "mmc: block: register RPMB partition with the RPMB subsystem", based
+  on the commit with the same name in [3]
+* Added "optee: probe RPMB device using RPMB subsystem" for integration
+  with OP-TEE
+* Moved the RPMB driver into drivers/misc/rpmb-core.c
+* Added my name to MODULE_AUTHOR() in rpmb-core.c
+* Added an rpmb_mutex to serialize access to the IDA
+* Removed the target parameter from all rpmb_*() functions since it's
+  currently unused
+
+
+
+Jens Wiklander (3):
+  rpmb: add Replay Protected Memory Block (RPMB) subsystem
+  mmc: block: register RPMB partition with the RPMB subsystem
+  optee: probe RPMB device using RPMB subsystem
+
+ MAINTAINERS                       |   7 +
+ drivers/misc/Kconfig              |   9 ++
+ drivers/misc/Makefile             |   1 +
+ drivers/misc/rpmb-core.c          | 247 ++++++++++++++++++++++++++++++
+ drivers/mmc/core/block.c          | 177 +++++++++++++++++++++
+ drivers/tee/optee/core.c          |   1 +
+ drivers/tee/optee/ffa_abi.c       |   2 +
+ drivers/tee/optee/optee_private.h |   6 +
+ drivers/tee/optee/optee_rpc_cmd.h |  33 ++++
+ drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++
+ drivers/tee/optee/smc_abi.c       |   2 +
+ include/linux/rpmb.h              | 184 ++++++++++++++++++++++
+ 12 files changed, 890 insertions(+)
+ create mode 100644 drivers/misc/rpmb-core.c
+ create mode 100644 include/linux/rpmb.h
+
+
+base-commit: 41bccc98fb7931d63d03f326a746ac4d429c1dd3
+--=20
+2.34.1
+
+
+--===============3504525030688151493==--
 
