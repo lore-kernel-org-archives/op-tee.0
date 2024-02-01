@@ -1,337 +1,491 @@
-From: Manish Pandey2 <Manish.Pandey2@arm.com>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI handler
-Date: Thu, 01 Feb 2024 14:51:05 +0000
-Message-ID: <VI1PR08MB3472B85E456B9DE3E67CF00FC0432@VI1PR08MB3472.eurprd08.prod.outlook.com>
-In-Reply-To: <=?utf-8?q?=3CAM6PR08MB34611001F145450D0053C92EC0B4A=40AM6PR08MB?=
- =?utf-8?q?3461=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: Re: [PATCH v2 4/4] remoteproc: stm32: Add support of an OP-TEE TA to
+ load the firmware
+Date: Thu, 01 Feb 2024 09:02:35 -0700
+Message-ID: <ZbvAmxHscnbUQGOD@p14s>
+In-Reply-To: <8ede77bb-0fbc-4de2-b51b-67674744b551@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3218510825048886397=="
+Content-Type: multipart/mixed; boundary="===============1714704265420228981=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3218510825048886397==
+--===============1714704265420228981==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit/Brian/Caleb,
+On Thu, Feb 01, 2024 at 04:06:37PM +0100, Arnaud POULIQUEN wrote:
+> hello Mathieu,
+>=20
+> On 1/31/24 19:52, Mathieu Poirier wrote:
+> > On Tue, Jan 30, 2024 at 10:13:48AM +0100, Arnaud POULIQUEN wrote:
+> >>
+> >>
+> >> On 1/26/24 18:11, Mathieu Poirier wrote:
+> >>> On Thu, Jan 18, 2024 at 11:04:33AM +0100, Arnaud Pouliquen wrote:
+> >>>> The new TEE remoteproc device is used to manage remote firmware in a
+> >>>> secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
+> >>>> introduced to delegate the loading of the firmware to the trusted
+> >>>> execution context. In such cases, the firmware should be signed and
+> >>>> adhere to the image format defined by the TEE.
+> >>>>
+> >>>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+> >>>> ---
+> >>>> V1 to V2 update:
+> >>>> - remove the select "TEE_REMOTEPROC" in STM32_RPROC config as detected=
+ by
+> >>>>   the kernel test robot:
+> >>>>      WARNING: unmet direct dependencies detected for TEE_REMOTEPROC
+> >>>>      Depends on [n]: REMOTEPROC [=3Dy] && OPTEE [=3Dn]
+> >>>>      Selected by [y]:
+> >>>>      - STM32_RPROC [=3Dy] && (ARCH_STM32 || COMPILE_TEST [=3Dy]) && RE=
+MOTEPROC [=3Dy]
+> >>>> - Fix initialized trproc variable in  stm32_rproc_probe
+> >>>> ---
+> >>>>  drivers/remoteproc/stm32_rproc.c | 149 +++++++++++++++++++++++++++++--
+> >>>>  1 file changed, 144 insertions(+), 5 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm=
+32_rproc.c
+> >>>> index fcc0001e2657..cf6a21bac945 100644
+> >>>> --- a/drivers/remoteproc/stm32_rproc.c
+> >>>> +++ b/drivers/remoteproc/stm32_rproc.c
+> >>>> @@ -20,6 +20,7 @@
+> >>>>  #include <linux/remoteproc.h>
+> >>>>  #include <linux/reset.h>
+> >>>>  #include <linux/slab.h>
+> >>>> +#include <linux/tee_remoteproc.h>
+> >>>>  #include <linux/workqueue.h>
+> >>>> =20
+> >>>>  #include "remoteproc_internal.h"
+> >>>> @@ -49,6 +50,9 @@
+> >>>>  #define M4_STATE_STANDBY	4
+> >>>>  #define M4_STATE_CRASH		5
+> >>>> =20
+> >>>> +/* Remote processor unique identifier aligned with the Trusted Execut=
+ion Environment definitions */
+> >>>> +#define STM32_MP1_M4_PROC_ID    0
+> >>>> +
+> >>>>  struct stm32_syscon {
+> >>>>  	struct regmap *map;
+> >>>>  	u32 reg;
+> >>>> @@ -90,6 +94,8 @@ struct stm32_rproc {
+> >>>>  	struct stm32_mbox mb[MBOX_NB_MBX];
+> >>>>  	struct workqueue_struct *workqueue;
+> >>>>  	bool hold_boot_smc;
+> >>>> +	bool fw_loaded;
+> >>>> +	struct tee_rproc *trproc;
+> >>>>  	void __iomem *rsc_va;
+> >>>>  };
+> >>>> =20
+> >>>> @@ -257,6 +263,91 @@ static int stm32_rproc_release(struct rproc *rpro=
+c)
+> >>>>  	return err;
+> >>>>  }
+> >>>> =20
+> >>>> +static int stm32_rproc_tee_elf_sanity_check(struct rproc *rproc,
+> >>>> +					    const struct firmware *fw)
+> >>>> +{
+> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >>>> +	unsigned int ret =3D 0;
+> >>>> +
+> >>>> +	if (rproc->state =3D=3D RPROC_DETACHED)
+> >>>> +		return 0;
+> >>>> +
+> >>>> +	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
+> >>>> +	if (!ret)
+> >>>> +		ddata->fw_loaded =3D true;
+> >>>> +
+> >>>> +	return ret;
+> >>>> +}
+> >>>> +
+> >>>> +static int stm32_rproc_tee_elf_load(struct rproc *rproc,
+> >>>> +				    const struct firmware *fw)
+> >>>> +{
+> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >>>> +	unsigned int ret;
+> >>>> +
+> >>>> +	/*
+> >>>> +	 * This function can be called by remote proc for recovery
+> >>>> +	 * without the sanity check. In this case we need to load the firmwa=
+re
+> >>>> +	 * else nothing done here as the firmware has been preloaded for the
+> >>>> +	 * sanity check to be able to parse it for the resource table.
+> >>>> +	 */
+> >>>
+> >>> This comment is very confusing - please consider refactoring. =20
+> >>>
+> >>>> +	if (ddata->fw_loaded)
+> >>>> +		return 0;
+> >>>> +
+> >>>
+> >>> I'm not sure about keeping a flag to indicate the status of the loaded =
+firmware.
+> >>> It is not done for the non-secure method, I don't see why it would be n=
+eeded for
+> >>> the secure one.
+> >>>
+> >>
+> >> The difference is on the sanity check.
+> >> - in rproc_elf_sanity_check we  parse the elf file to verify that it is
+> >> valid.
+> >> - in stm32_rproc_tee_elf_sanity_check we have to do the same, that means=
+ to
+> >> authenticate it. the authentication is done during the load.
+> >>
+> >> So this flag is used to avoid to reload it twice time.
+> >> refactoring the comment should help to understand this flag
+> >>
+> >>
+> >> An alternative would be to bypass the sanity check. But this lead to same
+> >> limitation.
+> >> Before loading the firmware in remoteproc_core, we call rproc_parse_fw()=
+ that is
+> >> used to get the resource table address. To get it from tee we need to
+> >> authenticate the firmware so load it...
+> >>
+> >=20
+> > I spent a long time thinking about this patchset.  Looking at the code as=
+ it
+> > is now, request_firmware() in rproc_boot() is called even when the TEE is
+> > responsible for loading the firmware.  There should be some conditional c=
+ode
+> > that calls either request_firmware() or tee_rproc_load_fw().  The latter =
+should
+> > also be renamed to tee_rproc_request_firmware() to avoid confusion.
+>=20
+>=20
+> The request_firmware() call is needed in both cases to get the image from t=
+he
+> filesystem. The tee_rproc_load_fw() gets, as input, the struct firmware pro=
+vided
+> by request_firmware().
 
-FYI the patch is now merged upstream https://review.trustedfirmware.org/c/TF-=
-A/trusted-firmware-a/+/25034
+The cover letter clearly state the secure side is responsible for loading the
+firmware image but here you're telling me it has to be loaded twice.  This is
+very confusing.
 
-Thanks
-Manish
+I'm also confused as to why stm32_rproc_tee_elf_sanity_check() is calling
+tee_rproc_load_fw().  There should be one call to load the firmware and anoth=
+er
+to perform a sanity check on it.  If the sanity check is done at load time by
+the secure world then ops::sanity_check() is NULL.
 
-________________________________
-From: Manish Pandey2 <Manish.Pandey2@arm.com>
-Sent: 20 November 2023 12:34
-To: Sumit Garg <sumit.garg@linaro.org>
-Cc: Olivier Deprez <Olivier.Deprez@arm.com>; tf-a(a)lists.trustedfirmware.o=
-rg <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@anal=
-og.com>; Neely, Brian <Brian.Neely@analog.com>; op-tee(a)lists.trustedfirmw=
-are.org <op-tee@lists.trustedfirmware.org>
-Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI ha=
-ndler
+Most of what this patchset does makes sense, but some of it needs to be moved
+around. =20
 
-Hi Sumit/Brian/Caleb
+Thanks,
+Mathieu
 
-This discussion started with the requirement mentioned here [1] and then the =
-side effect of it mentioned here [2]
-
-The question in [1] was "I'm seeing some strange behavior when NS interrupts =
-are routed to EL3 as FIQs (due to EHF)"
-I want to understand from Brian/Caleb that for your use case do you want to h=
-ave a different routing model for OP-TEE with your new requirement or you wan=
-t to keep it same. Just because you wanted to pull in EHF for NS world, you g=
-et side-effect in secure world?
-
-There are couple of things we are discussing in this thread
-1. Should interrupts be disabled when invoking SPD hooks in PSCI calls?
-  - It can be done in generic PSCI code (for RESET)
-
-2. Is there a need for changing Secure OS routing model just because EHF has =
-been pulled in EL3 ? for e.g. OP-TEE running without EHF (in EL3) will have d=
-ifferent routing model for FIQs compared to OP-TEE on top of EL3 with EHF.  C=
-urrent OP-TEE must have a mechanism to route NS interrupts to NS world, which=
- can be re-used.
-
-What EHF basically does is changes the routing model of foreign interrupts (S=
-CR_EL3.FIQ =3D 1) for both secure(except SPM/hafnium) and NS.
-For NS world it means : G1S and G0 interrupts are routed to EL3
-For Secure world it means : G1NS and G0 are routed to EL3
-The only two known use cases for EHF was to support Firmware First handling (=
-only for NS world) and SPM_MM (in secure world).
-
-What I am proposing is to change the EL3 code in such a way that we change FI=
-Q routing model just for known use cases (Always for NS world and for secure =
-world only if SPM_MM is present). This will require a change similar to [3].
-This is also inline with the design of Externa aborts routing to EL3 (SCR_EL3=
-.EA =3D 1). This routing selectively done for NS world (HANDLE_EA_EL3_FIRST_N=
-S) only as we do not have any use cases where Secure world needs it.
-
-On your comments Sumit:
->I don't think secure world should handle any EL3 interrupts, the EL3 firmwar=
-e should directly trap and handle EL3 interrupts.
-  - I don't think the worry is about actual EL3 interrupts, I guess its NS in=
-terrupts which gets triggered as EL3 interrupt (after pulling in EHF)
-
->Fast Calls execute atomic operations. The call appears to be atomic from the=
- perspective of the calling PE, and returns when the requested operation has =
-completed
-   - This holds true even if the SMC calls gets interrupted but the control d=
-oes not goes back to the caller location.
-
-[1] https://lists.trustedfirmware.org/archives/list/tf-a(a)lists.trustedfirmw=
-are.org/thread/HDFDUBNCEHPV7VS7EOHZC6QH3ERZDHND/#2RLBVV34AAXWCHZZUTUICKC3TRWV=
-RFPM
-[2] https://lists.trustedfirmware.org/archives/list/tf-a(a)lists.trustedfirmw=
-are.org/thread/MU56V7FRNLC6DF7Q4KP2FHKOKEDZVP6E/
-[3] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/25034
-
-Thanks
-Manish
-
-________________________________
-From: Sumit Garg <sumit.garg@linaro.org>
-Sent: 16 November 2023 09:16
-To: Manish Pandey2 <Manish.Pandey2@arm.com>
-Cc: Olivier Deprez <Olivier.Deprez@arm.com>; tf-a(a)lists.trustedfirmware.o=
-rg <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@anal=
-og.com>; Neely, Brian <Brian.Neely@analog.com>; op-tee(a)lists.trustedfirmw=
-are.org <op-tee@lists.trustedfirmware.org>
-Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI ha=
-ndler
-
-Hi Manish,
-
-On Tue, 14 Nov 2023 at 16:47, Manish Pandey2 <Manish.Pandey2@arm.com> wrote:
->
-> Hi Brian,
->
-> Your usecase is that you want to use SDEI framework to deliver some EL3 int=
-errupts to NS and if your only concern is about system reset the easiest/temp=
- solution would be to disable the G1NS interrupts in OP-TEE dispatcher's syst=
-em RESET hook.
->
-> The generic solution would take some time to implement as i need to analyse=
-/discuss following scenarios before making a decision
->
-> 1. Does secure world really needs EL3 interrupts or it can handle NS-interr=
-upts as FIQ (pre-EHF, do not modify routing model for secure world).
-
-I don't think secure world should handle any EL3 interrupts, the EL3
-firmware should directly trap and handle EL3 interrupts.
-
->  Notification to EL3 can be done using some standard or IMPDEF mechanism. F=
-FA has an ABI for this FFA_EL3_INTR_HANDLE. Current Hafnium implementation fo=
-llows this for G0 interrupts.
-> 2. The PSCI calls for CPU power down/up, migrate, system reset/off do invok=
-e SPD hooks. It need to be carefully analysed whether we really need to disab=
-le G1NS interrupts in these paths or not ? For e.g in CPU power down path the=
- PSCI spec mandates that its caller's responsbility to migrate interrupts fro=
-m the core (so we don't need to do anything special in TF-A code). Similarly =
-for reset/off and migrate we need to analyse what should be the best way to a=
-void this situation.
-
-As per SMCCC spec [1], PSCI calls are part of Standard Secure Service
-Calls which are essentially fast calls defined as below in the spec:
-
-"Fast Calls execute atomic operations. The call appears to be atomic
-from the perspective of the calling
-PE, and returns when the requested operation has completed"
-
-These are non-preemptible. So we should disable all interrupts (EL3 G0
-or EL1 G1NS or EL1 G1S) while handling PSCI calls. I don't think it's
-the responsibility of the OP-TEE dispatcher but rather the generic EL3
-firmware itself. However, if a particular platform is unmasking
-interrupts in OP-TEE while handling PSCI notifications then it's an
-issue which doesn't seem to be the case here.
-
-[1] https://developer.arm.com/documentation/den0028/f/?lang=3Den
-
--Sumit
-
->
-> Also, i need to work on test infrastructure to simulate these scenarios. It=
- will be useful if your setup can be recreated using OP-TEE/TF-A ?
->
-> Thanks
-> Manish
->
-> ________________________________
-> From: Olivier Deprez <Olivier.Deprez@arm.com>
-> Sent: 14 November 2023 10:47
-> To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware=
-.org <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@an=
-alog.com>; Neely, Brian <Brian.Neely@analog.com>
-> Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
-> Subject: Re: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI =
-handler
->
-> Hi,
->
-> Cc the OP-TEE mailing list, as I sense this might be more of an OP-TEE (/ O=
-PTEED) design question than TF-A generic.
->
-> I agree with Manish/Achin the best way to eliminate the return by NS interr=
-upt while OP-TEE kernel runs handling a PSCI request is to mask interrupts gl=
-obally in the GIC e.g. from within opteed_system_reset?
->
-> Additional questions:
->
-> On https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psc=
-i/psci_system_off.c#L44
-> The PSCI layer calls into OP-TEE SPD and then resumes OP-TEE to handle the =
-PSCI call in a platform defined manner.
->
-> As suggested here https://github.com/ARM-software/arm-trusted-firmware/blob=
-/master/services/spd/opteed/opteed_pm.c#L233 , it looks this invocation is no=
-t supposed to return into TF-A?
->
-> Did you redefine the weak psci_system_reset function within OP-TEE for your=
- platform?
-> Is this function designed to end up in a loop and never returns to TF-A?
->
-> As a side question, is this an issue that the TF-A's PSCI platform hook is =
-possibly never called https://github.com/ARM-software/arm-trusted-firmware/bl=
-ob/master/lib/psci/psci_system_off.c#L50 ?
->
-> Regards,
-> Olivier.
->
->
-> ________________________________
-> From: Neely, Brian via TF-A <tf-a@lists.trustedfirmware.org>
-> Sent: 13 November 2023 19:01
-> To: Manish Pandey2 <Manish.Pandey2@arm.com>; tf-a(a)lists.trustedfirmware=
-.org <tf-a@lists.trustedfirmware.org>; Ethridge, Caleb <Caleb.Ethridge@an=
-alog.com>
-> Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI hand=
-ler
->
->
-> Hi Manish,
->
->
->
-> Just following up on your comment below. Are you planning to provide guidan=
-ce as to which PSCI calls should have NS interrupts masked? Are these changes=
- that should go in the mainline TF-A repo, or do you believe they are specifi=
-c to our use case?
->
->
->
+>=20
+> If we want to integrate in remoteproc_core the solution could probably have=
+ to
+> create the equivalent of the rproc_fw_boot() to load the firmware with an
+> external method. Here is an example based on a new rproc_ops ( not tested)
+>=20
+> + static int rproc_fw_ext_boot(struct rproc *rproc, const struct firmware *=
+fw)
+> + {
+> + 	struct device *dev =3D &rproc->dev;
+> + 	const char *name =3D rproc->firmware;
+> + 	int ret;
+> +
+> +
+> + 	dev_info(dev, "Booting fw image %s, size %zd\n", name, fw->size);
+> + =09
+> + 	/* ops to load and start the remoteprocessor */
+> + 	ret =3D rproc->ops->boot(rproc, fw);
+> + 	if (ret)
+> + 		return ret;
+> +
+> + 	/*
+> + 	 * if enabling an IOMMU isn't relevant for this rproc, this is
+> + 	 * just a nop
+> + 	 */
+> + 	ret =3D rproc_enable_iommu(rproc);
+> + 	if (ret) {
+> + 		dev_err(dev, "can't enable iommu: %d\n", ret);
+> + 		return ret;
+> + 	}
+> +
+> + 	/* Prepare rproc for firmware loading if needed */
+> + 	ret =3D rproc_prepare_device(rproc);
+> + 	if (ret) {
+> + 		dev_err(dev, "can't prepare rproc %s: %d\n", rproc->name, ret);
+> + 		goto disable_iommu;
+> + 	}
+> +
+> + 	ret =3D rproc_set_rsc_table(rproc);
+> + 	if (ret) {
+> + 		dev_err(dev, "can't load resource table: %d\n", ret);
+> + 		goto unprepare_device;
+> + 	}
+> +
+> +
+> + 	/* reset max_notifyid */
+> + 	rproc->max_notifyid =3D -1;
+> +
+> + 	/* reset handled vdev */
+> + 	rproc->nb_vdev =3D 0;
+> +
+> + 	/* handle fw resources which are required to boot rproc */
+> + 	ret =3D rproc_handle_resources(rproc, rproc_loading_handlers);
+> + 	if (ret) {
+> + 		dev_err(dev, "Failed to process resources: %d\n", ret);
+> + 		goto clean_up_resources;
+> + 	}
+> +
+> + 	/* Allocate carveout resources associated to rproc */
+> + 	ret =3D rproc_alloc_registered_carveouts(rproc);
+> + 	if (ret) {
+> + 		dev_err(dev, "Failed to allocate associated carveouts: %d\n",
+> + 			ret);
+> + 		goto clean_up_resources;
+> + 	}
+> +
+> + 	return 0;
+> +
+> + clean_up_resources:
+> + 	rproc_resource_cleanup(rproc);
+> + unprepare_rproc:
+> + 	/* release HW resources if needed */
+> + 	rproc_unprepare_device(rproc);
+> + disable_iommu:
+> + 	rproc_disable_iommu(rproc);
+> + 	return ret;
+> + }
+>=20
+>=20
+> int rproc_boot(struct rproc *rproc)
+> {
+> [...]
+>=20
+> - 		ret =3D rproc_fw_boot(rproc, firmware_p);
+> + 		if(rproc->ops->boot)
+> + 			ret =3D rproc_fw_ext_boot(rproc, firmware_p);
+> + 		else
+> + 			ret =3D rproc_fw_boot(rproc, firmware_p);
+>=20
+> Another advantage of this solution is that it opens the framework to other
+> formats. For instance it could be a way to support dtb format requested in =
+[RFC]
+> Passing device-tree to remoteproc [1].
+>=20
+> [1]
+> https://lore.kernel.org/linux-remoteproc/f67cd822-4e29-71f2-7c42-e11dbaa6cd=
+8c(a)kalrayinc.com/T/#t
+>=20
 > Thanks,
->
-> Brian
->
->
->
-> From: Manish Pandey2 via TF-A <tf-a@lists.trustedfirmware.org>
-> Sent: Friday, November 10, 2023 11:31 AM
-> To: tf-a(a)lists.trustedfirmware.org; Ethridge, Caleb <Caleb.Ethridge@ana=
-log.com>
-> Subject: [TF-A] Re: Handling of normal world interrupts with BL31 PSCI hand=
-ler
->
->
->
-> [External]
->
->
->
-> Hi Caleb,
->
->
->
-> The quick answer to your query is to mask the NS interrupts in BL31 (option=
- a), You should not remove the callback to OPTEE as it may need to do its own=
- state maintained before system RESET.
->
->
->
-> There are other scenarios in PSCI (e.g. CPU power down) path which need to =
-consider disabling NS interrupts before invoking Secure world hooks, will pro=
-vide further analysis on those later.
->
->
->
-> Thanks
-> Manish Pandey
->
->
->
-> ________________________________
->
-> From: Caleb Ethridge via TF-A <tf-a(a)lists.trustedfirmware.org<mailto:tf-a=
-@lists.trustedfirmware.org>>
-> Sent: 10 November 2023 15:12
-> To: tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.or=
-g> <tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.trustedfirmware.org>>
-> Subject: [TF-A] Handling of normal world interrupts with BL31 PSCI handler
->
->
->
-> Hello,
->
-> If normal world interrupts are received while invoking TF-A's PSCI reset ha=
-ndler, we have observed that the reset can be aborted.
->
-> In TF-A's PSCI reset handler, a call out to OP-TEE is made before performin=
-g the platform-specific reset:
-> https://github.com/ARM-software/arm-trusted-firmware/blob/master/lib/psci/p=
-sci_system_off.c#L44<https://urldefense.com/v3/__https:/github.com/ARM-softwa=
-re/arm-trusted-firmware/blob/master/lib/psci/psci_system_off.c*L44__;Iw!!A3Ni=
-8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZz=
-yiBgwAyngBZMHyWqcCFuQ$>
-> https://github.com/ARM-software/arm-trusted-firmware/blob/master/services/s=
-pd/opteed/opteed_pm.c#L233<https://urldefense.com/v3/__https:/github.com/ARM-=
-software/arm-trusted-firmware/blob/master/services/spd/opteed/opteed_pm.c*L23=
-3__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3Ka=
-kFsaMwnp3xZzyiBgwAyngBZMHypZWQwUQ$>
->
-> When OP-TEE is entered, it is possible to receive foreign (normal world) in=
-terrupts, which invokes the procedure described here: https://optee.readthedo=
-cs.io/en/3.16.0/architecture/core.html#deliver-non-secure-interrupts-to-norma=
-l-world<https://urldefense.com/v3/__https:/optee.readthedocs.io/en/3.16.0/arc=
-hitecture/core.html*deliver-non-secure-interrupts-to-normal-world__;Iw!!A3Ni8=
-CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzy=
-iBgwAyngBZMHzqKZ6_0Q$>
-> When the SMC call is aborted as described above, this results in the reboot=
- failing. Linux does not retry the PSCI reset (https://github.com/torvalds/li=
-nux/blob/master/drivers/firmware/psci/psci.c#L308<https://urldefense.com/v3/_=
-_https:/github.com/torvalds/linux/blob/master/drivers/firmware/psci/psci.c*L3=
-08__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoimjH1u-u9fLXfaoLqv1ECsW3K=
-akFsaMwnp3xZzyiBgwAyngBZMHwH0cQx8g$>). This makes sense because it is not exp=
-ecting the SMC call to fail (it expected to make an uninterruptable SMC call =
-into the secure monitor, not a call into OP-TEE).
->
-> If OP-TEE itself is setup to handle PSCI reset calls, it also handles them =
-in (uninterruptable) SMC context:
-> https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/psci.c#L140=
-<https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/co=
-re/arch/arm/sm/psci.c*L140__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJfoi=
-mjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHwHJcYAAQ$>
-> https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/sm/sm_a32.S#L9=
-6<https://urldefense.com/v3/__https:/github.com/OP-TEE/optee_os/blob/master/c=
-ore/arch/arm/sm/sm_a32.S*L96__;Iw!!A3Ni8CS0y2Y!7wdssXjEhDud9Tm5QRek7Mw71eVJJf=
-oimjH1u-u9fLXfaoLqv1ECsW3KakFsaMwnp3xZzyiBgwAyngBZMHxqZFTGrA$>
->
-> Based on this, we see two possible solutions:
-> a) Masking the non-secure interrupts in BL31 while we are doing a reset
-> b) Removing the call to OPTEE in the reset handler so that we never leave t=
-he SMC context
->
-> Which option do you suggest? Or are we missing an important detail here?
->
-> Thanks,
->
-> Caleb
-> --
-> TF-A mailing list -- tf-a(a)lists.trustedfirmware.org<mailto:tf-a@lists.t=
-rustedfirmware.org>
-> To unsubscribe send an email to tf-a-leave(a)lists.trustedfirmware.org<mail=
-to:tf-a-leave@lists.trustedfirmware.org>
+> Arnaud
+>=20
+>=20
+>=20
+> >=20
+> > I touched on that before but please rename rproc_tee_get_rsc_table() to
+> > rproc_tee_elf_load_rsc_table().  I also suggest to introduce a new functi=
+on,
+> > rproc_tee_get_loaded_rsc_table() that would be called from
+> > rproc_tee_elf_load_rsc_table().  That way we don't need trproc->rsc_va.  =
 
---===============3218510825048886397==--
+> >=20
+> > I also think tee_rproc should be renamed to "rproc_tee_interface" and fol=
+ded
+> > under struct rproc. =20
+> >=20
+> > With the above most of the problems with the current implementation should
+> > naturally go away.
+> >=20
+> > Thanks,
+> > Mathieu
+> >=20
+> >>
+> >>>> +	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
+> >>>> +	if (ret)
+> >>>> +		return ret;
+> >>>> +	ddata->fw_loaded =3D true;
+> >>>> +
+> >>>> +	/* Update the resource table parameters. */
+> >>>> +	if (rproc_tee_get_rsc_table(ddata->trproc)) {
+> >>>> +		/* No resource table: reset the related fields. */
+> >>>> +		rproc->cached_table =3D NULL;
+> >>>> +		rproc->table_ptr =3D NULL;
+> >>>> +		rproc->table_sz =3D 0;
+> >>>> +	}
+> >>>> +
+> >>>> +	return 0;
+> >>>> +}
+> >>>> +
+> >>>> +static struct resource_table *
+> >>>> +stm32_rproc_tee_elf_find_loaded_rsc_table(struct rproc *rproc,
+> >>>> +					  const struct firmware *fw)
+> >>>> +{
+> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >>>> +
+> >>>> +	return tee_rproc_get_loaded_rsc_table(ddata->trproc);
+> >>>> +}
+> >>>> +
+> >>>> +static int stm32_rproc_tee_start(struct rproc *rproc)
+> >>>> +{
+> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >>>> +
+> >>>> +	return tee_rproc_start(ddata->trproc);
+> >>>> +}
+> >>>> +
+> >>>> +static int stm32_rproc_tee_attach(struct rproc *rproc)
+> >>>> +{
+> >>>> +	/* Nothing to do, remote proc already started by the secured context=
+. */
+> >>>> +	return 0;
+> >>>> +}
+> >>>> +
+> >>>> +static int stm32_rproc_tee_stop(struct rproc *rproc)
+> >>>> +{
+> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >>>> +	int err;
+> >>>> +
+> >>>> +	stm32_rproc_request_shutdown(rproc);
+> >>>> +
+> >>>> +	err =3D tee_rproc_stop(ddata->trproc);
+> >>>> +	if (err)
+> >>>> +		return err;
+> >>>> +
+> >>>> +	ddata->fw_loaded =3D false;
+> >>>> +
+> >>>> +	return stm32_rproc_release(rproc);
+> >>>> +}
+> >>>> +
+> >>>>  static int stm32_rproc_prepare(struct rproc *rproc)
+> >>>>  {
+> >>>>  	struct device *dev =3D rproc->dev.parent;
+> >>>> @@ -319,7 +410,14 @@ static int stm32_rproc_prepare(struct rproc *rpro=
+c)
+> >>>> =20
+> >>>>  static int stm32_rproc_parse_fw(struct rproc *rproc, const struct fir=
+mware *fw)
+> >>>>  {
+> >>>> -	if (rproc_elf_load_rsc_table(rproc, fw))
+> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
+> >>>> +	int ret;
+> >>>> +
+> >>>> +	if (ddata->trproc)
+> >>>> +		ret =3D rproc_tee_get_rsc_table(ddata->trproc);
+> >>>> +	else
+> >>>> +		ret =3D rproc_elf_load_rsc_table(rproc, fw);
+> >>>> +	if (ret)
+> >>>>  		dev_warn(&rproc->dev, "no resource table found for this firmware\n"=
+);
+> >>>> =20
+> >>>>  	return 0;
+> >>>> @@ -693,8 +791,22 @@ static const struct rproc_ops st_rproc_ops =3D {
+> >>>>  	.get_boot_addr	=3D rproc_elf_get_boot_addr,
+> >>>>  };
+> >>>> =20
+> >>>> +static const struct rproc_ops st_rproc_tee_ops =3D {
+> >>>> +	.prepare	=3D stm32_rproc_prepare,
+> >>>> +	.start		=3D stm32_rproc_tee_start,
+> >>>> +	.stop		=3D stm32_rproc_tee_stop,
+> >>>> +	.attach		=3D stm32_rproc_tee_attach,
+> >>>> +	.kick		=3D stm32_rproc_kick,
+> >>>> +	.parse_fw	=3D stm32_rproc_parse_fw,
+> >>>> +	.find_loaded_rsc_table =3D stm32_rproc_tee_elf_find_loaded_rsc_table,
+> >>>> +	.get_loaded_rsc_table =3D stm32_rproc_get_loaded_rsc_table,
+> >>>> +	.sanity_check	=3D stm32_rproc_tee_elf_sanity_check,
+> >>>> +	.load		=3D stm32_rproc_tee_elf_load,
+> >>>> +};
+> >>>> +
+> >>>>  static const struct of_device_id stm32_rproc_match[] =3D {
+> >>>> -	{ .compatible =3D "st,stm32mp1-m4" },
+> >>>> +	{.compatible =3D "st,stm32mp1-m4",},
+> >>>> +	{.compatible =3D "st,stm32mp1-m4-tee",},
+> >>>>  	{},
+> >>>>  };
+> >>>>  MODULE_DEVICE_TABLE(of, stm32_rproc_match);
+> >>>> @@ -853,6 +965,7 @@ static int stm32_rproc_probe(struct platform_devic=
+e *pdev)
+> >>>>  	struct device *dev =3D &pdev->dev;
+> >>>>  	struct stm32_rproc *ddata;
+> >>>>  	struct device_node *np =3D dev->of_node;
+> >>>> +	struct tee_rproc *trproc =3D NULL;
+> >>>>  	struct rproc *rproc;
+> >>>>  	unsigned int state;
+> >>>>  	int ret;
+> >>>> @@ -861,11 +974,31 @@ static int stm32_rproc_probe(struct platform_dev=
+ice *pdev)
+> >>>>  	if (ret)
+> >>>>  		return ret;
+> >>>> =20
+> >>>> -	rproc =3D rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*dd=
+ata));
+> >>>> -	if (!rproc)
+> >>>> -		return -ENOMEM;
+> >>>> +	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
+> >>>> +		trproc =3D tee_rproc_register(dev, STM32_MP1_M4_PROC_ID);
+> >>>> +		if (IS_ERR(trproc)) {
+> >>>> +			dev_err_probe(dev, PTR_ERR(trproc),
+> >>>> +				      "signed firmware not supported by TEE\n");
+> >>>> +			return PTR_ERR(trproc);
+> >>>> +		}
+> >>>> +		/*
+> >>>> +		 * Delegate the firmware management to the secure context.
+> >>>> +		 * The firmware loaded has to be signed.
+> >>>> +		 */
+> >>>> +		dev_info(dev, "Support of signed firmware only\n");
+> >>>
+> >>> Not sure what this adds.  Please remove.
+> >>
+> >> This is used to inform the user that only a signed firmware can be loade=
+d, not
+> >> an ELF file.
+> >> I have a patch in my pipe to provide the supported format in the debugfs=
+. In a
+> >> first step, I can suppress this message and we can revisit the issue whe=
+n I push
+> >> the debugfs proposal.
+> >>
+> >> Thanks,
+> >> Arnaud
+> >>
+> >>>
+> >>>> +	}
+> >>>> +	rproc =3D rproc_alloc(dev, np->name,
+> >>>> +			    trproc ? &st_rproc_tee_ops : &st_rproc_ops,
+> >>>> +			    NULL, sizeof(*ddata));
+> >>>> +	if (!rproc) {
+> >>>> +		ret =3D -ENOMEM;
+> >>>> +		goto free_tee;
+> >>>> +	}
+> >>>> =20
+> >>>>  	ddata =3D rproc->priv;
+> >>>> +	ddata->trproc =3D trproc;
+> >>>> +	if (trproc)
+> >>>> +		trproc->rproc =3D rproc;
+> >>>> =20
+> >>>>  	rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
+> >>>> =20
+> >>>> @@ -916,6 +1049,10 @@ static int stm32_rproc_probe(struct platform_dev=
+ice *pdev)
+> >>>>  		device_init_wakeup(dev, false);
+> >>>>  	}
+> >>>>  	rproc_free(rproc);
+> >>>> +free_tee:
+> >>>> +	if (trproc)
+> >>>> +		tee_rproc_unregister(trproc);
+> >>>> +
+> >>>>  	return ret;
+> >>>>  }
+> >>>> =20
+> >>>> @@ -937,6 +1074,8 @@ static void stm32_rproc_remove(struct platform_de=
+vice *pdev)
+> >>>>  		device_init_wakeup(dev, false);
+> >>>>  	}
+> >>>>  	rproc_free(rproc);
+> >>>> +	if (ddata->trproc)
+> >>>> +		tee_rproc_unregister(ddata->trproc);
+> >>>>  }
+> >>>> =20
+> >>>>  static int stm32_rproc_suspend(struct device *dev)
+> >>>> --=20
+> >>>> 2.25.1
+> >>>>
+
+--===============1714704265420228981==--
 
