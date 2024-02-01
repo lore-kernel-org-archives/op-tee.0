@@ -1,404 +1,280 @@
-From: Randy Dunlap <rdunlap@infradead.org>
+From: "Jorge Ramirez-Ortiz, Foundries" <jorge@foundries.io>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v2 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
-Date: Wed, 31 Jan 2024 22:04:38 -0800
-Message-ID: <09e318f9-ccb6-4c0c-b06d-d433d44d6e25@infradead.org>
-In-Reply-To: <20240131174347.510961-2-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v2 2/3] mmc: block: register RPMB partition with the RPMB
+ subsystem
+Date: Thu, 01 Feb 2024 10:18:19 +0100
+Message-ID: <Zbth2wZ+TtGuCJux@trax>
+In-Reply-To: <20240131174347.510961-3-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8197680085962552704=="
+Content-Type: multipart/mixed; boundary="===============8310486296140599887=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8197680085962552704==
+--===============8310486296140599887==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On 1/31/24 09:43, Jens Wiklander wrote:
-> A number of storage technologies support a specialised hardware
-> partition designed to be resistant to replay attacks. The underlying
-> HW protocols differ but the operations are common. The RPMB partition
-> cannot be accessed via standard block layer, but by a set of specific
-> RPMB commands: WRITE, READ, GET_WRITE_COUNTER, and PROGRAM_KEY. Such a
-> partition provides authenticated and replay protected access, hence
-> suitable as a secure storage.
->=20
-> The initial aim of this patch is to provide a simple RPMB Driver which
-> can be accessed by the optee driver to facilitate early RPMB access to
-> OP-TEE OS (secure OS) during the boot time.
->=20
-> A TEE device driver can claim the RPMB interface, for example, via
-> class_interface_register() or rpmb_dev_find_device(). The RPMB driver
-> provides a callback to route RPMB frames to the RPMB device accessible
-> via rpmb_route_frames().
->=20
-> The detailed operation of implementing the access is left to the TEE
-> device driver itself.
->=20
+On 31/01/24 18:43:46, Jens Wiklander wrote:
+> Register eMMC RPMB partition with the RPMB subsystem and provide
+> an implementation for the RPMB access operations abstracting
+> the actual multi step process.
+>
+> Add callbacks for getting and putting the needed resources, that is, the
+> RPMB data and the RPMB disk.
+>
+> Add a callback to extract the needed device information at registration
+> to avoid accessing the struct mmc_card at a later stage as we're not
+> holding a reference counter for this struct.
+>
 > Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
-> Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
+> Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
->  MAINTAINERS              |   7 ++
->  drivers/misc/Kconfig     |   9 ++
->  drivers/misc/Makefile    |   1 +
->  drivers/misc/rpmb-core.c | 247 +++++++++++++++++++++++++++++++++++++++
->  include/linux/rpmb.h     | 184 +++++++++++++++++++++++++++++
->  5 files changed, 448 insertions(+)
->  create mode 100644 drivers/misc/rpmb-core.c
->  create mode 100644 include/linux/rpmb.h
->=20
-
-
-> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> index 4fb291f0bf7c..891aa5763666 100644
-> --- a/drivers/misc/Kconfig
-> +++ b/drivers/misc/Kconfig
-> @@ -104,6 +104,15 @@ config PHANTOM
->  	  If you choose to build module, its name will be phantom. If unsure,
->  	  say N here.
-> =20
-> +config RPMB
-> +	tristate "RPMB partition interface"
-> +	help
-> +	  Unified RPMB unit interface for RPMB capable devices such as eMMC and
-> +	  UFS. Provides interface for in kernel security controllers to access
-
-	                              in-kernel
-
-> +	  RPMB unit.
-> +
-> +	  If unsure, select N.
-> +
->  config TIFM_CORE
->  	tristate "TI Flash Media interface support"
->  	depends on PCI
-
-
-> diff --git a/drivers/misc/rpmb-core.c b/drivers/misc/rpmb-core.c
-> new file mode 100644
-> index 000000000000..a3c289051687
-> --- /dev/null
-> +++ b/drivers/misc/rpmb-core.c
-> @@ -0,0 +1,247 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright(c) 2015 - 2019 Intel Corporation. All rights reserved.
-> + * Copyright(c) 2021 - 2024 Linaro Ltd.
-> + */
-> +#include <linux/device.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/list.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
+>  drivers/mmc/core/block.c | 177 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 177 insertions(+)
+>
+> diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
+> index 32d49100dff5..5286e0b3a5a2 100644
+> --- a/drivers/mmc/core/block.c
+> +++ b/drivers/mmc/core/block.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/cdev.h>
+>  #include <linux/mutex.h>
+>  #include <linux/scatterlist.h>
+> +#include <linux/string.h>
+>  #include <linux/string_helpers.h>
+>  #include <linux/delay.h>
+>  #include <linux/capability.h>
+> @@ -40,6 +41,7 @@
+>  #include <linux/pm_runtime.h>
+>  #include <linux/idr.h>
+>  #include <linux/debugfs.h>
 > +#include <linux/rpmb.h>
-> +#include <linux/slab.h>
-
-> +
-> +/**
-> + * rpmb_route_frames() - route rpmb frames to rpmb device
-> + * @rdev:	rpmb device
-> + * @req:	rpmb request frames
-> + * @req_len:	length of rpmb request frames in bytes
-> + * @rsp:	rpmb response frames
-> + * @rsp_len:	length of rpmb response frames in bytes
-> + *
-> + * @return < 0 on failure
-
-Above needs a colon ':' after @return, although using
- * Return:
-is preferable IMO.
-
-> + */
-> +int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
-> +		      unsigned int req_len, u8 *rsp, unsigned int rsp_len)
+>
+>  #include <linux/mmc/ioctl.h>
+>  #include <linux/mmc/card.h>
+> @@ -163,6 +165,7 @@ struct mmc_rpmb_data {
+>  	int id;
+>  	unsigned int part_index;
+>  	struct mmc_blk_data *md;
+> +	struct rpmb_dev *rdev;
+>  	struct list_head node;
+>  };
+>
+> @@ -2707,6 +2710,169 @@ static void mmc_blk_rpmb_device_release(struct devi=
+ce *dev)
+>  	kfree(rpmb);
+>  }
+>
+> +static void rpmb_op_mmc_get_resources(struct device *dev)
 > +{
-
-
-> +/**
-> + * rpmb_dev_find_device() - return first matching rpmb device
-> + * @data: data for the match function
-> + * @match: the matching function
-> + *
-> + * @returns a matching rpmb device or NULL on failure
-
-    * @returns:
-or
-    * Returns:
-
-> + */
-> +struct rpmb_dev *rpmb_dev_find_device(const void *data,
-> +				      const struct rpmb_dev *start,
-> +				      int (*match)(struct device *dev,
-> +						   const void *data))
-> +{
-> +	struct device *dev;
-> +	const struct device *start_dev =3D NULL;
+> +	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
 > +
-> +	if (start)
-> +		start_dev =3D &start->dev;
-> +	dev =3D class_find_device(&rpmb_class, start_dev, data, match);
-> +
-> +	return dev ? to_rpmb_dev(dev) : NULL;
+> +	/*
+> +	 * When the MMC card is removed rpmb_dev_unregister() is called
+> +	 * from mmc_blk_remove_rpmb_part(). That removes references to the
+> +	 * devices in struct mmc_rpmb_data and rpmb->md. Since struct
+> +	 * rpmb_dev can still reach those structs we must hold a reference
+> +	 * until struct rpmb_dev also is released.
+> +	 *
+> +	 * This is analogous to what's done in mmc_rpmb_chrdev_open() and
+> +	 * mmc_rpmb_chrdev_release() below.
+> +	 */
+> +	get_device(dev);
+> +	mmc_blk_get(rpmb->md->disk);
 > +}
 > +
-> +/**
-> + * rpmb_dev_unregister() - unregister RPMB partition from the RPMB subsyst=
-em
-> + * @rdev: the rpmb device to unregister
-> + *
-> + * @returns < 0 on failure
-
-Ditto.
-
-> + */
-> +int rpmb_dev_unregister(struct rpmb_dev *rdev)
+> +static void rpmb_op_mmc_put_resources(struct device *dev)
 > +{
-> +	if (!rdev)
-> +		return -EINVAL;
+> +	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
 > +
-> +	device_del(&rdev->dev);
+> +	mmc_blk_put(rpmb->md);
+> +	put_device(dev);
+> +}
 > +
-> +	rpmb_dev_put(rdev);
+> +static struct mmc_blk_ioc_data **alloc_idata(struct mmc_rpmb_data *rpmb,
+> +					     unsigned int cmd_count)
+> +{
+> +	struct mmc_blk_ioc_data **idata;
+> +	unsigned int n;
+> +
+> +	idata =3D kcalloc(cmd_count, sizeof(*idata), GFP_KERNEL);
+> +	if (!idata)
+> +		return NULL;
+> +
+> +	for (n =3D 0; n < cmd_count; n++) {
+> +		idata[n] =3D kcalloc(1, sizeof(**idata), GFP_KERNEL);
+> +		if (!idata[n]) {
+> +			kfree(idata);
+
+don't you need to unwind these allocations on error?
+
+> +			return NULL;
+> +		}
+> +		idata[n]->rpmb =3D rpmb;
+> +	}
+> +
+> +	return idata;
+> +}
+> +
+> +static void set_idata(struct mmc_blk_ioc_data *idata, u32 opcode,
+> +		      int write_flag, u8 *buf, unsigned int buf_bytes)
+> +{
+> +	idata->ic.opcode =3D opcode;
+> +	idata->ic.flags =3D MMC_RSP_R1 | MMC_CMD_ADTC;
+> +	idata->ic.write_flag =3D write_flag;
+> +	idata->ic.blksz =3D sizeof(struct rpmb_frame);
+> +	idata->ic.blocks =3D buf_bytes /  idata->ic.blksz;
+> +	idata->buf =3D buf;
+> +	idata->buf_bytes =3D buf_bytes;
+> +}
+> +
+> +static void free_idata(struct mmc_blk_ioc_data **idata, unsigned int cmd_c=
+ount)
+> +{
+> +	unsigned int n;
+> +
+> +	for (n =3D 0; n < cmd_count; n++)
+> +		kfree(idata[n]);
+> +	kfree(idata);
+> +}
+> +
+> +static int rpmb_op_mmc_route_frames(struct device *dev, bool write, u8 *re=
+q,
+> +				    unsigned int req_len, u8 *resp,
+> +				    unsigned int resp_len)
+> +{
+> +	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
+> +	struct mmc_blk_data *md =3D rpmb->md;
+> +	struct mmc_blk_ioc_data **idata;
+> +	unsigned int cmd_count;
+> +	struct request *rq;
+> +	int ret;
+> +
+> +	if (write)
+> +		cmd_count =3D 3;
+> +	else
+> +		cmd_count =3D 2;
+> +
+> +	if (IS_ERR(md->queue.card))
+> +		return PTR_ERR(md->queue.card);
+> +
+> +	idata =3D alloc_idata(rpmb, cmd_count);
+> +	if (!idata)
+> +		return -ENOMEM;
+> +
+> +	if (write) {
+> +		struct rpmb_frame *frm =3D (struct rpmb_frame *)resp;
+> +
+> +		/* Send write request frame(s) */
+> +		set_idata(idata[0], MMC_WRITE_MULTIPLE_BLOCK,
+> +			  1 | MMC_CMD23_ARG_REL_WR, req, req_len);
+> +
+> +		/* Send result request frame */
+> +		memset(frm, 0, sizeof(*frm));
+> +		frm->req_resp =3D cpu_to_be16(RPMB_RESULT_READ);
+> +		set_idata(idata[1], MMC_WRITE_MULTIPLE_BLOCK, 1, resp,
+> +			  resp_len);
+> +
+> +		/* Read response frame */
+> +		set_idata(idata[2], MMC_READ_MULTIPLE_BLOCK, 0, resp, resp_len);
+> +	} else {
+> +		/* Send write request frame(s) */
+> +		set_idata(idata[0], MMC_WRITE_MULTIPLE_BLOCK, 1, req, req_len);
+> +
+> +		/* Read response frame */
+> +		set_idata(idata[1], MMC_READ_MULTIPLE_BLOCK, 0, resp, resp_len);
+> +	}
+> +
+> +	rq =3D blk_mq_alloc_request(md->queue.queue, REQ_OP_DRV_OUT, 0);
+> +	if (IS_ERR(rq)) {
+> +		ret =3D PTR_ERR(rq);
+> +		goto out;
+> +	}
+> +
+> +	req_to_mmc_queue_req(rq)->drv_op =3D MMC_DRV_OP_IOCTL_RPMB;
+> +	req_to_mmc_queue_req(rq)->drv_op_result =3D -EIO;
+> +	req_to_mmc_queue_req(rq)->drv_op_data =3D idata;
+> +	req_to_mmc_queue_req(rq)->ioc_count =3D cmd_count;
+> +	blk_execute_rq(rq, false);
+> +	ret =3D req_to_mmc_queue_req(rq)->drv_op_result;
+> +
+> +	blk_mq_free_request(rq);
+> +
+> +out:
+> +	free_idata(idata, cmd_count);
+> +	return ret;
+> +}
+> +
+> +static int rpmb_op_mmc_set_dev_info(struct device *dev, struct rpmb_dev *r=
+dev)
+> +{
+> +	struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
+> +	struct mmc_card *card =3D rpmb->md->queue.card;
+> +	unsigned int n;
+> +	u32 cid[4];
+> +
+> +	for (n =3D 0; n < 4; n++)
+> +		cid[n] =3D be32_to_cpu(card->raw_cid[n]);
+> +
+> +	rdev->dev_id =3D kmemdup(cid, sizeof(cid), GFP_KERNEL);
+> +	if (!rdev->dev_id)
+> +		return -ENOMEM;
+> +	rdev->dev_id_len =3D sizeof(cid);
+> +	rdev->reliable_wr_count =3D card->ext_csd.raw_rpmb_size_mult;
+> +	rdev->capacity =3D card->ext_csd.rel_sectors;
 > +
 > +	return 0;
 > +}
-> +EXPORT_SYMBOL_GPL(rpmb_dev_unregister);
 > +
-> +/**
-> + * rpmb_dev_register - register RPMB partition with the RPMB subsystem
-> + * @dev: storage device of the rpmb device
-> + * @target: RPMB target/region within the physical device
-
-There is no @target function parameter.
-
-> + * @ops: device specific operations
-> + *
-> + * While registering the RPMB partition get references to needed resources
-> + * with the @ops->get_resources() callback and extracts needed devices
-> + * information while needed resources are available.
-> + *
-> + * @returns a pointer to a 'struct rpmb_dev' or an ERR_PTR on failure
-
-Ditto for Return syntax.
-
-> + */
-> +struct rpmb_dev *rpmb_dev_register(struct device *dev,
-> +				   const struct rpmb_ops *ops)
-> +{
-> +	struct rpmb_dev *rdev;
-> +	int id;
-> +	int ret;
+> +static struct rpmb_ops rpmb_mmc_ops =3D {
+> +	.type =3D RPMB_TYPE_EMMC,
+> +	.get_resources =3D rpmb_op_mmc_get_resources,
+> +	.put_resources =3D rpmb_op_mmc_put_resources,
+> +	.route_frames =3D rpmb_op_mmc_route_frames,
+> +	.set_dev_info =3D rpmb_op_mmc_set_dev_info,
+> +};
 > +
-> +	if (!dev || !ops || !ops->get_resources ||
-> +	    !ops->put_resources || !ops->route_frames ||
-> +	    !ops->set_dev_info)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	rdev =3D kzalloc(sizeof(*rdev), GFP_KERNEL);
-> +	if (!rdev)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	mutex_lock(&rpmb_mutex);
-> +	id =3D ida_simple_get(&rpmb_ida, 0, 0, GFP_KERNEL);
-> +	mutex_unlock(&rpmb_mutex);
-> +	if (id < 0) {
-> +		ret =3D id;
-> +		goto exit;
+>  static int mmc_blk_alloc_rpmb_part(struct mmc_card *card,
+>  				   struct mmc_blk_data *md,
+>  				   unsigned int part_index,
+> @@ -2751,6 +2917,14 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *=
+card,
+>  		goto out_put_device;
+>  	}
+>
+> +	rpmb->rdev =3D rpmb_dev_register(&rpmb->dev, &rpmb_mmc_ops);
+> +	if (IS_ERR(rpmb->rdev)) {
+> +		pr_err("%s: could not register RPMB device\n", rpmb_name);
+> +		ret =3D PTR_ERR(rpmb->rdev);
+> +		rpmb->rdev =3D NULL;
+> +		goto out_cdev_device_del;
 > +	}
 > +
-> +	rdev->ops =3D ops;
-> +	rdev->id =3D id;
-> +
-> +	dev_set_name(&rdev->dev, "rpmb%d", id);
-> +	rdev->dev.class =3D &rpmb_class;
-> +	rdev->dev.parent =3D dev;
-> +
-> +	ret =3D ops->set_dev_info(dev, rdev);
-> +	if (ret)
-> +		goto exit;
-> +
-> +	ret =3D device_register(&rdev->dev);
-> +	if (ret)
-> +		goto exit;
-> +
-> +	ops->get_resources(rdev->dev.parent);
-> +
-> +	dev_dbg(&rdev->dev, "registered device\n");
-> +
-> +	return rdev;
-> +
-> +exit:
-> +	if (id >=3D 0) {
-> +		mutex_lock(&rpmb_mutex);
-> +		ida_simple_remove(&rpmb_ida, id);
-> +		mutex_unlock(&rpmb_mutex);
-> +	}
-> +	kfree(rdev);
-> +	return ERR_PTR(ret);
-> +}
-> +EXPORT_SYMBOL_GPL(rpmb_dev_register);
+>  	list_add(&rpmb->node, &md->rpmbs);
+>
+>  	string_get_size((u64)size, 512, STRING_UNITS_2,
+> @@ -2762,6 +2936,8 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *c=
+ard,
+>
+>  	return 0;
+>
+> +out_cdev_device_del:
+> +	cdev_device_del(&rpmb->chrdev, &rpmb->dev);
+>  out_put_device:
+>  	put_device(&rpmb->dev);
+>  	return ret;
+> @@ -2770,6 +2946,7 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *c=
+ard,
+>  static void mmc_blk_remove_rpmb_part(struct mmc_rpmb_data *rpmb)
+>
+>  {
+> +	rpmb_dev_unregister(rpmb->rdev);
+>  	cdev_device_del(&rpmb->chrdev, &rpmb->dev);
+>  	put_device(&rpmb->dev);
+>  }
+> --
+> 2.34.1
+>
 
-
-> diff --git a/include/linux/rpmb.h b/include/linux/rpmb.h
-> new file mode 100644
-> index 000000000000..45073513264a
-> --- /dev/null
-> +++ b/include/linux/rpmb.h
-> @@ -0,0 +1,184 @@
-> +/* SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0 */
-> +/*
-> + * Copyright (C) 2015-2019 Intel Corp. All rights reserved
-> + * Copyright (C) 2021-2022 Linaro Ltd
-> + */
-> +#ifndef __RPMB_H__
-> +#define __RPMB_H__
-> +
-> +#include <linux/types.h>
-> +#include <linux/device.h>
-> +
-> +/**
-> + * struct rpmb_frame - rpmb frame as defined by specs
-> + *
-> + * @stuff        : stuff bytes
-> + * @key_mac      : The authentication key or the message authentication
-> + *                 code (MAC) depending on the request/response type.
-> + *                 The MAC will be delivered in the last (or the only)
-> + *                 block of data.
-> + * @data         : Data to be written or read by signed access.
-> + * @nonce        : Random number generated by the host for the requests
-> + *                 and copied to the response by the RPMB engine.
-> + * @write_counter: Counter value for the total amount of the successful
-> + *                 authenticated data write requests made by the host.
-> + * @addr         : Address of the data to be programmed to or read
-> + *                 from the RPMB. Address is the serial number of
-> + *                 the accessed block (half sector 256B).
-> + * @block_count  : Number of blocks (half sectors, 256B) requested to be
-> + *                 read/programmed.
-> + * @result       : Includes information about the status of the write coun=
-ter
-> + *                 (valid, expired) and result of the access made to the R=
-PMB.
-> + * @req_resp     : Defines the type of request and response to/from the me=
-mory.
-> + */
-> +struct rpmb_frame {
-> +	u8     stuff[196];
-> +	u8     key_mac[32];
-> +	u8     data[256];
-> +	u8     nonce[16];
-> +	__be32 write_counter;
-> +	__be16 addr;
-> +	__be16 block_count;
-> +	__be16 result;
-> +	__be16 req_resp;
-> +} __packed;
-> +
-> +#define RPMB_PROGRAM_KEY       0x1    /* Program RPMB Authentication Key */
-> +#define RPMB_GET_WRITE_COUNTER 0x2    /* Read RPMB write counter */
-> +#define RPMB_WRITE_DATA        0x3    /* Write data to RPMB partition */
-> +#define RPMB_READ_DATA         0x4    /* Read data from RPMB partition */
-> +#define RPMB_RESULT_READ       0x5    /* Read result request  (Internal) */
-> +
-> +#define RPMB_REQ2RESP(_OP) ((_OP) << 8)
-> +#define RPMB_RESP2REQ(_OP) ((_OP) >> 8)
-> +
-> +/**
-> + * enum rpmb_op_result - rpmb operation results
-> + *
-> + * @RPMB_ERR_OK      : operation successful
-> + * @RPMB_ERR_GENERAL : general failure
-> + * @RPMB_ERR_AUTH    : mac doesn't match or ac calculation failure
-> + * @RPMB_ERR_COUNTER : counter doesn't match or counter increment failure
-> + * @RPMB_ERR_ADDRESS : address out of range or wrong address alignment
-> + * @RPMB_ERR_WRITE   : data, counter, or result write failure
-> + * @RPMB_ERR_READ    : data, counter, or result read failure
-> + * @RPMB_ERR_NO_KEY  : authentication key not yet programmed
-> + *
-> + * @RPMB_ERR_COUNTER_EXPIRED:  counter expired
-> + */
-> +enum rpmb_op_result {
-> +	RPMB_ERR_OK      =3D 0x0000,
-> +	RPMB_ERR_GENERAL =3D 0x0001,
-> +	RPMB_ERR_AUTH    =3D 0x0002,
-> +	RPMB_ERR_COUNTER =3D 0x0003,
-> +	RPMB_ERR_ADDRESS =3D 0x0004,
-> +	RPMB_ERR_WRITE   =3D 0x0005,
-> +	RPMB_ERR_READ    =3D 0x0006,
-> +	RPMB_ERR_NO_KEY  =3D 0x0007,
-> +
-> +	RPMB_ERR_COUNTER_EXPIRED =3D 0x0080
-> +};
-> +
-> +/**
-> + * enum rpmb_type - type of underlaying storage technology
-
-                               underlying
-
-> + *
-> + * @RPMB_TYPE_EMMC  : emmc (JESD84-B50.1)
-> + * @RPMB_TYPE_UFS   : UFS (JESD220)
-> + * @RPMB_TYPE_NVME  : NVM Express
-> + */
-> +enum rpmb_type {
-> +	RPMB_TYPE_EMMC,
-> +	RPMB_TYPE_UFS,
-> +	RPMB_TYPE_NVME,
-> +};
-> +
-> +/**
-> + * struct rpmb_dev - device which can support RPMB partition
-> + *
-> + * @dev              : device
-> + * @id               : device id;
-> + * @ops              : operation exported by rpmb
-> + * @dev_id           : unique device identifier read from the hardware
-> + * @dev_id_len       : length of unique device identifier
-> + * @reliable_wr_count: number of sectors that can be written in one access
-> + * @capacity         : capacity of the device in units of 128K
-> + */
-> +struct rpmb_dev {
-> +	struct device dev;
-> +	int id;
-> +	const struct rpmb_ops *ops;
-> +	u8 *dev_id;
-> +	size_t dev_id_len;
-> +	u16 reliable_wr_count;
-> +	u16 capacity;
-> +};
-> +
-> +#define to_rpmb_dev(x) container_of((x), struct rpmb_dev, dev)
-> +
-> +/**
-> + * struct rpmb_ops - RPMB ops to be implemented by underlying block device
-> + *
-> + * @type          : block device type
-> + * @get_resources : gets references to needed resources in rpmb_dev_regist=
-er()
-> + * @put_resources : puts references from resources in rpmb_dev_release()
-> + * @route_frames  : routes frames to and from the RPMB device
-> + * @get_dev_info  : extracts device info from the RPMB device
-
-       set_dev_info ???
-
-> + */
-> +struct rpmb_ops {
-> +	enum rpmb_type type;
-> +	void (*get_resources)(struct device *dev);
-> +	void (*put_resources)(struct device *dev);
-> +	int (*set_dev_info)(struct device *dev, struct rpmb_dev *rdev);
-> +	int (*route_frames)(struct device *dev, bool write,
-> +			    u8 *req, unsigned int req_len,
-> +			    u8 *resp, unsigned int resp_len);
-> +};
-> +
-
-thanks.
---=20
-#Randy
-
---===============8197680085962552704==--
+--===============8310486296140599887==--
 
