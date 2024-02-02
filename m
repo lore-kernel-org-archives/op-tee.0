@@ -1,135 +1,160 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2 0/3] Replay Protected Memory Block (RPMB) subsystem
-Date: Fri, 02 Feb 2024 15:29:30 +0530
+Date: Fri, 02 Feb 2024 11:46:15 +0100
 Message-ID: 
- <CAFA6WYORTtuRsoiDhjCdPwaDHyJ+ixZBu_-VQHPE2RhCprKQ0w@mail.gmail.com>
-In-Reply-To: <20240131174347.510961-1-jens.wiklander@linaro.org>
+ <CAHUa44FmrtsbssK_R_Pm9WLzrSPU++HOETfaVxHqoZyhSEM8jw@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYORTtuRsoiDhjCdPwaDHyJ+ixZBu_-VQHPE2RhCprKQ0w@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2880771881080067199=="
+Content-Type: multipart/mixed; boundary="===============5929908089729034091=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2880771881080067199==
+--===============5929908089729034091==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
+Hi Sumit,
 
-On Wed, 31 Jan 2024 at 23:14, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
+On Fri, Feb 2, 2024 at 10:59=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org> =
+wrote:
 >
-> Hi,
+> Hi Jens,
 >
-> It's been a while since Shyam posted the last version [1] of this patch
-> set. I've pinged Shyam, but so far I've had no reply so I'm trying to make
-> another attempt with the RPMB subsystem. If Shyam has other changes in mind
-> than what I'm adding here I hope we'll find a way to cover that too. I'm
-> calling it version two of the patchset since I'm trying to address all
-> feedback on the previous version even if I'm starting a new thread.
+> On Wed, 31 Jan 2024 at 23:14, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
+> >
+> > Hi,
+> >
+> > It's been a while since Shyam posted the last version [1] of this patch
+> > set. I've pinged Shyam, but so far I've had no reply so I'm trying to make
+> > another attempt with the RPMB subsystem. If Shyam has other changes in mi=
+nd
+> > than what I'm adding here I hope we'll find a way to cover that too. I'm
+> > calling it version two of the patchset since I'm trying to address all
+> > feedback on the previous version even if I'm starting a new thread.
+> >
+> > This patch set introduces a new RPMB subsystem, based on patches from [1],
+> > [2], and [3]. The RPMB subsystem aims at providing access to RPMB
+> > partitions to other kernel drivers, in particular the OP-TEE driver. A new
+> > user space ABI isn't needed, we can instead continue using the already
+> > present ABI when writing the RPMB key during production.
+> >
+> > I've added and removed things to keep only what is needed by the OP-TEE
+> > driver. Since the posting of [3], there has been major changes in the MMC
+> > subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+> > is in practice completely rewritten.
+> >
+> > With this OP-TEE can access RPMB during early boot instead of having to
+> > wait for user space to become available as in the current design [4].
+> > This will benefit the efi variables [5] since we wont rely on userspace as
+> > well as some TPM issues [6] that were solved.
+> >
+> > The OP-TEE driver finds the correct RPMB device to interact with by
+> > iterating over available devices until one is found with a programmed
+> > authentication matching the one OP-TEE is using. This enables coexisting
+> > users of other RPMBs since the owner can be determined by who knows the
+> > authentication key.
+> >
+> > I've put myself as a maintainer for the RPMB subsystem as I have an
+> > interest in the OP-TEE driver to keep this in good shape. However, if you=
+'d
+> > rather see someone else taking the maintainership that's fine too. I'll
+> > help keep the subsystem updated regardless.
+> >
+> > [1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linu=
+x.microsoft.com/
+> > [2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)l=
+inaro.org/
+> > [3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-to=
+mas.winkler(a)intel.com/
+> > [4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.ht=
+ml#rpmb-secure-storage
+> > [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/co=
+mmit/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+> > [6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/co=
+mmit/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+> >
+> > Thanks,
+> > Jens
+> >
+> > Changes since Shyam's RFC:
+> > * Removed the remaining leftover rpmb_cdev_*() function calls
+> > * Refactored the struct rpmb_ops with all the previous ops replaced, in
+> >   some sense closer to [3] with the route_frames() op
+> > * Added rpmb_route_frames()
+> > * Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [=
+3]
+> > * Removed all functions not needed in the OP-TEE use case
+> > * Added "mmc: block: register RPMB partition with the RPMB subsystem", ba=
+sed
+> >   on the commit with the same name in [3]
+> > * Added "optee: probe RPMB device using RPMB subsystem" for integration
+> >   with OP-TEE
+> > * Moved the RPMB driver into drivers/misc/rpmb-core.c
+> > * Added my name to MODULE_AUTHOR() in rpmb-core.c
+> > * Added an rpmb_mutex to serialize access to the IDA
+> > * Removed the target parameter from all rpmb_*() functions since it's
+> >   currently unused
+> >
 >
-> This patch set introduces a new RPMB subsystem, based on patches from [1],
-> [2], and [3]. The RPMB subsystem aims at providing access to RPMB
-> partitions to other kernel drivers, in particular the OP-TEE driver. A new
-> user space ABI isn't needed, we can instead continue using the already
-> present ABI when writing the RPMB key during production.
->
-> I've added and removed things to keep only what is needed by the OP-TEE
-> driver. Since the posting of [3], there has been major changes in the MMC
-> subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
-> is in practice completely rewritten.
->
-> With this OP-TEE can access RPMB during early boot instead of having to
-> wait for user space to become available as in the current design [4].
-> This will benefit the efi variables [5] since we wont rely on userspace as
-> well as some TPM issues [6] that were solved.
->
-> The OP-TEE driver finds the correct RPMB device to interact with by
-> iterating over available devices until one is found with a programmed
-> authentication matching the one OP-TEE is using. This enables coexisting
-> users of other RPMBs since the owner can be determined by who knows the
-> authentication key.
->
-> I've put myself as a maintainer for the RPMB subsystem as I have an
-> interest in the OP-TEE driver to keep this in good shape. However, if you'd
-> rather see someone else taking the maintainership that's fine too. I'll
-> help keep the subsystem updated regardless.
->
-> [1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.=
-microsoft.com/
-> [2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)lin=
-aro.org/
-> [3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-toma=
-s.winkler(a)intel.com/
-> [4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html=
-#rpmb-secure-storage
-> [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
-it/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
-> [6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
-it/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
->
-> Thanks,
-> Jens
->
-> Changes since Shyam's RFC:
-> * Removed the remaining leftover rpmb_cdev_*() function calls
-> * Refactored the struct rpmb_ops with all the previous ops replaced, in
->   some sense closer to [3] with the route_frames() op
-> * Added rpmb_route_frames()
-> * Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
-> * Removed all functions not needed in the OP-TEE use case
-> * Added "mmc: block: register RPMB partition with the RPMB subsystem", based
->   on the commit with the same name in [3]
-> * Added "optee: probe RPMB device using RPMB subsystem" for integration
->   with OP-TEE
-> * Moved the RPMB driver into drivers/misc/rpmb-core.c
-> * Added my name to MODULE_AUTHOR() in rpmb-core.c
-> * Added an rpmb_mutex to serialize access to the IDA
-> * Removed the target parameter from all rpmb_*() functions since it's
->   currently unused
->
+> Thanks for working on this. This is a huge step towards supporting TEE
+> kernel client drivers. IIRC you mentioned offline to test it with
+> virtio RPMB on Qemu. If it works then I would be happy to try it out
+> as well.
 
-Thanks for working on this. This is a huge step towards supporting TEE
-kernel client drivers. IIRC you mentioned offline to test it with
-virtio RPMB on Qemu. If it works then I would be happy to try it out
-as well.
-
-Along with that can you point me to the corresponding OP-TEE OS
-changes? I suppose as you are just adding 3 new RPC calls in patch#3,
-so we should be fine ABI wise although people have to uprev both
-OP-TEE and Linux kernel to get this feature enabled. However, OP-TEE
-should gate those RPCs behind a config flag or can just fallback to
-user-space supplicant if those aren't supported?
-
--Sumit
+I'm sorry, I didn't get far enough with that. I've been testing on a
+HiKey 620 with a removable HardKernel eMMC. So I have two RPMBs to
+test with.
 
 >
->
-> Jens Wiklander (3):
->   rpmb: add Replay Protected Memory Block (RPMB) subsystem
->   mmc: block: register RPMB partition with the RPMB subsystem
->   optee: probe RPMB device using RPMB subsystem
->
->  MAINTAINERS                       |   7 +
->  drivers/misc/Kconfig              |   9 ++
->  drivers/misc/Makefile             |   1 +
->  drivers/misc/rpmb-core.c          | 247 ++++++++++++++++++++++++++++++
->  drivers/mmc/core/block.c          | 177 +++++++++++++++++++++
->  drivers/tee/optee/core.c          |   1 +
->  drivers/tee/optee/ffa_abi.c       |   2 +
->  drivers/tee/optee/optee_private.h |   6 +
->  drivers/tee/optee/optee_rpc_cmd.h |  33 ++++
->  drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++
->  drivers/tee/optee/smc_abi.c       |   2 +
->  include/linux/rpmb.h              | 184 ++++++++++++++++++++++
->  12 files changed, 890 insertions(+)
->  create mode 100644 drivers/misc/rpmb-core.c
->  create mode 100644 include/linux/rpmb.h
->
->
-> base-commit: 41bccc98fb7931d63d03f326a746ac4d429c1dd3
-> --
-> 2.34.1
->
+> Along with that can you point me to the corresponding OP-TEE OS
+> changes? I suppose as you are just adding 3 new RPC calls in patch#3,
+> so we should be fine ABI wise although people have to uprev both
+> OP-TEE and Linux kernel to get this feature enabled. However, OP-TEE
+> should gate those RPCs behind a config flag or can just fallback to
+> user-space supplicant if those aren't supported?
 
---===============2880771881080067199==--
+Here are the OP-TEE OS patches
+https://github.com/jenswi-linaro/optee_os/tree/rpmb_probe .
+Yes, there's automatic fallback to the user-space supplicant if the
+kernel reports that the new RPCs aren't supported and the kernel will
+not use the in-kernel driver unless the new RPCs have been used.
+
+Cheers,
+Jens
+
+>
+> -Sumit
+>
+> >
+> >
+> > Jens Wiklander (3):
+> >   rpmb: add Replay Protected Memory Block (RPMB) subsystem
+> >   mmc: block: register RPMB partition with the RPMB subsystem
+> >   optee: probe RPMB device using RPMB subsystem
+> >
+> >  MAINTAINERS                       |   7 +
+> >  drivers/misc/Kconfig              |   9 ++
+> >  drivers/misc/Makefile             |   1 +
+> >  drivers/misc/rpmb-core.c          | 247 ++++++++++++++++++++++++++++++
+> >  drivers/mmc/core/block.c          | 177 +++++++++++++++++++++
+> >  drivers/tee/optee/core.c          |   1 +
+> >  drivers/tee/optee/ffa_abi.c       |   2 +
+> >  drivers/tee/optee/optee_private.h |   6 +
+> >  drivers/tee/optee/optee_rpc_cmd.h |  33 ++++
+> >  drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++
+> >  drivers/tee/optee/smc_abi.c       |   2 +
+> >  include/linux/rpmb.h              | 184 ++++++++++++++++++++++
+> >  12 files changed, 890 insertions(+)
+> >  create mode 100644 drivers/misc/rpmb-core.c
+> >  create mode 100644 include/linux/rpmb.h
+> >
+> >
+> > base-commit: 41bccc98fb7931d63d03f326a746ac4d429c1dd3
+> > --
+> > 2.34.1
+> >
+
+--===============5929908089729034091==--
 
