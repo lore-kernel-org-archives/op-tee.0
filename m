@@ -1,491 +1,135 @@
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 4/4] remoteproc: stm32: Add support of an OP-TEE TA to
- load the firmware
-Date: Thu, 01 Feb 2024 09:02:35 -0700
-Message-ID: <ZbvAmxHscnbUQGOD@p14s>
-In-Reply-To: <8ede77bb-0fbc-4de2-b51b-67674744b551@foss.st.com>
+Subject: Re: [PATCH v2 0/3] Replay Protected Memory Block (RPMB) subsystem
+Date: Fri, 02 Feb 2024 15:29:30 +0530
+Message-ID: 
+ <CAFA6WYORTtuRsoiDhjCdPwaDHyJ+ixZBu_-VQHPE2RhCprKQ0w@mail.gmail.com>
+In-Reply-To: <20240131174347.510961-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1714704265420228981=="
+Content-Type: multipart/mixed; boundary="===============2880771881080067199=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1714704265420228981==
+--===============2880771881080067199==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Feb 01, 2024 at 04:06:37PM +0100, Arnaud POULIQUEN wrote:
-> hello Mathieu,
->=20
-> On 1/31/24 19:52, Mathieu Poirier wrote:
-> > On Tue, Jan 30, 2024 at 10:13:48AM +0100, Arnaud POULIQUEN wrote:
-> >>
-> >>
-> >> On 1/26/24 18:11, Mathieu Poirier wrote:
-> >>> On Thu, Jan 18, 2024 at 11:04:33AM +0100, Arnaud Pouliquen wrote:
-> >>>> The new TEE remoteproc device is used to manage remote firmware in a
-> >>>> secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
-> >>>> introduced to delegate the loading of the firmware to the trusted
-> >>>> execution context. In such cases, the firmware should be signed and
-> >>>> adhere to the image format defined by the TEE.
-> >>>>
-> >>>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> >>>> ---
-> >>>> V1 to V2 update:
-> >>>> - remove the select "TEE_REMOTEPROC" in STM32_RPROC config as detected=
- by
-> >>>>   the kernel test robot:
-> >>>>      WARNING: unmet direct dependencies detected for TEE_REMOTEPROC
-> >>>>      Depends on [n]: REMOTEPROC [=3Dy] && OPTEE [=3Dn]
-> >>>>      Selected by [y]:
-> >>>>      - STM32_RPROC [=3Dy] && (ARCH_STM32 || COMPILE_TEST [=3Dy]) && RE=
-MOTEPROC [=3Dy]
-> >>>> - Fix initialized trproc variable in  stm32_rproc_probe
-> >>>> ---
-> >>>>  drivers/remoteproc/stm32_rproc.c | 149 +++++++++++++++++++++++++++++--
-> >>>>  1 file changed, 144 insertions(+), 5 deletions(-)
-> >>>>
-> >>>> diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm=
-32_rproc.c
-> >>>> index fcc0001e2657..cf6a21bac945 100644
-> >>>> --- a/drivers/remoteproc/stm32_rproc.c
-> >>>> +++ b/drivers/remoteproc/stm32_rproc.c
-> >>>> @@ -20,6 +20,7 @@
-> >>>>  #include <linux/remoteproc.h>
-> >>>>  #include <linux/reset.h>
-> >>>>  #include <linux/slab.h>
-> >>>> +#include <linux/tee_remoteproc.h>
-> >>>>  #include <linux/workqueue.h>
-> >>>> =20
-> >>>>  #include "remoteproc_internal.h"
-> >>>> @@ -49,6 +50,9 @@
-> >>>>  #define M4_STATE_STANDBY	4
-> >>>>  #define M4_STATE_CRASH		5
-> >>>> =20
-> >>>> +/* Remote processor unique identifier aligned with the Trusted Execut=
-ion Environment definitions */
-> >>>> +#define STM32_MP1_M4_PROC_ID    0
-> >>>> +
-> >>>>  struct stm32_syscon {
-> >>>>  	struct regmap *map;
-> >>>>  	u32 reg;
-> >>>> @@ -90,6 +94,8 @@ struct stm32_rproc {
-> >>>>  	struct stm32_mbox mb[MBOX_NB_MBX];
-> >>>>  	struct workqueue_struct *workqueue;
-> >>>>  	bool hold_boot_smc;
-> >>>> +	bool fw_loaded;
-> >>>> +	struct tee_rproc *trproc;
-> >>>>  	void __iomem *rsc_va;
-> >>>>  };
-> >>>> =20
-> >>>> @@ -257,6 +263,91 @@ static int stm32_rproc_release(struct rproc *rpro=
-c)
-> >>>>  	return err;
-> >>>>  }
-> >>>> =20
-> >>>> +static int stm32_rproc_tee_elf_sanity_check(struct rproc *rproc,
-> >>>> +					    const struct firmware *fw)
-> >>>> +{
-> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
-> >>>> +	unsigned int ret =3D 0;
-> >>>> +
-> >>>> +	if (rproc->state =3D=3D RPROC_DETACHED)
-> >>>> +		return 0;
-> >>>> +
-> >>>> +	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
-> >>>> +	if (!ret)
-> >>>> +		ddata->fw_loaded =3D true;
-> >>>> +
-> >>>> +	return ret;
-> >>>> +}
-> >>>> +
-> >>>> +static int stm32_rproc_tee_elf_load(struct rproc *rproc,
-> >>>> +				    const struct firmware *fw)
-> >>>> +{
-> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
-> >>>> +	unsigned int ret;
-> >>>> +
-> >>>> +	/*
-> >>>> +	 * This function can be called by remote proc for recovery
-> >>>> +	 * without the sanity check. In this case we need to load the firmwa=
-re
-> >>>> +	 * else nothing done here as the firmware has been preloaded for the
-> >>>> +	 * sanity check to be able to parse it for the resource table.
-> >>>> +	 */
-> >>>
-> >>> This comment is very confusing - please consider refactoring. =20
-> >>>
-> >>>> +	if (ddata->fw_loaded)
-> >>>> +		return 0;
-> >>>> +
-> >>>
-> >>> I'm not sure about keeping a flag to indicate the status of the loaded =
-firmware.
-> >>> It is not done for the non-secure method, I don't see why it would be n=
-eeded for
-> >>> the secure one.
-> >>>
-> >>
-> >> The difference is on the sanity check.
-> >> - in rproc_elf_sanity_check we  parse the elf file to verify that it is
-> >> valid.
-> >> - in stm32_rproc_tee_elf_sanity_check we have to do the same, that means=
- to
-> >> authenticate it. the authentication is done during the load.
-> >>
-> >> So this flag is used to avoid to reload it twice time.
-> >> refactoring the comment should help to understand this flag
-> >>
-> >>
-> >> An alternative would be to bypass the sanity check. But this lead to same
-> >> limitation.
-> >> Before loading the firmware in remoteproc_core, we call rproc_parse_fw()=
- that is
-> >> used to get the resource table address. To get it from tee we need to
-> >> authenticate the firmware so load it...
-> >>
-> >=20
-> > I spent a long time thinking about this patchset.  Looking at the code as=
- it
-> > is now, request_firmware() in rproc_boot() is called even when the TEE is
-> > responsible for loading the firmware.  There should be some conditional c=
-ode
-> > that calls either request_firmware() or tee_rproc_load_fw().  The latter =
-should
-> > also be renamed to tee_rproc_request_firmware() to avoid confusion.
->=20
->=20
-> The request_firmware() call is needed in both cases to get the image from t=
-he
-> filesystem. The tee_rproc_load_fw() gets, as input, the struct firmware pro=
-vided
-> by request_firmware().
+Hi Jens,
 
-The cover letter clearly state the secure side is responsible for loading the
-firmware image but here you're telling me it has to be loaded twice.  This is
-very confusing.
-
-I'm also confused as to why stm32_rproc_tee_elf_sanity_check() is calling
-tee_rproc_load_fw().  There should be one call to load the firmware and anoth=
-er
-to perform a sanity check on it.  If the sanity check is done at load time by
-the secure world then ops::sanity_check() is NULL.
-
-Most of what this patchset does makes sense, but some of it needs to be moved
-around. =20
-
-Thanks,
-Mathieu
-
->=20
-> If we want to integrate in remoteproc_core the solution could probably have=
- to
-> create the equivalent of the rproc_fw_boot() to load the firmware with an
-> external method. Here is an example based on a new rproc_ops ( not tested)
->=20
-> + static int rproc_fw_ext_boot(struct rproc *rproc, const struct firmware *=
-fw)
-> + {
-> + 	struct device *dev =3D &rproc->dev;
-> + 	const char *name =3D rproc->firmware;
-> + 	int ret;
-> +
-> +
-> + 	dev_info(dev, "Booting fw image %s, size %zd\n", name, fw->size);
-> + =09
-> + 	/* ops to load and start the remoteprocessor */
-> + 	ret =3D rproc->ops->boot(rproc, fw);
-> + 	if (ret)
-> + 		return ret;
-> +
-> + 	/*
-> + 	 * if enabling an IOMMU isn't relevant for this rproc, this is
-> + 	 * just a nop
-> + 	 */
-> + 	ret =3D rproc_enable_iommu(rproc);
-> + 	if (ret) {
-> + 		dev_err(dev, "can't enable iommu: %d\n", ret);
-> + 		return ret;
-> + 	}
-> +
-> + 	/* Prepare rproc for firmware loading if needed */
-> + 	ret =3D rproc_prepare_device(rproc);
-> + 	if (ret) {
-> + 		dev_err(dev, "can't prepare rproc %s: %d\n", rproc->name, ret);
-> + 		goto disable_iommu;
-> + 	}
-> +
-> + 	ret =3D rproc_set_rsc_table(rproc);
-> + 	if (ret) {
-> + 		dev_err(dev, "can't load resource table: %d\n", ret);
-> + 		goto unprepare_device;
-> + 	}
-> +
-> +
-> + 	/* reset max_notifyid */
-> + 	rproc->max_notifyid =3D -1;
-> +
-> + 	/* reset handled vdev */
-> + 	rproc->nb_vdev =3D 0;
-> +
-> + 	/* handle fw resources which are required to boot rproc */
-> + 	ret =3D rproc_handle_resources(rproc, rproc_loading_handlers);
-> + 	if (ret) {
-> + 		dev_err(dev, "Failed to process resources: %d\n", ret);
-> + 		goto clean_up_resources;
-> + 	}
-> +
-> + 	/* Allocate carveout resources associated to rproc */
-> + 	ret =3D rproc_alloc_registered_carveouts(rproc);
-> + 	if (ret) {
-> + 		dev_err(dev, "Failed to allocate associated carveouts: %d\n",
-> + 			ret);
-> + 		goto clean_up_resources;
-> + 	}
-> +
-> + 	return 0;
-> +
-> + clean_up_resources:
-> + 	rproc_resource_cleanup(rproc);
-> + unprepare_rproc:
-> + 	/* release HW resources if needed */
-> + 	rproc_unprepare_device(rproc);
-> + disable_iommu:
-> + 	rproc_disable_iommu(rproc);
-> + 	return ret;
-> + }
->=20
->=20
-> int rproc_boot(struct rproc *rproc)
-> {
-> [...]
->=20
-> - 		ret =3D rproc_fw_boot(rproc, firmware_p);
-> + 		if(rproc->ops->boot)
-> + 			ret =3D rproc_fw_ext_boot(rproc, firmware_p);
-> + 		else
-> + 			ret =3D rproc_fw_boot(rproc, firmware_p);
->=20
-> Another advantage of this solution is that it opens the framework to other
-> formats. For instance it could be a way to support dtb format requested in =
-[RFC]
-> Passing device-tree to remoteproc [1].
->=20
-> [1]
-> https://lore.kernel.org/linux-remoteproc/f67cd822-4e29-71f2-7c42-e11dbaa6cd=
-8c(a)kalrayinc.com/T/#t
->=20
+On Wed, 31 Jan 2024 at 23:14, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
+>
+> Hi,
+>
+> It's been a while since Shyam posted the last version [1] of this patch
+> set. I've pinged Shyam, but so far I've had no reply so I'm trying to make
+> another attempt with the RPMB subsystem. If Shyam has other changes in mind
+> than what I'm adding here I hope we'll find a way to cover that too. I'm
+> calling it version two of the patchset since I'm trying to address all
+> feedback on the previous version even if I'm starting a new thread.
+>
+> This patch set introduces a new RPMB subsystem, based on patches from [1],
+> [2], and [3]. The RPMB subsystem aims at providing access to RPMB
+> partitions to other kernel drivers, in particular the OP-TEE driver. A new
+> user space ABI isn't needed, we can instead continue using the already
+> present ABI when writing the RPMB key during production.
+>
+> I've added and removed things to keep only what is needed by the OP-TEE
+> driver. Since the posting of [3], there has been major changes in the MMC
+> subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+> is in practice completely rewritten.
+>
+> With this OP-TEE can access RPMB during early boot instead of having to
+> wait for user space to become available as in the current design [4].
+> This will benefit the efi variables [5] since we wont rely on userspace as
+> well as some TPM issues [6] that were solved.
+>
+> The OP-TEE driver finds the correct RPMB device to interact with by
+> iterating over available devices until one is found with a programmed
+> authentication matching the one OP-TEE is using. This enables coexisting
+> users of other RPMBs since the owner can be determined by who knows the
+> authentication key.
+>
+> I've put myself as a maintainer for the RPMB subsystem as I have an
+> interest in the OP-TEE driver to keep this in good shape. However, if you'd
+> rather see someone else taking the maintainership that's fine too. I'll
+> help keep the subsystem updated regardless.
+>
+> [1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.=
+microsoft.com/
+> [2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)lin=
+aro.org/
+> [3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-toma=
+s.winkler(a)intel.com/
+> [4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html=
+#rpmb-secure-storage
+> [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
+it/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+> [6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
+it/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+>
 > Thanks,
-> Arnaud
->=20
->=20
->=20
-> >=20
-> > I touched on that before but please rename rproc_tee_get_rsc_table() to
-> > rproc_tee_elf_load_rsc_table().  I also suggest to introduce a new functi=
-on,
-> > rproc_tee_get_loaded_rsc_table() that would be called from
-> > rproc_tee_elf_load_rsc_table().  That way we don't need trproc->rsc_va.  =
+> Jens
+>
+> Changes since Shyam's RFC:
+> * Removed the remaining leftover rpmb_cdev_*() function calls
+> * Refactored the struct rpmb_ops with all the previous ops replaced, in
+>   some sense closer to [3] with the route_frames() op
+> * Added rpmb_route_frames()
+> * Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
+> * Removed all functions not needed in the OP-TEE use case
+> * Added "mmc: block: register RPMB partition with the RPMB subsystem", based
+>   on the commit with the same name in [3]
+> * Added "optee: probe RPMB device using RPMB subsystem" for integration
+>   with OP-TEE
+> * Moved the RPMB driver into drivers/misc/rpmb-core.c
+> * Added my name to MODULE_AUTHOR() in rpmb-core.c
+> * Added an rpmb_mutex to serialize access to the IDA
+> * Removed the target parameter from all rpmb_*() functions since it's
+>   currently unused
+>
 
-> >=20
-> > I also think tee_rproc should be renamed to "rproc_tee_interface" and fol=
-ded
-> > under struct rproc. =20
-> >=20
-> > With the above most of the problems with the current implementation should
-> > naturally go away.
-> >=20
-> > Thanks,
-> > Mathieu
-> >=20
-> >>
-> >>>> +	ret =3D tee_rproc_load_fw(ddata->trproc, fw);
-> >>>> +	if (ret)
-> >>>> +		return ret;
-> >>>> +	ddata->fw_loaded =3D true;
-> >>>> +
-> >>>> +	/* Update the resource table parameters. */
-> >>>> +	if (rproc_tee_get_rsc_table(ddata->trproc)) {
-> >>>> +		/* No resource table: reset the related fields. */
-> >>>> +		rproc->cached_table =3D NULL;
-> >>>> +		rproc->table_ptr =3D NULL;
-> >>>> +		rproc->table_sz =3D 0;
-> >>>> +	}
-> >>>> +
-> >>>> +	return 0;
-> >>>> +}
-> >>>> +
-> >>>> +static struct resource_table *
-> >>>> +stm32_rproc_tee_elf_find_loaded_rsc_table(struct rproc *rproc,
-> >>>> +					  const struct firmware *fw)
-> >>>> +{
-> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
-> >>>> +
-> >>>> +	return tee_rproc_get_loaded_rsc_table(ddata->trproc);
-> >>>> +}
-> >>>> +
-> >>>> +static int stm32_rproc_tee_start(struct rproc *rproc)
-> >>>> +{
-> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
-> >>>> +
-> >>>> +	return tee_rproc_start(ddata->trproc);
-> >>>> +}
-> >>>> +
-> >>>> +static int stm32_rproc_tee_attach(struct rproc *rproc)
-> >>>> +{
-> >>>> +	/* Nothing to do, remote proc already started by the secured context=
-. */
-> >>>> +	return 0;
-> >>>> +}
-> >>>> +
-> >>>> +static int stm32_rproc_tee_stop(struct rproc *rproc)
-> >>>> +{
-> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
-> >>>> +	int err;
-> >>>> +
-> >>>> +	stm32_rproc_request_shutdown(rproc);
-> >>>> +
-> >>>> +	err =3D tee_rproc_stop(ddata->trproc);
-> >>>> +	if (err)
-> >>>> +		return err;
-> >>>> +
-> >>>> +	ddata->fw_loaded =3D false;
-> >>>> +
-> >>>> +	return stm32_rproc_release(rproc);
-> >>>> +}
-> >>>> +
-> >>>>  static int stm32_rproc_prepare(struct rproc *rproc)
-> >>>>  {
-> >>>>  	struct device *dev =3D rproc->dev.parent;
-> >>>> @@ -319,7 +410,14 @@ static int stm32_rproc_prepare(struct rproc *rpro=
-c)
-> >>>> =20
-> >>>>  static int stm32_rproc_parse_fw(struct rproc *rproc, const struct fir=
-mware *fw)
-> >>>>  {
-> >>>> -	if (rproc_elf_load_rsc_table(rproc, fw))
-> >>>> +	struct stm32_rproc *ddata =3D rproc->priv;
-> >>>> +	int ret;
-> >>>> +
-> >>>> +	if (ddata->trproc)
-> >>>> +		ret =3D rproc_tee_get_rsc_table(ddata->trproc);
-> >>>> +	else
-> >>>> +		ret =3D rproc_elf_load_rsc_table(rproc, fw);
-> >>>> +	if (ret)
-> >>>>  		dev_warn(&rproc->dev, "no resource table found for this firmware\n"=
-);
-> >>>> =20
-> >>>>  	return 0;
-> >>>> @@ -693,8 +791,22 @@ static const struct rproc_ops st_rproc_ops =3D {
-> >>>>  	.get_boot_addr	=3D rproc_elf_get_boot_addr,
-> >>>>  };
-> >>>> =20
-> >>>> +static const struct rproc_ops st_rproc_tee_ops =3D {
-> >>>> +	.prepare	=3D stm32_rproc_prepare,
-> >>>> +	.start		=3D stm32_rproc_tee_start,
-> >>>> +	.stop		=3D stm32_rproc_tee_stop,
-> >>>> +	.attach		=3D stm32_rproc_tee_attach,
-> >>>> +	.kick		=3D stm32_rproc_kick,
-> >>>> +	.parse_fw	=3D stm32_rproc_parse_fw,
-> >>>> +	.find_loaded_rsc_table =3D stm32_rproc_tee_elf_find_loaded_rsc_table,
-> >>>> +	.get_loaded_rsc_table =3D stm32_rproc_get_loaded_rsc_table,
-> >>>> +	.sanity_check	=3D stm32_rproc_tee_elf_sanity_check,
-> >>>> +	.load		=3D stm32_rproc_tee_elf_load,
-> >>>> +};
-> >>>> +
-> >>>>  static const struct of_device_id stm32_rproc_match[] =3D {
-> >>>> -	{ .compatible =3D "st,stm32mp1-m4" },
-> >>>> +	{.compatible =3D "st,stm32mp1-m4",},
-> >>>> +	{.compatible =3D "st,stm32mp1-m4-tee",},
-> >>>>  	{},
-> >>>>  };
-> >>>>  MODULE_DEVICE_TABLE(of, stm32_rproc_match);
-> >>>> @@ -853,6 +965,7 @@ static int stm32_rproc_probe(struct platform_devic=
-e *pdev)
-> >>>>  	struct device *dev =3D &pdev->dev;
-> >>>>  	struct stm32_rproc *ddata;
-> >>>>  	struct device_node *np =3D dev->of_node;
-> >>>> +	struct tee_rproc *trproc =3D NULL;
-> >>>>  	struct rproc *rproc;
-> >>>>  	unsigned int state;
-> >>>>  	int ret;
-> >>>> @@ -861,11 +974,31 @@ static int stm32_rproc_probe(struct platform_dev=
-ice *pdev)
-> >>>>  	if (ret)
-> >>>>  		return ret;
-> >>>> =20
-> >>>> -	rproc =3D rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*dd=
-ata));
-> >>>> -	if (!rproc)
-> >>>> -		return -ENOMEM;
-> >>>> +	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
-> >>>> +		trproc =3D tee_rproc_register(dev, STM32_MP1_M4_PROC_ID);
-> >>>> +		if (IS_ERR(trproc)) {
-> >>>> +			dev_err_probe(dev, PTR_ERR(trproc),
-> >>>> +				      "signed firmware not supported by TEE\n");
-> >>>> +			return PTR_ERR(trproc);
-> >>>> +		}
-> >>>> +		/*
-> >>>> +		 * Delegate the firmware management to the secure context.
-> >>>> +		 * The firmware loaded has to be signed.
-> >>>> +		 */
-> >>>> +		dev_info(dev, "Support of signed firmware only\n");
-> >>>
-> >>> Not sure what this adds.  Please remove.
-> >>
-> >> This is used to inform the user that only a signed firmware can be loade=
-d, not
-> >> an ELF file.
-> >> I have a patch in my pipe to provide the supported format in the debugfs=
-. In a
-> >> first step, I can suppress this message and we can revisit the issue whe=
-n I push
-> >> the debugfs proposal.
-> >>
-> >> Thanks,
-> >> Arnaud
-> >>
-> >>>
-> >>>> +	}
-> >>>> +	rproc =3D rproc_alloc(dev, np->name,
-> >>>> +			    trproc ? &st_rproc_tee_ops : &st_rproc_ops,
-> >>>> +			    NULL, sizeof(*ddata));
-> >>>> +	if (!rproc) {
-> >>>> +		ret =3D -ENOMEM;
-> >>>> +		goto free_tee;
-> >>>> +	}
-> >>>> =20
-> >>>>  	ddata =3D rproc->priv;
-> >>>> +	ddata->trproc =3D trproc;
-> >>>> +	if (trproc)
-> >>>> +		trproc->rproc =3D rproc;
-> >>>> =20
-> >>>>  	rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
-> >>>> =20
-> >>>> @@ -916,6 +1049,10 @@ static int stm32_rproc_probe(struct platform_dev=
-ice *pdev)
-> >>>>  		device_init_wakeup(dev, false);
-> >>>>  	}
-> >>>>  	rproc_free(rproc);
-> >>>> +free_tee:
-> >>>> +	if (trproc)
-> >>>> +		tee_rproc_unregister(trproc);
-> >>>> +
-> >>>>  	return ret;
-> >>>>  }
-> >>>> =20
-> >>>> @@ -937,6 +1074,8 @@ static void stm32_rproc_remove(struct platform_de=
-vice *pdev)
-> >>>>  		device_init_wakeup(dev, false);
-> >>>>  	}
-> >>>>  	rproc_free(rproc);
-> >>>> +	if (ddata->trproc)
-> >>>> +		tee_rproc_unregister(ddata->trproc);
-> >>>>  }
-> >>>> =20
-> >>>>  static int stm32_rproc_suspend(struct device *dev)
-> >>>> --=20
-> >>>> 2.25.1
-> >>>>
+Thanks for working on this. This is a huge step towards supporting TEE
+kernel client drivers. IIRC you mentioned offline to test it with
+virtio RPMB on Qemu. If it works then I would be happy to try it out
+as well.
 
---===============1714704265420228981==--
+Along with that can you point me to the corresponding OP-TEE OS
+changes? I suppose as you are just adding 3 new RPC calls in patch#3,
+so we should be fine ABI wise although people have to uprev both
+OP-TEE and Linux kernel to get this feature enabled. However, OP-TEE
+should gate those RPCs behind a config flag or can just fallback to
+user-space supplicant if those aren't supported?
+
+-Sumit
+
+>
+>
+> Jens Wiklander (3):
+>   rpmb: add Replay Protected Memory Block (RPMB) subsystem
+>   mmc: block: register RPMB partition with the RPMB subsystem
+>   optee: probe RPMB device using RPMB subsystem
+>
+>  MAINTAINERS                       |   7 +
+>  drivers/misc/Kconfig              |   9 ++
+>  drivers/misc/Makefile             |   1 +
+>  drivers/misc/rpmb-core.c          | 247 ++++++++++++++++++++++++++++++
+>  drivers/mmc/core/block.c          | 177 +++++++++++++++++++++
+>  drivers/tee/optee/core.c          |   1 +
+>  drivers/tee/optee/ffa_abi.c       |   2 +
+>  drivers/tee/optee/optee_private.h |   6 +
+>  drivers/tee/optee/optee_rpc_cmd.h |  33 ++++
+>  drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++
+>  drivers/tee/optee/smc_abi.c       |   2 +
+>  include/linux/rpmb.h              | 184 ++++++++++++++++++++++
+>  12 files changed, 890 insertions(+)
+>  create mode 100644 drivers/misc/rpmb-core.c
+>  create mode 100644 include/linux/rpmb.h
+>
+>
+> base-commit: 41bccc98fb7931d63d03f326a746ac4d429c1dd3
+> --
+> 2.34.1
+>
+
+--===============2880771881080067199==--
 
