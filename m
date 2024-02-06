@@ -1,149 +1,274 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 3/3] optee: probe RPMB device using RPMB subsystem
-Date: Tue, 06 Feb 2024 16:42:40 +0530
+Subject: 
+ Re: [PATCH v2 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
+Date: Tue, 06 Feb 2024 13:33:27 +0100
 Message-ID: 
- <CAFA6WYPATEXUNfYHA1abup=kYBREJq7y=D9d1DdkJCxXqPhgAQ@mail.gmail.com>
-In-Reply-To: <20240131174347.510961-4-jens.wiklander@linaro.org>
+ <CAPDyKFqNhGWKm=+7niNsjXOjEJE3U=o7dRNG=JqpptUSo9G-ug@mail.gmail.com>
+In-Reply-To: <20240131174347.510961-2-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5983098426674662588=="
+Content-Type: multipart/mixed; boundary="===============1214933456218262151=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5983098426674662588==
+--===============1214933456218262151==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
-
-On Wed, 31 Jan 2024 at 23:14, Jens Wiklander <jens.wiklander@linaro.org> wr=
+On Wed, 31 Jan 2024 at 18:44, Jens Wiklander <jens.wiklander@linaro.org> wr=
 ote:
 >
-> Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe and
-> use an RPMB device via the RPBM subsystem instead of passing the RPMB
-> frames via tee-supplicant in user space. A fallback mechanism is kept to
-> route RPMB frames via tee-supplicant if the RPMB subsystem isn't
-> available.
+> A number of storage technologies support a specialised hardware
+> partition designed to be resistant to replay attacks. The underlying
+> HW protocols differ but the operations are common. The RPMB partition
+> cannot be accessed via standard block layer, but by a set of specific
+> RPMB commands: WRITE, READ, GET_WRITE_COUNTER, and PROGRAM_KEY. Such a
+> partition provides authenticated and replay protected access, hence
+> suitable as a secure storage.
 >
-> The OP-TEE RPC ABI is extended to support iterating over all RPMB
-> devices until one is found with the expected RPMB key already
-> programmed.
+> The initial aim of this patch is to provide a simple RPMB Driver which
+> can be accessed by the optee driver to facilitate early RPMB access to
+> OP-TEE OS (secure OS) during the boot time.
+
+How early do we expect OP-TEE to need RPMB access?
+
+The way things work for mmc today, is that the eMMC card gets
+discovered/probed via a workqueue. The work is punted by the mmc host
+driver (typically a module-platform-driver), when it has probed
+successfully.
+
+The point is, it looks like we need some kind of probe deferral
+mechanism too. Whether we want the OP-TEE driver to manage this itself
+or whether we should let rpmb_dev_find_device() deal with it, I don't
+know.
+
 >
+> A TEE device driver can claim the RPMB interface, for example, via
+> class_interface_register() or rpmb_dev_find_device(). The RPMB driver
+> provides a callback to route RPMB frames to the RPMB device accessible
+> via rpmb_route_frames().
+
+By looking at the design of the interface, I do like it. It's simple
+and straightforward.
+
+However, I wonder if you considered avoiding using a class-device
+altogether? Even if it helps with lifecycle problems and the
+ops-lookup, we really don't need another struct device with a sysfs
+node, etc.
+
+To deal with the lifecycle issue, we could probably just add reference
+counting for the corresponding struct device that we already have at
+hand, which represents the eMMC/UFS/NVME card. That together with a
+simple list that contains the registered rpmb ops. But I may be
+overlooking something, so perhaps it's more complicated than that?
+
+>
+> The detailed operation of implementing the access is left to the TEE
+> device driver itself.
+>
+> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
+> Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
->  drivers/tee/optee/core.c          |   1 +
->  drivers/tee/optee/ffa_abi.c       |   2 +
->  drivers/tee/optee/optee_private.h |   6 +
->  drivers/tee/optee/optee_rpc_cmd.h |  33 +++++
->  drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++++++
->  drivers/tee/optee/smc_abi.c       |   2 +
->  6 files changed, 265 insertions(+)
+>  MAINTAINERS              |   7 ++
+>  drivers/misc/Kconfig     |   9 ++
+>  drivers/misc/Makefile    |   1 +
+>  drivers/misc/rpmb-core.c | 247 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/rpmb.h     | 184 +++++++++++++++++++++++++++++
+>  5 files changed, 448 insertions(+)
+>  create mode 100644 drivers/misc/rpmb-core.c
+>  create mode 100644 include/linux/rpmb.h
 >
-
-[snip]
-
->  #endif /*__OPTEE_RPC_CMD_H*/
-> diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-> index e69bc6380683..6fd6f99dafab 100644
-> --- a/drivers/tee/optee/rpc.c
-> +++ b/drivers/tee/optee/rpc.c
-> @@ -7,6 +7,7 @@
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 8999497011a2..e83152c42499 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -19012,6 +19012,13 @@ T:     git git://linuxtv.org/media_tree.git
+>  F:     Documentation/devicetree/bindings/media/allwinner,sun8i-a83t-de2-ro=
+tate.yaml
+>  F:     drivers/media/platform/sunxi/sun8i-rotate/
 >
->  #include <linux/delay.h>
->  #include <linux/i2c.h>
+> +RPMB SUBSYSTEM
+> +M:     Jens Wiklander <jens.wiklander@linaro.org>
+> +L:     linux-kernel(a)vger.kernel.org
+> +S:     Supported
+> +F:     drivers/misc/rpmb-core.c
+> +F:     include/linux/rpmb.h
+> +
+>  RPMSG TTY DRIVER
+>  M:     Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+>  L:     linux-remoteproc(a)vger.kernel.org
+> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> index 4fb291f0bf7c..891aa5763666 100644
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -104,6 +104,15 @@ config PHANTOM
+>           If you choose to build module, its name will be phantom. If unsur=
+e,
+>           say N here.
+>
+> +config RPMB
+> +       tristate "RPMB partition interface"
+
+Should we add a "depends on MMC"? (We can add the other NVME and UFS
+later on too).
+
+> +       help
+> +         Unified RPMB unit interface for RPMB capable devices such as eMMC=
+ and
+> +         UFS. Provides interface for in kernel security controllers to acc=
+ess
+> +         RPMB unit.
+> +
+> +         If unsure, select N.
+> +
+>  config TIFM_CORE
+>         tristate "TI Flash Media interface support"
+>         depends on PCI
+> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+> index ea6ea5bbbc9c..8af058ad1df4 100644
+> --- a/drivers/misc/Makefile
+> +++ b/drivers/misc/Makefile
+> @@ -15,6 +15,7 @@ obj-$(CONFIG_LKDTM)           +=3D lkdtm/
+>  obj-$(CONFIG_TIFM_CORE)        +=3D tifm_core.o
+>  obj-$(CONFIG_TIFM_7XX1)        +=3D tifm_7xx1.o
+>  obj-$(CONFIG_PHANTOM)          +=3D phantom.o
+> +obj-$(CONFIG_RPMB)             +=3D rpmb-core.o
+>  obj-$(CONFIG_QCOM_COINCELL)    +=3D qcom-coincell.o
+>  obj-$(CONFIG_QCOM_FASTRPC)     +=3D fastrpc.o
+>  obj-$(CONFIG_SENSORS_BH1770)   +=3D bh1770glc.o
+> diff --git a/drivers/misc/rpmb-core.c b/drivers/misc/rpmb-core.c
+> new file mode 100644
+> index 000000000000..a3c289051687
+> --- /dev/null
+> +++ b/drivers/misc/rpmb-core.c
+> @@ -0,0 +1,247 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright(c) 2015 - 2019 Intel Corporation. All rights reserved.
+> + * Copyright(c) 2021 - 2024 Linaro Ltd.
+> + */
+> +#include <linux/device.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/list.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
 > +#include <linux/rpmb.h>
->  #include <linux/slab.h>
->  #include <linux/tee_drv.h>
->  #include "optee_private.h"
-> @@ -255,6 +256,217 @@ void optee_rpc_cmd_free_suppl(struct tee_context *ctx=
-, struct tee_shm *shm)
->         optee_supp_thrd_req(ctx, OPTEE_RPC_CMD_SHM_FREE, 1, &param);
->  }
->
-> +static void handle_rpc_func_rpmb_probe_reset(struct tee_context *ctx,
-> +                                            struct optee *optee,
-> +                                            struct optee_msg_arg *arg)
+> +#include <linux/slab.h>
+> +
+> +static DEFINE_IDA(rpmb_ida);
+> +static DEFINE_MUTEX(rpmb_mutex);
+> +
+> +/**
+> + * rpmb_dev_get() - increase rpmb device ref counter
+> + * @rdev: rpmb device
+> + */
+> +struct rpmb_dev *rpmb_dev_get(struct rpmb_dev *rdev)
 > +{
-> +       struct tee_param params[1];
-> +
-> +       if (!IS_ENABLED(CONFIG_RPMB)) {
-> +               handle_rpc_supp_cmd(ctx, optee, arg);
-> +               return;
-> +       }
-> +
-> +       if (arg->num_params !=3D ARRAY_SIZE(params) ||
-> +           optee->ops->from_msg_param(optee, params, arg->num_params,
-> +                                      arg->params) ||
-> +           params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) {
-> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> +               return;
-> +       }
-> +
-> +       params[0].u.value.a =3D OPTEE_RPC_SHM_TYPE_KERNEL;
-> +       params[0].u.value.b =3D 0;
-> +       params[0].u.value.c =3D 0;
-> +       if (optee->ops->to_msg_param(optee, arg->params,
-> +                                    arg->num_params, params)) {
-> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> +               return;
-> +       }
-> +
-> +       mutex_lock(&optee->rpmb_dev_mutex);
-> +       rpmb_dev_put(optee->rpmb_dev);
-> +       optee->rpmb_dev =3D NULL;
-> +       mutex_unlock(&optee->rpmb_dev_mutex);
-> +
-> +       arg->ret =3D TEEC_SUCCESS;
+> +       if (rdev)
+> +               get_device(&rdev->dev);
+> +       return rdev;
 > +}
+> +EXPORT_SYMBOL_GPL(rpmb_dev_get);
 > +
-> +static int rpc_rpmb_match(struct device *dev, const void *data)
+> +/**
+> + * rpmb_dev_put() - decrease rpmb device ref counter
+> + * @rdev: rpmb device
+> + */
+> +void rpmb_dev_put(struct rpmb_dev *rdev)
 > +{
-> +       return 1;
+> +       if (rdev)
+> +               put_device(&rdev->dev);
 > +}
+> +EXPORT_SYMBOL_GPL(rpmb_dev_put);
 > +
-> +static void handle_rpc_func_rpmb_probe_next(struct tee_context *ctx,
-> +                                           struct optee *optee,
-> +                                           struct optee_msg_arg *arg)
+> +/**
+> + * rpmb_route_frames() - route rpmb frames to rpmb device
+> + * @rdev:      rpmb device
+> + * @req:       rpmb request frames
+> + * @req_len:   length of rpmb request frames in bytes
+> + * @rsp:       rpmb response frames
+> + * @rsp_len:   length of rpmb response frames in bytes
+> + *
+> + * @return < 0 on failure
+> + */
+> +int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
+> +                     unsigned int req_len, u8 *rsp, unsigned int rsp_len)
 > +{
-> +       struct rpmb_dev *start_rdev;
-> +       struct rpmb_dev *rdev;
-> +       struct tee_param params[2];
-> +       void *buf;
+> +       struct rpmb_frame *frm =3D (struct rpmb_frame *)req;
+
+Is there a reason why we are passing an u8 *req, in favor of a
+"rpmb_frame *frame" directly as the in-parameter?
+
+> +       u16 req_type;
+> +       bool write;
 > +
-> +       if (!IS_ENABLED(CONFIG_RPMB)) {
-> +               handle_rpc_supp_cmd(ctx, optee, arg);
-> +               return;
+> +       if (!req || req_len < sizeof(*frm) || !rsp || !rsp_len)
+> +               return -EINVAL;
+> +
+> +       req_type =3D be16_to_cpu(frm->req_resp);
+> +       switch (req_type) {
+> +       case RPMB_PROGRAM_KEY:
+> +               if (req_len !=3D sizeof(struct rpmb_frame) ||
+> +                   rsp_len !=3D sizeof(struct rpmb_frame))
+> +                       return -EINVAL;
+> +               write =3D true;
+> +               break;
+> +       case RPMB_GET_WRITE_COUNTER:
+> +               if (req_len !=3D sizeof(struct rpmb_frame) ||
+> +                   rsp_len !=3D sizeof(struct rpmb_frame))
+> +                       return -EINVAL;
+> +               write =3D false;
+> +               break;
+> +       case RPMB_WRITE_DATA:
+> +               if (req_len % sizeof(struct rpmb_frame) ||
+> +                   rsp_len !=3D sizeof(struct rpmb_frame))
+> +                       return -EINVAL;
+> +               write =3D true;
+> +               break;
+> +       case RPMB_READ_DATA:
+> +               if (req_len !=3D sizeof(struct rpmb_frame) ||
+> +                   rsp_len % sizeof(struct rpmb_frame))
+> +                       return -EINVAL;
+> +               write =3D false;
+> +               break;
+> +       default:
+> +               return -EINVAL;
 > +       }
 > +
-> +       if (arg->num_params !=3D ARRAY_SIZE(params) ||
-> +           optee->ops->from_msg_param(optee, params, arg->num_params,
-> +                                      arg->params) ||
-> +           params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
-> +           params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
-> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> +               return;
-> +       }
-> +       buf =3D tee_shm_get_va(params[1].u.memref.shm,
-> +                            params[1].u.memref.shm_offs);
-> +       if (!buf) {
-> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-> +               return;
-> +       }
+> +       return rdev->ops->route_frames(rdev->dev.parent, write,
+> +                                      req, req_len, rsp, rsp_len);
+> +}
+> +EXPORT_SYMBOL_GPL(rpmb_route_frames);
+
+[...]
+
+
 > +
-> +       mutex_lock(&optee->rpmb_dev_mutex);
-> +       start_rdev =3D optee->rpmb_dev;
-> +       rdev =3D rpmb_dev_find_device(NULL, start_rdev, rpc_rpmb_match);
-> +       rpmb_dev_put(start_rdev);
-> +       optee->rpmb_dev =3D rdev;
-> +       mutex_unlock(&optee->rpmb_dev_mutex);
-> +
-> +       if (!rdev) {
-> +               arg->ret =3D TEEC_ERROR_ITEM_NOT_FOUND;
+> +/**
+> + * enum rpmb_type - type of underlaying storage technology
+> + *
+> + * @RPMB_TYPE_EMMC  : emmc (JESD84-B50.1)
+> + * @RPMB_TYPE_UFS   : UFS (JESD220)
+> + * @RPMB_TYPE_NVME  : NVM Express
+> + */
+> +enum rpmb_type {
+> +       RPMB_TYPE_EMMC,
+> +       RPMB_TYPE_UFS,
+> +       RPMB_TYPE_NVME,
+> +};
 
-One of the major comments I have here is regarding how this implicit
-dependency on eMMC driver probe is met here. What if OP-TEE based
-fTPM/EFI client driver probes before eMMC driver?
+In what way do we expect these to be useful?
 
--Sumit
+Perhaps we should add some information about this, because currently
+in the series they seem not to be used. Maybe the OP-TEE driver needs
+it when extending support to NVME and UFS?
 
---===============5983098426674662588==--
+[...]
+
+Kind regards
+Uffe
+
+--===============1214933456218262151==--
 
