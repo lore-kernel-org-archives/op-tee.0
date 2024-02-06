@@ -1,107 +1,149 @@
-From: Igor Zhbanov <izh1979@gmail.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Why UBSAN is marked as using a lot of memory?
-Date: Mon, 05 Feb 2024 19:44:58 +0300
+Subject: Re: [PATCH v2 3/3] optee: probe RPMB device using RPMB subsystem
+Date: Tue, 06 Feb 2024 16:42:40 +0530
 Message-ID: 
- <CAEUiM9Mow2oL1UTti9F0EOA-1KqgLrAS63TptCfFWgrVCKhi0A@mail.gmail.com>
-In-Reply-To: <
- <CA+NB=maN2Zuv1yRXomU9oHr1Ea2qahfwVAqtPn4yNNKzuoPS1Q@mail.gmail.com>>
+ <CAFA6WYPATEXUNfYHA1abup=kYBREJq7y=D9d1DdkJCxXqPhgAQ@mail.gmail.com>
+In-Reply-To: <20240131174347.510961-4-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2546662758839798235=="
+Content-Type: multipart/mixed; boundary="===============5983098426674662588=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2546662758839798235==
+--===============5983098426674662588==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-J=C3=A9r=C3=B4me, thanks.
+Hi Jens,
 
-=D0=BF=D0=BD, 5 =D1=84=D0=B5=D0=B2=D1=80. 2024=E2=80=AF=D0=B3. =D0=B2 17:22, =
-J=C3=A9r=C3=B4me Forissier <jerome.forissier@linaro.org>:
-
-> I don't know, but the latest info about USBSAN is that it fails to build
-> on the master branch so I can't even try it and check the memory usage :-/
+On Wed, 31 Jan 2024 at 23:14, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
 >
-> See https://github.com/OP-TEE/optee_os/issues/6463.
+> Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe and
+> use an RPMB device via the RPBM subsystem instead of passing the RPMB
+> frames via tee-supplicant in user space. A fallback mechanism is kept to
+> route RPMB frames via tee-supplicant if the RPMB subsystem isn't
+> available.
+>
+> The OP-TEE RPC ABI is extended to support iterating over all RPMB
+> devices until one is found with the expected RPMB key already
+> programmed.
+>
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>  drivers/tee/optee/core.c          |   1 +
+>  drivers/tee/optee/ffa_abi.c       |   2 +
+>  drivers/tee/optee/optee_private.h |   6 +
+>  drivers/tee/optee/optee_rpc_cmd.h |  33 +++++
+>  drivers/tee/optee/rpc.c           | 221 ++++++++++++++++++++++++++++++
+>  drivers/tee/optee/smc_abi.c       |   2 +
+>  6 files changed, 265 insertions(+)
 >
 
-I was curious, how UBSAN is affecting the Linux kernel, so, I've built
-openSUSE kernel
-on x86_64 with the default distribution configuration, then checked the
-sized of the stripped
-files vmlinux and vmlinux.o.
+[snip]
 
-# CONFIG_UBSAN is not set:
-vmlinux   48 237 768
-vmlinux.o 31 664 696
+>  #endif /*__OPTEE_RPC_CMD_H*/
+> diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
+> index e69bc6380683..6fd6f99dafab 100644
+> --- a/drivers/tee/optee/rpc.c
+> +++ b/drivers/tee/optee/rpc.c
+> @@ -7,6 +7,7 @@
+>
+>  #include <linux/delay.h>
+>  #include <linux/i2c.h>
+> +#include <linux/rpmb.h>
+>  #include <linux/slab.h>
+>  #include <linux/tee_drv.h>
+>  #include "optee_private.h"
+> @@ -255,6 +256,217 @@ void optee_rpc_cmd_free_suppl(struct tee_context *ctx=
+, struct tee_shm *shm)
+>         optee_supp_thrd_req(ctx, OPTEE_RPC_CMD_SHM_FREE, 1, &param);
+>  }
+>
+> +static void handle_rpc_func_rpmb_probe_reset(struct tee_context *ctx,
+> +                                            struct optee *optee,
+> +                                            struct optee_msg_arg *arg)
+> +{
+> +       struct tee_param params[1];
+> +
+> +       if (!IS_ENABLED(CONFIG_RPMB)) {
+> +               handle_rpc_supp_cmd(ctx, optee, arg);
+> +               return;
+> +       }
+> +
+> +       if (arg->num_params !=3D ARRAY_SIZE(params) ||
+> +           optee->ops->from_msg_param(optee, params, arg->num_params,
+> +                                      arg->params) ||
+> +           params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) {
+> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
+> +               return;
+> +       }
+> +
+> +       params[0].u.value.a =3D OPTEE_RPC_SHM_TYPE_KERNEL;
+> +       params[0].u.value.b =3D 0;
+> +       params[0].u.value.c =3D 0;
+> +       if (optee->ops->to_msg_param(optee, arg->params,
+> +                                    arg->num_params, params)) {
+> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
+> +               return;
+> +       }
+> +
+> +       mutex_lock(&optee->rpmb_dev_mutex);
+> +       rpmb_dev_put(optee->rpmb_dev);
+> +       optee->rpmb_dev =3D NULL;
+> +       mutex_unlock(&optee->rpmb_dev_mutex);
+> +
+> +       arg->ret =3D TEEC_SUCCESS;
+> +}
+> +
+> +static int rpc_rpmb_match(struct device *dev, const void *data)
+> +{
+> +       return 1;
+> +}
+> +
+> +static void handle_rpc_func_rpmb_probe_next(struct tee_context *ctx,
+> +                                           struct optee *optee,
+> +                                           struct optee_msg_arg *arg)
+> +{
+> +       struct rpmb_dev *start_rdev;
+> +       struct rpmb_dev *rdev;
+> +       struct tee_param params[2];
+> +       void *buf;
+> +
+> +       if (!IS_ENABLED(CONFIG_RPMB)) {
+> +               handle_rpc_supp_cmd(ctx, optee, arg);
+> +               return;
+> +       }
+> +
+> +       if (arg->num_params !=3D ARRAY_SIZE(params) ||
+> +           optee->ops->from_msg_param(optee, params, arg->num_params,
+> +                                      arg->params) ||
+> +           params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
+> +           params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
+> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
+> +               return;
+> +       }
+> +       buf =3D tee_shm_get_va(params[1].u.memref.shm,
+> +                            params[1].u.memref.shm_offs);
+> +       if (!buf) {
+> +               arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
+> +               return;
+> +       }
+> +
+> +       mutex_lock(&optee->rpmb_dev_mutex);
+> +       start_rdev =3D optee->rpmb_dev;
+> +       rdev =3D rpmb_dev_find_device(NULL, start_rdev, rpc_rpmb_match);
+> +       rpmb_dev_put(start_rdev);
+> +       optee->rpmb_dev =3D rdev;
+> +       mutex_unlock(&optee->rpmb_dev_mutex);
+> +
+> +       if (!rdev) {
+> +               arg->ret =3D TEEC_ERROR_ITEM_NOT_FOUND;
 
-CONFIG_UBSAN=3Dy
-# CONFIG_UBSAN_TRAP is not set
-CONFIG_CC_HAS_UBSAN_BOUNDS_STRICT=3Dy
-CONFIG_UBSAN_BOUNDS=3Dy
-CONFIG_UBSAN_BOUNDS_STRICT=3Dy
-CONFIG_UBSAN_SHIFT=3Dy
-CONFIG_UBSAN_DIV_ZERO=3Dy
-CONFIG_UBSAN_BOOL=3Dy
-CONFIG_UBSAN_ENUM=3Dy
-CONFIG_UBSAN_ALIGNMENT=3Dy
-CONFIG_UBSAN_SANITIZE_ALL=3Dy
-vmlinux   96 472 264 (+48 234 496,  +99.99%)
-vmlinux.o 79 215 456 (+47 550 760, +150.17%)
+One of the major comments I have here is regarding how this implicit
+dependency on eMMC driver probe is met here. What if OP-TEE based
+fTPM/EFI client driver probes before eMMC driver?
 
-In this case the kernel is twice as big because of disabled
-CONFIG_UBSAN_TRAP option,
-which enables (when the option is disabled) printing verbose error location
-information.
-Also, pointer alignment is enabled. Of course, such a big overhead is not
-acceptable
-in production.
+-Sumit
 
-However, without CONFIG_UBSAN_ALIGNMENT=3Dy, the numbers are much more
-optimistic:
-
-CONFIG_ARCH_HAS_UBSAN_SANITIZE_ALL=3Dy
-CONFIG_UBSAN=3Dy
-# CONFIG_UBSAN_TRAP is not set
-CONFIG_CC_HAS_UBSAN_BOUNDS_STRICT=3Dy
-CONFIG_UBSAN_BOUNDS=3Dy
-CONFIG_UBSAN_BOUNDS_STRICT=3Dy
-CONFIG_UBSAN_SHIFT=3Dy
-CONFIG_UBSAN_DIV_ZERO=3Dy
-CONFIG_UBSAN_BOOL=3Dy
-CONFIG_UBSAN_ENUM=3Dy
-# CONFIG_UBSAN_ALIGNMENT is not set
-CONFIG_UBSAN_SANITIZE_ALL=3Dy
-vmlinux   50334920 (+2 097 152, +4.35%)
-vmlinux.o 34402408 (+2 737 712, +8.65%)
-
-And the overhead is even smaller, when CONFIG_UBSAN_TRAP=3Dy is enabled,
-which results in wordless oopses in the case of error:
-
-CONFIG_UBSAN=3Dy
-CONFIG_UBSAN_TRAP=3Dy
-CONFIG_CC_HAS_UBSAN_BOUNDS_STRICT=3Dy
-CONFIG_UBSAN_BOUNDS=3Dy
-CONFIG_UBSAN_BOUNDS_STRICT=3Dy
-CONFIG_UBSAN_SHIFT=3Dy
-CONFIG_UBSAN_DIV_ZERO=3Dy
-CONFIG_UBSAN_BOOL=3Dy
-CONFIG_UBSAN_ENUM=3Dy
-# CONFIG_UBSAN_ALIGNMENT is not set
-CONFIG_UBSAN_SANITIZE_ALL=3Dy
-vmlinux   48 237 768 (      +0, +0.00%)
-vmlinux.o 32 004 392 (+339 696, +1.07%)
-
-In this case the overhead is neglectable, compared to the overall kernel
-size. (And the final
-kernel image is even of the same size for some unknown reason.)
-
-Since pointers alignment sanitizing for some reason is incompatible with
-CONFIG_UBSAN_TRAP=3Dy, I can't test them together.
-
-So, I suppose that the overhead for OP-TEE should also be small, as there
-is no detailed
-error logging. But, of course, it is better to be tested.
-
---===============2546662758839798235==--
+--===============5983098426674662588==--
 
