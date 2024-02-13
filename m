@@ -1,67 +1,150 @@
-From: "Ricardo B. Marliere" <ricardo@marliere.net>
+From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] tee: make tee_bus_type const
-Date: Tue, 13 Feb 2024 14:45:51 +0000
-Message-ID: <20240213-bus_cleanup-tee-v1-1-77945ae1a172@marliere.net>
+Subject: 
+ Re: [PATCH v2 2/4] dt-bindings: remoteproc: Add compatibility for TEE support
+Date: Tue, 13 Feb 2024 15:39:19 +0000
+Message-ID: <32b5b04b-c644-43d0-b190-4200f0e92979@foss.st.com>
+In-Reply-To: <20240130175112.GA2040002-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5195065346342978875=="
+Content-Type: multipart/mixed; boundary="===============3996571043673360767=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5195065346342978875==
+--===============3996571043673360767==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Since commit d492cc2573a0 ("driver core: device.h: make struct
-bus_type a const *"), the driver core can properly handle constant
-struct bus_type, move the tee_bus_type variable to be a constant
-structure as well, placing it into read-only memory which can not be
-modified at runtime.
+Hello Rob,
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
----
- drivers/tee/tee_core.c  | 2 +-
- include/linux/tee_drv.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+On 1/30/24 18:51, Rob Herring wrote:
+> On Thu, Jan 18, 2024 at 11:04:31AM +0100, Arnaud Pouliquen wrote:
+>> The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+>> where the Cortex-M4 firmware is loaded by the Trusted execution Environment
+>> (TEE).
+>> For instance, this compatible is used in both the Linux and OP-TEE
+>> device-tree:
+>> - In OP-TEE, a node is defined in the device tree with the
+>>   st,stm32mp1-m4-tee to support signed remoteproc firmware.
+>>   Based on DT properties, OP-TEE authenticates, loads, starts, and stops
+>>   the firmware.
+>> - On Linux, when the compatibility is set, the Cortex-M resets should not
+>>   be declared in the device tree.
+>>
+>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+>> ---
+>> V1 to V2 updates
+>> - update "st,stm32mp1-m4" compatible description to generalize
+>> - remove the 'reset-names' requirement in one conditional branch, as the
+>>   property is already part of the condition test.
+>> ---
+>>  .../bindings/remoteproc/st,stm32-rproc.yaml   | 52 +++++++++++++++----
+>>  1 file changed, 43 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.y=
+aml b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+>> index 370af61d8f28..6af821b15736 100644
+>> --- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+>> +++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+>> @@ -16,7 +16,12 @@ maintainers:
+>> =20
+>>  properties:
+>>    compatible:
+>> -    const: st,stm32mp1-m4
+>> +    enum:
+>> +      - st,stm32mp1-m4
+>> +      - st,stm32mp1-m4-tee
+>> +    description:
+>> +      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by no=
+n-secure context
+>> +      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management b=
+y secure context
+>> =20
+>>    reg:
+>>      description:
+>> @@ -142,21 +147,40 @@ properties:
+>>  required:
+>>    - compatible
+>>    - reg
+>> -  - resets
+>> =20
+>>  allOf:
+>>    - if:
+>>        properties:
+>> -        reset-names:
+>> -          not:
+>> -            contains:
+>> -              const: hold_boot
+>> +        compatible:
+>> +          contains:
+>> +            const: st,stm32mp1-m4
+>> +    then:
+>> +      if:
+>> +        properties:
+>> +          reset-names:
+>> +            not:
+>> +              contains:
+>> +                const: hold_boot
+>=20
+> Note that this is true when 'reset-names' is not present. If that is not=20
+> desired, then you need 'required: [reset-names]'. Not really a new issue=20
+> though.
+>=20
 
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index 792d6fae4354..e59c20d74b36 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -1226,7 +1226,7 @@ static int tee_client_device_uevent(const struct device=
- *dev,
- 	return add_uevent_var(env, "MODALIAS=3Dtee:%pUb", dev_id);
- }
-=20
--struct bus_type tee_bus_type =3D {
-+const struct bus_type tee_bus_type =3D {
- 	.name		=3D "tee",
- 	.match		=3D tee_client_device_match,
- 	.uevent		=3D tee_client_device_uevent,
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index 911ddf92dcee..71632e3c5f18 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -482,7 +482,7 @@ static inline bool tee_param_is_memref(struct tee_param *=
-param)
- 	}
- }
-=20
--extern struct bus_type tee_bus_type;
-+extern const struct bus_type tee_bus_type;
-=20
- /**
-  * struct tee_client_device - tee based device
+Yes that corresponds to my expectation, for compatibility with legacy DT.
+If the hold_boot reset was not used, reset-names was not mandatory
+I will add the 'required: [reset-names]' in the else
 
----
-base-commit: 716f4aaa7b48a55c73d632d0657b35342b1fefd7
-change-id: 20240213-bus_cleanup-tee-c25729bbcd7f
+Thanks,
+Arnaud
 
-Best regards,
---=20
-Ricardo B. Marliere <ricardo@marliere.net>
+>> +      then:
+>> +        required:
+>> +          - st,syscfg-holdboot
+>> +          - resets
+>> +      else:
+>> +        properties:
+>> +          st,syscfg-holdboot: false
+>> +        required:
+>> +          - resets
+>=20
+> 'resets' is always required within the outer 'then' schema, so you can=20
+> move this up a level.
+>=20
+>> +
+>> +  - if:
+>> +      properties:
+>> +        compatible:
+>> +          contains:
+>> +            const: st,stm32mp1-m4-tee
+>>      then:
+>> -      required:
+>> -        - st,syscfg-holdboot
+>> -    else:
+>>        properties:
+>>          st,syscfg-holdboot: false
+>> +        reset-names: false
+>> +        resets: false
+>> =20
+>>  additionalProperties: false
+>> =20
+>> @@ -188,5 +212,15 @@ examples:
+>>        st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+>>        st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+>>      };
+>> +  - |
+>> +    #include <dt-bindings/reset/stm32mp1-resets.h>
+>> +    m4(a)10000000 {
+>> +      compatible =3D "st,stm32mp1-m4-tee";
+>> +      reg =3D <0x10000000 0x40000>,
+>> +            <0x30000000 0x40000>,
+>> +            <0x38000000 0x10000>;
+>> +      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+>> +      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+>> +    };
+>> =20
+>>  ...
+>> --=20
+>> 2.25.1
+>>
 
-
---===============5195065346342978875==--
+--===============3996571043673360767==--
 
