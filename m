@@ -1,51 +1,73 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Why UBSAN is marked as using a lot of memory?
-Date: Fri, 09 Feb 2024 14:01:08 +0100
-Message-ID: 
- <CAHUa44Etp05V+Cdck9ch+Z4-kYHUiHZNiV6M7VOoB=VzH=+NmQ@mail.gmail.com>
-In-Reply-To: <
- <CAEUiM9N4z+btycMir_Mgr1JgqxmhLhkeuh=FheB+ENyjmydeoA@mail.gmail.com>>
+Subject: [PATCH 0/3] TEE driver for Trusted Services
+Date: Tue, 13 Feb 2024 15:52:36 +0100
+Message-ID: <20240213145239.379875-1-balint.dobszay@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3294743100707891299=="
+Content-Type: multipart/mixed; boundary="===============6572102400012525202=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3294743100707891299==
+--===============6572102400012525202==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Igor,
+This series introduces a TEE driver for Trusted Services [1].
 
-On Fri, Feb 9, 2024 at 1:49=E2=80=AFPM Igor Zhbanov <izh1979@gmail.com> wro=
-te:
->
-> Hi Jens,
->
-> Fri, 9 Feb. 2024=E2=80=AF=D0=B3. =D0=B2 14:33, Jens Wiklander <jens.wikland=
-er@linaro.org>:
->>
->> Hi Igor,
->>
->> On Mon, Feb 5, 2024 at 5:45=E2=80=AFPM Igor Zhbanov <izh1979@gmail.com> =
-wrote:
->>
->> > So, I suppose that the overhead for OP-TEE should also be small, as there
->> > is no detailed
->> > error logging. But, of course, it is better to be tested.
->>
->> I guess that depends on what you mean by detailed, it prints file
->> name, line, and column when logging.
->
->
-> I hoped, it is possible to run UBSAN in minimalistic mode, where it would j=
-ust print the current IP
-> of violation instruction (and optionally reset the device). Then the overhe=
-ad should be acceptable.
+Trusted Services is a TrustedFirmware.org project that provides a
+framework for developing and deploying device Root of Trust services in
+FF-A [2] Secure Partitions. The project hosts the reference
+implementation of Arm Platform Security Architecture [3] for Arm
+A-profile devices.
 
-Sure, that should be possible.
+The FF-A Secure Partitions are accessible through the FF-A driver in
+Linux. However, the FF-A driver doesn't have a user space interface so
+user space clients currently cannot access Trusted Services. The goal of
+this TEE driver is to bridge this gap and make Trusted Services
+functionality accessible from user space.
 
-Cheers,
-Jens
+Changelog:
+RFC[4] -> v1:
+  - Add patch for moving pool_op helper functions to the TEE subsystem,
+    as suggested by Jens
+  - Address comments from Sumit, add patch for documentation
 
---===============3294743100707891299==--
+[1] https://www.trustedfirmware.org/projects/trusted-services/
+[2] https://developer.arm.com/documentation/den0077/
+[3] https://www.arm.com/architecture/security-features/platform-security
+[4] https://lore.kernel.org/linux-arm-kernel/20230927152145.111777-1-balint.d=
+obszay(a)arm.com/
+
+
+Balint Dobszay (3):
+  tee: optee: Move pool_op helper functions
+  tee: tstee: Add Trusted Services TEE driver
+  Documentation: tee: Add TS-TEE driver
+
+ Documentation/tee/index.rst       |   1 +
+ Documentation/tee/ts-tee.rst      |  70 +++++
+ drivers/tee/Kconfig               |   1 +
+ drivers/tee/Makefile              |   1 +
+ drivers/tee/optee/core.c          |  64 ----
+ drivers/tee/optee/ffa_abi.c       |   6 +-
+ drivers/tee/optee/optee_private.h |  12 -
+ drivers/tee/optee/smc_abi.c       |  10 +-
+ drivers/tee/tee_shm.c             |  65 ++++
+ drivers/tee/tstee/Kconfig         |  11 +
+ drivers/tee/tstee/Makefile        |   3 +
+ drivers/tee/tstee/core.c          | 501 ++++++++++++++++++++++++++++++
+ drivers/tee/tstee/tstee_private.h |  92 ++++++
+ include/linux/tee_drv.h           |  11 +
+ include/uapi/linux/tee.h          |   1 +
+ 15 files changed, 765 insertions(+), 84 deletions(-)
+ create mode 100644 Documentation/tee/ts-tee.rst
+ create mode 100644 drivers/tee/tstee/Kconfig
+ create mode 100644 drivers/tee/tstee/Makefile
+ create mode 100644 drivers/tee/tstee/core.c
+ create mode 100644 drivers/tee/tstee/tstee_private.h
+
+--=20
+2.34.1
+
+
+--===============6572102400012525202==--
 
