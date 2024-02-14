@@ -1,77 +1,119 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: make tee_bus_type const
-Date: Wed, 14 Feb 2024 19:09:26 +0530
-Message-ID: 
- <CAFA6WYPdq+DLxX7-4uVBVt7Xcta_ueHd477dfcnQUKWTvQ=0kg@mail.gmail.com>
-In-Reply-To: <20240213-bus_cleanup-tee-v1-1-77945ae1a172@marliere.net>
+Subject: Re: [PATCH 3/3] Documentation: tee: Add TS-TEE driver
+Date: Wed, 14 Feb 2024 17:56:41 +0100
+Message-ID: <40BCD479-90FC-4B32-AA97-A7B39CA8A3FC@arm.com>
+In-Reply-To: <bbb40718-9bfa-4431-a3b0-c09d068fd6cc@infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5796088579279897778=="
+Content-Type: multipart/mixed; boundary="===============6948963798324637332=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5796088579279897778==
+--===============6948963798324637332==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 13 Feb 2024 at 20:15, Ricardo B. Marliere <ricardo@marliere.net> wr=
-ote:
->
-> Since commit d492cc2573a0 ("driver core: device.h: make struct
-> bus_type a const *"), the driver core can properly handle constant
-> struct bus_type, move the tee_bus_type variable to be a constant
-> structure as well, placing it into read-only memory which can not be
-> modified at runtime.
->
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Ricardo B. Marliere <ricardo@marliere.net>
-> ---
->  drivers/tee/tee_core.c  | 2 +-
->  include/linux/tee_drv.h | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->
+Hi Randy,
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+On 13 Feb 2024, at 22:44, Randy Dunlap wrote:
 
--Sumit
+> Hi--
+>
+> On 2/13/24 06:52, Balint Dobszay wrote:
+>> Add documentation for the Trusted Services TEE driver.
+>>
+>> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
+>> ---
+>>  Documentation/tee/index.rst  |  1 +
+>>  Documentation/tee/ts-tee.rst | 70 ++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 71 insertions(+)
+>>  create mode 100644 Documentation/tee/ts-tee.rst
+>>
+>
+>> diff --git a/Documentation/tee/ts-tee.rst b/Documentation/tee/ts-tee.rst
+>> new file mode 100644
+>> index 000000000000..e121ebbbfab7
+>> --- /dev/null
+>> +++ b/Documentation/tee/ts-tee.rst
+>> @@ -0,0 +1,70 @@
+>> +.. SPDX-License-Identifier: GPL-2.0
+>> +
+>> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> +TS-TEE (Trusted Services project)
+>> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> +
+>> +This driver provides access to secure services implemented by Trusted Ser=
+vices.
+>> +
+>> +Trusted Services [1] is a TrustedFirmware.org project that provides a fra=
+mework
+>> +for developing and deploying device Root of Trust services in FF-A [2] S-=
+EL0
+>> +Secure Partitions. The project hosts the reference implementation of the =
+Arm
+>> +Platform Security Architecture [3] for Arm A-profile devices.
+>> +
+>> +The FF-A Secure Partitions (SP) are accessible through the FF-A driver [4=
+] which
+>> +provides the low level communication for this driver. On top of that the =
+Trusted
+>> +Services RPC protocol is used [5]. To use the driver from user space a re=
+ference
+>> +implementation is provided at [6], which is part of the Trusted Services =
+client
+>> +library called libts [7].
+>> +
+>
+> Fix run-on sentences:
+>
+>> +All Trusted Services (TS) SPs have the same FF-A UUID, it identifies the =
+TS RPC
+>
+>                                                     UUID. It
+> or
+>                                                     UUIT; it
+>
+>> +protocol. A TS SP can host one or more services (e.g. PSA Crypto, PSA ITS=
+, etc).
+>> +A service is identified by its service UUID, the same type of service can=
+not be
+>
+>                                           UUID;
+>
+>> +present twice in the same SP. During SP boot each service in the SP is as=
+signed
+>> +an "interface ID", this is just a short ID to simplify message addressing.
+>
+>       "interface ID." This
+>
+>> +
+>> +The generic TEE design is to share memory at once with the TEE implementa=
+tion,
+>> +which can then be reused to communicate with multiple TAs. However, in ca=
+se of
+>
+> "TA" is not defined.
+>
+>> +FF-A, memory sharing works on an endpoint level, i.e. memory is shared wi=
+th a
+>> +specific SP. User space has to be able to separately share memory with ea=
+ch SP
+>> +based on its endpoint ID, therefore a separate TEE device is registered f=
+or each
+>
+>                          ID; therefore
+>
+>> +discovered TS SP. Opening the SP corresponds to opening the TEE device and
+>> +creating a TEE context. A TS SP hosts one or more services, opening a ser=
+vice
+>
+>                                                      services. Opening
 
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index 792d6fae4354..e59c20d74b36 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -1226,7 +1226,7 @@ static int tee_client_device_uevent(const struct devi=
-ce *dev,
->         return add_uevent_var(env, "MODALIAS=3Dtee:%pUb", dev_id);
->  }
->
-> -struct bus_type tee_bus_type =3D {
-> +const struct bus_type tee_bus_type =3D {
->         .name           =3D "tee",
->         .match          =3D tee_client_device_match,
->         .uevent         =3D tee_client_device_uevent,
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index 911ddf92dcee..71632e3c5f18 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -482,7 +482,7 @@ static inline bool tee_param_is_memref(struct tee_param=
- *param)
->         }
->  }
->
-> -extern struct bus_type tee_bus_type;
-> +extern const struct bus_type tee_bus_type;
->
->  /**
->   * struct tee_client_device - tee based device
->
-> ---
-> base-commit: 716f4aaa7b48a55c73d632d0657b35342b1fefd7
-> change-id: 20240213-bus_cleanup-tee-c25729bbcd7f
->
-> Best regards,
-> --
-> Ricardo B. Marliere <ricardo@marliere.net>
->
+Thanks for the comments, I'll address them in the next version.
 
---===============5796088579279897778==--
+Regards,
+Balint
+
+--===============6948963798324637332==--
 
