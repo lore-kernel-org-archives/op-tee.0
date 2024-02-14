@@ -1,49 +1,129 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 3/7] remoteproc: core: Add check on cached_table pointer
-Date: Wed, 14 Feb 2024 17:22:37 +0000
-Message-ID: <20240214172127.1022199-4-arnaud.pouliquen@foss.st.com>
+Subject: 
+ [PATCH v3 5/7] dt-bindings: remoteproc: Add compatibility for TEE support
+Date: Wed, 14 Feb 2024 17:22:38 +0000
+Message-ID: <20240214172127.1022199-6-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20240214172127.1022199-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8483871021295895459=="
+Content-Type: multipart/mixed; boundary="===============6111552568177188595=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8483871021295895459==
+--===============6111552568177188595==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add a check on the optional rproc->cached_table to perform the memory
-copy only if it is not null.
-
-2 use cases to support:
-- starting on boot, in which case rproc->cached_table can be null,
-- starting on crash recovery, where the cached table is used to save
-  the resource table configuration on stop and re-apply the configuration
-  on the re-start.
+The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+where the Cortex-M4 firmware is loaded by the Trusted execution Environment
+(TEE).
+For instance, this compatible is used in both the Linux and OP-TEE
+device-tree:
+- In OP-TEE, a node is defined in the device tree with the
+  st,stm32mp1-m4-tee to support signed remoteproc firmware.
+  Based on DT properties, OP-TEE authenticates, loads, starts, and stops
+  the firmware.
+- On Linux, when the compatibility is set, the Cortex-M resets should not
+  be declared in the device tree.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
- drivers/remoteproc/remoteproc_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+V1 to V2 updates
+- update "st,stm32mp1-m4" compatible description to generalize
+- remove the 'reset-names' requirement in one conditional branch, as the
+  property is already part of the condition test.
+---
+ .../bindings/remoteproc/st,stm32-rproc.yaml   | 51 ++++++++++++++++---
+ 1 file changed, 43 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
-proc_core.c
-index 283ca071e35c..34b0093689da 100644
---- a/drivers/remoteproc/remoteproc_core.c
-+++ b/drivers/remoteproc/remoteproc_core.c
-@@ -1278,7 +1278,7 @@ static int rproc_start(struct rproc *rproc, const struc=
-t firmware *fw)
- 	 * that any subsequent changes will be applied to the loaded version.
- 	 */
- 	loaded_table =3D rproc_find_loaded_rsc_table(rproc, fw);
--	if (loaded_table) {
-+	if (loaded_table && rproc->cached_table) {
- 		memcpy(loaded_table, rproc->cached_table, rproc->table_sz);
- 		rproc->table_ptr =3D loaded_table;
- 	}
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
+ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 370af61d8f28..36ea54016b76 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -16,7 +16,12 @@ maintainers:
+=20
+ properties:
+   compatible:
+-    const: st,stm32mp1-m4
++    enum:
++      - st,stm32mp1-m4
++      - st,stm32mp1-m4-tee
++    description:
++      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-s=
+ecure context
++      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
+ecure context
+=20
+   reg:
+     description:
+@@ -142,21 +147,41 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - resets
+=20
+ allOf:
+   - if:
+       properties:
+-        reset-names:
+-          not:
+-            contains:
+-              const: hold_boot
++        compatible:
++          contains:
++            const: st,stm32mp1-m4
+     then:
++      if:
++        properties:
++          reset-names:
++            not:
++              contains:
++                const: hold_boot
++      then:
++        required:
++          - st,syscfg-holdboot
++      else:
++        properties:
++          st,syscfg-holdboot: false
++        required:
++          - reset-names
+       required:
+-        - st,syscfg-holdboot
+-    else:
++        - resets
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: st,stm32mp1-m4-tee
++    then:
+       properties:
+         st,syscfg-holdboot: false
++        reset-names: false
++        resets: false
+=20
+ additionalProperties: false
+=20
+@@ -188,5 +213,15 @@ examples:
+       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+     };
++  - |
++    #include <dt-bindings/reset/stm32mp1-resets.h>
++    m4(a)10000000 {
++      compatible =3D "st,stm32mp1-m4-tee";
++      reg =3D <0x10000000 0x40000>,
++            <0x30000000 0x40000>,
++            <0x38000000 0x10000>;
++      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
++      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
++    };
+=20
+ ...
 --=20
 2.25.1
 
 
---===============8483871021295895459==--
+--===============6111552568177188595==--
 
