@@ -1,14 +1,14 @@
 From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH 1/3] tee: optee: Move pool_op helper functions
-Date: Wed, 14 Feb 2024 21:01:22 +0800
-Message-ID: <202402142042.JLQEGKBr-lkp@intel.com>
+Date: Wed, 14 Feb 2024 21:11:57 +0800
+Message-ID: <202402142000.xRg35j1i-lkp@intel.com>
 In-Reply-To: <20240213145239.379875-2-balint.dobszay@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4668347474234388653=="
+Content-Type: multipart/mixed; boundary="===============2732045194797805451=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4668347474234388653==
+--===============2732045194797805451==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -28,32 +28,31 @@ base:   git://git.lwn.net/linux.git docs-next
 patch link:    https://lore.kernel.org/r/20240213145239.379875-2-balint.dobsz=
 ay%40arm.com
 patch subject: [PATCH 1/3] tee: optee: Move pool_op helper functions
-config: s390-allyesconfig (https://download.01.org/0day-ci/archive/20240214/2=
-02402142042.JLQEGKBr-lkp(a)intel.com/config)
-compiler: s390-linux-gcc (GCC) 13.2.0
+config: i386-buildonly-randconfig-002-20240214 (https://download.01.org/0day-=
+ci/archive/20240214/202402142000.xRg35j1i-lkp(a)intel.com/config)
+compiler: clang version 17.0.6 (https://github.com/llvm/llvm-project 6009708b=
+4367171ccdbf4b5905cb6a803753fe18)
 reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0240214/202402142042.JLQEGKBr-lkp(a)intel.com/reproduce)
+0240214/202402142000.xRg35j1i-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202402142042.JLQEGKBr-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202402142000.xRg35j1i-lkp(a)i=
 ntel.com/
 
 All errors (new ones prefixed by >>):
 
-   drivers/tee/tee_shm.c: In function 'tee_shm_pool_op_alloc_helper':
->> drivers/tee/tee_shm.c:227:22: error: implicit declaration of function 'vir=
-t_to_phys'; did you mean 'virt_to_pfn'? [-Werror=3Dimplicit-function-declarat=
-ion]
+>> drivers/tee/tee_shm.c:227:15: error: call to undeclared function 'virt_to_=
+phys'; ISO C99 and later do not support implicit function declarations [-Wimp=
+licit-function-declaration]
      227 |         shm->paddr =3D virt_to_phys(shm->kaddr);
-         |                      ^~~~~~~~~~~~
-         |                      virt_to_pfn
-   cc1: some warnings being treated as errors
+         |                      ^
+   1 error generated.
 
 
-vim +227 drivers/tee/tee_shm.c
+vim +/virt_to_phys +227 drivers/tee/tee_shm.c
 
    204=09
    205	int tee_shm_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee=
@@ -114,5 +113,5 @@ _shm *shm,
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============4668347474234388653==--
+--===============2732045194797805451==--
 
