@@ -1,129 +1,82 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v3 5/7] dt-bindings: remoteproc: Add compatibility for TEE support
+Subject: [PATCH v3 2/7] remoteproc: Extract the firmware load from the start
 Date: Wed, 14 Feb 2024 17:22:38 +0000
-Message-ID: <20240214172127.1022199-6-arnaud.pouliquen@foss.st.com>
+Message-ID: <20240214172127.1022199-3-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20240214172127.1022199-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6111552568177188595=="
+Content-Type: multipart/mixed; boundary="===============2168632640293875179=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6111552568177188595==
+--===============2168632640293875179==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
-where the Cortex-M4 firmware is loaded by the Trusted execution Environment
-(TEE).
-For instance, this compatible is used in both the Linux and OP-TEE
-device-tree:
-- In OP-TEE, a node is defined in the device tree with the
-  st,stm32mp1-m4-tee to support signed remoteproc firmware.
-  Based on DT properties, OP-TEE authenticates, loads, starts, and stops
-  the firmware.
-- On Linux, when the compatibility is set, the Cortex-M resets should not
-  be declared in the device tree.
+With the introduction of tee_remoteproc, the firmware has to be loaded
+first before parsing the resource table. This constraint is linked to
+the firmware authentication, that contains the resource table.
+In OP-TEE, this authentication is correlated with the load of the
+firmware (the loaded segments authenticated after being copied
+to the destination memory). Removing rproc_load_segments will allow
+it to be called earlier in the boot sequence.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
-V1 to V2 updates
-- update "st,stm32mp1-m4" compatible description to generalize
-- remove the 'reset-names' requirement in one conditional branch, as the
-  property is already part of the condition test.
----
- .../bindings/remoteproc/st,stm32-rproc.yaml   | 51 ++++++++++++++++---
- 1 file changed, 43 insertions(+), 8 deletions(-)
+ drivers/remoteproc/remoteproc_core.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
- b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-index 370af61d8f28..36ea54016b76 100644
---- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-+++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-@@ -16,7 +16,12 @@ maintainers:
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
+proc_core.c
+index 695cce218e8c..283ca071e35c 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -1269,13 +1269,6 @@ static int rproc_start(struct rproc *rproc, const stru=
+ct firmware *fw)
+ 	struct device *dev =3D &rproc->dev;
+ 	int ret;
 =20
- properties:
-   compatible:
--    const: st,stm32mp1-m4
-+    enum:
-+      - st,stm32mp1-m4
-+      - st,stm32mp1-m4-tee
-+    description:
-+      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-s=
-ecure context
-+      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
-ecure context
+-	/* load the ELF segments to memory */
+-	ret =3D rproc_load_segments(rproc, fw);
+-	if (ret) {
+-		dev_err(dev, "Failed to load program segments: %d\n", ret);
+-		return ret;
+-	}
+-
+ 	/*
+ 	 * The starting device has been given the rproc->cached_table as the
+ 	 * resource table. The address of the vring along with the other
+@@ -1430,6 +1423,13 @@ static int rproc_fw_boot(struct rproc *rproc, const st=
+ruct firmware *fw)
+ 		goto clean_up_resources;
+ 	}
 =20
-   reg:
-     description:
-@@ -142,21 +147,41 @@ properties:
- required:
-   - compatible
-   - reg
--  - resets
-=20
- allOf:
-   - if:
-       properties:
--        reset-names:
--          not:
--            contains:
--              const: hold_boot
-+        compatible:
-+          contains:
-+            const: st,stm32mp1-m4
-     then:
-+      if:
-+        properties:
-+          reset-names:
-+            not:
-+              contains:
-+                const: hold_boot
-+      then:
-+        required:
-+          - st,syscfg-holdboot
-+      else:
-+        properties:
-+          st,syscfg-holdboot: false
-+        required:
-+          - reset-names
-       required:
--        - st,syscfg-holdboot
--    else:
-+        - resets
++	/* load the ELF segments to memory */
++	ret =3D rproc_load_segments(rproc, fw);
++	if (ret) {
++		dev_err(dev, "Failed to load program segments: %d\n", ret);
++		return ret;
++	}
 +
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: st,stm32mp1-m4-tee
-+    then:
-       properties:
-         st,syscfg-holdboot: false
-+        reset-names: false
-+        resets: false
+ 	ret =3D rproc_start(rproc, fw);
+ 	if (ret)
+ 		goto clean_up_resources;
+@@ -1808,6 +1808,13 @@ static int rproc_boot_recovery(struct rproc *rproc)
+ 		return ret;
+ 	}
 =20
- additionalProperties: false
++	/* load the ELF segments to memory */
++	ret =3D rproc_load_segments(rproc, firmware_p);
++	if (ret) {
++		dev_err(dev, "Failed to load program segments: %d\n", ret);
++		return ret;
++	}
++
+ 	/* boot the remote processor up again */
+ 	ret =3D rproc_start(rproc, firmware_p);
 =20
-@@ -188,5 +213,15 @@ examples:
-       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-     };
-+  - |
-+    #include <dt-bindings/reset/stm32mp1-resets.h>
-+    m4(a)10000000 {
-+      compatible =3D "st,stm32mp1-m4-tee";
-+      reg =3D <0x10000000 0x40000>,
-+            <0x30000000 0x40000>,
-+            <0x38000000 0x10000>;
-+      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-+      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-+    };
-=20
- ...
 --=20
 2.25.1
 
 
---===============6111552568177188595==--
+--===============2168632640293875179==--
 
