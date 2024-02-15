@@ -1,119 +1,131 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 3/3] Documentation: tee: Add TS-TEE driver
-Date: Wed, 14 Feb 2024 17:56:41 +0100
-Message-ID: <40BCD479-90FC-4B32-AA97-A7B39CA8A3FC@arm.com>
-In-Reply-To: <bbb40718-9bfa-4431-a3b0-c09d068fd6cc@infradead.org>
+Subject: Re: [PATCH 2/3] tee: tstee: Add Trusted Services TEE driver
+Date: Thu, 15 Feb 2024 09:59:50 +0100
+Message-ID: <ed8aaee7-be14-43ab-981c-d2ac04f4fc71@kernel.org>
+In-Reply-To: <20240213145239.379875-3-balint.dobszay@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6948963798324637332=="
+Content-Type: multipart/mixed; boundary="===============6675910776931740763=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6948963798324637332==
+--===============6675910776931740763==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi Randy,
+On 13/02/2024 15:52, Balint Dobszay wrote:
+> The Trusted Services project provides a framework for developing and
+> deploying device Root of Trust services in FF-A Secure Partitions. The
+> FF-A SPs are accessible through the FF-A driver, but this doesn't
+> provide a user space interface. The goal of this TEE driver is to make
+> Trusted Services SPs accessible for user space clients.
+> 
+> All TS SPs have the same FF-A UUID, it identifies the RPC protocol used
+> by TS. A TS SP can host one or more services, a service is identified by
+> its service UUID. The same type of service cannot be present twice in
+> the same SP. During SP boot each service in an SP is assigned an
+> interface ID, this is just a short ID to simplify message addressing.
+> There is 1:1 mapping between TS SPs and TEE devices, i.e. a separate TEE
+> device is registered for each TS SP. This is required since contrary to
+> the generic TEE design where memory is shared with the whole TEE
+> implementation, in case of FF-A, memory is shared with a specific SP. A
+> user space client has to be able to separately share memory with each SP
+> based on its endpoint ID.
+> 
+> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
+> ---
 
-On 13 Feb 2024, at 22:44, Randy Dunlap wrote:
 
-> Hi--
->
-> On 2/13/24 06:52, Balint Dobszay wrote:
->> Add documentation for the Trusted Services TEE driver.
->>
->> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
->> ---
->>  Documentation/tee/index.rst  |  1 +
->>  Documentation/tee/ts-tee.rst | 70 ++++++++++++++++++++++++++++++++++++
->>  2 files changed, 71 insertions(+)
->>  create mode 100644 Documentation/tee/ts-tee.rst
->>
->
->> diff --git a/Documentation/tee/ts-tee.rst b/Documentation/tee/ts-tee.rst
->> new file mode 100644
->> index 000000000000..e121ebbbfab7
->> --- /dev/null
->> +++ b/Documentation/tee/ts-tee.rst
->> @@ -0,0 +1,70 @@
->> +.. SPDX-License-Identifier: GPL-2.0
->> +
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +TS-TEE (Trusted Services project)
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +
->> +This driver provides access to secure services implemented by Trusted Ser=
-vices.
->> +
->> +Trusted Services [1] is a TrustedFirmware.org project that provides a fra=
-mework
->> +for developing and deploying device Root of Trust services in FF-A [2] S-=
-EL0
->> +Secure Partitions. The project hosts the reference implementation of the =
-Arm
->> +Platform Security Architecture [3] for Arm A-profile devices.
->> +
->> +The FF-A Secure Partitions (SP) are accessible through the FF-A driver [4=
-] which
->> +provides the low level communication for this driver. On top of that the =
-Trusted
->> +Services RPC protocol is used [5]. To use the driver from user space a re=
-ference
->> +implementation is provided at [6], which is part of the Trusted Services =
-client
->> +library called libts [7].
->> +
->
-> Fix run-on sentences:
->
->> +All Trusted Services (TS) SPs have the same FF-A UUID, it identifies the =
-TS RPC
->
->                                                     UUID. It
-> or
->                                                     UUIT; it
->
->> +protocol. A TS SP can host one or more services (e.g. PSA Crypto, PSA ITS=
-, etc).
->> +A service is identified by its service UUID, the same type of service can=
-not be
->
->                                           UUID;
->
->> +present twice in the same SP. During SP boot each service in the SP is as=
-signed
->> +an "interface ID", this is just a short ID to simplify message addressing.
->
->       "interface ID." This
->
->> +
->> +The generic TEE design is to share memory at once with the TEE implementa=
-tion,
->> +which can then be reused to communicate with multiple TAs. However, in ca=
-se of
->
-> "TA" is not defined.
->
->> +FF-A, memory sharing works on an endpoint level, i.e. memory is shared wi=
-th a
->> +specific SP. User space has to be able to separately share memory with ea=
-ch SP
->> +based on its endpoint ID, therefore a separate TEE device is registered f=
-or each
->
->                          ID; therefore
->
->> +discovered TS SP. Opening the SP corresponds to opening the TEE device and
->> +creating a TEE context. A TS SP hosts one or more services, opening a ser=
-vice
->
->                                                      services. Opening
+> +static int tstee_probe(struct ffa_device *ffa_dev)
+> +{
+> +	struct tstee *tstee;
+> +	int rc;
+> +
+> +	ffa_dev->ops->msg_ops->mode_32bit_set(ffa_dev);
+> +
+> +	if (!tstee_check_rpc_compatible(ffa_dev))
+> +		return -EINVAL;
+> +
+> +	tstee = kzalloc(sizeof(*tstee), GFP_KERNEL);
+> +	if (!tstee)
+> +		return -ENOMEM;
+> +
+> +	tstee->ffa_dev = ffa_dev;
+> +
+> +	tstee->pool = tstee_create_shm_pool();
+> +	if (IS_ERR(tstee->pool)) {
+> +		rc = PTR_ERR(tstee->pool);
+> +		tstee->pool = NULL;
+> +		goto err;
 
-Thanks for the comments, I'll address them in the next version.
+Is it logically correct to call here tee_device_unregister()?
 
-Regards,
-Balint
+> +	}
+> +
+> +	tstee->teedev = tee_device_alloc(&tstee_desc, NULL, tstee->pool, tstee);
+> +	if (IS_ERR(tstee->teedev)) {
+> +		rc = PTR_ERR(tstee->teedev);
+> +		tstee->teedev = NULL;
+> +		goto err;
+> +	}
+> +
+> +	rc = tee_device_register(tstee->teedev);
+> +	if (rc)
+> +		goto err;
+> +
+> +	ffa_dev_set_drvdata(ffa_dev, tstee);
+> +
+> +	pr_info("driver initialized for endpoint 0x%x\n", ffa_dev->vm_id);
 
---===============6948963798324637332==--
+Don't print simple probe success messages. Anyway all prints in device
+context should be dev_*.
+
+> +
+> +	return 0;
+> +
+> +err:
+> +	tstee_deinit_common(tstee);
+> +	return rc;
+> +}
+> +
+> +static void tstee_remove(struct ffa_device *ffa_dev)
+> +{
+> +	tstee_deinit_common(ffa_dev->dev.driver_data);
+> +}
+> +
+> +static const struct ffa_device_id tstee_device_ids[] = {
+> +	/* TS RPC protocol UUID: bdcd76d7-825e-4751-963b-86d4f84943ac */
+> +	{ TS_RPC_UUID },
+> +	{}
+> +};
+> +
+> +static struct ffa_driver tstee_driver = {
+> +	.name = "arm_tstee",
+> +	.probe = tstee_probe,
+> +	.remove = tstee_remove,
+> +	.id_table = tstee_device_ids,
+> +};
+> +
+> +static int __init mod_init(void)
+> +{
+> +	return ffa_register(&tstee_driver);
+> +}
+> +module_init(mod_init)
+> +
+> +static void __exit mod_exit(void)
+> +{
+> +	ffa_unregister(&tstee_driver);
+> +}
+> +module_exit(mod_exit)
+> +
+> +MODULE_ALIAS("arm-tstee");
+
+Why do you need this alias? I don't see MODULE_DEVICE_TABLE, so how this
+bus handles module loading?
+
+
+Best regards,
+Krzysztof
+
+
+--===============6675910776931740763==--
 
