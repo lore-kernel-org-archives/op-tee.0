@@ -1,144 +1,45 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Rob Herring <robh@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 2/3] tee: tstee: Add Trusted Services TEE driver
-Date: Thu, 22 Feb 2024 17:20:33 +0100
-Message-ID: <D4EFA956-1E7B-4DDD-AC0A-D2F3217D46F0@arm.com>
-In-Reply-To: <ed8aaee7-be14-43ab-981c-d2ac04f4fc71@kernel.org>
+Subject: 
+ Re: [PATCH v3 5/7] dt-bindings: remoteproc: Add compatibility for TEE support
+Date: Thu, 22 Feb 2024 12:24:30 -0600
+Message-ID: <170862626977.3652711.10744856298270939089.robh@kernel.org>
+In-Reply-To: <20240214172127.1022199-6-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2692695723596904167=="
+Content-Type: multipart/mixed; boundary="===============0487324726449661572=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2692695723596904167==
+--===============0487324726449661572==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
 
-Thanks for the feedback.
+On Wed, 14 Feb 2024 18:21:25 +0100, Arnaud Pouliquen wrote:
+> The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+> where the Cortex-M4 firmware is loaded by the Trusted execution Environment
+> (TEE).
+> For instance, this compatible is used in both the Linux and OP-TEE
+> device-tree:
+> - In OP-TEE, a node is defined in the device tree with the
+>   st,stm32mp1-m4-tee to support signed remoteproc firmware.
+>   Based on DT properties, OP-TEE authenticates, loads, starts, and stops
+>   the firmware.
+> - On Linux, when the compatibility is set, the Cortex-M resets should not
+>   be declared in the device tree.
+> 
+> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+> ---
+> V1 to V2 updates
+> - update "st,stm32mp1-m4" compatible description to generalize
+> - remove the 'reset-names' requirement in one conditional branch, as the
+>   property is already part of the condition test.
+> ---
+>  .../bindings/remoteproc/st,stm32-rproc.yaml   | 51 ++++++++++++++++---
+>  1 file changed, 43 insertions(+), 8 deletions(-)
+> 
 
-On 15 Feb 2024, at 9:59, Krzysztof Kozlowski wrote:
+Reviewed-by: Rob Herring <robh@kernel.org>
 
-> On 13/02/2024 15:52, Balint Dobszay wrote:
->> The Trusted Services project provides a framework for developing and
->> deploying device Root of Trust services in FF-A Secure Partitions. The
->> FF-A SPs are accessible through the FF-A driver, but this doesn't
->> provide a user space interface. The goal of this TEE driver is to make
->> Trusted Services SPs accessible for user space clients.
->>
->> All TS SPs have the same FF-A UUID, it identifies the RPC protocol used
->> by TS. A TS SP can host one or more services, a service is identified by
->> its service UUID. The same type of service cannot be present twice in
->> the same SP. During SP boot each service in an SP is assigned an
->> interface ID, this is just a short ID to simplify message addressing.
->> There is 1:1 mapping between TS SPs and TEE devices, i.e. a separate TEE
->> device is registered for each TS SP. This is required since contrary to
->> the generic TEE design where memory is shared with the whole TEE
->> implementation, in case of FF-A, memory is shared with a specific SP. A
->> user space client has to be able to separately share memory with each SP
->> based on its endpoint ID.
->>
->> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
->> ---
->
->
->> +static int tstee_probe(struct ffa_device *ffa_dev)
->> +{
->> +	struct tstee *tstee;
->> +	int rc;
->> +
->> +	ffa_dev->ops->msg_ops->mode_32bit_set(ffa_dev);
->> +
->> +	if (!tstee_check_rpc_compatible(ffa_dev))
->> +		return -EINVAL;
->> +
->> +	tstee = kzalloc(sizeof(*tstee), GFP_KERNEL);
->> +	if (!tstee)
->> +		return -ENOMEM;
->> +
->> +	tstee->ffa_dev = ffa_dev;
->> +
->> +	tstee->pool = tstee_create_shm_pool();
->> +	if (IS_ERR(tstee->pool)) {
->> +		rc = PTR_ERR(tstee->pool);
->> +		tstee->pool = NULL;
->> +		goto err;
->
-> Is it logically correct to call here tee_device_unregister()?
 
-As Jens mentioned it doesn't cause any issues. But I see you point, it's
-not logically correct. I'll refactor this.
-
->> +	}
->> +
->> +	tstee->teedev = tee_device_alloc(&tstee_desc, NULL, tstee->pool, tstee);
->> +	if (IS_ERR(tstee->teedev)) {
->> +		rc = PTR_ERR(tstee->teedev);
->> +		tstee->teedev = NULL;
->> +		goto err;
->> +	}
->> +
->> +	rc = tee_device_register(tstee->teedev);
->> +	if (rc)
->> +		goto err;
->> +
->> +	ffa_dev_set_drvdata(ffa_dev, tstee);
->> +
->> +	pr_info("driver initialized for endpoint 0x%x\n", ffa_dev->vm_id);
->
-> Don't print simple probe success messages. Anyway all prints in device
-> context should be dev_*.
-
-Okay, I'll remove this.
-
->> +
->> +	return 0;
->> +
->> +err:
->> +	tstee_deinit_common(tstee);
->> +	return rc;
->> +}
->> +
->> +static void tstee_remove(struct ffa_device *ffa_dev)
->> +{
->> +	tstee_deinit_common(ffa_dev->dev.driver_data);
->> +}
->> +
->> +static const struct ffa_device_id tstee_device_ids[] = {
->> +	/* TS RPC protocol UUID: bdcd76d7-825e-4751-963b-86d4f84943ac */
->> +	{ TS_RPC_UUID },
->> +	{}
->> +};
->> +
->> +static struct ffa_driver tstee_driver = {
->> +	.name = "arm_tstee",
->> +	.probe = tstee_probe,
->> +	.remove = tstee_remove,
->> +	.id_table = tstee_device_ids,
->> +};
->> +
->> +static int __init mod_init(void)
->> +{
->> +	return ffa_register(&tstee_driver);
->> +}
->> +module_init(mod_init)
->> +
->> +static void __exit mod_exit(void)
->> +{
->> +	ffa_unregister(&tstee_driver);
->> +}
->> +module_exit(mod_exit)
->> +
->> +MODULE_ALIAS("arm-tstee");
->
-> Why do you need this alias? I don't see MODULE_DEVICE_TABLE, so how this
-> bus handles module loading?
-
-You're right, the alias is not needed, I'll remove it.
-Regarding MODULE_DEVICE_TABLE, AFAIK this mechanism is currently not
-supported for the arm_ffa bus type. Maybe Sudeep can chime in on this?
-
-Regards,
-Balint
-
---===============2692695723596904167==--
+--===============0487324726449661572==--
 
