@@ -1,150 +1,127 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 3/3] Documentation: tee: Add TS-TEE driver
-Date: Tue, 27 Feb 2024 12:44:51 +0530
-Message-ID: 
- <CAFA6WYP4WVv2H4_2PAn_BOUpYYbG1SDcWL0Gmd6c0ECiH62c_w@mail.gmail.com>
-In-Reply-To: <20240223095133.109046-4-balint.dobszay@arm.com>
+Subject: [PATCH v3 0/3] Replay Protected Memory Block (RPMB) subsystem
+Date: Tue, 27 Feb 2024 16:31:29 +0100
+Message-ID: <20240227153132.2611499-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7482337721144266770=="
+Content-Type: multipart/mixed; boundary="===============7212986474965321512=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7482337721144266770==
+--===============7212986474965321512==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 23 Feb 2024 at 15:23, Balint Dobszay <balint.dobszay@arm.com> wrote:
->
-> Add documentation for the Trusted Services TEE driver.
->
-> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
-> ---
->  Documentation/tee/index.rst  |  1 +
->  Documentation/tee/ts-tee.rst | 71 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 72 insertions(+)
->  create mode 100644 Documentation/tee/ts-tee.rst
->
+Hi,
 
-Acked-by: Sumit Garg <sumit.garg@linaro.org>
+This patch set introduces a new RPMB subsystem, based on patches from [1],
+[2], and [3]. The RPMB subsystem aims at providing access to RPMB
+partitions to other kernel drivers, in particular the OP-TEE driver. A new
+user space ABI isn't needed, we can instead continue using the already
+present ABI when writing the RPMB key during production.
 
--Sumit
+I've added and removed things to keep only what is needed by the OP-TEE
+driver. Since the posting of [3], there has been major changes in the MMC
+subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+is in practice completely rewritten.
 
-> diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
-> index a23bd08847e5..4be6e69d7837 100644
-> --- a/Documentation/tee/index.rst
-> +++ b/Documentation/tee/index.rst
-> @@ -10,6 +10,7 @@ TEE Subsystem
->     tee
->     op-tee
->     amd-tee
-> +   ts-tee
->
->  .. only::  subproject and html
->
-> diff --git a/Documentation/tee/ts-tee.rst b/Documentation/tee/ts-tee.rst
-> new file mode 100644
-> index 000000000000..843e34422648
-> --- /dev/null
-> +++ b/Documentation/tee/ts-tee.rst
-> @@ -0,0 +1,71 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +TS-TEE (Trusted Services project)
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +This driver provides access to secure services implemented by Trusted Serv=
-ices.
-> +
-> +Trusted Services [1] is a TrustedFirmware.org project that provides a fram=
-ework
-> +for developing and deploying device Root of Trust services in FF-A [2] S-E=
-L0
-> +Secure Partitions. The project hosts the reference implementation of the A=
-rm
-> +Platform Security Architecture [3] for Arm A-profile devices.
-> +
-> +The FF-A Secure Partitions (SP) are accessible through the FF-A driver [4]=
- which
-> +provides the low level communication for this driver. On top of that the T=
-rusted
-> +Services RPC protocol is used [5]. To use the driver from user space a ref=
-erence
-> +implementation is provided at [6], which is part of the Trusted Services c=
-lient
-> +library called libts [7].
-> +
-> +All Trusted Services (TS) SPs have the same FF-A UUID; it identifies the T=
-S RPC
-> +protocol. A TS SP can host one or more services (e.g. PSA Crypto, PSA ITS,=
- etc).
-> +A service is identified by its service UUID; the same type of service cann=
-ot be
-> +present twice in the same SP. During SP boot each service in the SP is ass=
-igned
-> +an "interface ID". This is just a short ID to simplify message addressing.
-> +
-> +The generic TEE design is to share memory at once with the Trusted OS, whi=
-ch can
-> +then be reused to communicate with multiple applications running on the Tr=
-usted
-> +OS. However, in case of FF-A, memory sharing works on an endpoint level, i=
-.e.
-> +memory is shared with a specific SP. User space has to be able to separate=
-ly
-> +share memory with each SP based on its endpoint ID; therefore a separate T=
-EE
-> +device is registered for each discovered TS SP. Opening the SP corresponds=
- to
-> +opening the TEE device and creating a TEE context. A TS SP hosts one or mo=
-re
-> +services. Opening a service corresponds to opening a session in the given
-> +tee_context.
-> +
-> +Overview of a system with Trusted Services components::
-> +
-> +   User space                  Kernel space                   Secure world
-> +   ~~~~~~~~~~                  ~~~~~~~~~~~~                   ~~~~~~~~~~~~
-> +   +--------+                                               +-------------+
-> +   | Client |                                               | Trusted     |
-> +   +--------+                                               | Services SP |
-> +      /\                                                    +-------------+
-> +      ||                                                          /\
-> +      ||                                                          ||
-> +      ||                                                          ||
-> +      \/                                                          \/
-> +   +-------+                +----------+--------+           +-------------+
-> +   | libts |                |  TEE     | TS-TEE |           |  FF-A SPMC  |
-> +   |       |                |  subsys  | driver |           |   + SPMD    |
-> +   +-------+----------------+----+-----+--------+-----------+-------------+
-> +   |      Generic TEE API        |     |  FF-A  |     TS RPC protocol     |
-> +   |      IOCTL (TEE_IOC_*)      |     | driver |        over FF-A        |
-> +   +-----------------------------+     +--------+-------------------------+
-> +
-> +References
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +[1] https://www.trustedfirmware.org/projects/trusted-services/
-> +
-> +[2] https://developer.arm.com/documentation/den0077/
-> +
-> +[3] https://www.arm.com/architecture/security-features/platform-security
-> +
-> +[4] drivers/firmware/arm_ffa/
-> +
-> +[5] https://trusted-services.readthedocs.io/en/v1.0.0/developer/service-ac=
-cess-protocols.html#abi
-> +
-> +[6] https://git.trustedfirmware.org/TS/trusted-services.git/tree/component=
-s/rpc/ts_rpc/caller/linux/ts_rpc_caller_linux.c?h=3Dv1.0.0
-> +
-> +[7] https://git.trustedfirmware.org/TS/trusted-services.git/tree/deploymen=
-ts/libts/arm-linux/CMakeLists.txt?h=3Dv1.0.0
-> --
-> 2.34.1
->
+With this OP-TEE can access RPMB during early boot instead of having to
+wait for user space to become available as in the current design [4].
+This will benefit the efi variables [5] since we wont rely on userspace as
+well as some TPM issues [6] that were solved.
 
---===============7482337721144266770==--
+The OP-TEE driver finds the correct RPMB device to interact with by
+iterating over available devices until one is found with a programmed
+authentication matching the one OP-TEE is using. This enables coexisting
+users of other RPMBs since the owner can be determined by who knows the
+authentication key.
+
+I've put myself as a maintainer for the RPMB subsystem as I have an
+interest in the OP-TEE driver to keep this in good shape. However, if you'd
+rather see someone else taking the maintainership that's fine too. I'll
+help keep the subsystem updated regardless.
+
+[1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.mi=
+crosoft.com/
+[2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)linar=
+o.org/
+[3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-tomas.=
+winkler(a)intel.com/
+[4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html#r=
+pmb-secure-storage
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+[6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+
+Thanks,
+Jens
+
+Changes since v2:
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Fixing documentation issues
+  - Adding a "depends on MMC" in the Kconfig
+  - Removed the class-device and the embedded device, struct rpmb_dev now
+    relies on the parent device for reference counting as requested
+  - Removed the now unneeded rpmb_ops get_resources() and put_resources()
+    since references are already taken in mmc_blk_alloc_rpmb_part() before
+    rpmb_dev_register() is called
+  - Added rpmb_interface_{,un}register() now that
+    class_interface_{,un}register() can't be used ay longer
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Adding the missing error cleanup in alloc_idata()
+  - Taking the needed reference to md->disk in mmc_blk_alloc_rpmb_part()
+    instead of in mmc_rpmb_chrdev_open() and rpmb_op_mmc_get_resources()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Registering to get a notification when an RPMB device comes online
+  - Probes for RPMB devices each time an RPMB device comes online, until
+    a usable device is found
+  - When a usable RPMB device is found, call
+    optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB)
+  - Pass type of rpmb in return value from OPTEE_RPC_CMD_RPMB_PROBE_NEXT
+
+Changes since Shyam's RFC:
+* Removed the remaining leftover rpmb_cdev_*() function calls
+* Refactored the struct rpmb_ops with all the previous ops replaced, in
+  some sense closer to [3] with the route_frames() op
+* Added rpmb_route_frames()
+* Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
+* Removed all functions not needed in the OP-TEE use case
+* Added "mmc: block: register RPMB partition with the RPMB subsystem", based
+  on the commit with the same name in [3]
+* Added "optee: probe RPMB device using RPMB subsystem" for integration
+  with OP-TEE
+* Moved the RPMB driver into drivers/misc/rpmb-core.c
+* Added my name to MODULE_AUTHOR() in rpmb-core.c
+* Added an rpmb_mutex to serialize access to the IDA
+* Removed the target parameter from all rpmb_*() functions since it's
+  currently unused
+
+Jens Wiklander (3):
+  rpmb: add Replay Protected Memory Block (RPMB) subsystem
+  mmc: block: register RPMB partition with the RPMB subsystem
+  optee: probe RPMB device using RPMB subsystem
+
+ MAINTAINERS                       |   7 +
+ drivers/misc/Kconfig              |  10 ++
+ drivers/misc/Makefile             |   1 +
+ drivers/misc/rpmb-core.c          | 258 ++++++++++++++++++++++++++++++
+ drivers/mmc/core/block.c          | 153 +++++++++++++++++-
+ drivers/tee/optee/core.c          |  55 +++++++
+ drivers/tee/optee/ffa_abi.c       |   7 +
+ drivers/tee/optee/optee_private.h |  16 ++
+ drivers/tee/optee/optee_rpc_cmd.h |  35 ++++
+ drivers/tee/optee/rpc.c           | 233 +++++++++++++++++++++++++++
+ drivers/tee/optee/smc_abi.c       |   6 +
+ include/linux/rpmb.h              | 195 ++++++++++++++++++++++
+ 12 files changed, 974 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/misc/rpmb-core.c
+ create mode 100644 include/linux/rpmb.h
+
+
+base-commit: 41bccc98fb7931d63d03f326a746ac4d429c1dd3
+--=20
+2.34.1
+
+
+--===============7212986474965321512==--
 
