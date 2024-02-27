@@ -1,739 +1,150 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 2/3] tee: tstee: Add Trusted Services TEE driver
-Date: Tue, 27 Feb 2024 12:38:30 +0530
+Subject: Re: [PATCH v2 3/3] Documentation: tee: Add TS-TEE driver
+Date: Tue, 27 Feb 2024 12:44:51 +0530
 Message-ID: 
- <CAFA6WYOKtxGTU33BY_z1H01UF41rm6g-LTxUi-DX4CJrV-aT3w@mail.gmail.com>
-In-Reply-To: <20240223095133.109046-3-balint.dobszay@arm.com>
+ <CAFA6WYP4WVv2H4_2PAn_BOUpYYbG1SDcWL0Gmd6c0ECiH62c_w@mail.gmail.com>
+In-Reply-To: <20240223095133.109046-4-balint.dobszay@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5423858324030150049=="
+Content-Type: multipart/mixed; boundary="===============7482337721144266770=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5423858324030150049==
+--===============7482337721144266770==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 23 Feb 2024 at 15:22, Balint Dobszay <balint.dobszay@arm.com> wrote:
+On Fri, 23 Feb 2024 at 15:23, Balint Dobszay <balint.dobszay@arm.com> wrote:
 >
-> The Trusted Services project provides a framework for developing and
-> deploying device Root of Trust services in FF-A Secure Partitions. The
-> FF-A SPs are accessible through the FF-A driver, but this doesn't
-> provide a user space interface. The goal of this TEE driver is to make
-> Trusted Services SPs accessible for user space clients.
->
-> All TS SPs have the same FF-A UUID, it identifies the RPC protocol used
-> by TS. A TS SP can host one or more services, a service is identified by
-> its service UUID. The same type of service cannot be present twice in
-> the same SP. During SP boot each service in an SP is assigned an
-> interface ID, this is just a short ID to simplify message addressing.
-> There is 1:1 mapping between TS SPs and TEE devices, i.e. a separate TEE
-> device is registered for each TS SP. This is required since contrary to
-> the generic TEE design where memory is shared with the whole TEE
-> implementation, in case of FF-A, memory is shared with a specific SP. A
-> user space client has to be able to separately share memory with each SP
-> based on its endpoint ID.
+> Add documentation for the Trusted Services TEE driver.
 >
 > Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
 > ---
->  drivers/tee/Kconfig               |   1 +
->  drivers/tee/Makefile              |   1 +
->  drivers/tee/tstee/Kconfig         |  11 +
->  drivers/tee/tstee/Makefile        |   3 +
->  drivers/tee/tstee/core.c          | 490 ++++++++++++++++++++++++++++++
->  drivers/tee/tstee/tstee_private.h |  94 ++++++
->  include/uapi/linux/tee.h          |   1 +
->  7 files changed, 601 insertions(+)
->  create mode 100644 drivers/tee/tstee/Kconfig
->  create mode 100644 drivers/tee/tstee/Makefile
->  create mode 100644 drivers/tee/tstee/core.c
->  create mode 100644 drivers/tee/tstee/tstee_private.h
+>  Documentation/tee/index.rst  |  1 +
+>  Documentation/tee/ts-tee.rst | 71 ++++++++++++++++++++++++++++++++++++
+>  2 files changed, 72 insertions(+)
+>  create mode 100644 Documentation/tee/ts-tee.rst
 >
-> diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
-> index 73a147202e88..61b507c18780 100644
-> --- a/drivers/tee/Kconfig
-> +++ b/drivers/tee/Kconfig
-> @@ -15,5 +15,6 @@ if TEE
->
->  source "drivers/tee/optee/Kconfig"
->  source "drivers/tee/amdtee/Kconfig"
-> +source "drivers/tee/tstee/Kconfig"
->
->  endif
-> diff --git a/drivers/tee/Makefile b/drivers/tee/Makefile
-> index 68da044afbfa..5488cba30bd2 100644
-> --- a/drivers/tee/Makefile
-> +++ b/drivers/tee/Makefile
-> @@ -5,3 +5,4 @@ tee-objs +=3D tee_shm.o
->  tee-objs +=3D tee_shm_pool.o
->  obj-$(CONFIG_OPTEE) +=3D optee/
->  obj-$(CONFIG_AMDTEE) +=3D amdtee/
-> +obj-$(CONFIG_ARM_TSTEE) +=3D tstee/
-> diff --git a/drivers/tee/tstee/Kconfig b/drivers/tee/tstee/Kconfig
-> new file mode 100644
-> index 000000000000..d32f91d47398
-> --- /dev/null
-> +++ b/drivers/tee/tstee/Kconfig
-> @@ -0,0 +1,11 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +config ARM_TSTEE
-> +       tristate "Arm Trusted Services TEE driver"
-> +       depends on ARM_FFA_TRANSPORT
-> +       default n
-> +       help
-> +         The Trusted Services project provides a framework for developing =
-and
-> +         deploying device Root of Trust services in FF-A Secure Partitions.
-> +         This driver provides an interface to make Trusted Services Secure
-> +         Partitions accessible for user space clients, since the FF-A driv=
-er
-> +         doesn't implement a user space interface directly.
-> diff --git a/drivers/tee/tstee/Makefile b/drivers/tee/tstee/Makefile
-> new file mode 100644
-> index 000000000000..5227020ebd30
-> --- /dev/null
-> +++ b/drivers/tee/tstee/Makefile
-> @@ -0,0 +1,3 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +arm-tstee-objs :=3D core.o
-> +obj-$(CONFIG_ARM_TSTEE) =3D arm-tstee.o
-> diff --git a/drivers/tee/tstee/core.c b/drivers/tee/tstee/core.c
-> new file mode 100644
-> index 000000000000..2932be017dbe
-> --- /dev/null
-> +++ b/drivers/tee/tstee/core.c
-> @@ -0,0 +1,490 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2023, Arm Limited
-> + */
-> +
-> +#define DRIVER_NAME "Arm TSTEE"
-> +#define pr_fmt(fmt) DRIVER_NAME ": " fmt
-> +
-> +#include <linux/arm_ffa.h>
-> +#include <linux/err.h>
-> +#include <linux/errno.h>
-> +#include <linux/kernel.h>
-> +#include <linux/limits.h>
-> +#include <linux/list.h>
-> +#include <linux/mm.h>
-> +#include <linux/module.h>
-> +#include <linux/scatterlist.h>
-> +#include <linux/slab.h>
-> +#include <linux/stat.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/types.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include "tstee_private.h"
-> +
-> +#define FFA_DIRECT_REQ_ARG_NUM 5
-> +#define FFA_INVALID_MEM_HANDLE U64_MAX
-> +
-> +static void arg_list_to_ffa_data(const u32 *args,
-> +                                struct ffa_send_direct_data *data)
-> +{
-> +       data->data0 =3D args[0];
-> +       data->data1 =3D args[1];
-> +       data->data2 =3D args[2];
-> +       data->data3 =3D args[3];
-> +       data->data4 =3D args[4];
-> +}
-> +
-> +static void arg_list_from_ffa_data(const struct ffa_send_direct_data *data,
-> +                                  u32 *args)
-> +{
-> +       args[0] =3D lower_32_bits(data->data0);
-> +       args[1] =3D lower_32_bits(data->data1);
-> +       args[2] =3D lower_32_bits(data->data2);
-> +       args[3] =3D lower_32_bits(data->data3);
-> +       args[4] =3D lower_32_bits(data->data4);
-> +}
-> +
-> +static void tstee_get_version(struct tee_device *teedev,
-> +                             struct tee_ioctl_version_data *vers)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(teedev);
-> +       struct tee_ioctl_version_data v =3D {
-> +               .impl_id =3D TEE_IMPL_ID_TSTEE,
-> +               /* FF-A endpoint ID only uses the lower 16 bits */
-> +               .impl_caps =3D lower_16_bits(tstee->ffa_dev->vm_id),
-> +               .gen_caps =3D 0,
-> +       };
-> +
-> +       *vers =3D v;
-> +}
-> +
-> +static int tstee_open(struct tee_context *ctx)
-> +{
-> +       struct ts_context_data *ctxdata;
-> +
-> +       ctxdata =3D kzalloc(sizeof(*ctxdata), GFP_KERNEL);
-> +       if (!ctxdata)
-> +               return -ENOMEM;
-> +
-> +       mutex_init(&ctxdata->mutex);
-> +       xa_init_flags(&ctxdata->sess_list, XA_FLAGS_ALLOC);
-> +
-> +       ctx->data =3D ctxdata;
-> +
-> +       return 0;
-> +}
-> +
-> +static void tstee_release(struct tee_context *ctx)
-> +{
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ts_session *sess;
-> +       unsigned long idx;
-> +
-> +       if (!ctxdata)
-> +               return;
-> +
-> +       xa_for_each(&ctxdata->sess_list, idx, sess) {
-> +               xa_erase(&ctxdata->sess_list, idx);
-> +               kfree(sess);
-> +       }
-> +
-> +       xa_destroy(&ctxdata->sess_list);
-> +       mutex_destroy(&ctxdata->mutex);
-> +
-> +       kfree(ctxdata);
-> +       ctx->data =3D NULL;
-> +}
-> +
-> +static int tstee_open_session(struct tee_context *ctx,
-> +                             struct tee_ioctl_open_session_arg *arg,
-> +                             struct tee_param *param __always_unused)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ffa_send_direct_data ffa_data;
-> +       struct ts_session *sess =3D NULL;
-> +       u32 ffa_args[FFA_DIRECT_REQ_ARG_NUM] =3D {};
-> +       u32 sess_id;
-> +       int rc;
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D
-> +               TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_MGMT_IFACE_ID,
-> +                                             TS_RPC_OP_SERVICE_INFO);
-> +
-> +       memcpy(ffa_args + TS_RPC_SERVICE_INFO_UUID0, arg->uuid, UUID_SIZE);
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc)
-> +               return rc;
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_SERVICE_INFO_RPC_STATUS] !=3D TS_RPC_OK)
-> +               return -ENODEV;
-> +
-> +       if (ffa_args[TS_RPC_SERVICE_INFO_IFACE] > U8_MAX)
-> +               return -EINVAL;
-> +
-> +       sess =3D kzalloc(sizeof(*sess), GFP_KERNEL);
-> +       if (!sess)
-> +               return -ENOMEM;
-> +
-> +       sess->iface_id =3D ffa_args[TS_RPC_SERVICE_INFO_IFACE];
-> +
-> +       rc =3D xa_alloc(&ctxdata->sess_list, &sess_id, sess, xa_limit_32b,
-> +                     GFP_KERNEL);
-> +       if (rc) {
-> +               kfree(sess);
-> +               return rc;
-> +       }
-> +
-> +       arg->session =3D sess_id;
-> +       arg->ret =3D 0;
-> +
-> +       return 0;
-> +}
-> +
-> +static int tstee_close_session(struct tee_context *ctx, u32 session)
-> +{
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ts_session *sess;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D xa_erase(&ctxdata->sess_list, session);
-> +       mutex_unlock(&ctxdata->mutex);
-> +       if (!sess)
-> +               return -EINVAL;
-> +
-> +       kfree(sess);
-> +
-> +       return 0;
-> +}
-> +
-> +static int tstee_invoke_func(struct tee_context *ctx,
-> +                            struct tee_ioctl_invoke_arg *arg,
-> +                            struct tee_param *param)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ts_context_data *ctxdata =3D ctx->data;
-> +       struct ffa_send_direct_data ffa_data;
-> +       struct tee_shm *shm =3D NULL;
-> +       struct ts_session *sess;
-> +       u32 req_len, ffa_args[FFA_DIRECT_REQ_ARG_NUM] =3D {};
-> +       int shm_id, rc;
-> +       u8 iface_id;
-> +       u64 handle;
-> +       u16 opcode;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D xa_load(&ctxdata->sess_list, arg->session);
-> +
-> +       /*
-> +        * Do this while holding the mutex to make sure that the session wa=
-sn't
-> +        * closed meanwhile
-> +        */
-> +       if (sess)
-> +               iface_id =3D sess->iface_id;
-> +
-> +       mutex_unlock(&ctxdata->mutex);
-> +       if (!sess)
-> +               return -EINVAL;
-> +
 
-We can drop usage of mutex here and other places via reusing
-xa_lock(), something like below should work:
-
-        xa_lock(&ctxdata->sess_list);
-
-        sess =3D xa_load(&ctxdata->sess_list, arg->session);
-        if (sess)
-                iface_id =3D sess->iface_id;
-
-        xa_unlock(&ctxdata->sess_list);
+Acked-by: Sumit Garg <sumit.garg@linaro.org>
 
 -Sumit
 
-> +       opcode =3D lower_16_bits(arg->func);
-> +       shm_id =3D lower_32_bits(param[0].u.value.a);
-> +       req_len =3D lower_32_bits(param[0].u.value.b);
-> +
-> +       if (shm_id !=3D 0) {
-> +               shm =3D tee_shm_get_from_id(ctx, shm_id);
-> +               if (IS_ERR(shm))
-> +                       return PTR_ERR(shm);
-> +
-> +               if (shm->size < req_len) {
-> +                       pr_err("request doesn't fit into shared memory buff=
-er\n");
-> +                       rc =3D -EINVAL;
-> +                       goto out;
-> +               }
-> +
-> +               handle =3D shm->sec_world_id;
-> +       } else {
-> +               handle =3D FFA_INVALID_MEM_HANDLE;
-> +       }
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D TS_RPC_CTRL_PACK_IFACE_OPCODE(iface_i=
-d,
-> +                                                                 opcode);
-> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_LSW] =3D lower_32_bits(handle);
-> +       ffa_args[TS_RPC_SERVICE_MEM_HANDLE_MSW] =3D upper_32_bits(handle);
-> +       ffa_args[TS_RPC_SERVICE_REQ_LEN] =3D req_len;
-> +       ffa_args[TS_RPC_SERVICE_CLIENT_ID] =3D 0;
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc)
-> +               goto out;
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_SERVICE_RPC_STATUS] !=3D TS_RPC_OK) {
-> +               pr_err("invoke_func rpc status: %d\n",
-> +                      ffa_args[TS_RPC_SERVICE_RPC_STATUS]);
-> +               rc =3D -EINVAL;
-> +               goto out;
-> +       }
-> +
-> +       arg->ret =3D ffa_args[TS_RPC_SERVICE_STATUS];
-> +       if (shm && shm->size >=3D ffa_args[TS_RPC_SERVICE_RESP_LEN])
-> +               param[0].u.value.a =3D ffa_args[TS_RPC_SERVICE_RESP_LEN];
-> +
-> +out:
-> +       if (shm)
-> +               tee_shm_put(shm);
-> +
-> +       return rc;
-> +}
-> +
-> +static int tstee_shm_register(struct tee_context *ctx, struct tee_shm *shm,
-> +                             struct page **pages, size_t num_pages,
-> +                             unsigned long start __always_unused)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ffa_mem_region_attributes mem_attr =3D {
-> +               .receiver =3D tstee->ffa_dev->vm_id,
-> +               .attrs =3D FFA_MEM_RW,
-> +               .flag =3D 0,
-> +       };
-> +       struct ffa_mem_ops_args mem_args =3D {
-> +               .attrs =3D &mem_attr,
-> +               .use_txbuf =3D true,
-> +               .nattrs =3D 1,
-> +               .flags =3D 0,
-> +       };
-> +       struct ffa_send_direct_data ffa_data;
-> +       struct sg_table sgt;
-> +       u32 ffa_args[FFA_DIRECT_REQ_ARG_NUM] =3D {};
-> +       int rc;
-> +
-> +       rc =3D sg_alloc_table_from_pages(&sgt, pages, num_pages, 0,
-> +                                      num_pages * PAGE_SIZE, GFP_KERNEL);
-> +       if (rc)
-> +               return rc;
-> +
-> +       mem_args.sg =3D sgt.sgl;
-> +       rc =3D ffa_dev->ops->mem_ops->memory_share(&mem_args);
-> +       sg_free_table(&sgt);
-> +       if (rc)
-> +               return rc;
-> +
-> +       shm->sec_world_id =3D mem_args.g_handle;
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D
-> +                       TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_MGMT_IFACE_ID,
-> +                                                     TS_RPC_OP_RETRIEVE_ME=
-M);
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_HANDLE_LSW] =3D
-> +                       lower_32_bits(shm->sec_world_id);
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_HANDLE_MSW] =3D
-> +                       upper_32_bits(shm->sec_world_id);
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_TAG_LSW] =3D 0;
-> +       ffa_args[TS_RPC_RETRIEVE_MEM_TAG_MSW] =3D 0;
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc) {
-> +               (void)ffa_dev->ops->mem_ops->memory_reclaim(shm->sec_world_=
-id,
-> +                                                           0);
-> +               return rc;
-> +       }
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_RETRIEVE_MEM_RPC_STATUS] !=3D TS_RPC_OK) {
-> +               pr_err("shm_register rpc status: %d\n",
-> +                      ffa_args[TS_RPC_RETRIEVE_MEM_RPC_STATUS]);
-> +               ffa_dev->ops->mem_ops->memory_reclaim(shm->sec_world_id, 0);
-> +               return -EINVAL;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static int tstee_shm_unregister(struct tee_context *ctx, struct tee_shm *s=
-hm)
-> +{
-> +       struct tstee *tstee =3D tee_get_drvdata(ctx->teedev);
-> +       struct ffa_device *ffa_dev =3D tstee->ffa_dev;
-> +       struct ffa_send_direct_data ffa_data;
-> +       u32 ffa_args[FFA_DIRECT_REQ_ARG_NUM] =3D {};
-> +       int rc;
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D
-> +                       TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_MGMT_IFACE_ID,
-> +                                                     TS_RPC_OP_RELINQ_MEM);
-> +       ffa_args[TS_RPC_RELINQ_MEM_HANDLE_LSW] =3D
-> +                       lower_32_bits(shm->sec_world_id);
-> +       ffa_args[TS_RPC_RELINQ_MEM_HANDLE_MSW] =3D
-> +                       upper_32_bits(shm->sec_world_id);
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       rc =3D ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data);
-> +       if (rc)
-> +               return rc;
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       if (ffa_args[TS_RPC_RELINQ_MEM_RPC_STATUS] !=3D TS_RPC_OK) {
-> +               pr_err("shm_unregister rpc status: %d\n",
-> +                      ffa_args[TS_RPC_RELINQ_MEM_RPC_STATUS]);
-> +               return -EINVAL;
-> +       }
-> +
-> +       rc =3D ffa_dev->ops->mem_ops->memory_reclaim(shm->sec_world_id, 0);
-> +
-> +       return rc;
-> +}
-> +
-> +static const struct tee_driver_ops tstee_ops =3D {
-> +       .get_version =3D tstee_get_version,
-> +       .open =3D tstee_open,
-> +       .release =3D tstee_release,
-> +       .open_session =3D tstee_open_session,
-> +       .close_session =3D tstee_close_session,
-> +       .invoke_func =3D tstee_invoke_func,
-> +       .shm_register =3D tstee_shm_register,
-> +       .shm_unregister =3D tstee_shm_unregister,
-> +};
-> +
-> +static const struct tee_desc tstee_desc =3D {
-> +       .name =3D "tstee-clnt",
-> +       .ops =3D &tstee_ops,
-> +       .owner =3D THIS_MODULE,
-> +};
-> +
-> +static int pool_op_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
-> +                        size_t size, size_t align)
-> +{
-> +       return tee_shm_pool_op_alloc_helper(pool, shm, size, align,
-> +                                           tstee_shm_register);
-> +}
-> +
-> +static void pool_op_free(struct tee_shm_pool *pool, struct tee_shm *shm)
-> +{
-> +       tee_shm_pool_op_free_helper(pool, shm, tstee_shm_unregister);
-> +}
-> +
-> +static void pool_op_destroy_pool(struct tee_shm_pool *pool)
-> +{
-> +       kfree(pool);
-> +}
-> +
-> +static const struct tee_shm_pool_ops pool_ops =3D {
-> +       .alloc =3D pool_op_alloc,
-> +       .free =3D pool_op_free,
-> +       .destroy_pool =3D pool_op_destroy_pool,
-> +};
-> +
-> +static struct tee_shm_pool *tstee_create_shm_pool(void)
-> +{
-> +       struct tee_shm_pool *pool =3D kzalloc(sizeof(*pool), GFP_KERNEL);
-> +
-> +       if (!pool)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       pool->ops =3D &pool_ops;
-> +
-> +       return pool;
-> +}
-> +
-> +static bool tstee_check_rpc_compatible(struct ffa_device *ffa_dev)
-> +{
-> +       struct ffa_send_direct_data ffa_data;
-> +       u32 ffa_args[FFA_DIRECT_REQ_ARG_NUM] =3D {};
-> +
-> +       ffa_args[TS_RPC_CTRL_REG] =3D
-> +                       TS_RPC_CTRL_PACK_IFACE_OPCODE(TS_RPC_MGMT_IFACE_ID,
-> +                                                     TS_RPC_OP_GET_VERSION=
-);
-> +
-> +       arg_list_to_ffa_data(ffa_args, &ffa_data);
-> +       if (ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_data))
-> +               return false;
-> +
-> +       arg_list_from_ffa_data(&ffa_data, ffa_args);
-> +
-> +       return ffa_args[TS_RPC_GET_VERSION_RESP] =3D=3D TS_RPC_PROTOCOL_VER=
-SION;
-> +}
-> +
-> +static int tstee_probe(struct ffa_device *ffa_dev)
-> +{
-> +       struct tstee *tstee;
-> +       int rc;
-> +
-> +       ffa_dev->ops->msg_ops->mode_32bit_set(ffa_dev);
-> +
-> +       if (!tstee_check_rpc_compatible(ffa_dev))
-> +               return -EINVAL;
-> +
-> +       tstee =3D kzalloc(sizeof(*tstee), GFP_KERNEL);
-> +       if (!tstee)
-> +               return -ENOMEM;
-> +
-> +       tstee->ffa_dev =3D ffa_dev;
-> +
-> +       tstee->pool =3D tstee_create_shm_pool();
-> +       if (IS_ERR(tstee->pool)) {
-> +               rc =3D PTR_ERR(tstee->pool);
-> +               tstee->pool =3D NULL;
-> +               goto err_free_tstee;
-> +       }
-> +
-> +       tstee->teedev =3D tee_device_alloc(&tstee_desc, NULL, tstee->pool, =
-tstee);
-> +       if (IS_ERR(tstee->teedev)) {
-> +               rc =3D PTR_ERR(tstee->teedev);
-> +               tstee->teedev =3D NULL;
-> +               goto err_free_pool;
-> +       }
-> +
-> +       rc =3D tee_device_register(tstee->teedev);
-> +       if (rc)
-> +               goto err_unreg_teedev;
-> +
-> +       ffa_dev_set_drvdata(ffa_dev, tstee);
-> +
-> +       return 0;
-> +
-> +err_unreg_teedev:
-> +       tee_device_unregister(tstee->teedev);
-> +err_free_pool:
-> +       tee_shm_pool_free(tstee->pool);
-> +err_free_tstee:
-> +       kfree(tstee);
-> +       return rc;
-> +}
-> +
-> +static void tstee_remove(struct ffa_device *ffa_dev)
-> +{
-> +       struct tstee *tstee =3D ffa_dev->dev.driver_data;
-> +
-> +       tee_device_unregister(tstee->teedev);
-> +       tee_shm_pool_free(tstee->pool);
-> +       kfree(tstee);
-> +}
-> +
-> +static const struct ffa_device_id tstee_device_ids[] =3D {
-> +       /* TS RPC protocol UUID: bdcd76d7-825e-4751-963b-86d4f84943ac */
-> +       { TS_RPC_UUID },
-> +       {}
-> +};
-> +
-> +static struct ffa_driver tstee_driver =3D {
-> +       .name =3D "arm_tstee",
-> +       .probe =3D tstee_probe,
-> +       .remove =3D tstee_remove,
-> +       .id_table =3D tstee_device_ids,
-> +};
-> +
-> +module_ffa_driver(tstee_driver);
-> +
-> +MODULE_AUTHOR("Balint Dobszay <balint.dobszay@arm.com>");
-> +MODULE_DESCRIPTION("Arm Trusted Services TEE driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/tee/tstee/tstee_private.h b/drivers/tee/tstee/tstee_pr=
-ivate.h
-> new file mode 100644
-> index 000000000000..6d24cf0dbbc2
-> --- /dev/null
-> +++ b/drivers/tee/tstee/tstee_private.h
-> @@ -0,0 +1,94 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (c) 2023, Arm Limited
-> + */
-> +
-> +#ifndef TSTEE_PRIVATE_H
-> +#define TSTEE_PRIVATE_H
-> +
-> +#include <linux/arm_ffa.h>
-> +#include <linux/bitops.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/types.h>
-> +#include <linux/uuid.h>
-> +#include <linux/xarray.h>
-> +
-> +/*
-> + * The description of the ABI implemented in this file is available at
-> + * https://trusted-services.readthedocs.io/en/v1.0.0/developer/service-acc=
-ess-protocols.html#abi
-> + */
-> +
-> +/* UUID of this protocol */
-> +#define TS_RPC_UUID UUID_INIT(0xbdcd76d7, 0x825e, 0x4751, \
-> +                             0x96, 0x3b, 0x86, 0xd4, 0xf8, 0x49, 0x43, 0xa=
-c)
-> +
-> +/* Protocol version*/
-> +#define TS_RPC_PROTOCOL_VERSION                (1)
-> +
-> +/* Status codes */
-> +#define TS_RPC_OK                      (0)
-> +
-> +/* RPC control register */
-> +#define TS_RPC_CTRL_REG                        (0)
-> +#define OPCODE_MASK                    GENMASK(15, 0)
-> +#define IFACE_ID_MASK                  GENMASK(23, 16)
-> +#define TS_RPC_CTRL_OPCODE(x)          ((u16)(FIELD_GET(OPCODE_MASK, (x))))
-> +#define TS_RPC_CTRL_IFACE_ID(x)                ((u8)(FIELD_GET(IFACE_ID_MA=
-SK, (x))))
-> +#define TS_RPC_CTRL_PACK_IFACE_OPCODE(i, o)    \
-> +       (FIELD_PREP(IFACE_ID_MASK, (i)) | FIELD_PREP(OPCODE_MASK, (o)))
-> +#define TS_RPC_CTRL_SAP_RC             BIT(30)
-> +#define TS_RPC_CTRL_SAP_ERR            BIT(31)
-> +
-> +/* Interface ID for RPC management operations */
-> +#define TS_RPC_MGMT_IFACE_ID           (0xff)
-> +
-> +/* Management calls */
-> +#define TS_RPC_OP_GET_VERSION          (0x0000)
-> +#define TS_RPC_GET_VERSION_RESP                (1)
-> +
-> +#define TS_RPC_OP_RETRIEVE_MEM         (0x0001)
-> +#define TS_RPC_RETRIEVE_MEM_HANDLE_LSW (1)
-> +#define TS_RPC_RETRIEVE_MEM_HANDLE_MSW (2)
-> +#define TS_RPC_RETRIEVE_MEM_TAG_LSW    (3)
-> +#define TS_RPC_RETRIEVE_MEM_TAG_MSW    (4)
-> +#define TS_RPC_RETRIEVE_MEM_RPC_STATUS (1)
-> +
-> +#define TS_RPC_OP_RELINQ_MEM           (0x0002)
-> +#define TS_RPC_RELINQ_MEM_HANDLE_LSW   (1)
-> +#define TS_RPC_RELINQ_MEM_HANDLE_MSW   (2)
-> +#define TS_RPC_RELINQ_MEM_RPC_STATUS   (1)
-> +
-> +#define TS_RPC_OP_SERVICE_INFO         (0x0003)
-> +#define TS_RPC_SERVICE_INFO_UUID0      (1)
-> +#define TS_RPC_SERVICE_INFO_UUID1      (2)
-> +#define TS_RPC_SERVICE_INFO_UUID2      (3)
-> +#define TS_RPC_SERVICE_INFO_UUID3      (4)
-> +#define TS_RPC_SERVICE_INFO_RPC_STATUS (1)
-> +#define TS_RPC_SERVICE_INFO_IFACE      (2)
-> +
-> +/* Service call */
-> +#define TS_RPC_SERVICE_MEM_HANDLE_LSW  (1)
-> +#define TS_RPC_SERVICE_MEM_HANDLE_MSW  (2)
-> +#define TS_RPC_SERVICE_REQ_LEN         (3)
-> +#define TS_RPC_SERVICE_CLIENT_ID       (4)
-> +#define TS_RPC_SERVICE_RPC_STATUS      (1)
-> +#define TS_RPC_SERVICE_STATUS          (2)
-> +#define TS_RPC_SERVICE_RESP_LEN                (3)
-> +
-> +struct tstee {
-> +       struct ffa_device *ffa_dev;
-> +       struct tee_device *teedev;
-> +       struct tee_shm_pool *pool;
-> +};
-> +
-> +struct ts_session {
-> +       u8 iface_id;
-> +};
-> +
-> +struct ts_context_data {
-> +       struct xarray sess_list;
-> +       /* Serializes access to the session list */
-> +       struct mutex mutex;
-> +};
-> +
-> +#endif /* TSTEE_PRIVATE_H */
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index 23e57164693c..d0430bee8292 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -56,6 +56,7 @@
->   */
->  #define TEE_IMPL_ID_OPTEE      1
->  #define TEE_IMPL_ID_AMDTEE     2
-> +#define TEE_IMPL_ID_TSTEE      3
+> diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
+> index a23bd08847e5..4be6e69d7837 100644
+> --- a/Documentation/tee/index.rst
+> +++ b/Documentation/tee/index.rst
+> @@ -10,6 +10,7 @@ TEE Subsystem
+>     tee
+>     op-tee
+>     amd-tee
+> +   ts-tee
 >
->  /*
->   * OP-TEE specific capabilities
+>  .. only::  subproject and html
+>
+> diff --git a/Documentation/tee/ts-tee.rst b/Documentation/tee/ts-tee.rst
+> new file mode 100644
+> index 000000000000..843e34422648
+> --- /dev/null
+> +++ b/Documentation/tee/ts-tee.rst
+> @@ -0,0 +1,71 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +TS-TEE (Trusted Services project)
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +This driver provides access to secure services implemented by Trusted Serv=
+ices.
+> +
+> +Trusted Services [1] is a TrustedFirmware.org project that provides a fram=
+ework
+> +for developing and deploying device Root of Trust services in FF-A [2] S-E=
+L0
+> +Secure Partitions. The project hosts the reference implementation of the A=
+rm
+> +Platform Security Architecture [3] for Arm A-profile devices.
+> +
+> +The FF-A Secure Partitions (SP) are accessible through the FF-A driver [4]=
+ which
+> +provides the low level communication for this driver. On top of that the T=
+rusted
+> +Services RPC protocol is used [5]. To use the driver from user space a ref=
+erence
+> +implementation is provided at [6], which is part of the Trusted Services c=
+lient
+> +library called libts [7].
+> +
+> +All Trusted Services (TS) SPs have the same FF-A UUID; it identifies the T=
+S RPC
+> +protocol. A TS SP can host one or more services (e.g. PSA Crypto, PSA ITS,=
+ etc).
+> +A service is identified by its service UUID; the same type of service cann=
+ot be
+> +present twice in the same SP. During SP boot each service in the SP is ass=
+igned
+> +an "interface ID". This is just a short ID to simplify message addressing.
+> +
+> +The generic TEE design is to share memory at once with the Trusted OS, whi=
+ch can
+> +then be reused to communicate with multiple applications running on the Tr=
+usted
+> +OS. However, in case of FF-A, memory sharing works on an endpoint level, i=
+.e.
+> +memory is shared with a specific SP. User space has to be able to separate=
+ly
+> +share memory with each SP based on its endpoint ID; therefore a separate T=
+EE
+> +device is registered for each discovered TS SP. Opening the SP corresponds=
+ to
+> +opening the TEE device and creating a TEE context. A TS SP hosts one or mo=
+re
+> +services. Opening a service corresponds to opening a session in the given
+> +tee_context.
+> +
+> +Overview of a system with Trusted Services components::
+> +
+> +   User space                  Kernel space                   Secure world
+> +   ~~~~~~~~~~                  ~~~~~~~~~~~~                   ~~~~~~~~~~~~
+> +   +--------+                                               +-------------+
+> +   | Client |                                               | Trusted     |
+> +   +--------+                                               | Services SP |
+> +      /\                                                    +-------------+
+> +      ||                                                          /\
+> +      ||                                                          ||
+> +      ||                                                          ||
+> +      \/                                                          \/
+> +   +-------+                +----------+--------+           +-------------+
+> +   | libts |                |  TEE     | TS-TEE |           |  FF-A SPMC  |
+> +   |       |                |  subsys  | driver |           |   + SPMD    |
+> +   +-------+----------------+----+-----+--------+-----------+-------------+
+> +   |      Generic TEE API        |     |  FF-A  |     TS RPC protocol     |
+> +   |      IOCTL (TEE_IOC_*)      |     | driver |        over FF-A        |
+> +   +-----------------------------+     +--------+-------------------------+
+> +
+> +References
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +[1] https://www.trustedfirmware.org/projects/trusted-services/
+> +
+> +[2] https://developer.arm.com/documentation/den0077/
+> +
+> +[3] https://www.arm.com/architecture/security-features/platform-security
+> +
+> +[4] drivers/firmware/arm_ffa/
+> +
+> +[5] https://trusted-services.readthedocs.io/en/v1.0.0/developer/service-ac=
+cess-protocols.html#abi
+> +
+> +[6] https://git.trustedfirmware.org/TS/trusted-services.git/tree/component=
+s/rpc/ts_rpc/caller/linux/ts_rpc_caller_linux.c?h=3Dv1.0.0
+> +
+> +[7] https://git.trustedfirmware.org/TS/trusted-services.git/tree/deploymen=
+ts/libts/arm-linux/CMakeLists.txt?h=3Dv1.0.0
 > --
 > 2.34.1
 >
 
---===============5423858324030150049==--
+--===============7482337721144266770==--
 
