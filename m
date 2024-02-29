@@ -1,312 +1,749 @@
 From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
- load the firmware
-Date: Thu, 29 Feb 2024 18:17:20 +0000
-Message-ID: <429d5df5-ab41-408b-a50a-2388f2efc92b@foss.st.com>
-In-Reply-To: <Zdjl6Z2ktTwi+oWp@p14s>
+Subject: Re: [PATCH v3 1/7] remoteproc: Add TEE support
+Date: Thu, 29 Feb 2024 18:27:40 +0000
+Message-ID: <725ac2a3-f526-44bc-a40c-c39ce0bd3046@foss.st.com>
+In-Reply-To: <ZeCujRgH/odzU9og@p14s>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5075619079965525263=="
+Content-Type: multipart/mixed; boundary="===============1459978131344447701=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5075619079965525263==
+--===============1459978131344447701==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hello Mathieu,
 
-
-On 2/23/24 19:37, Mathieu Poirier wrote:
-> On Fri, Feb 23, 2024 at 02:54:13PM +0100, Arnaud POULIQUEN wrote:
+On 2/29/24 17:19, Mathieu Poirier wrote:
+> Good morning,
+>=20
+> On Wed, Feb 28, 2024 at 09:20:28AM +0100, Arnaud POULIQUEN wrote:
 >> Hello Mathieu,
 >>
->> On 2/22/24 20:02, Mathieu Poirier wrote:
->>> Hi,
->>>
->>> On Wed, Feb 14, 2024 at 06:21:27PM +0100, Arnaud Pouliquen wrote:
->>>> The new TEE remoteproc device is used to manage remote firmware in a
->>>> secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
->>>> introduced to delegate the loading of the firmware to the trusted
->>>> execution context. In such cases, the firmware should be signed and
->>>> adhere to the image format defined by the TEE.
+>>
+>> On 2/23/24 19:27, Mathieu Poirier wrote:
+>>> On Wed, Feb 14, 2024 at 06:21:21PM +0100, Arnaud Pouliquen wrote:
+>>>> From: Arnaud Pouliquen <arnaud.pouliquen@st.com>
 >>>>
->>>> A new "to_attach" field is introduced to differentiate the use cases
->>>> "firmware loaded by the boot stage" and "firmware loaded by the TEE".
+>>>> Add a remoteproc TEE (Trusted Execution Environment) driver
+>>>> that will be probed by the TEE bus. If the associated Trusted
+>>>> application is supported on secure part this device offers a client
+>>>> interface to load a firmware in the secure part.
+>>>> This firmware could be authenticated and decrypted by the secure
+>>>> trusted application.
 >>>>
->>>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+>>>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@st.com>
 >>>> ---
->>>> V2 to V3 update:
->>>> - remove stm32_rproc_tee_elf_sanity_check(), stm32_rproc_tee_elf_load()
->>>>   stm32_rproc_tee_elf_find_loaded_rsc_table() and  stm32_rproc_tee_start=
-() that are bnow unused
->>>> - use new rproc::alt_boot field to sepcify that the alternate fboot meth=
-od is used
->>>> - use stm32_rproc::to_attach field to differenciate attch mode from remo=
-teproc tee boot mode.
->>>> - remove the used of stm32_rproc::fw_loaded
+>>>> update from V2
+>>>> - Use 'tee_rproc' prefix for all functions
+>>>> - rename tee_rproc_get_loaded_rsc_table to tee_rproc_find_loaded_rsc_tab=
+le
+>>>> - redefine fonction to better match with the rproc_ops structure format
+>>>> 	- replace 'struct tee_rproc' parameter by 'struct rproc' parameter
+>>>> 	- rename 'rproc_tee_get_rsc_table()' to tee_rproc_get_loaded_rsc_table()
+>>>> 	  and rework it to remove the cached_table management.
+>>>> 	- introduce tee_rproc_get_context() to get the tee_rproc struct from the
+>>>>           rproc struct
+>>>> 	- rename tee_rproc_get_loaded_rsc_table() to tee_rproc_find_loaded_rsc_=
+table()
+>>>> - remove useless check on tee_rproc_ctx structure in tee_rproc_register()
+>>>>   and tee_rproc_unregister()
+>>>> - fix test on the return of tee_rproc_ctx =3D devm_kzalloc()
+>>>> - remove useless includes and unused tee_rproc_mem structure.
 >>>> ---
->>>>  drivers/remoteproc/stm32_rproc.c | 85 +++++++++++++++++++++++++++++---
->>>>  1 file changed, 79 insertions(+), 6 deletions(-)
+>>>>  drivers/remoteproc/Kconfig          |   9 +
+>>>>  drivers/remoteproc/Makefile         |   1 +
+>>>>  drivers/remoteproc/tee_remoteproc.c | 397 ++++++++++++++++++++++++++++
+>>>>  include/linux/tee_remoteproc.h      | 102 +++++++
+>>>>  4 files changed, 509 insertions(+)
+>>>>  create mode 100644 drivers/remoteproc/tee_remoteproc.c
+>>>>  create mode 100644 include/linux/tee_remoteproc.h
 >>>>
->>>> diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32=
-_rproc.c
->>>> index fcc0001e2657..9cfcf66462e0 100644
->>>> --- a/drivers/remoteproc/stm32_rproc.c
->>>> +++ b/drivers/remoteproc/stm32_rproc.c
->>>> @@ -20,6 +20,7 @@
->>>>  #include <linux/remoteproc.h>
->>>>  #include <linux/reset.h>
->>>>  #include <linux/slab.h>
->>>> +#include <linux/tee_remoteproc.h>
->>>>  #include <linux/workqueue.h>
+>>>> diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
+>>>> index 48845dc8fa85..85299606806c 100644
+>>>> --- a/drivers/remoteproc/Kconfig
+>>>> +++ b/drivers/remoteproc/Kconfig
+>>>> @@ -365,6 +365,15 @@ config XLNX_R5_REMOTEPROC
 >>>> =20
->>>>  #include "remoteproc_internal.h"
->>>> @@ -49,6 +50,9 @@
->>>>  #define M4_STATE_STANDBY	4
->>>>  #define M4_STATE_CRASH		5
+>>>>  	  It's safe to say N if not interested in using RPU r5f cores.
 >>>> =20
->>>> +/* Remote processor unique identifier aligned with the Trusted Executio=
-n Environment definitions */
->>>> +#define STM32_MP1_M4_PROC_ID    0
 >>>> +
->>>>  struct stm32_syscon {
->>>>  	struct regmap *map;
->>>>  	u32 reg;
->>>> @@ -90,6 +94,8 @@ struct stm32_rproc {
->>>>  	struct stm32_mbox mb[MBOX_NB_MBX];
->>>>  	struct workqueue_struct *workqueue;
->>>>  	bool hold_boot_smc;
->>>> +	bool to_attach;
->>>> +	struct tee_rproc *trproc;
->>>>  	void __iomem *rsc_va;
->>>>  };
+>>>> +config TEE_REMOTEPROC
+>>>> +	tristate "trusted firmware support by a TEE application"
+>>>> +	depends on OPTEE
+>>>> +	help
+>>>> +	  Support for trusted remote processors firmware. The firmware
+>>>> +	  authentication and/or decryption are managed by a trusted applicatio=
+n.
+>>>> +	  This can be either built-in or a loadable module.
+>>>> +
+>>>>  endif # REMOTEPROC
 >>>> =20
->>>> @@ -253,10 +259,30 @@ static int stm32_rproc_release(struct rproc *rproc)
->>>>  			return err;
->>>>  		}
->>>>  	}
->>>> +	ddata->to_attach =3D false;
->>>> =20
->>>>  	return err;
->>>>  }
->>>> =20
->>>> +static int stm32_rproc_tee_attach(struct rproc *rproc)
+>>>>  endmenu
+>>>> diff --git a/drivers/remoteproc/Makefile b/drivers/remoteproc/Makefile
+>>>> index 91314a9b43ce..fa8daebce277 100644
+>>>> --- a/drivers/remoteproc/Makefile
+>>>> +++ b/drivers/remoteproc/Makefile
+>>>> @@ -36,6 +36,7 @@ obj-$(CONFIG_RCAR_REMOTEPROC)		+=3D rcar_rproc.o
+>>>>  obj-$(CONFIG_ST_REMOTEPROC)		+=3D st_remoteproc.o
+>>>>  obj-$(CONFIG_ST_SLIM_REMOTEPROC)	+=3D st_slim_rproc.o
+>>>>  obj-$(CONFIG_STM32_RPROC)		+=3D stm32_rproc.o
+>>>> +obj-$(CONFIG_TEE_REMOTEPROC)		+=3D tee_remoteproc.o
+>>>>  obj-$(CONFIG_TI_K3_DSP_REMOTEPROC)	+=3D ti_k3_dsp_remoteproc.o
+>>>>  obj-$(CONFIG_TI_K3_R5_REMOTEPROC)	+=3D ti_k3_r5_remoteproc.o
+>>>>  obj-$(CONFIG_XLNX_R5_REMOTEPROC)	+=3D xlnx_r5_remoteproc.o
+>>>> diff --git a/drivers/remoteproc/tee_remoteproc.c b/drivers/remoteproc/te=
+e_remoteproc.c
+>>>> new file mode 100644
+>>>> index 000000000000..ac727e062d00
+>>>> --- /dev/null
+>>>> +++ b/drivers/remoteproc/tee_remoteproc.c
+>>>> @@ -0,0 +1,397 @@
+>>>> +// SPDX-License-Identifier: GPL-2.0-or-later
+>>>> +/*
+>>>> + * Copyright (C) STMicroelectronics 2023 - All Rights Reserved
+>>>> + * Author: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+>>>> + */
+>>>> +
+>>>> +#include <linux/firmware.h>
+>>>> +#include <linux/io.h>
+>>>> +#include <linux/module.h>
+>>>> +#include <linux/remoteproc.h>
+>>>> +#include <linux/slab.h>
+>>>> +#include <linux/tee_drv.h>
+>>>> +#include <linux/tee_remoteproc.h>
+>>>> +
+>>>> +#include "remoteproc_internal.h"
+>>>> +
+>>>> +#define MAX_TEE_PARAM_ARRY_MEMBER	4
+>>>> +
+>>>> +/*
+>>>> + * Authentication of the firmware and load in the remote processor memo=
+ry
+>>>> + *
+>>>> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+>>>> + * [in]	 params[1].memref:	buffer containing the image of the buffer
+>>>> + */
+>>>> +#define TA_RPROC_FW_CMD_LOAD_FW		1
+>>>> +
+>>>> +/*
+>>>> + * Start the remote processor
+>>>> + *
+>>>> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+>>>> + */
+>>>> +#define TA_RPROC_FW_CMD_START_FW	2
+>>>> +
+>>>> +/*
+>>>> + * Stop the remote processor
+>>>> + *
+>>>> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+>>>> + */
+>>>> +#define TA_RPROC_FW_CMD_STOP_FW		3
+>>>> +
+>>>> +/*
+>>>> + * Return the address of the resource table, or 0 if not found
+>>>> + * No check is done to verify that the address returned is accessible by
+>>>> + * the non secure context. If the resource table is loaded in a protect=
+ed
+>>>> + * memory the access by the non secure context will lead to a data abor=
+t.
+>>>> + *
+>>>> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+>>>> + * [out]  params[1].value.a:	32bit LSB resource table memory address
+>>>> + * [out]  params[1].value.b:	32bit MSB resource table memory address
+>>>> + * [out]  params[2].value.a:	32bit LSB resource table memory size
+>>>> + * [out]  params[2].value.b:	32bit MSB resource table memory size
+>>>> + */
+>>>> +#define TA_RPROC_FW_CMD_GET_RSC_TABLE	4
+>>>> +
+>>>> +/*
+>>>> + * Return the address of the core dump
+>>>> + *
+>>>> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+>>>> + * [out] params[1].memref:	address of the core dump image if exist,
+>>>> + *				else return Null
+>>>> + */
+>>>> +#define TA_RPROC_FW_CMD_GET_COREDUMP	5
+>>>> +
+>>>> +struct tee_rproc__context {
+>>>> +	struct list_head sessions;
+>>>> +	struct tee_context *tee_ctx;
+>>>> +	struct device *dev;
+>>>> +};
+>>>> +
+>>>> +static struct tee_rproc__context *tee_rproc_ctx;
+>>>> +
+>>>> +static void prepare_args(struct tee_rproc *trproc, int cmd,
+>>>> +			 struct tee_ioctl_invoke_arg *arg,
+>>>> +			 struct tee_param *param, unsigned int num_params)
 >>>> +{
->>>> +	/* Nothing to do, remote proc already started by the secured context. =
-*/
+>>>> +	memset(arg, 0, sizeof(*arg));
+>>>> +	memset(param, 0, MAX_TEE_PARAM_ARRY_MEMBER * sizeof(*param));
+>>>> +
+>>>> +	arg->func =3D cmd;
+>>>> +	arg->session =3D trproc->session_id;
+>>>> +	arg->num_params =3D num_params + 1;
+>>>> +
+>>>> +	param[0] =3D (struct tee_param) {
+>>>> +		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
+>>>> +		.u.value.a =3D trproc->rproc_id,
+>>>> +	};
+>>>> +}
+>>>> +
+>>>> +static struct tee_rproc *tee_rproc_get_context(struct rproc *rproc)
+>>>> +{
+>>>> +	struct tee_rproc *entry, *tmp;
+>>>> +
+>>>> +	list_for_each_entry_safe(entry, tmp, &tee_rproc_ctx->sessions, node) {
+>>>> +		if (entry->rproc =3D=3D rproc)
+>>>> +			return entry;
+>>>> +	}
+>>>> +
+>>>> +	return NULL;
+>>>> +}
+>>>> +
+>>>> +int tee_rproc_load_fw(struct rproc *rproc, const struct firmware *fw)
+>>>> +{
+>>>> +	struct tee_ioctl_invoke_arg arg;
+>>>> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+>>>> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+>>>> +	struct tee_shm *fw_shm;
+>>>> +	int ret;
+>>>> +
+>>>> +	if (!trproc)
+>>>> +		return -EINVAL;
+>>>> +
+>>>> +	fw_shm =3D tee_shm_register_kernel_buf(tee_rproc_ctx->tee_ctx, (void *=
+)fw->data, fw->size);
+>>>> +	if (IS_ERR(fw_shm))
+>>>> +		return PTR_ERR(fw_shm);
+>>>> +
+>>>> +	prepare_args(trproc, TA_RPROC_FW_CMD_LOAD_FW, &arg, param, 1);
+>>>> +
+>>>> +	/* Provide the address of the firmware image */
+>>>> +	param[1] =3D (struct tee_param) {
+>>>> +		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT,
+>>>> +		.u.memref =3D {
+>>>> +			.shm =3D fw_shm,
+>>>> +			.size =3D fw->size,
+>>>> +			.shm_offs =3D 0,
+>>>> +		},
+>>>> +	};
+>>>> +
+>>>> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+>>>> +	if (ret < 0 || arg.ret !=3D 0) {
+>>>> +		dev_err(tee_rproc_ctx->dev,
+>>>> +			"TA_RPROC_FW_CMD_LOAD_FW invoke failed TEE err: %x, ret:%x\n",
+>>>> +			arg.ret, ret);
+>>>> +		if (!ret)
+>>>> +			ret =3D -EIO;
+>>>> +	}
+>>>> +
+>>>> +	tee_shm_free(fw_shm);
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_load_fw);
+>>>> +
+>>>> +struct resource_table *tee_rproc_get_loaded_rsc_table(struct rproc *rpr=
+oc, size_t *table_sz)
+>>>> +{
+>>>> +	struct tee_ioctl_invoke_arg arg;
+>>>> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+>>>> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+>>>> +	int ret;
+>>>> +
+>>>> +	if (!trproc)
+>>>> +		return ERR_PTR(-EINVAL);
+>>>> +
+>>>> +	prepare_args(trproc, TA_RPROC_FW_CMD_GET_RSC_TABLE, &arg, param, 2);
+>>>> +
+>>>> +	param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
+>>>> +	param[2].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
+>>>> +
+>>>> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+>>>> +	if (ret < 0 || arg.ret !=3D 0) {
+>>>> +		dev_err(tee_rproc_ctx->dev,
+>>>> +			"TA_RPROC_FW_CMD_GET_RSC_TABLE invoke failed TEE err: %x, ret:%x\n",
+>>>> +			arg.ret, ret);
+>>>> +		return ERR_PTR(-EIO);
+>>>> +	}
+>>>> +
+>>>> +	*table_sz =3D param[2].u.value.a;
+>>>> +
+>>>> +	/* If the size is null no resource table defined in the image */
+>>>> +	if (!*table_sz)
+>>>> +		return NULL;
+>>>> +
+>>>> +	/* Store the resource table address that would be updated by the remot=
+e core. */
+>>>> +	trproc->rsc_table =3D ioremap_wc(param[1].u.value.a, *table_sz);
+>>>> +	if (IS_ERR_OR_NULL(trproc->rsc_table)) {
+>>>> +		dev_err(tee_rproc_ctx->dev, "Unable to map memory region: %lld+%zx\n",
+>>>> +			param[1].u.value.a, *table_sz);
+>>>> +		return ERR_PTR(-ENOMEM);
+>>>> +	}
+>>>> +
+>>>> +	return trproc->rsc_table;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_get_loaded_rsc_table);
+>>>
+>>> Here we are missing:
+>>>
+>>> tee_rproc_parse_fw()
+>>
+>> Please tell me if I'm wrong but the aim of this ops is to parse the firmwa=
+re
+>> before loading it in case of some resources shoukd be needed before.
+>> but here to parse it we load. I'm not sure that this function makes sense =
+here.
+>>
+>=20
+> The documentation for rproc_ops::parse_fw [1] indicate the operation
+> is to extract the resource table from the firmware image, something that is
+> echoed in by the implementation of rproc_elf_load_rsc_table().  No matter w=
+hat
+> the secure side needs or how it does it, this function should return the ad=
+dress
+> of the resource table. =20
+>=20
+> [1]. https://elixir.bootlin.com/linux/v6.8-rc6/source/include/linux/remotep=
+roc.h#L370
+>=20
+>>> {
+>>>         tee_rproc_load_fw()
+>>>         resource_table =3D tee_rproc_get_loaded_rsc_table()
+>>>
+>>>         //check error conditions here
+>>>
+>>>         rproc->cached_table =3D resource_table;
+>>>         rproc->table_ptr =3D resource_table;
+>>
+>> This seems to me that it is not possible regarding
+>> the "memcpy(loaded_table, rproc->cached_table, rproc->table_sz)"[1] in
+>> rproc_start() and the kfree(rproc->cached_table) [2] in rproc_shutdown(). =
+We
+>> would copy with the same source and destibnation address.
+>> In this case a memory should be allocated for the rproc->cached_table.
+>>
+>=20
+> I touched base on how to fix the handling of the resource table in rproc_st=
+art()
+> in an earlier reply, but because of the kfree() in rproc_shutdown, I agree
+> rproc->cached_table should be set to NULL.  That said, there needs to be a
+> detailed explanation of what is happening in rproc_start().
+>=20
+>>
+>>> }
+>>>
+>>> This is essentially the same as rproc_elf_load_rsc_table(). That way we d=
+on't
+>>> need rproc_alt_fw_boot() and rproc_load_segments() doesn't have to be mov=
+ed
+>>> around.=20
+>>
+>> The trusted application simply needs to know that if the firmware is
+>>> already loaded, it has to return.=20
+>>
+>> Today trying to load twice time is considered as an error in OP-TEE [3].
+>=20
+> That can be fixed.
+>=20
+>> As it is a constraint introduced by Linux, I would prefer treated it  in t=
+he Linux.
+>=20
+> Things in the remoteproc subsystem have been working just fine for well ove=
+r a
+> decade.  I'd say this is introduced by contraints from an image that is han=
+dled
+> by the secure world.
+>=20
+>>
+>> What about introduce a "fw_loaded" flag in tee_rproc__context?
+>=20
+> I'd like to avoid that since the flag is associated with the specific way t=
+he
+> trusted application works.  That flag surely won't apply, or new flags will=
+ be
+> introduced, when another trusted application to handle the remote processor=
+'s
+> firmware is introduced.
+>=20
+
+Let's move in this direction, I can try to change the behaviour in OP-TEE on
+Load and if it is not accepted we can rediscuss the use of a flag.
+
+I will come back with a new version based on your proposals.
+
+Thanks,
+Arnaud
+
+>>
+>>
+>> [1]
+>> https://elixir.bootlin.com/linux/v6.8-rc6/source/drivers/remoteproc/remote=
+proc_core.c#L1289
+>> [2]
+>> https://elixir.bootlin.com/linux/v6.8-rc6/source/drivers/remoteproc/remote=
+proc_core.c#L2024
+>> [3]
+>> https://elixir.bootlin.com/op-tee/latest/source/ta/remoteproc/src/remotepr=
+oc_core.c#L896
+>>
+>>
+>> Regards,
+>> Arnaud
+>>
+>>>
+>>>> +
+>>>> +struct resource_table *tee_rproc_find_loaded_rsc_table(struct rproc *rp=
+roc,
+>>>> +						       const struct firmware *fw)
+>>>> +{
+>>>> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+>>>> +	size_t table_sz;
+>>>> +
+>>>> +	if (!trproc)
+>>>> +		return ERR_PTR(-EINVAL);
+>>>> +
+>>>> +	if (!trproc->rsc_table)
+>>>> +		trproc->rsc_table =3D tee_rproc_get_loaded_rsc_table(rproc, &table_sz=
+);
+>>>> +
+>>>> +	return trproc->rsc_table;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_find_loaded_rsc_table);
+>>>> +
+>>>> +int tee_rproc_start(struct rproc *rproc)
+>>>> +{
+>>>> +	struct tee_ioctl_invoke_arg arg;
+>>>> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+>>>> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+>>>> +	int ret;
+>>>> +
+>>>> +	if (!trproc)
+>>>> +		return -EINVAL;
+>>>> +
+>>>> +	prepare_args(trproc, TA_RPROC_FW_CMD_START_FW, &arg, param, 0);
+>>>> +
+>>>> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+>>>> +	if (ret < 0 || arg.ret !=3D 0) {
+>>>> +		dev_err(tee_rproc_ctx->dev,
+>>>> +			"TA_RPROC_FW_CMD_START_FW invoke failed TEE err: %x, ret:%x\n",
+>>>> +			arg.ret, ret);
+>>>> +		if (!ret)
+>>>> +			ret =3D -EIO;
+>>>> +	}
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_start);
+>>>> +
+>>>> +int tee_rproc_stop(struct rproc *rproc)
+>>>> +{
+>>>> +	struct tee_ioctl_invoke_arg arg;
+>>>> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+>>>> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+>>>> +	int ret;
+>>>> +
+>>>> +	if (!trproc)
+>>>> +		return -EINVAL;
+>>>> +
+>>>> +	prepare_args(trproc, TA_RPROC_FW_CMD_STOP_FW, &arg, param, 0);
+>>>> +
+>>>> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+>>>> +	if (ret < 0 || arg.ret !=3D 0) {
+>>>> +		dev_err(tee_rproc_ctx->dev,
+>>>> +			"TA_RPROC_FW_CMD_STOP_FW invoke failed TEE err: %x, ret:%x\n",
+>>>> +			arg.ret, ret);
+>>>> +		if (!ret)
+>>>> +			ret =3D -EIO;
+>>>> +	}
+>>>> +	if (trproc->rsc_table)
+>>>> +		iounmap(trproc->rsc_table);
+>>>> +	trproc->rsc_table =3D NULL;
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_stop);
+>>>> +
+>>>> +static const struct tee_client_device_id stm32_tee_rproc_id_table[] =3D=
+ {
+>>>> +	{UUID_INIT(0x80a4c275, 0x0a47, 0x4905,
+>>>> +		   0x82, 0x85, 0x14, 0x86, 0xa9, 0x77, 0x1a, 0x08)},
+>>>> +	{}
+>>>> +};
+>>>> +
+>>>> +struct tee_rproc *tee_rproc_register(struct device *dev, unsigned int r=
+proc_id)
+>>>> +{
+>>>> +	struct tee_client_device *tee_device;
+>>>> +	struct tee_ioctl_open_session_arg sess_arg;
+>>>> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+>>>> +	struct tee_rproc *trproc;
+>>>> +	int ret;
+>>>> +
+>>>> +	/*
+>>>> +	 * The device is not probed by the TEE bus. We ignore the reason (bus =
+could be not yet
+>>>> +	 * probed or service not available in the secure firmware)
+>>>> +	 * Assumption here is that the TEE bus is not probed.
+>>>> +	 */
+>>>> +	if (!tee_rproc_ctx)
+>>>> +		return ERR_PTR(-EPROBE_DEFER);
+>>>> +
+>>>> +	trproc =3D  devm_kzalloc(dev, sizeof(*trproc), GFP_KERNEL);
+>>>> +	if (!trproc)
+>>>> +		return ERR_PTR(-ENOMEM);
+>>>> +
+>>>> +	tee_device =3D to_tee_client_device(tee_rproc_ctx->dev);
+>>>> +	memset(&sess_arg, 0, sizeof(sess_arg));
+>>>> +
+>>>> +	/* Open session with rproc_tee load the OP-TEE Trusted Application */
+>>>> +	memcpy(sess_arg.uuid, tee_device->id.uuid.b, TEE_IOCTL_UUID_LEN);
+>>>> +
+>>>> +	sess_arg.clnt_login =3D TEE_IOCTL_LOGIN_REE_KERNEL;
+>>>> +	sess_arg.num_params =3D 1;
+>>>> +
+>>>> +	param[0] =3D (struct tee_param) {
+>>>> +		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
+>>>> +		.u.value.a =3D rproc_id,
+>>>> +	};
+>>>> +
+>>>> +	ret =3D tee_client_open_session(tee_rproc_ctx->tee_ctx, &sess_arg, par=
+am);
+>>>> +	if (ret < 0 || sess_arg.ret !=3D 0) {
+>>>> +		dev_err(dev, "tee_client_open_session failed, err: %x\n", sess_arg.re=
+t);
+>>>> +		return ERR_PTR(-EINVAL);
+>>>> +	}
+>>>> +
+>>>> +	trproc->parent =3D  dev;
+>>>> +	trproc->rproc_id =3D rproc_id;
+>>>> +	trproc->session_id =3D sess_arg.session;
+>>>> +
+>>>> +	list_add_tail(&trproc->node, &tee_rproc_ctx->sessions);
+>>>> +
+>>>> +	return trproc;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_register);
+>>>> +
+>>>> +int tee_rproc_unregister(struct tee_rproc *trproc)
+>>>> +{
+>>>> +	int ret;
+>>>> +
+>>>> +	ret =3D tee_client_close_session(tee_rproc_ctx->tee_ctx, trproc->sessi=
+on_id);
+>>>> +	if (ret < 0)
+>>>> +		dev_err(trproc->parent,	"tee_client_close_session failed, err: %x\n",=
+ ret);
+>>>> +
+>>>> +	list_del(&trproc->node);
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(tee_rproc_unregister);
+>>>> +
+>>>> +static int tee_rproc_ctx_match(struct tee_ioctl_version_data *ver, cons=
+t void *data)
+>>>> +{
+>>>> +	/* Today we support only the OP-TEE, could be extend to other tees */
+>>>> +	return (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE);
+>>>> +}
+>>>> +
+>>>> +static int tee_rproc_probe(struct device *dev)
+>>>> +{
+>>>> +	struct tee_context *tee_ctx;
+>>>> +	int ret;
+>>>> +
+>>>> +	/* Open context with TEE driver */
+>>>> +	tee_ctx =3D tee_client_open_context(NULL, tee_rproc_ctx_match, NULL, N=
+ULL);
+>>>> +	if (IS_ERR(tee_ctx))
+>>>> +		return PTR_ERR(tee_ctx);
+>>>> +
+>>>> +	tee_rproc_ctx =3D devm_kzalloc(dev, sizeof(*tee_ctx), GFP_KERNEL);
+>>>> +	if (!tee_rproc_ctx) {
+>>>> +		ret =3D -ENOMEM;
+>>>> +		goto err;
+>>>> +	}
+>>>> +
+>>>> +	tee_rproc_ctx->dev =3D dev;
+>>>> +	tee_rproc_ctx->tee_ctx =3D tee_ctx;
+>>>> +	INIT_LIST_HEAD(&tee_rproc_ctx->sessions);
+>>>> +
+>>>> +	return 0;
+>>>> +err:
+>>>> +	tee_client_close_context(tee_ctx);
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +
+>>>> +static int tee_rproc_remove(struct device *dev)
+>>>> +{
+>>>> +	struct tee_rproc *entry, *tmp;
+>>>> +
+>>>> +	list_for_each_entry_safe(entry, tmp, &tee_rproc_ctx->sessions, node) {
+>>>> +		tee_client_close_session(tee_rproc_ctx->tee_ctx, entry->session_id);
+>>>> +		list_del(&entry->node);
+>>>> +		kfree(entry);
+>>>> +	}
+>>>> +
+>>>> +	tee_client_close_context(tee_rproc_ctx->tee_ctx);
+>>>> +
 >>>> +	return 0;
 >>>> +}
 >>>> +
->>>> +static int stm32_rproc_tee_stop(struct rproc *rproc)
->>>> +{
->>>> +	int err;
+>>>> +MODULE_DEVICE_TABLE(tee, stm32_tee_rproc_id_table);
 >>>> +
->>>> +	stm32_rproc_request_shutdown(rproc);
->>>> +
->>>> +	err =3D tee_rproc_stop(rproc);
->>>> +	if (err)
->>>> +		return err;
->>>> +
->>>> +	return stm32_rproc_release(rproc);
->>>> +}
->>>> +
->>>>  static int stm32_rproc_prepare(struct rproc *rproc)
->>>>  {
->>>>  	struct device *dev =3D rproc->dev.parent;
->>>> @@ -637,10 +663,14 @@ stm32_rproc_get_loaded_rsc_table(struct rproc *rpr=
-oc, size_t *table_sz)
->>>>  {
->>>>  	struct stm32_rproc *ddata =3D rproc->priv;
->>>>  	struct device *dev =3D rproc->dev.parent;
->>>> +	struct tee_rproc *trproc =3D ddata->trproc;
->>>>  	phys_addr_t rsc_pa;
->>>>  	u32 rsc_da;
->>>>  	int err;
->>>> =20
->>>> +	if (trproc && !ddata->to_attach)
->>>> +		return tee_rproc_get_loaded_rsc_table(rproc, table_sz);
->>>> +
->>>
->>> Why do we need a flag at all?  Why can't st_rproc_tee_ops::get_loaded_rsc=
-_table
->>> be set to tee_rproc_get_loaded_rsc_table()?
->>
->>
->> This function is used to retrieve the address of the resource table in 3 c=
-ases
->> - attach to a firmware started by the boot loader (U-boot).
->> - load of the firmware by OP-TEE.
->> - crash recovery on a signed firmware started by the boot loader.
->>
->> The flag is used to differentiate the attch from the other uses cases
->> For instance we support this use case.
->> 1) attach to the firmware on boot
->> 2) crash during runtime
->>   2a) stop the firmware by OP-TEE( ddata->to_attach set to 0)
->>   2b) load the firmware by OP-TEE
->>   2c) get the loaded resource table from OP-TEE (we can not guaranty
->>       that the firmware loaded on recovery is the same)
->>   2d) restart the firmware by OP-TEE
->=20
-> This is not maintainable and needs to be broken down into smaller
-> building blocks.  The introduction of tee_rproc_parse_fw() should help deal=
-ing
-> with some of the complexity.
-
-The use cases I mentioned are supported by the legacy, if firmware is not
-authenticated by a Trusted Application.
-No problem to addressed this in a second step.
-I will remove this constrain from this series in next version.
-
-Regards,
-Arnaud
-
->=20
->>
->>>
->>>>  	/* The resource table has already been mapped, nothing to do */
->>>>  	if (ddata->rsc_va)
->>>>  		goto done;
->>>> @@ -693,8 +723,20 @@ static const struct rproc_ops st_rproc_ops =3D {
->>>>  	.get_boot_addr	=3D rproc_elf_get_boot_addr,
->>>>  };
->>>> =20
->>>> +static const struct rproc_ops st_rproc_tee_ops =3D {
->>>> +	.prepare	=3D stm32_rproc_prepare,
->>>> +	.start		=3D tee_rproc_start,
->>>> +	.stop		=3D stm32_rproc_tee_stop,
->>>> +	.attach		=3D stm32_rproc_tee_attach,
->>>> +	.kick		=3D stm32_rproc_kick,
->>>> +	.get_loaded_rsc_table =3D stm32_rproc_get_loaded_rsc_table,
->>>> +	.find_loaded_rsc_table =3D tee_rproc_find_loaded_rsc_table,
->>>> +	.load		=3D tee_rproc_load_fw,
+>>>> +static struct tee_client_driver tee_rproc_fw_driver =3D {
+>>>> +	.id_table	=3D stm32_tee_rproc_id_table,
+>>>> +	.driver		=3D {
+>>>> +		.name		=3D KBUILD_MODNAME,
+>>>> +		.bus		=3D &tee_bus_type,
+>>>> +		.probe		=3D tee_rproc_probe,
+>>>> +		.remove		=3D tee_rproc_remove,
+>>>> +	},
 >>>> +};
 >>>> +
->>>>  static const struct of_device_id stm32_rproc_match[] =3D {
->>>> -	{ .compatible =3D "st,stm32mp1-m4" },
->>>> +	{.compatible =3D "st,stm32mp1-m4",},
->>>> +	{.compatible =3D "st,stm32mp1-m4-tee",},
->>>>  	{},
->>>>  };
->>>>  MODULE_DEVICE_TABLE(of, stm32_rproc_match);
->>>> @@ -853,6 +895,7 @@ static int stm32_rproc_probe(struct platform_device =
-*pdev)
->>>>  	struct device *dev =3D &pdev->dev;
->>>>  	struct stm32_rproc *ddata;
->>>>  	struct device_node *np =3D dev->of_node;
->>>> +	struct tee_rproc *trproc =3D NULL;
->>>>  	struct rproc *rproc;
->>>>  	unsigned int state;
->>>>  	int ret;
->>>> @@ -861,12 +904,33 @@ static int stm32_rproc_probe(struct platform_devic=
-e *pdev)
->>>>  	if (ret)
->>>>  		return ret;
->>>> =20
->>>> -	rproc =3D rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*ddat=
-a));
->>>> -	if (!rproc)
->>>> -		return -ENOMEM;
->>>
->>> This patch doesn't apply to rproc-next - please rebase.
->>
->> Yes, sure. I forgot to mention in my cover letter that my series has been
->> applied and tested on 841c35169323 (Linux 6.8-rc4).
->>
->>>
->>>
->>>> +	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
->>>> +		/*
->>>> +		 * Delegate the firmware management to the secure context.
->>>> +		 * The firmware loaded has to be signed.
->>>> +		 */
->>>> +		trproc =3D tee_rproc_register(dev, STM32_MP1_M4_PROC_ID);
->>>> +		if (IS_ERR(trproc)) {
->>>> +			dev_err_probe(dev, PTR_ERR(trproc),
->>>> +				      "signed firmware not supported by TEE\n");
->>>> +			return PTR_ERR(trproc);
->>>> +		}
->>>> +	}
->>>> =20
->>>> -	ddata =3D rproc->priv;
->>>> +	rproc =3D rproc_alloc(dev, np->name,
->>>> +			    trproc ? &st_rproc_tee_ops : &st_rproc_ops,
->>>> +			    NULL, sizeof(*ddata));
->>>> +	if (!rproc) {
->>>> +		ret =3D -ENOMEM;
->>>> +		goto free_tee;
->>>> +	}
->>>> =20
->>>> +	ddata =3D rproc->priv;
->>>> +	ddata->trproc =3D trproc;
->>>
->>> My opinion hasn't changed from the previous patchet, i.e tee_rproc should=
- be
->>> folded in struct rproc as rproc::tee_interface.
->>
->> Sure, I will do it in next version
->>
->>>
->>> More comments to come shortly...
->>>
->>
->> Thanks!
->> Arnaud
->>
->>>> +	if (trproc) {
->>>> +		rproc->alt_boot =3D true;
->>>> +		trproc->rproc =3D rproc;
->>>> +	}
->>>>  	rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
->>>> =20
->>>>  	ret =3D stm32_rproc_parse_dt(pdev, ddata, &rproc->auto_boot);
->>>> @@ -881,8 +945,10 @@ static int stm32_rproc_probe(struct platform_device=
- *pdev)
->>>>  	if (ret)
->>>>  		goto free_rproc;
->>>> =20
->>>> -	if (state =3D=3D M4_STATE_CRUN)
->>>> +	if (state =3D=3D M4_STATE_CRUN) {
->>>>  		rproc->state =3D RPROC_DETACHED;
->>>> +		ddata->to_attach =3D true;
->>>> +	}
->>>> =20
->>>>  	rproc->has_iommu =3D false;
->>>>  	ddata->workqueue =3D create_workqueue(dev_name(dev));
->>>> @@ -916,6 +982,10 @@ static int stm32_rproc_probe(struct platform_device=
- *pdev)
->>>>  		device_init_wakeup(dev, false);
->>>>  	}
->>>>  	rproc_free(rproc);
->>>> +free_tee:
->>>> +	if (trproc)
->>>> +		tee_rproc_unregister(trproc);
+>>>> +static int __init tee_rproc_fw_mod_init(void)
+>>>> +{
+>>>> +	return driver_register(&tee_rproc_fw_driver.driver);
+>>>> +}
 >>>> +
->>>>  	return ret;
->>>>  }
->>>> =20
->>>> @@ -923,6 +993,7 @@ static void stm32_rproc_remove(struct platform_devic=
-e *pdev)
->>>>  {
->>>>  	struct rproc *rproc =3D platform_get_drvdata(pdev);
->>>>  	struct stm32_rproc *ddata =3D rproc->priv;
->>>> +	struct tee_rproc *trproc =3D ddata->trproc;
->>>>  	struct device *dev =3D &pdev->dev;
->>>> =20
->>>>  	if (atomic_read(&rproc->power) > 0)
->>>> @@ -937,6 +1008,8 @@ static void stm32_rproc_remove(struct platform_devi=
-ce *pdev)
->>>>  		device_init_wakeup(dev, false);
->>>>  	}
->>>>  	rproc_free(rproc);
->>>> +	if (trproc)
->>>> +		tee_rproc_unregister(trproc);
->>>>  }
->>>> =20
->>>>  static int stm32_rproc_suspend(struct device *dev)
+>>>> +static void __exit tee_rproc_fw_mod_exit(void)
+>>>> +{
+>>>> +	driver_unregister(&tee_rproc_fw_driver.driver);
+>>>> +}
+>>>> +
+>>>> +module_init(tee_rproc_fw_mod_init);
+>>>> +module_exit(tee_rproc_fw_mod_exit);
+>>>> +
+>>>> +MODULE_DESCRIPTION(" TEE remote processor control driver");
+>>>> +MODULE_LICENSE("GPL");
+>>>> diff --git a/include/linux/tee_remoteproc.h b/include/linux/tee_remotepr=
+oc.h
+>>>> new file mode 100644
+>>>> index 000000000000..7c9e91e989ba
+>>>> --- /dev/null
+>>>> +++ b/include/linux/tee_remoteproc.h
+>>>> @@ -0,0 +1,102 @@
+>>>> +/* SPDX-License-Identifier: GPL-2.0-or-later */
+>>>> +/*
+>>>> + * Copyright(c) 2023 STMicroelectronics - All Rights Reserved
+>>>> + */
+>>>> +
+>>>> +#ifndef TEE_REMOTEPROC_H
+>>>> +#define TEE_REMOTEPROC_H
+>>>> +
+>>>> +#include <linux/tee_drv.h>
+>>>> +#include <linux/firmware.h>
+>>>> +#include <linux/remoteproc.h>
+>>>> +
+>>>> +struct rproc;
+>>>> +
+>>>> +/**
+>>>> + * struct tee_rproc - TEE remoteproc structure
+>>>> + * @node:		Reference in list
+>>>> + * @rproc:		Remoteproc reference
+>>>> + * @parent:		Parent device
+>>>> + * @rproc_id:		Identifier of the target firmware
+>>>> + * @session_id:		TEE session identifier
+>>>> + * @rsc_table:		Resource table virtual address.
+>>>> + */
+>>>> +struct tee_rproc {
+>>>> +	struct list_head node;
+>>>> +	struct rproc *rproc;
+>>>> +	struct device *parent;
+>>>> +	u32 rproc_id;
+>>>> +	u32 session_id;
+>>>> +	struct resource_table *rsc_table;
+>>>> +};
+>>>> +
+>>>> +#if IS_ENABLED(CONFIG_TEE_REMOTEPROC)
+>>>> +
+>>>> +struct tee_rproc *tee_rproc_register(struct device *dev, unsigned int r=
+proc_id);
+>>>> +int tee_rproc_unregister(struct tee_rproc *trproc);
+>>>> +
+>>>> +int tee_rproc_load_fw(struct rproc *rproc, const struct firmware *fw);
+>>>> +struct resource_table *tee_rproc_get_loaded_rsc_table(struct rproc *rpr=
+oc, size_t *table_sz);
+>>>> +struct resource_table *tee_rproc_find_loaded_rsc_table(struct rproc *rp=
+roc,
+>>>> +						       const struct firmware *fw);
+>>>> +int tee_rproc_start(struct rproc *rproc);
+>>>> +int tee_rproc_stop(struct rproc *rproc);
+>>>> +
+>>>> +#else
+>>>> +
+>>>> +static inline struct tee_rproc *tee_rproc_register(struct device *dev, =
+unsigned int rproc_id)
+>>>> +{
+>>>> +	return ERR_PTR(-ENODEV);
+>>>> +}
+>>>> +
+>>>> +static inline int tee_rproc_unregister(struct tee_rproc *trproc)
+>>>> +{
+>>>> +	/* This shouldn't be possible */
+>>>> +	WARN_ON(1);
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +static inline int tee_rproc_load_fw(struct rproc *rproc,  const struct =
+firmware *fw)
+>>>> +{
+>>>> +	/* This shouldn't be possible */
+>>>> +	WARN_ON(1);
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +static inline int tee_rproc_start(struct rproc *rproc)
+>>>> +{
+>>>> +	/* This shouldn't be possible */
+>>>> +	WARN_ON(1);
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +static inline int tee_rproc_stop(struct rproc *rproc)
+>>>> +{
+>>>> +	/* This shouldn't be possible */
+>>>> +	WARN_ON(1);
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +static inline struct resource_table *
+>>>> +tee_rproc_get_loaded_rsc_table(struct rproc *rproc, size_t *table_sz)
+>>>> +{
+>>>> +	/* This shouldn't be possible */
+>>>> +	WARN_ON(1);
+>>>> +
+>>>> +	return NULL;
+>>>> +}
+>>>> +
+>>>> +static inline struct resource_table *
+>>>> +tee_rproc_find_loaded_rsc_table(struct rproc *rproc, const struct firmw=
+are *fw)
+>>>> +{
+>>>> +	/* This shouldn't be possible */
+>>>> +	WARN_ON(1);
+>>>> +
+>>>> +	return NULL;
+>>>> +}
+>>>> +#endif /* CONFIG_TEE_REMOTEPROC */
+>>>> +#endif /* TEE_REMOTEPROC_H */
 >>>> --=20
 >>>> 2.25.1
 >>>>
->>>
 
---===============5075619079965525263==--
+--===============1459978131344447701==--
 
