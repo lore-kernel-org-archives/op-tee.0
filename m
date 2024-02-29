@@ -1,1006 +1,730 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] tee: Refactor TEE subsystem header files
-Date: Wed, 28 Feb 2024 20:23:40 +0530
-Message-ID: <20240228145340.3439408-1-sumit.garg@linaro.org>
+Subject: Re: [PATCH v3 1/7] remoteproc: Add TEE support
+Date: Thu, 29 Feb 2024 09:19:25 -0700
+Message-ID: <ZeCujRgH/odzU9og@p14s>
+In-Reply-To: <74b7a8a4-20e4-4210-8de5-0282ab3fbd9c@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9086521512127104373=="
+Content-Type: multipart/mixed; boundary="===============7462553143568208902=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9086521512127104373==
+--===============7462553143568208902==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Since commit 25559c22cef8 ("tee: add kernel internal client interface"),
-it has been a common include/linux/tee_drv.h header file which is shared
-to hold TEE subsystem internal bits along with the APIs exposed to the
-TEE client drivers. However, this practice is prone to TEE subsystem
-internal APIs abuse and especially so with the new TEE implementation
-drivers being added to reuse existing functionality.
+Good morning,
 
-In order to address this split TEE subsystem internal bits as a separate
-header file: include/linux/tee_core.h which should be the one used by
-TEE implementation drivers. With that include/linux/tee_drv.h lists only
-APIs exposed by TEE subsystem to the TEE client drivers.
+On Wed, Feb 28, 2024 at 09:20:28AM +0100, Arnaud POULIQUEN wrote:
+> Hello Mathieu,
+>=20
+>=20
+> On 2/23/24 19:27, Mathieu Poirier wrote:
+> > On Wed, Feb 14, 2024 at 06:21:21PM +0100, Arnaud Pouliquen wrote:
+> >> From: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+> >>
+> >> Add a remoteproc TEE (Trusted Execution Environment) driver
+> >> that will be probed by the TEE bus. If the associated Trusted
+> >> application is supported on secure part this device offers a client
+> >> interface to load a firmware in the secure part.
+> >> This firmware could be authenticated and decrypted by the secure
+> >> trusted application.
+> >>
+> >> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+> >> ---
+> >> update from V2
+> >> - Use 'tee_rproc' prefix for all functions
+> >> - rename tee_rproc_get_loaded_rsc_table to tee_rproc_find_loaded_rsc_tab=
+le
+> >> - redefine fonction to better match with the rproc_ops structure format
+> >> 	- replace 'struct tee_rproc' parameter by 'struct rproc' parameter
+> >> 	- rename 'rproc_tee_get_rsc_table()' to tee_rproc_get_loaded_rsc_table()
+> >> 	  and rework it to remove the cached_table management.
+> >> 	- introduce tee_rproc_get_context() to get the tee_rproc struct from the
+> >>           rproc struct
+> >> 	- rename tee_rproc_get_loaded_rsc_table() to tee_rproc_find_loaded_rsc_=
+table()
+> >> - remove useless check on tee_rproc_ctx structure in tee_rproc_register()
+> >>   and tee_rproc_unregister()
+> >> - fix test on the return of tee_rproc_ctx =3D devm_kzalloc()
+> >> - remove useless includes and unused tee_rproc_mem structure.
+> >> ---
+> >>  drivers/remoteproc/Kconfig          |   9 +
+> >>  drivers/remoteproc/Makefile         |   1 +
+> >>  drivers/remoteproc/tee_remoteproc.c | 397 ++++++++++++++++++++++++++++
+> >>  include/linux/tee_remoteproc.h      | 102 +++++++
+> >>  4 files changed, 509 insertions(+)
+> >>  create mode 100644 drivers/remoteproc/tee_remoteproc.c
+> >>  create mode 100644 include/linux/tee_remoteproc.h
+> >>
+> >> diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
+> >> index 48845dc8fa85..85299606806c 100644
+> >> --- a/drivers/remoteproc/Kconfig
+> >> +++ b/drivers/remoteproc/Kconfig
+> >> @@ -365,6 +365,15 @@ config XLNX_R5_REMOTEPROC
+> >> =20
+> >>  	  It's safe to say N if not interested in using RPU r5f cores.
+> >> =20
+> >> +
+> >> +config TEE_REMOTEPROC
+> >> +	tristate "trusted firmware support by a TEE application"
+> >> +	depends on OPTEE
+> >> +	help
+> >> +	  Support for trusted remote processors firmware. The firmware
+> >> +	  authentication and/or decryption are managed by a trusted applicatio=
+n.
+> >> +	  This can be either built-in or a loadable module.
+> >> +
+> >>  endif # REMOTEPROC
+> >> =20
+> >>  endmenu
+> >> diff --git a/drivers/remoteproc/Makefile b/drivers/remoteproc/Makefile
+> >> index 91314a9b43ce..fa8daebce277 100644
+> >> --- a/drivers/remoteproc/Makefile
+> >> +++ b/drivers/remoteproc/Makefile
+> >> @@ -36,6 +36,7 @@ obj-$(CONFIG_RCAR_REMOTEPROC)		+=3D rcar_rproc.o
+> >>  obj-$(CONFIG_ST_REMOTEPROC)		+=3D st_remoteproc.o
+> >>  obj-$(CONFIG_ST_SLIM_REMOTEPROC)	+=3D st_slim_rproc.o
+> >>  obj-$(CONFIG_STM32_RPROC)		+=3D stm32_rproc.o
+> >> +obj-$(CONFIG_TEE_REMOTEPROC)		+=3D tee_remoteproc.o
+> >>  obj-$(CONFIG_TI_K3_DSP_REMOTEPROC)	+=3D ti_k3_dsp_remoteproc.o
+> >>  obj-$(CONFIG_TI_K3_R5_REMOTEPROC)	+=3D ti_k3_r5_remoteproc.o
+> >>  obj-$(CONFIG_XLNX_R5_REMOTEPROC)	+=3D xlnx_r5_remoteproc.o
+> >> diff --git a/drivers/remoteproc/tee_remoteproc.c b/drivers/remoteproc/te=
+e_remoteproc.c
+> >> new file mode 100644
+> >> index 000000000000..ac727e062d00
+> >> --- /dev/null
+> >> +++ b/drivers/remoteproc/tee_remoteproc.c
+> >> @@ -0,0 +1,397 @@
+> >> +// SPDX-License-Identifier: GPL-2.0-or-later
+> >> +/*
+> >> + * Copyright (C) STMicroelectronics 2023 - All Rights Reserved
+> >> + * Author: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+> >> + */
+> >> +
+> >> +#include <linux/firmware.h>
+> >> +#include <linux/io.h>
+> >> +#include <linux/module.h>
+> >> +#include <linux/remoteproc.h>
+> >> +#include <linux/slab.h>
+> >> +#include <linux/tee_drv.h>
+> >> +#include <linux/tee_remoteproc.h>
+> >> +
+> >> +#include "remoteproc_internal.h"
+> >> +
+> >> +#define MAX_TEE_PARAM_ARRY_MEMBER	4
+> >> +
+> >> +/*
+> >> + * Authentication of the firmware and load in the remote processor memo=
+ry
+> >> + *
+> >> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+> >> + * [in]	 params[1].memref:	buffer containing the image of the buffer
+> >> + */
+> >> +#define TA_RPROC_FW_CMD_LOAD_FW		1
+> >> +
+> >> +/*
+> >> + * Start the remote processor
+> >> + *
+> >> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+> >> + */
+> >> +#define TA_RPROC_FW_CMD_START_FW	2
+> >> +
+> >> +/*
+> >> + * Stop the remote processor
+> >> + *
+> >> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+> >> + */
+> >> +#define TA_RPROC_FW_CMD_STOP_FW		3
+> >> +
+> >> +/*
+> >> + * Return the address of the resource table, or 0 if not found
+> >> + * No check is done to verify that the address returned is accessible by
+> >> + * the non secure context. If the resource table is loaded in a protect=
+ed
+> >> + * memory the access by the non secure context will lead to a data abor=
+t.
+> >> + *
+> >> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+> >> + * [out]  params[1].value.a:	32bit LSB resource table memory address
+> >> + * [out]  params[1].value.b:	32bit MSB resource table memory address
+> >> + * [out]  params[2].value.a:	32bit LSB resource table memory size
+> >> + * [out]  params[2].value.b:	32bit MSB resource table memory size
+> >> + */
+> >> +#define TA_RPROC_FW_CMD_GET_RSC_TABLE	4
+> >> +
+> >> +/*
+> >> + * Return the address of the core dump
+> >> + *
+> >> + * [in]  params[0].value.a:	unique 32bit identifier of the remote proce=
+ssor
+> >> + * [out] params[1].memref:	address of the core dump image if exist,
+> >> + *				else return Null
+> >> + */
+> >> +#define TA_RPROC_FW_CMD_GET_COREDUMP	5
+> >> +
+> >> +struct tee_rproc__context {
+> >> +	struct list_head sessions;
+> >> +	struct tee_context *tee_ctx;
+> >> +	struct device *dev;
+> >> +};
+> >> +
+> >> +static struct tee_rproc__context *tee_rproc_ctx;
+> >> +
+> >> +static void prepare_args(struct tee_rproc *trproc, int cmd,
+> >> +			 struct tee_ioctl_invoke_arg *arg,
+> >> +			 struct tee_param *param, unsigned int num_params)
+> >> +{
+> >> +	memset(arg, 0, sizeof(*arg));
+> >> +	memset(param, 0, MAX_TEE_PARAM_ARRY_MEMBER * sizeof(*param));
+> >> +
+> >> +	arg->func =3D cmd;
+> >> +	arg->session =3D trproc->session_id;
+> >> +	arg->num_params =3D num_params + 1;
+> >> +
+> >> +	param[0] =3D (struct tee_param) {
+> >> +		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
+> >> +		.u.value.a =3D trproc->rproc_id,
+> >> +	};
+> >> +}
+> >> +
+> >> +static struct tee_rproc *tee_rproc_get_context(struct rproc *rproc)
+> >> +{
+> >> +	struct tee_rproc *entry, *tmp;
+> >> +
+> >> +	list_for_each_entry_safe(entry, tmp, &tee_rproc_ctx->sessions, node) {
+> >> +		if (entry->rproc =3D=3D rproc)
+> >> +			return entry;
+> >> +	}
+> >> +
+> >> +	return NULL;
+> >> +}
+> >> +
+> >> +int tee_rproc_load_fw(struct rproc *rproc, const struct firmware *fw)
+> >> +{
+> >> +	struct tee_ioctl_invoke_arg arg;
+> >> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+> >> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+> >> +	struct tee_shm *fw_shm;
+> >> +	int ret;
+> >> +
+> >> +	if (!trproc)
+> >> +		return -EINVAL;
+> >> +
+> >> +	fw_shm =3D tee_shm_register_kernel_buf(tee_rproc_ctx->tee_ctx, (void *=
+)fw->data, fw->size);
+> >> +	if (IS_ERR(fw_shm))
+> >> +		return PTR_ERR(fw_shm);
+> >> +
+> >> +	prepare_args(trproc, TA_RPROC_FW_CMD_LOAD_FW, &arg, param, 1);
+> >> +
+> >> +	/* Provide the address of the firmware image */
+> >> +	param[1] =3D (struct tee_param) {
+> >> +		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT,
+> >> +		.u.memref =3D {
+> >> +			.shm =3D fw_shm,
+> >> +			.size =3D fw->size,
+> >> +			.shm_offs =3D 0,
+> >> +		},
+> >> +	};
+> >> +
+> >> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+> >> +	if (ret < 0 || arg.ret !=3D 0) {
+> >> +		dev_err(tee_rproc_ctx->dev,
+> >> +			"TA_RPROC_FW_CMD_LOAD_FW invoke failed TEE err: %x, ret:%x\n",
+> >> +			arg.ret, ret);
+> >> +		if (!ret)
+> >> +			ret =3D -EIO;
+> >> +	}
+> >> +
+> >> +	tee_shm_free(fw_shm);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_load_fw);
+> >> +
+> >> +struct resource_table *tee_rproc_get_loaded_rsc_table(struct rproc *rpr=
+oc, size_t *table_sz)
+> >> +{
+> >> +	struct tee_ioctl_invoke_arg arg;
+> >> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+> >> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+> >> +	int ret;
+> >> +
+> >> +	if (!trproc)
+> >> +		return ERR_PTR(-EINVAL);
+> >> +
+> >> +	prepare_args(trproc, TA_RPROC_FW_CMD_GET_RSC_TABLE, &arg, param, 2);
+> >> +
+> >> +	param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
+> >> +	param[2].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
+> >> +
+> >> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+> >> +	if (ret < 0 || arg.ret !=3D 0) {
+> >> +		dev_err(tee_rproc_ctx->dev,
+> >> +			"TA_RPROC_FW_CMD_GET_RSC_TABLE invoke failed TEE err: %x, ret:%x\n",
+> >> +			arg.ret, ret);
+> >> +		return ERR_PTR(-EIO);
+> >> +	}
+> >> +
+> >> +	*table_sz =3D param[2].u.value.a;
+> >> +
+> >> +	/* If the size is null no resource table defined in the image */
+> >> +	if (!*table_sz)
+> >> +		return NULL;
+> >> +
+> >> +	/* Store the resource table address that would be updated by the remot=
+e core. */
+> >> +	trproc->rsc_table =3D ioremap_wc(param[1].u.value.a, *table_sz);
+> >> +	if (IS_ERR_OR_NULL(trproc->rsc_table)) {
+> >> +		dev_err(tee_rproc_ctx->dev, "Unable to map memory region: %lld+%zx\n",
+> >> +			param[1].u.value.a, *table_sz);
+> >> +		return ERR_PTR(-ENOMEM);
+> >> +	}
+> >> +
+> >> +	return trproc->rsc_table;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_get_loaded_rsc_table);
+> >=20
+> > Here we are missing:
+> >=20
+> > tee_rproc_parse_fw()
+>=20
+> Please tell me if I'm wrong but the aim of this ops is to parse the firmware
+> before loading it in case of some resources shoukd be needed before.
+> but here to parse it we load. I'm not sure that this function makes sense h=
+ere.
+>=20
 
-Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
----
- MAINTAINERS                         |   1 +
- drivers/tee/amdtee/amdtee_private.h |   2 +-
- drivers/tee/amdtee/call.c           |   2 +-
- drivers/tee/amdtee/core.c           |   3 +-
- drivers/tee/amdtee/shm_pool.c       |   2 +-
- drivers/tee/optee/call.c            |   2 +-
- drivers/tee/optee/core.c            |   2 +-
- drivers/tee/optee/device.c          |   2 +-
- drivers/tee/optee/ffa_abi.c         |   2 +-
- drivers/tee/optee/notif.c           |   2 +-
- drivers/tee/optee/optee_private.h   |   2 +-
- drivers/tee/optee/rpc.c             |   2 +-
- drivers/tee/optee/smc_abi.c         |   2 +-
- drivers/tee/tee_core.c              |   2 +-
- drivers/tee/tee_private.h           |  35 ----
- drivers/tee/tee_shm.c               |   2 +-
- drivers/tee/tee_shm_pool.c          |   2 +-
- include/linux/tee_core.h            | 296 ++++++++++++++++++++++++++++
- include/linux/tee_drv.h             | 285 +++-----------------------
- 19 files changed, 343 insertions(+), 305 deletions(-)
- create mode 100644 include/linux/tee_core.h
+The documentation for rproc_ops::parse_fw [1] indicate the operation
+is to extract the resource table from the firmware image, something that is
+echoed in by the implementation of rproc_elf_load_rsc_table().  No matter what
+the secure side needs or how it does it, this function should return the addr=
+ess
+of the resource table. =20
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 716b2e22598c..b5f4a28648d0 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -21575,6 +21575,7 @@ F:	Documentation/driver-api/tee.rst
- F:	Documentation/tee/
- F:	Documentation/userspace-api/tee.rst
- F:	drivers/tee/
-+F:	include/linux/tee_core.h
- F:	include/linux/tee_drv.h
- F:	include/uapi/linux/tee.h
-=20
-diff --git a/drivers/tee/amdtee/amdtee_private.h b/drivers/tee/amdtee/amdtee_=
-private.h
-index 6d0f7062bb87..d87050033894 100644
---- a/drivers/tee/amdtee/amdtee_private.h
-+++ b/drivers/tee/amdtee/amdtee_private.h
-@@ -9,7 +9,7 @@
-=20
- #include <linux/mutex.h>
- #include <linux/spinlock.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/kref.h>
- #include <linux/types.h>
- #include "amdtee_if.h"
-diff --git a/drivers/tee/amdtee/call.c b/drivers/tee/amdtee/call.c
-index e9b63dcb3194..4c21b02be4af 100644
---- a/drivers/tee/amdtee/call.c
-+++ b/drivers/tee/amdtee/call.c
-@@ -5,7 +5,7 @@
-=20
- #include <linux/device.h>
- #include <linux/tee.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/psp-tee.h>
- #include <linux/slab.h>
- #include <linux/psp.h>
-diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
-index 3c15f6a9e91c..e487231d25dc 100644
---- a/drivers/tee/amdtee/core.c
-+++ b/drivers/tee/amdtee/core.c
-@@ -9,13 +9,12 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/device.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/types.h>
- #include <linux/mm.h>
- #include <linux/uaccess.h>
- #include <linux/firmware.h>
- #include "amdtee_private.h"
--#include "../tee_private.h"
- #include <linux/psp-tee.h>
-=20
- static struct amdtee_driver_data *drv_data;
-diff --git a/drivers/tee/amdtee/shm_pool.c b/drivers/tee/amdtee/shm_pool.c
-index f0303126f199..6346e0bc8a64 100644
---- a/drivers/tee/amdtee/shm_pool.c
-+++ b/drivers/tee/amdtee/shm_pool.c
-@@ -4,7 +4,7 @@
-  */
-=20
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/psp.h>
- #include "amdtee_private.h"
-=20
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index a91e50be11be..16eb953e14bb 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -7,7 +7,7 @@
- #include <linux/errno.h>
- #include <linux/mm.h>
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/types.h>
- #include "optee_private.h"
-=20
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 3aed554bc8d8..f762e3a25119 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -13,7 +13,7 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/string.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/types.h>
- #include "optee_private.h"
-=20
-diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-index 4b1092127694..9d2afac96acc 100644
---- a/drivers/tee/optee/device.c
-+++ b/drivers/tee/optee/device.c
-@@ -7,7 +7,7 @@
-=20
- #include <linux/kernel.h>
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/uuid.h>
- #include "optee_private.h"
-=20
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index ecb5eb079408..cee8ccb84cb8 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -11,7 +11,7 @@
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/string.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/types.h>
- #include "optee_private.h"
- #include "optee_ffa.h"
-diff --git a/drivers/tee/optee/notif.c b/drivers/tee/optee/notif.c
-index 05212842b0a5..0d7878e770cd 100644
---- a/drivers/tee/optee/notif.c
-+++ b/drivers/tee/optee/notif.c
-@@ -9,7 +9,7 @@
- #include <linux/errno.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include "optee_private.h"
-=20
- struct notif_entry {
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index 7a5243c78b55..a0698ac18993 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -9,7 +9,7 @@
- #include <linux/arm-smccc.h>
- #include <linux/rhashtable.h>
- #include <linux/semaphore.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/types.h>
- #include "optee_msg.h"
-=20
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index e69bc6380683..f086812f1179 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -8,7 +8,7 @@
- #include <linux/delay.h>
- #include <linux/i2c.h>
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include "optee_private.h"
- #include "optee_rpc_cmd.h"
-=20
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index a37f87087e5c..9c296b887dc1 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -23,7 +23,7 @@
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/string.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
- #include "optee_private.h"
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index 792d6fae4354..dd6e4ad4dceb 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -11,7 +11,7 @@
- #include <linux/idr.h>
- #include <linux/module.h>
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/uaccess.h>
- #include <crypto/hash.h>
- #include <crypto/sha1.h>
-diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
-index 754e11dcb240..9bc50605227c 100644
---- a/drivers/tee/tee_private.h
-+++ b/drivers/tee/tee_private.h
-@@ -12,41 +12,6 @@
- #include <linux/mutex.h>
- #include <linux/types.h>
-=20
--#define TEE_DEVICE_FLAG_REGISTERED	0x1
--#define TEE_MAX_DEV_NAME_LEN		32
--
--/**
-- * struct tee_device - TEE Device representation
-- * @name:	name of device
-- * @desc:	description of device
-- * @id:		unique id of device
-- * @flags:	represented by TEE_DEVICE_FLAG_REGISTERED above
-- * @dev:	embedded basic device structure
-- * @cdev:	embedded cdev
-- * @num_users:	number of active users of this device
-- * @c_no_user:	completion used when unregistering the device
-- * @mutex:	mutex protecting @num_users and @idr
-- * @idr:	register of user space shared memory objects allocated or
-- *		registered on this device
-- * @pool:	shared memory pool
-- */
--struct tee_device {
--	char name[TEE_MAX_DEV_NAME_LEN];
--	const struct tee_desc *desc;
--	int id;
--	unsigned int flags;
--
--	struct device dev;
--	struct cdev cdev;
--
--	size_t num_users;
--	struct completion c_no_users;
--	struct mutex mutex;	/* protects num_users and idr */
--
--	struct idr idr;
--	struct tee_shm_pool *pool;
--};
--
- int tee_shm_get_fd(struct tee_shm *shm);
-=20
- bool tee_device_get(struct tee_device *teedev);
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 731d9028b67f..96a45c817427 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -8,7 +8,7 @@
- #include <linux/mm.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include <linux/uaccess.h>
- #include <linux/uio.h>
- #include <linux/highmem.h>
-diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
-index 058bfbac657a..80004b55628d 100644
---- a/drivers/tee/tee_shm_pool.c
-+++ b/drivers/tee/tee_shm_pool.c
-@@ -6,7 +6,7 @@
- #include <linux/dma-buf.h>
- #include <linux/genalloc.h>
- #include <linux/slab.h>
--#include <linux/tee_drv.h>
-+#include <linux/tee_core.h>
- #include "tee_private.h"
-=20
- static int pool_op_gen_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
-diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
-new file mode 100644
-index 000000000000..d9b3ba8e8fa9
---- /dev/null
-+++ b/include/linux/tee_core.h
-@@ -0,0 +1,296 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (c) 2024 Linaro Limited
-+ */
-+
-+#ifndef __TEE_CORE_H
-+#define __TEE_CORE_H
-+
-+#include <linux/cdev.h>
-+#include <linux/device.h>
-+#include <linux/idr.h>
-+#include <linux/kref.h>
-+#include <linux/list.h>
-+#include <linux/tee.h>
-+#include <linux/tee_drv.h>
-+#include <linux/types.h>
-+#include <linux/uuid.h>
-+
-+/*
-+ * The file describes the API provided by the generic TEE driver to the
-+ * specific TEE driver.
-+ */
-+
-+#define TEE_SHM_DYNAMIC		BIT(0)  /* Dynamic shared memory registered */
-+					/* in secure world */
-+#define TEE_SHM_USER_MAPPED	BIT(1)  /* Memory mapped in user space */
-+#define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
-+#define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
-+
-+#define TEE_DEVICE_FLAG_REGISTERED	0x1
-+#define TEE_MAX_DEV_NAME_LEN		32
-+
-+/**
-+ * struct tee_device - TEE Device representation
-+ * @name:	name of device
-+ * @desc:	description of device
-+ * @id:		unique id of device
-+ * @flags:	represented by TEE_DEVICE_FLAG_REGISTERED above
-+ * @dev:	embedded basic device structure
-+ * @cdev:	embedded cdev
-+ * @num_users:	number of active users of this device
-+ * @c_no_user:	completion used when unregistering the device
-+ * @mutex:	mutex protecting @num_users and @idr
-+ * @idr:	register of user space shared memory objects allocated or
-+ *		registered on this device
-+ * @pool:	shared memory pool
-+ */
-+struct tee_device {
-+	char name[TEE_MAX_DEV_NAME_LEN];
-+	const struct tee_desc *desc;
-+	int id;
-+	unsigned int flags;
-+
-+	struct device dev;
-+	struct cdev cdev;
-+
-+	size_t num_users;
-+	struct completion c_no_users;
-+	struct mutex mutex;	/* protects num_users and idr */
-+
-+	struct idr idr;
-+	struct tee_shm_pool *pool;
-+};
-+
-+/**
-+ * struct tee_driver_ops - driver operations vtable
-+ * @get_version:	returns version of driver
-+ * @open:		called when the device file is opened
-+ * @release:		release this open file
-+ * @open_session:	open a new session
-+ * @close_session:	close a session
-+ * @system_session:	declare session as a system session
-+ * @invoke_func:	invoke a trusted function
-+ * @cancel_req:		request cancel of an ongoing invoke or open
-+ * @supp_recv:		called for supplicant to get a command
-+ * @supp_send:		called for supplicant to send a response
-+ * @shm_register:	register shared memory buffer in TEE
-+ * @shm_unregister:	unregister shared memory buffer in TEE
-+ */
-+struct tee_driver_ops {
-+	void (*get_version)(struct tee_device *teedev,
-+			    struct tee_ioctl_version_data *vers);
-+	int (*open)(struct tee_context *ctx);
-+	void (*release)(struct tee_context *ctx);
-+	int (*open_session)(struct tee_context *ctx,
-+			    struct tee_ioctl_open_session_arg *arg,
-+			    struct tee_param *param);
-+	int (*close_session)(struct tee_context *ctx, u32 session);
-+	int (*system_session)(struct tee_context *ctx, u32 session);
-+	int (*invoke_func)(struct tee_context *ctx,
-+			   struct tee_ioctl_invoke_arg *arg,
-+			   struct tee_param *param);
-+	int (*cancel_req)(struct tee_context *ctx, u32 cancel_id, u32 session);
-+	int (*supp_recv)(struct tee_context *ctx, u32 *func, u32 *num_params,
-+			 struct tee_param *param);
-+	int (*supp_send)(struct tee_context *ctx, u32 ret, u32 num_params,
-+			 struct tee_param *param);
-+	int (*shm_register)(struct tee_context *ctx, struct tee_shm *shm,
-+			    struct page **pages, size_t num_pages,
-+			    unsigned long start);
-+	int (*shm_unregister)(struct tee_context *ctx, struct tee_shm *shm);
-+};
-+
-+/**
-+ * struct tee_desc - Describes the TEE driver to the subsystem
-+ * @name:	name of driver
-+ * @ops:	driver operations vtable
-+ * @owner:	module providing the driver
-+ * @flags:	Extra properties of driver, defined by TEE_DESC_* below
-+ */
-+#define TEE_DESC_PRIVILEGED	0x1
-+struct tee_desc {
-+	const char *name;
-+	const struct tee_driver_ops *ops;
-+	struct module *owner;
-+	u32 flags;
-+};
-+
-+/**
-+ * tee_device_alloc() - Allocate a new struct tee_device instance
-+ * @teedesc:	Descriptor for this driver
-+ * @dev:	Parent device for this device
-+ * @pool:	Shared memory pool, NULL if not used
-+ * @driver_data: Private driver data for this device
-+ *
-+ * Allocates a new struct tee_device instance. The device is
-+ * removed by tee_device_unregister().
-+ *
-+ * @returns a pointer to a 'struct tee_device' or an ERR_PTR on failure
-+ */
-+struct tee_device *tee_device_alloc(const struct tee_desc *teedesc,
-+				    struct device *dev,
-+				    struct tee_shm_pool *pool,
-+				    void *driver_data);
-+
-+/**
-+ * tee_device_register() - Registers a TEE device
-+ * @teedev:	Device to register
-+ *
-+ * tee_device_unregister() need to be called to remove the @teedev if
-+ * this function fails.
-+ *
-+ * @returns < 0 on failure
-+ */
-+int tee_device_register(struct tee_device *teedev);
-+
-+/**
-+ * tee_device_unregister() - Removes a TEE device
-+ * @teedev:	Device to unregister
-+ *
-+ * This function should be called to remove the @teedev even if
-+ * tee_device_register() hasn't been called yet. Does nothing if
-+ * @teedev is NULL.
-+ */
-+void tee_device_unregister(struct tee_device *teedev);
-+
-+/**
-+ * tee_session_calc_client_uuid() - Calculates client UUID for session
-+ * @uuid:		Resulting UUID
-+ * @connection_method:	Connection method for session (TEE_IOCTL_LOGIN_*)
-+ * @connectuon_data:	Connection data for opening session
-+ *
-+ * Based on connection method calculates UUIDv5 based client UUID.
-+ *
-+ * For group based logins verifies that calling process has specified
-+ * credentials.
-+ *
-+ * @return < 0 on failure
-+ */
-+int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
-+				 const u8 connection_data[TEE_IOCTL_UUID_LEN]);
-+
-+/**
-+ * struct tee_shm_pool - shared memory pool
-+ * @ops:		operations
-+ * @private_data:	private data for the shared memory manager
-+ */
-+struct tee_shm_pool {
-+	const struct tee_shm_pool_ops *ops;
-+	void *private_data;
-+};
-+
-+/**
-+ * struct tee_shm_pool_ops - shared memory pool operations
-+ * @alloc:		called when allocating shared memory
-+ * @free:		called when freeing shared memory
-+ * @destroy_pool:	called when destroying the pool
-+ */
-+struct tee_shm_pool_ops {
-+	int (*alloc)(struct tee_shm_pool *pool, struct tee_shm *shm,
-+		     size_t size, size_t align);
-+	void (*free)(struct tee_shm_pool *pool, struct tee_shm *shm);
-+	void (*destroy_pool)(struct tee_shm_pool *pool);
-+};
-+
-+/*
-+ * tee_shm_pool_alloc_res_mem() - Create a shm manager for reserved memory
-+ * @vaddr:	Virtual address of start of pool
-+ * @paddr:	Physical address of start of pool
-+ * @size:	Size in bytes of the pool
-+ *
-+ * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
-+ */
-+struct tee_shm_pool *tee_shm_pool_alloc_res_mem(unsigned long vaddr,
-+						phys_addr_t paddr, size_t size,
-+						int min_alloc_order);
-+
-+/**
-+ * tee_shm_pool_free() - Free a shared memory pool
-+ * @pool:	The shared memory pool to free
-+ *
-+ * The must be no remaining shared memory allocated from this pool when
-+ * this function is called.
-+ */
-+static inline void tee_shm_pool_free(struct tee_shm_pool *pool)
-+{
-+	pool->ops->destroy_pool(pool);
-+}
-+
-+/**
-+ * tee_get_drvdata() - Return driver_data pointer
-+ * @returns the driver_data pointer supplied to tee_register().
-+ */
-+void *tee_get_drvdata(struct tee_device *teedev);
-+
-+/**
-+ * tee_shm_alloc_priv_buf() - Allocate shared memory for private use by spec=
-ific
-+ *                            TEE driver
-+ * @ctx:	The TEE context for shared memory allocation
-+ * @size:	Shared memory allocation size
-+ * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-+ */
-+struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
-+
-+/**
-+ * tee_shm_is_dynamic() - Check if shared memory object is of the dynamic ki=
-nd
-+ * @shm:	Shared memory handle
-+ * @returns true if object is dynamic shared memory
-+ */
-+static inline bool tee_shm_is_dynamic(struct tee_shm *shm)
-+{
-+	return shm && (shm->flags & TEE_SHM_DYNAMIC);
-+}
-+
-+/**
-+ * tee_shm_put() - Decrease reference count on a shared memory handle
-+ * @shm:	Shared memory handle
-+ */
-+void tee_shm_put(struct tee_shm *shm);
-+
-+/**
-+ * tee_shm_get_id() - Get id of a shared memory object
-+ * @shm:	Shared memory handle
-+ * @returns id
-+ */
-+static inline int tee_shm_get_id(struct tee_shm *shm)
-+{
-+	return shm->id;
-+}
-+
-+/**
-+ * tee_shm_get_from_id() - Find shared memory object and increase reference
-+ * count
-+ * @ctx:	Context owning the shared memory
-+ * @id:		Id of shared memory object
-+ * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-+ */
-+struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
-+
-+static inline bool tee_param_is_memref(struct tee_param *param)
-+{
-+	switch (param->attr & TEE_IOCTL_PARAM_ATTR_TYPE_MASK) {
-+	case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-+	case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-+	case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+/**
-+ * teedev_open() - Open a struct tee_device
-+ * @teedev:	Device to open
-+ *
-+ * @return a pointer to struct tee_context on success or an ERR_PTR on failu=
-re.
-+ */
-+struct tee_context *teedev_open(struct tee_device *teedev);
-+
-+/**
-+ * teedev_close_context() - closes a struct tee_context
-+ * @ctx:	The struct tee_context to close
-+ */
-+void teedev_close_context(struct tee_context *ctx);
-+
-+#endif /*__TEE_CORE_H*/
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index 911ddf92dcee..1fa2fa99e5e1 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -1,40 +1,28 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
- /*
-- * Copyright (c) 2015-2022 Linaro Limited
-+ * Copyright (c) 2015-2024 Linaro Limited
-  */
-=20
- #ifndef __TEE_DRV_H
- #define __TEE_DRV_H
-=20
- #include <linux/device.h>
--#include <linux/idr.h>
- #include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/mod_devicetable.h>
- #include <linux/tee.h>
- #include <linux/types.h>
--#include <linux/uuid.h>
-=20
- /*
-- * The file describes the API provided by the generic TEE driver to the
-- * specific TEE driver.
-+ * The file describes the API provided by the TEE subsystem to the
-+ * TEE client drivers.
-  */
-=20
--#define TEE_SHM_DYNAMIC		BIT(0)  /* Dynamic shared memory registered */
--					/* in secure world */
--#define TEE_SHM_USER_MAPPED	BIT(1)  /* Memory mapped in user space */
--#define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
--#define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
--
--struct device;
- struct tee_device;
--struct tee_shm;
--struct tee_shm_pool;
-=20
- /**
-  * struct tee_context - driver specific context on file pointer data
-  * @teedev:	pointer to this drivers struct tee_device
-- * @list_shm:	List of shared memory object owned by this context
-  * @data:	driver specific context data, managed by the driver
-  * @refcount:	reference counter for this structure
-  * @releasing:  flag that indicates if context is being released right now.
-@@ -57,134 +45,6 @@ struct tee_context {
- 	bool cap_memref_null;
- };
-=20
--struct tee_param_memref {
--	size_t shm_offs;
--	size_t size;
--	struct tee_shm *shm;
--};
--
--struct tee_param_value {
--	u64 a;
--	u64 b;
--	u64 c;
--};
--
--struct tee_param {
--	u64 attr;
--	union {
--		struct tee_param_memref memref;
--		struct tee_param_value value;
--	} u;
--};
--
--/**
-- * struct tee_driver_ops - driver operations vtable
-- * @get_version:	returns version of driver
-- * @open:		called when the device file is opened
-- * @release:		release this open file
-- * @open_session:	open a new session
-- * @close_session:	close a session
-- * @system_session:	declare session as a system session
-- * @invoke_func:	invoke a trusted function
-- * @cancel_req:		request cancel of an ongoing invoke or open
-- * @supp_recv:		called for supplicant to get a command
-- * @supp_send:		called for supplicant to send a response
-- * @shm_register:	register shared memory buffer in TEE
-- * @shm_unregister:	unregister shared memory buffer in TEE
-- */
--struct tee_driver_ops {
--	void (*get_version)(struct tee_device *teedev,
--			    struct tee_ioctl_version_data *vers);
--	int (*open)(struct tee_context *ctx);
--	void (*release)(struct tee_context *ctx);
--	int (*open_session)(struct tee_context *ctx,
--			    struct tee_ioctl_open_session_arg *arg,
--			    struct tee_param *param);
--	int (*close_session)(struct tee_context *ctx, u32 session);
--	int (*system_session)(struct tee_context *ctx, u32 session);
--	int (*invoke_func)(struct tee_context *ctx,
--			   struct tee_ioctl_invoke_arg *arg,
--			   struct tee_param *param);
--	int (*cancel_req)(struct tee_context *ctx, u32 cancel_id, u32 session);
--	int (*supp_recv)(struct tee_context *ctx, u32 *func, u32 *num_params,
--			 struct tee_param *param);
--	int (*supp_send)(struct tee_context *ctx, u32 ret, u32 num_params,
--			 struct tee_param *param);
--	int (*shm_register)(struct tee_context *ctx, struct tee_shm *shm,
--			    struct page **pages, size_t num_pages,
--			    unsigned long start);
--	int (*shm_unregister)(struct tee_context *ctx, struct tee_shm *shm);
--};
--
--/**
-- * struct tee_desc - Describes the TEE driver to the subsystem
-- * @name:	name of driver
-- * @ops:	driver operations vtable
-- * @owner:	module providing the driver
-- * @flags:	Extra properties of driver, defined by TEE_DESC_* below
-- */
--#define TEE_DESC_PRIVILEGED	0x1
--struct tee_desc {
--	const char *name;
--	const struct tee_driver_ops *ops;
--	struct module *owner;
--	u32 flags;
--};
--
--/**
-- * tee_device_alloc() - Allocate a new struct tee_device instance
-- * @teedesc:	Descriptor for this driver
-- * @dev:	Parent device for this device
-- * @pool:	Shared memory pool, NULL if not used
-- * @driver_data: Private driver data for this device
-- *
-- * Allocates a new struct tee_device instance. The device is
-- * removed by tee_device_unregister().
-- *
-- * @returns a pointer to a 'struct tee_device' or an ERR_PTR on failure
-- */
--struct tee_device *tee_device_alloc(const struct tee_desc *teedesc,
--				    struct device *dev,
--				    struct tee_shm_pool *pool,
--				    void *driver_data);
--
--/**
-- * tee_device_register() - Registers a TEE device
-- * @teedev:	Device to register
-- *
-- * tee_device_unregister() need to be called to remove the @teedev if
-- * this function fails.
-- *
-- * @returns < 0 on failure
-- */
--int tee_device_register(struct tee_device *teedev);
--
--/**
-- * tee_device_unregister() - Removes a TEE device
-- * @teedev:	Device to unregister
-- *
-- * This function should be called to remove the @teedev even if
-- * tee_device_register() hasn't been called yet. Does nothing if
-- * @teedev is NULL.
-- */
--void tee_device_unregister(struct tee_device *teedev);
--
--/**
-- * tee_session_calc_client_uuid() - Calculates client UUID for session
-- * @uuid:		Resulting UUID
-- * @connection_method:	Connection method for session (TEE_IOCTL_LOGIN_*)
-- * @connectuon_data:	Connection data for opening session
-- *
-- * Based on connection method calculates UUIDv5 based client UUID.
-- *
-- * For group based logins verifies that calling process has specified
-- * credentials.
-- *
-- * @return < 0 on failure
-- */
--int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
--				 const u8 connection_data[TEE_IOCTL_UUID_LEN]);
--
- /**
-  * struct tee_shm - shared memory object
-  * @ctx:	context using the object
-@@ -195,15 +55,12 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 conne=
-ction_method,
-  * @pages:	locked pages from userspace
-  * @num_pages:	number of locked pages
-  * @refcount:	reference counter
-- * @flags:	defined by TEE_SHM_* in tee_drv.h
-+ * @flags:	defined by TEE_SHM_* in tee_core.h
-  * @id:		unique id of a shared memory object on this device, shared
-  *		with user space
-  * @sec_world_id:
-  *		secure world assigned id of this shared memory object, not
-  *		used by all drivers
-- *
-- * This pool is only supposed to be accessed directly from the TEE
-- * subsystem and from drivers that implements their own shm pool manager.
-  */
- struct tee_shm {
- 	struct tee_context *ctx;
-@@ -219,87 +76,52 @@ struct tee_shm {
- 	u64 sec_world_id;
- };
-=20
--/**
-- * struct tee_shm_pool - shared memory pool
-- * @ops:		operations
-- * @private_data:	private data for the shared memory manager
-- */
--struct tee_shm_pool {
--	const struct tee_shm_pool_ops *ops;
--	void *private_data;
-+struct tee_param_memref {
-+	size_t shm_offs;
-+	size_t size;
-+	struct tee_shm *shm;
- };
-=20
--/**
-- * struct tee_shm_pool_ops - shared memory pool operations
-- * @alloc:		called when allocating shared memory
-- * @free:		called when freeing shared memory
-- * @destroy_pool:	called when destroying the pool
-- */
--struct tee_shm_pool_ops {
--	int (*alloc)(struct tee_shm_pool *pool, struct tee_shm *shm,
--		     size_t size, size_t align);
--	void (*free)(struct tee_shm_pool *pool, struct tee_shm *shm);
--	void (*destroy_pool)(struct tee_shm_pool *pool);
-+struct tee_param_value {
-+	u64 a;
-+	u64 b;
-+	u64 c;
- };
-=20
--/*
-- * tee_shm_pool_alloc_res_mem() - Create a shm manager for reserved memory
-- * @vaddr:	Virtual address of start of pool
-- * @paddr:	Physical address of start of pool
-- * @size:	Size in bytes of the pool
-- *
-- * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
-- */
--struct tee_shm_pool *tee_shm_pool_alloc_res_mem(unsigned long vaddr,
--						phys_addr_t paddr, size_t size,
--						int min_alloc_order);
-+struct tee_param {
-+	u64 attr;
-+	union {
-+		struct tee_param_memref memref;
-+		struct tee_param_value value;
-+	} u;
-+};
-=20
- /**
-- * tee_shm_pool_free() - Free a shared memory pool
-- * @pool:	The shared memory pool to free
-- *
-- * The must be no remaining shared memory allocated from this pool when
-- * this function is called.
-+ * tee_shm_alloc_kernel_buf() - Allocate kernel shared memory for a
-+ *                              particular TEE client driver
-+ * @ctx:	The TEE context for shared memory allocation
-+ * @size:	Shared memory allocation size
-+ * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-  */
--static inline void tee_shm_pool_free(struct tee_shm_pool *pool)
--{
--	pool->ops->destroy_pool(pool);
--}
-+struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
-e);
-=20
- /**
-- * tee_get_drvdata() - Return driver_data pointer
-- * @returns the driver_data pointer supplied to tee_register().
-+ * tee_shm_register_kernel_buf() - Register kernel shared memory for a
-+ *                                 particular TEE client driver
-+ * @ctx:	The TEE context for shared memory registration
-+ * @addr:	Kernel buffer address
-+ * @length:	Kernel buffer length
-+ * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-  */
--void *tee_get_drvdata(struct tee_device *teedev);
--
--struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
--struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t siz=
-e);
--
- struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
- 					    void *addr, size_t length);
-=20
--/**
-- * tee_shm_is_dynamic() - Check if shared memory object is of the dynamic ki=
-nd
-- * @shm:	Shared memory handle
-- * @returns true if object is dynamic shared memory
-- */
--static inline bool tee_shm_is_dynamic(struct tee_shm *shm)
--{
--	return shm && (shm->flags & TEE_SHM_DYNAMIC);
--}
--
- /**
-  * tee_shm_free() - Free shared memory
-  * @shm:	Handle to shared memory to free
-  */
- void tee_shm_free(struct tee_shm *shm);
-=20
--/**
-- * tee_shm_put() - Decrease reference count on a shared memory handle
-- * @shm:	Shared memory handle
-- */
--void tee_shm_put(struct tee_shm *shm);
--
- /**
-  * tee_shm_get_va() - Get virtual address of a shared memory plus an offset
-  * @shm:	Shared memory handle
-@@ -352,25 +174,6 @@ static inline size_t tee_shm_get_page_offset(struct tee_=
-shm *shm)
- 	return shm->offset;
- }
-=20
--/**
-- * tee_shm_get_id() - Get id of a shared memory object
-- * @shm:	Shared memory handle
-- * @returns id
-- */
--static inline int tee_shm_get_id(struct tee_shm *shm)
--{
--	return shm->id;
--}
--
--/**
-- * tee_shm_get_from_id() - Find shared memory object and increase reference
-- * count
-- * @ctx:	Context owning the shared memory
-- * @id:		Id of shared memory object
-- * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-- */
--struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
--
- /**
-  * tee_client_open_context() - Open a TEE context
-  * @start:	if not NULL, continue search after this context
-@@ -470,18 +273,6 @@ int tee_client_invoke_func(struct tee_context *ctx,
- int tee_client_cancel_req(struct tee_context *ctx,
- 			  struct tee_ioctl_cancel_arg *arg);
-=20
--static inline bool tee_param_is_memref(struct tee_param *param)
--{
--	switch (param->attr & TEE_IOCTL_PARAM_ATTR_TYPE_MASK) {
--	case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
--	case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
--	case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
--		return true;
--	default:
--		return false;
--	}
--}
--
- extern struct bus_type tee_bus_type;
-=20
- /**
-@@ -509,18 +300,4 @@ struct tee_client_driver {
- #define to_tee_client_driver(d) \
- 		container_of(d, struct tee_client_driver, driver)
-=20
--/**
-- * teedev_open() - Open a struct tee_device
-- * @teedev:	Device to open
-- *
-- * @return a pointer to struct tee_context on success or an ERR_PTR on failu=
-re.
-- */
--struct tee_context *teedev_open(struct tee_device *teedev);
--
--/**
-- * teedev_close_context() - closes a struct tee_context
-- * @ctx:	The struct tee_context to close
-- */
--void teedev_close_context(struct tee_context *ctx);
--
- #endif /*__TEE_DRV_H*/
---=20
-2.34.1
+[1]. https://elixir.bootlin.com/linux/v6.8-rc6/source/include/linux/remotepro=
+c.h#L370
 
+> > {
+> >         tee_rproc_load_fw()
+> >         resource_table =3D tee_rproc_get_loaded_rsc_table()
+> >=20
+> >         //check error conditions here
+> >=20
+> >         rproc->cached_table =3D resource_table;
+> >         rproc->table_ptr =3D resource_table;
+>=20
+> This seems to me that it is not possible regarding
+> the "memcpy(loaded_table, rproc->cached_table, rproc->table_sz)"[1] in
+> rproc_start() and the kfree(rproc->cached_table) [2] in rproc_shutdown(). We
+> would copy with the same source and destibnation address.
+> In this case a memory should be allocated for the rproc->cached_table.
+>=20
 
---===============9086521512127104373==--
+I touched base on how to fix the handling of the resource table in rproc_star=
+t()
+in an earlier reply, but because of the kfree() in rproc_shutdown, I agree
+rproc->cached_table should be set to NULL.  That said, there needs to be a
+detailed explanation of what is happening in rproc_start().
+
+>=20
+> > }
+> >=20
+> > This is essentially the same as rproc_elf_load_rsc_table(). That way we d=
+on't
+> > need rproc_alt_fw_boot() and rproc_load_segments() doesn't have to be mov=
+ed
+> > around.=20
+>=20
+> The trusted application simply needs to know that if the firmware is
+> > already loaded, it has to return.=20
+>=20
+> Today trying to load twice time is considered as an error in OP-TEE [3].
+
+That can be fixed.
+
+> As it is a constraint introduced by Linux, I would prefer treated it  in th=
+e Linux.
+
+Things in the remoteproc subsystem have been working just fine for well over a
+decade.  I'd say this is introduced by contraints from an image that is handl=
+ed
+by the secure world.
+
+>=20
+> What about introduce a "fw_loaded" flag in tee_rproc__context?
+
+I'd like to avoid that since the flag is associated with the specific way the
+trusted application works.  That flag surely won't apply, or new flags will be
+introduced, when another trusted application to handle the remote processor's
+firmware is introduced.
+
+>=20
+>=20
+> [1]
+> https://elixir.bootlin.com/linux/v6.8-rc6/source/drivers/remoteproc/remotep=
+roc_core.c#L1289
+> [2]
+> https://elixir.bootlin.com/linux/v6.8-rc6/source/drivers/remoteproc/remotep=
+roc_core.c#L2024
+> [3]
+> https://elixir.bootlin.com/op-tee/latest/source/ta/remoteproc/src/remotepro=
+c_core.c#L896
+>=20
+>=20
+> Regards,
+> Arnaud
+>=20
+> >=20
+> >> +
+> >> +struct resource_table *tee_rproc_find_loaded_rsc_table(struct rproc *rp=
+roc,
+> >> +						       const struct firmware *fw)
+> >> +{
+> >> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+> >> +	size_t table_sz;
+> >> +
+> >> +	if (!trproc)
+> >> +		return ERR_PTR(-EINVAL);
+> >> +
+> >> +	if (!trproc->rsc_table)
+> >> +		trproc->rsc_table =3D tee_rproc_get_loaded_rsc_table(rproc, &table_sz=
+);
+> >> +
+> >> +	return trproc->rsc_table;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_find_loaded_rsc_table);
+> >> +
+> >> +int tee_rproc_start(struct rproc *rproc)
+> >> +{
+> >> +	struct tee_ioctl_invoke_arg arg;
+> >> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+> >> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+> >> +	int ret;
+> >> +
+> >> +	if (!trproc)
+> >> +		return -EINVAL;
+> >> +
+> >> +	prepare_args(trproc, TA_RPROC_FW_CMD_START_FW, &arg, param, 0);
+> >> +
+> >> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+> >> +	if (ret < 0 || arg.ret !=3D 0) {
+> >> +		dev_err(tee_rproc_ctx->dev,
+> >> +			"TA_RPROC_FW_CMD_START_FW invoke failed TEE err: %x, ret:%x\n",
+> >> +			arg.ret, ret);
+> >> +		if (!ret)
+> >> +			ret =3D -EIO;
+> >> +	}
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_start);
+> >> +
+> >> +int tee_rproc_stop(struct rproc *rproc)
+> >> +{
+> >> +	struct tee_ioctl_invoke_arg arg;
+> >> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+> >> +	struct tee_rproc *trproc =3D tee_rproc_get_context(rproc);
+> >> +	int ret;
+> >> +
+> >> +	if (!trproc)
+> >> +		return -EINVAL;
+> >> +
+> >> +	prepare_args(trproc, TA_RPROC_FW_CMD_STOP_FW, &arg, param, 0);
+> >> +
+> >> +	ret =3D tee_client_invoke_func(tee_rproc_ctx->tee_ctx, &arg, param);
+> >> +	if (ret < 0 || arg.ret !=3D 0) {
+> >> +		dev_err(tee_rproc_ctx->dev,
+> >> +			"TA_RPROC_FW_CMD_STOP_FW invoke failed TEE err: %x, ret:%x\n",
+> >> +			arg.ret, ret);
+> >> +		if (!ret)
+> >> +			ret =3D -EIO;
+> >> +	}
+> >> +	if (trproc->rsc_table)
+> >> +		iounmap(trproc->rsc_table);
+> >> +	trproc->rsc_table =3D NULL;
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_stop);
+> >> +
+> >> +static const struct tee_client_device_id stm32_tee_rproc_id_table[] =3D=
+ {
+> >> +	{UUID_INIT(0x80a4c275, 0x0a47, 0x4905,
+> >> +		   0x82, 0x85, 0x14, 0x86, 0xa9, 0x77, 0x1a, 0x08)},
+> >> +	{}
+> >> +};
+> >> +
+> >> +struct tee_rproc *tee_rproc_register(struct device *dev, unsigned int r=
+proc_id)
+> >> +{
+> >> +	struct tee_client_device *tee_device;
+> >> +	struct tee_ioctl_open_session_arg sess_arg;
+> >> +	struct tee_param param[MAX_TEE_PARAM_ARRY_MEMBER];
+> >> +	struct tee_rproc *trproc;
+> >> +	int ret;
+> >> +
+> >> +	/*
+> >> +	 * The device is not probed by the TEE bus. We ignore the reason (bus =
+could be not yet
+> >> +	 * probed or service not available in the secure firmware)
+> >> +	 * Assumption here is that the TEE bus is not probed.
+> >> +	 */
+> >> +	if (!tee_rproc_ctx)
+> >> +		return ERR_PTR(-EPROBE_DEFER);
+> >> +
+> >> +	trproc =3D  devm_kzalloc(dev, sizeof(*trproc), GFP_KERNEL);
+> >> +	if (!trproc)
+> >> +		return ERR_PTR(-ENOMEM);
+> >> +
+> >> +	tee_device =3D to_tee_client_device(tee_rproc_ctx->dev);
+> >> +	memset(&sess_arg, 0, sizeof(sess_arg));
+> >> +
+> >> +	/* Open session with rproc_tee load the OP-TEE Trusted Application */
+> >> +	memcpy(sess_arg.uuid, tee_device->id.uuid.b, TEE_IOCTL_UUID_LEN);
+> >> +
+> >> +	sess_arg.clnt_login =3D TEE_IOCTL_LOGIN_REE_KERNEL;
+> >> +	sess_arg.num_params =3D 1;
+> >> +
+> >> +	param[0] =3D (struct tee_param) {
+> >> +		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
+> >> +		.u.value.a =3D rproc_id,
+> >> +	};
+> >> +
+> >> +	ret =3D tee_client_open_session(tee_rproc_ctx->tee_ctx, &sess_arg, par=
+am);
+> >> +	if (ret < 0 || sess_arg.ret !=3D 0) {
+> >> +		dev_err(dev, "tee_client_open_session failed, err: %x\n", sess_arg.re=
+t);
+> >> +		return ERR_PTR(-EINVAL);
+> >> +	}
+> >> +
+> >> +	trproc->parent =3D  dev;
+> >> +	trproc->rproc_id =3D rproc_id;
+> >> +	trproc->session_id =3D sess_arg.session;
+> >> +
+> >> +	list_add_tail(&trproc->node, &tee_rproc_ctx->sessions);
+> >> +
+> >> +	return trproc;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_register);
+> >> +
+> >> +int tee_rproc_unregister(struct tee_rproc *trproc)
+> >> +{
+> >> +	int ret;
+> >> +
+> >> +	ret =3D tee_client_close_session(tee_rproc_ctx->tee_ctx, trproc->sessi=
+on_id);
+> >> +	if (ret < 0)
+> >> +		dev_err(trproc->parent,	"tee_client_close_session failed, err: %x\n",=
+ ret);
+> >> +
+> >> +	list_del(&trproc->node);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(tee_rproc_unregister);
+> >> +
+> >> +static int tee_rproc_ctx_match(struct tee_ioctl_version_data *ver, cons=
+t void *data)
+> >> +{
+> >> +	/* Today we support only the OP-TEE, could be extend to other tees */
+> >> +	return (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE);
+> >> +}
+> >> +
+> >> +static int tee_rproc_probe(struct device *dev)
+> >> +{
+> >> +	struct tee_context *tee_ctx;
+> >> +	int ret;
+> >> +
+> >> +	/* Open context with TEE driver */
+> >> +	tee_ctx =3D tee_client_open_context(NULL, tee_rproc_ctx_match, NULL, N=
+ULL);
+> >> +	if (IS_ERR(tee_ctx))
+> >> +		return PTR_ERR(tee_ctx);
+> >> +
+> >> +	tee_rproc_ctx =3D devm_kzalloc(dev, sizeof(*tee_ctx), GFP_KERNEL);
+> >> +	if (!tee_rproc_ctx) {
+> >> +		ret =3D -ENOMEM;
+> >> +		goto err;
+> >> +	}
+> >> +
+> >> +	tee_rproc_ctx->dev =3D dev;
+> >> +	tee_rproc_ctx->tee_ctx =3D tee_ctx;
+> >> +	INIT_LIST_HEAD(&tee_rproc_ctx->sessions);
+> >> +
+> >> +	return 0;
+> >> +err:
+> >> +	tee_client_close_context(tee_ctx);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +
+> >> +static int tee_rproc_remove(struct device *dev)
+> >> +{
+> >> +	struct tee_rproc *entry, *tmp;
+> >> +
+> >> +	list_for_each_entry_safe(entry, tmp, &tee_rproc_ctx->sessions, node) {
+> >> +		tee_client_close_session(tee_rproc_ctx->tee_ctx, entry->session_id);
+> >> +		list_del(&entry->node);
+> >> +		kfree(entry);
+> >> +	}
+> >> +
+> >> +	tee_client_close_context(tee_rproc_ctx->tee_ctx);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +MODULE_DEVICE_TABLE(tee, stm32_tee_rproc_id_table);
+> >> +
+> >> +static struct tee_client_driver tee_rproc_fw_driver =3D {
+> >> +	.id_table	=3D stm32_tee_rproc_id_table,
+> >> +	.driver		=3D {
+> >> +		.name		=3D KBUILD_MODNAME,
+> >> +		.bus		=3D &tee_bus_type,
+> >> +		.probe		=3D tee_rproc_probe,
+> >> +		.remove		=3D tee_rproc_remove,
+> >> +	},
+> >> +};
+> >> +
+> >> +static int __init tee_rproc_fw_mod_init(void)
+> >> +{
+> >> +	return driver_register(&tee_rproc_fw_driver.driver);
+> >> +}
+> >> +
+> >> +static void __exit tee_rproc_fw_mod_exit(void)
+> >> +{
+> >> +	driver_unregister(&tee_rproc_fw_driver.driver);
+> >> +}
+> >> +
+> >> +module_init(tee_rproc_fw_mod_init);
+> >> +module_exit(tee_rproc_fw_mod_exit);
+> >> +
+> >> +MODULE_DESCRIPTION(" TEE remote processor control driver");
+> >> +MODULE_LICENSE("GPL");
+> >> diff --git a/include/linux/tee_remoteproc.h b/include/linux/tee_remotepr=
+oc.h
+> >> new file mode 100644
+> >> index 000000000000..7c9e91e989ba
+> >> --- /dev/null
+> >> +++ b/include/linux/tee_remoteproc.h
+> >> @@ -0,0 +1,102 @@
+> >> +/* SPDX-License-Identifier: GPL-2.0-or-later */
+> >> +/*
+> >> + * Copyright(c) 2023 STMicroelectronics - All Rights Reserved
+> >> + */
+> >> +
+> >> +#ifndef TEE_REMOTEPROC_H
+> >> +#define TEE_REMOTEPROC_H
+> >> +
+> >> +#include <linux/tee_drv.h>
+> >> +#include <linux/firmware.h>
+> >> +#include <linux/remoteproc.h>
+> >> +
+> >> +struct rproc;
+> >> +
+> >> +/**
+> >> + * struct tee_rproc - TEE remoteproc structure
+> >> + * @node:		Reference in list
+> >> + * @rproc:		Remoteproc reference
+> >> + * @parent:		Parent device
+> >> + * @rproc_id:		Identifier of the target firmware
+> >> + * @session_id:		TEE session identifier
+> >> + * @rsc_table:		Resource table virtual address.
+> >> + */
+> >> +struct tee_rproc {
+> >> +	struct list_head node;
+> >> +	struct rproc *rproc;
+> >> +	struct device *parent;
+> >> +	u32 rproc_id;
+> >> +	u32 session_id;
+> >> +	struct resource_table *rsc_table;
+> >> +};
+> >> +
+> >> +#if IS_ENABLED(CONFIG_TEE_REMOTEPROC)
+> >> +
+> >> +struct tee_rproc *tee_rproc_register(struct device *dev, unsigned int r=
+proc_id);
+> >> +int tee_rproc_unregister(struct tee_rproc *trproc);
+> >> +
+> >> +int tee_rproc_load_fw(struct rproc *rproc, const struct firmware *fw);
+> >> +struct resource_table *tee_rproc_get_loaded_rsc_table(struct rproc *rpr=
+oc, size_t *table_sz);
+> >> +struct resource_table *tee_rproc_find_loaded_rsc_table(struct rproc *rp=
+roc,
+> >> +						       const struct firmware *fw);
+> >> +int tee_rproc_start(struct rproc *rproc);
+> >> +int tee_rproc_stop(struct rproc *rproc);
+> >> +
+> >> +#else
+> >> +
+> >> +static inline struct tee_rproc *tee_rproc_register(struct device *dev, =
+unsigned int rproc_id)
+> >> +{
+> >> +	return ERR_PTR(-ENODEV);
+> >> +}
+> >> +
+> >> +static inline int tee_rproc_unregister(struct tee_rproc *trproc)
+> >> +{
+> >> +	/* This shouldn't be possible */
+> >> +	WARN_ON(1);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static inline int tee_rproc_load_fw(struct rproc *rproc,  const struct =
+firmware *fw)
+> >> +{
+> >> +	/* This shouldn't be possible */
+> >> +	WARN_ON(1);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static inline int tee_rproc_start(struct rproc *rproc)
+> >> +{
+> >> +	/* This shouldn't be possible */
+> >> +	WARN_ON(1);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static inline int tee_rproc_stop(struct rproc *rproc)
+> >> +{
+> >> +	/* This shouldn't be possible */
+> >> +	WARN_ON(1);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static inline struct resource_table *
+> >> +tee_rproc_get_loaded_rsc_table(struct rproc *rproc, size_t *table_sz)
+> >> +{
+> >> +	/* This shouldn't be possible */
+> >> +	WARN_ON(1);
+> >> +
+> >> +	return NULL;
+> >> +}
+> >> +
+> >> +static inline struct resource_table *
+> >> +tee_rproc_find_loaded_rsc_table(struct rproc *rproc, const struct firmw=
+are *fw)
+> >> +{
+> >> +	/* This shouldn't be possible */
+> >> +	WARN_ON(1);
+> >> +
+> >> +	return NULL;
+> >> +}
+> >> +#endif /* CONFIG_TEE_REMOTEPROC */
+> >> +#endif /* TEE_REMOTEPROC_H */
+> >> --=20
+> >> 2.25.1
+> >>
+
+--===============7462553143568208902==--
 
