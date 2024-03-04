@@ -1,169 +1,78 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 3/3] Documentation: tee: Add TS-TEE driver
-Date: Mon, 04 Mar 2024 10:05:50 +0100
-Message-ID: <96D25150-1FBC-4DEA-A202-CA85E718FAA7@arm.com>
-In-Reply-To: <
- <CAFA6WYP4WVv2H4_2PAn_BOUpYYbG1SDcWL0Gmd6c0ECiH62c_w@mail.gmail.com>>
+Subject: Re: [PATCH v2 1/3] tee: optee: Move pool_op helper functions
+Date: Mon, 04 Mar 2024 14:47:11 +0530
+Message-ID: 
+ <CAFA6WYNz57v_S9CBQHUjvPdzcP9FWuDN0ciPNvgUZY_-m3JKRg@mail.gmail.com>
+In-Reply-To: <4E68610D-8F2B-4E27-AE5C-45CB59D7FEC0@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3864599861659156655=="
+Content-Type: multipart/mixed; boundary="===============6822973944203227557=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3864599861659156655==
+--===============6822973944203227557==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 27 Feb 2024, at 8:14, Sumit Garg wrote:
+Hi Balint,
 
-> On Fri, 23 Feb 2024 at 15:23, Balint Dobszay <balint.dobszay@arm.com> wro=
-te:
->>
->> Add documentation for the Trusted Services TEE driver.
->>
->> Signed-off-by: Balint Dobszay <balint.dobszay@arm.com>
->> ---
->>  Documentation/tee/index.rst  |  1 +
->>  Documentation/tee/ts-tee.rst | 71 ++++++++++++++++++++++++++++++++++++
->>  2 files changed, 72 insertions(+)
->>  create mode 100644 Documentation/tee/ts-tee.rst
->>
+On Mon, 4 Mar 2024 at 14:33, Balint Dobszay <balint.dobszay@arm.com> wrote:
 >
-> Acked-by: Sumit Garg <sumit.garg@linaro.org>
+> Hi Sumit,
 >
-> -Sumit
 
-Thanks, I'll apply the tag in the next version.
+[snip]
 
-Regards,
-Balint
+> >> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> >> index 911ddf92dcee..4cf402424e71 100644
+> >> --- a/include/linux/tee_drv.h
+> >> +++ b/include/linux/tee_drv.h
+> >> @@ -275,6 +275,17 @@ void *tee_get_drvdata(struct tee_device *teedev);
+> >>  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t =
+size);
+> >>  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_=
+t size);
+> >>
+> >> +int tee_shm_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_=
+shm *shm,
+> >> +                                size_t size, size_t align,
+> >> +                                int (*shm_register)(struct tee_context =
+*ctx,
+> >> +                                                    struct tee_shm *shm,
+> >> +                                                    struct page **pages,
+> >> +                                                    size_t num_pages,
+> >> +                                                    unsigned long start=
+));
+> >> +void tee_shm_pool_op_free_helper(struct tee_shm_pool *pool, struct tee_=
+shm *shm,
+> >> +                                int (*shm_unregister)(struct tee_contex=
+t *ctx,
+> >> +                                                      struct tee_shm *s=
+hm));
+> >> +
+> >
+> > These rather belong to drivers/tee/tee_private.h as we shouldn't
+> > expose them to other kernel client drivers.
+>
+> As per the discussion in the other thread I'll ignore this.
+>
 
->> diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
->> index a23bd08847e5..4be6e69d7837 100644
->> --- a/Documentation/tee/index.rst
->> +++ b/Documentation/tee/index.rst
->> @@ -10,6 +10,7 @@ TEE Subsystem
->>     tee
->>     op-tee
->>     amd-tee
->> +   ts-tee
->>
->>  .. only::  subproject and html
->>
->> diff --git a/Documentation/tee/ts-tee.rst b/Documentation/tee/ts-tee.rst
->> new file mode 100644
->> index 000000000000..843e34422648
->> --- /dev/null
->> +++ b/Documentation/tee/ts-tee.rst
->> @@ -0,0 +1,71 @@
->> +.. SPDX-License-Identifier: GPL-2.0
->> +
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +TS-TEE (Trusted Services project)
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +
->> +This driver provides access to secure services implemented by Trusted Ser=
-vices.
->> +
->> +Trusted Services [1] is a TrustedFirmware.org project that provides a fra=
-mework
->> +for developing and deploying device Root of Trust services in FF-A [2] S-=
-EL0
->> +Secure Partitions. The project hosts the reference implementation of the =
-Arm
->> +Platform Security Architecture [3] for Arm A-profile devices.
->> +
->> +The FF-A Secure Partitions (SP) are accessible through the FF-A driver [4=
-] which
->> +provides the low level communication for this driver. On top of that the =
-Trusted
->> +Services RPC protocol is used [5]. To use the driver from user space a re=
-ference
->> +implementation is provided at [6], which is part of the Trusted Services =
-client
->> +library called libts [7].
->> +
->> +All Trusted Services (TS) SPs have the same FF-A UUID; it identifies the =
-TS RPC
->> +protocol. A TS SP can host one or more services (e.g. PSA Crypto, PSA ITS=
-, etc).
->> +A service is identified by its service UUID; the same type of service can=
-not be
->> +present twice in the same SP. During SP boot each service in the SP is as=
-signed
->> +an "interface ID". This is just a short ID to simplify message addressing.
->> +
->> +The generic TEE design is to share memory at once with the Trusted OS, wh=
-ich can
->> +then be reused to communicate with multiple applications running on the T=
-rusted
->> +OS. However, in case of FF-A, memory sharing works on an endpoint level, =
-i.e.
->> +memory is shared with a specific SP. User space has to be able to separat=
-ely
->> +share memory with each SP based on its endpoint ID; therefore a separate =
-TEE
->> +device is registered for each discovered TS SP. Opening the SP correspond=
-s to
->> +opening the TEE device and creating a TEE context. A TS SP hosts one or m=
-ore
->> +services. Opening a service corresponds to opening a session in the given
->> +tee_context.
->> +
->> +Overview of a system with Trusted Services components::
->> +
->> +   User space                  Kernel space                   Secure world
->> +   ~~~~~~~~~~                  ~~~~~~~~~~~~                   ~~~~~~~~~~~~
->> +   +--------+                                               +------------=
--+
->> +   | Client |                                               | Trusted    =
- |
->> +   +--------+                                               | Services SP=
- |
->> +      /\                                                    +------------=
--+
->> +      ||                                                          /\
->> +      ||                                                          ||
->> +      ||                                                          ||
->> +      \/                                                          \/
->> +   +-------+                +----------+--------+           +------------=
--+
->> +   | libts |                |  TEE     | TS-TEE |           |  FF-A SPMC =
- |
->> +   |       |                |  subsys  | driver |           |   + SPMD   =
- |
->> +   +-------+----------------+----+-----+--------+-----------+------------=
--+
->> +   |      Generic TEE API        |     |  FF-A  |     TS RPC protocol    =
- |
->> +   |      IOCTL (TEE_IOC_*)      |     | driver |        over FF-A       =
- |
->> +   +-----------------------------+     +--------+------------------------=
--+
->> +
->> +References
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +
->> +[1] https://www.trustedfirmware.org/projects/trusted-services/
->> +
->> +[2] https://developer.arm.com/documentation/den0077/
->> +
->> +[3] https://www.arm.com/architecture/security-features/platform-security
->> +
->> +[4] drivers/firmware/arm_ffa/
->> +
->> +[5] https://trusted-services.readthedocs.io/en/v1.0.0/developer/service-a=
-ccess-protocols.html#abi
->> +
->> +[6] https://git.trustedfirmware.org/TS/trusted-services.git/tree/componen=
-ts/rpc/ts_rpc/caller/linux/ts_rpc_caller_linux.c?h=3Dv1.0.0
->> +
->> +[7] https://git.trustedfirmware.org/TS/trusted-services.git/tree/deployme=
-nts/libts/arm-linux/CMakeLists.txt?h=3Dv1.0.0
->> --
->> 2.34.1
->>
+Then it will have conflicts with this [1] patch. If you are fine to
+incorporate [1] in your series then the right place for these function
+declarations should be include/linux/tee_core.h.
 
---===============3864599861659156655==--
+[1] https://www.spinics.net/lists/kernel/msg5122983.html
+
+-Sumit
+
+> Regards,
+> Balint
+>
+> >>  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
+> >>                                             void *addr, size_t length);
+> >>
+> >> --
+> >> 2.34.1
+> >>
+
+--===============6822973944203227557==--
 
