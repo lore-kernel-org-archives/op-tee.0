@@ -1,78 +1,47 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 1/3] tee: optee: Move pool_op helper functions
-Date: Mon, 04 Mar 2024 14:47:11 +0530
-Message-ID: 
- <CAFA6WYNz57v_S9CBQHUjvPdzcP9FWuDN0ciPNvgUZY_-m3JKRg@mail.gmail.com>
-In-Reply-To: <4E68610D-8F2B-4E27-AE5C-45CB59D7FEC0@arm.com>
+Subject: [GIT PULL] OP-TEE fix for 6.8
+Date: Mon, 04 Mar 2024 14:27:27 +0100
+Message-ID: <20240304132727.GA3501807@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6822973944203227557=="
+Content-Type: multipart/mixed; boundary="===============1546213754468161132=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6822973944203227557==
+--===============1546213754468161132==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Balint,
+Hello arm-soc maintainers,
 
-On Mon, 4 Mar 2024 at 14:33, Balint Dobszay <balint.dobszay@arm.com> wrote:
->
-> Hi Sumit,
->
+Please pull this small fix for a panic in the OP-TEE driver that can occur
+in the error path when registering devices on the TEE bus.
 
-[snip]
+Thanks,
+Jens
 
-> >> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> >> index 911ddf92dcee..4cf402424e71 100644
-> >> --- a/include/linux/tee_drv.h
-> >> +++ b/include/linux/tee_drv.h
-> >> @@ -275,6 +275,17 @@ void *tee_get_drvdata(struct tee_device *teedev);
-> >>  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t =
-size);
-> >>  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_=
-t size);
-> >>
-> >> +int tee_shm_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_=
-shm *shm,
-> >> +                                size_t size, size_t align,
-> >> +                                int (*shm_register)(struct tee_context =
-*ctx,
-> >> +                                                    struct tee_shm *shm,
-> >> +                                                    struct page **pages,
-> >> +                                                    size_t num_pages,
-> >> +                                                    unsigned long start=
-));
-> >> +void tee_shm_pool_op_free_helper(struct tee_shm_pool *pool, struct tee_=
-shm *shm,
-> >> +                                int (*shm_unregister)(struct tee_contex=
-t *ctx,
-> >> +                                                      struct tee_shm *s=
-hm));
-> >> +
-> >
-> > These rather belong to drivers/tee/tee_private.h as we shouldn't
-> > expose them to other kernel client drivers.
->
-> As per the discussion in the other thread I'll ignore this.
->
+The following changes since commit 41bccc98fb7931d63d03f326a746ac4d429c1dd3:
 
-Then it will have conflicts with this [1] patch. If you are fine to
-incorporate [1] in your series then the right place for these function
-declarations should be include/linux/tee_core.h.
+  Linux 6.8-rc2 (2024-01-28 17:01:12 -0800)
 
-[1] https://www.spinics.net/lists/kernel/msg5122983.html
+are available in the Git repository at:
 
--Sumit
+  https://git.linaro.org/people/jens.wiklander/linux-tee.git tags/optee-fix-f=
+or-v6.8
 
-> Regards,
-> Balint
->
-> >>  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
-> >>                                             void *addr, size_t length);
-> >>
-> >> --
-> >> 2.34.1
-> >>
+for you to fetch changes up to 95915ba4b987cf2b222b0f251280228a1ff977ac:
 
---===============6822973944203227557==--
+  tee: optee: Fix kernel panic caused by incorrect error handling (2024-03-04=
+ 09:49:03 +0100)
+
+----------------------------------------------------------------
+Fix kernel panic in OP-TEE driver
+
+----------------------------------------------------------------
+Sumit Garg (1):
+      tee: optee: Fix kernel panic caused by incorrect error handling
+
+ drivers/tee/optee/device.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--===============1546213754468161132==--
 
