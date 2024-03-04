@@ -1,87 +1,49 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Arnd Bergmann <arnd@arndb.de>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 1/3] tee: optee: Move pool_op helper functions
-Date: Mon, 04 Mar 2024 15:26:58 +0100
-Message-ID: <1A75CF74-D486-4A3B-9004-250F870D7330@arm.com>
-In-Reply-To: <
- <CAFA6WYNz57v_S9CBQHUjvPdzcP9FWuDN0ciPNvgUZY_-m3JKRg@mail.gmail.com>>
+Subject: Re: [GIT PULL] Make tee_bus_type const for v6.9
+Date: Mon, 04 Mar 2024 17:26:23 +0100
+Message-ID: <560b697d-4343-4e69-986d-6c3f4daa637c@app.fastmail.com>
+In-Reply-To: <20240216142700.GA3863398@rayden>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4383633950288096124=="
+Content-Type: multipart/mixed; boundary="===============0978242233275428719=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4383633950288096124==
+--===============0978242233275428719==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On 4 Mar 2024, at 10:17, Sumit Garg wrote:
-
-> Hi Balint,
+On Fri, Feb 16, 2024, at 15:27, Jens Wiklander wrote:
+> Hello arm-soc maitainers,
 >
-> On Mon, 4 Mar 2024 at 14:33, Balint Dobszay <balint.dobszay@arm.com> wrot=
-e:
->>
->> Hi Sumit,
->>
+> Please pull this small patch making tee_bus_type const.
 >
-> [snip]
+> Thanks,
+> Jens
 >
->>>> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
->>>> index 911ddf92dcee..4cf402424e71 100644
->>>> --- a/include/linux/tee_drv.h
->>>> +++ b/include/linux/tee_drv.h
->>>> @@ -275,6 +275,17 @@ void *tee_get_drvdata(struct tee_device *teedev);
->>>>  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t =
-size);
->>>>  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_=
-t size);
->>>>
->>>> +int tee_shm_pool_op_alloc_helper(struct tee_shm_pool *pool, struct tee_=
-shm *shm,
->>>> +                                size_t size, size_t align,
->>>> +                                int (*shm_register)(struct tee_context =
-*ctx,
->>>> +                                                    struct tee_shm *shm,
->>>> +                                                    struct page **pages,
->>>> +                                                    size_t num_pages,
->>>> +                                                    unsigned long start=
-));
->>>> +void tee_shm_pool_op_free_helper(struct tee_shm_pool *pool, struct tee_=
-shm *shm,
->>>> +                                int (*shm_unregister)(struct tee_contex=
-t *ctx,
->>>> +                                                      struct tee_shm *s=
-hm));
->>>> +
->>>
->>> These rather belong to drivers/tee/tee_private.h as we shouldn't
->>> expose them to other kernel client drivers.
->>
->> As per the discussion in the other thread I'll ignore this.
->>
+> The following changes since commit 41bccc98fb7931d63d03f326a746ac4d429c1dd3:
 >
-> Then it will have conflicts with this [1] patch. If you are fine to
-> incorporate [1] in your series then the right place for these function
-> declarations should be include/linux/tee_core.h.
+>   Linux 6.8-rc2 (2024-01-28 17:01:12 -0800)
 >
-> [1] https://www.spinics.net/lists/kernel/msg5122983.html
+> are available in the Git repository at:
+>
+>   https://git.linaro.org/people/jens.wiklander/linux-tee.git/ 
+> tags/tee-bus-type-for-v6.9
+>
+> for you to fetch changes up to 1d044941d53855ca06e4fa34936ff7273c8641dd:
+>
+>   tee: make tee_bus_type const (2024-02-15 08:28:24 +0100)
+>
+> ----------------------------------------------------------------
+> tee: make tee_bus_type const
+>
 
-You're right, I'll rebase my patches on this.
+My soc/drivers branch was based on -rc1, not -rc2, and
+I did not want to do a backmerge of the rc2 contents into
+it, so I ended up just cherry-picking this trivial change.
 
-By incorporating your patch in my series, do you mean that I should just
-add it as the first patch in the series for the next version? Or keep my
-series as is (do the rebase of course) and just mention that it's using
-your patch as base?
+I hope that's ok.
 
-Regards,
-Balint
+     Arnd
 
->>
->>>>  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
->>>>                                             void *addr, size_t length);
->>>>
->>>> --
->>>> 2.34.1
->>>>
-
---===============4383633950288096124==--
+--===============0978242233275428719==--
 
