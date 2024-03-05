@@ -2,58 +2,70 @@ From: "Winkler, Tomas" <tomas.winkler@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  RE: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
-Date: Tue, 05 Mar 2024 12:54:09 +0000
-Message-ID: <PH7PR11MB7605493349915A168A80CDD8E5222@PH7PR11MB7605.namprd11.prod.outlook.com>
+Date: Tue, 05 Mar 2024 12:55:17 +0000
+Message-ID: <PH7PR11MB7605979F0DC103BFCC617FF2E5222@PH7PR11MB7605.namprd11.prod.outlook.com>
 In-Reply-To: <
- <CACRpkdbhhZ9+Jy_tvWy1RSnyZMjqUhh0ARpS+WRtgWTH3AYCPw@mail.gmail.com>>
+ <CACRpkdZBWBio8kvKuVzj2CknCb4eS=VB2EqUsAK-vf4e328icg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1337012129605101371=="
+Content-Type: multipart/mixed; boundary="===============7950420151028662139=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1337012129605101371==
+--===============7950420151028662139==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 
->=20
 > Hi Jens,
 >=20
-> I realized there is one thing I wonder about:
+> thanks for your patch!
 >=20
 > On Tue, Feb 27, 2024 at 4:31=E2=80=AFPM Jens Wiklander <jens.wiklander@li=
 naro.org>
 > wrote:
 >=20
-> > +struct rpmb_frame {
-> > +       u8     stuff[196];
-> > +       u8     key_mac[32];
-> > +       u8     data[256];
-> > +       u8     nonce[16];
-> > +       __be32 write_counter;
-> > +       __be16 addr;
-> > +       __be16 block_count;
-> > +       __be16 result;
-> > +       __be16 req_resp;
-> > +} __packed;
+> > A number of storage technologies support a specialised hardware
+> > partition designed to be resistant to replay attacks. The underlying
+> > HW protocols differ but the operations are common. The RPMB partition
+> > cannot be accessed via standard block layer, but by a set of specific
+> > RPMB commands: WRITE, READ, GET_WRITE_COUNTER, and
+> PROGRAM_KEY. Such a
+> > partition provides authenticated and replay protected access, hence
+> > suitable as a secure storage.
+> >
+> > The initial aim of this patch is to provide a simple RPMB driver
+> > interface which can be accessed by the optee driver to facilitate
+> > early RPMB access to OP-TEE OS (secure OS) during the boot time.
+> >
+> > A TEE device driver can claim the RPMB interface, for example, via
+> > rpmb_interface_register() or rpmb_dev_find_device(). The RPMB driver
+> > provides a callback to route RPMB frames to the RPMB device accessible
+> > via rpmb_route_frames().
+> >
+> > The detailed operation of implementing the access is left to the TEE
+> > device driver itself.
+> >
+> > Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> > Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
+> > Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 >=20
-> I didn't quite get why these things are encoded big-endian?
-
-
-By the spec.
-
+> I would mention in the commit that the subsystem is currently only used with
+> eMMC but is designed to be used also by UFS and NVME. Nevertheless, no
+> big deal so:
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 >=20
-> As on the producer side (the eMMC backend) it seems we are anyway calling
-> cpu_to_be* to convert them into this format.
+> > +config RPMB
+> > +       tristate "RPMB partition interface"
+> > +       depends on MMC
 >=20
-> If this is a requirement on the consumer side (such as TEE) I think the
-> consumer should swap the bytes rather than the producer, but I guess that
-> kind of assumes that we foresee there will be other consumers in the first
-> place.
+> depends on MMC || SCSI_UFSHCD || NVME_CORE ?
 >=20
-This is end 2 end.=20
+> Or do we want to hold it off until we implement the backends?
 
-> Yours,
-> Linus Walleij
+I believe I've sent the implementation for all the backends, need to search t=
+he mailing list.
 
---===============1337012129605101371==--
+
+
+--===============7950420151028662139==--
 
