@@ -1,134 +1,85 @@
-From: Balint Dobszay <balint.dobszay@arm.com>
+From: Avri Altman <Avri.Altman@wdc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 0/4] TEE driver for Trusted Services
-Date: Tue, 12 Mar 2024 12:36:13 +0100
-Message-ID: <173F2BEA-50F1-4339-A072-473ED7CC7DC9@arm.com>
+Subject: 
+ RE: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
+Date: Tue, 05 Mar 2024 16:33:54 +0000
+Message-ID: <DM6PR04MB65759DF9CAF6ECB5BA78E138FC222@DM6PR04MB6575.namprd04.prod.outlook.com>
 In-Reply-To: <
- <CAFA6WYPNV5F3h=naCtg=fYr8zfB3rho+G1B6-rggLe_PkqvgnQ@mail.gmail.com>>
+ <CACRpkdZBWBio8kvKuVzj2CknCb4eS=VB2EqUsAK-vf4e328icg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4148122852051649174=="
+Content-Type: multipart/mixed; boundary="===============7489730834212868932=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4148122852051649174==
+--===============7489730834212868932==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit,
+> Hi Jens,
+>=20
+> thanks for your patch!
+>=20
+> On Tue, Feb 27, 2024 at 4:31=E2=80=AFPM Jens Wiklander <jens.wiklander@li=
+naro.org>
+> wrote:
+>=20
+> > A number of storage technologies support a specialised hardware
+> > partition designed to be resistant to replay attacks. The underlying
+> > HW protocols differ but the operations are common. The RPMB partition
+> > cannot be accessed via standard block layer, but by a set of specific
+> > RPMB commands: WRITE, READ, GET_WRITE_COUNTER, and PROGRAM_KEY.
+> Such a
+> > partition provides authenticated and replay protected access, hence
+> > suitable as a secure storage.
+> >
+> > The initial aim of this patch is to provide a simple RPMB driver
+> > interface which can be accessed by the optee driver to facilitate
+> > early RPMB access to OP-TEE OS (secure OS) during the boot time.
+> >
+> > A TEE device driver can claim the RPMB interface, for example, via
+> > rpmb_interface_register() or rpmb_dev_find_device(). The RPMB driver
+> > provides a callback to route RPMB frames to the RPMB device accessible
+> > via rpmb_route_frames().
+> >
+> > The detailed operation of implementing the access is left to the TEE
+> > device driver itself.
+> >
+> > Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> > Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
+> > Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+>=20
+> I would mention in the commit that the subsystem is currently only used with
+> eMMC but is designed to be used also by UFS and NVME. Nevertheless, no big
+> deal so:
+Moreover, as the years went by, the differences between mmc and ufs grew:
+In mmc there are 7 rpmb operations, in ufs 9.
+In mmc the rpmb frame is 512Bytes, also in legacy ufs (up to including ufs3.1=
+), but in ufs4.0 onward it can be 4k with extended header.
+See e.g. https://patchwork.kernel.org/project/linux-scsi/patch/20221107131038=
+.201724-3-beanhuo(a)iokpp.de/
+In mmc the rpmb sequence is atomic, in ufs not.
+In ufs rpmb is a wlun in mmc a partition.
+Both protocols support in multi-region rpmb, but there are some differences t=
+here.
+Etc.
 
-On 6 Mar 2024, at 11:40, Sumit Garg wrote:
+Thanks,
+Avri
 
-> Hi Balint,
->
-> On Tue, 5 Mar 2024 at 15:48, Balint Dobszay <balint.dobszay@arm.com> wrot=
-e:
->>
->> This series introduces a TEE driver for Trusted Services [1].
->>
->> Trusted Services is a TrustedFirmware.org project that provides a
->> framework for developing and deploying device Root of Trust services in
->> FF-A [2] Secure Partitions. The project hosts the reference
->> implementation of Arm Platform Security Architecture [3] for Arm
->> A-profile devices.
->>
->> The FF-A Secure Partitions are accessible through the FF-A driver in
->> Linux. However, the FF-A driver doesn't have a user space interface so
->> user space clients currently cannot access Trusted Services. The goal of
->> this TEE driver is to bridge this gap and make Trusted Services
->> functionality accessible from user space.
->>
->> Changelog:
->> v2[6] -> v3:
->>   - Add patch "tee: Refactor TEE subsystem header files" from Sumit
->>   - Remove unnecessary includes from core.c
->>   - Remove the mutex from "struct ts_context_data" since the same
->>     mechanism could be implemented by reusing the XArray's internal lock
->>   - Rename tee_shm_pool_op_*_helper functions as suggested by Sumit
->>   - Replace pr_* with dev_* as previously suggested by Krzysztof
->>
->
-> I will also suggest you to add a maintainer's entry for this new
-> Trusted Services TEE driver.
 
-Sure, will do. I plan to post v4 next week.
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+>=20
+> > +config RPMB
+> > +       tristate "RPMB partition interface"
+> > +       depends on MMC
+>=20
+> depends on MMC || SCSI_UFSHCD || NVME_CORE ?
+>=20
+> Or do we want to hold it off until we implement the backends?
+>=20
+> Yours,
+> Linus Walleij
 
-Regards,
-Balint
 
->> v1[5] -> v2:
->>   - Refactor session handling to use XArray instead of IDR and linked
->>     list (the linked list was redundant as pointed out by Jens, and IDR
->>     is now deprecated in favor of XArray)
->>   - Refactor tstee_probe() to not call tee_device_unregister() before
->>     calling tee_device_register()
->>   - Address comments from Krzysztof and Jens
->>   - Address documentation comments from Randy
->>   - Use module_ffa_driver() macro instead of separate module init / exit
->>     functions
->>   - Reformat max line length 100 -> 80
->>
->> RFC[4] -> v1:
->>   - Add patch for moving pool_op helper functions to the TEE subsystem,
->>     as suggested by Jens
->>   - Address comments from Sumit, add patch for documentation
->>
->> [1] https://www.trustedfirmware.org/projects/trusted-services/
->> [2] https://developer.arm.com/documentation/den0077/
->> [3] https://www.arm.com/architecture/security-features/platform-security
->> [4] https://lore.kernel.org/linux-arm-kernel/20230927152145.111777-1-balin=
-t.dobszay(a)arm.com/
->> [5] https://lore.kernel.org/lkml/20240213145239.379875-1-balint.dobszay(a)=
-arm.com/
->> [6] https://lore.kernel.org/lkml/20240223095133.109046-1-balint.dobszay(a)=
-arm.com/
->>
->>
->> Balint Dobszay (3):
->>   tee: optee: Move pool_op helper functions
->>   tee: tstee: Add Trusted Services TEE driver
->>   Documentation: tee: Add TS-TEE driver
->>
->> Sumit Garg (1):
->>   tee: Refactor TEE subsystem header files
->>
->>  Documentation/tee/index.rst         |   1 +
->>  Documentation/tee/ts-tee.rst        |  71 ++++
->>  MAINTAINERS                         |   1 +
->>  drivers/tee/Kconfig                 |   1 +
->>  drivers/tee/Makefile                |   1 +
->>  drivers/tee/amdtee/amdtee_private.h |   2 +-
->>  drivers/tee/amdtee/call.c           |   2 +-
->>  drivers/tee/amdtee/core.c           |   3 +-
->>  drivers/tee/amdtee/shm_pool.c       |   2 +-
->>  drivers/tee/optee/call.c            |   2 +-
->>  drivers/tee/optee/core.c            |  66 +---
->>  drivers/tee/optee/device.c          |   2 +-
->>  drivers/tee/optee/ffa_abi.c         |   8 +-
->>  drivers/tee/optee/notif.c           |   2 +-
->>  drivers/tee/optee/optee_private.h   |  14 +-
->>  drivers/tee/optee/rpc.c             |   2 +-
->>  drivers/tee/optee/smc_abi.c         |  11 +-
->>  drivers/tee/tee_core.c              |   2 +-
->>  drivers/tee/tee_private.h           |  35 --
->>  drivers/tee/tee_shm.c               |  66 +++-
->>  drivers/tee/tee_shm_pool.c          |   2 +-
->>  drivers/tee/tstee/Kconfig           |  11 +
->>  drivers/tee/tstee/Makefile          |   3 +
->>  drivers/tee/tstee/core.c            | 482 ++++++++++++++++++++++++++++
->>  drivers/tee/tstee/tstee_private.h   |  92 ++++++
->>  include/linux/tee_core.h            | 306 ++++++++++++++++++
->>  include/linux/tee_drv.h             | 285 ++--------------
->>  include/uapi/linux/tee.h            |   1 +
->>  28 files changed, 1087 insertions(+), 389 deletions(-)
->>  create mode 100644 Documentation/tee/ts-tee.rst
->>  create mode 100644 drivers/tee/tstee/Kconfig
->>  create mode 100644 drivers/tee/tstee/Makefile
->>  create mode 100644 drivers/tee/tstee/core.c
->>  create mode 100644 drivers/tee/tstee/tstee_private.h
->>  create mode 100644 include/linux/tee_core.h
->>
->> --
->> 2.34.1
->>
-
---===============4148122852051649174==--
+--===============7489730834212868932==--
 
