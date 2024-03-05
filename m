@@ -1,75 +1,98 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH] tee: optee: Fix kernel panic caused by incorrect error handling
-Date: Tue, 05 Mar 2024 11:04:19 +0530
+Subject: Re: [PATCH v2 1/3] tee: optee: Move pool_op helper functions
+Date: Tue, 05 Mar 2024 11:06:52 +0530
 Message-ID: 
- <CAFA6WYORMkAmoSqxA3NSfTgfdebnVt1VjJp7i23yt8L8OquWGg@mail.gmail.com>
-In-Reply-To: <f539dd73-96bd-41e7-8227-fbf1ffba068b@app.fastmail.com>
+ <CAFA6WYMocdcQXaqk8hS8dwnfwJLNWKWSEfMLO4wXyCQM=TQ8vQ@mail.gmail.com>
+In-Reply-To: <1A75CF74-D486-4A3B-9004-250F870D7330@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8482173984157205412=="
+Content-Type: multipart/mixed; boundary="===============6431659220807778323=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8482173984157205412==
+--===============6431659220807778323==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 4 Mar 2024 at 22:35, Arnd Bergmann <arnd@arndb.de> wrote:
+On Mon, 4 Mar 2024 at 19:57, Balint Dobszay <balint.dobszay@arm.com> wrote:
 >
-> On Mon, Mar 4, 2024, at 06:45, Sumit Garg wrote:
-> > + Arnd
-> >
-> > On Fri, 1 Mar 2024 at 20:07, Sumit Garg <sumit.garg@linaro.org> wrote:
-> >>
-> >> The error path while failing to register devices on the TEE bus has a
-> >> bug leading to kernel panic as follows:
-> >>
-> >> [   15.398930] Unable to handle kernel paging request at virtual address=
- ffff07ed00626d7c
-> >> [   15.406913] Mem abort info:
-> >> [   15.409722]   ESR =3D 0x0000000096000005
-> >> [   15.413490]   EC =3D 0x25: DABT (current EL), IL =3D 32 bits
-> >> [   15.418814]   SET =3D 0, FnV =3D 0
-> >> [   15.421878]   EA =3D 0, S1PTW =3D 0
-> >> [   15.425031]   FSC =3D 0x05: level 1 translation fault
-> >> [   15.429922] Data abort info:
-> >> [   15.432813]   ISV =3D 0, ISS =3D 0x00000005, ISS2 =3D 0x00000000
-> >> [   15.438310]   CM =3D 0, WnR =3D 0, TnD =3D 0, TagAccess =3D 0
-> >> [   15.443372]   GCS =3D 0, Overlay =3D 0, DirtyBit =3D 0, Xs =3D 0
-> >> [   15.448697] swapper pgtable: 4k pages, 48-bit VAs, pgdp=3D00000000d9e=
-3e000
-> >> [   15.455413] [ffff07ed00626d7c] pgd=3D1800000bffdf9003, p4d=3D1800000b=
-ffdf9003, pud=3D0000000000000000
-> >> [   15.464146] Internal error: Oops: 0000000096000005 [#1] PREEMPT SMP
-> >>
-> >> Commit 7269cba53d90 ("tee: optee: Fix supplicant based device enumeratio=
-n")
-> >> lead to the introduction of this bug. So fix it appropriately.
-> >>
-> >> Reported-by: Mikko Rapeli <mikko.rapeli@linaro.org>
-> >> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D218542
-> >> Fixes: 7269cba53d90 ("tee: optee: Fix supplicant based device enumeratio=
-n")
-> >> Cc: stable(a)vger.kernel.org
-> >> Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
-> >> ---
-> >>  drivers/tee/optee/device.c | 3 ++-
-> >>  1 file changed, 2 insertions(+), 1 deletion(-)
-> >>
-> >
-> > Jens, Arnd,
-> >
-> > Is there any chance for this fix to make it into v6.8 release?
+> On 4 Mar 2024, at 10:17, Sumit Garg wrote:
 >
-> I merged the pull request into my arm/fixes branch now, will
-> send the branch on once it passes CI.
+> > Hi Balint,
+> >
+> > On Mon, 4 Mar 2024 at 14:33, Balint Dobszay <balint.dobszay@arm.com> wr=
+ote:
+> >>
+> >> Hi Sumit,
+> >>
+> >
+> > [snip]
+> >
+> >>>> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> >>>> index 911ddf92dcee..4cf402424e71 100644
+> >>>> --- a/include/linux/tee_drv.h
+> >>>> +++ b/include/linux/tee_drv.h
+> >>>> @@ -275,6 +275,17 @@ void *tee_get_drvdata(struct tee_device *teedev);
+> >>>>  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_=
+t size);
+> >>>>  struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, siz=
+e_t size);
+> >>>>
+> >>>> +int tee_shm_pool_op_alloc_helper(struct tee_shm_pool *pool, struct te=
+e_shm *shm,
+> >>>> +                                size_t size, size_t align,
+> >>>> +                                int (*shm_register)(struct tee_contex=
+t *ctx,
+> >>>> +                                                    struct tee_shm *s=
+hm,
+> >>>> +                                                    struct page **pag=
+es,
+> >>>> +                                                    size_t num_pages,
+> >>>> +                                                    unsigned long sta=
+rt));
+> >>>> +void tee_shm_pool_op_free_helper(struct tee_shm_pool *pool, struct te=
+e_shm *shm,
+> >>>> +                                int (*shm_unregister)(struct tee_cont=
+ext *ctx,
+> >>>> +                                                      struct tee_shm =
+*shm));
+> >>>> +
+> >>>
+> >>> These rather belong to drivers/tee/tee_private.h as we shouldn't
+> >>> expose them to other kernel client drivers.
+> >>
+> >> As per the discussion in the other thread I'll ignore this.
+> >>
+> >
+> > Then it will have conflicts with this [1] patch. If you are fine to
+> > incorporate [1] in your series then the right place for these function
+> > declarations should be include/linux/tee_core.h.
+> >
+> > [1] https://www.spinics.net/lists/kernel/msg5122983.html
+>
+> You're right, I'll rebase my patches on this.
+>
+> By incorporating your patch in my series, do you mean that I should just
+> add it as the first patch in the series for the next version?
 
-Thanks.
+If you are happy to carry it then I would be in favour of this to take
+care of dependency.
 
 -Sumit
 
+> Or keep my
+> series as is (do the rebase of course) and just mention that it's using
+> your patch as base?
 >
->      Arnd
+> Regards,
+> Balint
+>
+> >>
+> >>>>  struct tee_shm *tee_shm_register_kernel_buf(struct tee_context *ctx,
+> >>>>                                             void *addr, size_t length);
+> >>>>
+> >>>> --
+> >>>> 2.34.1
+> >>>>
 
---===============8482173984157205412==--
+--===============6431659220807778323==--
 
