@@ -1,71 +1,51 @@
-From: "Winkler, Tomas" <tomas.winkler@intel.com>
+From: Linus Walleij <linus.walleij@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- RE: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
-Date: Tue, 05 Mar 2024 12:55:17 +0000
-Message-ID: <PH7PR11MB7605979F0DC103BFCC617FF2E5222@PH7PR11MB7605.namprd11.prod.outlook.com>
-In-Reply-To: <
- <CACRpkdZBWBio8kvKuVzj2CknCb4eS=VB2EqUsAK-vf4e328icg@mail.gmail.com>>
+ Re: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
+Date: Tue, 05 Mar 2024 15:16:34 +0100
+Message-ID: 
+ <CACRpkdaOnbUmk1q_BBWkPYGriNHfZBUmGxtH+sQmw6U0rxicMg@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3CPH7PR11MB7605493349915A168A80CDD8E5222=40PH7PR11MB?=
+ =?utf-8?q?7605=2Enamprd11=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7950420151028662139=="
+Content-Type: multipart/mixed; boundary="===============0740706194722330082=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7950420151028662139==
+--===============0740706194722330082==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+On Tue, Mar 5, 2024 at 1:54=E2=80=AFPM Winkler, Tomas <tomas.winkler@intel.=
+com> wrote:
 
-> Hi Jens,
->=20
-> thanks for your patch!
->=20
-> On Tue, Feb 27, 2024 at 4:31=E2=80=AFPM Jens Wiklander <jens.wiklander@li=
-naro.org>
-> wrote:
->=20
-> > A number of storage technologies support a specialised hardware
-> > partition designed to be resistant to replay attacks. The underlying
-> > HW protocols differ but the operations are common. The RPMB partition
-> > cannot be accessed via standard block layer, but by a set of specific
-> > RPMB commands: WRITE, READ, GET_WRITE_COUNTER, and
-> PROGRAM_KEY. Such a
-> > partition provides authenticated and replay protected access, hence
-> > suitable as a secure storage.
+> > On Tue, Feb 27, 2024 at 4:31=E2=80=AFPM Jens Wiklander <jens.wiklander@=
+linaro.org>
+> > wrote:
 > >
-> > The initial aim of this patch is to provide a simple RPMB driver
-> > interface which can be accessed by the optee driver to facilitate
-> > early RPMB access to OP-TEE OS (secure OS) during the boot time.
+> > > +struct rpmb_frame {
+> > > +       u8     stuff[196];
+> > > +       u8     key_mac[32];
+> > > +       u8     data[256];
+> > > +       u8     nonce[16];
+> > > +       __be32 write_counter;
+> > > +       __be16 addr;
+> > > +       __be16 block_count;
+> > > +       __be16 result;
+> > > +       __be16 req_resp;
+> > > +} __packed;
 > >
-> > A TEE device driver can claim the RPMB interface, for example, via
-> > rpmb_interface_register() or rpmb_dev_find_device(). The RPMB driver
-> > provides a callback to route RPMB frames to the RPMB device accessible
-> > via rpmb_route_frames().
-> >
-> > The detailed operation of implementing the access is left to the TEE
-> > device driver itself.
-> >
-> > Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> > Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
-> > Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
->=20
-> I would mention in the commit that the subsystem is currently only used with
-> eMMC but is designed to be used also by UFS and NVME. Nevertheless, no
-> big deal so:
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
->=20
-> > +config RPMB
-> > +       tristate "RPMB partition interface"
-> > +       depends on MMC
->=20
-> depends on MMC || SCSI_UFSHCD || NVME_CORE ?
->=20
-> Or do we want to hold it off until we implement the backends?
+> > I didn't quite get why these things are encoded big-endian?
+>
+> By the spec.
 
-I believe I've sent the implementation for all the backends, need to search t=
-he mailing list.
+So a kerneldoc comment above the struct with a reference to the spec
+it is mirroring should be appropriate?
 
+As it stands now it will be misunderstood by people like me as "just some
+other Linux struct".
 
+Yours,
+Linus Walleij
 
---===============7950420151028662139==--
+--===============0740706194722330082==--
 
