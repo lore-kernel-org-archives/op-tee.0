@@ -1,54 +1,113 @@
-From: Avri Altman <Avri.Altman@wdc.com>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- RE: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
-Date: Tue, 05 Mar 2024 16:42:37 +0000
-Message-ID: <DM6PR04MB657511E98570A227AD1AF40AFC222@DM6PR04MB6575.namprd04.prod.outlook.com>
-In-Reply-To: <1859f2a9-b3fa-4d41-86e6-aa0a18fddad4@app.fastmail.com>
+ [PATCH v4 0/4] Introduction of a remoteproc tee to load signed firmware
+Date: Fri, 08 Mar 2024 14:48:29 +0000
+Message-ID: <20240308144708.62362-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3877940613239213113=="
+Content-Type: multipart/mixed; boundary="===============1288042918336748506=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3877940613239213113==
+--===============1288042918336748506==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-=20
-> On Tue, Mar 5, 2024, at 17:33, Avri Altman wrote:
-> >> On Tue, Feb 27, 2024 at 4:31=E2=80=AFPM Jens Wiklander
-> <jens.wiklander@linaro.org> wrote:
-> >>
-> >> I would mention in the commit that the subsystem is currently only
-> >> used with eMMC but is designed to be used also by UFS and NVME.
-> >> Nevertheless, no big deal so:
-> > Moreover, as the years went by, the differences between mmc and ufs
-> > grew:
-> > In mmc there are 7 rpmb operations, in ufs 9.
-> > In mmc the rpmb frame is 512Bytes, also in legacy ufs (up to including
-> > ufs3.1), but in ufs4.0 onward it can be 4k with extended header.
-> > See e.g.
-> > https://patchwork.kernel.org/project/linux-scsi/patch/20221107131038.2
-> > 01724-3-beanhuo(a)iokpp.de/ In mmc the rpmb sequence is atomic, in ufs
-> > not.
-> > In ufs rpmb is a wlun in mmc a partition.
-> > Both protocols support in multi-region rpmb, but there are some
-> > differences there.
->=20
-> How sure are we then that the user-visible ABI is sufficiently abstract to =
-cover
-> all the hardware implementations? Are any of the changes you mention going =
-to
-> be noticed by userspace or are they only visible to the kernel driver?
-Both in ufs & mmc rpmb today is accessed via user-space utils:
-In mmc via mmc-utils (ioctl) , and in ufs via ufs-utils using its bsg interfa=
-ce.
-No ABI changes are needed.
+Main updates from the previous version [1]:
 
-Thanks,
-Avri
+- Remove the alternate boot sequence: rproc_alt_fw_boot()
+- Introduce tee_rproc_parse_fw function
+	- create a cached table as done inrproc_elf_load_rsc_table[2],
+	- PR sent to OP-TEE to allow TA_RPROC_FW_CMD_LOAD_FW service=20
+	  re-entrance[3].
+- Rework TEE_REMOTEPROC description in Kconfig
+- Introduce proc::tee_interface
 
->=20
->       Arnd
+Patch commit messages list updates with more details
 
---===============3877940613239213113==--
+base-commit: 62210f7509e13a2caa7b080722a45229b8f17a0a
+
+[1] https://lore.kernel.org/linux-arm-kernel/Zdjl6Z2ktTwi+oWp(a)p14s/T/#m53f9=
+94237dc984c5dbbe3c75d2c30fcfff8548a0
+[2] https://elixir.bootlin.com/linux/latest/source/drivers/remoteproc/remotep=
+roc_elf_loader.c#L326
+[3] https://github.com/OP-TEE/optee_os/pull/6743
+
+
+Description of the feature:
+
+This series proposes the implementation of a remoteproc tee driver to
+communicate with a TEE trusted application responsible for authenticating and
+loading the remoteproc firmware image in an Arm secure context.
+
+1) Principle:
+
+The remoteproc tee driver provides services to communicate with the OP-TEE
+trusted application running on the Trusted Execution Context (TEE).
+The trusted application in TEE manages the remote processor lifecycle:
+
+- authenticating and loading firmware images,
+- isolating and securing the remote processor memories,
+- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
+- managing the start and stop of the firmware by the TEE.
+
+2) Format of the signed image:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_c=
+ore.c#L18-L57
+
+3) OP-TEE trusted application API:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remot=
+eproc.h
+
+4) OP-TEE signature script
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
+
+Example of usage:
+sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key $=
+{OP-TEE_PATH}/keys/default.pem
+
+
+5) Impact on User space Application
+
+No sysfs impact.the user only needs to provide the signed firmware image
+instead of the ELF image.
+
+
+For more information about the implementation, a presentation is available he=
+re
+(note that the format of the signed image has evolved between the presentation
+and the integration in OP-TEE).
+
+https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+
+Arnaud Pouliquen (4):
+  remoteproc: Add TEE support
+  dt-bindings: remoteproc: Add compatibility for TEE support
+  remoteproc: stm32: Create sub-functions to request shutdown and
+    release
+  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
+
+ .../bindings/remoteproc/st,stm32-rproc.yaml   |  51 +-
+ drivers/remoteproc/Kconfig                    |  10 +
+ drivers/remoteproc/Makefile                   |   1 +
+ drivers/remoteproc/stm32_rproc.c              | 144 ++++--
+ drivers/remoteproc/tee_remoteproc.c           | 434 ++++++++++++++++++
+ include/linux/remoteproc.h                    |   4 +
+ include/linux/tee_remoteproc.h                | 112 +++++
+ 7 files changed, 711 insertions(+), 45 deletions(-)
+ create mode 100644 drivers/remoteproc/tee_remoteproc.c
+ create mode 100644 include/linux/tee_remoteproc.h
+
+
+base-commit: 62210f7509e13a2caa7b080722a45229b8f17a0a
+--=20
+2.25.1
+
+
+--===============1288042918336748506==--
 
