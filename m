@@ -1,93 +1,121 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Balint Dobszay <balint.dobszay@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: smc: Convert to platform remove callback
- returning void
-Date: Mon, 25 Mar 2024 15:54:27 +0100
-Message-ID: 
- <CAHUa44FH9g=k6b-YGzESxsJ_LixbRD3wkV17+Rza_9AidiO+QQ@mail.gmail.com>
-In-Reply-To: <
- <CAFA6WYMDvFGopHkLfMUL963MAOBwcCSfu8TwnjqcyTRWWZrN8w@mail.gmail.com>>
+Subject: [PATCH v4 0/5] TEE driver for Trusted Services
+Date: Mon, 25 Mar 2024 16:11:00 +0100
+Message-ID: <20240325151105.135667-1-balint.dobszay@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6185770129925955839=="
+Content-Type: multipart/mixed; boundary="===============8699315868363351631=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6185770129925955839==
+--===============8699315868363351631==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 11, 2024 at 12:31=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org>=
- wrote:
->
-> On Fri, 8 Mar 2024 at 14:21, Uwe Kleine-K=C3=B6nig
-> <u.kleine-koenig@pengutronix.de> wrote:
-> >
-> > The .remove() callback for a platform driver returns an int which makes
-> > many driver authors wrongly assume it's possible to do error handling by
-> > returning an error code. However the value returned is ignored (apart
-> > from emitting a warning) and this typically results in resource leaks.
-> >
-> > To improve here there is a quest to make the remove callback return
-> > void. In the first step of this quest all drivers are converted to
-> > .remove_new(), which already returns void. Eventually after all drivers
-> > are converted, .remove_new() will be renamed to .remove().
-> >
-> > Trivially convert this driver from always returning zero in the remove
-> > callback to the void returning variant.
-> >
-> > Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> > ---
-> >  drivers/tee/optee/smc_abi.c | 6 ++----
-> >  1 file changed, 2 insertions(+), 4 deletions(-)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+This series introduces a TEE driver for Trusted Services [1].
 
-I'm picking up this for 6.10.
+Trusted Services is a TrustedFirmware.org project that provides a
+framework for developing and deploying device Root of Trust services in
+FF-A [2] Secure Partitions. The project hosts the reference
+implementation of Arm Platform Security Architecture [3] for Arm
+A-profile devices.
 
-Thanks,
-Jens
+The FF-A Secure Partitions are accessible through the FF-A driver in
+Linux. However, the FF-A driver doesn't have a user space interface so
+user space clients currently cannot access Trusted Services. The goal of
+this TEE driver is to bridge this gap and make Trusted Services
+functionality accessible from user space.
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > index a37f87087e5c..c82b7b88991d 100644
-> > --- a/drivers/tee/optee/smc_abi.c
-> > +++ b/drivers/tee/optee/smc_abi.c
-> > @@ -1433,7 +1433,7 @@ static optee_invoke_fn *get_invoke_func(struct devi=
-ce *dev)
-> >   * optee_remove is called by platform subsystem to alert the driver
-> >   * that it should release the device
-> >   */
-> > -static int optee_smc_remove(struct platform_device *pdev)
-> > +static void optee_smc_remove(struct platform_device *pdev)
-> >  {
-> >         struct optee *optee =3D platform_get_drvdata(pdev);
-> >
-> > @@ -1453,8 +1453,6 @@ static int optee_smc_remove(struct platform_device =
-*pdev)
-> >                 memunmap(optee->smc.memremaped_shm);
-> >
-> >         kfree(optee);
-> > -
-> > -       return 0;
-> >  }
-> >
-> >  /* optee_shutdown - Device Removal Routine
-> > @@ -1806,7 +1804,7 @@ MODULE_DEVICE_TABLE(of, optee_dt_match);
-> >
-> >  static struct platform_driver optee_driver =3D {
-> >         .probe  =3D optee_probe,
-> > -       .remove =3D optee_smc_remove,
-> > +       .remove_new =3D optee_smc_remove,
-> >         .shutdown =3D optee_shutdown,
-> >         .driver =3D {
-> >                 .name =3D "optee",
-> >
-> > base-commit: 8ffc8b1bbd505e27e2c8439d326b6059c906c9dd
-> > --
-> > 2.43.0
-> >
+Changelog:
+v3[7] -> v4:
+  - Remove unnecessary callbacks from tstee_ops
+  - Add maintainers entry for the new driver
 
---===============6185770129925955839==--
+v2[6] -> v3:
+  - Add patch "tee: Refactor TEE subsystem header files" from Sumit
+  - Remove unnecessary includes from core.c
+  - Remove the mutex from "struct ts_context_data" since the same
+    mechanism could be implemented by reusing the XArray's internal lock
+  - Rename tee_shm_pool_op_*_helper functions as suggested by Sumit
+  - Replace pr_* with dev_* as previously suggested by Krzysztof
+
+v1[5] -> v2:
+  - Refactor session handling to use XArray instead of IDR and linked
+    list (the linked list was redundant as pointed out by Jens, and IDR
+    is now deprecated in favor of XArray)
+  - Refactor tstee_probe() to not call tee_device_unregister() before
+    calling tee_device_register()
+  - Address comments from Krzysztof and Jens
+  - Address documentation comments from Randy
+  - Use module_ffa_driver() macro instead of separate module init / exit
+    functions
+  - Reformat max line length 100 -> 80
+
+RFC[4] -> v1:
+  - Add patch for moving pool_op helper functions to the TEE subsystem,
+    as suggested by Jens
+  - Address comments from Sumit, add patch for documentation
+
+[1] https://www.trustedfirmware.org/projects/trusted-services/
+[2] https://developer.arm.com/documentation/den0077/
+[3] https://www.arm.com/architecture/security-features/platform-security
+[4] https://lore.kernel.org/linux-arm-kernel/20230927152145.111777-1-balint.d=
+obszay(a)arm.com/
+[5] https://lore.kernel.org/lkml/20240213145239.379875-1-balint.dobszay(a)arm=
+.com/
+[6] https://lore.kernel.org/lkml/20240223095133.109046-1-balint.dobszay(a)arm=
+.com/
+[7] https://lore.kernel.org/lkml/20240305101745.213933-1-balint.dobszay(a)arm=
+.com/
+
+
+Balint Dobszay (4):
+  tee: optee: Move pool_op helper functions
+  tee: tstee: Add Trusted Services TEE driver
+  Documentation: tee: Add TS-TEE driver
+  MAINTAINERS: tee: tstee: Add entry
+
+Sumit Garg (1):
+  tee: Refactor TEE subsystem header files
+
+ Documentation/tee/index.rst         |   1 +
+ Documentation/tee/ts-tee.rst        |  71 ++++
+ MAINTAINERS                         |  10 +
+ drivers/tee/Kconfig                 |   1 +
+ drivers/tee/Makefile                |   1 +
+ drivers/tee/amdtee/amdtee_private.h |   2 +-
+ drivers/tee/amdtee/call.c           |   2 +-
+ drivers/tee/amdtee/core.c           |   3 +-
+ drivers/tee/amdtee/shm_pool.c       |   2 +-
+ drivers/tee/optee/call.c            |   2 +-
+ drivers/tee/optee/core.c            |  66 +---
+ drivers/tee/optee/device.c          |   2 +-
+ drivers/tee/optee/ffa_abi.c         |   8 +-
+ drivers/tee/optee/notif.c           |   2 +-
+ drivers/tee/optee/optee_private.h   |  14 +-
+ drivers/tee/optee/rpc.c             |   2 +-
+ drivers/tee/optee/smc_abi.c         |  11 +-
+ drivers/tee/tee_core.c              |   2 +-
+ drivers/tee/tee_private.h           |  35 --
+ drivers/tee/tee_shm.c               |  66 +++-
+ drivers/tee/tee_shm_pool.c          |   2 +-
+ drivers/tee/tstee/Kconfig           |  11 +
+ drivers/tee/tstee/Makefile          |   3 +
+ drivers/tee/tstee/core.c            | 480 ++++++++++++++++++++++++++++
+ drivers/tee/tstee/tstee_private.h   |  92 ++++++
+ include/linux/tee_core.h            | 306 ++++++++++++++++++
+ include/linux/tee_drv.h             | 285 ++---------------
+ include/uapi/linux/tee.h            |   1 +
+ 28 files changed, 1094 insertions(+), 389 deletions(-)
+ create mode 100644 Documentation/tee/ts-tee.rst
+ create mode 100644 drivers/tee/tstee/Kconfig
+ create mode 100644 drivers/tee/tstee/Makefile
+ create mode 100644 drivers/tee/tstee/core.c
+ create mode 100644 drivers/tee/tstee/tstee_private.h
+ create mode 100644 include/linux/tee_core.h
+
+--=20
+2.34.1
+
+
+--===============8699315868363351631==--
 
