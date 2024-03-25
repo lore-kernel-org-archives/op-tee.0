@@ -1,22 +1,22 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
-Date: Mon, 25 Mar 2024 14:33:48 +0100
+Date: Mon, 25 Mar 2024 14:44:13 +0100
 Message-ID: 
- <CAPDyKFqzy9Tz9rC0gLbY5zyaGtLX6F_Le4bNzMb3=BhCoexGvg@mail.gmail.com>
+ <CAHUa44E7z=nppPnBEAqUddtrbTeiZxK8gQ95AGV9oA0-UdLMCQ@mail.gmail.com>
 In-Reply-To: <=?utf-8?q?=3CPH7PR11MB76054BC0C863E5947C7B2DAFE5362=40PH7PR11MB?=
  =?utf-8?q?7605=2Enamprd11=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7321580712452532117=="
+Content-Type: multipart/mixed; boundary="===============1862014786355054720=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7321580712452532117==
+--===============1862014786355054720==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 25 Mar 2024 at 09:23, Winkler, Tomas <tomas.winkler@intel.com> wrot=
-e:
+On Mon, Mar 25, 2024 at 9:23=E2=80=AFAM Winkler, Tomas <tomas.winkler@intel=
+.com> wrote:
 >
 >
 > > > > +struct rpmb_frame {
@@ -47,6 +47,21 @@ ta)
 > > probably more differences that I forgot.
 > > This is why it is better to designated this as an eMMC-only implementatio=
 n?
+
+Thanks for the update.
+
+To move forward here we can either
+1. as you suggest make this an eMMC-only implementation,
+or
+2. we could remove struct rpmb_frame from include/linux/rpmb.h to make
+the shuffled data more opaque.
+
+Is it possible to find and route RPMB data to NVME and UFS devices
+without a common meeting point like the RPMB subsystem proposed here?
+If the answer is yes option 1 makes more sense since we'll add a
+missing capability to eMMC. If the answer is no option 2 makes sense
+for NVME and UFS even if we save the implementation for later.
+
 >
 > As  I wrote previously the original implementation has already resolved pro=
 tocol differences
@@ -55,31 +70,15 @@ a (not the configuration)
 > I believe the whole point here is to let TEE driver to store the data, rega=
 rdless of the technology.
 
-Yes, I also agree. It makes sense to have a generic way to manage RPMB
-partitions, even if there are some specific parts that must be managed
-differently based on the underlying technology.
-
-That said, I tend to think that we actually want the UFS and NVMe
-implementation being included in the $subject series too. To get the
-complete picture. Otherwise, we may just end up having to redesign a
-lot of things, if we just start with eMMC.
+Agreed.
 
 >  In addition I might be wrong but I don't see much value in eMMC as the UFS=
  and NVMe are currently leading technologies.
 
-Even if UFS and NVMe have been taking over some of the earlier eMMC
-product segments, I think it's too soon to declare eMMC dead. :-)
+This patchset addresses a problem on present platforms so it's not irrelevant.
 
-Moreover, we also have older platforms that we want to get supported
-upstream and allowing them to move away from downstream-hacks, is also
-a very good reason to add eMMC support.
+Thanks,
+Jens
 
-> Thanks
-> Tomas
->
-
-Kind regards
-Uffe
-
---===============7321580712452532117==--
+--===============1862014786355054720==--
 
