@@ -1,225 +1,712 @@
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v4 4/4] remoteproc: stm32: Add support of an OP-TEE TA to
- load the firmware
-Date: Wed, 27 Mar 2024 11:14:20 -0600
-Message-ID: <ZgRT7PtzIogAWc50@p14s>
-In-Reply-To: <a08add21-b8ff-434a-9689-6af8b05b1965@foss.st.com>
+Subject: 
+ Re: [PATCH v3 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
+Date: Thu, 28 Mar 2024 07:58:48 +0100
+Message-ID: 
+ <CAHUa44Fr42j07Rshu0JS5Kwu6xL2aroGkz=Xp1xwBLLLSkQgLw@mail.gmail.com>
+In-Reply-To: <
+ <CAPDyKFp5j+L=oE1uVyUdu7rVLxRcueWwP0XcNTTMMrFQgmeZiw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8428202197908947218=="
+Content-Type: multipart/mixed; boundary="===============1682837156468435502=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8428202197908947218==
+--===============1682837156468435502==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 26, 2024 at 08:31:33PM +0100, Arnaud POULIQUEN wrote:
->=20
->=20
-> On 3/25/24 17:51, Mathieu Poirier wrote:
-> > On Fri, Mar 08, 2024 at 03:47:08PM +0100, Arnaud Pouliquen wrote:
-> >> The new TEE remoteproc device is used to manage remote firmware in a
-> >> secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
-> >> introduced to delegate the loading of the firmware to the trusted
-> >> execution context. In such cases, the firmware should be signed and
-> >> adhere to the image format defined by the TEE.
-> >>
-> >> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> >> ---
-> >> Updates from V3:
-> >> - remove support of the attach use case. Will be addressed in a separate
-> >>   thread,
-> >> - add st_rproc_tee_ops::parse_fw ops,
-> >> - inverse call of devm_rproc_alloc()and tee_rproc_register() to manage c=
-ross
-> >>   reference between the rproc struct and the tee_rproc struct in tee_rpr=
-oc.c.
-> >> ---
-> >>  drivers/remoteproc/stm32_rproc.c | 60 +++++++++++++++++++++++++++++---
-> >>  1 file changed, 56 insertions(+), 4 deletions(-)
-> >>
-> >> diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32=
-_rproc.c
-> >> index 8cd838df4e92..13df33c78aa2 100644
-> >> --- a/drivers/remoteproc/stm32_rproc.c
-> >> +++ b/drivers/remoteproc/stm32_rproc.c
-> >> @@ -20,6 +20,7 @@
-> >>  #include <linux/remoteproc.h>
-> >>  #include <linux/reset.h>
-> >>  #include <linux/slab.h>
-> >> +#include <linux/tee_remoteproc.h>
-> >>  #include <linux/workqueue.h>
-> >> =20
-> >>  #include "remoteproc_internal.h"
-> >> @@ -49,6 +50,9 @@
-> >>  #define M4_STATE_STANDBY	4
-> >>  #define M4_STATE_CRASH		5
-> >> =20
-> >> +/* Remote processor unique identifier aligned with the Trusted Executio=
-n Environment definitions */
-> >=20
-> > Why is this the case?  At least from the kernel side it is possible to ca=
-ll
-> > tee_rproc_register() with any kind of value, why is there a need to be any
-> > kind of alignment with the TEE?
->=20
->=20
-> The use of the proc_id is to identify a processor in case of multi co-proce=
-ssors.
+On Fri, Mar 22, 2024 at 5:26=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.org=
+> wrote:
 >
+> On Tue, 27 Feb 2024 at 16:31, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
+> >
+> > A number of storage technologies support a specialised hardware
+> > partition designed to be resistant to replay attacks. The underlying
+> > HW protocols differ but the operations are common. The RPMB partition
+> > cannot be accessed via standard block layer, but by a set of specific
+> > RPMB commands: WRITE, READ, GET_WRITE_COUNTER, and PROGRAM_KEY. Such a
+> > partition provides authenticated and replay protected access, hence
+> > suitable as a secure storage.
+> >
+> > The initial aim of this patch is to provide a simple RPMB driver
+> > interface which can be accessed by the optee driver to facilitate early
+> > RPMB access to OP-TEE OS (secure OS) during the boot time.
+> >
+> > A TEE device driver can claim the RPMB interface, for example, via
+> > rpmb_interface_register() or rpmb_dev_find_device(). The RPMB driver
+> > provides a callback to route RPMB frames to the RPMB device accessible
+> > via rpmb_route_frames().
+> >
+> > The detailed operation of implementing the access is left to the TEE
+> > device driver itself.
+> >
+> > Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> > Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
+> > Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> >  MAINTAINERS              |   7 ++
+> >  drivers/misc/Kconfig     |  10 ++
+> >  drivers/misc/Makefile    |   1 +
+> >  drivers/misc/rpmb-core.c | 258 +++++++++++++++++++++++++++++++++++++++
+> >  include/linux/rpmb.h     | 195 +++++++++++++++++++++++++++++
+> >  5 files changed, 471 insertions(+)
+> >  create mode 100644 drivers/misc/rpmb-core.c
+> >  create mode 100644 include/linux/rpmb.h
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 8999497011a2..e83152c42499 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -19012,6 +19012,13 @@ T:     git git://linuxtv.org/media_tree.git
+> >  F:     Documentation/devicetree/bindings/media/allwinner,sun8i-a83t-de2-=
+rotate.yaml
+> >  F:     drivers/media/platform/sunxi/sun8i-rotate/
+> >
+> > +RPMB SUBSYSTEM
+> > +M:     Jens Wiklander <jens.wiklander@linaro.org>
+> > +L:     linux-kernel(a)vger.kernel.org
+> > +S:     Supported
+> > +F:     drivers/misc/rpmb-core.c
+> > +F:     include/linux/rpmb.h
+> > +
+> >  RPMSG TTY DRIVER
+> >  M:     Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+> >  L:     linux-remoteproc(a)vger.kernel.org
+> > diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> > index 4fb291f0bf7c..dbff9e8c3a03 100644
+> > --- a/drivers/misc/Kconfig
+> > +++ b/drivers/misc/Kconfig
+> > @@ -104,6 +104,16 @@ config PHANTOM
+> >           If you choose to build module, its name will be phantom. If uns=
+ure,
+> >           say N here.
+> >
+> > +config RPMB
+> > +       tristate "RPMB partition interface"
+> > +       depends on MMC
+> > +       help
+> > +         Unified RPMB unit interface for RPMB capable devices such as eM=
+MC and
+> > +         UFS. Provides interface for in-kernel security controllers to a=
+ccess
+> > +         RPMB unit.
+> > +
+> > +         If unsure, select N.
+> > +
+> >  config TIFM_CORE
+> >         tristate "TI Flash Media interface support"
+> >         depends on PCI
+> > diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+> > index ea6ea5bbbc9c..8af058ad1df4 100644
+> > --- a/drivers/misc/Makefile
+> > +++ b/drivers/misc/Makefile
+> > @@ -15,6 +15,7 @@ obj-$(CONFIG_LKDTM)           +=3D lkdtm/
+> >  obj-$(CONFIG_TIFM_CORE)        +=3D tifm_core.o
+> >  obj-$(CONFIG_TIFM_7XX1)        +=3D tifm_7xx1.o
+> >  obj-$(CONFIG_PHANTOM)          +=3D phantom.o
+> > +obj-$(CONFIG_RPMB)             +=3D rpmb-core.o
+> >  obj-$(CONFIG_QCOM_COINCELL)    +=3D qcom-coincell.o
+> >  obj-$(CONFIG_QCOM_FASTRPC)     +=3D fastrpc.o
+> >  obj-$(CONFIG_SENSORS_BH1770)   +=3D bh1770glc.o
+> > diff --git a/drivers/misc/rpmb-core.c b/drivers/misc/rpmb-core.c
+> > new file mode 100644
+> > index 000000000000..e0003b039e9f
+> > --- /dev/null
+> > +++ b/drivers/misc/rpmb-core.c
+> > @@ -0,0 +1,258 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Copyright(c) 2015 - 2019 Intel Corporation. All rights reserved.
+> > + * Copyright(c) 2021 - 2024 Linaro Ltd.
+> > + */
+> > +#include <linux/device.h>
+> > +#include <linux/init.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/list.h>
+> > +#include <linux/module.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/rpmb.h>
+> > +#include <linux/slab.h>
+> > +
+> > +static struct list_head rpmb_dev_list;
+> > +static struct list_head rpmb_intf_list;
+> > +static DEFINE_MUTEX(rpmb_mutex);
+> > +
+> > +/**
+> > + * rpmb_dev_get() - increase rpmb device ref counter
+> > + * @rdev: rpmb device
+> > + */
+> > +struct rpmb_dev *rpmb_dev_get(struct rpmb_dev *rdev)
+> > +{
+> > +       if (rdev)
+> > +               get_device(rdev->parent_dev);
+> > +       return rdev;
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_dev_get);
+>
+> As rpmb_dev_find_device() already bumps the reference count by calling
+> rpmb_dev_get(), why does this need to be exported and called by the
+> tee driver in patch3, too?
+>
+> Would it not be sufficient to export only rpmb_dev_put()?
+>
+> Ahh, I realized now that when calling ->add_rdev() callback, the mutex
+> is being held without first increasing the reference count. Hmm, I
+> don't know what makes the best sense here.
 
-That is well understood.
+rpmb_dev_get() is needed in another place in the OP-TEE driver too,
+I'll get to that below.
 
-> For instance we can have a system with A DSP and a modem. We would use the =
-same
-> TEE service, but
+>
+> > +
+> > +/**
+> > + * rpmb_dev_put() - decrease rpmb device ref counter
+> > + * @rdev: rpmb device
+> > + */
+> > +void rpmb_dev_put(struct rpmb_dev *rdev)
+> > +{
+> > +       if (rdev)
+> > +               put_device(rdev->parent_dev);
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_dev_put);
+> > +
+> > +/**
+> > + * rpmb_route_frames() - route rpmb frames to rpmb device
+> > + * @rdev:      rpmb device
+> > + * @req:       rpmb request frames
+> > + * @req_len:   length of rpmb request frames in bytes
+> > + * @rsp:       rpmb response frames
+> > + * @rsp_len:   length of rpmb response frames in bytes
+> > + *
+> > + * Returns: < 0 on failure
+> > + */
+> > +int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
+> > +                     unsigned int req_len, u8 *rsp, unsigned int rsp_len)
+> > +{
+> > +       struct rpmb_frame *frm =3D (struct rpmb_frame *)req;
+> > +       u16 req_type;
+> > +       bool write;
+> > +
+> > +       if (!req || req_len < sizeof(*frm) || !rsp || !rsp_len)
+> > +               return -EINVAL;
+> > +
+> > +       req_type =3D be16_to_cpu(frm->req_resp);
+> > +       switch (req_type) {
+> > +       case RPMB_PROGRAM_KEY:
+> > +               if (req_len !=3D sizeof(struct rpmb_frame) ||
+> > +                   rsp_len !=3D sizeof(struct rpmb_frame))
+> > +                       return -EINVAL;
+> > +               write =3D true;
+> > +               break;
+> > +       case RPMB_GET_WRITE_COUNTER:
+> > +               if (req_len !=3D sizeof(struct rpmb_frame) ||
+> > +                   rsp_len !=3D sizeof(struct rpmb_frame))
+> > +                       return -EINVAL;
+> > +               write =3D false;
+> > +               break;
+> > +       case RPMB_WRITE_DATA:
+> > +               if (req_len % sizeof(struct rpmb_frame) ||
+> > +                   rsp_len !=3D sizeof(struct rpmb_frame))
+> > +                       return -EINVAL;
+> > +               write =3D true;
+> > +               break;
+> > +       case RPMB_READ_DATA:
+> > +               if (req_len !=3D sizeof(struct rpmb_frame) ||
+> > +                   rsp_len % sizeof(struct rpmb_frame))
+> > +                       return -EINVAL;
+> > +               write =3D false;
+> > +               break;
+> > +       default:
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +       return rdev->ops->route_frames(rdev->parent_dev, write,
+> > +                                      req, req_len, rsp, rsp_len);
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_route_frames);
+> > +
+> > +/**
+> > + * rpmb_dev_find_device() - return first matching rpmb device
+> > + * @data: data for the match function
+> > + * @match: the matching function
+>
+> There are a couple of missing parameters that should be described here.
+>
+> Moreover, I think it's important to clarify that it's the caller's
+> responsibility to call rpmb_dev_put() on the returned rpmb_dev, when
+> it's ready with it.
 
-That too.
+I'll update.
 
-> the TEE driver will probably be different, same for the signature key.
+>
+> > + *
+> > + * Returns: a matching rpmb device or NULL on failure
+> > + */
+> > +struct rpmb_dev *rpmb_dev_find_device(const void *data,
+> > +                                     const struct rpmb_dev *start,
+> > +                                     int (*match)(struct rpmb_dev *rdev,
+> > +                                                  const void *data))
+> > +{
+> > +       struct rpmb_dev *rdev;
+> > +       struct list_head *pos;
+> > +
+> > +       mutex_lock(&rpmb_mutex);
+> > +       if (start)
+> > +               pos =3D start->list_node.next;
+> > +       else
+> > +               pos =3D rpmb_dev_list.next;
+> > +
+> > +       while (pos !=3D &rpmb_dev_list) {
+> > +               rdev =3D container_of(pos, struct rpmb_dev, list_node);
+> > +               if (match(rdev, data)) {
+> > +                       rpmb_dev_get(rdev);
+> > +                       goto out;
+> > +               }
+> > +               pos =3D pos->next;
+> > +       }
+> > +       rdev =3D NULL;
+> > +
+> > +out:
+> > +       mutex_unlock(&rpmb_mutex);
+> > +
+> > +       return rdev;
+> > +}
+> > +
+> > +/**
+> > + * rpmb_dev_unregister() - unregister RPMB partition from the RPMB subsy=
+stem
+> > + * @rdev: the rpmb device to unregister
+>
+> It would be nice to clarify in the function description for when this
+> should be called. Especially from the data-lifecycle point of view.
 
-What TEE driver are we talking about here?
+OK, I'll update.
 
-> In such case the proc ID allows to identify the the processor you want to a=
-ddress.
->=20
+>
+> > + *
+> > + * Returns: < 0 on failure
+> > + */
+> > +int rpmb_dev_unregister(struct rpmb_dev *rdev)
+> > +{
+> > +       if (!rdev)
+> > +               return -EINVAL;
+> > +
+> > +       mutex_lock(&rpmb_mutex);
+> > +       list_del(&rdev->list_node);
+> > +       mutex_unlock(&rpmb_mutex);
+> > +       kfree(rdev->dev_id);
+> > +       kfree(rdev);
+> > +
+> > +       return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_dev_unregister);
+> > +
+> > +/**
+> > + * rpmb_dev_register - register RPMB partition with the RPMB subsystem
+> > + * @dev: storage device of the rpmb device
+> > + * @ops: device specific operations
+> > + *
+> > + * While registering the RPMB partition extract needed device information
+> > + * while needed resources are available.
+> > + *
+> > + * Returns: a pointer to a 'struct rpmb_dev' or an ERR_PTR on failure
+> > + */
+> > +struct rpmb_dev *rpmb_dev_register(struct device *dev,
+> > +                                  const struct rpmb_ops *ops)
+> > +{
+> > +       struct rpmb_dev *rdev;
+> > +       struct rpmb_interface *intf;
+> > +       int ret;
+> > +
+> > +       if (!dev || !ops || !ops->route_frames || !ops->set_dev_info)
+> > +               return ERR_PTR(-EINVAL);
+> > +
+> > +       rdev =3D kzalloc(sizeof(*rdev), GFP_KERNEL);
+> > +       if (!rdev)
+> > +               return ERR_PTR(-ENOMEM);
+> > +
+> > +       mutex_lock(&rpmb_mutex);
+> > +       list_add_tail(&rdev->list_node, &rpmb_dev_list);
+> > +       mutex_unlock(&rpmb_mutex);
+>
+> It does not look safe to add an rpmb_dev to the rpmb_dev_list, before
+> it has been completely initialized. The consumer of it may fetch it
+> and try use it before it's initialized.
 
-That too is well understood, but there is no alignment needed with the TEE, i=
-.e
-the TEE application is not expecting a value of '0'.  We could set
-STM32_MP1_M4_PROC_ID to 0xDEADBEEF and things would work.  This driver won't =
-go
-anywhere for as long as it is not the case.
+You're right, I'll move the registration to the end of mmc_blk_probe().
 
->=20
-> >=20
-> >> +#define STM32_MP1_M4_PROC_ID    0
-> >> +
-> >>  struct stm32_syscon {
-> >>  	struct regmap *map;
-> >>  	u32 reg;
-> >> @@ -257,6 +261,19 @@ static int stm32_rproc_release(struct rproc *rproc)
-> >>  	return 0;
-> >>  }
-> >> =20
-> >> +static int stm32_rproc_tee_stop(struct rproc *rproc)
-> >> +{
-> >> +	int err;
-> >> +
-> >> +	stm32_rproc_request_shutdown(rproc);
-> >> +
-> >> +	err =3D tee_rproc_stop(rproc);
-> >> +	if (err)
-> >> +		return err;
-> >> +
-> >> +	return stm32_rproc_release(rproc);
-> >> +}
-> >> +
-> >>  static int stm32_rproc_prepare(struct rproc *rproc)
-> >>  {
-> >>  	struct device *dev =3D rproc->dev.parent;
-> >> @@ -693,8 +710,19 @@ static const struct rproc_ops st_rproc_ops =3D {
-> >>  	.get_boot_addr	=3D rproc_elf_get_boot_addr,
-> >>  };
-> >> =20
-> >> +static const struct rproc_ops st_rproc_tee_ops =3D {
-> >> +	.prepare	=3D stm32_rproc_prepare,
-> >> +	.start		=3D tee_rproc_start,
-> >> +	.stop		=3D stm32_rproc_tee_stop,
-> >> +	.kick		=3D stm32_rproc_kick,
-> >> +	.load		=3D tee_rproc_load_fw,
-> >> +	.parse_fw	=3D tee_rproc_parse_fw,
-> >> +	.find_loaded_rsc_table =3D tee_rproc_find_loaded_rsc_table,
-> >> +};
-> >> +
-> >>  static const struct of_device_id stm32_rproc_match[] =3D {
-> >> -	{ .compatible =3D "st,stm32mp1-m4" },
-> >> +	{.compatible =3D "st,stm32mp1-m4",},
-> >> +	{.compatible =3D "st,stm32mp1-m4-tee",},
-> >>  	{},
-> >>  };
-> >>  MODULE_DEVICE_TABLE(of, stm32_rproc_match);
-> >> @@ -853,6 +881,7 @@ static int stm32_rproc_probe(struct platform_device =
-*pdev)
-> >>  	struct device *dev =3D &pdev->dev;
-> >>  	struct stm32_rproc *ddata;
-> >>  	struct device_node *np =3D dev->of_node;
-> >> +	struct tee_rproc *trproc =3D NULL;
-> >>  	struct rproc *rproc;
-> >>  	unsigned int state;
-> >>  	int ret;
-> >> @@ -861,9 +890,26 @@ static int stm32_rproc_probe(struct platform_device=
- *pdev)
-> >>  	if (ret)
-> >>  		return ret;
-> >> =20
-> >> -	rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(=
-*ddata));
-> >> -	if (!rproc)
-> >> -		return -ENOMEM;
-> >> +	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
-> >> +		/*
-> >> +		 * Delegate the firmware management to the secure context.
-> >> +		 * The firmware loaded has to be signed.
-> >> +		 */
-> >> +		rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_tee_ops, NULL, si=
-zeof(*ddata));
-> >> +		if (!rproc)
-> >> +			return -ENOMEM;
-> >> +
-> >> +		trproc =3D tee_rproc_register(dev, rproc, STM32_MP1_M4_PROC_ID);
-> >> +		if (IS_ERR(trproc)) {
-> >> +			dev_err_probe(dev, PTR_ERR(trproc),
-> >> +				      "signed firmware not supported by TEE\n");
-> >> +			return PTR_ERR(trproc);
-> >> +		}
-> >> +	} else {
-> >> +		rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof=
-(*ddata));
-> >> +		if (!rproc)
-> >> +			return -ENOMEM;
-> >> +	}
-> >> =20
-> >>  	ddata =3D rproc->priv;
-> >> =20
-> >> @@ -915,6 +961,9 @@ static int stm32_rproc_probe(struct platform_device =
-*pdev)
-> >>  		dev_pm_clear_wake_irq(dev);
-> >>  		device_init_wakeup(dev, false);
-> >>  	}
-> >> +	if (trproc)
-> >=20
-> >         if (rproc->tee_interface)
-> >=20
-> >=20
-> > I am done reviewing this set.
->=20
-> Thank for your review!
-> Arnaud
->=20
-> >=20
-> > Thanks,
-> > Mathieu
-> >=20
-> >> +		tee_rproc_unregister(trproc);
-> >> +
-> >>  	return ret;
-> >>  }
-> >> =20
-> >> @@ -935,6 +984,9 @@ static void stm32_rproc_remove(struct platform_devic=
-e *pdev)
-> >>  		dev_pm_clear_wake_irq(dev);
-> >>  		device_init_wakeup(dev, false);
-> >>  	}
-> >> +	if (rproc->tee_interface)
-> >> +		tee_rproc_unregister(rproc->tee_interface);
-> >> +
-> >>  }
-> >> =20
-> >>  static int stm32_rproc_suspend(struct device *dev)
-> >> --=20
-> >> 2.25.1
-> >>
+>
+> > +
+> > +       rdev->ops =3D ops;
+> > +
+> > +       rdev->parent_dev =3D dev;
+> > +
+> > +       ret =3D ops->set_dev_info(dev, rdev);
+>
+> Rather than using a callback to initialize the rpmb_dev, I would
+> suggest (and prefer) to let the corresponding data be provided as an
+> in-parameter to rpmb_dev_register() instead.
 
---===============8428202197908947218==--
+OK
+
+>
+> > +       if (ret)
+> > +               goto exit;
+> > +
+> > +       dev_dbg(rdev->parent_dev, "registered device\n");
+> > +
+> > +       mutex_lock(&rpmb_mutex);
+> > +       list_for_each_entry(intf, &rpmb_intf_list, list_node)
+> > +               if (intf->add_rdev)
+> > +                       intf->add_rdev(intf, rdev);
+>
+> Rather than implementing our own specific notification mechanism, we
+> could make use of a "blocking_notifier" (include/linux/notifier.h)
+> instead.
+
+Good idea, I'll use that.
+
+>
+> Moreover, it looks like we are lacking a way to inform the consumer
+> driver that an rpmb_dev is being removed. Or maybe that isn't needed,
+> as the reference counting manages that for us?
+
+Yes, the reference counting is managing this.
+
+>
+> > +       mutex_unlock(&rpmb_mutex);
+> > +
+> > +       return rdev;
+> > +
+> > +exit:
+> > +       mutex_lock(&rpmb_mutex);
+> > +       list_del(&rdev->list_node);
+> > +       mutex_unlock(&rpmb_mutex);
+> > +       kfree(rdev);
+> > +       return ERR_PTR(ret);
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_dev_register);
+> > +
+> > +/**
+> > + * rpmb_interface_register() - register for new device notifications
+> > + *
+> > + * @intf : pointer to interface struct with a notification callback
+> > + */
+> > +void rpmb_interface_register(struct rpmb_interface *intf)
+> > +{
+> > +       struct rpmb_dev *rdev;
+> > +
+> > +       mutex_lock(&rpmb_mutex);
+> > +       list_add_tail(&intf->list_node, &rpmb_intf_list);
+> > +       if (intf->add_rdev)
+>
+> Is there any reason to allow the ->add_rdev() callback to be optional?
+
+No, I'll fix.
+
+>
+> > +               list_for_each_entry(rdev, &rpmb_dev_list, list_node)
+> > +                       intf->add_rdev(intf, rdev);
+>
+> What if ->add_rdev() are happy to use one of the rpmb_dev, then we
+> will still continue to iterate over the list. Should we use a return
+> code to indicate if we should continue or not?
+
+I'm switching to "blocking_notifier".
+
+>
+> > +       mutex_unlock(&rpmb_mutex);
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_interface_register);
+> > +
+> > +/**
+> > + * rpmb_interface_unregister() - unregister from new device notifications
+> > + *
+> > + * @intf : pointer to previously registered interface struct
+> > + */
+> > +void rpmb_interface_unregister(struct rpmb_interface *intf)
+> > +{
+> > +       mutex_lock(&rpmb_mutex);
+> > +       list_del(&intf->list_node);
+> > +       mutex_unlock(&rpmb_mutex);
+> > +}
+> > +EXPORT_SYMBOL_GPL(rpmb_interface_unregister);
+> > +
+> > +static int __init rpmb_init(void)
+> > +{
+> > +       INIT_LIST_HEAD(&rpmb_dev_list);
+> > +       INIT_LIST_HEAD(&rpmb_intf_list);
+> > +       return 0;
+> > +}
+> > +
+> > +static void __exit rpmb_exit(void)
+> > +{
+> > +       mutex_destroy(&rpmb_mutex);
+> > +}
+> > +
+> > +subsys_initcall(rpmb_init);
+> > +module_exit(rpmb_exit);
+> > +
+> > +MODULE_AUTHOR("Jens Wiklander <jens.wiklander@linaro.org>");
+> > +MODULE_DESCRIPTION("RPMB class");
+> > +MODULE_LICENSE("GPL");
+> > diff --git a/include/linux/rpmb.h b/include/linux/rpmb.h
+> > new file mode 100644
+> > index 000000000000..c4b13dad10c4
+> > --- /dev/null
+> > +++ b/include/linux/rpmb.h
+> > @@ -0,0 +1,195 @@
+> > +/* SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0 */
+> > +/*
+> > + * Copyright (C) 2015-2019 Intel Corp. All rights reserved
+> > + * Copyright (C) 2021-2022 Linaro Ltd
+> > + */
+> > +#ifndef __RPMB_H__
+> > +#define __RPMB_H__
+> > +
+> > +#include <linux/types.h>
+> > +#include <linux/device.h>
+> > +
+> > +/**
+> > + * struct rpmb_frame - rpmb frame as defined by specs
+> > + *
+> > + * @stuff        : stuff bytes
+> > + * @key_mac      : The authentication key or the message authentication
+> > + *                 code (MAC) depending on the request/response type.
+> > + *                 The MAC will be delivered in the last (or the only)
+> > + *                 block of data.
+> > + * @data         : Data to be written or read by signed access.
+> > + * @nonce        : Random number generated by the host for the requests
+> > + *                 and copied to the response by the RPMB engine.
+> > + * @write_counter: Counter value for the total amount of the successful
+> > + *                 authenticated data write requests made by the host.
+> > + * @addr         : Address of the data to be programmed to or read
+> > + *                 from the RPMB. Address is the serial number of
+> > + *                 the accessed block (half sector 256B).
+> > + * @block_count  : Number of blocks (half sectors, 256B) requested to be
+> > + *                 read/programmed.
+> > + * @result       : Includes information about the status of the write co=
+unter
+> > + *                 (valid, expired) and result of the access made to the=
+ RPMB.
+> > + * @req_resp     : Defines the type of request and response to/from the =
+memory.
+> > + */
+> > +struct rpmb_frame {
+> > +       u8     stuff[196];
+> > +       u8     key_mac[32];
+> > +       u8     data[256];
+> > +       u8     nonce[16];
+> > +       __be32 write_counter;
+> > +       __be16 addr;
+> > +       __be16 block_count;
+> > +       __be16 result;
+> > +       __be16 req_resp;
+> > +} __packed;
+>
+> I haven't looked at the NVME or the UFS spec in detail. Although, I
+> assume the above frame makes sense for those types of
+> interfaces/protocols too?
+
+This is MMC-specific as we learned in the mail thread. I'll move this
+into the MMC-specific code.
+
+>
+> > +
+> > +#define RPMB_PROGRAM_KEY       0x1    /* Program RPMB Authentication Key=
+ */
+> > +#define RPMB_GET_WRITE_COUNTER 0x2    /* Read RPMB write counter */
+> > +#define RPMB_WRITE_DATA        0x3    /* Write data to RPMB partition */
+> > +#define RPMB_READ_DATA         0x4    /* Read data from RPMB partition */
+> > +#define RPMB_RESULT_READ       0x5    /* Read result request  (Internal)=
+ */
+> > +
+> > +#define RPMB_REQ2RESP(_OP) ((_OP) << 8)
+> > +#define RPMB_RESP2REQ(_OP) ((_OP) >> 8)
+> > +
+> > +/**
+> > + * enum rpmb_op_result - rpmb operation results
+> > + *
+> > + * @RPMB_ERR_OK      : operation successful
+> > + * @RPMB_ERR_GENERAL : general failure
+> > + * @RPMB_ERR_AUTH    : mac doesn't match or ac calculation failure
+> > + * @RPMB_ERR_COUNTER : counter doesn't match or counter increment failure
+> > + * @RPMB_ERR_ADDRESS : address out of range or wrong address alignment
+> > + * @RPMB_ERR_WRITE   : data, counter, or result write failure
+> > + * @RPMB_ERR_READ    : data, counter, or result read failure
+> > + * @RPMB_ERR_NO_KEY  : authentication key not yet programmed
+> > + *
+> > + * @RPMB_ERR_COUNTER_EXPIRED:  counter expired
+> > + */
+> > +enum rpmb_op_result {
+> > +       RPMB_ERR_OK      =3D 0x0000,
+> > +       RPMB_ERR_GENERAL =3D 0x0001,
+> > +       RPMB_ERR_AUTH    =3D 0x0002,
+> > +       RPMB_ERR_COUNTER =3D 0x0003,
+> > +       RPMB_ERR_ADDRESS =3D 0x0004,
+> > +       RPMB_ERR_WRITE   =3D 0x0005,
+> > +       RPMB_ERR_READ    =3D 0x0006,
+> > +       RPMB_ERR_NO_KEY  =3D 0x0007,
+> > +
+> > +       RPMB_ERR_COUNTER_EXPIRED =3D 0x0080
+> > +};
+> > +
+> > +/**
+> > + * enum rpmb_type - type of underlying storage technology
+> > + *
+> > + * @RPMB_TYPE_EMMC  : emmc (JESD84-B50.1)
+> > + * @RPMB_TYPE_UFS   : UFS (JESD220)
+> > + * @RPMB_TYPE_NVME  : NVM Express
+> > + */
+> > +enum rpmb_type {
+> > +       RPMB_TYPE_EMMC,
+> > +       RPMB_TYPE_UFS,
+> > +       RPMB_TYPE_NVME,
+> > +};
+> > +
+> > +/**
+> > + * struct rpmb_dev - device which can support RPMB partition
+> > + *
+> > + * @parent_dev       : parent device
+> > + * @list_node        : linked list node
+> > + * @ops              : operation exported by rpmb
+> > + * @dev_id           : unique device identifier read from the hardware
+>
+> This part puzzled me a bit, when I realized that they are used as an
+> input to derive the authentication-data.
+>
+> For eMMC (as shown in patch2), we have chosen to use the CID register
+> data, which makes perfect sense to me. However, I think it's important
+> to clarify what this field is being used for, here in the description
+> too.
+
+Good point, I'll add that.
+
+>
+> > + * @dev_id_len       : length of unique device identifier
+> > + * @reliable_wr_count: number of sectors that can be written in one acce=
+ss
+> > + * @capacity         : capacity of the device in units of 128K
+> > + */
+> > +struct rpmb_dev {
+> > +       struct device *parent_dev;
+> > +       struct list_head list_node;
+> > +       const struct rpmb_ops *ops;
+> > +       u8 *dev_id;
+> > +       size_t dev_id_len;
+> > +       u16 reliable_wr_count;
+> > +       u16 capacity;
+> > +};
+> > +
+> > +/**
+> > + * struct rpmb_ops - RPMB ops to be implemented by underlying block devi=
+ce
+> > + *
+> > + * @type          : block device type
+> > + * @route_frames  : routes frames to and from the RPMB device
+> > + * @set_dev_info  : extracts device info from the RPMB device
+> > + */
+> > +struct rpmb_ops {
+> > +       enum rpmb_type type;
+>
+> I would keep this in the rpmb_dev instead, as it's not really a callback (o=
+ps).
+>
+> > +       int (*set_dev_info)(struct device *dev, struct rpmb_dev *rdev);
+>
+> As I suggested earlier, we should be able to drop the above callback.
+> That said, it looks like we end up with only one callback left, so
+> maybe just put that in the struct rpmb_dev instead?
+
+OK
+
+Thanks,
+Jens
+
+>
+> > +       int (*route_frames)(struct device *dev, bool write,
+> > +                           u8 *req, unsigned int req_len,
+> > +                           u8 *resp, unsigned int resp_len);
+> > +};
+> > +
+> > +/**
+> > + * struct rpmb_interface - subscribe to new RPMB devices
+> > + *
+> > + * @list_node     : linked list node
+> > + * @add_rdev      : notifies that a new RPMB device has been found
+> > + */
+> > +struct rpmb_interface {
+> > +       struct list_head list_node;
+> > +       void (*add_rdev)(struct rpmb_interface *intf, struct rpmb_dev *rd=
+ev);
+> > +};
+> > +
+> > +#if IS_ENABLED(CONFIG_RPMB)
+> > +struct rpmb_dev *rpmb_dev_get(struct rpmb_dev *rdev);
+> > +void rpmb_dev_put(struct rpmb_dev *rdev);
+> > +struct rpmb_dev *rpmb_dev_find_device(const void *data,
+> > +                                     const struct rpmb_dev *start,
+> > +                                     int (*match)(struct rpmb_dev *rdev,
+> > +                                                  const void *data));
+> > +struct rpmb_dev *rpmb_dev_register(struct device *dev,
+> > +                                  const struct rpmb_ops *ops);
+> > +int rpmb_dev_unregister(struct rpmb_dev *rdev);
+> > +
+> > +int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
+> > +                     unsigned int req_len, u8 *resp, unsigned int resp_l=
+en);
+> > +
+> > +void rpmb_interface_register(struct rpmb_interface *intf);
+> > +void rpmb_interface_unregister(struct rpmb_interface *intf);
+> > +#else
+> > +static inline struct rpmb_dev *rpmb_dev_get(struct rpmb_dev *rdev)
+> > +{
+> > +       return NULL;
+> > +}
+> > +
+> > +static inline void rpmb_dev_put(struct rpmb_dev *rdev) { }
+> > +
+> > +static inline struct rpmb_dev *
+> > +rpmb_dev_find_device(const void *data, const struct rpmb_dev *start,
+> > +                    int (*match)(struct rpmb_dev *rdev, const void *data=
+))
+> > +{
+> > +       return NULL;
+> > +}
+> > +
+> > +static inline struct rpmb_dev *
+> > +rpmb_dev_register(struct device *dev, const struct rpmb_ops *ops)
+> > +{
+> > +       return NULL;
+> > +}
+> > +
+> > +static inline int rpmb_dev_unregister(struct rpmb_dev *dev)
+> > +{
+> > +       return 0;
+> > +}
+> > +
+> > +static inline int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
+> > +                                   unsigned int req_len, u8 *resp,
+> > +                                   unsigned int resp_len)
+> > +{
+> > +       return -EOPNOTSUPP;
+> > +}
+> > +
+> > +static inline void rpmb_interface_register(struct rpmb_interface *intf) =
+{ }
+> > +static inline void rpmb_interface_unregister(struct rpmb_interface *intf=
+) { }
+> > +#endif /* CONFIG_RPMB */
+> > +
+> > +#endif /* __RPMB_H__ */
+> > --
+> > 2.34.1
+> >
+>
+> Kind regards
+> Uffe
+
+--===============1682837156468435502==--
 
