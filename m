@@ -1,47 +1,35 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jan Kiszka <jan.kiszka@siemens.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v4 2/3] mmc: block: register RPMB partition with the RPMB
- subsystem
-Date: Tue, 09 Apr 2024 14:01:10 +0200
-Message-ID: 
- <CAHUa44GozpaRSC4oNiGCG1Myv+GE8bvk6aHS0q1ecQwW-YMMUA@mail.gmail.com>
-In-Reply-To: <
- <CACRpkdYLCuRKZRqRUkav7UoT+0FSaMmciH9bps3VGgxLCw6+_g@mail.gmail.com>>
+Subject: OP-TEE fTPM seems in need for a new home
+Date: Tue, 09 Apr 2024 17:42:07 +0200
+Message-ID: <6820d18c-91b3-4a6d-bd8e-80df181ad57c@siemens.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3565800580076779740=="
+Content-Type: multipart/mixed; boundary="===============8990463705256333323=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3565800580076779740==
+--===============8990463705256333323==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi Linus,
+Hi all,
 
-On Mon, Apr 8, 2024 at 11:07=E2=80=AFAM Linus Walleij <linus.walleij@linaro=
-.org> wrote:
->
-> Hi Jens,
->
-> On Fri, Apr 5, 2024 at 1:53=E2=80=AFPM Jens Wiklander <jens.wiklander@lin=
-aro.org> wrote:
->
-> > +/**
-> > + * struct rpmb_frame - rpmb frame as defined by specs
->
-> As Tomas said maybe we can write the name of the spec or the number or
-> something so users can find it?
->
-> I would also write explicitly "the stuff bytes and big-endian properties are
-> modeled to fit to the spec".
+not sure if this is the best place to discuss, but let's try (open for
+better suggestions):
 
-That makes sense, I'll add it.
+The fTPM version for OP-TEE based on [1] is discontinued [2] and the one
+in [3] is apparently dead as well. Seems this valuable piece of
+integration needs a new home and new maintainers. Is anyone aware of
+related plans/activities?
 
-Thanks,
-Jens
+Jan
 
->
-> Yours,
-> Linus Walleij
+[1] https://github.com/microsoft/ms-tpm-20-ref
+[2] https://github.com/microsoft/ms-tpm-20-ref/pull/97#issuecomment-1985982763
+[3] https://github.com/microsoft/MSRSec/issues/42
 
---===============3565800580076779740==--
+-- 
+Siemens AG, Technology
+Linux Expert Center
+
+--===============8990463705256333323==--
 
