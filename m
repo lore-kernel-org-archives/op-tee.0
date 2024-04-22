@@ -1,36 +1,33 @@
-From: Jan Kiszka <jan.kiszka@siemens.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE fTPM seems in need for a new home
-Date: Mon, 08 Apr 2024 16:36:54 +0000
-Message-ID: <dad98441-4832-40b7-91fb-08f76ac86a34@siemens.com>
+Subject: Linaro OP-TEE Contribution, LOC, monthly meeting April 23
+Date: Mon, 22 Apr 2024 10:12:27 +0200
+Message-ID: 
+ <CAHUa44HcCNV9-+GbjJ8sySrrwOuQ4dqZENYFVneeYpsWDHhqKw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1178861631242819806=="
+Content-Type: multipart/mixed; boundary="===============8977226867022992497=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1178861631242819806==
+--===============8977226867022992497==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Hi,
 
-not sure if this is the best place to discuss, but let's try (open for
-better suggestions):
+Tomorrow (Tuesday), it's time for another LOC monthly meeting. For
+time and connection details see the calendar at
+https://www.trustedfirmware.org/meetings/
 
-The fTPM version for OP-TEE based on [1] is discontinued [2] and the one
-in [3] is apparently dead as well. Seems this valuable piece of
-integration needs a new home and new maintainers. Is anyone aware of
-related plans/activities?
+Jan Kiszka has brought [1] up the need for a new home for OP-TEE fTPM.
+Let's talk about this at the meeting tomorrow.
 
-Jan
+Any other topics?
 
-[1] https://github.com/microsoft/ms-tpm-20-ref
-[2]
-https://github.com/microsoft/ms-tpm-20-ref/pull/97#issuecomment-1985982763
-[3] https://github.com/microsoft/MSRSec/issues/42
+[1] https://lists.trustedfirmware.org/archives/list/op-tee(a)lists.trustedfir=
+mware.org/thread/BHCFCH5P6R7NI5BKL35P5E77IGKCRNZF/
 
--- 
-Siemens AG, Technology
-Linux Expert Center
+Thanks,
+Jens
 
---===============1178861631242819806==--
+--===============8977226867022992497==--
 
