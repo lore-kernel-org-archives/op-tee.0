@@ -1,19 +1,28 @@
-From: don.harbin@linaro.org
+From: Avri Altman <Avri.Altman@wdc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Reminder: TrustedFirmware Discord Channel
-Date: Wed, 17 Apr 2024 14:16:16 +0000
-Message-ID: 
- <CA+HB5jBLA3RbzteQHtAhsEZfk9XnbHL963dyycdKs35WuNgxFw@mail.gmail.com>
+Subject: RE: [PATCH v5 0/3] Replay Protected Memory Block (RPMB) subsystem
+Date: Tue, 23 Apr 2024 06:42:05 +0000
+Message-ID: <DM6PR04MB6575CE5A70F2C733DF40E54CFC112@DM6PR04MB6575.namprd04.prod.outlook.com>
+In-Reply-To: <20240422091936.3714381-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1854562572496501911=="
+Content-Type: multipart/mixed; boundary="===============6133480206897277133=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1854562572496501911==
+--===============6133480206897277133==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-The content of this message was lost. It was probably cross-posted to
-multiple lists and previously handled on another list.
+> The OP-TEE driver finds the correct RPMB device to interact with by
+> iterating over available devices until one is found with a programmed
+> authentication matching the one OP-TEE is using. This enables coexisting
+> users of other RPMBs since the owner can be determined by who knows the
+> authentication key.
+Devices in plural?
+I am unaware of any board with multi eMMC devices soldered.
+Can you refer me to such a platform?
 
---===============1854562572496501911==--
+Thanks,
+Avri
+
+--===============6133480206897277133==--
 
