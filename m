@@ -1,234 +1,221 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v5 1/3] rpmb: add Replay Protected Memory Block (RPMB) subsystem
-Date: Fri, 26 Apr 2024 15:08:07 +0200
+Subject: Re: [PATCH v5 2/3] mmc: block: register RPMB partition with the RPMB
+ subsystem
+Date: Fri, 26 Apr 2024 15:24:21 +0200
 Message-ID: 
- <CAHUa44EsO9rr2_KsmNcwoUuL_OAO-Oh8gqepUn5Bmo1dfP_LUA@mail.gmail.com>
-In-Reply-To: <ZioWLgVJ7Ky4nUxC@mecka.net>
+ <CAHUa44Fojanryuc+ciJrVZUopRLcTt2teS_pC4BBjt1Wmy240A@mail.gmail.com>
+In-Reply-To: <ZioXkvnIw5V5MXBU@mecka.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0998587552494858451=="
+Content-Type: multipart/mixed; boundary="===============2109145412574344126=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0998587552494858451==
+--===============2109145412574344126==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 25, 2024 at 10:37=E2=80=AFAM Manuel Traut <manut@mecka.net> wro=
+On Thu, Apr 25, 2024 at 10:43=E2=80=AFAM Manuel Traut <manut@mecka.net> wro=
 te:
 >
-> On Mon, Apr 22, 2024 at 11:19:34AM +0200, Jens Wiklander wrote:
-> > A number of storage technologies support a specialised hardware
-> > partition designed to be resistant to replay attacks. The underlying
-> > HW protocols differ but the operations are common. The RPMB partition
-> > cannot be accessed via standard block layer, but by a set of specific
-> > RPMB commands. Such a partition provides authenticated and replay
-> > protected access, hence suitable as a secure storage.
+> On Mon, Apr 22, 2024 at 11:19:35AM +0200, Jens Wiklander wrote:
+> > Register eMMC RPMB partition with the RPMB subsystem and provide
+> > an implementation for the RPMB access operations abstracting
+> > the actual multi step process.
 > >
-> > The initial aim of this patch is to provide a simple RPMB driver
-> > interface which can be accessed by the optee driver to facilitate early
-> > RPMB access to OP-TEE OS (secure OS) during the boot time.
+> > Add a callback to extract the needed device information at registration
+> > to avoid accessing the struct mmc_card at a later stage as we're not
+> > holding a reference counter for this struct.
 > >
-> > A TEE device driver can claim the RPMB interface, for example, via
-> > rpmb_interface_register() or rpmb_dev_find_device(). The RPMB driver
-> > provides a callback to route RPMB frames to the RPMB device accessible
-> > via rpmb_route_frames().
-> >
-> > The detailed operation of implementing the access is left to the TEE
-> > device driver itself.
+> > Taking the needed reference to md->disk in mmc_blk_alloc_rpmb_part()
+> > instead of in mmc_rpmb_chrdev_open(). This is needed by the
+> > route_frames() function pointer in struct rpmb_ops.
 > >
 > > Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> > Signed-off-by: Alex Benn=C3=A9e <alex.bennee@linaro.org>
-> > Signed-off-by: Shyam Saini <shyamsaini@linux.microsoft.com>
+> > Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 > > ---
-> >  MAINTAINERS              |   7 ++
-> >  drivers/misc/Kconfig     |  10 ++
-> >  drivers/misc/Makefile    |   1 +
-> >  drivers/misc/rpmb-core.c | 232 +++++++++++++++++++++++++++++++++++++++
-> >  include/linux/rpmb.h     | 136 +++++++++++++++++++++++
-> >  5 files changed, 386 insertions(+)
-> >  create mode 100644 drivers/misc/rpmb-core.c
-> >  create mode 100644 include/linux/rpmb.h
+> >  drivers/mmc/core/block.c | 241 ++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 239 insertions(+), 2 deletions(-)
 > >
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 8999497011a2..e83152c42499 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -19012,6 +19012,13 @@ T:   git git://linuxtv.org/media_tree.git
-> >  F:   Documentation/devicetree/bindings/media/allwinner,sun8i-a83t-de2-ro=
-tate.yaml
-> >  F:   drivers/media/platform/sunxi/sun8i-rotate/
-> >
-> > +RPMB SUBSYSTEM
-> > +M:   Jens Wiklander <jens.wiklander@linaro.org>
-> > +L:   linux-kernel(a)vger.kernel.org
-> > +S:   Supported
-> > +F:   drivers/misc/rpmb-core.c
-> > +F:   include/linux/rpmb.h
-> > +
-> >  RPMSG TTY DRIVER
-> >  M:   Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> >  L:   linux-remoteproc(a)vger.kernel.org
-> > diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> > index 4fb291f0bf7c..dbff9e8c3a03 100644
-> > --- a/drivers/misc/Kconfig
-> > +++ b/drivers/misc/Kconfig
-> > @@ -104,6 +104,16 @@ config PHANTOM
-> >         If you choose to build module, its name will be phantom. If unsur=
-e,
-> >         say N here.
-> >
-> > +config RPMB
-> > +     tristate "RPMB partition interface"
-> > +     depends on MMC
-> > +     help
-> > +       Unified RPMB unit interface for RPMB capable devices such as eMMC=
- and
-> > +       UFS. Provides interface for in-kernel security controllers to acc=
-ess
-> > +       RPMB unit.
-> > +
-> > +       If unsure, select N.
-> > +
-> >  config TIFM_CORE
-> >       tristate "TI Flash Media interface support"
-> >       depends on PCI
-> > diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-> > index ea6ea5bbbc9c..8af058ad1df4 100644
-> > --- a/drivers/misc/Makefile
-> > +++ b/drivers/misc/Makefile
-> > @@ -15,6 +15,7 @@ obj-$(CONFIG_LKDTM)         +=3D lkdtm/
-> >  obj-$(CONFIG_TIFM_CORE)              +=3D tifm_core.o
-> >  obj-$(CONFIG_TIFM_7XX1)              +=3D tifm_7xx1.o
-> >  obj-$(CONFIG_PHANTOM)                +=3D phantom.o
-> > +obj-$(CONFIG_RPMB)           +=3D rpmb-core.o
-> >  obj-$(CONFIG_QCOM_COINCELL)  +=3D qcom-coincell.o
-> >  obj-$(CONFIG_QCOM_FASTRPC)   +=3D fastrpc.o
-> >  obj-$(CONFIG_SENSORS_BH1770) +=3D bh1770glc.o
-> > diff --git a/drivers/misc/rpmb-core.c b/drivers/misc/rpmb-core.c
-> > new file mode 100644
-> > index 000000000000..5479469c26f3
-> > --- /dev/null
-> > +++ b/drivers/misc/rpmb-core.c
-> > @@ -0,0 +1,232 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * Copyright(c) 2015 - 2019 Intel Corporation. All rights reserved.
-> > + * Copyright(c) 2021 - 2024 Linaro Ltd.
-> > + */
-> > +#include <linux/device.h>
-> > +#include <linux/init.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/list.h>
-> > +#include <linux/module.h>
-> > +#include <linux/mutex.h>
+> > diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
+> > index 32d49100dff5..a7f126fbc605 100644
+> > --- a/drivers/mmc/core/block.c
+> > +++ b/drivers/mmc/core/block.c
+> > @@ -33,6 +33,7 @@
+> >  #include <linux/cdev.h>
+> >  #include <linux/mutex.h>
+> >  #include <linux/scatterlist.h>
+> > +#include <linux/string.h>
+> >  #include <linux/string_helpers.h>
+> >  #include <linux/delay.h>
+> >  #include <linux/capability.h>
+> > @@ -40,6 +41,7 @@
+> >  #include <linux/pm_runtime.h>
+> >  #include <linux/idr.h>
+> >  #include <linux/debugfs.h>
 > > +#include <linux/rpmb.h>
-> > +#include <linux/slab.h>
-> > +
-> > +static struct list_head rpmb_dev_list;
-> > +static DEFINE_MUTEX(rpmb_mutex);
-> > +static struct blocking_notifier_head rpmb_interface =3D
-> > +     BLOCKING_NOTIFIER_INIT(rpmb_interface);
-> > +
+> >
+> >  #include <linux/mmc/ioctl.h>
+> >  #include <linux/mmc/card.h>
+> > @@ -76,6 +78,48 @@ MODULE_ALIAS("mmc:block");
+> >  #define MMC_EXTRACT_INDEX_FROM_ARG(x) ((x & 0x00FF0000) >> 16)
+> >  #define MMC_EXTRACT_VALUE_FROM_ARG(x) ((x & 0x0000FF00) >> 8)
+> >
 > > +/**
-> > + * rpmb_dev_get() - increase rpmb device ref counter
-> > + * @rdev: rpmb device
+> > + * struct rpmb_frame - rpmb frame as defined by eMMC 5.1 (JESD84-B51)
+> > + *
+> > + * @stuff        : stuff bytes
+> > + * @key_mac      : The authentication key or the message authentication
+> > + *                 code (MAC) depending on the request/response type.
+> > + *                 The MAC will be delivered in the last (or the only)
+> > + *                 block of data.
+> > + * @data         : Data to be written or read by signed access.
+> > + * @nonce        : Random number generated by the host for the requests
+> > + *                 and copied to the response by the RPMB engine.
+> > + * @write_counter: Counter value for the total amount of the successful
+> > + *                 authenticated data write requests made by the host.
+> > + * @addr         : Address of the data to be programmed to or read
+> > + *                 from the RPMB. Address is the serial number of
+> > + *                 the accessed block (half sector 256B).
+> > + * @block_count  : Number of blocks (half sectors, 256B) requested to be
+> > + *                 read/programmed.
+> > + * @result       : Includes information about the status of the write co=
+unter
+> > + *                 (valid, expired) and result of the access made to the=
+ RPMB.
+> > + * @req_resp     : Defines the type of request and response to/from the =
+memory.
+> > + *
+> > + * The stuff bytes and big-endian properties are modeled to fit to the s=
+pec.
 > > + */
-> > +struct rpmb_dev *rpmb_dev_get(struct rpmb_dev *rdev)
-> > +{
-> > +     if (rdev)
-> > +             get_device(rdev->parent_dev);
-> > +     return rdev;
-> > +}
-> > +EXPORT_SYMBOL_GPL(rpmb_dev_get);
+> > +struct rpmb_frame {
+> > +     u8     stuff[196];
+> > +     u8     key_mac[32];
+> > +     u8     data[256];
+> > +     u8     nonce[16];
+> > +     __be32 write_counter;
+> > +     __be16 addr;
+> > +     __be16 block_count;
+> > +     __be16 result;
+> > +     __be16 req_resp;
+> > +} __packed;
 > > +
-> > +/**
-> > + * rpmb_dev_put() - decrease rpmb device ref counter
-> > + * @rdev: rpmb device
-> > + */
-> > +void rpmb_dev_put(struct rpmb_dev *rdev)
-> > +{
-> > +     if (rdev)
-> > +             put_device(rdev->parent_dev);
-> > +}
-> > +EXPORT_SYMBOL_GPL(rpmb_dev_put);
+> > +#define RPMB_PROGRAM_KEY       0x1    /* Program RPMB Authentication Key=
+ */
+> > +#define RPMB_GET_WRITE_COUNTER 0x2    /* Read RPMB write counter */
+> > +#define RPMB_WRITE_DATA        0x3    /* Write data to RPMB partition */
+> > +#define RPMB_READ_DATA         0x4    /* Read data from RPMB partition */
+> > +#define RPMB_RESULT_READ       0x5    /* Read result request  (Internal)=
+ */
 > > +
-> > +/**
-> > + * rpmb_route_frames() - route rpmb frames to rpmb device
-> > + * @rdev:    rpmb device
-> > + * @req:     rpmb request frames
-> > + * @req_len: length of rpmb request frames in bytes
-> > + * @rsp:     rpmb response frames
-> > + * @rsp_len: length of rpmb response frames in bytes
-> > + *
-> > + * Returns: < 0 on failure
-> > + */
-> > +int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
-> > +                   unsigned int req_len, u8 *rsp, unsigned int rsp_len)
-> > +{
-> > +     if (!req || !req_len || !rsp || !rsp_len)
-> > +             return -EINVAL;
-> > +
-> > +     return rdev->descr.route_frames(rdev->parent_dev, req, req_len,
-> > +                                     rsp, rsp_len);
-> > +}
-> > +EXPORT_SYMBOL_GPL(rpmb_route_frames);
-> > +
-> > +/**
-> > + * rpmb_dev_find_device() - return first matching rpmb device
-> > + * @data: data for the match function
-> > + * @match: the matching function
-> > + *
-> > + * Iterate over registered RPMB devices, and call @match() for each pass=
-ing
-> > + * it the RPMB device and @data.
-> > + *
-> > + * The return value of @match() is checked for each call. If it returns
-> > + * anything other 0, break and return the found RPMB device.
-> > + *
-> > + * It's the callers responsibility to call rpmb_dev_put() on the returned
-> > + * device, when it's done with it.
-> > + *
-> > + * Returns: a matching rpmb device or NULL on failure
-> > + */
-> > +struct rpmb_dev *rpmb_dev_find_device(const void *data,
-> > +                                   const struct rpmb_dev *start,
-> > +                                   int (*match)(struct rpmb_dev *rdev,
-> > +                                                const void *data))
-> > +{
+> >  static DEFINE_MUTEX(block_mutex);
+> >
+> >  /*
+> > @@ -163,6 +207,7 @@ struct mmc_rpmb_data {
+> >       int id;
+> >       unsigned int part_index;
+> >       struct mmc_blk_data *md;
 > > +     struct rpmb_dev *rdev;
-> > +     struct list_head *pos;
+> >       struct list_head node;
+> >  };
+> >
+> > @@ -2672,7 +2717,6 @@ static int mmc_rpmb_chrdev_open(struct inode *inode=
+, struct file *filp)
+> >
+> >       get_device(&rpmb->dev);
+> >       filp->private_data =3D rpmb;
+> > -     mmc_blk_get(rpmb->md->disk);
+> >
+> >       return nonseekable_open(inode, filp);
+> >  }
+> > @@ -2682,7 +2726,6 @@ static int mmc_rpmb_chrdev_release(struct inode *in=
+ode, struct file *filp)
+> >       struct mmc_rpmb_data *rpmb =3D container_of(inode->i_cdev,
+> >                                                 struct mmc_rpmb_data, chr=
+dev);
+> >
+> > -     mmc_blk_put(rpmb->md);
+> >       put_device(&rpmb->dev);
+> >
+> >       return 0;
+> > @@ -2703,10 +2746,165 @@ static void mmc_blk_rpmb_device_release(struct d=
+evice *dev)
+> >  {
+> >       struct mmc_rpmb_data *rpmb =3D dev_get_drvdata(dev);
+> >
+> > +     rpmb_dev_unregister(rpmb->rdev);
+> > +     mmc_blk_put(rpmb->md);
+> >       ida_simple_remove(&mmc_rpmb_ida, rpmb->id);
+> >       kfree(rpmb);
+> >  }
+> >
+> > +static void free_idata(struct mmc_blk_ioc_data **idata, unsigned int cmd=
+_count)
+> > +{
+> > +     unsigned int n;
 > > +
-> > +     mutex_lock(&rpmb_mutex);
-> > +     if (start)
-> > +             pos =3D start->list_node.next;
-> > +     else
-> > +             pos =3D rpmb_dev_list.next;
-> > +
-> > +     while (pos !=3D &rpmb_dev_list) {
-> > +             rdev =3D container_of(pos, struct rpmb_dev, list_node);
-> > +             if (match(rdev, data)) {
-> > +                     rpmb_dev_get(rdev);
-> > +                     goto out;
-> > +             }
-> > +             pos =3D pos->next;
-> > +     }
-> > +     rdev =3D NULL;
-> > +
-> > +out:
-> > +     mutex_unlock(&rpmb_mutex);
-> > +
-> > +     return rdev;
+> > +     for (n =3D 0; n < cmd_count; n++)
+> > +             kfree(idata[n]);
+> > +     kfree(idata);
 > > +}
+> > +
+> > +static struct mmc_blk_ioc_data **alloc_idata(struct mmc_rpmb_data *rpmb,
+> > +                                          unsigned int cmd_count)
+> > +{
+> > +     struct mmc_blk_ioc_data **idata;
+> > +     unsigned int n;
+> > +
+> > +     idata =3D kcalloc(cmd_count, sizeof(*idata), GFP_KERNEL);
+> > +     if (!idata)
+> > +             return NULL;
+> > +
+> > +     for (n =3D 0; n < cmd_count; n++) {
+> > +             idata[n] =3D kcalloc(1, sizeof(**idata), GFP_KERNEL);
+> > +             if (!idata[n]) {
+> > +                     free_idata(idata, n);
+> > +                     return NULL;
+> > +             }
+> > +             idata[n]->rpmb =3D rpmb;
+> > +     }
+> > +
+> > +     return idata;
+> > +}
+> > +
+> > +static void set_idata(struct mmc_blk_ioc_data *idata, u32 opcode,
+> > +                   int write_flag, u8 *buf, unsigned int buf_bytes)
+> > +{
+> > +     /*
+> > +      * The size of an RPMB frame must match what's expected by the
+> > +      * hardware.
+> > +      */
+> > +     BUILD_BUG_ON(sizeof(struct rpmb_frame) !=3D 512);
+> > +
+> > +     idata->ic.opcode =3D opcode;
+> > +     idata->ic.flags =3D MMC_RSP_R1 | MMC_CMD_ADTC;
+> > +     idata->ic.write_flag =3D write_flag;
+> > +     idata->ic.blksz =3D sizeof(struct rpmb_frame);
+> > +     idata->ic.blocks =3D buf_bytes /  idata->ic.blksz;
+> > +     idata->buf =3D buf;
 >
-> EXPORT_SYMBOL_GPL missing?
+> I tested the series on a i.MX8MM with a eMMC connected via the imx-sdhci
+> controller. Reading from RPMB does not work. It ends in timeouts due to
+> no response from the SDHCI controller.
+>
+> If idata->buf is allocated here with kmalloc(buf_bytes, GFP_KERNEL) and
+> the content of buf is copied to the new allocated area, transfers succeed.
+>
+> Is it possible that idata->buf is not DMA capable? Any other ideas?
 
-You're right, I'll add it.
+Thanks for testing. I don't know, the idata->buf is allocated using
+alloc_pages_exact(nr_pages * PAGE_SIZE, GFP_KERNEL | __GFP_ZERO); in
+optee_pool_op_alloc_helper(). Alternatively, it's from the memory
+range mapped using memremap() in optee_config_shm_memremap(), but
+that's only if you don't have "dynamic shared memory is enabled" in
+the boot log.
 
 Thanks,
 Jens
 
---===============0998587552494858451==--
+--===============2109145412574344126==--
 
