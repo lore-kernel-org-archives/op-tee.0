@@ -1,73 +1,129 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: "gavin.liu" <gavin.liu@mediatek.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH] MAINTAINERS: .mailmap: Update Sumit Garg's email address
-Date: Thu, 27 Feb 2025 17:02:28 +0530
-Message-ID: <20250227113228.1809449-1-sumit.garg@linaro.org>
+Subject: 
+ [PATCH v2] optee: add timeout value to optee_notif_wait() to support timeout
+Date: Thu, 02 May 2024 16:56:36 +0800
+Message-ID: <20240502085636.4049-1-gavin.liu@mediatek.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4988940253799764368=="
+Content-Type: multipart/mixed; boundary="===============4104127894817070994=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4988940253799764368==
+--===============4104127894817070994==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Update Sumit Garg's email address to @kernel.org.
+From: Gavin Liu <gavin.liu@mediatek.com>
 
-Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+Add timeout value to support self waking when timeout to avoid waiting
+indefinitely.
+
+Signed-off-by: Gavin Liu <gavin.liu@mediatek.com>
 ---
- .mailmap    | 1 +
- MAINTAINERS | 6 +++---
- 2 files changed, 4 insertions(+), 3 deletions(-)
+Change in v2:
+Change commit message.
+Add description for value[0].c in optee_rpc_cmd.h.
+---
+---
+ drivers/tee/optee/notif.c         |  9 +++++++--
+ drivers/tee/optee/optee_private.h |  2 +-
+ drivers/tee/optee/optee_rpc_cmd.h |  1 +
+ drivers/tee/optee/rpc.c           | 10 ++++++++--
+ 4 files changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/.mailmap b/.mailmap
-index a897c16d3bae..4a93909286d8 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -689,6 +689,7 @@ Subbaraman Narayanamurthy <quic_subbaram@quicinc.com> <=
-subbaram@codeaurora.org>
- Subhash Jadavani <subhashj@codeaurora.org>
- Sudarshan Rajagopalan <quic_sudaraja@quicinc.com> <sudaraja@codeaurora.o=
-rg>
- Sudeep Holla <sudeep.holla@arm.com> Sudeep KarkadaNagesha <sudeep.karkadan=
-agesha@arm.com>
-+Sumit Garg <sumit.garg@kernel.org> <sumit.garg@linaro.org>
- Sumit Semwal <sumit.semwal@ti.com>
- Surabhi Vishnoi <quic_svishnoi@quicinc.com> <svishnoi@codeaurora.org>
- Sven Eckelmann <sven@narfation.org> <seckelmann@datto.com>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1b0cc181db74..616f859c5f92 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12861,7 +12861,7 @@ F:	include/keys/trusted_dcp.h
- F:	security/keys/trusted-keys/trusted_dcp.c
+diff --git a/drivers/tee/optee/notif.c b/drivers/tee/optee/notif.c
+index 05212842b0a5..d5e5c0645609 100644
+--- a/drivers/tee/optee/notif.c
++++ b/drivers/tee/optee/notif.c
+@@ -29,7 +29,7 @@ static bool have_key(struct optee *optee, u_int key)
+ 	return false;
+ }
 =20
- KEYS-TRUSTED-TEE
--M:	Sumit Garg <sumit.garg@linaro.org>
-+M:	Sumit Garg <sumit.garg@kernel.org>
- L:	linux-integrity(a)vger.kernel.org
- L:	keyrings(a)vger.kernel.org
- S:	Supported
-@@ -17661,7 +17661,7 @@ F:	Documentation/ABI/testing/sysfs-bus-optee-devices
- F:	drivers/tee/optee/
+-int optee_notif_wait(struct optee *optee, u_int key)
++int optee_notif_wait(struct optee *optee, u_int key, u32 timeout)
+ {
+ 	unsigned long flags;
+ 	struct notif_entry *entry;
+@@ -70,7 +70,12 @@ int optee_notif_wait(struct optee *optee, u_int key)
+ 	 * Unlock temporarily and wait for completion.
+ 	 */
+ 	spin_unlock_irqrestore(&optee->notif.lock, flags);
+-	wait_for_completion(&entry->c);
++	if (timeout !=3D 0) {
++		if (!wait_for_completion_timeout(&entry->c, timeout))
++			rc =3D -ETIMEDOUT;
++	} else {
++		wait_for_completion(&entry->c);
++	}
+ 	spin_lock_irqsave(&optee->notif.lock, flags);
 =20
- OP-TEE RANDOM NUMBER GENERATOR (RNG) DRIVER
--M:	Sumit Garg <sumit.garg@linaro.org>
-+M:	Sumit Garg <sumit.garg@kernel.org>
- L:	op-tee(a)lists.trustedfirmware.org
- S:	Maintained
- F:	drivers/char/hw_random/optee-rng.c
-@@ -23272,7 +23272,7 @@ F:	include/media/i2c/tw9910.h
+ 	list_del(&entry->link);
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+index 7a5243c78b55..da990c4016ec 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -252,7 +252,7 @@ struct optee_call_ctx {
 =20
- TEE SUBSYSTEM
- M:	Jens Wiklander <jens.wiklander@linaro.org>
--R:	Sumit Garg <sumit.garg@linaro.org>
-+R:	Sumit Garg <sumit.garg@kernel.org>
- L:	op-tee(a)lists.trustedfirmware.org
- S:	Maintained
- F:	Documentation/ABI/testing/sysfs-class-tee
+ int optee_notif_init(struct optee *optee, u_int max_key);
+ void optee_notif_uninit(struct optee *optee);
+-int optee_notif_wait(struct optee *optee, u_int key);
++int optee_notif_wait(struct optee *optee, u_int key, u32 timeout);
+ int optee_notif_send(struct optee *optee, u_int key);
+=20
+ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
+diff --git a/drivers/tee/optee/optee_rpc_cmd.h b/drivers/tee/optee/optee_rpc_=
+cmd.h
+index f3f06e0994a7..99342aa66263 100644
+--- a/drivers/tee/optee/optee_rpc_cmd.h
++++ b/drivers/tee/optee/optee_rpc_cmd.h
+@@ -41,6 +41,7 @@
+  * Waiting on notification
+  * [in]    value[0].a	    OPTEE_RPC_NOTIFICATION_WAIT
+  * [in]    value[0].b	    notification value
++ * [in]    value[0].c	    timeout in millisecond or 0 if no timeout
+  *
+  * Sending a synchronous notification
+  * [in]    value[0].a	    OPTEE_RPC_NOTIFICATION_SEND
+diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
+index e69bc6380683..14e6246aaf05 100644
+--- a/drivers/tee/optee/rpc.c
++++ b/drivers/tee/optee/rpc.c
+@@ -130,6 +130,8 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee_c=
+ontext *ctx,
+ static void handle_rpc_func_cmd_wq(struct optee *optee,
+ 				   struct optee_msg_arg *arg)
+ {
++	int rc =3D 0;
++
+ 	if (arg->num_params !=3D 1)
+ 		goto bad;
+=20
+@@ -139,7 +141,8 @@ static void handle_rpc_func_cmd_wq(struct optee *optee,
+=20
+ 	switch (arg->params[0].u.value.a) {
+ 	case OPTEE_RPC_NOTIFICATION_WAIT:
+-		if (optee_notif_wait(optee, arg->params[0].u.value.b))
++		rc =3D optee_notif_wait(optee, arg->params[0].u.value.b, arg->params[0].u.=
+value.c);
++		if (rc)
+ 			goto bad;
+ 		break;
+ 	case OPTEE_RPC_NOTIFICATION_SEND:
+@@ -153,7 +156,10 @@ static void handle_rpc_func_cmd_wq(struct optee *optee,
+ 	arg->ret =3D TEEC_SUCCESS;
+ 	return;
+ bad:
+-	arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++	if (rc =3D=3D -ETIMEDOUT)
++		arg->ret =3D TEEC_ERROR_BUSY;
++	else
++		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
+ }
+=20
+ static void handle_rpc_func_cmd_wait(struct optee_msg_arg *arg)
 --=20
-2.43.0
+2.18.0
 
 
---===============4988940253799764368==--
+--===============4104127894817070994==--
 
