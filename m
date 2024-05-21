@@ -1,70 +1,65 @@
-From: Hareesh Das Ulleri <hareesh.ulleri@ovt.com>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: SSH - OpTee reboot scenario Issue
-Date: Tue, 21 May 2024 08:08:23 +0000
-Message-ID: <SJ0PR22MB375592D7CDBB16A594A03D2F9DEA2@SJ0PR22MB3755.namprd22.prod.outlook.com>
-In-Reply-To: <
- <CAHUa44F5FwVrwBH017+wpNDb8GM9YeLh2WLoYVYDFUoP8BbFYw@mail.gmail.com>>
+Subject: [RESEND PATCH v5 3/7] dt-bindings: remoteproc: Add processor
+ identifier property
+Date: Tue, 21 May 2024 14:24:54 +0200
+Message-ID: <20240521122458.3517054-4-arnaud.pouliquen@foss.st.com>
+In-Reply-To: <20240521122458.3517054-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0966804945345087952=="
+Content-Type: multipart/mixed; boundary="===============6121826472507547930=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0966804945345087952==
+--===============6121826472507547930==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Add the "st,proc-id" property allowing to identify the remote processor.
+This ID is used to define an unique ID, common between Linux, U-boot and
+OP-TEE to identify a coprocessor.
+This ID will be used in request to OP-TEE remoteproc Trusted Application
+to specify the remote processor.
 
- Thanks for the reply.
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+ .../devicetree/bindings/remoteproc/st,stm32-rproc.yaml     | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
- In this scenario, userspace lib triggers a series of OP-TEE lib calls (Init,=
- TEEC_OpenSession,  TA_CRYPT_CMD_PREPARE, TA_CRYPT_CMD_SET_KEY ... ) one by o=
-ne based on previous call's response return code. Shutdown request can happen=
- middle of any of the above calls and what I see is TEE function return code =
-is SUCESSS even after system shutdown request. So here I can't take any actio=
-n based on the return code !
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
+ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 36ea54016b76..409123cd4667 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -48,6 +48,10 @@ properties:
+           - description: The offset of the hold boot setting register
+           - description: The field mask of the hold boot
+=20
++  st,proc-id:
++    description: remote processor identifier
++    $ref: /schemas/types.yaml#/definitions/uint32
++
+   st,syscfg-tz:
+     deprecated: true
+     description:
+@@ -182,6 +186,8 @@ allOf:
+         st,syscfg-holdboot: false
+         reset-names: false
+         resets: false
++      required:
++        - st,proc-id
+=20
+ additionalProperties: false
+=20
+@@ -220,6 +226,7 @@ examples:
+       reg =3D <0x10000000 0x40000>,
+             <0x30000000 0x40000>,
+             <0x38000000 0x10000>;
++      st,proc-id =3D <0>;
+       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+     };
+--=20
+2.25.1
 
-Regards,
-Hareesh
 
------Original Message-----
-From: Jens Wiklander <jens.wiklander@linaro.org>=20
-Sent: Tuesday, May 21, 2024 3:18 PM
-To: Hareesh Das Ulleri <hareesh.ulleri@ovt.com>
-Cc: op-tee(a)lists.trustedfirmware.org
-Subject: Re: SSH - OpTee reboot scenario Issue
-
-[CAUTION]: EXTERNAL EMAIL
-
-
-Hi,
-
-On Fri, May 17, 2024 at 10:42=E2=80=AFAM Hareesh Das Ulleri <hareesh.ulleri(a=
-)ovt.com> wrote:
->
-> Hello All,
->
-> [please suggest the email list if this is not the right platform to=20
-> discuss, sorry for that]
->
-> We use Op-tee (3.18) in our ARM64 based project (Linux 5.15.14+) for crypti=
-on, so basically it is like " OpenSSH -> OpenSSL -> OpTee -> HSM". It works f=
-ine until we tried with a test scenario of reboot request via SSH.
->
-> When we request the system reboot via SSH, the shutting down looks not a gr=
-aceful way (ssh client connection exception). This is only we add OpTee layer=
-, otherwise everything works fine. I would like to know anyone has encountere=
-d similar kind of issue where OpTee has to take care any special shutting dow=
-n process. Any leads much appreciated !
-
-The OP-TEE kernel driver does something to prepare for shutdown. The exceptio=
-n in the ssh client suggests it could be a user-space integration issue. I as=
-sume the exception is triggered by an unexpected return code from OP-TEE. Is =
-it possible to do something special when receiving that return code in order =
-to avoid the exception?
-
-Cheers,
-Jens
-
---===============0966804945345087952==--
+--===============6121826472507547930==--
 
