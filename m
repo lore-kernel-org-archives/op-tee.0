@@ -1,107 +1,125 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RESEND PATCH v5 5/7] remoteproc: core: support of the tee interface
-Date: Tue, 21 May 2024 14:24:56 +0200
-Message-ID: <20240521122458.3517054-6-arnaud.pouliquen@foss.st.com>
+Subject: [RESEND PATCH v5 2/7] dt-bindings: remoteproc: Add compatibility for
+ TEE support
+Date: Tue, 21 May 2024 14:24:53 +0200
+Message-ID: <20240521122458.3517054-3-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20240521122458.3517054-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1834450580051385227=="
+Content-Type: multipart/mixed; boundary="===============5091462485338555766=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1834450580051385227==
+--===============5091462485338555766==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-1) on start:
-- Using the TEE loader, the resource table is loaded by an external entity.
-In such case the resource table address is not find from the firmware but
-provided by the TEE remoteproc framework.
-Use the rproc_get_loaded_rsc_table instead of rproc_find_loaded_rsc_table
-- test that rproc->cached_table is not null before performing the memcpy
-
-2)on stop
-The use of the cached_table seems mandatory:
-- during recovery sequence to have a snapshot of the resource table
-  resources used,
-- on stop to allow  for the deinitialization of resources after the
-  the remote processor has been shutdown.
-However if the TEE interface is being used, we first need to unmap the
-table_ptr before setting it to rproc->cached_table.
-The update of rproc->table_ptr to rproc->cached_table is performed in
-tee_remoteproc.
+The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+where the Cortex-M4 firmware is loaded by the Trusted execution Environment
+(TEE).
+For instance, this compatible is used in both the Linux and OP-TEE
+device-tree:
+- In OP-TEE, a node is defined in the device tree with the
+  st,stm32mp1-m4-tee to support signed remoteproc firmware.
+  Based on DT properties, OP-TEE authenticates, loads, starts, and stops
+  the firmware.
+- On Linux, when the compatibility is set, the Cortex-M resets should not
+  be declared in the device tree.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/remoteproc/remoteproc_core.c | 31 +++++++++++++++++++++-------
- 1 file changed, 23 insertions(+), 8 deletions(-)
+ .../bindings/remoteproc/st,stm32-rproc.yaml   | 51 ++++++++++++++++---
+ 1 file changed, 43 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
-proc_core.c
-index 42bca01f3bde..3a642151c983 100644
---- a/drivers/remoteproc/remoteproc_core.c
-+++ b/drivers/remoteproc/remoteproc_core.c
-@@ -1267,6 +1267,7 @@ EXPORT_SYMBOL(rproc_resource_cleanup);
- static int rproc_set_rsc_table_on_start(struct rproc *rproc, const struct fi=
-rmware *fw)
- {
- 	struct resource_table *loaded_table;
-+	struct device *dev =3D &rproc->dev;
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
+ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 370af61d8f28..36ea54016b76 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -16,7 +16,12 @@ maintainers:
 =20
- 	/*
- 	 * The starting device has been given the rproc->cached_table as the
-@@ -1276,12 +1277,21 @@ static int rproc_set_rsc_table_on_start(struct rproc =
-*rproc, const struct firmwa
- 	 * this information to device memory. We also update the table_ptr so
- 	 * that any subsequent changes will be applied to the loaded version.
- 	 */
--	loaded_table =3D rproc_find_loaded_rsc_table(rproc, fw);
--	if (loaded_table) {
--		memcpy(loaded_table, rproc->cached_table, rproc->table_sz);
--		rproc->table_ptr =3D loaded_table;
-+	if (rproc->tee_interface) {
-+		loaded_table =3D rproc_get_loaded_rsc_table(rproc, &rproc->table_sz);
-+		if (IS_ERR(loaded_table)) {
-+			dev_err(dev, "can't get resource table\n");
-+			return PTR_ERR(loaded_table);
-+		}
-+	} else {
-+		loaded_table =3D rproc_find_loaded_rsc_table(rproc, fw);
- 	}
+ properties:
+   compatible:
+-    const: st,stm32mp1-m4
++    enum:
++      - st,stm32mp1-m4
++      - st,stm32mp1-m4-tee
++    description:
++      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-s=
+ecure context
++      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
+ecure context
 =20
-+	if (loaded_table && rproc->cached_table)
-+		memcpy(loaded_table, rproc->cached_table, rproc->table_sz);
+   reg:
+     description:
+@@ -142,21 +147,41 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - resets
+=20
+ allOf:
+   - if:
+       properties:
+-        reset-names:
+-          not:
+-            contains:
+-              const: hold_boot
++        compatible:
++          contains:
++            const: st,stm32mp1-m4
+     then:
++      if:
++        properties:
++          reset-names:
++            not:
++              contains:
++                const: hold_boot
++      then:
++        required:
++          - st,syscfg-holdboot
++      else:
++        properties:
++          st,syscfg-holdboot: false
++        required:
++          - reset-names
+       required:
+-        - st,syscfg-holdboot
+-    else:
++        - resets
 +
-+	rproc->table_ptr =3D loaded_table;
-+
- 	return 0;
- }
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: st,stm32mp1-m4-tee
++    then:
+       properties:
+         st,syscfg-holdboot: false
++        reset-names: false
++        resets: false
 =20
-@@ -1318,11 +1328,16 @@ static int rproc_reset_rsc_table_on_stop(struct rproc=
- *rproc)
- 	kfree(rproc->clean_table);
+ additionalProperties: false
 =20
- out:
--	/*
--	 * Use a copy of the resource table for the remainder of the
--	 * shutdown process.
-+	/* If the remoteproc_tee interface is used, then we have first to unmap the=
- resource table
-+	 * before updating the proc->table_ptr reference.
- 	 */
--	rproc->table_ptr =3D rproc->cached_table;
-+	if (!rproc->tee_interface) {
-+		/*
-+		 * Use a copy of the resource table for the remainder of the
-+		 * shutdown process.
-+		 */
-+		rproc->table_ptr =3D rproc->cached_table;
-+	}
- 	return 0;
- }
+@@ -188,5 +213,15 @@ examples:
+       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+     };
++  - |
++    #include <dt-bindings/reset/stm32mp1-resets.h>
++    m4(a)10000000 {
++      compatible =3D "st,stm32mp1-m4-tee";
++      reg =3D <0x10000000 0x40000>,
++            <0x30000000 0x40000>,
++            <0x38000000 0x10000>;
++      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
++      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
++    };
 =20
+ ...
 --=20
 2.25.1
 
 
---===============1834450580051385227==--
+--===============5091462485338555766==--
 
