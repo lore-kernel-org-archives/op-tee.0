@@ -1,141 +1,107 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RESEND PATCH v5 6/7] remoteproc: stm32: Create sub-functions to
- request shutdown and release
-Date: Tue, 21 May 2024 14:24:57 +0200
-Message-ID: <20240521122458.3517054-7-arnaud.pouliquen@foss.st.com>
+Subject: [RESEND PATCH v5 5/7] remoteproc: core: support of the tee interface
+Date: Tue, 21 May 2024 14:24:56 +0200
+Message-ID: <20240521122458.3517054-6-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20240521122458.3517054-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4803923436711417843=="
+Content-Type: multipart/mixed; boundary="===============1834450580051385227=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4803923436711417843==
+--===============1834450580051385227==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-To prepare for the support of TEE remoteproc, create sub-functions
-that can be used in both cases, with and without remoteproc TEE support.
+1) on start:
+- Using the TEE loader, the resource table is loaded by an external entity.
+In such case the resource table address is not find from the firmware but
+provided by the TEE remoteproc framework.
+Use the rproc_get_loaded_rsc_table instead of rproc_find_loaded_rsc_table
+- test that rproc->cached_table is not null before performing the memcpy
+
+2)on stop
+The use of the cached_table seems mandatory:
+- during recovery sequence to have a snapshot of the resource table
+  resources used,
+- on stop to allow  for the deinitialization of resources after the
+  the remote processor has been shutdown.
+However if the TEE interface is being used, we first need to unmap the
+table_ptr before setting it to rproc->cached_table.
+The update of rproc->table_ptr to rproc->cached_table is performed in
+tee_remoteproc.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
- drivers/remoteproc/stm32_rproc.c | 84 +++++++++++++++++++-------------
- 1 file changed, 51 insertions(+), 33 deletions(-)
+ drivers/remoteproc/remoteproc_core.c | 31 +++++++++++++++++++++-------
+ 1 file changed, 23 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
-c.c
-index 88623df7d0c3..8cd838df4e92 100644
---- a/drivers/remoteproc/stm32_rproc.c
-+++ b/drivers/remoteproc/stm32_rproc.c
-@@ -209,6 +209,54 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, con=
-st unsigned char *name)
- 	return -EINVAL;
- }
-=20
-+static void stm32_rproc_request_shutdown(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	int err, dummy_data, idx;
-+
-+	/* Request shutdown of the remote processor */
-+	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
-+		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
-+		if (idx >=3D 0 && ddata->mb[idx].chan) {
-+			/* A dummy data is sent to allow to block on transmit. */
-+			err =3D mbox_send_message(ddata->mb[idx].chan,
-+						&dummy_data);
-+			if (err < 0)
-+				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
-+		}
-+	}
-+}
-+
-+static int stm32_rproc_release(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	unsigned int err =3D 0;
-+
-+	/* To allow platform Standby power mode, set remote proc Deep Sleep. */
-+	if (ddata->pdds.map) {
-+		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
-+					 ddata->pdds.mask, 1);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set pdds\n");
-+			return err;
-+		}
-+	}
-+
-+	/* Update coprocessor state to OFF if available. */
-+	if (ddata->m4_state.map) {
-+		err =3D regmap_update_bits(ddata->m4_state.map,
-+					 ddata->m4_state.reg,
-+					 ddata->m4_state.mask,
-+					 M4_STATE_OFF);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set copro state\n");
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int stm32_rproc_prepare(struct rproc *rproc)
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
+proc_core.c
+index 42bca01f3bde..3a642151c983 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -1267,6 +1267,7 @@ EXPORT_SYMBOL(rproc_resource_cleanup);
+ static int rproc_set_rsc_table_on_start(struct rproc *rproc, const struct fi=
+rmware *fw)
  {
- 	struct device *dev =3D rproc->dev.parent;
-@@ -519,17 +567,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
- static int stm32_rproc_stop(struct rproc *rproc)
- {
- 	struct stm32_rproc *ddata =3D rproc->priv;
--	int err, idx;
-+	int err;
+ 	struct resource_table *loaded_table;
++	struct device *dev =3D &rproc->dev;
 =20
--	/* request shutdown of the remote processor */
--	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
--		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
--		if (idx >=3D 0 && ddata->mb[idx].chan) {
--			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
--			if (err < 0)
--				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
--		}
--	}
-+	stm32_rproc_request_shutdown(rproc);
-=20
- 	err =3D stm32_rproc_set_hold_boot(rproc, true);
- 	if (err)
-@@ -541,29 +581,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
- 		return err;
+ 	/*
+ 	 * The starting device has been given the rproc->cached_table as the
+@@ -1276,12 +1277,21 @@ static int rproc_set_rsc_table_on_start(struct rproc =
+*rproc, const struct firmwa
+ 	 * this information to device memory. We also update the table_ptr so
+ 	 * that any subsequent changes will be applied to the loaded version.
+ 	 */
+-	loaded_table =3D rproc_find_loaded_rsc_table(rproc, fw);
+-	if (loaded_table) {
+-		memcpy(loaded_table, rproc->cached_table, rproc->table_sz);
+-		rproc->table_ptr =3D loaded_table;
++	if (rproc->tee_interface) {
++		loaded_table =3D rproc_get_loaded_rsc_table(rproc, &rproc->table_sz);
++		if (IS_ERR(loaded_table)) {
++			dev_err(dev, "can't get resource table\n");
++			return PTR_ERR(loaded_table);
++		}
++	} else {
++		loaded_table =3D rproc_find_loaded_rsc_table(rproc, fw);
  	}
 =20
--	/* to allow platform Standby power mode, set remote proc Deep Sleep */
--	if (ddata->pdds.map) {
--		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
--					 ddata->pdds.mask, 1);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set pdds\n");
--			return err;
--		}
--	}
--
--	/* update coprocessor state to OFF if available */
--	if (ddata->m4_state.map) {
--		err =3D regmap_update_bits(ddata->m4_state.map,
--					 ddata->m4_state.reg,
--					 ddata->m4_state.mask,
--					 M4_STATE_OFF);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set copro state\n");
--			return err;
--		}
--	}
--
--	return 0;
-+	return stm32_rproc_release(rproc);
++	if (loaded_table && rproc->cached_table)
++		memcpy(loaded_table, rproc->cached_table, rproc->table_sz);
++
++	rproc->table_ptr =3D loaded_table;
++
+ 	return 0;
  }
 =20
- static void stm32_rproc_kick(struct rproc *rproc, int vqid)
+@@ -1318,11 +1328,16 @@ static int rproc_reset_rsc_table_on_stop(struct rproc=
+ *rproc)
+ 	kfree(rproc->clean_table);
+=20
+ out:
+-	/*
+-	 * Use a copy of the resource table for the remainder of the
+-	 * shutdown process.
++	/* If the remoteproc_tee interface is used, then we have first to unmap the=
+ resource table
++	 * before updating the proc->table_ptr reference.
+ 	 */
+-	rproc->table_ptr =3D rproc->cached_table;
++	if (!rproc->tee_interface) {
++		/*
++		 * Use a copy of the resource table for the remainder of the
++		 * shutdown process.
++		 */
++		rproc->table_ptr =3D rproc->cached_table;
++	}
+ 	return 0;
+ }
+=20
 --=20
 2.25.1
 
 
---===============4803923436711417843==--
+--===============1834450580051385227==--
 
