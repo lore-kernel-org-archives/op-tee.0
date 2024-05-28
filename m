@@ -1,81 +1,92 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Build failing with vexpress/juno+mbedtls
-Date: Tue, 28 May 2024 10:51:35 +0200
+Subject: Re: [PATCH v7 4/4] optee: probe RPMB device using RPMB subsystem
+Date: Tue, 28 May 2024 11:08:21 +0200
 Message-ID: 
- <CAHUa44HbPScOx36cOrb9BzUiqc+Maw7EhHMD5oWqDEFNa7qy2A@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CGV2PR02MB892060B39ABB345467DF5F908AF02=40GV2PR02MB?=
- =?utf-8?q?8920=2Eeurprd02=2Eprod=2Eoutlook=2Ecom=3E?=>
+ <CAHUa44EFYwYU6LSGfv+2ym_pweDKbJzqQG0MfW=bqx5UGSnYSQ@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYNF77WrpC6PPY4idM7XkObnrS9hDyyBJDsaLRLcqdH_9g@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8202704875807480275=="
+Content-Type: multipart/mixed; boundary="===============2173955705519348644=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8202704875807480275==
+--===============2173955705519348644==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jacob,
+Hi Sumit,
 
-
-On Mon, May 27, 2024 at 2:59=E2=80=AFPM Jacob Kroon <Jacob.Kroon@axis.com> =
+On Mon, May 27, 2024 at 4:38=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org> =
 wrote:
 >
-> Hi,
+> On Mon, 27 May 2024 at 17:44, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
+> >
+> > Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe and
+> > use an RPMB device via the RPMB subsystem instead of passing the RPMB
+> > frames via tee-supplicant in user space. A fallback mechanism is kept to
+> > route RPMB frames via tee-supplicant if the RPMB subsystem isn't
+> > available.
+> >
+> > The OP-TEE RPC ABI is extended to support iterating over all RPMB
+> > devices until one is found with the expected RPMB key already
+> > programmed.
+> >
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > Tested-by: Manuel Traut <manut@mecka.net>
+> > ---
+> >  Documentation/ABI/testing/sysfs-class-tee |  15 ++
+> >  MAINTAINERS                               |   1 +
+> >  drivers/tee/optee/core.c                  |  96 +++++++++++-
+> >  drivers/tee/optee/device.c                |   7 +
+> >  drivers/tee/optee/ffa_abi.c               |  14 ++
+> >  drivers/tee/optee/optee_ffa.h             |   2 +
+> >  drivers/tee/optee/optee_private.h         |  26 +++-
+> >  drivers/tee/optee/optee_rpc_cmd.h         |  35 +++++
+> >  drivers/tee/optee/optee_smc.h             |   2 +
+> >  drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++++++++
+> >  drivers/tee/optee/smc_abi.c               |  14 ++
+> >  11 files changed, 387 insertions(+), 2 deletions(-)
+> >  create mode 100644 Documentation/ABI/testing/sysfs-class-tee
+> >
+> > diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Documentation/AB=
+I/testing/sysfs-class-tee
+> > new file mode 100644
+> > index 000000000000..c9144d16003e
+> > --- /dev/null
+> > +++ b/Documentation/ABI/testing/sysfs-class-tee
+> > @@ -0,0 +1,15 @@
+> > +What:          /sys/class/tee/tee{,priv}X/rpmb_routing_model
+> > +Date:          May 2024
+> > +KernelVersion: 6.10
+> > +Contact:        op-tee(a)lists.trustedfirmware.org
+> > +Description:
+> > +               RPMB frames can be routed to the RPMB device via the
+> > +               user-space daemon tee-supplicant or the RPMB subsystem
+> > +               in the kernel. The value "user" means that the driver
+> > +               will route the RPMB frames via user space. Conversely,
+> > +               "kernel" means that the frames are routed via the RPMB
+> > +               subsystem without assistance from tee-supplicant. It
+> > +               should be assumed that RPMB frames are routed via user
+> > +               space if the variable is absent. The primary purpose
+> > +               of this variable is to let systemd know whether
+> > +               tee-supplicant is needed in the early boot with initramfs.
 >
-> When building master as of today with:
+> Why do we need this if we already have [1] [2]? AFAICS, whichever
+> devices like fTPM etc. systemd depends upon, it can be easily known
+> via existing sysfs property.
 >
-> make PLATFORM=3Dvexpress PLATFORM_FLAVOR=3Djuno CFG_CRYPTOLIB_NAME=3Dmbedtl=
-s CFG_CRYPTOLIB_DIR=3Dlib/libmbedtls
->
-> I get the following build failure:
->
-> core/lib/libtomcrypt/aes_accel.c: In function =E2=80=98aes_ctr_encrypt_nblo=
-cks=E2=80=99:
-> core/lib/libtomcrypt/aes_accel.c:182:21: error: =E2=80=98CTR_COUNTER_LITTLE=
-_ENDIAN=E2=80=99 undeclared (first use in this function)
->   182 |         if (mode =3D=3D CTR_COUNTER_LITTLE_ENDIAN) {
->
-> I can fix the build with:
->
-> diff --git a/core/lib/libtomcrypt/src/headers/tomcrypt_cipher.h b/core/lib/=
-libtomcrypt/src/headers/tomcrypt_cipher.h
-> index aa94698de..760aa70e1 100644
-> --- a/core/lib/libtomcrypt/src/headers/tomcrypt_cipher.h
-> +++ b/core/lib/libtomcrypt/src/headers/tomcrypt_cipher.h
-> @@ -925,12 +925,12 @@ int cbc_setiv(const unsigned char *IV, unsigned long =
-len, symmetric_CBC *cbc);
->  int cbc_done(symmetric_CBC *cbc);
->  #endif
->
-> -#ifdef LTC_CTR_MODE
-> -
->  #define CTR_COUNTER_LITTLE_ENDIAN    0x0000
->  #define CTR_COUNTER_BIG_ENDIAN       0x1000
->  #define LTC_CTR_RFC3686              0x2000
->
-> +#ifdef LTC_CTR_MODE
-> +
->  int ctr_start(               int   cipher,
->                const unsigned char *IV,
->                const unsigned char *key,       int keylen,
->
-> ------------------
->
-> Does this look like a proper fix ? If so, can I send patches to the mailing=
- list, or do I need to go via a github pull-request ?
+> [1] https://docs.kernel.org/admin-guide/abi-testing.html?highlight=3Doptee#=
+abi-sys-bus-tee-devices-optee-ta-uuid-need-supplicant
+> [2] Documentation/ABI/testing/sysfs-bus-optee-devices
 
-Thanks for reporting the error. The fix looks easy, but I'm not sure
-it's the right one. I think the problem is in
-core/lib/libtomcrypt/aes_accel.c, if _CFG_CORE_LTC_CTR isn't y (or
-LTC_CTR_MODE undefined) then I suppose that aes_ctr_encrypt_nblocks()
-shouldn't be provided either.
+The dependency is reversed. A TA depending on tee-supplicant will not
+be loaded until tee-supplicant is ready. rpmb_routing_model is used as
+one of the inputs to determine if tee-supplicant must be started early
+or if it can wait until the real rootfs is available.
 
-Anyway, patches are best sent as a github pull-request. Issues on
-github tend to reach a broader audience, but there's nothing wrong
-with discussing them here if you prefer that.
-
-Cheers,
+Thanks,
 Jens
 
---===============8202704875807480275==--
+--===============2173955705519348644==--
 
