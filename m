@@ -1,112 +1,74 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: Jacob Kroon <jacob.kroon@axis.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 4/4] optee: probe RPMB device using RPMB subsystem
-Date: Wed, 29 May 2024 10:56:04 +0530
-Message-ID: 
- <CAFA6WYOT52fdqgGvDYE91DQ_4MUbAv_1Gnn2fTyMNhrj_Agu=w@mail.gmail.com>
-In-Reply-To: <ZlWkSCCjJ2fbE2ML@nuoska>
+Subject: Re: Build failing with vexpress/juno+mbedtls
+Date: Wed, 29 May 2024 08:33:04 +0200
+Message-ID: <c0900527-4379-4801-a026-ffd99bd620f0@axis.com>
+In-Reply-To: <
+ <CAHUa44HbPScOx36cOrb9BzUiqc+Maw7EhHMD5oWqDEFNa7qy2A@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0821100326749458887=="
+Content-Type: multipart/mixed; boundary="===============7939153677853339149=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0821100326749458887==
+--===============7939153677853339149==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Mikko,
+Hi Jens,
 
-On Tue, 28 May 2024 at 15:00, Mikko Rapeli <mikko.rapeli@linaro.org> wrote:
->
-> Hi,
->
-> On Mon, May 27, 2024 at 03:24:01PM +0200, Jens Wiklander wrote:
-> > On Mon, May 27, 2024 at 3:00=E2=80=AFPM Jerome Forissier
-> > <jerome.forissier@linaro.org> wrote:
-> > >
-> > > On 5/27/24 14:13, Jens Wiklander wrote:
-> > > > Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe =
-and
-> > > > use an RPMB device via the RPMB subsystem instead of passing the RPMB
-> > > > frames via tee-supplicant in user space. A fallback mechanism is kept=
- to
-> > > > route RPMB frames via tee-supplicant if the RPMB subsystem isn't
-> > > > available.
-> > > >
-> > > > The OP-TEE RPC ABI is extended to support iterating over all RPMB
-> > > > devices until one is found with the expected RPMB key already
-> > > > programmed.
-> > > >
-> > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > Tested-by: Manuel Traut <manut@mecka.net>
-> > > > ---
-> > > >  Documentation/ABI/testing/sysfs-class-tee |  15 ++
-> > > >  MAINTAINERS                               |   1 +
-> > > >  drivers/tee/optee/core.c                  |  96 +++++++++++-
-> > > >  drivers/tee/optee/device.c                |   7 +
-> > > >  drivers/tee/optee/ffa_abi.c               |  14 ++
-> > > >  drivers/tee/optee/optee_ffa.h             |   2 +
-> > > >  drivers/tee/optee/optee_private.h         |  26 +++-
-> > > >  drivers/tee/optee/optee_rpc_cmd.h         |  35 +++++
-> > > >  drivers/tee/optee/optee_smc.h             |   2 +
-> > > >  drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++++++=
-++
-> > > >  drivers/tee/optee/smc_abi.c               |  14 ++
-> > > >  11 files changed, 387 insertions(+), 2 deletions(-)
-> > > >  create mode 100644 Documentation/ABI/testing/sysfs-class-tee
-> > > >
-> > > > diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Documentatio=
-n/ABI/testing/sysfs-class-tee
-> > > > new file mode 100644
-> > > > index 000000000000..c9144d16003e
-> > > > --- /dev/null
-> > > > +++ b/Documentation/ABI/testing/sysfs-class-tee
-> > > > @@ -0,0 +1,15 @@
-> > > > +What:                /sys/class/tee/tee{,priv}X/rpmb_routing_model
-> > >
-> > > Wouldn't /sys/class/tee/teeX/rpmb_routing_model be good enough?
-> >
-> > Doesn't the routing model concern tee-supplicant more than a TEE
-> > client? Then it might make more sense to have
-> > /sys/class/tee/teeprivX/rpmb_routing_model only. Keeping it for both
-> > devices representing the same internal struct optee makes it easier to
-> > find. Anyway, I don't mind removing one. Mikko, what do you prefer?
->
-> As simple as possible. A single sysfs file is enough. Even the existence of=
- the sysfs file
-> could be the needed indicator for userspace to queue tee-supplicant startup.
->
-> Outside of these patches, I think the optee RPC setup with fTPM TA is one a=
-rea which
-> currently requires tee-supplicant to be started. Detecting the existence of=
- TPM before
-> kernel drivers are loaded is possible via the exported EFI logs from firmwa=
-re to kernel
-> or ACPI TPM2 table entry, and detecting optee and thus starting tee-supplic=
-ant in userspace too.
+On 5/28/24 10:51, Jens Wiklander wrote:
+<cut>
+> Thanks for reporting the error. The fix looks easy, but I'm not sure
+> it's the right one. I think the problem is in
+> core/lib/libtomcrypt/aes_accel.c, if _CFG_CORE_LTC_CTR isn't y (or
+> LTC_CTR_MODE undefined) then I suppose that aes_ctr_encrypt_nblocks()
+> shouldn't be provided either.
+>=20
+> Anyway, patches are best sent as a github pull-request. Issues on
+> github tend to reach a broader audience, but there's nothing wrong
+> with discussing them here if you prefer that.
+>=20
 
-One thing I am trying to find an answer about is why do we need to
-defer tee-supplicant launch if it's bundled into initrd? Once you
-detect OP-TEE then tee-supplicant should be launched unconditionally.
-As per your example below, the motivation here seems to be the TPM2
-device dependent on RPMB backend but what if other future systemd
-services come up and depend on other services offered by
-tee-supplicant?
+Ok, how about instead doing something along the lines of the patch below ?
 
--Sumit
+diff --git a/core/lib/libtomcrypt/aes_accel.c b/core/lib/libtomcrypt/aes_acce=
+l.c
+index 5b622e58a..cc667795a 100644
+--- a/core/lib/libtomcrypt/aes_accel.c
++++ b/core/lib/libtomcrypt/aes_accel.c
+@@ -170,6 +170,7 @@ static int aes_cbc_decrypt_nblocks(const unsigned char *c=
+t, unsigned char *pt,
+        return CRYPT_OK;
+ }
+=20
++#ifdef LTC_CTR_MODE
+ static int aes_ctr_encrypt_nblocks(const unsigned char *pt, unsigned char *c=
+t,
+                                   unsigned long blocks, unsigned char *IV,
+                                   int mode, symmetric_key *skey)
+@@ -189,6 +190,7 @@ static int aes_ctr_encrypt_nblocks(const unsigned char *p=
+t, unsigned char *ct,
+=20
+        return CRYPT_OK;
+ }
++#endif
+=20
+ static int aes_xts_encrypt_nblocks(const unsigned char *pt, unsigned char *c=
+t,
+                                   unsigned long blocks, unsigned char *tweak,
+@@ -245,7 +247,9 @@ const struct ltc_cipher_descriptor aes_desc =3D {
+        .accel_ecb_decrypt =3D aes_ecb_decrypt_nblocks,
+        .accel_cbc_encrypt =3D aes_cbc_encrypt_nblocks,
+        .accel_cbc_decrypt =3D aes_cbc_decrypt_nblocks,
++#ifdef LTC_CTR_MODE
+        .accel_ctr_encrypt =3D aes_ctr_encrypt_nblocks,
++#endif
+        .accel_xts_encrypt =3D aes_xts_encrypt_nblocks,
+        .accel_xts_decrypt =3D aes_xts_decrypt_nblocks,
+ };
 
->
-> In userspace and systemd it's just important to know that service need to w=
-ait for a TPM2
-> device to appear in early initrd and when can things be postponed to main r=
-ootfs and later
-> stages. Kernel and udev will bring up the device then once discovered.
-> Knowledge about the RPMB backend is important when something like TPM2 devi=
-ce
-> depends on it.
->
-> Hope this helps,
->
-> -Mikko
 
---===============0821100326749458887==--
+Regards
+Jacob
+
+--===============7939153677853339149==--
 
