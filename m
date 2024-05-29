@@ -1,83 +1,271 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Build failing with vexpress/juno+mbedtls
-Date: Wed, 29 May 2024 09:45:05 +0200
+Subject: Re: [PATCH v7 4/4] optee: probe RPMB device using RPMB subsystem
+Date: Wed, 29 May 2024 13:36:26 +0530
 Message-ID: 
- <CAHUa44GmQ8CLbHmFcG7Hq4R1k3UV0dbwGbkG5X1bKp2emJw6gA@mail.gmail.com>
-In-Reply-To: <c0900527-4379-4801-a026-ffd99bd620f0@axis.com>
+ <CAFA6WYOny9RVPLbGCsTwUqOo+doi6k+F-RgCorNdyC+w7u63mw@mail.gmail.com>
+In-Reply-To: <ZlbUwI0G3HGvioNm@nuoska>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5766440446058149109=="
+Content-Type: multipart/mixed; boundary="===============7586925628818343801=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5766440446058149109==
+--===============7586925628818343801==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jacob,
-
-On Wed, May 29, 2024 at 8:33=E2=80=AFAM Jacob Kroon <jacob.kroon@axis.com> =
-wrote:
+On Wed, 29 May 2024 at 12:39, Mikko Rapeli <mikko.rapeli@linaro.org> wrote:
 >
-> Hi Jens,
+> Hi,
 >
-> On 5/28/24 10:51, Jens Wiklander wrote:
-> <cut>
-> > Thanks for reporting the error. The fix looks easy, but I'm not sure
-> > it's the right one. I think the problem is in
-> > core/lib/libtomcrypt/aes_accel.c, if _CFG_CORE_LTC_CTR isn't y (or
-> > LTC_CTR_MODE undefined) then I suppose that aes_ctr_encrypt_nblocks()
-> > shouldn't be provided either.
+> On Wed, May 29, 2024 at 10:56:04AM +0530, Sumit Garg wrote:
+> > Hi Mikko,
 > >
-> > Anyway, patches are best sent as a github pull-request. Issues on
-> > github tend to reach a broader audience, but there's nothing wrong
-> > with discussing them here if you prefer that.
+> > On Tue, 28 May 2024 at 15:00, Mikko Rapeli <mikko.rapeli@linaro.org> wr=
+ote:
+> > >
+> > > Hi,
+> > >
+> > > On Mon, May 27, 2024 at 03:24:01PM +0200, Jens Wiklander wrote:
+> > > > On Mon, May 27, 2024 at 3:00=E2=80=AFPM Jerome Forissier
+> > > > <jerome.forissier@linaro.org> wrote:
+> > > > >
+> > > > > On 5/27/24 14:13, Jens Wiklander wrote:
+> > > > > > Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to pr=
+obe and
+> > > > > > use an RPMB device via the RPMB subsystem instead of passing the =
+RPMB
+> > > > > > frames via tee-supplicant in user space. A fallback mechanism is =
+kept to
+> > > > > > route RPMB frames via tee-supplicant if the RPMB subsystem isn't
+> > > > > > available.
+> > > > > >
+> > > > > > The OP-TEE RPC ABI is extended to support iterating over all RPMB
+> > > > > > devices until one is found with the expected RPMB key already
+> > > > > > programmed.
+> > > > > >
+> > > > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > > > > > Tested-by: Manuel Traut <manut@mecka.net>
+> > > > > > ---
+> > > > > >  Documentation/ABI/testing/sysfs-class-tee |  15 ++
+> > > > > >  MAINTAINERS                               |   1 +
+> > > > > >  drivers/tee/optee/core.c                  |  96 +++++++++++-
+> > > > > >  drivers/tee/optee/device.c                |   7 +
+> > > > > >  drivers/tee/optee/ffa_abi.c               |  14 ++
+> > > > > >  drivers/tee/optee/optee_ffa.h             |   2 +
+> > > > > >  drivers/tee/optee/optee_private.h         |  26 +++-
+> > > > > >  drivers/tee/optee/optee_rpc_cmd.h         |  35 +++++
+> > > > > >  drivers/tee/optee/optee_smc.h             |   2 +
+> > > > > >  drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++=
+++++++
+> > > > > >  drivers/tee/optee/smc_abi.c               |  14 ++
+> > > > > >  11 files changed, 387 insertions(+), 2 deletions(-)
+> > > > > >  create mode 100644 Documentation/ABI/testing/sysfs-class-tee
+> > > > > >
+> > > > > > diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Document=
+ation/ABI/testing/sysfs-class-tee
+> > > > > > new file mode 100644
+> > > > > > index 000000000000..c9144d16003e
+> > > > > > --- /dev/null
+> > > > > > +++ b/Documentation/ABI/testing/sysfs-class-tee
+> > > > > > @@ -0,0 +1,15 @@
+> > > > > > +What:                /sys/class/tee/tee{,priv}X/rpmb_routing_mod=
+el
+> > > > >
+> > > > > Wouldn't /sys/class/tee/teeX/rpmb_routing_model be good enough?
+> > > >
+> > > > Doesn't the routing model concern tee-supplicant more than a TEE
+> > > > client? Then it might make more sense to have
+> > > > /sys/class/tee/teeprivX/rpmb_routing_model only. Keeping it for both
+> > > > devices representing the same internal struct optee makes it easier to
+> > > > find. Anyway, I don't mind removing one. Mikko, what do you prefer?
+> > >
+> > > As simple as possible. A single sysfs file is enough. Even the existenc=
+e of the sysfs file
+> > > could be the needed indicator for userspace to queue tee-supplicant sta=
+rtup.
+> > >
+> > > Outside of these patches, I think the optee RPC setup with fTPM TA is o=
+ne area which
+> > > currently requires tee-supplicant to be started. Detecting the existenc=
+e of TPM before
+> > > kernel drivers are loaded is possible via the exported EFI logs from fi=
+rmware to kernel
+> > > or ACPI TPM2 table entry, and detecting optee and thus starting tee-sup=
+plicant in userspace too.
 > >
+> > One thing I am trying to find an answer about is why do we need to
+> > defer tee-supplicant launch if it's bundled into initrd? Once you
+> > detect OP-TEE then tee-supplicant should be launched unconditionally.
+> > As per your example below, the motivation here seems to be the TPM2
+> > device dependent on RPMB backend but what if other future systemd
+> > services come up and depend on other services offered by
+> > tee-supplicant?
 >
-> Ok, how about instead doing something along the lines of the patch below ?
+> There is an annoying depedency between firmware side optee and TAs, and ker=
+nel optee driver,
+> tee-supplicant in userspace and kernel TA drivers like fTPM.
 >
-> diff --git a/core/lib/libtomcrypt/aes_accel.c b/core/lib/libtomcrypt/aes_ac=
-cel.c
-> index 5b622e58a..cc667795a 100644
-> --- a/core/lib/libtomcrypt/aes_accel.c
-> +++ b/core/lib/libtomcrypt/aes_accel.c
-> @@ -170,6 +170,7 @@ static int aes_cbc_decrypt_nblocks(const unsigned char =
-*ct, unsigned char *pt,
->         return CRYPT_OK;
->  }
+> Kernel fTPM driver and fTPM TA require tee-supplicant in userspace for RPMB=
+, RPC etc.
 >
-> +#ifdef LTC_CTR_MODE
->  static int aes_ctr_encrypt_nblocks(const unsigned char *pt, unsigned char =
-*ct,
->                                    unsigned long blocks, unsigned char *IV,
->                                    int mode, symmetric_key *skey)
-> @@ -189,6 +190,7 @@ static int aes_ctr_encrypt_nblocks(const unsigned char =
-*pt, unsigned char *ct,
+> This patch series is adding kernel side support for RPMB handling so that t=
+he dependency to
+> tee-supplicant in userspace can be removed. For fTPM use case, there is sti=
+ll the optee RPC
+> buffer setup which currently requires tee-supplicant in userspace or fTPM T=
+A will panic.
 >
->         return CRYPT_OK;
->  }
-> +#endif
->
->  static int aes_xts_encrypt_nblocks(const unsigned char *pt, unsigned char =
-*ct,
->                                    unsigned long blocks, unsigned char *twe=
-ak,
-> @@ -245,7 +247,9 @@ const struct ltc_cipher_descriptor aes_desc =3D {
->         .accel_ecb_decrypt =3D aes_ecb_decrypt_nblocks,
->         .accel_cbc_encrypt =3D aes_cbc_encrypt_nblocks,
->         .accel_cbc_decrypt =3D aes_cbc_decrypt_nblocks,
-> +#ifdef LTC_CTR_MODE
->         .accel_ctr_encrypt =3D aes_ctr_encrypt_nblocks,
-> +#endif
->         .accel_xts_encrypt =3D aes_xts_encrypt_nblocks,
->         .accel_xts_decrypt =3D aes_xts_decrypt_nblocks,
->  };
->
->
+> So yes, currently, tee-supplicant must be started. But it would be great if=
+ kernel drivers
+> and firmware optee trusted applications would not depend on tee-supplicant =
+running in userspace.
 
-Yes, it makes sense. Please submit a PR for further review.
+Agree, we are aligned here. With this patch-set we aim to achieve
+that, the user-space dependency for kernel drivers is hard to manage
+and it's better to get rid of it. However, backwards compatibility for
+distros will still require starting tee-supplicant.
 
-Cheers,
-Jens
+> The startup sequence is really tricky to get right. My fTPM use case is usi=
+ng the TPM device
+> to encrypt rootfs and thus all SW components including tee-supplicant need =
+to run early in
+> initramfs. Currently also switch from initramfs to main rootfs requires unl=
+oading
+> fTPM kernel driver and stopping tee-supplicant in initrd, and then starting=
+ tee-supplicant
+> and loading fTPM kernel driver from main rootfs. udev and automatic module =
+loading for
+> fTPM can not be used due to the tee-supplicant userspace dependency.
 
---===============5766440446058149109==--
+This is one of the reasons for gating tee-supplicant loading which I
+was looking for. What happens if we want to keep tee-supplicant alive
+when we migrate from initramfs to real rootfs? Does it work?
+
+>
+> As an example, here is v6 of this series on rockpi4b using fTPM TA with sys=
+temd based initrd
+> without tee-supplicant and fTPM TA panics because the RPC setup is missing:
+
+I think this is due to RPC allocation requested from tee-supplicant
+during RPMB operations. Can you try following untested optee-os diff
+and see if it resolves the problem for you?
+
+diff --git a/core/tee/tee_rpmb_fs.c b/core/tee/tee_rpmb_fs.c
+index 0ed30933b..b3d4d077a 100644
+--- a/core/tee/tee_rpmb_fs.c
++++ b/core/tee/tee_rpmb_fs.c
+@@ -418,11 +418,11 @@ static void tee_rpmb_free(struct tee_rpmb_mem *mem)
+                return;
+
+        if (mem->phreq_mobj) {
+-               thread_rpc_free_payload(mem->phreq_mobj);
++               thread_rpc_free_kernel_payload(mem->phreq_mobj);
+                mem->phreq_mobj =3D NULL;
+        }
+        if (mem->phresp_mobj) {
+-               thread_rpc_free_payload(mem->phresp_mobj);
++               thread_rpc_free_kernel_payload(mem->phresp_mobj);
+                mem->phresp_mobj =3D NULL;
+        }
+ }
+@@ -440,8 +440,8 @@ static TEE_Result tee_rpmb_alloc(size_t req_size,
+size_t resp_size,
+
+        memset(mem, 0, sizeof(*mem));
+
+-       mem->phreq_mobj =3D thread_rpc_alloc_payload(req_s);
+-       mem->phresp_mobj =3D thread_rpc_alloc_payload(resp_s);
++       mem->phreq_mobj =3D thread_rpc_alloc_kernel_payload(req_s);
++       mem->phresp_mobj =3D thread_rpc_alloc_kernel_payload(resp_s);
+
+        if (!mem->phreq_mobj || !mem->phresp_mobj) {
+                res =3D TEE_ERROR_OUT_OF_MEMORY;
+
+>
+> https://ledge.validation.linaro.org/scheduler/job/87488
+>
+> [[0;32m  OK  [0m] Finished [0;1;39mFile System Check on /dev/mapper/usr[0m.
+> E/TC:? 0 get_rpc_alloc_res:645 RPC allocation failed. Non-secure world resu=
+lt: ret=3D0xffff000c ret_origin=3D0x2
+> E/TC:? 0
+> E/TC:? 0 TA panicked with code 0xffff000c
+> E/LD:  Status of TA bc50d971-d4c9-42c4-82cb-343fb7f37896
+> E/LD:   arch: aarch64
+> E/LD:  region  0: va 0x40005000 pa 0x3061b000 size 0x002000 flags rw-s (lde=
+lf)
+> E/LD:  region  1: va 0x40007000 pa 0x3061d000 size 0x008000 flags r-xs (lde=
+lf)
+> E/LD:  region  2: va 0x4000f000 pa 0x30625000 size 0x001000 flags rw-s (lde=
+lf)
+> E/LD:  region  3: va 0x40010000 pa 0x30626000 size 0x004000 flags rw-s (lde=
+lf)
+> E/LD:  region  4: va 0x40014000 pa 0x3062a000 size 0x001000 flags r--s
+> E/LD:  region  5: va 0x40015000 pa 0x306b2000 size 0x011000 flags rw-s (sta=
+ck)
+> E/LD:  region  6: va 0x40026000 pa 0xe50ce000 size 0x002000 flags rw-- (par=
+am)
+> E/LD:  region  7: va 0x40062000 pa 0x00001000 size 0x068000 flags r-xs [0]
+> E/LD:  region  8: va 0x400ca000 pa 0x00069000 size 0x01f000 flags rw-s [0]
+> E/LD:   [0] bc50d971-d4c9-42c4-82cb-343fb7f37896 @ 0x40062000
+> E/LD:  Call stack:
+> E/LD:   0x400a00c0
+> E/LD:   0x40062b40
+> E/LD:   0x400631b8
+> E/LD:   0x40081f44
+> E/LD:   0x4009b060
+> E/LD:   0x40063a2c
+> E/LD:   0x400a6298
+> E/LD:   0x4009b214
+> [    7.212584] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error:=
+ 0xffff3024
+> [    7.213281] tpm tpm0: tpm_try_transmit: send(): error -53212
+> [    7.213820] tpm tpm0: ftpm_tee_tpm_op_send: SUBMIT_COMMAND invoke error:=
+ 0xffff3024
+> [    7.214493] tpm tpm0: tpm_try_transmit: send(): error -53212
+> [    7.214996] optee-ftpm optee-ta-bc50d971-d4c9-42c4-82cb-343fb7f37896: ft=
+pm_tee_probe: tpm_chip_register failed with rc=3D-53212
+>          Mounting [0;1;39m/sysusr/usr[0m...
+>
+> This series adds the RPMB support in kernel, if HW supports it, but some HW=
+ doesn't and the
+> tee-supplicant is emulating it as fall back.
+
+That's just for testing purposes, right? It won't be used to implement
+disk encryption for that HW.
+
+> Userspace needs to know if tee-supplicant start
+> is needed. Thus to me, exporting the RPMB routing details is useful for use=
+rspace.
+>
+> It's one thing to have a full control of HW and SW and force a policy, like=
+ always
+> waiting for a specific TPM device to appear, but then again distros should =
+be able
+> to have automatic detection of TPM devices if firmware used them too and th=
+en
+> start the needed bits in userspace, which depend on the firmware and HW con=
+figuration,
+> like which SW components are needed for RPMB storage, kernel or tee-supplic=
+ant in userspace.
+>
+> These could possibly be just bugs in fTPM kernel driver and fTPM TA in opte=
+e world,
+> which should be able to handle missing RPC and RPMB too and retry later on.=
+ Right now
+> without tee-supplicant they panic early in boot and become unusable for the=
+ rest of the
+> power cycle.
+
+I very much would like to see fTPM working without dependency on
+tee-supplicant. If there are any further problems you see then please
+feel free to report.
+
+-Sumit
+
+>
+> Cheers,
+>
+> -Mikko
+
+--===============7586925628818343801==--
 
