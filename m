@@ -1,173 +1,235 @@
 From: Manuel Traut <manut@mecka.net>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 4/4] optee: probe RPMB device using RPMB subsystem
-Date: Thu, 30 May 2024 16:22:11 +0200
-Message-ID: <ZliLk1VkekBQlyO7@mecka.net>
-In-Reply-To: <Zlg411JGQJf2zRPe@nuoska>
+Subject: Re: [PATCH v7 0/4] Replay Protected Memory Block (RPMB) subsystem
+Date: Thu, 30 May 2024 16:38:29 +0200
+Message-ID: <ZliPZWm0oVxLwUSQ@mecka.net>
+In-Reply-To: <20240527121340.3931987-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7074337481424868148=="
+Content-Type: multipart/mixed; boundary="===============1779148930202776920=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7074337481424868148==
+--===============1779148930202776920==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 30, 2024 at 11:29:11AM +0300, Mikko Rapeli wrote:
-> On Thu, May 30, 2024 at 09:35:10AM +0200, Manuel Traut wrote:
-> > Hi Mikko,
-> >=20
-> > On Wed, May 29, 2024 at 05:26:15PM +0300, Mikko Rapeli wrote:
-> > > Hi,
-> > >=20
-> > > On Wed, May 29, 2024 at 11:38:06AM +0200, Manuel Traut wrote:
-> > > > Hi Mikko,
-> > > >=20
-> > > > On 10:09 Wed 29 May     , Mikko Rapeli wrote:
-> > > > > On Wed, May 29, 2024 at 10:56:04AM +0530, Sumit Garg wrote:
-> > > > > > On Tue, 28 May 2024 at 15:00, Mikko Rapeli <mikko.rapeli@linaro=
-.org> wrote:
-> > > > > > > On Mon, May 27, 2024 at 03:24:01PM +0200, Jens Wiklander wrote:
-> > > > > > > > On Mon, May 27, 2024 at 3:00=E2=80=AFPM Jerome Forissier
-> > > > > > > > <jerome.forissier@linaro.org> wrote:
-> > > > > > > > > On 5/27/24 14:13, Jens Wiklander wrote:
-> > > > > > > Outside of these patches, I think the optee RPC setup with fTPM=
- TA is one area which
-> > > > > > > currently requires tee-supplicant to be started. Detecting the =
-existence of TPM before
-> > > > > > > kernel drivers are loaded is possible via the exported EFI logs=
- from firmware to kernel
-> > > > > > > or ACPI TPM2 table entry, and detecting optee and thus starting=
- tee-supplicant in userspace too.
-> > > > > >=20
-> > > > > > One thing I am trying to find an answer about is why do we need to
-> > > > > > defer tee-supplicant launch if it's bundled into initrd? Once you
-> > > > > > detect OP-TEE then tee-supplicant should be launched unconditiona=
-lly.
-> > > > > > As per your example below, the motivation here seems to be the TP=
-M2
-> > > > > > device dependent on RPMB backend but what if other future systemd
-> > > > > > services come up and depend on other services offered by
-> > > > > > tee-supplicant?
-> > > > >=20
-> > > > > There is an annoying depedency between firmware side optee and TAs,=
- and kernel optee driver,
-> > > > > tee-supplicant in userspace and kernel TA drivers like fTPM.
-> > > > >=20
-> > > > > Kernel fTPM driver and fTPM TA require tee-supplicant in userspace =
-for RPMB, RPC etc.
-> > > > >=20
-> > > > > This patch series is adding kernel side support for RPMB handling s=
-o that the dependency to
-> > > > > tee-supplicant in userspace can be removed. For fTPM use case, ther=
-e is still the optee RPC
-> > > > > buffer setup which currently requires tee-supplicant in userspace o=
-r fTPM TA will panic.
-> > > > >=20
-> > > > > So yes, currently, tee-supplicant must be started. But it would be =
-great if kernel drivers
-> > > > > and firmware optee trusted applications would not depend on tee-sup=
-plicant running in userspace.
-> > > > > The startup sequence is really tricky to get right. My fTPM use cas=
-e is using the TPM device
-> > > > > to encrypt rootfs and thus all SW components including tee-supplica=
-nt need to run early in
-> > > > > initramfs. Currently also switch from initramfs to main rootfs requ=
-ires unloading
-> > > > > fTPM kernel driver and stopping tee-supplicant in initrd, and then =
-starting tee-supplicant
-> > > > > and loading fTPM kernel driver from main rootfs. udev and automatic=
- module loading for
-> > > > > fTPM can not be used due to the tee-supplicant userspace dependency.
-> > > >=20
-> > > > I decided to build fTPM as buildin-TA into OP-TEE. RPMB routing is al=
-ready
-> > > > implemented in u-boot so it can already write PCR registers.
-> > >=20
-> > > Is build in TA same as early TA? I presume so.
-> >=20
-> > Indeed.. sorry for using the wrong term.
+Hi Jens,
+
+On Mon, May 27, 2024 at 02:13:36PM +0200, Jens Wiklander wrote:
+> Hi,
 >=20
-> Ok, no problem. Then we have the same fTPM TA setup. I'm using optee 4.1
-> with RPMB kernel support changes from Jens cherry-picked on top.
+> This patch set introduces a new RPMB subsystem, based on patches from [1],
+> [2], and [3]. The RPMB subsystem aims at providing access to RPMB
+> partitions to other kernel drivers, in particular the OP-TEE driver. A new
+> user space ABI isn't needed, we can instead continue using the already
+> present ABI when writing the RPMB key during production.
 >=20
-> > > > With this series and the required changes in OP-TEE and a compiled in=
- fTPM
-> > > > kernel driver and systemd v256 it is possible to use the fTPM in the =
-initrd
-> > > > without tee-supplicant.
-> > > >=20
-> > > > Maybe this information is helpful to you, regards
-> > >=20
-> > > This is very interesting and I'm trying to get to the same state, thoug=
-h with
-> > > fTPM kernel driver as module. With v6 of this patch set and matching op=
-tee changes
-> > > I was not able to make this work as fTPM TA was crashing when loading f=
-tpm kernel driver
-> > > due to failing RPC allocation, which tee-supplicant was setting up in t=
-he whole chain.
-> > > I'll try to get v7 patches working and test this again on my yocto base=
-d setup and kernel 6.6.y.
-> >=20
-> > I'll try today also with v7 and 6.10-rc1 on an i.MX8MM. It should also
-> > work with fTPM as kernel module if you use systemd in the initrd
-> > with the new tpm.target in systemd v256.
+> I've added and removed things to keep only what is needed by the OP-TEE
+> driver. Since the posting of [3], there has been major changes in the MMC
+> subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+> is in practice completely rewritten.
 >=20
-> Thanks for the details. I'm testing on qemu, rockpi4b (Rockchip rk3399 SoC)=
- and synquacer
-> (Socionext Developer Box, SC2A11:Cortex-A53 MPCore 24cores). Kernel and roo=
-tfs
-> are from our yocto master branch based Trusted Reference Stack distro
-> ( https://gitlab.com/Linaro/trusted-reference-stack/trs )
-> with kernel 6.6.29 (porting the RPMB v7 patches currently), systemd 255.4 (=
-tpm2.target
-> backported), tee-supplicant 4.1 etc. I'm switching the initramfs from shell=
- scripts
-> to systemd currently, but running into various issues.
+> With this OP-TEE can access RPMB during early boot instead of having to
+> wait for user space to become available as in the current design [4].
+> This will benefit the efi variables [5] since we won't rely on userspace as
+> well as some TPM issues [6] that were solved.
 
-I just use a mkosi generated Debian/sid image..
+I applied the patches to 6.10~rc1 today and tried them on a Toradex
+Verdin Board with an i.MX8MM.
+=20
+> The OP-TEE driver finds the correct RPMB device to interact with by
+> iterating over available devices until one is found with a programmed
+> authentication matching the one OP-TEE is using. This enables coexisting
+> users of other RPMBs since the owner can be determined by who knows the
+> authentication key.
 
-> UEFI firmware is our Trusted Substrate ( https://gitlab.com/Linaro/trusteds=
-ubstrate/meta-ts/ )
+The probing does not work for me.
 
-This is a cool project! I was not aware of it. Thanks for sharing.
+> The corresponding secure world OP-TEE patches are available at [7].
 
-> ARM System Ready IR compatible with secure boot and TPM support, u-boot
-> 2024.04 (except rockpi4b still on 2023.01), optee 4.1, fTPM etc from meta-a=
-rm
-> yocto layer.
+I added some debug prints to see that the optee side properly detected
+the need to reinit in tee_rpmb_init. The rpmb_ctx->key_verified is false
+and the following call of rpmb_probe_reset fails which leads to the
+panic of the TA trying to do a rpmb request.
 
-I am on a Toradex Verdin board with an i.MX8MM SoM. u-boot is still
-2024.01, optee_os from Jens referenced branch, with a little change in:
+Same codeflow can be seen earlier during probing the rpmb device but
+without the panic.
 
-lib/libutee/include/user_ta_header.h
+I am not sure if I find time to look at it in more detail tomorrow.
+Otherwise next week.
 
--#define TA_FLAGS_MASK  GENMASK_32(10, 0)
-+#define TA_FLAGS_MASK  GENMASK_32(12, 0)
-
-fTPM is from ms-tpm-20-ref.git on github. Need to check what is in the meta-a=
-rm.
-Figured out some problems with this regarding OrPolicies used by
-systemd-cryptenroll..
-
-> Booting without tee-supplicant has so far only resulted in the fTPM TA pani=
-c'ing
-> because RPC setup is failing. Also the fTPM TA enumation needs to be changed
-> from current yocto defaults to always discoverable if there is no tee-suppl=
-icant:
-> https://git.yoctoproject.org/meta-arm/tree/meta-arm/recipes-security/optee-=
-ftpm/optee-ftpm/0001-add-enum-to-ta-flags.patch
-
-Ah, seems to be the same change than above, just limited to the fTPM TA?
-Shouldn't it be part of optee_os since it is a capability of it?
-
-> I hope to get v7 of these patches into testing today.
-
-Was able to test it. But ended also in TA panic. Will share the details
-in another mail.
-
-Regards
+Thanks
 Manuel
 
---===============7074337481424868148==--
+> I've put myself as a maintainer for the RPMB subsystem as I have an
+> interest in the OP-TEE driver to keep this in good shape. However, if you'd
+> rather see someone else taking the maintainership that's fine too. I'll
+> help keep the subsystem updated regardless.
+>=20
+> [1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.=
+microsoft.com/
+> [2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)lin=
+aro.org/
+> [3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-toma=
+s.winkler(a)intel.com/
+> [4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html=
+#rpmb-secure-storage
+> [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
+it/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+> [6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
+it/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+> [7] https://github.com/jenswi-linaro/optee_os/tree/rpmb_probe_v7
+>=20
+> Thanks,
+> Jens
+>=20
+> Changes since v6:
+> * Add Tested-by: Manuel Traut <manut@mecka.net> provided for the v6
+> * Add a new patch "tee: add tee_device_set_dev_groups()" needed later in
+>   the patch set
+> * Reintroduce the rpmb_class as requested by Greg, this affects the patches
+>   "rpmb: add Replay Protected Memory Block (RPMB) subsystem" and
+>   "optee: probe RPMB device using RPMB subsystem"
+> * "rpmb: add Replay Protected Memory Block (RPMB) subsystem":
+>   - rpmb_interface_{,un}register() are now based on
+>     class_interface_{,un}register()
+>   - Embed a separate device in struct rpmb_dev for life cycle
+>     management etc
+> * "optee: probe RPMB device using RPMB subsystem"
+>   - Add an internal blocking_notifier to deal with the struct
+>     class_interface callback
+>   - Add a rpmb_routing_model variable in sysfs to help integration with
+>     systemd, requested by Mikko Rapeli
+>   - Add an RPMB probe capability flag in the ABI shared with the secure
+>     world, both SMC and FF-A ABI, needed to support the rpmb_routing_model
+>     variable
+>   - optee_rpc_cmd() is strict whether an RPMB RPC request should be
+>     forwarded to tee-supplicant or routed via the RPMB subsystem, depending
+>     on the reported RPMB routing model
+>=20
+> Changes since v5:
+> Manuel Traut reported and investigated an error on an i.MX8MM, the root
+> cause was identified as insufficient alignment on frames sent to the RPMB
+> device. Fixed in the OP-TEE driver as described below.
+> * "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+>   - Adding a missing EXPORT_SYMBOL_GPL()
+> * "optee: probe RPMB device using RPMB subsystem"
+>   - Replacing the old OPTEE_RPC_CMD_RPMB ABI with OPTEE_RPC_CMD_RPMB_FRAMES
+>     to get rid of the small header struct rpmb_req (now removed) causing
+>     the problem.
+>   - Matching changes on the secure side + support for re-initializing
+>     RPMB in case a boot stage has used RPMB, the latter also reported by=20
+>     Manuel Traut.
+>=20
+> Changes since v4:
+> * "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+>   - Describing struct rpmb_descr as RPMB description instead of descriptor
+> * "mmc: block: register RPMB partition with the RPMB subsystem"
+>   - Addressing review comments
+>   - Adding more comments for struct rpmb_frame
+>   - Fixing assignment of reliable_wr_count and capacity in mmc_blk_rpmb_add=
+()
+> * "optee: probe RPMB device using RPMB subsystem"
+>   - Updating struct rpmb_dev_info to match changes in "rpmb: add Replay
+>     Protected Memory Block (RPMB) subsystem"
+>=20
+> Changes since v3:
+> * Move struct rpmb_frame into the MMC driver since the format of the RPMB
+>   frames depend on the implementation, one format for eMMC, another for
+>   UFS, and so on
+> * "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+>   - Adding Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+>   - Adding more description of the API functions
+>   - Removing the set_dev_info() op from struct rpmb_ops, the needed informa=
+tion
+>     is supplied in the arguments to rpmb_dev_register() instead.
+>   - Getting rid of struct rpmb_ops since only the route_frames() op was
+>     remaining, store that op directly in struct rpmb_dev
+>   - Changed rpmb_interface_register() and rpmb_interface_unregister() to use
+>     notifier_block instead of implementing the same thing ourselves
+> * "mmc: block: register RPMB partition with the RPMB subsystem"
+>   - Moving the call to rpmb_dev_register() to be done at the end of
+>     mmc_blk_probe() when the device is fully available
+> * "optee: probe RPMB device using RPMB subsystem"
+>   - Use IS_REACHABLE(CONFIG_RPMB) to determine if the RPMB subsystem is
+>     available
+>   - Translate TEE_ERROR_STORAGE_NOT_AVAILABLE if encountered in get_devices=
+()
+>     to recognize the error in optee_rpmb_scan()
+>   - Simplified optee_rpmb_scan() and optee_rpmb_intf_rdev()
+>=20
+> Changes since v2:
+> * "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+>   - Fixing documentation issues
+>   - Adding a "depends on MMC" in the Kconfig
+>   - Removed the class-device and the embedded device, struct rpmb_dev now
+>     relies on the parent device for reference counting as requested
+>   - Removed the now unneeded rpmb_ops get_resources() and put_resources()
+>     since references are already taken in mmc_blk_alloc_rpmb_part() before
+>     rpmb_dev_register() is called
+>   - Added rpmb_interface_{,un}register() now that
+>     class_interface_{,un}register() can't be used ay longer
+> * "mmc: block: register RPMB partition with the RPMB subsystem"
+>   - Adding the missing error cleanup in alloc_idata()
+>   - Taking the needed reference to md->disk in mmc_blk_alloc_rpmb_part()
+>     instead of in mmc_rpmb_chrdev_open() and rpmb_op_mmc_get_resources()
+> * "optee: probe RPMB device using RPMB subsystem"
+>   - Registering to get a notification when an RPMB device comes online
+>   - Probes for RPMB devices each time an RPMB device comes online, until
+>     a usable device is found
+>   - When a usable RPMB device is found, call
+>     optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB)
+>   - Pass type of rpmb in return value from OPTEE_RPC_CMD_RPMB_PROBE_NEXT
+>=20
+> Changes since Shyam's RFC:
+> * Removed the remaining leftover rpmb_cdev_*() function calls
+> * Refactored the struct rpmb_ops with all the previous ops replaced, in
+>   some sense closer to [3] with the route_frames() op
+> * Added rpmb_route_frames()
+> * Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
+> * Removed all functions not needed in the OP-TEE use case
+> * Added "mmc: block: register RPMB partition with the RPMB subsystem", based
+>   on the commit with the same name in [3]
+> * Added "optee: probe RPMB device using RPMB subsystem" for integration
+>   with OP-TEE
+> * Moved the RPMB driver into drivers/misc/rpmb-core.c
+> * Added my name to MODULE_AUTHOR() in rpmb-core.c
+> * Added an rpmb_mutex to serialize access to the IDA
+> * Removed the target parameter from all rpmb_*() functions since it's
+>   currently unused
+>=20
+>=20
+> Jens Wiklander (4):
+>   rpmb: add Replay Protected Memory Block (RPMB) subsystem
+>   mmc: block: register RPMB partition with the RPMB subsystem
+>   tee: add tee_device_set_dev_groups()
+>   optee: probe RPMB device using RPMB subsystem
+>=20
+>  Documentation/ABI/testing/sysfs-class-tee |  15 ++
+>  MAINTAINERS                               |   8 +
+>  drivers/misc/Kconfig                      |  10 +
+>  drivers/misc/Makefile                     |   1 +
+>  drivers/misc/rpmb-core.c                  | 232 +++++++++++++++++++++
+>  drivers/mmc/core/block.c                  | 241 +++++++++++++++++++++-
+>  drivers/tee/optee/core.c                  |  96 ++++++++-
+>  drivers/tee/optee/device.c                |   7 +
+>  drivers/tee/optee/ffa_abi.c               |  14 ++
+>  drivers/tee/optee/optee_ffa.h             |   2 +
+>  drivers/tee/optee/optee_private.h         |  26 ++-
+>  drivers/tee/optee/optee_rpc_cmd.h         |  35 ++++
+>  drivers/tee/optee/optee_smc.h             |   2 +
+>  drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++
+>  drivers/tee/optee/smc_abi.c               |  14 ++
+>  drivers/tee/tee_core.c                    |  19 +-
+>  include/linux/rpmb.h                      | 123 +++++++++++
+>  include/linux/tee_drv.h                   |  12 ++
+>  18 files changed, 1024 insertions(+), 10 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-tee
+>  create mode 100644 drivers/misc/rpmb-core.c
+>  create mode 100644 include/linux/rpmb.h
+>=20
+> --=20
+> 2.34.1
+>=20
+
+--===============1779148930202776920==--
 
