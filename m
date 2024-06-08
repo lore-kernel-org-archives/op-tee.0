@@ -2,14 +2,14 @@ From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v6 5/5] remoteproc: stm32: Add support of an OP-TEE TA to
  load the firmware
-Date: Sat, 08 Jun 2024 11:30:05 +0800
-Message-ID: <202406081159.KM501g5C-lkp@intel.com>
+Date: Sat, 08 Jun 2024 12:45:05 +0800
+Message-ID: <202406081214.qFAil90A-lkp@intel.com>
 In-Reply-To: <20240607093326.369090-6-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7283768311730715921=="
+Content-Type: multipart/mixed; boundary="===============1143611579778255346=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7283768311730715921==
+--===============1143611579778255346==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -26,82 +26,79 @@ patch link:    https://lore.kernel.org/r/20240607093326.369090-6-arnaud.pouli=
 quen%40foss.st.com
 patch subject: [PATCH v6 5/5] remoteproc: stm32: Add support of an OP-TEE TA =
 to load the firmware
-config: i386-buildonly-randconfig-002-20240608 (https://download.01.org/0day-=
-ci/archive/20240608/202406081159.KM501g5C-lkp(a)intel.com/config)
-compiler: clang version 18.1.5 (https://github.com/llvm/llvm-project 617a15a9=
-eac96088ae5e9134248d8236e34b91b1)
+config: s390-allyesconfig (https://download.01.org/0day-ci/archive/20240608/2=
+02406081214.qFAil90A-lkp(a)intel.com/config)
+compiler: s390-linux-gcc (GCC) 13.2.0
 reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0240608/202406081159.KM501g5C-lkp(a)intel.com/reproduce)
+0240608/202406081214.qFAil90A-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202406081159.KM501g5C-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202406081214.qFAil90A-lkp(a)i=
 ntel.com/
 
 All errors (new ones prefixed by >>):
 
-   In file included from drivers/remoteproc/stm32_rproc.c:23:
->> include/linux/tee_remoteproc.h:94:2: error: expected parameter declarator
+   In file included from include/linux/bug.h:5,
+                    from include/linux/fortify-string.h:6,
+                    from include/linux/string.h:374,
+                    from include/linux/dma-mapping.h:7,
+                    from drivers/remoteproc/stm32_rproc.c:9:
+>> arch/s390/include/asm/bug.h:53:21: error: expected declaration specifiers =
+or '...' before '{' token
+      53 | #define WARN_ON(x) ({                                   \
+         |                     ^
+   include/linux/tee_remoteproc.h:94:9: note: in expansion of macro 'WARN_ON'
       94 |         WARN_ON(1);
-         |         ^
-   include/asm-generic/bug.h:122:29: note: expanded from macro 'WARN_ON'
-     122 | #define WARN_ON(condition) ({                                     =
-      \
-         |                             ^
+         |         ^~~~~~~
    In file included from drivers/remoteproc/stm32_rproc.c:23:
->> include/linux/tee_remoteproc.h:94:2: error: expected ')'
-   include/asm-generic/bug.h:122:29: note: expanded from macro 'WARN_ON'
-     122 | #define WARN_ON(condition) ({                                     =
-      \
-         |                             ^
-   include/linux/tee_remoteproc.h:94:2: note: to match this '('
-   include/asm-generic/bug.h:122:28: note: expanded from macro 'WARN_ON'
-     122 | #define WARN_ON(condition) ({                                     =
-      \
-         |                            ^
-   In file included from drivers/remoteproc/stm32_rproc.c:23:
->> include/linux/tee_remoteproc.h:92:32: error: function cannot return functi=
-on type 'struct resource_table *()'
-      92 | tee_rproc_find_loaded_rsc_table(struct rproc *rproc, const struct =
-firmware *fw)
-         |                                ^
->> include/linux/tee_remoteproc.h:94:2: error: a function declaration without=
- a prototype is deprecated in all versions of C [-Werror,-Wstrict-prototypes]
-      94 |         WARN_ON(1);
-         |         ^
-   include/asm-generic/bug.h:122:28: note: expanded from macro 'WARN_ON'
-     122 | #define WARN_ON(condition) ({                                     =
-      \
-         |                            ^
-   In file included from drivers/remoteproc/stm32_rproc.c:23:
->> include/linux/tee_remoteproc.h:96:2: error: expected identifier or '('
+   include/linux/tee_remoteproc.h:96:9: error: expected identifier or '(' bef=
+ore 'return'
       96 |         return NULL;
-         |         ^
->> include/linux/tee_remoteproc.h:97:1: error: extraneous closing brace ('}')
+         |         ^~~~~~
+   include/linux/tee_remoteproc.h:97:1: error: expected identifier or '(' bef=
+ore '}' token
       97 | }
          | ^
-   6 errors generated.
+   drivers/remoteproc/stm32_rproc.c:717:34: error: 'tee_rproc_find_loaded_rsc=
+_table' undeclared here (not in a function); did you mean 'rproc_find_loaded_=
+rsc_table'?
+     717 |         .find_loaded_rsc_table =3D tee_rproc_find_loaded_rsc_table,
+         |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         |                                  rproc_find_loaded_rsc_table
 
 
-vim +94 include/linux/tee_remoteproc.h
+vim +53 arch/s390/include/asm/bug.h
 
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07  90 =20
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07  91  static inline struct resource=
-_table *
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07 @92  tee_rproc_find_loaded_rsc_tab=
-le(struct rproc *rproc, const struct firmware *fw)
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07  93  	/* This shouldn't be possibl=
-e */
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07 @94  	WARN_ON(1);
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07  95 =20
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07 @96  	return NULL;
-5c0eb7b2737b6e Arnaud Pouliquen 2024-06-07 @97  }
+a9df8e325d0de5 arch/s390/include/asm/bug.h Heiko Carstens 2010-01-13  52 =20
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27 @53  #de=
+fine WARN_ON(x) ({					\
+fd0cbdd378258f include/asm-s390/bug.h      Heiko Carstens 2007-08-02  54  	in=
+t __ret_warn_on =3D !!(x);			\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  55  	if=
+ (__builtin_constant_p(__ret_warn_on)) {	\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  56  		i=
+f (__ret_warn_on)			\
+b2be05273a1744 arch/s390/include/asm/bug.h Ben Hutchings  2010-04-03  57  			=
+__WARN();			\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  58  	} =
+else {					\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  59  		i=
+f (unlikely(__ret_warn_on))		\
+b2be05273a1744 arch/s390/include/asm/bug.h Ben Hutchings  2010-04-03  60  			=
+__WARN();			\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  61  	}	=
+					\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  62  	un=
+likely(__ret_warn_on);			\
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  63  })
+c0007f1a65762e include/asm-s390/bug.h      Heiko Carstens 2007-04-27  64 =20
 
 --=20
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============7283768311730715921==--
+--===============1143611579778255346==--
 
