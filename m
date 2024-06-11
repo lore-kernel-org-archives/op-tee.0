@@ -1,75 +1,126 @@
-From: Mikko Rapeli <mikko.rapeli@linaro.org>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 4/4] optee: probe RPMB device using RPMB subsystem
-Date: Tue, 11 Jun 2024 12:02:12 +0900
-Message-ID: <Zme-NMa3Bvp2h7aL@nuoska>
-In-Reply-To: <
- <CAHUa44GAiUf9+PxqhXOwGfOuc250YDyJ7uzGe2B1bGmBw2iegg@mail.gmail.com>>
+Subject: 
+ [PATCH v7 0/5] Introduction of a remoteproc tee to load signed firmware
+Date: Tue, 11 Jun 2024 09:38:59 +0200
+Message-ID: <20240611073904.475019-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8662812084606141047=="
+Content-Type: multipart/mixed; boundary="===============0888185261489456440=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8662812084606141047==
+--===============0888185261489456440==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Main updates from version V6:
+------------------------------------------
 
-On Mon, Jun 10, 2024 at 02:52:31PM +0200, Jens Wiklander wrote:
-> Hi Manuel,
->=20
-> On Mon, Jun 3, 2024 at 11:10=E2=80=AFAM Manuel Traut <manut@mecka.net> wr=
-ote:
-> >
-> > On 14:13 Mon 27 May     , Jens Wiklander wrote:
-> > > --- a/drivers/tee/optee/ffa_abi.c
-> > > +++ b/drivers/tee/optee/ffa_abi.c
-> > > @@ -7,6 +7,7 @@
-> > >
-> > >  #include <linux/arm_ffa.h>
-> > >  #include <linux/errno.h>
-> > > +#include <linux/rpmb.h>
-> > >  #include <linux/scatterlist.h>
-> > >  #include <linux/sched.h>
-> > >  #include <linux/slab.h>
-> > > @@ -903,6 +904,10 @@ static int optee_ffa_probe(struct ffa_device *ffa_=
-dev)
-> > >       optee->ffa.bottom_half_value =3D U32_MAX;
-> > >       optee->rpc_param_count =3D rpc_param_count;
-> > >
-> > > +     if (IS_REACHABLE(CONFIG_RPMB) &&
-> > > +         (sec_caps & OPTEE_FFA_SEC_CAP_RPMB_PROBE))
-> > > +             optee->in_kernel_rpmb_routing =3D true;
-> >
-> > The SEC_CAP_RPMB_PROBE flag seems to be missing in optee_os at the moment.
-> > If I remove this check here, the series works for me.
->=20
-> You're right, I missed pushing those flags to optee_os. I've pushed them no=
-w.
+- Fix kernel robot build report on in tee_rproc_find_loaded_rsc_table() inline
+  default definition.
 
-Thanks! Tested with optee 4.1 and your patches from
-https://github.com/jenswi-linaro/optee_os/commits/rpmb_probe_v7/
-in Trusted Substrate uefi firmware
-( https://gitlab.com/Linaro/trustedsubstrate/meta-ts/ )
-and this series and a bunch of dependencies backported to
-our Trusted Reference Stack
-( https://trs.readthedocs.io/en/latest/ )
-6.6.29 kernel on rockpi4b (rk3399 ARM64 SoC) with secure boot and
-the optee side fTPM TA device used to create an encrypted rootfs with
-systemd. Kernel side RPMB routing is in use and works for the TPM use cases.
+Main updates from version V5[1][2]:
+------------------------------------------
 
-Full boot and test log (with unrelated test failures)
-https://ledge.validation.linaro.org/scheduler/job/88692
+1) Rework resource table management
+  - Rework tee_rproc_parse_fw to temporary map the resource table address
+    to create a cached_table (similar to what is done in
+    rproc_elf_load_rsc_table()).
+  - Rename tee_rproc_get_loaded_rsc_table to tee_rproc_find_loaded_rsc_table
+  - Introduce rproc_pa_to_va() allowing to translate the resource table
+    physical address to virtual address based on remoteproc carveouts.
 
-root(a)trs-qemuarm64:~# cat /sys/class/tee/tee0/rpmb_routing_model
-...
-kernel
+2) Merge the 2 "st,stm32-rproc.yaml" bindings patch in one
+   As the st,rproc-id" is linked to the introduction of the
+   "st,stm32mp1-m4-tee" compatible, merge following patches to address
+   Krzysztof concern.
+   - [PATCH v5 2/7] dt-bindings: remoteproc: Add compatibility for TEE support
+   - [PATCH v5 3/7] dt-bindings: remoteproc: Add processor identifier property
 
-Tested-by: Mikko Rapeli <mikko.rapeli@linaro.org>
+More details on updates are listed in commits messages.
 
-Cheers,
+[1] https://lore.kernel.org/lkml/Zlil4YSjHxb0FRgf(a)p14s/T/
+[2] https://lore.kernel.org/lkml/20240521122458.3517054-1-arnaud.pouliquen(a)=
+foss.st.com/
 
--Mikko
+base-commit: 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0
 
---===============8662812084606141047==--
+Description of the feature:
+--------------------------
+This series proposes the implementation of a remoteproc tee driver to
+communicate with a TEE trusted application responsible for authenticating
+and loading the remoteproc firmware image in an Arm secure context.
+
+1) Principle:
+
+The remoteproc tee driver provides services to communicate with the OP-TEE
+trusted application running on the Trusted Execution Context (TEE).
+The trusted application in TEE manages the remote processor lifecycle:
+
+- authenticating and loading firmware images,
+- isolating and securing the remote processor memories,
+- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
+- managing the start and stop of the firmware by the TEE.
+
+2) Format of the signed image:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_c=
+ore.c#L18-L57
+
+3) OP-TEE trusted application API:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remot=
+eproc.h
+
+4) OP-TEE signature script
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
+
+Example of usage:
+sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key $=
+{OP-TEE_PATH}/keys/default.pem
+
+
+5) Impact on User space Application
+
+No sysfs impact.the user only needs to provide the signed firmware image
+instead of the ELF image.
+
+
+For more information about the implementation, a presentation is available he=
+re
+(note that the format of the signed image has evolved between the presentation
+and the integration in OP-TEE).
+
+https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+
+Arnaud Pouliquen (5):
+  remoteproc: core: Introduce rproc_pa_to_va helper
+  remoteproc: Add TEE support
+  dt-bindings: remoteproc: Add compatibility for TEE support
+  remoteproc: stm32: Create sub-functions to request shutdown and
+    release
+  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
+
+ .../bindings/remoteproc/st,stm32-rproc.yaml   |  58 ++-
+ drivers/remoteproc/Kconfig                    |  10 +
+ drivers/remoteproc/Makefile                   |   1 +
+ drivers/remoteproc/remoteproc_core.c          |  74 ++-
+ drivers/remoteproc/stm32_rproc.c              | 147 ++++--
+ drivers/remoteproc/tee_remoteproc.c           | 451 ++++++++++++++++++
+ include/linux/remoteproc.h                    |   7 +
+ include/linux/tee_remoteproc.h                | 100 ++++
+ 8 files changed, 802 insertions(+), 46 deletions(-)
+ create mode 100644 drivers/remoteproc/tee_remoteproc.c
+ create mode 100644 include/linux/tee_remoteproc.h
+
+
+base-commit: 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0
+--=20
+2.25.1
+
+
+--===============0888185261489456440==--
 
