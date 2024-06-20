@@ -1,36 +1,33 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Preparing for OP-TEE 4.3.0
-Date: Thu, 20 Jun 2024 16:16:07 +0200
-Message-ID: <20240620141607.GA556471@rayden>
+Subject: Linaro OP-TEE Contribution, LOC, monthly meeting June 25
+Date: Thu, 20 Jun 2024 16:59:35 +0200
+Message-ID: 
+ <CAHUa44G7RyHb093ChenTXubXDVn-VJbqXhBO2ABuMBKAL5gr7g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5551539630018360372=="
+Content-Type: multipart/mixed; boundary="===============2533600813822867585=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5551539630018360372==
+--===============2533600813822867585==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-[BCC all OP-TEE maintainers]
+Hi,
 
-Hi OP-TEE maintainers & contributors,
+Next week on Tuesday, it's time for another LOC monthly meeting. For
+time and connection details see the calendar at
+https://www.trustedfirmware.org/meetings/
 
-OP-TEE v4.3.0 is scheduled to be released on 2024-07-12. So, now is
-a good time to start testing the master branch on the various platforms
-and report/fix any bugs.
+We discussed fTPM last time with some actions (see notes at
+http://bit.ly/loc-notes):
+- Jan to get approval for sharing code using the new crypto API
 
-The GitHub pull request for collecting Tested-by tags or any other
-comments is https://github.com/OP-TEE/optee_os/pull/6906.
+We have an upcoming OP-TEE release, 4.3.0, July 12th.
 
-As usual, we will create a release candidate tag one week before the
-release date for final testing.
+Any other topics?
 
-In addition to that you can find some additional information related to
-releases here: https://optee.readthedocs.io/en/latest/general/releases.html
-
-Thanks,
+Cheers,
 Jens
 
-
---===============5551539630018360372==--
+--===============2533600813822867585==--
 
