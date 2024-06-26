@@ -1,18 +1,36 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Gabor Toth <Gabor.Toth2@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Enable pointer authentication for the SP initialization
-Date: Wed, 26 Jun 2024 15:03:25 +0200
-Message-ID: 
- <CAHUa44EjyJT5TtZ0idTCu4o6ved+St6-=S3os5NHzgTKi0tm1Q@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CVI1PR08MB10174C80D2EF3B0F8E08251F1A9D62=40VI1PR08M?=
- =?utf-8?q?B10174=2Eeurprd08=2Eprod=2Eoutlook=2Ecom=3E?=>
+Subject: RE: Enable pointer authentication for the SP initialization
+Date: Wed, 26 Jun 2024 13:09:08 +0000
+Message-ID: <VI1PR08MB10174DE2EDBD33278C5EC205EA9D62@VI1PR08MB10174.eurprd08.prod.outlook.com>
+In-Reply-To: <
+ <CAHUa44EjyJT5TtZ0idTCu4o6ved+St6-=S3os5NHzgTKi0tm1Q@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9148776864607244115=="
+Content-Type: multipart/mixed; boundary="===============6256616238859169657=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9148776864607244115==
+--===============6256616238859169657==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+
+Hi Jens,
+
+" TAs use their own pauth keys, I think SPs should do the same. Or we're expo=
+sing keys that shouldn't be exposed to SPs."
+Yes I am implementing the same behavior as in case of TA-s. The SP-s have own=
+ keys which are used when they are running.
+
+Now everything is clear, thank you for the help!
+
+Br,
+G=C3=A1bor
+
+-----Original Message-----
+From: Jens Wiklander <jens.wiklander@linaro.org>=20
+Sent: Wednesday, June 26, 2024 3:03 PM
+To: Gabor Toth <Gabor.Toth2@arm.com>
+Cc: op-tee(a)lists.trustedfirmware.org
+Subject: Re: Enable pointer authentication for the SP initialization
 
 Hi Gabor,
 
@@ -26,15 +44,15 @@ h keys are set to the keys of the atomic context (kernels[n].keys). So the on=
 ly problem is that at initialization the keys of the thread-line context (thr=
 ead_core_local[n].keys) are used instead of the atomic ones.
 >
-> Since " which context is used is more by chance than by design", do you see=
- anything against initializing the pauth keys to the keys of the atomic conte=
-xt instead of the kernel-like ones
+> Since " which context is used is more by chance than by design", do=20
+> you see anything against initializing the pauth keys to the keys of=20
+> the atomic context instead of the kernel-like ones
 > here: https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/kernel/e=
 ntry_a64.S#L139 ?
 
-No, at the point where this macro is used we're definitely in an
-atomic context. I meant before that we're emulating a threaded context
-to the extent it's needed at some places, for instance, to keep
+No, at the point where this macro is used we're definitely in an atomic conte=
+xt. I meant before that we're emulating a threaded context to the extent it's=
+ needed at some places, for instance, to keep
 mutex_lock() happy.
 
 >
@@ -42,8 +60,8 @@ mutex_lock() happy.
 R_ENIA the feature seems to be working properly and the protection is already=
  enabled when the sp boot starts.
 
-TAs use their own pauth keys, I think SPs should do the same. Or we're
-exposing keys that shouldn't be exposed to SPs.
+TAs use their own pauth keys, I think SPs should do the same. Or we're exposi=
+ng keys that shouldn't be exposed to SPs.
 
 Cheers,
 Jens
@@ -68,7 +86,8 @@ wrote:
 > >
 > > Currently pointer authentication is disabled at the beginning of the SP-s=
  and is enabled after boot_init_primary_late here:
-> > https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/kernel/en
+> > https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/kernel/
+> > en
 > > try_a64.S#L385
 > >
 > > We would like to have it already enabled when the SP starts running to pr=
@@ -76,7 +95,8 @@ otect all the code and to also avoid problems like having the feature enabled=
  between a paciasp-autiasp pair.
 > > I tried moving the feature enablement right before the initialization of =
 the SP-s, here:
-> > https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/kernel/bo
+> > https://github.com/OP-TEE/optee_os/blob/master/core/arch/arm/kernel/
+> > bo
 > > ot.c#L1064
 > >
 > > When __thread_enter_user_mode is called thread_core_local[0] keys are use=
@@ -120,5 +140,5 @@ ything from the thread context or atomic per CPU context.
 > Cheers,
 > Jens
 
---===============9148776864607244115==--
+--===============6256616238859169657==--
 
