@@ -1,15 +1,15 @@
 From: Sasha Levin <sashal@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH AUTOSEL 6.6 05/18] tee: optee: ffa: Fix
+Subject: [PATCH AUTOSEL 6.1 05/15] tee: optee: ffa: Fix
  missing-field-initializers warning
-Date: Tue, 16 Jul 2024 10:26:40 -0400
-Message-ID: <20240716142713.2712998-5-sashal@kernel.org>
-In-Reply-To: <20240716142713.2712998-1-sashal@kernel.org>
+Date: Tue, 16 Jul 2024 10:28:02 -0400
+Message-ID: <20240716142825.2713416-5-sashal@kernel.org>
+In-Reply-To: <20240716142825.2713416-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5946684429209484665=="
+Content-Type: multipart/mixed; boundary="===============4661341459875383045=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5946684429209484665==
+--===============4661341459875383045==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -75,5 +75,5 @@ a_dev,
 2.43.0
 
 
---===============5946684429209484665==--
+--===============4661341459875383045==--
 
