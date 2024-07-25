@@ -1,26 +1,30 @@
 From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH RFC 0/3] Implement Qualcomm TEE IPC and ioctl calls
-Date: Thu, 25 Jul 2024 01:55:57 +0000
-Message-ID: <37b6ba2d-6c3b-448e-be2c-8922ee1ae68a@quicinc.com>
-In-Reply-To: <
- <CAHUa44FXT6VREMUkNsY943EfhFoMSEsWKb5vyx9SwOERXitDbw@mail.gmail.com>>
+Date: Thu, 25 Jul 2024 03:16:22 +0000
+Message-ID: <d2be904b-f5d6-4c58-93ed-b460d48862d0@quicinc.com>
+In-Reply-To: <fsoczpwh4za37yavm5wau7n2ie2eemu4aux5xh3jubjfshlceu@4h7nfmi2qe2t>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8798946338203664330=="
+Content-Type: multipart/mixed; boundary="===============5492333181657499932=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8798946338203664330==
+--===============5492333181657499932==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 7/18/2024 12:52 AM, Jens Wiklander wrote:
-> Hi,
+On 7/17/2024 10:31 PM, Dmitry Baryshkov wrote:
+> Adding TEE mailing list and maintainers to the CC list.
 >=20
-> On Wed, Jul 10, 2024 at 1:17=E2=80=AFAM Amirreza Zarrabi
-> <quic_azarrabi@quicinc.com> wrote:
->>
+> Amirreza, please include them in future even if you are not going to use
+> the framework.
+>=20
+
+Sure, Thanks Dmitry.
+
+>=20
+> On Wed, Jul 10, 2024 at 09:16:48AM GMT, Amirreza Zarrabi wrote:
 >>
 >>
 >> On 7/3/2024 9:36 PM, Dmitry Baryshkov wrote:
@@ -82,14 +86,6 @@ ly
 >> enforcement" (i.e. ability to revoke authority and ability to control
 >> the authority propagation). This is out of scope for the MinkIPC.
 >> MinkIPC is only interested in P1 and P2 (mention above).
->=20
-> This is still quite abstract. We have tried to avoid inventing yet
-> another IPC mechanism in the TEE subsystem. But that's not written in
-> stone if it turns out there's a use case that needs it.
->=20
-
-Ack.
-
 >>
 >>
 >>>> Does TEE subsystem fit requirements of a capability based system?
@@ -128,64 +124,6 @@ ghts,
 >> and say "even though a TEE-Handle is allocated in a session but it is also
 >> valid outside a session", i.e. the session-id in TEE uapi becomes redundant
 >> (a case of divergence from definition).
->=20
-> Only the backend drivers put a meaning to a session, the TEE subsystem
-> doesn't enforce anything. All fields but num_params and params in
-> struct tee_ioctl_invoke_arg are only interpreted by the backend driver
-> if I recall correctly. Using the fields for something completely
-> different would be confusing so if struct tee_ioctl_invoke_arg isn't
-> matching well enough we might need a new IOCTL for whatever you have
-> in mind.
->
-
-That's right.
-
-Nice. Assuming there is option for some additions ;), what do you think about
-
-(1) support for a buffer without actual memory sharing with TEE.
-    TEE subsystem provides very nice memory sharing utilities. We are missing
-    support for sending __user addresses to backend driver so it can sent it =
-to
-    TEE, however it sees fit, e.g. copying to an existing shared memory used =
-by
-    the underlying transport.
-
-    + What if we add TEE_IOCTL_PARAM_ATTR_TYPE_MEMBUF_INPUT/OUPUT?
-
-(2) support to pass more generic form of service identification.
-    Currently, we use (session_id + fun_id) to identify the service, what we =
-need
-    is (object_id + fun_id). It is just a name, but it has a greater side eff=
-ect.
-    session_id, implies that (a) the user should call TEE_IOC_OPEN_SESSION
-    first, and (b) call to TEE_IOC_INVOKE can not generate a session_id, or
-    (c) TEE_IOC_SUPPL_RECV can not return a session_id from TEE.
-
-    With object_id, we do not put a requirement on how we get the id,
-    e.g. a call to TEE_IOC_INVOKE may return an object_id or object_id may ac=
-tually
-    represent a resource in kernel rather than TEE (e.g. dma_buf, so you shou=
-ld be
-    able to pass an FD as object_id).
-
-    + What if we add IEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT/OUTPUT?
-
-    Finally, we need an IOCTL to invoke the object.
-   =20
-    + What if we add TEE_IOC_OBJECT_INVOKE which accept (object_id + fun_id)?=
-=20
-
-    PS - Just a suggestion, as object_id can be anything, we can use TEE_IOC_=
-OBJECT_INVOKE
-         for any future improvement. So for instance, to prepare a dma_buf fo=
-r TEE, we
-         can invoke it, and the TEE back-end driver will map it, and register=
- it with TEE
-         subsystem (if needed) rather than introducing new IOCTL + struct eve=
-ry
-         time, for each new feature.
-
-
 >>
 >>>
 >>>> 2. In TEE subsystem, resources are managed in a context. Every time a
@@ -212,52 +150,11 @@ ny
 >> capability for them. In kernel, clients access an object if they have
 >> access to "qcom_tee_object", in userspace, clients access an object if
 >> they have the FD wrapper for the TEE-Handle.
->=20
-> So if a client has a file descriptor representing a TEE-Handle, then
-> it has the capability to access a TEE-object? Is the kernel
-> controlling anything more about these capabilities?
->=20
-
-Yes. Having an FD means the process is capable of invoking the object.
-The only thing kernel does is just wrapping the TEE-Handles in a FD, and
-converting the IOCTL calls on the FD to TEE calls.
-
 >>
 >> If we use context, instead of the file descriptor table, any form of object
 >> transfer requires involvement of the backend driver. If we use the file
 >> descriptor table, contexts are becoming useless for MinkIPC (i.e.
 >> 'ctx->data' will "always" be null).
->=20
-> You still need to open a device to be able to create TEE-handles.
-
-Not really, only for the first FD.
-
-When opened, it returns an FD which wraps a static object in TEE (let's call =
-it root object).
-The root_fd is used for initiating the connection with other TEE services.
-
-So the steps are like:
-  (1) open /dev/tee to get the root_fd
-  (2) env_fd =3D IOCTL(root_fd, credentials);
-  (3) TA_fd =3D IOCTL(env_fd, LOAD_TA)
-  (4) ...
-
-In theory, you should be able to pass env_fd to another process, i.e. sharing
-your identity, or pass TA_fd to another process, i.e. share a service.
-
-So, here is the issue, if we expose object trough FDs, in practice we do not =
-need to
-use IOCTL on the FD we get by opening the device. Therefore, the contexts rem=
-ain
-unused and we directly land in the back-end driver.
-
-PS - Assuming we do the above improvement to the TEE subsystem IOCTL, we shou=
-ld be able
-     to wrap TEE-Handle as FD and pass them as object_id to userspace if we s=
-haring is
-     requested for an object.
-
->=20
 >>
 >>>
 >>>> 3. The TEE subsystem supports two type of memory sharing:
@@ -280,30 +177,10 @@ haring is
 >> (1) from an isolated pool, (2) a shared pool, (3) a secure heap,
 >> (4) a system dma-heap, (5) process address space, or (6) other memory
 >> with "different constraints", becomes independent.
->=20
-> Especially points 3 and 4 are of great interest for the TEE Subsystem.
-
-Ack.
-
->=20
 >>
 >> We introduced "memory object" type. User implements a kernel service
 >> using "qcom_tee_object" to represent the memory object. We have an
 >> implementation of memory objects based on dma-buf.
->=20
-> Do you have an idea of what it would take to extend to TEE subsystem
-> to cover this?
-
-I am a bit hesitate to put dma-buf handling directly into the TEE subsystem
-(maybe I am wrong :)). For instance, dma-but can have scatterlist, or single
-entries, or even it must be from specific heap, registered in specific way.
-Each may need support from back-end driver, i.e. the dma-buf should be passed
-to the back-end driver.
-
-If we have a support for IEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT, we can pass
-dma_buf directly to the back-end to process.
-
->=20
 >>
 >>>
 >>>> 4. The kernel API provided by TEE subsystem does not support a kernel
@@ -311,10 +188,6 @@ dma_buf directly to the back-end to process.
 >>>> kernel thread) due to the TEE subsystem design. tee_driver_ops supports
 >>>> only "send" and "receive" callbacks and to deliver a request, someone
 >>>> should wait on "receive".
->=20
-> So far we haven't needed a kernel thread, but if you need one feel
-> free to propose something.
->=20
 >>>
 >>> There is nothing wrong here, but maybe I'm misunderstanding something.
 >>
@@ -323,12 +196,6 @@ dma_buf directly to the back-end to process.
 >> For instance, to expose RPMB service we will use "qcom_tee_object".
 >> So there is nothing provided by the framework to simplify the service
 >> development.
->=20
-> The same is true for all backend drivers.
-
-Ack.
-
->=20
 >>
 >>>
 >>>> We need a callback to "dispatch" or "handle" a request in the context of
@@ -341,14 +208,6 @@ ed
 >>>>    interface. This interface is not suitable for a capability system.
 >>>> For instance, there is no session in a capability system which means
 >>>> either its should not be used, or we should overload its definition.
->=20
-> Not using the session field doesn't seem like such a big obstacle.
-> Overloading it for something different might be messy. We can add a
-> new IOCTL if needed as I mentioned above.
->=20
-
-Ack. Responded above.
-
 >>>
 >>> General comment: maybe adding more detailed explanation of how the
 >>> capabilities are aquired and how they can be used might make sense.
@@ -367,13 +226,6 @@ Ack. Responded above.
 >>>> should define our own UAPI or try to use a hack-y way of fitting into
 >>>> the TEE subsystem. I am using word hack-y, as most of the workaround
 >>>> involves:
->=20
-> Instead of hack-y workarounds, we should consider extending the TEE
-> subsystem as needed.
-
-Ack. :)
-
->=20
 >>>>
 >>>> - "diverging from the definition". For instance, ignoring the session
 >>>>   open and close ioctl calls or use file descriptors for all remote
@@ -382,32 +234,10 @@ Ack. :)
 >>>>
 >>>> - "overloading the variables". For instance, passing object ID as file
 >>>>   descriptors in a place of session ID, or
->=20
-> struct qcom_tee_object_invoke_arg and struct tee_ioctl_invoke_arg are
-> quite similar, there are only a few more fields in the latter and we
-> are missing a TEE_IOCTL_PARAM_ATTR_TYPE_OBJECT. Does it make sense to
-> have a direction on objects?
-
-Almost, we can have direction on how object is moving around, e.g. an object
-can be passed to TEE (i.e. INPUT), or received from TEE (i.e. OUTPUT). But wh=
-en
-invoked, an object can be used to pass other objects to/from TEE.
-
->=20
 >>>>
 >>>> - "bypass TEE subsystem". For instance, extensively rely on meta
 >>>>   parameters or push everything (e.g. kernel services) to the back-end
 >>>> driver, which means leaving almost all TEE subsystem unused.
->=20
-> The TEE subsystem is largely "bypassed" by all backend drivers, with
-> the exception of some SHM handling.
->=20
-> I'm sure the TEE subsystem can be extended to handle the "common" part
-> of SHM handling needed by QTEE.
-
-Ack.=20
-
->=20
 >>>>
 >>>> We cannot take the full benefits of TEE subsystem and may need to
 >>>> implement most of the requirements in the back-end driver. Also, as
@@ -439,19 +269,41 @@ Ack.=20
 >>
 >> For, MinkIPC, we will not use any of them. The only usable piece, is uapi
 >> interface which is not suitable for MinkIPC, as discussed above.
+>>
+>>>
+>>>>
+>>>> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+>>>> ---
+>>>> Amirreza Zarrabi (3):
+>>>>       firmware: qcom: implement object invoke support
+>>>>       firmware: qcom: implement memory object support for TEE
+>>>>       firmware: qcom: implement ioctl for TEE object invocation
+>>>>
+>>>>  drivers/firmware/qcom/Kconfig                      |   36 +
+>>>>  drivers/firmware/qcom/Makefile                     |    2 +
+>>>>  drivers/firmware/qcom/qcom_object_invoke/Makefile  |   12 +
+>>>>  drivers/firmware/qcom/qcom_object_invoke/async.c   |  142 +++
+>>>>  drivers/firmware/qcom/qcom_object_invoke/core.c    | 1139 +++++++++++++=
++++++
+>>>>  drivers/firmware/qcom/qcom_object_invoke/core.h    |  186 +++
+>>>>  .../qcom/qcom_object_invoke/qcom_scm_invoke.c      |   22 +
+>>>>  .../firmware/qcom/qcom_object_invoke/release_wq.c  |   90 ++
+>>>>  .../qcom/qcom_object_invoke/xts/mem_object.c       |  406 +++++++
+>>>>  .../qcom_object_invoke/xts/object_invoke_uapi.c    | 1231 +++++++++++++=
++++++++
+>>>>  include/linux/firmware/qcom/qcom_object_invoke.h   |  233 ++++
+>>>>  include/uapi/misc/qcom_tee.h                       |  117 ++
+>>>>  12 files changed, 3616 insertions(+)
+>>>> ---
+>>>> base-commit: 74564adfd3521d9e322cfc345fdc132df80f3c79
+>>>> change-id: 20240702-qcom-tee-object-and-ioctls-6f52fde03485
+>>>>
+>>>> Best regards,
+>>>> --=20
+>>>> Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+>>>>
+>>>
 >=20
-> I hope that we can change that.  :-)
-> For instance, extending the TEE subsystem with the memory-sharing QTEE
-> needs could be useful for other TEE drivers.
 
-Thank you so much Jens for comment :).
-
-Best Regards,
-Amir
-
->=20
-> Cheers,
-> Jens
-
---===============8798946338203664330==--
+--===============5492333181657499932==--
 
