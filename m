@@ -1,61 +1,94 @@
-From: Sumit Garg <sumit.garg@linaro.org>
+From: thomas.gymer@bt.com
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: combine "config" and "menu" for TEE's menuconfig
-Date: Thu, 30 Dec 2021 16:17:23 +0530
-Message-ID: 
- <CAFA6WYPnWSig-OKApJ_PLQgfSvZ2zdF0gUAARPgRTUx1TUDOXQ@mail.gmail.com>
-In-Reply-To: <20211228195737.16633-1-jengelh@inai.de>
+Subject: Verified Boot through U-Boot for RPi3 with OP-TEE
+Date: Fri, 09 Aug 2024 15:21:40 +0000
+Message-ID: <CWLP123MB63935507882C09545073EA17E5BA2@CWLP123MB6393.GBRP123.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0886807117452104212=="
+Content-Type: multipart/mixed; boundary="===============2220726285972313102=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0886807117452104212==
+--===============2220726285972313102==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 29 Dec 2021 at 04:17, Jan Engelhardt <jengelh@inai.de> wrote:
->
-> Don't let TEE occupy two lines in menuconfig when practically no
-> other (sub)menu does either.
->
-> Signed-off-by: Jan Engelhardt <jengelh@inai.de>
-> ---
->  drivers/tee/Kconfig | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->
+Hello all,
 
-Looks sane to me.
+We (Eden and I) have been assigned a summer project exploring the possibility=
+ of verified boot for Linux with a view to experiment with a TEE, and would l=
+ike to share our outcomes from the project so far.
 
-Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+We've been working on condensing all the information and documentation on TF-=
+A, OP-TEE, and U-Boot verified boot into a trivially workable form, a Makefil=
+e, for the Raspberry Pi 3B+. Our aim is a proof of concept pilot project to s=
+ee what parts of the technology outlined in the NIST standards for secure boo=
+t on IoT is currently available, and thus what needs to be developed. This al=
+so leads us to an interest in full crypto algorithm agility to ensure quick a=
+doption of the quantum safe algorithms as they come out.
+I should note that our boot order here is TF-A to OP-TEE, then TF-A to U-Boot=
+ to Linux.
+This has raised a few areas of note and a couple of issues on our end:
 
--Sumit
+# Areas of note
+- U-Boot and Linux DTB's being incompatible has minimal documentation
+Newer versions of U-Boot do have `CONFIG_OF_UPSTREAM`, but I can't see that a=
+s a recommended solution. Perhaps a note in the Kconfig entry for `CONFIG_OF_=
+CONTROL` would be sufficient
+- U-Boot can fail silently if the DTB used is incompatible
+No idea what the solution here could be; an invalid DTB inevitably means that=
+ the firmware cannot access any of the hardware correctly.
+- U-Boot unable to find `CONFIG_OF_SEPARATE` DTB's when loaded by TF-A; this =
+is a TF-A problem, but maybe check other possible places for a DTB on the U-B=
+oot end?
+- U-Boot itself appears to have good crypto agility (or will in the near futu=
+re), with a macro and existing algorithms as examples for the addition of new=
+ algorithms
+- `mkimage` appears to be lacking these same features for crypto agility, whi=
+ch would otherwise set U-Boot up to be ready for the new quantum safe algorit=
+hms' release
+A similar macro system for `mkimage`, or some other schema for defining how t=
+o add algorithm keys to the FDT, would provide some amazing flexibility, alre=
+ady being able to define more than one signature as required. Adding keys to =
+the FDT would need to be standardised in someway for this, I would imagine.
 
-> diff --git drivers/tee/Kconfig drivers/tee/Kconfig
-> index e99d840c2511..73a147202e88 100644
-> --- drivers/tee/Kconfig
-> +++ drivers/tee/Kconfig
-> @@ -1,6 +1,6 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->  # Generic Trusted Execution Environment Configuration
-> -config TEE
-> +menuconfig TEE
->         tristate "Trusted Execution Environment support"
->         depends on HAVE_ARM_SMCCC || COMPILE_TEST || CPU_SUP_AMD
->         select CRYPTO
-> @@ -13,10 +13,7 @@ config TEE
->
->  if TEE
->
-> -menu "TEE drivers"
-> -
->  source "drivers/tee/optee/Kconfig"
->  source "drivers/tee/amdtee/Kconfig"
-> -endmenu
->
->  endif
-> --
-> 2.34.1
->
+I am very aware that some of the below issues are not relevant to all project=
+s, but thought it best to maintain a single list to ensure that the correct p=
+lace to make a fix for each issue is not locked project wise too early.
+# Issues
+- buildroot build fails when the directory length is greater than ~80 charact=
+ers
+- TF-A does not pass on the DTB address unless `RPI3_DIRECT_LINUX_BOOT` is se=
+t, which also implies a define U-Boot doesn't need
+- TF-A `LOG_LEVEL=3D50` flag has compatibility issue in xlat tables v2 when c=
+ompiled for 64bit
+- `mkimage` ECDSA key adding to FDT fails if there is no signature node pre-a=
+dded and doesn't set `required` node when `-r` is used
+- `fit_check_sig`fails to check an ECDSA signed FIT file with corresponding F=
+DT due to `<null>` hash node
+- `mkimage` expects ECDSA private key only in a `.pem` and not `.der`, which =
+would be standard for a single private key
 
---===============0886807117452104212==--
+We intend to release the Makefile and accompanying scripts for this on Monday=
+ 12th August, likely ~5pm BST to give us time to finalise what we have curren=
+tly; this will consist of two Makefiles: one for verified boot using `CONFIG_=
+OF_EMBED`, and another using `CONFIG_OF_SEPARATE` on U-Boot v2024.07. We are =
+currently planning on releasing this on GitHub under the same license as the =
+involved projects, but what would be the most helpful way for us to release t=
+his to you?
+We have, beside the points raised in the Issues section above, no specific ch=
+anges for the exiting repos, focusing instead on Makefiles which pull togethe=
+r parts of the existing releases to produce a working PoC as quickly as possi=
+ble. We intend to also release this to the Raspberry Pi community as a TEE so=
+lution they can experiment with today.
+
+This email has been sent to:
+- u-boot(a)lists.denx.de
+- op-tee(a)lists.trustedfirmware.org
+and the Makefiles will be sent to Raspberry Pi Foundation and community some =
+point next week
+
+Thomas Gymer (thomas.gymer(a)bt.com) & Eden Hamilton (eden.hamilton(a)bt.com)
+
+
+
+--===============2220726285972313102==--
 
