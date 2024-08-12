@@ -1,739 +1,119 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: thomas.gymer@bt.com
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 4/4] optee: probe RPMB device using RPMB subsystem
-Date: Mon, 12 Aug 2024 15:31:27 +0200
-Message-ID: <20240812133127.865879-5-jens.wiklander@linaro.org>
-In-Reply-To: <20240812133127.865879-1-jens.wiklander@linaro.org>
+Subject: Re: Verified Boot through U-Boot for RPi3 with OP-TEE
+Date: Mon, 12 Aug 2024 16:57:50 +0000
+Message-ID: <CWLP123MB6393BF66D102DD3CDBB53A89E5852@CWLP123MB6393.GBRP123.PROD.OUTLOOK.COM>
+In-Reply-To: <=?utf-8?q?=3CCWLP123MB63935507882C09545073EA17E5BA2=40CWLP123MB?=
+ =?utf-8?q?6393=2EGBRP123=2EPROD=2EOUTLOOK=2ECOM=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1980885262464371354=="
+Content-Type: multipart/mixed; boundary="===============2946285698830181972=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1980885262464371354==
+--===============2946285698830181972==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Adds support in the OP-TEE drivers (both SMC and FF-A ABIs) to probe and
-use an RPMB device via the RPMB subsystem instead of passing the RPMB
-frames via tee-supplicant in user space. A fallback mechanism is kept to
-route RPMB frames via tee-supplicant if the RPMB subsystem isn't
-available.
+Hello all,
 
-The OP-TEE RPC ABI is extended to support iterating over all RPMB
-devices until one is found with the expected RPMB key already
-programmed.
+Final email from us to both mailing lists like this, further updates - beside=
+ any fixes we push to the individual projects over the next couple of weeks -=
+ will be available here: https://github.com/BT-Summer/RPi-OP-TEE-Verified-Boot
+[cid:f4606bb5-79d0-4934-9a6d-3a569d85aa33]<https://github.com/BT-Summer/RPi-O=
+P-TEE-Verified-Boot>
+GitHub - BT-Summer/RPi-OP-TEE-Verified-Boot<https://github.com/BT-Summer/RPi-=
+OP-TEE-Verified-Boot>
+Contribute to BT-Summer/RPi-OP-TEE-Verified-Boot development by creating an a=
+ccount on GitHub.
+github.com
+A few details missing currently (have marked TODO in the README) will be adde=
+d tomorrow.
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-Tested-by: Manuel Traut <manut@mecka.net>
----
- Documentation/ABI/testing/sysfs-class-tee |  15 ++
- MAINTAINERS                               |   1 +
- drivers/tee/optee/core.c                  |  96 +++++++++++-
- drivers/tee/optee/device.c                |   7 +
- drivers/tee/optee/ffa_abi.c               |  14 ++
- drivers/tee/optee/optee_ffa.h             |   2 +
- drivers/tee/optee/optee_private.h         |  26 +++-
- drivers/tee/optee/optee_rpc_cmd.h         |  35 +++++
- drivers/tee/optee/optee_smc.h             |   2 +
- drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++++++++
- drivers/tee/optee/smc_abi.c               |  14 ++
- 11 files changed, 387 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-tee
+Thomas Gymer (thomas.gymer(a)bt.com) & Eden Hamilton (eden.hamilton(a)bt.com)
+________________________________
+From: Thomas Gymer VRC7 C
+Sent: Friday, August 9, 2024 4:21 PM
+To: u-boot(a)lists.denx.de <u-boot@lists.denx.de>; op-tee(a)lists.trustedfi=
+rmware.org <op-tee@lists.trustedfirmware.org>
+Subject: Verified Boot through U-Boot for RPi3 with OP-TEE
 
-diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Documentation/ABI/te=
-sting/sysfs-class-tee
-new file mode 100644
-index 000000000000..c9144d16003e
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-tee
-@@ -0,0 +1,15 @@
-+What:		/sys/class/tee/tee{,priv}X/rpmb_routing_model
-+Date:		May 2024
-+KernelVersion:	6.10
-+Contact:        op-tee(a)lists.trustedfirmware.org
-+Description:
-+		RPMB frames can be routed to the RPMB device via the
-+		user-space daemon tee-supplicant or the RPMB subsystem
-+		in the kernel. The value "user" means that the driver
-+		will route the RPMB frames via user space. Conversely,
-+		"kernel" means that the frames are routed via the RPMB
-+		subsystem without assistance from tee-supplicant. It
-+		should be assumed that RPMB frames are routed via user
-+		space if the variable is absent. The primary purpose
-+		of this variable is to let systemd know whether
-+		tee-supplicant is needed in the early boot with initramfs.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 716011964b18..d692417edab1 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22433,6 +22433,7 @@ M:	Jens Wiklander <jens.wiklander@linaro.org>
- R:	Sumit Garg <sumit.garg@linaro.org>
- L:	op-tee(a)lists.trustedfirmware.org
- S:	Maintained
-+F:	Documentation/ABI/testing/sysfs-class-tee
- F:	Documentation/driver-api/tee.rst
- F:	Documentation/tee/
- F:	Documentation/userspace-api/tee.rst
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 39e688d4e974..935f3fff9046 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -10,17 +10,85 @@
- #include <linux/errno.h>
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/rpmb.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/tee_core.h>
- #include <linux/types.h>
- #include "optee_private.h"
-=20
-+struct blocking_notifier_head optee_rpmb_intf_added =3D
-+	BLOCKING_NOTIFIER_INIT(optee_rpmb_intf_added);
-+
-+static int rpmb_add_dev(struct device *dev)
-+{
-+	blocking_notifier_call_chain(&optee_rpmb_intf_added, 0,
-+				     to_rpmb_dev(dev));
-+
-+	return 0;
-+}
-+
-+static struct class_interface rpmb_class_intf =3D {
-+	.add_dev =3D rpmb_add_dev,
-+};
-+
-+void optee_bus_scan_rpmb(struct work_struct *work)
-+{
-+	struct optee *optee =3D container_of(work, struct optee,
-+					   rpmb_scan_bus_work);
-+	int ret;
-+
-+	if (!optee->rpmb_scan_bus_done) {
-+		ret =3D optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB);
-+		optee->rpmb_scan_bus_done =3D !ret;
-+		if (ret && ret !=3D -ENODEV)
-+			pr_info("Scanning for RPMB device: ret %d\n", ret);
-+	}
-+}
-+
-+int optee_rpmb_intf_rdev(struct notifier_block *intf, unsigned long action,
-+			 void *data)
-+{
-+	struct optee *optee =3D container_of(intf, struct optee, rpmb_intf);
-+
-+	schedule_work(&optee->rpmb_scan_bus_work);
-+
-+	return 0;
-+}
-+
- static void optee_bus_scan(struct work_struct *work)
- {
- 	WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
- }
-=20
-+static ssize_t rpmb_routing_model_show(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
-+{
-+	struct optee *optee =3D dev_get_drvdata(dev);
-+	const char *s;
-+
-+	if (optee->in_kernel_rpmb_routing)
-+		s =3D "kernel";
-+	else
-+		s =3D "user";
-+
-+	return scnprintf(buf, PAGE_SIZE, "%s\n", s);
-+}
-+static DEVICE_ATTR_RO(rpmb_routing_model);
-+
-+static struct attribute *optee_dev_attrs[] =3D {
-+	&dev_attr_rpmb_routing_model.attr,
-+	NULL
-+};
-+
-+ATTRIBUTE_GROUPS(optee_dev);
-+
-+void optee_set_dev_group(struct optee *optee)
-+{
-+	tee_device_set_dev_groups(optee->teedev, optee_dev_groups);
-+	tee_device_set_dev_groups(optee->supp_teedev, optee_dev_groups);
-+}
-+
- int optee_open(struct tee_context *ctx, bool cap_memref_null)
- {
- 	struct optee_context_data *ctxdata;
-@@ -97,6 +165,9 @@ void optee_release_supp(struct tee_context *ctx)
-=20
- void optee_remove_common(struct optee *optee)
- {
-+	blocking_notifier_chain_unregister(&optee_rpmb_intf_added,
-+					   &optee->rpmb_intf);
-+	cancel_work_sync(&optee->rpmb_scan_bus_work);
- 	/* Unregister OP-TEE specific client devices on TEE bus */
- 	optee_unregister_devices();
-=20
-@@ -113,13 +184,18 @@ void optee_remove_common(struct optee *optee)
- 	tee_shm_pool_free(optee->pool);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
-+	rpmb_dev_put(optee->rpmb_dev);
-+	mutex_destroy(&optee->rpmb_dev_mutex);
- }
-=20
- static int smc_abi_rc;
- static int ffa_abi_rc;
-+static bool intf_is_regged;
-=20
- static int __init optee_core_init(void)
- {
-+	int rc;
-+
- 	/*
- 	 * The kernel may have crashed at the same time that all available
- 	 * secure world threads were suspended and we cannot reschedule the
-@@ -130,18 +206,36 @@ static int __init optee_core_init(void)
- 	if (is_kdump_kernel())
- 		return -ENODEV;
-=20
-+	if (IS_ENABLED(CONFIG_RPMB)) {
-+		rc =3D rpmb_interface_register(&rpmb_class_intf);
-+		if (rc)
-+			return rc;
-+		intf_is_regged =3D true;
-+	}
-+
- 	smc_abi_rc =3D optee_smc_abi_register();
- 	ffa_abi_rc =3D optee_ffa_abi_register();
-=20
- 	/* If both failed there's no point with this module */
--	if (smc_abi_rc && ffa_abi_rc)
-+	if (smc_abi_rc && ffa_abi_rc) {
-+		if (IS_ENABLED(CONFIG_RPMB)) {
-+			rpmb_interface_unregister(&rpmb_class_intf);
-+			intf_is_regged =3D false;
-+		}
- 		return smc_abi_rc;
-+	}
-+
- 	return 0;
- }
- module_init(optee_core_init);
-=20
- static void __exit optee_core_exit(void)
- {
-+	if (IS_ENABLED(CONFIG_RPMB) && intf_is_regged) {
-+		rpmb_interface_unregister(&rpmb_class_intf);
-+		intf_is_regged =3D false;
-+	}
-+
- 	if (!smc_abi_rc)
- 		optee_smc_abi_unregister();
- 	if (!ffa_abi_rc)
-diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-index d296c70ddfdc..950b4661d5df 100644
---- a/drivers/tee/optee/device.c
-+++ b/drivers/tee/optee/device.c
-@@ -43,6 +43,13 @@ static int get_devices(struct tee_context *ctx, u32 sessio=
-n,
- 	ret =3D tee_client_invoke_func(ctx, &inv_arg, param);
- 	if ((ret < 0) || ((inv_arg.ret !=3D TEEC_SUCCESS) &&
- 			  (inv_arg.ret !=3D TEEC_ERROR_SHORT_BUFFER))) {
-+		/*
-+		 * TEE_ERROR_STORAGE_NOT_AVAILABLE is returned when getting
-+		 * the list of device TAs that depends on RPMB but a usable
-+		 * RPMB device isn't found.
-+		 */
-+		if (inv_arg.ret =3D=3D TEE_ERROR_STORAGE_NOT_AVAILABLE)
-+			return -ENODEV;
- 		pr_err("PTA_CMD_GET_DEVICES invoke function err: %x\n",
- 		       inv_arg.ret);
- 		return -EINVAL;
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index 3e73efa51bba..f3af5666bb11 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -7,6 +7,7 @@
-=20
- #include <linux/arm_ffa.h>
- #include <linux/errno.h>
-+#include <linux/rpmb.h>
- #include <linux/scatterlist.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-@@ -909,6 +910,10 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	optee->ffa.bottom_half_value =3D U32_MAX;
- 	optee->rpc_param_count =3D rpc_param_count;
-=20
-+	if (IS_REACHABLE(CONFIG_RPMB) &&
-+	    (sec_caps & OPTEE_FFA_SEC_CAP_RPMB_PROBE))
-+		optee->in_kernel_rpmb_routing =3D true;
-+
- 	teedev =3D tee_device_alloc(&optee_ffa_clnt_desc, NULL, optee->pool,
- 				  optee);
- 	if (IS_ERR(teedev)) {
-@@ -925,6 +930,8 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	}
- 	optee->supp_teedev =3D teedev;
-=20
-+	optee_set_dev_group(optee);
-+
- 	rc =3D tee_device_register(optee->teedev);
- 	if (rc)
- 		goto err_unreg_supp_teedev;
-@@ -940,6 +947,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	optee_cq_init(&optee->call_queue, 0);
- 	optee_supp_init(&optee->supp);
- 	optee_shm_arg_cache_init(optee, arg_cache_flags);
-+	mutex_init(&optee->rpmb_dev_mutex);
- 	ffa_dev_set_drvdata(ffa_dev, optee);
- 	ctx =3D teedev_open(optee->teedev);
- 	if (IS_ERR(ctx)) {
-@@ -961,6 +969,10 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	if (rc)
- 		goto err_unregister_devices;
-=20
-+	INIT_WORK(&optee->rpmb_scan_bus_work, optee_bus_scan_rpmb);
-+	optee->rpmb_intf.notifier_call =3D optee_rpmb_intf_rdev;
-+	blocking_notifier_chain_register(&optee_rpmb_intf_added,
-+					 &optee->rpmb_intf);
- 	pr_info("initialized driver\n");
- 	return 0;
-=20
-@@ -974,6 +986,8 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	teedev_close_context(ctx);
- err_rhashtable_free:
- 	rhashtable_free_and_destroy(&optee->ffa.global_ids, rh_free_fn, NULL);
-+	rpmb_dev_put(optee->rpmb_dev);
-+	mutex_destroy(&optee->rpmb_dev_mutex);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
- 	mutex_destroy(&optee->ffa.mutex);
-diff --git a/drivers/tee/optee/optee_ffa.h b/drivers/tee/optee/optee_ffa.h
-index 5db779dc00de..257735ae5b56 100644
---- a/drivers/tee/optee/optee_ffa.h
-+++ b/drivers/tee/optee/optee_ffa.h
-@@ -92,6 +92,8 @@
- #define OPTEE_FFA_SEC_CAP_ARG_OFFSET	BIT(0)
- /* OP-TEE supports asynchronous notification via FF-A */
- #define OPTEE_FFA_SEC_CAP_ASYNC_NOTIF	BIT(1)
-+/* OP-TEE supports probing for RPMB device if needed */
-+#define OPTEE_FFA_SEC_CAP_RPMB_PROBE	BIT(2)
-=20
- #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
-=20
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index 424898cdc4e9..dc0f355ef72a 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -7,7 +7,9 @@
- #define OPTEE_PRIVATE_H
-=20
- #include <linux/arm-smccc.h>
-+#include <linux/notifier.h>
- #include <linux/rhashtable.h>
-+#include <linux/rpmb.h>
- #include <linux/semaphore.h>
- #include <linux/tee_core.h>
- #include <linux/types.h>
-@@ -20,6 +22,7 @@
- /* Some Global Platform error codes used in this driver */
- #define TEEC_SUCCESS			0x00000000
- #define TEEC_ERROR_BAD_PARAMETERS	0xFFFF0006
-+#define TEEC_ERROR_ITEM_NOT_FOUND	0xFFFF0008
- #define TEEC_ERROR_NOT_SUPPORTED	0xFFFF000A
- #define TEEC_ERROR_COMMUNICATION	0xFFFF000E
- #define TEEC_ERROR_OUT_OF_MEMORY	0xFFFF000C
-@@ -28,6 +31,7 @@
-=20
- /* API Return Codes are from the GP TEE Internal Core API Specification */
- #define TEE_ERROR_TIMEOUT		0xFFFF3001
-+#define TEE_ERROR_STORAGE_NOT_AVAILABLE	0xF0100003
-=20
- #define TEEC_ORIGIN_COMMS		0x00000002
-=20
-@@ -200,6 +204,12 @@ struct optee_ops {
-  * @notif:		notification synchronization struct
-  * @supp:		supplicant synchronization struct for RPC to supplicant
-  * @pool:		shared memory pool
-+ * @mutex:		mutex protecting @rpmb_dev
-+ * @rpmb_dev:		current RPMB device or NULL
-+ * @rpmb_scan_bus_done	flag if device registation of RPMB dependent devices
-+ *			was already done
-+ * @rpmb_scan_bus_work	workq to for an RPMB device and to scan optee bus
-+ *			and register RPMB dependent optee drivers
-  * @rpc_param_count:	If > 0 number of RPC parameters to make room for
-  * @scan_bus_done	flag if device registation was already done.
-  * @scan_bus_work	workq to scan optee bus and register optee drivers
-@@ -218,9 +228,16 @@ struct optee {
- 	struct optee_notif notif;
- 	struct optee_supp supp;
- 	struct tee_shm_pool *pool;
-+	/* Protects rpmb_dev pointer */
-+	struct mutex rpmb_dev_mutex;
-+	struct rpmb_dev *rpmb_dev;
-+	struct notifier_block rpmb_intf;
- 	unsigned int rpc_param_count;
--	bool   scan_bus_done;
-+	bool scan_bus_done;
-+	bool rpmb_scan_bus_done;
-+	bool in_kernel_rpmb_routing;
- 	struct work_struct scan_bus_work;
-+	struct work_struct rpmb_scan_bus_work;
- };
-=20
- struct optee_session {
-@@ -253,6 +270,8 @@ struct optee_call_ctx {
- 	size_t num_entries;
- };
-=20
-+extern struct blocking_notifier_head optee_rpmb_intf_added;
-+
- int optee_notif_init(struct optee *optee, u_int max_key);
- void optee_notif_uninit(struct optee *optee);
- int optee_notif_wait(struct optee *optee, u_int key, u32 timeout);
-@@ -283,9 +302,14 @@ int optee_cancel_req(struct tee_context *ctx, u32 cancel=
-_id, u32 session);
-=20
- #define PTA_CMD_GET_DEVICES		0x0
- #define PTA_CMD_GET_DEVICES_SUPP	0x1
-+#define PTA_CMD_GET_DEVICES_RPMB	0x2
- int optee_enumerate_devices(u32 func);
- void optee_unregister_devices(void);
-+void optee_bus_scan_rpmb(struct work_struct *work);
-+int optee_rpmb_intf_rdev(struct notifier_block *intf, unsigned long action,
-+			 void *data);
-=20
-+void optee_set_dev_group(struct optee *optee);
- void optee_remove_common(struct optee *optee);
- int optee_open(struct tee_context *ctx, bool cap_memref_null);
- void optee_release(struct tee_context *ctx);
-diff --git a/drivers/tee/optee/optee_rpc_cmd.h b/drivers/tee/optee/optee_rpc_=
-cmd.h
-index 4576751b490c..87a59cc03480 100644
---- a/drivers/tee/optee/optee_rpc_cmd.h
-+++ b/drivers/tee/optee/optee_rpc_cmd.h
-@@ -104,4 +104,39 @@
- /* I2C master control flags */
- #define OPTEE_RPC_I2C_FLAGS_TEN_BIT	BIT(0)
-=20
-+/*
-+ * Reset RPMB probing
-+ *
-+ * Releases an eventually already used RPMB devices and starts over searching
-+ * for RPMB devices. Returns the kind of shared memory to use in subsequent
-+ * OPTEE_RPC_CMD_RPMB_PROBE_NEXT and OPTEE_RPC_CMD_RPMB calls.
-+ *
-+ * [out]    value[0].a	    OPTEE_RPC_SHM_TYPE_*, the parameter for
-+ *			    OPTEE_RPC_CMD_SHM_ALLOC
-+ */
-+#define OPTEE_RPC_CMD_RPMB_PROBE_RESET	22
-+
-+/*
-+ * Probe next RPMB device
-+ *
-+ * [out]    value[0].a	    Type of RPMB device, OPTEE_RPC_RPMB_*
-+ * [out]    value[0].b	    EXT CSD-slice 168 "RPMB Size"
-+ * [out]    value[0].c	    EXT CSD-slice 222 "Reliable Write Sector Count"
-+ * [out]    memref[1]       Buffer with the raw CID
-+ */
-+#define OPTEE_RPC_CMD_RPMB_PROBE_NEXT	23
-+
-+/* Type of RPMB device */
-+#define OPTEE_RPC_RPMB_EMMC		0
-+#define OPTEE_RPC_RPMB_UFS		1
-+#define OPTEE_RPC_RPMB_NVME		2
-+
-+/*
-+ * Replay Protected Memory Block access
-+ *
-+ * [in]     memref[0]	    Frames to device
-+ * [out]    memref[1]	    Frames from device
-+ */
-+#define OPTEE_RPC_CMD_RPMB_FRAMES	24
-+
- #endif /*__OPTEE_RPC_CMD_H*/
-diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
-index 7d9fa426505b..879426300821 100644
---- a/drivers/tee/optee/optee_smc.h
-+++ b/drivers/tee/optee/optee_smc.h
-@@ -278,6 +278,8 @@ struct optee_smc_get_shm_config_result {
- #define OPTEE_SMC_SEC_CAP_ASYNC_NOTIF		BIT(5)
- /* Secure world supports pre-allocating RPC arg struct */
- #define OPTEE_SMC_SEC_CAP_RPC_ARG		BIT(6)
-+/* Secure world supports probing for RPMB device if needed */
-+#define OPTEE_SMC_SEC_CAP_RPMB_PROBE		BIT(7)
-=20
- #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
- #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index 5de4504665be..a4b49fd1d46d 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -7,6 +7,7 @@
-=20
- #include <linux/delay.h>
- #include <linux/i2c.h>
-+#include <linux/rpmb.h>
- #include <linux/slab.h>
- #include <linux/tee_core.h>
- #include "optee_private.h"
-@@ -261,6 +262,154 @@ void optee_rpc_cmd_free_suppl(struct tee_context *ctx, =
-struct tee_shm *shm)
- 	optee_supp_thrd_req(ctx, OPTEE_RPC_CMD_SHM_FREE, 1, &param);
- }
-=20
-+static void handle_rpc_func_rpmb_probe_reset(struct tee_context *ctx,
-+					     struct optee *optee,
-+					     struct optee_msg_arg *arg)
-+{
-+	struct tee_param params[1];
-+
-+	if (arg->num_params !=3D ARRAY_SIZE(params) ||
-+	    optee->ops->from_msg_param(optee, params, arg->num_params,
-+				       arg->params) ||
-+	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	params[0].u.value.a =3D OPTEE_RPC_SHM_TYPE_KERNEL;
-+	params[0].u.value.b =3D 0;
-+	params[0].u.value.c =3D 0;
-+	if (optee->ops->to_msg_param(optee, arg->params,
-+				     arg->num_params, params)) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	mutex_lock(&optee->rpmb_dev_mutex);
-+	rpmb_dev_put(optee->rpmb_dev);
-+	optee->rpmb_dev =3D NULL;
-+	mutex_unlock(&optee->rpmb_dev_mutex);
-+
-+	arg->ret =3D TEEC_SUCCESS;
-+}
-+
-+static int rpmb_type_to_rpc_type(enum rpmb_type rtype)
-+{
-+	switch (rtype) {
-+	case RPMB_TYPE_EMMC:
-+		return OPTEE_RPC_RPMB_EMMC;
-+	case RPMB_TYPE_UFS:
-+		return OPTEE_RPC_RPMB_UFS;
-+	case RPMB_TYPE_NVME:
-+		return OPTEE_RPC_RPMB_NVME;
-+	default:
-+		return -1;
-+	}
-+}
-+
-+static int rpc_rpmb_match(struct device *dev, const void *data)
-+{
-+	struct rpmb_dev *rdev =3D to_rpmb_dev(dev);
-+
-+	return rpmb_type_to_rpc_type(rdev->descr.type) >=3D 0;
-+}
-+
-+static void handle_rpc_func_rpmb_probe_next(struct tee_context *ctx,
-+					    struct optee *optee,
-+					    struct optee_msg_arg *arg)
-+{
-+	struct rpmb_dev *rdev;
-+	struct tee_param params[2];
-+	void *buf;
-+
-+	if (arg->num_params !=3D ARRAY_SIZE(params) ||
-+	    optee->ops->from_msg_param(optee, params, arg->num_params,
-+				       arg->params) ||
-+	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
-+	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+	buf =3D tee_shm_get_va(params[1].u.memref.shm,
-+			     params[1].u.memref.shm_offs);
-+	if (!buf) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	mutex_lock(&optee->rpmb_dev_mutex);
-+	rdev =3D rpmb_dev_find_device(NULL, optee->rpmb_dev, rpc_rpmb_match);
-+	rpmb_dev_put(optee->rpmb_dev);
-+	optee->rpmb_dev =3D rdev;
-+	mutex_unlock(&optee->rpmb_dev_mutex);
-+
-+	if (!rdev) {
-+		arg->ret =3D TEEC_ERROR_ITEM_NOT_FOUND;
-+		return;
-+	}
-+
-+	if (params[1].u.memref.size < rdev->descr.dev_id_len) {
-+		arg->ret =3D TEEC_ERROR_SHORT_BUFFER;
-+		return;
-+	}
-+	memcpy(buf, rdev->descr.dev_id, rdev->descr.dev_id_len);
-+	params[1].u.memref.size =3D rdev->descr.dev_id_len;
-+	params[0].u.value.a =3D rpmb_type_to_rpc_type(rdev->descr.type);
-+	params[0].u.value.b =3D rdev->descr.capacity;
-+	params[0].u.value.c =3D rdev->descr.reliable_wr_count;
-+	if (optee->ops->to_msg_param(optee, arg->params,
-+				     arg->num_params, params)) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		return;
-+	}
-+
-+	arg->ret =3D TEEC_SUCCESS;
-+}
-+
-+static void handle_rpc_func_rpmb_frames(struct tee_context *ctx,
-+					struct optee *optee,
-+					struct optee_msg_arg *arg)
-+{
-+	struct tee_param params[2];
-+	struct rpmb_dev *rdev;
-+	void *p0, *p1;
-+
-+	mutex_lock(&optee->rpmb_dev_mutex);
-+	rdev =3D rpmb_dev_get(optee->rpmb_dev);
-+	mutex_unlock(&optee->rpmb_dev_mutex);
-+	if (!rdev) {
-+		arg->ret =3D TEEC_ERROR_ITEM_NOT_FOUND;
-+		return;
-+	}
-+
-+	if (arg->num_params !=3D ARRAY_SIZE(params) ||
-+	    optee->ops->from_msg_param(optee, params, arg->num_params,
-+				       arg->params) ||
-+	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT ||
-+	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		goto out;
-+	}
-+
-+	p0 =3D tee_shm_get_va(params[0].u.memref.shm,
-+			    params[0].u.memref.shm_offs);
-+	p1 =3D tee_shm_get_va(params[1].u.memref.shm,
-+			    params[1].u.memref.shm_offs);
-+	if (rpmb_route_frames(rdev, p0, params[0].u.memref.size, p1,
-+			      params[1].u.memref.size)) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		goto out;
-+	}
-+	if (optee->ops->to_msg_param(optee, arg->params,
-+				     arg->num_params, params)) {
-+		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-+		goto out;
-+	}
-+	arg->ret =3D TEEC_SUCCESS;
-+out:
-+	rpmb_dev_put(rdev);
-+}
-+
- void optee_rpc_cmd(struct tee_context *ctx, struct optee *optee,
- 		   struct optee_msg_arg *arg)
- {
-@@ -277,6 +426,34 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee=
- *optee,
- 	case OPTEE_RPC_CMD_I2C_TRANSFER:
- 		handle_rpc_func_cmd_i2c_transfer(ctx, arg);
- 		break;
-+	/*
-+	 * optee->in_kernel_rpmb_routing true means that OP-TEE supports
-+	 * in-kernel RPMB routing _and_ that the RPMB subsystem is
-+	 * reachable. This is reported to user space with
-+	 * rpmb_routing_model=3Dkernel in sysfs.
-+	 *
-+	 * rpmb_routing_model=3Dkernel is also a promise to user space that
-+	 * RPMB access will not require supplicant support, hence the
-+	 * checks below.
-+	 */
-+	case OPTEE_RPC_CMD_RPMB_PROBE_RESET:
-+		if (optee->in_kernel_rpmb_routing)
-+			handle_rpc_func_rpmb_probe_reset(ctx, optee, arg);
-+		else
-+			handle_rpc_supp_cmd(ctx, optee, arg);
-+		break;
-+	case OPTEE_RPC_CMD_RPMB_PROBE_NEXT:
-+		if (optee->in_kernel_rpmb_routing)
-+			handle_rpc_func_rpmb_probe_next(ctx, optee, arg);
-+		else
-+			handle_rpc_supp_cmd(ctx, optee, arg);
-+		break;
-+	case OPTEE_RPC_CMD_RPMB_FRAMES:
-+		if (optee->in_kernel_rpmb_routing)
-+			handle_rpc_func_rpmb_frames(ctx, optee, arg);
-+		else
-+			handle_rpc_supp_cmd(ctx, optee, arg);
-+		break;
- 	default:
- 		handle_rpc_supp_cmd(ctx, optee, arg);
- 	}
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 844285d4f03c..e9456e3e74cc 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -20,6 +20,7 @@
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
-+#include <linux/rpmb.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-@@ -1685,6 +1686,10 @@ static int optee_probe(struct platform_device *pdev)
- 	optee->smc.sec_caps =3D sec_caps;
- 	optee->rpc_param_count =3D rpc_param_count;
-=20
-+	if (IS_REACHABLE(CONFIG_RPMB) &&
-+	    (sec_caps & OPTEE_SMC_SEC_CAP_RPMB_PROBE))
-+		optee->in_kernel_rpmb_routing =3D true;
-+
- 	teedev =3D tee_device_alloc(&optee_clnt_desc, NULL, pool, optee);
- 	if (IS_ERR(teedev)) {
- 		rc =3D PTR_ERR(teedev);
-@@ -1699,6 +1704,8 @@ static int optee_probe(struct platform_device *pdev)
- 	}
- 	optee->supp_teedev =3D teedev;
-=20
-+	optee_set_dev_group(optee);
-+
- 	rc =3D tee_device_register(optee->teedev);
- 	if (rc)
- 		goto err_unreg_supp_teedev;
-@@ -1712,6 +1719,7 @@ static int optee_probe(struct platform_device *pdev)
- 	optee->smc.memremaped_shm =3D memremaped_shm;
- 	optee->pool =3D pool;
- 	optee_shm_arg_cache_init(optee, arg_cache_flags);
-+	mutex_init(&optee->rpmb_dev_mutex);
-=20
- 	platform_set_drvdata(pdev, optee);
- 	ctx =3D teedev_open(optee->teedev);
-@@ -1766,6 +1774,10 @@ static int optee_probe(struct platform_device *pdev)
- 	if (rc)
- 		goto err_disable_shm_cache;
-=20
-+	INIT_WORK(&optee->rpmb_scan_bus_work, optee_bus_scan_rpmb);
-+	optee->rpmb_intf.notifier_call =3D optee_rpmb_intf_rdev;
-+	blocking_notifier_chain_register(&optee_rpmb_intf_added,
-+					 &optee->rpmb_intf);
- 	pr_info("initialized driver\n");
- 	return 0;
-=20
-@@ -1779,6 +1791,8 @@ static int optee_probe(struct platform_device *pdev)
- err_close_ctx:
- 	teedev_close_context(ctx);
- err_supp_uninit:
-+	rpmb_dev_put(optee->rpmb_dev);
-+	mutex_destroy(&optee->rpmb_dev_mutex);
- 	optee_shm_arg_cache_uninit(optee);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
---=20
-2.34.1
+Hello all,
+
+We (Eden and I) have been assigned a summer project exploring the possibility=
+ of verified boot for Linux with a view to experiment with a TEE, and would l=
+ike to share our outcomes from the project so far.
+
+We've been working on condensing all the information and documentation on TF-=
+A, OP-TEE, and U-Boot verified boot into a trivially workable form, a Makefil=
+e, for the Raspberry Pi 3B+. Our aim is a proof of concept pilot project to s=
+ee what parts of the technology outlined in the NIST standards for secure boo=
+t on IoT is currently available, and thus what needs to be developed. This al=
+so leads us to an interest in full crypto algorithm agility to ensure quick a=
+doption of the quantum safe algorithms as they come out.
+I should note that our boot order here is TF-A to OP-TEE, then TF-A to U-Boot=
+ to Linux.
+This has raised a few areas of note and a couple of issues on our end:
+
+# Areas of note
+- U-Boot and Linux DTB's being incompatible has minimal documentation
+Newer versions of U-Boot do have `CONFIG_OF_UPSTREAM`, but I can't see that a=
+s a recommended solution. Perhaps a note in the Kconfig entry for `CONFIG_OF_=
+CONTROL` would be sufficient
+- U-Boot can fail silently if the DTB used is incompatible
+No idea what the solution here could be; an invalid DTB inevitably means that=
+ the firmware cannot access any of the hardware correctly.
+- U-Boot unable to find `CONFIG_OF_SEPARATE` DTB's when loaded by TF-A; this =
+is a TF-A problem, but maybe check other possible places for a DTB on the U-B=
+oot end?
+- U-Boot itself appears to have good crypto agility (or will in the near futu=
+re), with a macro and existing algorithms as examples for the addition of new=
+ algorithms
+- `mkimage` appears to be lacking these same features for crypto agility, whi=
+ch would otherwise set U-Boot up to be ready for the new quantum safe algorit=
+hms' release
+A similar macro system for `mkimage`, or some other schema for defining how t=
+o add algorithm keys to the FDT, would provide some amazing flexibility, alre=
+ady being able to define more than one signature as required. Adding keys to =
+the FDT would need to be standardised in someway for this, I would imagine.
+
+I am very aware that some of the below issues are not relevant to all project=
+s, but thought it best to maintain a single list to ensure that the correct p=
+lace to make a fix for each issue is not locked project wise too early.
+# Issues
+- buildroot build fails when the directory length is greater than ~80 charact=
+ers
+- TF-A does not pass on the DTB address unless `RPI3_DIRECT_LINUX_BOOT` is se=
+t, which also implies a define U-Boot doesn't need
+- TF-A `LOG_LEVEL=3D50` flag has compatibility issue in xlat tables v2 when c=
+ompiled for 64bit
+- `mkimage` ECDSA key adding to FDT fails if there is no signature node pre-a=
+dded and doesn't set `required` node when `-r` is used
+- `fit_check_sig`fails to check an ECDSA signed FIT file with corresponding F=
+DT due to `<null>` hash node
+- `mkimage` expects ECDSA private key only in a `.pem` and not `.der`, which =
+would be standard for a single private key
+
+We intend to release the Makefile and accompanying scripts for this on Monday=
+ 12th August, likely ~5pm BST to give us time to finalise what we have curren=
+tly; this will consist of two Makefiles: one for verified boot using `CONFIG_=
+OF_EMBED`, and another using `CONFIG_OF_SEPARATE` on U-Boot v2024.07. We are =
+currently planning on releasing this on GitHub under the same license as the =
+involved projects, but what would be the most helpful way for us to release t=
+his to you?
+We have, beside the points raised in the Issues section above, no specific ch=
+anges for the exiting repos, focusing instead on Makefiles which pull togethe=
+r parts of the existing releases to produce a working PoC as quickly as possi=
+ble. We intend to also release this to the Raspberry Pi community as a TEE so=
+lution they can experiment with today.
+
+This email has been sent to:
+- u-boot(a)lists.denx.de
+- op-tee(a)lists.trustedfirmware.org
+and the Makefiles will be sent to Raspberry Pi Foundation and community some =
+point next week
+
+Thomas Gymer (thomas.gymer(a)bt.com) & Eden Hamilton (eden.hamilton(a)bt.com)
 
 
---===============1980885262464371354==--
+
+--===============2946285698830181972==--
 
