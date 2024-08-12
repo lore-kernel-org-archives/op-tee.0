@@ -1,153 +1,228 @@
-From: Joakim Bech <joakim.bech@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Verified Boot through U-Boot for RPi3 with OP-TEE
-Date: Mon, 12 Aug 2024 10:31:27 +0200
-Message-ID: 
- <CA+Eyddbaq1cXtzrNXc1K2bsWwG3v3G6Zm=7Y0SRGuMDw5Zk0FQ@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CCWLP123MB63935507882C09545073EA17E5BA2=40CWLP123MB?=
- =?utf-8?q?6393=2EGBRP123=2EPROD=2EOUTLOOK=2ECOM=3E?=>
+Subject: [PATCH v8 0/4] Replay Protected Memory Block (RPMB) subsystem
+Date: Mon, 12 Aug 2024 15:31:23 +0200
+Message-ID: <20240812133127.865879-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0608087890404666498=="
+Content-Type: multipart/mixed; boundary="===============4368663162313366733=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0608087890404666498==
+--===============4368663162313366733==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Thomas and Eden,
+Hi,
 
-On Mon, Aug 12, 2024 at 9:48=E2=80=AFAM thomas.gymer--- via OP-TEE <
-op-tee@lists.trustedfirmware.org> wrote:
+This patch set is getting ready to be queued for the next merge window. The
+issues reported by Mikka in the previous patch set has been resolved, the
+issues turned out to be outside of this patch set relating to configuration
+in the secure world. I'm planning a pull request to arm-soc, but before
+that I'd rather have acks or at least an OK for:
+- "rpmb: add Replay Protected Memory Block (RPMB) subsystem" by Greg
+- "mmc: block: register RPMB partition with the RPMB subsystem" by Ulf
 
-> Hello all,
->
-> We (Eden and I) have been assigned a summer project exploring the
-> possibility of verified boot for Linux with a view to experiment with a
-> TEE, and would like to share our outcomes from the project so far.
->
-> We've been working on condensing all the information and documentation on
-> TF-A, OP-TEE, and U-Boot verified boot into a trivially workable form, a
-> Makefile, for the Raspberry Pi 3B+. Our aim is a proof of concept pilot
-> project to see what parts of the technology outlined in the NIST standards
-> for secure boot on IoT is currently available, and thus what needs to be
-> developed. This also leads us to an interest in full crypto algorithm
-> agility to ensure quick adoption of the quantum safe algorithms as they
-> come out.
-> I should note that our boot order here is TF-A to OP-TEE, then TF-A to
-> U-Boot to Linux.
-> This has raised a few areas of note and a couple of issues on our end:
->
-> # Areas of note
-> - U-Boot and Linux DTB's being incompatible has minimal documentation
-> Newer versions of U-Boot do have `CONFIG_OF_UPSTREAM`, but I can't see
-> that as a recommended solution. Perhaps a note in the Kconfig entry for
-> `CONFIG_OF_CONTROL` would be sufficient
-> - U-Boot can fail silently if the DTB used is incompatible
-> No idea what the solution here could be; an invalid DTB inevitably means
-> that the firmware cannot access any of the hardware correctly.
-> - U-Boot unable to find `CONFIG_OF_SEPARATE` DTB's when loaded by TF-A;
-> this is a TF-A problem, but maybe check other possible places for a DTB on
-> the U-Boot end?
-> - U-Boot itself appears to have good crypto agility (or will in the near
-> future), with a macro and existing algorithms as examples for the addition
-> of new algorithms
-> - `mkimage` appears to be lacking these same features for crypto agility,
-> which would otherwise set U-Boot up to be ready for the new quantum safe
-> algorithms' release
-> A similar macro system for `mkimage`, or some other schema for defining
-> how to add algorithm keys to the FDT, would provide some amazing
-> flexibility, already being able to define more than one signature as
-> required. Adding keys to the FDT would need to be standardised in someway
-> for this, I would imagine.
->
-As a general comment, the incompatibilities (DTB UBoot/Linux) you've seen
-is well known to the community and it's been a long running effort to
-improve the situation.
+Arnd, please let me know if anything else is missing.
+
+This patch set introduces a new RPMB subsystem, based on patches from [1],
+[2], and [3]. The RPMB subsystem aims at providing access to RPMB
+partitions to other kernel drivers, in particular the OP-TEE driver. A new
+user space ABI isn't needed, we can instead continue using the already
+present ABI when writing the RPMB key during production.
+
+I've added and removed things to keep only what is needed by the OP-TEE
+driver. Since the posting of [3], there has been major changes in the MMC
+subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+is in practice completely rewritten.
+
+With this OP-TEE can access RPMB during early boot instead of having to
+wait for user space to become available as in the current design [4].
+This will benefit the efi variables [5] since we won't rely on userspace as
+well as some TPM issues [6] that were solved.
+
+The OP-TEE driver finds the correct RPMB device to interact with by
+iterating over available devices until one is found with a programmed
+authentication matching the one OP-TEE is using. This enables coexisting
+users of other RPMBs since the owner can be determined by who knows the
+authentication key.
+
+The corresponding secure world OP-TEE patches are available at [7].
+
+I've put myself as a maintainer for the RPMB subsystem as I have an
+interest in the OP-TEE driver to keep this in good shape. However, if you'd
+rather see someone else taking the maintainership that's fine too. I'll
+help keep the subsystem updated regardless.
+
+[1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.mi=
+crosoft.com/
+[2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)linar=
+o.org/
+[3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-tomas.=
+winkler(a)intel.com/
+[4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html#r=
+pmb-secure-storage
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+[6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+[7] https://github.com/jenswi-linaro/optee_os/tree/rpmb_probe_v8
+
+Thanks,
+Jens
+
+Changes since v7:
+* Rebased on v6.11-rc1
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Adding Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+* "tee: add tee_device_set_dev_groups()"
+  - Declaring tee_device_set_dev_groups() in the recently introduced
+    include/linux/tee_core.h
+
+Changes since v6:
+* Add Tested-by: Manuel Traut <manut@mecka.net> provided for the v6
+* Add a new patch "tee: add tee_device_set_dev_groups()" needed later in
+  the patch set
+* Reintroduce the rpmb_class as requested by Greg, this affects the patches
+  "rpmb: add Replay Protected Memory Block (RPMB) subsystem" and
+  "optee: probe RPMB device using RPMB subsystem"
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem":
+  - rpmb_interface_{,un}register() are now based on
+    class_interface_{,un}register()
+  - Embed a separate device in struct rpmb_dev for life cycle
+    management etc
+* "optee: probe RPMB device using RPMB subsystem"
+  - Add an internal blocking_notifier to deal with the struct
+    class_interface callback
+  - Add a rpmb_routing_model variable in sysfs to help integration with
+    systemd, requested by Mikko Rapeli
+  - Add an RPMB probe capability flag in the ABI shared with the secure
+    world, both SMC and FF-A ABI, needed to support the rpmb_routing_model
+    variable
+  - optee_rpc_cmd() is strict whether an RPMB RPC request should be
+    forwarded to tee-supplicant or routed via the RPMB subsystem, depending
+    on the reported RPMB routing model
+
+Changes since v5:
+Manuel Traut reported and investigated an error on an i.MX8MM, the root
+cause was identified as insufficient alignment on frames sent to the RPMB
+device. Fixed in the OP-TEE driver as described below.
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Adding a missing EXPORT_SYMBOL_GPL()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Replacing the old OPTEE_RPC_CMD_RPMB ABI with OPTEE_RPC_CMD_RPMB_FRAMES
+    to get rid of the small header struct rpmb_req (now removed) causing
+    the problem.
+  - Matching changes on the secure side + support for re-initializing
+    RPMB in case a boot stage has used RPMB, the latter also reported by=20
+    Manuel Traut.
+
+Changes since v4:
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Describing struct rpmb_descr as RPMB description instead of descriptor
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Addressing review comments
+  - Adding more comments for struct rpmb_frame
+  - Fixing assignment of reliable_wr_count and capacity in mmc_blk_rpmb_add()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Updating struct rpmb_dev_info to match changes in "rpmb: add Replay
+    Protected Memory Block (RPMB) subsystem"
+
+Changes since v3:
+* Move struct rpmb_frame into the MMC driver since the format of the RPMB
+  frames depend on the implementation, one format for eMMC, another for
+  UFS, and so on
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Adding Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+  - Adding more description of the API functions
+  - Removing the set_dev_info() op from struct rpmb_ops, the needed informati=
+on
+    is supplied in the arguments to rpmb_dev_register() instead.
+  - Getting rid of struct rpmb_ops since only the route_frames() op was
+    remaining, store that op directly in struct rpmb_dev
+  - Changed rpmb_interface_register() and rpmb_interface_unregister() to use
+    notifier_block instead of implementing the same thing ourselves
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Moving the call to rpmb_dev_register() to be done at the end of
+    mmc_blk_probe() when the device is fully available
+* "optee: probe RPMB device using RPMB subsystem"
+  - Use IS_REACHABLE(CONFIG_RPMB) to determine if the RPMB subsystem is
+    available
+  - Translate TEE_ERROR_STORAGE_NOT_AVAILABLE if encountered in get_devices()
+    to recognize the error in optee_rpmb_scan()
+  - Simplified optee_rpmb_scan() and optee_rpmb_intf_rdev()
+
+Changes since v2:
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Fixing documentation issues
+  - Adding a "depends on MMC" in the Kconfig
+  - Removed the class-device and the embedded device, struct rpmb_dev now
+    relies on the parent device for reference counting as requested
+  - Removed the now unneeded rpmb_ops get_resources() and put_resources()
+    since references are already taken in mmc_blk_alloc_rpmb_part() before
+    rpmb_dev_register() is called
+  - Added rpmb_interface_{,un}register() now that
+    class_interface_{,un}register() can't be used ay longer
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Adding the missing error cleanup in alloc_idata()
+  - Taking the needed reference to md->disk in mmc_blk_alloc_rpmb_part()
+    instead of in mmc_rpmb_chrdev_open() and rpmb_op_mmc_get_resources()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Registering to get a notification when an RPMB device comes online
+  - Probes for RPMB devices each time an RPMB device comes online, until
+    a usable device is found
+  - When a usable RPMB device is found, call
+    optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB)
+  - Pass type of rpmb in return value from OPTEE_RPC_CMD_RPMB_PROBE_NEXT
+
+Changes since Shyam's RFC:
+* Removed the remaining leftover rpmb_cdev_*() function calls
+* Refactored the struct rpmb_ops with all the previous ops replaced, in
+  some sense closer to [3] with the route_frames() op
+* Added rpmb_route_frames()
+* Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
+* Removed all functions not needed in the OP-TEE use case
+* Added "mmc: block: register RPMB partition with the RPMB subsystem", based
+  on the commit with the same name in [3]
+* Added "optee: probe RPMB device using RPMB subsystem" for integration
+  with OP-TEE
+* Moved the RPMB driver into drivers/misc/rpmb-core.c
+* Added my name to MODULE_AUTHOR() in rpmb-core.c
+* Added an rpmb_mutex to serialize access to the IDA
+* Removed the target parameter from all rpmb_*() functions since it's
+  currently unused
 
 
->
-> I am very aware that some of the below issues are not relevant to all
-> projects, but thought it best to maintain a single list to ensure that the
-> correct place to make a fix for each issue is not locked project wise too
-> early.
-> # Issues
-> - buildroot build fails when the directory length is greater than ~80
-> characters
->
-Interesting, I wasn't aware.
+Jens Wiklander (4):
+  rpmb: add Replay Protected Memory Block (RPMB) subsystem
+  mmc: block: register RPMB partition with the RPMB subsystem
+  tee: add tee_device_set_dev_groups()
+  optee: probe RPMB device using RPMB subsystem
 
+ Documentation/ABI/testing/sysfs-class-tee |  15 ++
+ MAINTAINERS                               |   8 +
+ drivers/misc/Kconfig                      |  10 +
+ drivers/misc/Makefile                     |   1 +
+ drivers/misc/rpmb-core.c                  | 232 +++++++++++++++++++++
+ drivers/mmc/core/block.c                  | 241 +++++++++++++++++++++-
+ drivers/tee/optee/core.c                  |  96 ++++++++-
+ drivers/tee/optee/device.c                |   7 +
+ drivers/tee/optee/ffa_abi.c               |  14 ++
+ drivers/tee/optee/optee_ffa.h             |   2 +
+ drivers/tee/optee/optee_private.h         |  26 ++-
+ drivers/tee/optee/optee_rpc_cmd.h         |  35 ++++
+ drivers/tee/optee/optee_smc.h             |   2 +
+ drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++
+ drivers/tee/optee/smc_abi.c               |  14 ++
+ drivers/tee/tee_core.c                    |  19 +-
+ include/linux/rpmb.h                      | 123 +++++++++++
+ include/linux/tee_core.h                  |  12 ++
+ 18 files changed, 1024 insertions(+), 10 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-tee
+ create mode 100644 drivers/misc/rpmb-core.c
+ create mode 100644 include/linux/rpmb.h
 
-> - TF-A does not pass on the DTB address unless `RPI3_DIRECT_LINUX_BOOT` is
-> set, which also implies a define U-Boot doesn't need
-> - TF-A `LOG_LEVEL=3D50` flag has compatibility issue in xlat tables v2 when
-> compiled for 64bit
->
-I believe this one is about the image becoming too big? Or is it actually a
-xlat tables issue?
-
-
-> - `mkimage` ECDSA key adding to FDT fails if there is no signature node
-> pre-added and doesn't set `required` node when `-r` is used
-> - `fit_check_sig`fails to check an ECDSA signed FIT file with
-> corresponding FDT due to `<null>` hash node
-> - `mkimage` expects ECDSA private key only in a `.pem` and not `.der`,
-> which would be standard for a single private key
->
-> We intend to release the Makefile and accompanying scripts for this on
-> Monday 12th August, likely ~5pm BST to give us time to finalise what we
-> have currently; this will consist of two Makefiles: one for verified boot
-> using `CONFIG_OF_EMBED`, and another using `CONFIG_OF_SEPARATE` on U-Boot
-> v2024.07. We are currently planning on releasing this on GitHub under the
-> same license as the involved projects, but what would be the most helpful
-> way for us to release this to you?
->
-As one of the maintainers of the OP-TEE project, I'm always in favor of
-having changes done in the official repositories, both code and
-documentation. There is nothing wrong with doing a write up and keep fixes
-elsewhere as such, but it has happened a couple of times that when people
-do these things on their own, other people find the instructions etc on
-internet and when they don't get it to work, they post issues and questions
-at the official OP-TEE issue list. However, since this is code not
-maintained or in the official git, there is little we can do about it. So,
-if you can send fixes upstream to the official projects, that's what I
-would suggest, that's the best in the long run. If you keep it elsewhere,
-may I please just ask you to put some note somewhere in the docs or readme,
-saying that this is work done outside official code, so if people try it
-and if it for some reason wouldn't work, then asking for help upstream
-likely won't lead to anything.
-
-
-> We have, beside the points raised in the Issues section above, no specific
-> changes for the exiting repos, focusing instead on Makefiles which pull
-> together parts of the existing releases to produce a working PoC as quickly
-> as possible. We intend to also release this to the Raspberry Pi community
-> as a TEE solution they can experiment with today.
->
-I understand that you have a deadline for a summer project and therefore
-have to prioritize and make decisions. It looks like you've done a great
-deep dive and found various things that can (and should) be improved. For
-OP-TEE, if you have time, please consider sending your findings to the
-various "Issues" list at GitHub. If there is no obvious place to post the
-issue, you can use the one in OP-TEE os (
-https://github.com/OP-TEE/optee_os/issues). For U-Boot I believe it's the
-mailinglist that is the best place to discuss individual issues.
-
-
->
-> This email has been sent to:
-> - u-boot(a)lists.denx.de
-> - op-tee(a)lists.trustedfirmware.org
-> and the Makefiles will be sent to Raspberry Pi Foundation and community
-> some point next week
->
-> Thomas Gymer (thomas.gymer(a)bt.com) & Eden Hamilton (eden.hamilton(a)bt.co=
-m)
->
->
->
 --=20
-Regards,
-Joakim
+2.34.1
 
---===============0608087890404666498==--
+
+--===============4368663162313366733==--
 
