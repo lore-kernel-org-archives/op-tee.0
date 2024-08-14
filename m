@@ -1,99 +1,170 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH 6/7] firmware: arm_ffa: Add support for FFA_YIELD in direct messaging
-Date: Wed, 14 Aug 2024 14:48:55 +0100
-Message-ID: <20240814-ffa_v1-2-v1-6-9e9abef69b21@arm.com>
+Subject: [PATCH 7/7] firmware: arm_ffa: Fetch the Rx/Tx buffer size using
+ ffa_features()
+Date: Wed, 14 Aug 2024 14:48:56 +0100
+Message-ID: <20240814-ffa_v1-2-v1-7-9e9abef69b21@arm.com>
 In-Reply-To: <20240814-ffa_v1-2-v1-0-9e9abef69b21@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8178314694608894013=="
+Content-Type: multipart/mixed; boundary="===============7780240169467206874=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8178314694608894013==
+--===============7780240169467206874==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Successful completion of both direct messaging function can be indicated
-through an invocation of FFA_YIELD or GGA_INTERRUPT by the callee.
+An endpoint can discover the minimum size, maximum size and alignment
+boundary for the Rx/Tx buffers by passing the function ID of the
+FFA_RXTX_MAP ABI as input in the FFA_FEATURES interface. The maximum
+size is an optional field and a value of 0 means that the partition
+manager or the hypervisor does not enforce a maximum size.
 
-FFA_INTERRUPT indicates that the direct request was interrupted and must
-be resumed through the FFA_RUN interface which is already done in the
-driver.
-
-FFA_YIELD indicates that the receiver endpoint has transitioned to the
-blocked runtime state and must be resumed through the FFA_RUN interface.
-However, the way receiver endpoint gets unblocked is implementation
-defined. So, the driver just sleeps for 1 - 2ms and issues FFA_RUN. It
-can return to the caller with FFA_YIELD is the receiver endpoint is still
-blocked.
+Use the discovery mechanism and remove the hardcoded 4kB buffer size.
+If the discovery fails, it still defaults to 4kB.
 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/firmware/arm_ffa/driver.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/firmware/arm_ffa/driver.c | 44 +++++++++++++++++++++++++------------=
+--
+ 1 file changed, 28 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/dri=
 ver.c
-index 8af41be4b1c1..90102ed7bd18 100644
+index 90102ed7bd18..1e3764852118 100644
 --- a/drivers/firmware/arm_ffa/driver.c
 +++ b/drivers/firmware/arm_ffa/driver.c
-@@ -26,6 +26,7 @@
- #include <linux/arm_ffa.h>
- #include <linux/bitfield.h>
- #include <linux/cpuhotplug.h>
-+#include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/hashtable.h>
- #include <linux/interrupt.h>
-@@ -397,6 +398,18 @@ static int ffa_id_get(u16 *vm_id)
- 	return 0;
- }
+@@ -54,11 +54,8 @@
+ #define PACK_TARGET_INFO(s, r)		\
+ 	(FIELD_PREP(SENDER_ID_MASK, (s)) | FIELD_PREP(RECEIVER_ID_MASK, (r)))
 =20
-+static inline void ffa_msg_send_wait_for_completion(ffa_value_t *ret)
-+{
-+	while (ret->a0 =3D=3D FFA_INTERRUPT || ret->a0 =3D=3D FFA_YIELD) {
-+		if (ret->a0 =3D=3D FFA_YIELD)
-+			fsleep(1000);
-+
-+		invoke_ffa_fn((ffa_value_t){
-+			      .a0 =3D FFA_RUN, .a1 =3D ret->a1,
-+			      }, ret);
-+	}
-+}
-+
- static int ffa_msg_send_direct_req(u16 src_id, u16 dst_id, bool mode_32bit,
- 				   struct ffa_send_direct_data *data)
+-/*
+- * Keeping RX TX buffer size as 4K for now
+- * 64K may be preferred to keep it min a page in 64K PAGE_SIZE config
+- */
+-#define RXTX_BUFFER_SIZE	SZ_4K
++#define RXTX_MAP_MIN_BUFSZ_MASK	GENMASK(1, 0)
++#define RXTX_MAP_MIN_BUFSZ(x)	((x) & RXTX_MAP_MIN_BUFSZ_MASK)
+=20
+ #define FFA_MAX_NOTIFICATIONS		64
+=20
+@@ -99,6 +96,7 @@ struct ffa_drv_info {
+ 	struct mutex tx_lock; /* lock to protect Tx buffer */
+ 	void *rx_buffer;
+ 	void *tx_buffer;
++	size_t rxtx_bufsz;
+ 	bool mem_ops_native;
+ 	bool msg_direct_req2_supp;
+ 	bool bitmap_created;
+@@ -454,7 +452,7 @@ static int ffa_msg_send2(u16 src_id, u16 dst_id, void *bu=
+f, size_t sz)
+ 	ffa_value_t ret;
+ 	int retval =3D 0;
+=20
+-	if (sz > (RXTX_BUFFER_SIZE - sizeof(*msg)))
++	if (sz > (drv_info->rxtx_bufsz - sizeof(*msg)))
+ 		return -ERANGE;
+=20
+ 	mutex_lock(&drv_info->tx_lock);
+@@ -689,9 +687,10 @@ static int ffa_memory_ops(u32 func_id, struct ffa_mem_op=
+s_args *args)
  {
-@@ -417,10 +430,7 @@ static int ffa_msg_send_direct_req(u16 src_id, u16 dst_i=
-d, bool mode_32bit,
- 		      .a6 =3D data->data3, .a7 =3D data->data4,
- 		      }, &ret);
+ 	int ret;
+ 	void *buffer;
++	size_t rxtx_bufsz =3D drv_info->rxtx_bufsz;
 =20
--	while (ret.a0 =3D=3D FFA_INTERRUPT)
--		invoke_ffa_fn((ffa_value_t){
--			      .a0 =3D FFA_RUN, .a1 =3D ret.a1,
--			      }, &ret);
-+	ffa_msg_send_wait_for_completion(&ret);
+ 	if (!args->use_txbuf) {
+-		buffer =3D alloc_pages_exact(RXTX_BUFFER_SIZE, GFP_KERNEL);
++		buffer =3D alloc_pages_exact(rxtx_bufsz, GFP_KERNEL);
+ 		if (!buffer)
+ 			return -ENOMEM;
+ 	} else {
+@@ -699,12 +698,12 @@ static int ffa_memory_ops(u32 func_id, struct ffa_mem_o=
+ps_args *args)
+ 		mutex_lock(&drv_info->tx_lock);
+ 	}
 =20
- 	if (ret.a0 =3D=3D FFA_ERROR)
- 		return ffa_to_linux_errno((int)ret.a2);
-@@ -482,10 +492,7 @@ static int ffa_msg_send_direct_req2(u16 src_id, u16 dst_=
-id, const uuid_t *uuid,
+-	ret =3D ffa_setup_and_transmit(func_id, buffer, RXTX_BUFFER_SIZE, args);
++	ret =3D ffa_setup_and_transmit(func_id, buffer, rxtx_bufsz, args);
 =20
- 	invoke_ffa_fn(args, &ret);
+ 	if (args->use_txbuf)
+ 		mutex_unlock(&drv_info->tx_lock);
+ 	else
+-		free_pages_exact(buffer, RXTX_BUFFER_SIZE);
++		free_pages_exact(buffer, rxtx_bufsz);
 =20
--	while (ret.a0 =3D=3D FFA_INTERRUPT)
--		invoke_ffa_fn((ffa_value_t){
--			      .a0 =3D FFA_RUN, .a1 =3D ret.a1,
--			      }, &ret);
-+	ffa_msg_send_wait_for_completion(&ret);
+ 	return ret < 0 ? ret : 0;
+ }
+@@ -1718,6 +1717,8 @@ static void ffa_notifications_setup(void)
+ static int __init ffa_init(void)
+ {
+ 	int ret;
++	u32 buf_sz;
++	size_t rxtx_bufsz =3D SZ_4K;
 =20
- 	if (ret.a0 =3D=3D FFA_ERROR)
- 		return ffa_to_linux_errno((int)ret.a2);
+ 	ret =3D ffa_transport_init(&invoke_ffa_fn);
+ 	if (ret)
+@@ -1737,13 +1738,24 @@ static int __init ffa_init(void)
+ 		goto free_drv_info;
+ 	}
+=20
+-	drv_info->rx_buffer =3D alloc_pages_exact(RXTX_BUFFER_SIZE, GFP_KERNEL);
++	ret =3D ffa_features(FFA_FN_NATIVE(RXTX_MAP), 0, &buf_sz, NULL);
++	if (!ret) {
++		if (RXTX_MAP_MIN_BUFSZ(buf_sz) =3D=3D 1)
++			rxtx_bufsz =3D SZ_64K;
++		else if (RXTX_MAP_MIN_BUFSZ(buf_sz) =3D=3D 2)
++			rxtx_bufsz =3D SZ_16K;
++		else
++			rxtx_bufsz =3D SZ_4K;
++	}
++
++	drv_info->rxtx_bufsz =3D rxtx_bufsz;
++	drv_info->rx_buffer =3D alloc_pages_exact(rxtx_bufsz, GFP_KERNEL);
+ 	if (!drv_info->rx_buffer) {
+ 		ret =3D -ENOMEM;
+ 		goto free_pages;
+ 	}
+=20
+-	drv_info->tx_buffer =3D alloc_pages_exact(RXTX_BUFFER_SIZE, GFP_KERNEL);
++	drv_info->tx_buffer =3D alloc_pages_exact(rxtx_bufsz, GFP_KERNEL);
+ 	if (!drv_info->tx_buffer) {
+ 		ret =3D -ENOMEM;
+ 		goto free_pages;
+@@ -1751,7 +1763,7 @@ static int __init ffa_init(void)
+=20
+ 	ret =3D ffa_rxtx_map(virt_to_phys(drv_info->tx_buffer),
+ 			   virt_to_phys(drv_info->rx_buffer),
+-			   RXTX_BUFFER_SIZE / FFA_PAGE_SIZE);
++			   rxtx_bufsz / FFA_PAGE_SIZE);
+ 	if (ret) {
+ 		pr_err("failed to register FFA RxTx buffers\n");
+ 		goto free_pages;
+@@ -1781,8 +1793,8 @@ static int __init ffa_init(void)
+ 	ffa_notifications_cleanup();
+ free_pages:
+ 	if (drv_info->tx_buffer)
+-		free_pages_exact(drv_info->tx_buffer, RXTX_BUFFER_SIZE);
+-	free_pages_exact(drv_info->rx_buffer, RXTX_BUFFER_SIZE);
++		free_pages_exact(drv_info->tx_buffer, rxtx_bufsz);
++	free_pages_exact(drv_info->rx_buffer, rxtx_bufsz);
+ free_drv_info:
+ 	kfree(drv_info);
+ 	return ret;
+@@ -1794,8 +1806,8 @@ static void __exit ffa_exit(void)
+ 	ffa_notifications_cleanup();
+ 	ffa_partitions_cleanup();
+ 	ffa_rxtx_unmap(drv_info->vm_id);
+-	free_pages_exact(drv_info->tx_buffer, RXTX_BUFFER_SIZE);
+-	free_pages_exact(drv_info->rx_buffer, RXTX_BUFFER_SIZE);
++	free_pages_exact(drv_info->tx_buffer, drv_info->rxtx_bufsz);
++	free_pages_exact(drv_info->rx_buffer, drv_info->rxtx_bufsz);
+ 	kfree(drv_info);
+ }
+ module_exit(ffa_exit);
 
 --=20
 2.46.0
 
 
---===============8178314694608894013==--
+--===============7780240169467206874==--
 
