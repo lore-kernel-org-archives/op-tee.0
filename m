@@ -1,170 +1,245 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 7/7] firmware: arm_ffa: Fetch the Rx/Tx buffer size using
- ffa_features()
-Date: Wed, 14 Aug 2024 14:48:56 +0100
-Message-ID: <20240814-ffa_v1-2-v1-7-9e9abef69b21@arm.com>
-In-Reply-To: <20240814-ffa_v1-2-v1-0-9e9abef69b21@arm.com>
+Subject: [PATCH v9 0/4] Replay Protected Memory Block (RPMB) subsystem
+Date: Wed, 14 Aug 2024 17:35:54 +0200
+Message-ID: <20240814153558.708365-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7780240169467206874=="
+Content-Type: multipart/mixed; boundary="===============3997944909046638918=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7780240169467206874==
+--===============3997944909046638918==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-An endpoint can discover the minimum size, maximum size and alignment
-boundary for the Rx/Tx buffers by passing the function ID of the
-FFA_RXTX_MAP ABI as input in the FFA_FEATURES interface. The maximum
-size is an optional field and a value of 0 means that the partition
-manager or the hypervisor does not enforce a maximum size.
+Hi,
 
-Use the discovery mechanism and remove the hardcoded 4kB buffer size.
-If the discovery fails, it still defaults to 4kB.
+This patch set is getting ready to be queued for the next merge window. The
+issues reported by Mikka in the v7 patch set has been resolved, the issues
+turned out to be outside of the v7 patch set relating to configuration in
+the secure world. I'm planning a pull request to arm-soc, but before that
+I'd rather have acks or at least an OK for:
+- "rpmb: add Replay Protected Memory Block (RPMB) subsystem" by Greg
+- "mmc: block: register RPMB partition with the RPMB subsystem" by Ulf
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/firmware/arm_ffa/driver.c | 44 +++++++++++++++++++++++++------------=
---
- 1 file changed, 28 insertions(+), 16 deletions(-)
+Arnd, please let me know if anything else is missing.
 
-diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/dri=
-ver.c
-index 90102ed7bd18..1e3764852118 100644
---- a/drivers/firmware/arm_ffa/driver.c
-+++ b/drivers/firmware/arm_ffa/driver.c
-@@ -54,11 +54,8 @@
- #define PACK_TARGET_INFO(s, r)		\
- 	(FIELD_PREP(SENDER_ID_MASK, (s)) | FIELD_PREP(RECEIVER_ID_MASK, (r)))
-=20
--/*
-- * Keeping RX TX buffer size as 4K for now
-- * 64K may be preferred to keep it min a page in 64K PAGE_SIZE config
-- */
--#define RXTX_BUFFER_SIZE	SZ_4K
-+#define RXTX_MAP_MIN_BUFSZ_MASK	GENMASK(1, 0)
-+#define RXTX_MAP_MIN_BUFSZ(x)	((x) & RXTX_MAP_MIN_BUFSZ_MASK)
-=20
- #define FFA_MAX_NOTIFICATIONS		64
-=20
-@@ -99,6 +96,7 @@ struct ffa_drv_info {
- 	struct mutex tx_lock; /* lock to protect Tx buffer */
- 	void *rx_buffer;
- 	void *tx_buffer;
-+	size_t rxtx_bufsz;
- 	bool mem_ops_native;
- 	bool msg_direct_req2_supp;
- 	bool bitmap_created;
-@@ -454,7 +452,7 @@ static int ffa_msg_send2(u16 src_id, u16 dst_id, void *bu=
-f, size_t sz)
- 	ffa_value_t ret;
- 	int retval =3D 0;
-=20
--	if (sz > (RXTX_BUFFER_SIZE - sizeof(*msg)))
-+	if (sz > (drv_info->rxtx_bufsz - sizeof(*msg)))
- 		return -ERANGE;
-=20
- 	mutex_lock(&drv_info->tx_lock);
-@@ -689,9 +687,10 @@ static int ffa_memory_ops(u32 func_id, struct ffa_mem_op=
-s_args *args)
- {
- 	int ret;
- 	void *buffer;
-+	size_t rxtx_bufsz =3D drv_info->rxtx_bufsz;
-=20
- 	if (!args->use_txbuf) {
--		buffer =3D alloc_pages_exact(RXTX_BUFFER_SIZE, GFP_KERNEL);
-+		buffer =3D alloc_pages_exact(rxtx_bufsz, GFP_KERNEL);
- 		if (!buffer)
- 			return -ENOMEM;
- 	} else {
-@@ -699,12 +698,12 @@ static int ffa_memory_ops(u32 func_id, struct ffa_mem_o=
-ps_args *args)
- 		mutex_lock(&drv_info->tx_lock);
- 	}
-=20
--	ret =3D ffa_setup_and_transmit(func_id, buffer, RXTX_BUFFER_SIZE, args);
-+	ret =3D ffa_setup_and_transmit(func_id, buffer, rxtx_bufsz, args);
-=20
- 	if (args->use_txbuf)
- 		mutex_unlock(&drv_info->tx_lock);
- 	else
--		free_pages_exact(buffer, RXTX_BUFFER_SIZE);
-+		free_pages_exact(buffer, rxtx_bufsz);
-=20
- 	return ret < 0 ? ret : 0;
- }
-@@ -1718,6 +1717,8 @@ static void ffa_notifications_setup(void)
- static int __init ffa_init(void)
- {
- 	int ret;
-+	u32 buf_sz;
-+	size_t rxtx_bufsz =3D SZ_4K;
-=20
- 	ret =3D ffa_transport_init(&invoke_ffa_fn);
- 	if (ret)
-@@ -1737,13 +1738,24 @@ static int __init ffa_init(void)
- 		goto free_drv_info;
- 	}
-=20
--	drv_info->rx_buffer =3D alloc_pages_exact(RXTX_BUFFER_SIZE, GFP_KERNEL);
-+	ret =3D ffa_features(FFA_FN_NATIVE(RXTX_MAP), 0, &buf_sz, NULL);
-+	if (!ret) {
-+		if (RXTX_MAP_MIN_BUFSZ(buf_sz) =3D=3D 1)
-+			rxtx_bufsz =3D SZ_64K;
-+		else if (RXTX_MAP_MIN_BUFSZ(buf_sz) =3D=3D 2)
-+			rxtx_bufsz =3D SZ_16K;
-+		else
-+			rxtx_bufsz =3D SZ_4K;
-+	}
-+
-+	drv_info->rxtx_bufsz =3D rxtx_bufsz;
-+	drv_info->rx_buffer =3D alloc_pages_exact(rxtx_bufsz, GFP_KERNEL);
- 	if (!drv_info->rx_buffer) {
- 		ret =3D -ENOMEM;
- 		goto free_pages;
- 	}
-=20
--	drv_info->tx_buffer =3D alloc_pages_exact(RXTX_BUFFER_SIZE, GFP_KERNEL);
-+	drv_info->tx_buffer =3D alloc_pages_exact(rxtx_bufsz, GFP_KERNEL);
- 	if (!drv_info->tx_buffer) {
- 		ret =3D -ENOMEM;
- 		goto free_pages;
-@@ -1751,7 +1763,7 @@ static int __init ffa_init(void)
-=20
- 	ret =3D ffa_rxtx_map(virt_to_phys(drv_info->tx_buffer),
- 			   virt_to_phys(drv_info->rx_buffer),
--			   RXTX_BUFFER_SIZE / FFA_PAGE_SIZE);
-+			   rxtx_bufsz / FFA_PAGE_SIZE);
- 	if (ret) {
- 		pr_err("failed to register FFA RxTx buffers\n");
- 		goto free_pages;
-@@ -1781,8 +1793,8 @@ static int __init ffa_init(void)
- 	ffa_notifications_cleanup();
- free_pages:
- 	if (drv_info->tx_buffer)
--		free_pages_exact(drv_info->tx_buffer, RXTX_BUFFER_SIZE);
--	free_pages_exact(drv_info->rx_buffer, RXTX_BUFFER_SIZE);
-+		free_pages_exact(drv_info->tx_buffer, rxtx_bufsz);
-+	free_pages_exact(drv_info->rx_buffer, rxtx_bufsz);
- free_drv_info:
- 	kfree(drv_info);
- 	return ret;
-@@ -1794,8 +1806,8 @@ static void __exit ffa_exit(void)
- 	ffa_notifications_cleanup();
- 	ffa_partitions_cleanup();
- 	ffa_rxtx_unmap(drv_info->vm_id);
--	free_pages_exact(drv_info->tx_buffer, RXTX_BUFFER_SIZE);
--	free_pages_exact(drv_info->rx_buffer, RXTX_BUFFER_SIZE);
-+	free_pages_exact(drv_info->tx_buffer, drv_info->rxtx_bufsz);
-+	free_pages_exact(drv_info->rx_buffer, drv_info->rxtx_bufsz);
- 	kfree(drv_info);
- }
- module_exit(ffa_exit);
+This patch set introduces a new RPMB subsystem, based on patches from [1],
+[2], and [3]. The RPMB subsystem aims at providing access to RPMB
+partitions to other kernel drivers, in particular the OP-TEE driver. A new
+user space ABI isn't needed, we can instead continue using the already
+present ABI when writing the RPMB key during production.
+
+I've added and removed things to keep only what is needed by the OP-TEE
+driver. Since the posting of [3], there has been major changes in the MMC
+subsystem so "mmc: block: register RPMB partition with the RPMB subsystem"
+is in practice completely rewritten.
+
+With this OP-TEE can access RPMB during early boot instead of having to
+wait for user space to become available as in the current design [4].
+This will benefit the efi variables [5] since we won't rely on userspace as
+well as some TPM issues [6] that were solved.
+
+The OP-TEE driver finds the correct RPMB device to interact with by
+iterating over available devices until one is found with a programmed
+authentication matching the one OP-TEE is using. This enables coexisting
+users of other RPMBs since the owner can be determined by who knows the
+authentication key.
+
+The corresponding secure world OP-TEE patches are available at [7].
+
+I've put myself as a maintainer for the RPMB subsystem as I have an
+interest in the OP-TEE driver to keep this in good shape. However, if you'd
+rather see someone else taking the maintainership that's fine too. I'll
+help keep the subsystem updated regardless.
+
+[1] https://lore.kernel.org/lkml/20230722014037.42647-1-shyamsaini(a)linux.mi=
+crosoft.com/
+[2] https://lore.kernel.org/lkml/20220405093759.1126835-2-alex.bennee(a)linar=
+o.org/
+[3] https://lore.kernel.org/linux-mmc/1478548394-8184-2-git-send-email-tomas.=
+winkler(a)intel.com/
+[4] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html#r=
+pmb-secure-storage
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3Dc44b6be62e8dd4ee0a308c36a70620613e6fc55f
+[6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit=
+/?id=3D7269cba53d906cf257c139d3b3a53ad272176bca
+[7] https://github.com/jenswi-linaro/optee_os/tree/rpmb_probe_v8
+
+Thanks,
+Jens
+
+Changes since v8:
+* Moved changes to drivers/misc/rpmb-core.c and include/linux/rpmb.h from
+  "tee: add tee_device_set_dev_groups()" to
+  "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - reverted license change of include/linux/rpmb.h introduced in [2] back
+    to GLP-2.0 as in [3]
+  - Small documentation fixes reported by kernel test robot <lkp@intel.com>
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Small documentation fixes reported by kernel test robot <lkp@intel.com>
+  - Silencing a "sparse: cast to restricted __be32" warning reported by
+    kernel test robot <lkp@intel.com>
+* "optee: probe RPMB device using RPMB subsystem"
+  - replaced IS_ENABLED(CONFIG_RPMB) with IS_REACHABLE(CONFIG_RPMB)
+  - Added Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
+
+Changes since v7:
+* Rebased on v6.11-rc1
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Adding Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+* "tee: add tee_device_set_dev_groups()"
+  - Declaring tee_device_set_dev_groups() in the recently introduced
+    include/linux/tee_core.h
+
+Changes since v6:
+* Add Tested-by: Manuel Traut <manut@mecka.net> provided for the v6
+* Add a new patch "tee: add tee_device_set_dev_groups()" needed later in
+  the patch set
+* Reintroduce the rpmb_class as requested by Greg, this affects the patches
+  "rpmb: add Replay Protected Memory Block (RPMB) subsystem" and
+  "optee: probe RPMB device using RPMB subsystem"
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem":
+  - rpmb_interface_{,un}register() are now based on
+    class_interface_{,un}register()
+  - Embed a separate device in struct rpmb_dev for life cycle
+    management etc
+* "optee: probe RPMB device using RPMB subsystem"
+  - Add an internal blocking_notifier to deal with the struct
+    class_interface callback
+  - Add a rpmb_routing_model variable in sysfs to help integration with
+    systemd, requested by Mikko Rapeli
+  - Add an RPMB probe capability flag in the ABI shared with the secure
+    world, both SMC and FF-A ABI, needed to support the rpmb_routing_model
+    variable
+  - optee_rpc_cmd() is strict whether an RPMB RPC request should be
+    forwarded to tee-supplicant or routed via the RPMB subsystem, depending
+    on the reported RPMB routing model
+
+Changes since v5:
+Manuel Traut reported and investigated an error on an i.MX8MM, the root
+cause was identified as insufficient alignment on frames sent to the RPMB
+device. Fixed in the OP-TEE driver as described below.
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Adding a missing EXPORT_SYMBOL_GPL()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Replacing the old OPTEE_RPC_CMD_RPMB ABI with OPTEE_RPC_CMD_RPMB_FRAMES
+    to get rid of the small header struct rpmb_req (now removed) causing
+    the problem.
+  - Matching changes on the secure side + support for re-initializing
+    RPMB in case a boot stage has used RPMB, the latter also reported by=20
+    Manuel Traut.
+
+Changes since v4:
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Describing struct rpmb_descr as RPMB description instead of descriptor
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Addressing review comments
+  - Adding more comments for struct rpmb_frame
+  - Fixing assignment of reliable_wr_count and capacity in mmc_blk_rpmb_add()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Updating struct rpmb_dev_info to match changes in "rpmb: add Replay
+    Protected Memory Block (RPMB) subsystem"
+
+Changes since v3:
+* Move struct rpmb_frame into the MMC driver since the format of the RPMB
+  frames depend on the implementation, one format for eMMC, another for
+  UFS, and so on
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Adding Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+  - Adding more description of the API functions
+  - Removing the set_dev_info() op from struct rpmb_ops, the needed informati=
+on
+    is supplied in the arguments to rpmb_dev_register() instead.
+  - Getting rid of struct rpmb_ops since only the route_frames() op was
+    remaining, store that op directly in struct rpmb_dev
+  - Changed rpmb_interface_register() and rpmb_interface_unregister() to use
+    notifier_block instead of implementing the same thing ourselves
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Moving the call to rpmb_dev_register() to be done at the end of
+    mmc_blk_probe() when the device is fully available
+* "optee: probe RPMB device using RPMB subsystem"
+  - Use IS_REACHABLE(CONFIG_RPMB) to determine if the RPMB subsystem is
+    available
+  - Translate TEE_ERROR_STORAGE_NOT_AVAILABLE if encountered in get_devices()
+    to recognize the error in optee_rpmb_scan()
+  - Simplified optee_rpmb_scan() and optee_rpmb_intf_rdev()
+
+Changes since v2:
+* "rpmb: add Replay Protected Memory Block (RPMB) subsystem"
+  - Fixing documentation issues
+  - Adding a "depends on MMC" in the Kconfig
+  - Removed the class-device and the embedded device, struct rpmb_dev now
+    relies on the parent device for reference counting as requested
+  - Removed the now unneeded rpmb_ops get_resources() and put_resources()
+    since references are already taken in mmc_blk_alloc_rpmb_part() before
+    rpmb_dev_register() is called
+  - Added rpmb_interface_{,un}register() now that
+    class_interface_{,un}register() can't be used ay longer
+* "mmc: block: register RPMB partition with the RPMB subsystem"
+  - Adding the missing error cleanup in alloc_idata()
+  - Taking the needed reference to md->disk in mmc_blk_alloc_rpmb_part()
+    instead of in mmc_rpmb_chrdev_open() and rpmb_op_mmc_get_resources()
+* "optee: probe RPMB device using RPMB subsystem"
+  - Registering to get a notification when an RPMB device comes online
+  - Probes for RPMB devices each time an RPMB device comes online, until
+    a usable device is found
+  - When a usable RPMB device is found, call
+    optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB)
+  - Pass type of rpmb in return value from OPTEE_RPC_CMD_RPMB_PROBE_NEXT
+
+Changes since Shyam's RFC:
+* Removed the remaining leftover rpmb_cdev_*() function calls
+* Refactored the struct rpmb_ops with all the previous ops replaced, in
+  some sense closer to [3] with the route_frames() op
+* Added rpmb_route_frames()
+* Added struct rpmb_frame, enum rpmb_op_result, and enum rpmb_type from [3]
+* Removed all functions not needed in the OP-TEE use case
+* Added "mmc: block: register RPMB partition with the RPMB subsystem", based
+  on the commit with the same name in [3]
+* Added "optee: probe RPMB device using RPMB subsystem" for integration
+  with OP-TEE
+* Moved the RPMB driver into drivers/misc/rpmb-core.c
+* Added my name to MODULE_AUTHOR() in rpmb-core.c
+* Added an rpmb_mutex to serialize access to the IDA
+* Removed the target parameter from all rpmb_*() functions since it's
+  currently unused
+
+
+
+Jens Wiklander (4):
+  rpmb: add Replay Protected Memory Block (RPMB) subsystem
+  mmc: block: register RPMB partition with the RPMB subsystem
+  tee: add tee_device_set_dev_groups()
+  optee: probe RPMB device using RPMB subsystem
+
+ Documentation/ABI/testing/sysfs-class-tee |  15 ++
+ MAINTAINERS                               |   8 +
+ drivers/misc/Kconfig                      |  10 +
+ drivers/misc/Makefile                     |   1 +
+ drivers/misc/rpmb-core.c                  | 233 +++++++++++++++++++++
+ drivers/mmc/core/block.c                  | 242 +++++++++++++++++++++-
+ drivers/tee/optee/core.c                  |  96 ++++++++-
+ drivers/tee/optee/device.c                |   7 +
+ drivers/tee/optee/ffa_abi.c               |  14 ++
+ drivers/tee/optee/optee_ffa.h             |   2 +
+ drivers/tee/optee/optee_private.h         |  26 ++-
+ drivers/tee/optee/optee_rpc_cmd.h         |  35 ++++
+ drivers/tee/optee/optee_smc.h             |   2 +
+ drivers/tee/optee/rpc.c                   | 177 ++++++++++++++++
+ drivers/tee/optee/smc_abi.c               |  14 ++
+ drivers/tee/tee_core.c                    |  19 +-
+ include/linux/rpmb.h                      | 123 +++++++++++
+ include/linux/tee_core.h                  |  12 ++
+ 18 files changed, 1026 insertions(+), 10 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-tee
+ create mode 100644 drivers/misc/rpmb-core.c
+ create mode 100644 include/linux/rpmb.h
 
 --=20
-2.46.0
+2.34.1
 
 
---===============7780240169467206874==--
+--===============3997944909046638918==--
 
