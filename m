@@ -1,176 +1,99 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 5/7] firmware: arm_ffa: Add support for
- FFA_MSG_SEND_DIRECT_{REQ,RESP}2
-Date: Tue, 20 Aug 2024 15:27:58 +0100
-Message-ID: <20240820-ffa_v1-2-v2-5-18c0c5f3c65e@arm.com>
+Subject: [PATCH v2 6/7] firmware: arm_ffa: Add support for FFA_YIELD in direct
+ messaging
+Date: Tue, 20 Aug 2024 15:27:59 +0100
+Message-ID: <20240820-ffa_v1-2-v2-6-18c0c5f3c65e@arm.com>
 In-Reply-To: <20240820-ffa_v1-2-v2-0-18c0c5f3c65e@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7451906856593313797=="
+Content-Type: multipart/mixed; boundary="===============2160883236474311022=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7451906856593313797==
+--===============2160883236474311022==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-FFA_MSG_SEND_DIRECT_{REQ,RESP} supported only x3-x7 to pass implementation
-defined values as part of the message. This may not be sufficient sometimes
-and also it would be good to use all the registers supported by SMCCC v1.2
-(x0-x17) for such register based communication.
+Successful completion of both direct messaging function can be indicated
+through an invocation of FFA_YIELD or GGA_INTERRUPT by the callee.
 
-Also another limitation with the FFA_MSG_SEND_DIRECT_{REQ,RESP} is the
-ability to target a specific service within the partition based on it's
-UUID.
+FFA_INTERRUPT indicates that the direct request was interrupted and must
+be resumed through the FFA_RUN interface which is already done in the
+driver.
 
-In order to address both of the above limitation, FF-A v1.2 introduced
-FFA_MSG_SEND_DIRECT_{REQ,RESP}2 which has the ability to target the
-message to a specific service based on its UUID within a partition as
-well as utilise all the available registers(x4-x17 specifically) for
-the communication.
-
-This change adds support for FFA_MSG_SEND_DIRECT_REQ2 and
-FFA_MSG_SEND_DIRECT_RESP2.
+FFA_YIELD indicates that the receiver endpoint has transitioned to the
+blocked runtime state and must be resumed through the FFA_RUN interface.
+However, the way receiver endpoint gets unblocked is implementation
+defined. So, the driver just sleeps for 1 - 2ms and issues FFA_RUN. It
+can return to the caller with FFA_YIELD is the receiver endpoint is still
+blocked.
 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/firmware/arm_ffa/driver.c | 49 +++++++++++++++++++++++++++++++++++++=
---
- include/linux/arm_ffa.h           |  7 ++++++
- 2 files changed, 54 insertions(+), 2 deletions(-)
+ drivers/firmware/arm_ffa/driver.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/dri=
 ver.c
-index e28cbfe9a801..ec99fed5715d 100644
+index ec99fed5715d..d47272859190 100644
 --- a/drivers/firmware/arm_ffa/driver.c
 +++ b/drivers/firmware/arm_ffa/driver.c
-@@ -99,6 +99,7 @@ struct ffa_drv_info {
- 	void *rx_buffer;
- 	void *tx_buffer;
- 	bool mem_ops_native;
-+	bool msg_direct_req2_supp;
- 	bool bitmap_created;
- 	bool notif_enabled;
- 	unsigned int sched_recv_irq;
-@@ -468,6 +469,35 @@ static int ffa_msg_send2(u16 src_id, u16 dst_id, void *b=
-uf, size_t sz)
- 	return retval;
- }
-=20
-+static int ffa_msg_send_direct_req2(u16 src_id, u16 dst_id, const uuid_t *uu=
-id,
-+				    struct ffa_send_direct_data2 *data)
-+{
-+	u32 src_dst_ids =3D PACK_TARGET_INFO(src_id, dst_id);
-+	ffa_value_t ret, args =3D {
-+		.a0 =3D FFA_MSG_SEND_DIRECT_REQ2, .a1 =3D src_dst_ids,
-+	};
-+
-+	export_uuid((u8 *)&args.a2, uuid);
-+	memcpy((void *)&args + offsetof(ffa_value_t, a4), data, sizeof(*data));
-+
-+	invoke_ffa_fn(args, &ret);
-+
-+	while (ret.a0 =3D=3D FFA_INTERRUPT)
-+		invoke_ffa_fn((ffa_value_t){
-+			      .a0 =3D FFA_RUN, .a1 =3D ret.a1,
-+			      }, &ret);
-+
-+	if (ret.a0 =3D=3D FFA_ERROR)
-+		return ffa_to_linux_errno((int)ret.a2);
-+
-+	if (ret.a0 =3D=3D FFA_MSG_SEND_DIRECT_RESP2) {
-+		memcpy(data, &ret.a4, sizeof(*data));
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
- static int ffa_mem_first_frag(u32 func_id, phys_addr_t buf, u32 buf_sz,
- 			      u32 frag_len, u32 len, u64 *handle)
- {
-@@ -923,11 +953,15 @@ static int ffa_run(struct ffa_device *dev, u16 vcpu)
+@@ -26,6 +26,7 @@
+ #include <linux/arm_ffa.h>
+ #include <linux/bitfield.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/hashtable.h>
+ #include <linux/interrupt.h>
+@@ -397,6 +398,18 @@ static int ffa_id_get(u16 *vm_id)
  	return 0;
  }
 =20
--static void ffa_set_up_mem_ops_native_flag(void)
-+static void ffa_drvinfo_flags_init(void)
- {
- 	if (!ffa_features(FFA_FN_NATIVE(MEM_LEND), 0, NULL, NULL) ||
- 	    !ffa_features(FFA_FN_NATIVE(MEM_SHARE), 0, NULL, NULL))
- 		drv_info->mem_ops_native =3D true;
-+
-+	if (!ffa_features(FFA_MSG_SEND_DIRECT_REQ2, 0, NULL, NULL) ||
-+	    !ffa_features(FFA_MSG_SEND_DIRECT_RESP2, 0, NULL, NULL))
-+		drv_info->msg_direct_req2_supp =3D true;
- }
-=20
- static u32 ffa_api_version_get(void)
-@@ -973,6 +1007,16 @@ static int ffa_indirect_msg_send(struct ffa_device *dev=
-, void *buf, size_t sz)
- 	return ffa_msg_send2(drv_info->vm_id, dev->vm_id, buf, sz);
- }
-=20
-+static int ffa_sync_send_receive2(struct ffa_device *dev, const uuid_t *uuid,
-+				  struct ffa_send_direct_data2 *data)
++static inline void ffa_msg_send_wait_for_completion(ffa_value_t *ret)
 +{
-+	if (!drv_info->msg_direct_req2_supp)
-+		return -EOPNOTSUPP;
++	while (ret->a0 =3D=3D FFA_INTERRUPT || ret->a0 =3D=3D FFA_YIELD) {
++		if (ret->a0 =3D=3D FFA_YIELD)
++			fsleep(1000);
 +
-+	return ffa_msg_send_direct_req2(drv_info->vm_id, dev->vm_id,
-+					uuid, data);
++		invoke_ffa_fn((ffa_value_t){
++			      .a0 =3D FFA_RUN, .a1 =3D ret->a1,
++			      }, ret);
++	}
 +}
 +
- static int ffa_memory_share(struct ffa_mem_ops_args *args)
+ static int ffa_msg_send_direct_req(u16 src_id, u16 dst_id, bool mode_32bit,
+ 				   struct ffa_send_direct_data *data)
  {
- 	if (drv_info->mem_ops_native)
-@@ -1256,6 +1300,7 @@ static const struct ffa_msg_ops ffa_drv_msg_ops =3D {
- 	.mode_32bit_set =3D ffa_mode_32bit_set,
- 	.sync_send_receive =3D ffa_sync_send_receive,
- 	.indirect_send =3D ffa_indirect_msg_send,
-+	.sync_send_receive2 =3D ffa_sync_send_receive2,
- };
+@@ -417,10 +430,7 @@ static int ffa_msg_send_direct_req(u16 src_id, u16 dst_i=
+d, bool mode_32bit,
+ 		      .a6 =3D data->data3, .a7 =3D data->data4,
+ 		      }, &ret);
 =20
- static const struct ffa_mem_ops ffa_drv_mem_ops =3D {
-@@ -1708,7 +1753,7 @@ static int __init ffa_init(void)
- 	mutex_init(&drv_info->rx_lock);
- 	mutex_init(&drv_info->tx_lock);
+-	while (ret.a0 =3D=3D FFA_INTERRUPT)
+-		invoke_ffa_fn((ffa_value_t){
+-			      .a0 =3D FFA_RUN, .a1 =3D ret.a1,
+-			      }, &ret);
++	ffa_msg_send_wait_for_completion(&ret);
 =20
--	ffa_set_up_mem_ops_native_flag();
-+	ffa_drvinfo_flags_init();
+ 	if (ret.a0 =3D=3D FFA_ERROR)
+ 		return ffa_to_linux_errno((int)ret.a2);
+@@ -482,10 +492,7 @@ static int ffa_msg_send_direct_req2(u16 src_id, u16 dst_=
+id, const uuid_t *uuid,
 =20
- 	ffa_notifications_setup();
+ 	invoke_ffa_fn(args, &ret);
 =20
-diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
-index b34f0c0dc2c5..a28e2a6a13d0 100644
---- a/include/linux/arm_ffa.h
-+++ b/include/linux/arm_ffa.h
-@@ -270,6 +270,11 @@ struct ffa_indirect_msg_hdr {
- 	u32 size;
- };
+-	while (ret.a0 =3D=3D FFA_INTERRUPT)
+-		invoke_ffa_fn((ffa_value_t){
+-			      .a0 =3D FFA_RUN, .a1 =3D ret.a1,
+-			      }, &ret);
++	ffa_msg_send_wait_for_completion(&ret);
 =20
-+/* For use with FFA_MSG_SEND_DIRECT_{REQ,RESP}2 which pass data via register=
-s */
-+struct ffa_send_direct_data2 {
-+	unsigned long data[14]; /* x4-x17 */
-+};
-+
- struct ffa_mem_region_addr_range {
- 	/* The base IPA of the constituent memory region, aligned to 4 kiB */
- 	u64 address;
-@@ -431,6 +436,8 @@ struct ffa_msg_ops {
- 	int (*sync_send_receive)(struct ffa_device *dev,
- 				 struct ffa_send_direct_data *data);
- 	int (*indirect_send)(struct ffa_device *dev, void *buf, size_t sz);
-+	int (*sync_send_receive2)(struct ffa_device *dev, const uuid_t *uuid,
-+				  struct ffa_send_direct_data2 *data);
- };
-=20
- struct ffa_mem_ops {
+ 	if (ret.a0 =3D=3D FFA_ERROR)
+ 		return ffa_to_linux_errno((int)ret.a2);
 
 --=20
 2.46.0
 
 
---===============7451906856593313797==--
+--===============2160883236474311022==--
 
