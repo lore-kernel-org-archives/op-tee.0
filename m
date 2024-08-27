@@ -1,53 +1,50 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: Linaro OP-TEE Contribution, LOC, monthly meeting August 27
-Date: Tue, 27 Aug 2024 10:36:09 +0200
-Message-ID: 
- <CAHUa44E3ti5q6SfCDdntyNycEeobpO4+fWsMe5rBV2cNEu5PEQ@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44Eda4SBCmhXT6D_XCVwGefJuOGEESOTTxrK=s-mNWkutw@mail.gmail.com>>
+Subject: Re: [PATCH v2 0/7] firmware: arm_ffa: FF-A basic v1.2 support
+Date: Tue, 27 Aug 2024 15:23:54 +0100
+Message-ID: <172476858317.1462451.6804614071493160194.b4-ty@arm.com>
+In-Reply-To: <20240820-ffa_v1-2-v2-0-18c0c5f3c65e@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3156159159820478150=="
+Content-Type: multipart/mixed; boundary="===============6783247699063218428=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3156159159820478150==
+--===============6783247699063218428==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi,
+On Tue, 20 Aug 2024 15:27:53 +0100, Sudeep Holla wrote:
+> This series add basic support for FF-A v1.2.
+> It mainly includes support for newly added:
+> 1. FFA_MSG_SEND_DIRECT_{REQ,RESP}2
+> 2. FFA_PARTITION_INFO_GET_REGS
+> 3. FFA_YIELD support in direct messaging
+> 
+> Apart from these, the changes include support to fetch the Rx/Tx buffer
+> size using FFA_FEATURES, addition of the FF-A FIDs for v1.2 and some
+> coding style cleanups.
+> 
+> [...]
 
-The meeting ended a bit abruptly today, but I think we were done with
-all the topics.
+Applied to sudeep.holla/linux (for-next/ffa/updates), thanks!
 
-Thank you for joining and see you next time.
+[1/7] firmware: arm_ffa: Some coding style fixes
+      https://git.kernel.org/sudeep.holla/c/fbbb0e5fd260
+[2/7] firmware: arm_ffa: Update the FF-A command list with v1.2 additions
+      https://git.kernel.org/sudeep.holla/c/7c432a18ad21
+[3/7] firmware: arm_ffa: Move the function ffa_features() earlier
+      https://git.kernel.org/sudeep.holla/c/d37fff98262d
+[4/7] firmware: arm_ffa: Add support for FFA_PARTITION_INFO_GET_REGS
+      https://git.kernel.org/sudeep.holla/c/ba85c644ac8d
+[5/7] firmware: arm_ffa: Add support for FFA_MSG_SEND_DIRECT_{REQ,RESP}2
+      https://git.kernel.org/sudeep.holla/c/aaef3bc98129
+[6/7] firmware: arm_ffa: Add support for FFA_YIELD in direct messaging
+      https://git.kernel.org/sudeep.holla/c/eaca7ef8f31a
+[7/7] firmware: arm_ffa: Fetch the Rx/Tx buffer size using ffa_features()
+      https://git.kernel.org/sudeep.holla/c/61824feae5c0
+--
+Regards,
+Sudeep
 
-Cheers,
-jens
 
-On Mon, Aug 26, 2024 at 10:47=E2=80=AFAM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
->
-> Hi,
->
-> Tomorrow, Tuesday, it's time for another LOC monthly meeting. For time
-> and connection details see the calendar at
-> https://www.trustedfirmware.org/meetings/
->
-> The RPMB patches to handle RPMB processing internally in the kernel
-> are about to be merged, see
-> https://lore.kernel.org/lkml/20240814153558.708365-1-jens.wiklander(a)linar=
-o.org/.
->
-> Progress on fTPM have slowed down recently. Jan and colleagues at
-> Siemens have published patches at
-> https://github.com/zeschg/ms-tpm-20-ref/tree/feat_add_tee_crypto
-> replacing the third-party crypto library with TEE Internal core API.
-> Good work! What should be our next step?
->
-> Are there any other topics?
->
-> Cheers,
-> Jens
-
---===============3156159159820478150==--
+--===============6783247699063218428==--
 
