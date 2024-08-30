@@ -1,50 +1,88 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/7] firmware: arm_ffa: FF-A basic v1.2 support
-Date: Tue, 27 Aug 2024 15:23:54 +0100
-Message-ID: <172476858317.1462451.6804614071493160194.b4-ty@arm.com>
-In-Reply-To: <20240820-ffa_v1-2-v2-0-18c0c5f3c65e@arm.com>
+Subject: [RFC PATCH 0/4] Linaro restricted heap
+Date: Fri, 30 Aug 2024 09:03:47 +0200
+Message-ID: <20240830070351.2855919-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6783247699063218428=="
+Content-Type: multipart/mixed; boundary="===============3541433790334214326=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6783247699063218428==
+--===============3541433790334214326==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 20 Aug 2024 15:27:53 +0100, Sudeep Holla wrote:
-> This series add basic support for FF-A v1.2.
-> It mainly includes support for newly added:
-> 1. FFA_MSG_SEND_DIRECT_{REQ,RESP}2
-> 2. FFA_PARTITION_INFO_GET_REGS
-> 3. FFA_YIELD support in direct messaging
-> 
-> Apart from these, the changes include support to fetch the Rx/Tx buffer
-> size using FFA_FEATURES, addition of the FF-A FIDs for v1.2 and some
-> coding style cleanups.
-> 
-> [...]
+Hi,
 
-Applied to sudeep.holla/linux (for-next/ffa/updates), thanks!
+This patch set is based on top of Yong Wu's restricted heap patch set [1].
+It's also a continuation on Olivier's Add dma-buf secure-heap patch set [2].
 
-[1/7] firmware: arm_ffa: Some coding style fixes
-      https://git.kernel.org/sudeep.holla/c/fbbb0e5fd260
-[2/7] firmware: arm_ffa: Update the FF-A command list with v1.2 additions
-      https://git.kernel.org/sudeep.holla/c/7c432a18ad21
-[3/7] firmware: arm_ffa: Move the function ffa_features() earlier
-      https://git.kernel.org/sudeep.holla/c/d37fff98262d
-[4/7] firmware: arm_ffa: Add support for FFA_PARTITION_INFO_GET_REGS
-      https://git.kernel.org/sudeep.holla/c/ba85c644ac8d
-[5/7] firmware: arm_ffa: Add support for FFA_MSG_SEND_DIRECT_{REQ,RESP}2
-      https://git.kernel.org/sudeep.holla/c/aaef3bc98129
-[6/7] firmware: arm_ffa: Add support for FFA_YIELD in direct messaging
-      https://git.kernel.org/sudeep.holla/c/eaca7ef8f31a
-[7/7] firmware: arm_ffa: Fetch the Rx/Tx buffer size using ffa_features()
-      https://git.kernel.org/sudeep.holla/c/61824feae5c0
---
-Regards,
-Sudeep
+The Linaro restricted heap uses genalloc in the kernel to manage the heap
+carvout. This is a difference from the Mediatek restricted heap which
+relies on the secure world to manage the carveout.
+
+I've tried to adress the comments on [2], but [1] introduces changes so I'm
+afraid I've had to skip some comments.
+
+This can be tested on QEMU with the following steps:
+repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
+        -b prototype/sdp-v1
+repo sync -j8
+cd build
+make toolchains -j4
+make all -j$(nproc)
+make run-only
+# login and at the prompt:
+xtest --sdp-basic
+
+https://optee.readthedocs.io/en/latest/building/prerequisites.html
+list dependencies needed to build the above.
+
+The tests are pretty basic, mostly checking that a Trusted Application in
+the secure world can access and manipulate the memory.
+
+Cheers,
+Jens
+
+[1] https://lore.kernel.org/dri-devel/20240515112308.10171-1-yong.wu(a)mediat=
+ek.com/
+[2] https://lore.kernel.org/lkml/20220805135330.970-1-olivier.masse(a)nxp.com/
+
+Changes since Olivier's post [2]:
+* Based on Yong Wu's post [1] where much of dma-buf handling is done in
+  the generic restricted heap
+* Simplifications and cleanup
+* New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
+  support"
+* Replaced the word "secure" with "restricted" where applicable
+
+Etienne Carriere (1):
+  tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+
+Jens Wiklander (2):
+  dma-buf: heaps: restricted_heap: add no_map attribute
+  dma-buf: heaps: add Linaro restricted dmabuf heap support
+
+Olivier Masse (1):
+  dt-bindings: reserved-memory: add linaro,restricted-heap
+
+ .../linaro,restricted-heap.yaml               |  56 ++++++
+ drivers/dma-buf/heaps/Kconfig                 |  10 ++
+ drivers/dma-buf/heaps/Makefile                |   1 +
+ drivers/dma-buf/heaps/restricted_heap.c       |  17 +-
+ drivers/dma-buf/heaps/restricted_heap.h       |   2 +
+ .../dma-buf/heaps/restricted_heap_linaro.c    | 165 ++++++++++++++++++
+ drivers/tee/tee_core.c                        |  38 ++++
+ drivers/tee/tee_shm.c                         | 104 ++++++++++-
+ include/linux/tee_drv.h                       |  11 ++
+ include/uapi/linux/tee.h                      |  29 +++
+ 10 files changed, 426 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/reserved-memory/linaro,=
+restricted-heap.yaml
+ create mode 100644 drivers/dma-buf/heaps/restricted_heap_linaro.c
+
+--=20
+2.34.1
 
 
---===============6783247699063218428==--
+--===============3541433790334214326==--
 
