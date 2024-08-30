@@ -1,82 +1,86 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for
- firmware release
-Date: Fri, 30 Aug 2024 11:51:44 +0200
-Message-ID: <20240830095147.3538047-5-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v9 3/7] remoteproc: core: Refactor resource table cleanup into
+ rproc_release_fw
+Date: Fri, 30 Aug 2024 11:51:43 +0200
+Message-ID: <20240830095147.3538047-4-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20240830095147.3538047-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7594670463275292363=="
+Content-Type: multipart/mixed; boundary="===============6660487507040024827=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7594670463275292363==
+--===============6660487507040024827==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add support for releasing remote processor firmware through
-the Trusted Execution Environment (TEE) interface.
+This patch centralizing the cleanup of the resource table into a new
+helper function rproc_release_fw().
 
-The tee_rproc_release_fw() function is called in the following cases:
-
-- An error occurs in rproc_start() between the loading of the segments and
-  the start of the remote processor.
-- When rproc_release_fw is called on error or after stopping the remote
-  processor.
-
+Suggested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
- drivers/remoteproc/remoteproc_core.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/remoteproc/remoteproc_core.c | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
 proc_core.c
-index 7694817f25d4..32052dedc149 100644
+index ace11ea17097..7694817f25d4 100644
 --- a/drivers/remoteproc/remoteproc_core.c
 +++ b/drivers/remoteproc/remoteproc_core.c
-@@ -29,6 +29,7 @@
- #include <linux/debugfs.h>
- #include <linux/rculist.h>
- #include <linux/remoteproc.h>
-+#include <linux/remoteproc_tee.h>
- #include <linux/iommu.h>
- #include <linux/idr.h>
- #include <linux/elf.h>
-@@ -1258,6 +1259,9 @@ static int rproc_alloc_registered_carveouts(struct rpro=
-c *rproc)
+@@ -1256,6 +1256,13 @@ static int rproc_alloc_registered_carveouts(struct rpr=
+oc *rproc)
+ 	return 0;
+ }
 =20
- static void rproc_release_fw(struct rproc *rproc)
- {
-+	if (rproc->state =3D=3D RPROC_OFFLINE && rproc->tee_interface)
-+		tee_rproc_release_fw(rproc);
-+
- 	/* Free the copy of the resource table */
- 	kfree(rproc->cached_table);
- 	rproc->cached_table =3D NULL;
-@@ -1348,7 +1352,7 @@ static int rproc_start(struct rproc *rproc, const struc=
-t firmware *fw)
- 	if (ret) {
- 		dev_err(dev, "failed to prepare subdevices for %s: %d\n",
- 			rproc->name, ret);
--		goto reset_table_ptr;
-+		goto release_fw;
- 	}
++static void rproc_release_fw(struct rproc *rproc)
++{
++	/* Free the copy of the resource table */
++	kfree(rproc->cached_table);
++	rproc->cached_table =3D NULL;
++	rproc->table_ptr =3D NULL;
++}
 =20
- 	/* power up the remote processor */
-@@ -1376,7 +1380,9 @@ static int rproc_start(struct rproc *rproc, const struc=
-t firmware *fw)
- 	rproc->ops->stop(rproc);
- unprepare_subdevices:
- 	rproc_unprepare_subdevices(rproc);
--reset_table_ptr:
-+release_fw:
-+	if (rproc->tee_interface)
-+		tee_rproc_release_fw(rproc);
- 	rproc->table_ptr =3D rproc->cached_table;
+ /**
+  * rproc_resource_cleanup() - clean up and free all acquired resources
+@@ -1485,9 +1492,7 @@ static int rproc_fw_boot(struct rproc *rproc, const str=
+uct firmware *fw)
 =20
+ clean_up_resources:
+ 	rproc_resource_cleanup(rproc);
+-	kfree(rproc->cached_table);
+-	rproc->cached_table =3D NULL;
+-	rproc->table_ptr =3D NULL;
++	rproc_release_fw(rproc);
+ unprepare_rproc:
+ 	/* release HW resources if needed */
+ 	rproc_unprepare_device(rproc);
+@@ -2067,10 +2072,7 @@ int rproc_shutdown(struct rproc *rproc)
+=20
+ 	rproc_disable_iommu(rproc);
+=20
+-	/* Free the copy of the resource table */
+-	kfree(rproc->cached_table);
+-	rproc->cached_table =3D NULL;
+-	rproc->table_ptr =3D NULL;
++	rproc_release_fw(rproc);
+ out:
+ 	mutex_unlock(&rproc->lock);
+ 	return ret;
+@@ -2133,10 +2135,7 @@ int rproc_detach(struct rproc *rproc)
+=20
+ 	rproc_disable_iommu(rproc);
+=20
+-	/* Free the copy of the resource table */
+-	kfree(rproc->cached_table);
+-	rproc->cached_table =3D NULL;
+-	rproc->table_ptr =3D NULL;
++	rproc_release_fw(rproc);
+ out:
+ 	mutex_unlock(&rproc->lock);
  	return ret;
 --=20
 2.25.1
 
 
---===============7594670463275292363==--
+--===============6660487507040024827==--
 
