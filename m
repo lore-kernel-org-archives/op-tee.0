@@ -1,136 +1,118 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Christian König <christian.koenig@amd.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [RFC PATCH 3/4] dt-bindings: reserved-memory: add linaro,restricted-heap
-Date: Fri, 30 Aug 2024 10:42:32 +0200
-Message-ID: 
- <CAHUa44Fd-Eo5-CUfxDgCFpRVbJP0gzA7LX_-5=cBfBd8NxhpDw@mail.gmail.com>
-In-Reply-To: <3bqb6mktkvbdl6h4eekad4mpjhyvzx7mjidhnanboygbwu2asz@6ros56bp6isd>
+ Re: [RFC PATCH 1/4] dma-buf: heaps: restricted_heap: add no_map attribute
+Date: Fri, 30 Aug 2024 10:46:56 +0200
+Message-ID: <4a498990-2d9e-4555-85f3-d1d22e26b9dd@amd.com>
+In-Reply-To: <20240830070351.2855919-2-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3147572786730385259=="
+Content-Type: multipart/mixed; boundary="===============0806825711724932175=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3147572786730385259==
+--===============0806825711724932175==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 30, 2024 at 10:20=E2=80=AFAM Krzysztof Kozlowski <krzk@kernel.o=
-rg> wrote:
->
-> On Fri, Aug 30, 2024 at 09:03:50AM +0200, Jens Wiklander wrote:
-> > From: Olivier Masse <olivier.masse@nxp.com>
-> >
-> > DMABUF reserved memory definition for OP-TEE secure data path feature.
-> >
-> > Signed-off-by: Olivier Masse <olivier.masse@nxp.com>
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  .../linaro,restricted-heap.yaml               | 56 +++++++++++++++++++
-> >  1 file changed, 56 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/reserved-memory/lin=
-aro,restricted-heap.yaml
-> >
-> > diff --git a/Documentation/devicetree/bindings/reserved-memory/linaro,res=
-tricted-heap.yaml b/Documentation/devicetree/bindings/reserved-memory/linaro,=
-restricted-heap.yaml
-> > new file mode 100644
-> > index 000000000000..0ab87cf02775
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/reserved-memory/linaro,restricted=
--heap.yaml
-> > @@ -0,0 +1,56 @@
-> > +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/reserved-memory/linaro,restricted-hea=
-p.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: Linaro Secure DMABUF Heap
-> > +
-> > +maintainers:
-> > +  - Olivier Masse <olivier.masse@nxp.com>
-> > +
-> > +description:
-> > +  Linaro OP-TEE firmware needs a reserved memory for the
-> > +  Secure Data Path feature (aka SDP).
-> > +  The purpose is to provide a restricted memory heap which allow
-> > +  the normal world OS (REE) to allocate/free restricted buffers.
-> > +  The TEE is reponsible for protecting the SDP memory buffers.
-> > +  TEE Trusted Application can access restricted memory references
-> > +  provided as parameters (DMABUF file descriptor).
->
-> And what is the difference from regular reserved memory? Why it cannot
-> be used?
+Am 30.08.24 um 09:03 schrieb Jens Wiklander:
+> Add a no_map attribute to struct restricted_heap_attachment and struct
+> restricted_heap to skip the call to dma_map_sgtable() if set. This
+> avoids trying to map a dma-buf that doens't refer to memory accessible
+> by the kernel.
 
-Good question. I need a compatible =3D "linaro,restricted-heap" to find
-it, but it appears that's permitted with regular reserved memory.
-Let's drop this patch. Thanks for pointing me in the right direction.
+You seem to have a misunderstanding here dma_map_sgtable() is called to=20
+map a table into IOMMU and not any kernel address space.
+
+So please explain why you need that?
+
+Regards,
+Christian.
 
 >
-> > +
-> > +allOf:
-> > +  - $ref: "reserved-memory.yaml"
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>   drivers/dma-buf/heaps/restricted_heap.c | 17 +++++++++++++----
+>   drivers/dma-buf/heaps/restricted_heap.h |  2 ++
+>   2 files changed, 15 insertions(+), 4 deletions(-)
 >
-> It does not look like you tested the bindings, at least after quick
-> look. Please run  (see
-> Documentation/devicetree/bindings/writing-schema.rst for instructions).
-> Maybe you need to update your dtschema and yamllint.
+> diff --git a/drivers/dma-buf/heaps/restricted_heap.c b/drivers/dma-buf/heap=
+s/restricted_heap.c
+> index 8bc8a5e3f969..4bf28e3727ca 100644
+> --- a/drivers/dma-buf/heaps/restricted_heap.c
+> +++ b/drivers/dma-buf/heaps/restricted_heap.c
+> @@ -16,6 +16,7 @@
+>   struct restricted_heap_attachment {
+>   	struct sg_table			*table;
+>   	struct device			*dev;
+> +	bool no_map;
+>   };
+>  =20
+>   static int
+> @@ -54,6 +55,8 @@ restricted_heap_memory_free(struct restricted_heap *rheap=
+, struct restricted_buf
+>   static int restricted_heap_attach(struct dma_buf *dmabuf, struct dma_buf_=
+attachment *attachment)
+>   {
+>   	struct restricted_buffer *restricted_buf =3D dmabuf->priv;
+> +	struct dma_heap *heap =3D restricted_buf->heap;
+> +	struct restricted_heap *rheap =3D dma_heap_get_drvdata(heap);
+>   	struct restricted_heap_attachment *a;
+>   	struct sg_table *table;
+>  =20
+> @@ -70,6 +73,7 @@ static int restricted_heap_attach(struct dma_buf *dmabuf,=
+ struct dma_buf_attachm
+>   	sg_dma_mark_restricted(table->sgl);
+>   	a->table =3D table;
+>   	a->dev =3D attachment->dev;
+> +	a->no_map =3D rheap->no_map;
+>   	attachment->priv =3D a;
+>  =20
+>   	return 0;
+> @@ -92,9 +96,12 @@ restricted_heap_map_dma_buf(struct dma_buf_attachment *a=
+ttachment,
+>   	struct sg_table *table =3D a->table;
+>   	int ret;
+>  =20
+> -	ret =3D dma_map_sgtable(attachment->dev, table, direction, DMA_ATTR_SKIP_=
+CPU_SYNC);
+> -	if (ret)
+> -		return ERR_PTR(ret);
+> +	if (!a->no_map) {
+> +		ret =3D dma_map_sgtable(attachment->dev, table, direction,
+> +				      DMA_ATTR_SKIP_CPU_SYNC);
+> +		if (ret)
+> +			return ERR_PTR(ret);
+> +	}
+>   	return table;
+>   }
+>  =20
+> @@ -106,7 +113,9 @@ restricted_heap_unmap_dma_buf(struct dma_buf_attachment=
+ *attachment, struct sg_t
+>  =20
+>   	WARN_ON(a->table !=3D table);
+>  =20
+> -	dma_unmap_sgtable(attachment->dev, table, direction, DMA_ATTR_SKIP_CPU_SY=
+NC);
+> +	if (!a->no_map)
+> +		dma_unmap_sgtable(attachment->dev, table, direction,
+> +				  DMA_ATTR_SKIP_CPU_SYNC);
+>   }
+>  =20
+>   static int
+> diff --git a/drivers/dma-buf/heaps/restricted_heap.h b/drivers/dma-buf/heap=
+s/restricted_heap.h
+> index 7dec4b8a471b..94cc0842f70d 100644
+> --- a/drivers/dma-buf/heaps/restricted_heap.h
+> +++ b/drivers/dma-buf/heaps/restricted_heap.h
+> @@ -27,6 +27,8 @@ struct restricted_heap {
+>   	unsigned long		cma_paddr;
+>   	unsigned long		cma_size;
+>  =20
+> +	bool			no_map;
+> +
+>   	void			*priv_data;
+>   };
+>  =20
 
-You're right, sorry.
 
->
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: linaro,restricted-heap
-> > +
-> > +  reg:
-> > +    description:
-> > +      Region of memory reserved for OP-TEE SDP feature
-> > +
-> > +  no-map:
-> > +    $ref: /schemas/types.yaml#/definitions/flag
-> > +    description:
-> > +      Avoid creating a virtual mapping of the region as part of the OS'
-> > +      standard mapping of system memory.
-> > +
-> > +unevaluatedProperties: false
->
-> This goes after "required:" block.
-
-OK
-
->
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - no-map
-> > +
-> > +examples:
-> > +  - |
-> > +  reserved-memory {
-> > +    #address-cells =3D <2>;
-> > +    #size-cells =3D <2>;
-> > +
-> > +    sdp(a)3e800000 {
-> > +      compatible =3D "linaro,restricted-heap";
-> > +      no-map;
-> > +      reg =3D <0 0x3E800000 0 0x00400000>;
->
-> lowercase hex
->
-
-OK
-
-
-Thanks,
-Jens
-
-> Best regards,
-> Krzysztof
->
-
---===============3147572786730385259==--
+--===============0806825711724932175==--
 
