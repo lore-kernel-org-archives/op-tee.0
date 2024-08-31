@@ -1,86 +1,71 @@
-From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v9 3/7] remoteproc: core: Refactor resource table cleanup into
- rproc_release_fw
-Date: Fri, 30 Aug 2024 11:51:43 +0200
-Message-ID: <20240830095147.3538047-4-arnaud.pouliquen@foss.st.com>
-In-Reply-To: <20240830095147.3538047-1-arnaud.pouliquen@foss.st.com>
+Subject: Re: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for
+ firmware release
+Date: Sun, 01 Sep 2024 00:43:31 +0800
+Message-ID: <202409010034.Tln3soEY-lkp@intel.com>
+In-Reply-To: <20240830095147.3538047-5-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6660487507040024827=="
+Content-Type: multipart/mixed; boundary="===============8378685746583248021=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6660487507040024827==
+--===============8378685746583248021==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-This patch centralizing the cleanup of the resource table into a new
-helper function rproc_release_fw().
+Hi Arnaud,
 
-Suggested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
-Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
----
- drivers/remoteproc/remoteproc_core.c | 21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+kernel test robot noticed the following build warnings:
 
-diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
-proc_core.c
-index ace11ea17097..7694817f25d4 100644
---- a/drivers/remoteproc/remoteproc_core.c
-+++ b/drivers/remoteproc/remoteproc_core.c
-@@ -1256,6 +1256,13 @@ static int rproc_alloc_registered_carveouts(struct rpr=
-oc *rproc)
- 	return 0;
- }
-=20
-+static void rproc_release_fw(struct rproc *rproc)
-+{
-+	/* Free the copy of the resource table */
-+	kfree(rproc->cached_table);
-+	rproc->cached_table =3D NULL;
-+	rproc->table_ptr =3D NULL;
-+}
-=20
- /**
-  * rproc_resource_cleanup() - clean up and free all acquired resources
-@@ -1485,9 +1492,7 @@ static int rproc_fw_boot(struct rproc *rproc, const str=
-uct firmware *fw)
-=20
- clean_up_resources:
- 	rproc_resource_cleanup(rproc);
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- unprepare_rproc:
- 	/* release HW resources if needed */
- 	rproc_unprepare_device(rproc);
-@@ -2067,10 +2072,7 @@ int rproc_shutdown(struct rproc *rproc)
-=20
- 	rproc_disable_iommu(rproc);
-=20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
-@@ -2133,10 +2135,7 @@ int rproc_detach(struct rproc *rproc)
-=20
- 	rproc_disable_iommu(rproc);
-=20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
+[auto build test WARNING on 5be63fc19fcaa4c236b307420483578a56986a37]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Arnaud-Pouliquen/remot=
+eproc-core-Introduce-rproc_pa_to_va-helper/20240830-175609
+base:   5be63fc19fcaa4c236b307420483578a56986a37
+patch link:    https://lore.kernel.org/r/20240830095147.3538047-5-arnaud.poul=
+iquen%40foss.st.com
+patch subject: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for=
+ firmware release
+config: loongarch-allmodconfig (https://download.01.org/0day-ci/archive/20240=
+901/202409010034.Tln3soEY-lkp(a)intel.com/config)
+compiler: loongarch64-linux-gcc (GCC) 14.1.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0240901/202409010034.Tln3soEY-lkp(a)intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version =
+of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202409010034.Tln3soEY-lkp(a)i=
+ntel.com/
+
+All warnings (new ones prefixed by >>):
+
+   In file included from drivers/remoteproc/remoteproc_core.c:32:
+>> include/linux/remoteproc_tee.h:52:12: warning: 'tee_rproc_parse_fw' define=
+d but not used [-Wunused-function]
+      52 | static int tee_rproc_parse_fw(struct rproc *rproc, const struct fi=
+rmware *fw)
+         |            ^~~~~~~~~~~~~~~~~~
+
+
+vim +/tee_rproc_parse_fw +52 include/linux/remoteproc_tee.h
+
+498143a453d14e Arnaud Pouliquen 2024-08-30  51 =20
+498143a453d14e Arnaud Pouliquen 2024-08-30 @52  static int tee_rproc_parse_fw=
+(struct rproc *rproc, const struct firmware *fw)
+498143a453d14e Arnaud Pouliquen 2024-08-30  53  {
+498143a453d14e Arnaud Pouliquen 2024-08-30  54  	/* This shouldn't be possibl=
+e */
+498143a453d14e Arnaud Pouliquen 2024-08-30  55  	WARN_ON(1);
+498143a453d14e Arnaud Pouliquen 2024-08-30  56 =20
+498143a453d14e Arnaud Pouliquen 2024-08-30  57  	return 0;
+498143a453d14e Arnaud Pouliquen 2024-08-30  58  }
+498143a453d14e Arnaud Pouliquen 2024-08-30  59 =20
+
 --=20
-2.25.1
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
-
---===============6660487507040024827==--
+--===============8378685746583248021==--
 
