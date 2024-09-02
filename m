@@ -1,77 +1,52 @@
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for
- firmware release
-Date: Mon, 02 Sep 2024 09:18:56 +0200
-Message-ID: <cfc164a7-9cf9-42d8-8b66-b4567d3971ae@foss.st.com>
-In-Reply-To: <202409010034.Tln3soEY-lkp@intel.com>
+Subject: [PATCH 1/2] mmc: block: add RPMB dependency
+Date: Mon, 02 Sep 2024 17:12:30 +0200
+Message-ID: <20240902151231.3705204-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3133133995603630237=="
+Content-Type: multipart/mixed; boundary="===============8244669745776444694=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3133133995603630237==
+--===============8244669745776444694==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Prevent build error when CONFIG_RPMB=3Dm and CONFIG_MMC_BLOCK=3Dy by adding
+a dependency to CONFIG_RPMB for CONFIG_MMC_BLOCK block so the RPMB
+subsystem always is reachable if configured. This means that
+CONFIG_MMC_BLOCK automatically becomes compiled as a module if
+CONFIG_RPMB is compiled as a module. If CONFIG_RPMB isn't configured or
+is configured as built-in, CONFIG_MMC_BLOCK will remain unchanged.
+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202409021448.RSvcBPzt-lkp(a)int=
+el.com/
+Fixes: 7852028a35f0 ("mmc: block: register RPMB partition with the RPMB subsy=
+stem")
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+---
+Replacing "rpmb: use IS_REACHABLE instead of IS_ENABLED"
+https://lore.kernel.org/lkml/20240902080727.2665235-1-jens.wiklander(a)linaro=
+.org/
+---
+ drivers/mmc/core/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mmc/core/Kconfig b/drivers/mmc/core/Kconfig
+index bf4e29ef023c..14d2ecbb04d3 100644
+--- a/drivers/mmc/core/Kconfig
++++ b/drivers/mmc/core/Kconfig
+@@ -37,6 +37,7 @@ config PWRSEQ_SIMPLE
+ config MMC_BLOCK
+ 	tristate "MMC block device driver"
+ 	depends on BLOCK
++	depends on RPMB || !RPMB
+ 	imply IOSCHED_BFQ
+ 	default y
+ 	help
+--=20
+2.34.1
 
 
-On 8/31/24 18:43, kernel test robot wrote:
-> Hi Arnaud,
->=20
-> kernel test robot noticed the following build warnings:
->=20
-> [auto build test WARNING on 5be63fc19fcaa4c236b307420483578a56986a37]
->=20
-> url:    https://github.com/intel-lab-lkp/linux/commits/Arnaud-Pouliquen/rem=
-oteproc-core-Introduce-rproc_pa_to_va-helper/20240830-175609
-> base:   5be63fc19fcaa4c236b307420483578a56986a37
-> patch link:    https://lore.kernel.org/r/20240830095147.3538047-5-arnaud.po=
-uliquen%40foss.st.com
-> patch subject: [PATCH v9 4/7] remoteproc: core: Add TEE interface support f=
-or firmware release
-> config: loongarch-allmodconfig (https://download.01.org/0day-ci/archive/202=
-40901/202409010034.Tln3soEY-lkp(a)intel.com/config)
-> compiler: loongarch64-linux-gcc (GCC) 14.1.0
-> reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive=
-/20240901/202409010034.Tln3soEY-lkp(a)intel.com/reproduce)
->=20
-> If you fix the issue in a separate patch/commit (i.e. not just a new versio=
-n of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202409010034.Tln3soEY-lkp(a=
-)intel.com/
->=20
-> All warnings (new ones prefixed by >>):
->=20
->    In file included from drivers/remoteproc/remoteproc_core.c:32:
->>> include/linux/remoteproc_tee.h:52:12: warning: 'tee_rproc_parse_fw' defin=
-ed but not used [-Wunused-function]
->       52 | static int tee_rproc_parse_fw(struct rproc *rproc, const struct =
-firmware *fw)
->          |            ^~~~~~~~~~~~~~~~~~
->=20
->=20
-> vim +/tee_rproc_parse_fw +52 include/linux/remoteproc_tee.h
->=20
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  51 =20
-> 498143a453d14e Arnaud Pouliquen 2024-08-30 @52  static int tee_rproc_parse_=
-fw(struct rproc *rproc, const struct firmware *fw)
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  53  {
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  54  	/* This shouldn't be possi=
-ble */
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  55  	WARN_ON(1);
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  56 =20
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  57  	return 0;
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  58  }
-> 498143a453d14e Arnaud Pouliquen 2024-08-30  59 =20
->=20
-
-The inline attribute is missing. As it is a minor fix, I'm waiting for more
-reviews before fixing it in the next version.
-
-Regards,
-Arnaud
-
---===============3133133995603630237==--
+--===============8244669745776444694==--
 
