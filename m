@@ -1,95 +1,147 @@
 From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for
- firmware release
-Date: Thu, 12 Sep 2024 09:26:10 -0600
-Message-ID: <ZuMIEp4cVrp1hWa7@p14s>
-In-Reply-To: <20240830095147.3538047-5-arnaud.pouliquen@foss.st.com>
+Subject: Re: [PATCH v9 6/7] remoteproc: stm32: Create sub-functions to request
+ shutdown and release
+Date: Thu, 12 Sep 2024 09:41:23 -0600
+Message-ID: <ZuMLo2+an1sxdYlt@p14s>
+In-Reply-To: <20240830095147.3538047-7-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5467105155140992728=="
+Content-Type: multipart/mixed; boundary="===============6592606213228569197=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5467105155140992728==
+--===============6592606213228569197==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 30, 2024 at 11:51:44AM +0200, Arnaud Pouliquen wrote:
-> Add support for releasing remote processor firmware through
-> the Trusted Execution Environment (TEE) interface.
->=20
-> The tee_rproc_release_fw() function is called in the following cases:
->=20
-> - An error occurs in rproc_start() between the loading of the segments and
->   the start of the remote processor.
-> - When rproc_release_fw is called on error or after stopping the remote
->   processor.
+On Fri, Aug 30, 2024 at 11:51:46AM +0200, Arnaud Pouliquen wrote:
+> To prepare for the support of TEE remoteproc, create sub-functions
+> that can be used in both cases, with and without remoteproc TEE support.
 >=20
 > Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 > ---
->  drivers/remoteproc/remoteproc_core.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+>  drivers/remoteproc/stm32_rproc.c | 84 +++++++++++++++++++-------------
+>  1 file changed, 51 insertions(+), 33 deletions(-)
 >=20
-> diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remo=
-teproc_core.c
-> index 7694817f25d4..32052dedc149 100644
-> --- a/drivers/remoteproc/remoteproc_core.c
-> +++ b/drivers/remoteproc/remoteproc_core.c
-> @@ -29,6 +29,7 @@
->  #include <linux/debugfs.h>
->  #include <linux/rculist.h>
->  #include <linux/remoteproc.h>
-> +#include <linux/remoteproc_tee.h>
->  #include <linux/iommu.h>
->  #include <linux/idr.h>
->  #include <linux/elf.h>
-> @@ -1258,6 +1259,9 @@ static int rproc_alloc_registered_carveouts(struct rp=
-roc *rproc)
+> diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rp=
+roc.c
+> index 8c7f7950b80e..79c638936163 100644
+> --- a/drivers/remoteproc/stm32_rproc.c
+> +++ b/drivers/remoteproc/stm32_rproc.c
+> @@ -209,6 +209,54 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, c=
+onst unsigned char *name)
+>  	return -EINVAL;
+>  }
 > =20
->  static void rproc_release_fw(struct rproc *rproc)
->  {
-> +	if (rproc->state =3D=3D RPROC_OFFLINE && rproc->tee_interface)
-> +		tee_rproc_release_fw(rproc);
-
-Function tee_rproc_release_fw() returns a value that is ignored.  I don't know
-how it passes the Sparse checker but I already see patches coming in my Inbox=
- to
-deal with that.  In this case there is nothing else to do if there is an error
-releasing the firware.  As such I would put a (void) in front and add a comme=
-nt
-about the return value being ignore on purpose.
-
+> +static void stm32_rproc_request_shutdown(struct rproc *rproc)
+> +{
+> +	struct stm32_rproc *ddata =3D rproc->priv;
+> +	int err, dummy_data, idx;
 > +
->  	/* Free the copy of the resource table */
->  	kfree(rproc->cached_table);
->  	rproc->cached_table =3D NULL;
-> @@ -1348,7 +1352,7 @@ static int rproc_start(struct rproc *rproc, const str=
-uct firmware *fw)
->  	if (ret) {
->  		dev_err(dev, "failed to prepare subdevices for %s: %d\n",
->  			rproc->name, ret);
-> -		goto reset_table_ptr;
-> +		goto release_fw;
+> +	/* Request shutdown of the remote processor */
+> +	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
+> +		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
+> +		if (idx >=3D 0 && ddata->mb[idx].chan) {
+> +			/* A dummy data is sent to allow to block on transmit. */
+> +			err =3D mbox_send_message(ddata->mb[idx].chan,
+> +						&dummy_data);
+
+When refactoring functions, please do not change the inner code.  Here
+@dummy_data was introduced.  Making changes, even small ones, makes it really
+hard to review your work.  I'm pretty sure we talked about that before.
+
+> +			if (err < 0)
+> +				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
+> +		}
+> +	}
+> +}
+> +
+> +static int stm32_rproc_release(struct rproc *rproc)
+> +{
+> +	struct stm32_rproc *ddata =3D rproc->priv;
+> +	unsigned int err =3D 0;
+> +
+> +	/* To allow platform Standby power mode, set remote proc Deep Sleep. */
+> +	if (ddata->pdds.map) {
+> +		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
+> +					 ddata->pdds.mask, 1);
+> +		if (err) {
+> +			dev_err(&rproc->dev, "failed to set pdds\n");
+> +			return err;
+> +		}
+> +	}
+> +
+> +	/* Update coprocessor state to OFF if available. */
+> +	if (ddata->m4_state.map) {
+> +		err =3D regmap_update_bits(ddata->m4_state.map,
+> +					 ddata->m4_state.reg,
+> +					 ddata->m4_state.mask,
+> +					 M4_STATE_OFF);
+> +		if (err) {
+> +			dev_err(&rproc->dev, "failed to set copro state\n");
+> +			return err;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static int stm32_rproc_prepare(struct rproc *rproc)
+>  {
+>  	struct device *dev =3D rproc->dev.parent;
+> @@ -519,17 +567,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
+>  static int stm32_rproc_stop(struct rproc *rproc)
+>  {
+>  	struct stm32_rproc *ddata =3D rproc->priv;
+> -	int err, idx;
+> +	int err;
+> =20
+> -	/* request shutdown of the remote processor */
+> -	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
+> -		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
+> -		if (idx >=3D 0 && ddata->mb[idx].chan) {
+> -			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
+> -			if (err < 0)
+> -				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
+> -		}
+> -	}
+> +	stm32_rproc_request_shutdown(rproc);
+> =20
+>  	err =3D stm32_rproc_set_hold_boot(rproc, true);
+>  	if (err)
+> @@ -541,29 +581,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
+>  		return err;
 >  	}
 > =20
->  	/* power up the remote processor */
-> @@ -1376,7 +1380,9 @@ static int rproc_start(struct rproc *rproc, const str=
-uct firmware *fw)
->  	rproc->ops->stop(rproc);
->  unprepare_subdevices:
->  	rproc_unprepare_subdevices(rproc);
-> -reset_table_ptr:
-> +release_fw:
-> +	if (rproc->tee_interface)
-> +		tee_rproc_release_fw(rproc);
-
-Same here.
-
->  	rproc->table_ptr =3D rproc->cached_table;
+> -	/* to allow platform Standby power mode, set remote proc Deep Sleep */
+> -	if (ddata->pdds.map) {
+> -		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
+> -					 ddata->pdds.mask, 1);
+> -		if (err) {
+> -			dev_err(&rproc->dev, "failed to set pdds\n");
+> -			return err;
+> -		}
+> -	}
+> -
+> -	/* update coprocessor state to OFF if available */
+> -	if (ddata->m4_state.map) {
+> -		err =3D regmap_update_bits(ddata->m4_state.map,
+> -					 ddata->m4_state.reg,
+> -					 ddata->m4_state.mask,
+> -					 M4_STATE_OFF);
+> -		if (err) {
+> -			dev_err(&rproc->dev, "failed to set copro state\n");
+> -			return err;
+> -		}
+> -	}
+> -
+> -	return 0;
+> +	return stm32_rproc_release(rproc);
+>  }
 > =20
->  	return ret;
+>  static void stm32_rproc_kick(struct rproc *rproc, int vqid)
 > --=20
 > 2.25.1
 >=20
 
---===============5467105155140992728==--
+--===============6592606213228569197==--
 
