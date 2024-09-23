@@ -1,73 +1,116 @@
-From: Rijo Thomas <Rijo-john.Thomas@amd.com>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v1 1/1] tee: amdtee: Use %pUl printk() format specifier to
- print GUIDs
-Date: Mon, 23 Sep 2024 16:37:30 +0530
-Message-ID: <78a3361f-2223-498e-1ee9-644998e55d6e@amd.com>
-In-Reply-To: <94e37138-ae66-4336-93ac-79683f2058aa@linaro.org>
+Subject: Re: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for
+ firmware release
+Date: Mon, 23 Sep 2024 08:53:43 -0600
+Message-ID: <ZvGA9741OV3aexzs@p14s>
+In-Reply-To: <fce2374e-384f-4005-b882-3e0d26897fb7@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0143271215287126637=="
+Content-Type: multipart/mixed; boundary="===============0058408996244334851=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0143271215287126637==
+--===============0058408996244334851==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 9/17/2024 12:52 PM, Jerome Forissier wrote:
+On Tue, Sep 17, 2024 at 06:56:58PM +0200, Arnaud POULIQUEN wrote:
+> Hello Mathieu,
 >=20
+> On 9/12/24 17:26, Mathieu Poirier wrote:
+> > On Fri, Aug 30, 2024 at 11:51:44AM +0200, Arnaud Pouliquen wrote:
+> >> Add support for releasing remote processor firmware through
+> >> the Trusted Execution Environment (TEE) interface.
+> >>
+> >> The tee_rproc_release_fw() function is called in the following cases:
+> >>
+> >> - An error occurs in rproc_start() between the loading of the segments a=
+nd
+> >>   the start of the remote processor.
+> >> - When rproc_release_fw is called on error or after stopping the remote
+> >>   processor.
+> >>
+> >> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+> >> ---
+> >>  drivers/remoteproc/remoteproc_core.c | 10 ++++++++--
+> >>  1 file changed, 8 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/r=
+emoteproc_core.c
+> >> index 7694817f25d4..32052dedc149 100644
+> >> --- a/drivers/remoteproc/remoteproc_core.c
+> >> +++ b/drivers/remoteproc/remoteproc_core.c
+> >> @@ -29,6 +29,7 @@
+> >>  #include <linux/debugfs.h>
+> >>  #include <linux/rculist.h>
+> >>  #include <linux/remoteproc.h>
+> >> +#include <linux/remoteproc_tee.h>
+> >>  #include <linux/iommu.h>
+> >>  #include <linux/idr.h>
+> >>  #include <linux/elf.h>
+> >> @@ -1258,6 +1259,9 @@ static int rproc_alloc_registered_carveouts(struct=
+ rproc *rproc)
+> >> =20
+> >>  static void rproc_release_fw(struct rproc *rproc)
+> >>  {
+> >> +	if (rproc->state =3D=3D RPROC_OFFLINE && rproc->tee_interface)
+> >> +		tee_rproc_release_fw(rproc);
+> >=20
+> > Function tee_rproc_release_fw() returns a value that is ignored.  I don't=
+ know
+> > how it passes the Sparse checker but I already see patches coming in my I=
+nbox to
+> > deal with that.  In this case there is nothing else to do if there is an =
+error
+> > releasing the firware.  As such I would put a (void) in front and add a c=
+omment
+> > about the return value being ignore on purpose.
 >=20
-> On 9/16/24 11:38, Andy Shevchenko wrote:
->> On Mon, Sep 16, 2024 at 01:38:27PM +0530, Rijo Thomas wrote:
->>> On 9/13/2024 2:59 PM, Andy Shevchenko wrote:
->>>> On Thu, Sep 12, 2024 at 07:50:08AM +0200, Jens Wiklander wrote:
->>>>> On Wed, Sep 11, 2024 at 10:41=E2=80=AFPM Andy Shevchenko
->>>>> <andriy.shevchenko@linux.intel.com> wrote:
->>>>>>
->>>>>> Replace the custom approach with the %pUl printk() format specifier.
->>>>>> No functional change intended.
->>>>
->>>>> Thanks, the patch looks like a nice simplificatrion.
->>>>
->>>> Thank you for the review.
->>>>
->>>>> Rijo, Devaraj, does this work for you?
->>>>
->>>> Yes, please test, because seems others use uuid_t (UUID BE) for TEE,
->>>> but in this driver IIUC it's guid_t (UUID LE).
->>>
->>> No, this does not work for us. I tested this patch, it does not work as e=
-xpected.
->>>
->>> %pUl gives output in uuid format (%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02=
-x%02x%02x).
->>> But, what we need, is a name with the format %08x-%04x-%04x-%02x%02x%02x%=
-02x%02x%02x%02x%02x.
->>>
->>> Endian-ness is not an issue here. uuid generates name with 4 hypens (-).
->>> While, in our TA naming we are using 3 hyphens (-).
->>
->> Ah, good catch! Can somebody add a comment there to explain that this uses
->> non-standard human-readable representation of GUID/UUID?
->=20
-> Could this be due to some copying/pasting from the OP-TEE code base which h=
-ad
-> a similar mistake prior to v2.3.0 [1][2][3]?
->=20
-> [1] https://github.com/OP-TEE/optee_os/blob/2.3.0/CHANGELOG.md?plain=3D1#L4=
-0-L45
-> [2] https://github.com/OP-TEE/optee_client/commit/a5b1ffcd26e3
-> [3] https://github.com/OP-TEE/optee_client/commit/365657667f89
->=20
->>
->> P.S. Thank you for testing!
->>
+> Instead of ignoring the error, I wonder if we should panic in
+> tee_rproc_release_fw(). Indeed, we would be in an unexpected state without =
+any
+> possible action to return to a normal state.
+
+Nowadays a call to panic() is only used in very dire situations and I don't s=
+ee
+this meeting that requirement.  I would just call a dev_err() and let it be.
+
 >=20
 > Regards,
+> Arnaud
 >=20
-Thanks Jerome for the information. We will update and post a patch for this.
+> >=20
+> >> +
+> >>  	/* Free the copy of the resource table */
+> >>  	kfree(rproc->cached_table);
+> >>  	rproc->cached_table =3D NULL;
+> >> @@ -1348,7 +1352,7 @@ static int rproc_start(struct rproc *rproc, const =
+struct firmware *fw)
+> >>  	if (ret) {
+> >>  		dev_err(dev, "failed to prepare subdevices for %s: %d\n",
+> >>  			rproc->name, ret);
+> >> -		goto reset_table_ptr;
+> >> +		goto release_fw;
+> >>  	}
+> >> =20
+> >>  	/* power up the remote processor */
+> >> @@ -1376,7 +1380,9 @@ static int rproc_start(struct rproc *rproc, const =
+struct firmware *fw)
+> >>  	rproc->ops->stop(rproc);
+> >>  unprepare_subdevices:
+> >>  	rproc_unprepare_subdevices(rproc);
+> >> -reset_table_ptr:
+> >> +release_fw:
+> >> +	if (rproc->tee_interface)
+> >> +		tee_rproc_release_fw(rproc);
+> >=20
+> > Same here.
+> >=20
+> >>  	rproc->table_ptr =3D rproc->cached_table;
+> >> =20
+> >>  	return ret;
+> >> --=20
+> >> 2.25.1
+> >>
 
-Regards,
-Rijo
-
---===============0143271215287126637==--
+--===============0058408996244334851==--
 
