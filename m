@@ -1,126 +1,186 @@
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
+From: Andrew Davis <afd@ti.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v9 4/7] remoteproc: core: Add TEE interface support for
- firmware release
-Date: Mon, 23 Sep 2024 09:13:32 -0600
-Message-ID: <ZvGFnKd3RkVY9Wb0@p14s>
-In-Reply-To: <fabec69a-3b3a-4068-8906-7996cf125c0b@foss.st.com>
+Subject: Re: [RFC PATCH 0/4] Linaro restricted heap
+Date: Tue, 24 Sep 2024 13:13:18 -0500
+Message-ID: <d8e0cb78-7cfb-42bf-b3a5-f765592e8dd4@ti.com>
+In-Reply-To: <dhxvyshwi4qmcmwceokhqey2ww4azjcs6qrpnkgivdj7tv5cke@r36srvvbof6q>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8215074297389518411=="
+Content-Type: multipart/mixed; boundary="===============1422247782482944422=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8215074297389518411==
+--===============1422247782482944422==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 18, 2024 at 04:43:32PM +0200, Arnaud POULIQUEN wrote:
-> Hello Mathieu,
+On 9/23/24 1:33 AM, Dmitry Baryshkov wrote:
+> Hi,
 >=20
-> On 8/30/24 11:51, Arnaud Pouliquen wrote:
-> > Add support for releasing remote processor firmware through
-> > the Trusted Execution Environment (TEE) interface.
-> >=20
-> > The tee_rproc_release_fw() function is called in the following cases:
-> >=20
-> > - An error occurs in rproc_start() between the loading of the segments and
-> >   the start of the remote processor.
-> > - When rproc_release_fw is called on error or after stopping the remote
-> >   processor.
-> >=20
-> > Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> > ---
-> >  drivers/remoteproc/remoteproc_core.c | 10 ++++++++--
-> >  1 file changed, 8 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/re=
-moteproc_core.c
-> > index 7694817f25d4..32052dedc149 100644
-> > --- a/drivers/remoteproc/remoteproc_core.c
-> > +++ b/drivers/remoteproc/remoteproc_core.c
-> > @@ -29,6 +29,7 @@
-> >  #include <linux/debugfs.h>
-> >  #include <linux/rculist.h>
-> >  #include <linux/remoteproc.h>
-> > +#include <linux/remoteproc_tee.h>
-> >  #include <linux/iommu.h>
-> >  #include <linux/idr.h>
-> >  #include <linux/elf.h>
-> > @@ -1258,6 +1259,9 @@ static int rproc_alloc_registered_carveouts(struct =
-rproc *rproc)
-> > =20
-> >  static void rproc_release_fw(struct rproc *rproc)
-> >  {
-> > +	if (rproc->state =3D=3D RPROC_OFFLINE && rproc->tee_interface)
-> > +		tee_rproc_release_fw(rproc);
+> On Fri, Aug 30, 2024 at 09:03:47AM GMT, Jens Wiklander wrote:
+>> Hi,
+>>
+>> This patch set is based on top of Yong Wu's restricted heap patch set [1].
+>> It's also a continuation on Olivier's Add dma-buf secure-heap patch set [2=
+].
+>>
+>> The Linaro restricted heap uses genalloc in the kernel to manage the heap
+>> carvout. This is a difference from the Mediatek restricted heap which
+>> relies on the secure world to manage the carveout.
+>>
+>> I've tried to adress the comments on [2], but [1] introduces changes so I'm
+>> afraid I've had to skip some comments.
 >=20
-> I'm requesting you expertise to fix an issue I'm facing during my test prep=
-aring
-> the V10.
+> I know I have raised the same question during LPC (in connection to
+> Qualcomm's dma-heap implementation). Is there any reason why we are
+> using generic heaps instead of allocating the dma-bufs on the device
+> side?
 >=20
-> My issue is that here, we can call the tee_rproc_release_fw() function, def=
-ined
-> in remoteproc_tee built as a remoteproc_tee.ko module.
+> In your case you already have TEE device, you can use it to allocate and
+> export dma-bufs, which then get imported by the V4L and DRM drivers.
 >=20
-> I tried to use the IS_ENABLED and IS_REACHABLE macros in remoteproc_tee.h, =
-but
-> without success:
-> - use IS_ENABLED() results in a link error: "undefined reference to
-> tee_rproc_release_fw."
-> - use IS_REACHABLE() returns false and remoteproc_core calls the inline
-> tee_rproc_release_fw function that just call WARN_ON(1).
->=20
-> To solve the issue, I can see three alternatives:
->=20
-> 1) Modify Kconfig and remoteproc_tee.c to support only built-in.
-> 2) Use symbol_get/symbol_put.
-> 3) Define a new rproc_ops->release_fw operation that will be initialized to
-> tee_rproc_release_fw.
->
 
-Option (1) is best but make sure people can disable the TEE interface if they
-don't wish to use it.
+This goes to the heart of why we have dma-heaps in the first place.
+We don't want to burden userspace with having to figure out the right
+place to get a dma-buf for a given use-case on a given hardware.
+That would be very non-portable, and fail at the core purpose of
+a kernel: to abstract hardware specifics away.
 
-> From my perspective, the solution 3 seems to be the cleanest way, as it also
-> removes the dependency between remoteproc_core.c and remoteproc_tee.c. But
-> regarding previous discussion/series version, it seems that it could not be=
- your
-> preferred solution.
->=20
-> Please, could you indicate your preference so that I can directly implement=
- the
-> best solution (or perhaps you have another alternative to propose)?
->=20
-> Thanks in advance!
->=20
-> Arnaud
->=20
->=20
-> > +
-> >  	/* Free the copy of the resource table */
-> >  	kfree(rproc->cached_table);
-> >  	rproc->cached_table =3D NULL;
-> > @@ -1348,7 +1352,7 @@ static int rproc_start(struct rproc *rproc, const s=
-truct firmware *fw)
-> >  	if (ret) {
-> >  		dev_err(dev, "failed to prepare subdevices for %s: %d\n",
-> >  			rproc->name, ret);
-> > -		goto reset_table_ptr;
-> > +		goto release_fw;
-> >  	}
-> > =20
-> >  	/* power up the remote processor */
-> > @@ -1376,7 +1380,9 @@ static int rproc_start(struct rproc *rproc, const s=
-truct firmware *fw)
-> >  	rproc->ops->stop(rproc);
-> >  unprepare_subdevices:
-> >  	rproc_unprepare_subdevices(rproc);
-> > -reset_table_ptr:
-> > +release_fw:
-> > +	if (rproc->tee_interface)
-> > +		tee_rproc_release_fw(rproc);
-> >  	rproc->table_ptr =3D rproc->cached_table;
-> > =20
-> >  	return ret;
+Worse, the actual interface for dma-buf exporting changes from
+framework to framework (getting a dma-buf from DRM is different
+than V4L, and there would be yet another API for TEE, etc..)
 
---===============8215074297389518411==--
+Most subsystem don't need an allocator, they work just fine
+simply being only dma-bufs importers. Recent example being the
+IIO subsystem[0], for which some early posting included an
+allocator, but in the end, all that was needed was to consume
+buffers.
+
+For devices that don't actually contain memory there is no
+reason to be an exporter. What most want is just to consume
+normal system memory. Or system memory with some constraints
+(e.g. contiguous, coherent, restricted, etc..).
+
+> I have a feeling (I might be completely wrong here) that by using
+> generic dma-buf heaps we can easily end up in a situation when the
+> userspace depends heavily on the actual platform being used (to map the
+> platform to heap names). I think we should instead depend on the
+> existing devices (e.g. if there is a TEE device, use an IOCTL to
+> allocate secured DMA BUF from it, otherwise check for QTEE device,
+> otherwise check for some other vendor device).
+>=20
+> The mental experiment to check if the API is correct is really simple:
+> Can you use exactly the same rootfs on several devices without
+> any additional tuning (e.g. your QEMU, HiKey, a Mediatek board, Qualcomm
+> laptop, etc)?
+>=20
+
+This is a great north star to follow. And exactly the reason we should
+*not* be exposing device specific constraints to userspace. The constrains
+change based on the platform. So a userspace would have to also pick
+a different set of constraints based on each platform.
+
+Userspace knows which subsystems it will attach a buffer, and the
+kernel knows what constraints those devices have on a given platform.
+Ideal case is then allocate from the one exporter, attach to various
+devices, and have the constraints solved at map time by the exporter
+based on the set of attached devices.
+
+For example, on one platform the display needs contiguous buffers,
+but on a different platform the display can scatter-gather. So
+what heap should our generic application allocate from when it
+wants a buffer consumable by the display, CMA or System?
+Answer *should* be always use the generic exporter, and that
+exporter then picks the right backing type based on the platform.
+
+Userspace shouldn't be dealing with any of these constraints
+(looking back, adding the CMA heap was probably incorrect,
+and the System heap should have been the only one. Idea back
+then was a userspace helper would show up to do the constraint
+solving and pick the right heap. That has yet to materialize and
+folks are still just hardcoding which heap to use..).
+
+Same for this restricted heap, I'd like to explore if we can
+enhance the System heap such that when attached to the TEE framework,
+the backing memory is either made restricted by fire-walling,
+or allocating from a TEE carveout (based on platform).
+
+This will mean more inter-subsystem coordination, but we can
+iterate on these in kernel interfaces. We cannot iterate on
+userspace interfaces, those have to be correct the first time.
+
+Andrew
+
+[0] https://www.kernel.org/doc/html/next/iio/iio_dmabuf_api.html
+
+>>
+>> This can be tested on QEMU with the following steps:
+>> repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
+>>          -b prototype/sdp-v1
+>> repo sync -j8
+>> cd build
+>> make toolchains -j4
+>> make all -j$(nproc)
+>> make run-only
+>> # login and at the prompt:
+>> xtest --sdp-basic
+>>
+>> https://optee.readthedocs.io/en/latest/building/prerequisites.html
+>> list dependencies needed to build the above.
+>>
+>> The tests are pretty basic, mostly checking that a Trusted Application in
+>> the secure world can access and manipulate the memory.
+>=20
+> - Can we test that the system doesn't crash badly if user provides
+>    non-secured memory to the users which expect a secure buffer?
+>=20
+> - At the same time corresponding entities shouldn't decode data to the
+>    buffers accessible to the rest of the sytem.
+>=20
+>>
+>> Cheers,
+>> Jens
+>>
+>> [1] https://lore.kernel.org/dri-devel/20240515112308.10171-1-yong.wu(a)med=
+iatek.com/
+>> [2] https://lore.kernel.org/lkml/20220805135330.970-1-olivier.masse(a)nxp.=
+com/
+>>
+>> Changes since Olivier's post [2]:
+>> * Based on Yong Wu's post [1] where much of dma-buf handling is done in
+>>    the generic restricted heap
+>> * Simplifications and cleanup
+>> * New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
+>>    support"
+>> * Replaced the word "secure" with "restricted" where applicable
+>>
+>> Etienne Carriere (1):
+>>    tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+>>
+>> Jens Wiklander (2):
+>>    dma-buf: heaps: restricted_heap: add no_map attribute
+>>    dma-buf: heaps: add Linaro restricted dmabuf heap support
+>>
+>> Olivier Masse (1):
+>>    dt-bindings: reserved-memory: add linaro,restricted-heap
+>>
+>>   .../linaro,restricted-heap.yaml               |  56 ++++++
+>>   drivers/dma-buf/heaps/Kconfig                 |  10 ++
+>>   drivers/dma-buf/heaps/Makefile                |   1 +
+>>   drivers/dma-buf/heaps/restricted_heap.c       |  17 +-
+>>   drivers/dma-buf/heaps/restricted_heap.h       |   2 +
+>>   .../dma-buf/heaps/restricted_heap_linaro.c    | 165 ++++++++++++++++++
+>>   drivers/tee/tee_core.c                        |  38 ++++
+>>   drivers/tee/tee_shm.c                         | 104 ++++++++++-
+>>   include/linux/tee_drv.h                       |  11 ++
+>>   include/uapi/linux/tee.h                      |  29 +++
+>>   10 files changed, 426 insertions(+), 7 deletions(-)
+>>   create mode 100644 Documentation/devicetree/bindings/reserved-memory/lin=
+aro,restricted-heap.yaml
+>>   create mode 100644 drivers/dma-buf/heaps/restricted_heap_linaro.c
+>>
+>> --=20
+>> 2.34.1
+>>
+>=20
+
+--===============1422247782482944422==--
 
