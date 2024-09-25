@@ -1,195 +1,133 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Christian König <christian.koenig@amd.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [RFC PATCH 0/4] Linaro restricted heap
-Date: Wed, 25 Sep 2024 14:53:34 +0200
-Message-ID: 
- <CAHUa44EvgcUg0QFvwsgU6BSs_BtZg6bO_5rx3CJbyCUPbiQZXQ@mail.gmail.com>
-In-Reply-To: <bktt4yanmfn4gjljy2wxmigj6mncpga237oxyf4g4h2vxu2a3q@asnsn7smi4u2>
+Subject: Re: [Linaro-mm-sig] Re: [RFC PATCH 0/4] Linaro restricted heap
+Date: Wed, 25 Sep 2024 16:01:09 +0200
+Message-ID: <04caa788-19a6-4336-985c-4eb191c24438@amd.com>
+In-Reply-To: <lk7a2xuqrctyywuanjwseh5lkcz3soatc2zf3kn3uwc43pdyic@edm3hcd2koas>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0457418474100190939=="
+Content-Type: multipart/mixed; boundary="===============3122397048629156111=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0457418474100190939==
+--===============3122397048629156111==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 25, 2024 at 1:41=E2=80=AFPM Dmitry Baryshkov
-<dmitry.baryshkov@linaro.org> wrote:
+Am 25.09.24 um 14:51 schrieb Dmitry Baryshkov:
+> On Wed, Sep 25, 2024 at 10:51:15AM GMT, Christian K=C3=B6nig wrote:
+>> Am 25.09.24 um 01:05 schrieb Dmitry Baryshkov:
+>>> On Tue, Sep 24, 2024 at 01:13:18PM GMT, Andrew Davis wrote:
+>>>> On 9/23/24 1:33 AM, Dmitry Baryshkov wrote:
+>>>>> Hi,
+>>>>>
+>>>>> On Fri, Aug 30, 2024 at 09:03:47AM GMT, Jens Wiklander wrote:
+>>>>>> Hi,
+>>>>>>
+>>>>>> This patch set is based on top of Yong Wu's restricted heap patch set =
+[1].
+>>>>>> It's also a continuation on Olivier's Add dma-buf secure-heap patch se=
+t [2].
+>>>>>>
+>>>>>> The Linaro restricted heap uses genalloc in the kernel to manage the h=
+eap
+>>>>>> carvout. This is a difference from the Mediatek restricted heap which
+>>>>>> relies on the secure world to manage the carveout.
+>>>>>>
+>>>>>> I've tried to adress the comments on [2], but [1] introduces changes s=
+o I'm
+>>>>>> afraid I've had to skip some comments.
+>>>>> I know I have raised the same question during LPC (in connection to
+>>>>> Qualcomm's dma-heap implementation). Is there any reason why we are
+>>>>> using generic heaps instead of allocating the dma-bufs on the device
+>>>>> side?
+>>>>>
+>>>>> In your case you already have TEE device, you can use it to allocate and
+>>>>> export dma-bufs, which then get imported by the V4L and DRM drivers.
+>>>>>
+>>>> This goes to the heart of why we have dma-heaps in the first place.
+>>>> We don't want to burden userspace with having to figure out the right
+>>>> place to get a dma-buf for a given use-case on a given hardware.
+>>>> That would be very non-portable, and fail at the core purpose of
+>>>> a kernel: to abstract hardware specifics away.
+>>> Unfortunately all proposals to use dma-buf heaps were moving in the
+>>> described direction: let app select (somehow) from a platform- and
+>>> vendor- specific list of dma-buf heaps. In the kernel we at least know
+>>> the platform on which the system is running. Userspace generally doesn't
+>>> (and shouldn't). As such, it seems better to me to keep the knowledge in
+>>> the kernel and allow userspace do its job by calling into existing
+>>> device drivers.
+>> The idea of letting the kernel fully abstract away the complexity of inter
+>> device data exchange is a completely failed design. There has been plenty =
+of
+>> evidence for that over the years.
+>>
+>> Because of this in DMA-buf it's an intentional design decision that
+>> userspace and *not* the kernel decides where and what to allocate from.
+> Hmm, ok.
 >
-> On Wed, Sep 25, 2024 at 09:15:04AM GMT, Jens Wiklander wrote:
-> > On Mon, Sep 23, 2024 at 09:33:29AM +0300, Dmitry Baryshkov wrote:
-> > > Hi,
-> > >
-> > > On Fri, Aug 30, 2024 at 09:03:47AM GMT, Jens Wiklander wrote:
-> > > > Hi,
-> > > >
-> > > > This patch set is based on top of Yong Wu's restricted heap patch set=
- [1].
-> > > > It's also a continuation on Olivier's Add dma-buf secure-heap patch s=
-et [2].
-> > > >
-> > > > The Linaro restricted heap uses genalloc in the kernel to manage the =
-heap
-> > > > carvout. This is a difference from the Mediatek restricted heap which
-> > > > relies on the secure world to manage the carveout.
-> > > >
-> > > > I've tried to adress the comments on [2], but [1] introduces changes =
-so I'm
-> > > > afraid I've had to skip some comments.
-> > >
-> > > I know I have raised the same question during LPC (in connection to
-> > > Qualcomm's dma-heap implementation). Is there any reason why we are
-> > > using generic heaps instead of allocating the dma-bufs on the device
-> > > side?
-> > >
-> > > In your case you already have TEE device, you can use it to allocate and
-> > > export dma-bufs, which then get imported by the V4L and DRM drivers.
-> > >
-> > > I have a feeling (I might be completely wrong here) that by using
-> > > generic dma-buf heaps we can easily end up in a situation when the
-> > > userspace depends heavily on the actual platform being used (to map the
-> > > platform to heap names). I think we should instead depend on the
-> > > existing devices (e.g. if there is a TEE device, use an IOCTL to
-> > > allocate secured DMA BUF from it, otherwise check for QTEE device,
-> > > otherwise check for some other vendor device).
-> >
-> > That makes sense, it's similar to what we do with TEE_IOC_SHM_ALLOC
-> > where we allocate from a carveout reserverd for shared memory with the
-> > secure world. It was even based on dma-buf until commit dfd0743f1d9e
-> > ("tee: handle lookup of shm with reference count 0").
-> >
-> > We should use a new TEE_IOC_*_ALLOC for these new dma-bufs to avoid
-> > confusion and to have more freedom when designing the interface.
-> >
-> > >
-> > > The mental experiment to check if the API is correct is really simple:
-> > > Can you use exactly the same rootfs on several devices without
-> > > any additional tuning (e.g. your QEMU, HiKey, a Mediatek board, Qualcomm
-> > > laptop, etc)?
-> >
-> > No, I don't think so.
->
-> Then the API needs to be modified.
+>> What the kernel should provide are the necessary information what type of
+>> memory a device can work with and if certain memory is accessible or not.
+>> This is the part which is unfortunately still not well defined nor
+>> implemented at the moment.
+>>
+>> Apart from that there are a whole bunch of intentional design decision whi=
+ch
+>> should prevent developers to move allocation decision inside the kernel. F=
+or
+>> example DMA-buf doesn't know what the content of the buffer is (except for
+>> it's total size) and which use cases a buffer will be used with.
+>>
+>> So the question if memory should be exposed through DMA-heaps or a driver
+>> specific allocator is not a question of abstraction, but rather one of the
+>> physical location and accessibility of the memory.
+>>
+>> If the memory is attached to any physical device, e.g. local memory on a
+>> dGPU, FPGA PCIe BAR, RDMA, camera internal memory etc, then expose the
+>> memory as device specific allocator.
+> So, for embedded systems with unified memory all buffers (maybe except
+> PCIe BARs) should come from DMA-BUF heaps, correct?
 
-I don't think that is enough. I would have answered no even without
-the secure data path in mind. Communication with the secure world is
-still too fragmented.
+ From what I know that is correct, yes. Question is really if that will=20
+stay this way.
 
->
-> Or the userspace needs to be modified in the way similar to Vulkan /
-> OpenCL / glvnd / VA / VDPU: platform-specific backends, coexisting on a
-> single rootfs.
+Neural accelerators look a lot stripped down FPGAs these days and the=20
+benefit of local memory for GPUs is known for decades.
 
-Yes, that's likely a needed step. But the first step is to have
-something to relate to upstream, without that there's only an
-ever-changing downstream ABI.
+Could be that designs with local specialized memory see a revival any=20
+time, who knows.
 
->
-> It is more or less fine to have platform-specific rootfs when we are
-> talking about the embedded, resource-limited devices. But for the
-> end-user devices we must be able to install a generic distro with no
-> device-specific packages being selected.
+>> If the memory is not physically attached to any device, but rather just
+>> memory attached to the CPU or a system wide memory controller then expose
+>> the memory as DMA-heap with specific requirements (e.g. certain sized page=
+s,
+>> contiguous, restricted, encrypted, ...).
+> Is encrypted / protected a part of the allocation contract or should it
+> be enforced separately via a call to TEE / SCM / anything else?
 
-I'm not sure we can solve that problem here. But we should of course
-not make matters worse. In the restricted heap patch set which this
-patchset builds on we define a way to allocate memory from a
-restricted heap, but we leave the problem of finding the right heap to
-userspace.
+Well that is a really good question I can't fully answer either. From=20
+what I know now I would say it depends on the design.
 
-Thanks,
-Jens
+For the content encryption used by AMD and some other vendors it's=20
+clearly a data property which isn't related in any way to something the=20
+kernel deals with.
 
->
-> >
-> > >
-> > > >
-> > > > This can be tested on QEMU with the following steps:
-> > > > repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8=
-.xml \
-> > > >         -b prototype/sdp-v1
-> > > > repo sync -j8
-> > > > cd build
-> > > > make toolchains -j4
-> > > > make all -j$(nproc)
-> > > > make run-only
-> > > > # login and at the prompt:
-> > > > xtest --sdp-basic
-> > > >
-> > > > https://optee.readthedocs.io/en/latest/building/prerequisites.html
-> > > > list dependencies needed to build the above.
-> > > >
-> > > > The tests are pretty basic, mostly checking that a Trusted Applicatio=
-n in
-> > > > the secure world can access and manipulate the memory.
-> > >
-> > > - Can we test that the system doesn't crash badly if user provides
-> > >   non-secured memory to the users which expect a secure buffer?
-> > >
-> > > - At the same time corresponding entities shouldn't decode data to the
-> > >   buffers accessible to the rest of the sytem.
-> >
-> > I'll a few tests along that.
-> >
-> > Thanks,
-> > Jens
-> >
-> > >
-> > > >
-> > > > Cheers,
-> > > > Jens
-> > > >
-> > > > [1] https://lore.kernel.org/dri-devel/20240515112308.10171-1-yong.wu(=
-a)mediatek.com/
-> > > > [2] https://lore.kernel.org/lkml/20220805135330.970-1-olivier.masse(a=
-)nxp.com/
-> > > >
-> > > > Changes since Olivier's post [2]:
-> > > > * Based on Yong Wu's post [1] where much of dma-buf handling is done =
-in
-> > > >   the generic restricted heap
-> > > > * Simplifications and cleanup
-> > > > * New commit message for "dma-buf: heaps: add Linaro restricted dmabu=
-f heap
-> > > >   support"
-> > > > * Replaced the word "secure" with "restricted" where applicable
-> > > >
-> > > > Etienne Carriere (1):
-> > > >   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
-> > > >
-> > > > Jens Wiklander (2):
-> > > >   dma-buf: heaps: restricted_heap: add no_map attribute
-> > > >   dma-buf: heaps: add Linaro restricted dmabuf heap support
-> > > >
-> > > > Olivier Masse (1):
-> > > >   dt-bindings: reserved-memory: add linaro,restricted-heap
-> > > >
-> > > >  .../linaro,restricted-heap.yaml               |  56 ++++++
-> > > >  drivers/dma-buf/heaps/Kconfig                 |  10 ++
-> > > >  drivers/dma-buf/heaps/Makefile                |   1 +
-> > > >  drivers/dma-buf/heaps/restricted_heap.c       |  17 +-
-> > > >  drivers/dma-buf/heaps/restricted_heap.h       |   2 +
-> > > >  .../dma-buf/heaps/restricted_heap_linaro.c    | 165 ++++++++++++++++=
-++
-> > > >  drivers/tee/tee_core.c                        |  38 ++++
-> > > >  drivers/tee/tee_shm.c                         | 104 ++++++++++-
-> > > >  include/linux/tee_drv.h                       |  11 ++
-> > > >  include/uapi/linux/tee.h                      |  29 +++
-> > > >  10 files changed, 426 insertions(+), 7 deletions(-)
-> > > >  create mode 100644 Documentation/devicetree/bindings/reserved-memory=
-/linaro,restricted-heap.yaml
-> > > >  create mode 100644 drivers/dma-buf/heaps/restricted_heap_linaro.c
-> > > >
-> > > > --
-> > > > 2.34.1
-> > > >
-> > >
-> > > --
-> > > With best wishes
-> > > Dmitry
->
-> --
-> With best wishes
-> Dmitry
+When it's not encryption but rather some special protected area of=20
+memory which only certain devices have DMA access to then having a=20
+separate heap might make sense for that.
 
---===============0457418474100190939==--
+As rule of thump I would say it's the kernels responsibility to manage=20
+the physical interconnection between two devices, e.g. come up with DMA=20
+addresses which work. And it's the userspace responsibility to negotiate=20
+the actual data format of the bytes transferred, e.g. things like width,=20
+height, stride, pixel format, tiling, encryption etc....
+
+The tricky part is all those special cases, e.g. that GPU can only=20
+scanout from local memory, that atomic operations work only on system=20
+memory, that a devices might have different coherency constrains, etc..=20
+Nobody has figured out really all the requirements and we basically just=20
+go from use case to another use use case.
+
+Regards,
+Christian.
+
+--===============3122397048629156111==--
 
