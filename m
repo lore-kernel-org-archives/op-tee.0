@@ -1,93 +1,177 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v10 3/7] remoteproc: core: Refactor resource table cleanup
- into rproc_release_fw
-Date: Mon, 07 Oct 2024 15:16:16 +0200
-Message-ID: <20241007131620.2090104-4-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v10 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
+ load the firmware
+Date: Mon, 07 Oct 2024 15:16:20 +0200
+Message-ID: <20241007131620.2090104-8-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20241007131620.2090104-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8893500370693238031=="
+Content-Type: multipart/mixed; boundary="===============2919598562590696288=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8893500370693238031==
+--===============2919598562590696288==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-This patch centralizing the cleanup of the resource table into a new
-helper function rproc_release_fw().
+The new TEE remoteproc driver is used to manage remote firmware in a
+secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
+introduced to delegate the loading of the firmware to the trusted
+execution context. In such cases, the firmware should be signed and
+adhere to the image format defined by the TEE.
 
-More than just factorizing the code into a common function, it is the
-first step to integrate the release of the firmware image loaded by the
-OP-TEE remoteproc framework.
-
-Suggested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
-Update vs previous revision:
-- add justification of the patch in the commit message
+update vs previous version
+- rename tee_interface to tee_rproc_itf
+- in stm32_rproc_probe(), test and use rproc->tee_rproc_itf instead of
+  trproc in the tee_rproc_unregister() call
+- initialize release_fw ops
+- add select REMOTEPROC_TEE in Kconfig for STM32_RPROC.
 ---
- drivers/remoteproc/remoteproc_core.c | 21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ drivers/remoteproc/Kconfig       |  1 +
+ drivers/remoteproc/stm32_rproc.c | 63 ++++++++++++++++++++++++++++++--
+ 2 files changed, 61 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
-proc_core.c
-index ace11ea17097..7694817f25d4 100644
---- a/drivers/remoteproc/remoteproc_core.c
-+++ b/drivers/remoteproc/remoteproc_core.c
-@@ -1256,6 +1256,13 @@ static int rproc_alloc_registered_carveouts(struct rpr=
-oc *rproc)
+diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
+index d0284220a194..df9ccbffe48b 100644
+--- a/drivers/remoteproc/Kconfig
++++ b/drivers/remoteproc/Kconfig
+@@ -327,6 +327,7 @@ config STM32_RPROC
+ 	depends on ARCH_STM32 || COMPILE_TEST
+ 	depends on REMOTEPROC
+ 	select MAILBOX
++	select REMOTEPROC_TEE
+ 	help
+ 	  Say y here to support STM32 MCU processors via the
+ 	  remote processor framework.
+diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
+c.c
+index 288bd70c7861..cb7093de41df 100644
+--- a/drivers/remoteproc/stm32_rproc.c
++++ b/drivers/remoteproc/stm32_rproc.c
+@@ -18,6 +18,7 @@
+ #include <linux/pm_wakeirq.h>
+ #include <linux/regmap.h>
+ #include <linux/remoteproc.h>
++#include <linux/remoteproc_tee.h>
+ #include <linux/reset.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+@@ -255,6 +256,19 @@ static int stm32_rproc_release(struct rproc *rproc)
  	return 0;
  }
 =20
-+static void rproc_release_fw(struct rproc *rproc)
++static int stm32_rproc_tee_stop(struct rproc *rproc)
 +{
-+	/* Free the copy of the resource table */
-+	kfree(rproc->cached_table);
-+	rproc->cached_table =3D NULL;
-+	rproc->table_ptr =3D NULL;
++	int err;
++
++	stm32_rproc_request_shutdown(rproc);
++
++	err =3D tee_rproc_stop(rproc);
++	if (err)
++		return err;
++
++	return stm32_rproc_release(rproc);
 +}
++
+ static int stm32_rproc_prepare(struct rproc *rproc)
+ {
+ 	struct device *dev =3D rproc->dev.parent;
+@@ -691,8 +705,20 @@ static const struct rproc_ops st_rproc_ops =3D {
+ 	.get_boot_addr	=3D rproc_elf_get_boot_addr,
+ };
 =20
- /**
-  * rproc_resource_cleanup() - clean up and free all acquired resources
-@@ -1485,9 +1492,7 @@ static int rproc_fw_boot(struct rproc *rproc, const str=
-uct firmware *fw)
++static const struct rproc_ops st_rproc_tee_ops =3D {
++	.prepare	=3D stm32_rproc_prepare,
++	.start		=3D tee_rproc_start,
++	.stop		=3D stm32_rproc_tee_stop,
++	.kick		=3D stm32_rproc_kick,
++	.load		=3D tee_rproc_load_fw,
++	.parse_fw	=3D tee_rproc_parse_fw,
++	.find_loaded_rsc_table =3D tee_rproc_find_loaded_rsc_table,
++	.release_fw	=3D tee_rproc_release_fw,
++};
++
+ static const struct of_device_id stm32_rproc_match[] =3D {
+ 	{ .compatible =3D "st,stm32mp1-m4" },
++	{ .compatible =3D "st,stm32mp1-m4-tee" },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, stm32_rproc_match);
+@@ -851,17 +877,42 @@ static int stm32_rproc_probe(struct platform_device *pd=
+ev)
+ 	struct device *dev =3D &pdev->dev;
+ 	struct stm32_rproc *ddata;
+ 	struct device_node *np =3D dev->of_node;
++	struct tee_rproc *trproc =3D NULL;
+ 	struct rproc *rproc;
+ 	unsigned int state;
++	u32 proc_id;
+ 	int ret;
 =20
- clean_up_resources:
- 	rproc_resource_cleanup(rproc);
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- unprepare_rproc:
- 	/* release HW resources if needed */
- 	rproc_unprepare_device(rproc);
-@@ -2067,10 +2072,7 @@ int rproc_shutdown(struct rproc *rproc)
+ 	ret =3D dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
+ 	if (ret)
+ 		return ret;
 =20
- 	rproc_disable_iommu(rproc);
+-	rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*ddat=
+a));
+-	if (!rproc)
+-		return -ENOMEM;
++	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
++		/*
++		 * Delegate the firmware management to the secure context.
++		 * The firmware loaded has to be signed.
++		 */
++		ret =3D of_property_read_u32(np, "st,proc-id", &proc_id);
++		if (ret) {
++			dev_err(dev, "failed to read st,rproc-id property\n");
++			return ret;
++		}
++
++		rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_tee_ops, NULL, sizeof(=
+*ddata));
++		if (!rproc)
++			return -ENOMEM;
++
++		trproc =3D tee_rproc_register(dev, rproc, proc_id);
++		if (IS_ERR(trproc)) {
++			dev_err_probe(dev, PTR_ERR(trproc),
++				      "signed firmware not supported by TEE\n");
++			return PTR_ERR(trproc);
++		}
++	} else {
++		rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*dda=
+ta));
++		if (!rproc)
++			return -ENOMEM;
++	}
 =20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
+ 	ddata =3D rproc->priv;
+=20
+@@ -913,6 +964,9 @@ static int stm32_rproc_probe(struct platform_device *pdev)
+ 		dev_pm_clear_wake_irq(dev);
+ 		device_init_wakeup(dev, false);
+ 	}
++	if (rproc->tee_rproc_itf)
++		tee_rproc_unregister(rproc->tee_rproc_itf);
++
  	return ret;
-@@ -2133,10 +2135,7 @@ int rproc_detach(struct rproc *rproc)
+ }
 =20
- 	rproc_disable_iommu(rproc);
+@@ -933,6 +987,9 @@ static void stm32_rproc_remove(struct platform_device *pd=
+ev)
+ 		dev_pm_clear_wake_irq(dev);
+ 		device_init_wakeup(dev, false);
+ 	}
++	if (rproc->tee_rproc_itf)
++		tee_rproc_unregister(rproc->tee_rproc_itf);
++
+ }
 =20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
+ static int stm32_rproc_suspend(struct device *dev)
 --=20
 2.25.1
 
 
---===============8893500370693238031==--
+--===============2919598562590696288==--
 
