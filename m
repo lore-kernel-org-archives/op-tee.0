@@ -1,150 +1,88 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v11 5/7] dt-bindings: remoteproc: Add compatibility for TEE support
-Date: Wed, 09 Oct 2024 10:01:06 +0200
-Message-ID: <20241009080108.4170320-6-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v11 4/7] remoteproc: Introduce release_fw optional operation
+Date: Wed, 09 Oct 2024 10:01:05 +0200
+Message-ID: <20241009080108.4170320-5-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20241009080108.4170320-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0316836814120777095=="
+Content-Type: multipart/mixed; boundary="===============9108742331554122614=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0316836814120777095==
+--===============9108742331554122614==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
-where the Cortex-M4 firmware is loaded by the Trusted Execution Environment
-(TEE).
+This patch updates the rproc_ops struct to include an optional
+release_fw function.
 
-For instance, this compatible is used in both the Linux and OP-TEE device
-trees:
-- In OP-TEE, a node is defined in the device tree with the
-  "st,stm32mp1-m4-tee" compatible to support signed remoteproc firmware.
-  Based on DT properties, the OP-TEE remoteproc framework is initiated to
-  expose a trusted application service to authenticate and load the remote
-  processor firmware provided by the Linux remoteproc framework, as well
-  as to start and stop the remote processor.
-- In Linux, when the compatibility is set, the Cortex-M resets should not
-  be declared in the device tree. In such a configuration, the reset is
-  managed by the OP-TEE remoteproc driver and is no longer accessible from
-  the Linux kernel.
+The release_fw ops is responsible for releasing the remote processor
+firmware image. The ops is called in the following cases:
 
-Associated with this new compatible, add the "st,proc-id" property to
-identify the remote processor. This ID is used to define a unique ID,
-common between Linux, U-Boot, and OP-TEE, to identify a coprocessor.
-This ID will be used in requests to the OP-TEE remoteproc Trusted
-Application to specify the remote processor.
+ - An error occurs in rproc_start() between the loading of the segments and
+      the start of the remote processor.
+ - after stopping the remote processor.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- .../bindings/remoteproc/st,stm32-rproc.yaml   | 58 ++++++++++++++++---
- 1 file changed, 50 insertions(+), 8 deletions(-)
+Update vs v9 revision:
+- New commit that preplace previous one to introduce ops->release_fw
+---
+ drivers/remoteproc/remoteproc_core.c | 5 +++++
+ include/linux/remoteproc.h           | 3 +++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
- b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-index 370af61d8f28..409123cd4667 100644
---- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-+++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-@@ -16,7 +16,12 @@ maintainers:
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
+proc_core.c
+index 7694817f25d4..46863e1ca307 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -1258,6 +1258,9 @@ static int rproc_alloc_registered_carveouts(struct rpro=
+c *rproc)
 =20
- properties:
-   compatible:
--    const: st,stm32mp1-m4
-+    enum:
-+      - st,stm32mp1-m4
-+      - st,stm32mp1-m4-tee
-+    description:
-+      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-s=
-ecure context
-+      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
-ecure context
-=20
-   reg:
-     description:
-@@ -43,6 +48,10 @@ properties:
-           - description: The offset of the hold boot setting register
-           - description: The field mask of the hold boot
-=20
-+  st,proc-id:
-+    description: remote processor identifier
-+    $ref: /schemas/types.yaml#/definitions/uint32
+ static void rproc_release_fw(struct rproc *rproc)
+ {
++	if (rproc->ops->release_fw)
++		rproc->ops->release_fw(rproc);
 +
-   st,syscfg-tz:
-     deprecated: true
-     description:
-@@ -142,21 +151,43 @@ properties:
- required:
-   - compatible
-   - reg
--  - resets
+ 	/* Free the copy of the resource table */
+ 	kfree(rproc->cached_table);
+ 	rproc->cached_table =3D NULL;
+@@ -1377,6 +1380,8 @@ static int rproc_start(struct rproc *rproc, const struc=
+t firmware *fw)
+ unprepare_subdevices:
+ 	rproc_unprepare_subdevices(rproc);
+ reset_table_ptr:
++	if (rproc->ops->release_fw)
++		rproc->ops->release_fw(rproc);
+ 	rproc->table_ptr =3D rproc->cached_table;
 =20
- allOf:
-   - if:
-       properties:
--        reset-names:
--          not:
--            contains:
--              const: hold_boot
-+        compatible:
-+          contains:
-+            const: st,stm32mp1-m4
-     then:
-+      if:
-+        properties:
-+          reset-names:
-+            not:
-+              contains:
-+                const: hold_boot
-+      then:
-+        required:
-+          - st,syscfg-holdboot
-+      else:
-+        properties:
-+          st,syscfg-holdboot: false
-+        required:
-+          - reset-names
-       required:
--        - st,syscfg-holdboot
--    else:
-+        - resets
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: st,stm32mp1-m4-tee
-+    then:
-       properties:
-         st,syscfg-holdboot: false
-+        reset-names: false
-+        resets: false
-+      required:
-+        - st,proc-id
+ 	return ret;
+diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
+index 73f640dd0fc0..bdf4d94a9e63 100644
+--- a/include/linux/remoteproc.h
++++ b/include/linux/remoteproc.h
+@@ -381,6 +381,8 @@ enum rsc_handling_status {
+  * @panic:	optional callback to react to system panic, core will delay
+  *		panic at least the returned number of milliseconds
+  * @coredump:	  collect firmware dump after the subsystem is shutdown
++ * @release_fw:	optional function to release the firmware image from ROM mem=
+ories.
++ *              This function is called after stopping the process or in cas=
+e of an error
+  */
+ struct rproc_ops {
+ 	int (*prepare)(struct rproc *rproc);
+@@ -403,6 +405,7 @@ struct rproc_ops {
+ 	u64 (*get_boot_addr)(struct rproc *rproc, const struct firmware *fw);
+ 	unsigned long (*panic)(struct rproc *rproc);
+ 	void (*coredump)(struct rproc *rproc);
++	void (*release_fw)(struct rproc *rproc);
+ };
 =20
- additionalProperties: false
-=20
-@@ -188,5 +219,16 @@ examples:
-       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-     };
-+  - |
-+    #include <dt-bindings/reset/stm32mp1-resets.h>
-+    m4(a)10000000 {
-+      compatible =3D "st,stm32mp1-m4-tee";
-+      reg =3D <0x10000000 0x40000>,
-+            <0x30000000 0x40000>,
-+            <0x38000000 0x10000>;
-+      st,proc-id =3D <0>;
-+      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-+      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-+    };
-=20
- ...
+ /**
 --=20
 2.25.1
 
 
---===============0316836814120777095==--
+--===============9108742331554122614==--
 
