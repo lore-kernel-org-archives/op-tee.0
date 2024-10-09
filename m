@@ -1,144 +1,150 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v11 6/7] remoteproc: stm32: Create sub-functions to request
- shutdown and release
-Date: Wed, 09 Oct 2024 10:01:07 +0200
-Message-ID: <20241009080108.4170320-7-arnaud.pouliquen@foss.st.com>
+Subject: 
+ [PATCH v11 5/7] dt-bindings: remoteproc: Add compatibility for TEE support
+Date: Wed, 09 Oct 2024 10:01:06 +0200
+Message-ID: <20241009080108.4170320-6-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20241009080108.4170320-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7039287534885473520=="
+Content-Type: multipart/mixed; boundary="===============0316836814120777095=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7039287534885473520==
+--===============0316836814120777095==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-To prepare for the support of TEE remoteproc, create sub-functions
-that can be used in both cases, with and without remoteproc TEE support.
+The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+where the Cortex-M4 firmware is loaded by the Trusted Execution Environment
+(TEE).
+
+For instance, this compatible is used in both the Linux and OP-TEE device
+trees:
+- In OP-TEE, a node is defined in the device tree with the
+  "st,stm32mp1-m4-tee" compatible to support signed remoteproc firmware.
+  Based on DT properties, the OP-TEE remoteproc framework is initiated to
+  expose a trusted application service to authenticate and load the remote
+  processor firmware provided by the Linux remoteproc framework, as well
+  as to start and stop the remote processor.
+- In Linux, when the compatibility is set, the Cortex-M resets should not
+  be declared in the device tree. In such a configuration, the reset is
+  managed by the OP-TEE remoteproc driver and is no longer accessible from
+  the Linux kernel.
+
+Associated with this new compatible, add the "st,proc-id" property to
+identify the remote processor. This ID is used to define a unique ID,
+common between Linux, U-Boot, and OP-TEE, to identify a coprocessor.
+This ID will be used in requests to the OP-TEE remoteproc Trusted
+Application to specify the remote processor.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 ---
-Updates vs v9 revision:
-- Fix stm32_rproc_request_shutdown code, which was not an exact move of the
-  source code from stm32_rproc_stop. This issue was introduced by a
-  rebase of the commit from an old version of the code.
----
- drivers/remoteproc/stm32_rproc.c | 82 +++++++++++++++++++-------------
- 1 file changed, 49 insertions(+), 33 deletions(-)
+ .../bindings/remoteproc/st,stm32-rproc.yaml   | 58 ++++++++++++++++---
+ 1 file changed, 50 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
-c.c
-index 8c7f7950b80e..288bd70c7861 100644
---- a/drivers/remoteproc/stm32_rproc.c
-+++ b/drivers/remoteproc/stm32_rproc.c
-@@ -209,6 +209,52 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, con=
-st unsigned char *name)
- 	return -EINVAL;
- }
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
+ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 370af61d8f28..409123cd4667 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -16,7 +16,12 @@ maintainers:
 =20
-+static void stm32_rproc_request_shutdown(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	int err, idx;
-+
-+	/* Request shutdown of the remote processor */
-+	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
-+		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
-+		if (idx >=3D 0 && ddata->mb[idx].chan) {
-+			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
-+			if (err < 0)
-+				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
-+		}
-+	}
-+}
-+
-+static int stm32_rproc_release(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	unsigned int err =3D 0;
-+
-+	/* To allow platform Standby power mode, set remote proc Deep Sleep */
-+	if (ddata->pdds.map) {
-+		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
-+					 ddata->pdds.mask, 1);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set pdds\n");
-+			return err;
-+		}
-+	}
-+
-+	/* Update coprocessor state to OFF if available */
-+	if (ddata->m4_state.map) {
-+		err =3D regmap_update_bits(ddata->m4_state.map,
-+					 ddata->m4_state.reg,
-+					 ddata->m4_state.mask,
-+					 M4_STATE_OFF);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set copro state\n");
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int stm32_rproc_prepare(struct rproc *rproc)
- {
- 	struct device *dev =3D rproc->dev.parent;
-@@ -519,17 +565,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
- static int stm32_rproc_stop(struct rproc *rproc)
- {
- 	struct stm32_rproc *ddata =3D rproc->priv;
--	int err, idx;
-+	int err;
+ properties:
+   compatible:
+-    const: st,stm32mp1-m4
++    enum:
++      - st,stm32mp1-m4
++      - st,stm32mp1-m4-tee
++    description:
++      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-s=
+ecure context
++      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
+ecure context
 =20
--	/* request shutdown of the remote processor */
--	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
--		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
--		if (idx >=3D 0 && ddata->mb[idx].chan) {
--			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
--			if (err < 0)
--				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
--		}
--	}
-+	stm32_rproc_request_shutdown(rproc);
+   reg:
+     description:
+@@ -43,6 +48,10 @@ properties:
+           - description: The offset of the hold boot setting register
+           - description: The field mask of the hold boot
 =20
- 	err =3D stm32_rproc_set_hold_boot(rproc, true);
- 	if (err)
-@@ -541,29 +579,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
- 		return err;
- 	}
++  st,proc-id:
++    description: remote processor identifier
++    $ref: /schemas/types.yaml#/definitions/uint32
++
+   st,syscfg-tz:
+     deprecated: true
+     description:
+@@ -142,21 +151,43 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - resets
 =20
--	/* to allow platform Standby power mode, set remote proc Deep Sleep */
--	if (ddata->pdds.map) {
--		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
--					 ddata->pdds.mask, 1);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set pdds\n");
--			return err;
--		}
--	}
--
--	/* update coprocessor state to OFF if available */
--	if (ddata->m4_state.map) {
--		err =3D regmap_update_bits(ddata->m4_state.map,
--					 ddata->m4_state.reg,
--					 ddata->m4_state.mask,
--					 M4_STATE_OFF);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set copro state\n");
--			return err;
--		}
--	}
--
--	return 0;
-+	return stm32_rproc_release(rproc);
- }
+ allOf:
+   - if:
+       properties:
+-        reset-names:
+-          not:
+-            contains:
+-              const: hold_boot
++        compatible:
++          contains:
++            const: st,stm32mp1-m4
+     then:
++      if:
++        properties:
++          reset-names:
++            not:
++              contains:
++                const: hold_boot
++      then:
++        required:
++          - st,syscfg-holdboot
++      else:
++        properties:
++          st,syscfg-holdboot: false
++        required:
++          - reset-names
+       required:
+-        - st,syscfg-holdboot
+-    else:
++        - resets
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: st,stm32mp1-m4-tee
++    then:
+       properties:
+         st,syscfg-holdboot: false
++        reset-names: false
++        resets: false
++      required:
++        - st,proc-id
 =20
- static void stm32_rproc_kick(struct rproc *rproc, int vqid)
+ additionalProperties: false
+=20
+@@ -188,5 +219,16 @@ examples:
+       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
+       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
+     };
++  - |
++    #include <dt-bindings/reset/stm32mp1-resets.h>
++    m4(a)10000000 {
++      compatible =3D "st,stm32mp1-m4-tee";
++      reg =3D <0x10000000 0x40000>,
++            <0x30000000 0x40000>,
++            <0x38000000 0x10000>;
++      st,proc-id =3D <0>;
++      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
++      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
++    };
+=20
+ ...
 --=20
 2.25.1
 
 
---===============7039287534885473520==--
+--===============0316836814120777095==--
 
