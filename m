@@ -1,93 +1,144 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v11 3/7] remoteproc: core: Refactor resource table cleanup
- into rproc_release_fw
-Date: Wed, 09 Oct 2024 10:01:04 +0200
-Message-ID: <20241009080108.4170320-4-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v11 6/7] remoteproc: stm32: Create sub-functions to request
+ shutdown and release
+Date: Wed, 09 Oct 2024 10:01:07 +0200
+Message-ID: <20241009080108.4170320-7-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20241009080108.4170320-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8998992921501561177=="
+Content-Type: multipart/mixed; boundary="===============7039287534885473520=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8998992921501561177==
+--===============7039287534885473520==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-This patch centralizing the cleanup of the resource table into a new
-helper function rproc_release_fw().
+To prepare for the support of TEE remoteproc, create sub-functions
+that can be used in both cases, with and without remoteproc TEE support.
 
-More than just factorizing the code into a common function, it is the
-first step to integrate the release of the firmware image loaded by the
-OP-TEE remoteproc framework.
-
-Suggested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
-Update vs v9 revision:
-- add justification of the patch in the commit message
+Updates vs v9 revision:
+- Fix stm32_rproc_request_shutdown code, which was not an exact move of the
+  source code from stm32_rproc_stop. This issue was introduced by a
+  rebase of the commit from an old version of the code.
 ---
- drivers/remoteproc/remoteproc_core.c | 21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ drivers/remoteproc/stm32_rproc.c | 82 +++++++++++++++++++-------------
+ 1 file changed, 49 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
-proc_core.c
-index ace11ea17097..7694817f25d4 100644
---- a/drivers/remoteproc/remoteproc_core.c
-+++ b/drivers/remoteproc/remoteproc_core.c
-@@ -1256,6 +1256,13 @@ static int rproc_alloc_registered_carveouts(struct rpr=
-oc *rproc)
- 	return 0;
+diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
+c.c
+index 8c7f7950b80e..288bd70c7861 100644
+--- a/drivers/remoteproc/stm32_rproc.c
++++ b/drivers/remoteproc/stm32_rproc.c
+@@ -209,6 +209,52 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, con=
+st unsigned char *name)
+ 	return -EINVAL;
  }
 =20
-+static void rproc_release_fw(struct rproc *rproc)
++static void stm32_rproc_request_shutdown(struct rproc *rproc)
 +{
-+	/* Free the copy of the resource table */
-+	kfree(rproc->cached_table);
-+	rproc->cached_table =3D NULL;
-+	rproc->table_ptr =3D NULL;
++	struct stm32_rproc *ddata =3D rproc->priv;
++	int err, idx;
++
++	/* Request shutdown of the remote processor */
++	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
++		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
++		if (idx >=3D 0 && ddata->mb[idx].chan) {
++			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
++			if (err < 0)
++				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
++		}
++	}
 +}
++
++static int stm32_rproc_release(struct rproc *rproc)
++{
++	struct stm32_rproc *ddata =3D rproc->priv;
++	unsigned int err =3D 0;
++
++	/* To allow platform Standby power mode, set remote proc Deep Sleep */
++	if (ddata->pdds.map) {
++		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
++					 ddata->pdds.mask, 1);
++		if (err) {
++			dev_err(&rproc->dev, "failed to set pdds\n");
++			return err;
++		}
++	}
++
++	/* Update coprocessor state to OFF if available */
++	if (ddata->m4_state.map) {
++		err =3D regmap_update_bits(ddata->m4_state.map,
++					 ddata->m4_state.reg,
++					 ddata->m4_state.mask,
++					 M4_STATE_OFF);
++		if (err) {
++			dev_err(&rproc->dev, "failed to set copro state\n");
++			return err;
++		}
++	}
++
++	return 0;
++}
++
+ static int stm32_rproc_prepare(struct rproc *rproc)
+ {
+ 	struct device *dev =3D rproc->dev.parent;
+@@ -519,17 +565,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
+ static int stm32_rproc_stop(struct rproc *rproc)
+ {
+ 	struct stm32_rproc *ddata =3D rproc->priv;
+-	int err, idx;
++	int err;
 =20
- /**
-  * rproc_resource_cleanup() - clean up and free all acquired resources
-@@ -1485,9 +1492,7 @@ static int rproc_fw_boot(struct rproc *rproc, const str=
-uct firmware *fw)
+-	/* request shutdown of the remote processor */
+-	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
+-		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
+-		if (idx >=3D 0 && ddata->mb[idx].chan) {
+-			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
+-			if (err < 0)
+-				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
+-		}
+-	}
++	stm32_rproc_request_shutdown(rproc);
 =20
- clean_up_resources:
- 	rproc_resource_cleanup(rproc);
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- unprepare_rproc:
- 	/* release HW resources if needed */
- 	rproc_unprepare_device(rproc);
-@@ -2067,10 +2072,7 @@ int rproc_shutdown(struct rproc *rproc)
+ 	err =3D stm32_rproc_set_hold_boot(rproc, true);
+ 	if (err)
+@@ -541,29 +579,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
+ 		return err;
+ 	}
 =20
- 	rproc_disable_iommu(rproc);
+-	/* to allow platform Standby power mode, set remote proc Deep Sleep */
+-	if (ddata->pdds.map) {
+-		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
+-					 ddata->pdds.mask, 1);
+-		if (err) {
+-			dev_err(&rproc->dev, "failed to set pdds\n");
+-			return err;
+-		}
+-	}
+-
+-	/* update coprocessor state to OFF if available */
+-	if (ddata->m4_state.map) {
+-		err =3D regmap_update_bits(ddata->m4_state.map,
+-					 ddata->m4_state.reg,
+-					 ddata->m4_state.mask,
+-					 M4_STATE_OFF);
+-		if (err) {
+-			dev_err(&rproc->dev, "failed to set copro state\n");
+-			return err;
+-		}
+-	}
+-
+-	return 0;
++	return stm32_rproc_release(rproc);
+ }
 =20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
-@@ -2133,10 +2135,7 @@ int rproc_detach(struct rproc *rproc)
-=20
- 	rproc_disable_iommu(rproc);
-=20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
+ static void stm32_rproc_kick(struct rproc *rproc, int vqid)
 --=20
 2.25.1
 
 
---===============8998992921501561177==--
+--===============7039287534885473520==--
 
