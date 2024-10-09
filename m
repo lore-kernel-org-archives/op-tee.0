@@ -1,163 +1,117 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v11 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
- load the firmware
-Date: Wed, 09 Oct 2024 10:01:08 +0200
-Message-ID: <20241009080108.4170320-8-arnaud.pouliquen@foss.st.com>
-In-Reply-To: <20241009080108.4170320-1-arnaud.pouliquen@foss.st.com>
+Subject: 
+ [PATCH v11 0/7] Introduction of a remoteproc tee to load signed firmware
+Date: Wed, 09 Oct 2024 10:01:01 +0200
+Message-ID: <20241009080108.4170320-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4599031113846097511=="
+Content-Type: multipart/mixed; boundary="===============6535069377089809688=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4599031113846097511==
+--===============6535069377089809688==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The new TEE remoteproc driver is used to manage remote firmware in a
-secure, trusted context. The 'st,stm32mp1-m4-tee' compatibility is
-introduced to delegate the loading of the firmware to the trusted
-execution context. In such cases, the firmware should be signed and
-adhere to the image format defined by the TEE.
 
-Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
----
-updates vs v9 revision:
-- rename tee_interface to tee_rproc_itf
-- in stm32_rproc_probe(), test and use rproc->tee_rproc_itf instead of
-  trproc in the tee_rproc_unregister() call
-- initialize release_fw ops
----
- drivers/remoteproc/stm32_rproc.c | 63 ++++++++++++++++++++++++++++++--
- 1 file changed, 60 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
-c.c
-index 288bd70c7861..cb7093de41df 100644
---- a/drivers/remoteproc/stm32_rproc.c
-+++ b/drivers/remoteproc/stm32_rproc.c
-@@ -18,6 +18,7 @@
- #include <linux/pm_wakeirq.h>
- #include <linux/regmap.h>
- #include <linux/remoteproc.h>
-+#include <linux/remoteproc_tee.h>
- #include <linux/reset.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
-@@ -255,6 +256,19 @@ static int stm32_rproc_release(struct rproc *rproc)
- 	return 0;
- }
-=20
-+static int stm32_rproc_tee_stop(struct rproc *rproc)
-+{
-+	int err;
-+
-+	stm32_rproc_request_shutdown(rproc);
-+
-+	err =3D tee_rproc_stop(rproc);
-+	if (err)
-+		return err;
-+
-+	return stm32_rproc_release(rproc);
-+}
-+
- static int stm32_rproc_prepare(struct rproc *rproc)
- {
- 	struct device *dev =3D rproc->dev.parent;
-@@ -691,8 +705,20 @@ static const struct rproc_ops st_rproc_ops =3D {
- 	.get_boot_addr	=3D rproc_elf_get_boot_addr,
- };
-=20
-+static const struct rproc_ops st_rproc_tee_ops =3D {
-+	.prepare	=3D stm32_rproc_prepare,
-+	.start		=3D tee_rproc_start,
-+	.stop		=3D stm32_rproc_tee_stop,
-+	.kick		=3D stm32_rproc_kick,
-+	.load		=3D tee_rproc_load_fw,
-+	.parse_fw	=3D tee_rproc_parse_fw,
-+	.find_loaded_rsc_table =3D tee_rproc_find_loaded_rsc_table,
-+	.release_fw	=3D tee_rproc_release_fw,
-+};
-+
- static const struct of_device_id stm32_rproc_match[] =3D {
- 	{ .compatible =3D "st,stm32mp1-m4" },
-+	{ .compatible =3D "st,stm32mp1-m4-tee" },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, stm32_rproc_match);
-@@ -851,17 +877,42 @@ static int stm32_rproc_probe(struct platform_device *pd=
-ev)
- 	struct device *dev =3D &pdev->dev;
- 	struct stm32_rproc *ddata;
- 	struct device_node *np =3D dev->of_node;
-+	struct tee_rproc *trproc =3D NULL;
- 	struct rproc *rproc;
- 	unsigned int state;
-+	u32 proc_id;
- 	int ret;
-=20
- 	ret =3D dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		return ret;
-=20
--	rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*ddat=
-a));
--	if (!rproc)
--		return -ENOMEM;
-+	if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
-+		/*
-+		 * Delegate the firmware management to the secure context.
-+		 * The firmware loaded has to be signed.
-+		 */
-+		ret =3D of_property_read_u32(np, "st,proc-id", &proc_id);
-+		if (ret) {
-+			dev_err(dev, "failed to read st,rproc-id property\n");
-+			return ret;
-+		}
-+
-+		rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_tee_ops, NULL, sizeof(=
-*ddata));
-+		if (!rproc)
-+			return -ENOMEM;
-+
-+		trproc =3D tee_rproc_register(dev, rproc, proc_id);
-+		if (IS_ERR(trproc)) {
-+			dev_err_probe(dev, PTR_ERR(trproc),
-+				      "signed firmware not supported by TEE\n");
-+			return PTR_ERR(trproc);
-+		}
-+	} else {
-+		rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeof(*dda=
-ta));
-+		if (!rproc)
-+			return -ENOMEM;
-+	}
-=20
- 	ddata =3D rproc->priv;
-=20
-@@ -913,6 +964,9 @@ static int stm32_rproc_probe(struct platform_device *pdev)
- 		dev_pm_clear_wake_irq(dev);
- 		device_init_wakeup(dev, false);
- 	}
-+	if (rproc->tee_rproc_itf)
-+		tee_rproc_unregister(rproc->tee_rproc_itf);
-+
- 	return ret;
- }
-=20
-@@ -933,6 +987,9 @@ static void stm32_rproc_remove(struct platform_device *pd=
-ev)
- 		dev_pm_clear_wake_irq(dev);
- 		device_init_wakeup(dev, false);
- 	}
-+	if (rproc->tee_rproc_itf)
-+		tee_rproc_unregister(rproc->tee_rproc_itf);
-+
- }
-=20
- static int stm32_rproc_suspend(struct device *dev)
+Main updates from version V10[1]:
+- remove "select REMOTEPROC_TEE" in STM32_RPROC config to fix kernel robot
+
+To keep history of the updates I have kept in each patches the description
+of the updates versus the V9[2] revision.
+
+Main updates from version V9[2]:
+
+- Introduce release_fw remoteproc ops to avoid direct call of
+  tee_rproc_release_fw() in remoteproc_core.c:
+  - allow to remove link between remoteproc and remoteproc_tee
+  - allow to build the remoteproc_tee as a module
+
+[1] https://lore.kernel.org/linux-arm-kernel/ZwVATlRbo0OdRLbj(a)p14s/T/
+[2] https://lore.kernel.org/linux-arm-kernel/ZuMIEp4cVrp1hWa7(a)p14s/T/
+
+Tested-on: commit 9852d85ec9d4 ("Linux 6.12-rc1")
+
+Description of the feature:
+--------------------------
+This series proposes the implementation of a remoteproc tee driver to
+communicate with a TEE trusted application responsible for authenticating
+and loading the remoteproc firmware image in an Arm secure context.
+
+1) Principle:
+
+The remoteproc tee driver provides services to communicate with the OP-TEE
+trusted application running on the Trusted Execution Context (TEE).
+The trusted application in TEE manages the remote processor lifecycle:
+
+- authenticating and loading firmware images,
+- isolating and securing the remote processor memories,
+- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
+- managing the start and stop of the firmware by the TEE.
+
+2) Format of the signed image:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_c=
+ore.c#L18-L57
+
+3) OP-TEE trusted application API:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remot=
+eproc.h
+
+4) OP-TEE signature script
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
+
+Example of usage:
+sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key $=
+{OP-TEE_PATH}/keys/default.pem
+
+
+5) Impact on User space Application
+
+No sysfs impact. The user only needs to provide the signed firmware image
+instead of the ELF image.
+
+
+For more information about the implementation, a presentation is available he=
+re
+(note that the format of the signed image has evolved between the presentation
+and the integration in OP-TEE).
+
+https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+
+Arnaud Pouliquen (7):
+  remoteproc: core: Introduce rproc_pa_to_va helper
+  remoteproc: Add TEE support
+  remoteproc: core: Refactor resource table cleanup into
+    rproc_release_fw
+  remoteproc: Introduce release_fw optional operation
+  dt-bindings: remoteproc: Add compatibility for TEE support
+  remoteproc: stm32: Create sub-functions to request shutdown and
+    release
+  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
+
+ .../bindings/remoteproc/st,stm32-rproc.yaml   |  58 +-
+ drivers/remoteproc/Kconfig                    |  10 +
+ drivers/remoteproc/Makefile                   |   1 +
+ drivers/remoteproc/remoteproc_core.c          |  72 ++-
+ drivers/remoteproc/remoteproc_tee.c           | 506 ++++++++++++++++++
+ drivers/remoteproc/stm32_rproc.c              | 145 +++--
+ include/linux/remoteproc.h                    |   8 +
+ include/linux/remoteproc_tee.h                | 107 ++++
+ 8 files changed, 852 insertions(+), 55 deletions(-)
+ create mode 100644 drivers/remoteproc/remoteproc_tee.c
+ create mode 100644 include/linux/remoteproc_tee.h
+
+
+base-commit: 9852d85ec9d492ebef56dc5f229416c925758edc
 --=20
 2.25.1
 
 
---===============4599031113846097511==--
+--===============6535069377089809688==--
 
