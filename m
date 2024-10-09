@@ -1,110 +1,93 @@
-From: kernel test robot <lkp@intel.com>
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v10 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
- load the firmware
-Date: Wed, 09 Oct 2024 02:27:51 +0800
-Message-ID: <202410090225.d3bZaaqk-lkp@intel.com>
-In-Reply-To: <20241007131620.2090104-8-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v11 3/7] remoteproc: core: Refactor resource table cleanup
+ into rproc_release_fw
+Date: Wed, 09 Oct 2024 10:01:04 +0200
+Message-ID: <20241009080108.4170320-4-arnaud.pouliquen@foss.st.com>
+In-Reply-To: <20241009080108.4170320-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7367786621608431199=="
+Content-Type: multipart/mixed; boundary="===============8998992921501561177=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7367786621608431199==
+--===============8998992921501561177==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Arnaud,
+This patch centralizing the cleanup of the resource table into a new
+helper function rproc_release_fw().
 
-kernel test robot noticed the following build errors:
+More than just factorizing the code into a common function, it is the
+first step to integrate the release of the firmware image loaded by the
+OP-TEE remoteproc framework.
 
-[auto build test ERROR on 9852d85ec9d492ebef56dc5f229416c925758edc]
+Suggested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+Update vs v9 revision:
+- add justification of the patch in the commit message
+---
+ drivers/remoteproc/remoteproc_core.c | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Arnaud-Pouliquen/remot=
-eproc-core-Introduce-rproc_pa_to_va-helper/20241007-212358
-base:   9852d85ec9d492ebef56dc5f229416c925758edc
-patch link:    https://lore.kernel.org/r/20241007131620.2090104-8-arnaud.poul=
-iquen%40foss.st.com
-patch subject: [PATCH v10 7/7] remoteproc: stm32: Add support of an OP-TEE TA=
- to load the firmware
-config: arm-randconfig-r054-20241008 (https://download.01.org/0day-ci/archive=
-/20241009/202410090225.d3bZaaqk-lkp(a)intel.com/config)
-compiler: clang version 20.0.0git (https://github.com/llvm/llvm-project fef35=
-66a25ff0e34fb87339ba5e13eca17cec00f)
-reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0241009/202410090225.d3bZaaqk-lkp(a)intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version =
-of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410090225.d3bZaaqk-lkp(a)i=
-ntel.com/
-
-All errors (new ones prefixed by >>):
-
->> ld.lld: error: undefined symbol: tee_client_invoke_func
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_release_f=
-w) in archive vmlinux.a
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_load_fw) =
-in archive vmlinux.a
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_parse_fw)=
- in archive vmlinux.a
-   >>> referenced 3 more times
---
->> ld.lld: error: undefined symbol: tee_shm_register_kernel_buf
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_load_fw) =
-in archive vmlinux.a
---
->> ld.lld: error: undefined symbol: tee_shm_free
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_load_fw) =
-in archive vmlinux.a
---
->> ld.lld: error: undefined symbol: tee_client_open_session
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_register)=
- in archive vmlinux.a
---
->> ld.lld: error: undefined symbol: tee_client_close_session
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_unregiste=
-r) in archive vmlinux.a
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_remove) i=
-n archive vmlinux.a
---
->> ld.lld: error: undefined symbol: tee_client_open_context
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_probe) in=
- archive vmlinux.a
---
->> ld.lld: error: undefined symbol: tee_client_close_context
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_probe) in=
- archive vmlinux.a
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_remove) i=
-n archive vmlinux.a
---
->> ld.lld: error: undefined symbol: tee_bus_type
-   >>> referenced by remoteproc_tee.c
-   >>>               drivers/remoteproc/remoteproc_tee.o:(tee_rproc_fw_driver=
-) in archive vmlinux.a
-
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for REMOTEPROC_TEE
-   Depends on [n]: REMOTEPROC [=3Dy] && OPTEE [=3Dn]
-   Selected by [y]:
-   - STM32_RPROC [=3Dy] && (ARCH_STM32 [=3Dn] || COMPILE_TEST [=3Dy]) && REMO=
-TEPROC [=3Dy]
-
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
+proc_core.c
+index ace11ea17097..7694817f25d4 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -1256,6 +1256,13 @@ static int rproc_alloc_registered_carveouts(struct rpr=
+oc *rproc)
+ 	return 0;
+ }
+=20
++static void rproc_release_fw(struct rproc *rproc)
++{
++	/* Free the copy of the resource table */
++	kfree(rproc->cached_table);
++	rproc->cached_table =3D NULL;
++	rproc->table_ptr =3D NULL;
++}
+=20
+ /**
+  * rproc_resource_cleanup() - clean up and free all acquired resources
+@@ -1485,9 +1492,7 @@ static int rproc_fw_boot(struct rproc *rproc, const str=
+uct firmware *fw)
+=20
+ clean_up_resources:
+ 	rproc_resource_cleanup(rproc);
+-	kfree(rproc->cached_table);
+-	rproc->cached_table =3D NULL;
+-	rproc->table_ptr =3D NULL;
++	rproc_release_fw(rproc);
+ unprepare_rproc:
+ 	/* release HW resources if needed */
+ 	rproc_unprepare_device(rproc);
+@@ -2067,10 +2072,7 @@ int rproc_shutdown(struct rproc *rproc)
+=20
+ 	rproc_disable_iommu(rproc);
+=20
+-	/* Free the copy of the resource table */
+-	kfree(rproc->cached_table);
+-	rproc->cached_table =3D NULL;
+-	rproc->table_ptr =3D NULL;
++	rproc_release_fw(rproc);
+ out:
+ 	mutex_unlock(&rproc->lock);
+ 	return ret;
+@@ -2133,10 +2135,7 @@ int rproc_detach(struct rproc *rproc)
+=20
+ 	rproc_disable_iommu(rproc);
+=20
+-	/* Free the copy of the resource table */
+-	kfree(rproc->cached_table);
+-	rproc->cached_table =3D NULL;
+-	rproc->table_ptr =3D NULL;
++	rproc_release_fw(rproc);
+ out:
+ 	mutex_unlock(&rproc->lock);
+ 	return ret;
 --=20
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.25.1
 
---===============7367786621608431199==--
+
+--===============8998992921501561177==--
 
