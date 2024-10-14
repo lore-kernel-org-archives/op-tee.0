@@ -1,89 +1,71 @@
-From: Ryan Roberts <ryan.roberts@arm.com>
+From: Jérôme Forissier <jerome.forissier@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [RFC PATCH v1 32/57] optee: Remove PAGE_SIZE compile-time constant assumption
-Date: Mon, 14 Oct 2024 11:58:39 +0100
-Message-ID: <20241014105912.3207374-32-ryan.roberts@arm.com>
-In-Reply-To: <20241014105912.3207374-1-ryan.roberts@arm.com>
+Subject: Re: Padding on Optee + AES Block Cyphers
+Date: Mon, 14 Oct 2024 15:02:09 +0200
+Message-ID: 
+ <CA+NB=mbwffDf0=Ko3r-ifd6NmfF0JVW4b=yM1GY-5WA+WOMpBw@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3CSN7PR22MB3762671B5F65160819AE98689D792=40SN7PR22MB?=
+ =?utf-8?q?3762=2Enamprd22=2Eprod=2Eoutlook=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2763708345878042797=="
+Content-Type: multipart/mixed; boundary="===============2735137168329073743=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2763708345878042797==
+--===============2735137168329073743==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-To prepare for supporting boot-time page size selection, refactor code
-to remove assumptions about PAGE_SIZE being compile-time constant. Code
-intended to be equivalent when compile-time page size is active.
+Hello Hareesh,
 
-Updated BUILD_BUG_ON() to test against limit.
+On Fri, 11 Oct 2024 at 11:33, Hareesh Das Ulleri <hareesh.ulleri@ovt.com>
+wrote:
 
-Refactored "struct optee_shm_arg_entry" to use a flexible array member
-for "map", since its length depends on PAGE_SIZE.
+> Dear Op-Tee support team,
+>
+>    Required some expert opinion - Could you please confirm whether AES
+> block cyphers (ECB and CBC mode) support non-block aligned input for
+> cryption ?
+>
 
-Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
----
-
-***NOTE***
-Any confused maintainers may want to read the cover note here for context:
-https://lore.kernel.org/all/20241014105514.3206191-1-ryan.roberts(a)arm.com/
-
- drivers/tee/optee/call.c    | 7 +++++--
- drivers/tee/optee/smc_abi.c | 2 +-
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index 16eb953e14bb6..41bd7ace6606e 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -36,7 +36,7 @@
- struct optee_shm_arg_entry {
- 	struct list_head list_node;
- 	struct tee_shm *shm;
--	DECLARE_BITMAP(map, MAX_ARG_COUNT_PER_ENTRY);
-+	unsigned long map[];
- };
-=20
- void optee_cq_init(struct optee_call_queue *cq, int thread_count)
-@@ -271,6 +271,7 @@ struct optee_msg_arg *optee_get_msg_arg(struct tee_contex=
-t *ctx,
- 	struct optee_shm_arg_entry *entry;
- 	struct optee_msg_arg *ma;
- 	size_t args_per_entry;
-+	size_t entry_sz;
- 	u_long bit;
- 	u_int offs;
- 	void *res;
-@@ -293,7 +294,9 @@ struct optee_msg_arg *optee_get_msg_arg(struct tee_contex=
-t *ctx,
- 	/*
- 	 * No entry was found, let's allocate a new.
- 	 */
--	entry =3D kzalloc(sizeof(*entry), GFP_KERNEL);
-+	entry_sz =3D struct_size(entry, map,
-+			       BITS_TO_LONGS(MAX_ARG_COUNT_PER_ENTRY));
-+	entry =3D kzalloc(entry_sz, GFP_KERNEL);
- 	if (!entry) {
- 		res =3D ERR_PTR(-ENOMEM);
- 		goto out;
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 844285d4f03c1..005689380d848 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -418,7 +418,7 @@ static void optee_fill_pages_list(u64 *dst, struct page *=
-*pages, int num_pages,
- 	 * code heavily relies on this assumption, so it is better be
- 	 * safe than sorry.
- 	 */
--	BUILD_BUG_ON(PAGE_SIZE < OPTEE_MSG_NONCONTIG_PAGE_SIZE);
-+	BUILD_BUG_ON(PAGE_SIZE_MIN < OPTEE_MSG_NONCONTIG_PAGE_SIZE);
-=20
- 	pages_data =3D (void *)dst;
- 	/*
---=20
-2.43.0
+AES block ciphers in "plain" ECB and CBC mode do NOT support input data
+that are not a multiple of the block size (16 bytes). Please refer to this
+note in the GlobalPlatform TEE Internal Core API v1.3.1, section 6.4.3
+TEE_CipherDofinal: "[Panic Reasons] If the total length of the input is not
+a multiple of a block size when the algorithm of the operation is a
+symmetric block cipher which does not specify padding.".
 
 
---===============2763708345878042797==--
+>    My Use case as below App (say input buffer as 17 bytes) -> OpTee (CA +
+> TA) -> HSM.
+>
+>    In the above mentioned case, Does Op-Tee can take care the input buffer
+> with any size or does it expect block-size aligned input buffer ? In which
+> layer does the padding recommended ? Could you please provide any
+> suggestions / links ?
+>
+
+You would need to take care of the padding yourself, typically in the TA.
+That being said, you need to be very careful with ECB as it is susceptible
+to pattern repetition attacks. It should be used only in very specific
+circumstances. For CBC, a common padding scheme is PKCS#7. Other AES modes
+on the other hand (CCM, CTR, CTS, GCM and XTS) do NOT require padding --
+i.e., the input data can be of arbitrary length.
+
+Note that I am talking about data being a "multiple of the block size" and
+I am not saying "blocksize-aligned" data. Alignment usually conveys a
+different meaning, i.e., whether or not the start address of the buffer is
+a multiple of the block size. This has no impact whatsoever with OP-TEE.
+Any alignment requirements of hardware crypto engines or crypto
+instructions etc. are dealt with internally.
+
+HTH,
+-- 
+Jerome
+
+
+>
+> Thanks & Regards,
+> Hareesh
+>
+
+--===============2735137168329073743==--
 
