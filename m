@@ -1,79 +1,100 @@
-From: Hareesh Das Ulleri <hareesh.ulleri@ovt.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: Padding on Optee + AES Block Cyphers
-Date: Tue, 15 Oct 2024 01:56:12 +0000
-Message-ID: <SN7PR22MB37624B2C5C04DD49A0CDF5B29D452@SN7PR22MB3762.namprd22.prod.outlook.com>
-In-Reply-To: <
- <CA+NB=mbwffDf0=Ko3r-ifd6NmfF0JVW4b=yM1GY-5WA+WOMpBw@mail.gmail.com>>
+Subject: [RFC PATCH v2 0/2] TEE subsystem for restricted dma-buf allocations
+Date: Tue, 15 Oct 2024 12:15:32 +0200
+Message-ID: <20241015101716.740829-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5073824306118506929=="
+Content-Type: multipart/mixed; boundary="===============3613000229067036571=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5073824306118506929==
+--===============3613000229067036571==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jerome
+Hi,
 
-  Thanks for the reply. Yes this helps.
+This patch set allocates the restricted DMA-bufs via the TEE subsystem.
+This a complete rewrite compared to the previous patch set [1], and other
+earlier proposals [2] and [3] with a separate restricted heap.
 
-Regards,
-Hareesh
+The TEE subsystem handles the DMA-buf allocations since it is the TEE
+(OP-TEE, AMD-TEE, TS-TEE, or a future QTEE) which sets up the restrictions
+for the memory used for the DMA-bufs.
 
-From: J=C3=A9r=C3=B4me Forissier <jerome.forissier@linaro.org>
-Sent: Monday, October 14, 2024 9:02 PM
-To: Hareesh Das Ulleri <hareesh.ulleri@ovt.com>
-Cc: op-tee(a)lists.trustedfirmware.org
-Subject: Re: Padding on Optee + AES Block Cyphers
+I've added a new IOCTL, TEE_IOC_RSTMEM_ALLOC, to allocate the restricted
+DMA-bufs. This new IOCTL reaches the backend TEE driver, allowing it to
+choose how to allocate the restricted physical memory.
 
-[CAUTION]: EXTERNAL EMAIL
+TEE_IOC_RSTMEM_ALLOC is quite similar to TEE_IOC_SHM_ALLOC so it's tempting
+to extend TEE_IOC_SHM_ALLOC with two new flags
+TEE_IOC_SHM_FLAG_SECURE_VIDEO and TEE_IOC_SHM_FLAG_SECURE_TRUSTED_UI for
+the same feature. However, it might be a bit confusing since
+TEE_IOC_SHM_ALLOC only returns an anonymous file descriptor, but
+TEE_IOC_SHM_FLAG_SECURE_VIDEO and TEE_IOC_SHM_FLAG_SECURE_TRUSTED_UI would
+return a DMA-buf file descriptor instead. What do others think?
 
-Hello Hareesh,
+This can be tested on QEMU with the following steps:
+repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
+        -b prototype/sdp-v2
+repo sync -j8
+cd build
+make toolchains -j4
+make all -j$(nproc)
+make run-only
+# login and at the prompt:
+xtest --sdp-basic
 
-On Fri, 11 Oct 2024 at 11:33, Hareesh Das Ulleri <hareesh.ulleri(a)ovt.com<ma=
-ilto:hareesh.ulleri@ovt.com>> wrote:
-Dear Op-Tee support team,
+https://optee.readthedocs.io/en/latest/building/prerequisites.html
+list dependencies needed to build the above.
 
-   Required some expert opinion - Could you please confirm whether AES block =
-cyphers (ECB and CBC mode) support non-block aligned input for cryption ?
+The tests are pretty basic, mostly checking that a Trusted Application in
+the secure world can access and manipulate the memory. There are also some
+negative tests for out of bounds buffers etc.
 
-AES block ciphers in "plain" ECB and CBC mode do NOT support input data that =
-are not a multiple of the block size (16 bytes). Please refer to this note in=
- the GlobalPlatform TEE Internal Core API v1.3.1, section 6.4.3 TEE_CipherDof=
-inal: "[Panic Reasons] If the total length of the input is not a multiple of =
-a block size when the algorithm of the operation is a symmetric block cipher =
-which does not specify padding.".
+Thanks,
+Jens
+
+[1] https://lore.kernel.org/lkml/20240830070351.2855919-1-jens.wiklander(a)li=
+naro.org/
+[2] https://lore.kernel.org/dri-devel/20240515112308.10171-1-yong.wu(a)mediat=
+ek.com/
+[3] https://lore.kernel.org/lkml/20220805135330.970-1-olivier.masse(a)nxp.com/
+
+Changes since the V1 RFC:
+* Based on v6.11
+* Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALLOC
+
+Changes since Olivier's post [2]:
+* Based on Yong Wu's post [1] where much of dma-buf handling is done in
+  the generic restricted heap
+* Simplifications and cleanup
+* New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
+  support"
+* Replaced the word "secure" with "restricted" where applicable
+
+Jens Wiklander (2):
+  tee: add restricted memory allocation
+  optee: support restricted memory allocation
+
+ drivers/tee/Makefile              |   1 +
+ drivers/tee/optee/core.c          |  21 ++++
+ drivers/tee/optee/optee_private.h |   6 +
+ drivers/tee/optee/optee_smc.h     |  35 ++++++
+ drivers/tee/optee/smc_abi.c       |  45 ++++++-
+ drivers/tee/tee_core.c            |  33 ++++-
+ drivers/tee/tee_private.h         |   2 +
+ drivers/tee/tee_rstmem.c          | 200 ++++++++++++++++++++++++++++++
+ drivers/tee/tee_shm.c             |   2 +
+ drivers/tee/tee_shm_pool.c        |  69 ++++++++++-
+ include/linux/tee_core.h          |   6 +
+ include/linux/tee_drv.h           |   9 ++
+ include/uapi/linux/tee.h          |  33 ++++-
+ 13 files changed, 455 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/tee/tee_rstmem.c
+
+--=20
+2.43.0
 
 
-   My Use case as below App (say input buffer as 17 bytes) -> OpTee (CA + TA)=
- -> HSM.
-
-   In the above mentioned case, Does Op-Tee can take care the input buffer wi=
-th any size or does it expect block-size aligned input buffer ? In which laye=
-r does the padding recommended ? Could you please provide any suggestions / l=
-inks ?
-
-You would need to take care of the padding yourself, typically in the TA. Tha=
-t being said, you need to be very careful with ECB as it is susceptible to pa=
-ttern repetition attacks. It should be used only in very specific circumstanc=
-es. For CBC, a common padding scheme is PKCS#7. Other AES modes on the other =
-hand (CCM, CTR, CTS, GCM and XTS) do NOT require padding -- i.e., the input d=
-ata can be of arbitrary length.
-
-Note that I am talking about data being a "multiple of the block size" and I =
-am not saying "blocksize-aligned" data. Alignment usually conveys a different=
- meaning, i.e., whether or not the start address of the buffer is a multiple =
-of the block size. This has no impact whatsoever with OP-TEE. Any alignment r=
-equirements of hardware crypto engines or crypto instructions etc. are dealt =
-with internally.
-
-HTH,
---
-Jerome
-
-
-Thanks & Regards,
-Hareesh
-
---===============5073824306118506929==--
+--===============3613000229067036571==--
 
