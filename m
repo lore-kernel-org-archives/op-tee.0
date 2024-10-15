@@ -1,546 +1,265 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RFC PATCH v2 1/2] tee: add restricted memory allocation
-Date: Tue, 15 Oct 2024 12:15:33 +0200
-Message-ID: <20241015101716.740829-2-jens.wiklander@linaro.org>
+Subject: [RFC PATCH v2 2/2] optee: support restricted memory allocation
+Date: Tue, 15 Oct 2024 12:15:34 +0200
+Message-ID: <20241015101716.740829-3-jens.wiklander@linaro.org>
 In-Reply-To: <20241015101716.740829-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7895656046938672495=="
+Content-Type: multipart/mixed; boundary="===============3542539256017510929=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7895656046938672495==
+--===============3542539256017510929==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add restricted memory allocation to the TEE subsystem. Restricted memory
-is not be accessible by kernel during normal circumstances. A new ioctl
-TEE_IOC_RSTMEM_ALLOC is added to allocate these restricted memory
-buffers. The restricted memory is supposed to we used in special
-use-cases like Secure Data Path or Trusted UI where certain hardware
-devices can access the memory.
+Add support in the OP-TEE backend driver for restricted memory
+allocation. The support is limited to only the SMC ABI and for secure
+video buffers.
+
+OP-TEE is probed for the range of restricted physical memory and a
+memory pool allocator is initialized if OP-TEE have support for such
+memory.
 
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/Makefile       |   1 +
- drivers/tee/tee_core.c     |  33 +++++-
- drivers/tee/tee_private.h  |   2 +
- drivers/tee/tee_rstmem.c   | 200 +++++++++++++++++++++++++++++++++++++
- drivers/tee/tee_shm.c      |   2 +
- drivers/tee/tee_shm_pool.c |  69 ++++++++++++-
- include/linux/tee_core.h   |   6 ++
- include/linux/tee_drv.h    |   9 ++
- include/uapi/linux/tee.h   |  33 +++++-
- 9 files changed, 351 insertions(+), 4 deletions(-)
- create mode 100644 drivers/tee/tee_rstmem.c
+ drivers/tee/optee/core.c          | 21 +++++++++++++++
+ drivers/tee/optee/optee_private.h |  6 +++++
+ drivers/tee/optee/optee_smc.h     | 35 ++++++++++++++++++++++++
+ drivers/tee/optee/smc_abi.c       | 45 ++++++++++++++++++++++++++++---
+ 4 files changed, 104 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tee/Makefile b/drivers/tee/Makefile
-index 5488cba30bd2..a4c6b55444b9 100644
---- a/drivers/tee/Makefile
-+++ b/drivers/tee/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_TEE) +=3D tee.o
- tee-objs +=3D tee_core.o
- tee-objs +=3D tee_shm.o
- tee-objs +=3D tee_shm_pool.o
-+tee-objs +=3D tee_rstmem.o
- obj-$(CONFIG_OPTEE) +=3D optee/
- obj-$(CONFIG_AMDTEE) +=3D amdtee/
- obj-$(CONFIG_ARM_TSTEE) +=3D tstee/
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index d52e879b204e..0f4eee05ab13 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -1,12 +1,13 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * Copyright (c) 2015-2016, Linaro Limited
-+ * Copyright (c) 2015-2022, 2024, Linaro Limited
-  */
-=20
- #define pr_fmt(fmt) "%s: " fmt, __func__
-=20
- #include <linux/cdev.h>
- #include <linux/cred.h>
-+#include <linux/dma-buf.h>
- #include <linux/fs.h>
- #include <linux/idr.h>
- #include <linux/module.h>
-@@ -818,6 +819,34 @@ static int tee_ioctl_supp_send(struct tee_context *ctx,
- 	return rc;
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 39e688d4e974..b6d5cbc6728d 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -95,6 +95,25 @@ void optee_release_supp(struct tee_context *ctx)
+ 	optee_supp_release(&optee->supp);
  }
 =20
-+static int
-+tee_ioctl_rstmem_alloc(struct tee_context *ctx,
-+		       struct tee_ioctl_rstmem_alloc_data __user *udata)
++int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
++		       u32 flags, size_t size)
 +{
-+	struct tee_ioctl_rstmem_alloc_data data;
-+	struct dma_buf *dmabuf;
-+	int id;
-+	int fd;
++	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
 +
-+	if (copy_from_user(&data, udata, sizeof(data)))
-+		return -EFAULT;
-+
-+	dmabuf =3D tee_rstmem_alloc(ctx, data.flags, data.size, &id);
-+	if (IS_ERR(dmabuf))
-+		return PTR_ERR(dmabuf);
-+	if (put_user(id, &udata->id)) {
-+		fd =3D -EFAULT;
-+		goto err;
-+	}
-+	fd =3D dma_buf_fd(dmabuf, O_CLOEXEC);
-+	if (fd < 0)
-+		goto err;
-+	return fd;
-+err:
-+	dma_buf_put(dmabuf);
-+	return fd;
++	if (!optee->sdp_pool)
++		return -EINVAL;
++	if (flags !=3D TEE_IOC_FLAG_SECURE_VIDEO)
++		return -EINVAL;
++	return optee->sdp_pool->ops->alloc(optee->sdp_pool, shm, size, 0);
 +}
 +
- static long tee_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
++void optee_rstmem_free(struct tee_context *ctx, struct tee_shm *shm)
++{
++	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
++
++	optee->sdp_pool->ops->free(optee->sdp_pool, shm);
++}
++
+ void optee_remove_common(struct optee *optee)
  {
- 	struct tee_context *ctx =3D filp->private_data;
-@@ -842,6 +871,8 @@ static long tee_ioctl(struct file *filp, unsigned int cmd=
-, unsigned long arg)
- 		return tee_ioctl_supp_recv(ctx, uarg);
- 	case TEE_IOC_SUPPL_SEND:
- 		return tee_ioctl_supp_send(ctx, uarg);
-+	case TEE_IOC_RSTMEM_ALLOC:
-+		return tee_ioctl_rstmem_alloc(ctx, uarg);
- 	default:
- 		return -EINVAL;
- 	}
-diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
-index 9bc50605227c..8eccbb4ce5f7 100644
---- a/drivers/tee/tee_private.h
-+++ b/drivers/tee/tee_private.h
-@@ -23,5 +23,7 @@ void teedev_ctx_put(struct tee_context *ctx);
- struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size);
- struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
- 					  unsigned long addr, size_t length);
-+struct dma_buf *tee_rstmem_alloc(struct tee_context *ctx, u32 flags,
-+				 size_t size, int *shm_id);
+ 	/* Unregister OP-TEE specific client devices on TEE bus */
+@@ -111,6 +130,8 @@ void optee_remove_common(struct optee *optee)
+ 	tee_device_unregister(optee->teedev);
 =20
- #endif /*TEE_PRIVATE_H*/
-diff --git a/drivers/tee/tee_rstmem.c b/drivers/tee/tee_rstmem.c
-new file mode 100644
-index 000000000000..948c8e8fe96c
---- /dev/null
-+++ b/drivers/tee/tee_rstmem.c
-@@ -0,0 +1,200 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2024 Linaro Limited
-+ */
-+#include <linux/device.h>
-+#include <linux/dma-buf.h>
-+#include <linux/genalloc.h>
-+#include <linux/scatterlist.h>
-+#include <linux/slab.h>
-+#include <linux/tee_core.h>
-+#include "tee_private.h"
-+
-+struct tee_rstmem_attachment {
-+	struct sg_table table;
-+	struct device *dev;
-+};
-+
-+static int rstmem_dma_attach(struct dma_buf *dmabuf,
-+			     struct dma_buf_attachment *attachment)
-+{
-+	struct tee_shm *shm =3D dmabuf->priv;
-+	struct tee_rstmem_attachment *a;
-+	int rc;
-+
-+	a =3D kzalloc(sizeof(*a), GFP_KERNEL);
-+	if (!a)
-+		return -ENOMEM;
-+
-+	if (shm->pages) {
-+		rc =3D sg_alloc_table_from_pages(&a->table, shm->pages,
-+					       shm->num_pages, 0,
-+					       shm->num_pages * PAGE_SIZE,
-+					       GFP_KERNEL);
-+		if (rc)
-+			goto err;
-+	} else {
-+		rc =3D sg_alloc_table(&a->table, 1, GFP_KERNEL);
-+		if (rc)
-+			goto err;
-+		sg_set_page(a->table.sgl, phys_to_page(shm->paddr), shm->size,
-+			    0);
-+	}
-+
-+	a->dev =3D attachment->dev;
-+	attachment->priv =3D a;
-+
-+	return 0;
-+err:
-+	kfree(a);
-+	return rc;
-+}
-+
-+static void rstmem_dma_detach(struct dma_buf *dmabuf,
-+			      struct dma_buf_attachment *attachment)
-+{
-+	struct tee_rstmem_attachment *a =3D attachment->priv;
-+
-+	sg_free_table(&a->table);
-+	kfree(a);
-+}
-+
-+static struct sg_table *
-+rstmem_dma_map_dma_buf(struct dma_buf_attachment *attachment,
-+		       enum dma_data_direction direction)
-+{
-+	struct tee_rstmem_attachment *a =3D attachment->priv;
-+	int ret;
-+
-+	ret =3D dma_map_sgtable(attachment->dev, &a->table, direction,
-+			      DMA_ATTR_SKIP_CPU_SYNC);
-+	if (ret)
-+		return ERR_PTR(ret);
-+
-+	return &a->table;
-+}
-+
-+static void rstmem_dma_unmap_dma_buf(struct dma_buf_attachment *attachment,
-+				     struct sg_table *table,
-+				     enum dma_data_direction direction)
-+{
-+	struct tee_rstmem_attachment *a =3D attachment->priv;
-+
-+	WARN_ON(&a->table !=3D table);
-+
-+	dma_unmap_sgtable(attachment->dev, table, direction,
-+			  DMA_ATTR_SKIP_CPU_SYNC);
-+}
-+
-+static int rstmem_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,
-+					   enum dma_data_direction direction)
-+{
-+	return -EPERM;
-+}
-+
-+static int rstmem_dma_buf_end_cpu_access(struct dma_buf *dmabuf,
-+					 enum dma_data_direction direction)
-+{
-+	return -EPERM;
-+}
-+
-+static int rstmem_dma_buf_mmap(struct dma_buf *dmabuf,
-+			       struct vm_area_struct *vma)
-+{
-+	return -EPERM;
-+}
-+
-+static void rstmem_dma_buf_free(struct dma_buf *dmabuf)
-+{
-+	struct tee_shm *shm =3D dmabuf->priv;
-+
-+	tee_shm_put(shm);
-+}
-+
-+static const struct dma_buf_ops rstmem_generic_buf_ops =3D {
-+	.attach =3D rstmem_dma_attach,
-+	.detach =3D rstmem_dma_detach,
-+	.map_dma_buf =3D rstmem_dma_map_dma_buf,
-+	.unmap_dma_buf =3D rstmem_dma_unmap_dma_buf,
-+	.begin_cpu_access =3D rstmem_dma_buf_begin_cpu_access,
-+	.end_cpu_access =3D rstmem_dma_buf_end_cpu_access,
-+	.mmap =3D rstmem_dma_buf_mmap,
-+	.release =3D rstmem_dma_buf_free,
-+};
-+
-+struct dma_buf *tee_rstmem_alloc(struct tee_context *ctx, u32 flags,
-+				 size_t size, int *shm_id)
-+{
-+	struct tee_device *teedev =3D ctx->teedev;
-+	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
-+	struct dma_buf *dmabuf;
-+	struct tee_shm *shm;
-+	void *ret;
-+	int rc;
-+
-+	if (!tee_device_get(teedev))
-+		return ERR_PTR(-EINVAL);
-+
-+	if (!teedev->desc->ops->rstmem_alloc ||
-+	    !teedev->desc->ops->rstmem_free) {
-+		dmabuf =3D ERR_PTR(-EINVAL);
-+		goto err;
-+	}
-+
-+	shm =3D kzalloc(sizeof(*shm), GFP_KERNEL);
-+	if (!shm) {
-+		dmabuf =3D ERR_PTR(-ENOMEM);
-+		goto err;
-+	}
-+
-+	refcount_set(&shm->refcount, 1);
-+	shm->flags =3D TEE_SHM_RESTRICTED;
-+	shm->ctx =3D ctx;
-+
-+	mutex_lock(&teedev->mutex);
-+	shm->id =3D idr_alloc(&teedev->idr, NULL, 1, 0, GFP_KERNEL);
-+	mutex_unlock(&teedev->mutex);
-+	if (shm->id < 0) {
-+		dmabuf =3D ERR_PTR(shm->id);
-+		goto err_kfree;
-+	}
-+
-+	rc =3D teedev->desc->ops->rstmem_alloc(ctx, shm, flags, size);
-+	if (rc) {
-+		dmabuf =3D ERR_PTR(rc);
-+		goto err_idr_remove;
-+	}
-+
-+	mutex_lock(&teedev->mutex);
-+	ret =3D idr_replace(&teedev->idr, shm, shm->id);
-+	mutex_unlock(&teedev->mutex);
-+	if (IS_ERR(ret)) {
-+		dmabuf =3D ret;
-+		goto err_rstmem_free;
-+	}
-+	teedev_ctx_get(ctx);
-+
-+	exp_info.ops =3D &rstmem_generic_buf_ops;
-+	exp_info.size =3D shm->size;
-+	exp_info.priv =3D shm;
-+	dmabuf =3D dma_buf_export(&exp_info);
-+	if (IS_ERR(dmabuf)) {
-+		tee_shm_put(shm);
-+		return dmabuf;
-+	}
-+
-+	*shm_id =3D shm->id;
-+	return dmabuf;
-+
-+err_rstmem_free:
-+	teedev->desc->ops->rstmem_free(ctx, shm);
-+err_idr_remove:
-+	mutex_lock(&teedev->mutex);
-+	idr_remove(&teedev->idr, shm->id);
-+	mutex_unlock(&teedev->mutex);
-+err_kfree:
-+	kfree(shm);
-+err:
-+	tee_device_put(teedev);
-+	return dmabuf;
-+}
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index daf6e5cfd59a..416f7f25d885 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -55,6 +55,8 @@ static void tee_shm_release(struct tee_device *teedev, stru=
-ct tee_shm *shm)
- 				"unregister shm %p failed: %d", shm, rc);
-=20
- 		release_registered_pages(shm);
-+	} else if (shm->flags & TEE_SHM_RESTRICTED) {
-+		teedev->desc->ops->rstmem_free(shm->ctx, shm);
- 	}
-=20
- 	teedev_ctx_put(shm->ctx);
-diff --git a/drivers/tee/tee_shm_pool.c b/drivers/tee/tee_shm_pool.c
-index 80004b55628d..ee57ef157a77 100644
---- a/drivers/tee/tee_shm_pool.c
-+++ b/drivers/tee/tee_shm_pool.c
-@@ -1,9 +1,8 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * Copyright (c) 2015, 2017, 2022 Linaro Limited
-+ * Copyright (c) 2015, 2017, 2022, 2024 Linaro Limited
-  */
- #include <linux/device.h>
--#include <linux/dma-buf.h>
- #include <linux/genalloc.h>
- #include <linux/slab.h>
- #include <linux/tee_core.h>
-@@ -90,3 +89,69 @@ struct tee_shm_pool *tee_shm_pool_alloc_res_mem(unsigned l=
-ong vaddr,
- 	return ERR_PTR(rc);
+ 	tee_shm_pool_free(optee->pool);
++	if (optee->sdp_pool)
++		optee->sdp_pool->ops->destroy_pool(optee->sdp_pool);
+ 	optee_supp_uninit(&optee->supp);
+ 	mutex_destroy(&optee->call_queue.mutex);
  }
- EXPORT_SYMBOL_GPL(tee_shm_pool_alloc_res_mem);
-+
-+static int rstmem_pool_op_gen_alloc(struct tee_shm_pool *pool,
-+				    struct tee_shm *shm, size_t size,
-+				    size_t align)
-+{
-+	size_t sz =3D ALIGN(size, PAGE_SIZE);
-+	phys_addr_t pa;
-+
-+	pa =3D gen_pool_alloc(pool->private_data, sz);
-+	if (!pa)
-+		return -ENOMEM;
-+
-+	shm->size =3D sz;
-+	shm->paddr =3D pa;
-+
-+	return 0;
-+}
-+
-+static void rstmem_pool_op_gen_free(struct tee_shm_pool *pool,
-+				    struct tee_shm *shm)
-+{
-+	gen_pool_free(pool->private_data, shm->paddr, shm->size);
-+	shm->paddr =3D 0;
-+}
-+
-+static struct tee_shm_pool_ops rstmem_pool_ops_generic =3D {
-+	.alloc =3D rstmem_pool_op_gen_alloc,
-+	.free =3D rstmem_pool_op_gen_free,
-+	.destroy_pool =3D pool_op_gen_destroy_pool,
-+};
-+
-+struct tee_shm_pool *tee_rstmem_gen_pool_alloc(phys_addr_t paddr, size_t siz=
-e)
-+{
-+	const size_t page_mask =3D PAGE_SIZE - 1;
-+	struct tee_shm_pool *pool;
-+	int rc;
-+
-+	/* Check it's page aligned */
-+	if ((paddr | size) & page_mask)
-+		return ERR_PTR(-EINVAL);
-+
-+	pool =3D kzalloc(sizeof(*pool), GFP_KERNEL);
-+	if (!pool)
-+		return ERR_PTR(-ENOMEM);
-+
-+	pool->private_data =3D gen_pool_create(PAGE_SHIFT, -1);
-+	if (!pool->private_data) {
-+		rc =3D -ENOMEM;
-+		goto err_free;
-+	}
-+
-+	rc =3D gen_pool_add(pool->private_data, paddr, size, -1);
-+	if (rc)
-+		goto err_free_pool;
-+
-+	pool->ops =3D &rstmem_pool_ops_generic;
-+	return pool;
-+
-+err_free_pool:
-+	gen_pool_destroy(pool->private_data);
-+err_free:
-+	kfree(pool);
-+
-+	return ERR_PTR(rc);
-+}
-+EXPORT_SYMBOL_GPL(tee_rstmem_gen_pool_alloc);
-diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
-index efd16ed52315..8ffecddbbc4b 100644
---- a/include/linux/tee_core.h
-+++ b/include/linux/tee_core.h
-@@ -26,6 +26,7 @@
- #define TEE_SHM_USER_MAPPED	BIT(1)  /* Memory mapped in user space */
- #define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
- #define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
-+#define TEE_SHM_RESTRICTED	BIT(4)  /* Restricted memory */
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
+ate.h
+index 424898cdc4e9..1f6b2cc992a9 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -200,6 +200,7 @@ struct optee_ops {
+  * @notif:		notification synchronization struct
+  * @supp:		supplicant synchronization struct for RPC to supplicant
+  * @pool:		shared memory pool
++ * @sdp_pool:		restricted memory pool for secure data path
+  * @rpc_param_count:	If > 0 number of RPC parameters to make room for
+  * @scan_bus_done	flag if device registation was already done.
+  * @scan_bus_work	workq to scan optee bus and register optee drivers
+@@ -218,6 +219,7 @@ struct optee {
+ 	struct optee_notif notif;
+ 	struct optee_supp supp;
+ 	struct tee_shm_pool *pool;
++	struct tee_shm_pool *sdp_pool;
+ 	unsigned int rpc_param_count;
+ 	bool   scan_bus_done;
+ 	struct work_struct scan_bus_work;
+@@ -340,6 +342,10 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee=
+ *optee,
+ int optee_do_bottom_half(struct tee_context *ctx);
+ int optee_stop_async_notif(struct tee_context *ctx);
 =20
- #define TEE_DEVICE_FLAG_REGISTERED	0x1
- #define TEE_MAX_DEV_NAME_LEN		32
-@@ -76,6 +77,8 @@ struct tee_device {
-  * @supp_send:		called for supplicant to send a response
-  * @shm_register:	register shared memory buffer in TEE
-  * @shm_unregister:	unregister shared memory buffer in TEE
-+ * @rstmem_alloc:	allocate restricted memory
-+ * @rstmem_free:	free restricted memory
++int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
++		       u32 flags, size_t size);
++void optee_rstmem_free(struct tee_context *ctx, struct tee_shm *shm);
++
+ /*
+  * Small helpers
   */
- struct tee_driver_ops {
- 	void (*get_version)(struct tee_device *teedev,
-@@ -99,6 +102,9 @@ struct tee_driver_ops {
- 			    struct page **pages, size_t num_pages,
- 			    unsigned long start);
- 	int (*shm_unregister)(struct tee_context *ctx, struct tee_shm *shm);
-+	int (*rstmem_alloc)(struct tee_context *ctx, struct tee_shm *shm,
-+			    u32 flags, size_t size);
-+	void (*rstmem_free)(struct tee_context *ctx, struct tee_shm *shm);
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index 7d9fa426505b..c3b8a1c204af 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -234,6 +234,39 @@ struct optee_smc_get_shm_config_result {
+ 	unsigned long settings;
  };
 =20
- /**
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index a54c203000ed..71f40f2dbd98 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -174,6 +174,15 @@ static inline size_t tee_shm_get_page_offset(struct tee_=
-shm *shm)
- 	return shm->offset;
- }
-=20
-+/**
-+ * tee_rstmem_gen_pool_alloc() - Create a restricted memory manager
-+ * @paddr:	Physical address of start of pool
-+ * @size:	Size in bytes of the pool
++/*
++ * Get Secure Data Path memory config
 + *
-+ * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
++ * Returns the Secure Data Path memory config.
++ *
++ * Call register usage:
++ * a0   SMC Function ID, OPTEE_SMC_GET_SDP_CONFIG
++ * a2-6 Not used, must be zero
++ * a7   Hypervisor Client ID register
++ *
++ * Have config return register usage:
++ * a0   OPTEE_SMC_RETURN_OK
++ * a1   Physical address of start of SDP memory
++ * a2   Size of SDP memory
++ * a3   Not used
++ * a4-7 Preserved
++ *
++ * Not available register usage:
++ * a0   OPTEE_SMC_RETURN_ENOTAVAIL
++ * a1-3 Not used
++ * a4-7 Preserved
 + */
-+struct tee_shm_pool *tee_rstmem_gen_pool_alloc(phys_addr_t paddr, size_t siz=
-e);
++#define OPTEE_SMC_FUNCID_GET_SDP_CONFIG	20
++#define OPTEE_SMC_GET_SDP_CONFIG \
++	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_SDP_CONFIG)
 +
- /**
-  * tee_client_open_context() - Open a TEE context
-  * @start:	if not NULL, continue search after this context
-diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-index d0430bee8292..c023d7cdbe49 100644
---- a/include/uapi/linux/tee.h
-+++ b/include/uapi/linux/tee.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2015-2016, Linaro Limited
-+ * Copyright (c) 2015-2017, 2020, 2024, Linaro Limited
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-@@ -48,6 +48,7 @@
- #define TEE_GEN_CAP_PRIVILEGED	(1 << 1)/* Privileged device (for supplicant)=
- */
- #define TEE_GEN_CAP_REG_MEM	(1 << 2)/* Supports registering shared memory */
- #define TEE_GEN_CAP_MEMREF_NULL	(1 << 3)/* NULL MemRef support */
-+#define TEE_GEN_CAP_RSTMEM	(1 << 4)/* Supports restricted memory */
-=20
- #define TEE_MEMREF_NULL		(__u64)(-1) /* NULL MemRef Buffer */
-=20
-@@ -389,6 +390,36 @@ struct tee_ioctl_shm_register_data {
-  */
- #define TEE_IOC_SHM_REGISTER   _IOWR(TEE_IOC_MAGIC, TEE_IOC_BASE + 9, \
- 				     struct tee_ioctl_shm_register_data)
-+
-+#define TEE_IOC_FLAG_SECURE_VIDEO	(1 << 0)
-+#define TEE_IOC_FLAG_TRUSTED_UI		(1 << 1)
-+
-+/**
-+ * struct tee_ioctl_rstmem_alloc_data - Restricted memory allocate argument
-+ * @size:	[in/out] Size of restricted memory to allocate
-+ * @flags:	[in/out] Flags to/from allocate
-+ * @id:		[out] Identifier of the restricted memory
-+ */
-+struct tee_ioctl_rstmem_alloc_data {
-+	__u64 size;
-+	__u32 flags;
-+	__s32 id;
++struct optee_smc_get_sdp_config_result {
++	unsigned long status;
++	unsigned long start;
++	unsigned long size;
++	unsigned long flags;
 +};
 +
-+/**
-+ * TEE_IOC_RSTMEM_ALLOC - allocate restricted memory
-+ *
-+ * Allocates restricted physically memory normally not accessible by the
-+ * kernel.
-+ *
-+ * Returns a file descriptor on success or < 0 on failure
-+ *
-+ * The returned file descriptor is a dma-buf that can be attached and
-+ * mapped for device with permission to access the physical memory.
-+ */
-+#define TEE_IOC_RSTMEM_ALLOC     _IOWR(TEE_IOC_MAGIC, TEE_IOC_BASE + 10, \
-+				       struct tee_ioctl_rstmem_alloc_data)
-+
  /*
-  * Five syscalls are used when communicating with the TEE driver.
-  * open(): opens the device associated with the driver
+  * Exchanges capabilities between normal world and secure world
+  *
+@@ -278,6 +311,8 @@ struct optee_smc_get_shm_config_result {
+ #define OPTEE_SMC_SEC_CAP_ASYNC_NOTIF		BIT(5)
+ /* Secure world supports pre-allocating RPC arg struct */
+ #define OPTEE_SMC_SEC_CAP_RPC_ARG		BIT(6)
++/* Secure world supports Secure Data Path */
++#define OPTEE_SMC_SEC_CAP_SDP			BIT(7)
+=20
+ #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
+ #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index 844285d4f03c..05068c70c791 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -1164,6 +1164,8 @@ static void optee_get_version(struct tee_device *teedev,
+ 		v.gen_caps |=3D TEE_GEN_CAP_REG_MEM;
+ 	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL)
+ 		v.gen_caps |=3D TEE_GEN_CAP_MEMREF_NULL;
++	if (optee->sdp_pool)
++		v.gen_caps |=3D TEE_GEN_CAP_RSTMEM;
+ 	*vers =3D v;
+ }
+=20
+@@ -1186,6 +1188,8 @@ static const struct tee_driver_ops optee_clnt_ops =3D {
+ 	.cancel_req =3D optee_cancel_req,
+ 	.shm_register =3D optee_shm_register,
+ 	.shm_unregister =3D optee_shm_unregister,
++	.rstmem_alloc =3D optee_rstmem_alloc,
++	.rstmem_free =3D optee_rstmem_free,
+ };
+=20
+ static const struct tee_desc optee_clnt_desc =3D {
+@@ -1202,6 +1206,8 @@ static const struct tee_driver_ops optee_supp_ops =3D {
+ 	.supp_send =3D optee_supp_send,
+ 	.shm_register =3D optee_shm_register_supp,
+ 	.shm_unregister =3D optee_shm_unregister_supp,
++	.rstmem_alloc =3D optee_rstmem_alloc,
++	.rstmem_free =3D optee_rstmem_free,
+ };
+=20
+ static const struct tee_desc optee_supp_desc =3D {
+@@ -1582,6 +1588,32 @@ static inline int optee_load_fw(struct platform_device=
+ *pdev,
+ }
+ #endif
+=20
++static int optee_sdp_pool_init(struct optee *optee)
++{
++	struct tee_shm_pool *pool;
++	union {
++		struct arm_smccc_res smccc;
++		struct optee_smc_get_sdp_config_result result;
++	} res;
++
++	if (!(optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP))
++		return 0;
++
++	optee->smc.invoke_fn(OPTEE_SMC_GET_SDP_CONFIG, 0, 0, 0, 0, 0, 0, 0,
++			     &res.smccc);
++	if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
++		pr_err("Secure Data Path service not available\n");
++		return 0;
++	}
++
++	pool =3D tee_rstmem_gen_pool_alloc(res.result.start, res.result.size);
++	if (IS_ERR(pool))
++		return PTR_ERR(pool);
++	optee->sdp_pool =3D pool;
++
++	return 0;
++}
++
+ static int optee_probe(struct platform_device *pdev)
+ {
+ 	optee_invoke_fn *invoke_fn;
+@@ -1677,7 +1709,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
+ 	if (!optee) {
+ 		rc =3D -ENOMEM;
+-		goto err_free_pool;
++		goto err_free_shm_pool;
+ 	}
+=20
+ 	optee->ops =3D &optee_ops;
+@@ -1685,10 +1717,14 @@ static int optee_probe(struct platform_device *pdev)
+ 	optee->smc.sec_caps =3D sec_caps;
+ 	optee->rpc_param_count =3D rpc_param_count;
+=20
++	rc =3D optee_sdp_pool_init(optee);
++	if (rc)
++		goto err_free_optee;
++
+ 	teedev =3D tee_device_alloc(&optee_clnt_desc, NULL, pool, optee);
+ 	if (IS_ERR(teedev)) {
+ 		rc =3D PTR_ERR(teedev);
+-		goto err_free_optee;
++		goto err_sdp_pool_uninit;
+ 	}
+ 	optee->teedev =3D teedev;
+=20
+@@ -1786,9 +1822,12 @@ static int optee_probe(struct platform_device *pdev)
+ 	tee_device_unregister(optee->supp_teedev);
+ err_unreg_teedev:
+ 	tee_device_unregister(optee->teedev);
++err_sdp_pool_uninit:
++	if (optee->sdp_pool)
++		optee->sdp_pool->ops->destroy_pool(optee->sdp_pool);
+ err_free_optee:
+ 	kfree(optee);
+-err_free_pool:
++err_free_shm_pool:
+ 	tee_shm_pool_free(pool);
+ 	if (memremaped_shm)
+ 		memunmap(memremaped_shm);
 --=20
 2.43.0
 
 
---===============7895656046938672495==--
+--===============3542539256017510929==--
 
