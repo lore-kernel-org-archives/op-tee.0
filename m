@@ -1,265 +1,138 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RFC PATCH v2 2/2] optee: support restricted memory allocation
-Date: Tue, 15 Oct 2024 12:15:34 +0200
-Message-ID: <20241015101716.740829-3-jens.wiklander@linaro.org>
+Subject: 
+ Re: [RFC PATCH v2 0/2] TEE subsystem for restricted dma-buf allocations
+Date: Thu, 17 Oct 2024 16:16:20 +0530
+Message-ID: 
+ <CAFA6WYOCDf6RqHr7E9nN7DQdoq+ZDwFO=Y0yB+fzit2GwzDkGg@mail.gmail.com>
 In-Reply-To: <20241015101716.740829-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3542539256017510929=="
+Content-Type: multipart/mixed; boundary="===============9222327742393812705=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3542539256017510929==
+--===============9222327742393812705==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add support in the OP-TEE backend driver for restricted memory
-allocation. The support is limited to only the SMC ABI and for secure
-video buffers.
+Hi Jens,
 
-OP-TEE is probed for the range of restricted physical memory and a
-memory pool allocator is initialized if OP-TEE have support for such
-memory.
+On Tue, 15 Oct 2024 at 15:47, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
+>
+> Hi,
+>
+> This patch set allocates the restricted DMA-bufs via the TEE subsystem.
+> This a complete rewrite compared to the previous patch set [1], and other
+> earlier proposals [2] and [3] with a separate restricted heap.
+>
+> The TEE subsystem handles the DMA-buf allocations since it is the TEE
+> (OP-TEE, AMD-TEE, TS-TEE, or a future QTEE) which sets up the restrictions
+> for the memory used for the DMA-bufs.
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/core.c          | 21 +++++++++++++++
- drivers/tee/optee/optee_private.h |  6 +++++
- drivers/tee/optee/optee_smc.h     | 35 ++++++++++++++++++++++++
- drivers/tee/optee/smc_abi.c       | 45 ++++++++++++++++++++++++++++---
- 4 files changed, 104 insertions(+), 3 deletions(-)
+Thanks for proposing this interface. IMHO, this solution will address
+many concerns raised for the prior vendor specific DMA heaps approach
+[1] as follows:
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 39e688d4e974..b6d5cbc6728d 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -95,6 +95,25 @@ void optee_release_supp(struct tee_context *ctx)
- 	optee_supp_release(&optee->supp);
- }
-=20
-+int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
-+		       u32 flags, size_t size)
-+{
-+	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-+
-+	if (!optee->sdp_pool)
-+		return -EINVAL;
-+	if (flags !=3D TEE_IOC_FLAG_SECURE_VIDEO)
-+		return -EINVAL;
-+	return optee->sdp_pool->ops->alloc(optee->sdp_pool, shm, size, 0);
-+}
-+
-+void optee_rstmem_free(struct tee_context *ctx, struct tee_shm *shm)
-+{
-+	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-+
-+	optee->sdp_pool->ops->free(optee->sdp_pool, shm);
-+}
-+
- void optee_remove_common(struct optee *optee)
- {
- 	/* Unregister OP-TEE specific client devices on TEE bus */
-@@ -111,6 +130,8 @@ void optee_remove_common(struct optee *optee)
- 	tee_device_unregister(optee->teedev);
-=20
- 	tee_shm_pool_free(optee->pool);
-+	if (optee->sdp_pool)
-+		optee->sdp_pool->ops->destroy_pool(optee->sdp_pool);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
- }
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index 424898cdc4e9..1f6b2cc992a9 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -200,6 +200,7 @@ struct optee_ops {
-  * @notif:		notification synchronization struct
-  * @supp:		supplicant synchronization struct for RPC to supplicant
-  * @pool:		shared memory pool
-+ * @sdp_pool:		restricted memory pool for secure data path
-  * @rpc_param_count:	If > 0 number of RPC parameters to make room for
-  * @scan_bus_done	flag if device registation was already done.
-  * @scan_bus_work	workq to scan optee bus and register optee drivers
-@@ -218,6 +219,7 @@ struct optee {
- 	struct optee_notif notif;
- 	struct optee_supp supp;
- 	struct tee_shm_pool *pool;
-+	struct tee_shm_pool *sdp_pool;
- 	unsigned int rpc_param_count;
- 	bool   scan_bus_done;
- 	struct work_struct scan_bus_work;
-@@ -340,6 +342,10 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee=
- *optee,
- int optee_do_bottom_half(struct tee_context *ctx);
- int optee_stop_async_notif(struct tee_context *ctx);
-=20
-+int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
-+		       u32 flags, size_t size);
-+void optee_rstmem_free(struct tee_context *ctx, struct tee_shm *shm);
-+
- /*
-  * Small helpers
-  */
-diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
-index 7d9fa426505b..c3b8a1c204af 100644
---- a/drivers/tee/optee/optee_smc.h
-+++ b/drivers/tee/optee/optee_smc.h
-@@ -234,6 +234,39 @@ struct optee_smc_get_shm_config_result {
- 	unsigned long settings;
- };
-=20
-+/*
-+ * Get Secure Data Path memory config
-+ *
-+ * Returns the Secure Data Path memory config.
-+ *
-+ * Call register usage:
-+ * a0   SMC Function ID, OPTEE_SMC_GET_SDP_CONFIG
-+ * a2-6 Not used, must be zero
-+ * a7   Hypervisor Client ID register
-+ *
-+ * Have config return register usage:
-+ * a0   OPTEE_SMC_RETURN_OK
-+ * a1   Physical address of start of SDP memory
-+ * a2   Size of SDP memory
-+ * a3   Not used
-+ * a4-7 Preserved
-+ *
-+ * Not available register usage:
-+ * a0   OPTEE_SMC_RETURN_ENOTAVAIL
-+ * a1-3 Not used
-+ * a4-7 Preserved
-+ */
-+#define OPTEE_SMC_FUNCID_GET_SDP_CONFIG	20
-+#define OPTEE_SMC_GET_SDP_CONFIG \
-+	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_SDP_CONFIG)
-+
-+struct optee_smc_get_sdp_config_result {
-+	unsigned long status;
-+	unsigned long start;
-+	unsigned long size;
-+	unsigned long flags;
-+};
-+
- /*
-  * Exchanges capabilities between normal world and secure world
-  *
-@@ -278,6 +311,8 @@ struct optee_smc_get_shm_config_result {
- #define OPTEE_SMC_SEC_CAP_ASYNC_NOTIF		BIT(5)
- /* Secure world supports pre-allocating RPC arg struct */
- #define OPTEE_SMC_SEC_CAP_RPC_ARG		BIT(6)
-+/* Secure world supports Secure Data Path */
-+#define OPTEE_SMC_SEC_CAP_SDP			BIT(7)
-=20
- #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
- #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 844285d4f03c..05068c70c791 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1164,6 +1164,8 @@ static void optee_get_version(struct tee_device *teedev,
- 		v.gen_caps |=3D TEE_GEN_CAP_REG_MEM;
- 	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL)
- 		v.gen_caps |=3D TEE_GEN_CAP_MEMREF_NULL;
-+	if (optee->sdp_pool)
-+		v.gen_caps |=3D TEE_GEN_CAP_RSTMEM;
- 	*vers =3D v;
- }
-=20
-@@ -1186,6 +1188,8 @@ static const struct tee_driver_ops optee_clnt_ops =3D {
- 	.cancel_req =3D optee_cancel_req,
- 	.shm_register =3D optee_shm_register,
- 	.shm_unregister =3D optee_shm_unregister,
-+	.rstmem_alloc =3D optee_rstmem_alloc,
-+	.rstmem_free =3D optee_rstmem_free,
- };
-=20
- static const struct tee_desc optee_clnt_desc =3D {
-@@ -1202,6 +1206,8 @@ static const struct tee_driver_ops optee_supp_ops =3D {
- 	.supp_send =3D optee_supp_send,
- 	.shm_register =3D optee_shm_register_supp,
- 	.shm_unregister =3D optee_shm_unregister_supp,
-+	.rstmem_alloc =3D optee_rstmem_alloc,
-+	.rstmem_free =3D optee_rstmem_free,
- };
-=20
- static const struct tee_desc optee_supp_desc =3D {
-@@ -1582,6 +1588,32 @@ static inline int optee_load_fw(struct platform_device=
- *pdev,
- }
- #endif
-=20
-+static int optee_sdp_pool_init(struct optee *optee)
-+{
-+	struct tee_shm_pool *pool;
-+	union {
-+		struct arm_smccc_res smccc;
-+		struct optee_smc_get_sdp_config_result result;
-+	} res;
-+
-+	if (!(optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP))
-+		return 0;
-+
-+	optee->smc.invoke_fn(OPTEE_SMC_GET_SDP_CONFIG, 0, 0, 0, 0, 0, 0, 0,
-+			     &res.smccc);
-+	if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
-+		pr_err("Secure Data Path service not available\n");
-+		return 0;
-+	}
-+
-+	pool =3D tee_rstmem_gen_pool_alloc(res.result.start, res.result.size);
-+	if (IS_ERR(pool))
-+		return PTR_ERR(pool);
-+	optee->sdp_pool =3D pool;
-+
-+	return 0;
-+}
-+
- static int optee_probe(struct platform_device *pdev)
- {
- 	optee_invoke_fn *invoke_fn;
-@@ -1677,7 +1709,7 @@ static int optee_probe(struct platform_device *pdev)
- 	optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
- 	if (!optee) {
- 		rc =3D -ENOMEM;
--		goto err_free_pool;
-+		goto err_free_shm_pool;
- 	}
-=20
- 	optee->ops =3D &optee_ops;
-@@ -1685,10 +1717,14 @@ static int optee_probe(struct platform_device *pdev)
- 	optee->smc.sec_caps =3D sec_caps;
- 	optee->rpc_param_count =3D rpc_param_count;
-=20
-+	rc =3D optee_sdp_pool_init(optee);
-+	if (rc)
-+		goto err_free_optee;
-+
- 	teedev =3D tee_device_alloc(&optee_clnt_desc, NULL, pool, optee);
- 	if (IS_ERR(teedev)) {
- 		rc =3D PTR_ERR(teedev);
--		goto err_free_optee;
-+		goto err_sdp_pool_uninit;
- 	}
- 	optee->teedev =3D teedev;
-=20
-@@ -1786,9 +1822,12 @@ static int optee_probe(struct platform_device *pdev)
- 	tee_device_unregister(optee->supp_teedev);
- err_unreg_teedev:
- 	tee_device_unregister(optee->teedev);
-+err_sdp_pool_uninit:
-+	if (optee->sdp_pool)
-+		optee->sdp_pool->ops->destroy_pool(optee->sdp_pool);
- err_free_optee:
- 	kfree(optee);
--err_free_pool:
-+err_free_shm_pool:
- 	tee_shm_pool_free(pool);
- 	if (memremaped_shm)
- 		memunmap(memremaped_shm);
---=20
-2.43.0
+1. User-space interacting with the TEE subsystem for restricted memory
+allocation makes it obvious that the returned DMA buf can't be
+directly mapped by the CPU.
 
+2. All the low level platform details gets abstracted out for
+user-space regarding how the platform specific memory restriction
+comes into play.
 
---===============3542539256017510929==--
+3. User-space doesn't have to deal with holding 2 DMA buffer
+references, one after allocation from DMA heap and other for
+communication with the TEE subsystem.
+
+4. Allows for better co-ordination with other kernel subsystems
+dealing with restricted DMA-bufs.
+
+[1] https://lore.kernel.org/linux-arm-kernel/20240515112308.10171-1-yong.wu(a=
+)mediatek.com/
+
+>
+> I've added a new IOCTL, TEE_IOC_RSTMEM_ALLOC, to allocate the restricted
+> DMA-bufs. This new IOCTL reaches the backend TEE driver, allowing it to
+> choose how to allocate the restricted physical memory.
+>
+> TEE_IOC_RSTMEM_ALLOC is quite similar to TEE_IOC_SHM_ALLOC so it's tempting
+> to extend TEE_IOC_SHM_ALLOC with two new flags
+> TEE_IOC_SHM_FLAG_SECURE_VIDEO and TEE_IOC_SHM_FLAG_SECURE_TRUSTED_UI for
+> the same feature. However, it might be a bit confusing since
+> TEE_IOC_SHM_ALLOC only returns an anonymous file descriptor, but
+> TEE_IOC_SHM_FLAG_SECURE_VIDEO and TEE_IOC_SHM_FLAG_SECURE_TRUSTED_UI would
+> return a DMA-buf file descriptor instead. What do others think?
+
+I think it's better to keep it as a separate IOCTL given the primary
+objective of buffer allocation and it's usage.
+
+-Sumit
+
+>
+> This can be tested on QEMU with the following steps:
+> repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
+>         -b prototype/sdp-v2
+> repo sync -j8
+> cd build
+> make toolchains -j4
+> make all -j$(nproc)
+> make run-only
+> # login and at the prompt:
+> xtest --sdp-basic
+>
+> https://optee.readthedocs.io/en/latest/building/prerequisites.html
+> list dependencies needed to build the above.
+>
+> The tests are pretty basic, mostly checking that a Trusted Application in
+> the secure world can access and manipulate the memory. There are also some
+> negative tests for out of bounds buffers etc.
+>
+> Thanks,
+> Jens
+>
+> [1] https://lore.kernel.org/lkml/20240830070351.2855919-1-jens.wiklander(a)=
+linaro.org/
+> [2] https://lore.kernel.org/dri-devel/20240515112308.10171-1-yong.wu(a)medi=
+atek.com/
+> [3] https://lore.kernel.org/lkml/20220805135330.970-1-olivier.masse(a)nxp.c=
+om/
+>
+> Changes since the V1 RFC:
+> * Based on v6.11
+> * Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALLOC
+>
+> Changes since Olivier's post [2]:
+> * Based on Yong Wu's post [1] where much of dma-buf handling is done in
+>   the generic restricted heap
+> * Simplifications and cleanup
+> * New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
+>   support"
+> * Replaced the word "secure" with "restricted" where applicable
+>
+> Jens Wiklander (2):
+>   tee: add restricted memory allocation
+>   optee: support restricted memory allocation
+>
+>  drivers/tee/Makefile              |   1 +
+>  drivers/tee/optee/core.c          |  21 ++++
+>  drivers/tee/optee/optee_private.h |   6 +
+>  drivers/tee/optee/optee_smc.h     |  35 ++++++
+>  drivers/tee/optee/smc_abi.c       |  45 ++++++-
+>  drivers/tee/tee_core.c            |  33 ++++-
+>  drivers/tee/tee_private.h         |   2 +
+>  drivers/tee/tee_rstmem.c          | 200 ++++++++++++++++++++++++++++++
+>  drivers/tee/tee_shm.c             |   2 +
+>  drivers/tee/tee_shm_pool.c        |  69 ++++++++++-
+>  include/linux/tee_core.h          |   6 +
+>  include/linux/tee_drv.h           |   9 ++
+>  include/uapi/linux/tee.h          |  33 ++++-
+>  13 files changed, 455 insertions(+), 7 deletions(-)
+>  create mode 100644 drivers/tee/tee_rstmem.c
+>
+> --
+> 2.43.0
+>
+
+--===============9222327742393812705==--
 
