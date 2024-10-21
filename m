@@ -1,33 +1,35 @@
-From: Jerome Forissier <jerome.forissier@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE 4.4.0 has been released
-Date: Fri, 18 Oct 2024 21:45:06 +0200
-Message-ID: <8a64e120-4f7f-419b-8b81-00da1d1d8146@linaro.org>
+Subject: Linaro OP-TEE Contribution, LOC, monthly meeting October 22
+Date: Mon, 21 Oct 2024 10:12:54 +0200
+Message-ID: 
+ <CAHUa44FmO4TbLHDxW_20wN-xYe=SD0OTWOrKY1F0zWM2_E5kJw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1668887985174092570=="
+Content-Type: multipart/mixed; boundary="===============8161898572387115621=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1668887985174092570==
+--===============8161898572387115621==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
 Hi,
 
-I'm pleased to announce that OP-TEE version 4.4.0 is now available.
-The list of changes can be found in the changelog [1]. A blog post will
-be published soon on trustedfirmware.org [2].
+Tomorrow, Tuesday, it's time for another LOC monthly meeting. For time
+and connection details see the calendar at
+https://www.trustedfirmware.org/meetings/
 
-A big thank you to everyone who participated with contributions and
-helping out with testing the release [3].
+I've started the Pull Request
+https://github.com/OP-TEE/optee_os/pull/7054 to import the TA-specific
+part of fTPM into the OP-TEE git.
 
-[1] https://github.com/OP-TEE/optee_os/blob/master/CHANGELOG.md
-[2] https://www.trustedfirmware.org/blog/
-[3] https://github.com/OP-TEE/optee_os/commit/8f645256efc0dc66bd5c118778b0b50=
-c44469ae1
+It appears that MS has filed for patents on fTPM. How does that affect
+downstream usage? Would it be safer or more convenient for downstream
+if the fTPM TA was in a separate git instead of the optee_os git?
 
-Regards,
---=20
-Jerome
+Are there any other topics?
 
---===============1668887985174092570==--
+Thanks,
+Jens
+
+--===============8161898572387115621==--
 
