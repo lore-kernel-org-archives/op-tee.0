@@ -1,90 +1,109 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v12 3/7] remoteproc: core: Refactor resource table cleanup
- into rproc_release_fw
-Date: Fri, 25 Oct 2024 22:59:20 +0200
-Message-ID: <20241025205924.2087768-4-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v12 1/7] remoteproc: core: Introduce rproc_pa_to_va helper
+Date: Fri, 25 Oct 2024 22:59:18 +0200
+Message-ID: <20241025205924.2087768-2-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20241025205924.2087768-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3422834521827880062=="
+Content-Type: multipart/mixed; boundary="===============3990211639643665806=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3422834521827880062==
+--===============3990211639643665806==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-This patch centralizing the cleanup of the resource table into a new
-helper function rproc_release_fw().
+When a resource table is loaded by an external entity such as U-boot or
+OP-TEE, we do not necessarily get the device address(da) but the physical
+address(pa).
+This helper performs similar translation than the rproc_da_to_va()
+but based on a physical address.
 
-More than just factorizing the code into a common function, it is the
-first step to integrate the release of the firmware image loaded by the
-OP-TEE remoteproc framework.
-
-Suggested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
- drivers/remoteproc/remoteproc_core.c | 21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ drivers/remoteproc/remoteproc_core.c | 46 ++++++++++++++++++++++++++++
+ include/linux/remoteproc.h           |  1 +
+ 2 files changed, 47 insertions(+)
 
 diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
 proc_core.c
-index ace11ea17097..7694817f25d4 100644
+index f276956f2c5c..ace11ea17097 100644
 --- a/drivers/remoteproc/remoteproc_core.c
 +++ b/drivers/remoteproc/remoteproc_core.c
-@@ -1256,6 +1256,13 @@ static int rproc_alloc_registered_carveouts(struct rpr=
-oc *rproc)
- 	return 0;
+@@ -230,6 +230,52 @@ void *rproc_da_to_va(struct rproc *rproc, u64 da, size_t=
+ len, bool *is_iomem)
  }
+ EXPORT_SYMBOL(rproc_da_to_va);
 =20
-+static void rproc_release_fw(struct rproc *rproc)
++/**
++ * rproc_pa_to_va() - lookup the kernel virtual address for a physical addre=
+ss of a remoteproc
++ * memory
++ *
++ * @rproc: handle of a remote processor
++ * @pa: remoteproc physical address
++ * @len: length of the memory region @pa is pointing to
++ * @is_iomem: optional pointer filled in to indicate if @da is iomapped memo=
+ry
++ *
++ * This function is a helper function similar to rproc_da_to_va() but it dea=
+ls with physical
++ * addresses instead of device addresses.
++ *
++ * Return: a valid kernel address on success or NULL on failure
++ */
++void *rproc_pa_to_va(struct rproc *rproc, phys_addr_t pa, size_t len, bool *=
+is_iomem)
 +{
-+	/* Free the copy of the resource table */
-+	kfree(rproc->cached_table);
-+	rproc->cached_table =3D NULL;
-+	rproc->table_ptr =3D NULL;
++	struct rproc_mem_entry *carveout;
++	void *ptr =3D NULL;
++
++	list_for_each_entry(carveout, &rproc->carveouts, node) {
++		int offset =3D pa - carveout->dma;
++
++		/*  Verify that carveout is allocated */
++		if (!carveout->va)
++			continue;
++
++		/* try next carveout if da is too small */
++		if (offset < 0)
++			continue;
++
++		/* try next carveout if da is too large */
++		if (offset + len > carveout->len)
++			continue;
++
++		ptr =3D carveout->va + offset;
++
++		if (is_iomem)
++			*is_iomem =3D carveout->is_iomem;
++
++		break;
++	}
++
++	return ptr;
 +}
-=20
++EXPORT_SYMBOL(rproc_pa_to_va);
++
  /**
-  * rproc_resource_cleanup() - clean up and free all acquired resources
-@@ -1485,9 +1492,7 @@ static int rproc_fw_boot(struct rproc *rproc, const str=
-uct firmware *fw)
+  * rproc_find_carveout_by_name() - lookup the carveout region by a name
+  * @rproc: handle of a remote processor
+diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
+index b4795698d8c2..8fd0d7f63c8e 100644
+--- a/include/linux/remoteproc.h
++++ b/include/linux/remoteproc.h
+@@ -690,6 +690,7 @@ int rproc_detach(struct rproc *rproc);
+ int rproc_set_firmware(struct rproc *rproc, const char *fw_name);
+ void rproc_report_crash(struct rproc *rproc, enum rproc_crash_type type);
+ void *rproc_da_to_va(struct rproc *rproc, u64 da, size_t len, bool *is_iomem=
+);
++void *rproc_pa_to_va(struct rproc *rproc, phys_addr_t pa, size_t len, bool *=
+is_iomem);
 =20
- clean_up_resources:
- 	rproc_resource_cleanup(rproc);
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- unprepare_rproc:
- 	/* release HW resources if needed */
- 	rproc_unprepare_device(rproc);
-@@ -2067,10 +2072,7 @@ int rproc_shutdown(struct rproc *rproc)
-=20
- 	rproc_disable_iommu(rproc);
-=20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
-@@ -2133,10 +2135,7 @@ int rproc_detach(struct rproc *rproc)
-=20
- 	rproc_disable_iommu(rproc);
-=20
--	/* Free the copy of the resource table */
--	kfree(rproc->cached_table);
--	rproc->cached_table =3D NULL;
--	rproc->table_ptr =3D NULL;
-+	rproc_release_fw(rproc);
- out:
- 	mutex_unlock(&rproc->lock);
- 	return ret;
+ /* from remoteproc_coredump.c */
+ void rproc_coredump_cleanup(struct rproc *rproc);
 --=20
 2.25.1
 
 
---===============3422834521827880062==--
+--===============3990211639643665806==--
 
