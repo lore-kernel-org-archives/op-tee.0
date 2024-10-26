@@ -2,22 +2,22 @@ From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v12 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
  load the firmware
-Date: Sat, 26 Oct 2024 18:21:15 +0800
-Message-ID: <202410261837.eRmJAHKZ-lkp@intel.com>
+Date: Sat, 26 Oct 2024 20:45:42 +0800
+Message-ID: <202410262040.PWNrKv2Q-lkp@intel.com>
 In-Reply-To: <20241025205924.2087768-8-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8536207343192682738=="
+Content-Type: multipart/mixed; boundary="===============5352927490320984752=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8536207343192682738==
+--===============5352927490320984752==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hi Arnaud,
 
-kernel test robot noticed the following build errors:
+kernel test robot noticed the following build warnings:
 
-[auto build test ERROR on 42f7652d3eb527d03665b09edac47f85fb600924]
+[auto build test WARNING on 42f7652d3eb527d03665b09edac47f85fb600924]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Arnaud-Pouliquen/remot=
 eproc-core-Introduce-rproc_pa_to_va-helper/20241026-050443
@@ -26,55 +26,52 @@ patch link:    https://lore.kernel.org/r/20241025205924.2087768-8-arnaud.poul=
 iquen%40foss.st.com
 patch subject: [PATCH v12 7/7] remoteproc: stm32: Add support of an OP-TEE TA=
  to load the firmware
-config: x86_64-buildonly-randconfig-004-20241026 (https://download.01.org/0da=
-y-ci/archive/20241026/202410261837.eRmJAHKZ-lkp(a)intel.com/config)
-compiler: clang version 19.1.2 (https://github.com/llvm/llvm-project 7ba7d8e2=
-f7b6445b60679da826210cdde29eaf8b)
+config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20241026/=
+202410262040.PWNrKv2Q-lkp(a)intel.com/config)
+compiler: alpha-linux-gcc (GCC) 13.3.0
 reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0241026/202410261837.eRmJAHKZ-lkp(a)intel.com/reproduce)
+0241026/202410262040.PWNrKv2Q-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410261837.eRmJAHKZ-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410262040.PWNrKv2Q-lkp(a)i=
 ntel.com/
 
-All errors (new ones prefixed by >>):
+All warnings (new ones prefixed by >>):
 
-   In file included from drivers/remoteproc/stm32_rproc.c:9:
-   In file included from include/linux/dma-mapping.h:11:
-   In file included from include/linux/scatterlist.h:8:
-   In file included from include/linux/mm.h:2213:
-   include/linux/vmstat.h:518:36: warning: arithmetic between different enume=
-ration types ('enum node_stat_item' and 'enum lru_list') [-Wenum-enum-convers=
-ion]
-     518 |         return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
-         |                               ~~~~~~~~~~~ ^ ~~~
->> drivers/remoteproc/stm32_rproc.c:904:7: error: incompatible pointer to int=
-eger conversion assigning to 'int' from 'struct rproc_tee *' [-Wint-conversio=
-n]
+   drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_probe':
+>> drivers/remoteproc/stm32_rproc.c:904:21: warning: assignment to 'int' from=
+ 'struct rproc_tee *' makes integer from pointer without a cast [-Wint-conver=
+sion]
      904 |                 ret =3D rproc_tee_register(dev, rproc, proc_id);
-         |                     ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> drivers/remoteproc/stm32_rproc.c:963:23: error: incompatible pointer types=
- passing 'struct rproc *' to parameter of type 'struct rproc_tee *' [-Werror,=
--Wincompatible-pointer-types]
+         |                     ^
+   drivers/remoteproc/stm32_rproc.c:963:30: error: passing argument 1 of 'rpr=
+oc_tee_unregister' from incompatible pointer type [-Werror=3Dincompatible-poi=
+nter-types]
      963 |         rproc_tee_unregister(rproc);
          |                              ^~~~~
-   include/linux/remoteproc_tee.h:59:58: note: passing argument to parameter =
-'trproc' here
+         |                              |
+         |                              struct rproc *
+   In file included from drivers/remoteproc/stm32_rproc.c:21:
+   include/linux/remoteproc_tee.h:59:58: note: expected 'struct rproc_tee *' =
+but argument is of type 'struct rproc *'
       59 | static inline int rproc_tee_unregister(struct rproc_tee *trproc)
-         |                                                          ^
-   drivers/remoteproc/stm32_rproc.c:986:23: error: incompatible pointer types=
- passing 'struct rproc *' to parameter of type 'struct rproc_tee *' [-Werror,=
--Wincompatible-pointer-types]
+         |                                        ~~~~~~~~~~~~~~~~~~^~~~~~
+   drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_remove':
+   drivers/remoteproc/stm32_rproc.c:986:30: error: passing argument 1 of 'rpr=
+oc_tee_unregister' from incompatible pointer type [-Werror=3Dincompatible-poi=
+nter-types]
      986 |         rproc_tee_unregister(rproc);
          |                              ^~~~~
-   include/linux/remoteproc_tee.h:59:58: note: passing argument to parameter =
-'trproc' here
+         |                              |
+         |                              struct rproc *
+   include/linux/remoteproc_tee.h:59:58: note: expected 'struct rproc_tee *' =
+but argument is of type 'struct rproc *'
       59 | static inline int rproc_tee_unregister(struct rproc_tee *trproc)
-         |                                                          ^
-   1 warning and 3 errors generated.
+         |                                        ~~~~~~~~~~~~~~~~~~^~~~~~
+   cc1: some warnings being treated as errors
 
 
 vim +904 drivers/remoteproc/stm32_rproc.c
@@ -171,7 +168,7 @@ f(*ddata));
    960			dev_pm_clear_wake_irq(dev);
    961			device_init_wakeup(dev, false);
    962		}
- > 963		rproc_tee_unregister(rproc);
+   963		rproc_tee_unregister(rproc);
    964=09
    965		return ret;
    966	}
@@ -181,5 +178,5 @@ f(*ddata));
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============8536207343192682738==--
+--===============5352927490320984752==--
 
