@@ -1,139 +1,187 @@
-From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v12 6/7] remoteproc: stm32: Create sub-functions to request
- shutdown and release
-Date: Fri, 25 Oct 2024 22:59:23 +0200
-Message-ID: <20241025205924.2087768-7-arnaud.pouliquen@foss.st.com>
-In-Reply-To: <20241025205924.2087768-1-arnaud.pouliquen@foss.st.com>
+Subject: Re: [PATCH v12 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
+ load the firmware
+Date: Sat, 26 Oct 2024 18:00:12 +0800
+Message-ID: <202410261701.jz99xF8B-lkp@intel.com>
+In-Reply-To: <20241025205924.2087768-8-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7203411783278585625=="
+Content-Type: multipart/mixed; boundary="===============2779672707930144740=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7203411783278585625==
+--===============2779672707930144740==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-To prepare for the support of TEE remoteproc, create sub-functions
-that can be used in both cases, with and without remoteproc TEE support.
+Hi Arnaud,
 
-Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
----
- drivers/remoteproc/stm32_rproc.c | 82 +++++++++++++++++++-------------
- 1 file changed, 49 insertions(+), 33 deletions(-)
+kernel test robot noticed the following build errors:
 
-diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
-c.c
-index 8c7f7950b80e..288bd70c7861 100644
---- a/drivers/remoteproc/stm32_rproc.c
-+++ b/drivers/remoteproc/stm32_rproc.c
-@@ -209,6 +209,52 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, con=
-st unsigned char *name)
- 	return -EINVAL;
- }
-=20
-+static void stm32_rproc_request_shutdown(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	int err, idx;
-+
-+	/* Request shutdown of the remote processor */
-+	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
-+		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
-+		if (idx >=3D 0 && ddata->mb[idx].chan) {
-+			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
-+			if (err < 0)
-+				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
-+		}
-+	}
-+}
-+
-+static int stm32_rproc_release(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	unsigned int err =3D 0;
-+
-+	/* To allow platform Standby power mode, set remote proc Deep Sleep */
-+	if (ddata->pdds.map) {
-+		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
-+					 ddata->pdds.mask, 1);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set pdds\n");
-+			return err;
-+		}
-+	}
-+
-+	/* Update coprocessor state to OFF if available */
-+	if (ddata->m4_state.map) {
-+		err =3D regmap_update_bits(ddata->m4_state.map,
-+					 ddata->m4_state.reg,
-+					 ddata->m4_state.mask,
-+					 M4_STATE_OFF);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set copro state\n");
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int stm32_rproc_prepare(struct rproc *rproc)
- {
- 	struct device *dev =3D rproc->dev.parent;
-@@ -519,17 +565,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
- static int stm32_rproc_stop(struct rproc *rproc)
- {
- 	struct stm32_rproc *ddata =3D rproc->priv;
--	int err, idx;
-+	int err;
-=20
--	/* request shutdown of the remote processor */
--	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
--		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
--		if (idx >=3D 0 && ddata->mb[idx].chan) {
--			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
--			if (err < 0)
--				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
--		}
--	}
-+	stm32_rproc_request_shutdown(rproc);
-=20
- 	err =3D stm32_rproc_set_hold_boot(rproc, true);
- 	if (err)
-@@ -541,29 +579,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
- 		return err;
- 	}
-=20
--	/* to allow platform Standby power mode, set remote proc Deep Sleep */
--	if (ddata->pdds.map) {
--		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
--					 ddata->pdds.mask, 1);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set pdds\n");
--			return err;
--		}
--	}
--
--	/* update coprocessor state to OFF if available */
--	if (ddata->m4_state.map) {
--		err =3D regmap_update_bits(ddata->m4_state.map,
--					 ddata->m4_state.reg,
--					 ddata->m4_state.mask,
--					 M4_STATE_OFF);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set copro state\n");
--			return err;
--		}
--	}
--
--	return 0;
-+	return stm32_rproc_release(rproc);
- }
-=20
- static void stm32_rproc_kick(struct rproc *rproc, int vqid)
+[auto build test ERROR on 42f7652d3eb527d03665b09edac47f85fb600924]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Arnaud-Pouliquen/remot=
+eproc-core-Introduce-rproc_pa_to_va-helper/20241026-050443
+base:   42f7652d3eb527d03665b09edac47f85fb600924
+patch link:    https://lore.kernel.org/r/20241025205924.2087768-8-arnaud.poul=
+iquen%40foss.st.com
+patch subject: [PATCH v12 7/7] remoteproc: stm32: Add support of an OP-TEE TA=
+ to load the firmware
+config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20241026/2=
+02410261701.jz99xF8B-lkp(a)intel.com/config)
+compiler: m68k-linux-gcc (GCC) 14.1.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0241026/202410261701.jz99xF8B-lkp(a)intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version =
+of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410261701.jz99xF8B-lkp(a)i=
+ntel.com/
+
+All errors (new ones prefixed by >>):
+
+   drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_probe':
+>> drivers/remoteproc/stm32_rproc.c:904:21: error: assignment to 'int' from '=
+struct rproc_tee *' makes integer from pointer without a cast [-Wint-conversi=
+on]
+     904 |                 ret =3D rproc_tee_register(dev, rproc, proc_id);
+         |                     ^
+>> drivers/remoteproc/stm32_rproc.c:963:30: error: passing argument 1 of 'rpr=
+oc_tee_unregister' from incompatible pointer type [-Wincompatible-pointer-typ=
+es]
+     963 |         rproc_tee_unregister(rproc);
+         |                              ^~~~~
+         |                              |
+         |                              struct rproc *
+   In file included from drivers/remoteproc/stm32_rproc.c:21:
+   include/linux/remoteproc_tee.h:59:58: note: expected 'struct rproc_tee *' =
+but argument is of type 'struct rproc *'
+      59 | static inline int rproc_tee_unregister(struct rproc_tee *trproc)
+         |                                        ~~~~~~~~~~~~~~~~~~^~~~~~
+   drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_remove':
+   drivers/remoteproc/stm32_rproc.c:986:30: error: passing argument 1 of 'rpr=
+oc_tee_unregister' from incompatible pointer type [-Wincompatible-pointer-typ=
+es]
+     986 |         rproc_tee_unregister(rproc);
+         |                              ^~~~~
+         |                              |
+         |                              struct rproc *
+   include/linux/remoteproc_tee.h:59:58: note: expected 'struct rproc_tee *' =
+but argument is of type 'struct rproc *'
+      59 | static inline int rproc_tee_unregister(struct rproc_tee *trproc)
+         |                                        ~~~~~~~~~~~~~~~~~~^~~~~~
+
+Kconfig warnings: (for reference only)
+   WARNING: unmet direct dependencies detected for GET_FREE_REGION
+   Depends on [n]: SPARSEMEM [=3Dn]
+   Selected by [y]:
+   - RESOURCE_KUNIT_TEST [=3Dy] && RUNTIME_TESTING_MENU [=3Dy] && KUNIT [=3Dy]
+
+
+vim +904 drivers/remoteproc/stm32_rproc.c
+
+   874=09
+   875	static int stm32_rproc_probe(struct platform_device *pdev)
+   876	{
+   877		struct device *dev =3D &pdev->dev;
+   878		struct stm32_rproc *ddata;
+   879		struct device_node *np =3D dev->of_node;
+   880		struct rproc *rproc;
+   881		unsigned int state;
+   882		u32 proc_id;
+   883		int ret;
+   884=09
+   885		ret =3D dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
+   886		if (ret)
+   887			return ret;
+   888=09
+   889		if (of_device_is_compatible(np, "st,stm32mp1-m4-tee")) {
+   890			/*
+   891			 * Delegate the firmware management to the secure context.
+   892			 * The firmware loaded has to be signed.
+   893			 */
+   894			ret =3D of_property_read_u32(np, "st,proc-id", &proc_id);
+   895			if (ret) {
+   896				dev_err(dev, "failed to read st,rproc-id property\n");
+   897				return ret;
+   898			}
+   899=09
+   900			rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_tee_ops, NULL, s=
+izeof(*ddata));
+   901			if (!rproc)
+   902				return -ENOMEM;
+   903=09
+ > 904			ret =3D rproc_tee_register(dev, rproc, proc_id);
+   905			if (ret)
+   906				return dev_err_probe(dev, ret,  "signed firmware not supported by T=
+EE\n");
+   907		} else {
+   908			rproc =3D devm_rproc_alloc(dev, np->name, &st_rproc_ops, NULL, sizeo=
+f(*ddata));
+   909			if (!rproc)
+   910				return -ENOMEM;
+   911		}
+   912=09
+   913		ddata =3D rproc->priv;
+   914=09
+   915		rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
+   916=09
+   917		ret =3D stm32_rproc_parse_dt(pdev, ddata, &rproc->auto_boot);
+   918		if (ret)
+   919			goto free_rproc;
+   920=09
+   921		ret =3D stm32_rproc_of_memory_translations(pdev, ddata);
+   922		if (ret)
+   923			goto free_rproc;
+   924=09
+   925		ret =3D stm32_rproc_get_m4_status(ddata, &state);
+   926		if (ret)
+   927			goto free_rproc;
+   928=09
+   929		if (state =3D=3D M4_STATE_CRUN)
+   930			rproc->state =3D RPROC_DETACHED;
+   931=09
+   932		rproc->has_iommu =3D false;
+   933		ddata->workqueue =3D create_workqueue(dev_name(dev));
+   934		if (!ddata->workqueue) {
+   935			dev_err(dev, "cannot create workqueue\n");
+   936			ret =3D -ENOMEM;
+   937			goto free_resources;
+   938		}
+   939=09
+   940		platform_set_drvdata(pdev, rproc);
+   941=09
+   942		ret =3D stm32_rproc_request_mbox(rproc);
+   943		if (ret)
+   944			goto free_wkq;
+   945=09
+   946		ret =3D rproc_add(rproc);
+   947		if (ret)
+   948			goto free_mb;
+   949=09
+   950		return 0;
+   951=09
+   952	free_mb:
+   953		stm32_rproc_free_mbox(rproc);
+   954	free_wkq:
+   955		destroy_workqueue(ddata->workqueue);
+   956	free_resources:
+   957		rproc_resource_cleanup(rproc);
+   958	free_rproc:
+   959		if (device_may_wakeup(dev)) {
+   960			dev_pm_clear_wake_irq(dev);
+   961			device_init_wakeup(dev, false);
+   962		}
+ > 963		rproc_tee_unregister(rproc);
+   964=09
+   965		return ret;
+   966	}
+   967=09
+
 --=20
-2.25.1
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
-
---===============7203411783278585625==--
+--===============2779672707930144740==--
 
