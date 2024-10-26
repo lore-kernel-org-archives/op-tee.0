@@ -2,14 +2,14 @@ From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v12 7/7] remoteproc: stm32: Add support of an OP-TEE TA to
  load the firmware
-Date: Sat, 26 Oct 2024 18:00:12 +0800
-Message-ID: <202410261701.jz99xF8B-lkp@intel.com>
+Date: Sat, 26 Oct 2024 18:21:15 +0800
+Message-ID: <202410261837.eRmJAHKZ-lkp@intel.com>
 In-Reply-To: <20241025205924.2087768-8-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2779672707930144740=="
+Content-Type: multipart/mixed; boundary="===============8536207343192682738=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2779672707930144740==
+--===============8536207343192682738==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -26,57 +26,55 @@ patch link:    https://lore.kernel.org/r/20241025205924.2087768-8-arnaud.poul=
 iquen%40foss.st.com
 patch subject: [PATCH v12 7/7] remoteproc: stm32: Add support of an OP-TEE TA=
  to load the firmware
-config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20241026/2=
-02410261701.jz99xF8B-lkp(a)intel.com/config)
-compiler: m68k-linux-gcc (GCC) 14.1.0
+config: x86_64-buildonly-randconfig-004-20241026 (https://download.01.org/0da=
+y-ci/archive/20241026/202410261837.eRmJAHKZ-lkp(a)intel.com/config)
+compiler: clang version 19.1.2 (https://github.com/llvm/llvm-project 7ba7d8e2=
+f7b6445b60679da826210cdde29eaf8b)
 reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0241026/202410261701.jz99xF8B-lkp(a)intel.com/reproduce)
+0241026/202410261837.eRmJAHKZ-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410261701.jz99xF8B-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410261837.eRmJAHKZ-lkp(a)i=
 ntel.com/
 
 All errors (new ones prefixed by >>):
 
-   drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_probe':
->> drivers/remoteproc/stm32_rproc.c:904:21: error: assignment to 'int' from '=
-struct rproc_tee *' makes integer from pointer without a cast [-Wint-conversi=
-on]
+   In file included from drivers/remoteproc/stm32_rproc.c:9:
+   In file included from include/linux/dma-mapping.h:11:
+   In file included from include/linux/scatterlist.h:8:
+   In file included from include/linux/mm.h:2213:
+   include/linux/vmstat.h:518:36: warning: arithmetic between different enume=
+ration types ('enum node_stat_item' and 'enum lru_list') [-Wenum-enum-convers=
+ion]
+     518 |         return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
+         |                               ~~~~~~~~~~~ ^ ~~~
+>> drivers/remoteproc/stm32_rproc.c:904:7: error: incompatible pointer to int=
+eger conversion assigning to 'int' from 'struct rproc_tee *' [-Wint-conversio=
+n]
      904 |                 ret =3D rproc_tee_register(dev, rproc, proc_id);
-         |                     ^
->> drivers/remoteproc/stm32_rproc.c:963:30: error: passing argument 1 of 'rpr=
-oc_tee_unregister' from incompatible pointer type [-Wincompatible-pointer-typ=
-es]
+         |                     ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>> drivers/remoteproc/stm32_rproc.c:963:23: error: incompatible pointer types=
+ passing 'struct rproc *' to parameter of type 'struct rproc_tee *' [-Werror,=
+-Wincompatible-pointer-types]
      963 |         rproc_tee_unregister(rproc);
          |                              ^~~~~
-         |                              |
-         |                              struct rproc *
-   In file included from drivers/remoteproc/stm32_rproc.c:21:
-   include/linux/remoteproc_tee.h:59:58: note: expected 'struct rproc_tee *' =
-but argument is of type 'struct rproc *'
+   include/linux/remoteproc_tee.h:59:58: note: passing argument to parameter =
+'trproc' here
       59 | static inline int rproc_tee_unregister(struct rproc_tee *trproc)
-         |                                        ~~~~~~~~~~~~~~~~~~^~~~~~
-   drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_remove':
-   drivers/remoteproc/stm32_rproc.c:986:30: error: passing argument 1 of 'rpr=
-oc_tee_unregister' from incompatible pointer type [-Wincompatible-pointer-typ=
-es]
+         |                                                          ^
+   drivers/remoteproc/stm32_rproc.c:986:23: error: incompatible pointer types=
+ passing 'struct rproc *' to parameter of type 'struct rproc_tee *' [-Werror,=
+-Wincompatible-pointer-types]
      986 |         rproc_tee_unregister(rproc);
          |                              ^~~~~
-         |                              |
-         |                              struct rproc *
-   include/linux/remoteproc_tee.h:59:58: note: expected 'struct rproc_tee *' =
-but argument is of type 'struct rproc *'
+   include/linux/remoteproc_tee.h:59:58: note: passing argument to parameter =
+'trproc' here
       59 | static inline int rproc_tee_unregister(struct rproc_tee *trproc)
-         |                                        ~~~~~~~~~~~~~~~~~~^~~~~~
-
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for GET_FREE_REGION
-   Depends on [n]: SPARSEMEM [=3Dn]
-   Selected by [y]:
-   - RESOURCE_KUNIT_TEST [=3Dy] && RUNTIME_TESTING_MENU [=3Dy] && KUNIT [=3Dy]
+         |                                                          ^
+   1 warning and 3 errors generated.
 
 
 vim +904 drivers/remoteproc/stm32_rproc.c
@@ -183,5 +181,5 @@ f(*ddata));
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============2779672707930144740==--
+--===============8536207343192682738==--
 
