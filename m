@@ -1,139 +1,104 @@
-From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+From: Enric Balletbo i Serra <eballetb@redhat.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v13 6/7] remoteproc: stm32: Create sub-functions to request
- shutdown and release
-Date: Mon, 04 Nov 2024 14:35:14 +0100
-Message-ID: <20241104133515.256497-7-arnaud.pouliquen@foss.st.com>
-In-Reply-To: <20241104133515.256497-1-arnaud.pouliquen@foss.st.com>
+Subject: optee-based efi runtime variable service on TI j784s4 platforms
+Date: Fri, 08 Nov 2024 13:26:12 +0100
+Message-ID: 
+ <CALE0LRvJ-n77oU=O9__NdSLw2v33zMK+WYkn2LcwWMwHCbohQw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3462717609634770866=="
+Content-Type: multipart/mixed; boundary="===============1429786119741971653=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3462717609634770866==
+--===============1429786119741971653==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-To prepare for the support of TEE remoteproc, create sub-functions
-that can be used in both cases, with and without remoteproc TEE support.
+Hi all,
 
-Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
----
- drivers/remoteproc/stm32_rproc.c | 82 +++++++++++++++++++-------------
- 1 file changed, 49 insertions(+), 33 deletions(-)
+I'm looking for any advice/clue to help me to progress on enabling
+TEE-base EFI Runtime Variable Service on TI a j784s4 platforms.
 
-diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rpro=
-c.c
-index 8c7f7950b80e..288bd70c7861 100644
---- a/drivers/remoteproc/stm32_rproc.c
-+++ b/drivers/remoteproc/stm32_rproc.c
-@@ -209,6 +209,52 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, con=
-st unsigned char *name)
- 	return -EINVAL;
- }
-=20
-+static void stm32_rproc_request_shutdown(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	int err, idx;
-+
-+	/* Request shutdown of the remote processor */
-+	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
-+		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
-+		if (idx >=3D 0 && ddata->mb[idx].chan) {
-+			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
-+			if (err < 0)
-+				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
-+		}
-+	}
-+}
-+
-+static int stm32_rproc_release(struct rproc *rproc)
-+{
-+	struct stm32_rproc *ddata =3D rproc->priv;
-+	unsigned int err =3D 0;
-+
-+	/* To allow platform Standby power mode, set remote proc Deep Sleep */
-+	if (ddata->pdds.map) {
-+		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
-+					 ddata->pdds.mask, 1);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set pdds\n");
-+			return err;
-+		}
-+	}
-+
-+	/* Update coprocessor state to OFF if available */
-+	if (ddata->m4_state.map) {
-+		err =3D regmap_update_bits(ddata->m4_state.map,
-+					 ddata->m4_state.reg,
-+					 ddata->m4_state.mask,
-+					 M4_STATE_OFF);
-+		if (err) {
-+			dev_err(&rproc->dev, "failed to set copro state\n");
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int stm32_rproc_prepare(struct rproc *rproc)
- {
- 	struct device *dev =3D rproc->dev.parent;
-@@ -519,17 +565,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
- static int stm32_rproc_stop(struct rproc *rproc)
- {
- 	struct stm32_rproc *ddata =3D rproc->priv;
--	int err, idx;
-+	int err;
-=20
--	/* request shutdown of the remote processor */
--	if (rproc->state !=3D RPROC_OFFLINE && rproc->state !=3D RPROC_CRASHED) {
--		idx =3D stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
--		if (idx >=3D 0 && ddata->mb[idx].chan) {
--			err =3D mbox_send_message(ddata->mb[idx].chan, "detach");
--			if (err < 0)
--				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
--		}
--	}
-+	stm32_rproc_request_shutdown(rproc);
-=20
- 	err =3D stm32_rproc_set_hold_boot(rproc, true);
- 	if (err)
-@@ -541,29 +579,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
- 		return err;
- 	}
-=20
--	/* to allow platform Standby power mode, set remote proc Deep Sleep */
--	if (ddata->pdds.map) {
--		err =3D regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
--					 ddata->pdds.mask, 1);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set pdds\n");
--			return err;
--		}
--	}
--
--	/* update coprocessor state to OFF if available */
--	if (ddata->m4_state.map) {
--		err =3D regmap_update_bits(ddata->m4_state.map,
--					 ddata->m4_state.reg,
--					 ddata->m4_state.mask,
--					 M4_STATE_OFF);
--		if (err) {
--			dev_err(&rproc->dev, "failed to set copro state\n");
--			return err;
--		}
--	}
--
--	return 0;
-+	return stm32_rproc_release(rproc);
- }
-=20
- static void stm32_rproc_kick(struct rproc *rproc, int vqid)
---=20
-2.25.1
+I basically followed the steps described in u-boot documentation [1],
+I enabled some debugging messages but I think I'm at the point that
+the problem might be in the StandaloneMM application, and I'm not sure
+how to debug it.
+
+What I see is that when I run the tee-supplicant daemon, it looks like
+the tee_client_open_session() call loops forever and the tee_stmm_efi
+driver never ends to probe.
+
+With debug enabled I got the following messages.
+
+# tee-supplicant
+D/TC:? 0 tee_ta_init_session_with_context:557 Re-open trusted service
+7011a688-ddde-4053-a5a9-7b3c4ddf13b8
+D/TC:? 0 load_stmm:297 stmm load address 0x40004000
+D/TC:? 0 spm_handle_scall:859 Received FFA version
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+D/TC:? 0 spm_handle_scall:867 Received FFA direct request
+
+And tracing the function calls gives me that:
+
+      tee_stmm_efi_probe() {
+             tee_client_open_context() {
+               optee_get_version() {
+                 tee_get_drvdata(); (ret=3D0xffff000002e55800)
+               } (ret=3D0xd)
+               tee_ctx_match(); (ret=3D0x1)
+               optee_smc_open() {
+                 tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                 optee_open() {
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                 } (ret=3D0x0)
+               } (ret=3D0x0)
+             } (ret=3D0xffff000004e71c80)
+             tee_client_open_session() {
+               optee_open_session() {
+                 tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                 optee_get_msg_arg() {
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   tee_shm_get_va(); (ret=3D0xffff000002909000)
+                 } (ret=3D0xffff000002909000)
+                 tee_session_calc_client_uuid(); (ret=3D0x0)
+                 optee_to_msg_param(); (ret=3D0x0)
+                 optee_smc_do_call_with_arg() {
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   tee_shm_get_va(); (ret=3D0xffff000002909000)
+                   tee_shm_get_va(); (ret=3D0xffff000002909060)
+                   optee_cq_wait_init(); (ret=3D0xffff000002e55910)
+                   optee_smccc_smc(); (ret=3D0xffff0004)
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   optee_smccc_smc(); (ret=3D0xffff0004)
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   optee_smccc_smc(); (ret=3D0xffff0004)
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   optee_smccc_smc(); (ret=3D0xffff0004)
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   optee_smccc_smc(); (ret=3D0xffff0004)
+     ... continues sending this forever ...
+     ... Hit ^C to stop recording ...
+                   tee_get_drvdata(); (ret=3D0xffff000002e55800)
+                   optee_smccc_smc() {
+
+[1] https://docs.u-boot.org/en/latest/develop/uefi/uefi.html#using-op-tee-for=
+-efi-variables
+
+Thanks in advance,
+   Enric
 
 
---===============3462717609634770866==--
+--===============1429786119741971653==--
 
