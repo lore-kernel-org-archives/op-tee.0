@@ -2,18 +2,18 @@ From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
  Re: [PATCH v13 4/7] remoteproc: Introduce release_fw optional operation
-Date: Tue, 19 Nov 2024 09:02:16 +0100
-Message-ID: <be493536-aedd-4253-ad42-21821d080f41@foss.st.com>
+Date: Tue, 19 Nov 2024 19:10:58 +0100
+Message-ID: <0d9075cd-68c2-49ec-9b9c-4315aa8c8517@foss.st.com>
 In-Reply-To: <Zzt+7NBdNjyzWZIb@p14s>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7895250511950040577=="
+Content-Type: multipart/mixed; boundary="===============7571903707588851442=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7895250511950040577==
+--===============7571903707588851442==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-hello Mathieu,
+Hello Mathieu,
 
 On 11/18/24 18:52, Mathieu Poirier wrote:
 > On Mon, Nov 04, 2024 at 02:35:12PM +0100, Arnaud Pouliquen wrote:
@@ -69,6 +69,12 @@ he
 > rproc->ops->release_fw(), if they are present.  When a TEE interface is
 > available, ->load_fw() and ->release_fw() become rproc_tee_load_fw() and
 > rproc_tee_release_fw().
+
+
+I'm wondering if it should be ->preload_fw() instead of ->load_fw() ops, as t=
+he
+->load() op already exists.
+
 >=20
 > 2) Call rproc_load_fw() in rproc_boot(), just before rproc_fw_boot().  If t=
 he
@@ -76,6 +82,21 @@ he
 >=20
 > 3) The same logic applies to rproc_boot_recovery(), i.e call rproc_load_fw()
 > before rproc_start() and call rproc_release_fw() if rproc_start() fails.
+
+
+I implemented this and I'm currently testing it.
+Thise second part requires a few adjustments to work. The ->load() ops needs =
+to
+becomes optional to not be called if the "->preload_fw()" is used.
+
+For that, I propose to return 0 in rproc_load_segments if rproc->ops->load is
+NULL and compensate by checking that at least "->preload_fw()" or ->load() is
+non-null in rproc_alloc_ops.
+
+Thanks,
+Arnaud
+
+
 >=20
 > 4) Take rproc_tee_load_fw() out of rproc_tee_parse_fw().  It will now be ca=
 lled
@@ -89,11 +110,6 @@ nt.
 > With the above the cached_table management within the core remains the same=
  and
 > we can get rid of patch 3.7.
-
-Thanks for your suggestion! I will try this in next revision.
-
-Regards,
-Arnaud
 
 >=20
 > Thanks,
@@ -128,5 +144,5 @@ e of an error
 >> 2.25.1
 >>
 
---===============7895250511950040577==--
+--===============7571903707588851442==--
 
