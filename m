@@ -1,112 +1,81 @@
 From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH RFC 1/3] tee: revert removal of redundant teedev in struct tee_shm
-Date: Wed, 20 Nov 2024 17:37:15 -0800
+Subject: [PATCH RFC 0/3] Introduce orphan tee_shm and default tee_context
+Date: Wed, 20 Nov 2024 17:37:14 -0800
 Message-ID: 
- <20241120-fix-tee_shm-refcount-upstream-v1-1-5da97f584fcd@quicinc.com>
-In-Reply-To: <
- <20241120-fix-tee_shm-refcount-upstream-v1-0-5da97f584fcd@quicinc.com>>
+ <20241120-fix-tee_shm-refcount-upstream-v1-0-5da97f584fcd@quicinc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6017045454385710501=="
+Content-Type: multipart/mixed; boundary="===============3628798025328426706=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6017045454385710501==
+--===============3628798025328426706==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-In commit 5271b2011e44 ("tee: remove redundant teedev in struct tee_shm"),
-the reference to teedev was removed following the change in
-commit 217e0250cccb ("tee: use reference counting for tee_context").
-This change ensured that the ctx in tee_shm remains valid as long as the
-shared buffer is valid, and teedev is accessible from ctx. It made teedev
-in tee_shm redundant.
+The TEE subsystem manages three main structures: tee_device, the device
+that represents the TEE; tee_context, the context that represents the
+TEE client; and tee_shm, which represents the shared memory with the
+TEE. When a tee_device is opened, it creates a tee_context instance. The
+tee_shm is created for the tee_device when allocating shared memory with
+the TEE but is linked to a context. The lifespan of the device is
+determined by the presence of context and shared memory, while the
+lifespan of a context depends on the client closing the device.
 
-Reintroduce teedev to tee_shm to facilitate the introduction of orphan
-shared memory, which may not be linked to the context it was originally
-associated with.
+This behavior has been modified, making the lifespan of context
+dependent on shared memory. If a client closes the device but doesn=E2=80=99t
+release the shared memory, the linked context will remain active,
+preventing the release callback from freeing resources in the TEE. This
+could lead to a deadlock if the TEE holds a reference to the shared
+memory and relies on the release callback to remove the reference.
+
+In this pachset we introduce orphan tee_shm and default tee_context.
+
+When a shared memory becomes orphan because its associated context is
+released, it no longer has a tee_context. One method to differentiate
+between orphaned and regular shared memory is to use NULL as the linked
+context. However, this can cause issues if releasing the shared memory
+triggers additional calls, like those to the supplicant, which require a
+valid context. Instead of using NULL, an internal tee_context for the
+driver can be used.
+
+The driver relies on tee_device_unregister which is a blocking calls
+waiting for all context to be released and all shared memory to be freed
+before unloading the driver. This means that all contexts, including
+internal context, should be closed before tee_device_unregister can
+proceed. This can introduce a short window where there is no valid
+context to use when releasing the shared memory. The default tee_context
+has lifespan similar to the device.
+
+For an orphan tee_shm, default context is used.
+
+This has not been tested. Looking for feedback if this is a reasonable
+change.
 
 Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 ---
- drivers/tee/tee_shm.c   | 10 +++++++---
- include/linux/tee_drv.h |  2 ++
- 2 files changed, 9 insertions(+), 3 deletions(-)
+Amirreza Zarrabi (3):
+      tee: revert removal of redundant teedev in struct tee_shm
+      tee: revert removal of linked list of struct tee_shm
+      tee: introduce orphan tee_shm and default context
 
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index daf6e5cfd59a..31e032446cf5 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -43,8 +43,10 @@ static void release_registered_pages(struct tee_shm *shm)
- 	}
- }
-=20
--static void tee_shm_release(struct tee_device *teedev, struct tee_shm *shm)
-+static void tee_shm_release(struct tee_shm *shm)
- {
-+	struct tee_device *teedev =3D shm->teedev;
-+
- 	if (shm->flags & TEE_SHM_POOL) {
- 		teedev->pool->ops->free(teedev->pool, shm);
- 	} else if (shm->flags & TEE_SHM_DYNAMIC) {
-@@ -89,6 +91,7 @@ static struct tee_shm *shm_alloc_helper(struct tee_context =
-*ctx, size_t size,
-=20
- 	refcount_set(&shm->refcount, 1);
- 	shm->flags =3D flags;
-+	shm->teedev =3D teedev;
- 	shm->id =3D id;
-=20
- 	/*
-@@ -298,6 +301,7 @@ register_shm_helper(struct tee_context *ctx, struct iov_i=
-ter *iter, u32 flags,
-=20
- 	refcount_set(&shm->refcount, 1);
- 	shm->flags =3D flags;
-+	shm->teedev =3D teedev;
- 	shm->ctx =3D ctx;
- 	shm->id =3D id;
- 	addr =3D untagged_addr((unsigned long)iter_iov_addr(iter));
-@@ -560,7 +564,7 @@ EXPORT_SYMBOL_GPL(tee_shm_get_from_id);
-  */
- void tee_shm_put(struct tee_shm *shm)
- {
--	struct tee_device *teedev =3D shm->ctx->teedev;
-+	struct tee_device *teedev =3D shm->teedev;
- 	bool do_release =3D false;
-=20
- 	mutex_lock(&teedev->mutex);
-@@ -578,6 +582,6 @@ void tee_shm_put(struct tee_shm *shm)
- 	mutex_unlock(&teedev->mutex);
-=20
- 	if (do_release)
--		tee_shm_release(teedev, shm);
-+		tee_shm_release(shm);
- }
- EXPORT_SYMBOL_GPL(tee_shm_put);
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index a54c203000ed..56560441b2cb 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -47,6 +47,7 @@ struct tee_context {
-=20
- /**
-  * struct tee_shm - shared memory object
-+ * @teedev:	device used to allocate the object
-  * @ctx:	context using the object
-  * @paddr:	physical address of the shared memory
-  * @kaddr:	virtual address of the shared memory
-@@ -63,6 +64,7 @@ struct tee_context {
-  *		used by all drivers
-  */
- struct tee_shm {
-+	struct tee_device *teedev;
- 	struct tee_context *ctx;
- 	phys_addr_t paddr;
- 	void *kaddr;
+ drivers/tee/optee/core.c    |  2 +-
+ drivers/tee/optee/ffa_abi.c |  2 +-
+ drivers/tee/optee/smc_abi.c |  2 +-
+ drivers/tee/tee_core.c      | 84 +++++++++++++++++++++++++++++--------------=
+--
+ drivers/tee/tee_private.h   |  3 --
+ drivers/tee/tee_shm.c       | 41 ++++++++++++----------
+ include/linux/tee_core.h    | 15 ++++++++
+ include/linux/tee_drv.h     | 13 ++++---
+ 8 files changed, 100 insertions(+), 62 deletions(-)
+---
+base-commit: ae58226b89ac0cffa05ba7357733776542e40216
+change-id: 20241120-fix-tee_shm-refcount-upstream-c671b89fbe67
 
+Best regards,
 --=20
-2.34.1
+Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 
 
---===============6017045454385710501==--
+--===============3628798025328426706==--
 
