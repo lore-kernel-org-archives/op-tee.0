@@ -1,193 +1,112 @@
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
+From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH v13 4/7] remoteproc: Introduce release_fw optional operation
-Date: Wed, 20 Nov 2024 17:35:49 +0100
-Message-ID: <57a66f3c-d644-4ebb-b4dd-0b9d411ec243@foss.st.com>
+ [PATCH RFC 1/3] tee: revert removal of redundant teedev in struct tee_shm
+Date: Wed, 20 Nov 2024 17:37:15 -0800
+Message-ID: 
+ <20241120-fix-tee_shm-refcount-upstream-v1-1-5da97f584fcd@quicinc.com>
 In-Reply-To: <
- <CANLsYkwPDFvJxgXrAV=92w+sT8tXB=-=K8Qs8eRVKm2C2v+0aA@mail.gmail.com>>
+ <20241120-fix-tee_shm-refcount-upstream-v1-0-5da97f584fcd@quicinc.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6798198668891724876=="
+Content-Type: multipart/mixed; boundary="===============6017045454385710501=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6798198668891724876==
+--===============6017045454385710501==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+In commit 5271b2011e44 ("tee: remove redundant teedev in struct tee_shm"),
+the reference to teedev was removed following the change in
+commit 217e0250cccb ("tee: use reference counting for tee_context").
+This change ensured that the ctx in tee_shm remains valid as long as the
+shared buffer is valid, and teedev is accessible from ctx. It made teedev
+in tee_shm redundant.
+
+Reintroduce teedev to tee_shm to facilitate the introduction of orphan
+shared memory, which may not be linked to the context it was originally
+associated with.
+
+Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+---
+ drivers/tee/tee_shm.c   | 10 +++++++---
+ include/linux/tee_drv.h |  2 ++
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index daf6e5cfd59a..31e032446cf5 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -43,8 +43,10 @@ static void release_registered_pages(struct tee_shm *shm)
+ 	}
+ }
+=20
+-static void tee_shm_release(struct tee_device *teedev, struct tee_shm *shm)
++static void tee_shm_release(struct tee_shm *shm)
+ {
++	struct tee_device *teedev =3D shm->teedev;
++
+ 	if (shm->flags & TEE_SHM_POOL) {
+ 		teedev->pool->ops->free(teedev->pool, shm);
+ 	} else if (shm->flags & TEE_SHM_DYNAMIC) {
+@@ -89,6 +91,7 @@ static struct tee_shm *shm_alloc_helper(struct tee_context =
+*ctx, size_t size,
+=20
+ 	refcount_set(&shm->refcount, 1);
+ 	shm->flags =3D flags;
++	shm->teedev =3D teedev;
+ 	shm->id =3D id;
+=20
+ 	/*
+@@ -298,6 +301,7 @@ register_shm_helper(struct tee_context *ctx, struct iov_i=
+ter *iter, u32 flags,
+=20
+ 	refcount_set(&shm->refcount, 1);
+ 	shm->flags =3D flags;
++	shm->teedev =3D teedev;
+ 	shm->ctx =3D ctx;
+ 	shm->id =3D id;
+ 	addr =3D untagged_addr((unsigned long)iter_iov_addr(iter));
+@@ -560,7 +564,7 @@ EXPORT_SYMBOL_GPL(tee_shm_get_from_id);
+  */
+ void tee_shm_put(struct tee_shm *shm)
+ {
+-	struct tee_device *teedev =3D shm->ctx->teedev;
++	struct tee_device *teedev =3D shm->teedev;
+ 	bool do_release =3D false;
+=20
+ 	mutex_lock(&teedev->mutex);
+@@ -578,6 +582,6 @@ void tee_shm_put(struct tee_shm *shm)
+ 	mutex_unlock(&teedev->mutex);
+=20
+ 	if (do_release)
+-		tee_shm_release(teedev, shm);
++		tee_shm_release(shm);
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_put);
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index a54c203000ed..56560441b2cb 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -47,6 +47,7 @@ struct tee_context {
+=20
+ /**
+  * struct tee_shm - shared memory object
++ * @teedev:	device used to allocate the object
+  * @ctx:	context using the object
+  * @paddr:	physical address of the shared memory
+  * @kaddr:	virtual address of the shared memory
+@@ -63,6 +64,7 @@ struct tee_context {
+  *		used by all drivers
+  */
+ struct tee_shm {
++	struct tee_device *teedev;
+ 	struct tee_context *ctx;
+ 	phys_addr_t paddr;
+ 	void *kaddr;
+
+--=20
+2.34.1
 
 
-On 11/20/24 17:04, Mathieu Poirier wrote:
-> On Tue, 19 Nov 2024 at 13:38, Mathieu Poirier
-> <mathieu.poirier@linaro.org> wrote:
->>
->> On Tue, 19 Nov 2024 at 11:14, Arnaud POULIQUEN
->> <arnaud.pouliquen@foss.st.com> wrote:
->>>
->>> Hello Mathieu,
->>>
->>> On 11/18/24 18:52, Mathieu Poirier wrote:
->>>> On Mon, Nov 04, 2024 at 02:35:12PM +0100, Arnaud Pouliquen wrote:
->>>>> This patch updates the rproc_ops struct to include an optional
->>>>> release_fw function.
->>>>>
->>>>> The release_fw ops is responsible for releasing the remote processor
->>>>> firmware image. The ops is called in the following cases:
->>>>>
->>>>>  - An error occurs in rproc_start() between the loading of the segments=
- and
->>>>>       the start of the remote processor.
->>>>>  - after stopping the remote processor.
->>>>>
->>>>> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
->>>>> ---
->>>>> Updates from version V11:
->>>>> - fix typo in @release_fw comment
->>>>> ---
->>>>>  drivers/remoteproc/remoteproc_core.c | 5 +++++
->>>>>  include/linux/remoteproc.h           | 3 +++
->>>>>  2 files changed, 8 insertions(+)
->>>>>
->>>>> diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/=
-remoteproc_core.c
->>>>> index 7694817f25d4..46863e1ca307 100644
->>>>> --- a/drivers/remoteproc/remoteproc_core.c
->>>>> +++ b/drivers/remoteproc/remoteproc_core.c
->>>>> @@ -1258,6 +1258,9 @@ static int rproc_alloc_registered_carveouts(struc=
-t rproc *rproc)
->>>>>
->>>>>  static void rproc_release_fw(struct rproc *rproc)
->>>>>  {
->>>>> +    if (rproc->ops->release_fw)
->>>>> +            rproc->ops->release_fw(rproc);
->>>>> +
->>>>>      /* Free the copy of the resource table */
->>>>>      kfree(rproc->cached_table);
->>>>>      rproc->cached_table =3D NULL;
->>>>> @@ -1377,6 +1380,8 @@ static int rproc_start(struct rproc *rproc, const=
- struct firmware *fw)
->>>>>  unprepare_subdevices:
->>>>>      rproc_unprepare_subdevices(rproc);
->>>>>  reset_table_ptr:
->>>>> +    if (rproc->ops->release_fw)
->>>>> +            rproc->ops->release_fw(rproc);
->>>>>      rproc->table_ptr =3D rproc->cached_table;
->>>>
->>>> I suggest the following:
->>>>
->>>> 1) Create two new functions, i.e rproc_load_fw() and rproc_release_fw().=
-  The
->>>> only thing those would do is call rproc->ops->load_fw() and
->>>> rproc->ops->release_fw(), if they are present.  When a TEE interface is
->>>> available, ->load_fw() and ->release_fw() become rproc_tee_load_fw() and
->>>> rproc_tee_release_fw().
->>>
->>>
->>> I'm wondering if it should be ->preload_fw() instead of ->load_fw() ops, =
-as the
->>> ->load() op already exists.
->>>
->>
->> I agree that ->load() and ->load_fw() will lead to confusion.  I would
->> support ->preload_fw() but there is no obvious antonyme.
->>
->> Since we already have rproc_ops::prepare() and rproc_prepare_device()
->> I suggest rproc_ops::prepare_fw() and rproc_prepare_fw().  The
->> corollary would be rproc_ops::unprepare_fw() and rproc_unprepare_fm().
->> That said, I'm open to other ideas should you be interested in finding
->> other alternatives.
->>
->=20
-> Actually...  A better approach might to rename rproc::load to
-> rproc::load_segments.  That way we can use rproc::load_fw() and
-> rproc_load_fw() without confusion.
-
-Concerning this proposal, please correct me if I'm wrong
-- ops::load_segments() would be used for ELF format only as segment notion se=
-ems
-linked to this format.
-- ops:rproc_load_fw should be used for other formats.
-
-The risk is that someone may later come with a requirement to get a resource
-table first to configure some memories before loading a non-ELF firmware.
-
-
->=20
->>>>
->>>> 2) Call rproc_load_fw() in rproc_boot(), just before rproc_fw_boot().  I=
-f the
->>>> call to rproc_fw_boot() fails, call rproc_release_fw().
->>>>
->>>> 3) The same logic applies to rproc_boot_recovery(), i.e call rproc_load_=
-fw()
->>>> before rproc_start() and call rproc_release_fw() if rproc_start() fails.
->>>
->>>
->>> I implemented this and I'm currently testing it.
->>> Thise second part requires a few adjustments to work. The ->load() ops ne=
-eds to
->>> becomes optional to not be called if the "->preload_fw()" is used.
->>>
->>> For that, I propose to return 0 in rproc_load_segments if rproc->ops->loa=
-d is
->>> NULL and compensate by checking that at least "->preload_fw()" or ->load(=
-) is
->>> non-null in rproc_alloc_ops.
->>>
->>
->> I agree.
->>
->>> Thanks,
->>> Arnaud
->>>
->>>
->>>>
->>>> 4) Take rproc_tee_load_fw() out of rproc_tee_parse_fw().  It will now be=
- called
->>>> in rproc_load_fw().
->>>>
->>>> 5) As stated above function rproc_release_fw() now calls rproc_tee_relea=
-se_fw().
->>>> The former is already called in rproc_shutdown() so we are good in that =
-front.
->>>>
->>>> With the above the cached_table management within the core remains the s=
-ame and
->>>> we can get rid of patch 3.7.
->>>
->>>>
->>>> Thanks,
->>>> Mathieu
->>>>
->>>>>
->>>>>      return ret;
->>>>> diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
->>>>> index 2e0ddcb2d792..08e0187a84d9 100644
->>>>> --- a/include/linux/remoteproc.h
->>>>> +++ b/include/linux/remoteproc.h
->>>>> @@ -381,6 +381,8 @@ enum rsc_handling_status {
->>>>>   * @panic:  optional callback to react to system panic, core will delay
->>>>>   *          panic at least the returned number of milliseconds
->>>>>   * @coredump:         collect firmware dump after the subsystem is shu=
-tdown
->>>>> + * @release_fw:     optional function to release the firmware image fr=
-om ROM memories.
->>>>> + *          This function is called after stopping the remote processo=
-r or in case of an error
->>>>>   */
->>>>>  struct rproc_ops {
->>>>>      int (*prepare)(struct rproc *rproc);
->>>>> @@ -403,6 +405,7 @@ struct rproc_ops {
->>>>>      u64 (*get_boot_addr)(struct rproc *rproc, const struct firmware *f=
-w);
->>>>>      unsigned long (*panic)(struct rproc *rproc);
->>>>>      void (*coredump)(struct rproc *rproc);
->>>>> +    void (*release_fw)(struct rproc *rproc);
->>>>>  };
->>>>>
->>>>>  /**
->>>>> --
->>>>> 2.25.1
->>>>>
-
---===============6798198668891724876==--
+--===============6017045454385710501==--
 
