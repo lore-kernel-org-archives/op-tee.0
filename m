@@ -1,950 +1,558 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v3 4/4] optee: support restricted memory allocation
-Date: Thu, 28 Nov 2024 16:09:04 +0100
-Message-ID: <20241128150927.1377981-5-jens.wiklander@linaro.org>
-In-Reply-To: <20241128150927.1377981-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH RFC 3/3] tee: introduce orphan tee_shm and default context
+Date: Fri, 29 Nov 2024 08:28:43 +1100
+Message-ID: <bb7b0895-bdcf-44dc-ac15-b528ebbc7e25@quicinc.com>
+In-Reply-To: <
+ <CAFA6WYMrOt=u7VNrhPRsLkQq95rgkMXd-inuSg2hLHQDjtP8=Q@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5546100486855343730=="
+Content-Type: multipart/mixed; boundary="===============8033617187672544582=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5546100486855343730==
+--===============8033617187672544582==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add support in the OP-TEE backend driver for restricted memory
-allocation.
-
-The restricted memory can be allocated from a static carveout, but also
-be dynamically allocated from CMA and turned into restricted memory by
-OP-TEE, inaccessible by the kernel. The restricted memory configuration
-is depends on the platform and is probed by driver.
-
-A restricted memory pool is allocated during probe if a static carveout
-is available. The restricted memory pools for dynamically allocated
-restrict memory are instantiated when requested by user-space. This
-instantiation can fail if OP-TEE doesn't support the requested use-case
-of restricted memory.
-
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/Makefile        |   1 +
- drivers/tee/optee/core.c          |   1 +
- drivers/tee/optee/ffa_abi.c       | 135 ++++++++++-
- drivers/tee/optee/optee_private.h |  33 ++-
- drivers/tee/optee/rstmem.c        | 380 ++++++++++++++++++++++++++++++
- drivers/tee/optee/smc_abi.c       | 138 ++++++++++-
- 6 files changed, 683 insertions(+), 5 deletions(-)
- create mode 100644 drivers/tee/optee/rstmem.c
-
-diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-index a6eff388d300..498969fb8e40 100644
---- a/drivers/tee/optee/Makefile
-+++ b/drivers/tee/optee/Makefile
-@@ -4,6 +4,7 @@ optee-objs +=3D core.o
- optee-objs +=3D call.o
- optee-objs +=3D notif.o
- optee-objs +=3D rpc.o
-+optee-objs +=3D rstmem.o
- optee-objs +=3D supp.o
- optee-objs +=3D device.o
- optee-objs +=3D smc_abi.o
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index c75fddc83576..f4fa494789a4 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -182,6 +182,7 @@ void optee_remove_common(struct optee *optee)
- 	tee_device_unregister(optee->teedev);
-=20
- 	tee_shm_pool_free(optee->pool);
-+	optee_rstmem_pools_uninit(optee);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
- 	rpmb_dev_put(optee->rpmb_dev);
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index 02e6175ac5f0..f500cf101c8d 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -672,6 +672,122 @@ static int optee_ffa_do_call_with_arg(struct tee_contex=
-t *ctx,
- 	return optee_ffa_yielding_call(ctx, &data, rpc_arg, system_thread);
- }
-=20
-+static int do_call_lend_rstmem(struct optee *optee, u64 cookie, u32 use_case)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 1, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_ASSIGN_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-+	msg_arg->params[0].u.value.a =3D cookie;
-+	msg_arg->params[0].u.value.b =3D use_case;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS) {
-+		rc =3D -EINVAL;
-+		goto out;
-+	}
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
-+static int optee_ffa_lend_rstmem(struct optee *optee, struct tee_shm *rstmem,
-+				 u16 *end_points, unsigned int ep_count)
-+{
-+	struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
-+	const struct ffa_mem_ops *mem_ops =3D ffa_dev->ops->mem_ops;
-+	const struct ffa_msg_ops *msg_ops =3D ffa_dev->ops->msg_ops;
-+	struct ffa_send_direct_data data;
-+	struct ffa_mem_region_attributes *mem_attr;
-+	struct ffa_mem_ops_args args =3D {
-+		.use_txbuf =3D true,
-+		.tag =3D rstmem->use_case,
-+	};
-+	struct page *page;
-+	struct scatterlist sgl;
-+	unsigned int n;
-+	int rc;
-+
-+	mem_attr =3D kcalloc(ep_count, sizeof(*mem_attr), GFP_KERNEL);
-+	for (n =3D 0; n < ep_count; n++) {
-+		mem_attr[n].receiver =3D end_points[n];
-+		mem_attr[n].attrs =3D FFA_MEM_RW;
-+	}
-+	args.attrs =3D mem_attr;
-+	args.nattrs =3D ep_count;
-+
-+	page =3D phys_to_page(rstmem->paddr);
-+	sg_init_table(&sgl, 1);
-+	sg_set_page(&sgl, page, rstmem->size, 0);
-+
-+	args.sg =3D &sgl;
-+	rc =3D mem_ops->memory_lend(&args);
-+	kfree(mem_attr);
-+	if (rc)
-+		return rc;
-+
-+	rc =3D do_call_lend_rstmem(optee, args.g_handle, rstmem->use_case);
-+	if (rc)
-+		goto err_reclaim;
-+
-+	rc =3D optee_shm_add_ffa_handle(optee, rstmem, args.g_handle);
-+	if (rc)
-+		goto err_unreg;
-+
-+	rstmem->sec_world_id =3D args.g_handle;
-+
-+	return 0;
-+
-+err_unreg:
-+	data =3D (struct ffa_send_direct_data){
-+		.data0 =3D OPTEE_FFA_RELEASE_RSTMEM,
-+		.data1 =3D (u32)args.g_handle,
-+		.data2 =3D (u32)(args.g_handle >> 32),
-+	};
-+	msg_ops->sync_send_receive(ffa_dev, &data);
-+err_reclaim:
-+	mem_ops->memory_reclaim(args.g_handle, 0);
-+	return rc;
-+}
-+
-+static int optee_ffa_reclaim_rstmem(struct optee *optee, struct tee_shm *rst=
-mem)
-+{
-+	struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
-+	const struct ffa_msg_ops *msg_ops =3D ffa_dev->ops->msg_ops;
-+	const struct ffa_mem_ops *mem_ops =3D ffa_dev->ops->mem_ops;
-+	u64 global_handle =3D rstmem->sec_world_id;
-+	struct ffa_send_direct_data data =3D {
-+		.data0 =3D OPTEE_FFA_RELEASE_RSTMEM,
-+		.data1 =3D (u32)global_handle,
-+		.data2 =3D (u32)(global_handle >> 32)
-+	};
-+	int rc;
-+
-+	optee_shm_rem_ffa_handle(optee, global_handle);
-+	rstmem->sec_world_id =3D 0;
-+
-+	rc =3D msg_ops->sync_send_receive(ffa_dev, &data);
-+	if (rc)
-+		pr_err("Release SHM id 0x%llx rc %d\n", global_handle, rc);
-+
-+	rc =3D mem_ops->memory_reclaim(global_handle, 0);
-+	if (rc)
-+		pr_err("mem_reclaim: 0x%llx %d", global_handle, rc);
-+
-+	return rc;
-+}
-+
- /*
-  * 6. Driver initialization
-  *
-@@ -785,7 +901,10 @@ static void optee_ffa_get_version(struct tee_device *tee=
-dev,
- 		.gen_caps =3D TEE_GEN_CAP_GP | TEE_GEN_CAP_REG_MEM |
- 			    TEE_GEN_CAP_MEMREF_NULL,
- 	};
-+	struct optee *optee =3D tee_get_drvdata(teedev);
-=20
-+	if (optee->rstmem_pools)
-+		v.gen_caps |=3D TEE_GEN_CAP_RSTMEM;
- 	*vers =3D v;
- }
-=20
-@@ -804,6 +923,8 @@ static const struct tee_driver_ops optee_ffa_clnt_ops =3D=
- {
- 	.cancel_req =3D optee_cancel_req,
- 	.shm_register =3D optee_ffa_shm_register,
- 	.shm_unregister =3D optee_ffa_shm_unregister,
-+	.rstmem_alloc =3D optee_rstmem_alloc,
-+	.rstmem_free =3D optee_rstmem_free,
- };
-=20
- static const struct tee_desc optee_ffa_clnt_desc =3D {
-@@ -820,6 +941,8 @@ static const struct tee_driver_ops optee_ffa_supp_ops =3D=
- {
- 	.supp_send =3D optee_supp_send,
- 	.shm_register =3D optee_ffa_shm_register, /* same as for clnt ops */
- 	.shm_unregister =3D optee_ffa_shm_unregister_supp,
-+	.rstmem_alloc =3D optee_rstmem_alloc,
-+	.rstmem_free =3D optee_rstmem_free,
- };
-=20
- static const struct tee_desc optee_ffa_supp_desc =3D {
-@@ -833,6 +956,8 @@ static const struct optee_ops optee_ffa_ops =3D {
- 	.do_call_with_arg =3D optee_ffa_do_call_with_arg,
- 	.to_msg_param =3D optee_ffa_to_msg_param,
- 	.from_msg_param =3D optee_ffa_from_msg_param,
-+	.lend_rstmem =3D optee_ffa_lend_rstmem,
-+	.reclaim_rstmem =3D optee_ffa_reclaim_rstmem,
- };
-=20
- static void optee_ffa_remove(struct ffa_device *ffa_dev)
-@@ -937,11 +1062,17 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	    (sec_caps & OPTEE_FFA_SEC_CAP_RPMB_PROBE))
- 		optee->in_kernel_rpmb_routing =3D true;
-=20
-+	if (sec_caps & OPTEE_FFA_SEC_CAP_RSTMEM) {
-+		rc =3D optee_rstmem_pools_init(optee);
-+		if (rc)
-+			goto err_free_pool;
-+	}
-+
- 	teedev =3D tee_device_alloc(&optee_ffa_clnt_desc, NULL, optee->pool,
- 				  optee);
- 	if (IS_ERR(teedev)) {
- 		rc =3D PTR_ERR(teedev);
--		goto err_free_pool;
-+		goto err_free_rstmem_pools;
- 	}
- 	optee->teedev =3D teedev;
-=20
-@@ -1020,6 +1151,8 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	tee_device_unregister(optee->teedev);
- err_free_pool:
- 	tee_shm_pool_free(pool);
-+err_free_rstmem_pools:
-+	optee_rstmem_pools_uninit(optee);
- err_free_optee:
- 	kfree(optee);
- 	return rc;
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index 20eda508dbac..dd2a3a2224bc 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -174,9 +174,14 @@ struct optee;
-  * @do_call_with_arg:	enters OP-TEE in secure world
-  * @to_msg_param:	converts from struct tee_param to OPTEE_MSG parameters
-  * @from_msg_param:	converts from OPTEE_MSG parameters to struct tee_param
-+ * @lend_rstmem:	lends physically contiguous memory as restricted
-+ *			memory, inaccessible by the kernel
-+ * @reclaim_rstmem:	reclaims restricted memory previously lent with
-+ *			@lend_rstmem() and makes it accessible by the
-+ *			kernel again
-  *
-  * These OPs are only supposed to be used internally in the OP-TEE driver
-- * as a way of abstracting the different methogs of entering OP-TEE in
-+ * as a way of abstracting the different methods of entering OP-TEE in
-  * secure world.
-  */
- struct optee_ops {
-@@ -191,6 +196,23 @@ struct optee_ops {
- 			      size_t num_params,
- 			      const struct optee_msg_param *msg_params,
- 			      bool update_out);
-+	int (*lend_rstmem)(struct optee *optee, struct tee_shm *rstmem,
-+			   u16 *end_points, unsigned int ep_count);
-+	int (*reclaim_rstmem)(struct optee *optee, struct tee_shm *rstmem);
-+};
-+
-+/**
-+ * struct optee_rstmem_pools - restricted memory pools
-+ * @mutex:	serializes write access to @xa when adding a new pool.
-+ * @xa:		XArray of struct tee_shm_pool where the index is the
-+ *		use case ID TEE_IOC_UC_* supplied for TEE_IOC_RSTMEM_ALLOC.
-+ */
-+struct optee_rstmem_pools {
-+	/*
-+	 * Serializes write access to @xa when adding a new pool.
-+	 */
-+	struct mutex mutex;
-+	struct xarray xa;
- };
-=20
- /**
-@@ -206,6 +228,7 @@ struct optee_ops {
-  * @notif:		notification synchronization struct
-  * @supp:		supplicant synchronization struct for RPC to supplicant
-  * @pool:		shared memory pool
-+ * @rstmem_pool:	restricted memory pool for secure data path
-  * @mutex:		mutex protecting @rpmb_dev
-  * @rpmb_dev:		current RPMB device or NULL
-  * @rpmb_scan_bus_done	flag if device registation of RPMB dependent devices
-@@ -230,6 +253,7 @@ struct optee {
- 	struct optee_notif notif;
- 	struct optee_supp supp;
- 	struct tee_shm_pool *pool;
-+	struct optee_rstmem_pools *rstmem_pools;
- 	/* Protects rpmb_dev pointer */
- 	struct mutex rpmb_dev_mutex;
- 	struct rpmb_dev *rpmb_dev;
-@@ -286,6 +310,9 @@ void optee_supp_init(struct optee_supp *supp);
- void optee_supp_uninit(struct optee_supp *supp);
- void optee_supp_release(struct optee_supp *supp);
-=20
-+int optee_rstmem_pools_init(struct optee *optee);
-+void optee_rstmem_pools_uninit(struct optee *optee);
-+
- int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
- 		    struct tee_param *param);
- int optee_supp_send(struct tee_context *ctx, u32 ret, u32 num_params,
-@@ -378,6 +405,10 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee=
- *optee,
- int optee_do_bottom_half(struct tee_context *ctx);
- int optee_stop_async_notif(struct tee_context *ctx);
-=20
-+int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
-+		       u32 flags, u32 use_case, size_t size);
-+void optee_rstmem_free(struct tee_context *ctx, struct tee_shm *shm);
-+
- /*
-  * Small helpers
-  */
-diff --git a/drivers/tee/optee/rstmem.c b/drivers/tee/optee/rstmem.c
-new file mode 100644
-index 000000000000..cf300929171f
---- /dev/null
-+++ b/drivers/tee/optee/rstmem.c
-@@ -0,0 +1,380 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2024, Linaro Limited
-+ */
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/cma.h>
-+#include <linux/dma-map-ops.h>
-+#include <linux/errno.h>
-+#include <linux/genalloc.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/tee_core.h>
-+#include <linux/types.h>
-+#include "optee_private.h"
-+
-+struct optee_rstmem_cma_pool {
-+	struct tee_shm_pool pool;
-+	struct page *page;
-+	struct optee *optee;
-+	size_t page_count;
-+	u16 *end_points;
-+	u_int end_point_count;
-+	u_int align;
-+	refcount_t refcount;
-+	struct tee_shm rstmem;
-+	/* Protects when initializing and tearing down this struct */
-+	struct mutex mutex;
-+};
-+
-+static struct optee_rstmem_cma_pool *
-+to_rstmem_cma_pool(struct tee_shm_pool *pool)
-+{
-+	return container_of(pool, struct optee_rstmem_cma_pool, pool);
-+}
-+
-+static int init_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-+{
-+	struct cma *cma =3D dev_get_cma_area(&rp->optee->teedev->dev);
-+	int rc;
-+
-+	rp->page =3D cma_alloc(cma, rp->page_count, rp->align, true/*no_warn*/);
-+	if (!rp->page)
-+		return -ENOMEM;
-+
-+	/*
-+	 * TODO unmap the memory range since the physical memory will
-+	 * become inaccesible after the lend_rstmem() call.
-+	 */
-+
-+	rp->rstmem.paddr =3D page_to_phys(rp->page);
-+	rp->rstmem.size =3D rp->page_count * PAGE_SIZE;
-+	rc =3D rp->optee->ops->lend_rstmem(rp->optee, &rp->rstmem,
-+					 rp->end_points, rp->end_point_count);
-+	if (rc)
-+		goto err_release;
-+
-+	rp->pool.private_data =3D gen_pool_create(PAGE_SHIFT, -1);
-+	if (!rp->pool.private_data) {
-+		rc =3D -ENOMEM;
-+		goto err_reclaim;
-+	}
-+
-+	rc =3D gen_pool_add(rp->pool.private_data, rp->rstmem.paddr,
-+			  rp->rstmem.size, -1);
-+	if (rc)
-+		goto err_free_pool;
-+
-+	refcount_set(&rp->refcount, 1);
-+	return 0;
-+
-+err_free_pool:
-+	gen_pool_destroy(rp->pool.private_data);
-+err_reclaim:
-+	rp->optee->ops->reclaim_rstmem(rp->optee, &rp->rstmem);
-+err_release:
-+	cma_release(cma, rp->page, rp->page_count);
-+	rp->rstmem.paddr =3D 0;
-+	rp->rstmem.size =3D 0;
-+	rp->rstmem.sec_world_id =3D 0;
-+	return rc;
-+}
-+
-+static int get_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-+{
-+	int rc =3D 0;
-+
-+	if (!refcount_inc_not_zero(&rp->refcount)) {
-+		mutex_lock(&rp->mutex);
-+		if (rp->pool.private_data) {
-+			/*
-+			 * Another thread has already initialized the pool
-+			 * before us, or the pool was just about to be torn
-+			 * down. Either way we only need to increase the
-+			 * refcount and we're done.
-+			 */
-+			refcount_inc(&rp->refcount);
-+		} else {
-+			rc =3D init_cma_rstmem(rp);
-+		}
-+		mutex_unlock(&rp->mutex);
-+	}
-+
-+	return rc;
-+}
-+
-+static void release_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-+{
-+	gen_pool_destroy(rp->pool.private_data);
-+	rp->optee->ops->reclaim_rstmem(rp->optee, &rp->rstmem);
-+	cma_release(dev_get_cma_area(&rp->optee->teedev->dev), rp->page,
-+		    rp->page_count);
-+
-+	rp->pool.private_data =3D NULL;
-+	rp->page =3D NULL;
-+	rp->rstmem.paddr =3D 0;
-+	rp->rstmem.size =3D 0;
-+	rp->rstmem.sec_world_id =3D 0;
-+}
-+
-+static void put_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-+{
-+	if (refcount_dec_and_test(&rp->refcount)) {
-+		mutex_lock(&rp->mutex);
-+		if (rp->pool.private_data)
-+			release_cma_rstmem(rp);
-+		mutex_unlock(&rp->mutex);
-+	}
-+}
-+
-+static int rstmem_pool_op_cma_alloc(struct tee_shm_pool *pool,
-+				    struct tee_shm *shm, size_t size,
-+				    size_t align)
-+{
-+	struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-+	size_t sz =3D ALIGN(size, PAGE_SIZE);
-+	phys_addr_t pa;
-+	int rc;
-+
-+	rc =3D get_cma_rstmem(rp);
-+	if (rc)
-+		return rc;
-+
-+	pa =3D gen_pool_alloc(rp->pool.private_data, sz);
-+	if (!pa) {
-+		put_cma_rstmem(rp);
-+		return -ENOMEM;
-+	}
-+
-+	shm->size =3D sz;
-+	shm->paddr =3D pa;
-+	shm->offset =3D pa - page_to_phys(rp->page);
-+	shm->sec_world_id =3D rp->rstmem.sec_world_id;
-+
-+	return 0;
-+}
-+
-+static void rstmem_pool_op_cma_free(struct tee_shm_pool *pool,
-+				    struct tee_shm *shm)
-+{
-+	struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-+
-+	gen_pool_free(rp->pool.private_data, shm->paddr, shm->size);
-+	shm->size =3D 0;
-+	shm->paddr =3D 0;
-+	shm->offset =3D 0;
-+	shm->sec_world_id =3D 0;
-+	put_cma_rstmem(rp);
-+}
-+
-+static void pool_op_cma_destroy_pool(struct tee_shm_pool *pool)
-+{
-+	struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-+
-+	mutex_destroy(&rp->mutex);
-+	kfree(rp);
-+}
-+
-+static struct tee_shm_pool_ops rstmem_pool_ops_cma =3D {
-+	.alloc =3D rstmem_pool_op_cma_alloc,
-+	.free =3D rstmem_pool_op_cma_free,
-+	.destroy_pool =3D pool_op_cma_destroy_pool,
-+};
-+
-+static int get_rstmem_config(struct optee *optee, u32 use_case,
-+			     size_t *min_size, u_int *min_align,
-+			     u16 *end_points, u_int *ep_count)
-+{
-+	struct tee_param params[2] =3D {
-+		[0] =3D {
-+			.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT,
-+			.u.value.a =3D use_case,
-+		},
-+		[1] =3D {
-+			.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT,
-+		},
-+	};
-+	struct optee_shm_arg_entry *entry;
-+	struct tee_shm *shm_param =3D NULL;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	if (end_points && *ep_count) {
-+		params[1].u.memref.size =3D *ep_count * sizeof(*end_points);
-+		shm_param =3D tee_shm_alloc_priv_buf(optee->ctx,
-+						   params[1].u.memref.size);
-+		if (IS_ERR(shm_param))
-+			return PTR_ERR(shm_param);
-+		params[1].u.memref.shm =3D shm_param;
-+	}
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, ARRAY_SIZE(params), &entry,
-+				    &shm, &offs);
-+	if (IS_ERR(msg_arg)) {
-+		rc =3D PTR_ERR(msg_arg);
-+		goto out_free_shm;
-+	}
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_GET_RSTMEM_CONFIG;
-+
-+	rc =3D optee->ops->to_msg_param(optee, msg_arg->params,
-+				      ARRAY_SIZE(params), params,
-+				      false /*!update_out*/);
-+	if (rc)
-+		goto out_free_msg;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out_free_msg;
-+	if (msg_arg->ret && msg_arg->ret !=3D TEEC_ERROR_SHORT_BUFFER) {
-+		rc =3D -EINVAL;
-+		goto out_free_msg;
-+	}
-+
-+	rc =3D optee->ops->from_msg_param(optee, params, ARRAY_SIZE(params),
-+					msg_arg->params, true /*update_out*/);
-+	if (rc)
-+		goto out_free_msg;
-+
-+	if (!msg_arg->ret && end_points &&
-+	    *ep_count < params[1].u.memref.size / sizeof(u16)) {
-+		rc =3D -EINVAL;
-+		goto out_free_msg;
-+	}
-+
-+	*min_size =3D params[0].u.value.a;
-+	*min_align =3D params[0].u.value.b;
-+	*ep_count =3D params[1].u.memref.size / sizeof(u16);
-+
-+	if (msg_arg->ret =3D=3D TEEC_ERROR_SHORT_BUFFER) {
-+		rc =3D -ENOSPC;
-+		goto out_free_msg;
-+	}
-+
-+	if (end_points)
-+		memcpy(end_points, tee_shm_get_va(shm_param, 0),
-+		       params[1].u.memref.size);
-+
-+out_free_msg:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+out_free_shm:
-+	if (shm_param)
-+		tee_shm_free(shm_param);
-+	return rc;
-+}
-+
-+static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee, u32 use_c=
-ase)
-+{
-+	struct optee_rstmem_cma_pool *rp;
-+	size_t min_size;
-+	int rc;
-+
-+	rp =3D kzalloc(sizeof(*rp), GFP_KERNEL);
-+	if (!rp)
-+		return ERR_PTR(-ENOMEM);
-+	rp->rstmem.use_case =3D use_case;
-+
-+	rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align, NULL,
-+			       &rp->end_point_count);
-+	if (rc) {
-+		if (rc !=3D -ENOSPC)
-+			goto err;
-+		rp->end_points =3D kcalloc(rp->end_point_count,
-+					 sizeof(*rp->end_points), GFP_KERNEL);
-+		if (!rp->end_points) {
-+			rc =3D -ENOMEM;
-+			goto err;
-+		}
-+		rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align,
-+				       rp->end_points, &rp->end_point_count);
-+		if (rc)
-+			goto err_kfree_eps;
-+	}
-+
-+	rp->pool.ops =3D &rstmem_pool_ops_cma;
-+	rp->optee =3D optee;
-+	rp->page_count =3D min_size / PAGE_SIZE;
-+	mutex_init(&rp->mutex);
-+
-+	return &rp->pool;
-+
-+err_kfree_eps:
-+	kfree(rp->end_points);
-+err:
-+	kfree(rp);
-+	return ERR_PTR(rc);
-+}
-+
-+int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
-+		       u32 flags, u32 use_case, size_t size)
-+{
-+	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-+	struct tee_shm_pool *pool;
-+	int rc;
-+
-+	if (!optee->rstmem_pools)
-+		return -EINVAL;
-+	if (flags)
-+		return -EINVAL;
-+
-+	pool =3D xa_load(&optee->rstmem_pools->xa, use_case);
-+	if (!pool) {
-+		pool =3D alloc_rstmem_pool(optee, use_case);
-+		if (IS_ERR(pool))
-+			return PTR_ERR(pool);
-+		rc =3D xa_insert(&optee->rstmem_pools->xa, use_case, pool,
-+			       GFP_KERNEL);
-+		if (rc) {
-+			pool->ops->destroy_pool(pool);
-+			return rc;
-+		}
-+	}
-+
-+	return pool->ops->alloc(pool, shm, size, 0);
-+}
-+
-+void optee_rstmem_free(struct tee_context *ctx, struct tee_shm *shm)
-+{
-+	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-+	struct tee_shm_pool *pool;
-+
-+	pool =3D xa_load(&optee->rstmem_pools->xa, shm->use_case);
-+	if (pool)
-+		pool->ops->free(pool, shm);
-+	else
-+		pr_err("Can't find pool for use_case %u\n", shm->use_case);
-+}
-+
-+int optee_rstmem_pools_init(struct optee *optee)
-+{
-+	struct optee_rstmem_pools *pools;
-+
-+	pools =3D kmalloc(sizeof(*pools), GFP_KERNEL);
-+	if (!pools)
-+		return -ENOMEM;
-+
-+	mutex_init(&pools->mutex);
-+	xa_init(&pools->xa);
-+	optee->rstmem_pools =3D pools;
-+	return 0;
-+}
-+
-+void optee_rstmem_pools_uninit(struct optee *optee)
-+{
-+	if (optee->rstmem_pools) {
-+		struct tee_shm_pool *pool;
-+		u_long idx;
-+
-+		xa_for_each(&optee->rstmem_pools->xa, idx, pool) {
-+			xa_erase(&optee->rstmem_pools->xa, idx);
-+			pool->ops->destroy_pool(pool);
-+		}
-+
-+		xa_destroy(&optee->rstmem_pools->xa);
-+		mutex_destroy(&optee->rstmem_pools->mutex);
-+		kfree(optee->rstmem_pools);
-+		optee->rstmem_pools =3D NULL;
-+	}
-+}
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index d1f79947f58a..7fa7d9d14c94 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1001,6 +1001,67 @@ static int optee_smc_do_call_with_arg(struct tee_conte=
-xt *ctx,
- 	return rc;
- }
-=20
-+static int optee_smc_lend_rstmem(struct optee *optee, struct tee_shm *rstmem,
-+				 u16 *end_points, unsigned int ep_count)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 2, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_LEND_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-+	msg_arg->params[0].u.value.a =3D OPTEE_MSG_RSTMEM_SECURE_VIDEO_PLAY;
-+	msg_arg->params[1].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_INPUT;
-+	msg_arg->params[1].u.tmem.buf_ptr =3D rstmem->paddr;
-+	msg_arg->params[1].u.tmem.size =3D rstmem->size;
-+	msg_arg->params[1].u.tmem.shm_ref =3D (u_long)rstmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS) {
-+		rc =3D -EINVAL;
-+		goto out;
-+	}
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
-+static int optee_smc_reclaim_rstmem(struct optee *optee, struct tee_shm *rst=
-mem)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 1, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_RECLAIM_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT;
-+	msg_arg->params[0].u.rmem.shm_ref =3D (u_long)rstmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS)
-+		rc =3D -EINVAL;
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
- /*
-  * 5. Asynchronous notification
-  */
-@@ -1201,6 +1262,8 @@ static void optee_get_version(struct tee_device *teedev,
- 		v.gen_caps |=3D TEE_GEN_CAP_REG_MEM;
- 	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL)
- 		v.gen_caps |=3D TEE_GEN_CAP_MEMREF_NULL;
-+	if (optee->rstmem_pools)
-+		v.gen_caps |=3D TEE_GEN_CAP_RSTMEM;
- 	*vers =3D v;
- }
-=20
-@@ -1223,6 +1286,8 @@ static const struct tee_driver_ops optee_clnt_ops =3D {
- 	.cancel_req =3D optee_cancel_req,
- 	.shm_register =3D optee_shm_register,
- 	.shm_unregister =3D optee_shm_unregister,
-+	.rstmem_alloc =3D optee_rstmem_alloc,
-+	.rstmem_free =3D optee_rstmem_free,
- };
-=20
- static const struct tee_desc optee_clnt_desc =3D {
-@@ -1239,6 +1304,8 @@ static const struct tee_driver_ops optee_supp_ops =3D {
- 	.supp_send =3D optee_supp_send,
- 	.shm_register =3D optee_shm_register_supp,
- 	.shm_unregister =3D optee_shm_unregister_supp,
-+	.rstmem_alloc =3D optee_rstmem_alloc,
-+	.rstmem_free =3D optee_rstmem_free,
- };
-=20
- static const struct tee_desc optee_supp_desc =3D {
-@@ -1252,6 +1319,9 @@ static const struct optee_ops optee_ops =3D {
- 	.do_call_with_arg =3D optee_smc_do_call_with_arg,
- 	.to_msg_param =3D optee_to_msg_param,
- 	.from_msg_param =3D optee_from_msg_param,
-+	.lend_rstmem =3D optee_smc_lend_rstmem,
-+	.reclaim_rstmem =3D optee_smc_reclaim_rstmem,
-+	//.alloc_rstmem_pool =3D optee_smc_alloc_rstmem_pool,
- };
-=20
- static int enable_async_notif(optee_invoke_fn *invoke_fn)
-@@ -1619,6 +1689,62 @@ static inline int optee_load_fw(struct platform_device=
- *pdev,
- }
- #endif
-=20
-+static int optee_sdp_pool_init(struct optee *optee)
-+{
-+	bool dyn_sdp =3D optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_RSTMEM;
-+	bool sdp =3D optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP;
-+	struct tee_shm_pool *pool;
-+	int rc;
-+
-+	/*
-+	 * optee_sdp_pools_init() must be called if secure world has any
-+	 * SDP capability. If the static carvout is available initialize
-+	 * and add a pool for that. If there's an error from secure world
-+	 * we complain but don't call optee_sdp_pools_uninit() unless we
-+	 * know that there is no SDP capability left.
-+	 */
-+	if (!dyn_sdp && !sdp)
-+		return 0;
-+
-+	rc =3D optee_rstmem_pools_init(optee);
-+	if (rc)
-+		return rc;
-+
-+	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP) {
-+		union {
-+			struct arm_smccc_res smccc;
-+			struct optee_smc_get_sdp_config_result result;
-+		} res;
-+
-+		optee->smc.invoke_fn(OPTEE_SMC_GET_SDP_CONFIG, 0, 0, 0, 0, 0, 0,
-+				     0, &res.smccc);
-+		if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
-+			pr_err("Secure Data Path service not available\n");
-+			if (!dyn_sdp)
-+				goto err;
-+			return 0;
-+		}
-+
-+		pool =3D tee_rstmem_gen_pool_alloc(res.result.start,
-+						 res.result.size);
-+		if (IS_ERR(pool)) {
-+			rc =3D PTR_ERR(pool);
-+			goto err;
-+		}
-+		rc =3D xa_insert(&optee->rstmem_pools->xa,
-+			       TEE_IOC_UC_SECURE_VIDEO_PLAY, pool, GFP_KERNEL);
-+		if (rc) {
-+			pool->ops->destroy_pool(pool);
-+			goto err;
-+		}
-+	}
-+
-+	return 0;
-+err:
-+	optee_rstmem_pools_uninit(optee);
-+	return rc;
-+}
-+
- static int optee_probe(struct platform_device *pdev)
- {
- 	optee_invoke_fn *invoke_fn;
-@@ -1714,7 +1840,7 @@ static int optee_probe(struct platform_device *pdev)
- 	optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
- 	if (!optee) {
- 		rc =3D -ENOMEM;
--		goto err_free_pool;
-+		goto err_free_shm_pool;
- 	}
-=20
- 	optee->ops =3D &optee_ops;
-@@ -1726,10 +1852,14 @@ static int optee_probe(struct platform_device *pdev)
- 	    (sec_caps & OPTEE_SMC_SEC_CAP_RPMB_PROBE))
- 		optee->in_kernel_rpmb_routing =3D true;
-=20
-+	rc =3D optee_sdp_pool_init(optee);
-+	if (rc)
-+		goto err_free_optee;
-+
- 	teedev =3D tee_device_alloc(&optee_clnt_desc, NULL, pool, optee);
- 	if (IS_ERR(teedev)) {
- 		rc =3D PTR_ERR(teedev);
--		goto err_free_optee;
-+		goto err_rstmem_pools_uninit;
- 	}
- 	optee->teedev =3D teedev;
-=20
-@@ -1836,9 +1966,11 @@ static int optee_probe(struct platform_device *pdev)
- 	tee_device_unregister(optee->supp_teedev);
- err_unreg_teedev:
- 	tee_device_unregister(optee->teedev);
-+err_rstmem_pools_uninit:
-+	optee_rstmem_pools_uninit(optee);
- err_free_optee:
- 	kfree(optee);
--err_free_pool:
-+err_free_shm_pool:
- 	tee_shm_pool_free(pool);
- 	if (memremaped_shm)
- 		memunmap(memremaped_shm);
---=20
-2.43.0
 
 
---===============5546100486855343730==--
+On 11/28/2024 11:44 PM, Sumit Garg wrote:
+> On Thu, 28 Nov 2024 at 02:29, Amirreza Zarrabi
+> <quic_azarrabi@quicinc.com> wrote:
+>>
+>>
+>>
+>> On 11/27/2024 5:01 PM, Sumit Garg wrote:
+>>> On Tue, 26 Nov 2024 at 20:52, Jens Wiklander <jens.wiklander@linaro.org=
+> wrote:
+>>>>
+>>>> On Tue, Nov 26, 2024 at 1:27=E2=80=AFPM Sumit Garg <sumit.garg@linaro.=
+org> wrote:
+>>>>>
+>>>>> On Tue, 26 Nov 2024 at 14:03, Jens Wiklander <jens.wiklander@linaro.o=
+rg> wrote:
+>>>>>>
+>>>>>> On Mon, Nov 25, 2024 at 9:55=E2=80=AFPM Amirreza Zarrabi
+>>>>>> <quic_azarrabi@quicinc.com> wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> On 11/25/2024 6:51 PM, Sumit Garg wrote:
+>>>>>>>> On Mon, 25 Nov 2024 at 12:53, Jens Wiklander <jens.wiklander@linar=
+o.org> wrote:
+>>>>>>>>>
+>>>>>>>>> On Mon, Nov 25, 2024 at 7:14=E2=80=AFAM Sumit Garg <sumit.garg@li=
+naro.org> wrote:
+>>>>>>>>>>
+>>>>>>>>>> On Mon, 25 Nov 2024 at 03:00, Amirreza Zarrabi
+>>>>>>>>>> <quic_azarrabi@quicinc.com> wrote:
+>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> Hi Sumit,
+>>>>>>>>>>>
+>>>>>>>>>>> Thank you so much for the comemnts :).
+>>>>>>>>>>>
+>>>>>>>>>>> On 11/23/2024 9:32 PM, Sumit Garg wrote:
+>>>>>>>>>>>> Hi Amirreza,
+>>>>>>>>>>>>
+>>>>>>>>>>>> Thanks for proposing this.
+>>>>>>>>>>>>
+>>>>>>>>>>>> On Fri, 22 Nov 2024 at 06:38, Amirreza Zarrabi
+>>>>>>>>>>>> <quic_azarrabi@quicinc.com> wrote:
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> On 11/21/2024 11:08 PM, Jens Wiklander wrote:
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> Hi Jens,
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>> Hi Amirreza,
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>> On Thu, Nov 21, 2024 at 2:37=E2=80=AFAM Amirreza Zarrabi
+>>>>>>>>>>>>>> <quic_azarrabi@quicinc.com> wrote:
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> The default context has a lifespan similar to the tee_device.
+>>>>>>>>>>>>
+>>>>>>>>>>>> Since it's associated with tee_device context, let's call it obv=
+ious
+>>>>>>>>>>>> via renaming it as device context instead (s/def_ctx/dev_ctx/ in=
+ this
+>>>>>>>>>>>> patch).
+>>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> Make sense, I'll rename it.
+>>>>>>>>>>>
+>>>>>>>>>>>>>>> It is used as a context for shared memory if the context to w=
+hich the
+>>>>>>>>>>>>>>> shared memory belongs is released, making the tee_shm an orph=
+an.
+>>>>>>>>>>>>>>> This allows the driver implementing shm_unregister to safely =
+make
+>>>>>>>>>>>>>>> subsequent calls, such as to a supplicant if needed.
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> It also enables users to free the shared memory while the dri=
+ver is
+>>>>>>>>>>>>>>> blocked on unregister_tee_device safely.
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> Preferably, this should be used for all driver internal uses,=
+ using
+>>>>>>>>>>>>>>> teedev_get_def_context rather than calling teedev_open.
+>>>>>>>>>>>>
+>>>>>>>>>>>> Makes sense to me.
+>>>>>>>>>>>>
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+>>>>>>>>>>>>>>> ---
+>>>>>>>>>>>>>>>  drivers/tee/optee/core.c    |  2 +-
+>>>>>>>>>>>>>>>  drivers/tee/optee/ffa_abi.c |  2 +-
+>>>>>>>>>>>>>>>  drivers/tee/optee/smc_abi.c |  2 +-
+>>>>>>>>>>>>>>>  drivers/tee/tee_core.c      | 83 +++++++++++++++++++++++++++=
+++----------------
+>>>>>>>>>>>>>>>  drivers/tee/tee_private.h   |  3 --
+>>>>>>>>>>>>>>>  drivers/tee/tee_shm.c       | 18 ++--------
+>>>>>>>>>>>>>>>  include/linux/tee_core.h    | 15 ++++++++
+>>>>>>>>>>>>>>>  include/linux/tee_drv.h     |  7 ----
+>>>>>>>>>>>>>>>  8 files changed, 73 insertions(+), 59 deletions(-)
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/cor=
+e.c
+>>>>>>>>>>>>>>> index c75fddc83576..78d43d0c8014 100644
+>>>>>>>>>>>>>>> --- a/drivers/tee/optee/core.c
+>>>>>>>>>>>>>>> +++ b/drivers/tee/optee/core.c
+>>>>>>>>>>>>>>> @@ -173,7 +173,7 @@ void optee_remove_common(struct optee *op=
+tee)
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>         optee_notif_uninit(optee);
+>>>>>>>>>>>>>>>         optee_shm_arg_cache_uninit(optee);
+>>>>>>>>>>>>>>> -       teedev_close_context(optee->ctx);
+>>>>>>>>>>>>>>> +
+>>>>>>>>>>>>>>>         /*
+>>>>>>>>>>>>>>>          * The two devices have to be unregistered before we =
+can free the
+>>>>>>>>>>>>>>>          * other resources.
+>>>>>>>>>>>>>>> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/=
+ffa_abi.c
+>>>>>>>>>>>>>>> index f3af5666bb11..6ad94f0788ad 100644
+>>>>>>>>>>>>>>> --- a/drivers/tee/optee/ffa_abi.c
+>>>>>>>>>>>>>>> +++ b/drivers/tee/optee/ffa_abi.c
+>>>>>>>>>>>>>>> @@ -949,7 +949,7 @@ static int optee_ffa_probe(struct ffa_dev=
+ice *ffa_dev)
+>>>>>>>>>>>>>>>         optee_shm_arg_cache_init(optee, arg_cache_flags);
+>>>>>>>>>>>>>>>         mutex_init(&optee->rpmb_dev_mutex);
+>>>>>>>>>>>>>>>         ffa_dev_set_drvdata(ffa_dev, optee);
+>>>>>>>>>>>>>>> -       ctx =3D teedev_open(optee->teedev);
+>>>>>>>>>>>>>>> +       ctx =3D teedev_get_def_context(optee->teedev);
+>>>>>>>>>>>>>>>         if (IS_ERR(ctx)) {
+>>>>>>>>>>>>>>>                 rc =3D PTR_ERR(ctx);
+>>>>>>>>>>>>>>>                 goto err_rhashtable_free;
+>>>>>>>>>>>>>>> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/=
+smc_abi.c
+>>>>>>>>>>>>>>> index e9456e3e74cc..c77a3e631d04 100644
+>>>>>>>>>>>>>>> --- a/drivers/tee/optee/smc_abi.c
+>>>>>>>>>>>>>>> +++ b/drivers/tee/optee/smc_abi.c
+>>>>>>>>>>>>>>> @@ -1722,7 +1722,7 @@ static int optee_probe(struct platform_=
+device *pdev)
+>>>>>>>>>>>>>>>         mutex_init(&optee->rpmb_dev_mutex);
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>         platform_set_drvdata(pdev, optee);
+>>>>>>>>>>>>>>> -       ctx =3D teedev_open(optee->teedev);
+>>>>>>>>>>>>>>> +       ctx =3D teedev_get_def_context(optee->teedev);
+>>>>>>>>>>>>>>>         if (IS_ERR(ctx)) {
+>>>>>>>>>>>>>>>                 rc =3D PTR_ERR(ctx);
+>>>>>>>>>>>>>>>                 goto err_supp_uninit;
+>>>>>>>>>>>>>>> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+>>>>>>>>>>>>>>> index 93f3b330aec8..805e1336089d 100644
+>>>>>>>>>>>>>>> --- a/drivers/tee/tee_core.c
+>>>>>>>>>>>>>>> +++ b/drivers/tee/tee_core.c
+>>>>>>>>>>>>>>> @@ -57,7 +57,6 @@ struct tee_context *teedev_open(struct tee_=
+device *teedev)
+>>>>>>>>>>>>>>>                 goto err;
+>>>>>>>>>>>>>>>         }
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -       kref_init(&ctx->refcount);
+>>>>>>>>>>>>>>>         ctx->teedev =3D teedev;
+>>>>>>>>>>>>>>>         INIT_LIST_HEAD(&ctx->list_shm);
+>>>>>>>>>>>>>>>         rc =3D teedev->desc->ops->open(ctx);
+>>>>>>>>>>>>>>> @@ -73,36 +72,43 @@ struct tee_context *teedev_open(struct te=
+e_device *teedev)
+>>>>>>>>>>>>>>>  }
+>>>>>>>>>>>>>>>  EXPORT_SYMBOL_GPL(teedev_open);
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -void teedev_ctx_get(struct tee_context *ctx)
+>>>>>>>>>>>>>>> +struct tee_context *teedev_get_def_context(struct tee_device=
+ *teedev)
+>>>>>>>>>>>>>>>  {
+>>>>>>>>>>>>>>> -       if (ctx->releasing)
+>>>>>>>>>>>>>>> -               return;
+>>>>>>>>>>>>>>> +       int rc;
+>>>>>>>>>>>>>>> +       struct tee_context *ctx =3D &teedev->def_ctx;
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -       kref_get(&ctx->refcount);
+>>>>>>>>>>>>>>> -}
+>>>>>>>>>>>>>>> +       ctx->teedev =3D teedev;
+>>>>>>>>>>>>>>> +       INIT_LIST_HEAD(&ctx->list_shm);
+>>>>>>>>>>>>>>> +       rc =3D teedev->desc->ops->open(ctx);
+>>>>>>>>>>>>>>> +       if (rc)
+>>>>>>>>>>>>>>> +               return ERR_PTR(rc);
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>> I think ctx->teedev and ctx->list_shm must always be initializ=
+ed or
+>>>>>>>>>>>>>> &teedev->def_ctx can't be used in teedev_close_context().
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> True, but &teedev->def_ctx is never used in teedev_close_contex=
+t().
+>>>>>>>>>>>>> The closing of the &teedev->def_ctx simply ignored. So once ope=
+ned,
+>>>>>>>>>>>>> &teedev->def_ctx will always remain open until the tee_device i=
+s alive.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>> We could initialize teedev->def_ctx on the first call to teede=
+v_open()
+>>>>>>>>>>>>>> on that tee_device. We need a way to tell the
+>>>>>>>>>>>>>> teedev->desc->ops->open() to the backed driver that it's initi=
+alizing
+>>>>>>>>>>>>>> the default context though, or optee_open() can't handle the
+>>>>>>>>>>>>>> tee-supplicant case properly.
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> That's a good point. This way, it is guaranteed that there is o=
+ne def_ctx
+>>>>>>>>>>>>> per teedev. There should be a way to tell the open() callback t=
+hat it is
+>>>>>>>>>>>>> a def_ctx, so it is not registered as a supplicant context.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>> Should we allow this function to be called more than once for =
+each teedev?
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> Yes, moving to teedev_open() will fix the issue.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>> Do we need serialization in this function if it's called after=
+ the
+>>>>>>>>>>>>>> driver is probed?
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> True. I'll make sure there is no race.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -static void teedev_ctx_release(struct kref *ref)
+>>>>>>>>>>>>>>> -{
+>>>>>>>>>>>>>>> -       struct tee_context *ctx =3D container_of(ref, struct =
+tee_context,
+>>>>>>>>>>>>>>> -                                              refcount);
+>>>>>>>>>>>>>>> -       ctx->releasing =3D true;
+>>>>>>>>>>>>>>> -       ctx->teedev->desc->ops->release(ctx);
+>>>>>>>>>>>>>>> -       kfree(ctx);
+>>>>>>>>>>>>>>> +       return ctx;
+>>>>>>>>>>>>>>>  }
+>>>>>>>>>>>>>>> +EXPORT_SYMBOL_GPL(teedev_get_def_context);
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -void teedev_ctx_put(struct tee_context *ctx)
+>>>>>>>>>>>>>>> +void teedev_close_context(struct tee_context *ctx)
+>>>>>>>>>>>>>>>  {
+>>>>>>>>>>>>>>> -       if (ctx->releasing)
+>>>>>>>>>>>>>>> +       struct tee_device *teedev =3D ctx->teedev;
+>>>>>>>>>>>>>>> +       struct tee_shm *shm;
+>>>>>>>>>>>>>>> +
+>>>>>>>>>>>>>>> +       if (ctx =3D=3D &teedev->def_ctx)
+>>>>>>>>>>>>>>>                 return;
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -       kref_put(&ctx->refcount, teedev_ctx_release);
+>>>>>>>>>>>>>>> -}
+>>>>>>>>>>>>>>> +       teedev->desc->ops->release(ctx);
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -void teedev_close_context(struct tee_context *ctx)
+>>>>>>>>>>>>>>> -{
+>>>>>>>>>>>>>>> -       struct tee_device *teedev =3D ctx->teedev;
+>>>>>>>>>>>>>>> +       mutex_lock(&teedev->mutex);
+>>>>>>>>>>>>>>> +       list_for_each_entry(shm, &ctx->list_shm, link) {
+>>>>>>>>>>>>>>> +               /* Context released. However, shm still holdi=
+ng a teedev reference.
+>>>>>>>>>>>>>>> +                * Replace shm->ctx with the default context =
+so that tee_shm_get_from_id()
+>>>>>>>>>>>>>>> +                * fails (i.e. it is not accessible from user=
+space) but shm still
+>>>>>>>>>>>>>>> +                * holds a valid context for further clean up=
+, e.g. shm_unregister().
+>>>>>>>>>>>>>>> +                */
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>> /*
+>>>>>>>>>>>>>>  * Please format
+>>>>>>>>>>>>>>  * multiline comments
+>>>>>>>>>>>>>>  * like this. Please
+>>>>>>>>>>>>>>  * keep the lines at
+>>>>>>>>>>>>>>  * max 80 columns
+>>>>>>>>>>>>>>  * here and at other
+>>>>>>>>>>>>>>  * places in the patch-
+>>>>>>>>>>>>>>  * set.
+>>>>>>>>>>>>>>  */
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> Ack.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> +               shm->ctx =3D &teedev->def_ctx;
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>> shm->ctx will always point to a valid context, even if it is t=
+he
+>>>>>>>>>>>>>> default context. It seems that we can always get hold of the c=
+orrect
+>>>>>>>>>>>>>> teedev via shm->ctx->teedev. Do we need "tee: revert removal of
+>>>>>>>>>>>>>> redundant teedev in struct tee_shm"?
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> It was there in case we wanted to use NULL, but with def_ctx, i=
+t is not
+>>>>>>>>>>>>> necessary. I am withdrawing that commit. :).
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>> Shouldn't the shm be removed from the ctx->list_shm and be mov=
+ed to
+>>>>>>>>>>>>>> teedev->def_ctx.list_shm?
+>>>>>>>>>>>>
+>>>>>>>>>>>> +1
+>>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> Ack.
+>>>>>>>>>>>
+>>>>>>>>>>>>>>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> Not really. If we put shm in the teedev->def_ctx.list_shm, by t=
+he time
+>>>>>>>>>>>>> we are closing the def_ctx, the list is guaranteed to be empty.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> However, I understand it is cleaner and more consistent to do t=
+hat rather
+>>>>>>>>>>>>> than making changes to tee_shm_put().
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> I'll do it.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> +       }
+>>>>>>>>>>>>>>> +       mutex_unlock(&teedev->mutex);
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>> -       teedev_ctx_put(ctx);
+>>>>>>>>>>>>>>> +       kfree(ctx);
+>>>>>>>>>>>>>>>         tee_device_put(teedev);
+>>>>>>>>>>>>>>>  }
+>>>>>>>>>>>>>>>  EXPORT_SYMBOL_GPL(teedev_close_context);
+>>>>>>>>>>>>>>> @@ -946,6 +952,8 @@ struct tee_device *tee_device_alloc(const=
+ struct tee_desc *teedesc,
+>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>         teedev->desc =3D teedesc;
+>>>>>>>>>>>>>>>         teedev->pool =3D pool;
+>>>>>>>>>>>>>>> +       /* Only open default context when teedev_get_def_cont=
+ext() called. */
+>>>>>>>>>>>>>>> +       teedev->def_ctx.teedev =3D NULL;
+>>>>>>>>>>>>
+>>>>>>>>>>>> Why don't you open the device context here only? This will assoc=
+iate
+>>>>>>>>>>>> it automatically with teedev lifespan and then
+>>>>>>>>>>>> teedev_get_def_context() will just return a reference to that.
+>>>>>>>>>>>>
+>>>>>>>>>>>> -Sumit
+>>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> So my assumption is that the tee_devic_alloc() is called as part =
+of
+>>>>>>>>>>> the driver initialization; there is no guarantee that at this tim=
+e the
+>>>>>>>>>>> driver is actually ready to accept any open() callback.
+>>>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>> The drivers should be able to handle open() callback since we alre=
+ady
+>>>>>>>>>> check for !teedesc->ops->open in the beginning of tee_devic_alloc(=
+).
+>>>>>>>>>> Also, we need to open a device context for !TEE_DESC_PRIVILEGED su=
+ch
+>>>>>>>>>> that we don't open a supplicant device context there.
+>>>>>>>>>
+>>>>>>>>> It would be nice to have the device context fully initialized when =
+the
+>>>>>>>>> probe function returns. How about adding a "bool is_dev_ctx" to str=
+uct
+>>>>>>>>> tee_context so the open() callback can tell that this is a special
+>>>>>>>>> tee_contex?
+>>>>>>>>
+>>>>>>>> Sure, that will be useful to distinguish the device context from
+>>>>>>>> normal client context.
+>>>>>>>>
+>>>>>>>> -Sumit
+>>>>>>>>
+>>>>>>>
+>>>>>>> So, as far as the open() callback, I do not believe checking if it is=
+ not null
+>>>>>>> is reasonable for calling it here. Most drivers allocate resources an=
+d then
+>>>>>>> initialize them. So, assume these steps for a TEE driver:
+>>>>>>>  (1) allocate internal data structures,
+>>>>>>>  (2) allocate the device,
+>>>>>>>  (3) initialize the internal data structurse and then
+>>>>>>>  (4) register the device.
+>>>>>>>
+>>>>>>> Having these steps for a backend driver means that if you call open()=
+ at
+>>>>>>> step (2), the internal data structures are not ready.
+>>>>>
+>>>>> As part of tee_device_alloc(), every driver has to pass "const struct
+>>>>> tee_desc *teedesc" fully initialized. Which internal data structures
+>>>>> are you referring too? Is there any upstream example?
+>>>>
+>>>> It's reasonable to wait with the open() callback until step 4 above,
+>>>> which should correspond with the tee_device_register() call. Data
+>>>> written only once doesn't need serialized access if the fields are
+>>>> only accessed after they have been fully initialized.
+>>>
+>>> Fair enough, I can live with the device context opened after registering =
+it.
+>>>
+>>>>
+>>>>>
+>>>>>>>
+>>>>>>> I was originally thinking of going with Jens' suggestion to open dev_=
+ctx in
+>>>>>>> the teedev_open(), and use a flag to distinguish the type of context =
+for
+>>>>>>> the open() callback
+>>>>>>>
+>>>>>>> What about this:
+>>>>>>> Open the dev_ctx in the tee_device_register(), at the last step before
+>>>>>>> setting the TEE_DEVICE_FLAG_REGISTERED flag. Then the open() callback=
+ can
+>>>>>>> check for this flag to determine if it is a normal context or dev_ctx.
+>>>>>>> If the open() is called while the device has not been registered, it =
+should
+>>>>>>> handle it differently
+>>>>>>
+>>>>>> That makes sense, the driver should be prepared to handle open() calls
+>>>>>> after tee_device_register() anyway.
+>>>>>> However, there is no serialization of the flags field in struct
+>>>>>> tee_device. Hmm, would it be too hacky for the open() callback to
+>>>>>> check if &ctx->teedev.dev_ctx =3D=3D ctx? We could add a helper functi=
+on
+>>>>>> to wrap that check.
+>>>>>>
+>>>>>
+>>>>> Your suggested change requires every driver to update open() callback
+>>>>> and later other callbacks may have to support it too. IMHO, only
+>>>>> teedev_get_dev_ctx() should be able to return a reference to device
+>>>>> context for usage within the TEE and the implementation driver.
+>>>>
+>>>> Yes, but it's only the OP-TEE driver that needs anything special. It
+>>>> looks like the others can be left unchanged.
+>>>
+>>> I suppose it's most likely the upcoming QTEE driver requiring it.
+>>>
+>>
+>> I don't believe this is correct. This requirement is implicitly imposed
+>> by the TEE subsystem API. If calling open() is acceptable in
+>> tee_device_alloc(), then I could argue that tee_device_register() and
+>> tee_device_alloc() should be merged into a single function. If a driver
+>> is ready to handle requests, why delay its exposure by postponing the
+>> registration?
+>=20
+> You can't mix in device alloc/init with device registration. As soon
+> as you register a device, it's available for user-space to issue
+> IOCTLs. So if there is any race between device init and it's usage
+> then it's going to cause hard to debug issues.
+>=20
+
+That's exactly my point :). Whoever alloc the device, knows that the
+device is not being available untill the regsiteration is done. So they
+may make decisions based on that, e.g reorder some init steps.
+
+> There can be an argument that dev_ctx being a member of "struct
+> tee_device" so it should get initialized alongside other bits in
+> tee_device_alloc() (we can rename
+> s/tee_device_alloc()/tee_device_init()/ if that makes it obvious). But
+> I can live with the device context getting initialized as the first
+> thing in tee_device_register() avoiding the race window mentioned
+> above.
+>=20
+>>
+>> By calling open() in tee_device_alloc(), you indirectly impose an unspoken
+>> requirement on developers regarding how they should write their drivers,
+>> such as the steps they should take to probe the device.
+>=20
+> Still not sure why it isn't an explicit requirement when you are
+> already passing an initialized ops structure to tee_device_alloc().
+>=20
+> -Sumit
+
+Whoeever, passed the ops to the alloc interface may assume that it is
+not being called untill the register being finished as you mentioned
+above. I assume it is fair assumption.
+
+Regards,
+Amir
+
+>=20
+>>
+>> Regards,
+>> Amir
+>>
+>>>>
+>>>>>
+>>>>> I am still not able to understand why the following won't work with a
+>>>>> clear lifetime for the device context?
+>>>>>
+>>>>> tee_device_alloc()
+>>>>>   -> if (!(teedesc->flags & TEE_DESC_PRIVILEGED))
+>>>>> desc->ops->open(&teedev->dev_ctx);
+>>>>
+>>>> We must also have a fully initialized dev_ctx for the supplicant
+>>>> device.
+>>>
+>>> Currently I only see following for OP-TEE driver:
+>>>
+>>> ctx =3D teedev_open(optee->teedev);
+>>>
+>>> And I can't see anything like below:
+>>>
+>>> ctx =3D teedev_open(optee->supp_teedev);
+>>>
+>>> Where do you think that the dev_ctx is required for a supplicant
+>>> device? AFAICS, currently opening a context with the supplicant device
+>>> means that the supplicant daemon is available to handle RPCs which
+>>> won't be possible during OP-TEE driver probe. Am I missing something?
+>>>
+>>>> I'd rather delay the open() callback until
+>>>> tee_device_register() since the dev_ctx is guaranteed not to be needed
+>>>> before that.
+>>>
+>>> Okay, the updated call chain can look like:
+>>>
+>>> tee_device_register()
+>>>   -> if (!(teedev->desc->flags & TEE_DESC_PRIVILEGED))
+>>>          desc->ops->open(&teedev->dev_ctx);
+>>>>
+>>>>>
+>>>>> tee_device_put()
+>>>>>   -> if (teedev->dev_ctx) desc->ops->release(&teedev->dev_ctx);
+>>>>
+>>>> teedev->dev_ctx is supposed to be embedded in struct tee_device, so
+>>>> the if isn't needed.
+>>>
+>>> I added "if" to cover the case when dev_ctx is not initialized for the
+>>> supplicant device.
+>>>
+>>> -Sumit
+>>>
+>>>>
+>>>> Cheers,
+>>>> Jens
+>>>>
+>>>>>
+>>>>> -Sumit
+>>>>>
+>>>>>> Cheers,
+>>>>>> Jens
+>>>>>>
+>>>>>>>
+>>>>>>> - Amir
+>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Cheers,
+>>>>>>>>> Jens
+>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>> -Sumit
+
+--===============8033617187672544582==--
 
