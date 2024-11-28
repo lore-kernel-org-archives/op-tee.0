@@ -1,464 +1,487 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH RFC 3/3] tee: introduce orphan tee_shm and default context
-Date: Thu, 28 Nov 2024 17:46:44 +0530
+Date: Thu, 28 Nov 2024 18:14:22 +0530
 Message-ID: 
- <CAFA6WYOismrfoMLhkZo1GuSdZQDFz6dAF84f-cQxTidwgVoMAA@mail.gmail.com>
-In-Reply-To: <
- <CAHUa44Gh3Y9a=ci7FPibiT=hFGbn+B7iaAY1n_Q6MDYoO6PJdA@mail.gmail.com>>
+ <CAFA6WYMrOt=u7VNrhPRsLkQq95rgkMXd-inuSg2hLHQDjtP8=Q@mail.gmail.com>
+In-Reply-To: <89599f39-9e95-49df-ac70-0827559653f6@quicinc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1653650557779196587=="
+Content-Type: multipart/mixed; boundary="===============7017378396081202817=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1653650557779196587==
+--===============7017378396081202817==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 27 Nov 2024 at 12:52, Jens Wiklander <jens.wiklander@linaro.org> wr=
-ote:
+On Thu, 28 Nov 2024 at 02:29, Amirreza Zarrabi
+<quic_azarrabi@quicinc.com> wrote:
 >
-> On Wed, Nov 27, 2024 at 7:02=E2=80=AFAM Sumit Garg <sumit.garg@linaro.org=
-> wrote:
-> >
+>
+>
+> On 11/27/2024 5:01 PM, Sumit Garg wrote:
 > > On Tue, 26 Nov 2024 at 20:52, Jens Wiklander <jens.wiklander@linaro.org=
 > wrote:
-> > >
-> > > On Tue, Nov 26, 2024 at 1:27=E2=80=AFPM Sumit Garg <sumit.garg@linaro=
-.org> wrote:
-> > > >
-> > > > On Tue, 26 Nov 2024 at 14:03, Jens Wiklander <jens.wiklander@linaro=
-.org> wrote:
-> > > > >
-> > > > > On Mon, Nov 25, 2024 at 9:55=E2=80=AFPM Amirreza Zarrabi
-> > > > > <quic_azarrabi@quicinc.com> wrote:
-> > > > > >
-> > > > > >
-> > > > > >
-> > > > > > On 11/25/2024 6:51 PM, Sumit Garg wrote:
-> > > > > > > On Mon, 25 Nov 2024 at 12:53, Jens Wiklander <jens.wiklander@=
-linaro.org> wrote:
-> > > > > > >>
-> > > > > > >> On Mon, Nov 25, 2024 at 7:14=E2=80=AFAM Sumit Garg <sumit.garg=
-@linaro.org> wrote:
-> > > > > > >>>
-> > > > > > >>> On Mon, 25 Nov 2024 at 03:00, Amirreza Zarrabi
-> > > > > > >>> <quic_azarrabi@quicinc.com> wrote:
-> > > > > > >>>>
-> > > > > > >>>>
-> > > > > > >>>> Hi Sumit,
-> > > > > > >>>>
-> > > > > > >>>> Thank you so much for the comemnts :).
-> > > > > > >>>>
-> > > > > > >>>> On 11/23/2024 9:32 PM, Sumit Garg wrote:
-> > > > > > >>>>> Hi Amirreza,
-> > > > > > >>>>>
-> > > > > > >>>>> Thanks for proposing this.
-> > > > > > >>>>>
-> > > > > > >>>>> On Fri, 22 Nov 2024 at 06:38, Amirreza Zarrabi
-> > > > > > >>>>> <quic_azarrabi@quicinc.com> wrote:
-> > > > > > >>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>> On 11/21/2024 11:08 PM, Jens Wiklander wrote:
-> > > > > > >>>>>>
-> > > > > > >>>>>> Hi Jens,
-> > > > > > >>>>>>
-> > > > > > >>>>>>> Hi Amirreza,
-> > > > > > >>>>>>>
-> > > > > > >>>>>>> On Thu, Nov 21, 2024 at 2:37=E2=80=AFAM Amirreza Zarrabi
-> > > > > > >>>>>>> <quic_azarrabi@quicinc.com> wrote:
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> The default context has a lifespan similar to the tee_de=
-vice.
-> > > > > > >>>>>
-> > > > > > >>>>> Since it's associated with tee_device context, let's call i=
-t obvious
-> > > > > > >>>>> via renaming it as device context instead (s/def_ctx/dev_ct=
-x/ in this
-> > > > > > >>>>> patch).
-> > > > > > >>>>>
-> > > > > > >>>>
-> > > > > > >>>> Make sense, I'll rename it.
-> > > > > > >>>>
-> > > > > > >>>>>>>> It is used as a context for shared memory if the context=
- to which the
-> > > > > > >>>>>>>> shared memory belongs is released, making the tee_shm an=
- orphan.
-> > > > > > >>>>>>>> This allows the driver implementing shm_unregister to sa=
-fely make
-> > > > > > >>>>>>>> subsequent calls, such as to a supplicant if needed.
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> It also enables users to free the shared memory while th=
-e driver is
-> > > > > > >>>>>>>> blocked on unregister_tee_device safely.
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> Preferably, this should be used for all driver internal =
-uses, using
-> > > > > > >>>>>>>> teedev_get_def_context rather than calling teedev_open.
-> > > > > > >>>>>
-> > > > > > >>>>> Makes sense to me.
-> > > > > > >>>>>
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc=
-.com>
-> > > > > > >>>>>>>> ---
-> > > > > > >>>>>>>>  drivers/tee/optee/core.c    |  2 +-
-> > > > > > >>>>>>>>  drivers/tee/optee/ffa_abi.c |  2 +-
-> > > > > > >>>>>>>>  drivers/tee/optee/smc_abi.c |  2 +-
-> > > > > > >>>>>>>>  drivers/tee/tee_core.c      | 83 ++++++++++++++++++++++=
-+++++++----------------
-> > > > > > >>>>>>>>  drivers/tee/tee_private.h   |  3 --
-> > > > > > >>>>>>>>  drivers/tee/tee_shm.c       | 18 ++--------
-> > > > > > >>>>>>>>  include/linux/tee_core.h    | 15 ++++++++
-> > > > > > >>>>>>>>  include/linux/tee_drv.h     |  7 ----
-> > > > > > >>>>>>>>  8 files changed, 73 insertions(+), 59 deletions(-)
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> diff --git a/drivers/tee/optee/core.c b/drivers/tee/opte=
-e/core.c
-> > > > > > >>>>>>>> index c75fddc83576..78d43d0c8014 100644
-> > > > > > >>>>>>>> --- a/drivers/tee/optee/core.c
-> > > > > > >>>>>>>> +++ b/drivers/tee/optee/core.c
-> > > > > > >>>>>>>> @@ -173,7 +173,7 @@ void optee_remove_common(struct opte=
-e *optee)
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>>         optee_notif_uninit(optee);
-> > > > > > >>>>>>>>         optee_shm_arg_cache_uninit(optee);
-> > > > > > >>>>>>>> -       teedev_close_context(optee->ctx);
-> > > > > > >>>>>>>> +
-> > > > > > >>>>>>>>         /*
-> > > > > > >>>>>>>>          * The two devices have to be unregistered befor=
-e we can free the
-> > > > > > >>>>>>>>          * other resources.
-> > > > > > >>>>>>>> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/o=
-ptee/ffa_abi.c
-> > > > > > >>>>>>>> index f3af5666bb11..6ad94f0788ad 100644
-> > > > > > >>>>>>>> --- a/drivers/tee/optee/ffa_abi.c
-> > > > > > >>>>>>>> +++ b/drivers/tee/optee/ffa_abi.c
-> > > > > > >>>>>>>> @@ -949,7 +949,7 @@ static int optee_ffa_probe(struct ff=
-a_device *ffa_dev)
-> > > > > > >>>>>>>>         optee_shm_arg_cache_init(optee, arg_cache_flags);
-> > > > > > >>>>>>>>         mutex_init(&optee->rpmb_dev_mutex);
-> > > > > > >>>>>>>>         ffa_dev_set_drvdata(ffa_dev, optee);
-> > > > > > >>>>>>>> -       ctx =3D teedev_open(optee->teedev);
-> > > > > > >>>>>>>> +       ctx =3D teedev_get_def_context(optee->teedev);
-> > > > > > >>>>>>>>         if (IS_ERR(ctx)) {
-> > > > > > >>>>>>>>                 rc =3D PTR_ERR(ctx);
-> > > > > > >>>>>>>>                 goto err_rhashtable_free;
-> > > > > > >>>>>>>> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/o=
-ptee/smc_abi.c
-> > > > > > >>>>>>>> index e9456e3e74cc..c77a3e631d04 100644
-> > > > > > >>>>>>>> --- a/drivers/tee/optee/smc_abi.c
-> > > > > > >>>>>>>> +++ b/drivers/tee/optee/smc_abi.c
-> > > > > > >>>>>>>> @@ -1722,7 +1722,7 @@ static int optee_probe(struct plat=
-form_device *pdev)
-> > > > > > >>>>>>>>         mutex_init(&optee->rpmb_dev_mutex);
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>>         platform_set_drvdata(pdev, optee);
-> > > > > > >>>>>>>> -       ctx =3D teedev_open(optee->teedev);
-> > > > > > >>>>>>>> +       ctx =3D teedev_get_def_context(optee->teedev);
-> > > > > > >>>>>>>>         if (IS_ERR(ctx)) {
-> > > > > > >>>>>>>>                 rc =3D PTR_ERR(ctx);
-> > > > > > >>>>>>>>                 goto err_supp_uninit;
-> > > > > > >>>>>>>> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_co=
-re.c
-> > > > > > >>>>>>>> index 93f3b330aec8..805e1336089d 100644
-> > > > > > >>>>>>>> --- a/drivers/tee/tee_core.c
-> > > > > > >>>>>>>> +++ b/drivers/tee/tee_core.c
-> > > > > > >>>>>>>> @@ -57,7 +57,6 @@ struct tee_context *teedev_open(struct=
- tee_device *teedev)
-> > > > > > >>>>>>>>                 goto err;
-> > > > > > >>>>>>>>         }
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -       kref_init(&ctx->refcount);
-> > > > > > >>>>>>>>         ctx->teedev =3D teedev;
-> > > > > > >>>>>>>>         INIT_LIST_HEAD(&ctx->list_shm);
-> > > > > > >>>>>>>>         rc =3D teedev->desc->ops->open(ctx);
-> > > > > > >>>>>>>> @@ -73,36 +72,43 @@ struct tee_context *teedev_open(stru=
-ct tee_device *teedev)
-> > > > > > >>>>>>>>  }
-> > > > > > >>>>>>>>  EXPORT_SYMBOL_GPL(teedev_open);
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -void teedev_ctx_get(struct tee_context *ctx)
-> > > > > > >>>>>>>> +struct tee_context *teedev_get_def_context(struct tee_d=
-evice *teedev)
-> > > > > > >>>>>>>>  {
-> > > > > > >>>>>>>> -       if (ctx->releasing)
-> > > > > > >>>>>>>> -               return;
-> > > > > > >>>>>>>> +       int rc;
-> > > > > > >>>>>>>> +       struct tee_context *ctx =3D &teedev->def_ctx;
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -       kref_get(&ctx->refcount);
-> > > > > > >>>>>>>> -}
-> > > > > > >>>>>>>> +       ctx->teedev =3D teedev;
-> > > > > > >>>>>>>> +       INIT_LIST_HEAD(&ctx->list_shm);
-> > > > > > >>>>>>>> +       rc =3D teedev->desc->ops->open(ctx);
-> > > > > > >>>>>>>> +       if (rc)
-> > > > > > >>>>>>>> +               return ERR_PTR(rc);
-> > > > > > >>>>>>>
-> > > > > > >>>>>>> I think ctx->teedev and ctx->list_shm must always be init=
-ialized or
-> > > > > > >>>>>>> &teedev->def_ctx can't be used in teedev_close_context().
-> > > > > > >>>>>>
-> > > > > > >>>>>> True, but &teedev->def_ctx is never used in teedev_close_c=
-ontext().
-> > > > > > >>>>>> The closing of the &teedev->def_ctx simply ignored. So onc=
-e opened,
-> > > > > > >>>>>> &teedev->def_ctx will always remain open until the tee_dev=
-ice is alive.
-> > > > > > >>>>>>
-> > > > > > >>>>>>> We could initialize teedev->def_ctx on the first call to =
-teedev_open()
-> > > > > > >>>>>>> on that tee_device. We need a way to tell the
-> > > > > > >>>>>>> teedev->desc->ops->open() to the backed driver that it's =
-initializing
-> > > > > > >>>>>>> the default context though, or optee_open() can't handle =
+> >>
+> >> On Tue, Nov 26, 2024 at 1:27=E2=80=AFPM Sumit Garg <sumit.garg@linaro.=
+org> wrote:
+> >>>
+> >>> On Tue, 26 Nov 2024 at 14:03, Jens Wiklander <jens.wiklander@linaro.o=
+rg> wrote:
+> >>>>
+> >>>> On Mon, Nov 25, 2024 at 9:55=E2=80=AFPM Amirreza Zarrabi
+> >>>> <quic_azarrabi@quicinc.com> wrote:
+> >>>>>
+> >>>>>
+> >>>>>
+> >>>>> On 11/25/2024 6:51 PM, Sumit Garg wrote:
+> >>>>>> On Mon, 25 Nov 2024 at 12:53, Jens Wiklander <jens.wiklander@linar=
+o.org> wrote:
+> >>>>>>>
+> >>>>>>> On Mon, Nov 25, 2024 at 7:14=E2=80=AFAM Sumit Garg <sumit.garg@li=
+naro.org> wrote:
+> >>>>>>>>
+> >>>>>>>> On Mon, 25 Nov 2024 at 03:00, Amirreza Zarrabi
+> >>>>>>>> <quic_azarrabi@quicinc.com> wrote:
+> >>>>>>>>>
+> >>>>>>>>>
+> >>>>>>>>> Hi Sumit,
+> >>>>>>>>>
+> >>>>>>>>> Thank you so much for the comemnts :).
+> >>>>>>>>>
+> >>>>>>>>> On 11/23/2024 9:32 PM, Sumit Garg wrote:
+> >>>>>>>>>> Hi Amirreza,
+> >>>>>>>>>>
+> >>>>>>>>>> Thanks for proposing this.
+> >>>>>>>>>>
+> >>>>>>>>>> On Fri, 22 Nov 2024 at 06:38, Amirreza Zarrabi
+> >>>>>>>>>> <quic_azarrabi@quicinc.com> wrote:
+> >>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>> On 11/21/2024 11:08 PM, Jens Wiklander wrote:
+> >>>>>>>>>>>
+> >>>>>>>>>>> Hi Jens,
+> >>>>>>>>>>>
+> >>>>>>>>>>>> Hi Amirreza,
+> >>>>>>>>>>>>
+> >>>>>>>>>>>> On Thu, Nov 21, 2024 at 2:37=E2=80=AFAM Amirreza Zarrabi
+> >>>>>>>>>>>> <quic_azarrabi@quicinc.com> wrote:
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> The default context has a lifespan similar to the tee_device.
+> >>>>>>>>>>
+> >>>>>>>>>> Since it's associated with tee_device context, let's call it obv=
+ious
+> >>>>>>>>>> via renaming it as device context instead (s/def_ctx/dev_ctx/ in=
+ this
+> >>>>>>>>>> patch).
+> >>>>>>>>>>
+> >>>>>>>>>
+> >>>>>>>>> Make sense, I'll rename it.
+> >>>>>>>>>
+> >>>>>>>>>>>>> It is used as a context for shared memory if the context to w=
+hich the
+> >>>>>>>>>>>>> shared memory belongs is released, making the tee_shm an orph=
+an.
+> >>>>>>>>>>>>> This allows the driver implementing shm_unregister to safely =
+make
+> >>>>>>>>>>>>> subsequent calls, such as to a supplicant if needed.
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> It also enables users to free the shared memory while the dri=
+ver is
+> >>>>>>>>>>>>> blocked on unregister_tee_device safely.
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> Preferably, this should be used for all driver internal uses,=
+ using
+> >>>>>>>>>>>>> teedev_get_def_context rather than calling teedev_open.
+> >>>>>>>>>>
+> >>>>>>>>>> Makes sense to me.
+> >>>>>>>>>>
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+> >>>>>>>>>>>>> ---
+> >>>>>>>>>>>>>  drivers/tee/optee/core.c    |  2 +-
+> >>>>>>>>>>>>>  drivers/tee/optee/ffa_abi.c |  2 +-
+> >>>>>>>>>>>>>  drivers/tee/optee/smc_abi.c |  2 +-
+> >>>>>>>>>>>>>  drivers/tee/tee_core.c      | 83 +++++++++++++++++++++++++++=
+++----------------
+> >>>>>>>>>>>>>  drivers/tee/tee_private.h   |  3 --
+> >>>>>>>>>>>>>  drivers/tee/tee_shm.c       | 18 ++--------
+> >>>>>>>>>>>>>  include/linux/tee_core.h    | 15 ++++++++
+> >>>>>>>>>>>>>  include/linux/tee_drv.h     |  7 ----
+> >>>>>>>>>>>>>  8 files changed, 73 insertions(+), 59 deletions(-)
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/cor=
+e.c
+> >>>>>>>>>>>>> index c75fddc83576..78d43d0c8014 100644
+> >>>>>>>>>>>>> --- a/drivers/tee/optee/core.c
+> >>>>>>>>>>>>> +++ b/drivers/tee/optee/core.c
+> >>>>>>>>>>>>> @@ -173,7 +173,7 @@ void optee_remove_common(struct optee *op=
+tee)
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>>         optee_notif_uninit(optee);
+> >>>>>>>>>>>>>         optee_shm_arg_cache_uninit(optee);
+> >>>>>>>>>>>>> -       teedev_close_context(optee->ctx);
+> >>>>>>>>>>>>> +
+> >>>>>>>>>>>>>         /*
+> >>>>>>>>>>>>>          * The two devices have to be unregistered before we =
+can free the
+> >>>>>>>>>>>>>          * other resources.
+> >>>>>>>>>>>>> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/=
+ffa_abi.c
+> >>>>>>>>>>>>> index f3af5666bb11..6ad94f0788ad 100644
+> >>>>>>>>>>>>> --- a/drivers/tee/optee/ffa_abi.c
+> >>>>>>>>>>>>> +++ b/drivers/tee/optee/ffa_abi.c
+> >>>>>>>>>>>>> @@ -949,7 +949,7 @@ static int optee_ffa_probe(struct ffa_dev=
+ice *ffa_dev)
+> >>>>>>>>>>>>>         optee_shm_arg_cache_init(optee, arg_cache_flags);
+> >>>>>>>>>>>>>         mutex_init(&optee->rpmb_dev_mutex);
+> >>>>>>>>>>>>>         ffa_dev_set_drvdata(ffa_dev, optee);
+> >>>>>>>>>>>>> -       ctx =3D teedev_open(optee->teedev);
+> >>>>>>>>>>>>> +       ctx =3D teedev_get_def_context(optee->teedev);
+> >>>>>>>>>>>>>         if (IS_ERR(ctx)) {
+> >>>>>>>>>>>>>                 rc =3D PTR_ERR(ctx);
+> >>>>>>>>>>>>>                 goto err_rhashtable_free;
+> >>>>>>>>>>>>> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/=
+smc_abi.c
+> >>>>>>>>>>>>> index e9456e3e74cc..c77a3e631d04 100644
+> >>>>>>>>>>>>> --- a/drivers/tee/optee/smc_abi.c
+> >>>>>>>>>>>>> +++ b/drivers/tee/optee/smc_abi.c
+> >>>>>>>>>>>>> @@ -1722,7 +1722,7 @@ static int optee_probe(struct platform_=
+device *pdev)
+> >>>>>>>>>>>>>         mutex_init(&optee->rpmb_dev_mutex);
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>>         platform_set_drvdata(pdev, optee);
+> >>>>>>>>>>>>> -       ctx =3D teedev_open(optee->teedev);
+> >>>>>>>>>>>>> +       ctx =3D teedev_get_def_context(optee->teedev);
+> >>>>>>>>>>>>>         if (IS_ERR(ctx)) {
+> >>>>>>>>>>>>>                 rc =3D PTR_ERR(ctx);
+> >>>>>>>>>>>>>                 goto err_supp_uninit;
+> >>>>>>>>>>>>> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> >>>>>>>>>>>>> index 93f3b330aec8..805e1336089d 100644
+> >>>>>>>>>>>>> --- a/drivers/tee/tee_core.c
+> >>>>>>>>>>>>> +++ b/drivers/tee/tee_core.c
+> >>>>>>>>>>>>> @@ -57,7 +57,6 @@ struct tee_context *teedev_open(struct tee_=
+device *teedev)
+> >>>>>>>>>>>>>                 goto err;
+> >>>>>>>>>>>>>         }
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -       kref_init(&ctx->refcount);
+> >>>>>>>>>>>>>         ctx->teedev =3D teedev;
+> >>>>>>>>>>>>>         INIT_LIST_HEAD(&ctx->list_shm);
+> >>>>>>>>>>>>>         rc =3D teedev->desc->ops->open(ctx);
+> >>>>>>>>>>>>> @@ -73,36 +72,43 @@ struct tee_context *teedev_open(struct te=
+e_device *teedev)
+> >>>>>>>>>>>>>  }
+> >>>>>>>>>>>>>  EXPORT_SYMBOL_GPL(teedev_open);
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -void teedev_ctx_get(struct tee_context *ctx)
+> >>>>>>>>>>>>> +struct tee_context *teedev_get_def_context(struct tee_device=
+ *teedev)
+> >>>>>>>>>>>>>  {
+> >>>>>>>>>>>>> -       if (ctx->releasing)
+> >>>>>>>>>>>>> -               return;
+> >>>>>>>>>>>>> +       int rc;
+> >>>>>>>>>>>>> +       struct tee_context *ctx =3D &teedev->def_ctx;
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -       kref_get(&ctx->refcount);
+> >>>>>>>>>>>>> -}
+> >>>>>>>>>>>>> +       ctx->teedev =3D teedev;
+> >>>>>>>>>>>>> +       INIT_LIST_HEAD(&ctx->list_shm);
+> >>>>>>>>>>>>> +       rc =3D teedev->desc->ops->open(ctx);
+> >>>>>>>>>>>>> +       if (rc)
+> >>>>>>>>>>>>> +               return ERR_PTR(rc);
+> >>>>>>>>>>>>
+> >>>>>>>>>>>> I think ctx->teedev and ctx->list_shm must always be initializ=
+ed or
+> >>>>>>>>>>>> &teedev->def_ctx can't be used in teedev_close_context().
+> >>>>>>>>>>>
+> >>>>>>>>>>> True, but &teedev->def_ctx is never used in teedev_close_contex=
+t().
+> >>>>>>>>>>> The closing of the &teedev->def_ctx simply ignored. So once ope=
+ned,
+> >>>>>>>>>>> &teedev->def_ctx will always remain open until the tee_device i=
+s alive.
+> >>>>>>>>>>>
+> >>>>>>>>>>>> We could initialize teedev->def_ctx on the first call to teede=
+v_open()
+> >>>>>>>>>>>> on that tee_device. We need a way to tell the
+> >>>>>>>>>>>> teedev->desc->ops->open() to the backed driver that it's initi=
+alizing
+> >>>>>>>>>>>> the default context though, or optee_open() can't handle the
+> >>>>>>>>>>>> tee-supplicant case properly.
+> >>>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>> That's a good point. This way, it is guaranteed that there is o=
+ne def_ctx
+> >>>>>>>>>>> per teedev. There should be a way to tell the open() callback t=
+hat it is
+> >>>>>>>>>>> a def_ctx, so it is not registered as a supplicant context.
+> >>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>>> Should we allow this function to be called more than once for =
+each teedev?
+> >>>>>>>>>>>
+> >>>>>>>>>>> Yes, moving to teedev_open() will fix the issue.
+> >>>>>>>>>>>
+> >>>>>>>>>>>> Do we need serialization in this function if it's called after=
+ the
+> >>>>>>>>>>>> driver is probed?
+> >>>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>> True. I'll make sure there is no race.
+> >>>>>>>>>>>
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -static void teedev_ctx_release(struct kref *ref)
+> >>>>>>>>>>>>> -{
+> >>>>>>>>>>>>> -       struct tee_context *ctx =3D container_of(ref, struct =
+tee_context,
+> >>>>>>>>>>>>> -                                              refcount);
+> >>>>>>>>>>>>> -       ctx->releasing =3D true;
+> >>>>>>>>>>>>> -       ctx->teedev->desc->ops->release(ctx);
+> >>>>>>>>>>>>> -       kfree(ctx);
+> >>>>>>>>>>>>> +       return ctx;
+> >>>>>>>>>>>>>  }
+> >>>>>>>>>>>>> +EXPORT_SYMBOL_GPL(teedev_get_def_context);
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -void teedev_ctx_put(struct tee_context *ctx)
+> >>>>>>>>>>>>> +void teedev_close_context(struct tee_context *ctx)
+> >>>>>>>>>>>>>  {
+> >>>>>>>>>>>>> -       if (ctx->releasing)
+> >>>>>>>>>>>>> +       struct tee_device *teedev =3D ctx->teedev;
+> >>>>>>>>>>>>> +       struct tee_shm *shm;
+> >>>>>>>>>>>>> +
+> >>>>>>>>>>>>> +       if (ctx =3D=3D &teedev->def_ctx)
+> >>>>>>>>>>>>>                 return;
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -       kref_put(&ctx->refcount, teedev_ctx_release);
+> >>>>>>>>>>>>> -}
+> >>>>>>>>>>>>> +       teedev->desc->ops->release(ctx);
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -void teedev_close_context(struct tee_context *ctx)
+> >>>>>>>>>>>>> -{
+> >>>>>>>>>>>>> -       struct tee_device *teedev =3D ctx->teedev;
+> >>>>>>>>>>>>> +       mutex_lock(&teedev->mutex);
+> >>>>>>>>>>>>> +       list_for_each_entry(shm, &ctx->list_shm, link) {
+> >>>>>>>>>>>>> +               /* Context released. However, shm still holdi=
+ng a teedev reference.
+> >>>>>>>>>>>>> +                * Replace shm->ctx with the default context =
+so that tee_shm_get_from_id()
+> >>>>>>>>>>>>> +                * fails (i.e. it is not accessible from user=
+space) but shm still
+> >>>>>>>>>>>>> +                * holds a valid context for further clean up=
+, e.g. shm_unregister().
+> >>>>>>>>>>>>> +                */
+> >>>>>>>>>>>>
+> >>>>>>>>>>>> /*
+> >>>>>>>>>>>>  * Please format
+> >>>>>>>>>>>>  * multiline comments
+> >>>>>>>>>>>>  * like this. Please
+> >>>>>>>>>>>>  * keep the lines at
+> >>>>>>>>>>>>  * max 80 columns
+> >>>>>>>>>>>>  * here and at other
+> >>>>>>>>>>>>  * places in the patch-
+> >>>>>>>>>>>>  * set.
+> >>>>>>>>>>>>  */
+> >>>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>> Ack.
+> >>>>>>>>>>>
+> >>>>>>>>>>>>> +               shm->ctx =3D &teedev->def_ctx;
+> >>>>>>>>>>>>
+> >>>>>>>>>>>> shm->ctx will always point to a valid context, even if it is t=
+he
+> >>>>>>>>>>>> default context. It seems that we can always get hold of the c=
+orrect
+> >>>>>>>>>>>> teedev via shm->ctx->teedev. Do we need "tee: revert removal of
+> >>>>>>>>>>>> redundant teedev in struct tee_shm"?
+> >>>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>> It was there in case we wanted to use NULL, but with def_ctx, i=
+t is not
+> >>>>>>>>>>> necessary. I am withdrawing that commit. :).
+> >>>>>>>>>>>
+> >>>>>>>>>>>> Shouldn't the shm be removed from the ctx->list_shm and be mov=
+ed to
+> >>>>>>>>>>>> teedev->def_ctx.list_shm?
+> >>>>>>>>>>
+> >>>>>>>>>> +1
+> >>>>>>>>>>
+> >>>>>>>>>
+> >>>>>>>>> Ack.
+> >>>>>>>>>
+> >>>>>>>>>>>>
+> >>>>>>>>>>>
+> >>>>>>>>>>> Not really. If we put shm in the teedev->def_ctx.list_shm, by t=
+he time
+> >>>>>>>>>>> we are closing the def_ctx, the list is guaranteed to be empty.
+> >>>>>>>>>>>
+> >>>>>>>>>>> However, I understand it is cleaner and more consistent to do t=
+hat rather
+> >>>>>>>>>>> than making changes to tee_shm_put().
+> >>>>>>>>>>>
+> >>>>>>>>>>> I'll do it.
+> >>>>>>>>>>>
+> >>>>>>>>>>>>> +       }
+> >>>>>>>>>>>>> +       mutex_unlock(&teedev->mutex);
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>> -       teedev_ctx_put(ctx);
+> >>>>>>>>>>>>> +       kfree(ctx);
+> >>>>>>>>>>>>>         tee_device_put(teedev);
+> >>>>>>>>>>>>>  }
+> >>>>>>>>>>>>>  EXPORT_SYMBOL_GPL(teedev_close_context);
+> >>>>>>>>>>>>> @@ -946,6 +952,8 @@ struct tee_device *tee_device_alloc(const=
+ struct tee_desc *teedesc,
+> >>>>>>>>>>>>>
+> >>>>>>>>>>>>>         teedev->desc =3D teedesc;
+> >>>>>>>>>>>>>         teedev->pool =3D pool;
+> >>>>>>>>>>>>> +       /* Only open default context when teedev_get_def_cont=
+ext() called. */
+> >>>>>>>>>>>>> +       teedev->def_ctx.teedev =3D NULL;
+> >>>>>>>>>>
+> >>>>>>>>>> Why don't you open the device context here only? This will assoc=
+iate
+> >>>>>>>>>> it automatically with teedev lifespan and then
+> >>>>>>>>>> teedev_get_def_context() will just return a reference to that.
+> >>>>>>>>>>
+> >>>>>>>>>> -Sumit
+> >>>>>>>>>>
+> >>>>>>>>>
+> >>>>>>>>> So my assumption is that the tee_devic_alloc() is called as part =
+of
+> >>>>>>>>> the driver initialization; there is no guarantee that at this tim=
+e the
+> >>>>>>>>> driver is actually ready to accept any open() callback.
+> >>>>>>>>>
+> >>>>>>>>
+> >>>>>>>> The drivers should be able to handle open() callback since we alre=
+ady
+> >>>>>>>> check for !teedesc->ops->open in the beginning of tee_devic_alloc(=
+).
+> >>>>>>>> Also, we need to open a device context for !TEE_DESC_PRIVILEGED su=
+ch
+> >>>>>>>> that we don't open a supplicant device context there.
+> >>>>>>>
+> >>>>>>> It would be nice to have the device context fully initialized when =
 the
-> > > > > > >>>>>>> tee-supplicant case properly.
-> > > > > > >>>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>> That's a good point. This way, it is guaranteed that there=
- is one def_ctx
-> > > > > > >>>>>> per teedev. There should be a way to tell the open() callb=
-ack that it is
-> > > > > > >>>>>> a def_ctx, so it is not registered as a supplicant context.
-> > > > > > >>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>>> Should we allow this function to be called more than once=
- for each teedev?
-> > > > > > >>>>>>
-> > > > > > >>>>>> Yes, moving to teedev_open() will fix the issue.
-> > > > > > >>>>>>
-> > > > > > >>>>>>> Do we need serialization in this function if it's called =
-after the
-> > > > > > >>>>>>> driver is probed?
-> > > > > > >>>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>> True. I'll make sure there is no race.
-> > > > > > >>>>>>
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -static void teedev_ctx_release(struct kref *ref)
-> > > > > > >>>>>>>> -{
-> > > > > > >>>>>>>> -       struct tee_context *ctx =3D container_of(ref, st=
-ruct tee_context,
-> > > > > > >>>>>>>> -                                              refcount);
-> > > > > > >>>>>>>> -       ctx->releasing =3D true;
-> > > > > > >>>>>>>> -       ctx->teedev->desc->ops->release(ctx);
-> > > > > > >>>>>>>> -       kfree(ctx);
-> > > > > > >>>>>>>> +       return ctx;
-> > > > > > >>>>>>>>  }
-> > > > > > >>>>>>>> +EXPORT_SYMBOL_GPL(teedev_get_def_context);
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -void teedev_ctx_put(struct tee_context *ctx)
-> > > > > > >>>>>>>> +void teedev_close_context(struct tee_context *ctx)
-> > > > > > >>>>>>>>  {
-> > > > > > >>>>>>>> -       if (ctx->releasing)
-> > > > > > >>>>>>>> +       struct tee_device *teedev =3D ctx->teedev;
-> > > > > > >>>>>>>> +       struct tee_shm *shm;
-> > > > > > >>>>>>>> +
-> > > > > > >>>>>>>> +       if (ctx =3D=3D &teedev->def_ctx)
-> > > > > > >>>>>>>>                 return;
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -       kref_put(&ctx->refcount, teedev_ctx_release);
-> > > > > > >>>>>>>> -}
-> > > > > > >>>>>>>> +       teedev->desc->ops->release(ctx);
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -void teedev_close_context(struct tee_context *ctx)
-> > > > > > >>>>>>>> -{
-> > > > > > >>>>>>>> -       struct tee_device *teedev =3D ctx->teedev;
-> > > > > > >>>>>>>> +       mutex_lock(&teedev->mutex);
-> > > > > > >>>>>>>> +       list_for_each_entry(shm, &ctx->list_shm, link) {
-> > > > > > >>>>>>>> +               /* Context released. However, shm still =
-holding a teedev reference.
-> > > > > > >>>>>>>> +                * Replace shm->ctx with the default con=
-text so that tee_shm_get_from_id()
-> > > > > > >>>>>>>> +                * fails (i.e. it is not accessible from=
- userspace) but shm still
-> > > > > > >>>>>>>> +                * holds a valid context for further cle=
-an up, e.g. shm_unregister().
-> > > > > > >>>>>>>> +                */
-> > > > > > >>>>>>>
-> > > > > > >>>>>>> /*
-> > > > > > >>>>>>>  * Please format
-> > > > > > >>>>>>>  * multiline comments
-> > > > > > >>>>>>>  * like this. Please
-> > > > > > >>>>>>>  * keep the lines at
-> > > > > > >>>>>>>  * max 80 columns
-> > > > > > >>>>>>>  * here and at other
-> > > > > > >>>>>>>  * places in the patch-
-> > > > > > >>>>>>>  * set.
-> > > > > > >>>>>>>  */
-> > > > > > >>>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>> Ack.
-> > > > > > >>>>>>
-> > > > > > >>>>>>>> +               shm->ctx =3D &teedev->def_ctx;
-> > > > > > >>>>>>>
-> > > > > > >>>>>>> shm->ctx will always point to a valid context, even if it=
- is the
-> > > > > > >>>>>>> default context. It seems that we can always get hold of =
-the correct
-> > > > > > >>>>>>> teedev via shm->ctx->teedev. Do we need "tee: revert remo=
-val of
-> > > > > > >>>>>>> redundant teedev in struct tee_shm"?
-> > > > > > >>>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>> It was there in case we wanted to use NULL, but with def_c=
-tx, it is not
-> > > > > > >>>>>> necessary. I am withdrawing that commit. :).
-> > > > > > >>>>>>
-> > > > > > >>>>>>> Shouldn't the shm be removed from the ctx->list_shm and b=
-e moved to
-> > > > > > >>>>>>> teedev->def_ctx.list_shm?
-> > > > > > >>>>>
-> > > > > > >>>>> +1
-> > > > > > >>>>>
-> > > > > > >>>>
-> > > > > > >>>> Ack.
-> > > > > > >>>>
-> > > > > > >>>>>>>
-> > > > > > >>>>>>
-> > > > > > >>>>>> Not really. If we put shm in the teedev->def_ctx.list_shm,=
- by the time
-> > > > > > >>>>>> we are closing the def_ctx, the list is guaranteed to be e=
-mpty.
-> > > > > > >>>>>>
-> > > > > > >>>>>> However, I understand it is cleaner and more consistent to=
- do that rather
-> > > > > > >>>>>> than making changes to tee_shm_put().
-> > > > > > >>>>>>
-> > > > > > >>>>>> I'll do it.
-> > > > > > >>>>>>
-> > > > > > >>>>>>>> +       }
-> > > > > > >>>>>>>> +       mutex_unlock(&teedev->mutex);
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>> -       teedev_ctx_put(ctx);
-> > > > > > >>>>>>>> +       kfree(ctx);
-> > > > > > >>>>>>>>         tee_device_put(teedev);
-> > > > > > >>>>>>>>  }
-> > > > > > >>>>>>>>  EXPORT_SYMBOL_GPL(teedev_close_context);
-> > > > > > >>>>>>>> @@ -946,6 +952,8 @@ struct tee_device *tee_device_alloc(=
-const struct tee_desc *teedesc,
-> > > > > > >>>>>>>>
-> > > > > > >>>>>>>>         teedev->desc =3D teedesc;
-> > > > > > >>>>>>>>         teedev->pool =3D pool;
-> > > > > > >>>>>>>> +       /* Only open default context when teedev_get_def=
-_context() called. */
-> > > > > > >>>>>>>> +       teedev->def_ctx.teedev =3D NULL;
-> > > > > > >>>>>
-> > > > > > >>>>> Why don't you open the device context here only? This will =
-associate
-> > > > > > >>>>> it automatically with teedev lifespan and then
-> > > > > > >>>>> teedev_get_def_context() will just return a reference to th=
-at.
-> > > > > > >>>>>
-> > > > > > >>>>> -Sumit
-> > > > > > >>>>>
-> > > > > > >>>>
-> > > > > > >>>> So my assumption is that the tee_devic_alloc() is called as =
-part of
-> > > > > > >>>> the driver initialization; there is no guarantee that at thi=
-s time the
-> > > > > > >>>> driver is actually ready to accept any open() callback.
-> > > > > > >>>>
-> > > > > > >>>
-> > > > > > >>> The drivers should be able to handle open() callback since we=
- already
-> > > > > > >>> check for !teedesc->ops->open in the beginning of tee_devic_a=
-lloc().
-> > > > > > >>> Also, we need to open a device context for !TEE_DESC_PRIVILEG=
-ED such
-> > > > > > >>> that we don't open a supplicant device context there.
-> > > > > > >>
-> > > > > > >> It would be nice to have the device context fully initialized =
-when the
-> > > > > > >> probe function returns. How about adding a "bool is_dev_ctx" t=
-o struct
-> > > > > > >> tee_context so the open() callback can tell that this is a spe=
-cial
-> > > > > > >> tee_contex?
-> > > > > > >
-> > > > > > > Sure, that will be useful to distinguish the device context from
-> > > > > > > normal client context.
-> > > > > > >
-> > > > > > > -Sumit
-> > > > > > >
-> > > > > >
-> > > > > > So, as far as the open() callback, I do not believe checking if i=
-t is not null
-> > > > > > is reasonable for calling it here. Most drivers allocate resource=
-s and then
-> > > > > > initialize them. So, assume these steps for a TEE driver:
-> > > > > >  (1) allocate internal data structures,
-> > > > > >  (2) allocate the device,
-> > > > > >  (3) initialize the internal data structurse and then
-> > > > > >  (4) register the device.
-> > > > > >
-> > > > > > Having these steps for a backend driver means that if you call op=
-en() at
-> > > > > > step (2), the internal data structures are not ready.
-> > > >
-> > > > As part of tee_device_alloc(), every driver has to pass "const struct
-> > > > tee_desc *teedesc" fully initialized. Which internal data structures
-> > > > are you referring too? Is there any upstream example?
-> > >
-> > > It's reasonable to wait with the open() callback until step 4 above,
-> > > which should correspond with the tee_device_register() call. Data
-> > > written only once doesn't need serialized access if the fields are
-> > > only accessed after they have been fully initialized.
+> >>>>>>> probe function returns. How about adding a "bool is_dev_ctx" to str=
+uct
+> >>>>>>> tee_context so the open() callback can tell that this is a special
+> >>>>>>> tee_contex?
+> >>>>>>
+> >>>>>> Sure, that will be useful to distinguish the device context from
+> >>>>>> normal client context.
+> >>>>>>
+> >>>>>> -Sumit
+> >>>>>>
+> >>>>>
+> >>>>> So, as far as the open() callback, I do not believe checking if it is=
+ not null
+> >>>>> is reasonable for calling it here. Most drivers allocate resources an=
+d then
+> >>>>> initialize them. So, assume these steps for a TEE driver:
+> >>>>>  (1) allocate internal data structures,
+> >>>>>  (2) allocate the device,
+> >>>>>  (3) initialize the internal data structurse and then
+> >>>>>  (4) register the device.
+> >>>>>
+> >>>>> Having these steps for a backend driver means that if you call open()=
+ at
+> >>>>> step (2), the internal data structures are not ready.
+> >>>
+> >>> As part of tee_device_alloc(), every driver has to pass "const struct
+> >>> tee_desc *teedesc" fully initialized. Which internal data structures
+> >>> are you referring too? Is there any upstream example?
+> >>
+> >> It's reasonable to wait with the open() callback until step 4 above,
+> >> which should correspond with the tee_device_register() call. Data
+> >> written only once doesn't need serialized access if the fields are
+> >> only accessed after they have been fully initialized.
 > >
 > > Fair enough, I can live with the device context opened after registering =
 it.
 > >
-> > >
-> > > >
-> > > > > >
-> > > > > > I was originally thinking of going with Jens' suggestion to open =
-dev_ctx in
-> > > > > > the teedev_open(), and use a flag to distinguish the type of cont=
-ext for
-> > > > > > the open() callback
-> > > > > >
-> > > > > > What about this:
-> > > > > > Open the dev_ctx in the tee_device_register(), at the last step b=
-efore
-> > > > > > setting the TEE_DEVICE_FLAG_REGISTERED flag. Then the open() call=
-back can
-> > > > > > check for this flag to determine if it is a normal context or dev=
-_ctx.
-> > > > > > If the open() is called while the device has not been registered,=
- it should
-> > > > > > handle it differently
-> > > > >
-> > > > > That makes sense, the driver should be prepared to handle open() ca=
-lls
-> > > > > after tee_device_register() anyway.
-> > > > > However, there is no serialization of the flags field in struct
-> > > > > tee_device. Hmm, would it be too hacky for the open() callback to
-> > > > > check if &ctx->teedev.dev_ctx =3D=3D ctx? We could add a helper fun=
-ction
-> > > > > to wrap that check.
-> > > > >
-> > > >
-> > > > Your suggested change requires every driver to update open() callback
-> > > > and later other callbacks may have to support it too. IMHO, only
-> > > > teedev_get_dev_ctx() should be able to return a reference to device
-> > > > context for usage within the TEE and the implementation driver.
-> > >
-> > > Yes, but it's only the OP-TEE driver that needs anything special. It
-> > > looks like the others can be left unchanged.
+> >>
+> >>>
+> >>>>>
+> >>>>> I was originally thinking of going with Jens' suggestion to open dev_=
+ctx in
+> >>>>> the teedev_open(), and use a flag to distinguish the type of context =
+for
+> >>>>> the open() callback
+> >>>>>
+> >>>>> What about this:
+> >>>>> Open the dev_ctx in the tee_device_register(), at the last step before
+> >>>>> setting the TEE_DEVICE_FLAG_REGISTERED flag. Then the open() callback=
+ can
+> >>>>> check for this flag to determine if it is a normal context or dev_ctx.
+> >>>>> If the open() is called while the device has not been registered, it =
+should
+> >>>>> handle it differently
+> >>>>
+> >>>> That makes sense, the driver should be prepared to handle open() calls
+> >>>> after tee_device_register() anyway.
+> >>>> However, there is no serialization of the flags field in struct
+> >>>> tee_device. Hmm, would it be too hacky for the open() callback to
+> >>>> check if &ctx->teedev.dev_ctx =3D=3D ctx? We could add a helper functi=
+on
+> >>>> to wrap that check.
+> >>>>
+> >>>
+> >>> Your suggested change requires every driver to update open() callback
+> >>> and later other callbacks may have to support it too. IMHO, only
+> >>> teedev_get_dev_ctx() should be able to return a reference to device
+> >>> context for usage within the TEE and the implementation driver.
+> >>
+> >> Yes, but it's only the OP-TEE driver that needs anything special. It
+> >> looks like the others can be left unchanged.
 > >
 > > I suppose it's most likely the upcoming QTEE driver requiring it.
 > >
-> > >
-> > > >
-> > > > I am still not able to understand why the following won't work with a
-> > > > clear lifetime for the device context?
-> > > >
-> > > > tee_device_alloc()
-> > > >   -> if (!(teedesc->flags & TEE_DESC_PRIVILEGED))
-> > > > desc->ops->open(&teedev->dev_ctx);
-> > >
-> > > We must also have a fully initialized dev_ctx for the supplicant
-> > > device.
+>
+> I don't believe this is correct. This requirement is implicitly imposed
+> by the TEE subsystem API. If calling open() is acceptable in
+> tee_device_alloc(), then I could argue that tee_device_register() and
+> tee_device_alloc() should be merged into a single function. If a driver
+> is ready to handle requests, why delay its exposure by postponing the
+> registration?
+
+You can't mix in device alloc/init with device registration. As soon
+as you register a device, it's available for user-space to issue
+IOCTLs. So if there is any race between device init and it's usage
+then it's going to cause hard to debug issues.
+
+There can be an argument that dev_ctx being a member of "struct
+tee_device" so it should get initialized alongside other bits in
+tee_device_alloc() (we can rename
+s/tee_device_alloc()/tee_device_init()/ if that makes it obvious). But
+I can live with the device context getting initialized as the first
+thing in tee_device_register() avoiding the race window mentioned
+above.
+
+>
+> By calling open() in tee_device_alloc(), you indirectly impose an unspoken
+> requirement on developers regarding how they should write their drivers,
+> such as the steps they should take to probe the device.
+
+Still not sure why it isn't an explicit requirement when you are
+already passing an initialized ops structure to tee_device_alloc().
+
+-Sumit
+
+>
+> Regards,
+> Amir
+>
+> >>
+> >>>
+> >>> I am still not able to understand why the following won't work with a
+> >>> clear lifetime for the device context?
+> >>>
+> >>> tee_device_alloc()
+> >>>   -> if (!(teedesc->flags & TEE_DESC_PRIVILEGED))
+> >>> desc->ops->open(&teedev->dev_ctx);
+> >>
+> >> We must also have a fully initialized dev_ctx for the supplicant
+> >> device.
 > >
 > > Currently I only see following for OP-TEE driver:
 > >
@@ -472,73 +495,48 @@ ction
 > > device? AFAICS, currently opening a context with the supplicant device
 > > means that the supplicant daemon is available to handle RPCs which
 > > won't be possible during OP-TEE driver probe. Am I missing something?
->
-> One reason for initializing dev_ctx for all tee_devices is in
-> teedev_close_context(), where the tee_shms still active are
-> transferred to dev_ctx. The teedev member was re-introduced in this
-> patch set, but it can be removed again if we can depend on the dev_ctx
-> to always be available in teedev_close_context(). Even the
-> tee-supplicant may close its tee_context with active tee_shms at some
-> point. It might be possible to use half-baked dev_ctx, but then we'd
-> be burdened with keeping track of which dev_ctx can be used for what.
-> We want as few special cases as possible.
->
-
-Okay that sounds reasonable to lower the complexity. However,
-currently we only allow a single supplicant context so having another
-device context exception for that shouldn't be an issue.
-
--Sumit
-
-
 > >
-> > > I'd rather delay the open() callback until
-> > > tee_device_register() since the dev_ctx is guaranteed not to be needed
-> > > before that.
+> >> I'd rather delay the open() callback until
+> >> tee_device_register() since the dev_ctx is guaranteed not to be needed
+> >> before that.
 > >
 > > Okay, the updated call chain can look like:
 > >
 > > tee_device_register()
 > >   -> if (!(teedev->desc->flags & TEE_DESC_PRIVILEGED))
 > >          desc->ops->open(&teedev->dev_ctx);
-> > >
-> > > >
-> > > > tee_device_put()
-> > > >   -> if (teedev->dev_ctx) desc->ops->release(&teedev->dev_ctx);
-> > >
-> > > teedev->dev_ctx is supposed to be embedded in struct tee_device, so
-> > > the if isn't needed.
+> >>
+> >>>
+> >>> tee_device_put()
+> >>>   -> if (teedev->dev_ctx) desc->ops->release(&teedev->dev_ctx);
+> >>
+> >> teedev->dev_ctx is supposed to be embedded in struct tee_device, so
+> >> the if isn't needed.
 > >
 > > I added "if" to cover the case when dev_ctx is not initialized for the
 > > supplicant device.
->
-> OK.
->
-> Cheers,
-> Jens
->
 > >
 > > -Sumit
 > >
-> > >
-> > > Cheers,
-> > > Jens
-> > >
-> > > >
-> > > > -Sumit
-> > > >
-> > > > > Cheers,
-> > > > > Jens
-> > > > >
-> > > > > >
-> > > > > > - Amir
-> > > > > >
-> > > > > > >>
-> > > > > > >> Cheers,
-> > > > > > >> Jens
-> > > > > > >>
-> > > > > > >>>
-> > > > > > >>> -Sumit
+> >>
+> >> Cheers,
+> >> Jens
+> >>
+> >>>
+> >>> -Sumit
+> >>>
+> >>>> Cheers,
+> >>>> Jens
+> >>>>
+> >>>>>
+> >>>>> - Amir
+> >>>>>
+> >>>>>>>
+> >>>>>>> Cheers,
+> >>>>>>> Jens
+> >>>>>>>
+> >>>>>>>>
+> >>>>>>>> -Sumit
 
---===============1653650557779196587==--
+--===============7017378396081202817==--
 
