@@ -1,39 +1,58 @@
-From: Trilok Soni <quic_tsoni@quicinc.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 00/10] Trusted Execution Environment (TEE) driver for
- Qualcomm TEE (QTEE)
-Date: Mon, 02 Dec 2024 22:06:26 -0800
-Message-ID: <518ee3f1-b871-4349-ba85-3b3fc835a4ca@quicinc.com>
-In-Reply-To: <=?utf-8?q?=3C20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-?=
- =?utf-8?q?0-f502ef01e016=40quicinc=2Ecom=3E?=>
+Subject: Re: [PATCH] optee: fix format string for printing optee build_id
+Date: Tue, 03 Dec 2024 11:38:13 +0530
+Message-ID: 
+ <CAFA6WYP+x41pZ8s3NN+MwA135ELJMBDkMrffjX4LaN4vpunsqg@mail.gmail.com>
+In-Reply-To: <20241129114648.3048941-1-sahil.malhotra@nxp.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7766309408885222510=="
+Content-Type: multipart/mixed; boundary="===============4777945509461973060=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7766309408885222510==
+--===============4777945509461973060==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 12/2/2024 8:19 PM, Amirreza Zarrabi wrote:
-> This patch series introduces a Trusted Execution Environment (TEE)
-> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
-> and services to run securely. It uses an object-based interface, where
-> each service is an object with sets of operations. Clients can invoke
-> these operations on objects, which can generate results, including other
-> objects. For example, an object can load a TA and return another object
-> that represents the loaded TA, allowing access to its services.
+On Fri, 29 Nov 2024 at 17:17, Sahil Malhotra <sahil.malhotra@nxp.com> wrote:
+>
+> There has been a recent change in OP-TEE to print 8 and 16 character
+> commit id for 32bit and 64bit architecture respectively.
+> In case if commit id is starting with 0 like 04d1c612ec7beaede073b8c
+> it is printing revision as below removing leading 0
+> "optee: revision 4.4 (4d1c612ec7beaed)"
+>
+> Signed-off-by: Sahil Malhotra <sahil.malhotra@nxp.com>
+> ---
+>  drivers/tee/optee/smc_abi.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
 
-The first patch series was RFC and now you had removed the RFC. Can you please
-provide the reasons?
+Reviewed-by: Sumit Garg <sumit.garg@linaro.org>
 
-https://lwn.net/ml/all/20240702-qcom-tee-object-and-ioctls-v1-0-633c3ddf57ee(=
-a)quicinc.com/
+-Sumit
 
-I understand that you have now changed to tee framework but I want to check
-if we should continue with the version and increment here or start from [00]?
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index e9456e3e74cc..eb51dc18f32d 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1272,8 +1272,9 @@ static void optee_msg_get_os_revision(optee_invoke_fn=
+ *invoke_fn)
+>                   &res.smccc);
+>
+>         if (res.result.build_id)
+> -               pr_info("revision %lu.%lu (%08lx)", res.result.major,
+> -                       res.result.minor, res.result.build_id);
+> +               pr_info("revision %lu.%lu (%0*lx)", res.result.major,
+> +                       res.result.minor, (int)sizeof(res.result.build_id) =
+* 2,
+> +                       res.result.build_id);
+>         else
+>                 pr_info("revision %lu.%lu", res.result.major, res.result.mi=
+nor);
+>  }
+> --
+> 2.34.1
+>
 
---=20
----Trilok Soni
-
---===============7766309408885222510==--
+--===============4777945509461973060==--
 
