@@ -1,313 +1,178 @@
 From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 03/10] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
-Date: Mon, 02 Dec 2024 20:19:19 -0800
-Message-ID: <20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-3-f502ef01e016@quicinc.com>
+Subject: [PATCH 06/10] qcomtee: add primordial object
+Date: Mon, 02 Dec 2024 20:19:22 -0800
+Message-ID: <20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-6-f502ef01e016@quicinc.com>
 In-Reply-To: <=?utf-8?q?=3C20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-?=
  =?utf-8?q?0-f502ef01e016=40quicinc=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4881523700850411097=="
+Content-Type: multipart/mixed; boundary="===============7137032885397986553=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4881523700850411097==
+--===============7137032885397986553==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The TEE subsystem allows session-based access to trusted services,
-requiring a session to be established to receive a service. This
-is not suitable for an environment that represents services as objects.
-An object supports various operations that a client can invoke,
-potentially generating a result or a new object that can be invoked
-independently of the original object.
-
-Add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT/OUTPUT/INOUT to represent an
-object. Objects may reside in either TEE or userspace. To invoke an
-object in TEE, introduce a new ioctl. Use the existing SUPPL_RECV and
-SUPPL_SEND to invoke an object in userspace.
+After booting, the kernel provides a static object known as the primordial
+object. This object is utilized by QTEE for native kernel services such as
+yield or privileged operations.
 
 Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 ---
- drivers/tee/tee_core.c   | 85 ++++++++++++++++++++++++++++++++++++++++++++++=
+ drivers/tee/qcomtee/Makefile          |  1 +
+ drivers/tee/qcomtee/core.c            | 12 +++++--
+ drivers/tee/qcomtee/primordial_obj.c  | 63 +++++++++++++++++++++++++++++++++=
 ++
- include/linux/tee_core.h |  4 +++
- include/linux/tee_drv.h  |  6 ++++
- include/uapi/linux/tee.h | 41 +++++++++++++++++++----
- 4 files changed, 130 insertions(+), 6 deletions(-)
+ drivers/tee/qcomtee/qcomtee_private.h |  5 +++
+ 4 files changed, 78 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index 942ff5b359b2..037bd17159e2 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -374,6 +374,7 @@ static int params_from_user(struct tee_context *ctx, stru=
-ct tee_param *params,
- 		switch (ip.attr & TEE_IOCTL_PARAM_ATTR_TYPE_MASK) {
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT:
- 			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
-@@ -391,6 +392,11 @@ static int params_from_user(struct tee_context *ctx, str=
-uct tee_param *params,
- 				return -EFAULT;
-=20
- 			break;
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INOUT:
-+			params[n].u.objref.id =3D ip.a;
-+			params[n].u.objref.flags =3D ip.b;
-+			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-@@ -464,6 +470,12 @@ static int params_to_user(struct tee_ioctl_param __user =
-*uparams,
- 			if (put_user((u64)p->u.membuf.size, &up->b))
- 				return -EFAULT;
- 			break;
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INOUT:
-+			if (put_user(p->u.objref.id, &up->a) ||
-+			    put_user(p->u.objref.flags, &up->b))
-+				return -EFAULT;
-+			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
- 			if (put_user((u64)p->u.memref.size, &up->b))
-@@ -616,6 +628,66 @@ static int tee_ioctl_invoke(struct tee_context *ctx,
- 	return rc;
+diff --git a/drivers/tee/qcomtee/Makefile b/drivers/tee/qcomtee/Makefile
+index 7dc5e6373042..108bc7fdabcb 100644
+--- a/drivers/tee/qcomtee/Makefile
++++ b/drivers/tee/qcomtee/Makefile
+@@ -2,5 +2,6 @@
+ obj-$(CONFIG_QCOMTEE) +=3D qcomtee.o
+ qcomtee-objs +=3D async.o
+ qcomtee-objs +=3D core.o
++qcomtee-objs +=3D primordial_obj.o
+ qcomtee-objs +=3D qcom_scm.o
+ qcomtee-objs +=3D release.o
+diff --git a/drivers/tee/qcomtee/core.c b/drivers/tee/qcomtee/core.c
+index a949ef4cceee..79f1181cf676 100644
+--- a/drivers/tee/qcomtee/core.c
++++ b/drivers/tee/qcomtee/core.c
+@@ -34,9 +34,11 @@ int qcom_tee_next_arg_type(struct qcom_tee_arg *u, int i, =
+enum qcom_tee_arg_type
  }
 =20
-+static int tee_ioctl_object_invoke(struct tee_context *ctx,
-+				   struct tee_ioctl_buf_data __user *ubuf)
+ /* QTEE expects IDs with QCOM_TEE_MSG_OBJECT_NS_BIT set for object of
+- * QCOM_TEE_OBJECT_TYPE_CB_OBJECT type.
++ * QCOM_TEE_OBJECT_TYPE_CB_OBJECT type. The first ID with QCOM_TEE_MSG_OBJEC=
+T_NS_BIT set is
++ * reserved for primordial object.
+  */
+-#define QCOM_TEE_OBJECT_ID_START	(QCOM_TEE_MSG_OBJECT_NS_BIT + 1)
++#define QCOM_TEE_OBJECT_PRIMORDIAL	(QCOM_TEE_MSG_OBJECT_NS_BIT)
++#define QCOM_TEE_OBJECT_ID_START	(QCOM_TEE_OBJECT_PRIMORDIAL + 1)
+ #define QCOM_TEE_OBJECT_ID_END		(UINT_MAX)
+=20
+ #define QCOM_TEE_OBJECT_SET(p, type, ...) __QCOM_TEE_OBJECT_SET(p, type, ##_=
+_VA_ARGS__, 0UL)
+@@ -118,7 +120,8 @@ EXPORT_SYMBOL_GPL(qcom_tee_object_get);
+  */
+ void qcom_tee_object_put(struct qcom_tee_object *object)
+ {
+-	if (object !=3D NULL_QCOM_TEE_OBJECT &&
++	if (object !=3D &qcom_tee_primordial_object &&
++	    object !=3D NULL_QCOM_TEE_OBJECT &&
+ 	    object !=3D ROOT_QCOM_TEE_OBJECT)
+ 		kref_put(&object->refcount, qcom_tee_object_release);
+ }
+@@ -209,6 +212,9 @@ static struct qcom_tee_object *qcom_tee_local_object_get(=
+unsigned int object_id)
+ {
+ 	struct qcom_tee_object *object;
+=20
++	if (object_id =3D=3D QCOM_TEE_OBJECT_PRIMORDIAL)
++		return &qcom_tee_primordial_object;
++
+ 	/* We trust QTEE does not mess the refcounts.
+ 	 * It does not issue RELEASE request and qcom_tee_object_get(), simultaneou=
+sly.
+ 	 */
+diff --git a/drivers/tee/qcomtee/primordial_obj.c b/drivers/tee/qcomtee/primo=
+rdial_obj.c
+new file mode 100644
+index 000000000000..9065074b02e6
+--- /dev/null
++++ b/drivers/tee/qcomtee/primordial_obj.c
+@@ -0,0 +1,63 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/delay.h>
++#include "qcomtee_private.h"
++
++/**
++ * DOC: Primordial Object
++ *
++ * After the boot, REE provides a static object of type %QCOM_TEE_OBJECT_TYP=
+E_CB_OBJECT
++ * called primordial object. This object is used for native REE services or =
+privileged operations.
++ *
++ * We support
++ *  - %QCOM_TEE_OBJECT_OP_YIELD to yield by the thread running in QTEE.
++ *  - %QCOM_TEE_OBJECT_OP_SLEEP to wait for period of time.
++ */
++
++#define QCOM_TEE_OBJECT_OP_YIELD	1
++#define QCOM_TEE_OBJECT_OP_SLEEP	2
++
++static int qcom_tee_primordial_object_dispatch(struct qcom_tee_object_invoke=
+_ctx *oic,
++					       struct qcom_tee_object *primordial_object_unused,
++					       u32 op, struct qcom_tee_arg *args)
 +{
-+	int rc;
-+	size_t n;
-+	struct tee_ioctl_buf_data buf;
-+	struct tee_ioctl_object_invoke_arg __user *uarg;
-+	struct tee_ioctl_object_invoke_arg arg;
-+	struct tee_ioctl_param __user *uparams =3D NULL;
-+	struct tee_param *params =3D NULL;
++	int err =3D 0;
 +
-+	if (!ctx->teedev->desc->ops->object_invoke_func)
-+		return -EINVAL;
++	switch (op) {
++	case QCOM_TEE_OBJECT_OP_YIELD:
++		cond_resched();
++		/* No output object. */
++		oic->data =3D NULL;
++		break;
++	case QCOM_TEE_OBJECT_OP_SLEEP:
++		/* Check message format matched QCOM_TEE_OBJECT_OP_SLEEP op. */
++		if (qcom_tee_args_len(args) !=3D 1 ||		/* Expect 1 argument. */
++		    args[0].type !=3D QCOM_TEE_ARG_TYPE_IB ||	/* Time to sleep in ms. */
++		    args[0].b.size < sizeof(u32))		/* Buffer should hold a u32. */
++			return -EINVAL;
 +
-+	if (copy_from_user(&buf, ubuf, sizeof(buf)))
-+		return -EFAULT;
-+
-+	if (buf.buf_len > TEE_MAX_ARG_SIZE ||
-+	    buf.buf_len < sizeof(struct tee_ioctl_object_invoke_arg))
-+		return -EINVAL;
-+
-+	uarg =3D u64_to_user_ptr(buf.buf_ptr);
-+	if (copy_from_user(&arg, uarg, sizeof(arg)))
-+		return -EFAULT;
-+
-+	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) !=3D buf.buf_len)
-+		return -EINVAL;
-+
-+	if (arg.num_params) {
-+		params =3D kcalloc(arg.num_params, sizeof(struct tee_param),
-+				 GFP_KERNEL);
-+		if (!params)
-+			return -ENOMEM;
-+		uparams =3D uarg->params;
-+		rc =3D params_from_user(ctx, params, arg.num_params, uparams);
-+		if (rc)
-+			goto out;
++		msleep(*(u32 *)(args[0].b.addr));
++		/* No output object. */
++		oic->data =3D NULL;
++		break;
++	default:
++		err =3D -EINVAL;
 +	}
 +
-+	rc =3D ctx->teedev->desc->ops->object_invoke_func(ctx, &arg, params);
-+	if (rc)
-+		goto out;
-+
-+	if (put_user(arg.ret, &uarg->ret)) {
-+		rc =3D -EFAULT;
-+		goto out;
-+	}
-+	rc =3D params_to_user(uparams, arg.num_params, params);
-+out:
-+	if (params) {
-+		/* Decrease ref count for all valid shared memory pointers */
-+		for (n =3D 0; n < arg.num_params; n++)
-+			if (tee_param_is_memref(params + n) &&
-+			    params[n].u.memref.shm)
-+				tee_shm_put(params[n].u.memref.shm);
-+		kfree(params);
-+	}
-+	return rc;
++	return err;
 +}
 +
- static int tee_ioctl_cancel(struct tee_context *ctx,
- 			    struct tee_ioctl_cancel_arg __user *uarg)
- {
-@@ -670,6 +742,12 @@ static int params_to_supp(struct tee_context *ctx,
- 			ip.b =3D p->u.membuf.size;
- 			ip.c =3D 0;
- 			break;
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INOUT:
-+			ip.a =3D p->u.objref.id;
-+			ip.b =3D p->u.objref.flags;
-+			ip.c =3D 0;
-+			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-@@ -777,6 +855,11 @@ static int params_from_supp(struct tee_param *params, si=
-ze_t num_params,
- 			p->u.membuf.uaddr =3D u64_to_user_ptr(ip.a);
- 			p->u.membuf.size =3D ip.b;
- 			break;
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INOUT:
-+			p->u.objref.id =3D ip.a;
-+			p->u.objref.flags =3D ip.b;
-+			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
- 			/*
-@@ -857,6 +940,8 @@ static long tee_ioctl(struct file *filp, unsigned int cmd=
-, unsigned long arg)
- 		return tee_ioctl_open_session(ctx, uarg);
- 	case TEE_IOC_INVOKE:
- 		return tee_ioctl_invoke(ctx, uarg);
-+	case TEE_IOC_OBJECT_INVOKE:
-+		return tee_ioctl_object_invoke(ctx, uarg);
- 	case TEE_IOC_CANCEL:
- 		return tee_ioctl_cancel(ctx, uarg);
- 	case TEE_IOC_CLOSE_SESSION:
-diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
-index a38494d6b5f4..6311dedd2b83 100644
---- a/include/linux/tee_core.h
-+++ b/include/linux/tee_core.h
-@@ -71,6 +71,7 @@ struct tee_device {
-  * @close_session:	close a session
-  * @system_session:	declare session as a system session
-  * @invoke_func:	invoke a trusted function
-+ * @object_invoke_func:	invoke an object
-  * @cancel_req:		request cancel of an ongoing invoke or open
-  * @supp_recv:		called for supplicant to get a command
-  * @supp_send:		called for supplicant to send a response
-@@ -90,6 +91,9 @@ struct tee_driver_ops {
- 	int (*invoke_func)(struct tee_context *ctx,
- 			   struct tee_ioctl_invoke_arg *arg,
- 			   struct tee_param *param);
-+	int (*object_invoke_func)(struct tee_context *ctx,
-+				  struct tee_ioctl_object_invoke_arg *arg,
-+				  struct tee_param *param);
- 	int (*cancel_req)(struct tee_context *ctx, u32 cancel_id, u32 session);
- 	int (*supp_recv)(struct tee_context *ctx, u32 *func, u32 *num_params,
- 			 struct tee_param *param);
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index b66e611fece4..a556e6bc0c53 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -87,6 +87,11 @@ struct tee_param_membuf {
- 	size_t size;
- };
-=20
-+struct tee_param_objref {
-+	u64 id;
-+	u64 flags;
++static struct qcom_tee_object_operations qcom_tee_primordial_object_ops =3D {
++	.dispatch =3D qcom_tee_primordial_object_dispatch,
 +};
 +
- struct tee_param_value {
- 	u64 a;
- 	u64 b;
-@@ -97,6 +102,7 @@ struct tee_param {
- 	u64 attr;
- 	union {
- 		struct tee_param_memref memref;
-+		struct tee_param_objref objref;
- 		struct tee_param_membuf membuf;
- 		struct tee_param_value value;
- 	} u;
-diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-index fae68386968a..5d33a8009efb 100644
---- a/include/uapi/linux/tee.h
-+++ b/include/uapi/linux/tee.h
-@@ -48,8 +48,10 @@
- #define TEE_GEN_CAP_PRIVILEGED	(1 << 1)/* Privileged device (for supplicant)=
- */
- #define TEE_GEN_CAP_REG_MEM	(1 << 2)/* Supports registering shared memory */
- #define TEE_GEN_CAP_MEMREF_NULL	(1 << 3)/* NULL MemRef support */
-+#define TEE_GEN_CAP_OBJREF	(1 << 4)/* Supports generic object reference */
-=20
--#define TEE_MEMREF_NULL		(__u64)(-1) /* NULL MemRef Buffer */
-+#define TEE_MEMREF_NULL		((__u64)(-1)) /* NULL MemRef Buffer */
-+#define TEE_OBJREF_NULL		((__u64)(-1)) /* NULL ObjRef Object */
-=20
- /*
-  * TEE Implementation ID
-@@ -158,6 +160,13 @@ struct tee_ioctl_buf_data {
- #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMBUF_OUTPUT	9
- #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMBUF_INOUT	10	/* input and output */
-=20
-+/*
-+ * These defines object reference parameters.
-+ */
-+#define TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT	11
-+#define TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT	12
-+#define TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INOUT	13
-+
- /*
-  * Mask for the type part of the attribute, leaves room for more types
-  */
-@@ -195,15 +204,16 @@ struct tee_ioctl_buf_data {
-  * @attr: attributes
-  * @a: if a memref, offset into the shared memory object,
-  *     else if a membuf, address into the user buffer,
-- *     else a value parameter
-- * @b: if a memref or membuf, size of the buffer, else a value parameter
-+ *     else if an objref, object identifier, else a value parameter
-+ * @b: if a memref or membuf, size of the buffer,
-+ *     else if objref, a flag for object, else a value parameter
-  * @c: if a memref, shared memory identifier, else a value parameter
-  *
-  * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref, membuf, or value is
-  * used in the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value,
-- * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref, and TEE_PARAM_ATTR_TYPE_ME=
-MBUF_*
-- * indicates membuf. TEE_PARAM_ATTR_TYPE_NONE indicates that none of the mem=
-bers
-- * are used.
-+ * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref, TEE_PARAM_ATTR_TYPE_MEMBUF=
-_*
-+ * indicates membuf, and TEE_PARAM_ATTR_TYPE_OBJREF_* indicates objref.
-+ * TEE_PARAM_ATTR_TYPE_NONE indicates that none of the members are used.
-  *
-  * Shared memory is allocated with TEE_IOC_SHM_ALLOC which returns an
-  * identifier representing the shared memory object. A memref can reference
-@@ -411,4 +421,23 @@ struct tee_ioctl_shm_register_data {
-  * munmap(): unmaps previously shared memory
-  */
-=20
-+/**
-+ * struct tee_ioctl_invoke_func_arg - Invokes an object in a Trusted Applica=
-tion.
-+ * @object:	[in] Object id
-+ * @op:		[in] Object operation, specific to the object
-+ * @ret:	[out] return value
-+ * @num_params	[in] number of parameters following this struct
-+ */
-+struct tee_ioctl_object_invoke_arg {
-+	__u64 object;
-+	__u32 op;
-+	__u32 ret;
-+	__u32 num_params;
-+	/* num_params tells the actual number of element in params */
-+	struct tee_ioctl_param params[];
++struct qcom_tee_object qcom_tee_primordial_object =3D {
++	.name =3D "primordial",
++	.object_type =3D QCOM_TEE_OBJECT_TYPE_CB_OBJECT,
++	.ops =3D &qcom_tee_primordial_object_ops
 +};
+diff --git a/drivers/tee/qcomtee/qcomtee_private.h b/drivers/tee/qcomtee/qcom=
+tee_private.h
+index e3e4ef51c0b2..c718cd2d8463 100644
+--- a/drivers/tee/qcomtee/qcomtee_private.h
++++ b/drivers/tee/qcomtee/qcomtee_private.h
+@@ -44,4 +44,9 @@ int __qcom_tee_object_do_invoke(struct qcom_tee_object_invo=
+ke_ctx *oic,
+ 				struct qcom_tee_object *object, u32 op,	struct qcom_tee_arg *u,
+ 				int *result);
+=20
++/* OBJECTS: */
 +
-+#define TEE_IOC_OBJECT_INVOKE	_IOR(TEE_IOC_MAGIC, TEE_IOC_BASE + 10, \
-+				     struct tee_ioctl_buf_data)
++/* (1) Primordial Object. */
++extern struct qcom_tee_object qcom_tee_primordial_object;
 +
- #endif /*__TEE_H*/
+ #endif /* QCOM_TEE_PRIVATE_H */
 
 --=20
 2.34.1
 
 
---===============4881523700850411097==--
+--===============7137032885397986553==--
 
