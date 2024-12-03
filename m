@@ -1,50 +1,45 @@
-From: murali selvaraj <muraliselvaraj2020@gmail.com>
+From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: OP-TEE queries
-Date: Tue, 03 Dec 2024 15:08:06 -0500
-Message-ID: 
- <CABBtTm973zFtNDixvV-9deQVJu3OUUux1sVckuKH9uSWJcFMnQ@mail.gmail.com>
+Subject: Re: [PATCH 00/10] Trusted Execution Environment (TEE) driver for
+ Qualcomm TEE (QTEE)
+Date: Wed, 04 Dec 2024 09:13:43 +1100
+Message-ID: <0df58435-94e7-4b81-b688-ec0e1c49c0e0@quicinc.com>
+In-Reply-To: <518ee3f1-b871-4349-ba85-3b3fc835a4ca@quicinc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2804590150042922735=="
+Content-Type: multipart/mixed; boundary="===============3430018573478639086=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2804590150042922735==
+--===============3430018573478639086==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi All,
+Based on our discussions, we implemented significant changes. We essentially
+rewrote most of the files and altered the overall direction, except for a
+couple of files. The changelog entry would have been extensive.
 
-We are currently working on standard PKCS#11 TA and I'm new to this topic
-(PKCS11, OP-TEE,TA).
+- Amir
 
-Please go through and share your inputs on the following queries.
+On 12/3/2024 5:06 PM, Trilok Soni wrote:
+> On 12/2/2024 8:19 PM, Amirreza Zarrabi wrote:
+>> This patch series introduces a Trusted Execution Environment (TEE)
+>> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
+>> and services to run securely. It uses an object-based interface, where
+>> each service is an object with sets of operations. Clients can invoke
+>> these operations on objects, which can generate results, including other
+>> objects. For example, an object can load a TA and return another object
+>> that represents the loaded TA, allowing access to its services.
+>=20
+> The first patch series was RFC and now you had removed the RFC. Can you ple=
+ase
+> provide the reasons?
+>=20
+> https://lwn.net/ml/all/20240702-qcom-tee-object-and-ioctls-v1-0-633c3ddf57e=
+e(a)quicinc.com/
+>=20
+> I understand that you have now changed to tee framework but I want to check
+> if we should continue with the version and increment here or start from [00=
+]?
+>=20
 
--> slot
-        How do we know how many slots are supported in my device?
-        Is it based on the physical interface of the device or how do we
-find the list of available slots without pkcs11-tool?
-        Please share the details with an example.
-
--> token
-        Is token is a kind of virtual to hold different objects(keys, cert
-and so on).
-        Can one token have private, public, leaf cert, intermediate ca
-cert, root ca cart and so on or any limitations on the number of objects in
-a token?
-        Can we have each token be specific to the object ( for example ,
-token1 will have cert, token 2 will have key, token 3 will have seed/client
-cert )?
-        How many tokens maximum support on each slot?
-
-->    As part of pkcs11-tool, we have been using SO-PIN, user PIN,
-token/label name which are more specific to security.
-       If the normal world/REE is compromised, any sensitive data it holds,
-including PINs and tokens, could be exposed.
-       Do we have any access control mechanism to avoid this security issue
-( in PKCS11 TA, OP-TEE context).
-
-Thanks,
-Murali.S
-
---===============2804590150042922735==--
+--===============3430018573478639086==--
 
