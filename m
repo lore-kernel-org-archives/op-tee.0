@@ -1,115 +1,96 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 07/10] dt-bindings: arm: qcomtee: add QTEE driver
- devicetree binding for TEE subsystem
-Date: Tue, 03 Dec 2024 08:55:05 +0100
-Message-ID: <ccaff25d-d757-4b0a-851b-8f6c2dd9fb4b@kernel.org>
+Subject: Re: [PATCH 08/10] tee: add Qualcomm TEE driver
+Date: Tue, 03 Dec 2024 08:57:57 +0100
+Message-ID: <00e3bd13-eab8-47b0-b577-dfdb3bd5900e@kernel.org>
 In-Reply-To: <=?utf-8?q?=3C20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-?=
- =?utf-8?q?7-f502ef01e016=40quicinc=2Ecom=3E?=>
+ =?utf-8?q?8-f502ef01e016=40quicinc=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4926484285958707811=="
+Content-Type: multipart/mixed; boundary="===============8534084498514345422=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4926484285958707811==
+--===============8534084498514345422==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
 On 03/12/2024 05:19, Amirreza Zarrabi wrote:
-> Introduce qcom,tee compatible string.
-
-Why? What is it for? You have entire commit msg for this, instead of
-repeating subject.
-
-A nit, subject: drop second/last, redundant "devicetree binding". The
-"dt-bindings" prefix is already stating that these are bindings.
-See also:
-https://elixir.bootlin.com/linux/v6.7-rc8/source/Documentation/devicetree/bin=
-dings/submitting-patches.rst#L18
-
-Also drop driver, bindings are not for drivers.
-
->=20
-> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
-> ---
->  .../devicetree/bindings/arm/firmware/qcom,tee.yaml | 34 ++++++++++++++++++=
-++++
->  1 file changed, 34 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/arm/firmware/qcom,tee.yaml b=
-/Documentation/devicetree/bindings/arm/firmware/qcom,tee.yaml
-> new file mode 100644
-> index 000000000000..43b7e8ac944e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/firmware/qcom,tee.yaml
-> @@ -0,0 +1,34 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/arm/firmware/qcom,tee.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +static const struct tee_desc qcom_tee_desc = {
+> +	.name = "qcom_tee",
+> +	.ops = &qcom_tee_ops,
+> +	.owner = THIS_MODULE,
+> +};
 > +
-> +title: Qualcomm TEE
+> +static int qcom_tee_probe(struct platform_device *pdev)
+> +{
+> +	struct tee_device *teedev;
+> +	int err;
 > +
-> +maintainers:
-> +  - Amirreza Zarrabi <quic_azarrabi@quicinc.com>
-> +
-> +description: |
+> +	if (!qcom_scm_is_available())
+> +		return -EPROBE_DEFER;
 
-Do not need '|' unless you need to preserve formatting.
-
-> +  QTEE is a piece of software provide a Trusted Execution Environment usin=
-g ARM
-> +  TrustZone for Qualcomm SoC.
-> +
-> +properties:
-> +  $nodename:
-> +    const: qcom_tee
-
-No, first it is not correct (see coding style), second is not even
-needed. Drop.
+So this is part of SCM? Instantiate it there instead of creating fake
+DTS nodes.
 
 > +
-> +  compatible:
-> +    const: qcom,tee
-
-One, same interface for all devices? Nothing SoC specific? You are
-making now a contract, so please carefully analyze it internally what it
-means.
-
+> +	teedev = tee_device_alloc(&qcom_tee_desc, NULL, NULL, NULL);
+> +	if (IS_ERR(teedev))
+> +		return PTR_ERR(teedev);
 > +
-> +required:
-> +  - compatible
+> +	err = tee_device_register(teedev);
+> +	if (err)
+> +		goto err_unreg_teedev;
 > +
-> +additionalProperties: false
+> +	platform_set_drvdata(pdev, teedev);
+> +	return 0;
 > +
-> +examples:
-> +  - |
-> +    firmware {
+> +err_unreg_teedev:
+> +	tee_device_unregister(teedev);
+> +
+> +	return err;
+> +}
+> +
+> +static void qcom_tee_remove(struct platform_device *pdev)
+> +{
+> +	struct tee_device *teedev = platform_get_drvdata(pdev);
+> +
+> +	/* Keep a copy, tee_device_unregister() sets it to NULL. */
+> +	struct tee_shm_pool *pool = teedev->pool;
+> +
+> +	/* Wait for users to go away. */
+> +	tee_device_unregister(teedev);
+> +	tee_shm_pool_free(pool);
+> +}
+> +
+> +static const struct of_device_id qcom_tee_dt_match[] = {
+> +	{ .compatible = "qcom,tee" },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, qcom_tee_dt_match);
+> +
+> +static struct platform_driver qcom_tee_platform_driver = {
+> +	.probe = qcom_tee_probe,
+> +	.remove = qcom_tee_remove,
+> +	.driver = {
+> +		.name = "qcom_tee",
+> +		.of_match_table = qcom_tee_dt_match,
+> +	},
+> +};
+> +
+> +int qcom_tee_driver_register(void)
+> +{
+> +	return platform_driver_register(&qcom_tee_platform_driver);
+> +}
+> +
+> +void qcom_tee_driver_unregister(void)
+> +{
+> +	platform_driver_unregister(&qcom_tee_platform_driver);
+> +}
 
-Drop
-
-> +        qcom_tee {
-
-See DTS coding style.
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree=
--basics.html#generic-names-recommendation
-
-
-> +            compatible =3D "qcom,tee";
-
-No resources? Nothing here? What is the point except of instantiating
-your driver?
-
-> +        };
-> +    };
->=20
+Why open-coding typical module platform driver macro?
 
 
 Best regards,
 Krzysztof
 
---===============4926484285958707811==--
+--===============8534084498514345422==--
 
