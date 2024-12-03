@@ -1,45 +1,47 @@
 From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 09/10] arm64: dts: qcom: sm8650: add support for QTEE
-Date: Mon, 02 Dec 2024 20:19:25 -0800
-Message-ID: <20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-9-f502ef01e016@quicinc.com>
+Subject: 
+ [PATCH 01/10] tee: allow a driver to allocate a tee_device without a pool
+Date: Mon, 02 Dec 2024 20:19:17 -0800
+Message-ID: <20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-1-f502ef01e016@quicinc.com>
 In-Reply-To: <=?utf-8?q?=3C20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-?=
  =?utf-8?q?0-f502ef01e016=40quicinc=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7906227075818644191=="
+Content-Type: multipart/mixed; boundary="===============9013699613764381801=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7906227075818644191==
+--===============9013699613764381801==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add qcom_tee node.
+A TEE driver doesn't always need to provide a pool if it doesn't
+support memory sharing ioctls and can allocate memory for TEE
+messages in some other way. Although this is mentioned in the
+documentation for tee_device_alloc(), it is not handled correctly.
 
 Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 ---
- arch/arm64/boot/dts/qcom/sm8650.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/tee/tee_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8650.dtsi b/arch/arm64/boot/dts/qcom/=
-sm8650.dtsi
-index 25e47505adcb..41505b032e3a 100644
---- a/arch/arm64/boot/dts/qcom/sm8650.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8650.dtsi
-@@ -372,6 +372,10 @@ scm: scm {
- 			interconnects =3D <&aggre2_noc MASTER_CRYPTO QCOM_ICC_TAG_ALWAYS
- 					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ALWAYS>;
- 		};
-+
-+		qcom_tee {
-+			compatible =3D "qcom,tee";
-+		};
- 	};
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index d113679b1e2d..24edce4cdbaa 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -888,7 +888,7 @@ struct tee_device *tee_device_alloc(const struct tee_desc=
+ *teedesc,
 =20
- 	clk_virt: interconnect-0 {
+ 	if (!teedesc || !teedesc->name || !teedesc->ops ||
+ 	    !teedesc->ops->get_version || !teedesc->ops->open ||
+-	    !teedesc->ops->release || !pool)
++	    !teedesc->ops->release)
+ 		return ERR_PTR(-EINVAL);
+=20
+ 	teedev =3D kzalloc(sizeof(*teedev), GFP_KERNEL);
 
 --=20
 2.34.1
 
 
---===============7906227075818644191==--
+--===============9013699613764381801==--
 
