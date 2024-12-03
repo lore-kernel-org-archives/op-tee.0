@@ -1,44 +1,73 @@
-From: Shyam Saini <shyamsaini@linux.microsoft.com>
+From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH  v2 0/4] rpmb subsystem, uapi and virtio-rpmb driver
-Date: Wed, 31 May 2023 12:10:07 -0700
-Message-ID: <20230531191007.13460-1-shyamsaini@linux.microsoft.com>
-In-Reply-To: <20220405093759.1126835-1-alex.bennee@linaro.org>
+Subject: [PATCH 07/10] dt-bindings: arm: qcomtee: add QTEE driver devicetree
+ binding for TEE subsystem
+Date: Mon, 02 Dec 2024 20:19:23 -0800
+Message-ID: <20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-7-f502ef01e016@quicinc.com>
+In-Reply-To: <=?utf-8?q?=3C20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-?=
+ =?utf-8?q?0-f502ef01e016=40quicinc=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7430167351773752480=="
+Content-Type: multipart/mixed; boundary="===============8209037477274096304=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7430167351773752480==
+--===============8209037477274096304==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Alex,
+Introduce qcom,tee compatible string.
 
-[ Resending, Sorry for the noise ]
-=20
-Are you still working on it or planning to resubmit it ?
+Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+---
+ .../devicetree/bindings/arm/firmware/qcom,tee.yaml | 34 ++++++++++++++++++++=
+++
+ 1 file changed, 34 insertions(+)
 
-[1] The current optee tee kernel driver implementation doesn't work when IMA =
-is used with optee implemented ftpm.
+diff --git a/Documentation/devicetree/bindings/arm/firmware/qcom,tee.yaml b/D=
+ocumentation/devicetree/bindings/arm/firmware/qcom,tee.yaml
+new file mode 100644
+index 000000000000..43b7e8ac944e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/firmware/qcom,tee.yaml
+@@ -0,0 +1,34 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/arm/firmware/qcom,tee.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm TEE
++
++maintainers:
++  - Amirreza Zarrabi <quic_azarrabi@quicinc.com>
++
++description: |
++  QTEE is a piece of software provide a Trusted Execution Environment using =
+ARM
++  TrustZone for Qualcomm SoC.
++
++properties:
++  $nodename:
++    const: qcom_tee
++
++  compatible:
++    const: qcom,tee
++
++required:
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |
++    firmware {
++        qcom_tee {
++            compatible =3D "qcom,tee";
++        };
++    };
 
-The ftpm has dependency on tee-supplicant which comes once the user space is =
-up and running and IMA attestation happens at boot time and it requires to ex=
-tend ftpm PCRs.=20
+--=20
+2.34.1
 
-But IMA can't use PCRs if ftpm use secure emmc RPMB partition. As optee can o=
-nly access RPMB via tee-supplicant(user space). So, there should be a fast pa=
-th to allow optee os to access the RPMB parititon without waiting for user-sp=
-ace tee supplicant.
 
-To achieve this fast path linux optee driver and mmc driver needs some work a=
-nd finally it will need RPMB driver which you posted.
-=20
-Please let me know what's your plan on this.
-=20
-[1] https://optee.readthedocs.io/en/latest/architecture/secure_storage.html
-
-Best Regards,
-Shyam
-
---===============7430167351773752480==--
+--===============8209037477274096304==--
 
