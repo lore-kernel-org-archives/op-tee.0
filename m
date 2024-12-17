@@ -1,145 +1,62 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v4 6/6] optee: smc abi: dynamic restricted memory allocation
-Date: Tue, 17 Dec 2024 11:07:42 +0100
-Message-ID: <20241217100809.3962439-7-jens.wiklander@linaro.org>
-In-Reply-To: <20241217100809.3962439-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH] optee: fix format string for printing optee build_id
+Date: Tue, 17 Dec 2024 22:06:02 +0100
+Message-ID: 
+ <CAHUa44Gs8T+hxkmVr2ap-HKB9QHkPB14-O2S6BvLrkEhP-Rw9Q@mail.gmail.com>
+In-Reply-To: <20241129114648.3048941-1-sahil.malhotra@nxp.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0197796583254862766=="
+Content-Type: multipart/mixed; boundary="===============1381270636961792612=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0197796583254862766==
+--===============1381270636961792612==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add support in the OP-TEE backend driver for dynamic restricted memory
-allocation using the SMC ABI.
+Hi Sahil,
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/smc_abi.c | 74 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 71 insertions(+), 3 deletions(-)
+On Fri, Nov 29, 2024 at 12:46=E2=80=AFPM Sahil Malhotra <sahil.malhotra@nxp=
+.com> wrote:
+>
+> There has been a recent change in OP-TEE to print 8 and 16 character
+> commit id for 32bit and 64bit architecture respectively.
+> In case if commit id is starting with 0 like 04d1c612ec7beaede073b8c
+> it is printing revision as below removing leading 0
+> "optee: revision 4.4 (4d1c612ec7beaed)"
+>
+> Signed-off-by: Sahil Malhotra <sahil.malhotra@nxp.com>
+> ---
+>  drivers/tee/optee/smc_abi.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index f5fd5f1d9a6b..25b02dbbc76e 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1001,6 +1001,67 @@ static int optee_smc_do_call_with_arg(struct tee_conte=
-xt *ctx,
- 	return rc;
- }
-=20
-+static int optee_smc_lend_rstmem(struct optee *optee, struct tee_shm *rstmem,
-+				 u16 *end_points, unsigned int ep_count)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 2, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_LEND_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-+	msg_arg->params[0].u.value.a =3D OPTEE_MSG_RSTMEM_SECURE_VIDEO_PLAY;
-+	msg_arg->params[1].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_INPUT;
-+	msg_arg->params[1].u.tmem.buf_ptr =3D rstmem->paddr;
-+	msg_arg->params[1].u.tmem.size =3D rstmem->size;
-+	msg_arg->params[1].u.tmem.shm_ref =3D (u_long)rstmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS) {
-+		rc =3D -EINVAL;
-+		goto out;
-+	}
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
-+static int optee_smc_reclaim_rstmem(struct optee *optee, struct tee_shm *rst=
-mem)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 1, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_RECLAIM_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT;
-+	msg_arg->params[0].u.rmem.shm_ref =3D (u_long)rstmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS)
-+		rc =3D -EINVAL;
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
- /*
-  * 5. Asynchronous notification
-  */
-@@ -1258,6 +1319,8 @@ static const struct optee_ops optee_ops =3D {
- 	.do_call_with_arg =3D optee_smc_do_call_with_arg,
- 	.to_msg_param =3D optee_to_msg_param,
- 	.from_msg_param =3D optee_from_msg_param,
-+	.lend_rstmem =3D optee_smc_lend_rstmem,
-+	.reclaim_rstmem =3D optee_smc_reclaim_rstmem,
- };
-=20
- static int enable_async_notif(optee_invoke_fn *invoke_fn)
-@@ -1627,6 +1690,7 @@ static inline int optee_load_fw(struct platform_device =
-*pdev,
-=20
- static int optee_sdp_pool_init(struct optee *optee)
- {
-+	bool dyn_sdp =3D optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_RSTMEM;
- 	bool sdp =3D optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP;
- 	struct tee_shm_pool *pool;
- 	int rc;
-@@ -1634,9 +1698,11 @@ static int optee_sdp_pool_init(struct optee *optee)
- 	/*
- 	 * optee_sdp_pools_init() must be called if secure world has any
- 	 * SDP capability. If the static carvout is available initialize
--	 * and add a pool for that.
-+	 * and add a pool for that. If there's an error from secure world
-+	 * we complain but don't call optee_sdp_pools_uninit() unless we
-+	 * know that there is no SDP capability left.
- 	 */
--	if (!sdp)
-+	if (!dyn_sdp && !sdp)
- 		return 0;
-=20
- 	rc =3D optee_rstmem_pools_init(optee);
-@@ -1653,7 +1719,9 @@ static int optee_sdp_pool_init(struct optee *optee)
- 				     0, &res.smccc);
- 		if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
- 			pr_err("Secure Data Path service not available\n");
--			goto err;
-+			if (!dyn_sdp)
-+				goto err;
-+			return 0;
- 		}
-=20
- 		pool =3D tee_rstmem_gen_pool_alloc(res.result.start,
---=20
-2.43.0
+I'm picking up this.
 
+Thanks,
+Jens
 
---===============0197796583254862766==--
+>
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index e9456e3e74cc..eb51dc18f32d 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1272,8 +1272,9 @@ static void optee_msg_get_os_revision(optee_invoke_fn=
+ *invoke_fn)
+>                   &res.smccc);
+>
+>         if (res.result.build_id)
+> -               pr_info("revision %lu.%lu (%08lx)", res.result.major,
+> -                       res.result.minor, res.result.build_id);
+> +               pr_info("revision %lu.%lu (%0*lx)", res.result.major,
+> +                       res.result.minor, (int)sizeof(res.result.build_id) =
+* 2,
+> +                       res.result.build_id);
+>         else
+>                 pr_info("revision %lu.%lu", res.result.major, res.result.mi=
+nor);
+>  }
+> --
+> 2.34.1
+>
+
+--===============1381270636961792612==--
 
