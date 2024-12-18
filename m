@@ -1,129 +1,277 @@
 From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 00/10] Trusted Execution Environment (TEE) driver for
- Qualcomm TEE (QTEE)
-Date: Wed, 18 Dec 2024 19:55:55 +0530
+Subject: Re: [PATCH] tee: optee: Add support for supplicant timeout
+Date: Wed, 18 Dec 2024 20:11:52 +0530
 Message-ID: 
- <CAFA6WYMbDExfCD4PAPQCF1HKKxjDH5FcLpnnBBrwayCiY0SkTg@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3C20241202-qcom-tee-using-tee-ss-without-mem-obj-v1-?=
- =?utf-8?q?0-f502ef01e016=40quicinc=2Ecom=3E?=>
+ <CAFA6WYNt6k1_wwoveuYs6SFKVTRTaZV7NjKpypap0_eSjFtzmg@mail.gmail.com>
+In-Reply-To: <
+ <CAHUa44HEhTHS6Qya+4FnrHPWkQP2TJs8FGymYBEUCzxo2=Ebuw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4816443610133067980=="
+Content-Type: multipart/mixed; boundary="===============5501802379490037716=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4816443610133067980==
+--===============5501802379490037716==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Amirreza,
+On Wed, 18 Dec 2024 at 19:04, Jens Wiklander <jens.wiklander@linaro.org> wr=
+ote:
+>
+> On Wed, Dec 18, 2024 at 12:07=E2=80=AFPM Sumit Garg <sumit.garg@linaro.or=
+g> wrote:
+> >
+> > On Wed, 18 Dec 2024 at 16:02, Jens Wiklander <jens.wiklander@linaro.org=
+> wrote:
+> > >
+> > > On Wed, Dec 18, 2024 at 8:30=E2=80=AFAM Sumit Garg <sumit.garg@linaro=
+.org> wrote:
+> > > >
+> > > > + Erik
+> > > >
+> > > > Hi Jens,
+> > > >
+> > > > On Wed, 18 Dec 2024 at 12:27, Jens Wiklander <jens.wiklander@linaro=
+.org> wrote:
+> > > > >
+> > > > > Hi Sumit,
+> > > > >
+> > > > > On Fri, Dec 13, 2024 at 12:15=E2=80=AFPM Sumit Garg <sumit.garg@l=
+inaro.org> wrote:
+> > > > > >
+> > > > > > OP-TEE supplicant is a user-space daemon and it's possible for it
+> > > > > > being crashed or killed in the middle of processing an OP-TEE RPC=
+ call.
+> > > > > > It becomes more complicated when there is incorrect shutdown orde=
+ring
+> > > > > > of the supplicant process vs the OP-TEE client application which =
+can
+> > > > > > eventually lead to system hang-up waiting for the closure of the =
+client
+> > > > > > application.
+> > > > > >
+> > > > > > In order to gracefully handle this scenario, let's add a long eno=
+ugh
+> > > > > > timeout to wait for supplicant to process requests. In case there=
+ is a
+> > > > > > timeout then we return a proper error code for the RPC request.
+> > > > > >
+> > > > > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> > > > > > ---
+> > > > > >  drivers/tee/optee/supp.c | 58 +++++++++++++++++++++++++---------=
+------
+> > > > > >  1 file changed, 36 insertions(+), 22 deletions(-)
+> > > > > >
+> > > > > > diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
+> > > > > > index 322a543b8c27..92e86ac4cdd4 100644
+> > > > > > --- a/drivers/tee/optee/supp.c
+> > > > > > +++ b/drivers/tee/optee/supp.c
+> > > > > > @@ -7,6 +7,15 @@
+> > > > > >  #include <linux/uaccess.h>
+> > > > > >  #include "optee_private.h"
+> > > > > >
+> > > > > > +/*
+> > > > > > + * OP-TEE supplicant timeout, the user-space supplicant may get
+> > > > > > + * crashed or killed while servicing an RPC call. This will just=
+ lead
+> > > > > > + * to OP-TEE client hung indefinitely just waiting for supplican=
+t to
+> > > > > > + * serve requests which isn't expected. It is rather expected to=
+ fail
+> > > > > > + * gracefully with a timeout which is long enough.
+> > > > > > + */
+> > > > > > +#define SUPP_TIMEOUT   (msecs_to_jiffies(10000))
+> > > > > > +
+> > > > > >  struct optee_supp_req {
+> > > > > >         struct list_head link;
+> > > > > >
+> > > > > > @@ -52,8 +61,10 @@ void optee_supp_release(struct optee_supp *sup=
+p)
+> > > > > >
+> > > > > >         /* Abort all queued requests */
+> > > > > >         list_for_each_entry_safe(req, req_tmp, &supp->reqs, link)=
+ {
+> > > > > > -               list_del(&req->link);
+> > > > > > -               req->in_queue =3D false;
+> > > > > > +               if (req->in_queue) {
+> > > > > > +                       list_del(&req->link);
+> > > > > > +                       req->in_queue =3D false;
+> > > > > > +               }
+> > > > > >                 req->ret =3D TEEC_ERROR_COMMUNICATION;
+> > > > > >                 complete(&req->c);
+> > > > > >         }
+> > > > > > @@ -82,6 +93,7 @@ u32 optee_supp_thrd_req(struct tee_context *ctx=
+, u32 func, size_t num_params,
+> > > > > >         struct optee_supp_req *req;
+> > > > > >         bool interruptable;
+> > > > > >         u32 ret;
+> > > > > > +       int res =3D 1;
+> > > > > >
+> > > > > >         /*
+> > > > > >          * Return in case there is no supplicant available and
+> > > > > > @@ -108,28 +120,28 @@ u32 optee_supp_thrd_req(struct tee_context =
+*ctx, u32 func, size_t num_params,
+> > > > > >         /* Tell an eventual waiter there's a new request */
+> > > > > >         complete(&supp->reqs_c);
+> > > > > >
+> > > > > > -       /*
+> > > > > > -        * Wait for supplicant to process and return result, once=
+ we've
+> > > > > > -        * returned from wait_for_completion(&req->c) successfull=
+y we have
+> > > > > > -        * exclusive access again.
+> > > > > > -        */
+> > > > > > -       while (wait_for_completion_interruptible(&req->c)) {
+> > > > > > +       /* Wait for supplicant to process and return result */
+> > > > > > +       while (res) {
+> > > > > > +               res =3D wait_for_completion_interruptible_timeout=
+(&req->c,
+> > > > > > +                                                               S=
+UPP_TIMEOUT);
+> > > > > > +               /* Check if supplicant served the request */
+> > > > > > +               if (res > 0)
+> > > > > > +                       break;
+> > > > > > +
+> > > > > >                 mutex_lock(&supp->mutex);
+> > > > > > +               /*
+> > > > > > +                * There's no supplicant available and since the =
+supp->mutex
+> > > > > > +                * currently is held none can become available un=
+til the mutex
+> > > > > > +                * released again.
+> > > > > > +                *
+> > > > > > +                * Interrupting an RPC to supplicant is only allo=
+wed as a way
+> > > > > > +                * of slightly improving the user experience in c=
+ase the
+> > > > > > +                * supplicant hasn't been started yet. During nor=
+mal operation
+> > > > > > +                * the supplicant will serve all requests in a ti=
+mely manner and
+> > > > > > +                * interrupting then wouldn't make sense.
+> > > > > > +                */
+> > > > > >                 interruptable =3D !supp->ctx;
+> > > > > > -               if (interruptable) {
+> > > > > > -                       /*
+> > > > > > -                        * There's no supplicant available and si=
+nce the
+> > > > > > -                        * supp->mutex currently is held none can
+> > > > > > -                        * become available until the mutex relea=
+sed
+> > > > > > -                        * again.
+> > > > > > -                        *
+> > > > > > -                        * Interrupting an RPC to supplicant is o=
+nly
+> > > > > > -                        * allowed as a way of slightly improving=
+ the user
+> > > > > > -                        * experience in case the supplicant hasn=
+'t been
+> > > > > > -                        * started yet. During normal operation t=
+he supplicant
+> > > > > > -                        * will serve all requests in a timely ma=
+nner and
+> > > > > > -                        * interrupting then wouldn't make sense.
+> > > > > > -                        */
+> > > > > > +               if (interruptable || (res =3D=3D 0)) {
+> > > > >
+> > > > > Are you fixing an observed problem or a theoretical one?
+> > > >
+> > > > It is an observed problem, I was able to reproduce it using following
+> > > > sequence with OP-TEE buildroot setup:
+> > > >
+> > > > $ xtest 600 &  // Run some secure storage tests using supplicant in
+> > > > the background
+> > > > $ kill -9 `pidof tee-supplicant` // Kill supplicant when the tests are
+> > > > in progress.
+> > > >
+> > > > This will cause the xtest to hang up.
+> > > >
+> > > > > If the
+> > > > > supplicant has died then "interruptable" is expected to be true so =
+the
+> > > > > timeout shouldn't matter.
+> > > >
+> > > > When the supplicant dies, it doesn't lead to releasing the supplicant
+> > > > context in the above test scenario. The reason is probably the
+> > > > supplicant shared memory reference is held by OP-TEE which is in turn
+> > > > is holding a reference to supplicant context.
+> > >
+> > > This sounds like the problem Amirreza is trying to solve for the
+> > > QCOMTEE driver. If we could get the supplicant context removed soon
+> > > after the supplicant has died we wouldn't need this, except that we
+> > > may need some trick to avoid ignoring an eventual signal received
+> > > while tee-supplicant is dying.
+> >
+> > That would be an improvement but it may still get unnoticed in future
+> > once something else starts ref counting the supplicant context.
+> >
+>
+> That depends on the implementation. We were discussing adding a
+> callback when the file descriptor is closed.
+>
+> > >
+> > > Wait, would it work to break the loop on SIGKILL? It's an uncatchable
+> > > signal so there's no reason for the calling process to wait anyway.
+> >
+> > I agree this can be one way to solve the issue when the supplicant
+> > gets killed but what if the supplicant gets crashed then it will be
+> > another signal to handle. This approach sounds error prone to me as we
+> > might miss a corner case.
+> >
+> > So the question here is why do we need an infinite wait loop for the
+> > supplicant which breaks only if we receive events from the user-space?
+> > Isn't it rather robust for the kernel to have a bounded supplicant
+> > wait loop? Do you have any particular use-case where this bounded wait
+> > loop won't suffice?
+>
+> It will make it tricky to debug tee-supplicant with GDB.
 
-On Tue, 3 Dec 2024 at 09:50, Amirreza Zarrabi <quic_azarrabi@quicinc.com> w=
-rote:
->
-> This patch series introduces a Trusted Execution Environment (TEE)
-> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
-> and services to run securely. It uses an object-based interface, where
-> each service is an object with sets of operations. Clients can invoke
-> these operations on objects, which can generate results, including other
-> objects. For example, an object can load a TA and return another object
-> that represents the loaded TA, allowing access to its services.
->
-> Kernel and userspace services are also available to QTEE through a
-> similar approach. QTEE makes callback requests that are converted into
-> object invocations. These objects can represent services within the
-> kernel or userspace process.
->
-> Note: This patch series focuses on QTEE objects and userspace services.
->
-> Linux already provides a TEE subsystem, which is described in [1]. The
-> tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
-> can be used by userspace to talk to a TEE backend driver. We extend the
-> Linux TEE subsystem to understand object parameters and an ioctl call so
-> client can invoke objects in QTEE:
->
->   - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
->   - TEE_IOC_OBJECT_INVOKE
->
+Debugging with GDB is always a bit tricky when you are debugging on
+the kernel/user-space boundary.
 
-Thanks for proposing to extend the TEE subsystem. However, I couldn't
-see any user-space library or test application(s) to test this new
-IOCTL. Say for example how will someone with a board based on sm8650
-will be able to test the QTEE interface? IIRC, last time we agreed off
-list that you will be pushing that alongside this patch-set.
+> Is there any
+> risk of timeout during suspend?
+
+I don't think so since this timeout is per supplicant request and I
+can't think of a scenario where the system suspend occurs without all
+CPUs going into idle state first. That means there won't be any
+supplicant request running at that point.
 
 -Sumit
 
-> The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
-> used for invoking services in the userspace process by QTEE.
 >
-> The TEE backend driver uses the QTEE Transport Message to communicate
-> with QTEE. Interactions through the object INVOKE interface are
-> translated into QTEE messages. Likewise, object invocations from QTEE
-> for userspace objects are converted into SEND/RECV ioctl calls to
-> supplicants.
+> Cheers,
+> Jens
 >
-> The details of QTEE Transport Message to communicate with QTEE is
-> available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
->
-> This patch series has been tested for basic QTEE object invocations and
-> callback requests, including loading a TA and requesting services form
-> the TA. However, the test platform is currently being prepared for
-> upstream availability and will soon be accessible to the community for
-> further validation. I will share updates as the platform become
-> available.
->
-> [1] https://www.kernel.org/doc/Documentation/tee.txt
->
-> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
-> ---
-> Amirreza Zarrabi (10):
->       tee: allow a driver to allocate a tee_device without a pool
->       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_MEMBUF
->       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
->       firmware: qcom: scm: add support for object invocation
->       qcomtee: implement object invoke support
->       qcomtee: add primordial object
->       dt-bindings: arm: qcomtee: add QTEE driver devicetree binding for TEE=
- subsystem
->       tee: add Qualcomm TEE driver
->       arm64: dts: qcom: sm8650: add support for QTEE
->       Documentation: tee: Add Qualcomm TEE driver
->
->  .../devicetree/bindings/arm/firmware/qcom,tee.yaml |  34 +
->  Documentation/tee/index.rst                        |   1 +
->  Documentation/tee/qtee.rst                         | 143 ++++
->  arch/arm64/boot/dts/qcom/sm8650.dtsi               |   4 +
->  drivers/firmware/qcom/qcom_scm.c                   |  60 ++
->  drivers/firmware/qcom/qcom_scm.h                   |   7 +
->  drivers/tee/Kconfig                                |   1 +
->  drivers/tee/Makefile                               |   1 +
->  drivers/tee/qcomtee/Kconfig                        |  10 +
->  drivers/tee/qcomtee/Makefile                       |   9 +
->  drivers/tee/qcomtee/async.c                        | 153 ++++
->  drivers/tee/qcomtee/call.c                         | 707 ++++++++++++++++
->  drivers/tee/qcomtee/core.c                         | 942 +++++++++++++++++=
-++++
->  drivers/tee/qcomtee/primordial_obj.c               |  63 ++
->  drivers/tee/qcomtee/qcom_scm.c                     |  36 +
->  drivers/tee/qcomtee/qcomtee_msg.h                  | 217 +++++
->  drivers/tee/qcomtee/qcomtee_private.h              | 218 +++++
->  drivers/tee/qcomtee/release.c                      |  66 ++
->  drivers/tee/qcomtee/user_obj.c                     | 625 ++++++++++++++
->  drivers/tee/tee_core.c                             | 113 ++-
->  include/linux/firmware/qcom/qcom_scm.h             |   9 +
->  include/linux/firmware/qcom/qcom_tee.h             | 284 +++++++
->  include/linux/tee_core.h                           |   4 +
->  include/linux/tee_drv.h                            |  12 +
->  include/uapi/linux/tee.h                           |  54 +-
->  25 files changed, 3765 insertions(+), 8 deletions(-)
-> ---
-> base-commit: f486c8aa16b8172f63bddc70116a0c897a7f3f02
-> change-id: 20241202-qcom-tee-using-tee-ss-without-mem-obj-362c66340527
->
-> Best regards,
-> --
-> Amirreza Zarrabi <quic_azarrabi@quicinc.com>
->
+> >
+> > -Sumit
+> >
+> > >
+> > > Cheers,
+> > > Jens
+> > >
+> > > >
+> > > > -Sumit
+> > > >
+> > > > >
+> > > > > Cheers,
+> > > > > Jens
+> > > > >
+> > > > > >                         if (req->in_queue) {
+> > > > > >                                 list_del(&req->link);
+> > > > > >                                 req->in_queue =3D false;
+> > > > > > @@ -141,6 +153,8 @@ u32 optee_supp_thrd_req(struct tee_context *c=
+tx, u32 func, size_t num_params,
+> > > > > >                         req->ret =3D TEEC_ERROR_COMMUNICATION;
+> > > > > >                         break;
+> > > > > >                 }
+> > > > > > +               if (res =3D=3D 0)
+> > > > > > +                       req->ret =3D TEE_ERROR_TIMEOUT;
+> > > > > >         }
+> > > > > >
+> > > > > >         ret =3D req->ret;
+> > > > > > --
+> > > > > > 2.43.0
+> > > > > >
 
---===============4816443610133067980==--
+--===============5501802379490037716==--
 
