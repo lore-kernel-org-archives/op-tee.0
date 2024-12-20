@@ -1,139 +1,161 @@
-From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH 00/10] Trusted Execution Environment (TEE) driver for
- Qualcomm TEE (QTEE)
-Date: Thu, 19 Dec 2024 06:20:04 +1100
-Message-ID: <14ecefd5-85a1-4cd1-84e4-a2af241bffe2@quicinc.com>
-In-Reply-To: <
- <CAFA6WYMbDExfCD4PAPQCF1HKKxjDH5FcLpnnBBrwayCiY0SkTg@mail.gmail.com>>
+Subject: Re: [PATCH v4 5/6] optee: FF-A: dynamic restricted memory allocation
+Date: Fri, 20 Dec 2024 22:38:53 +0800
+Message-ID: <202412202214.OdgzpOke-lkp@intel.com>
+In-Reply-To: <20241217100809.3962439-6-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4548422818997832970=="
+Content-Type: multipart/mixed; boundary="===============7631273858136734150=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4548422818997832970==
+--===============7631273858136734150==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit,
+Hi Jens,
 
-On 12/19/2024 1:25 AM, Sumit Garg wrote:
-> Hi Amirreza,
->=20
-> On Tue, 3 Dec 2024 at 09:50, Amirreza Zarrabi <quic_azarrabi@quicinc.com>=
- wrote:
->>
->> This patch series introduces a Trusted Execution Environment (TEE)
->> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
->> and services to run securely. It uses an object-based interface, where
->> each service is an object with sets of operations. Clients can invoke
->> these operations on objects, which can generate results, including other
->> objects. For example, an object can load a TA and return another object
->> that represents the loaded TA, allowing access to its services.
->>
->> Kernel and userspace services are also available to QTEE through a
->> similar approach. QTEE makes callback requests that are converted into
->> object invocations. These objects can represent services within the
->> kernel or userspace process.
->>
->> Note: This patch series focuses on QTEE objects and userspace services.
->>
->> Linux already provides a TEE subsystem, which is described in [1]. The
->> tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
->> can be used by userspace to talk to a TEE backend driver. We extend the
->> Linux TEE subsystem to understand object parameters and an ioctl call so
->> client can invoke objects in QTEE:
->>
->>   - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
->>   - TEE_IOC_OBJECT_INVOKE
->>
->=20
-> Thanks for proposing to extend the TEE subsystem. However, I couldn't
-> see any user-space library or test application(s) to test this new
-> IOCTL. Say for example how will someone with a board based on sm8650
-> will be able to test the QTEE interface? IIRC, last time we agreed off
-> list that you will be pushing that alongside this patch-set.
->=20
+kernel test robot noticed the following build errors:
 
-:)
-Indeed. The upcoming version of this patch series will include a library
-and a test application.
+[auto build test ERROR on fac04efc5c793dccbd07e2d59af9f90b7fc0dca4]
 
-Best Regards,
-Amir
+url:    https://github.com/intel-lab-lkp/linux/commits/Jens-Wiklander/tee-add=
+-restricted-memory-allocation/20241217-181101
+base:   fac04efc5c793dccbd07e2d59af9f90b7fc0dca4
+patch link:    https://lore.kernel.org/r/20241217100809.3962439-6-jens.wiklan=
+der%40linaro.org
+patch subject: [PATCH v4 5/6] optee: FF-A: dynamic restricted memory allocati=
+on
+config: arm64-randconfig-002-20241220 (https://download.01.org/0day-ci/archiv=
+e/20241220/202412202214.OdgzpOke-lkp(a)intel.com/config)
+compiler: clang version 19.1.3 (https://github.com/llvm/llvm-project ab51eccf=
+88f5321e7c60591c5546b254b6afab99)
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0241220/202412202214.OdgzpOke-lkp(a)intel.com/reproduce)
 
-> -Sumit
->=20
->> The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
->> used for invoking services in the userspace process by QTEE.
->>
->> The TEE backend driver uses the QTEE Transport Message to communicate
->> with QTEE. Interactions through the object INVOKE interface are
->> translated into QTEE messages. Likewise, object invocations from QTEE
->> for userspace objects are converted into SEND/RECV ioctl calls to
->> supplicants.
->>
->> The details of QTEE Transport Message to communicate with QTEE is
->> available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
->>
->> This patch series has been tested for basic QTEE object invocations and
->> callback requests, including loading a TA and requesting services form
->> the TA. However, the test platform is currently being prepared for
->> upstream availability and will soon be accessible to the community for
->> further validation. I will share updates as the platform become
->> available.
->>
->> [1] https://www.kernel.org/doc/Documentation/tee.txt
->>
->> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
->> ---
->> Amirreza Zarrabi (10):
->>       tee: allow a driver to allocate a tee_device without a pool
->>       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_MEMBUF
->>       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
->>       firmware: qcom: scm: add support for object invocation
->>       qcomtee: implement object invoke support
->>       qcomtee: add primordial object
->>       dt-bindings: arm: qcomtee: add QTEE driver devicetree binding for TE=
-E subsystem
->>       tee: add Qualcomm TEE driver
->>       arm64: dts: qcom: sm8650: add support for QTEE
->>       Documentation: tee: Add Qualcomm TEE driver
->>
->>  .../devicetree/bindings/arm/firmware/qcom,tee.yaml |  34 +
->>  Documentation/tee/index.rst                        |   1 +
->>  Documentation/tee/qtee.rst                         | 143 ++++
->>  arch/arm64/boot/dts/qcom/sm8650.dtsi               |   4 +
->>  drivers/firmware/qcom/qcom_scm.c                   |  60 ++
->>  drivers/firmware/qcom/qcom_scm.h                   |   7 +
->>  drivers/tee/Kconfig                                |   1 +
->>  drivers/tee/Makefile                               |   1 +
->>  drivers/tee/qcomtee/Kconfig                        |  10 +
->>  drivers/tee/qcomtee/Makefile                       |   9 +
->>  drivers/tee/qcomtee/async.c                        | 153 ++++
->>  drivers/tee/qcomtee/call.c                         | 707 ++++++++++++++++
->>  drivers/tee/qcomtee/core.c                         | 942 ++++++++++++++++=
-+++++
->>  drivers/tee/qcomtee/primordial_obj.c               |  63 ++
->>  drivers/tee/qcomtee/qcom_scm.c                     |  36 +
->>  drivers/tee/qcomtee/qcomtee_msg.h                  | 217 +++++
->>  drivers/tee/qcomtee/qcomtee_private.h              | 218 +++++
->>  drivers/tee/qcomtee/release.c                      |  66 ++
->>  drivers/tee/qcomtee/user_obj.c                     | 625 ++++++++++++++
->>  drivers/tee/tee_core.c                             | 113 ++-
->>  include/linux/firmware/qcom/qcom_scm.h             |   9 +
->>  include/linux/firmware/qcom/qcom_tee.h             | 284 +++++++
->>  include/linux/tee_core.h                           |   4 +
->>  include/linux/tee_drv.h                            |  12 +
->>  include/uapi/linux/tee.h                           |  54 +-
->>  25 files changed, 3765 insertions(+), 8 deletions(-)
->> ---
->> base-commit: f486c8aa16b8172f63bddc70116a0c897a7f3f02
->> change-id: 20241202-qcom-tee-using-tee-ss-without-mem-obj-362c66340527
->>
->> Best regards,
->> --
->> Amirreza Zarrabi <quic_azarrabi@quicinc.com>
->>
+If you fix the issue in a separate patch/commit (i.e. not just a new version =
+of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202412202214.OdgzpOke-lkp(a)i=
+ntel.com/
 
---===============4548422818997832970==--
+All errors (new ones prefixed by >>):
+
+   In file included from drivers/tee/optee/rstmem.c:8:
+   In file included from include/linux/dma-map-ops.h:9:
+   In file included from include/linux/dma-mapping.h:8:
+   In file included from include/linux/scatterlist.h:8:
+   In file included from include/linux/mm.h:2223:
+   include/linux/vmstat.h:518:36: warning: arithmetic between different enume=
+ration types ('enum node_stat_item' and 'enum lru_list') [-Wenum-enum-convers=
+ion]
+     518 |         return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
+         |                               ~~~~~~~~~~~ ^ ~~~
+>> drivers/tee/optee/rstmem.c:311:67: error: expected ')'
+     311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
+__unused,
+         |                                                                   ^
+   drivers/tee/optee/rstmem.c:311:46: note: to match this '('
+     311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
+__unused,
+         |                                              ^
+>> drivers/tee/optee/rstmem.c:332:35: error: too many arguments to function c=
+all, expected single argument 'optee', have 2 arguments
+     332 |                 pool =3D alloc_rstmem_pool(optee, use_case);
+         |                        ~~~~~~~~~~~~~~~~~        ^~~~~~~~
+   drivers/tee/optee/rstmem.c:311:29: note: 'alloc_rstmem_pool' declared here
+     311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
+__unused,
+         |                             ^                 ~~~~~~~~~~~~~~~~~~~
+   1 warning and 2 errors generated.
+
+
+vim +311 drivers/tee/optee/rstmem.c
+
+   268=09
+   269	static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee, u32=
+ use_case)
+   270	{
+   271		struct optee_rstmem_cma_pool *rp;
+   272		size_t min_size;
+   273		int rc;
+   274=09
+   275		rp =3D kzalloc(sizeof(*rp), GFP_KERNEL);
+   276		if (!rp)
+   277			return ERR_PTR(-ENOMEM);
+   278		rp->rstmem.use_case =3D use_case;
+   279=09
+   280		rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align, NULL,
+   281				       &rp->end_point_count);
+   282		if (rc) {
+   283			if (rc !=3D -ENOSPC)
+   284				goto err;
+   285			rp->end_points =3D kcalloc(rp->end_point_count,
+   286						 sizeof(*rp->end_points), GFP_KERNEL);
+   287			if (!rp->end_points) {
+   288				rc =3D -ENOMEM;
+   289				goto err;
+   290			}
+   291			rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align,
+   292					       rp->end_points, &rp->end_point_count);
+   293			if (rc)
+   294				goto err_kfree_eps;
+   295		}
+   296=09
+   297		rp->pool.ops =3D &rstmem_pool_ops_cma;
+   298		rp->optee =3D optee;
+   299		rp->page_count =3D min_size / PAGE_SIZE;
+   300		mutex_init(&rp->mutex);
+   301=09
+   302		return &rp->pool;
+   303=09
+   304	err_kfree_eps:
+   305		kfree(rp->end_points);
+   306	err:
+   307		kfree(rp);
+   308		return ERR_PTR(rc);
+   309	}
+   310	#else /*CONFIG_CMA*/
+ > 311	static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee __un=
+used,
+   312						      u32 use_case __unused)
+   313	{
+   314		return ERR_PTR(-EINVAL);
+   315	}
+   316	#endif /*CONFIG_CMA*/
+   317=09
+   318	int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
+   319			       u32 flags, u32 use_case, size_t size)
+   320	{
+   321		struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+   322		struct tee_shm_pool *pool;
+   323		int rc;
+   324=09
+   325		if (!optee->rstmem_pools)
+   326			return -EINVAL;
+   327		if (flags)
+   328			return -EINVAL;
+   329=09
+   330		pool =3D xa_load(&optee->rstmem_pools->xa, use_case);
+   331		if (!pool) {
+ > 332			pool =3D alloc_rstmem_pool(optee, use_case);
+   333			if (IS_ERR(pool))
+   334				return PTR_ERR(pool);
+   335			rc =3D xa_insert(&optee->rstmem_pools->xa, use_case, pool,
+   336				       GFP_KERNEL);
+   337			if (rc) {
+   338				pool->ops->destroy_pool(pool);
+   339				return rc;
+   340			}
+   341		}
+   342=09
+   343		return pool->ops->alloc(pool, shm, size, 0);
+   344	}
+   345=09
+
+--=20
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
+
+--===============7631273858136734150==--
 
