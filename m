@@ -1,14 +1,14 @@
 From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v4 5/6] optee: FF-A: dynamic restricted memory allocation
-Date: Fri, 20 Dec 2024 22:38:53 +0800
-Message-ID: <202412202214.OdgzpOke-lkp@intel.com>
+Date: Sat, 21 Dec 2024 17:40:18 +0800
+Message-ID: <202412211952.LOCC8Lbo-lkp@intel.com>
 In-Reply-To: <20241217100809.3962439-6-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7631273858136734150=="
+Content-Type: multipart/mixed; boundary="===============2312985908119994070=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7631273858136734150==
+--===============2312985908119994070==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -25,49 +25,36 @@ patch link:    https://lore.kernel.org/r/20241217100809.3962439-6-jens.wiklan=
 der%40linaro.org
 patch subject: [PATCH v4 5/6] optee: FF-A: dynamic restricted memory allocati=
 on
-config: arm64-randconfig-002-20241220 (https://download.01.org/0day-ci/archiv=
-e/20241220/202412202214.OdgzpOke-lkp(a)intel.com/config)
-compiler: clang version 19.1.3 (https://github.com/llvm/llvm-project ab51eccf=
-88f5321e7c60591c5546b254b6afab99)
-reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
-0241220/202412202214.OdgzpOke-lkp(a)intel.com/reproduce)
+config: arm64-randconfig-r112-20241221 (https://download.01.org/0day-ci/archi=
+ve/20241221/202412211952.LOCC8Lbo-lkp(a)intel.com/config)
+compiler: aarch64-linux-gcc (GCC) 14.2.0
+reproduce: (https://download.01.org/0day-ci/archive/20241221/202412211952.LOC=
+C8Lbo-lkp(a)intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version =
 of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202412202214.OdgzpOke-lkp(a)i=
+| Closes: https://lore.kernel.org/oe-kbuild-all/202412211952.LOCC8Lbo-lkp(a)i=
 ntel.com/
 
 All errors (new ones prefixed by >>):
 
-   In file included from drivers/tee/optee/rstmem.c:8:
-   In file included from include/linux/dma-map-ops.h:9:
-   In file included from include/linux/dma-mapping.h:8:
-   In file included from include/linux/scatterlist.h:8:
-   In file included from include/linux/mm.h:2223:
-   include/linux/vmstat.h:518:36: warning: arithmetic between different enume=
-ration types ('enum node_stat_item' and 'enum lru_list') [-Wenum-enum-convers=
-ion]
-     518 |         return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
-         |                               ~~~~~~~~~~~ ^ ~~~
->> drivers/tee/optee/rstmem.c:311:67: error: expected ')'
+>> drivers/tee/optee/rstmem.c:311:67: error: expected ';', ',' or ')' before =
+'__unused'
      311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
 __unused,
-         |                                                                   ^
-   drivers/tee/optee/rstmem.c:311:46: note: to match this '('
-     311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
-__unused,
-         |                                              ^
->> drivers/tee/optee/rstmem.c:332:35: error: too many arguments to function c=
-all, expected single argument 'optee', have 2 arguments
+         |                                                                   =
+^~~~~~~~
+   drivers/tee/optee/rstmem.c: In function 'optee_rstmem_alloc':
+>> drivers/tee/optee/rstmem.c:332:24: error: implicit declaration of function=
+ 'alloc_rstmem_pool' [-Wimplicit-function-declaration]
      332 |                 pool =3D alloc_rstmem_pool(optee, use_case);
-         |                        ~~~~~~~~~~~~~~~~~        ^~~~~~~~
-   drivers/tee/optee/rstmem.c:311:29: note: 'alloc_rstmem_pool' declared here
-     311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
-__unused,
-         |                             ^                 ~~~~~~~~~~~~~~~~~~~
-   1 warning and 2 errors generated.
+         |                        ^~~~~~~~~~~~~~~~~
+>> drivers/tee/optee/rstmem.c:332:22: error: assignment to 'struct tee_shm_po=
+ol *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+     332 |                 pool =3D alloc_rstmem_pool(optee, use_case);
+         |                      ^
 
 
 vim +311 drivers/tee/optee/rstmem.c
@@ -157,5 +144,5 @@ used,
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
 
---===============7631273858136734150==--
+--===============2312985908119994070==--
 
