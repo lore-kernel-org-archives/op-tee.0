@@ -1,148 +1,238 @@
-From: kernel test robot <lkp@intel.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v4 5/6] optee: FF-A: dynamic restricted memory allocation
-Date: Sat, 21 Dec 2024 17:40:18 +0800
-Message-ID: <202412211952.LOCC8Lbo-lkp@intel.com>
-In-Reply-To: <20241217100809.3962439-6-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v4 0/6] TEE subsystem for restricted dma-buf allocations
+Date: Tue, 24 Dec 2024 12:05:19 +0530
+Message-ID: 
+ <CAFA6WYNVHu7_-bNAuTYBRBdoJwfk2VrW5M4aFVkb_UWQ=uxTvQ@mail.gmail.com>
+In-Reply-To: <Z2KsuAs-Dd4ZDaXR@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2312985908119994070=="
+Content-Type: multipart/mixed; boundary="===============4138071231875848760=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2312985908119994070==
+--===============4138071231875848760==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
+Hi Simona,
 
-kernel test robot noticed the following build errors:
+On Wed, 18 Dec 2024 at 16:36, Simona Vetter <simona.vetter@ffwll.ch> wrote:
+>
+> On Tue, Dec 17, 2024 at 11:07:36AM +0100, Jens Wiklander wrote:
+> > Hi,
+> >
+> > This patch set allocates the restricted DMA-bufs via the TEE subsystem.
+> >
+> > The TEE subsystem handles the DMA-buf allocations since it is the TEE
+> > (OP-TEE, AMD-TEE, TS-TEE, or perhaps a future QCOMTEE) which sets up the
+> > restrictions for the memory used for the DMA-bufs.
+> >
+> > I've added a new IOCTL, TEE_IOC_RSTMEM_ALLOC, to allocate the restricted
+> > DMA-bufs. This IOCTL reaches the backend TEE driver, allowing it to choose
+> > how to allocate the restricted physical memory.
+> >
+> > TEE_IOC_RSTMEM_ALLOC takes in addition to a size and flags parameters also
+> > a use-case parameter. This is used by the backend TEE driver to decide on
+> > allocation policy and which devices should be able to access the memory.
+> >
+> > Three use-cases (Secure Video Playback, Trusted UI, and Secure Video
+> > Recording) has been identified so far to serve as examples of what can be
+> > expected. More use-cases can be added in userspace ABI, but it's up to the
+> > backend TEE drivers to provide the implementation.
+> >
+> > Each use-case has it's own restricted memory pool since different use-cas=
+es
+> > requires isolation from different parts of the system. A restricted memory
+> > pool can be based on a static carveout instantiated while probing the TEE
+> > backend driver, or dynamically allocated from CMA and made restricted as
+> > needed by the TEE.
+> >
+> > This can be tested on QEMU with the following steps:
+> > repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml=
+ \
+> >         -b prototype/sdp-v4
+> > repo sync -j8
+> > cd build
+> > make toolchains -j$(nproc)
+> > make SPMC_AT_EL=3D1 all -j$(nproc)
+> > make SPMC_AT_EL=3D1 run-only
+> > # login and at the prompt:
+> > xtest --sdp-basic
+> >
+> > The SPMC_AT_EL=3D1 parameter configures the build with FF-A and an SPMC at
+> > S-EL1 inside OP-TEE. The parameter can be changed into SPMC_AT_EL=3Dn to =
+test
+> > without FF-A using the original SMC ABI instead. Please remember to do
+> > %rm -rf ../trusted-firmware-a/build/qemu
+> > for TF-A to be rebuilt properly using the new configuration.
+> >
+> > https://optee.readthedocs.io/en/latest/building/prerequisites.html
+> > list dependencies needed to build the above.
+> >
+> > The tests are pretty basic, mostly checking that a Trusted Application in
+> > the secure world can access and manipulate the memory. There are also some
+> > negative tests for out of bounds buffers etc.
+>
+> I think I've dropped this on earlier encrypted dma-buf discussions for
+> TEE, but can't find one right now ...
 
-[auto build test ERROR on fac04efc5c793dccbd07e2d59af9f90b7fc0dca4]
+Thanks for raising this query.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jens-Wiklander/tee-add=
--restricted-memory-allocation/20241217-181101
-base:   fac04efc5c793dccbd07e2d59af9f90b7fc0dca4
-patch link:    https://lore.kernel.org/r/20241217100809.3962439-6-jens.wiklan=
-der%40linaro.org
-patch subject: [PATCH v4 5/6] optee: FF-A: dynamic restricted memory allocati=
-on
-config: arm64-randconfig-r112-20241221 (https://download.01.org/0day-ci/archi=
-ve/20241221/202412211952.LOCC8Lbo-lkp(a)intel.com/config)
-compiler: aarch64-linux-gcc (GCC) 14.2.0
-reproduce: (https://download.01.org/0day-ci/archive/20241221/202412211952.LOC=
-C8Lbo-lkp(a)intel.com/reproduce)
+>
+> Do we have some open source userspace for this? To my knowledge we have
+> two implementations of encrypted/content protected dma-buf in upstream
+> right now in the amd and intel gpu drivers, and unless I'm mistaken they
+> both have some minimal userspace supporting EXT_protected_textures:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version =
-of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202412211952.LOCC8Lbo-lkp(a)i=
-ntel.com/
+First of all to clarify the support Jens is adding here for allocating
+restricted shared memory allocation in TEE subsystem is meant to be
+generic and not specific to only secure media pipeline use-case. Then
+here we not only have open source test applications but rather open
+source firmware too (OP-TEE as a Trusted OS) [1] supporting this as a
+core feature where we maintain a stable and extensible ABI among the
+kernel and the OP-TEE core.
 
-All errors (new ones prefixed by >>):
+Restricted memory is a feature enforced by hardware specific firewalls
+where a particular TEE implementation governs which particular block
+of memory is accessible to a particular peripheral or a CPU running in
+a higher privileged mode than the Linux kernel. There can be numeric
+use-cases surrounding that as follows:
 
->> drivers/tee/optee/rstmem.c:311:67: error: expected ';', ',' or ')' before =
-'__unused'
-     311 | static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee =
-__unused,
-         |                                                                   =
-^~~~~~~~
-   drivers/tee/optee/rstmem.c: In function 'optee_rstmem_alloc':
->> drivers/tee/optee/rstmem.c:332:24: error: implicit declaration of function=
- 'alloc_rstmem_pool' [-Wimplicit-function-declaration]
-     332 |                 pool =3D alloc_rstmem_pool(optee, use_case);
-         |                        ^~~~~~~~~~~~~~~~~
->> drivers/tee/optee/rstmem.c:332:22: error: assignment to 'struct tee_shm_po=
-ol *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
-     332 |                 pool =3D alloc_rstmem_pool(optee, use_case);
-         |                      ^
+- Secure media pipeline where the contents gets decrypted and stored
+in a restricted buffer which are then accessible only to media display
+pipeline peripherals.
+- Trusted user interface where a peripheral takes input from the user
+and stores it in a restricted buffer which then is accessible to TEE
+implementation only.
+- Another possible use-case can be for the TEE implementation to store
+key material in a restricted buffer which is only accessible to the
+hardware crypto accelerator.
 
+I am sure there will be more use-cases related to this feature but
+those will only be possible once we provide a stable and extensible
+restricted memory interface among the Linux user-space and the secure
+world user-space (normally referred to as Trusted Applications).
 
-vim +311 drivers/tee/optee/rstmem.c
+[1] https://github.com/OP-TEE/optee_os/pull/7159
 
-   268=09
-   269	static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee, u32=
- use_case)
-   270	{
-   271		struct optee_rstmem_cma_pool *rp;
-   272		size_t min_size;
-   273		int rc;
-   274=09
-   275		rp =3D kzalloc(sizeof(*rp), GFP_KERNEL);
-   276		if (!rp)
-   277			return ERR_PTR(-ENOMEM);
-   278		rp->rstmem.use_case =3D use_case;
-   279=09
-   280		rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align, NULL,
-   281				       &rp->end_point_count);
-   282		if (rc) {
-   283			if (rc !=3D -ENOSPC)
-   284				goto err;
-   285			rp->end_points =3D kcalloc(rp->end_point_count,
-   286						 sizeof(*rp->end_points), GFP_KERNEL);
-   287			if (!rp->end_points) {
-   288				rc =3D -ENOMEM;
-   289				goto err;
-   290			}
-   291			rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align,
-   292					       rp->end_points, &rp->end_point_count);
-   293			if (rc)
-   294				goto err_kfree_eps;
-   295		}
-   296=09
-   297		rp->pool.ops =3D &rstmem_pool_ops_cma;
-   298		rp->optee =3D optee;
-   299		rp->page_count =3D min_size / PAGE_SIZE;
-   300		mutex_init(&rp->mutex);
-   301=09
-   302		return &rp->pool;
-   303=09
-   304	err_kfree_eps:
-   305		kfree(rp->end_points);
-   306	err:
-   307		kfree(rp);
-   308		return ERR_PTR(rc);
-   309	}
-   310	#else /*CONFIG_CMA*/
- > 311	static struct tee_shm_pool *alloc_rstmem_pool(struct optee *optee __un=
-used,
-   312						      u32 use_case __unused)
-   313	{
-   314		return ERR_PTR(-EINVAL);
-   315	}
-   316	#endif /*CONFIG_CMA*/
-   317=09
-   318	int optee_rstmem_alloc(struct tee_context *ctx, struct tee_shm *shm,
-   319			       u32 flags, u32 use_case, size_t size)
-   320	{
-   321		struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-   322		struct tee_shm_pool *pool;
-   323		int rc;
-   324=09
-   325		if (!optee->rstmem_pools)
-   326			return -EINVAL;
-   327		if (flags)
-   328			return -EINVAL;
-   329=09
-   330		pool =3D xa_load(&optee->rstmem_pools->xa, use_case);
-   331		if (!pool) {
- > 332			pool =3D alloc_rstmem_pool(optee, use_case);
-   333			if (IS_ERR(pool))
-   334				return PTR_ERR(pool);
-   335			rc =3D xa_insert(&optee->rstmem_pools->xa, use_case, pool,
-   336				       GFP_KERNEL);
-   337			if (rc) {
-   338				pool->ops->destroy_pool(pool);
-   339				return rc;
-   340			}
-   341		}
-   342=09
-   343		return pool->ops->alloc(pool, shm, size, 0);
-   344	}
-   345=09
+>
+> https://github.com/KhronosGroup/OpenGL-Registry/blob/main/extensions/EXT/EX=
+T_protected_textures.txt
+>
+> It's not great, but it does just barely clear the bar in my opinion. I
+> guess something in gstreamer or similar video pipeline framework would
+> also do the job.
+>
+> Especially with the context of the uapi discussion in the v1/RFC thread I
+> think we need more than a bare-bones testcase to make sure this works in
+> actual use.
 
---=20
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Currently the TEE subsystem already supports a stable ABI for shared
+memory allocator among Linux user-space and secure world user-space
+here [2]. And the stable ABI for restricted memory is also along the
+same lines meant to be a vendor neutral abstraction for the user-space
+access. The current test cases not only test the interface but also
+perform regression tests too.
 
---===============2312985908119994070==--
+I am also in favour of end to end open source use-cases. But I fear
+without progressing in a step wise manner as with this proposal we
+would rather force developers to upstream all the software pieces in
+one go which will be kind of a chicken and egg situation. I am sure
+once this feature lands Mediatek folks will be interested to port
+their secure video playback patchset [3] on top of it. Similarly other
+silicon vendors like NXP, Qcom etc. will be motivated to do the same.
+
+[2] https://docs.kernel.org/userspace-api/tee.html
+[3] https://lore.kernel.org/linux-arm-kernel/20240515112308.10171-1-yong.wu(a=
+)mediatek.com/
+
+-Sumit
+
+>
+> Cheers, Sima
+>
+> >
+> > Thanks,
+> > Jens
+> >
+> > Changes since V3:
+> > * Make the use_case and flags field in struct tee_shm u32's instead of
+> >   u16's
+> > * Add more description for TEE_IOC_RSTMEM_ALLOC in the header file
+> > * Import namespace DMA_BUF in module tee, reported by lkp(a)intel.com
+> > * Added a note in the commit message for "optee: account for direction
+> >   while converting parameters" why it's needed
+> > * Factor out dynamic restricted memory allocation from
+> >   "optee: support restricted memory allocation" into two new commits
+> >   "optee: FF-A: dynamic restricted memory allocation" and
+> >   "optee: smc abi: dynamic restricted memory allocation"
+> > * Guard CMA usage with #ifdef CONFIG_CMA, effectively disabling dynamic
+> >   restricted memory allocate if CMA isn't configured
+> >
+> > Changes since the V2 RFC:
+> > * Based on v6.12
+> > * Replaced the flags for SVP and Trusted UID memory with a u32 field with
+> >   unique id for each use case
+> > * Added dynamic allocation of restricted memory pools
+> > * Added OP-TEE ABI both with and without FF-A for dynamic restricted memo=
+ry
+> > * Added support for FF-A with FFA_LEND
+> >
+> > Changes since the V1 RFC:
+> > * Based on v6.11
+> > * Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALL=
+OC
+> >
+> > Changes since Olivier's post [2]:
+> > * Based on Yong Wu's post [1] where much of dma-buf handling is done in
+> >   the generic restricted heap
+> > * Simplifications and cleanup
+> > * New commit message for "dma-buf: heaps: add Linaro restricted dmabuf he=
+ap
+> >   support"
+> > * Replaced the word "secure" with "restricted" where applicable
+> >
+> > Jens Wiklander (6):
+> >   tee: add restricted memory allocation
+> >   optee: account for direction while converting parameters
+> >   optee: sync secure world ABI headers
+> >   optee: support restricted memory allocation
+> >   optee: FF-A: dynamic restricted memory allocation
+> >   optee: smc abi: dynamic restricted memory allocation
+> >
+> >  drivers/tee/Makefile              |   1 +
+> >  drivers/tee/optee/Makefile        |   1 +
+> >  drivers/tee/optee/call.c          |  10 +-
+> >  drivers/tee/optee/core.c          |   1 +
+> >  drivers/tee/optee/ffa_abi.c       | 178 +++++++++++++-
+> >  drivers/tee/optee/optee_ffa.h     |  27 ++-
+> >  drivers/tee/optee/optee_msg.h     |  65 ++++-
+> >  drivers/tee/optee/optee_private.h |  75 ++++--
+> >  drivers/tee/optee/optee_smc.h     |  71 +++++-
+> >  drivers/tee/optee/rpc.c           |  31 ++-
+> >  drivers/tee/optee/rstmem.c        | 388 ++++++++++++++++++++++++++++++
+> >  drivers/tee/optee/smc_abi.c       | 213 ++++++++++++++--
+> >  drivers/tee/tee_core.c            |  38 ++-
+> >  drivers/tee/tee_private.h         |   2 +
+> >  drivers/tee/tee_rstmem.c          | 201 ++++++++++++++++
+> >  drivers/tee/tee_shm.c             |   2 +
+> >  drivers/tee/tee_shm_pool.c        |  69 +++++-
+> >  include/linux/tee_core.h          |  15 ++
+> >  include/linux/tee_drv.h           |   2 +
+> >  include/uapi/linux/tee.h          |  44 +++-
+> >  20 files changed, 1358 insertions(+), 76 deletions(-)
+> >  create mode 100644 drivers/tee/optee/rstmem.c
+> >  create mode 100644 drivers/tee/tee_rstmem.c
+> >
+> >
+> > base-commit: fac04efc5c793dccbd07e2d59af9f90b7fc0dca4
+> > --
+> > 2.43.0
+> >
+>
+> --
+> Simona Vetter
+> Software Engineer, Intel Corporation
+> http://blog.ffwll.ch
+
+--===============4138071231875848760==--
 
