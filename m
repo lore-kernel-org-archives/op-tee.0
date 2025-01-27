@@ -1,123 +1,159 @@
-From: "Jork Loeser (he/him)" <Jork.Loeser@microsoft.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: RE: [EXTERNAL] Re: libtomcrypt, AES-CTR: Missing counter-increment
- for non-crypto-accelerated archs?
-Date: Fri, 24 Jan 2025 18:32:30 +0000
-Message-ID: <IA1PR21MB4631CE640BC06293C45E24CEF1E32@IA1PR21MB4631.namprd21.prod.outlook.com>
+Subject: Re: [PATCH] tee: optee: Add support for supplicant timeout
+Date: Mon, 27 Jan 2025 08:33:33 +0100
+Message-ID: 
+ <CAHUa44GdxO3TCLyOQdCHbdVGKpSHpnxBp_JAfAhpVgXuWYOVhw@mail.gmail.com>
 In-Reply-To: <
- <CA+NB=mb=fZ3_e38mb3fyF5jMv-PpmgCUsF_63Wi2XL9J4dFuUQ@mail.gmail.com>>
+ <CAFA6WYO1aXiUozs8WiawSbok5hCmV8bXz9cRgEJ0r+LAwL9J9A@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1876239428353997513=="
+Content-Type: multipart/mixed; boundary="===============0408219009138477100=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1876239428353997513==
+--===============0408219009138477100==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-LGTM, thanks!
+[+Arnd for a question below]
 
-Best,
-Jork
+On Wed, Jan 22, 2025 at 1:25=E2=80=AFPM Sumit Garg <sumit.garg@linaro.org> =
+wrote:
+>
+> On Wed, 22 Jan 2025 at 15:36, Jens Wiklander <jens.wiklander@linaro.org> =
+wrote:
+> >
+> > On Wed, Jan 22, 2025 at 10:15=E2=80=AFAM Sumit Garg <sumit.garg@linaro.=
+org> wrote:
+> > >
+> > > On Mon, 20 Jan 2025 at 19:01, Jens Wiklander <jens.wiklander@linaro.o=
+rg> wrote:
+> > > >
+> > > > On Mon, Jan 20, 2025 at 10:24=E2=80=AFAM Sumit Garg <sumit.garg@lin=
+aro.org> wrote:
+> > > > >
+> > > > > Hi Jens,
+> > > > >
+> > > > > On Fri, 13 Dec 2024 at 16:45, Sumit Garg <sumit.garg@linaro.org> =
+wrote:
+> > > > > >
+> > > > > > OP-TEE supplicant is a user-space daemon and it's possible for it
+> > > > > > being crashed or killed in the middle of processing an OP-TEE RPC=
+ call.
+> > > > > > It becomes more complicated when there is incorrect shutdown orde=
+ring
+> > > > > > of the supplicant process vs the OP-TEE client application which =
+can
+> > > > > > eventually lead to system hang-up waiting for the closure of the =
+client
+> > > > > > application.
+> > > > > >
+> > > > > > In order to gracefully handle this scenario, let's add a long eno=
+ugh
+> > > > > > timeout to wait for supplicant to process requests. In case there=
+ is a
+> > > > > > timeout then we return a proper error code for the RPC request.
+> > > > > >
+> > > > > > Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
+> > > > > > ---
+> > > > > >  drivers/tee/optee/supp.c | 58 +++++++++++++++++++++++++---------=
+------
+> > > > > >  1 file changed, 36 insertions(+), 22 deletions(-)
+> > > > > >
+> > > > >
+> > > > > Do you have any further comments here? Or is it fine for you to pic=
+k it up?
+> > > >
+> > > > I don't like the timeout, it's a bit too hacky.
+> > > >
+> > >
+> > > Can you please elaborate here as to why?
+> >
+> > Tee-supplicant is supposed to respond in a timely manner. What is
+> > timely manner depends on the use case, but you now want to say that
+> > it's 10 seconds regardless of what's going on. This makes it
+> > impossible to debug tee-supplicant with a debugger unless you're very
+> > quick. It might also introduce random timouts in a system under a
+> > heavy IO load.
+>
+> Although, initially I thought 10 seconds should be enough for any
+> user-space process to be considered hung but then I saw
+> DEFAULT_HUNG_TASK_TIMEOUT which is 120 seconds for a task to be
+> considered hung. How about rather a Kconfig option like
+> OPTEE_SUPPLICANT_HUNG_TIMEOUT which defaults to 120 seconds? It can be
+> configured as 0 to disable timeout entirely for debugging purposes.
 
-From: J=C3=A9r=C3=B4me Forissier <jerome.forissier@linaro.org>
-Sent: Friday, January 24, 2025 10:09
-To: Jork Loeser (he/him) <Jork.Loeser@microsoft.com>
-Cc: op-tee(a)lists.trustedfirmware.org
-Subject: Re: [EXTERNAL] Re: libtomcrypt, AES-CTR: Missing counter-increment f=
-or non-crypto-accelerated archs?
+Adding a timeout when a timeout isn't needed seems wrong, even if the
+timeout is very long. Arnd, what do you think?
 
-You're welcome. I have created https://github.com/OP-TEE/optee_os/pull/7243.
+>
+> >
+> > > Currently the kernel is
+> > > relying too heavily on tee-supplicant daemon to respond properly in an
+> > > unbounded loop. I think this is really a bug for devices in production
+> > > in scenarios where the tee-supplicant gets stuck for some reason or
+> > > crashes in the middle or gets killed.
+> >
+> > Tee-supplicant is a system daemon, the system depends heavily on it.
+> > It should not be killable by unprivileged processes.
+> >  What happens if init crashes or is killed?
+>
+> I am not aware of any other place in the kernel where a kernel thread
+> does an unbounded loop for even other system daemons.
 
-Regards,
---
-Jerome
+I imagine that FUSE and NFS mounts behave similarly.
 
-On Fri, 24 Jan 2025 at 18:57, Jork Loeser (he/him) <Jork.Loeser(a)microsoft.c=
-om<mailto:Jork.Loeser@microsoft.com>> wrote:
-That is quite excellent then, thank you for the tips & details! Appreciate th=
-e credit ;-)
+>
+> >
+> > > These can simply lead to system
+> > > hung up issues during shutdown requiring a hard power off or reset
+> > > which isn't expected from a sane system.
+> >
+> > This is new information. Is the use case to avoid blocking for too
+> > long during shutdown or reset? We may need to do something to ensure
+> > that the tee-supplicant isn't killed before OP-TEE is done with it.
+> > Enforcing this timeout during shutdown makes sense, but not during
+> > normal operation.
+>
+> This was entirely the motivation of this patch, maybe the commit
+> description wasn't clear as I expected.
+>
+>     OP-TEE supplicant is a user-space daemon and it's possible for it
+>     being crashed or killed in the middle of processing an OP-TEE RPC call.
+>     It becomes more complicated when there is incorrect shutdown ordering
+>     of the supplicant process vs the OP-TEE client application which can
+>     eventually lead to system hang-up waiting for the closure of the client
+>     application.
+>
+> It's essentially trying to fix the system hang up problem during
+> shutdown/reboot. You can't always control user-space to do the right
+> thing but the golden rule is that the user-space shouldn't be able to
+> break or hang-up the kernel.
+>
+> >
+> > > So I rather consider the
+> > > unbounded wait loop for tee-supplicant a bug we have currently
+> > > requiring a fix to be backported.
+> >
+> > Yeah, but only during certain circumstances.
+> >
+> > >
+> > > So do you have a better suggestion to fix this in the mainline as well
+> > > as backported to stable releases?
+> >
+> > Let's start by finding out what problem you're trying to fix.
+>
+> Let me know if the Kconfig option as proposed above sounds reasonable to yo=
+u.
 
-Best,
-Jork Loeser,
-Microsoft
+No one is going to bother with that config option, recompiling the
+kernel to be able to debug tee-supplicant is a bit much.
 
-From: J=C3=A9r=C3=B4me Forissier <jerome.forissier(a)linaro.org<mailto:jerome=
-.forissier@linaro.org>>
-Sent: Friday, January 24, 2025 02:17
-To: Jork Loeser (he/him) <Jork.Loeser(a)microsoft.com<mailto:Jork.Loeser@mi=
-crosoft.com>>
-Cc: op-tee(a)lists.trustedfirmware.org<mailto:op-tee@lists.trustedfirmware.=
-org>
-Subject: [EXTERNAL] Re: libtomcrypt, AES-CTR: Missing counter-increment for n=
-on-crypto-accelerated archs?
-
-Hi Jork,
-
-On Fri, 24 Jan 2025 at 01:00, Jork Loeser (he/him) via OP-TEE <op-tee(a)lists=
-.trustedfirmware.org<mailto:op-tee@lists.trustedfirmware.org>> wrote:
-(Please provide a better way of reporting should this ML not be a good forum =
-for bug-reports/fixes)
-
-The prefered place is on the OP-TEE OS GitHub issues section: https://github.=
-com/OP-TEE/optee_os/issues, but this ML is OK too, unless the discussion invo=
-lves a lot of code changes.
-
-Hello all,
-
-While experimenting with OP-TEE OS on a non-ARM platform (x86, to be precise)=
-, I noticed xtest regression_4003 and regression_4017 to be failing. It appea=
-rs that for AES-CTR encrypt/decrypt, optee_os/core/lib/libtomcrypt/src/modes/=
-ctr/ctr_encrypt.c:s_ctr_encrypt()<https://github.com/OP-TEE/optee_os/blob/37d=
-e1791d97d0df56db0709b5d001f821598df39/core/lib/libtomcrypt/src/modes/ctr/ctr_=
-encrypt.c#L41> fails to increment the counter on block boundaries when passed=
- data covers a whole block. I suppose that it is a non-problem for architectu=
-res having crypto acceleration hooked up, since ctr_encrypt() bypasses s_ctr_=
-encrypt() in that case.
-
-Yes, and even without acceleration the platforms we routinely build for (arm,=
- arm64) do not set LTC_FAST and therefore do not use the part of the code tha=
-t has the problem.
-
-The below fixes the behavior for my setup - xtest regression_4003 and regress=
-ion_4017 pass as a result:
-
-diff --git a/core/lib/libtomcrypt/src/modes/ctr/ctr_encrypt.c b/core/lib/libt=
-omcrypt/src/modes/ctr/ctr_encrypt.c
-index a23e33c05..2019de2b6 100644
---- a/core/lib/libtomcrypt/src/modes/ctr/ctr_encrypt.c
-+++ b/core/lib/libtomcrypt/src/modes/ctr/ctr_encrypt.c
-@@ -61,6 +61,7 @@ static int s_ctr_encrypt(const unsigned char *pt, unsigned =
-char *ct, unsigned lo
-        ct         +=3D ctr->blocklen;
-        len        -=3D ctr->blocklen;
-        ctr->padlen =3D ctr->blocklen;
-+       s_ctr_increment_counter(ctr);
-        continue;
-       }
-#endif
-
-This change looks totally correct to me, both in principle (given how CTR is =
-supposed to work) and considering that the non-LTC_FAST part does call s_ctr_=
-increment_counter() on a block boundary just a few lines below.
-
-I understand that you might prefer a full PR instead. Please accept my apolog=
-ies for not providing such at this time; perhaps one of the maintainers (Jero=
-me Forissier?) can take the above into consideration instead. If in doubt, co=
-nsider above change as BSD-2-Clause'd.
-
-That's fine with me. I will create a PR. Let me know if I may credit you with=
- a "Reported-by: Your Name <your.email>" tag.
-
-Many thanks for reporting!
-
---
-Jerome Forissier
-Linaro
+Cheers,
+Jens
 
 
-Best,
-Jork Loeser,
-Microsoft
+>
+> -Sumit
 
---===============1876239428353997513==--
+--===============0408219009138477100==--
 
