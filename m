@@ -1,209 +1,106 @@
-From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 8/8] Documentation: tee: Add Qualcomm TEE driver
-Date: Sun, 02 Feb 2025 18:43:36 -0800
-Message-ID: <20250202-qcom-tee-using-tee-ss-without-mem-obj-v2-8-297eacd0d34f@quicinc.com>
-In-Reply-To: <=?utf-8?q?=3C20250202-qcom-tee-using-tee-ss-without-mem-obj-v2-?=
- =?utf-8?q?0-297eacd0d34f=40quicinc=2Ecom=3E?=>
+Subject: [PATCH v2] tee: optee: Fix supplicant wait loop
+Date: Mon, 03 Feb 2025 13:30:30 +0530
+Message-ID: <20250203080030.384929-1-sumit.garg@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6130266956118871842=="
+Content-Type: multipart/mixed; boundary="===============2034276205916191300=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6130266956118871842==
+--===============2034276205916191300==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add documentation for the Qualcomm TEE driver.
+OP-TEE supplicant is a user-space daemon and it's possible for it
+being hung or crashed or killed in the middle of processing an OP-TEE
+RPC call. It becomes more complicated when there is incorrect shutdown
+ordering of the supplicant process vs the OP-TEE client application which
+can eventually lead to system hang-up waiting for the closure of the
+client application.
 
-Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+Allow the client process waiting in kernel for supplicant response to
+be killed rather than indefinitetly waiting in an unkillable state. This
+fixes issues observed during system reboot/shutdown when supplicant got
+hung for some reason or gets crashed/killed which lead to client getting
+hung in an unkillable state. It in turn lead to system being in hung up
+state requiring hard power off/on to recover.
+
+Fixes: 4fb0a5eb364d ("tee: add OP-TEE driver")
+Suggested-by: Arnd Bergmann <arnd@arndb.de>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Sumit Garg <sumit.garg@linaro.org>
 ---
- Documentation/tee/index.rst |   1 +
- Documentation/tee/qtee.rst  | 150 ++++++++++++++++++++++++++++++++++++++++++=
-++
- 2 files changed, 151 insertions(+)
 
-diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
-index 4be6e69d7837..62afb7ee9b52 100644
---- a/Documentation/tee/index.rst
-+++ b/Documentation/tee/index.rst
-@@ -11,6 +11,7 @@ TEE Subsystem
-    op-tee
-    amd-tee
-    ts-tee
-+   qtee
-=20
- .. only::  subproject and html
-=20
-diff --git a/Documentation/tee/qtee.rst b/Documentation/tee/qtee.rst
-new file mode 100644
-index 000000000000..f6834410859c
---- /dev/null
-+++ b/Documentation/tee/qtee.rst
-@@ -0,0 +1,150 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+QTEE (Qualcomm Trusted Execution Environment)
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+The QTEE driver handles communication with Qualcomm TEE [1].
-+
-+The lowest level of communication with QTEE builds on the ARM SMC Calling
-+Convention (SMCCC) [2], which is the foundation for QTEE's Secure Channel
-+Manager (SCM) [3] used internally by the driver [4].
-+
-+In a QTEE-based system, services are represented as objects with a series of
-+operations that can be called to produce results, including other objects.
-+
-+When an object is hosted within QTEE, executing its operations is referred
-+to as direct invocation. QTEE can invoke objects hosted in the kernel or
-+userspace using a method known as callback requests.
-+
-+The SCM provides two functions for direct invocation and callback request:
-+
-+- QCOM_SCM_SMCINVOKE_INVOKE for direct invocation. It can return either
-+  a result or a callback request.
-+- QCOM_SCM_SMCINVOKE_CB_RSP submits a response for a previous callback reque=
-st.
-+
-+The QTEE Transport Message [5] is stacked on top of the SCM driver functions.
-+
-+A message consists of two buffers shared with QTEE: inbound and outbound
-+buffers. The inbound buffer is used for direct invocation, and the outbound
-+buffer is used to make callback requests. This picture shows the contents of
-+a QTEE transport message::
-+
-+                                      +---------------------+
-+                                      |                     v
-+    +-----------------+-------+-------+------+--------------------------+
-+    | qcomtee_msg_    |object | buffer       |                          |
-+    |  object_invoke  |  id   | offset, size |                          | (i=
-nbound buffer)
-+    +-----------------+-------+--------------+--------------------------+
-+    <---- header -----><---- arguments ------><- in/out buffer payload ->
-+
-+                                      +-----------+
-+                                      |           v
-+    +-----------------+-------+-------+------+----------------------+
-+    | qcomtee_msg_    |object | buffer       |                      |
-+    |  callback       |  id   | offset, size |                      | (outbo=
-und buffer)
-+    +-----------------+-------+--------------+----------------------+
-+
-+Each buffer is started with a header and array of arguments.
-+
-+QTEE Transport Message supports four types of arguments:
-+
-+- Input Object (IO) is an object parameter to the current invocation
-+  or callback request.
-+- Output Object (OO) is an object parameter from the current invocation
-+  or callback request.
-+- Input Buffer (IB) is (offset, size) pair to the inbound or outbound region
-+  to store parameter to the current invocation or callback request.
-+- Output Buffer (OB) is (offset, size) pair to the inbound or outbound region
-+  to store parameter from the current invocation or callback request.
-+
-+The QTEE driver offers the qcomtee_object, which represents an object within
-+both QTEE and the kernel. To access any service in QTEE, a client needs to
-+invoke an instance of this object. Any structure intended to represent a ser=
-vice
-+for export to QTEE should include an instance of qcomtee_object::
-+
-+	struct driver_service {
-+		struct qcomtee_object object;
-+		...
-+	};
-+
-+	#define to_driver_service_object(o) container_of((o), struct driver_service=
-, object)
-+
-+	static int driver_service_dispatch(struct qcomtee_object *object, u32 op,
-+					   struct qcomtee_arg *args)
-+	{
-+		struct driver_service *so =3D to_driver_service_object(object);
-+
-+		switch(op) {
-+		case OBJECT_OP1:
-+			...
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+	}
-+
-+	static void driver_service_object_release(struct si_object *object)
-+	{
-+		struct driver_service *so =3D to_driver_service_object(object);
-+		kfree(so);
-+	}
-+
-+	struct si_object_operations driver_service_ops =3D {
-+		.release =3D driver_service_object_release;
-+		.dispatch =3D driver_service_dispatch;
-+	};
-+
-+	void service_init(void)
-+	{
-+		struct driver_service *so =3D kzalloc(sizeof(*so), GFP_KERNEL);
-+
-+		/* Initialize so->object as a callback object. */
-+		qcomtee_object_user_init(&so->object, QCOMTEE_OBJECT_TYPE_CB_OBJECT,
-+					 &driver_service_ops, "driver_service_object");
-+
-+		/* Invoke a QTEE object and pass/register 'so->object' with QTEE. */
-+		...
-+	}
-+	module_init(service_init);
-+
-+The QTEE driver utilizes qcomtee_object to encapsulate userspace objects. Wh=
-en
-+a callback request is made, it translates into calling the dispatch operatio=
-n.
-+For userspace objects, this is converted into requests accessible to callback
-+servers and available through generic TEE API IOCTLs.
-+
-+Picture of the relationship between the different components in the QTEE
-+architecture::
-+
-+         User space               Kernel                     Secure world
-+         ~~~~~~~~~~               ~~~~~~                     ~~~~~~~~~~~~
-+   +--------+   +----------+                                +--------------+
-+   | Client |   |callback  |                                | Trusted      |
-+   +--------+   |server    |                                | Application  |
-+      /\        +----------+                                +--------------+
-+      ||  +----------+ /\                                          /\
-+      ||  |callback  | ||                                          ||
-+      ||  |server    | ||                                          \/
-+      ||  +----------+ ||                                   +--------------+
-+      \/       /\      ||                                   | TEE Internal |
-+   +-------+   ||      ||                                   | API          |
-+   | TEE   |   ||      ||   +--------+--------+             +--------------+
-+   | Client|   ||      ||   | TEE    | QTEE   |             | QTEE         |
-+   | API   |   \/      \/   | subsys | driver |             | Trusted OS   |
-+   +-------+----------------+----+-------+----+-------------+--------------+
-+   |      Generic TEE API        |       |   QTEE MSG                      |
-+   |      IOCTL (TEE_IOC_*)      |       |   SMCCC (QCOM_SCM_SMCINVOKE_*)  |
-+   +-----------------------------+       +---------------------------------+
-+
-+References
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+[1] https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-11/qualc=
-omm-trusted-execution-environment.html
-+
-+[2] http://infocenter.arm.com/help/topic/com.arm.doc.den0028a/index.html
-+
-+[3] drivers/firmware/qcom/qcom_scm.c
-+
-+[4] /local/mnt/workspace/Linux/drivers/tee/qcomtee/qcom_scm.c
-+
-+[5] drivers/tee/qcomtee/qcomtee_msg.h
+Changes in v2:
+- Switch to killable wait instead as suggested by Arnd instead
+  of supplicant timeout. It atleast allow the client to wait for
+  supplicant in killable state which in turn allows system to reboot
+  or shutdown gracefully.
 
+ drivers/tee/optee/supp.c | 32 +++++++-------------------------
+ 1 file changed, 7 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
+index 322a543b8c27..3fbfa9751931 100644
+--- a/drivers/tee/optee/supp.c
++++ b/drivers/tee/optee/supp.c
+@@ -80,7 +80,6 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, =
+size_t num_params,
+ 	struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+ 	struct optee_supp *supp =3D &optee->supp;
+ 	struct optee_supp_req *req;
+-	bool interruptable;
+ 	u32 ret;
+=20
+ 	/*
+@@ -111,36 +110,19 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 fu=
+nc, size_t num_params,
+ 	/*
+ 	 * Wait for supplicant to process and return result, once we've
+ 	 * returned from wait_for_completion(&req->c) successfully we have
+-	 * exclusive access again.
++	 * exclusive access again. Allow the wait to be killable such that
++	 * the wait doesn't turn into an indefinite state if the supplicant
++	 * gets hung for some reason.
+ 	 */
+-	while (wait_for_completion_interruptible(&req->c)) {
+-		mutex_lock(&supp->mutex);
+-		interruptable =3D !supp->ctx;
+-		if (interruptable) {
+-			/*
+-			 * There's no supplicant available and since the
+-			 * supp->mutex currently is held none can
+-			 * become available until the mutex released
+-			 * again.
+-			 *
+-			 * Interrupting an RPC to supplicant is only
+-			 * allowed as a way of slightly improving the user
+-			 * experience in case the supplicant hasn't been
+-			 * started yet. During normal operation the supplicant
+-			 * will serve all requests in a timely manner and
+-			 * interrupting then wouldn't make sense.
+-			 */
++	if (wait_for_completion_killable(&req->c)) {
++		if (!mutex_lock_killable(&supp->mutex))	{
+ 			if (req->in_queue) {
+ 				list_del(&req->link);
+ 				req->in_queue =3D false;
+ 			}
++			mutex_unlock(&supp->mutex);
+ 		}
+-		mutex_unlock(&supp->mutex);
+-
+-		if (interruptable) {
+-			req->ret =3D TEEC_ERROR_COMMUNICATION;
+-			break;
+-		}
++		req->ret =3D TEEC_ERROR_COMMUNICATION;
+ 	}
+=20
+ 	ret =3D req->ret;
 --=20
-2.34.1
+2.43.0
 
 
---===============6130266956118871842==--
+--===============2034276205916191300==--
 
