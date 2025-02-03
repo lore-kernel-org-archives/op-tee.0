@@ -1,174 +1,209 @@
 From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v2 7/8] qcomtee: add primordial object
-Date: Sun, 02 Feb 2025 18:43:35 -0800
-Message-ID: <20250202-qcom-tee-using-tee-ss-without-mem-obj-v2-7-297eacd0d34f@quicinc.com>
+Subject: [PATCH v2 8/8] Documentation: tee: Add Qualcomm TEE driver
+Date: Sun, 02 Feb 2025 18:43:36 -0800
+Message-ID: <20250202-qcom-tee-using-tee-ss-without-mem-obj-v2-8-297eacd0d34f@quicinc.com>
 In-Reply-To: <=?utf-8?q?=3C20250202-qcom-tee-using-tee-ss-without-mem-obj-v2-?=
  =?utf-8?q?0-297eacd0d34f=40quicinc=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1280986821919786775=="
+Content-Type: multipart/mixed; boundary="===============6130266956118871842=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1280986821919786775==
+--===============6130266956118871842==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-After booting, the kernel provides a static object known as the
-primordial object. This object is utilized by QTEE for native
-kernel services such as yield or privileged operations.
+Add documentation for the Qualcomm TEE driver.
 
 Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
 ---
- drivers/tee/qcomtee/Makefile          |  1 +
- drivers/tee/qcomtee/core.c            | 15 +++++---
- drivers/tee/qcomtee/primordial_obj.c  | 65 +++++++++++++++++++++++++++++++++=
+ Documentation/tee/index.rst |   1 +
+ Documentation/tee/qtee.rst  | 150 ++++++++++++++++++++++++++++++++++++++++++=
 ++
- drivers/tee/qcomtee/qcomtee_private.h |  3 ++
- 4 files changed, 80 insertions(+), 4 deletions(-)
+ 2 files changed, 151 insertions(+)
 
-diff --git a/drivers/tee/qcomtee/Makefile b/drivers/tee/qcomtee/Makefile
-index 1b14b943e5f5..a3a2d00e83f0 100644
---- a/drivers/tee/qcomtee/Makefile
-+++ b/drivers/tee/qcomtee/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_QCOMTEE) +=3D qcomtee.o
- qcomtee-objs +=3D async.o
- qcomtee-objs +=3D call.o
- qcomtee-objs +=3D core.o
-+qcomtee-objs +=3D primordial_obj.o
- qcomtee-objs +=3D qcom_scm.o
- qcomtee-objs +=3D release.o
- qcomtee-objs +=3D shm.o
-diff --git a/drivers/tee/qcomtee/core.c b/drivers/tee/qcomtee/core.c
-index 9dbfcf62678e..5342e9462d9e 100644
---- a/drivers/tee/qcomtee/core.c
-+++ b/drivers/tee/qcomtee/core.c
-@@ -30,10 +30,12 @@ int qcomtee_next_arg_type(struct qcomtee_arg *u, int i,
- }
+diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
+index 4be6e69d7837..62afb7ee9b52 100644
+--- a/Documentation/tee/index.rst
++++ b/Documentation/tee/index.rst
+@@ -11,6 +11,7 @@ TEE Subsystem
+    op-tee
+    amd-tee
+    ts-tee
++   qtee
 =20
- /*
-- * QTEE expects IDs with the QCOMTEE_MSG_OBJECT_NS_BIT set for objects
-- * of the QCOMTEE_OBJECT_TYPE_CB type.
-+ * QTEE expects IDs with QCOMTEE_MSG_OBJECT_NS_BIT set for objects of
-+ * QCOMTEE_OBJECT_TYPE_CB type. The first ID with QCOMTEE_MSG_OBJECT_NS_BIT
-+ * set is reserved for the primordial object.
-  */
--#define QCOMTEE_OBJECT_ID_START (QCOMTEE_MSG_OBJECT_NS_BIT + 1)
-+#define QCOMTEE_OBJECT_PRIMORDIAL (QCOMTEE_MSG_OBJECT_NS_BIT)
-+#define QCOMTEE_OBJECT_ID_START (QCOMTEE_OBJECT_PRIMORDIAL + 1)
- #define QCOMTEE_OBJECT_ID_END (UINT_MAX)
+ .. only::  subproject and html
 =20
- #define QCOMTEE_OBJECT_SET(p, type, ...) \
-@@ -112,7 +114,9 @@ EXPORT_SYMBOL_GPL(qcomtee_object_get);
-  */
- void qcomtee_object_put(struct qcomtee_object *object)
- {
--	if (object !=3D NULL_QCOMTEE_OBJECT && object !=3D ROOT_QCOMTEE_OBJECT)
-+	if (object !=3D &qcomtee_primordial_object &&
-+	    object !=3D NULL_QCOMTEE_OBJECT &&
-+	    object !=3D ROOT_QCOMTEE_OBJECT)
- 		kref_put(&object->refcount, qcomtee_object_release);
- }
- EXPORT_SYMBOL_GPL(qcomtee_object_put);
-@@ -202,6 +206,9 @@ static struct qcomtee_object *qcomtee_local_object_get(un=
-signed int object_id)
- {
- 	struct qcomtee_object *object;
-=20
-+	if (object_id =3D=3D QCOMTEE_OBJECT_PRIMORDIAL)
-+		return &qcomtee_primordial_object;
-+
- 	/*
- 	 * This is not protected by an RCU read lock because we are
- 	 * confident that QTEE does not issue a RELEASE request and
-diff --git a/drivers/tee/qcomtee/primordial_obj.c b/drivers/tee/qcomtee/primo=
-rdial_obj.c
+diff --git a/Documentation/tee/qtee.rst b/Documentation/tee/qtee.rst
 new file mode 100644
-index 000000000000..a30967d89c91
+index 000000000000..f6834410859c
 --- /dev/null
-+++ b/drivers/tee/qcomtee/primordial_obj.c
-@@ -0,0 +1,65 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-+ */
++++ b/Documentation/tee/qtee.rst
+@@ -0,0 +1,150 @@
++.. SPDX-License-Identifier: GPL-2.0
 +
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++QTEE (Qualcomm Trusted Execution Environment)
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 +
-+#include <linux/delay.h>
-+#include "qcomtee_private.h"
++The QTEE driver handles communication with Qualcomm TEE [1].
 +
-+/**
-+ * DOC: Primordial Object
-+ *
-+ * After boot, the kernel provides a static object of type
-+ * %QCOMTEE_OBJECT_TYPE_CB called the primordial object. This object is used
-+ * for native kernel services or privileged operations.
-+ *
-+ * We support:
-+ *  - %QCOMTEE_OBJECT_OP_YIELD to yield by the thread running in QTEE.
-+ *  - %QCOMTEE_OBJECT_OP_SLEEP to wait for a period of time.
-+ */
++The lowest level of communication with QTEE builds on the ARM SMC Calling
++Convention (SMCCC) [2], which is the foundation for QTEE's Secure Channel
++Manager (SCM) [3] used internally by the driver [4].
 +
-+#define QCOMTEE_OBJECT_OP_YIELD 1
-+#define QCOMTEE_OBJECT_OP_SLEEP 2
++In a QTEE-based system, services are represented as objects with a series of
++operations that can be called to produce results, including other objects.
 +
-+static int
-+qcomtee_primordial_obj_dispatch(struct qcomtee_object_invoke_ctx *oic,
-+				struct qcomtee_object *primordial_object_unused,
-+				u32 op, struct qcomtee_arg *args)
-+{
-+	int err =3D 0;
++When an object is hosted within QTEE, executing its operations is referred
++to as direct invocation. QTEE can invoke objects hosted in the kernel or
++userspace using a method known as callback requests.
 +
-+	switch (op) {
-+	case QCOMTEE_OBJECT_OP_YIELD:
-+		cond_resched();
-+		/* No output object. */
-+		oic->data =3D NULL;
-+		break;
-+	case QCOMTEE_OBJECT_OP_SLEEP:
-+		/* Check message format matched QCOMTEE_OBJECT_OP_SLEEP op. */
-+		if (qcomtee_args_len(args) !=3D 1 ||
-+		    args[0].type !=3D QCOMTEE_ARG_TYPE_IB ||
-+		    args[0].b.size < sizeof(u32))
++The SCM provides two functions for direct invocation and callback request:
++
++- QCOM_SCM_SMCINVOKE_INVOKE for direct invocation. It can return either
++  a result or a callback request.
++- QCOM_SCM_SMCINVOKE_CB_RSP submits a response for a previous callback reque=
+st.
++
++The QTEE Transport Message [5] is stacked on top of the SCM driver functions.
++
++A message consists of two buffers shared with QTEE: inbound and outbound
++buffers. The inbound buffer is used for direct invocation, and the outbound
++buffer is used to make callback requests. This picture shows the contents of
++a QTEE transport message::
++
++                                      +---------------------+
++                                      |                     v
++    +-----------------+-------+-------+------+--------------------------+
++    | qcomtee_msg_    |object | buffer       |                          |
++    |  object_invoke  |  id   | offset, size |                          | (i=
+nbound buffer)
++    +-----------------+-------+--------------+--------------------------+
++    <---- header -----><---- arguments ------><- in/out buffer payload ->
++
++                                      +-----------+
++                                      |           v
++    +-----------------+-------+-------+------+----------------------+
++    | qcomtee_msg_    |object | buffer       |                      |
++    |  callback       |  id   | offset, size |                      | (outbo=
+und buffer)
++    +-----------------+-------+--------------+----------------------+
++
++Each buffer is started with a header and array of arguments.
++
++QTEE Transport Message supports four types of arguments:
++
++- Input Object (IO) is an object parameter to the current invocation
++  or callback request.
++- Output Object (OO) is an object parameter from the current invocation
++  or callback request.
++- Input Buffer (IB) is (offset, size) pair to the inbound or outbound region
++  to store parameter to the current invocation or callback request.
++- Output Buffer (OB) is (offset, size) pair to the inbound or outbound region
++  to store parameter from the current invocation or callback request.
++
++The QTEE driver offers the qcomtee_object, which represents an object within
++both QTEE and the kernel. To access any service in QTEE, a client needs to
++invoke an instance of this object. Any structure intended to represent a ser=
+vice
++for export to QTEE should include an instance of qcomtee_object::
++
++	struct driver_service {
++		struct qcomtee_object object;
++		...
++	};
++
++	#define to_driver_service_object(o) container_of((o), struct driver_service=
+, object)
++
++	static int driver_service_dispatch(struct qcomtee_object *object, u32 op,
++					   struct qcomtee_arg *args)
++	{
++		struct driver_service *so =3D to_driver_service_object(object);
++
++		switch(op) {
++		case OBJECT_OP1:
++			...
++			break;
++		default:
 +			return -EINVAL;
-+
-+		msleep(*(u32 *)(args[0].b.addr));
-+		/* No output object. */
-+		oic->data =3D NULL;
-+		break;
-+	default:
-+		err =3D -EINVAL;
++		}
 +	}
 +
-+	return err;
-+}
++	static void driver_service_object_release(struct si_object *object)
++	{
++		struct driver_service *so =3D to_driver_service_object(object);
++		kfree(so);
++	}
 +
-+static struct qcomtee_object_operations qcomtee_primordial_obj_ops =3D {
-+	.dispatch =3D qcomtee_primordial_obj_dispatch,
-+};
++	struct si_object_operations driver_service_ops =3D {
++		.release =3D driver_service_object_release;
++		.dispatch =3D driver_service_dispatch;
++	};
 +
-+struct qcomtee_object qcomtee_primordial_object =3D {
-+	.name =3D "primordial",
-+	.object_type =3D QCOMTEE_OBJECT_TYPE_CB,
-+	.ops =3D &qcomtee_primordial_obj_ops
-+};
-diff --git a/drivers/tee/qcomtee/qcomtee_private.h b/drivers/tee/qcomtee/qcom=
-tee_private.h
-index 706c200788a2..e846cb78e195 100644
---- a/drivers/tee/qcomtee/qcomtee_private.h
-+++ b/drivers/tee/qcomtee/qcomtee_private.h
-@@ -220,4 +220,7 @@ int qcomtee_user_object_submit(struct tee_context *ctx,
- 			       struct tee_param *params, int num_params,
- 			       int req_id, int errno);
-=20
-+/* (2) Primordial Object. */
-+extern struct qcomtee_object qcomtee_primordial_object;
++	void service_init(void)
++	{
++		struct driver_service *so =3D kzalloc(sizeof(*so), GFP_KERNEL);
 +
- #endif /* QCOMTEE_PRIVATE_H */
++		/* Initialize so->object as a callback object. */
++		qcomtee_object_user_init(&so->object, QCOMTEE_OBJECT_TYPE_CB_OBJECT,
++					 &driver_service_ops, "driver_service_object");
++
++		/* Invoke a QTEE object and pass/register 'so->object' with QTEE. */
++		...
++	}
++	module_init(service_init);
++
++The QTEE driver utilizes qcomtee_object to encapsulate userspace objects. Wh=
+en
++a callback request is made, it translates into calling the dispatch operatio=
+n.
++For userspace objects, this is converted into requests accessible to callback
++servers and available through generic TEE API IOCTLs.
++
++Picture of the relationship between the different components in the QTEE
++architecture::
++
++         User space               Kernel                     Secure world
++         ~~~~~~~~~~               ~~~~~~                     ~~~~~~~~~~~~
++   +--------+   +----------+                                +--------------+
++   | Client |   |callback  |                                | Trusted      |
++   +--------+   |server    |                                | Application  |
++      /\        +----------+                                +--------------+
++      ||  +----------+ /\                                          /\
++      ||  |callback  | ||                                          ||
++      ||  |server    | ||                                          \/
++      ||  +----------+ ||                                   +--------------+
++      \/       /\      ||                                   | TEE Internal |
++   +-------+   ||      ||                                   | API          |
++   | TEE   |   ||      ||   +--------+--------+             +--------------+
++   | Client|   ||      ||   | TEE    | QTEE   |             | QTEE         |
++   | API   |   \/      \/   | subsys | driver |             | Trusted OS   |
++   +-------+----------------+----+-------+----+-------------+--------------+
++   |      Generic TEE API        |       |   QTEE MSG                      |
++   |      IOCTL (TEE_IOC_*)      |       |   SMCCC (QCOM_SCM_SMCINVOKE_*)  |
++   +-----------------------------+       +---------------------------------+
++
++References
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++[1] https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-11/qualc=
+omm-trusted-execution-environment.html
++
++[2] http://infocenter.arm.com/help/topic/com.arm.doc.den0028a/index.html
++
++[3] drivers/firmware/qcom/qcom_scm.c
++
++[4] /local/mnt/workspace/Linux/drivers/tee/qcomtee/qcom_scm.c
++
++[5] drivers/tee/qcomtee/qcomtee_msg.h
 
 --=20
 2.34.1
 
 
---===============1280986821919786775==--
+--===============6130266956118871842==--
 
