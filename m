@@ -1,166 +1,103 @@
-From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2 0/8] Trusted Execution Environment (TEE) driver for
  Qualcomm TEE (QTEE)
-Date: Fri, 07 Feb 2025 06:55:08 +1100
-Message-ID: <f3b30e00-d6cd-44ee-88a5-e5a523563bb3@quicinc.com>
-In-Reply-To: <
- <CAFA6WYNGH_LP-R4hQx-+XMY3zFN74ij-JngwnuKOsz8=r_-bsQ@mail.gmail.com>>
+Date: Fri, 07 Feb 2025 10:42:37 +0530
+Message-ID: 
+ <CAFA6WYMhyDLmFaZMWd3TFfNTnujAN8ZuzguPgzjJXfhZf2ZnKA@mail.gmail.com>
+In-Reply-To: <f3b30e00-d6cd-44ee-88a5-e5a523563bb3@quicinc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4225466188025370587=="
+Content-Type: multipart/mixed; boundary="===============2930086843279734104=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4225466188025370587==
+--===============2930086843279734104==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+On Fri, 7 Feb 2025 at 01:25, Amirreza Zarrabi <quic_azarrabi@quicinc.com> w=
+rote:
+>
+>
+>
+> On 2/5/2025 4:38 PM, Sumit Garg wrote:
+> > Hi Amirreza,
+> >
+> > On Mon, 3 Feb 2025 at 08:14, Amirreza Zarrabi <quic_azarrabi@quicinc.co=
+m> wrote:
+> >>
+> >> This patch series introduces a Trusted Execution Environment (TEE)
+> >> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
+> >> and services to run securely. It uses an object-based interface, where
+> >> each service is an object with sets of operations. Clients can invoke
+> >> these operations on objects, which can generate results, including other
+> >> objects. For example, an object can load a TA and return another object
+> >> that represents the loaded TA, allowing access to its services.
+> >>
+> >> Kernel and userspace services are also available to QTEE through a
+> >> similar approach. QTEE makes callback requests that are converted into
+> >> object invocations. These objects can represent services within the
+> >> kernel or userspace process.
+> >>
+> >> Note: This patch series focuses on QTEE objects and userspace services.
+> >>
+> >> Linux already provides a TEE subsystem, which is described in [1]. The
+> >> tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
+> >> can be used by userspace to talk to a TEE backend driver. We extend the
+> >> Linux TEE subsystem to understand object parameters and an ioctl call so
+> >> client can invoke objects in QTEE:
+> >>
+> >>   - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
+> >>   - TEE_IOC_OBJECT_INVOKE
+> >>
+> >> The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
+> >> used for invoking services in the userspace process by QTEE.
+> >>
+> >> The TEE backend driver uses the QTEE Transport Message to communicate
+> >> with QTEE. Interactions through the object INVOKE interface are
+> >> translated into QTEE messages. Likewise, object invocations from QTEE
+> >> for userspace objects are converted into SEND/RECV ioctl calls to
+> >> supplicants.
+> >>
+> >> The details of QTEE Transport Message to communicate with QTEE is
+> >> available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
+> >>
+> >> You can run basic tests with following steps:
+> >> git clone https://github.com/quic/quic-teec.git
+> >> cd quic-teec
+> >> mkdir build
+> >> cmake .. -DCMAKE_TOOLCHAIN_FILE=3DCMakeToolchain.txt -DBUILD_UNITTEST=3D=
+ON
+> >>
+> >> https://github.com/quic/quic-teec/blob/main/README.md lists dependancies
+> >> needed to build the above.
+> >>
+> >> This series has been tested for basic QTEE object invocations and
+> >> callback requests, including loading a TA and requesting services form
+> >> the TA.
+> >
+> > Thanks for sharing these test user-space applications/libraries. Can I
+> > know which platforms are currently supported by this QTEE driver? I
+> > would like to run and understand the overall stack on a real device. I
+> > do have rb3, rb5 and db410c on my desk to test with.
+> >
+> > Also, platform support is important information you should put in the
+> > cover letter as well as the QTEE documentation.
+> >
+> > -Sumit
+> >
+>
+> I have tested it with sm8650-mtp. But would expect it to work with any plat=
+form.
 
+Good to know that I will try to test it by next week on one of the
+available platforms on my desk.
 
-On 2/5/2025 4:38 PM, Sumit Garg wrote:
-> Hi Amirreza,
->=20
-> On Mon, 3 Feb 2025 at 08:14, Amirreza Zarrabi <quic_azarrabi@quicinc.com>=
- wrote:
->>
->> This patch series introduces a Trusted Execution Environment (TEE)
->> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
->> and services to run securely. It uses an object-based interface, where
->> each service is an object with sets of operations. Clients can invoke
->> these operations on objects, which can generate results, including other
->> objects. For example, an object can load a TA and return another object
->> that represents the loaded TA, allowing access to its services.
->>
->> Kernel and userspace services are also available to QTEE through a
->> similar approach. QTEE makes callback requests that are converted into
->> object invocations. These objects can represent services within the
->> kernel or userspace process.
->>
->> Note: This patch series focuses on QTEE objects and userspace services.
->>
->> Linux already provides a TEE subsystem, which is described in [1]. The
->> tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
->> can be used by userspace to talk to a TEE backend driver. We extend the
->> Linux TEE subsystem to understand object parameters and an ioctl call so
->> client can invoke objects in QTEE:
->>
->>   - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
->>   - TEE_IOC_OBJECT_INVOKE
->>
->> The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
->> used for invoking services in the userspace process by QTEE.
->>
->> The TEE backend driver uses the QTEE Transport Message to communicate
->> with QTEE. Interactions through the object INVOKE interface are
->> translated into QTEE messages. Likewise, object invocations from QTEE
->> for userspace objects are converted into SEND/RECV ioctl calls to
->> supplicants.
->>
->> The details of QTEE Transport Message to communicate with QTEE is
->> available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
->>
->> You can run basic tests with following steps:
->> git clone https://github.com/quic/quic-teec.git
->> cd quic-teec
->> mkdir build
->> cmake .. -DCMAKE_TOOLCHAIN_FILE=3DCMakeToolchain.txt -DBUILD_UNITTEST=3DON
->>
->> https://github.com/quic/quic-teec/blob/main/README.md lists dependancies
->> needed to build the above.
->>
->> This series has been tested for basic QTEE object invocations and
->> callback requests, including loading a TA and requesting services form
->> the TA.
->=20
-> Thanks for sharing these test user-space applications/libraries. Can I
-> know which platforms are currently supported by this QTEE driver? I
-> would like to run and understand the overall stack on a real device. I
-> do have rb3, rb5 and db410c on my desk to test with.
->=20
-> Also, platform support is important information you should put in the
-> cover letter as well as the QTEE documentation.
->=20
-> -Sumit
->=20
+> I'll update the cover letter with the details :).
 
-I have tested it with sm8650-mtp. But would expect it to work with any platfo=
-rm.
-I'll update the cover letter with the details :).
+Also, put it in QTEE documentation too such that people are aware
+about supported platforms.
 
-- Amir
+-Sumit
 
->>
->> [1] https://www.kernel.org/doc/Documentation/tee.txt
->>
->> Signed-off-by: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
->> ---
->> Changes in v2:
->> - Clean up commit messages and comments.
->> - Use better names such as ubuf instead of membuf or QCOMTEE prefix
->>   instead of QCOM_TEE, or names that are more consistent with other
->>   TEE-backend drivers such as qcomtee_context_data instead of
->>   qcom_tee_context.
->> - Drop the DTS patch and instantiate the device from the scm driver.
->> - Use a single structure for all driver's internal states.
->> - Drop srcu primitives and use the existing mutex for synchronization
->>   between the supplicant and QTEE.
->> - Directly use tee_context to track the lifetime of qcomtee_context_data.
->> - Add close_context() to be called when the user closes the tee_context.
->> - Link to v1: https://lore.kernel.org/r/20241202-qcom-tee-using-tee-ss-wit=
-hout-mem-obj-v1-0-f502ef01e016(a)quicinc.com
->>
->> Changes in v1:
->> - It is a complete rewrite to utilize the TEE subsystem.
->> - Link to RFC: https://lore.kernel.org/all/20240702-qcom-tee-object-and-io=
-ctls-v1-0-633c3ddf57ee(a)quicinc.com
->>
->> ---
->> Amirreza Zarrabi (8):
->>       tee: allow a driver to allocate a tee_device without a pool
->>       tee: add close_context to TEE driver operation
->>       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
->>       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
->>       firmware: qcom: scm: add support for object invocation
->>       tee: add Qualcomm TEE driver
->>       qcomtee: add primordial object
->>       Documentation: tee: Add Qualcomm TEE driver
->>
->>  Documentation/tee/index.rst            |   1 +
->>  Documentation/tee/qtee.rst             | 150 ++++++
->>  drivers/firmware/qcom/qcom_scm.c       | 128 ++++++
->>  drivers/firmware/qcom/qcom_scm.h       |   7 +
->>  drivers/tee/Kconfig                    |   1 +
->>  drivers/tee/Makefile                   |   1 +
->>  drivers/tee/qcomtee/Kconfig            |  10 +
->>  drivers/tee/qcomtee/Makefile           |  10 +
->>  drivers/tee/qcomtee/async.c            | 160 +++++++
->>  drivers/tee/qcomtee/call.c             | 741 ++++++++++++++++++++++++++++=
-++
->>  drivers/tee/qcomtee/core.c             | 810 ++++++++++++++++++++++++++++=
-+++++
->>  drivers/tee/qcomtee/primordial_obj.c   |  65 +++
->>  drivers/tee/qcomtee/qcom_scm.c         |  36 ++
->>  drivers/tee/qcomtee/qcomtee_msg.h      | 234 ++++++++++
->>  drivers/tee/qcomtee/qcomtee_private.h  | 226 +++++++++
->>  drivers/tee/qcomtee/release.c          |  59 +++
->>  drivers/tee/qcomtee/shm.c              | 102 +++++
->>  drivers/tee/qcomtee/user_obj.c         | 712 +++++++++++++++++++++++++++++
->>  drivers/tee/tee_core.c                 | 121 ++++-
->>  drivers/tee/tee_private.h              |   6 -
->>  include/linux/firmware/qcom/qcom_scm.h |  27 ++
->>  include/linux/firmware/qcom/qcom_tee.h | 286 ++++++++++++
->>  include/linux/tee_core.h               |  15 +-
->>  include/linux/tee_drv.h                |  18 +
->>  include/uapi/linux/tee.h               |  54 ++-
->>  25 files changed, 3964 insertions(+), 16 deletions(-)
->> ---
->> base-commit: dab2734f8e9ecba609d66d1dd087a392a7774c04
->> change-id: 20241202-qcom-tee-using-tee-ss-without-mem-obj-362c66340527
->>
->> Best regards,
->> --
->> Amirreza Zarrabi <quic_azarrabi@quicinc.com>
->>
-
-
---===============4225466188025370587==--
+--===============2930086843279734104==--
 
