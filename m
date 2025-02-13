@@ -1,110 +1,91 @@
-From: Amirreza Zarrabi <quic_azarrabi@quicinc.com>
+From: Sumit Garg <sumit.garg@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2 0/8] Trusted Execution Environment (TEE) driver for
- Qualcomm TEE (QTEE)
-Date: Mon, 10 Feb 2025 07:18:36 +1100
-Message-ID: <c4f6f9e0-5a5f-4286-95f1-f01a46d415ee@quicinc.com>
-In-Reply-To: <
- <CAFA6WYMhyDLmFaZMWd3TFfNTnujAN8ZuzguPgzjJXfhZf2ZnKA@mail.gmail.com>>
+Subject: Re: [PATCH v4 0/6] TEE subsystem for restricted dma-buf allocations
+Date: Thu, 13 Feb 2025 12:11:52 +0530
+Message-ID: 
+ <CAFA6WYOaGEPj0xNEDBCoEmjJreEHChjQ2hyXRJ_CYoGhiBonfw@mail.gmail.com>
+In-Reply-To: <20250212205613.4400a888@collabora.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3984833334708667301=="
+Content-Type: multipart/mixed; boundary="===============5379219736119930386=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3984833334708667301==
+--===============5379219736119930386==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Hi Boris,
 
+On Thu, 13 Feb 2025 at 01:26, Boris Brezillon
+<boris.brezillon@collabora.com> wrote:
+>
+> +Florent, who's working on protected-mode support in Panthor.
+>
+> Hi Jens,
+>
+> On Tue, 17 Dec 2024 11:07:36 +0100
+> Jens Wiklander <jens.wiklander@linaro.org> wrote:
+>
+> > Hi,
+> >
+> > This patch set allocates the restricted DMA-bufs via the TEE subsystem.
+>
+> We're currently working on protected-mode support for Panthor [1] and it
+> looks like your series (and the OP-TEE implementation that goes with
+> it) would allow us to have a fully upstream/open solution for the
+> protected content use case we're trying to support. I need a bit more
+> time to play with the implementation but this looks very promising
+> (especially the lend rstmem feature, which might help us allocate our
+> FW sections that are supposed to execute code accessing protected
+> content).
 
-On 2/7/2025 4:12 PM, Sumit Garg wrote:
-> On Fri, 7 Feb 2025 at 01:25, Amirreza Zarrabi <quic_azarrabi@quicinc.com>=
- wrote:
->>
->>
->>
->> On 2/5/2025 4:38 PM, Sumit Garg wrote:
->>> Hi Amirreza,
->>>
->>> On Mon, 3 Feb 2025 at 08:14, Amirreza Zarrabi <quic_azarrabi@quicinc.co=
-m> wrote:
->>>>
->>>> This patch series introduces a Trusted Execution Environment (TEE)
->>>> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
->>>> and services to run securely. It uses an object-based interface, where
->>>> each service is an object with sets of operations. Clients can invoke
->>>> these operations on objects, which can generate results, including other
->>>> objects. For example, an object can load a TA and return another object
->>>> that represents the loaded TA, allowing access to its services.
->>>>
->>>> Kernel and userspace services are also available to QTEE through a
->>>> similar approach. QTEE makes callback requests that are converted into
->>>> object invocations. These objects can represent services within the
->>>> kernel or userspace process.
->>>>
->>>> Note: This patch series focuses on QTEE objects and userspace services.
->>>>
->>>> Linux already provides a TEE subsystem, which is described in [1]. The
->>>> tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
->>>> can be used by userspace to talk to a TEE backend driver. We extend the
->>>> Linux TEE subsystem to understand object parameters and an ioctl call so
->>>> client can invoke objects in QTEE:
->>>>
->>>>   - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
->>>>   - TEE_IOC_OBJECT_INVOKE
->>>>
->>>> The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
->>>> used for invoking services in the userspace process by QTEE.
->>>>
->>>> The TEE backend driver uses the QTEE Transport Message to communicate
->>>> with QTEE. Interactions through the object INVOKE interface are
->>>> translated into QTEE messages. Likewise, object invocations from QTEE
->>>> for userspace objects are converted into SEND/RECV ioctl calls to
->>>> supplicants.
->>>>
->>>> The details of QTEE Transport Message to communicate with QTEE is
->>>> available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
->>>>
->>>> You can run basic tests with following steps:
->>>> git clone https://github.com/quic/quic-teec.git
->>>> cd quic-teec
->>>> mkdir build
->>>> cmake .. -DCMAKE_TOOLCHAIN_FILE=3DCMakeToolchain.txt -DBUILD_UNITTEST=3D=
-ON
->>>>
->>>> https://github.com/quic/quic-teec/blob/main/README.md lists dependancies
->>>> needed to build the above.
->>>>
->>>> This series has been tested for basic QTEE object invocations and
->>>> callback requests, including loading a TA and requesting services form
->>>> the TA.
->>>
->>> Thanks for sharing these test user-space applications/libraries. Can I
->>> know which platforms are currently supported by this QTEE driver? I
->>> would like to run and understand the overall stack on a real device. I
->>> do have rb3, rb5 and db410c on my desk to test with.
->>>
->>> Also, platform support is important information you should put in the
->>> cover letter as well as the QTEE documentation.
->>>
->>> -Sumit
->>>
->>
->> I have tested it with sm8650-mtp. But would expect it to work with any pla=
-tform.
->=20
-> Good to know that I will try to test it by next week on one of the
-> available platforms on my desk.
->=20
->> I'll update the cover letter with the details :).
->=20
-> Also, put it in QTEE documentation too such that people are aware
-> about supported platforms.
->=20
+Glad to hear that, if you can demonstrate an open source use case
+based on this series then it will help to land it. We really would
+love to see support for restricted DMA-buf consumers be it GPU, crypto
+accelerator, media pipeline etc.
 
-Ack.
+>
+> >
+> > The TEE subsystem handles the DMA-buf allocations since it is the TEE
+> > (OP-TEE, AMD-TEE, TS-TEE, or perhaps a future QCOMTEE) which sets up the
+> > restrictions for the memory used for the DMA-bufs.
+> >
+> > I've added a new IOCTL, TEE_IOC_RSTMEM_ALLOC, to allocate the restricted
+> > DMA-bufs. This IOCTL reaches the backend TEE driver, allowing it to choose
+> > how to allocate the restricted physical memory.
+>
+> I'll probably have more questions soon, but here's one to start: any
+> particular reason you didn't go for a dma-heap to expose restricted
+> buffer allocation to userspace? I see you already have a cdev you can
+> take ioctl()s from, but my understanding was that dma-heap was the
+> standard solution for these device-agnostic/central allocators.
 
-> -Sumit
+This series started with the DMA heap approach only here [1] but later
+discussions [2] lead us here. To point out specifically:
 
+- DMA heaps require reliance on DT to discover static restricted
+regions carve-outs whereas via the TEE implementation driver (eg.
+OP-TEE) those can be discovered dynamically.
+- Dynamic allocation of buffers and making them restricted requires
+vendor specific driver hooks with DMA heaps whereas the TEE subsystem
+abstracts that out with underlying TEE implementation (eg. OP-TEE)
+managing the dynamic buffer restriction.
+- TEE subsystem already has a well defined user-space interface for
+managing shared memory buffers with TEE and restricted DMA buffers
+will be yet another interface managed along similar lines.
 
---===============3984833334708667301==--
+[1] https://lore.kernel.org/lkml/mzur3odofwwrdqnystozjgf3qtvb73wqjm6g2vf5dfsq=
+iehaxk(a)u67fcarhm6ge/T/
+[2] https://lore.kernel.org/lkml/CAFA6WYPtp3H5JhxzgH9=3Dz2EvNL7Kdku3EmG1aDkTS=
+-gjFtNZZA(a)mail.gmail.com/
+
+-Sumit
+
+>
+> Regards,
+>
+> Boris
+>
+> [1]https://lwn.net/ml/all/cover.1738228114.git.florent.tomasin(a)arm.com/#t
+
+--===============5379219736119930386==--
 
