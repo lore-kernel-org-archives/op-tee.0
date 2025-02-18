@@ -1,147 +1,146 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Daniel Stone <daniel@fooishbar.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v5 7/7] optee: smc abi: dynamic restricted memory allocation
-Date: Tue, 18 Feb 2025 15:34:56 +0100
-Message-ID: <20250218143527.1236668-8-jens.wiklander@linaro.org>
-In-Reply-To: <20250218143527.1236668-1-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v4 0/6] TEE subsystem for restricted dma-buf allocations
+Date: Tue, 18 Feb 2025 16:22:10 +0000
+Message-ID: 
+ <CAPj87rN-OYTzh5=Gdv619UQD5=x=U6Yt=uV4N1kCs4Zao4RVAg@mail.gmail.com>
+In-Reply-To: <
+ <CAFA6WYPc6EHQwcPuMZRm4C1P6SoDrCzEPUmju_meupB6NXQ1sg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8637762193011359985=="
+Content-Type: multipart/mixed; boundary="===============7615069751426450574=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8637762193011359985==
+--===============7615069751426450574==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add support in the OP-TEE backend driver for dynamic restricted memory
-allocation using the SMC ABI.
+Hi Sumit,
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/smc_abi.c | 76 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 73 insertions(+), 3 deletions(-)
+On Mon, 17 Feb 2025 at 06:13, Sumit Garg <sumit.garg@linaro.org> wrote:
+> On Fri, 14 Feb 2025 at 21:19, Boris Brezillon <boris.brezillon@collabora.=
+com> wrote:
+> > I would say one heap per-profile.
+>
+> And then it would have a per vendor multiplication factor as each
+> vendor enforces memory restriction in a platform specific manner which
+> won't scale.
 
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 11589e5120c9..ca0cb5045f5b 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1001,6 +1001,67 @@ static int optee_smc_do_call_with_arg(struct tee_conte=
-xt *ctx,
- 	return rc;
- }
-=20
-+static int optee_smc_lend_rstmem(struct optee *optee, struct tee_shm *rstmem,
-+				 u16 *end_points, unsigned int ep_count)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 2, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_LEND_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-+	msg_arg->params[0].u.value.a =3D OPTEE_MSG_RSTMEM_SECURE_VIDEO_PLAY;
-+	msg_arg->params[1].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_INPUT;
-+	msg_arg->params[1].u.tmem.buf_ptr =3D rstmem->paddr;
-+	msg_arg->params[1].u.tmem.size =3D rstmem->size;
-+	msg_arg->params[1].u.tmem.shm_ref =3D (u_long)rstmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS) {
-+		rc =3D -EINVAL;
-+		goto out;
-+	}
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
-+static int optee_smc_reclaim_rstmem(struct optee *optee, struct tee_shm *rst=
-mem)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 1, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_RECLAIM_RSTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT;
-+	msg_arg->params[0].u.rmem.shm_ref =3D (u_long)rstmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS)
-+		rc =3D -EINVAL;
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
- /*
-  * 5. Asynchronous notification
-  */
-@@ -1258,6 +1319,8 @@ static const struct optee_ops optee_ops =3D {
- 	.do_call_with_arg =3D optee_smc_do_call_with_arg,
- 	.to_msg_param =3D optee_to_msg_param,
- 	.from_msg_param =3D optee_from_msg_param,
-+	.lend_rstmem =3D optee_smc_lend_rstmem,
-+	.reclaim_rstmem =3D optee_smc_reclaim_rstmem,
- };
-=20
- static int enable_async_notif(optee_invoke_fn *invoke_fn)
-@@ -1628,6 +1691,9 @@ static inline int optee_load_fw(struct platform_device =
-*pdev,
-=20
- static int optee_sdp_pool_init(struct optee *optee)
- {
-+	bool dyn_sdp =3D (optee->smc.sec_caps &
-+			OPTEE_SMC_SEC_CAP_DYNAMIC_RSTMEM) &&
-+		       IS_ENABLED(CONFIG_CMA) && !IS_MODULE(CONFIG_OPTEE);
- 	bool sdp =3D optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP;
- 	struct tee_shm_pool *pool;
- 	int rc;
-@@ -1635,9 +1701,11 @@ static int optee_sdp_pool_init(struct optee *optee)
- 	/*
- 	 * optee_sdp_pools_init() must be called if secure world has any
- 	 * SDP capability. If the static carvout is available initialize
--	 * and add a pool for that.
-+	 * and add a pool for that. If there's an error from secure world
-+	 * we complain but don't call optee_sdp_pools_uninit() unless we
-+	 * know that there is no SDP capability left.
- 	 */
--	if (!sdp)
-+	if (!dyn_sdp && !sdp)
- 		return 0;
-=20
- 	rc =3D optee_rstmem_pools_init(optee);
-@@ -1654,7 +1722,9 @@ static int optee_sdp_pool_init(struct optee *optee)
- 				     0, &res.smccc);
- 		if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
- 			pr_err("Secure Data Path service not available\n");
--			goto err;
-+			if (!dyn_sdp)
-+				goto err;
-+			return 0;
- 		}
-=20
- 		pool =3D tee_rstmem_gen_pool_alloc(res.result.start,
---=20
-2.43.0
+Yes, they do enforce it in a platform-specific manner, but so does
+TEE. There is no one golden set of semantics which is globally
+applicable between all hardware and all products in a useful manner.
 
+So, if we define protected,secure-video +
+protected,secure-video-record + protected,trusted-ui heap names, we
+have exactly the same number of axes. The only change is from uint32_t
+to string.
 
---===============8637762193011359985==--
+> > > Christian gave an historical background here [1] as to why that hasn't
+> > > worked in the past with DMA heaps given the scalability issues.
+> > >
+> > > [1] https://lore.kernel.org/dri-devel/e967e382-6cca-4dee-8333-39892d532=
+f71(a)gmail.com/
+> >
+> > Hm, I fail to see where Christian dismiss the dma-heaps solution in
+> > this email. He even says:
+> >
+> > > If the memory is not physically attached to any device, but rather just
+> > memory attached to the CPU or a system wide memory controller then
+> > expose the memory as DMA-heap with specific requirements (e.g. certain
+> > sized pages, contiguous, restricted, encrypted, ...).
+>
+> I am not saying Christian dismissed DMA heaps but rather how
+> scalability is an issue. What we are proposing here is a generic
+> interface via TEE to the firmware/Trusted OS which can perform all the
+> platform specific memory restrictions. This solution will scale across
+> vendors.
+
+I read something completely different into Christian's mail.
+
+What Christian is saying is that injecting generic constraint solving
+into the kernel doesn't scale. It's not OK to build out generic
+infrastructure in the kernel which queries a bunch of leaf drivers and
+attempts to somehow come up with something which satisfies
+userspace-provided constraints.
+
+But this isn't the same thing as saying 'dma-heaps is wrong'! Again,
+there is no additional complexity in the kernel between a dma-heap
+which bridges over to TEE, and a TEE userspace interface which also
+bridges over to TEE. Both of them are completely fine according to
+what he's said.
+
+> > Honestly, when I look at dma-heap implementations, they seem
+> > to be trivial shells around existing (more complex) allocators, and the
+> > boiler plate [1] to expose a dma-heap is relatively small. The dma-buf
+> > implementation, you already have, so we're talking about a hundred
+> > lines of code to maintain, which shouldn't be significantly more than
+> > what you have for the new ioctl() to be honest.
+>
+> It will rather be redundant vendor specific code under DMA heaps
+> calling into firmware/Trusted OS to enforce memory restrictions as you
+> can look into Mediatek example [1]. With TEE subsystem managing that
+> it won't be the case as we will provide a common abstraction for the
+> communication with underlying firmware/Trusted OS.
+
+Yes, it's common for everyone who uses TEE to implement SVP. It's not
+common for the people who do _not_ use TEE to implement SVP. Which
+means that userspace has to type out both, and what we're asking in
+this thread is: why?
+
+Why should userspace have to support dma-heap allocation for platforms
+supporting SVP via a static DT-defined carveout as well as supporting
+TEE API allocation for platforms supporting SVP via a dynamic
+carveout? What benefit does it bring to have this surfaced as a
+completely separate uAPI?
+
+> > And I'll insist on what
+> > Daniel said, it's a small price to pay to have a standard interface to
+> > expose to userspace. If dma-heaps are not used for this kind things, I
+> > honestly wonder what they will be used for...
+>
+> Let's try not to forcefully find a use-case for DMA heaps when there
+> is a better alternative available.
+
+What makes it better? If you could explain very clearly the benefit
+userspace will gain from asking TEE to allocate $n bytes for
+TEE_IOC_UC_SECURE_VIDEO_PLAY, compared to asking dma-heap to allocate
+$n bytes for protected,secure-video, I think that would really help.
+Right now, I don't understand how it would be better in any way
+whatsoever for userspace. And I think your decision to implement it as
+a separate API is based on a misunderstanding of Christian's position.
+
+> I am still failing to see why you
+> don't consider following as a standardised user-space interface:
+>
+> "When user-space has to work with restricted memory, ask TEE device to
+> allocate it"
+
+As far as I can tell, having userspace work with the TEE interface
+brings zero benefit (again, please correct me if I'm wrong and explain
+how it's better). The direct cost - call it a disbenefit - it brings
+is that we have to spend a pile of time typing out support for TEE
+allocation in every media/GPU/display driver/application, and when we
+do any kind of negotiation, we have to have one protocol definition
+for TEE and one for non-TEE.
+
+dma-heaps was created to solve the problem of having too many
+'allocate $n bytes from $specialplace' uAPIs. The proliferation was
+painful and making it difficult for userspace to do what it needed to
+do. Userspace doesn't _yet_ make full use of it, but the solution is
+to make userspace make full use of it, not to go create entirely
+separate allocation paths for unclear reasons.
+
+Besides, I'm writing this from a platform that implements SVP not via
+TEE. I've worked on platforms which implement SVP without any TEE,
+where the TEE implementation would be at best a no-op stub, and at
+worst flat-out impossible.
+
+So that's 'why not TEE as the single uAPI for SVP'. So, again, let's
+please turn this around: _why_ TEE? Who benefits from exposing this as
+completely separate to the more generic uAPI that we specifically
+designed to handle things like this?
+
+Cheers,
+Daniel
+
+--===============7615069751426450574==--
 
