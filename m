@@ -1,657 +1,303 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v5 3/7] optee: account for direction while converting parameters
-Date: Tue, 18 Feb 2025 15:34:52 +0100
-Message-ID: <20250218143527.1236668-4-jens.wiklander@linaro.org>
+Subject: [PATCH v5 4/7] optee: sync secure world ABI headers
+Date: Tue, 18 Feb 2025 15:34:53 +0100
+Message-ID: <20250218143527.1236668-5-jens.wiklander@linaro.org>
 In-Reply-To: <20250218143527.1236668-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0828164484150076190=="
+Content-Type: multipart/mixed; boundary="===============2283268660123586170=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0828164484150076190==
+--===============2283268660123586170==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The OP-TEE backend driver has two internal function pointers to convert
-between the subsystem type struct tee_param and the OP-TEE type struct
-optee_msg_param.
-
-The conversion is done from one of the types to the other, which is then
-involved in some operation and finally converted back to the original
-type. When converting to prepare the parameters for the operation, all
-fields must be taken into account, but then converting back, it's enough
-to update only out-values and out-sizes. So, an update_out parameter is
-added to the conversion functions to tell if all or only some fields
-must be copied.
-
-This is needed in a later patch where it might get confusing when
-converting back in from_msg_param() callback since an allocated
-restricted SHM can be using the sec_world_id of the used restricted
-memory pool and that doesn't translate back well.
+Update the header files describing the secure world ABI, both with and
+without FF-A. The ABI is extended to deal with restricted memory, but as
+usual backward compatible.
 
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/optee/call.c          | 10 ++--
- drivers/tee/optee/ffa_abi.c       | 43 +++++++++++++----
- drivers/tee/optee/optee_private.h | 42 +++++++++++------
- drivers/tee/optee/rpc.c           | 31 +++++++++----
- drivers/tee/optee/smc_abi.c       | 76 +++++++++++++++++++++++--------
- 5 files changed, 144 insertions(+), 58 deletions(-)
+ drivers/tee/optee/optee_ffa.h | 27 ++++++++++---
+ drivers/tee/optee/optee_msg.h | 65 ++++++++++++++++++++++++++++++--
+ drivers/tee/optee/optee_smc.h | 71 ++++++++++++++++++++++++++++++++++-
+ 3 files changed, 154 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
-index 16eb953e14bb..f1533b894726 100644
---- a/drivers/tee/optee/call.c
-+++ b/drivers/tee/optee/call.c
-@@ -400,7 +400,8 @@ int optee_open_session(struct tee_context *ctx,
- 	export_uuid(msg_arg->params[1].u.octets, &client_uuid);
-=20
- 	rc =3D optee->ops->to_msg_param(optee, msg_arg->params + 2,
--				      arg->num_params, param);
-+				      arg->num_params, param,
-+				      false /*!update_out*/);
- 	if (rc)
- 		goto out;
-=20
-@@ -427,7 +428,8 @@ int optee_open_session(struct tee_context *ctx,
- 	}
-=20
- 	if (optee->ops->from_msg_param(optee, param, arg->num_params,
--				       msg_arg->params + 2)) {
-+				       msg_arg->params + 2,
-+				       true /*update_out*/)) {
- 		arg->ret =3D TEEC_ERROR_COMMUNICATION;
- 		arg->ret_origin =3D TEEC_ORIGIN_COMMS;
- 		/* Close session again to avoid leakage */
-@@ -541,7 +543,7 @@ int optee_invoke_func(struct tee_context *ctx, struct tee=
-_ioctl_invoke_arg *arg,
- 	msg_arg->cancel_id =3D arg->cancel_id;
-=20
- 	rc =3D optee->ops->to_msg_param(optee, msg_arg->params, arg->num_params,
--				      param);
-+				      param, false /*!update_out*/);
- 	if (rc)
- 		goto out;
-=20
-@@ -551,7 +553,7 @@ int optee_invoke_func(struct tee_context *ctx, struct tee=
-_ioctl_invoke_arg *arg,
- 	}
-=20
- 	if (optee->ops->from_msg_param(optee, param, arg->num_params,
--				       msg_arg->params)) {
-+				       msg_arg->params, true /*update_out*/)) {
- 		msg_arg->ret =3D TEEC_ERROR_COMMUNICATION;
- 		msg_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
- 	}
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index f3af5666bb11..02e6175ac5f0 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -122,15 +122,21 @@ static int optee_shm_rem_ffa_handle(struct optee *optee=
-, u64 global_id)
+diff --git a/drivers/tee/optee/optee_ffa.h b/drivers/tee/optee/optee_ffa.h
+index 257735ae5b56..7bd037200343 100644
+--- a/drivers/tee/optee/optee_ffa.h
++++ b/drivers/tee/optee/optee_ffa.h
+@@ -81,7 +81,7 @@
+  *                   as the second MSG arg struct for
+  *                   OPTEE_FFA_YIELDING_CALL_WITH_ARG.
+  *        Bit[31:8]: Reserved (MBZ)
+- * w5:	  Bitfield of secure world capabilities OPTEE_FFA_SEC_CAP_* below,
++ * w5:	  Bitfield of OP-TEE capabilities OPTEE_FFA_SEC_CAP_*
+  * w6:	  The maximum secure world notification number
+  * w7:	  Not used (MBZ)
   */
+@@ -94,6 +94,8 @@
+ #define OPTEE_FFA_SEC_CAP_ASYNC_NOTIF	BIT(1)
+ /* OP-TEE supports probing for RPMB device if needed */
+ #define OPTEE_FFA_SEC_CAP_RPMB_PROBE	BIT(2)
++/* OP-TEE supports Restricted Memory for secure data path */
++#define OPTEE_FFA_SEC_CAP_RSTMEM	BIT(3)
 =20
- static void from_msg_param_ffa_mem(struct optee *optee, struct tee_param *p,
--				   u32 attr, const struct optee_msg_param *mp)
-+				   u32 attr, const struct optee_msg_param *mp,
-+				   bool update_out)
- {
- 	struct tee_shm *shm =3D NULL;
- 	u64 offs_high =3D 0;
- 	u64 offs_low =3D 0;
+ #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
 =20
-+	if (update_out) {
-+		if (attr =3D=3D OPTEE_MSG_ATTR_TYPE_FMEM_INPUT)
-+			return;
-+		goto out;
-+	}
-+
- 	p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT +
- 		  attr - OPTEE_MSG_ATTR_TYPE_FMEM_INPUT;
--	p->u.memref.size =3D mp->u.fmem.size;
-=20
- 	if (mp->u.fmem.global_id !=3D OPTEE_MSG_FMEM_INVALID_GLOBAL_ID)
- 		shm =3D optee_shm_from_ffa_handle(optee, mp->u.fmem.global_id);
-@@ -141,6 +147,8 @@ static void from_msg_param_ffa_mem(struct optee *optee, s=
-truct tee_param *p,
- 		offs_high =3D mp->u.fmem.offs_high;
- 	}
- 	p->u.memref.shm_offs =3D offs_low | offs_high << 32;
-+out:
-+	p->u.memref.size =3D mp->u.fmem.size;
- }
-=20
- /**
-@@ -150,12 +158,14 @@ static void from_msg_param_ffa_mem(struct optee *optee,=
- struct tee_param *p,
-  * @params:	subsystem internal parameter representation
-  * @num_params:	number of elements in the parameter arrays
-  * @msg_params:	OPTEE_MSG parameters
-+ * @update_out: update parameter for output only
+@@ -108,7 +110,7 @@
   *
-  * Returns 0 on success or <0 on failure
+  * Return register usage:
+  * w3:    Error code, 0 on success
+- * w4-w7: Note used (MBZ)
++ * w4-w7: Not used (MBZ)
   */
- static int optee_ffa_from_msg_param(struct optee *optee,
- 				    struct tee_param *params, size_t num_params,
--				    const struct optee_msg_param *msg_params)
-+				    const struct optee_msg_param *msg_params,
-+				    bool update_out)
- {
- 	size_t n;
+ #define OPTEE_FFA_UNREGISTER_SHM	OPTEE_FFA_BLOCKING_CALL(3)
 =20
-@@ -166,18 +176,20 @@ static int optee_ffa_from_msg_param(struct optee *optee,
+@@ -119,16 +121,31 @@
+  * Call register usage:
+  * w3:    Service ID, OPTEE_FFA_ENABLE_ASYNC_NOTIF
+  * w4:	  Notification value to request bottom half processing, should be
+- *	  less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE.
++ *	  less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE
+  * w5-w7: Not used (MBZ)
+  *
+  * Return register usage:
+  * w3:    Error code, 0 on success
+- * w4-w7: Note used (MBZ)
++ * w4-w7: Not used (MBZ)
+  */
+ #define OPTEE_FFA_ENABLE_ASYNC_NOTIF	OPTEE_FFA_BLOCKING_CALL(5)
 =20
- 		switch (attr) {
- 		case OPTEE_MSG_ATTR_TYPE_NONE:
-+			if (update_out)
-+				break;
- 			p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
- 			memset(&p->u, 0, sizeof(p->u));
- 			break;
- 		case OPTEE_MSG_ATTR_TYPE_VALUE_INPUT:
- 		case OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT:
- 		case OPTEE_MSG_ATTR_TYPE_VALUE_INOUT:
--			optee_from_msg_param_value(p, attr, mp);
-+			optee_from_msg_param_value(p, attr, mp, update_out);
- 			break;
- 		case OPTEE_MSG_ATTR_TYPE_FMEM_INPUT:
- 		case OPTEE_MSG_ATTR_TYPE_FMEM_OUTPUT:
- 		case OPTEE_MSG_ATTR_TYPE_FMEM_INOUT:
--			from_msg_param_ffa_mem(optee, p, attr, mp);
-+			from_msg_param_ffa_mem(optee, p, attr, mp, update_out);
- 			break;
- 		default:
- 			return -EINVAL;
-@@ -188,10 +200,16 @@ static int optee_ffa_from_msg_param(struct optee *optee,
- }
-=20
- static int to_msg_param_ffa_mem(struct optee_msg_param *mp,
--				const struct tee_param *p)
-+				const struct tee_param *p, bool update_out)
- {
- 	struct tee_shm *shm =3D p->u.memref.shm;
-=20
-+	if (update_out) {
-+		if (p->attr =3D=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT)
-+			return 0;
-+		goto out;
-+	}
+-#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE 64
++#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE	64
 +
- 	mp->attr =3D OPTEE_MSG_ATTR_TYPE_FMEM_INPUT + p->attr -
- 		   TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
++/*
++ * Release Restricted memory
++ *
++ * Call register usage:
++ * w3:    Service ID, OPTEE_FFA_RECLAIM_RSTMEM
++ * w4:    Shared memory handle, lower bits
++ * w5:    Shared memory handle, higher bits
++ * w6-w7: Not used (MBZ)
++ *
++ * Return register usage:
++ * w3:    Error code, 0 on success
++ * w4-w7: Note used (MBZ)
++ */
++#define OPTEE_FFA_RELEASE_RSTMEM	OPTEE_FFA_BLOCKING_CALL(8)
 =20
-@@ -211,6 +229,7 @@ static int to_msg_param_ffa_mem(struct optee_msg_param *m=
-p,
- 		memset(&mp->u, 0, sizeof(mp->u));
- 		mp->u.fmem.global_id =3D OPTEE_MSG_FMEM_INVALID_GLOBAL_ID;
- 	}
-+out:
- 	mp->u.fmem.size =3D p->u.memref.size;
-=20
- 	return 0;
-@@ -222,13 +241,15 @@ static int to_msg_param_ffa_mem(struct optee_msg_param =
-*mp,
-  * @optee:	main service struct
-  * @msg_params:	OPTEE_MSG parameters
-  * @num_params:	number of elements in the parameter arrays
-- * @params:	subsystem itnernal parameter representation
-+ * @params:	subsystem internal parameter representation
-+ * @update_out: update parameter for output only
-  * Returns 0 on success or <0 on failure
-  */
- static int optee_ffa_to_msg_param(struct optee *optee,
- 				  struct optee_msg_param *msg_params,
- 				  size_t num_params,
--				  const struct tee_param *params)
-+				  const struct tee_param *params,
-+				  bool update_out)
- {
- 	size_t n;
-=20
-@@ -238,18 +259,20 @@ static int optee_ffa_to_msg_param(struct optee *optee,
-=20
- 		switch (p->attr) {
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-+			if (update_out)
-+				break;
- 			mp->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
- 			memset(&mp->u, 0, sizeof(mp->u));
- 			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
--			optee_to_msg_param_value(mp, p);
-+			optee_to_msg_param_value(mp, p, update_out);
- 			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
--			if (to_msg_param_ffa_mem(mp, p))
-+			if (to_msg_param_ffa_mem(mp, p, update_out))
- 				return -EINVAL;
- 			break;
- 		default:
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_priv=
-ate.h
-index dc0f355ef72a..20eda508dbac 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -185,10 +185,12 @@ struct optee_ops {
- 				bool system_thread);
- 	int (*to_msg_param)(struct optee *optee,
- 			    struct optee_msg_param *msg_params,
--			    size_t num_params, const struct tee_param *params);
-+			    size_t num_params, const struct tee_param *params,
-+			    bool update_out);
- 	int (*from_msg_param)(struct optee *optee, struct tee_param *params,
- 			      size_t num_params,
--			      const struct optee_msg_param *msg_params);
-+			      const struct optee_msg_param *msg_params,
-+			      bool update_out);
+ /*
+  * Call with struct optee_msg_arg as argument in the supplied shared memory
+diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+index e8840a82b983..1b558526e7d9 100644
+--- a/drivers/tee/optee/optee_msg.h
++++ b/drivers/tee/optee/optee_msg.h
+@@ -133,13 +133,13 @@ struct optee_msg_param_rmem {
  };
 =20
  /**
-@@ -316,23 +318,35 @@ void optee_release(struct tee_context *ctx);
- void optee_release_supp(struct tee_context *ctx);
-=20
- static inline void optee_from_msg_param_value(struct tee_param *p, u32 attr,
--					      const struct optee_msg_param *mp)
-+					      const struct optee_msg_param *mp,
-+					      bool update_out)
- {
--	p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT +
--		  attr - OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
--	p->u.value.a =3D mp->u.value.a;
--	p->u.value.b =3D mp->u.value.b;
--	p->u.value.c =3D mp->u.value.c;
-+	if (!update_out)
-+		p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT +
-+			  attr - OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-+
-+	if (attr =3D=3D OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT ||
-+	    attr =3D=3D OPTEE_MSG_ATTR_TYPE_VALUE_INOUT || !update_out) {
-+		p->u.value.a =3D mp->u.value.a;
-+		p->u.value.b =3D mp->u.value.b;
-+		p->u.value.c =3D mp->u.value.c;
-+	}
- }
-=20
- static inline void optee_to_msg_param_value(struct optee_msg_param *mp,
--					    const struct tee_param *p)
-+					    const struct tee_param *p,
-+					    bool update_out)
- {
--	mp->attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT + p->attr -
--		   TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT;
--	mp->u.value.a =3D p->u.value.a;
--	mp->u.value.b =3D p->u.value.b;
--	mp->u.value.c =3D p->u.value.c;
-+	if (!update_out)
-+		mp->attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT + p->attr -
-+			   TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT;
-+
-+	if (p->attr =3D=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
-+	    p->attr =3D=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT || !update_out) {
-+		mp->u.value.a =3D p->u.value.a;
-+		mp->u.value.b =3D p->u.value.b;
-+		mp->u.value.c =3D p->u.value.c;
-+	}
- }
-=20
- void optee_cq_init(struct optee_call_queue *cq, int thread_count);
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index ebbbd42b0e3e..580e6b9b0606 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -63,7 +63,7 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee_con=
-text *ctx,
- 	}
-=20
- 	if (optee->ops->from_msg_param(optee, params, arg->num_params,
--				       arg->params))
-+				       arg->params, false /*!update_out*/))
- 		goto bad;
-=20
- 	for (i =3D 0; i < arg->num_params; i++) {
-@@ -107,7 +107,8 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee_c=
-ontext *ctx,
- 	} else {
- 		params[3].u.value.a =3D msg.len;
- 		if (optee->ops->to_msg_param(optee, arg->params,
--					     arg->num_params, params))
-+					     arg->num_params, params,
-+					     true /*update_out*/))
- 			arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- 		else
- 			arg->ret =3D TEEC_SUCCESS;
-@@ -188,6 +189,7 @@ static void handle_rpc_func_cmd_wait(struct optee_msg_arg=
- *arg)
- static void handle_rpc_supp_cmd(struct tee_context *ctx, struct optee *optee,
- 				struct optee_msg_arg *arg)
- {
-+	bool update_out =3D false;
- 	struct tee_param *params;
-=20
- 	arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-@@ -200,15 +202,21 @@ static void handle_rpc_supp_cmd(struct tee_context *ctx=
-, struct optee *optee,
- 	}
-=20
- 	if (optee->ops->from_msg_param(optee, params, arg->num_params,
--				       arg->params)) {
-+				       arg->params, update_out)) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- 		goto out;
- 	}
-=20
- 	arg->ret =3D optee_supp_thrd_req(ctx, arg->cmd, arg->num_params, params);
-=20
-+	/*
-+	 * Special treatment for OPTEE_RPC_CMD_SHM_ALLOC since input is a
-+	 * value type, but the output is a memref type.
-+	 */
-+	if (arg->cmd !=3D OPTEE_RPC_CMD_SHM_ALLOC)
-+		update_out =3D true;
- 	if (optee->ops->to_msg_param(optee, arg->params, arg->num_params,
--				     params))
-+				     params, update_out))
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- out:
- 	kfree(params);
-@@ -270,7 +278,7 @@ static void handle_rpc_func_rpmb_probe_reset(struct tee_c=
-ontext *ctx,
-=20
- 	if (arg->num_params !=3D ARRAY_SIZE(params) ||
- 	    optee->ops->from_msg_param(optee, params, arg->num_params,
--				       arg->params) ||
-+				       arg->params, false /*!update_out*/) ||
- 	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- 		return;
-@@ -280,7 +288,8 @@ static void handle_rpc_func_rpmb_probe_reset(struct tee_c=
-ontext *ctx,
- 	params[0].u.value.b =3D 0;
- 	params[0].u.value.c =3D 0;
- 	if (optee->ops->to_msg_param(optee, arg->params,
--				     arg->num_params, params)) {
-+				     arg->num_params, params,
-+				     true /*update_out*/)) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- 		return;
- 	}
-@@ -324,7 +333,7 @@ static void handle_rpc_func_rpmb_probe_next(struct tee_co=
-ntext *ctx,
-=20
- 	if (arg->num_params !=3D ARRAY_SIZE(params) ||
- 	    optee->ops->from_msg_param(optee, params, arg->num_params,
--				       arg->params) ||
-+				       arg->params, false /*!update_out*/) ||
- 	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT ||
- 	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-@@ -358,7 +367,8 @@ static void handle_rpc_func_rpmb_probe_next(struct tee_co=
-ntext *ctx,
- 	params[0].u.value.b =3D rdev->descr.capacity;
- 	params[0].u.value.c =3D rdev->descr.reliable_wr_count;
- 	if (optee->ops->to_msg_param(optee, arg->params,
--				     arg->num_params, params)) {
-+				     arg->num_params, params,
-+				     true /*update_out*/)) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- 		return;
- 	}
-@@ -384,7 +394,7 @@ static void handle_rpc_func_rpmb_frames(struct tee_contex=
-t *ctx,
-=20
- 	if (arg->num_params !=3D ARRAY_SIZE(params) ||
- 	    optee->ops->from_msg_param(optee, params, arg->num_params,
--				       arg->params) ||
-+				       arg->params, false /*!update_out*/) ||
- 	    params[0].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT ||
- 	    params[1].attr !=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
-@@ -401,7 +411,8 @@ static void handle_rpc_func_rpmb_frames(struct tee_contex=
-t *ctx,
- 		goto out;
- 	}
- 	if (optee->ops->to_msg_param(optee, arg->params,
--				     arg->num_params, params)) {
-+				     arg->num_params, params,
-+				     true /*update_out*/)) {
- 		arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
- 		goto out;
- 	}
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index f0c3ac1103bb..e5b190d64a49 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -81,20 +81,26 @@ static int optee_cpuhp_disable_pcpu_irq(unsigned int cpu)
+- * struct optee_msg_param_fmem - ffa memory reference parameter
++ * struct optee_msg_param_fmem - FF-A memory reference parameter
+  * @offs_lower:	   Lower bits of offset into shared memory reference
+  * @offs_upper:	   Upper bits of offset into shared memory reference
+  * @internal_offs: Internal offset into the first page of shared memory
+  *		   reference
+  * @size:	   Size of the buffer
+- * @global_id:	   Global identifier of Shared memory
++ * @global_id:	   Global identifier of the shared memory
   */
+ struct optee_msg_param_fmem {
+ 	u32 offs_low;
+@@ -165,7 +165,7 @@ struct optee_msg_param_value {
+  * @attr:	attributes
+  * @tmem:	parameter by temporary memory reference
+  * @rmem:	parameter by registered memory reference
+- * @fmem:	parameter by ffa registered memory reference
++ * @fmem:	parameter by FF-A registered memory reference
+  * @value:	parameter by opaque value
+  * @octets:	parameter by octet string
+  *
+@@ -296,6 +296,18 @@ struct optee_msg_arg {
+  */
+ #define OPTEE_MSG_FUNCID_GET_OS_REVISION	0x0001
 =20
- static int from_msg_param_tmp_mem(struct tee_param *p, u32 attr,
--				  const struct optee_msg_param *mp)
-+				  const struct optee_msg_param *mp,
-+				  bool update_out)
- {
- 	struct tee_shm *shm;
- 	phys_addr_t pa;
- 	int rc;
-=20
-+	if (update_out) {
-+		if (attr =3D=3D OPTEE_MSG_ATTR_TYPE_TMEM_INPUT)
-+			return 0;
-+		goto out;
-+	}
++/*
++ * Values used in OPTEE_MSG_CMD_LEND_RSTMEM below
++ * OPTEE_MSG_RSTMEM_RESERVED		Reserved
++ * OPTEE_MSG_RSTMEM_SECURE_VIDEO_PLAY	Secure Video Playback
++ * OPTEE_MSG_RSTMEM_TRUSTED_UI		Trused UI
++ * OPTEE_MSG_RSTMEM_SECURE_VIDEO_RECORD	Secure Video Recording
++ */
++#define OPTEE_MSG_RSTMEM_RESERVED		0
++#define OPTEE_MSG_RSTMEM_SECURE_VIDEO_PLAY	1
++#define OPTEE_MSG_RSTMEM_TRUSTED_UI		2
++#define OPTEE_MSG_RSTMEM_SECURE_VIDEO_RECORD	3
 +
- 	p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT +
- 		  attr - OPTEE_MSG_ATTR_TYPE_TMEM_INPUT;
--	p->u.memref.size =3D mp->u.tmem.size;
- 	shm =3D (struct tee_shm *)(unsigned long)mp->u.tmem.shm_ref;
- 	if (!shm) {
- 		p->u.memref.shm_offs =3D 0;
- 		p->u.memref.shm =3D NULL;
--		return 0;
-+		goto out;
- 	}
+ /*
+  * Do a secure call with struct optee_msg_arg as argument
+  * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg::cmd
+@@ -337,6 +349,49 @@ struct optee_msg_arg {
+  * OPTEE_MSG_CMD_STOP_ASYNC_NOTIF informs secure world that from now is
+  * normal world unable to process asynchronous notifications. Typically
+  * used when the driver is shut down.
++ *
++ * OPTEE_MSG_CMD_LEND_RSTMEM lends restricted memory. The passed normal
++ * physical memory is restricted from normal world access. The memory
++ * should be unmapped prior to this call since it becomes inaccessible
++ * during the request.
++ * Parameters are passed as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
++ * [in] param[0].u.value.a		OPTEE_MSG_RSTMEM_* defined above
++ * [in] param[1].attr			OPTEE_MSG_ATTR_TYPE_TMEM_INPUT
++ * [in] param[1].u.tmem.buf_ptr		physical address
++ * [in] param[1].u.tmem.size		size
++ * [in] param[1].u.tmem.shm_ref		holds restricted memory reference
++ *
++ * OPTEE_MSG_CMD_RECLAIM_RSTMEM reclaims a previously lent restricted
++ * memory reference. The physical memory is accessible by the normal world
++ * after this function has return and can be mapped again. The information
++ * is passed as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
++ * [in] param[0].u.value.a		holds restricted memory cookie
++ *
++ * OPTEE_MSG_CMD_GET_RSTMEM_CONFIG get configuration for a specific
++ * restricted memory use case. Parameters are passed as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INOUT
++ * [in] param[0].value.a		OPTEE_MSG_RSTMEM_*
++ * [in] param[1].attr			OPTEE_MSG_ATTR_TYPE_{R,F}MEM_OUTPUT
++ * [in] param[1].u.{r,f}mem		Buffer or NULL
++ * [in] param[1].u.{r,f}mem.size	Provided size of buffer or 0 for query
++ * output for the restricted use case:
++ * [out] param[0].value.a		Minimal size of SDP memory
++ * [out] param[0].value.b		Required alignment of size and start of
++ *					restricted memory
++ * [out] param[1].{r,f}mem.size		Size of output data
++ * [out] param[1].{r,f}mem		If non-NULL, contains an array of
++ *					uint16_t holding endpoints that
++ *					must be included when lending
++ *					memory for this use case
++ *
++ * OPTEE_MSG_CMD_ASSIGN_RSTMEM assigns use-case to restricted memory
++ * previously lent using the FFA_LEND framework ABI. Parameters are passed
++ * as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
++ * [in] param[0].u.value.a		holds restricted memory cookie
++ * [in] param[0].u.value.b		OPTEE_MSG_RSTMEM_* defined above
+  */
+ #define OPTEE_MSG_CMD_OPEN_SESSION	0
+ #define OPTEE_MSG_CMD_INVOKE_COMMAND	1
+@@ -346,6 +401,10 @@ struct optee_msg_arg {
+ #define OPTEE_MSG_CMD_UNREGISTER_SHM	5
+ #define OPTEE_MSG_CMD_DO_BOTTOM_HALF	6
+ #define OPTEE_MSG_CMD_STOP_ASYNC_NOTIF	7
++#define OPTEE_MSG_CMD_LEND_RSTMEM	8
++#define OPTEE_MSG_CMD_RECLAIM_RSTMEM	9
++#define OPTEE_MSG_CMD_GET_RSTMEM_CONFIG	10
++#define OPTEE_MSG_CMD_ASSIGN_RSTMEM	11
+ #define OPTEE_MSG_FUNCID_CALL_WITH_ARG	0x0004
 =20
- 	rc =3D tee_shm_get_pa(shm, 0, &pa);
-@@ -103,18 +109,25 @@ static int from_msg_param_tmp_mem(struct tee_param *p, =
-u32 attr,
-=20
- 	p->u.memref.shm_offs =3D mp->u.tmem.buf_ptr - pa;
- 	p->u.memref.shm =3D shm;
+ #endif /* _OPTEE_MSG_H */
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index 879426300821..abc379ce190c 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -264,7 +264,6 @@ struct optee_smc_get_shm_config_result {
+ #define OPTEE_SMC_SEC_CAP_HAVE_RESERVED_SHM	BIT(0)
+ /* Secure world can communicate via previously unregistered shared memory */
+ #define OPTEE_SMC_SEC_CAP_UNREGISTERED_SHM	BIT(1)
 -
-+out:
-+	p->u.memref.size =3D mp->u.tmem.size;
- 	return 0;
- }
+ /*
+  * Secure world supports commands "register/unregister shared memory",
+  * secure world accepts command buffers located in any parts of non-secure R=
+AM
+@@ -280,6 +279,10 @@ struct optee_smc_get_shm_config_result {
+ #define OPTEE_SMC_SEC_CAP_RPC_ARG		BIT(6)
+ /* Secure world supports probing for RPMB device if needed */
+ #define OPTEE_SMC_SEC_CAP_RPMB_PROBE		BIT(7)
++/* Secure world supports Secure Data Path */
++#define OPTEE_SMC_SEC_CAP_SDP			BIT(8)
++/* Secure world supports dynamic restricted memory */
++#define OPTEE_SMC_SEC_CAP_DYNAMIC_RSTMEM	BIT(9)
 =20
- static void from_msg_param_reg_mem(struct tee_param *p, u32 attr,
--				   const struct optee_msg_param *mp)
-+				   const struct optee_msg_param *mp,
-+				   bool update_out)
- {
- 	struct tee_shm *shm;
+ #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
+ #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
+@@ -451,6 +454,72 @@ struct optee_smc_disable_shm_cache_result {
 =20
-+	if (update_out) {
-+		if (attr =3D=3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT)
-+			return;
-+		goto out;
-+	}
+ /* See OPTEE_SMC_CALL_WITH_REGD_ARG above */
+ #define OPTEE_SMC_FUNCID_CALL_WITH_REGD_ARG	19
++/*
++ * Get Secure Data Path memory config
++ *
++ * Returns the Secure Data Path memory config.
++ *
++ * Call register usage:
++ * a0   SMC Function ID, OPTEE_SMC_GET_SDP_CONFIG
++ * a2-6	Not used, must be zero
++ * a7	Hypervisor Client ID register
++ *
++ * Have config return register usage:
++ * a0	OPTEE_SMC_RETURN_OK
++ * a1	Physical address of start of SDP memory
++ * a2	Size of SDP memory
++ * a3	Not used
++ * a4-7	Preserved
++ *
++ * Not available register usage:
++ * a0	OPTEE_SMC_RETURN_ENOTAVAIL
++ * a1-3 Not used
++ * a4-7	Preserved
++ */
++#define OPTEE_SMC_FUNCID_GET_SDP_CONFIG		20
++#define OPTEE_SMC_GET_SDP_CONFIG \
++	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_SDP_CONFIG)
 +
- 	p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT +
- 		  attr - OPTEE_MSG_ATTR_TYPE_RMEM_INPUT;
--	p->u.memref.size =3D mp->u.rmem.size;
- 	shm =3D (struct tee_shm *)(unsigned long)mp->u.rmem.shm_ref;
-=20
- 	if (shm) {
-@@ -124,6 +137,8 @@ static void from_msg_param_reg_mem(struct tee_param *p, u=
-32 attr,
- 		p->u.memref.shm_offs =3D 0;
- 		p->u.memref.shm =3D NULL;
- 	}
-+out:
-+	p->u.memref.size =3D mp->u.rmem.size;
- }
-=20
- /**
-@@ -133,11 +148,13 @@ static void from_msg_param_reg_mem(struct tee_param *p,=
- u32 attr,
-  * @params:	subsystem internal parameter representation
-  * @num_params:	number of elements in the parameter arrays
-  * @msg_params:	OPTEE_MSG parameters
-+ * @update_out:	update parameter for output only
-  * Returns 0 on success or <0 on failure
-  */
- static int optee_from_msg_param(struct optee *optee, struct tee_param *param=
-s,
- 				size_t num_params,
--				const struct optee_msg_param *msg_params)
-+				const struct optee_msg_param *msg_params,
-+				bool update_out)
- {
- 	int rc;
- 	size_t n;
-@@ -149,25 +166,27 @@ static int optee_from_msg_param(struct optee *optee, st=
-ruct tee_param *params,
-=20
- 		switch (attr) {
- 		case OPTEE_MSG_ATTR_TYPE_NONE:
-+			if (update_out)
-+				break;
- 			p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
- 			memset(&p->u, 0, sizeof(p->u));
- 			break;
- 		case OPTEE_MSG_ATTR_TYPE_VALUE_INPUT:
- 		case OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT:
- 		case OPTEE_MSG_ATTR_TYPE_VALUE_INOUT:
--			optee_from_msg_param_value(p, attr, mp);
-+			optee_from_msg_param_value(p, attr, mp, update_out);
- 			break;
- 		case OPTEE_MSG_ATTR_TYPE_TMEM_INPUT:
- 		case OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT:
- 		case OPTEE_MSG_ATTR_TYPE_TMEM_INOUT:
--			rc =3D from_msg_param_tmp_mem(p, attr, mp);
-+			rc =3D from_msg_param_tmp_mem(p, attr, mp, update_out);
- 			if (rc)
- 				return rc;
- 			break;
- 		case OPTEE_MSG_ATTR_TYPE_RMEM_INPUT:
- 		case OPTEE_MSG_ATTR_TYPE_RMEM_OUTPUT:
- 		case OPTEE_MSG_ATTR_TYPE_RMEM_INOUT:
--			from_msg_param_reg_mem(p, attr, mp);
-+			from_msg_param_reg_mem(p, attr, mp, update_out);
- 			break;
-=20
- 		default:
-@@ -178,20 +197,25 @@ static int optee_from_msg_param(struct optee *optee, st=
-ruct tee_param *params,
- }
-=20
- static int to_msg_param_tmp_mem(struct optee_msg_param *mp,
--				const struct tee_param *p)
-+				const struct tee_param *p, bool update_out)
- {
- 	int rc;
- 	phys_addr_t pa;
-=20
-+	if (update_out) {
-+		if (p->attr =3D=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT)
-+			return 0;
-+		goto out;
-+	}
++struct optee_smc_get_sdp_config_result {
++	unsigned long status;
++	unsigned long start;
++	unsigned long size;
++	unsigned long flags;
++};
 +
- 	mp->attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_INPUT + p->attr -
- 		   TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
-=20
- 	mp->u.tmem.shm_ref =3D (unsigned long)p->u.memref.shm;
--	mp->u.tmem.size =3D p->u.memref.size;
-=20
- 	if (!p->u.memref.shm) {
- 		mp->u.tmem.buf_ptr =3D 0;
--		return 0;
-+		goto out;
- 	}
-=20
- 	rc =3D tee_shm_get_pa(p->u.memref.shm, p->u.memref.shm_offs, &pa);
-@@ -201,19 +225,27 @@ static int to_msg_param_tmp_mem(struct optee_msg_param =
-*mp,
- 	mp->u.tmem.buf_ptr =3D pa;
- 	mp->attr |=3D OPTEE_MSG_ATTR_CACHE_PREDEFINED <<
- 		    OPTEE_MSG_ATTR_CACHE_SHIFT;
--
-+out:
-+	mp->u.tmem.size =3D p->u.memref.size;
- 	return 0;
- }
-=20
- static int to_msg_param_reg_mem(struct optee_msg_param *mp,
--				const struct tee_param *p)
-+				const struct tee_param *p, bool update_out)
- {
-+	if (update_out) {
-+		if (p->attr =3D=3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT)
-+			return 0;
-+		goto out;
-+	}
++/*
++ * Get Secure Data Path dynamic memory config
++ *
++ * Returns the Secure Data Path dynamic memory config.
++ *
++ * Call register usage:
++ * a0	SMC Function ID, OPTEE_SMC_GET_DYN_SHM_CONFIG
++ * a2-6	Not used, must be zero
++ * a7	Hypervisor Client ID register
++ *
++ * Have config return register usage:
++ * a0	OPTEE_SMC_RETURN_OK
++ * a1	Minamal size of SDP memory
++ * a2	Required alignment of size and start of registered SDP memory
++ * a3	Not used
++ * a4-7	Preserved
++ *
++ * Not available register usage:
++ * a0	OPTEE_SMC_RETURN_ENOTAVAIL
++ * a1-3 Not used
++ * a4-7	Preserved
++ */
 +
- 	mp->attr =3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT + p->attr -
- 		   TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
++#define OPTEE_SMC_FUNCID_GET_DYN_SDP_CONFIG	21
++#define OPTEE_SMC_GET_DYN_SDP_CONFIG \
++	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_DYN_SDP_CONFIG)
++
++struct optee_smc_get_dyn_sdp_config_result {
++	unsigned long status;
++	unsigned long size;
++	unsigned long align;
++	unsigned long flags;
++};
 =20
- 	mp->u.rmem.shm_ref =3D (unsigned long)p->u.memref.shm;
--	mp->u.rmem.size =3D p->u.memref.size;
- 	mp->u.rmem.offs =3D p->u.memref.shm_offs;
-+out:
-+	mp->u.rmem.size =3D p->u.memref.size;
- 	return 0;
- }
-=20
-@@ -223,11 +255,13 @@ static int to_msg_param_reg_mem(struct optee_msg_param =
-*mp,
-  * @msg_params:	OPTEE_MSG parameters
-  * @num_params:	number of elements in the parameter arrays
-  * @params:	subsystem itnernal parameter representation
-+ * @update_out:	update parameter for output only
-  * Returns 0 on success or <0 on failure
-  */
- static int optee_to_msg_param(struct optee *optee,
- 			      struct optee_msg_param *msg_params,
--			      size_t num_params, const struct tee_param *params)
-+			      size_t num_params, const struct tee_param *params,
-+			      bool update_out)
- {
- 	int rc;
- 	size_t n;
-@@ -238,21 +272,23 @@ static int optee_to_msg_param(struct optee *optee,
-=20
- 		switch (p->attr) {
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-+			if (update_out)
-+				break;
- 			mp->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
- 			memset(&mp->u, 0, sizeof(mp->u));
- 			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
--			optee_to_msg_param_value(mp, p);
-+			optee_to_msg_param_value(mp, p, update_out);
- 			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
- 			if (tee_shm_is_dynamic(p->u.memref.shm))
--				rc =3D to_msg_param_reg_mem(mp, p);
-+				rc =3D to_msg_param_reg_mem(mp, p, update_out);
- 			else
--				rc =3D to_msg_param_tmp_mem(mp, p);
-+				rc =3D to_msg_param_tmp_mem(mp, p, update_out);
- 			if (rc)
- 				return rc;
- 			break;
+ /*
+  * Resume from RPC (for example after processing a foreign interrupt)
 --=20
 2.43.0
 
 
---===============0828164484150076190==--
+--===============2283268660123586170==--
 
