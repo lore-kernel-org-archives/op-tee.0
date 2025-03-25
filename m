@@ -1,150 +1,109 @@
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v16 4/6] dt-bindings: remoteproc: Add compatibility for TEE support
-Date: Tue, 25 Mar 2025 10:58:31 +0100
-Message-ID: <20250325095833.3059895-5-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v16 1/6] remoteproc: core: Introduce rproc_pa_to_va helper
+Date: Tue, 25 Mar 2025 10:58:28 +0100
+Message-ID: <20250325095833.3059895-2-arnaud.pouliquen@foss.st.com>
 In-Reply-To: <20250325095833.3059895-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1450539364808460812=="
+Content-Type: multipart/mixed; boundary="===============5001663920090574683=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1450539364808460812==
+--===============5001663920090574683==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
-where the Cortex-M4 firmware is loaded by the Trusted Execution Environment
-(TEE).
-
-For instance, this compatible is used in both the Linux and OP-TEE device
-trees:
-- In OP-TEE, a node is defined in the device tree with the
-  "st,stm32mp1-m4-tee" compatible to support signed remoteproc firmware.
-  Based on DT properties, the OP-TEE remoteproc framework is initiated to
-  expose a trusted application service to authenticate and load the remote
-  processor firmware provided by the Linux remoteproc framework, as well
-  as to start and stop the remote processor.
-- In Linux, when the compatibility is set, the Cortex-M resets should not
-  be declared in the device tree. In such a configuration, the reset is
-  managed by the OP-TEE remoteproc driver and is no longer accessible from
-  the Linux kernel.
-
-Associated with this new compatible, add the "st,proc-id" property to
-identify the remote processor. This ID is used to define a unique ID,
-common between Linux, U-Boot, and OP-TEE, to identify a coprocessor.
-This ID will be used in requests to the OP-TEE remoteproc Trusted
-Application to specify the remote processor.
+When a resource table is loaded by an external entity such as U-boot or
+OP-TEE, we do not necessarily get the device address(da) but the physical
+address(pa).
+This helper performs similar translation than the rproc_da_to_va()
+but based on a physical address.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- .../bindings/remoteproc/st,stm32-rproc.yaml   | 58 ++++++++++++++++---
- 1 file changed, 50 insertions(+), 8 deletions(-)
+ drivers/remoteproc/remoteproc_core.c | 46 ++++++++++++++++++++++++++++
+ include/linux/remoteproc.h           |  1 +
+ 2 files changed, 47 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml=
- b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-index 370af61d8f28..409123cd4667 100644
---- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-+++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
-@@ -16,7 +16,12 @@ maintainers:
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remote=
+proc_core.c
+index c2cf0d277729..f05122b699b7 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -230,6 +230,52 @@ void *rproc_da_to_va(struct rproc *rproc, u64 da, size_t=
+ len, bool *is_iomem)
+ }
+ EXPORT_SYMBOL(rproc_da_to_va);
 =20
- properties:
-   compatible:
--    const: st,stm32mp1-m4
-+    enum:
-+      - st,stm32mp1-m4
-+      - st,stm32mp1-m4-tee
-+    description:
-+      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-s=
-ecure context
-+      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by s=
-ecure context
-=20
-   reg:
-     description:
-@@ -43,6 +48,10 @@ properties:
-           - description: The offset of the hold boot setting register
-           - description: The field mask of the hold boot
-=20
-+  st,proc-id:
-+    description: remote processor identifier
-+    $ref: /schemas/types.yaml#/definitions/uint32
++/**
++ * rproc_pa_to_va() - lookup the kernel virtual address for a physical addre=
+ss of a remoteproc
++ * memory
++ *
++ * @rproc: handle of a remote processor
++ * @pa: remoteproc physical address
++ * @len: length of the memory region @pa is pointing to
++ * @is_iomem: optional pointer filled in to indicate if @da is iomapped memo=
+ry
++ *
++ * This function is a helper function similar to rproc_da_to_va() but it dea=
+ls with physical
++ * addresses instead of device addresses.
++ *
++ * Return: a valid kernel address on success or NULL on failure
++ */
++void *rproc_pa_to_va(struct rproc *rproc, phys_addr_t pa, size_t len, bool *=
+is_iomem)
++{
++	struct rproc_mem_entry *carveout;
++	void *ptr =3D NULL;
 +
-   st,syscfg-tz:
-     deprecated: true
-     description:
-@@ -142,21 +151,43 @@ properties:
- required:
-   - compatible
-   - reg
--  - resets
-=20
- allOf:
-   - if:
-       properties:
--        reset-names:
--          not:
--            contains:
--              const: hold_boot
-+        compatible:
-+          contains:
-+            const: st,stm32mp1-m4
-     then:
-+      if:
-+        properties:
-+          reset-names:
-+            not:
-+              contains:
-+                const: hold_boot
-+      then:
-+        required:
-+          - st,syscfg-holdboot
-+      else:
-+        properties:
-+          st,syscfg-holdboot: false
-+        required:
-+          - reset-names
-       required:
--        - st,syscfg-holdboot
--    else:
-+        - resets
++	list_for_each_entry(carveout, &rproc->carveouts, node) {
++		int offset =3D pa - carveout->dma;
 +
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: st,stm32mp1-m4-tee
-+    then:
-       properties:
-         st,syscfg-holdboot: false
-+        reset-names: false
-+        resets: false
-+      required:
-+        - st,proc-id
++		/*  Verify that carveout is allocated */
++		if (!carveout->va)
++			continue;
++
++		/* try next carveout if da is too small */
++		if (offset < 0)
++			continue;
++
++		/* try next carveout if da is too large */
++		if (offset + len > carveout->len)
++			continue;
++
++		ptr =3D carveout->va + offset;
++
++		if (is_iomem)
++			*is_iomem =3D carveout->is_iomem;
++
++		break;
++	}
++
++	return ptr;
++}
++EXPORT_SYMBOL(rproc_pa_to_va);
++
+ /**
+  * rproc_find_carveout_by_name() - lookup the carveout region by a name
+  * @rproc: handle of a remote processor
+diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
+index b4795698d8c2..8fd0d7f63c8e 100644
+--- a/include/linux/remoteproc.h
++++ b/include/linux/remoteproc.h
+@@ -690,6 +690,7 @@ int rproc_detach(struct rproc *rproc);
+ int rproc_set_firmware(struct rproc *rproc, const char *fw_name);
+ void rproc_report_crash(struct rproc *rproc, enum rproc_crash_type type);
+ void *rproc_da_to_va(struct rproc *rproc, u64 da, size_t len, bool *is_iomem=
+);
++void *rproc_pa_to_va(struct rproc *rproc, phys_addr_t pa, size_t len, bool *=
+is_iomem);
 =20
- additionalProperties: false
-=20
-@@ -188,5 +219,16 @@ examples:
-       st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-       st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-     };
-+  - |
-+    #include <dt-bindings/reset/stm32mp1-resets.h>
-+    m4(a)10000000 {
-+      compatible =3D "st,stm32mp1-m4-tee";
-+      reg =3D <0x10000000 0x40000>,
-+            <0x30000000 0x40000>,
-+            <0x38000000 0x10000>;
-+      st,proc-id =3D <0>;
-+      st,syscfg-rsc-tbl =3D <&tamp 0x144 0xFFFFFFFF>;
-+      st,syscfg-m4-state =3D <&tamp 0x148 0xFFFFFFFF>;
-+    };
-=20
- ...
+ /* from remoteproc_coredump.c */
+ void rproc_coredump_cleanup(struct rproc *rproc);
 --=20
 2.25.1
 
 
---===============1450539364808460812==--
+--===============5001663920090574683==--
 
