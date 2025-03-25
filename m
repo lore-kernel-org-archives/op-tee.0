@@ -1,899 +1,709 @@
-From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v16 2/6] remoteproc: Add TEE support
-Date: Tue, 25 Mar 2025 10:58:29 +0100
-Message-ID: <20250325095833.3059895-3-arnaud.pouliquen@foss.st.com>
-In-Reply-To: <20250325095833.3059895-1-arnaud.pouliquen@foss.st.com>
+Subject: Re: [PATCH v6 05/10] tee: implement restricted DMA-heap
+Date: Tue, 25 Mar 2025 11:55:46 +0100
+Message-ID: 
+ <CAHUa44GjpHT5Nqo+Ar5jNYNPV-YJQYpLTCf=7oJ1o0VjP-t0nA@mail.gmail.com>
+In-Reply-To: <Z-JOPgcWlpTlskgd@sumit-X1>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0041821564014506362=="
+Content-Type: multipart/mixed; boundary="===============6253880330559817567=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0041821564014506362==
+--===============6253880330559817567==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add a remoteproc TEE (Trusted Execution Environment) driver that will be
-probed by the TEE bus. If the associated Trusted application is supported
-on the secure part, this driver offers a client interface to load firmware
-by the secure part.
-This firmware could be authenticated by the secure trusted application.
+Hi Sumit,
 
-A specificity of the implementation is that the firmware has to be
-authenticated and optionally decrypted to access the resource table.
+On Tue, Mar 25, 2025 at 7:33=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
+wrote:
+>
+> Hi Jens,
+>
+> On Wed, Mar 05, 2025 at 02:04:11PM +0100, Jens Wiklander wrote:
+> > Implement DMA heap for restricted DMA-buf allocation in the TEE
+> > subsystem.
+> >
+> > Restricted memory refers to memory buffers behind a hardware enforced
+> > firewall. It is not accessible to the kernel during normal circumstances
+> > but rather only accessible to certain hardware IPs or CPUs executing in
+> > higher or differently privileged mode than the kernel itself. This
+> > interface allows to allocate and manage such restricted memory buffers
+> > via interaction with a TEE implementation.
+> >
+> > The restricted memory is allocated for a specific use-case, like Secure
+> > Video Playback, Trusted UI, or Secure Video Recording where certain
+> > hardware devices can access the memory.
+> >
+> > The DMA-heaps are enabled explicitly by the TEE backend driver. The TEE
+> > backend drivers needs to implement restricted memory pool to manage the
+> > restricted memory.
+> >
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> >  drivers/tee/Makefile      |   1 +
+> >  drivers/tee/tee_heap.c    | 470 ++++++++++++++++++++++++++++++++++++++
+> >  drivers/tee/tee_private.h |   6 +
+> >  include/linux/tee_core.h  |  62 +++++
+> >  4 files changed, 539 insertions(+)
+> >  create mode 100644 drivers/tee/tee_heap.c
+> >
+> > diff --git a/drivers/tee/Makefile b/drivers/tee/Makefile
+> > index 5488cba30bd2..949a6a79fb06 100644
+> > --- a/drivers/tee/Makefile
+> > +++ b/drivers/tee/Makefile
+> > @@ -1,6 +1,7 @@
+> >  # SPDX-License-Identifier: GPL-2.0
+> >  obj-$(CONFIG_TEE) +=3D tee.o
+> >  tee-objs +=3D tee_core.o
+> > +tee-objs +=3D tee_heap.o
+> >  tee-objs +=3D tee_shm.o
+> >  tee-objs +=3D tee_shm_pool.o
+> >  obj-$(CONFIG_OPTEE) +=3D optee/
+> > diff --git a/drivers/tee/tee_heap.c b/drivers/tee/tee_heap.c
+> > new file mode 100644
+> > index 000000000000..476ab2e27260
+> > --- /dev/null
+> > +++ b/drivers/tee/tee_heap.c
+> > @@ -0,0 +1,470 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (c) 2025, Linaro Limited
+> > + */
+> > +
+> > +#include <linux/scatterlist.h>
+> > +#include <linux/dma-buf.h>
+> > +#include <linux/dma-heap.h>
+> > +#include <linux/genalloc.h>
+> > +#include <linux/module.h>
+> > +#include <linux/scatterlist.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/tee_core.h>
+> > +#include <linux/xarray.h>
+>
+> Lets try to follow alphabetical order here.
 
-Consequently, the boot sequence is:
+Sure
 
-1) rproc_parse_fw --> rproc_tee_parse_fw
-   remoteproc TEE:
-   - Requests the TEE application to authenticate and load the firmware
-     in the remote processor memories.
-   - Requests the TEE application for the address of the resource table.
-   - Creates a copy of the resource table stored in rproc->cached_table.
+>
+> > +
+> > +#include "tee_private.h"
+> > +
+> > +struct tee_dma_heap {
+> > +     struct dma_heap *heap;
+> > +     enum tee_dma_heap_id id;
+> > +     struct tee_rstmem_pool *pool;
+> > +     struct tee_device *teedev;
+> > +     /* Protects pool and teedev above */
+> > +     struct mutex mu;
+> > +};
+> > +
+> > +struct tee_heap_buffer {
+> > +     struct tee_rstmem_pool *pool;
+> > +     struct tee_device *teedev;
+> > +     size_t size;
+> > +     size_t offs;
+> > +     struct sg_table table;
+> > +};
+> > +
+> > +struct tee_heap_attachment {
+> > +     struct sg_table table;
+> > +     struct device *dev;
+> > +};
+> > +
+> > +struct tee_rstmem_static_pool {
+> > +     struct tee_rstmem_pool pool;
+> > +     struct gen_pool *gen_pool;
+> > +     phys_addr_t pa_base;
+> > +};
+> > +
+> > +#if !IS_MODULE(CONFIG_TEE) && IS_ENABLED(CONFIG_DMABUF_HEAPS)
+>
+> Can this dependency rather be better managed via Kconfig?
 
-2) rproc_load_segments --> rproc_tee_load_fw
-   remoteproc TEE:
-   - Requests the TEE application to load the firmware. Nothing is done
-     at the TEE application as the firmware is already loaded.
-   - In case of recovery, the TEE application has to reload the firmware.
+This was the easiest yet somewhat flexible solution I could find. If
+you have something better, let's use that instead.
 
-3) rproc_tee_get_loaded_rsc_table
-   remoteproc TEE requests the TEE application for the address of the
-   resource table.
-
-4) rproc_start --> rproc_tee_start
-   - Requests the TEE application to start the remote processor.
-
-
-The shutdown sequence is:
-
-5) rproc_stop --> rproc_tee_stop
-   - Requests the TEE application to stop the remote processor.
-
-6) rproc_tee_release_fw
-   This function is used to request the TEE application to perform actions
-   to return to the initial state on stop or on error during the boot
-   sequence.
-
-Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
----
-Updates vs previous version:
-- Come back to v13 managing a load in rproc_tee_parse_fw().
-- Replace IS_REACHABLE with IS_ENABLED in remoteproc_tee.h, remoteproc_tee
-  is not supported as module
-- update REMOTEPROC_TEE config description in Kconfig
-- manage unbind sequence of the consumer rproc drivers using devlink
-- remove TA_RPROC_FW_CMD_GET_COREDUMP as not use ( to be treated in a
-  separate thread)
-- define a static `rproc_tee_ctx` variable instead of allocating it
-- add spinlock to protect `rproc_tee_ctx` accesses.
-- add exported function doumentation
----
- drivers/remoteproc/Kconfig          |  10 +
- drivers/remoteproc/Makefile         |   1 +
- drivers/remoteproc/remoteproc_tee.c | 619 ++++++++++++++++++++++++++++
- include/linux/remoteproc_tee.h      |  90 ++++
- 4 files changed, 720 insertions(+)
- create mode 100644 drivers/remoteproc/remoteproc_tee.c
- create mode 100644 include/linux/remoteproc_tee.h
-
-diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
-index 83962a114dc9..e39265d249d9 100644
---- a/drivers/remoteproc/Kconfig
-+++ b/drivers/remoteproc/Kconfig
-@@ -23,6 +23,16 @@ config REMOTEPROC_CDEV
-=20
- 	  It's safe to say N if you don't want to use this interface.
-=20
-+config REMOTEPROC_TEE
-+	bool "Remoteproc support by a TEE application"
-+	depends on OPTEE
-+	help
-+	  Support a remote processor that is managed by an application running in a=
- Trusted
-+	  Execution Environment (TEE). This application is responsible for loading =
-the remote
-+	  processor firmware image and managing its lifecycle.
-+
-+	  It's safe to say N if the remote processor is not managed by a TEE.
-+
- config IMX_REMOTEPROC
- 	tristate "i.MX remoteproc support"
- 	depends on ARCH_MXC
-diff --git a/drivers/remoteproc/Makefile b/drivers/remoteproc/Makefile
-index 5ff4e2fee4ab..f77e0abe8349 100644
---- a/drivers/remoteproc/Makefile
-+++ b/drivers/remoteproc/Makefile
-@@ -11,6 +11,7 @@ remoteproc-y				+=3D remoteproc_sysfs.o
- remoteproc-y				+=3D remoteproc_virtio.o
- remoteproc-y				+=3D remoteproc_elf_loader.o
- obj-$(CONFIG_REMOTEPROC_CDEV)		+=3D remoteproc_cdev.o
-+obj-$(CONFIG_REMOTEPROC_TEE)		+=3D remoteproc_tee.o
- obj-$(CONFIG_IMX_REMOTEPROC)		+=3D imx_rproc.o
- obj-$(CONFIG_IMX_DSP_REMOTEPROC)	+=3D imx_dsp_rproc.o
- obj-$(CONFIG_INGENIC_VPU_RPROC)		+=3D ingenic_rproc.o
-diff --git a/drivers/remoteproc/remoteproc_tee.c b/drivers/remoteproc/remotep=
-roc_tee.c
-new file mode 100644
-index 000000000000..cf50de7eb952
---- /dev/null
-+++ b/drivers/remoteproc/remoteproc_tee.c
-@@ -0,0 +1,619 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Copyright (C) STMicroelectronics 2024
-+ * Author: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-+ */
-+
-+#include <linux/firmware.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/remoteproc.h>
-+#include <linux/remoteproc_tee.h>
-+#include <linux/slab.h>
-+#include <linux/tee_drv.h>
-+
-+#define MAX_TEE_PARAM_ARRAY_MEMBER	4
-+
-+/*
-+ * Authentication and load of the firmware image in the remote processor mem=
-ories by the TEE.
-+ * After this step the firmware is loaded in destination memories, which can=
- then be locked to
-+ * prevent access by Linux.
-+ *
-+ * [in]  params[0].value.a:	remote processor identifier
-+ * [in]	 params[1].memref:	buffer containing a temporary copy of the signed =
-image to load.
-+ */
-+#define TA_RPROC_FW_CMD_LOAD_FW		1
-+
-+/*
-+ * Start the remote processor by the TEE
-+ *
-+ * [in]  params[0].value.a:	remote processor identifier
-+ */
-+#define TA_RPROC_FW_CMD_START		2
-+
-+/*
-+ * Stop the remote processor by the TEE
-+ *
-+ * [in]  params[0].value.a:	remote processor identifier
-+ */
-+#define TA_RPROC_FW_CMD_STOP		3
-+
-+/*
-+ * Return the address of the resource table, or 0 if not found.
-+ *
-+ * [in]  params[0].value.a:	remote processor identifier
-+ * [out]  params[1].value.a:	32bit LSB resource table memory address
-+ * [out]  params[1].value.b:	32bit MSB resource table memory address
-+ * [out]  params[2].value.a:	32bit LSB resource table memory size
-+ * [out]  params[2].value.b:	32bit MSB resource table memory size
-+ */
-+#define TA_RPROC_FW_CMD_GET_RSC_TABLE	4
-+
-+/*
-+ * Release remote processor firmware images and associated resources.
-+ * This command should be used in case an error occurs between the loading of
-+ * the firmware images (TA_RPROC_CMD_LOAD_FW) and the starting of the remote
-+ * processor (TA_RPROC_CMD_START_FW) or after stopping the remote processor
-+ * to release associated resources (TA_RPROC_CMD_STOP_FW).
-+ *
-+ * [in]  params[0].value.a: Unique 32-bit remote processor identifier
-+ */
-+#define TA_RPROC_CMD_RELEASE_FW		6
-+
-+struct rproc_tee_context {
-+	struct list_head	sessions;
-+	struct tee_context	*tee_ctx;
-+	struct device		*dev;
-+};
-+
-+/**
-+ * struct rproc_tee - TEE remoteproc structure
-+ * @node:		Reference in list
-+ * @rproc:		Remoteproc reference
-+ * @rproc_id:		Identifier of the target firmware
-+ * @session_id:		TEE session identifier
-+ */
-+struct rproc_tee {
-+	struct list_head node;
-+	struct rproc *rproc;
-+	u32 rproc_id;
-+	u32 session_id;
-+};
-+
-+static struct rproc_tee_context rproc_tee_ctx;
-+static DEFINE_SPINLOCK(ctx_lock);
-+
-+static struct rproc_tee *rproc_to_trproc(struct rproc *rproc)
-+{
-+	struct rproc_tee *trproc;
-+
-+	list_for_each_entry(trproc, &rproc_tee_ctx.sessions, node)
-+		if (trproc->rproc =3D=3D rproc)
-+			return trproc;
-+
-+	return NULL;
-+}
-+
-+static void rproc_tee_prepare_args(struct rproc_tee *trproc, int cmd,
-+				   struct tee_ioctl_invoke_arg *arg,
-+				   struct tee_param *param,
-+				   unsigned int num_params)
-+{
-+	memset(arg, 0, sizeof(*arg));
-+	memset(param, 0, MAX_TEE_PARAM_ARRAY_MEMBER * sizeof(*param));
-+
-+	arg->func =3D cmd;
-+	arg->session =3D trproc->session_id;
-+	arg->num_params =3D num_params + 1;
-+
-+	param[0] =3D (struct tee_param) {
-+		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
-+		.u.value.a =3D trproc->rproc_id,
-+	};
-+}
-+
-+/**
-+ * rproc_tee_release_fw - Release the firmware for a TEE-based remote proces=
-sor
-+ *
-+ * This function invokes the TA_RPROC_CMD_RELEASE_FW TEE client function to =
-release the firmware.
-+ * It should only be called when the remoteproc state is RPROC_OFFLINE or RP=
-ROC_DETACHED.
-+ * The function requests the TEE remoteproc application to release the firmw=
-are loaded by
-+ * rproc_tee_load_fw(). The request is ignored if the rproc state is RPROC_D=
-ETACHED as the
-+ * remote processor is still running.
-+ *
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ */
-+void rproc_tee_release_fw(struct rproc *rproc)
-+{
-+	struct tee_param param[MAX_TEE_PARAM_ARRAY_MEMBER];
-+	struct rproc_tee *trproc =3D rproc_to_trproc(rproc);
-+	struct tee_ioctl_invoke_arg arg;
-+	int ret;
-+
-+	if (!rproc_tee_ctx.dev)
-+		return;
-+
-+	if (!trproc)
-+		return;
-+
-+	/*
-+	 * If the remote processor state is RPROC_DETACHED, just ignore the
-+	 * request, as the remote processor is still running.
-+	 */
-+	if (rproc->state =3D=3D RPROC_DETACHED)
-+		return;
-+
-+	if (rproc->state !=3D RPROC_OFFLINE) {
-+		dev_err(rproc_tee_ctx.dev, "unexpected rproc state: %d\n", rproc->state);
-+		return;
-+	}
-+
-+	rproc_tee_prepare_args(trproc, TA_RPROC_CMD_RELEASE_FW, &arg, param, 0);
-+
-+	ret =3D tee_client_invoke_func(rproc_tee_ctx.tee_ctx, &arg, param);
-+	if (ret < 0 || arg.ret !=3D 0) {
-+		dev_err(rproc_tee_ctx.dev,
-+			"TA_RPROC_CMD_RELEASE_FW invoke failed TEE err: %#x, ret:%d\n",
-+			arg.ret, ret);
-+		ret =3D -EIO;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_release_fw);
-+
-+/**
-+ * rproc_tee_load_fw - Load firmware from TEE application
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @fw: Pointer to the firmware structure containing the firmware data and s=
-ize
-+ *
-+ * This function invokes the TA_RPROC_FW_CMD_LOAD_FW TEE client function to =
-load the firmware.
-+ * It registers the fw->data as a shared memory region with the TEE, and req=
-uest the TEE to load
-+ * the firmware. This function can be called twice during the remote process=
-or boot, considering
-+ * that the TEE application ignores the command if the firmware is already l=
-oaded.
-+ *
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @fw: Pointer to the firmware structure containing the firmware data and s=
-ize
-+ *
-+ * Return: 0 on success, or an error code on failure
-+ */
-+int rproc_tee_load_fw(struct rproc *rproc, const struct firmware *fw)
-+{
-+	struct tee_param param[MAX_TEE_PARAM_ARRAY_MEMBER];
-+	struct rproc_tee *trproc =3D rproc_to_trproc(rproc);
-+	struct tee_ioctl_invoke_arg arg;
-+	struct tee_shm *fw_shm;
-+	int ret;
-+
-+	if (!rproc_tee_ctx.dev)
-+		return -ENODEV;
-+
-+	if (!trproc)
-+		return -EINVAL;
-+
-+	fw_shm =3D tee_shm_register_kernel_buf(rproc_tee_ctx.tee_ctx, (void *)fw->d=
-ata, fw->size);
-+	if (IS_ERR(fw_shm))
-+		return PTR_ERR(fw_shm);
-+
-+	rproc_tee_prepare_args(trproc, TA_RPROC_FW_CMD_LOAD_FW, &arg, param, 1);
-+
-+	/* Provide the address of the firmware image */
-+	param[1] =3D (struct tee_param) {
-+		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT,
-+		.u.memref =3D {
-+			.shm =3D fw_shm,
-+			.size =3D fw->size,
-+			.shm_offs =3D 0,
-+		},
-+	};
-+
-+	ret =3D tee_client_invoke_func(rproc_tee_ctx.tee_ctx, &arg, param);
-+	if (ret < 0 || arg.ret !=3D 0) {
-+		dev_err(rproc_tee_ctx.dev,
-+			"TA_RPROC_FW_CMD_LOAD_FW invoke failed TEE err: %#x, ret:%d\n",
-+			arg.ret, ret);
-+		if (!ret)
-+			ret =3D -EIO;
-+	}
-+
-+	tee_shm_free(fw_shm);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_load_fw);
-+
-+static int rproc_tee_get_loaded_rsc_table(struct rproc *rproc, phys_addr_t *=
-rsc_pa,
-+					  size_t *table_sz)
-+{
-+	struct tee_param param[MAX_TEE_PARAM_ARRAY_MEMBER];
-+	struct rproc_tee *trproc =3D rproc_to_trproc(rproc);
-+	struct tee_ioctl_invoke_arg arg;
-+	int ret;
-+
-+	if (!rproc_tee_ctx.dev)
-+		return -ENODEV;
-+
-+	if (!trproc)
-+		return -EINVAL;
-+
-+	rproc_tee_prepare_args(trproc, TA_RPROC_FW_CMD_GET_RSC_TABLE, &arg, param, =
-2);
-+
-+	param[1].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
-+	param[2].attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT;
-+
-+	ret =3D tee_client_invoke_func(rproc_tee_ctx.tee_ctx, &arg, param);
-+	if (ret < 0 || arg.ret !=3D 0) {
-+		dev_err(rproc_tee_ctx.dev,
-+			"TA_RPROC_FW_CMD_GET_RSC_TABLE invoke failed TEE err: %#x, ret:%d\n",
-+			arg.ret, ret);
-+		return -EIO;
-+	}
-+
-+	*table_sz =3D param[2].u.value.a;
-+
-+	if (*table_sz)
-+		*rsc_pa =3D param[1].u.value.a;
-+	else
-+		*rsc_pa  =3D 0;
-+
-+	return 0;
-+}
-+
-+/**
-+ * rproc_tee_parse_fw - Get the resource table from TEE application
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @fw: Pointer to the firmware structure containing the firmware data and s=
-ize
-+ *
-+ * This function retrieves the loaded resource table and creates a cached_ta=
-ble copy. Since the
-+ * firmware image is signed and potentially encrypted, the firmware must be =
-loaded first to
-+ * access the loaded resource table.
-+ *
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @fw: Pointer to the firmware structure containing the firmware data and s=
-ize
-+ *
-+ * Return: 0 on success, or an error code on failure
-+ */
-+int rproc_tee_parse_fw(struct rproc *rproc, const struct firmware *fw)
-+{
-+	phys_addr_t rsc_table;
-+	void __iomem *rsc_va;
-+	size_t table_sz;
-+	int ret;
-+
-+	if (!rproc)
-+		return -EINVAL;
-+
-+	/* We need first to Load the firmware, to be able to get the resource table=
-. */
-+	ret =3D rproc_tee_load_fw(rproc, fw);
-+	if (ret)
-+		return ret;
-+
-+	ret =3D rproc_tee_get_loaded_rsc_table(rproc, &rsc_table, &table_sz);
-+	if (ret)
-+		goto release_fw;
-+
-+	/*
-+	 * We assume here that the memory mapping is the same between the TEE and L=
-inux kernel
-+	 * contexts. Else a new TEE remoteproc service could be needed to get a cop=
-y of the
-+	 * resource table
-+	 */
-+	rsc_va =3D ioremap_wc(rsc_table, table_sz);
-+	if (!rsc_va) {
-+		dev_err(rproc_tee_ctx.dev, "Unable to map memory region: %pa+%zx\n",
-+			&rsc_table, table_sz);
-+		ret =3D -ENOMEM;
-+		goto release_fw;
-+	}
-+
-+	/*
-+	 * Create a copy of the resource table to have the same behavior as the ELF=
- loader.
-+	 * This cached table will be used by the remoteproc core after the remotepr=
-oc stops
-+	 * to free resources and for crash recovery to reapply the settings.
-+	 * The cached table will be freed by the remoteproc core.
-+	 */
-+	rproc->cached_table =3D kmemdup((__force void *)rsc_va, table_sz, GFP_KERNE=
-L);
-+	iounmap(rsc_va);
-+
-+	if (!rproc->cached_table) {
-+		ret =3D -ENOMEM;
-+		goto release_fw;
-+	}
-+
-+	rproc->table_ptr =3D rproc->cached_table;
-+	rproc->table_sz =3D table_sz;
-+
-+	return 0;
-+
-+release_fw:
-+	rproc_tee_release_fw(rproc);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_parse_fw);
-+
-+/**
-+ * rproc_tee_find_loaded_rsc_table - Find the loaded resource table loaded b=
-y the TEE application
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @fw: Pointer to the firmware structure containing the firmware data and s=
-ize
-+ *
-+ * This function retrieves the physical address and size of the resource tab=
-le loaded by the TEE
-+ * application.
-+ *
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @fw: Pointer to the firmware structure containing the firmware data and s=
-ize
-+ *
-+ * Return:  pointer to the resource table if found, or NULL if not found or =
-size is 0
-+ */
-+struct resource_table *rproc_tee_find_loaded_rsc_table(struct rproc *rproc,
-+						       const struct firmware *fw)
-+{
-+	phys_addr_t rsc_table;
-+	size_t table_sz;
-+	int ret;
-+
-+	ret =3D rproc_tee_get_loaded_rsc_table(rproc, &rsc_table, &table_sz);
-+	if (ret)
-+		return NULL;
-+
-+	rproc->table_sz =3D table_sz;
-+	if (!table_sz)
-+		return NULL;
-+
-+	/*
-+	 * At this step the memory area that contains the resource table should hav=
-e been registered
-+	 * by the remote proc platform driver and allocated by rproc_alloc_register=
-ed_carveouts().
-+	 */
-+	return (struct resource_table *)rproc_pa_to_va(rproc, rsc_table, table_sz, =
-NULL);
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_find_loaded_rsc_table);
-+
-+/**
-+ * rproc_tee_start - Request the TEE application to start the remote process=
-or
-+ *
-+ * This function invokes the TA_RPROC_FW_CMD_START command to start the remo=
-te processor.
-+ *
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ *
-+ * Return: Returns 0 on success, -EINVAL or -EIO on failure
-+ */
-+int rproc_tee_start(struct rproc *rproc)
-+{
-+	struct tee_param param[MAX_TEE_PARAM_ARRAY_MEMBER];
-+	struct rproc_tee *trproc =3D rproc_to_trproc(rproc);
-+	struct tee_ioctl_invoke_arg arg;
-+	int ret =3D 0;
-+
-+	if (!trproc)
-+		return -EINVAL;
-+
-+	rproc_tee_prepare_args(trproc, TA_RPROC_FW_CMD_START, &arg, param, 0);
-+
-+	ret =3D tee_client_invoke_func(rproc_tee_ctx.tee_ctx, &arg, param);
-+	if (ret < 0 || arg.ret !=3D 0) {
-+		dev_err(rproc_tee_ctx.dev,
-+			"TA_RPROC_FW_CMD_START invoke failed TEE err: %#x, ret:%d\n", arg.ret, re=
-t);
-+		if (!ret)
-+			return  -EIO;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_start);
-+
-+/**
-+ * rproc_tee_stop - Request the TEE application to start the remote processor
-+ *
-+ * This function invokes the TA_RPROC_FW_CMD_STOP command to stop the remote=
- processor.
-+ *
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ *
-+ * Return: Returns 0 on success, -EINVAL or -EIO on failure
-+ */
-+int rproc_tee_stop(struct rproc *rproc)
-+{
-+	struct tee_param param[MAX_TEE_PARAM_ARRAY_MEMBER];
-+	struct rproc_tee *trproc =3D rproc_to_trproc(rproc);
-+	struct tee_ioctl_invoke_arg arg;
-+	int ret;
-+
-+	if (!trproc)
-+		return -EINVAL;
-+
-+	rproc_tee_prepare_args(trproc, TA_RPROC_FW_CMD_STOP, &arg, param, 0);
-+
-+	ret =3D tee_client_invoke_func(rproc_tee_ctx.tee_ctx, &arg, param);
-+	if (ret < 0 || arg.ret !=3D 0) {
-+		dev_err(rproc_tee_ctx.dev,
-+			"TA_RPROC_FW_CMD_STOP invoke failed TEE err: %#x, ret:%d\n", arg.ret, ret=
+>
+> > +static DEFINE_XARRAY_ALLOC(tee_dma_heap);
+> > +
+> > +static int copy_sg_table(struct sg_table *dst, struct sg_table *src)
+> > +{
+> > +     struct scatterlist *dst_sg;
+> > +     struct scatterlist *src_sg;
+> > +     int ret;
+> > +     int i;
+> > +
+> > +     ret =3D sg_alloc_table(dst, src->orig_nents, GFP_KERNEL);
+> > +     if (ret)
+> > +             return ret;
+> > +
+> > +     dst_sg =3D dst->sgl;
+> > +     for_each_sgtable_sg(src, src_sg, i) {
+> > +             sg_set_page(dst_sg, sg_page(src_sg), src_sg->length,
+> > +                         src_sg->offset);
+> > +             dst_sg =3D sg_next(dst_sg);
+> > +     }
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static int tee_heap_attach(struct dma_buf *dmabuf,
+> > +                        struct dma_buf_attachment *attachment)
+> > +{
+> > +     struct tee_heap_buffer *buf =3D dmabuf->priv;
+> > +     struct tee_heap_attachment *a;
+> > +     int ret;
+> > +
+> > +     a =3D kzalloc(sizeof(*a), GFP_KERNEL);
+> > +     if (!a)
+> > +             return -ENOMEM;
+> > +
+> > +     ret =3D copy_sg_table(&a->table, &buf->table);
+> > +     if (ret) {
+> > +             kfree(a);
+> > +             return ret;
+> > +     }
+> > +
+> > +     a->dev =3D attachment->dev;
+> > +     attachment->priv =3D a;
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static void tee_heap_detach(struct dma_buf *dmabuf,
+> > +                         struct dma_buf_attachment *attachment)
+> > +{
+> > +     struct tee_heap_attachment *a =3D attachment->priv;
+> > +
+> > +     sg_free_table(&a->table);
+> > +     kfree(a);
+> > +}
+> > +
+> > +static struct sg_table *
+> > +tee_heap_map_dma_buf(struct dma_buf_attachment *attachment,
+> > +                  enum dma_data_direction direction)
+> > +{
+> > +     struct tee_heap_attachment *a =3D attachment->priv;
+> > +     int ret;
+> > +
+> > +     ret =3D dma_map_sgtable(attachment->dev, &a->table, direction,
+> > +                           DMA_ATTR_SKIP_CPU_SYNC);
+> > +     if (ret)
+> > +             return ERR_PTR(ret);
+> > +
+> > +     return &a->table;
+> > +}
+> > +
+> > +static void tee_heap_unmap_dma_buf(struct dma_buf_attachment *attachment,
+> > +                                struct sg_table *table,
+> > +                                enum dma_data_direction direction)
+> > +{
+> > +     struct tee_heap_attachment *a =3D attachment->priv;
+> > +
+> > +     WARN_ON(&a->table !=3D table);
+> > +
+> > +     dma_unmap_sgtable(attachment->dev, table, direction,
+> > +                       DMA_ATTR_SKIP_CPU_SYNC);
+> > +}
+> > +
+> > +static void tee_heap_buf_free(struct dma_buf *dmabuf)
+> > +{
+> > +     struct tee_heap_buffer *buf =3D dmabuf->priv;
+> > +     struct tee_device *teedev =3D buf->teedev;
+> > +
+> > +     buf->pool->ops->free(buf->pool, &buf->table);
+> > +     tee_device_put(teedev);
+> > +}
+> > +
+> > +static const struct dma_buf_ops tee_heap_buf_ops =3D {
+> > +     .attach =3D tee_heap_attach,
+> > +     .detach =3D tee_heap_detach,
+> > +     .map_dma_buf =3D tee_heap_map_dma_buf,
+> > +     .unmap_dma_buf =3D tee_heap_unmap_dma_buf,
+> > +     .release =3D tee_heap_buf_free,
+> > +};
+> > +
+> > +static struct dma_buf *tee_dma_heap_alloc(struct dma_heap *heap,
+> > +                                       unsigned long len, u32 fd_flags,
+> > +                                       u64 heap_flags)
+> > +{
+> > +     struct tee_dma_heap *h =3D dma_heap_get_drvdata(heap);
+> > +     DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
+> > +     struct tee_device *teedev =3D NULL;
+> > +     struct tee_heap_buffer *buf;
+> > +     struct tee_rstmem_pool *pool;
+> > +     struct dma_buf *dmabuf;
+> > +     int rc;
+> > +
+> > +     mutex_lock(&h->mu);
+> > +     if (tee_device_get(h->teedev)) {
+> > +             teedev =3D h->teedev;
+> > +             pool =3D h->pool;
+> > +     }
+> > +     mutex_unlock(&h->mu);
+> > +
+> > +     if (!teedev)
+> > +             return ERR_PTR(-EINVAL);
+> > +
+> > +     buf =3D kzalloc(sizeof(*buf), GFP_KERNEL);
+> > +     if (!buf) {
+> > +             dmabuf =3D ERR_PTR(-ENOMEM);
+> > +             goto err;
+> > +     }
+> > +     buf->size =3D len;
+> > +     buf->pool =3D pool;
+> > +     buf->teedev =3D teedev;
+> > +
+> > +     rc =3D pool->ops->alloc(pool, &buf->table, len, &buf->offs);
+> > +     if (rc) {
+> > +             dmabuf =3D ERR_PTR(rc);
+> > +             goto err_kfree;
+> > +     }
+> > +
+> > +     exp_info.ops =3D &tee_heap_buf_ops;
+> > +     exp_info.size =3D len;
+> > +     exp_info.priv =3D buf;
+> > +     exp_info.flags =3D fd_flags;
+> > +     dmabuf =3D dma_buf_export(&exp_info);
+> > +     if (IS_ERR(dmabuf))
+> > +             goto err_rstmem_free;
+> > +
+> > +     return dmabuf;
+> > +
+> > +err_rstmem_free:
+> > +     pool->ops->free(pool, &buf->table);
+> > +err_kfree:
+> > +     kfree(buf);
+> > +err:
+> > +     tee_device_put(h->teedev);
+> > +     return dmabuf;
+> > +}
+> > +
+> > +static const struct dma_heap_ops tee_dma_heap_ops =3D {
+> > +     .allocate =3D tee_dma_heap_alloc,
+> > +};
+> > +
+> > +static const char *heap_id_2_name(enum tee_dma_heap_id id)
+> > +{
+> > +     switch (id) {
+> > +     case TEE_DMA_HEAP_SECURE_VIDEO_PLAY:
+> > +             return "restricted,secure-video";
+> > +     case TEE_DMA_HEAP_TRUSTED_UI:
+> > +             return "restricted,trusted-ui";
+> > +     case TEE_DMA_HEAP_SECURE_VIDEO_RECORD:
+> > +             return "restricted,secure-video-record";
+> > +     default:
+> > +             return NULL;
+> > +     }
+> > +}
+> > +
+> > +static int alloc_dma_heap(struct tee_device *teedev, enum tee_dma_heap_i=
+d id,
+> > +                       struct tee_rstmem_pool *pool)
+> > +{
+> > +     struct dma_heap_export_info exp_info =3D {
+> > +             .ops =3D &tee_dma_heap_ops,
+> > +             .name =3D heap_id_2_name(id),
+> > +     };
+> > +     struct tee_dma_heap *h;
+> > +     int rc;
+> > +
+> > +     if (!exp_info.name)
+> > +             return -EINVAL;
+> > +
+> > +     if (xa_reserve(&tee_dma_heap, id, GFP_KERNEL)) {
+> > +             if (!xa_load(&tee_dma_heap, id))
+> > +                     return -EEXIST;
+> > +             return -ENOMEM;
+> > +     }
+> > +
+> > +     h =3D kzalloc(sizeof(*h), GFP_KERNEL);
+> > +     if (!h)
+> > +             return -ENOMEM;
+> > +     h->id =3D id;
+> > +     h->teedev =3D teedev;
+> > +     h->pool =3D pool;
+> > +     mutex_init(&h->mu);
+> > +
+> > +     exp_info.priv =3D h;
+> > +     h->heap =3D dma_heap_add(&exp_info);
+> > +     if (IS_ERR(h->heap)) {
+> > +             rc =3D PTR_ERR(h->heap);
+> > +             kfree(h);
+> > +
+> > +             return rc;
+> > +     }
+> > +
+> > +     /* "can't fail" due to the call to xa_reserve() above */
+> > +     return WARN(xa_store(&tee_dma_heap, id, h, GFP_KERNEL),
+> > +                 "xa_store() failed");
+> > +}
+> > +
+> > +int tee_device_register_dma_heap(struct tee_device *teedev,
+> > +                              enum tee_dma_heap_id id,
+> > +                              struct tee_rstmem_pool *pool)
+> > +{
+> > +     struct tee_dma_heap *h;
+> > +     int rc;
+> > +
+> > +     h =3D xa_load(&tee_dma_heap, id);
+> > +     if (h) {
+> > +             mutex_lock(&h->mu);
+> > +             if (h->teedev) {
+> > +                     rc =3D -EBUSY;
+> > +             } else {
+> > +                     h->teedev =3D teedev;
+> > +                     h->pool =3D pool;
+> > +                     rc =3D 0;
+> > +             }
+> > +             mutex_unlock(&h->mu);
+> > +     } else {
+> > +             rc =3D alloc_dma_heap(teedev, id, pool);
+> > +     }
+> > +
+> > +     if (rc)
+> > +             dev_err(&teedev->dev, "can't register DMA heap id %d (%s)\n=
+",
+> > +                     id, heap_id_2_name(id));
+> > +
+> > +     return rc;
+> > +}
+> > +
+> > +void tee_device_unregister_all_dma_heaps(struct tee_device *teedev)
+> > +{
+> > +     struct tee_rstmem_pool *pool;
+> > +     struct tee_dma_heap *h;
+> > +     u_long i;
+> > +
+> > +     xa_for_each(&tee_dma_heap, i, h) {
+> > +             if (h) {
+> > +                     pool =3D NULL;
+> > +                     mutex_lock(&h->mu);
+> > +                     if (h->teedev =3D=3D teedev) {
+> > +                             pool =3D h->pool;
+> > +                             h->teedev =3D NULL;
+> > +                             h->pool =3D NULL;
+> > +                     }
+> > +                     mutex_unlock(&h->mu);
+> > +                     if (pool)
+> > +                             pool->ops->destroy_pool(pool);
+> > +             }
+> > +     }
+> > +}
+> > +EXPORT_SYMBOL_GPL(tee_device_unregister_all_dma_heaps);
+> > +
+> > +int tee_heap_update_from_dma_buf(struct tee_device *teedev,
+> > +                              struct dma_buf *dmabuf, size_t *offset,
+> > +                              struct tee_shm *shm,
+> > +                              struct tee_shm **parent_shm)
+> > +{
+> > +     struct tee_heap_buffer *buf;
+> > +     int rc;
+> > +
+> > +     /* The DMA-buf must be from our heap */
+> > +     if (dmabuf->ops !=3D &tee_heap_buf_ops)
+> > +             return -EINVAL;
+> > +
+> > +     buf =3D dmabuf->priv;
+> > +     /* The buffer must be from the same teedev */
+> > +     if (buf->teedev !=3D teedev)
+> > +             return -EINVAL;
+> > +
+> > +     shm->size =3D buf->size;
+> > +
+> > +     rc =3D buf->pool->ops->update_shm(buf->pool, &buf->table, buf->offs=
+, shm,
+> > +                                     parent_shm);
+> > +     if (!rc && *parent_shm)
+> > +             *offset =3D buf->offs;
+> > +
+> > +     return rc;
+> > +}
+> > +#else
+> > +int tee_device_register_dma_heap(struct tee_device *teedev __always_unus=
+ed,
+> > +                              enum tee_dma_heap_id id __always_unused,
+> > +                              struct tee_rstmem_pool *pool __always_unus=
+ed)
+> > +{
+> > +     return -EINVAL;
+> > +}
+> > +EXPORT_SYMBOL_GPL(tee_device_register_dma_heap);
+> > +
+> > +void
+> > +tee_device_unregister_all_dma_heaps(struct tee_device *teedev __always_u=
+nused)
+> > +{
+> > +}
+> > +EXPORT_SYMBOL_GPL(tee_device_unregister_all_dma_heaps);
+> > +
+> > +int tee_heap_update_from_dma_buf(struct tee_device *teedev __always_unus=
+ed,
+> > +                              struct dma_buf *dmabuf __always_unused,
+> > +                              size_t *offset __always_unused,
+> > +                              struct tee_shm *shm __always_unused,
+> > +                              struct tee_shm **parent_shm __always_unuse=
+d)
+> > +{
+> > +     return -EINVAL;
+> > +}
+> > +#endif
+> > +
+> > +static struct tee_rstmem_static_pool *
+> > +to_rstmem_static_pool(struct tee_rstmem_pool *pool)
+> > +{
+> > +     return container_of(pool, struct tee_rstmem_static_pool, pool);
+> > +}
+> > +
+> > +static int rstmem_pool_op_static_alloc(struct tee_rstmem_pool *pool,
+> > +                                    struct sg_table *sgt, size_t size,
+> > +                                    size_t *offs)
+> > +{
+> > +     struct tee_rstmem_static_pool *stp =3D to_rstmem_static_pool(pool);
+> > +     phys_addr_t pa;
+> > +     int ret;
+> > +
+> > +     pa =3D gen_pool_alloc(stp->gen_pool, size);
+> > +     if (!pa)
+> > +             return -ENOMEM;
+> > +
+> > +     ret =3D sg_alloc_table(sgt, 1, GFP_KERNEL);
+> > +     if (ret) {
+> > +             gen_pool_free(stp->gen_pool, pa, size);
+> > +             return ret;
+> > +     }
+> > +
+> > +     sg_set_page(sgt->sgl, phys_to_page(pa), size, 0);
+> > +     *offs =3D pa - stp->pa_base;
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static void rstmem_pool_op_static_free(struct tee_rstmem_pool *pool,
+> > +                                    struct sg_table *sgt)
+> > +{
+> > +     struct tee_rstmem_static_pool *stp =3D to_rstmem_static_pool(pool);
+> > +     struct scatterlist *sg;
+> > +     int i;
+> > +
+> > +     for_each_sgtable_sg(sgt, sg, i)
+> > +             gen_pool_free(stp->gen_pool, sg_phys(sg), sg->length);
+> > +     sg_free_table(sgt);
+> > +}
+> > +
+> > +static int rstmem_pool_op_static_update_shm(struct tee_rstmem_pool *pool,
+> > +                                         struct sg_table *sgt, size_t of=
+fs,
+> > +                                         struct tee_shm *shm,
+> > +                                         struct tee_shm **parent_shm)
+> > +{
+> > +     struct tee_rstmem_static_pool *stp =3D to_rstmem_static_pool(pool);
+> > +
+> > +     shm->paddr =3D stp->pa_base + offs;
+> > +     *parent_shm =3D NULL;
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static void rstmem_pool_op_static_destroy_pool(struct tee_rstmem_pool *p=
+ool)
+> > +{
+> > +     struct tee_rstmem_static_pool *stp =3D to_rstmem_static_pool(pool);
+> > +
+> > +     gen_pool_destroy(stp->gen_pool);
+> > +     kfree(stp);
+> > +}
+> > +
+> > +static struct tee_rstmem_pool_ops rstmem_pool_ops_static =3D {
+> > +     .alloc =3D rstmem_pool_op_static_alloc,
+> > +     .free =3D rstmem_pool_op_static_free,
+> > +     .update_shm =3D rstmem_pool_op_static_update_shm,
+> > +     .destroy_pool =3D rstmem_pool_op_static_destroy_pool,
+> > +};
+> > +
+> > +struct tee_rstmem_pool *tee_rstmem_static_pool_alloc(phys_addr_t paddr,
+> > +                                                  size_t size)
+> > +{
+> > +     const size_t page_mask =3D PAGE_SIZE - 1;
+> > +     struct tee_rstmem_static_pool *stp;
+> > +     int rc;
+> > +
+> > +     /* Check it's page aligned */
+> > +     if ((paddr | size) & page_mask)
+> > +             return ERR_PTR(-EINVAL);
+> > +
+> > +     stp =3D kzalloc(sizeof(*stp), GFP_KERNEL);
+> > +     if (!stp)
+> > +             return ERR_PTR(-ENOMEM);
+> > +
+> > +     stp->gen_pool =3D gen_pool_create(PAGE_SHIFT, -1);
+> > +     if (!stp->gen_pool) {
+> > +             rc =3D -ENOMEM;
+> > +             goto err_free;
+> > +     }
+> > +
+> > +     rc =3D gen_pool_add(stp->gen_pool, paddr, size, -1);
+> > +     if (rc)
+> > +             goto err_free_pool;
+> > +
+> > +     stp->pool.ops =3D &rstmem_pool_ops_static;
+> > +     stp->pa_base =3D paddr;
+> > +     return &stp->pool;
+> > +
+> > +err_free_pool:
+> > +     gen_pool_destroy(stp->gen_pool);
+> > +err_free:
+> > +     kfree(stp);
+> > +
+> > +     return ERR_PTR(rc);
+> > +}
+> > +EXPORT_SYMBOL_GPL(tee_rstmem_static_pool_alloc);
+> > diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
+> > index 9bc50605227c..6c6ff5d5eed2 100644
+> > --- a/drivers/tee/tee_private.h
+> > +++ b/drivers/tee/tee_private.h
+> > @@ -8,6 +8,7 @@
+> >  #include <linux/cdev.h>
+> >  #include <linux/completion.h>
+> >  #include <linux/device.h>
+> > +#include <linux/dma-buf.h>
+> >  #include <linux/kref.h>
+> >  #include <linux/mutex.h>
+> >  #include <linux/types.h>
+> > @@ -24,4 +25,9 @@ struct tee_shm *tee_shm_alloc_user_buf(struct tee_conte=
+xt *ctx, size_t size);
+> >  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+> >                                         unsigned long addr, size_t length=
 );
-+		if (!ret)
-+			ret =3D -EIO;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_stop);
-+
-+static const struct tee_client_device_id rproc_tee_id_table[] =3D {
-+	{UUID_INIT(0x80a4c275, 0x0a47, 0x4905, 0x82, 0x85, 0x14, 0x86, 0xa9, 0x77, =
-0x1a, 0x08)},
-+	{}
-+};
-+
-+/**
-+ * rproc_tee_register - Register a remote processor controlled by a TEE appl=
-ication.
-+ *
-+ * This function registers a remote processor that will be managed by a TEE =
-application,by opening
-+ * a session with the TEE client.
-+ *
-+ * @dev: Pointer to client rproc device
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ * @rproc_id: ID of the remote processor
-+ *
-+ * Return: Returns 0 on success, or an error code on failure
-+ */
-+int rproc_tee_register(struct device *dev, struct rproc *rproc, unsigned int=
- rproc_id)
-+{
-+	struct tee_param param[MAX_TEE_PARAM_ARRAY_MEMBER];
-+	struct tee_ioctl_open_session_arg sess_arg;
-+	struct tee_client_device *tee_device;
-+	struct rproc_tee *trproc;
-+	struct device_link *link;
-+	int ret;
-+
-+	spin_lock(&ctx_lock);
-+	/*
-+	 * Test if the device has been probed by the TEE bus. In case of failure, w=
-e ignore the
-+	 * reason. The bus could be not yet probed or the service not available in =
-the secure
-+	 * firmware.The assumption in such a case is that the TEE remoteproc is not=
- probed.
-+	 */
-+	if (!rproc_tee_ctx.dev) {
-+		ret =3D  -EPROBE_DEFER;
-+		goto out;
-+	}
-+
-+	trproc =3D  kzalloc(sizeof(*trproc), GFP_KERNEL);
-+	if (!trproc) {
-+		ret =3D  -ENOMEM;
-+		goto out;
-+	}
-+
-+	tee_device =3D to_tee_client_device(rproc_tee_ctx.dev);
-+	memset(&sess_arg, 0, sizeof(sess_arg));
-+
-+	memcpy(sess_arg.uuid, tee_device->id.uuid.b, TEE_IOCTL_UUID_LEN);
-+
-+	sess_arg.clnt_login =3D TEE_IOCTL_LOGIN_REE_KERNEL;
-+	sess_arg.num_params =3D 1;
-+
-+	param[0] =3D (struct tee_param) {
-+		.attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
-+		.u.value.a =3D rproc_id,
-+	};
-+
-+	ret =3D tee_client_open_session(rproc_tee_ctx.tee_ctx, &sess_arg, param);
-+	if (ret < 0 || sess_arg.ret !=3D 0) {
-+		dev_err(dev, "tee_client_open_session failed, err: %#x\n", sess_arg.ret);
-+		ret =3D -EINVAL;
-+		goto free_tproc;
-+	}
-+
-+	trproc->rproc_id =3D rproc_id;
-+	trproc->session_id =3D sess_arg.session;
-+
-+	trproc->rproc =3D rproc;
-+
-+	/* Create device link between the rproc device and the TEE device */
-+	link =3D device_link_add(dev, rproc_tee_ctx.dev, DL_FLAG_AUTOREMOVE_CONSUME=
-R);
-+	if (!link) {
-+		ret =3D -ENOMEM;
-+		goto close_tee;
-+	}
-+	list_add_tail(&trproc->node, &rproc_tee_ctx.sessions);
-+
-+	goto out;
-+
-+close_tee:
-+	if (tee_client_close_session(rproc_tee_ctx.tee_ctx, trproc->session_id))
-+		dev_err(rproc_tee_ctx.dev, "tee_client_close_session failed\n");
-+free_tproc:
-+	kfree(trproc);
-+out:
-+	spin_unlock(&ctx_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_register);
-+
-+/**
-+ * rproc_tee_unregister - Register a remote processor controlled by a TEE ap=
-plication.
-+ *
-+ * This function unregisters a remote processor previously registered by the=
- rproc_tee_register()
-+ * function.
-+ *
-+ * @dev: Pointer to client rproc device
-+ * @rproc: Pointer to the struct rproc representing the remote processor
-+ *
-+ * Return: Returns 0 on success, or an error code on failure
-+ */
-+int rproc_tee_unregister(struct device *dev, struct rproc *rproc)
-+{
-+	struct rproc_tee *trproc =3D rproc_to_trproc(rproc);
-+	int ret;
-+
-+	if (!trproc)
-+		return -EINVAL;
-+
-+	spin_lock(&ctx_lock);
-+
-+	ret =3D tee_client_close_session(rproc_tee_ctx.tee_ctx, trproc->session_id);
-+	if (ret < 0)
-+		dev_err(rproc_tee_ctx.dev, "tee_client_close_session failed, err: %#x\n", =
-ret);
-+
-+	spin_unlock(&ctx_lock);
-+
-+	list_del(&trproc->node);
-+	kfree(trproc);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(rproc_tee_unregister);
-+
-+static int rproc_tee_ctx_match(struct tee_ioctl_version_data *ver, const voi=
-d *data)
-+{
-+	/* Today we support only the OP-TEE, could be extend to other tees */
-+	return (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE);
-+}
-+
-+static int rproc_tee_probe(struct device *dev)
-+{
-+	struct tee_context *tee_ctx;
-+
-+	/* Open context with TEE driver */
-+	tee_ctx =3D tee_client_open_context(NULL, rproc_tee_ctx_match, NULL, NULL);
-+	if (IS_ERR(tee_ctx))
-+		return PTR_ERR(tee_ctx);
-+
-+	spin_lock(&ctx_lock);
-+	rproc_tee_ctx.dev =3D dev;
-+	rproc_tee_ctx.tee_ctx =3D tee_ctx;
-+	INIT_LIST_HEAD(&rproc_tee_ctx.sessions);
-+	spin_unlock(&ctx_lock);
-+
-+	return 0;
-+}
-+
-+static int rproc_tee_remove(struct device *dev)
-+{
-+	spin_lock(&ctx_lock);
-+	tee_client_close_context(rproc_tee_ctx.tee_ctx);
-+	rproc_tee_ctx.dev =3D NULL;
-+	rproc_tee_ctx.tee_ctx =3D NULL;
-+	spin_unlock(&ctx_lock);
-+
-+	return 0;
-+}
-+
-+MODULE_DEVICE_TABLE(tee, rproc_tee_id_table);
-+
-+static struct tee_client_driver rproc_tee_fw_driver =3D {
-+	.id_table	=3D rproc_tee_id_table,
-+	.driver		=3D {
-+		.name		=3D KBUILD_MODNAME,
-+		.bus		=3D &tee_bus_type,
-+		.probe		=3D rproc_tee_probe,
-+		.remove		=3D rproc_tee_remove,
-+	},
-+};
-+
-+static int __init rproc_tee_fw_mod_init(void)
-+{
-+	return driver_register(&rproc_tee_fw_driver.driver);
-+}
-+
-+static void __exit rproc_tee_fw_mod_exit(void)
-+{
-+	driver_unregister(&rproc_tee_fw_driver.driver);
-+}
-+
-+module_init(rproc_tee_fw_mod_init);
-+module_exit(rproc_tee_fw_mod_exit);
-+
-+MODULE_DESCRIPTION(" remote processor TEE module");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/remoteproc_tee.h b/include/linux/remoteproc_tee.h
-new file mode 100644
-index 000000000000..659bd77a4f12
---- /dev/null
-+++ b/include/linux/remoteproc_tee.h
-@@ -0,0 +1,90 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/*
-+ * Copyright(c) 2024 STMicroelectronics
-+ */
-+
-+#ifndef REMOTEPROC_TEE_H
-+#define REMOTEPROC_TEE_H
-+
-+#include <linux/tee_drv.h>
-+#include <linux/firmware.h>
-+#include <linux/remoteproc.h>
-+
-+struct rproc;
-+struct rproc_tee;
-+
-+#if IS_ENABLED(CONFIG_REMOTEPROC_TEE)
-+
-+int rproc_tee_register(struct device *dev, struct rproc *rproc, unsigned int=
- rproc_id);
-+int rproc_tee_unregister(struct device *dev, struct rproc *rproc);
-+int rproc_tee_parse_fw(struct rproc *rproc, const struct firmware *fw);
-+int rproc_tee_load_fw(struct rproc *rproc, const struct firmware *fw);
-+void rproc_tee_release_fw(struct rproc *rproc);
-+struct resource_table *rproc_tee_find_loaded_rsc_table(struct rproc *rproc,
-+						       const struct firmware *fw);
-+int rproc_tee_start(struct rproc *rproc);
-+int rproc_tee_stop(struct rproc *rproc);
-+
-+#else
-+
-+static inline int rproc_tee_register(struct device *dev, struct rproc *rproc=
-, unsigned int rproc_id)
-+{
-+	return -ENODEV;
-+}
-+
-+static inline int rproc_tee_parse_fw(struct rproc *rproc, const struct firmw=
-are *fw)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+
-+static inline int rproc_tee_unregister(struct device *dev, struct rproc *rpr=
-oc)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+
-+static inline int rproc_tee_load_fw(struct rproc *rproc,  const struct firmw=
-are *fw)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+
-+static inline int rproc_tee_start(struct rproc *rproc)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+
-+static inline int rproc_tee_stop(struct rproc *rproc)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+
-+static inline void rproc_tee_release_fw(struct rproc *rproc)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+}
-+
-+static inline struct resource_table *
-+rproc_tee_find_loaded_rsc_table(struct rproc *rproc, const struct firmware *=
-fw)
-+{
-+	/* This shouldn't be possible */
-+	WARN_ON(1);
-+
-+	return NULL;
-+}
-+#endif /* CONFIG_REMOTEPROC_TEE */
-+#endif /* REMOTEPROC_TEE_H */
---=20
-2.25.1
+> >
+> > +int tee_heap_update_from_dma_buf(struct tee_device *teedev,
+> > +                              struct dma_buf *dmabuf, size_t *offset,
+> > +                              struct tee_shm *shm,
+> > +                              struct tee_shm **parent_shm);
+> > +
+> >  #endif /*TEE_PRIVATE_H*/
+> > diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+> > index a38494d6b5f4..16ef078247ae 100644
+> > --- a/include/linux/tee_core.h
+> > +++ b/include/linux/tee_core.h
+> > @@ -8,9 +8,11 @@
+> >
+> >  #include <linux/cdev.h>
+> >  #include <linux/device.h>
+> > +#include <linux/dma-buf.h>
+> >  #include <linux/idr.h>
+> >  #include <linux/kref.h>
+> >  #include <linux/list.h>
+> > +#include <linux/scatterlist.h>
+> >  #include <linux/tee.h>
+> >  #include <linux/tee_drv.h>
+> >  #include <linux/types.h>
+> > @@ -30,6 +32,12 @@
+> >  #define TEE_DEVICE_FLAG_REGISTERED   0x1
+> >  #define TEE_MAX_DEV_NAME_LEN         32
+> >
+> > +enum tee_dma_heap_id {
+> > +     TEE_DMA_HEAP_SECURE_VIDEO_PLAY =3D 1,
+> > +     TEE_DMA_HEAP_TRUSTED_UI,
+> > +     TEE_DMA_HEAP_SECURE_VIDEO_RECORD,
+> > +};
+> > +
+> >  /**
+> >   * struct tee_device - TEE Device representation
+> >   * @name:    name of device
+> > @@ -116,6 +124,33 @@ struct tee_desc {
+> >       u32 flags;
+> >  };
+> >
+> > +/**
+> > + * struct tee_rstmem_pool - restricted memory pool
+> > + * @ops:             operations
+> > + *
+> > + * This is an abstract interface where this struct is expected to be
+> > + * embedded in another struct specific to the implementation.
+> > + */
+> > +struct tee_rstmem_pool {
+> > +     const struct tee_rstmem_pool_ops *ops;
+> > +};
+> > +
+> > +/**
+> > + * struct tee_rstmem_pool_ops - restricted memory pool operations
+> > + * @alloc:           called when allocating restricted memory
+> > + * @free:            called when freeing restricted memory
+> > + * @destroy_pool:    called when destroying the pool
+> > + */
+> > +struct tee_rstmem_pool_ops {
+> > +     int (*alloc)(struct tee_rstmem_pool *pool, struct sg_table *sgt,
+> > +                  size_t size, size_t *offs);
+> > +     void (*free)(struct tee_rstmem_pool *pool, struct sg_table *sgt);
+> > +     int (*update_shm)(struct tee_rstmem_pool *pool, struct sg_table *sg=
+t,
+> > +                       size_t offs, struct tee_shm *shm,
+> > +                       struct tee_shm **parent_shm);
+>
+> This API isn't descibed in kdoc comment above. Can you descibe the role
+> of this API and when it's needed?
 
+Yes, I'll add something.
 
---===============0041821564014506362==--
+Cheers,
+Jens
+
+>
+> -Sumit
+>
+> > +     void (*destroy_pool)(struct tee_rstmem_pool *pool);
+> > +};
+> > +
+> >  /**
+> >   * tee_device_alloc() - Allocate a new struct tee_device instance
+> >   * @teedesc: Descriptor for this driver
+> > @@ -154,6 +189,11 @@ int tee_device_register(struct tee_device *teedev);
+> >   */
+> >  void tee_device_unregister(struct tee_device *teedev);
+> >
+> > +int tee_device_register_dma_heap(struct tee_device *teedev,
+> > +                              enum tee_dma_heap_id id,
+> > +                              struct tee_rstmem_pool *pool);
+> > +void tee_device_unregister_all_dma_heaps(struct tee_device *teedev);
+> > +
+> >  /**
+> >   * tee_device_set_dev_groups() - Set device attribute groups
+> >   * @teedev:  Device to register
+> > @@ -229,6 +269,28 @@ static inline void tee_shm_pool_free(struct tee_shm_=
+pool *pool)
+> >       pool->ops->destroy_pool(pool);
+> >  }
+> >
+> > +/**
+> > + * tee_rstmem_static_pool_alloc() - Create a restricted memory manager
+> > + * @paddr:   Physical address of start of pool
+> > + * @size:    Size in bytes of the pool
+> > + *
+> > + * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
+> > + */
+> > +struct tee_rstmem_pool *tee_rstmem_static_pool_alloc(phys_addr_t paddr,
+> > +                                                  size_t size);
+> > +
+> > +/**
+> > + * tee_rstmem_pool_free() - Free a restricted memory pool
+> > + * @pool:    The restricted memory pool to free
+> > + *
+> > + * There must be no remaining restricted memory allocated from this pool
+> > + * when this function is called.
+> > + */
+> > +static inline void tee_rstmem_pool_free(struct tee_rstmem_pool *pool)
+> > +{
+> > +     pool->ops->destroy_pool(pool);
+> > +}
+> > +
+> >  /**
+> >   * tee_get_drvdata() - Return driver_data pointer
+> >   * @returns the driver_data pointer supplied to tee_register().
+> > --
+> > 2.43.0
+> >
+
+--===============6253880330559817567==--
 
