@@ -1,158 +1,141 @@
 From: Sumit Garg <sumit.garg@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v6 07/10] tee: add tee_shm_alloc_cma_phys_mem()
-Date: Tue, 25 Mar 2025 12:23:45 +0530
-Message-ID: <Z-JS-Tq_lxGAZfiP@sumit-X1>
-In-Reply-To: <20250305130634.1850178-8-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v6 08/10] optee: support restricted memory allocation
+Date: Tue, 25 Mar 2025 12:37:15 +0530
+Message-ID: <Z-JWIyd8cKyXQR0H@sumit-X1>
+In-Reply-To: <20250305130634.1850178-9-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5780678893952674191=="
+Content-Type: multipart/mixed; boundary="===============5374224803193829911=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============5780678893952674191==
+--===============5374224803193829911==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
-
-On Wed, Mar 05, 2025 at 02:04:13PM +0100, Jens Wiklander wrote:
-> Add tee_shm_alloc_cma_phys_mem() to allocate a physical memory using
-> from the default CMA pool. The memory is represented by a tee_shm object
-> using the new flag TEE_SHM_CMA_BUF to identify it as physical memory
-> from CMA.
+On Wed, Mar 05, 2025 at 02:04:14PM +0100, Jens Wiklander wrote:
+> Add support in the OP-TEE backend driver for restricted memory
+> allocation. The support is limited to only the SMC ABI and for secure
+> video buffers.
+>=20
+> OP-TEE is probed for the range of restricted physical memory and a
+> memory pool allocator is initialized if OP-TEE have support for such
+> memory.
 >=20
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
->  drivers/tee/tee_shm.c    | 55 ++++++++++++++++++++++++++++++++++++++--
->  include/linux/tee_core.h |  4 +++
->  2 files changed, 57 insertions(+), 2 deletions(-)
+>  drivers/tee/optee/core.c    |  1 +
+>  drivers/tee/optee/smc_abi.c | 44 +++++++++++++++++++++++++++++++++++--
+>  2 files changed, 43 insertions(+), 2 deletions(-)
 >=20
-> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> index 8b79918468b5..8d8341f8ebd7 100644
-> --- a/drivers/tee/tee_shm.c
-> +++ b/drivers/tee/tee_shm.c
-> @@ -3,8 +3,11 @@
->   * Copyright (c) 2015-2017, 2019-2021 Linaro Limited
->   */
->  #include <linux/anon_inodes.h>
-> +#include <linux/cma.h>
->  #include <linux/device.h>
->  #include <linux/dma-buf.h>
-> +#include <linux/dma-map-ops.h>
-> +#include <linux/highmem.h>
->  #include <linux/idr.h>
->  #include <linux/io.h>
->  #include <linux/mm.h>
-> @@ -13,7 +16,6 @@
->  #include <linux/tee_core.h>
->  #include <linux/uaccess.h>
->  #include <linux/uio.h>
-> -#include <linux/highmem.h>
->  #include "tee_private.h"
+> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> index c75fddc83576..c7fd8040480e 100644
+> --- a/drivers/tee/optee/core.c
+> +++ b/drivers/tee/optee/core.c
+> @@ -181,6 +181,7 @@ void optee_remove_common(struct optee *optee)
+>  	tee_device_unregister(optee->supp_teedev);
+>  	tee_device_unregister(optee->teedev);
 > =20
->  /* extra references appended to shm object for registered shared memory */
-> @@ -59,7 +61,14 @@ static void tee_shm_release(struct tee_device *teedev, s=
-truct tee_shm *shm)
->  	struct tee_shm *parent_shm =3D NULL;
->  	void *p =3D shm;
-> =20
-> -	if (shm->flags & TEE_SHM_DMA_BUF) {
-> +	if (shm->flags & TEE_SHM_CMA_BUF) {
-> +#if !IS_MODULE(CONFIG_TEE) && IS_ENABLED(CONFIG_CMA)
-
-Can we rather manage this dependency via Kconfig?
-
-> +		struct page *page =3D phys_to_page(shm->paddr);
-> +		struct cma *cma =3D dev_get_cma_area(&shm->ctx->teedev->dev);
-> +
-> +		cma_release(cma, page, shm->size / PAGE_SIZE);
-> +#endif
-> +	} else if (shm->flags & TEE_SHM_DMA_BUF) {
->  		struct tee_shm_dmabuf_ref *ref;
-> =20
->  		ref =3D container_of(shm, struct tee_shm_dmabuf_ref, shm);
-> @@ -341,6 +350,48 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_cont=
-ext *ctx, size_t size)
+> +	tee_device_unregister_all_dma_heaps(optee->teedev);
+>  	tee_shm_pool_free(optee->pool);
+>  	optee_supp_uninit(&optee->supp);
+>  	mutex_destroy(&optee->call_queue.mutex);
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index cfdae266548b..a14ff0b7d3b3 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1620,6 +1620,41 @@ static inline int optee_load_fw(struct platform_devi=
+ce *pdev,
 >  }
->  EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
+>  #endif
 > =20
-> +struct tee_shm *tee_shm_alloc_cma_phys_mem(struct tee_context *ctx,
-> +					   size_t page_count, size_t align)
+> +static int optee_sdp_pool_init(struct optee *optee)
 > +{
-> +#if !IS_MODULE(CONFIG_TEE) && IS_ENABLED(CONFIG_CMA)
+> +	enum tee_dma_heap_id heap_id =3D TEE_DMA_HEAP_SECURE_VIDEO_PLAY;
+> +	struct tee_rstmem_pool *pool;
+> +	int rc;
+> +
+> +	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_SDP) {
 
-Ditto here.
+Is this SDP capability an ABI yet since we haven't supported it in
+upstream kernel? If no then can we rename it as
+OPTEE_SMC_SEC_CAP_RSTMEM?
+
+> +		union {
+> +			struct arm_smccc_res smccc;
+> +			struct optee_smc_get_sdp_config_result result;
+> +		} res;
+> +
+> +		optee->smc.invoke_fn(OPTEE_SMC_GET_SDP_CONFIG, 0, 0, 0, 0, 0, 0,
+> +				     0, &res.smccc);
+> +		if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
+> +			pr_err("Secure Data Path service not available\n");
+> +			return 0;
+> +		}
+> +
+> +		pool =3D tee_rstmem_static_pool_alloc(res.result.start,
+> +						    res.result.size);
+> +		if (IS_ERR(pool))
+> +			return PTR_ERR(pool);
+> +
+> +		rc =3D tee_device_register_dma_heap(optee->teedev, heap_id, pool);
+> +		if (rc)
+> +			goto err;
+> +	}
+> +
+> +	return 0;
+> +err:
+> +	pool->ops->destroy_pool(pool);
+> +	return rc;
+> +}
+> +
+>  static int optee_probe(struct platform_device *pdev)
+>  {
+>  	optee_invoke_fn *invoke_fn;
+> @@ -1715,7 +1750,7 @@ static int optee_probe(struct platform_device *pdev)
+>  	optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
+>  	if (!optee) {
+>  		rc =3D -ENOMEM;
+> -		goto err_free_pool;
+> +		goto err_free_shm_pool;
+>  	}
+> =20
+>  	optee->ops =3D &optee_ops;
+> @@ -1788,6 +1823,10 @@ static int optee_probe(struct platform_device *pdev)
+>  		pr_info("Asynchronous notifications enabled\n");
+>  	}
+> =20
+> +	rc =3D optee_sdp_pool_init(optee);
+
+s/optee_sdp_pool_init/optee_rstmem_pool_init/
 
 -Sumit
 
-> +	struct tee_device *teedev =3D ctx->teedev;
-> +	struct cma *cma =3D dev_get_cma_area(&teedev->dev);
-> +	struct tee_shm *shm;
-> +	struct page *page;
+> +	if (rc)
+> +		goto err_notif_uninit;
 > +
-> +	if (!tee_device_get(teedev))
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	page =3D cma_alloc(cma, page_count, align, true/*no_warn*/);
-> +	if (!page)
-> +		goto err_put_teedev;
-> +
-> +	shm =3D kzalloc(sizeof(*shm), GFP_KERNEL);
-> +	if (!shm)
-> +		goto err_cma_crelease;
-> +
-> +	refcount_set(&shm->refcount, 1);
-> +	shm->ctx =3D ctx;
-> +	shm->paddr =3D page_to_phys(page);
-> +	shm->size =3D page_count * PAGE_SIZE;
-> +	shm->flags =3D TEE_SHM_CMA_BUF;
-> +
-> +	teedev_ctx_get(ctx);
-> +
-> +	return shm;
-> +
-> +err_cma_crelease:
-> +	cma_release(cma, page, page_count);
-> +err_put_teedev:
-> +	tee_device_put(teedev);
-> +
-> +	return ERR_PTR(-ENOMEM);
-> +#else
-> +	return ERR_PTR(-EINVAL);
-> +#endif
-> +}
-> +EXPORT_SYMBOL_GPL(tee_shm_alloc_cma_phys_mem);
-> +
->  int tee_dyn_shm_alloc_helper(struct tee_shm *shm, size_t size, size_t alig=
-n,
->  			     int (*shm_register)(struct tee_context *ctx,
->  						 struct tee_shm *shm,
-> diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
-> index 6bd833b6d0e1..b6727d9a3556 100644
-> --- a/include/linux/tee_core.h
-> +++ b/include/linux/tee_core.h
-> @@ -29,6 +29,7 @@
->  #define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
->  #define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
->  #define TEE_SHM_DMA_BUF		BIT(4)	/* Memory with dma-buf handle */
-> +#define TEE_SHM_CMA_BUF		BIT(5)	/* CMA allocated memory */
-> =20
->  #define TEE_DEVICE_FLAG_REGISTERED	0x1
->  #define TEE_MAX_DEV_NAME_LEN		32
-> @@ -307,6 +308,9 @@ void *tee_get_drvdata(struct tee_device *teedev);
->   */
->  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t siz=
-e);
-> =20
-> +struct tee_shm *tee_shm_alloc_cma_phys_mem(struct tee_context *ctx,
-> +					   size_t page_count, size_t align);
-> +
->  int tee_dyn_shm_alloc_helper(struct tee_shm *shm, size_t size, size_t alig=
-n,
->  			     int (*shm_register)(struct tee_context *ctx,
->  						 struct tee_shm *shm,
+>  	/*
+>  	 * Ensure that there are no pre-existing shm objects before enabling
+>  	 * the shm cache so that there's no chance of receiving an invalid
+> @@ -1823,6 +1862,7 @@ static int optee_probe(struct platform_device *pdev)
+>  		optee_disable_shm_cache(optee);
+>  	optee_smc_notif_uninit_irq(optee);
+>  	optee_unregister_devices();
+> +	tee_device_unregister_all_dma_heaps(optee->teedev);
+>  err_notif_uninit:
+>  	optee_notif_uninit(optee);
+>  err_close_ctx:
+> @@ -1839,7 +1879,7 @@ static int optee_probe(struct platform_device *pdev)
+>  	tee_device_unregister(optee->teedev);
+>  err_free_optee:
+>  	kfree(optee);
+> -err_free_pool:
+> +err_free_shm_pool:
+>  	tee_shm_pool_free(pool);
+>  	if (memremaped_shm)
+>  		memunmap(memremaped_shm);
 > --=20
 > 2.43.0
 >=20
 
---===============5780678893952674191==--
+--===============5374224803193829911==--
 
