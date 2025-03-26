@@ -1,108 +1,98 @@
-From: Marco Felsch <m.felsch@pengutronix.de>
+From: Matthew Wilcox <willy@infradead.org>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: [PATCH v2] tee: shm: fix slab page refcounting
-Date: Wed, 26 Mar 2025 10:42:47 +0100
-Message-ID: <20250326094247.py7q5kbalisduzcc@pengutronix.de>
-In-Reply-To: <
- <CAHUa44G_z0b42kHcaxvRJOou=pPT+MgWkJ5-5kbEOdJOFLMsAA@mail.gmail.com>>
+Date: Wed, 26 Mar 2025 10:54:32 +0000
+Message-ID: <Z-Pc6C1YUqLyej3Z@casper.infradead.org>
+In-Reply-To: <20250325200740.3645331-1-m.felsch@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6515780622696013135=="
+Content-Type: multipart/mixed; boundary="===============5671223981093536935=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6515780622696013135==
+--===============5671223981093536935==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
+On Tue, Mar 25, 2025 at 09:07:39PM +0100, Marco Felsch wrote:
+> Skip manipulating the refcount in case of slab pages according commit
+> b9c0e49abfca ("mm: decline to manipulate the refcount on a slab page").
 
-On 25-03-26, Jens Wiklander wrote:
-> Hi Marco,
->=20
-> On Tue, Mar 25, 2025 at 9:07=E2=80=AFPM Marco Felsch <m.felsch@pengutroni=
-x.de> wrote:
-> >
-> > Skip manipulating the refcount in case of slab pages according commit
-> > b9c0e49abfca ("mm: decline to manipulate the refcount on a slab page").
-> >
-> > Fixes: b9c0e49abfca ("mm: decline to manipulate the refcount on a slab pa=
-ge")
-> > Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
-> > ---
-> > v2:
-> > - Make use of page variable
-> > v1:
-> > - https://lore.kernel.org/all/20250325195021.3589797-1-m.felsch(a)pengutr=
-onix.de/
-> >
-> >  drivers/tee/tee_shm.c | 16 ++++++++++++----
-> >  1 file changed, 12 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index daf6e5cfd59a..35f0ac359b12 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -19,16 +19,24 @@ static void shm_put_kernel_pages(struct page **pages,=
- size_t page_count)
-> >  {
-> >         size_t n;
-> >
-> > -       for (n =3D 0; n < page_count; n++)
-> > -               put_page(pages[n]);
-> > +       for (n =3D 0; n < page_count; n++) {
-> > +               struct page *page =3D pages[n];
-> > +
-> > +               if (!PageSlab(page))
-> > +                       put_page(page);
-> > +       }
-> >  }
-> >
-> >  static void shm_get_kernel_pages(struct page **pages, size_t page_count)
-> >  {
-> >         size_t n;
-> >
-> > -       for (n =3D 0; n < page_count; n++)
-> > -               get_page(pages[n]);
-> > +       for (n =3D 0; n < page_count; n++) {
-> > +               struct page *page =3D pages[n];
-> > +
-> > +               if (!PageSlab(page))
-> > +                       get_page(page);
->=20
-> b9c0e49abfca ("mm: decline to manipulate the refcount on a slab page")
-> mentions that more page types will have a zero refcount in the longer
-> term. So we'll need to add exception after exception here. Is there a
-> helper function somewhere to get all the pages we need? Or can we do
-> this differently?
+This almost certainly isn't right.  I know nothing about TEE, but that
+you are doing this indicates a problem.  The hack that we put into
+networking should not be blindly replicated.
 
-You're right, but in the long-term perspective the patch also mentions
-"... stop taking a refcount on the pages that it uses and rely on the
-caller to hold whatever references are necessary to make the memory
-stable."
+Why are you taking a reference on the pages to begin with?  Is it copy
+and pasted from somewhere else, or was there actual thought put into it?
 
-As you mentioned, in the medium term more pages are going to have a zero
-refcount. I think that once mm is starting to add more zero refcounted
-page types, they will also add a helper like "PageRefcounted()" or so.
+If it's "prevent the caller from freeing the allocation", well, it never
+accomplished that with slab allocations.  So for callers that do kmalloc
+(eg setup_mm_hdr()  in drivers/firmware/efi/stmm/tee_stmm_efi.c), you
+have to rely on them not freeing the allocation while the TEE driver
+has it.
 
-At the moment all users are changed to cover only the slab use-case.
-Therefore I would keep it as it is right now and change it to the new
-helper later on.
+And if that's your API contract, then there's no point in taking
+refcounts on other kinds of pages either; it's just unnecessary atomic
+instructions.  So the right patch might be something like this:
 
-Regards,
-  Marco
++++ b/drivers/tee/tee_shm.c
+@@ -15,29 +15,11 @@
+ #include <linux/highmem.h>
+ #include "tee_private.h"
+
+-static void shm_put_kernel_pages(struct page **pages, size_t page_count)
+-{
+-       size_t n;
+-
+-       for (n =3D 0; n < page_count; n++)
+-               put_page(pages[n]);
+-}
+-
+-static void shm_get_kernel_pages(struct page **pages, size_t page_count)
+-{
+-       size_t n;
+-
+-       for (n =3D 0; n < page_count; n++)
+-               get_page(pages[n]);
+-}
+-
+ static void release_registered_pages(struct tee_shm *shm)
+ {
+        if (shm->pages) {
+                if (shm->flags & TEE_SHM_USER_MAPPED)
+                        unpin_user_pages(shm->pages, shm->num_pages);
+-               else
+-                       shm_put_kernel_pages(shm->pages, shm->num_pages);
+
+                kfree(shm->pages);
+        }
+@@ -321,13 +303,6 @@ register_shm_helper(struct tee_context *ctx, struct iov_=
+iter *iter, u32 flags,
+                goto err_free_shm_pages;
+        }
+
+-       /*
+-        * iov_iter_extract_kvec_pages does not get reference on the pages,
+-        * get a reference on them.
+-        */
+-       if (iov_iter_is_kvec(iter))
+-               shm_get_kernel_pages(shm->pages, num_pages);
+-
+        shm->offset =3D off;
+        shm->size =3D len;
+        shm->num_pages =3D num_pages;
+@@ -341,10 +316,8 @@ register_shm_helper(struct tee_context *ctx, struct iov_=
+iter *iter, u32 flags,
+
+        return shm;
+ err_put_shm_pages:
+-       if (!iov_iter_is_kvec(iter))
++       if (iter_is_uvec(iter))
+                unpin_user_pages(shm->pages, shm->num_pages);
+-       else
+-               shm_put_kernel_pages(shm->pages, shm->num_pages);
+ err_free_shm_pages:
+        kfree(shm->pages);
+ err_free_shm:
 
 
->=20
-> Cheers,
-> Jens
->=20
-> > +       }
-> >  }
-> >
-> >  static void release_registered_pages(struct tee_shm *shm)
-> > --
-> > 2.39.5
-> >
->=20
-
---===============6515780622696013135==--
+--===============5671223981093536935==--
 
