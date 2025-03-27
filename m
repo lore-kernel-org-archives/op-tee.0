@@ -1,678 +1,212 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v6 09/10] optee: FF-A: dynamic restricted memory allocation
-Date: Thu, 27 Mar 2025 09:07:34 +0100
+Subject: Re: [PATCH v6 00/10] TEE subsystem for restricted dma-buf allocations
+Date: Thu, 27 Mar 2025 09:27:11 +0100
 Message-ID: 
- <CAHUa44H1MzBLBM+Oeawca52C8PF3uAT0ggbL-zRdnBqj4LYrZg@mail.gmail.com>
-In-Reply-To: <Z-JePo6yGlUgrZkw@sumit-X1>
+ <CAHUa44F7HYQ8uR1vpu5XfR+Ag89JPpttW7hUvGROcXbPvXBXVA@mail.gmail.com>
+In-Reply-To: <20250305130634.1850178-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9220161420992523878=="
+Content-Type: multipart/mixed; boundary="===============6899669313521660431=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============9220161420992523878==
+--===============6899669313521660431==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sumit,
+Hi,
 
-On Tue, Mar 25, 2025 at 8:42=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
+On Wed, Mar 5, 2025 at 2:06=E2=80=AFPM Jens Wiklander <jens.wiklander@linar=
+o.org> wrote:
 >
-> On Wed, Mar 05, 2025 at 02:04:15PM +0100, Jens Wiklander wrote:
-> > Add support in the OP-TEE backend driver dynamic restricted memory
-> > allocation with FF-A.
-> >
-> > The restricted memory pools for dynamically allocated restrict memory
-> > are instantiated when requested by user-space. This instantiation can
-> > fail if OP-TEE doesn't support the requested use-case of restricted
-> > memory.
-> >
-> > Restricted memory pools based on a static carveout or dynamic allocation
-> > can coexist for different use-cases. We use only dynamic allocation with
-> > FF-A.
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/optee/Makefile        |   1 +
-> >  drivers/tee/optee/ffa_abi.c       | 143 ++++++++++++-
-> >  drivers/tee/optee/optee_private.h |  13 +-
-> >  drivers/tee/optee/rstmem.c        | 329 ++++++++++++++++++++++++++++++
-> >  4 files changed, 483 insertions(+), 3 deletions(-)
-> >  create mode 100644 drivers/tee/optee/rstmem.c
-> >
-> > diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-> > index a6eff388d300..498969fb8e40 100644
-> > --- a/drivers/tee/optee/Makefile
-> > +++ b/drivers/tee/optee/Makefile
-> > @@ -4,6 +4,7 @@ optee-objs +=3D core.o
-> >  optee-objs +=3D call.o
-> >  optee-objs +=3D notif.o
-> >  optee-objs +=3D rpc.o
-> > +optee-objs +=3D rstmem.o
-> >  optee-objs +=3D supp.o
-> >  optee-objs +=3D device.o
-> >  optee-objs +=3D smc_abi.o
-> > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> > index e4b08cd195f3..6a55114232ef 100644
-> > --- a/drivers/tee/optee/ffa_abi.c
-> > +++ b/drivers/tee/optee/ffa_abi.c
-> > @@ -672,6 +672,123 @@ static int optee_ffa_do_call_with_arg(struct tee_co=
-ntext *ctx,
-> >       return optee_ffa_yielding_call(ctx, &data, rpc_arg, system_thread);
-> >  }
-> >
-> > +static int do_call_lend_rstmem(struct optee *optee, u64 cookie, u32 use_=
-case)
-> > +{
-> > +     struct optee_shm_arg_entry *entry;
-> > +     struct optee_msg_arg *msg_arg;
-> > +     struct tee_shm *shm;
-> > +     u_int offs;
-> > +     int rc;
-> > +
-> > +     msg_arg =3D optee_get_msg_arg(optee->ctx, 1, &entry, &shm, &offs);
-> > +     if (IS_ERR(msg_arg))
-> > +             return PTR_ERR(msg_arg);
-> > +
-> > +     msg_arg->cmd =3D OPTEE_MSG_CMD_ASSIGN_RSTMEM;
-> > +     msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-> > +     msg_arg->params[0].u.value.a =3D cookie;
-> > +     msg_arg->params[0].u.value.b =3D use_case;
-> > +
-> > +     rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-> > +     if (rc)
-> > +             goto out;
-> > +     if (msg_arg->ret !=3D TEEC_SUCCESS) {
-> > +             rc =3D -EINVAL;
-> > +             goto out;
-> > +     }
-> > +
-> > +out:
-> > +     optee_free_msg_arg(optee->ctx, entry, offs);
-> > +     return rc;
-> > +}
-> > +
-> > +static int optee_ffa_lend_rstmem(struct optee *optee, struct tee_shm *rs=
-tmem,
-> > +                              u16 *end_points, unsigned int ep_count,
-> > +                              u32 use_case)
-> > +{
-> > +     struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
-> > +     const struct ffa_mem_ops *mem_ops =3D ffa_dev->ops->mem_ops;
-> > +     const struct ffa_msg_ops *msg_ops =3D ffa_dev->ops->msg_ops;
-> > +     struct ffa_send_direct_data data;
-> > +     struct ffa_mem_region_attributes *mem_attr;
-> > +     struct ffa_mem_ops_args args =3D {
-> > +             .use_txbuf =3D true,
-> > +             .tag =3D use_case,
-> > +     };
-> > +     struct page *page;
-> > +     struct scatterlist sgl;
-> > +     unsigned int n;
-> > +     int rc;
-> > +
-> > +     mem_attr =3D kcalloc(ep_count, sizeof(*mem_attr), GFP_KERNEL);
-> > +     for (n =3D 0; n < ep_count; n++) {
-> > +             mem_attr[n].receiver =3D end_points[n];
-> > +             mem_attr[n].attrs =3D FFA_MEM_RW;
-> > +     }
-> > +     args.attrs =3D mem_attr;
-> > +     args.nattrs =3D ep_count;
-> > +
-> > +     page =3D phys_to_page(rstmem->paddr);
-> > +     sg_init_table(&sgl, 1);
-> > +     sg_set_page(&sgl, page, rstmem->size, 0);
-> > +
-> > +     args.sg =3D &sgl;
-> > +     rc =3D mem_ops->memory_lend(&args);
-> > +     kfree(mem_attr);
-> > +     if (rc)
-> > +             return rc;
-> > +
-> > +     rc =3D do_call_lend_rstmem(optee, args.g_handle, use_case);
-> > +     if (rc)
-> > +             goto err_reclaim;
-> > +
-> > +     rc =3D optee_shm_add_ffa_handle(optee, rstmem, args.g_handle);
-> > +     if (rc)
-> > +             goto err_unreg;
-> > +
-> > +     rstmem->sec_world_id =3D args.g_handle;
-> > +
-> > +     return 0;
-> > +
-> > +err_unreg:
-> > +     data =3D (struct ffa_send_direct_data){
-> > +             .data0 =3D OPTEE_FFA_RELEASE_RSTMEM,
-> > +             .data1 =3D (u32)args.g_handle,
-> > +             .data2 =3D (u32)(args.g_handle >> 32),
-> > +     };
-> > +     msg_ops->sync_send_receive(ffa_dev, &data);
-> > +err_reclaim:
-> > +     mem_ops->memory_reclaim(args.g_handle, 0);
-> > +     return rc;
-> > +}
-> > +
-> > +static int optee_ffa_reclaim_rstmem(struct optee *optee, struct tee_shm =
-*rstmem)
-> > +{
-> > +     struct ffa_device *ffa_dev =3D optee->ffa.ffa_dev;
-> > +     const struct ffa_msg_ops *msg_ops =3D ffa_dev->ops->msg_ops;
-> > +     const struct ffa_mem_ops *mem_ops =3D ffa_dev->ops->mem_ops;
-> > +     u64 global_handle =3D rstmem->sec_world_id;
-> > +     struct ffa_send_direct_data data =3D {
-> > +             .data0 =3D OPTEE_FFA_RELEASE_RSTMEM,
-> > +             .data1 =3D (u32)global_handle,
-> > +             .data2 =3D (u32)(global_handle >> 32)
-> > +     };
-> > +     int rc;
-> > +
-> > +     optee_shm_rem_ffa_handle(optee, global_handle);
-> > +     rstmem->sec_world_id =3D 0;
-> > +
-> > +     rc =3D msg_ops->sync_send_receive(ffa_dev, &data);
-> > +     if (rc)
-> > +             pr_err("Release SHM id 0x%llx rc %d\n", global_handle, rc);
-> > +
-> > +     rc =3D mem_ops->memory_reclaim(global_handle, 0);
-> > +     if (rc)
-> > +             pr_err("mem_reclaim: 0x%llx %d", global_handle, rc);
-> > +
-> > +     return rc;
-> > +}
-> > +
-> >  /*
-> >   * 6. Driver initialization
-> >   *
-> > @@ -833,6 +950,8 @@ static const struct optee_ops optee_ffa_ops =3D {
-> >       .do_call_with_arg =3D optee_ffa_do_call_with_arg,
-> >       .to_msg_param =3D optee_ffa_to_msg_param,
-> >       .from_msg_param =3D optee_ffa_from_msg_param,
-> > +     .lend_rstmem =3D optee_ffa_lend_rstmem,
-> > +     .reclaim_rstmem =3D optee_ffa_reclaim_rstmem,
-> >  };
-> >
-> >  static void optee_ffa_remove(struct ffa_device *ffa_dev)
-> > @@ -941,7 +1060,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_de=
-v)
-> >                                 optee->pool, optee);
-> >       if (IS_ERR(teedev)) {
-> >               rc =3D PTR_ERR(teedev);
-> > -             goto err_free_pool;
-> > +             goto err_free_shm_pool;
-> >       }
-> >       optee->teedev =3D teedev;
-> >
-> > @@ -988,6 +1107,24 @@ static int optee_ffa_probe(struct ffa_device *ffa_d=
-ev)
-> >                              rc);
-> >       }
-> >
-> > +     if (IS_ENABLED(CONFIG_CMA) && !IS_MODULE(CONFIG_OPTEE) &&
+> Hi,
 >
-> The CMA dependency should be managed via Kconfig.
+> This patch set allocates the restricted DMA-bufs from a DMA-heap
+> instantiated from the TEE subsystem.
+>
+> The TEE subsystem handles the DMA-buf allocations since it is the TEE
+> (OP-TEE, AMD-TEE, TS-TEE, or perhaps a future QTEE) which sets up the
+> restrictions for the memory used for the DMA-bufs.
+>
+> The DMA-heap uses a restricted memory pool provided by the backend TEE
+> driver, allowing it to choose how to allocate the restricted physical
+> memory.
+>
+> The allocated DMA-bufs must be imported with a new TEE_IOC_SHM_REGISTER_FD
+> before they can be passed as arguments when requesting services from the
+> secure world.
+>
+> Three use-cases (Secure Video Playback, Trusted UI, and Secure Video
+> Recording) has been identified so far to serve as examples of what can be
+> expected. The use-cases has predefined DMA-heap names,
+> "restricted,secure-video", "restricted,trusted-ui", and
+> "restricted,secure-video-record". The backend driver registers restricted
+> memory pools for the use-cases it supports.
 
-Yes, I'll fix it.
+When preparing a v7 of this patch set, I'll switch to "protected"
+instead of "restricted" based on Nicolas Dufresne's comment [1],
+unless someone objects.
 
->
-> > +         (sec_caps & OPTEE_FFA_SEC_CAP_RSTMEM)) {
-> > +             enum tee_dma_heap_id id =3D TEE_DMA_HEAP_SECURE_VIDEO_PLAY;
-> > +             struct tee_rstmem_pool *pool;
-> > +
-> > +             pool =3D optee_rstmem_alloc_cma_pool(optee, id);
-> > +             if (IS_ERR(pool)) {
-> > +                     rc =3D PTR_ERR(pool);
-> > +                     goto err_notif_uninit;
-> > +             }
-> > +
-> > +             rc =3D tee_device_register_dma_heap(optee->teedev, id, pool=
-);
-> > +             if (rc) {
-> > +                     pool->ops->destroy_pool(pool);
-> > +                     goto err_notif_uninit;
-> > +             }
-> > +     }
-> > +
-> >       rc =3D optee_enumerate_devices(PTA_CMD_GET_DEVICES);
-> >       if (rc)
-> >               goto err_unregister_devices;
-> > @@ -1001,6 +1138,8 @@ static int optee_ffa_probe(struct ffa_device *ffa_d=
-ev)
-> >
-> >  err_unregister_devices:
-> >       optee_unregister_devices();
-> > +     tee_device_unregister_all_dma_heaps(optee->teedev);
-> > +err_notif_uninit:
-> >       if (optee->ffa.bottom_half_value !=3D U32_MAX)
-> >               notif_ops->notify_relinquish(ffa_dev,
-> >                                            optee->ffa.bottom_half_value);
-> > @@ -1018,7 +1157,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_d=
-ev)
-> >       tee_device_unregister(optee->supp_teedev);
-> >  err_unreg_teedev:
-> >       tee_device_unregister(optee->teedev);
-> > -err_free_pool:
-> > +err_free_shm_pool:
-> >       tee_shm_pool_free(pool);
-> >  err_free_optee:
-> >       kfree(optee);
-> > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_=
-private.h
-> > index 20eda508dbac..faab31ad7c52 100644
-> > --- a/drivers/tee/optee/optee_private.h
-> > +++ b/drivers/tee/optee/optee_private.h
-> > @@ -174,9 +174,14 @@ struct optee;
-> >   * @do_call_with_arg:        enters OP-TEE in secure world
-> >   * @to_msg_param:    converts from struct tee_param to OPTEE_MSG paramet=
-ers
-> >   * @from_msg_param:  converts from OPTEE_MSG parameters to struct tee_pa=
-ram
-> > + * @lend_rstmem:     lends physically contiguous memory as restricted
-> > + *                   memory, inaccessible by the kernel
-> > + * @reclaim_rstmem:  reclaims restricted memory previously lent with
-> > + *                   @lend_rstmem() and makes it accessible by the
-> > + *                   kernel again
-> >   *
-> >   * These OPs are only supposed to be used internally in the OP-TEE driver
-> > - * as a way of abstracting the different methogs of entering OP-TEE in
-> > + * as a way of abstracting the different methods of entering OP-TEE in
-> >   * secure world.
-> >   */
-> >  struct optee_ops {
-> > @@ -191,6 +196,10 @@ struct optee_ops {
-> >                             size_t num_params,
-> >                             const struct optee_msg_param *msg_params,
-> >                             bool update_out);
-> > +     int (*lend_rstmem)(struct optee *optee, struct tee_shm *rstmem,
-> > +                        u16 *end_points, unsigned int ep_count,
-> > +                        u32 use_case);
-> > +     int (*reclaim_rstmem)(struct optee *optee, struct tee_shm *rstmem);
-> >  };
-> >
-> >  /**
-> > @@ -285,6 +294,8 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 =
-func, size_t num_params,
-> >  void optee_supp_init(struct optee_supp *supp);
-> >  void optee_supp_uninit(struct optee_supp *supp);
-> >  void optee_supp_release(struct optee_supp *supp);
-> > +struct tee_rstmem_pool *optee_rstmem_alloc_cma_pool(struct optee *optee,
-> > +                                                 enum tee_dma_heap_id id=
-);
-> >
-> >  int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
-> >                   struct tee_param *param);
-> > diff --git a/drivers/tee/optee/rstmem.c b/drivers/tee/optee/rstmem.c
-> > new file mode 100644
-> > index 000000000000..ea27769934d4
-> > --- /dev/null
-> > +++ b/drivers/tee/optee/rstmem.c
-> > @@ -0,0 +1,329 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * Copyright (c) 2025, Linaro Limited
-> > + */
-> > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> > +
-> > +#include <linux/errno.h>
-> > +#include <linux/genalloc.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/string.h>
-> > +#include <linux/tee_core.h>
-> > +#include <linux/types.h>
-> > +#include "optee_private.h"
-> > +
-> > +struct optee_rstmem_cma_pool {
-> > +     struct tee_rstmem_pool pool;
-> > +     struct gen_pool *gen_pool;
-> > +     struct optee *optee;
-> > +     size_t page_count;
-> > +     u16 *end_points;
-> > +     u_int end_point_count;
-> > +     u_int align;
-> > +     refcount_t refcount;
-> > +     u32 use_case;
-> > +     struct tee_shm *rstmem;
-> > +     /* Protects when initializing and tearing down this struct */
-> > +     struct mutex mutex;
-> > +};
-> > +
-> > +static struct optee_rstmem_cma_pool *
-> > +to_rstmem_cma_pool(struct tee_rstmem_pool *pool)
-> > +{
-> > +     return container_of(pool, struct optee_rstmem_cma_pool, pool);
-> > +}
-> > +
-> > +static int init_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-> > +{
-> > +     int rc;
-> > +
-> > +     rp->rstmem =3D tee_shm_alloc_cma_phys_mem(rp->optee->ctx, rp->page_=
-count,
-> > +                                             rp->align);
-> > +     if (IS_ERR(rp->rstmem)) {
-> > +             rc =3D PTR_ERR(rp->rstmem);
-> > +             goto err_null_rstmem;
-> > +     }
-> > +
-> > +     /*
-> > +      * TODO unmap the memory range since the physical memory will
-> > +      * become inaccesible after the lend_rstmem() call.
-> > +      */
->
-> What's your plan for this TODO? I think we need a CMA allocator here
-> which can allocate un-mapped memory such that any cache speculation
-> won't lead to CPU hangs once the memory restriction comes into picture.
-
-What happens is platform-specific. For some platforms, it might be
-enough to avoid explicit access. Yes, a CMA allocator with unmapped
-memory or where memory can be unmapped is one option.
-
->
-> > +     rc =3D rp->optee->ops->lend_rstmem(rp->optee, rp->rstmem, rp->end_p=
-oints,
-> > +                                      rp->end_point_count, rp->use_case);
-> > +     if (rc)
-> > +             goto err_put_shm;
-> > +     rp->rstmem->flags |=3D TEE_SHM_DYNAMIC;
-> > +
-> > +     rp->gen_pool =3D gen_pool_create(PAGE_SHIFT, -1);
-> > +     if (!rp->gen_pool) {
-> > +             rc =3D -ENOMEM;
-> > +             goto err_reclaim;
-> > +     }
-> > +
-> > +     rc =3D gen_pool_add(rp->gen_pool, rp->rstmem->paddr,
-> > +                       rp->rstmem->size, -1);
-> > +     if (rc)
-> > +             goto err_free_pool;
-> > +
-> > +     refcount_set(&rp->refcount, 1);
-> > +     return 0;
-> > +
-> > +err_free_pool:
-> > +     gen_pool_destroy(rp->gen_pool);
-> > +     rp->gen_pool =3D NULL;
-> > +err_reclaim:
-> > +     rp->optee->ops->reclaim_rstmem(rp->optee, rp->rstmem);
-> > +err_put_shm:
-> > +     tee_shm_put(rp->rstmem);
-> > +err_null_rstmem:
-> > +     rp->rstmem =3D NULL;
-> > +     return rc;
-> > +}
-> > +
-> > +static int get_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-> > +{
-> > +     int rc =3D 0;
-> > +
-> > +     if (!refcount_inc_not_zero(&rp->refcount)) {
-> > +             mutex_lock(&rp->mutex);
-> > +             if (rp->gen_pool) {
-> > +                     /*
-> > +                      * Another thread has already initialized the pool
-> > +                      * before us, or the pool was just about to be torn
-> > +                      * down. Either way we only need to increase the
-> > +                      * refcount and we're done.
-> > +                      */
-> > +                     refcount_inc(&rp->refcount);
-> > +             } else {
-> > +                     rc =3D init_cma_rstmem(rp);
-> > +             }
-> > +             mutex_unlock(&rp->mutex);
-> > +     }
-> > +
-> > +     return rc;
-> > +}
-> > +
-> > +static void release_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-> > +{
-> > +     gen_pool_destroy(rp->gen_pool);
-> > +     rp->gen_pool =3D NULL;
-> > +
-> > +     rp->optee->ops->reclaim_rstmem(rp->optee, rp->rstmem);
-> > +     rp->rstmem->flags &=3D ~TEE_SHM_DYNAMIC;
-> > +
-> > +     WARN(refcount_read(&rp->rstmem->refcount) !=3D 1, "Unexpected refco=
-unt");
-> > +     tee_shm_put(rp->rstmem);
-> > +     rp->rstmem =3D NULL;
-> > +}
-> > +
-> > +static void put_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-> > +{
-> > +     if (refcount_dec_and_test(&rp->refcount)) {
-> > +             mutex_lock(&rp->mutex);
-> > +             if (rp->gen_pool)
-> > +                     release_cma_rstmem(rp);
-> > +             mutex_unlock(&rp->mutex);
-> > +     }
-> > +}
-> > +
-> > +static int rstmem_pool_op_cma_alloc(struct tee_rstmem_pool *pool,
-> > +                                 struct sg_table *sgt, size_t size,
-> > +                                 size_t *offs)
-> > +{
-> > +     struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-> > +     size_t sz =3D ALIGN(size, PAGE_SIZE);
-> > +     phys_addr_t pa;
-> > +     int rc;
-> > +
-> > +     rc =3D get_cma_rstmem(rp);
-> > +     if (rc)
-> > +             return rc;
-> > +
-> > +     pa =3D gen_pool_alloc(rp->gen_pool, sz);
-> > +     if (!pa) {
-> > +             rc =3D -ENOMEM;
-> > +             goto err_put;
-> > +     }
-> > +
-> > +     rc =3D sg_alloc_table(sgt, 1, GFP_KERNEL);
-> > +     if (rc)
-> > +             goto err_free;
-> > +
-> > +     sg_set_page(sgt->sgl, phys_to_page(pa), size, 0);
-> > +     *offs =3D pa - rp->rstmem->paddr;
-> > +
-> > +     return 0;
-> > +err_free:
-> > +     gen_pool_free(rp->gen_pool, pa, size);
-> > +err_put:
-> > +     put_cma_rstmem(rp);
-> > +
-> > +     return rc;
-> > +}
-> > +
-> > +static void rstmem_pool_op_cma_free(struct tee_rstmem_pool *pool,
-> > +                                 struct sg_table *sgt)
-> > +{
-> > +     struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-> > +     struct scatterlist *sg;
-> > +     int i;
-> > +
-> > +     for_each_sgtable_sg(sgt, sg, i)
-> > +             gen_pool_free(rp->gen_pool, sg_phys(sg), sg->length);
-> > +     sg_free_table(sgt);
-> > +     put_cma_rstmem(rp);
-> > +}
-> > +
-> > +static int rstmem_pool_op_cma_update_shm(struct tee_rstmem_pool *pool,
-> > +                                      struct sg_table *sgt, size_t offs,
-> > +                                      struct tee_shm *shm,
-> > +                                      struct tee_shm **parent_shm)
-> > +{
-> > +     struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-> > +
-> > +     *parent_shm =3D rp->rstmem;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static void pool_op_cma_destroy_pool(struct tee_rstmem_pool *pool)
-> > +{
-> > +     struct optee_rstmem_cma_pool *rp =3D to_rstmem_cma_pool(pool);
-> > +
-> > +     mutex_destroy(&rp->mutex);
-> > +     kfree(rp);
-> > +}
-> > +
-> > +static struct tee_rstmem_pool_ops rstmem_pool_ops_cma =3D {
-> > +     .alloc =3D rstmem_pool_op_cma_alloc,
-> > +     .free =3D rstmem_pool_op_cma_free,
-> > +     .update_shm =3D rstmem_pool_op_cma_update_shm,
-> > +     .destroy_pool =3D pool_op_cma_destroy_pool,
-> > +};
-> > +
-> > +static int get_rstmem_config(struct optee *optee, u32 use_case,
-> > +                          size_t *min_size, u_int *min_align,
-> > +                          u16 *end_points, u_int *ep_count)
->
-> I guess this end points terminology is specific to FF-A ABI. Is there
-> any relevance for this in the common APIs?
-
-Yes, endpoints are specific to FF-A ABI. The list of end-points must
-be presented to FFA_MEM_LEND. We're relying on the secure world to
-know which endpoints are needed for a specific use case.
+[1] https://lore.kernel.org/lkml/32c29526416c07c37819aedabcbf1e562ee98bf2.cam=
+el(a)ndufresne.ca/
 
 Cheers,
 Jens
 
 >
-> -Sumit
+> Each use-case has it's own restricted memory pool since different use-cases
+> requires isolation from different parts of the system. A restricted memory
+> pool can be based on a static carveout instantiated while probing the TEE
+> backend driver, or dynamically allocated from CMA and made restricted as
+> needed by the TEE.
 >
-> > +{
-> > +     struct tee_param params[2] =3D {
-> > +             [0] =3D {
-> > +                     .attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT,
-> > +                     .u.value.a =3D use_case,
-> > +             },
-> > +             [1] =3D {
-> > +                     .attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT,
-> > +             },
-> > +     };
-> > +     struct optee_shm_arg_entry *entry;
-> > +     struct tee_shm *shm_param =3D NULL;
-> > +     struct optee_msg_arg *msg_arg;
-> > +     struct tee_shm *shm;
-> > +     u_int offs;
-> > +     int rc;
-> > +
-> > +     if (end_points && *ep_count) {
-> > +             params[1].u.memref.size =3D *ep_count * sizeof(*end_points);
-> > +             shm_param =3D tee_shm_alloc_priv_buf(optee->ctx,
-> > +                                                params[1].u.memref.size);
-> > +             if (IS_ERR(shm_param))
-> > +                     return PTR_ERR(shm_param);
-> > +             params[1].u.memref.shm =3D shm_param;
-> > +     }
-> > +
-> > +     msg_arg =3D optee_get_msg_arg(optee->ctx, ARRAY_SIZE(params), &entr=
-y,
-> > +                                 &shm, &offs);
-> > +     if (IS_ERR(msg_arg)) {
-> > +             rc =3D PTR_ERR(msg_arg);
-> > +             goto out_free_shm;
-> > +     }
-> > +     msg_arg->cmd =3D OPTEE_MSG_CMD_GET_RSTMEM_CONFIG;
-> > +
-> > +     rc =3D optee->ops->to_msg_param(optee, msg_arg->params,
-> > +                                   ARRAY_SIZE(params), params,
-> > +                                   false /*!update_out*/);
-> > +     if (rc)
-> > +             goto out_free_msg;
-> > +
-> > +     rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-> > +     if (rc)
-> > +             goto out_free_msg;
-> > +     if (msg_arg->ret && msg_arg->ret !=3D TEEC_ERROR_SHORT_BUFFER) {
-> > +             rc =3D -EINVAL;
-> > +             goto out_free_msg;
-> > +     }
-> > +
-> > +     rc =3D optee->ops->from_msg_param(optee, params, ARRAY_SIZE(params),
-> > +                                     msg_arg->params, true /*update_out*=
-/);
-> > +     if (rc)
-> > +             goto out_free_msg;
-> > +
-> > +     if (!msg_arg->ret && end_points &&
-> > +         *ep_count < params[1].u.memref.size / sizeof(u16)) {
-> > +             rc =3D -EINVAL;
-> > +             goto out_free_msg;
-> > +     }
-> > +
-> > +     *min_size =3D params[0].u.value.a;
-> > +     *min_align =3D params[0].u.value.b;
-> > +     *ep_count =3D params[1].u.memref.size / sizeof(u16);
-> > +
-> > +     if (msg_arg->ret =3D=3D TEEC_ERROR_SHORT_BUFFER) {
-> > +             rc =3D -ENOSPC;
-> > +             goto out_free_msg;
-> > +     }
-> > +
-> > +     if (end_points)
-> > +             memcpy(end_points, tee_shm_get_va(shm_param, 0),
-> > +                    params[1].u.memref.size);
-> > +
-> > +out_free_msg:
-> > +     optee_free_msg_arg(optee->ctx, entry, offs);
-> > +out_free_shm:
-> > +     if (shm_param)
-> > +             tee_shm_free(shm_param);
-> > +     return rc;
-> > +}
-> > +
-> > +struct tee_rstmem_pool *optee_rstmem_alloc_cma_pool(struct optee *optee,
-> > +                                                 enum tee_dma_heap_id id)
-> > +{
-> > +     struct optee_rstmem_cma_pool *rp;
-> > +     u32 use_case =3D id;
-> > +     size_t min_size;
-> > +     int rc;
-> > +
-> > +     rp =3D kzalloc(sizeof(*rp), GFP_KERNEL);
-> > +     if (!rp)
-> > +             return ERR_PTR(-ENOMEM);
-> > +     rp->use_case =3D use_case;
-> > +
-> > +     rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->align, NU=
-LL,
-> > +                            &rp->end_point_count);
-> > +     if (rc) {
-> > +             if (rc !=3D -ENOSPC)
-> > +                     goto err;
-> > +             rp->end_points =3D kcalloc(rp->end_point_count,
-> > +                                      sizeof(*rp->end_points), GFP_KERNE=
-L);
-> > +             if (!rp->end_points) {
-> > +                     rc =3D -ENOMEM;
-> > +                     goto err;
-> > +             }
-> > +             rc =3D get_rstmem_config(optee, use_case, &min_size, &rp->a=
-lign,
-> > +                                    rp->end_points, &rp->end_point_count=
-);
-> > +             if (rc)
-> > +                     goto err_kfree_eps;
-> > +     }
-> > +
-> > +     rp->pool.ops =3D &rstmem_pool_ops_cma;
-> > +     rp->optee =3D optee;
-> > +     rp->page_count =3D min_size / PAGE_SIZE;
-> > +     mutex_init(&rp->mutex);
-> > +
-> > +     return &rp->pool;
-> > +
-> > +err_kfree_eps:
-> > +     kfree(rp->end_points);
-> > +err:
-> > +     kfree(rp);
-> > +     return ERR_PTR(rc);
-> > +}
-> > --
-> > 2.43.0
-> >
+> This can be tested on a RockPi 4B+ with the following steps:
+> repo init -u https://github.com/jenswi-linaro/manifest.git -m rockpi4.xml \
+>         -b prototype/sdp-v6
+> repo sync -j8
+> cd build
+> make toolchains -j$(nproc)
+> make all -j$(nproc)
+> # Copy ../out/rockpi4.img to an SD card and boot the RockPi from that
+> # Connect a monitor to the RockPi
+> # login and at the prompt:
+> gst-launch-1.0 videotestsrc ! \
+>         aesenc key=3D1f9423681beb9a79215820f6bda73d0f \
+>                 iv=3De9aa8e834d8d70b7e0d254ff670dd718 serialize-iv=3Dtrue !=
+ \
+>         aesdec key=3D1f9423681beb9a79215820f6bda73d0f ! \
+>         kmssink
+>
+> The aesdec module has been hacked to use an OP-TEE TA to decrypt the stream
+> into restricted DMA-bufs which are consumed by the kmssink.
+>
+> The primitive QEMU tests from previous patch set can be tested on RockPi
+> in the same way with:
+> xtest --sdp-basic
+>
+> The primitive test are tested on QEMU with the following steps:
+> repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
+>         -b prototype/sdp-v6
+> repo sync -j8
+> cd build
+> make toolchains -j$(nproc)
+> make SPMC_AT_EL=3D1 all -j$(nproc)
+> make SPMC_AT_EL=3D1 run-only
+> # login and at the prompt:
+> xtest --sdp-basic
+>
+> The SPMC_AT_EL=3D1 parameter configures the build with FF-A and an SPMC at
+> S-EL1 inside OP-TEE. The parameter can be changed into SPMC_AT_EL=3Dn to te=
+st
+> without FF-A using the original SMC ABI instead. Please remember to do
+> %rm -rf ../trusted-firmware-a/build/qemu
+> for TF-A to be rebuilt properly using the new configuration.
+>
+> https://optee.readthedocs.io/en/latest/building/prerequisites.html
+> list dependencies needed to build the above.
+>
+> The tests are pretty basic, mostly checking that a Trusted Application in
+> the secure world can access and manipulate the memory. There are also some
+> negative tests for out of bounds buffers etc.
+>
+> Thanks,
+> Jens
+>
+> Changes since V5:
+> * Removing "tee: add restricted memory allocation" and
+>   "tee: add TEE_IOC_RSTMEM_FD_INFO"
+> * Adding "tee: implement restricted DMA-heap",
+>   "tee: new ioctl to a register tee_shm from a dmabuf file descriptor",
+>   "tee: add tee_shm_alloc_cma_phys_mem()",
+>   "optee: pass parent device to tee_device_alloc()", and
+>   "tee: tee_device_alloc(): copy dma_mask from parent device"
+> * The two TEE driver OPs "rstmem_alloc()" and "rstmem_free()" are replaced
+>   with a struct tee_rstmem_pool abstraction.
+> * Replaced the the TEE_IOC_RSTMEM_ALLOC user space API with the DMA-heap API
+>
+> Changes since V4:
+> * Adding the patch "tee: add TEE_IOC_RSTMEM_FD_INFO" needed by the
+>   GStreamer demo
+> * Removing the dummy CPU access and mmap functions from the dma_buf_ops
+> * Fixing a compile error in "optee: FF-A: dynamic restricted memory allocat=
+ion"
+>   reported by kernel test robot <lkp@intel.com>
+>
+> Changes since V3:
+> * Make the use_case and flags field in struct tee_shm u32's instead of
+>   u16's
+> * Add more description for TEE_IOC_RSTMEM_ALLOC in the header file
+> * Import namespace DMA_BUF in module tee, reported by lkp(a)intel.com
+> * Added a note in the commit message for "optee: account for direction
+>   while converting parameters" why it's needed
+> * Factor out dynamic restricted memory allocation from
+>   "optee: support restricted memory allocation" into two new commits
+>   "optee: FF-A: dynamic restricted memory allocation" and
+>   "optee: smc abi: dynamic restricted memory allocation"
+> * Guard CMA usage with #ifdef CONFIG_CMA, effectively disabling dynamic
+>   restricted memory allocate if CMA isn't configured
+>
+> Changes since the V2 RFC:
+> * Based on v6.12
+> * Replaced the flags for SVP and Trusted UID memory with a u32 field with
+>   unique id for each use case
+> * Added dynamic allocation of restricted memory pools
+> * Added OP-TEE ABI both with and without FF-A for dynamic restricted memory
+> * Added support for FF-A with FFA_LEND
+>
+> Changes since the V1 RFC:
+> * Based on v6.11
+> * Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALLOC
+>
+> Changes since Olivier's post [2]:
+> * Based on Yong Wu's post [1] where much of dma-buf handling is done in
+>   the generic restricted heap
+> * Simplifications and cleanup
+> * New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
+>   support"
+> * Replaced the word "secure" with "restricted" where applicable
+>
+> Etienne Carriere (1):
+>   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+>
+> Jens Wiklander (9):
+>   tee: tee_device_alloc(): copy dma_mask from parent device
+>   optee: pass parent device to tee_device_alloc()
+>   optee: account for direction while converting parameters
+>   optee: sync secure world ABI headers
+>   tee: implement restricted DMA-heap
+>   tee: add tee_shm_alloc_cma_phys_mem()
+>   optee: support restricted memory allocation
+>   optee: FF-A: dynamic restricted memory allocation
+>   optee: smc abi: dynamic restricted memory allocation
+>
+>  drivers/tee/Makefile              |   1 +
+>  drivers/tee/optee/Makefile        |   1 +
+>  drivers/tee/optee/call.c          |  10 +-
+>  drivers/tee/optee/core.c          |   1 +
+>  drivers/tee/optee/ffa_abi.c       | 194 +++++++++++-
+>  drivers/tee/optee/optee_ffa.h     |  27 +-
+>  drivers/tee/optee/optee_msg.h     |  65 ++++-
+>  drivers/tee/optee/optee_private.h |  55 +++-
+>  drivers/tee/optee/optee_smc.h     |  71 ++++-
+>  drivers/tee/optee/rpc.c           |  31 +-
+>  drivers/tee/optee/rstmem.c        | 329 +++++++++++++++++++++
+>  drivers/tee/optee/smc_abi.c       | 190 ++++++++++--
+>  drivers/tee/tee_core.c            | 147 +++++++---
+>  drivers/tee/tee_heap.c            | 470 ++++++++++++++++++++++++++++++
+>  drivers/tee/tee_private.h         |   7 +
+>  drivers/tee/tee_shm.c             | 199 ++++++++++++-
+>  include/linux/tee_core.h          |  67 +++++
+>  include/linux/tee_drv.h           |  10 +
+>  include/uapi/linux/tee.h          |  29 ++
+>  19 files changed, 1781 insertions(+), 123 deletions(-)
+>  create mode 100644 drivers/tee/optee/rstmem.c
+>  create mode 100644 drivers/tee/tee_heap.c
+>
+>
+> base-commit: 7eb172143d5508b4da468ed59ee857c6e5e01da6
+> --
+> 2.43.0
+>
 
---===============9220161420992523878==--
+--===============6899669313521660431==--
 
