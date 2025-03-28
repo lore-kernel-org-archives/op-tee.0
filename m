@@ -1,247 +1,104 @@
 From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v3 05/11] firmware: qcom: scm: add support for object invocation
-Date: Thu, 27 Mar 2025 19:47:27 -0700
-Message-ID: <20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-5-7f457073282d@oss.qualcomm.com>
+Subject: [PATCH v3 06/11] firmware: qcom: scm: remove unused arguments to the
+ shm_brige
+Date: Thu, 27 Mar 2025 19:47:28 -0700
+Message-ID: <20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-6-7f457073282d@oss.qualcomm.com>
 In-Reply-To: <=?utf-8?q?=3C20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-?=
  =?utf-8?q?0-7f457073282d=40oss=2Equalcomm=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6032777456218672214=="
+Content-Type: multipart/mixed; boundary="===============3982797463713985825=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6032777456218672214==
+--===============3982797463713985825==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Qualcomm TEE (QTEE) hosts Trusted Applications (TAs) and services in
-the secure world, accessed via objects. A QTEE client can invoke these
-objects to request services. Similarly, QTEE can request services from
-the nonsecure world using objects exported to the secure world.
-
-Add low-level primitives to facilitate the invocation of objects hosted
-in QTEE, as well as those hosted in the nonsecure world.
-
-If support for object invocation is available, the qcom_scm allocates
-a dedicated child platform device. The driver for this device communicates
-with QTEE using low-level primitives.
+shm_bridge create/delete functions always use the scm device.
+There is no need to pass it as an argument.
 
 Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/firmware/qcom/qcom_scm.c       | 128 +++++++++++++++++++++++++++++++=
-++
- drivers/firmware/qcom/qcom_scm.h       |   7 ++
- include/linux/firmware/qcom/qcom_scm.h |  27 +++++++
- 3 files changed, 162 insertions(+)
+ drivers/firmware/qcom/qcom_scm.c       | 4 ++--
+ drivers/firmware/qcom/qcom_tzmem.c     | 8 ++++----
+ include/linux/firmware/qcom/qcom_scm.h | 4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/firmware/qcom/qcom_scm.c b/drivers/firmware/qcom/qcom_sc=
 m.c
-index fc4d67e4c4a6..bff1b0d3306e 100644
+index bff1b0d3306e..9fd5f900d327 100644
 --- a/drivers/firmware/qcom/qcom_scm.c
 +++ b/drivers/firmware/qcom/qcom_scm.c
-@@ -2084,6 +2084,124 @@ static int qcom_scm_qseecom_init(struct qcom_scm *scm)
+@@ -1631,7 +1631,7 @@ int qcom_scm_shm_bridge_enable(void)
+ }
+ EXPORT_SYMBOL_GPL(qcom_scm_shm_bridge_enable);
 =20
- #endif /* CONFIG_QCOM_QSEECOM */
+-int qcom_scm_shm_bridge_create(struct device *dev, u64 pfn_and_ns_perm_flags,
++int qcom_scm_shm_bridge_create(u64 pfn_and_ns_perm_flags,
+ 			       u64 ipfn_and_s_perm_flags, u64 size_and_flags,
+ 			       u64 ns_vmids, u64 *handle)
+ {
+@@ -1659,7 +1659,7 @@ int qcom_scm_shm_bridge_create(struct device *dev, u64 =
+pfn_and_ns_perm_flags,
+ }
+ EXPORT_SYMBOL_GPL(qcom_scm_shm_bridge_create);
 =20
-+#ifdef CONFIG_QCOMTEE
-+
-+/**
-+ * qcom_scm_qtee_invoke_smc() - Invoke a QTEE object.
-+ * @inbuf: start address of memory area used for inbound buffer.
-+ * @inbuf_size: size of the memory area used for inbound buffer.
-+ * @outbuf: start address of memory area used for outbound buffer.
-+ * @outbuf_size: size of the memory area used for outbound buffer.
-+ * @result: result of QTEE object invocation.
-+ * @response_type: response type returned by QTEE.
-+ *
-+ * @response_type determines how the contents of @inbuf and @outbuf
-+ * should be processed.
-+ *
-+ * Return: On success, return 0 or <0 on failure.
-+ */
-+int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_size,
-+			     phys_addr_t outbuf, size_t outbuf_size,
-+			     u64 *result, u64 *response_type)
-+{
-+	struct qcom_scm_desc desc =3D {
-+		.svc =3D QCOM_SCM_SVC_SMCINVOKE,
-+		.cmd =3D QCOM_SCM_SMCINVOKE_INVOKE,
-+		.owner =3D ARM_SMCCC_OWNER_TRUSTED_OS,
-+		.args[0] =3D inbuf,
-+		.args[1] =3D inbuf_size,
-+		.args[2] =3D outbuf,
-+		.args[3] =3D outbuf_size,
-+		.arginfo =3D QCOM_SCM_ARGS(4, QCOM_SCM_RW, QCOM_SCM_VAL,
-+					 QCOM_SCM_RW, QCOM_SCM_VAL),
-+	};
-+	struct qcom_scm_res res;
-+	int ret;
-+
-+	ret =3D qcom_scm_call(__scm->dev, &desc, &res);
-+	if (ret)
-+		return ret;
-+
-+	*response_type =3D res.result[0];
-+	*result =3D res.result[1];
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(qcom_scm_qtee_invoke_smc);
-+
-+/**
-+ * qcom_scm_qtee_callback_response() - Submit response for callback request.
-+ * @buf: start address of memory area used for outbound buffer.
-+ * @buf_size: size of the memory area used for outbound buffer.
-+ * @result: Result of QTEE object invocation.
-+ * @response_type: Response type returned by QTEE.
-+ *
-+ * @response_type determines how the contents of @buf should be processed.
-+ *
-+ * Return: On success, return 0 or <0 on failure.
-+ */
-+int qcom_scm_qtee_callback_response(phys_addr_t buf, size_t buf_size,
-+				    u64 *result, u64 *response_type)
-+{
-+	struct qcom_scm_desc desc =3D {
-+		.svc =3D QCOM_SCM_SVC_SMCINVOKE,
-+		.cmd =3D QCOM_SCM_SMCINVOKE_CB_RSP,
-+		.owner =3D ARM_SMCCC_OWNER_TRUSTED_OS,
-+		.args[0] =3D buf,
-+		.args[1] =3D buf_size,
-+		.arginfo =3D QCOM_SCM_ARGS(2, QCOM_SCM_RW, QCOM_SCM_VAL),
-+	};
-+	struct qcom_scm_res res;
-+	int ret;
-+
-+	ret =3D qcom_scm_call(__scm->dev, &desc, &res);
-+	if (ret)
-+		return ret;
-+
-+	*response_type =3D res.result[0];
-+	*result =3D res.result[1];
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(qcom_scm_qtee_callback_response);
-+
-+static void qcom_scm_qtee_free(void *data)
-+{
-+	struct platform_device *qtee_dev =3D data;
-+
-+	platform_device_unregister(qtee_dev);
-+}
-+
-+static int qcom_scm_qtee_init(struct qcom_scm *scm)
-+{
-+	struct platform_device *qtee_dev;
-+	int ret;
-+
-+	/* Setup QTEE interface device. */
-+	qtee_dev =3D platform_device_alloc("qcomtee", -1);
-+	if (!qtee_dev)
-+		return -ENOMEM;
-+
-+	qtee_dev->dev.parent =3D scm->dev;
-+
-+	ret =3D platform_device_add(qtee_dev);
-+	if (ret) {
-+		platform_device_put(qtee_dev);
-+		return ret;
-+	}
-+
-+	return devm_add_action_or_reset(scm->dev, qcom_scm_qtee_free, qtee_dev);
-+}
-+
-+#else
-+
-+static int qcom_scm_qtee_init(struct qcom_scm *scm)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_QCOMTEE */
-+
- /**
-  * qcom_scm_is_available() - Checks if SCM is available
-  */
-@@ -2319,6 +2437,16 @@ static int qcom_scm_probe(struct platform_device *pdev)
- 	ret =3D qcom_scm_qseecom_init(scm);
- 	WARN(ret < 0, "failed to initialize qseecom: %d\n", ret);
+-int qcom_scm_shm_bridge_delete(struct device *dev, u64 handle)
++int qcom_scm_shm_bridge_delete(u64 handle)
+ {
+ 	struct qcom_scm_desc desc =3D {
+ 		.svc =3D QCOM_SCM_SVC_MP,
+diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_=
+tzmem.c
+index 92b365178235..548dbd346b1b 100644
+--- a/drivers/firmware/qcom/qcom_tzmem.c
++++ b/drivers/firmware/qcom/qcom_tzmem.c
+@@ -123,9 +123,9 @@ static int qcom_tzmem_init_area(struct qcom_tzmem_area *a=
+rea)
+ 	if (!handle)
+ 		return -ENOMEM;
 =20
-+	/*
-+	 * Initialize the QTEE object interface.
-+	 *
-+	 * This only represents the availability for QTEE object invocation
-+	 * and callback support. On failure, ignore the result. Any subsystem
-+	 * depending on it may fail if it tries to access this interface.
-+	 */
-+	ret =3D qcom_scm_qtee_init(scm);
-+	WARN(ret < 0, "failed to initialize qcomtee: %d\n", ret);
-+
- 	return 0;
+-	ret =3D qcom_scm_shm_bridge_create(qcom_tzmem_dev, pfn_and_ns_perm,
+-					 ipfn_and_s_perm, size_and_flags,
+-					 QCOM_SCM_VMID_HLOS, handle);
++	ret =3D qcom_scm_shm_bridge_create(pfn_and_ns_perm, ipfn_and_s_perm,
++					 size_and_flags, QCOM_SCM_VMID_HLOS,
++					 handle);
+ 	if (ret)
+ 		return ret;
 =20
- err:
-diff --git a/drivers/firmware/qcom/qcom_scm.h b/drivers/firmware/qcom/qcom_sc=
-m.h
-index 097369d38b84..a25202e99f7c 100644
---- a/drivers/firmware/qcom/qcom_scm.h
-+++ b/drivers/firmware/qcom/qcom_scm.h
-@@ -152,6 +152,13 @@ struct qcom_tzmem_pool *qcom_scm_get_tzmem_pool(void);
- #define QCOM_SCM_SVC_GPU			0x28
- #define QCOM_SCM_SVC_GPU_INIT_REGS		0x01
+@@ -141,7 +141,7 @@ static void qcom_tzmem_cleanup_area(struct qcom_tzmem_are=
+a *area)
+ 	if (!qcom_tzmem_using_shm_bridge)
+ 		return;
 =20
-+/* ARM_SMCCC_OWNER_TRUSTED_OS calls */
-+
-+#define QCOM_SCM_SVC_SMCINVOKE			0x06
-+#define QCOM_SCM_SMCINVOKE_INVOKE_LEGACY	0x00
-+#define QCOM_SCM_SMCINVOKE_CB_RSP		0x01
-+#define QCOM_SCM_SMCINVOKE_INVOKE		0x02
-+
- /* common error codes */
- #define QCOM_SCM_V2_EBUSY	-12
- #define QCOM_SCM_ENOMEM		-5
+-	qcom_scm_shm_bridge_delete(qcom_tzmem_dev, *handle);
++	qcom_scm_shm_bridge_delete(*handle);
+ 	kfree(handle);
+ }
+=20
 diff --git a/include/linux/firmware/qcom/qcom_scm.h b/include/linux/firmware/=
 qcom/qcom_scm.h
-index 983e1591bbba..bf5e64f6deba 100644
+index bf5e64f6deba..33fde08dce70 100644
 --- a/include/linux/firmware/qcom/qcom_scm.h
 +++ b/include/linux/firmware/qcom/qcom_scm.h
-@@ -176,4 +176,31 @@ static inline int qcom_scm_qseecom_app_send(u32 app_id,
+@@ -149,10 +149,10 @@ bool qcom_scm_lmh_dcvsh_available(void);
+ int qcom_scm_gpu_init_regs(u32 gpu_req);
 =20
- #endif /* CONFIG_QCOM_QSEECOM */
+ int qcom_scm_shm_bridge_enable(void);
+-int qcom_scm_shm_bridge_create(struct device *dev, u64 pfn_and_ns_perm_flags,
++int qcom_scm_shm_bridge_create(u64 pfn_and_ns_perm_flags,
+ 			       u64 ipfn_and_s_perm_flags, u64 size_and_flags,
+ 			       u64 ns_vmids, u64 *handle);
+-int qcom_scm_shm_bridge_delete(struct device *dev, u64 handle);
++int qcom_scm_shm_bridge_delete(u64 handle);
 =20
-+#ifdef CONFIG_QCOMTEE
-+
-+int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_size,
-+			     phys_addr_t outbuf, size_t outbuf_size,
-+			     u64 *result, u64 *response_type);
-+int qcom_scm_qtee_callback_response(phys_addr_t buf, size_t buf_size,
-+				    u64 *result, u64 *response_type);
-+
-+#else /* CONFIG_QCOMTEE */
-+
-+static inline int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_s=
-ize,
-+					   phys_addr_t outbuf,
-+					   size_t outbuf_size, u64 *result,
-+					   u64 *response_type)
-+{
-+	return -EINVAL;
-+}
-+
-+static inline int qcom_scm_qtee_callback_response(phys_addr_t buf,
-+						  size_t buf_size, u64 *result,
-+						  u64 *response_type)
-+{
-+	return -EINVAL;
-+}
-+
-+#endif /* CONFIG_QCOMTEE */
-+
- #endif
+ #ifdef CONFIG_QCOM_QSEECOM
+=20
 
 --=20
 2.34.1
 
 
---===============6032777456218672214==--
+--===============3982797463713985825==--
 
