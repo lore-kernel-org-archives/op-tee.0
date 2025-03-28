@@ -1,149 +1,185 @@
 From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- [PATCH v3 07/11] firmware: qcom: tzmem: export shm_bridge create/delete
-Date: Thu, 27 Mar 2025 19:47:29 -0700
-Message-ID: <20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-7-7f457073282d@oss.qualcomm.com>
+Subject: [PATCH v3 09/11] qcomtee: add primordial object
+Date: Thu, 27 Mar 2025 19:47:31 -0700
+Message-ID: <20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-9-7f457073282d@oss.qualcomm.com>
 In-Reply-To: <=?utf-8?q?=3C20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-?=
  =?utf-8?q?0-7f457073282d=40oss=2Equalcomm=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2891166791011016078=="
+Content-Type: multipart/mixed; boundary="===============4791640388625803440=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2891166791011016078==
+--===============4791640388625803440==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Anyone with access to contiguous physical memory should be able to
-share memory with QTEE using shm_bridge.
+After booting, the kernel provides a static object known as the
+primordial object. This object is utilized by QTEE for native
+kernel services such as yield or privileged operations.
 
 Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/firmware/qcom/qcom_tzmem.c       | 57 +++++++++++++++++++++++++-----=
---
- include/linux/firmware/qcom/qcom_tzmem.h | 15 +++++++++
- 2 files changed, 60 insertions(+), 12 deletions(-)
+ drivers/tee/qcomtee/Makefile          |  1 +
+ drivers/tee/qcomtee/core.c            | 19 +++++++---
+ drivers/tee/qcomtee/primordial_obj.c  | 65 +++++++++++++++++++++++++++++++++=
+++
+ drivers/tee/qcomtee/qcomtee_private.h |  3 ++
+ 4 files changed, 83 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_=
-tzmem.c
-index 548dbd346b1b..a02913665801 100644
---- a/drivers/firmware/qcom/qcom_tzmem.c
-+++ b/drivers/firmware/qcom/qcom_tzmem.c
-@@ -107,25 +107,61 @@ static int qcom_tzmem_init(void)
+diff --git a/drivers/tee/qcomtee/Makefile b/drivers/tee/qcomtee/Makefile
+index 1b14b943e5f5..a3a2d00e83f0 100644
+--- a/drivers/tee/qcomtee/Makefile
++++ b/drivers/tee/qcomtee/Makefile
+@@ -3,6 +3,7 @@ obj-$(CONFIG_QCOMTEE) +=3D qcomtee.o
+ qcomtee-objs +=3D async.o
+ qcomtee-objs +=3D call.o
+ qcomtee-objs +=3D core.o
++qcomtee-objs +=3D primordial_obj.o
+ qcomtee-objs +=3D qcom_scm.o
+ qcomtee-objs +=3D release.o
+ qcomtee-objs +=3D shm.o
+diff --git a/drivers/tee/qcomtee/core.c b/drivers/tee/qcomtee/core.c
+index 162e32db656a..76944241e8e8 100644
+--- a/drivers/tee/qcomtee/core.c
++++ b/drivers/tee/qcomtee/core.c
+@@ -31,10 +31,12 @@ int qcomtee_next_arg_type(struct qcomtee_arg *u, int i,
+ }
+=20
+ /*
+- * QTEE expects IDs with the QCOMTEE_MSG_OBJECT_NS_BIT set for objects
+- * of the QCOMTEE_OBJECT_TYPE_CB type.
++ * QTEE expects IDs with QCOMTEE_MSG_OBJECT_NS_BIT set for objects of
++ * QCOMTEE_OBJECT_TYPE_CB type. The first ID with QCOMTEE_MSG_OBJECT_NS_BIT
++ * set is reserved for the primordial object.
+  */
+-#define QCOMTEE_OBJECT_ID_START (QCOMTEE_MSG_OBJECT_NS_BIT + 1)
++#define QCOMTEE_OBJECT_PRIMORDIAL (QCOMTEE_MSG_OBJECT_NS_BIT)
++#define QCOMTEE_OBJECT_ID_START (QCOMTEE_OBJECT_PRIMORDIAL + 1)
+ #define QCOMTEE_OBJECT_ID_END (UINT_MAX)
+=20
+ #define QCOMTEE_OBJECT_SET(p, type, ...) \
+@@ -112,7 +114,9 @@ static void qcomtee_object_release(struct kref *refcount)
+  */
+ int qcomtee_object_get(struct qcomtee_object *object)
+ {
+-	if (object !=3D NULL_QCOMTEE_OBJECT && object !=3D ROOT_QCOMTEE_OBJECT)
++	if (object !=3D &qcomtee_primordial_object &&
++	    object !=3D NULL_QCOMTEE_OBJECT &&
++	    object !=3D ROOT_QCOMTEE_OBJECT)
+ 		return kref_get_unless_zero(&object->refcount);
+=20
  	return 0;
- }
-=20
--static int qcom_tzmem_init_area(struct qcom_tzmem_area *area)
-+/**
-+ * qcom_tzmem_shm_bridge_create() - Create a SHM bridge.
-+ * @paddr: Physical address of the memory to share.
-+ * @size: Size of the memory to share.
-+ * @handle: Handle to the SHM bridge.
-+ *
-+ * On platforms that support SHM bridge, this function creates a SHM bridge
-+ * for the given memory region with QTEE. The handle returned by this functi=
-on
-+ * must be passed to qcom_tzmem_shm_bridge_delete() to free the SHM bridge.
-+ *
-+ * Return: On success, returns 0; on failure, returns < 0.
-+ */
-+int qcom_tzmem_shm_bridge_create(phys_addr_t paddr, size_t size, u64 *handle)
+@@ -125,7 +129,9 @@ EXPORT_SYMBOL_GPL(qcomtee_object_get);
+  */
+ void qcomtee_object_put(struct qcomtee_object *object)
  {
- 	u64 pfn_and_ns_perm, ipfn_and_s_perm, size_and_flags;
--	int ret;
+-	if (object !=3D NULL_QCOMTEE_OBJECT && object !=3D ROOT_QCOMTEE_OBJECT)
++	if (object !=3D &qcomtee_primordial_object &&
++	    object !=3D NULL_QCOMTEE_OBJECT &&
++	    object !=3D ROOT_QCOMTEE_OBJECT)
+ 		kref_put(&object->refcount, qcomtee_object_release);
+ }
+ EXPORT_SYMBOL_GPL(qcomtee_object_put);
+@@ -215,6 +221,9 @@ static struct qcomtee_object *qcomtee_local_object_get(un=
+signed int object_id)
+ {
+ 	struct qcomtee_object *object;
 =20
- 	if (!qcom_tzmem_using_shm_bridge)
- 		return 0;
-=20
--	pfn_and_ns_perm =3D (u64)area->paddr | QCOM_SCM_PERM_RW;
--	ipfn_and_s_perm =3D (u64)area->paddr | QCOM_SCM_PERM_RW;
--	size_and_flags =3D area->size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
-+	pfn_and_ns_perm =3D paddr | QCOM_SCM_PERM_RW;
-+	ipfn_and_s_perm =3D paddr | QCOM_SCM_PERM_RW;
-+	size_and_flags =3D size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
-+	if (qcom_scm_shm_bridge_create(pfn_and_ns_perm, ipfn_and_s_perm,
-+				       size_and_flags, QCOM_SCM_VMID_HLOS,
-+				       handle))
-+		return -EINVAL;
++	if (object_id =3D=3D QCOMTEE_OBJECT_PRIMORDIAL)
++		return &qcomtee_primordial_object;
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(qcom_tzmem_shm_bridge_create);
+ 	/*
+ 	 * This is not protected by an RCU read lock because we are
+ 	 * confident that QTEE does not issue a RELEASE request and
+diff --git a/drivers/tee/qcomtee/primordial_obj.c b/drivers/tee/qcomtee/primo=
+rdial_obj.c
+new file mode 100644
+index 000000000000..a30967d89c91
+--- /dev/null
++++ b/drivers/tee/qcomtee/primordial_obj.c
+@@ -0,0 +1,65 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/delay.h>
++#include "qcomtee_private.h"
 +
 +/**
-+ * qcom_tzmem_shm_bridge_delete() - Delete a SHM bridge.
-+ * @handle: Handle to the SHM bridge.
++ * DOC: Primordial Object
 + *
-+ * On platforms that support SHM bridge, this function deletes the SHM bridge
-+ * for the given memory region. The handle must be the same as the one
-+ * returned by qcom_tzmem_shm_bridge_create().
++ * After boot, the kernel provides a static object of type
++ * %QCOMTEE_OBJECT_TYPE_CB called the primordial object. This object is used
++ * for native kernel services or privileged operations.
++ *
++ * We support:
++ *  - %QCOMTEE_OBJECT_OP_YIELD to yield by the thread running in QTEE.
++ *  - %QCOMTEE_OBJECT_OP_SLEEP to wait for a period of time.
 + */
-+void qcom_tzmem_shm_bridge_delete(u64 handle)
-+{
-+	if (qcom_tzmem_using_shm_bridge)
-+		qcom_scm_shm_bridge_delete(handle);
-+}
-+EXPORT_SYMBOL_GPL(qcom_tzmem_shm_bridge_delete);
 +
-+static int qcom_tzmem_init_area(struct qcom_tzmem_area *area)
++#define QCOMTEE_OBJECT_OP_YIELD 1
++#define QCOMTEE_OBJECT_OP_SLEEP 2
++
++static int
++qcomtee_primordial_obj_dispatch(struct qcomtee_object_invoke_ctx *oic,
++				struct qcomtee_object *primordial_object_unused,
++				u32 op, struct qcomtee_arg *args)
 +{
-+	int ret;
-=20
- 	u64 *handle __free(kfree) =3D kzalloc(sizeof(*handle), GFP_KERNEL);
- 	if (!handle)
- 		return -ENOMEM;
-=20
--	ret =3D qcom_scm_shm_bridge_create(pfn_and_ns_perm, ipfn_and_s_perm,
--					 size_and_flags, QCOM_SCM_VMID_HLOS,
--					 handle);
-+	ret =3D qcom_tzmem_shm_bridge_create(area->paddr, area->size, handle);
- 	if (ret)
- 		return ret;
-=20
-@@ -138,10 +174,7 @@ static void qcom_tzmem_cleanup_area(struct qcom_tzmem_ar=
-ea *area)
- {
- 	u64 *handle =3D area->priv;
-=20
--	if (!qcom_tzmem_using_shm_bridge)
--		return;
--
--	qcom_scm_shm_bridge_delete(*handle);
-+	qcom_tzmem_shm_bridge_delete(*handle);
- 	kfree(handle);
- }
-=20
-diff --git a/include/linux/firmware/qcom/qcom_tzmem.h b/include/linux/firmwar=
-e/qcom/qcom_tzmem.h
-index b83b63a0c049..48ac0e5454c7 100644
---- a/include/linux/firmware/qcom/qcom_tzmem.h
-+++ b/include/linux/firmware/qcom/qcom_tzmem.h
-@@ -53,4 +53,19 @@ DEFINE_FREE(qcom_tzmem, void *, if (_T) qcom_tzmem_free(_T=
-))
-=20
- phys_addr_t qcom_tzmem_to_phys(void *ptr);
-=20
-+#if IS_ENABLED(CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE)
-+int qcom_tzmem_shm_bridge_create(phys_addr_t paddr, size_t size, u64 *handle=
-);
-+void qcom_tzmem_shm_bridge_delete(u64 handle);
-+#else
-+static inline int qcom_tzmem_shm_bridge_create(phys_addr_t paddr,
-+					       size_t size, u64 *handle)
-+{
-+	return 0;
++	int err =3D 0;
++
++	switch (op) {
++	case QCOMTEE_OBJECT_OP_YIELD:
++		cond_resched();
++		/* No output object. */
++		oic->data =3D NULL;
++		break;
++	case QCOMTEE_OBJECT_OP_SLEEP:
++		/* Check message format matched QCOMTEE_OBJECT_OP_SLEEP op. */
++		if (qcomtee_args_len(args) !=3D 1 ||
++		    args[0].type !=3D QCOMTEE_ARG_TYPE_IB ||
++		    args[0].b.size < sizeof(u32))
++			return -EINVAL;
++
++		msleep(*(u32 *)(args[0].b.addr));
++		/* No output object. */
++		oic->data =3D NULL;
++		break;
++	default:
++		err =3D -EINVAL;
++	}
++
++	return err;
 +}
 +
-+static inline void qcom_tzmem_shm_bridge_delete(u64 handle)
-+{
-+}
-+#endif
++static struct qcomtee_object_operations qcomtee_primordial_obj_ops =3D {
++	.dispatch =3D qcomtee_primordial_obj_dispatch,
++};
 +
- #endif /* __QCOM_TZMEM */
++struct qcomtee_object qcomtee_primordial_object =3D {
++	.name =3D "primordial",
++	.object_type =3D QCOMTEE_OBJECT_TYPE_CB,
++	.ops =3D &qcomtee_primordial_obj_ops
++};
+diff --git a/drivers/tee/qcomtee/qcomtee_private.h b/drivers/tee/qcomtee/qcom=
+tee_private.h
+index ab3acad40359..a5d05a72af15 100644
+--- a/drivers/tee/qcomtee/qcomtee_private.h
++++ b/drivers/tee/qcomtee/qcomtee_private.h
+@@ -219,4 +219,7 @@ int qcomtee_user_object_submit(struct tee_context *ctx,
+ 			       struct tee_param *params, int num_params,
+ 			       int req_id, int errno);
+=20
++/* (2) Primordial Object. */
++extern struct qcomtee_object qcomtee_primordial_object;
++
+ #endif /* QCOMTEE_PRIVATE_H */
 
 --=20
 2.34.1
 
 
---===============2891166791011016078==--
+--===============4791640388625803440==--
 
