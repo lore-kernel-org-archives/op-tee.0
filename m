@@ -1,212 +1,154 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v6 00/10] TEE subsystem for restricted dma-buf allocations
-Date: Thu, 27 Mar 2025 09:27:11 +0100
-Message-ID: 
- <CAHUa44F7HYQ8uR1vpu5XfR+Ag89JPpttW7hUvGROcXbPvXBXVA@mail.gmail.com>
-In-Reply-To: <20250305130634.1850178-1-jens.wiklander@linaro.org>
+Subject: [PATCH v3 00/11] Trusted Execution Environment (TEE) driver for
+ Qualcomm TEE (QTEE)
+Date: Thu, 27 Mar 2025 19:47:22 -0700
+Message-ID: <20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-0-7f457073282d@oss.qualcomm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6899669313521660431=="
+Content-Type: multipart/mixed; boundary="===============4344654089501412828=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6899669313521660431==
+--===============4344654089501412828==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+This patch series introduces a Trusted Execution Environment (TEE)
+driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
+and services to run securely. It uses an object-based interface, where
+each service is an object with sets of operations. Clients can invoke
+these operations on objects, which can generate results, including other
+objects. For example, an object can load a TA and return another object
+that represents the loaded TA, allowing access to its services.
 
-On Wed, Mar 5, 2025 at 2:06=E2=80=AFPM Jens Wiklander <jens.wiklander@linar=
-o.org> wrote:
->
-> Hi,
->
-> This patch set allocates the restricted DMA-bufs from a DMA-heap
-> instantiated from the TEE subsystem.
->
-> The TEE subsystem handles the DMA-buf allocations since it is the TEE
-> (OP-TEE, AMD-TEE, TS-TEE, or perhaps a future QTEE) which sets up the
-> restrictions for the memory used for the DMA-bufs.
->
-> The DMA-heap uses a restricted memory pool provided by the backend TEE
-> driver, allowing it to choose how to allocate the restricted physical
-> memory.
->
-> The allocated DMA-bufs must be imported with a new TEE_IOC_SHM_REGISTER_FD
-> before they can be passed as arguments when requesting services from the
-> secure world.
->
-> Three use-cases (Secure Video Playback, Trusted UI, and Secure Video
-> Recording) has been identified so far to serve as examples of what can be
-> expected. The use-cases has predefined DMA-heap names,
-> "restricted,secure-video", "restricted,trusted-ui", and
-> "restricted,secure-video-record". The backend driver registers restricted
-> memory pools for the use-cases it supports.
+Kernel and userspace services are also available to QTEE through a
+similar approach. QTEE makes callback requests that are converted into
+object invocations. These objects can represent services within the
+kernel or userspace process.
 
-When preparing a v7 of this patch set, I'll switch to "protected"
-instead of "restricted" based on Nicolas Dufresne's comment [1],
-unless someone objects.
+Note: This patch series focuses on QTEE objects and userspace services.
 
-[1] https://lore.kernel.org/lkml/32c29526416c07c37819aedabcbf1e562ee98bf2.cam=
-el(a)ndufresne.ca/
+Linux already provides a TEE subsystem, which is described in [1]. The
+tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
+can be used by userspace to talk to a TEE backend driver. We extend the
+Linux TEE subsystem to understand object parameters and an ioctl call so
+client can invoke objects in QTEE:
 
-Cheers,
-Jens
+  - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
+  - TEE_IOC_OBJECT_INVOKE
 
->
-> Each use-case has it's own restricted memory pool since different use-cases
-> requires isolation from different parts of the system. A restricted memory
-> pool can be based on a static carveout instantiated while probing the TEE
-> backend driver, or dynamically allocated from CMA and made restricted as
-> needed by the TEE.
->
-> This can be tested on a RockPi 4B+ with the following steps:
-> repo init -u https://github.com/jenswi-linaro/manifest.git -m rockpi4.xml \
->         -b prototype/sdp-v6
-> repo sync -j8
-> cd build
-> make toolchains -j$(nproc)
-> make all -j$(nproc)
-> # Copy ../out/rockpi4.img to an SD card and boot the RockPi from that
-> # Connect a monitor to the RockPi
-> # login and at the prompt:
-> gst-launch-1.0 videotestsrc ! \
->         aesenc key=3D1f9423681beb9a79215820f6bda73d0f \
->                 iv=3De9aa8e834d8d70b7e0d254ff670dd718 serialize-iv=3Dtrue !=
- \
->         aesdec key=3D1f9423681beb9a79215820f6bda73d0f ! \
->         kmssink
->
-> The aesdec module has been hacked to use an OP-TEE TA to decrypt the stream
-> into restricted DMA-bufs which are consumed by the kmssink.
->
-> The primitive QEMU tests from previous patch set can be tested on RockPi
-> in the same way with:
-> xtest --sdp-basic
->
-> The primitive test are tested on QEMU with the following steps:
-> repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
->         -b prototype/sdp-v6
-> repo sync -j8
-> cd build
-> make toolchains -j$(nproc)
-> make SPMC_AT_EL=3D1 all -j$(nproc)
-> make SPMC_AT_EL=3D1 run-only
-> # login and at the prompt:
-> xtest --sdp-basic
->
-> The SPMC_AT_EL=3D1 parameter configures the build with FF-A and an SPMC at
-> S-EL1 inside OP-TEE. The parameter can be changed into SPMC_AT_EL=3Dn to te=
-st
-> without FF-A using the original SMC ABI instead. Please remember to do
-> %rm -rf ../trusted-firmware-a/build/qemu
-> for TF-A to be rebuilt properly using the new configuration.
->
-> https://optee.readthedocs.io/en/latest/building/prerequisites.html
-> list dependencies needed to build the above.
->
-> The tests are pretty basic, mostly checking that a Trusted Application in
-> the secure world can access and manipulate the memory. There are also some
-> negative tests for out of bounds buffers etc.
->
-> Thanks,
-> Jens
->
-> Changes since V5:
-> * Removing "tee: add restricted memory allocation" and
->   "tee: add TEE_IOC_RSTMEM_FD_INFO"
-> * Adding "tee: implement restricted DMA-heap",
->   "tee: new ioctl to a register tee_shm from a dmabuf file descriptor",
->   "tee: add tee_shm_alloc_cma_phys_mem()",
->   "optee: pass parent device to tee_device_alloc()", and
->   "tee: tee_device_alloc(): copy dma_mask from parent device"
-> * The two TEE driver OPs "rstmem_alloc()" and "rstmem_free()" are replaced
->   with a struct tee_rstmem_pool abstraction.
-> * Replaced the the TEE_IOC_RSTMEM_ALLOC user space API with the DMA-heap API
->
-> Changes since V4:
-> * Adding the patch "tee: add TEE_IOC_RSTMEM_FD_INFO" needed by the
->   GStreamer demo
-> * Removing the dummy CPU access and mmap functions from the dma_buf_ops
-> * Fixing a compile error in "optee: FF-A: dynamic restricted memory allocat=
-ion"
->   reported by kernel test robot <lkp@intel.com>
->
-> Changes since V3:
-> * Make the use_case and flags field in struct tee_shm u32's instead of
->   u16's
-> * Add more description for TEE_IOC_RSTMEM_ALLOC in the header file
-> * Import namespace DMA_BUF in module tee, reported by lkp(a)intel.com
-> * Added a note in the commit message for "optee: account for direction
->   while converting parameters" why it's needed
-> * Factor out dynamic restricted memory allocation from
->   "optee: support restricted memory allocation" into two new commits
->   "optee: FF-A: dynamic restricted memory allocation" and
->   "optee: smc abi: dynamic restricted memory allocation"
-> * Guard CMA usage with #ifdef CONFIG_CMA, effectively disabling dynamic
->   restricted memory allocate if CMA isn't configured
->
-> Changes since the V2 RFC:
-> * Based on v6.12
-> * Replaced the flags for SVP and Trusted UID memory with a u32 field with
->   unique id for each use case
-> * Added dynamic allocation of restricted memory pools
-> * Added OP-TEE ABI both with and without FF-A for dynamic restricted memory
-> * Added support for FF-A with FFA_LEND
->
-> Changes since the V1 RFC:
-> * Based on v6.11
-> * Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALLOC
->
-> Changes since Olivier's post [2]:
-> * Based on Yong Wu's post [1] where much of dma-buf handling is done in
->   the generic restricted heap
-> * Simplifications and cleanup
-> * New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
->   support"
-> * Replaced the word "secure" with "restricted" where applicable
->
-> Etienne Carriere (1):
->   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
->
-> Jens Wiklander (9):
->   tee: tee_device_alloc(): copy dma_mask from parent device
->   optee: pass parent device to tee_device_alloc()
->   optee: account for direction while converting parameters
->   optee: sync secure world ABI headers
->   tee: implement restricted DMA-heap
->   tee: add tee_shm_alloc_cma_phys_mem()
->   optee: support restricted memory allocation
->   optee: FF-A: dynamic restricted memory allocation
->   optee: smc abi: dynamic restricted memory allocation
->
->  drivers/tee/Makefile              |   1 +
->  drivers/tee/optee/Makefile        |   1 +
->  drivers/tee/optee/call.c          |  10 +-
->  drivers/tee/optee/core.c          |   1 +
->  drivers/tee/optee/ffa_abi.c       | 194 +++++++++++-
->  drivers/tee/optee/optee_ffa.h     |  27 +-
->  drivers/tee/optee/optee_msg.h     |  65 ++++-
->  drivers/tee/optee/optee_private.h |  55 +++-
->  drivers/tee/optee/optee_smc.h     |  71 ++++-
->  drivers/tee/optee/rpc.c           |  31 +-
->  drivers/tee/optee/rstmem.c        | 329 +++++++++++++++++++++
->  drivers/tee/optee/smc_abi.c       | 190 ++++++++++--
->  drivers/tee/tee_core.c            | 147 +++++++---
->  drivers/tee/tee_heap.c            | 470 ++++++++++++++++++++++++++++++
->  drivers/tee/tee_private.h         |   7 +
->  drivers/tee/tee_shm.c             | 199 ++++++++++++-
->  include/linux/tee_core.h          |  67 +++++
->  include/linux/tee_drv.h           |  10 +
->  include/uapi/linux/tee.h          |  29 ++
->  19 files changed, 1781 insertions(+), 123 deletions(-)
->  create mode 100644 drivers/tee/optee/rstmem.c
->  create mode 100644 drivers/tee/tee_heap.c
->
->
-> base-commit: 7eb172143d5508b4da468ed59ee857c6e5e01da6
-> --
-> 2.43.0
->
+The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
+used for invoking services in the userspace process by QTEE.
 
---===============6899669313521660431==--
+The TEE backend driver uses the QTEE Transport Message to communicate
+with QTEE. Interactions through the object INVOKE interface are
+translated into QTEE messages. Likewise, object invocations from QTEE
+for userspace objects are converted into SEND/RECV ioctl calls to
+supplicants.
+
+The details of QTEE Transport Message to communicate with QTEE is
+available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
+
+You can run basic tests with following steps:
+git clone https://github.com/quic/quic-teec.git
+cd quic-teec
+mkdir build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=3DCMakeToolchain.txt -DBUILD_UNITTEST=3DON
+
+https://github.com/quic/quic-teec/blob/main/README.md lists dependancies
+needed to build the above.
+
+This series has been tested for basic QTEE object invocations and
+callback requests, including loading a TA and requesting services form
+the TA.
+
+Tested platforms: sm8650-mtp
+
+[1] https://www.kernel.org/doc/Documentation/tee.txt
+
+Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+
+Changes in v3:
+- Export shm_bridge create/delete APIs.
+- Enable support for QTEE memory objects.
+- Update the memory management code to use the TEE subsystem for all
+  allocations using the pool.
+- Move all driver states into the driver's main service struct.
+- Add more documentations.
+- Link to v2: https://lore.kernel.org/r/20250202-qcom-tee-using-tee-ss-withou=
+t-mem-obj-v2-0-297eacd0d34f(a)quicinc.com
+
+Changes in v2:
+- Clean up commit messages and comments.
+- Use better names such as ubuf instead of membuf or QCOMTEE prefix
+  instead of QCOM_TEE, or names that are more consistent with other
+  TEE-backend drivers such as qcomtee_context_data instead of
+  qcom_tee_context.
+- Drop the DTS patch and instantiate the device from the scm driver.
+- Use a single structure for all driver's internal states.
+- Drop srcu primitives and use the existing mutex for synchronization
+  between the supplicant and QTEE.
+- Directly use tee_context to track the lifetime of qcomtee_context_data.
+- Add close_context() to be called when the user closes the tee_context.
+- Link to v1: https://lore.kernel.org/r/20241202-qcom-tee-using-tee-ss-withou=
+t-mem-obj-v1-0-f502ef01e016(a)quicinc.com
+
+Changes in v1:
+- It is a complete rewrite to utilize the TEE subsystem.
+- Link to RFC: https://lore.kernel.org/all/20240702-qcom-tee-object-and-ioctl=
+s-v1-0-633c3ddf57ee(a)quicinc.com
+
+---
+Amirreza Zarrabi (11):
+      tee: allow a driver to allocate a tee_device without a pool
+      tee: add close_context to TEE driver operation
+      tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
+      tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
+      firmware: qcom: scm: add support for object invocation
+      firmware: qcom: scm: remove unused arguments to the shm_brige
+      firmware: qcom: tzmem: export shm_bridge create/delete
+      tee: add Qualcomm TEE driver
+      qcomtee: add primordial object
+      qcomtee: enable TEE_IOC_SHM_ALLOC ioctl
+      Documentation: tee: Add Qualcomm TEE driver
+
+ Documentation/tee/index.rst              |   1 +
+ Documentation/tee/qtee.rst               | 150 ++++++
+ drivers/firmware/qcom/qcom_scm.c         | 132 ++++-
+ drivers/firmware/qcom/qcom_scm.h         |   7 +
+ drivers/firmware/qcom/qcom_tzmem.c       |  57 ++-
+ drivers/tee/Kconfig                      |   1 +
+ drivers/tee/Makefile                     |   1 +
+ drivers/tee/qcomtee/Kconfig              |  10 +
+ drivers/tee/qcomtee/Makefile             |  11 +
+ drivers/tee/qcomtee/async.c              | 160 ++++++
+ drivers/tee/qcomtee/call.c               | 759 +++++++++++++++++++++++++++++
+ drivers/tee/qcomtee/core.c               | 810 +++++++++++++++++++++++++++++=
+++
+ drivers/tee/qcomtee/mem_obj.c            | 172 +++++++
+ drivers/tee/qcomtee/primordial_obj.c     | 116 +++++
+ drivers/tee/qcomtee/qcom_scm.c           |  38 ++
+ drivers/tee/qcomtee/qcomtee_msg.h        | 239 +++++++++
+ drivers/tee/qcomtee/qcomtee_private.h    | 264 ++++++++++
+ drivers/tee/qcomtee/release.c            |  48 ++
+ drivers/tee/qcomtee/shm.c                | 146 ++++++
+ drivers/tee/qcomtee/user_obj.c           | 710 +++++++++++++++++++++++++++
+ drivers/tee/tee_core.c                   | 159 +++++-
+ drivers/tee/tee_private.h                |   6 -
+ include/linux/firmware/qcom/qcom_scm.h   |  31 +-
+ include/linux/firmware/qcom/qcom_tee.h   | 302 ++++++++++++
+ include/linux/firmware/qcom/qcom_tzmem.h |  15 +
+ include/linux/tee_core.h                 |  15 +-
+ include/linux/tee_drv.h                  |  52 ++
+ include/uapi/linux/tee.h                 |  54 ++-
+ 28 files changed, 4434 insertions(+), 32 deletions(-)
+---
+base-commit: db8da9da41bced445077925f8a886c776a47440c
+change-id: 20241202-qcom-tee-using-tee-ss-without-mem-obj-362c66340527
+
+Best regards,
+--=20
+Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+
+
+--===============4344654089501412828==--
 
