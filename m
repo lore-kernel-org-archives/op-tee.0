@@ -1,95 +1,1603 @@
 From: Yuvraj Sakshith <yuvraj.kernel@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RFC PATCH 5/7] tee: optee: Add OPTEE_SMC_VM_CREATED and
- OPTEE_SMC_VM_DESTROYED
-Date: Tue, 01 Apr 2025 22:35:25 +0530
-Message-ID: <20250401170527.344092-6-yuvraj.kernel@gmail.com>
+Subject: [RFC PATCH 6/7] tee: optee: Add OP-TEE Mediator
+Date: Tue, 01 Apr 2025 22:35:26 +0530
+Message-ID: <20250401170527.344092-7-yuvraj.kernel@gmail.com>
 In-Reply-To: <20250401170527.344092-1-yuvraj.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7670248791230757545=="
+Content-Type: multipart/mixed; boundary="===============6134260387446668865=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7670248791230757545==
+--===============6134260387446668865==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-OP-TEE when compiled with NS-Virtualization support expects NS-Hypervisor
-to notify events such as guest creation and destruction through SMCs.
+The OP-TEE mediator is a software entity resposible for bridging
+the gap between a KVM guest and OP-TEE in the secure world.
 
-This change adds two macros OPTEE_SMC_VM_CREATED and OPTEE_SMC_VM_DESTROYED.
+The guest's OP-TEE driver issues an SMC instruction after populating
+its CPU registers with appropriate arguments. This SMC is trapped by
+the hypervisor and control is passed to the OP-TEE mediator with the
+vCPU state.
+
+The mediator is resposible for manipulating the vCPU state accordingly
+and keeping track of active transactions between the guest and the
+TEE.
+
+This implementation adds event handlers that gets hooked to the
+TEE Mediator layer and are called when events such as guest
+creation/destruction, mediator status check and guest SMC trap happen.
+
+Important routines implemented:
+
+	- optee_mediator_{create|destroy}_vm(): Sends an SMC to OP-TEE
+	  notifying KVM guest creation or destruction.
+
+	- optee_mediator_{create|destroy}_host(): Sends an SMC to OP-TEE
+	  notifying host OP-TEE driver initalization/release (OP-TEE treats
+	  all NS-EL1 entities as a guest, and is not aware of host privilege).
+
+	- optee_mediator_forward_smc(): Changes vCPU register state as required
+	  by OP-TEE and keeps track of standard calls and memory shared by guest.
+
+The OP-TEE mediator is implemented in such a way that, the guest/VMM can rema=
+in
+unmodified. The guest interacts with OP-TEE just as it would if it was running
+natively.
 
 Signed-off-by: Yuvraj Sakshith <yuvraj.kernel@gmail.com>
 ---
- drivers/tee/optee/optee_smc.h | 53 +++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ drivers/tee/optee/Kconfig          |    7 +
+ drivers/tee/optee/Makefile         |    1 +
+ drivers/tee/optee/optee_mediator.c | 1319 ++++++++++++++++++++++++++++
+ drivers/tee/optee/optee_mediator.h |  103 +++
+ 4 files changed, 1430 insertions(+)
+ create mode 100644 drivers/tee/optee/optee_mediator.c
+ create mode 100644 drivers/tee/optee/optee_mediator.h
 
-diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
-index 879426300821..988539b2407b 100644
---- a/drivers/tee/optee/optee_smc.h
-+++ b/drivers/tee/optee/optee_smc.h
-@@ -452,6 +452,59 @@ struct optee_smc_disable_shm_cache_result {
- /* See OPTEE_SMC_CALL_WITH_REGD_ARG above */
- #define OPTEE_SMC_FUNCID_CALL_WITH_REGD_ARG	19
- 
-+/*
-+ * Inform OP-TEE about a new virtual machine
-+ *
-+ * Hypervisor issues this call during virtual machine (guest) creation.
-+ * OP-TEE records client id of new virtual machine and prepares
-+ * to receive requests from it. This call is available only if OP-TEE
-+ * was built with virtualization support.
-+ *
-+ * Call requests usage:
-+ * a0	SMC Function ID, OPTEE_SMC_VM_CREATED
-+ * a1	Hypervisor Client ID of newly created virtual machine
-+ * a2-6 Not used
-+ * a7	Hypervisor Client ID register. Must be 0, because only hypervisor
-+ *      can issue this call
-+ *
-+ * Normal return register usage:
-+ * a0	OPTEE_SMC_RETURN_OK
-+ * a1-7	Preserved
-+ *
-+ * Error return:
-+ * a0	OPTEE_SMC_RETURN_ENOTAVAIL	OP-TEE have no resources for
-+ *					another VM
-+ * a1-7	Preserved
-+ *
-+ */
-+#define OPTEE_SMC_FUNCID_VM_CREATED		13
-+#define OPTEE_SMC_VM_CREATED \
-+	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_VM_CREATED)
+diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
+index 7bb7990d0b07..ef41d6d1793e 100644
+--- a/drivers/tee/optee/Kconfig
++++ b/drivers/tee/optee/Kconfig
+@@ -25,3 +25,10 @@ config OPTEE_INSECURE_LOAD_IMAGE
+=20
+ 	  Additional documentation on kernel security risks are at
+ 	  Documentation/tee/op-tee.rst.
 +
++config OPTEE_MEDIATOR
++	bool "OP-TEE Mediator support"
++	depends on TEE_MEDIATOR && OPTEE && ARM64 && KVM
++	help
++	  This enables a KVM guest equipped with an OP-TEE driver to interact with =
+OP-TEE
++	  in the secure world.
+diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
+index a6eff388d300..4a777940e0df 100644
+--- a/drivers/tee/optee/Makefile
++++ b/drivers/tee/optee/Makefile
+@@ -1,4 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_OPTEE_MEDIATOR) +=3D optee_mediator.o
+ obj-$(CONFIG_OPTEE) +=3D optee.o
+ optee-objs +=3D core.o
+ optee-objs +=3D call.o
+diff --git a/drivers/tee/optee/optee_mediator.c b/drivers/tee/optee/optee_med=
+iator.c
+new file mode 100644
+index 000000000000..d164eae570a9
+--- /dev/null
++++ b/drivers/tee/optee/optee_mediator.c
+@@ -0,0 +1,1319 @@
++// SPDX-License-Identifier: GPL-2.0-only
 +/*
-+ * Inform OP-TEE about shutdown of a virtual machine
++ * OP-TEE Mediator for the Linux Kernel
 + *
-+ * Hypervisor issues this call during virtual machine (guest) destruction.
-+ * OP-TEE will clean up all resources associated with this VM. This call is
-+ * available only if OP-TEE was built with virtualization support.
++ * This module enables a KVM guest to interact with OP-TEE
++ * in the secure world by hooking event handlers with
++ * the TEE Mediator layer.
 + *
-+ * Call requests usage:
-+ * a0	SMC Function ID, OPTEE_SMC_VM_DESTROYED
-+ * a1	Hypervisor Client ID of virtual machine being shut down
-+ * a2-6 Not used
-+ * a7	Hypervisor Client ID register. Must be 0, because only hypervisor
-+ *      can issue this call
-+ *
-+ * Normal return register usage:
-+ * a0	OPTEE_SMC_RETURN_OK
-+ * a1-7	Preserved
-+ *
++ * Author:
++ *   Yuvraj Sakshith <yuvraj.kernel@gmail.com>
 + */
 +
-+#define OPTEE_SMC_FUNCID_VM_DESTROYED	14
-+#define OPTEE_SMC_VM_DESTROYED \
-+	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_VM_DESTROYED)
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
- /*
-  * Resume from RPC (for example after processing a foreign interrupt)
-  *
--- 
++#include "optee_mediator.h"
++#include "optee_smc.h"
++#include "optee_msg.h"
++#include "optee_private.h"
++#include "optee_rpc_cmd.h"
++
++#include <linux/tee_mediator.h>
++#include <linux/kvm_host.h>
++#include <linux/arm-smccc.h>
++#include <linux/types.h>
++#include <linux/list.h>
++#include <linux/spinlock.h>
++#include <linux/mm_types.h>
++#include <linux/minmax.h>
++
++#include <asm/kvm_emulate.h>
++
++#define OPTEE_KNOWN_NSEC_CAPS	OPTEE_SMC_NSEC_CAP_UNIPROCESSOR
++#define OPTEE_KNOWN_SEC_CAPS	(OPTEE_SMC_SEC_CAP_HAVE_RESERVED_SHM | \
++								OPTEE_SMC_SEC_CAP_UNREGISTERED_SHM | \
++								OPTEE_SMC_SEC_CAP_DYNAMIC_SHM | \
++								OPTEE_SMC_SEC_CAP_MEMREF_NULL)
++
++static struct optee_mediator *mediator;
++static spinlock_t mediator_lock;
++static u32 optee_thread_limit;
++
++static void copy_regs_from_vcpu(struct kvm_vcpu *vcpu, struct guest_regs *re=
+gs)
++{
++	if (!vcpu || !regs)
++		return;
++
++	regs->a0 =3D vcpu_get_reg(vcpu, 0);
++	regs->a1 =3D vcpu_get_reg(vcpu, 1);
++	regs->a2 =3D vcpu_get_reg(vcpu, 2);
++	regs->a3 =3D vcpu_get_reg(vcpu, 3);
++	regs->a4 =3D vcpu_get_reg(vcpu, 4);
++	regs->a5 =3D vcpu_get_reg(vcpu, 5);
++	regs->a6 =3D vcpu_get_reg(vcpu, 6);
++	regs->a7 =3D vcpu_get_reg(vcpu, 7);
++}
++
++static void copy_smccc_res_to_vcpu(struct kvm_vcpu *vcpu, struct arm_smccc_r=
+es *res)
++{
++
++	vcpu_set_reg(vcpu, 0, res->a0);
++	vcpu_set_reg(vcpu, 1, res->a1);
++	vcpu_set_reg(vcpu, 2, res->a2);
++	vcpu_set_reg(vcpu, 3, res->a3);
++}
++
++static void optee_mediator_smccc_smc(struct guest_regs *regs, struct arm_smc=
+cc_res *res)
++{
++
++	arm_smccc_smc(regs->a0, regs->a1, regs->a2, regs->a3,
++	 regs->a4, regs->a5, regs->a6, regs->a7, res);
++}
++
++static int optee_mediator_pin_guest_page(struct kvm *kvm, gpa_t gpa)
++{
++
++	int ret =3D 0;
++
++	gfn_t gfn =3D gpa >> PAGE_SHIFT;
++
++	struct kvm_memory_slot *memslot =3D gfn_to_memslot(kvm, gfn);
++
++	if (!memslot) {
++		ret =3D -EAGAIN;
++		goto out;
++	}
++
++	struct page *pages;
++
++	if (!pin_user_pages_unlocked(memslot->userspace_addr,
++								1,
++								&pages,
++								FOLL_LONGTERM)) {
++		ret =3D -EAGAIN;
++		goto out;
++	}
++
++out:
++	return ret;
++}
++
++static void optee_mediator_unpin_guest_page(struct kvm *kvm, gpa_t gpa)
++{
++
++	gfn_t gfn =3D gpa >> PAGE_SHIFT;
++
++	struct page *page =3D gfn_to_page(kvm, gfn);
++
++	if (!page)
++		goto out;
++
++	unpin_user_page(page);
++
++out:
++	return;
++}
++
++static struct optee_vm_context *optee_mediator_find_vm_context(struct kvm *k=
+vm)
++{
++
++	struct optee_vm_context *vm_context, *tmp;
++	int found =3D 0;
++
++	if (!kvm)
++		goto out;
++
++	mutex_lock(&mediator->vm_list_lock);
++
++	list_for_each_entry_safe(vm_context, tmp, &mediator->vm_list, list) {
++		if (vm_context->kvm =3D=3D kvm) {
++			found =3D 1;
++			break;
++		}
++	}
++
++	mutex_unlock(&mediator->vm_list_lock);
++
++out:
++	if (!found)
++		return NULL;
++
++	return vm_context;
++}
++
++static void optee_mediator_add_vm_context(struct optee_vm_context *vm_contex=
+t)
++{
++
++	if (!vm_context)
++		goto out;
++
++	mutex_lock(&mediator->vm_list_lock);
++	list_add_tail(&vm_context->list, &mediator->vm_list);
++	mutex_unlock(&mediator->vm_list_lock);
++
++out:
++	return;
++}
++
++static void optee_mediator_delete_vm_context(struct optee_vm_context *vm_con=
+text)
++{
++
++	struct optee_vm_context *cursor_vm_context, *tmp;
++	struct optee_std_call *call, *tmp_call;
++	struct optee_shm_rpc *shm_rpc, *tmp_shm_rpc;
++	struct optee_shm_buf *shm_buf, *tmp_shm_buf;
++
++	if (!vm_context)
++		goto out;
++
++	mutex_lock(&vm_context->lock);
++
++	list_for_each_entry_safe(call, tmp_call, &vm_context->std_call_list, list) {
++		if (call) {
++			optee_mediator_unpin_guest_page(vm_context->kvm, (gpa_t) call->guest_arg_=
+gpa);
++
++			list_del(&call->list);
++			kfree(call->shadow_arg);
++			kfree(call);
++		}
++	}
++
++
++	list_for_each_entry_safe(shm_buf, tmp_shm_buf, &vm_context->shm_buf_list, l=
+ist) {
++		if (shm_buf) {
++
++			for (int j =3D 0; j < shm_buf->num_pages; j++)
++				optee_mediator_unpin_guest_page(vm_context->kvm, (gpa_t) shm_buf->guest_=
+page_list[j]);
++
++			list_del(&shm_buf->list);
++			kfree(shm_buf->shadow_buffer_list);
++			kfree(shm_buf->guest_page_list);
++			kfree(shm_buf);
++		}
++	}
++
++	list_for_each_entry_safe(shm_rpc, tmp_shm_rpc, &vm_context->shm_rpc_list, l=
+ist) {
++		if (shm_rpc) {
++			optee_mediator_unpin_guest_page(vm_context->kvm, (gpa_t) shm_rpc->rpc_arg=
+_gpa);
++			list_del(&shm_rpc->list);
++			kfree(shm_rpc);
++		}
++	}
++
++
++	mutex_unlock(&vm_context->lock);
++
++	mutex_lock(&mediator->vm_list_lock);
++
++	list_for_each_entry_safe(cursor_vm_context, tmp, &mediator->vm_list, list) {
++		if (cursor_vm_context =3D=3D vm_context) {
++			list_del(&cursor_vm_context->list);
++			kfree(cursor_vm_context);
++
++			goto out_unlock;
++		}
++	}
++
++out_unlock:
++	mutex_unlock(&mediator->vm_list_lock);
++out:
++	return;
++}
++
++static struct optee_std_call *optee_mediator_new_std_call(void)
++{
++	struct optee_std_call *call =3D kzalloc(sizeof(*call),  GFP_KERNEL);
++
++	if (!call)
++		return NULL;
++
++	return call;
++}
++
++static void optee_mediator_del_std_call(struct optee_std_call *call)
++{
++	if (!call)
++		return;
++
++	kfree(call);
++}
++
++static void optee_mediator_enlist_std_call(struct optee_vm_context *vm_conte=
+xt, struct optee_std_call *call)
++{
++	mutex_lock(&vm_context->lock);
++	list_add_tail(&call->list, &vm_context->std_call_list);
++	vm_context->call_count++;
++	mutex_unlock(&vm_context->lock);
++
++	optee_mediator_pin_guest_page(vm_context->kvm, (gpa_t) call->guest_arg_gpa);
++}
++
++static void optee_mediator_delist_std_call(struct optee_vm_context *vm_conte=
+xt, struct optee_std_call *call)
++{
++	mutex_lock(&vm_context->lock);
++	list_del(&call->list);
++	vm_context->call_count--;
++	mutex_unlock(&vm_context->lock);
++
++	optee_mediator_unpin_guest_page(vm_context->kvm, (gpa_t) call->guest_arg_gp=
+a);
++}
++
++static struct optee_std_call *optee_mediator_find_std_call(struct optee_vm_c=
+ontext *vm_context, u32 thread_id)
++{
++	struct optee_std_call *call;
++	int found =3D 0;
++
++	mutex_lock(&vm_context->lock);
++	list_for_each_entry(call, &vm_context->std_call_list, list) {
++		if (call->thread_id =3D=3D thread_id) {
++			found =3D 1;
++			break;
++		}
++	}
++	mutex_unlock(&vm_context->lock);
++
++	if (!found)
++		return NULL;
++
++	return call;
++}
++
++static struct optee_shm_buf *optee_mediator_new_shm_buf(void)
++{
++	struct optee_shm_buf *shm_buf =3D kzalloc(sizeof(*shm_buf),  GFP_KERNEL);
++
++	return shm_buf;
++}
++
++static void optee_mediator_enlist_shm_buf(struct optee_vm_context *vm_contex=
+t, struct optee_shm_buf *shm_buf)
++{
++	mutex_lock(&vm_context->lock);
++	list_add_tail(&shm_buf->list, &vm_context->shm_buf_list);
++	vm_context->shm_buf_page_count +=3D shm_buf->num_pages;
++	mutex_unlock(&vm_context->lock);
++
++	for (int i =3D 0; i < shm_buf->num_pages; i++)
++		optee_mediator_pin_guest_page(vm_context->kvm, (gpa_t) shm_buf->guest_page=
+_list[i]);
++}
++
++static void optee_mediator_free_shm_buf(struct optee_vm_context *vm_context,=
+ u64 cookie)
++{
++
++	struct optee_shm_buf *shm_buf, *tmp;
++
++	mutex_lock(&vm_context->lock);
++	list_for_each_entry_safe(shm_buf, tmp, &vm_context->shm_buf_list, list) {
++		if (shm_buf->cookie =3D=3D cookie) {
++			for (int buf =3D 0; buf < shm_buf->num_buffers; buf++)
++				kfree(shm_buf->shadow_buffer_list[buf]);
++
++			for (int buf =3D 0; buf < shm_buf->num_pages; buf++)
++				optee_mediator_unpin_guest_page(vm_context->kvm, (gpa_t) shm_buf->guest_=
+page_list[buf]);
++
++			vm_context->shm_buf_page_count -=3D shm_buf->num_pages;
++
++			list_del(&shm_buf->list);
++
++			kfree(shm_buf->shadow_buffer_list);
++			kfree(shm_buf->guest_page_list);
++			kfree(shm_buf);
++			break;
++		}
++	}
++	mutex_unlock(&vm_context->lock);
++}
++
++static void optee_mediator_free_all_buffers(struct optee_vm_context *vm_cont=
+ext, struct optee_std_call *call)
++{
++
++	for (int i =3D 0; i < call->shadow_arg->num_params; i++) {
++		u64 attr =3D call->shadow_arg->params[i].attr;
++
++		switch (attr & OPTEE_MSG_ATTR_TYPE_MASK) {
++
++		case OPTEE_MSG_ATTR_TYPE_TMEM_INPUT:
++		case OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT:
++		case OPTEE_MSG_ATTR_TYPE_TMEM_INOUT:
++			optee_mediator_free_shm_buf(vm_context, call->shadow_arg->params[i].u.tme=
+m.shm_ref);
++			break;
++		default:
++			break;
++
++		}
++	}
++}
++
++static void optee_mediator_free_shm_buf_page_list(struct optee_vm_context *v=
+m_context, u64 cookie)
++{
++	mutex_lock(&vm_context->lock);
++
++	struct optee_shm_buf *shm_buf;
++
++	list_for_each_entry(shm_buf, &vm_context->shm_buf_list, list) {
++		if (shm_buf->cookie =3D=3D cookie) {
++			for (int entry =3D 0; entry < shm_buf->num_buffers; entry++) {
++				kfree(shm_buf->shadow_buffer_list[entry]);
++				shm_buf->shadow_buffer_list[entry] =3D NULL;
++			}
++			break;
++		}
++	}
++
++	mutex_unlock(&vm_context->lock);
++}
++
++static struct optee_shm_rpc *optee_mediator_new_shm_rpc(void)
++{
++	struct optee_shm_rpc *shm_rpc =3D kzalloc(sizeof(*shm_rpc),  GFP_KERNEL);
++
++	return shm_rpc;
++}
++
++static void optee_mediator_enlist_shm_rpc(struct optee_vm_context *vm_contex=
+t, struct optee_shm_rpc *shm_rpc)
++{
++	mutex_lock(&vm_context->lock);
++	list_add_tail(&shm_rpc->list, &vm_context->shm_rpc_list);
++	mutex_unlock(&vm_context->lock);
++
++	optee_mediator_pin_guest_page(vm_context->kvm, (gpa_t) shm_rpc->rpc_arg_gpa=
+);
++}
++
++static struct optee_shm_rpc *optee_mediator_find_shm_rpc(struct optee_vm_con=
+text *vm_context, u64 cookie)
++{
++
++	struct optee_shm_rpc *shm_rpc;
++	int found =3D 0;
++
++	mutex_lock(&vm_context->lock);
++	list_for_each_entry(shm_rpc, &vm_context->shm_rpc_list, list) {
++		if (shm_rpc->cookie =3D=3D cookie) {
++			found =3D 1;
++			break;
++		}
++	}
++	mutex_unlock(&vm_context->lock);
++
++	if (!found)
++		return NULL;
++
++	return shm_rpc;
++}
++
++static void optee_mediator_free_shm_rpc(struct optee_vm_context *vm_context,=
+ u64 cookie)
++{
++
++	struct optee_shm_rpc *shm_rpc, *tmp;
++
++	mutex_lock(&vm_context->lock);
++
++	list_for_each_entry_safe(shm_rpc, tmp, &vm_context->shm_rpc_list, list) {
++		if (shm_rpc->cookie =3D=3D cookie) {
++
++			optee_mediator_unpin_guest_page(vm_context->kvm, (gpa_t) shm_rpc->rpc_arg=
+_gpa);
++
++			list_del(&shm_rpc->list);
++			kfree(shm_rpc);
++			break;
++		}
++	}
++
++	mutex_unlock(&vm_context->lock);
++}
++
++static hva_t optee_mediator_gpa_to_hva(struct kvm *kvm, gpa_t gpa)
++{
++	gfn_t gfn =3D gpa >> PAGE_SHIFT;
++
++	struct page *page =3D gfn_to_page(kvm, gfn);
++
++	if (!page)
++		return 0;
++
++	hva_t hva =3D (hva_t) page_to_virt(page);
++	return hva;
++}
++
++static hva_t optee_mediator_gpa_to_phys(struct kvm *kvm, gpa_t gpa)
++{
++	gfn_t gfn =3D gpa >> PAGE_SHIFT;
++
++	struct page *page =3D gfn_to_page(kvm, gfn);
++
++	if (!page)
++		return 0;
++
++	phys_addr_t phys =3D (phys_addr_t) page_to_phys(page);
++	return phys;
++}
++
++
++static int optee_mediator_shadow_msg_arg(struct kvm *kvm, struct optee_std_c=
+all *call)
++{
++
++	int ret =3D 0;
++
++	call->shadow_arg =3D kzalloc(OPTEE_MSG_NONCONTIG_PAGE_SIZE,  GFP_KERNEL);
++
++	if (!call->shadow_arg) {
++		ret =3D OPTEE_SMC_RETURN_ENOMEM;
++		goto out;
++	}
++
++	ret =3D kvm_read_guest(kvm, (gpa_t)call->guest_arg_gpa, (void *) call->shad=
+ow_arg, OPTEE_MSG_NONCONTIG_PAGE_SIZE);
++
++out:
++
++	return ret;
++}
++
++static void optee_mediator_shadow_arg_sync(struct optee_std_call *call)
++{
++
++
++
++	call->guest_arg_hva->ret =3D call->shadow_arg->ret;
++	call->guest_arg_hva->ret_origin =3D call->shadow_arg->ret_origin;
++	call->guest_arg_hva->session =3D call->shadow_arg->session;
++
++	for (int i =3D 0; i < call->shadow_arg->num_params; i++) {
++		u32 attr =3D call->shadow_arg->params[i].attr;
++
++		switch (attr & OPTEE_MSG_ATTR_TYPE_MASK) {
++
++		case OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT:
++		case OPTEE_MSG_ATTR_TYPE_TMEM_INOUT:
++			call->guest_arg_hva->params[i].u.tmem.size =3D
++				call->shadow_arg->params[i].u.tmem.size;
++			continue;
++		case OPTEE_MSG_ATTR_TYPE_RMEM_OUTPUT:
++		case OPTEE_MSG_ATTR_TYPE_RMEM_INOUT:
++			call->guest_arg_hva->params[i].u.rmem.size =3D
++				call->shadow_arg->params[i].u.rmem.size;
++			continue;
++		case OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT:
++		case OPTEE_MSG_ATTR_TYPE_VALUE_INOUT:
++			call->guest_arg_hva->params[i].u.value.a =3D
++				call->shadow_arg->params[i].u.value.a;
++			call->guest_arg_hva->params[i].u.value.b =3D
++				call->shadow_arg->params[i].u.value.b;
++			call->guest_arg_hva->params[i].u.value.c =3D
++				call->shadow_arg->params[i].u.value.c;
++			continue;
++		case OPTEE_MSG_ATTR_TYPE_NONE:
++		case OPTEE_MSG_ATTR_TYPE_RMEM_INPUT:
++		case OPTEE_MSG_ATTR_TYPE_TMEM_INPUT:
++			continue;
++
++		}
++	}
++}
++
++static int optee_mediator_resolve_noncontig(struct optee_vm_context *vm_cont=
+ext, struct optee_msg_param *param)
++{
++
++	int ret =3D 0;
++
++	if (!param->u.tmem.buf_ptr)
++		goto out;
++
++	struct kvm *kvm =3D vm_context->kvm;
++
++	struct page_data *guest_buffer_gpa =3D (struct page_data *) param->u.tmem.b=
+uf_ptr;
++	struct page_data *guest_buffer_hva =3D (struct page_data *) optee_mediator_=
+gpa_to_hva(kvm, (gpa_t) guest_buffer_gpa);
++
++	if (!guest_buffer_hva) {
++		ret =3D -EINVAL;
++		goto out;
++	}
++
++	u64 guest_buffer_size =3D param->u.tmem.size;
++	u64 guest_buffer_offset =3D param->u.tmem.buf_ptr & (OPTEE_MSG_NONCONTIG_PA=
+GE_SIZE - 1);
++	u64 num_entries =3D DIV_ROUND_UP(guest_buffer_size + guest_buffer_offset, O=
+PTEE_MSG_NONCONTIG_PAGE_SIZE);
++
++	mutex_lock(&vm_context->lock);
++	if (vm_context->shm_buf_page_count + num_entries > OPTEE_MAX_SHM_BUFFER_PAG=
+ES) {
++		ret =3D -ENOMEM;
++		mutex_unlock(&vm_context->lock);
++		goto out;
++	}
++	mutex_unlock(&vm_context->lock);
++
++	u64 num_buffers =3D DIV_ROUND_UP(num_entries, OPTEE_BUFFER_ENTRIES);
++
++	struct page_data **shadow_buffer_list =3D kzalloc(num_buffers * sizeof(stru=
+ct page_data *), GFP_KERNEL);
++
++	if (!shadow_buffer_list) {
++		ret =3D -ENOMEM;
++		goto out;
++	}
++
++	gpa_t *guest_page_list =3D kzalloc(num_entries * sizeof(gpa_t), GFP_KERNEL);
++
++	if (!guest_page_list) {
++		ret =3D -ENOMEM;
++		goto out_free_shadow_buffer_list;
++	}
++
++	u32 guest_page_num =3D 0;
++
++	for (int i =3D 0; i < num_buffers; i++) {
++		struct page_data *shadow_buffer =3D kzalloc(sizeof(struct page_data),  GFP=
+_KERNEL);
++
++		if (!shadow_buffer) {
++			ret =3D -ENOMEM;
++			goto out_free_guest_page_list;
++		}
++
++		for (int entry =3D 0; entry < MIN(num_entries, OPTEE_BUFFER_ENTRIES); entr=
+y++) {
++			gpa_t buffer_entry_gpa =3D guest_buffer_hva->pages_list[entry];
++
++			guest_page_list[guest_page_num++] =3D buffer_entry_gpa;
++
++			phys_addr_t buffer_entry_phys =3D optee_mediator_gpa_to_phys(kvm, buffer_=
+entry_gpa);
++
++			shadow_buffer->pages_list[entry] =3D (u64) buffer_entry_phys;
++		}
++
++		shadow_buffer_list[i] =3D shadow_buffer;
++		if (i > 0)
++			shadow_buffer_list[i-1]->next_page_data =3D (u64) virt_to_phys(shadow_buf=
+fer_list[i]);
++
++		guest_buffer_hva =3D (struct page_data *) optee_mediator_gpa_to_hva(kvm, (=
+gpa_t) guest_buffer_hva->next_page_data);
++		if (!guest_buffer_hva && (i !=3D num_buffers - 1)) {
++			ret =3D -EINVAL;
++			goto out_free_guest_page_list;
++		}
++
++	}
++
++	struct optee_shm_buf *shm_buf =3D optee_mediator_new_shm_buf();
++
++	if (!shm_buf) {
++		ret =3D -ENOMEM;
++		goto out_free_guest_page_list;
++	}
++
++	shm_buf->shadow_buffer_list =3D shadow_buffer_list;
++	shm_buf->num_buffers =3D num_buffers;
++	shm_buf->guest_page_list =3D guest_page_list;
++	shm_buf->num_pages =3D num_entries;
++	shm_buf->cookie =3D param->u.tmem.shm_ref;
++
++	optee_mediator_enlist_shm_buf(vm_context, shm_buf);
++
++	param->u.tmem.buf_ptr =3D (u64) virt_to_phys(shadow_buffer_list[0]) | guest=
+_buffer_offset;
++
++	return ret;
++
++out_free_guest_page_list:
++	kfree(guest_page_list);
++out_free_shadow_buffer_list:
++	for (int i =3D 0; i < num_buffers; i++)
++		kfree(shadow_buffer_list[i]);
++
++	kfree(shadow_buffer_list);
++out:
++	return ret;
++}
++
++static int optee_mediator_resolve_params(struct optee_vm_context *vm_context=
+, struct optee_std_call *call)
++{
++
++	int ret =3D 0;
++
++	for (int i =3D 0; i < call->shadow_arg->num_params; i++) {
++		u32 attr =3D call->shadow_arg->params[i].attr;
++
++		switch (attr & OPTEE_MSG_ATTR_TYPE_MASK) {
++
++		case OPTEE_MSG_ATTR_TYPE_TMEM_INPUT:
++		case OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT:
++		case OPTEE_MSG_ATTR_TYPE_TMEM_INOUT:
++			if (attr & OPTEE_MSG_ATTR_NONCONTIG) {
++				ret =3D optee_mediator_resolve_noncontig(vm_context, call->shadow_arg->p=
+arams + i);
++
++				if (ret =3D=3D -ENOMEM) {
++					call->shadow_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
++					call->shadow_arg->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
++					goto out;
++				}
++				if (ret =3D=3D -EINVAL) {
++					call->shadow_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
++					call->shadow_arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++					goto out;
++				}
++			} else {
++				if (call->shadow_arg->params[i].u.tmem.buf_ptr) {
++					call->shadow_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
++					call->shadow_arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++					ret =3D -EINVAL;
++					goto out;
++				}
++			}
++		default:
++			continue;
++
++		}
++	}
++out:
++
++	return ret;
++}
++
++
++static int optee_mediator_new_vmid(u64 *vmid_out)
++{
++
++	int ret =3D 0;
++
++	u64 vmid =3D atomic_read(&mediator->next_vmid);
++
++	atomic_inc(&mediator->next_vmid);
++
++	*vmid_out =3D vmid;
++
++	return ret;
++}
++
++static int optee_mediator_create_host(void)
++{
++
++	int ret =3D 0;
++
++	struct arm_smccc_res res;
++
++	arm_smccc_smc(OPTEE_SMC_VM_CREATED, OPTEE_HOST_VMID, 0, 0, 0, 0, 0, 0, &res=
+);
++
++	if (res.a0 =3D=3D OPTEE_SMC_RETURN_ENOTAVAIL) {
++		ret =3D -EBUSY;
++		goto out;
++	}
++
++out:
++	return ret;
++}
++
++static int optee_mediator_destroy_host(void)
++{
++
++	int ret =3D 0;
++
++	struct arm_smccc_res res;
++
++	arm_smccc_smc(OPTEE_SMC_VM_DESTROYED, OPTEE_HOST_VMID, 0, 0, 0, 0, 0, 0, &r=
+es);
++
++	return ret;
++}
++
++static int optee_mediator_create_vm(struct kvm *kvm)
++{
++
++	int ret =3D 0;
++	struct arm_smccc_res res;
++
++	if (!kvm) {
++		ret =3D -EINVAL;
++		goto out;
++	}
++
++	struct optee_vm_context *vm_context =3D kzalloc(sizeof(*vm_context), GFP_KE=
+RNEL);
++
++	if (!vm_context) {
++		ret =3D -ENOMEM;
++		goto out;
++	}
++
++	ret =3D optee_mediator_new_vmid(&vm_context->vmid);
++	if (ret < 0)
++		goto out_context_free;
++
++	INIT_LIST_HEAD(&vm_context->std_call_list);
++	INIT_LIST_HEAD(&vm_context->shm_buf_list);
++	INIT_LIST_HEAD(&vm_context->shm_rpc_list);
++
++	mutex_init(&vm_context->lock);
++
++	vm_context->kvm =3D kvm;
++
++	arm_smccc_smc(OPTEE_SMC_VM_CREATED, vm_context->vmid, 0, 0, 0, 0, 0, 0, &re=
+s);
++
++	if (res.a0 =3D=3D OPTEE_SMC_RETURN_ENOTAVAIL) {
++		ret =3D -EBUSY;
++		goto out_context_free;
++	}
++
++	optee_mediator_add_vm_context(vm_context);
++
++out:
++	return ret;
++out_context_free:
++	kfree(vm_context);
++	return ret;
++}
++
++static int optee_mediator_destroy_vm(struct kvm *kvm)
++{
++
++	int ret =3D 0;
++	struct arm_smccc_res res;
++
++	if (!kvm) {
++		ret =3D -EINVAL;
++		goto out;
++	}
++
++	struct optee_vm_context *vm_context =3D optee_mediator_find_vm_context(kvm);
++
++	if (!vm_context) {
++		ret =3D -EINVAL;
++		goto out;
++	}
++
++	arm_smccc_smc(OPTEE_SMC_VM_DESTROYED, vm_context->vmid, 0, 0, 0, 0, 0, 0, &=
+res);
++
++	optee_mediator_delete_vm_context(vm_context);
++
++out:
++	return ret;
++}
++
++static void optee_mediator_handle_fast_call(struct kvm_vcpu *vcpu, struct gu=
+est_regs *regs)
++{
++
++	struct arm_smccc_res res;
++	struct kvm *kvm =3D vcpu->kvm;
++
++	struct optee_vm_context *vm_context =3D optee_mediator_find_vm_context(kvm);
++
++	if (!vm_context) {
++		res.a0 =3D OPTEE_SMC_RETURN_ENOTAVAIL;
++		goto out;
++	}
++
++	regs->a7 =3D vm_context->vmid;
++
++	optee_mediator_smccc_smc(regs, &res);
++
++	switch (ARM_SMCCC_FUNC_NUM(regs->a0)) {
++
++	case OPTEE_SMC_FUNCID_GET_THREAD_COUNT:
++		optee_thread_limit =3D 0;
++		if (res.a0 !=3D OPTEE_SMC_RETURN_UNKNOWN_FUNCTION)
++			optee_thread_limit =3D res.a1;
++		break;
++
++	case OPTEE_SMC_FUNCID_DISABLE_SHM_CACHE:
++		if (res.a0 =3D=3D OPTEE_SMC_RETURN_OK) {
++			u64 cookie =3D (u64) reg_pair_to_ptr(res.a1, res.a2);
++
++			optee_mediator_free_shm_buf(vm_context, cookie);
++		}
++		break;
++
++	default:
++		break;
++
++	}
++
++	copy_smccc_res_to_vcpu(vcpu, &res);
++out:
++	return;
++}
++
++static int optee_mediator_handle_rpc_return(struct optee_vm_context *vm_cont=
+ext,
++											struct optee_std_call *call,
++											struct guest_regs *regs,
++											struct arm_smccc_res *res)
++{
++
++	int ret =3D 0;
++
++	call->rpc_state.a0 =3D res->a0;
++	call->rpc_state.a1 =3D res->a1;
++	call->rpc_state.a2 =3D res->a2;
++	call->rpc_state.a3 =3D res->a3;
++
++	call->rpc_func =3D OPTEE_SMC_RETURN_GET_RPC_FUNC(res->a0);
++	call->thread_id =3D res->a3;
++
++	if (call->rpc_func =3D=3D OPTEE_SMC_RPC_FUNC_FREE) {
++		u64 cookie =3D (u64) reg_pair_to_ptr(res->a1, res->a2);
++
++		optee_mediator_free_shm_rpc(vm_context, cookie);
++	}
++
++	if (call->rpc_func =3D=3D OPTEE_SMC_RPC_FUNC_CMD) {
++		u64 cookie =3D (u64) reg_pair_to_ptr(res->a1, res->a2);
++		struct optee_shm_rpc *shm_rpc =3D optee_mediator_find_shm_rpc(vm_context, =
+cookie);
++
++		if (!shm_rpc) {
++			ret =3D -ERESTART;
++			goto out;
++		}
++		if (shm_rpc->rpc_arg_hva->cmd =3D=3D OPTEE_RPC_CMD_SHM_FREE)
++			optee_mediator_free_shm_buf(vm_context, shm_rpc->rpc_arg_hva->params[0].u=
+.value.b);
++	}
++
++out:
++	return ret;
++}
++
++static void optee_mediator_do_call_with_arg(struct optee_vm_context *vm_cont=
+ext,
++										    struct optee_std_call *call,
++										    struct guest_regs *regs,
++										    struct arm_smccc_res *res)
++{
++
++	regs->a7 =3D vm_context->vmid;
++
++	optee_mediator_smccc_smc(regs, res);
++
++	if (OPTEE_SMC_RETURN_IS_RPC(res->a0)) {
++		while (optee_mediator_handle_rpc_return(vm_context, call, regs, res) =3D=
+=3D -ERESTART) {
++			optee_mediator_smccc_smc(regs, res);
++			if (!OPTEE_SMC_RETURN_IS_RPC(res->a0))
++				break;
++		}
++	} else {
++
++		u32 cmd =3D call->shadow_arg->cmd;
++		u32 call_ret =3D call->shadow_arg->ret;
++
++		switch (cmd) {
++
++		case OPTEE_MSG_CMD_REGISTER_SHM:
++			if (call_ret =3D=3D 0)
++				optee_mediator_free_shm_buf_page_list(vm_context, (u64) call->shadow_arg=
+->params[0].u.tmem.shm_ref);
++			else
++				optee_mediator_free_shm_buf(vm_context, (u64) call->shadow_arg->params[0=
+].u.tmem.shm_ref);
++
++			break;
++
++		case OPTEE_MSG_CMD_UNREGISTER_SHM:
++			if (call_ret =3D=3D 0)
++				optee_mediator_free_shm_buf(vm_context, (u64) call->shadow_arg->params[0=
+].u.rmem.shm_ref);
++			break;
++
++		default:
++			optee_mediator_free_all_buffers(vm_context, call);
++			break;
++
++		}
++	}
++}
++
++static void optee_mediator_handle_std_call(struct kvm_vcpu *vcpu, struct gue=
+st_regs *regs)
++{
++
++	struct arm_smccc_res res;
++	struct kvm *kvm =3D vcpu->kvm;
++	int ret;
++
++	struct optee_vm_context *vm_context =3D optee_mediator_find_vm_context(kvm);
++
++	if (!vm_context) {
++		res.a0 =3D OPTEE_SMC_RETURN_ENOTAVAIL;
++		goto out_copy;
++	}
++
++	struct optee_std_call *call =3D optee_mediator_new_std_call();
++
++	if (!call) {
++		res.a0 =3D OPTEE_SMC_RETURN_ENOMEM;
++		goto out_copy;
++	}
++
++	call->thread_id =3D 0xffffffff;
++	call->guest_arg_gpa =3D (struct optee_msg_arg *) reg_pair_to_ptr(regs->a1, =
+regs->a2);
++	call->guest_arg_hva =3D (struct optee_msg_arg *) optee_mediator_gpa_to_hva(=
+kvm, (gpa_t) call->guest_arg_gpa);
++
++	if (!call->guest_arg_hva) {
++		res.a0 =3D OPTEE_SMC_RETURN_EBADADDR;
++		goto out_call_free;
++	}
++
++	mutex_lock(&vm_context->lock);
++
++	if (vm_context->call_count >=3D optee_thread_limit) {
++		res.a0 =3D OPTEE_SMC_RETURN_ETHREAD_LIMIT;
++		mutex_unlock(&vm_context->lock);
++		goto out_call_free;
++	}
++
++	mutex_unlock(&vm_context->lock);
++
++	INIT_LIST_HEAD(&call->list);
++
++	ret =3D optee_mediator_shadow_msg_arg(kvm, call);
++	if (ret) {
++		res.a0 =3D OPTEE_SMC_RETURN_EBADADDR;
++		goto out_call_free;
++	}
++
++	optee_mediator_enlist_std_call(vm_context, call);
++
++	if (OPTEE_MSG_GET_ARG_SIZE(call->shadow_arg->num_params) > OPTEE_MSG_NONCON=
+TIG_PAGE_SIZE) {
++		call->shadow_arg->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		call->shadow_arg->ret_origin =3D TEEC_ORIGIN_COMMS;
++		call->shadow_arg->num_params =3D 0;
++
++		optee_mediator_shadow_arg_sync(call);
++		goto out_delist_std_call;
++	}
++
++
++	u32 cmd =3D call->shadow_arg->cmd;
++
++
++	switch (cmd) {
++
++	case OPTEE_MSG_CMD_OPEN_SESSION:
++	case OPTEE_MSG_CMD_CLOSE_SESSION:
++	case OPTEE_MSG_CMD_INVOKE_COMMAND:
++	case OPTEE_MSG_CMD_CANCEL:
++	case OPTEE_MSG_CMD_REGISTER_SHM:
++	case OPTEE_MSG_CMD_UNREGISTER_SHM:
++		ret =3D optee_mediator_resolve_params(vm_context, call);
++		if (ret) {
++			res.a0 =3D OPTEE_SMC_RETURN_OK;
++			optee_mediator_shadow_arg_sync(call);
++			goto out_delist_std_call;
++		}
++		break;
++	default:
++	    res.a0 =3D OPTEE_SMC_RETURN_EBADCMD;
++		goto out_delist_std_call;
++	}
++
++	reg_pair_from_64(&regs->a1, &regs->a2, (u64) virt_to_phys(call->shadow_arg)=
+);
++	regs->a3 =3D OPTEE_SMC_SHM_CACHED;
++
++	optee_mediator_do_call_with_arg(vm_context, call, regs, &res);
++	optee_mediator_shadow_arg_sync(call);
++
++	if (OPTEE_SMC_RETURN_IS_RPC(res.a0))
++		goto out_copy;
++
++out_delist_std_call:
++	optee_mediator_delist_std_call(vm_context, call);
++out_call_free:
++	optee_mediator_del_std_call(call);
++out_copy:
++	copy_smccc_res_to_vcpu(vcpu, &res);
++}
++
++static void optee_mediator_handle_rpc_alloc(struct optee_vm_context *vm_cont=
+ext, struct guest_regs *regs)
++{
++
++	u64 ptr =3D (u64) reg_pair_to_ptr(regs->a1, regs->a2);
++	u64 cookie =3D (u64) reg_pair_to_ptr(regs->a4, regs->a5);
++
++	struct optee_shm_rpc *shm_rpc =3D optee_mediator_new_shm_rpc();
++
++	if (!shm_rpc)
++		goto out_err;
++
++	struct optee_shm_rpc *temp_shm_rpc =3D optee_mediator_find_shm_rpc(vm_conte=
+xt, cookie);
++
++	if (temp_shm_rpc) { // guest is trying to reuse cookie
++		goto out_err;
++	}
++
++	shm_rpc->rpc_arg_gpa =3D (struct optee_msg_arg *) ptr;
++	shm_rpc->rpc_arg_hva =3D (struct optee_msg_arg *) optee_mediator_gpa_to_hva=
+(vm_context->kvm, (gpa_t) shm_rpc->rpc_arg_gpa);
++
++	if (!shm_rpc->rpc_arg_hva) {
++		ptr =3D 0;
++		goto out_err_free_rpc;
++	}
++
++	shm_rpc->cookie =3D cookie;
++
++	optee_mediator_enlist_shm_rpc(vm_context, shm_rpc);
++
++	ptr =3D optee_mediator_gpa_to_phys(vm_context->kvm, (gpa_t) shm_rpc->rpc_ar=
+g_gpa);
++
++	reg_pair_from_64(&regs->a1, &regs->a2, ptr);
++	return;
++
++out_err_free_rpc:
++	kfree(shm_rpc);
++out_err:
++	reg_pair_from_64(&regs->a1, &regs->a2, 0);
++}
++
++static int optee_mediator_handle_rpc_cmd(struct optee_vm_context *vm_context=
+, struct guest_regs *regs)
++{
++	int ret =3D 0;
++	u64 cookie =3D (u64) reg_pair_to_ptr(regs->a1, regs->a2);
++
++	struct optee_shm_rpc *shm_rpc =3D optee_mediator_find_shm_rpc(vm_context, c=
+ookie);
++
++	if (!shm_rpc) {
++		ret =3D -EINVAL;
++		goto out;
++	}
++
++	if (OPTEE_MSG_GET_ARG_SIZE(shm_rpc->rpc_arg_hva->num_params) > OPTEE_MSG_NO=
+NCONTIG_PAGE_SIZE) {
++		shm_rpc->rpc_arg_hva->ret =3D TEEC_ERROR_BAD_PARAMETERS;
++		goto out;
++	}
++
++	switch (shm_rpc->rpc_arg_hva->cmd) {
++	case OPTEE_RPC_CMD_SHM_ALLOC:
++		ret =3D optee_mediator_resolve_noncontig(vm_context, shm_rpc->rpc_arg_hva-=
+>params + 0);
++		break;
++
++	case OPTEE_RPC_CMD_SHM_FREE:
++		optee_mediator_free_shm_buf(vm_context, shm_rpc->rpc_arg_hva->params[0].u.=
+value.b);
++		break;
++	}
++
++out:
++	return ret;
++}
++
++static void optee_mediator_handle_rpc_call(struct kvm_vcpu *vcpu, struct gue=
+st_regs *regs)
++{
++
++	int ret =3D 0;
++	struct arm_smccc_res res;
++	struct optee_std_call *call;
++	u32 thread_id =3D regs->a3;
++
++	struct optee_vm_context *vm_context =3D optee_mediator_find_vm_context(vcpu=
+->kvm);
++
++	if (!vm_context) {
++		res.a0 =3D OPTEE_SMC_RETURN_ENOTAVAIL;
++		goto out_copy;
++	}
++
++	call =3D optee_mediator_find_std_call(vm_context, thread_id);
++	if (!call) {
++		res.a0 =3D OPTEE_SMC_RETURN_ERESUME;
++		goto out_copy;
++	}
++
++
++	call->thread_id =3D 0xffffffff;
++
++	switch (call->rpc_func) {
++
++	case OPTEE_SMC_RPC_FUNC_ALLOC:
++		optee_mediator_handle_rpc_alloc(vm_context, regs);
++		break;
++	case OPTEE_SMC_RPC_FUNC_FOREIGN_INTR:
++		break;
++	case OPTEE_SMC_RPC_FUNC_CMD:
++		ret =3D optee_mediator_handle_rpc_cmd(vm_context, regs);
++
++		if (ret < 0)
++			goto out;
++		break;
++	}
++
++
++
++	optee_mediator_do_call_with_arg(vm_context, call, regs, &res);
++
++	optee_mediator_shadow_arg_sync(call);
++
++	if (OPTEE_SMC_RETURN_IS_RPC(res.a0) || res.a0 =3D=3D OPTEE_SMC_RETURN_ERESU=
+ME)
++		goto out_copy;
++
++	optee_mediator_delist_std_call(vm_context, call);
++	optee_mediator_del_std_call(call);
++out_copy:
++	copy_smccc_res_to_vcpu(vcpu, &res);
++out:
++	return;
++}
++
++static void optee_mediator_handle_exchange_cap(struct kvm_vcpu *vcpu, struct=
+ guest_regs *regs)
++{
++
++	struct arm_smccc_res res;
++	struct kvm *kvm =3D vcpu->kvm;
++
++	struct optee_vm_context *vm_context =3D optee_mediator_find_vm_context(kvm);
++
++	if (!vm_context) {
++		res.a0 =3D OPTEE_SMC_RETURN_ENOTAVAIL;
++		goto out_copy;
++	}
++
++	regs->a1 &=3D OPTEE_KNOWN_NSEC_CAPS;
++	regs->a7 =3D vm_context->vmid;
++
++	optee_mediator_smccc_smc(regs, &res);
++	if (res.a0 !=3D OPTEE_SMC_RETURN_OK)
++		goto out_copy;
++
++	res.a1 &=3D OPTEE_KNOWN_SEC_CAPS;
++	res.a1 &=3D ~OPTEE_SMC_SEC_CAP_HAVE_RESERVED_SHM;
++
++	if (!(res.a1 & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)) {
++		res.a0 =3D OPTEE_SMC_RETURN_ENOTAVAIL;
++		goto out_copy;
++	}
++
++out_copy:
++	copy_smccc_res_to_vcpu(vcpu, &res);
++}
++
++static void optee_mediator_forward_smc(struct kvm_vcpu *vcpu)
++{
++
++	if (!vcpu)
++		goto out;
++
++	struct guest_regs regs;
++
++	copy_regs_from_vcpu(vcpu, &regs);
++
++	switch (ARM_SMCCC_FUNC_NUM(regs.a0)) {
++
++	case OPTEE_SMC_FUNCID_CALLS_COUNT:
++	case OPTEE_SMC_FUNCID_CALLS_UID:
++	case OPTEE_SMC_FUNCID_CALLS_REVISION:
++	case OPTEE_SMC_FUNCID_GET_OS_UUID:
++	case OPTEE_SMC_FUNCID_GET_OS_REVISION:
++	case OPTEE_SMC_FUNCID_GET_THREAD_COUNT:
++	case OPTEE_SMC_FUNCID_ENABLE_ASYNC_NOTIF:
++	case OPTEE_SMC_FUNCID_ENABLE_SHM_CACHE:
++	case OPTEE_SMC_FUNCID_GET_ASYNC_NOTIF_VALUE:
++	case OPTEE_SMC_FUNCID_DISABLE_SHM_CACHE:
++		optee_mediator_handle_fast_call(vcpu, &regs);
++		break;
++
++	case OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES:
++		optee_mediator_handle_exchange_cap(vcpu, &regs);
++		break;
++
++	case OPTEE_SMC_FUNCID_CALL_WITH_ARG:
++		optee_mediator_handle_std_call(vcpu, &regs);
++		break;
++
++	case OPTEE_SMC_FUNCID_RETURN_FROM_RPC:
++		optee_mediator_handle_rpc_call(vcpu, &regs);
++		break;
++
++	default:
++		vcpu_set_reg(vcpu, 0, OPTEE_SMC_RETURN_UNKNOWN_FUNCTION);
++		break;
++	}
++
++out:
++	return;
++}
++
++static int optee_mediator_is_active(void)
++{
++
++	int ret =3D 1;
++
++	spin_lock(&mediator_lock);
++
++	if (!mediator)
++		ret =3D 0;
++
++	spin_unlock(&mediator_lock);
++
++	return ret;
++}
++
++struct tee_mediator_ops optee_mediator_ops =3D {
++	.create_host =3D optee_mediator_create_host,
++	.destroy_host =3D optee_mediator_destroy_host,
++	.create_vm =3D optee_mediator_create_vm,
++	.destroy_vm =3D optee_mediator_destroy_vm,
++	.forward_request =3D optee_mediator_forward_smc,
++	.is_active =3D optee_mediator_is_active,
++};
++
++static int optee_check_virtualization(void)
++{
++
++	int ret =3D 0;
++
++	struct arm_smccc_res res;
++
++	arm_smccc_smc(OPTEE_SMC_VM_DESTROYED, 0, 0, 0, 0, 0, 0, 0, &res);
++
++	if (res.a0 =3D=3D OPTEE_SMC_RETURN_UNKNOWN_FUNCTION) {
++		ret =3D -ENODEV;
++		goto out;
++	}
++
++out:
++	return ret;
++}
++
++static int optee_check_page_size(void)
++{
++	if (OPTEE_MSG_NONCONTIG_PAGE_SIZE > PAGE_SIZE)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int __init optee_mediator_init(void)
++{
++
++	int ret;
++
++	ret =3D optee_check_virtualization();
++	if (ret < 0) {
++		pr_info("optee virtualization unsupported\n");
++		goto out;
++	}
++
++	ret =3D optee_check_page_size();
++	if (ret < 0) {
++		pr_info("optee noncontig page size too large");
++		goto out;
++	}
++
++	mediator =3D kzalloc(sizeof(*mediator), GFP_KERNEL);
++	if (!mediator) {
++		ret =3D -ENOMEM;
++		goto out;
++	}
++
++	ret =3D tee_mediator_register_ops(&optee_mediator_ops);
++	if (ret < 0)
++		goto out_free;
++
++	atomic_set(&mediator->next_vmid, 2); // VMID 0 is reserved for the hypervis=
+or and 1 is for host.
++
++	INIT_LIST_HEAD(&mediator->vm_list);
++	mutex_init(&mediator->vm_list_lock);
++	spin_lock_init(&mediator_lock);
++
++	pr_info("mediator initialised\n");
++
++out:
++	return ret;
++out_free:
++	kfree(mediator);
++	return ret;
++}
++module_init(optee_mediator_init);
++
++static void __exit optee_mediator_exit(void)
++{
++
++	struct optee_vm_context *vm_context;
++	struct optee_vm_context *tmp;
++
++	list_for_each_entry_safe(vm_context, tmp, &mediator->vm_list, list) {
++		list_del(&vm_context->list);
++		kfree(vm_context);
++	}
++
++	kfree(mediator);
++
++	pr_info("mediator exiting\n");
++
++}
++module_exit(optee_mediator_exit);
+diff --git a/drivers/tee/optee/optee_mediator.h b/drivers/tee/optee/optee_med=
+iator.h
+new file mode 100644
+index 000000000000..d632ed437aa6
+--- /dev/null
++++ b/drivers/tee/optee/optee_mediator.h
+@@ -0,0 +1,103 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * OP-TEE Mediator for the Linux Kernel
++ *
++ * This module enables a KVM guest to interact with OP-TEE
++ * in the secure world by hooking event handlers with
++ * the TEE Mediator layer.
++ *
++ * Author:
++ *   Yuvraj Sakshith <yuvraj.kernel@gmail.com>
++ */
++
++#ifndef __OPTEE_MEDIATOR_H
++#define __OPTEE_MEDIATOR_H
++
++#include "optee_msg.h"
++
++#include <linux/types.h>
++#include <linux/mm_types.h>
++#include <linux/kvm_types.h>
++#include <linux/list.h>
++#include <linux/mutex.h>
++
++#define OPTEE_HYP_CLIENT_ID		0
++#define OPTEE_HOST_VMID			1
++#define OPTEE_BUFFER_ENTRIES ((OPTEE_MSG_NONCONTIG_PAGE_SIZE / sizeof(u64)) =
+- 1)
++#define OPTEE_MAX_SHM_BUFFER_PAGES 512
++
++struct optee_mediator {
++	struct list_head vm_list;
++	struct mutex vm_list_lock;
++
++	atomic_t next_vmid;
++};
++
++struct optee_vm_context {
++	struct list_head list;
++	struct list_head std_call_list;
++	struct list_head shm_buf_list;
++	struct list_head shm_rpc_list;
++
++	struct mutex lock;
++
++	struct kvm *kvm;
++	u64 vmid;
++	u32 call_count;
++	u64 shm_buf_page_count;
++};
++
++struct guest_regs {
++	u32 a0;
++	u32 a1;
++	u32 a2;
++	u32 a3;
++	u32 a4;
++	u32 a5;
++	u32 a6;
++	u32 a7;
++};
++
++struct optee_std_call {
++	struct list_head list;
++
++	struct optee_msg_arg *guest_arg_gpa;
++	struct optee_msg_arg *guest_arg_hva;
++	struct optee_msg_arg *shadow_arg;
++
++	u32 thread_id;
++
++	u32 rpc_func;
++	u64 rpc_buffer_type;
++
++	struct guest_regs rpc_state;
++};
++
++struct page_data {
++	u64 pages_list[OPTEE_BUFFER_ENTRIES];
++	u64 next_page_data;
++};
++
++struct optee_shm_buf {
++	struct list_head list;
++
++	struct page_data **shadow_buffer_list;
++	u64 num_buffers;
++
++	gpa_t *guest_page_list;
++	u64 num_pages;
++
++	u64 cookie;
++};
++
++struct optee_shm_rpc {
++	struct list_head list;
++
++	struct optee_msg_arg *rpc_arg_gpa;
++	struct optee_msg_arg *rpc_arg_hva;
++
++	u64 cookie;
++};
++
++
++#endif
+--=20
 2.43.0
 
 
---===============7670248791230757545==--
+--===============6134260387446668865==--
 
