@@ -1,103 +1,150 @@
 From: Yuvraj Sakshith <yuvraj.kernel@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [RFC PATCH 7/7] tee: optee: Notify TEE Mediator on OP-TEE driver
- initialization and release
-Date: Tue, 01 Apr 2025 22:35:27 +0530
-Message-ID: <20250401170527.344092-8-yuvraj.kernel@gmail.com>
-In-Reply-To: <20250401170527.344092-1-yuvraj.kernel@gmail.com>
+Subject: Re: [RFC PATCH 0/7] KVM: optee: Introduce OP-TEE Mediator for
+ exposing secure world to KVM guests
+Date: Wed, 02 Apr 2025 08:28:48 +0530
+Message-ID: <Z-yn6BdPcuM_aDBX@raj>
+In-Reply-To: <87ldsjzr5l.wl-maz@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2532333715730374862=="
+Content-Type: multipart/mixed; boundary="===============7331152361585663720=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2532333715730374862==
+--===============7331152361585663720==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-When host initializes or releases its OP-TEE driver through
-optee_core_init()/optee_core_exit(), notify OP-TEE in the secure world
-about this change.
+On Tue, Apr 01, 2025 at 07:13:26PM +0100, Marc Zyngier wrote:
+> On Tue, 01 Apr 2025 18:05:20 +0100,
+> Yuvraj Sakshith <yuvraj.kernel@gmail.com> wrote:
+> >=20
+> > A KVM guest running on an arm64 machine will not be able to interact with=
+ a trusted execution environment
+> > (which supports non-secure guests) like OP-TEE in the secure world. This =
+is because, instructions provided
+> > by the architecture (such as, SMC)  which switch control to the firmware,=
+ are trapped in EL2 when the guest
+> > is executes them.
+> >=20
+> > This series adds a feature into the kernel called the TEE mediator abstra=
+ction layer, which lets
+> > a guest interact with the secure world. Additionally, a OP-TEE specific m=
+ediator is also implemented, which
+> > hooks itself to the TEE mediator layer and intercepts guest SMCs targette=
+d at OP-TEE.
+> >=20
+> > Overview
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >=20
+> > Essentially, if the kernel wants to interact with OP-TEE, it makes an "sm=
+c - secure monitor call instruction",
+> > after loading in arguments into CPU registers. What these arguments consi=
+sts of and how both these entities=20
+> > communicate can vary. If a guest wants to establish a connection with the=
+ secure world, its not possible.=20
+> > This is because of the fact that "smc" by the guest are trapped by the hy=
+pervisor in EL2. This is done by setting
+> > the HCR_EL2.TSC bit before entering the guest.
+> >=20
+> > Hence, this feature which I we may call TEE mediator, acts as an intermed=
+iary between the guest and OP-TEE.
+> > Instead of denying the guest SMC and jumping back into the guest, the med=
+iator forwards the request to
+> > OP-TEE.
+> >=20
+> > OP-TEE supports virtualization in the normal world and expects 6 things f=
+rom the NS-hypervisor:
+> >=20
+> > 1. Notify OP-TEE when a VM is created.
+> > 2. Notify OP-TEE when a VM is destroyed.
+> > 3. Any SMC to OP-TEE has to contain the VMID in x7. If its the hypervisor=
+ sending, then VMID is 0.
+> > 4. Hypervisor has to perform IPA->PA translations of the memory addresses=
+ sent by guest.
+> > 5. Memory shared by the VM to OP-TEE has to remain pinned.
+> > 6. The hypervisor has to follow the OP-TEE protocol, so the guest thinks =
+it is directly speaking to OP-TEE.
+> >=20
+> > Its important to note that, if OP-TEE is built with NS-virtualization sup=
+port, it can only function if there is=20
+> > a hypervisor with a mediator in normal world.
+> >=20
+> > This implementation has been heavily inspired by Xen's OP-TEE
+> > mediator.
+>=20
+> [...]
+>=20
+> And I think this inspiration is the source of most of the problems in
+> this series.
+>=20
+> Routing Secure Calls from the guest to whatever is on the secure side
+> should not be the kernel's job at all. It should be the VMM's job. All
+> you need to do is to route the SMCs from the guest to userspace, and
+> we already have all the required infrastructure for that.
+>
+Yes, this was an argument at the time of designing this solution.
 
-If OP-TEE is built with NS-Virtualization support, it will treat SMCs coming
-from the host as if it were coming from a VM (as OP-TEE does not understand
-the KVM paradigm).
+> It is the VMM that should:
+>=20
+> - signal the TEE of VM creation/teardown
+>=20
+> - translate between IPAs and host VAs without involving KVM
+>=20
+> - let the host TEE driver translate between VAs and PAs and deal with
+>   the pinning as required, just like it would do for any userspace
+>   (without ever using the KVM memslot interface)
+>=20
+> - proxy requests from the guest to the TEE
+>=20
+> - in general, bear the complexity of anything related to the TEE
+>
 
-Hence, OPTEE_SMC_VM_CREATED and OPTEE_SMC_VM_DESTROYED SMCs have to be made
-for its internal book-keeping.
+Major reason why I went with placing the implementation inside the kernel is,
+	- OP-TEE userspace lib (client) does not support sending SMCs for VM events
+	  and needs modification.
+	- QEMU (or every other VMM)  will have to be modified.
+	- OP-TEE driver is anyways in the kernel. A mediator will just be an addition
+		and not a completely new entity.
+	- (Potential) issues if we would want to mediate requests from VM which has
+	  private mem.
+	- Heavy VM exits if guest makes frequent TOS calls.
 
-Signed-off-by: Yuvraj Sakshith <yuvraj.kernel@gmail.com>
----
- drivers/tee/optee/core.c    | 13 ++++++++++++-
- drivers/tee/optee/smc_abi.c |  6 ++++++
- 2 files changed, 18 insertions(+), 1 deletion(-)
+Hence, the thought of making changes to too many entities (libteec, VMM, etc.=
+) was a
+strong reason, although arguable.
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index c75fddc83576..5f2ab0ee0893 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -14,6 +14,7 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/tee_core.h>
-+#include <linux/tee_mediator.h>
- #include <linux/types.h>
- #include "optee_private.h"
+> In short, the VMM is just another piece of userspace using the TEE to
+> do whatever it wants. The TEE driver on the host must obviously know
+> about VMs, but that's about it.
+>=20
+> Crucially, KVM should:
+>=20
+> - be completely TEE agnostic and never call into something that is
+>   TEE-specific
+>=20
+> - allow a TEE implementation entirely in userspace, specially for the
+>   machines that do not have EL3
+>
+
+Yes, you're right. Although I believe there still are some changes that need =
+to be made
+to KVM for facilitating this. For example, kvm_smccc_get_action() would deny =
+TOS call.
+
+So, having an implementation completely in VMM without any change in KVM migh=
+t be challenging,
+any potential solutions are welcome.
 =20
-@@ -195,7 +196,13 @@ static bool intf_is_regged;
- static int __init optee_core_init(void)
- {
- 	int rc;
--
-+#ifdef CONFIG_TEE_MEDIATOR
-+	if (tee_mediator_is_active()) {
-+		rc =3D tee_mediator_create_host();
-+		if (rc < 0)
-+			return rc;
-+	}
-+#endif
- 	/*
- 	 * The kernel may have crashed@the same time that all available
- 	 * secure world threads were suspended and we cannot reschedule the
-@@ -240,6 +247,10 @@ static void __exit optee_core_exit(void)
- 		optee_smc_abi_unregister();
- 	if (!ffa_abi_rc)
- 		optee_ffa_abi_unregister();
-+#ifdef CONFIG_TEE_MEDIATOR
-+	if (tee_mediator_is_active())
-+		tee_mediator_destroy_host();
-+#endif
- }
- module_exit(optee_core_exit);
-=20
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index f0c3ac1103bb..a930ca8cde23 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -25,8 +25,10 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/tee_core.h>
-+#include <linux/tee_mediator.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
-+#include "optee_mediator.h"
- #include "optee_private.h"
- #include "optee_smc.h"
- #include "optee_rpc_cmd.h"
-@@ -1396,6 +1398,10 @@ static void optee_smccc_smc(unsigned long a0, unsigned=
- long a1,
- 			    unsigned long a6, unsigned long a7,
- 			    struct arm_smccc_res *res)
- {
-+#ifdef CONFIG_TEE_MEDIATOR
-+	if (tee_mediator_is_active())
-+		a7 =3D OPTEE_HOST_VMID;
-+#endif
- 	arm_smccc_smc(a0, a1, a2, a3, a4, a5, a6, a7, res);
- }
-=20
---=20
-2.43.0
+> As it stands, your design looks completely upside-down. Most of this
+> code should be userspace code and live in (or close to) the VMM, with
+> the host kernel only providing the basic primitives, most of which
+> should already be there.
+>=20
+> Thanks,
+>=20
+> 	M.
+>=20
+> --=20
+> Jazz isn't dead. It just smells funny.
 
-
---===============2532333715730374862==--
+--===============7331152361585663720==--
 
