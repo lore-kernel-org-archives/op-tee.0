@@ -1,19 +1,27 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Lars Persson <Lars.Persson@axis.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: Re: Conflict with "fallthrough" define
-Date: Thu, 03 Apr 2025 10:25:56 +0200
-Message-ID: 
- <CAHUa44F_EEmub2Sj1xHYdVG9wz29Bj05jCB1VFDLG4vqZoxYHA@mail.gmail.com>
-In-Reply-To: <=?utf-8?q?=3CGV2PR02MB8920DD8FE701332DC2B7FE098AAF2=40GV2PR02MB?=
- =?utf-8?q?8920=2Eeurprd02=2Eprod=2Eoutlook=2Ecom=3E?=>
+Date: Thu, 03 Apr 2025 08:28:53 +0000
+Message-ID: <DU0PR02MB10340F575AE440D2A8E3CDA1BF2AE2@DU0PR02MB10340.eurprd02.prod.outlook.com>
+In-Reply-To: <
+ <CAHUa44F_EEmub2Sj1xHYdVG9wz29Bj05jCB1VFDLG4vqZoxYHA@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1689160239371999630=="
+Content-Type: multipart/mixed; boundary="===============6561479296770264306=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1689160239371999630==
+--===============6561479296770264306==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
+Keep in mind that fallthrough is an official attribute in C23. Not a reserved=
+ word but in attribute context it is claimed by the standard. #defining fallt=
+hrough to something not compatible with attribute context is bad.
+
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Thursday, 3 April 2025 at 10:26
+To: Jacob Kroon <Jacob.Kroon@axis.com>
+Cc: op-tee(a)lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>
+Subject: Re: Conflict with "fallthrough" define
 Hi,
 
 On Wed, Apr 2, 2025 at 8:21=E2=80=AFPM Jacob Kroon <Jacob.Kroon@axis.com> w=
@@ -61,5 +69,5 @@ Jens
 > Regards
 > Jacob
 
---===============1689160239371999630==--
+--===============6561479296770264306==--
 
