@@ -1,161 +1,130 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v7 08/11] tee: add tee_shm_alloc_cma_phys_mem()
-Date: Fri, 04 Apr 2025 16:31:31 +0200
-Message-ID: <20250404143215.2281034-9-jens.wiklander@linaro.org>
+Subject: [PATCH v7 09/11] optee: support protected memory allocation
+Date: Fri, 04 Apr 2025 16:31:32 +0200
+Message-ID: <20250404143215.2281034-10-jens.wiklander@linaro.org>
 In-Reply-To: <20250404143215.2281034-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4583107127830514797=="
+Content-Type: multipart/mixed; boundary="===============9186078098268284957=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4583107127830514797==
+--===============9186078098268284957==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Add tee_shm_alloc_cma_phys_mem() to allocate a physical memory using
-from the default CMA pool. The memory is represented by a tee_shm object
-using the new flag TEE_SHM_CMA_BUF to identify it as physical memory
-from CMA.
+Add support in the OP-TEE backend driver for protected memory
+allocation. The support is limited to only the SMC ABI and for secure
+video buffers.
+
+OP-TEE is probed for the range of protected physical memory and a
+memory pool allocator is initialized if OP-TEE have support for such
+memory.
 
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- drivers/tee/Kconfig      |  5 ++++
- drivers/tee/tee_shm.c    | 55 ++++++++++++++++++++++++++++++++++++++--
- include/linux/tee_core.h |  4 +++
- 3 files changed, 62 insertions(+), 2 deletions(-)
+ drivers/tee/optee/core.c    |  1 +
+ drivers/tee/optee/smc_abi.c | 44 +++++++++++++++++++++++++++++++++++--
+ 2 files changed, 43 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
-index 084bd794374d..53514cccd1c9 100644
---- a/drivers/tee/Kconfig
-+++ b/drivers/tee/Kconfig
-@@ -16,6 +16,11 @@ config TEE_DMABUF_HEAP
- 	depends on TEE =3D y && DMABUF_HEAPS
- 	default y
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index c75fddc83576..c7fd8040480e 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -181,6 +181,7 @@ void optee_remove_common(struct optee *optee)
+ 	tee_device_unregister(optee->supp_teedev);
+ 	tee_device_unregister(optee->teedev);
 =20
-+config TEE_CMA
-+	bool
-+	depends on TEE =3D y && CMA
-+	default y
-+
- if TEE
-=20
- source "drivers/tee/optee/Kconfig"
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index e1ed52ee0a16..d6b310b4a5fc 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -3,8 +3,11 @@
-  * Copyright (c) 2015-2017, 2019-2021 Linaro Limited
-  */
- #include <linux/anon_inodes.h>
-+#include <linux/cma.h>
- #include <linux/device.h>
- #include <linux/dma-buf.h>
-+#include <linux/dma-map-ops.h>
-+#include <linux/highmem.h>
- #include <linux/idr.h>
- #include <linux/io.h>
- #include <linux/mm.h>
-@@ -13,7 +16,6 @@
- #include <linux/tee_core.h>
- #include <linux/uaccess.h>
- #include <linux/uio.h>
--#include <linux/highmem.h>
- #include "tee_private.h"
-=20
- static void shm_put_kernel_pages(struct page **pages, size_t page_count)
-@@ -49,7 +51,14 @@ static void tee_shm_release(struct tee_device *teedev, str=
-uct tee_shm *shm)
- 	struct tee_shm *parent_shm =3D NULL;
- 	void *p =3D shm;
-=20
--	if (shm->flags & TEE_SHM_DMA_BUF) {
-+	if (shm->flags & TEE_SHM_CMA_BUF) {
-+#if IS_ENABLED(CONFIG_TEE_CMA)
-+		struct page *page =3D phys_to_page(shm->paddr);
-+		struct cma *cma =3D dev_get_cma_area(&shm->ctx->teedev->dev);
-+
-+		cma_release(cma, page, shm->size / PAGE_SIZE);
-+#endif
-+	} else if (shm->flags & TEE_SHM_DMA_BUF) {
- 		struct tee_shm_dmabuf_ref *ref;
-=20
- 		ref =3D container_of(shm, struct tee_shm_dmabuf_ref, shm);
-@@ -306,6 +315,48 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_contex=
-t *ctx, size_t size)
++	tee_device_unregister_all_dma_heaps(optee->teedev);
+ 	tee_shm_pool_free(optee->pool);
+ 	optee_supp_uninit(&optee->supp);
+ 	mutex_destroy(&optee->call_queue.mutex);
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index cfdae266548b..c10b38b23586 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -1620,6 +1620,41 @@ static inline int optee_load_fw(struct platform_device=
+ *pdev,
  }
- EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
+ #endif
 =20
-+struct tee_shm *tee_shm_alloc_cma_phys_mem(struct tee_context *ctx,
-+					   size_t page_count, size_t align)
++static int optee_rstmem_pool_init(struct optee *optee)
 +{
-+#if IS_ENABLED(CONFIG_TEE_CMA)
-+	struct tee_device *teedev =3D ctx->teedev;
-+	struct cma *cma =3D dev_get_cma_area(&teedev->dev);
-+	struct tee_shm *shm;
-+	struct page *page;
++	enum tee_dma_heap_id heap_id =3D TEE_DMA_HEAP_SECURE_VIDEO_PLAY;
++	struct tee_protmem_pool *pool;
++	int rc;
 +
-+	if (!tee_device_get(teedev))
-+		return ERR_PTR(-EINVAL);
++	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_PROTMEM) {
++		union {
++			struct arm_smccc_res smccc;
++			struct optee_smc_get_protmem_config_result result;
++		} res;
 +
-+	page =3D cma_alloc(cma, page_count, align, true/*no_warn*/);
-+	if (!page)
-+		goto err_put_teedev;
++		optee->smc.invoke_fn(OPTEE_SMC_GET_PROTMEM_CONFIG, 0, 0, 0, 0,
++				     0, 0, 0, &res.smccc);
++		if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
++			pr_err("Secure Data Path service not available\n");
++			return 0;
++		}
 +
-+	shm =3D kzalloc(sizeof(*shm), GFP_KERNEL);
-+	if (!shm)
-+		goto err_cma_crelease;
++		pool =3D tee_protmem_static_pool_alloc(res.result.start,
++						     res.result.size);
++		if (IS_ERR(pool))
++			return PTR_ERR(pool);
 +
-+	refcount_set(&shm->refcount, 1);
-+	shm->ctx =3D ctx;
-+	shm->paddr =3D page_to_phys(page);
-+	shm->size =3D page_count * PAGE_SIZE;
-+	shm->flags =3D TEE_SHM_CMA_BUF;
++		rc =3D tee_device_register_dma_heap(optee->teedev, heap_id, pool);
++		if (rc)
++			goto err;
++	}
 +
-+	teedev_ctx_get(ctx);
-+
-+	return shm;
-+
-+err_cma_crelease:
-+	cma_release(cma, page, page_count);
-+err_put_teedev:
-+	tee_device_put(teedev);
-+
-+	return ERR_PTR(-ENOMEM);
-+#else
-+	return ERR_PTR(-EINVAL);
-+#endif
++	return 0;
++err:
++	pool->ops->destroy_pool(pool);
++	return rc;
 +}
-+EXPORT_SYMBOL_GPL(tee_shm_alloc_cma_phys_mem);
 +
- int tee_dyn_shm_alloc_helper(struct tee_shm *shm, size_t size, size_t align,
- 			     int (*shm_register)(struct tee_context *ctx,
- 						 struct tee_shm *shm,
-diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
-index 02c07f661349..3a4e1b00fcc7 100644
---- a/include/linux/tee_core.h
-+++ b/include/linux/tee_core.h
-@@ -29,6 +29,7 @@
- #define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
- #define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
- #define TEE_SHM_DMA_BUF		BIT(4)	/* Memory with dma-buf handle */
-+#define TEE_SHM_CMA_BUF		BIT(5)	/* CMA allocated memory */
+ static int optee_probe(struct platform_device *pdev)
+ {
+ 	optee_invoke_fn *invoke_fn;
+@@ -1715,7 +1750,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
+ 	if (!optee) {
+ 		rc =3D -ENOMEM;
+-		goto err_free_pool;
++		goto err_free_shm_pool;
+ 	}
 =20
- #define TEE_DEVICE_FLAG_REGISTERED	0x1
- #define TEE_MAX_DEV_NAME_LEN		32
-@@ -310,6 +311,9 @@ void *tee_get_drvdata(struct tee_device *teedev);
-  */
- struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
+ 	optee->ops =3D &optee_ops;
+@@ -1788,6 +1823,10 @@ static int optee_probe(struct platform_device *pdev)
+ 		pr_info("Asynchronous notifications enabled\n");
+ 	}
 =20
-+struct tee_shm *tee_shm_alloc_cma_phys_mem(struct tee_context *ctx,
-+					   size_t page_count, size_t align);
++	rc =3D optee_rstmem_pool_init(optee);
++	if (rc)
++		goto err_notif_uninit;
 +
- int tee_dyn_shm_alloc_helper(struct tee_shm *shm, size_t size, size_t align,
- 			     int (*shm_register)(struct tee_context *ctx,
- 						 struct tee_shm *shm,
+ 	/*
+ 	 * Ensure that there are no pre-existing shm objects before enabling
+ 	 * the shm cache so that there's no chance of receiving an invalid
+@@ -1823,6 +1862,7 @@ static int optee_probe(struct platform_device *pdev)
+ 		optee_disable_shm_cache(optee);
+ 	optee_smc_notif_uninit_irq(optee);
+ 	optee_unregister_devices();
++	tee_device_unregister_all_dma_heaps(optee->teedev);
+ err_notif_uninit:
+ 	optee_notif_uninit(optee);
+ err_close_ctx:
+@@ -1839,7 +1879,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	tee_device_unregister(optee->teedev);
+ err_free_optee:
+ 	kfree(optee);
+-err_free_pool:
++err_free_shm_pool:
+ 	tee_shm_pool_free(pool);
+ 	if (memremaped_shm)
+ 		memunmap(memremaped_shm);
 --=20
 2.43.0
 
 
---===============4583107127830514797==--
+--===============9186078098268284957==--
 
