@@ -1,123 +1,90 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Stauffer Thomas MTANA <Thomas.Stauffer@mt.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v6 05/10] tee: implement restricted DMA-heap
-Date: Tue, 08 Apr 2025 15:28:45 +0200
-Message-ID: 
- <CAHUa44EGWuVPjoxpG-S66he=6dkvkwzxNewaGKVKXUxrO41ztg@mail.gmail.com>
-In-Reply-To: <Z_To9V-JOKZ7ChhE@sumit-X1>
+Subject: Re: Extract RPMB Key
+Date: Tue, 08 Apr 2025 13:29:14 +0000
+Message-ID: <GVXPR03MB1046013B0D70D9FAC1CEDE85E8AB52@GVXPR03MB10460.eurprd03.prod.outlook.com>
+In-Reply-To: <a830f81e-17b9-4dc7-9853-42c3660b5866@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2844744839501243683=="
+Content-Type: multipart/mixed; boundary="===============7812086547738005052=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2844744839501243683==
+--===============7812086547738005052==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 8, 2025 at 11:14=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
+Hi,
+
+Thanks for the feedback, I will create a PR then.
+
+Thomas
+
+________________________________
+From: Jerome Forissier
+Sent: Tuesday, April 08, 2025 14:32
+To: Stauffer Thomas MTANA; op-tee(a)lists.trustedfirmware.org
+Subject: Re: EXTERNAL - Extract RPMB Key
+
+Hi,
+
+On 4/8/25 13:35, Stauffer Thomas MTANA wrote:
+> As far as I understand there are currently two possibilities to setup an RP=
+MB with an appropriate key.
 >
-> On Tue, Apr 01, 2025 at 10:33:04AM +0200, Jens Wiklander wrote:
-> > On Tue, Apr 1, 2025 at 9:58=E2=80=AFAM Sumit Garg <sumit.garg@kernel.or=
-g> wrote:
-> > >
-> > > On Tue, Mar 25, 2025 at 11:55:46AM +0100, Jens Wiklander wrote:
-> > > > Hi Sumit,
-> > > >
-> > >
-> > > <snip>
-> > >
-> > > >
-> > > > >
-> > > > > > +
-> > > > > > +#include "tee_private.h"
-> > > > > > +
-> > > > > > +struct tee_dma_heap {
-> > > > > > +     struct dma_heap *heap;
-> > > > > > +     enum tee_dma_heap_id id;
-> > > > > > +     struct tee_rstmem_pool *pool;
-> > > > > > +     struct tee_device *teedev;
-> > > > > > +     /* Protects pool and teedev above */
-> > > > > > +     struct mutex mu;
-> > > > > > +};
-> > > > > > +
-> > > > > > +struct tee_heap_buffer {
-> > > > > > +     struct tee_rstmem_pool *pool;
-> > > > > > +     struct tee_device *teedev;
-> > > > > > +     size_t size;
-> > > > > > +     size_t offs;
-> > > > > > +     struct sg_table table;
-> > > > > > +};
-> > > > > > +
-> > > > > > +struct tee_heap_attachment {
-> > > > > > +     struct sg_table table;
-> > > > > > +     struct device *dev;
-> > > > > > +};
-> > > > > > +
-> > > > > > +struct tee_rstmem_static_pool {
-> > > > > > +     struct tee_rstmem_pool pool;
-> > > > > > +     struct gen_pool *gen_pool;
-> > > > > > +     phys_addr_t pa_base;
-> > > > > > +};
-> > > > > > +
-> > > > > > +#if !IS_MODULE(CONFIG_TEE) && IS_ENABLED(CONFIG_DMABUF_HEAPS)
-> > > > >
-> > > > > Can this dependency rather be better managed via Kconfig?
-> > > >
-> > > > This was the easiest yet somewhat flexible solution I could find. If
-> > > > you have something better, let's use that instead.
-> > > >
-> > >
-> > > --- a/drivers/tee/optee/Kconfig
-> > > +++ b/drivers/tee/optee/Kconfig
-> > > @@ -5,6 +5,7 @@ config OPTEE
-> > >         depends on HAVE_ARM_SMCCC
-> > >         depends on MMU
-> > >         depends on RPMB || !RPMB
-> > > +       select DMABUF_HEAPS
-> > >         help
-> > >           This implements the OP-TEE Trusted Execution Environment (TEE)
-> > >           driver.
-> >
-> > I wanted to avoid that since there are plenty of use cases where
-> > DMABUF_HEAPS aren't needed.
+> 1. Use a specialized OP-TEE with CFG_RPMB_WRITE_KEY=3Dy during production i=
+n an environment were leaking the key is ok.
+> 2. Get the HUK, get the CID from the MMC, then use scripts/derive_rpmb_key.=
+py to calculate the RPMB key and set e.g. via mmc tool.
+>> I've the impression when I read through some message on https://github.com=
+/OP-TEE/optee_os/issues, that 1 is not considered the best idea.
+
+Correct. CFG_RPMB_WRITE_KEY was implemented as an quick and easy solution for=
+ a development environment, especially for CI with QEMU. Then scripts/derive_=
+rpmb_key.py was introduced as a potentially better option for production, but=
+ I guess not all production environments are the same so it may have its shor=
+tcomings.
+
+> Currently I'm working on a iMX8M platform and using CFG_RPMB_WRITE_KEY also=
+ has the drawback to use the legacy RPMB interface, which makes tee-supplican=
+t still necessary, which otherwise would not be needed.
+
+Indeed. The ability to write the key was left out on purpose.
+
+> The problem at least on iMX8M is that its not easy possible to get the HUK,=
+ and the HUK also is different, depending if a device is in a closed state or=
+ not. To extract the whole HUK, even in a sensible environment during product=
+ion, seems unnecessary.
 >
-> Yeah, but how the users will figure out the dependency to enable DMA
-> heaps with TEE subsystem.
-
-I hope, without too much difficulty. They are after all looking for a
-way to allocate memory from a DMA heap.
-
-> So it's better we provide a generic kernel
-> Kconfig which enables all the default features.
-
-I disagree, it should be possible to configure without DMABUF_HEAPS if desire=
-d.
-
+> What I did now, something very simple. I extended tee_rpmb_fs.c a little bi=
+t and made a function which allows to retrieve the RPMB key, I added also a t=
+iny PTA, and a corresponding user space application to get the RPMB key, only=
+ as long CFG_INSECURE is set, therefore also only a specialized OP-TEE build =
+can provide this functionality.
 >
-> > This seems to do the job:
-> > +config TEE_DMABUF_HEAP
-> > + bool
-> > + depends on TEE =3D y && DMABUF_HEAPS
-> >
-> > We can only use DMABUF_HEAPS if the TEE subsystem is compiled into the ke=
-rnel.
+> Someone can now decide to get the RPMB key either before the device is clos=
+ed (for testing devices), or afterwards. Write then the RPMB key manually (e.=
+g. via mmc tool) and/or also store it securly in a production data database.
 >
-> Ah, I see. So we aren't exporting the DMA heaps APIs for TEE subsystem
-> to use. We should do that such that there isn't a hard dependency to
-> compile them into the kernel.
-
-I was saving that for a later patch set as a later problem. We may
-save some time by not doing it now.
-
-Cheers,
-Jens
-
+> What would be the advantages, compared to CFG_RPMB_WRITE_KEY=3Dy
 >
-> -Sumit
+> - HUK is still not leaked, as it may be used to derive other secrets
+> - derive_rpmb_key.py is not necessary
+> - It is guaranteed that the correct RPMB key is retrieved, 100% matches how=
+ OP-TEE was configured (e.g. with compat mode enabled or not)
+> - Because the RPMB key is known, one can manually still delete the RPMB and=
+ see how OP-TEE handles this situation, at least during development
+> - Testing this functionality also on an open device (which is currently not=
+ possible at least on iMX8M, due to plat_rpmb_key_is_ready)
 >
-> >
-> > Cheers,
-> > Jens
+> My question is, if there would be any interest to open a PR, so other peopl=
+e also can use this?
 
---===============2844744839501243683==--
+I would encourage you to do so, especially since you have the code already. P=
+eople using i.MX platforms will likely be interested and provide useful feedb=
+ack -- I mean better than mine :)
+
+Thanks,
+--
+Jerome
+
+--===============7812086547738005052==--
 
