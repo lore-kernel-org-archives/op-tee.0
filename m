@@ -1,61 +1,187 @@
-From: Stauffer Thomas MTANA <Thomas.Stauffer@mt.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Extract RPMB Key
-Date: Tue, 08 Apr 2025 11:35:23 +0000
-Message-ID: <GVXPR03MB10460083DA337669362105AB08AAA2@GVXPR03MB10460.eurprd03.prod.outlook.com>
+Subject: Re: [PATCH v3 03/11] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
+Date: Tue, 08 Apr 2025 14:19:39 +0200
+Message-ID: 
+ <CAHUa44GRBiRr6CsFWxJhyzf1cRSEP66m5K7uFntOv3oYWTHWgQ@mail.gmail.com>
+In-Reply-To: <=?utf-8?q?=3C20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-?=
+ =?utf-8?q?3-7f457073282d=40oss=2Equalcomm=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4967221075177673384=="
+Content-Type: multipart/mixed; boundary="===============6793162302711518215=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4967221075177673384==
+--===============6793162302711518215==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-As far as I understand there are currently two possibilities to setup an RPMB=
- with an appropriate key.
+Hi Amirreza,
 
-1. Use a specialized OP-TEE with CFG_RPMB_WRITE_KEY=3Dy during production in =
-an environment were leaking the key is ok.
-2. Get the HUK, get the CID from the MMC, then use scripts/derive_rpmb_key.py=
- to calculate the RPMB key and set e.g. via mmc tool.
+On Fri, Mar 28, 2025 at 3:48=E2=80=AFAM Amirreza Zarrabi
+<amirreza.zarrabi@oss.qualcomm.com> wrote:
+>
+> For drivers that can transfer data to the TEE without using shared
+> memory from client, it is necessary to receive the user address
+> directly, bypassing any processing by the TEE subsystem. Introduce
+> TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT/OUTPUT/INOUT to represent
+> userspace buffers.
+>
+> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+> ---
+>  drivers/tee/tee_core.c   | 33 +++++++++++++++++++++++++++++++++
+>  include/linux/tee_drv.h  |  6 ++++++
+>  include/uapi/linux/tee.h | 22 ++++++++++++++++------
+>  3 files changed, 55 insertions(+), 6 deletions(-)
 
-I've the impression when I read through some message on https://github.com/OP=
--TEE/optee_os/issues, that 1 is not considered the best idea.
+Is this patch needed now that the QCOMTEE driver supports shared
+memory? I prefer keeping changes to the ABI to a minimum.
 
-Currently I'm working on a iMX8M platform and using CFG_RPMB_WRITE_KEY also h=
-as the drawback to use the legacy RPMB interface, which makes tee-supplicant =
-still necessary, which otherwise would not be needed.
+Cheers,
+Jens
 
-The problem at least on iMX8M is that its not easy possible to get the HUK, a=
-nd the HUK also is different, depending if a device is in a closed state or n=
-ot. To extract the whole HUK, even in a sensible environment during productio=
-n, seems unnecessary.
+>
+> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> index 22cc7d624b0c..bc862a11d437 100644
+> --- a/drivers/tee/tee_core.c
+> +++ b/drivers/tee/tee_core.c
+> @@ -404,6 +404,17 @@ static int params_from_user(struct tee_context *ctx, s=
+truct tee_param *params,
+>                         params[n].u.value.b =3D ip.b;
+>                         params[n].u.value.c =3D ip.c;
+>                         break;
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
+> +                       params[n].u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
+> +                       params[n].u.ubuf.size =3D ip.b;
+> +
+> +                       if (!access_ok(params[n].u.ubuf.uaddr,
+> +                                      params[n].u.ubuf.size))
+> +                               return -EFAULT;
+> +
+> +                       break;
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+> @@ -472,6 +483,11 @@ static int params_to_user(struct tee_ioctl_param __use=
+r *uparams,
+>                             put_user(p->u.value.c, &up->c))
+>                                 return -EFAULT;
+>                         break;
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
+> +                       if (put_user((u64)p->u.ubuf.size, &up->b))
+> +                               return -EFAULT;
+> +                       break;
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+>                         if (put_user((u64)p->u.memref.size, &up->b))
+> @@ -672,6 +688,13 @@ static int params_to_supp(struct tee_context *ctx,
+>                         ip.b =3D p->u.value.b;
+>                         ip.c =3D p->u.value.c;
+>                         break;
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
+> +                       ip.a =3D (u64)p->u.ubuf.uaddr;
+> +                       ip.b =3D p->u.ubuf.size;
+> +                       ip.c =3D 0;
+> +                       break;
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+> @@ -774,6 +797,16 @@ static int params_from_supp(struct tee_param *params, =
+size_t num_params,
+>                         p->u.value.b =3D ip.b;
+>                         p->u.value.c =3D ip.c;
+>                         break;
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
+> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
+> +                       p->u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
+> +                       p->u.ubuf.size =3D ip.b;
+> +
+> +                       if (!access_ok(params[n].u.ubuf.uaddr,
+> +                                      params[n].u.ubuf.size))
+> +                               return -EFAULT;
+> +
+> +                       break;
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+>                         /*
+> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+> index ce23fd42c5d4..d773f91c6bdd 100644
+> --- a/include/linux/tee_drv.h
+> +++ b/include/linux/tee_drv.h
+> @@ -82,6 +82,11 @@ struct tee_param_memref {
+>         struct tee_shm *shm;
+>  };
+>
+> +struct tee_param_ubuf {
+> +       void * __user uaddr;
+> +       size_t size;
+> +};
+> +
+>  struct tee_param_value {
+>         u64 a;
+>         u64 b;
+> @@ -92,6 +97,7 @@ struct tee_param {
+>         u64 attr;
+>         union {
+>                 struct tee_param_memref memref;
+> +               struct tee_param_ubuf ubuf;
+>                 struct tee_param_value value;
+>         } u;
+>  };
+> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
+> index d0430bee8292..3e9b1ec5dfde 100644
+> --- a/include/uapi/linux/tee.h
+> +++ b/include/uapi/linux/tee.h
+> @@ -151,6 +151,13 @@ struct tee_ioctl_buf_data {
+>  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT        6
+>  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT 7       /* input and output=
+ */
+>
+> +/*
+> + * These defines userspace buffer parameters.
+> + */
+> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT   8
+> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT  9
+> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT   10      /* input and output=
+ */
+> +
+>  /*
+>   * Mask for the type part of the attribute, leaves room for more types
+>   */
+> @@ -186,14 +193,17 @@ struct tee_ioctl_buf_data {
+>  /**
+>   * struct tee_ioctl_param - parameter
+>   * @attr: attributes
+> - * @a: if a memref, offset into the shared memory object, else a value par=
+ameter
+> - * @b: if a memref, size of the buffer, else a value parameter
+> + * @a: if a memref, offset into the shared memory object,
+> + *     else if a ubuf, address of the user buffer,
+> + *     else a value parameter
+> + * @b: if a memref or ubuf, size of the buffer, else a value parameter
+>   * @c: if a memref, shared memory identifier, else a value parameter
+>   *
+> - * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref or value is used in
+> - * the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value and
+> - * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref. TEE_PARAM_ATTR_TYPE_NONE
+> - * indicates that none of the members are used.
+> + * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref, ubuf, or value is
+> + * used in the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value,
+> + * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref, and TEE_PARAM_ATTR_TYPE_=
+UBUF_*
+> + * indicates ubuf. TEE_PARAM_ATTR_TYPE_NONE indicates that none of the mem=
+bers
+> + * are used.
+>   *
+>   * Shared memory is allocated with TEE_IOC_SHM_ALLOC which returns an
+>   * identifier representing the shared memory object. A memref can reference
+>
+> --
+> 2.34.1
+>
 
-What I did now, something very simple. I extended tee_rpmb_fs.c a little bit =
-and made a function which allows to retrieve the RPMB key, I added also a tin=
-y PTA, and a corresponding user space application to get the RPMB key, only a=
-s long CFG_INSECURE is set, therefore also only a specialized OP-TEE build ca=
-n provide this functionality.
-
-Someone can now decide to get the RPMB key either before the device is closed=
- (for testing devices), or afterwards. Write then the RPMB key manually (e.g.=
- via mmc tool) and/or also store it securly in a production data database.
-
-What would be the advantages, compared to CFG_RPMB_WRITE_KEY=3Dy
-
-- HUK is still not leaked, as it may be used to derive other secrets
-- derive_rpmb_key.py is not necessary
-- It is guaranteed that the correct RPMB key is retrieved, 100% matches how O=
-P-TEE was configured (e.g. with compat mode enabled or not)
-- Because the RPMB key is known, one can manually still delete the RPMB and s=
-ee how OP-TEE handles this situation, at least during development
-- Testing this functionality also on an open device (which is currently not p=
-ossible at least on iMX8M, due to plat_rpmb_key_is_ready)
-
-My question is, if there would be any interest to open a PR, so other people =
-also can use this?
-
-
-
---===============4967221075177673384==--
+--===============6793162302711518215==--
 
