@@ -1,193 +1,284 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v6 09/10] optee: FF-A: dynamic restricted memory allocation
-Date: Tue, 08 Apr 2025 15:39:33 +0200
-Message-ID: 
- <CAHUa44EV=q35i-anXkAF2N7mY8gmWqfMbU0YXARHHOas5iKxHw@mail.gmail.com>
-In-Reply-To: <Z_TqTUpGhz1s-F8h@sumit-X1>
+Subject: Re: [PATCH v3 02/11] tee: add close_context to TEE driver operation
+Date: Wed, 09 Apr 2025 10:20:47 +1000
+Message-ID: <9c143438-82ee-47ac-acc5-00d58960afe5@oss.qualcomm.com>
+In-Reply-To: <
+ <CAHUa44G+Z9LjxqqqvKRRHrfN_6QPweF_5df2uOqtRuBfa5j3pw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3776355562830346690=="
+Content-Type: multipart/mixed; boundary="===============3968137350074876033=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3776355562830346690==
+--===============3968137350074876033==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 8, 2025 at 11:20=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
+Hi Jens,
+
+On 4/8/2025 12:55 AM, Jens Wiklander wrote:
+> Hi Amir,
 >
-> On Tue, Apr 01, 2025 at 02:26:59PM +0200, Jens Wiklander wrote:
-> > On Tue, Apr 1, 2025 at 12:13=E2=80=AFPM Sumit Garg <sumit.garg@kernel.o=
-rg> wrote:
-> > >
-> > > + MM folks to seek guidance here.
-> > >
-> > > On Thu, Mar 27, 2025 at 09:07:34AM +0100, Jens Wiklander wrote:
-> > > > Hi Sumit,
-> > > >
-> > > > On Tue, Mar 25, 2025 at 8:42=E2=80=AFAM Sumit Garg <sumit.garg@kern=
-el.org> wrote:
-> > > > >
-> > > > > On Wed, Mar 05, 2025 at 02:04:15PM +0100, Jens Wiklander wrote:
-> > > > > > Add support in the OP-TEE backend driver dynamic restricted memory
-> > > > > > allocation with FF-A.
-> > > > > >
-> > > > > > The restricted memory pools for dynamically allocated restrict me=
-mory
-> > > > > > are instantiated when requested by user-space. This instantiation=
- can
-> > > > > > fail if OP-TEE doesn't support the requested use-case of restrict=
-ed
-> > > > > > memory.
-> > > > > >
-> > > > > > Restricted memory pools based on a static carveout or dynamic all=
-ocation
-> > > > > > can coexist for different use-cases. We use only dynamic allocati=
-on with
-> > > > > > FF-A.
-> > > > > >
-> > > > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > > > ---
-> > > > > >  drivers/tee/optee/Makefile        |   1 +
-> > > > > >  drivers/tee/optee/ffa_abi.c       | 143 ++++++++++++-
-> > > > > >  drivers/tee/optee/optee_private.h |  13 +-
-> > > > > >  drivers/tee/optee/rstmem.c        | 329 ++++++++++++++++++++++++=
-++++++
-> > > > > >  4 files changed, 483 insertions(+), 3 deletions(-)
-> > > > > >  create mode 100644 drivers/tee/optee/rstmem.c
-> > > > > >
-> > >
-> > > <snip>
-> > >
-> > > > > > diff --git a/drivers/tee/optee/rstmem.c b/drivers/tee/optee/rstme=
-m.c
-> > > > > > new file mode 100644
-> > > > > > index 000000000000..ea27769934d4
-> > > > > > --- /dev/null
-> > > > > > +++ b/drivers/tee/optee/rstmem.c
-> > > > > > @@ -0,0 +1,329 @@
-> > > > > > +// SPDX-License-Identifier: GPL-2.0-only
-> > > > > > +/*
-> > > > > > + * Copyright (c) 2025, Linaro Limited
-> > > > > > + */
-> > > > > > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> > > > > > +
-> > > > > > +#include <linux/errno.h>
-> > > > > > +#include <linux/genalloc.h>
-> > > > > > +#include <linux/slab.h>
-> > > > > > +#include <linux/string.h>
-> > > > > > +#include <linux/tee_core.h>
-> > > > > > +#include <linux/types.h>
-> > > > > > +#include "optee_private.h"
-> > > > > > +
-> > > > > > +struct optee_rstmem_cma_pool {
-> > > > > > +     struct tee_rstmem_pool pool;
-> > > > > > +     struct gen_pool *gen_pool;
-> > > > > > +     struct optee *optee;
-> > > > > > +     size_t page_count;
-> > > > > > +     u16 *end_points;
-> > > > > > +     u_int end_point_count;
-> > > > > > +     u_int align;
-> > > > > > +     refcount_t refcount;
-> > > > > > +     u32 use_case;
-> > > > > > +     struct tee_shm *rstmem;
-> > > > > > +     /* Protects when initializing and tearing down this struct =
-*/
-> > > > > > +     struct mutex mutex;
-> > > > > > +};
-> > > > > > +
-> > > > > > +static struct optee_rstmem_cma_pool *
-> > > > > > +to_rstmem_cma_pool(struct tee_rstmem_pool *pool)
-> > > > > > +{
-> > > > > > +     return container_of(pool, struct optee_rstmem_cma_pool, poo=
-l);
-> > > > > > +}
-> > > > > > +
-> > > > > > +static int init_cma_rstmem(struct optee_rstmem_cma_pool *rp)
-> > > > > > +{
-> > > > > > +     int rc;
-> > > > > > +
-> > > > > > +     rp->rstmem =3D tee_shm_alloc_cma_phys_mem(rp->optee->ctx, r=
-p->page_count,
-> > > > > > +                                             rp->align);
-> > > > > > +     if (IS_ERR(rp->rstmem)) {
-> > > > > > +             rc =3D PTR_ERR(rp->rstmem);
-> > > > > > +             goto err_null_rstmem;
-> > > > > > +     }
-> > > > > > +
-> > > > > > +     /*
-> > > > > > +      * TODO unmap the memory range since the physical memory wi=
-ll
-> > > > > > +      * become inaccesible after the lend_rstmem() call.
-> > > > > > +      */
-> > > > >
-> > > > > What's your plan for this TODO? I think we need a CMA allocator here
-> > > > > which can allocate un-mapped memory such that any cache speculation
-> > > > > won't lead to CPU hangs once the memory restriction comes into pict=
-ure.
-> > > >
-> > > > What happens is platform-specific. For some platforms, it might be
-> > > > enough to avoid explicit access. Yes, a CMA allocator with unmapped
-> > > > memory or where memory can be unmapped is one option.
-> > >
-> > > Did you get a chance to enable real memory protection on RockPi board?
-> >
-> > No, I don't think I have access to the needed documentation for the
-> > board to set it up for relevant peripherals.
-> >
-> > > This will atleast ensure that mapped restricted memory without explicit
-> > > access works fine. Since otherwise once people start to enable real
-> > > memory restriction in OP-TEE, there can be chances of random hang ups
-> > > due to cache speculation.
-> >
-> > A hypervisor in the normal world can also make the memory inaccessible
-> > to the kernel. That shouldn't cause any hangups due to cache
-> > speculation.
+> On Fri, Mar 28, 2025 at 3:48=E2=80=AFAM Amirreza Zarrabi
+> <amirreza.zarrabi@oss.qualcomm.com> wrote:
+>> The tee_context can be used to manage TEE user resources, including
+>> those allocated by the driver for the TEE on behalf of the user.
+>> The release() callback is invoked only when all resources, such as
+>> tee_shm, are released and there are no references to the tee_context.
+>>
+>> When a user closes the device file, the driver should notify the
+>> TEE to release any resources it may hold and drop the context
+>> references. To achieve this, a close_context() callback is
+>> introduced to initiate resource release in the TEE driver when
+>> the device file is closed.
+>>
+>> Relocate teedev_ctx_get, teedev_ctx_put, tee_device_get, and
+>> tee_device_get functions to tee_drv.h to make them accessible
+>> outside the TEE subsystem.
+>>
+>> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>> ---
+>>  drivers/tee/tee_core.c    | 39 +++++++++++++++++++++++++++++++++++++++
+>>  drivers/tee/tee_private.h |  6 ------
+>>  include/linux/tee_core.h  | 11 +++++++++--
+>>  include/linux/tee_drv.h   | 40 ++++++++++++++++++++++++++++++++++++++++
+>>  4 files changed, 88 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+>> index 24edce4cdbaa..22cc7d624b0c 100644
+>> --- a/drivers/tee/tee_core.c
+>> +++ b/drivers/tee/tee_core.c
+>> @@ -72,6 +72,20 @@ struct tee_context *teedev_open(struct tee_device *teed=
+ev)
+>>  }
+>>  EXPORT_SYMBOL_GPL(teedev_open);
+>>
+>> +/**
+>> + * teedev_ctx_get() - Increment the reference count of a context
+>> + *
+>> + * This function increases the refcount of the context, which is tied to
+>> + * resources shared by the same tee_device. During the unregistration pro=
+cess,
+>> + * the context may remain valid even after tee_device_unregister() has re=
+turned.
+>> + *
+>> + * Users should ensure that the context's refcount is properly decreased =
+before
+>> + * calling tee_device_put(), typically within the context's release() fun=
+ction.
+>> + * Alternatively, users can call tee_device_get() and teedev_ctx_get() to=
+gether
+>> + * and release them simultaneously (see shm_alloc_helper()).
+>> + *
+>> + * @ctx: Pointer to the context
+> Please move this @ctx line to before the verbose description of the functio=
+n.
 >
-> The hypervisor should unmap the memory from EL2 translation tables which
-> I think should disallow the cache speculation to take place. However,
-> without hypervisor here the memory remains mapped in normal world which
-> can lead to cache speculation for restricted buffers. That's why we
-> should atleast test on one platform with real memory protection enabled
-> to rule out any assumptions we make.
+> Cheers,
+> Jens
 
-Do I hear a volunteer? ;-)
+Ack.
 
-Anyway, this isn't something that can be enabled in the kernel alone.
-Only platforms where the firmware has been updated will be affected.
-If this can't be supported on a particular platform, there's still the
-option with a static carveout.
-
-Cheers,
-Jens
+Best Regards,
+Amir
 
 >
-> -Sumit
->
-> >
-> > Cheers,
-> > Jens
-> >
-> > >
-> > > MM folks,
-> > >
-> > > Basically what we are trying to achieve here is a "no-map" DT behaviour
-> > > [1] which is rather dynamic in  nature. The use-case here is that a mem=
-ory
-> > > block allocated from CMA can be marked restricted at runtime where we
-> > > would like the Linux not being able to directly or indirectly (cache
-> > > speculation) access it. Once memory restriction use-case has been
-> > > completed, the memory block can be marked as normal and freed for
-> > > further CMA allocation.
-> > >
-> > > It will be apprciated if you can guide us regarding the appropriate APIs
-> > > to use for un-mapping/mamping CMA allocations for this use-case.
-> > >
-> > > [1] https://github.com/devicetree-org/dt-schema/blob/main/dtschema/sche=
-mas/reserved-memory/reserved-memory.yaml#L79
-> > >
-> > > -Sumit
+>> + */
+>>  void teedev_ctx_get(struct tee_context *ctx)
+>>  {
+>>         if (ctx->releasing)
+>> @@ -79,6 +93,7 @@ void teedev_ctx_get(struct tee_context *ctx)
+>>
+>>         kref_get(&ctx->refcount);
+>>  }
+>> +EXPORT_SYMBOL_GPL(teedev_ctx_get);
+>>
+>>  static void teedev_ctx_release(struct kref *ref)
+>>  {
+>> @@ -89,6 +104,10 @@ static void teedev_ctx_release(struct kref *ref)
+>>         kfree(ctx);
+>>  }
+>>
+>> +/**
+>> + * teedev_ctx_put() - Decrease reference count on a context
+>> + * @ctx: pointer to the context
+>> + */
+>>  void teedev_ctx_put(struct tee_context *ctx)
+>>  {
+>>         if (ctx->releasing)
+>> @@ -96,11 +115,15 @@ void teedev_ctx_put(struct tee_context *ctx)
+>>
+>>         kref_put(&ctx->refcount, teedev_ctx_release);
+>>  }
+>> +EXPORT_SYMBOL_GPL(teedev_ctx_put);
+>>
+>>  void teedev_close_context(struct tee_context *ctx)
+>>  {
+>>         struct tee_device *teedev =3D ctx->teedev;
+>>
+>> +       if (teedev->desc->ops->close_context)
+>> +               teedev->desc->ops->close_context(ctx);
+>> +
+>>         teedev_ctx_put(ctx);
+>>         tee_device_put(teedev);
+>>  }
+>> @@ -1024,6 +1047,10 @@ int tee_device_register(struct tee_device *teedev)
+>>  }
+>>  EXPORT_SYMBOL_GPL(tee_device_register);
+>>
+>> +/**
+>> + * tee_device_put() - Decrease the user count for a tee_device
+>> + * @teedev: pointer to the tee_device
+>> + */
+>>  void tee_device_put(struct tee_device *teedev)
+>>  {
+>>         mutex_lock(&teedev->mutex);
+>> @@ -1037,7 +1064,18 @@ void tee_device_put(struct tee_device *teedev)
+>>         }
+>>         mutex_unlock(&teedev->mutex);
+>>  }
+>> +EXPORT_SYMBOL_GPL(tee_device_put);
+>>
+>> +/**
+>> + * tee_device_get() - Increment the user count for a tee_device
+>> + * @teedev: Pointer to the tee_device
+>> + *
+>> + * If tee_device_unregister() has been called and the final user of @teed=
+ev
+>> + * has already released the device, this function will fail to prevent ne=
+w users
+>> + * from accessing the device during the unregistration process.
+>> + *
+>> + * Returns: true if @teedev remains valid, otherwise false
+>> + */
+>>  bool tee_device_get(struct tee_device *teedev)
+>>  {
+>>         mutex_lock(&teedev->mutex);
+>> @@ -1049,6 +1087,7 @@ bool tee_device_get(struct tee_device *teedev)
+>>         mutex_unlock(&teedev->mutex);
+>>         return true;
+>>  }
+>> +EXPORT_SYMBOL_GPL(tee_device_get);
+>>
+>>  /**
+>>   * tee_device_unregister() - Removes a TEE device
+>> diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
+>> index 9bc50605227c..d3f40a03de36 100644
+>> --- a/drivers/tee/tee_private.h
+>> +++ b/drivers/tee/tee_private.h
+>> @@ -14,12 +14,6 @@
+>>
+>>  int tee_shm_get_fd(struct tee_shm *shm);
+>>
+>> -bool tee_device_get(struct tee_device *teedev);
+>> -void tee_device_put(struct tee_device *teedev);
+>> -
+>> -void teedev_ctx_get(struct tee_context *ctx);
+>> -void teedev_ctx_put(struct tee_context *ctx);
+>> -
+>>  struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t si=
+ze);
+>>  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+>>                                           unsigned long addr, size_t lengt=
+h);
+>> diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+>> index a38494d6b5f4..8a4c9e30b652 100644
+>> --- a/include/linux/tee_core.h
+>> +++ b/include/linux/tee_core.h
+>> @@ -65,8 +65,9 @@ struct tee_device {
+>>  /**
+>>   * struct tee_driver_ops - driver operations vtable
+>>   * @get_version:       returns version of driver
+>> - * @open:              called when the device file is opened
+>> - * @release:           release this open file
+>> + * @open:              called for a context when the device file is opened
+>> + * @close_context:     called when the device file is closed
+>> + * @release:           called to release the context
+>>   * @open_session:      open a new session
+>>   * @close_session:     close a session
+>>   * @system_session:    declare session as a system session
+>> @@ -76,11 +77,17 @@ struct tee_device {
+>>   * @supp_send:         called for supplicant to send a response
+>>   * @shm_register:      register shared memory buffer in TEE
+>>   * @shm_unregister:    unregister shared memory buffer in TEE
+>> + *
+>> + * The context given to @open might last longer than the device file if i=
+t is
+>> + * tied to other resources in the TEE driver. @close_context is called wh=
+en the
+>> + * client closes the device file, even if there are existing references t=
+o the
+>> + * context. The TEE driver can use @close_context to start cleaning up.
+>>   */
+>>  struct tee_driver_ops {
+>>         void (*get_version)(struct tee_device *teedev,
+>>                             struct tee_ioctl_version_data *vers);
+>>         int (*open)(struct tee_context *ctx);
+>> +       void (*close_context)(struct tee_context *ctx);
+>>         void (*release)(struct tee_context *ctx);
+>>         int (*open_session)(struct tee_context *ctx,
+>>                             struct tee_ioctl_open_session_arg *arg,
+>> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+>> index a54c203000ed..ce23fd42c5d4 100644
+>> --- a/include/linux/tee_drv.h
+>> +++ b/include/linux/tee_drv.h
+>> @@ -96,6 +96,46 @@ struct tee_param {
+>>         } u;
+>>  };
+>>
+>> +/**
+>> + * tee_device_get() - Increment the user count for a tee_device
+>> + * @teedev: Pointer to the tee_device
+>> + *
+>> + * If tee_device_unregister() has been called and the final user of @teed=
+ev
+>> + * has already released the device, this function will fail to prevent ne=
+w users
+>> + * from accessing the device during the unregistration process.
+>> + *
+>> + * Returns: true if @teedev remains valid, otherwise false
+>> + */
+>> +bool tee_device_get(struct tee_device *teedev);
+>> +
+>> +/**
+>> + * tee_device_put() - Decrease the user count for a tee_device
+>> + * @teedev: pointer to the tee_device
+>> + */
+>> +void tee_device_put(struct tee_device *teedev);
+>> +
+>> +/**
+>> + * teedev_ctx_get() - Increment the reference count of a context
+>> + *
+>> + * This function increases the refcount of the context, which is tied to
+>> + * resources shared by the same tee_device. During the unregistration pro=
+cess,
+>> + * the context may remain valid even after tee_device_unregister() has re=
+turned.
+>> + *
+>> + * Users should ensure that the context's refcount is properly decreased =
+before
+>> + * calling tee_device_put(), typically within the context's release() fun=
+ction.
+>> + * Alternatively, users can call tee_device_get() and teedev_ctx_get() to=
+gether
+>> + * and release them simultaneously (see shm_alloc_helper()).
+>> + *
+>> + * @ctx: Pointer to the context
+>> + */
+>> +void teedev_ctx_get(struct tee_context *ctx);
+>> +
+>> +/**
+>> + * teedev_ctx_put() - Decrease reference count on a context
+>> + * @ctx: pointer to the context
+>> + */
+>> +void teedev_ctx_put(struct tee_context *ctx);
+>> +
+>>  /**
+>>   * tee_shm_alloc_kernel_buf() - Allocate kernel shared memory for a
+>>   *                              particular TEE client driver
+>>
+>> --
+>> 2.34.1
+>>
 
---===============3776355562830346690==--
+--===============3968137350074876033==--
 
