@@ -1,248 +1,162 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: neil.armstrong@linaro.org
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v3 03/11] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
-Date: Wed, 09 Apr 2025 10:27:20 +0200
-Message-ID: 
- <CAHUa44G9NS-kyqEuuJrqijNttGANUJ_3W0uu+686fhA2C6pYDQ@mail.gmail.com>
-In-Reply-To: <db3e8182-99ae-4a63-96ca-5d7ebeeb170f@oss.qualcomm.com>
+Subject: Re: [PATCH v3 00/11] Trusted Execution Environment (TEE) driver for
+ Qualcomm TEE (QTEE)
+Date: Wed, 09 Apr 2025 10:30:18 +0200
+Message-ID: <fd9ac8f1-94ad-460f-8ca7-e56724416fcf@linaro.org>
+In-Reply-To: <=?utf-8?q?=3C20250327-qcom-tee-using-tee-ss-without-mem-obj-v3-?=
+ =?utf-8?q?0-7f457073282d=40oss=2Equalcomm=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4846025440834383843=="
+Content-Type: multipart/mixed; boundary="===============8855474821321053380=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4846025440834383843==
+--===============8855474821321053380==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 9, 2025 at 9:20=E2=80=AFAM Amirreza Zarrabi
-<amirreza.zarrabi@oss.qualcomm.com> wrote:
->
->
->
-> On 4/9/2025 4:41 PM, Jens Wiklander wrote:
-> > Hi Amirreza,
-> >
-> > On Wed, Apr 9, 2025 at 2:28=E2=80=AFAM Amirreza Zarrabi
-> > <amirreza.zarrabi@oss.qualcomm.com> wrote:
-> >>
-> >> Hi jens,
-> >>
-> >> On 4/8/2025 10:19 PM, Jens Wiklander wrote:
-> >>
-> >> Hi Amirreza,
-> >>
-> >> On Fri, Mar 28, 2025 at 3:48=E2=80=AFAM Amirreza Zarrabi
-> >> <amirreza.zarrabi@oss.qualcomm.com> wrote:
-> >>
-> >> For drivers that can transfer data to the TEE without using shared
-> >> memory from client, it is necessary to receive the user address
-> >> directly, bypassing any processing by the TEE subsystem. Introduce
-> >> TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT/OUTPUT/INOUT to represent
-> >> userspace buffers.
-> >>
-> >> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> >> ---
-> >>  drivers/tee/tee_core.c   | 33 +++++++++++++++++++++++++++++++++
-> >>  include/linux/tee_drv.h  |  6 ++++++
-> >>  include/uapi/linux/tee.h | 22 ++++++++++++++++------
-> >>  3 files changed, 55 insertions(+), 6 deletions(-)
-> >>
-> >> Is this patch needed now that the QCOMTEE driver supports shared
-> >> memory? I prefer keeping changes to the ABI to a minimum.
-> >>
-> >> Cheers,
-> >> Jens
-> >>
-> >> Unfortunately, this is still required. QTEE supports two types of data t=
-ransfer:
-> >> (1) using UBUF and (2) memory objects. Even with memory object support, =
-some APIs still
-> >> expect to receive data using UBUF. For instance, to load a TA, QTEE offe=
-rs two interfaces:
-> >> one where the TA binary is in UBUF and another where the TA binary is in=
- a memory object.
-> >
-> > Is this a limitation in the QTEE backend driver or on the secure side?
-> > Can it be fixed? I don't ask for changes in the ABI to the secure
-> > world since I assume you haven't made such changes while this patch
-> > set has evolved.
-> >
-> > Cheers,
-> > Jens
->
-> The secure-side ABI supports passing data using memcpy to the same
-> buffer that contains the message for QTEE, rather than using a memory
-> object. Some services tend to use this approach for small data instead
-> of allocating a memory object. I have no choice but to expose this support.
+On 28/03/2025 03:47, Amirreza Zarrabi wrote:
+> This patch series introduces a Trusted Execution Environment (TEE)
+> driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
+> and services to run securely. It uses an object-based interface, where
+> each service is an object with sets of operations. Clients can invoke
+> these operations on objects, which can generate results, including other
+> objects. For example, an object can load a TA and return another object
+> that represents the loaded TA, allowing access to its services.
+>=20
+> Kernel and userspace services are also available to QTEE through a
+> similar approach. QTEE makes callback requests that are converted into
+> object invocations. These objects can represent services within the
+> kernel or userspace process.
+>=20
+> Note: This patch series focuses on QTEE objects and userspace services.
+>=20
+> Linux already provides a TEE subsystem, which is described in [1]. The
+> tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
+> can be used by userspace to talk to a TEE backend driver. We extend the
+> Linux TEE subsystem to understand object parameters and an ioctl call so
+> client can invoke objects in QTEE:
+>=20
+>    - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
+>    - TEE_IOC_OBJECT_INVOKE
+>=20
+> The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
+> used for invoking services in the userspace process by QTEE.
+>=20
+> The TEE backend driver uses the QTEE Transport Message to communicate
+> with QTEE. Interactions through the object INVOKE interface are
+> translated into QTEE messages. Likewise, object invocations from QTEE
+> for userspace objects are converted into SEND/RECV ioctl calls to
+> supplicants.
+>=20
+> The details of QTEE Transport Message to communicate with QTEE is
+> available in [PATCH 10/10] Documentation: tee: Add Qualcomm TEE driver.
+>=20
+> You can run basic tests with following steps:
+> git clone https://github.com/quic/quic-teec.git
+> cd quic-teec
+> mkdir build
+> cmake .. -DCMAKE_TOOLCHAIN_FILE=3DCMakeToolchain.txt -DBUILD_UNITTEST=3DON
+>=20
+> https://github.com/quic/quic-teec/blob/main/README.md lists dependancies
+> needed to build the above.
+>=20
+> This series has been tested for basic QTEE object invocations and
+> callback requests, including loading a TA and requesting services form
+> the TA.
+>=20
+> Tested platforms: sm8650-mtp
 
-Got it, thanks! It's needed.
+Does it requires any DT changes to be tested on other SM8650 devices ?
 
->
-> Throughout the patchset, I have not made any change to the ABI but
-> tried to provide support for the memory object in a separate,
-> independent commit, distinct from the UBUF.
+Thanks,
+Neil
 
-OK
-
-Cheers,
-Jens
-
->
+>=20
+> [1] https://www.kernel.org/doc/Documentation/tee.txt
+>=20
+> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>=20
+> Changes in v3:
+> - Export shm_bridge create/delete APIs.
+> - Enable support for QTEE memory objects.
+> - Update the memory management code to use the TEE subsystem for all
+>    allocations using the pool.
+> - Move all driver states into the driver's main service struct.
+> - Add more documentations.
+> - Link to v2: https://lore.kernel.org/r/20250202-qcom-tee-using-tee-ss-with=
+out-mem-obj-v2-0-297eacd0d34f(a)quicinc.com
+>=20
+> Changes in v2:
+> - Clean up commit messages and comments.
+> - Use better names such as ubuf instead of membuf or QCOMTEE prefix
+>    instead of QCOM_TEE, or names that are more consistent with other
+>    TEE-backend drivers such as qcomtee_context_data instead of
+>    qcom_tee_context.
+> - Drop the DTS patch and instantiate the device from the scm driver.
+> - Use a single structure for all driver's internal states.
+> - Drop srcu primitives and use the existing mutex for synchronization
+>    between the supplicant and QTEE.
+> - Directly use tee_context to track the lifetime of qcomtee_context_data.
+> - Add close_context() to be called when the user closes the tee_context.
+> - Link to v1: https://lore.kernel.org/r/20241202-qcom-tee-using-tee-ss-with=
+out-mem-obj-v1-0-f502ef01e016(a)quicinc.com
+>=20
+> Changes in v1:
+> - It is a complete rewrite to utilize the TEE subsystem.
+> - Link to RFC: https://lore.kernel.org/all/20240702-qcom-tee-object-and-ioc=
+tls-v1-0-633c3ddf57ee(a)quicinc.com
+>=20
+> ---
+> Amirreza Zarrabi (11):
+>        tee: allow a driver to allocate a tee_device without a pool
+>        tee: add close_context to TEE driver operation
+>        tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
+>        tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
+>        firmware: qcom: scm: add support for object invocation
+>        firmware: qcom: scm: remove unused arguments to the shm_brige
+>        firmware: qcom: tzmem: export shm_bridge create/delete
+>        tee: add Qualcomm TEE driver
+>        qcomtee: add primordial object
+>        qcomtee: enable TEE_IOC_SHM_ALLOC ioctl
+>        Documentation: tee: Add Qualcomm TEE driver
+>=20
+>   Documentation/tee/index.rst              |   1 +
+>   Documentation/tee/qtee.rst               | 150 ++++++
+>   drivers/firmware/qcom/qcom_scm.c         | 132 ++++-
+>   drivers/firmware/qcom/qcom_scm.h         |   7 +
+>   drivers/firmware/qcom/qcom_tzmem.c       |  57 ++-
+>   drivers/tee/Kconfig                      |   1 +
+>   drivers/tee/Makefile                     |   1 +
+>   drivers/tee/qcomtee/Kconfig              |  10 +
+>   drivers/tee/qcomtee/Makefile             |  11 +
+>   drivers/tee/qcomtee/async.c              | 160 ++++++
+>   drivers/tee/qcomtee/call.c               | 759 ++++++++++++++++++++++++++=
++++
+>   drivers/tee/qcomtee/core.c               | 810 ++++++++++++++++++++++++++=
++++++
+>   drivers/tee/qcomtee/mem_obj.c            | 172 +++++++
+>   drivers/tee/qcomtee/primordial_obj.c     | 116 +++++
+>   drivers/tee/qcomtee/qcom_scm.c           |  38 ++
+>   drivers/tee/qcomtee/qcomtee_msg.h        | 239 +++++++++
+>   drivers/tee/qcomtee/qcomtee_private.h    | 264 ++++++++++
+>   drivers/tee/qcomtee/release.c            |  48 ++
+>   drivers/tee/qcomtee/shm.c                | 146 ++++++
+>   drivers/tee/qcomtee/user_obj.c           | 710 +++++++++++++++++++++++++++
+>   drivers/tee/tee_core.c                   | 159 +++++-
+>   drivers/tee/tee_private.h                |   6 -
+>   include/linux/firmware/qcom/qcom_scm.h   |  31 +-
+>   include/linux/firmware/qcom/qcom_tee.h   | 302 ++++++++++++
+>   include/linux/firmware/qcom/qcom_tzmem.h |  15 +
+>   include/linux/tee_core.h                 |  15 +-
+>   include/linux/tee_drv.h                  |  52 ++
+>   include/uapi/linux/tee.h                 |  54 ++-
+>   28 files changed, 4434 insertions(+), 32 deletions(-)
+> ---
+> base-commit: db8da9da41bced445077925f8a886c776a47440c
+> change-id: 20241202-qcom-tee-using-tee-ss-without-mem-obj-362c66340527
+>=20
 > Best regards,
-> Amir
->
-> >
-> >>
-> >> Best Regards,
-> >> Amir
-> >>
-> >> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> >> index 22cc7d624b0c..bc862a11d437 100644
-> >> --- a/drivers/tee/tee_core.c
-> >> +++ b/drivers/tee/tee_core.c
-> >> @@ -404,6 +404,17 @@ static int params_from_user(struct tee_context *ctx=
-, struct tee_param *params,
-> >>                         params[n].u.value.b =3D ip.b;
-> >>                         params[n].u.value.c =3D ip.c;
-> >>                         break;
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> >> +                       params[n].u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
-> >> +                       params[n].u.ubuf.size =3D ip.b;
-> >> +
-> >> +                       if (!access_ok(params[n].u.ubuf.uaddr,
-> >> +                                      params[n].u.ubuf.size))
-> >> +                               return -EFAULT;
-> >> +
-> >> +                       break;
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> >> @@ -472,6 +483,11 @@ static int params_to_user(struct tee_ioctl_param __=
-user *uparams,
-> >>                             put_user(p->u.value.c, &up->c))
-> >>                                 return -EFAULT;
-> >>                         break;
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> >> +                       if (put_user((u64)p->u.ubuf.size, &up->b))
-> >> +                               return -EFAULT;
-> >> +                       break;
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> >>                         if (put_user((u64)p->u.memref.size, &up->b))
-> >> @@ -672,6 +688,13 @@ static int params_to_supp(struct tee_context *ctx,
-> >>                         ip.b =3D p->u.value.b;
-> >>                         ip.c =3D p->u.value.c;
-> >>                         break;
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> >> +                       ip.a =3D (u64)p->u.ubuf.uaddr;
-> >> +                       ip.b =3D p->u.ubuf.size;
-> >> +                       ip.c =3D 0;
-> >> +                       break;
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> >> @@ -774,6 +797,16 @@ static int params_from_supp(struct tee_param *param=
-s, size_t num_params,
-> >>                         p->u.value.b =3D ip.b;
-> >>                         p->u.value.c =3D ip.c;
-> >>                         break;
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> >> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> >> +                       p->u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
-> >> +                       p->u.ubuf.size =3D ip.b;
-> >> +
-> >> +                       if (!access_ok(params[n].u.ubuf.uaddr,
-> >> +                                      params[n].u.ubuf.size))
-> >> +                               return -EFAULT;
-> >> +
-> >> +                       break;
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> >>                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> >>                         /*
-> >> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> >> index ce23fd42c5d4..d773f91c6bdd 100644
-> >> --- a/include/linux/tee_drv.h
-> >> +++ b/include/linux/tee_drv.h
-> >> @@ -82,6 +82,11 @@ struct tee_param_memref {
-> >>         struct tee_shm *shm;
-> >>  };
-> >>
-> >> +struct tee_param_ubuf {
-> >> +       void * __user uaddr;
-> >> +       size_t size;
-> >> +};
-> >> +
-> >>  struct tee_param_value {
-> >>         u64 a;
-> >>         u64 b;
-> >> @@ -92,6 +97,7 @@ struct tee_param {
-> >>         u64 attr;
-> >>         union {
-> >>                 struct tee_param_memref memref;
-> >> +               struct tee_param_ubuf ubuf;
-> >>                 struct tee_param_value value;
-> >>         } u;
-> >>  };
-> >> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> >> index d0430bee8292..3e9b1ec5dfde 100644
-> >> --- a/include/uapi/linux/tee.h
-> >> +++ b/include/uapi/linux/tee.h
-> >> @@ -151,6 +151,13 @@ struct tee_ioctl_buf_data {
-> >>  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT        6
-> >>  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT 7       /* input and out=
-put */
-> >>
-> >> +/*
-> >> + * These defines userspace buffer parameters.
-> >> + */
-> >> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT   8
-> >> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT  9
-> >> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT   10      /* input and out=
-put */
-> >> +
-> >>  /*
-> >>   * Mask for the type part of the attribute, leaves room for more types
-> >>   */
-> >> @@ -186,14 +193,17 @@ struct tee_ioctl_buf_data {
-> >>  /**
-> >>   * struct tee_ioctl_param - parameter
-> >>   * @attr: attributes
-> >> - * @a: if a memref, offset into the shared memory object, else a value =
-parameter
-> >> - * @b: if a memref, size of the buffer, else a value parameter
-> >> + * @a: if a memref, offset into the shared memory object,
-> >> + *     else if a ubuf, address of the user buffer,
-> >> + *     else a value parameter
-> >> + * @b: if a memref or ubuf, size of the buffer, else a value parameter
-> >>   * @c: if a memref, shared memory identifier, else a value parameter
-> >>   *
-> >> - * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref or value is use=
-d in
-> >> - * the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value and
-> >> - * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref. TEE_PARAM_ATTR_TYPE_N=
-ONE
-> >> - * indicates that none of the members are used.
-> >> + * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref, ubuf, or value=
- is
-> >> + * used in the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value,
-> >> + * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref, and TEE_PARAM_ATTR_TY=
-PE_UBUF_*
-> >> + * indicates ubuf. TEE_PARAM_ATTR_TYPE_NONE indicates that none of the =
-members
-> >> + * are used.
-> >>   *
-> >>   * Shared memory is allocated with TEE_IOC_SHM_ALLOC which returns an
-> >>   * identifier representing the shared memory object. A memref can refer=
-ence
-> >>
-> >> --
-> >> 2.34.1
-> >>
->
 
---===============4846025440834383843==--
+
+--===============8855474821321053380==--
 
