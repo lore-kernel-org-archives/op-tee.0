@@ -1,151 +1,130 @@
-From: David Hildenbrand <david@redhat.com>
+From: Sumit Garg <sumit.garg@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v6 09/10] optee: FF-A: dynamic restricted memory allocation
-Date: Wed, 09 Apr 2025 12:01:21 +0200
-Message-ID: <561d6050-e24f-4643-806f-8a520e324d11@redhat.com>
-In-Reply-To: <Z-u8MWNVNy9lLbkK@sumit-X1>
+Subject: Re: [PATCH v6 05/10] tee: implement restricted DMA-heap
+Date: Wed, 09 Apr 2025 18:20:21 +0530
+Message-ID: <Z_ZtDQQY4eouqBh8@sumit-X1>
+In-Reply-To: <
+ <CAHUa44EGWuVPjoxpG-S66he=6dkvkwzxNewaGKVKXUxrO41ztg@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1368752870835183724=="
+Content-Type: multipart/mixed; boundary="===============6385446967458017567=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1368752870835183724==
+--===============6385446967458017567==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On 01.04.25 12:13, Sumit Garg wrote:
-> + MM folks to seek guidance here.
+On Tue, Apr 08, 2025 at 03:28:45PM +0200, Jens Wiklander wrote:
+> On Tue, Apr 8, 2025 at 11:14=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org=
+> wrote:
+> >
+> > On Tue, Apr 01, 2025 at 10:33:04AM +0200, Jens Wiklander wrote:
+> > > On Tue, Apr 1, 2025 at 9:58=E2=80=AFAM Sumit Garg <sumit.garg@kernel.=
+org> wrote:
+> > > >
+> > > > On Tue, Mar 25, 2025 at 11:55:46AM +0100, Jens Wiklander wrote:
+> > > > > Hi Sumit,
+> > > > >
+> > > >
+> > > > <snip>
+> > > >
+> > > > >
+> > > > > >
+> > > > > > > +
+> > > > > > > +#include "tee_private.h"
+> > > > > > > +
+> > > > > > > +struct tee_dma_heap {
+> > > > > > > +     struct dma_heap *heap;
+> > > > > > > +     enum tee_dma_heap_id id;
+> > > > > > > +     struct tee_rstmem_pool *pool;
+> > > > > > > +     struct tee_device *teedev;
+> > > > > > > +     /* Protects pool and teedev above */
+> > > > > > > +     struct mutex mu;
+> > > > > > > +};
+> > > > > > > +
+> > > > > > > +struct tee_heap_buffer {
+> > > > > > > +     struct tee_rstmem_pool *pool;
+> > > > > > > +     struct tee_device *teedev;
+> > > > > > > +     size_t size;
+> > > > > > > +     size_t offs;
+> > > > > > > +     struct sg_table table;
+> > > > > > > +};
+> > > > > > > +
+> > > > > > > +struct tee_heap_attachment {
+> > > > > > > +     struct sg_table table;
+> > > > > > > +     struct device *dev;
+> > > > > > > +};
+> > > > > > > +
+> > > > > > > +struct tee_rstmem_static_pool {
+> > > > > > > +     struct tee_rstmem_pool pool;
+> > > > > > > +     struct gen_pool *gen_pool;
+> > > > > > > +     phys_addr_t pa_base;
+> > > > > > > +};
+> > > > > > > +
+> > > > > > > +#if !IS_MODULE(CONFIG_TEE) && IS_ENABLED(CONFIG_DMABUF_HEAPS)
+> > > > > >
+> > > > > > Can this dependency rather be better managed via Kconfig?
+> > > > >
+> > > > > This was the easiest yet somewhat flexible solution I could find. If
+> > > > > you have something better, let's use that instead.
+> > > > >
+> > > >
+> > > > --- a/drivers/tee/optee/Kconfig
+> > > > +++ b/drivers/tee/optee/Kconfig
+> > > > @@ -5,6 +5,7 @@ config OPTEE
+> > > >         depends on HAVE_ARM_SMCCC
+> > > >         depends on MMU
+> > > >         depends on RPMB || !RPMB
+> > > > +       select DMABUF_HEAPS
+> > > >         help
+> > > >           This implements the OP-TEE Trusted Execution Environment (T=
+EE)
+> > > >           driver.
+> > >
+> > > I wanted to avoid that since there are plenty of use cases where
+> > > DMABUF_HEAPS aren't needed.
+> >
+> > Yeah, but how the users will figure out the dependency to enable DMA
+> > heaps with TEE subsystem.
 >=20
-> On Thu, Mar 27, 2025 at 09:07:34AM +0100, Jens Wiklander wrote:
->> Hi Sumit,
->>
->> On Tue, Mar 25, 2025 at 8:42=E2=80=AFAM Sumit Garg <sumit.garg@kernel.or=
-g> wrote:
->>>
->>> On Wed, Mar 05, 2025 at 02:04:15PM +0100, Jens Wiklander wrote:
->>>> Add support in the OP-TEE backend driver dynamic restricted memory
->>>> allocation with FF-A.
->>>>
->>>> The restricted memory pools for dynamically allocated restrict memory
->>>> are instantiated when requested by user-space. This instantiation can
->>>> fail if OP-TEE doesn't support the requested use-case of restricted
->>>> memory.
->>>>
->>>> Restricted memory pools based on a static carveout or dynamic allocation
->>>> can coexist for different use-cases. We use only dynamic allocation with
->>>> FF-A.
->>>>
->>>> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
->>>> ---
->>>>   drivers/tee/optee/Makefile        |   1 +
->>>>   drivers/tee/optee/ffa_abi.c       | 143 ++++++++++++-
->>>>   drivers/tee/optee/optee_private.h |  13 +-
->>>>   drivers/tee/optee/rstmem.c        | 329 ++++++++++++++++++++++++++++++
->>>>   4 files changed, 483 insertions(+), 3 deletions(-)
->>>>   create mode 100644 drivers/tee/optee/rstmem.c
->>>>
+> I hope, without too much difficulty. They are after all looking for a
+> way to allocate memory from a DMA heap.
 >=20
-> <snip>
+> > So it's better we provide a generic kernel
+> > Kconfig which enables all the default features.
 >=20
->>>> diff --git a/drivers/tee/optee/rstmem.c b/drivers/tee/optee/rstmem.c
->>>> new file mode 100644
->>>> index 000000000000..ea27769934d4
->>>> --- /dev/null
->>>> +++ b/drivers/tee/optee/rstmem.c
->>>> @@ -0,0 +1,329 @@
->>>> +// SPDX-License-Identifier: GPL-2.0-only
->>>> +/*
->>>> + * Copyright (c) 2025, Linaro Limited
->>>> + */
->>>> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->>>> +
->>>> +#include <linux/errno.h>
->>>> +#include <linux/genalloc.h>
->>>> +#include <linux/slab.h>
->>>> +#include <linux/string.h>
->>>> +#include <linux/tee_core.h>
->>>> +#include <linux/types.h>
->>>> +#include "optee_private.h"
->>>> +
->>>> +struct optee_rstmem_cma_pool {
->>>> +     struct tee_rstmem_pool pool;
->>>> +     struct gen_pool *gen_pool;
->>>> +     struct optee *optee;
->>>> +     size_t page_count;
->>>> +     u16 *end_points;
->>>> +     u_int end_point_count;
->>>> +     u_int align;
->>>> +     refcount_t refcount;
->>>> +     u32 use_case;
->>>> +     struct tee_shm *rstmem;
->>>> +     /* Protects when initializing and tearing down this struct */
->>>> +     struct mutex mutex;
->>>> +};
->>>> +
->>>> +static struct optee_rstmem_cma_pool *
->>>> +to_rstmem_cma_pool(struct tee_rstmem_pool *pool)
->>>> +{
->>>> +     return container_of(pool, struct optee_rstmem_cma_pool, pool);
->>>> +}
->>>> +
->>>> +static int init_cma_rstmem(struct optee_rstmem_cma_pool *rp)
->>>> +{
->>>> +     int rc;
->>>> +
->>>> +     rp->rstmem =3D tee_shm_alloc_cma_phys_mem(rp->optee->ctx, rp->page=
-_count,
->>>> +                                             rp->align);
->>>> +     if (IS_ERR(rp->rstmem)) {
->>>> +             rc =3D PTR_ERR(rp->rstmem);
->>>> +             goto err_null_rstmem;
->>>> +     }
->>>> +
->>>> +     /*
->>>> +      * TODO unmap the memory range since the physical memory will
->>>> +      * become inaccesible after the lend_rstmem() call.
->>>> +      */
->>>
->>> What's your plan for this TODO? I think we need a CMA allocator here
->>> which can allocate un-mapped memory such that any cache speculation
->>> won't lead to CPU hangs once the memory restriction comes into picture.
->>
->> What happens is platform-specific. For some platforms, it might be
->> enough to avoid explicit access. Yes, a CMA allocator with unmapped
->> memory or where memory can be unmapped is one option.
+> I disagree, it should be possible to configure without DMABUF_HEAPS if desi=
+red.
+
+It's hard to see a use-case for that additional compile time option. If
+you are worried about kernel size then those can be built as modules. On
+the other hand the benifit is that we avoid ifdefery and providing sane
+TEE defaults where features can be detected and enabled at runtime
+instead.
+
 >=20
-> Did you get a chance to enable real memory protection on RockPi board?
-> This will atleast ensure that mapped restricted memory without explicit
-> access works fine. Since otherwise once people start to enable real
-> memory restriction in OP-TEE, there can be chances of random hang ups
-> due to cache speculation.
+> >
+> > > This seems to do the job:
+> > > +config TEE_DMABUF_HEAP
+> > > + bool
+> > > + depends on TEE =3D y && DMABUF_HEAPS
+> > >
+> > > We can only use DMABUF_HEAPS if the TEE subsystem is compiled into the =
+kernel.
+> >
+> > Ah, I see. So we aren't exporting the DMA heaps APIs for TEE subsystem
+> > to use. We should do that such that there isn't a hard dependency to
+> > compile them into the kernel.
 >=20
-> MM folks,
->=20
-> Basically what we are trying to achieve here is a "no-map" DT behaviour
-> [1] which is rather dynamic in  nature. The use-case here is that a memory
-> block allocated from CMA can be marked restricted at runtime where we
-> would like the Linux not being able to directly or indirectly (cache
-> speculation) access it. Once memory restriction use-case has been
-> completed, the memory block can be marked as normal and freed for
-> further CMA allocation.
->=20
-> It will be apprciated if you can guide us regarding the appropriate APIs
-> to use for un-mapping/mamping CMA allocations for this use-case.
+> I was saving that for a later patch set as a later problem. We may
+> save some time by not doing it now.
+>
 
-Can we get some more information why that is even required, so we can=20
-decide if that is even the right thing to do? :)
+But I think it's not a correct way to just reuse internal APIs from DMA
+heaps subsystem without exporting them. It can be seen as a inter
+subsystem API contract breach. I hope it won't be an issue with DMA heap
+maintainers regarding export of those APIs.
 
-Who would mark the memory block as restricted and for which purpose?
+-Sumit
 
-In arch/powerpc/platforms/powernv/memtrace.c we have some arch-specific=20
-code to remove the directmap after alloc_contig_pages(). See=20
-memtrace_alloc_node(). But it's very arch-specific ...
-
---=20
-Cheers,
-
-David / dhildenb
-
-
---===============1368752870835183724==--
+--===============6385446967458017567==--
 
