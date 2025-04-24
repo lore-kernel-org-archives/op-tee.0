@@ -1,60 +1,49 @@
-From: Mario Limonciello <superm1@kernel.org>
+From: Sumit Garg <sumit.garg@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH 2/2] tee: Sort header includes
-Date: Mon, 21 Apr 2025 10:22:23 -0500
-Message-ID: <20250421152238.764659-3-superm1@kernel.org>
-In-Reply-To: <20250421152238.764659-1-superm1@kernel.org>
+Subject: Re: [PATCH] tee: optee: smc: remove unnecessary NULL check before
+ release_firmware()
+Date: Thu, 24 Apr 2025 10:23:55 +0530
+Message-ID: <aAnD4_WXl8gE2bGv@sumit-X1>
+In-Reply-To: <20250410075635.3558712-1-nichen@iscas.ac.cn>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0847529653928194670=="
+Content-Type: multipart/mixed; boundary="===============7059506036553221247=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0847529653928194670==
+--===============7059506036553221247==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-From: Mario Limonciello <mario.limonciello@amd.com>
+On Thu, Apr 10, 2025 at 03:56:35PM +0800, Chen Ni wrote:
+> release_firmware() checks for NULL pointers internally.
+> Remove unneeded NULL check for fmw here.
+> 
+> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
+> ---
+>  drivers/tee/optee/smc_abi.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Various headers have been added over time that are not added alphabetically
-and a private header is used before one of the linux/ headers.
+Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-Resort the list.
+-Sumit
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
- drivers/tee/amdtee/core.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> index f0c3ac1103bb..26f8f7bbbe56 100644
+> --- a/drivers/tee/optee/smc_abi.c
+> +++ b/drivers/tee/optee/smc_abi.c
+> @@ -1551,8 +1551,7 @@ static int optee_load_fw(struct platform_device *pdev,
+>  		  data_pa_high, data_pa_low, 0, 0, 0, &res);
+>  	if (!rc)
+>  		rc = res.a0;
+> -	if (fw)
+> -		release_firmware(fw);
+> +	release_firmware(fw);
+>  	kfree(data_buf);
+>  
+>  	if (!rc) {
+> -- 
+> 2.25.1
+> 
 
-diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
-index a44625d076401..fb39d9a19c698 100644
---- a/drivers/tee/amdtee/core.c
-+++ b/drivers/tee/amdtee/core.c
-@@ -6,18 +6,19 @@
-  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/errno.h>
-+#include <linux/device.h>
-+#include <linux/firmware.h>
- #include <linux/io.h>
-+#include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/psp-tee.h>
- #include <linux/slab.h>
- #include <linux/string.h>
--#include <linux/device.h>
- #include <linux/tee_core.h>
- #include <linux/types.h>
--#include <linux/mm.h>
- #include <linux/uaccess.h>
--#include <linux/firmware.h>
-+
- #include "amdtee_private.h"
--#include <linux/psp-tee.h>
- 
- static struct amdtee_driver_data *drv_data;
- static DEFINE_MUTEX(session_list_mutex);
--- 
-2.43.0
-
-
---===============0847529653928194670==--
+--===============7059506036553221247==--
 
