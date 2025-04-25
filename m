@@ -1,49 +1,37 @@
-From: Sumit Garg <sumit.garg@kernel.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: smc: remove unnecessary NULL check before
- release_firmware()
-Date: Thu, 24 Apr 2025 10:23:55 +0530
-Message-ID: <aAnD4_WXl8gE2bGv@sumit-X1>
-In-Reply-To: <20250410075635.3558712-1-nichen@iscas.ac.cn>
+Subject: OP-TEE 4.6.0 has been released
+Date: Fri, 25 Apr 2025 13:41:04 +0200
+Message-ID: 
+ <CAHUa44Eq-28b5sHogJf92Co6t6v9MKXCYYTmnrM+8g0Mb08pCw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7059506036553221247=="
+Content-Type: multipart/mixed; boundary="===============0470631999856210751=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7059506036553221247==
+--===============0470631999856210751==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 10, 2025 at 03:56:35PM +0800, Chen Ni wrote:
-> release_firmware() checks for NULL pointers internally.
-> Remove unneeded NULL check for fmw here.
-> 
-> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
-> ---
->  drivers/tee/optee/smc_abi.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+Hi,
 
-Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+I'm pleased to announce that OP-TEE version 4.6.0 is now available.
+The list of changes can be found in the changelog [1]. A blog post will
+be published soon on trustedfirmware.org [2].
 
--Sumit
+We have one known issue in this release [3]. We are collecting further
+details and solutions for it in the GitHub issue [3].
 
-> 
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index f0c3ac1103bb..26f8f7bbbe56 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -1551,8 +1551,7 @@ static int optee_load_fw(struct platform_device *pdev,
->  		  data_pa_high, data_pa_low, 0, 0, 0, &res);
->  	if (!rc)
->  		rc = res.a0;
-> -	if (fw)
-> -		release_firmware(fw);
-> +	release_firmware(fw);
->  	kfree(data_buf);
->  
->  	if (!rc) {
-> -- 
-> 2.25.1
-> 
+A big thank you to everyone who participated with contributions and
+helping out with testing the release [4].
 
---===============7059506036553221247==--
+[1] https://github.com/OP-TEE/optee_os/blob/4.6.0/CHANGELOG.md
+[2] https://www.trustedfirmware.org/blog/
+[3] https://github.com/OP-TEE/optee_os/issues/7374
+[3] https://github.com/OP-TEE/optee_os/commit/71785645fa6ce42db40dbf5a54e0eae=
+dc4f61591
+
+Regards,
+Jens
+
+--===============0470631999856210751==--
 
