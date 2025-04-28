@@ -1,101 +1,102 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jann Horn <jannh@google.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v2] tee: shm: fix slab page refcounting
-Date: Mon, 28 Apr 2025 14:48:15 +0200
-Message-ID: 
- <CAHUa44HEsMkzQHZZufdwutQyZRtig6e0qWomhwgDZAhy2qDyhg@mail.gmail.com>
-In-Reply-To: <Z-TXMIXzaro0w60M@sumit-X1>
+Subject: [PATCH] tee: Prevent size calculation wraparound on 32-bit kernels
+Date: Mon, 28 Apr 2025 15:06:43 +0200
+Message-ID: <20250428-tee-sizecheck-v1-1-5c3c25a2fa79@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6049024387104786837=="
+Content-Type: multipart/mixed; boundary="===============0853913773346480550=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6049024387104786837==
+--===============0853913773346480550==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 27, 2025 at 5:42=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
->
-> On Wed, Mar 26, 2025 at 02:47:46PM +0100, Jens Wiklander wrote:
-> > On Wed, Mar 26, 2025 at 12:07=E2=80=AFPM Marco Felsch <m.felsch@pengutr=
-onix.de> wrote:
-> > >
-> > > On 25-03-26, Matthew Wilcox wrote:
-> > > > On Tue, Mar 25, 2025 at 09:07:39PM +0100, Marco Felsch wrote:
-> > > > > Skip manipulating the refcount in case of slab pages according comm=
-it
-> > > > > b9c0e49abfca ("mm: decline to manipulate the refcount on a slab pag=
-e").
-> > > >
-> > > > This almost certainly isn't right.  I know nothing about TEE, but that
-> > > > you are doing this indicates a problem.  The hack that we put into
-> > > > networking should not be blindly replicated.
-> > > >
-> > > > Why are you taking a reference on the pages to begin with?  Is it copy
-> > > > and pasted from somewhere else, or was there actual thought put into =
-it?
-> > >
-> > > Not sure, this belongs to the TEE maintainers.
-> >
-> > I don't know. We were getting the user pages first, so I assume we
-> > just did the same thing when we added support for kernel pages.
-> >
-> > >
-> > > > If it's "prevent the caller from freeing the allocation", well, it ne=
-ver
-> > > > accomplished that with slab allocations.  So for callers that do kmal=
-loc
-> > > > (eg setup_mm_hdr()  in drivers/firmware/efi/stmm/tee_stmm_efi.c), you
-> > > > have to rely on them not freeing the allocation while the TEE driver
-> > > > has it.
->
-> It's not just about the TEE driver but rather if the TEE implementation
-> (a trusted OS) to whom the page is registered with. We don't want the
-> trusted OS to work on registered kernel pages if they gets free somehow
-> in the TEE client driver. Having a reference in the TEE subsystem
-> assured us that won't happen. But if you say slab allocations are still
-> prone the kernel pages getting freed even after refcount then can you
-> suggest how should we handle this better?
->
-> As otherwise it can cause very hard to debug problems if trusted OS can
-> manipulate kernel pages that are no longer available.
+The current code around TEE_IOCTL_PARAM_SIZE() is a bit wrong on
+32-bit kernels: Multiplying a user-provided 32-bit value with the
+size of a structure can wrap around on such platforms.
 
-We must be able to rely on the kernel callers to have the needed
-references before calling tee_shm_register_kernel_buf() and to keep
-those until after calling tee_shm_free().
+Fix it by using saturating arithmetic for the size calculation.
+
+This has no security consequences because, in all users of
+TEE_IOCTL_PARAM_SIZE(), the subsequent kcalloc() implicitly checks
+for wrapping.
+
+Signed-off-by: Jann Horn <jannh@google.com>
+---
+Note that I don't have a test device with a TEE; I only compile-tested
+the change on an x86-64 build.
+---
+ drivers/tee/tee_core.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index d113679b1e2d..acc7998758ad 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -10,6 +10,7 @@
+ #include <linux/fs.h>
+ #include <linux/idr.h>
+ #include <linux/module.h>
++#include <linux/overflow.h>
+ #include <linux/slab.h>
+ #include <linux/tee_core.h>
+ #include <linux/uaccess.h>
+@@ -19,7 +20,7 @@
+=20
+ #define TEE_NUM_DEVICES	32
+=20
+-#define TEE_IOCTL_PARAM_SIZE(x) (sizeof(struct tee_param) * (x))
++#define TEE_IOCTL_PARAM_SIZE(x) (size_mul(sizeof(struct tee_param), (x)))
+=20
+ #define TEE_UUID_NS_NAME_SIZE	128
+=20
+@@ -487,7 +488,7 @@ static int tee_ioctl_open_session(struct tee_context *ctx,
+ 	if (copy_from_user(&arg, uarg, sizeof(arg)))
+ 		return -EFAULT;
+=20
+-	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) !=3D buf.buf_len)
++	if (size_add(sizeof(arg), TEE_IOCTL_PARAM_SIZE(arg.num_params)) !=3D buf.bu=
+f_len)
+ 		return -EINVAL;
+=20
+ 	if (arg.num_params) {
+@@ -565,7 +566,7 @@ static int tee_ioctl_invoke(struct tee_context *ctx,
+ 	if (copy_from_user(&arg, uarg, sizeof(arg)))
+ 		return -EFAULT;
+=20
+-	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) !=3D buf.buf_len)
++	if (size_add(sizeof(arg), TEE_IOCTL_PARAM_SIZE(arg.num_params)) !=3D buf.bu=
+f_len)
+ 		return -EINVAL;
+=20
+ 	if (arg.num_params) {
+@@ -699,7 +700,7 @@ static int tee_ioctl_supp_recv(struct tee_context *ctx,
+ 	if (get_user(num_params, &uarg->num_params))
+ 		return -EFAULT;
+=20
+-	if (sizeof(*uarg) + TEE_IOCTL_PARAM_SIZE(num_params) !=3D buf.buf_len)
++	if (size_add(sizeof(*uarg), TEE_IOCTL_PARAM_SIZE(num_params)) !=3D buf.buf_=
+len)
+ 		return -EINVAL;
+=20
+ 	params =3D kcalloc(num_params, sizeof(struct tee_param), GFP_KERNEL);
+@@ -798,7 +799,7 @@ static int tee_ioctl_supp_send(struct tee_context *ctx,
+ 	    get_user(num_params, &uarg->num_params))
+ 		return -EFAULT;
+=20
+-	if (sizeof(*uarg) + TEE_IOCTL_PARAM_SIZE(num_params) > buf.buf_len)
++	if (size_add(sizeof(*uarg), TEE_IOCTL_PARAM_SIZE(num_params)) > buf.buf_len)
+ 		return -EINVAL;
+=20
+ 	params =3D kcalloc(num_params, sizeof(struct tee_param), GFP_KERNEL);
+
+---
+base-commit: b4432656b36e5cc1d50a1f2dc15357543add530e
+change-id: 20250428-tee-sizecheck-299d5eff8fc7
+
+--=20
+Jann Horn <jannh@google.com>
 
 
->
-> > > >
-> > > > And if that's your API contract, then there's no point in taking
-> > > > refcounts on other kinds of pages either; it's just unnecessary atomic
-> > > > instructions.  So the right patch might be something like this:
-> > > >
-> > > > +++ b/drivers/tee/tee_shm.c
-> > > > @@ -15,29 +15,11 @@
-> > > >  #include <linux/highmem.h>
-> > > >  #include "tee_private.h"
-> > >
-> > > I had the same diff but didn't went this way since we can't be sure that
-> > > iov's are always slab backed. As far as I understood IOVs. In
-> > > 'worst-case' scenario an iov can be backed by different page types too.
-> >
-> > We're only using kvec's. Briefly, before commit 7bdee4157591 ("tee:
-> > Use iov_iter to better support shared buffer registration") we checked
-> > with is_vmalloc_addr() || is_kmap_addr(). I like Matthew's suggestion,
-> > it's nice to fix problems by deleting code. :-)
-> >
-> > Sumit, you know the callers better. What do you think?
->
-> If we don't have a sane way to refcont registered kernel pages in TEE
-> subsystem then yeah we have to solely rely on the client drivers to
-> behave properly. Nevertheless, it's still within the kernel boundaries
-> which we can rely upon.
-
-Yes.
-
-Cheers,
-Jens
-
---===============6049024387104786837==--
+--===============0853913773346480550==--
 
