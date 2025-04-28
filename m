@@ -1,60 +1,79 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Sumit Garg <sumit.garg@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH] tee: optee: smc: remove unnecessary NULL check before
- release_firmware()
-Date: Mon, 28 Apr 2025 07:36:43 +0200
-Message-ID: 
- <CAHUa44EHpcn8g0Cg-nvg+DskvbD5PZzEg9b7N_Uj4VGF53NF2g@mail.gmail.com>
-In-Reply-To: <aAnD4_WXl8gE2bGv@sumit-X1>
+Subject: Re: [PATCH 1/2] tee: Use pr_fmt for messages
+Date: Mon, 28 Apr 2025 13:15:25 +0530
+Message-ID: <aA8yFRKBjEV2mgBL@sumit-X1>
+In-Reply-To: <20250421152238.764659-2-superm1@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7886447849738561819=="
+Content-Type: multipart/mixed; boundary="===============6459891363290251112=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7886447849738561819==
+--===============6459891363290251112==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 24, 2025 at 6:54=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
+On Mon, Apr 21, 2025 at 10:22:22AM -0500, Mario Limonciello via OP-TEE wrote:
+> From: Mario Limonciello <mario.limonciello@amd.com>
+> 
+> amd-tee inconsistently uses the word amd-tee in error messages.
+> 
+> Add a `pr_fmt()` define and remove the hardcoded use of amd-tee.
+> Also, remove the unnecessary driver init successful message because
+> there will be a message if failed and a user can assume it was successful
+> otherwise.
+> 
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+> ---
+>  drivers/tee/amdtee/core.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 >
-> On Thu, Apr 10, 2025 at 03:56:35PM +0800, Chen Ni wrote:
-> > release_firmware() checks for NULL pointers internally.
-> > Remove unneeded NULL check for fmw here.
-> >
-> > Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
-> > ---
-> >  drivers/tee/optee/smc_abi.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-I'm picking up this.
+Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-Thanks,
-Jens
+-Sumit
 
->
-> -Sumit
->
-> >
-> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > index f0c3ac1103bb..26f8f7bbbe56 100644
-> > --- a/drivers/tee/optee/smc_abi.c
-> > +++ b/drivers/tee/optee/smc_abi.c
-> > @@ -1551,8 +1551,7 @@ static int optee_load_fw(struct platform_device *pd=
-ev,
-> >                 data_pa_high, data_pa_low, 0, 0, 0, &res);
-> >       if (!rc)
-> >               rc =3D res.a0;
-> > -     if (fw)
-> > -             release_firmware(fw);
-> > +     release_firmware(fw);
-> >       kfree(data_buf);
-> >
-> >       if (!rc) {
-> > --
-> > 2.25.1
-> >
+> diff --git a/drivers/tee/amdtee/core.c b/drivers/tee/amdtee/core.c
+> index e487231d25dc0..a44625d076401 100644
+> --- a/drivers/tee/amdtee/core.c
+> +++ b/drivers/tee/amdtee/core.c
+> @@ -3,6 +3,8 @@
+>   * Copyright 2019 Advanced Micro Devices, Inc.
+>   */
+>  
+> + #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/errno.h>
+>  #include <linux/io.h>
+>  #include <linux/module.h>
+> @@ -458,7 +460,7 @@ static int __init amdtee_driver_init(void)
+>  
+>  	rc = psp_check_tee_status();
+>  	if (rc) {
+> -		pr_err("amd-tee driver: tee not present\n");
+> +		pr_err("tee not present\n");
+>  		return rc;
+>  	}
+>  
+> @@ -494,7 +496,6 @@ static int __init amdtee_driver_init(void)
+>  
+>  	drv_data->amdtee = amdtee;
+>  
+> -	pr_info("amd-tee driver initialization successful\n");
+>  	return 0;
+>  
+>  err_device_unregister:
+> @@ -510,7 +511,7 @@ static int __init amdtee_driver_init(void)
+>  	kfree(drv_data);
+>  	drv_data = NULL;
+>  
+> -	pr_err("amd-tee driver initialization failed\n");
+> +	pr_err("initialization failed\n");
+>  	return rc;
+>  }
+>  module_init(amdtee_driver_init);
+> -- 
+> 2.43.0
+> 
 
---===============7886447849738561819==--
+--===============6459891363290251112==--
 
