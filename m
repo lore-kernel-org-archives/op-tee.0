@@ -1,335 +1,304 @@
-From: Rouven Czerwinski <rouven.czerwinski@linaro.org>
+From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v7 04/11] optee: sync secure world ABI headers
-Date: Fri, 25 Apr 2025 15:36:33 +0200
-Message-ID: 
- <CAK8z29XHZXo5e1u8q_0D=iWxr3V2m7PateRGgqVGFe-WDeFKGg@mail.gmail.com>
-In-Reply-To: <20250404143215.2281034-5-jens.wiklander@linaro.org>
+Subject: Re: [PATCH v3 02/11] tee: add close_context to TEE driver operation
+Date: Mon, 28 Apr 2025 14:01:37 +1000
+Message-ID: <1bbdd255-ccd7-4b28-9d16-66c4e0c9fd34@oss.qualcomm.com>
+In-Reply-To: <aAYhCg6XOeZm7jqq@sumit-X1>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0200833726810587140=="
+Content-Type: multipart/mixed; boundary="===============0423674585062395059=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============0200833726810587140==
+--===============0423674585062395059==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Sumit
 
-On Fri, 4 Apr 2025 at 16:31, Jens Wiklander <jens.wiklander@linaro.org> wro=
-te:
+On 4/21/2025 8:42 PM, Sumit Garg wrote:
+> On Thu, Mar 27, 2025 at 07:47:24PM -0700, Amirreza Zarrabi wrote:
+>> The tee_context can be used to manage TEE user resources, including
+>> those allocated by the driver for the TEE on behalf of the user.
+>> The release() callback is invoked only when all resources, such as
+>> tee_shm, are released and there are no references to the tee_context.
+>>
+>> When a user closes the device file, the driver should notify the
+>> TEE to release any resources it may hold and drop the context
+>> references. To achieve this, a close_context() callback is
+>> introduced to initiate resource release in the TEE driver when
+>> the device file is closed.
+>=20
+> Can you ellaborate more as to whether the TEE driver will release
+> resources corresponding to a particular user or all the users?
 >
-> Update the header files describing the secure world ABI, both with and
-> without FF-A. The ABI is extended to deal with protected memory, but as
-> usual backward compatible.
->
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/tee/optee/optee_ffa.h | 27 +++++++++---
->  drivers/tee/optee/optee_msg.h | 83 ++++++++++++++++++++++++++++++-----
->  drivers/tee/optee/optee_smc.h | 71 +++++++++++++++++++++++++++++-
->  3 files changed, 163 insertions(+), 18 deletions(-)
->
-> diff --git a/drivers/tee/optee/optee_ffa.h b/drivers/tee/optee/optee_ffa.h
-> index 257735ae5b56..cc257e7956a3 100644
-> --- a/drivers/tee/optee/optee_ffa.h
-> +++ b/drivers/tee/optee/optee_ffa.h
-> @@ -81,7 +81,7 @@
->   *                   as the second MSG arg struct for
->   *                   OPTEE_FFA_YIELDING_CALL_WITH_ARG.
->   *        Bit[31:8]: Reserved (MBZ)
-> - * w5:   Bitfield of secure world capabilities OPTEE_FFA_SEC_CAP_* below,
-> + * w5:   Bitfield of OP-TEE capabilities OPTEE_FFA_SEC_CAP_*
->   * w6:   The maximum secure world notification number
->   * w7:   Not used (MBZ)
->   */
-> @@ -94,6 +94,8 @@
->  #define OPTEE_FFA_SEC_CAP_ASYNC_NOTIF  BIT(1)
->  /* OP-TEE supports probing for RPMB device if needed */
->  #define OPTEE_FFA_SEC_CAP_RPMB_PROBE   BIT(2)
-> +/* OP-TEE supports Protected Memory for secure data path */
-> +#define OPTEE_FFA_SEC_CAP_PROTMEM      BIT(3)
->
->  #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
->
-> @@ -108,7 +110,7 @@
->   *
->   * Return register usage:
->   * w3:    Error code, 0 on success
-> - * w4-w7: Note used (MBZ)
-> + * w4-w7: Not used (MBZ)
->   */
->  #define OPTEE_FFA_UNREGISTER_SHM       OPTEE_FFA_BLOCKING_CALL(3)
->
-> @@ -119,16 +121,31 @@
->   * Call register usage:
->   * w3:    Service ID, OPTEE_FFA_ENABLE_ASYNC_NOTIF
->   * w4:   Notification value to request bottom half processing, should be
-> - *       less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE.
-> + *       less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE
->   * w5-w7: Not used (MBZ)
->   *
->   * Return register usage:
->   * w3:    Error code, 0 on success
-> - * w4-w7: Note used (MBZ)
-> + * w4-w7: Not used (MBZ)
->   */
->  #define OPTEE_FFA_ENABLE_ASYNC_NOTIF   OPTEE_FFA_BLOCKING_CALL(5)
->
-> -#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE 64
-> +#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE        64
-> +
-> +/*
-> + * Release Protected memory
-> + *
-> + * Call register usage:
-> + * w3:    Service ID, OPTEE_FFA_RECLAIM_PROTMEM
-> + * w4:    Shared memory handle, lower bits
-> + * w5:    Shared memory handle, higher bits
-> + * w6-w7: Not used (MBZ)
-> + *
-> + * Return register usage:
-> + * w3:    Error code, 0 on success
-> + * w4-w7: Note used (MBZ)
-> + */
-> +#define OPTEE_FFA_RELEASE_PROTMEM      OPTEE_FFA_BLOCKING_CALL(8)
->
->  /*
->   * Call with struct optee_msg_arg as argument in the supplied shared memory
-> diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
-> index e8840a82b983..22d71d6f110d 100644
-> --- a/drivers/tee/optee/optee_msg.h
-> +++ b/drivers/tee/optee/optee_msg.h
-> @@ -133,13 +133,13 @@ struct optee_msg_param_rmem {
->  };
->
->  /**
-> - * struct optee_msg_param_fmem - ffa memory reference parameter
-> + * struct optee_msg_param_fmem - FF-A memory reference parameter
->   * @offs_lower:           Lower bits of offset into shared memory reference
->   * @offs_upper:           Upper bits of offset into shared memory reference
->   * @internal_offs: Internal offset into the first page of shared memory
->   *                reference
->   * @size:         Size of the buffer
-> - * @global_id:    Global identifier of Shared memory
-> + * @global_id:    Global identifier of the shared memory
->   */
->  struct optee_msg_param_fmem {
->         u32 offs_low;
-> @@ -165,7 +165,7 @@ struct optee_msg_param_value {
->   * @attr:      attributes
->   * @tmem:      parameter by temporary memory reference
->   * @rmem:      parameter by registered memory reference
-> - * @fmem:      parameter by ffa registered memory reference
-> + * @fmem:      parameter by FF-A registered memory reference
->   * @value:     parameter by opaque value
->   * @octets:    parameter by octet string
->   *
-> @@ -296,6 +296,18 @@ struct optee_msg_arg {
->   */
->  #define OPTEE_MSG_FUNCID_GET_OS_REVISION       0x0001
->
-> +/*
-> + * Values used in OPTEE_MSG_CMD_LEND_PROTMEM below
-> + * OPTEE_MSG_PROTMEM_RESERVED          Reserved
-> + * OPTEE_MSG_PROTMEM_SECURE_VIDEO_PLAY Secure Video Playback
-> + * OPTEE_MSG_PROTMEM_TRUSTED_UI                Trused UI
-> + * OPTEE_MSG_PROTMEM_SECURE_VIDEO_RECORD       Secure Video Recording
-> + */
-> +#define OPTEE_MSG_PROTMEM_RESERVED             0
-> +#define OPTEE_MSG_PROTMEM_SECURE_VIDEO_PLAY    1
-> +#define OPTEE_MSG_PROTMEM_TRUSTED_UI           2
-> +#define OPTEE_MSG_PROTMEM_SECURE_VIDEO_RECORD  3
-> +
->  /*
->   * Do a secure call with struct optee_msg_arg as argument
->   * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg::cmd
-> @@ -337,15 +349,62 @@ struct optee_msg_arg {
->   * OPTEE_MSG_CMD_STOP_ASYNC_NOTIF informs secure world that from now is
->   * normal world unable to process asynchronous notifications. Typically
->   * used when the driver is shut down.
-> + *
-> + * OPTEE_MSG_CMD_LEND_PROTMEM lends protected memory. The passed normal
-> + * physical memory is protected from normal world access. The memory
-> + * should be unmapped prior to this call since it becomes inaccessible
-> + * during the request.
-> + * Parameters are passed as:
-> + * [in] param[0].attr                  OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
-> + * [in] param[0].u.value.a             OPTEE_MSG_PROTMEM_* defined above
-> + * [in] param[1].attr                  OPTEE_MSG_ATTR_TYPE_TMEM_INPUT
-> + * [in] param[1].u.tmem.buf_ptr                physical address
-> + * [in] param[1].u.tmem.size           size
-> + * [in] param[1].u.tmem.shm_ref                holds protected memory refe=
-rence
-> + *
-> + * OPTEE_MSG_CMD_RECLAIM_PROTMEM reclaims a previously lent protected
-> + * memory reference. The physical memory is accessible by the normal world
-> + * after this function has return and can be mapped again. The information
-> + * is passed as:
-> + * [in] param[0].attr                  OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
-> + * [in] param[0].u.value.a             holds protected memory cookie
-> + *
-> + * OPTEE_MSG_CMD_GET_PROTMEM_CONFIG get configuration for a specific
-> + * protected memory use case. Parameters are passed as:
-> + * [in] param[0].attr                  OPTEE_MSG_ATTR_TYPE_VALUE_INOUT
-> + * [in] param[0].value.a               OPTEE_MSG_PROTMEM_*
-> + * [in] param[1].attr                  OPTEE_MSG_ATTR_TYPE_{R,F}MEM_OUTPUT
-> + * [in] param[1].u.{r,f}mem            Buffer or NULL
-> + * [in] param[1].u.{r,f}mem.size       Provided size of buffer or 0 for qu=
-ery
-> + * output for the protected use case:
-> + * [out] param[0].value.a              Minimal size of protected memory
-> + * [out] param[0].value.b              Required alignment of size and star=
-t of
-> + *                                     protected memory
-> + * [out] param[1].{r,f}mem.size                Size of output data
-> + * [out] param[1].{r,f}mem             If non-NULL, contains an array of
-> + *                                     uint16_t holding endpoints that
-> + *                                     must be included when lending
-> + *                                     memory for this use case
-> + *
-> + * OPTEE_MSG_CMD_ASSIGN_PROTMEM assigns use-case to protected memory
-> + * previously lent using the FFA_LEND framework ABI. Parameters are passed
-> + * as:
-> + * [in] param[0].attr                  OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
-> + * [in] param[0].u.value.a             holds protected memory cookie
-> + * [in] param[0].u.value.b             OPTEE_MSG_PROTMEM_* defined above
->   */
-> -#define OPTEE_MSG_CMD_OPEN_SESSION     0
-> -#define OPTEE_MSG_CMD_INVOKE_COMMAND   1
-> -#define OPTEE_MSG_CMD_CLOSE_SESSION    2
-> -#define OPTEE_MSG_CMD_CANCEL           3
-> -#define OPTEE_MSG_CMD_REGISTER_SHM     4
-> -#define OPTEE_MSG_CMD_UNREGISTER_SHM   5
-> -#define OPTEE_MSG_CMD_DO_BOTTOM_HALF   6
-> -#define OPTEE_MSG_CMD_STOP_ASYNC_NOTIF 7
-> -#define OPTEE_MSG_FUNCID_CALL_WITH_ARG 0x0004
-> +#define OPTEE_MSG_CMD_OPEN_SESSION             0
-> +#define OPTEE_MSG_CMD_INVOKE_COMMAND           1
-> +#define OPTEE_MSG_CMD_CLOSE_SESSION            2
-> +#define OPTEE_MSG_CMD_CANCEL                   3
-> +#define OPTEE_MSG_CMD_REGISTER_SHM             4
-> +#define OPTEE_MSG_CMD_UNREGISTER_SHM           5
-> +#define OPTEE_MSG_CMD_DO_BOTTOM_HALF           6
-> +#define OPTEE_MSG_CMD_STOP_ASYNC_NOTIF         7
-> +#define OPTEE_MSG_CMD_LEND_PROTMEM             8
-> +#define OPTEE_MSG_CMD_RECLAIM_PROTMEM          9
-> +#define OPTEE_MSG_CMD_GET_PROTMEM_CONFIG       10
-> +#define OPTEE_MSG_CMD_ASSIGN_PROTMEM           11
-> +#define OPTEE_MSG_FUNCID_CALL_WITH_ARG         0x0004
->
->  #endif /* _OPTEE_MSG_H */
-> diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
-> index 879426300821..b17e81f464a3 100644
-> --- a/drivers/tee/optee/optee_smc.h
-> +++ b/drivers/tee/optee/optee_smc.h
-> @@ -264,7 +264,6 @@ struct optee_smc_get_shm_config_result {
->  #define OPTEE_SMC_SEC_CAP_HAVE_RESERVED_SHM    BIT(0)
->  /* Secure world can communicate via previously unregistered shared memory =
-*/
->  #define OPTEE_SMC_SEC_CAP_UNREGISTERED_SHM     BIT(1)
-> -
->  /*
->   * Secure world supports commands "register/unregister shared memory",
->   * secure world accepts command buffers located in any parts of non-secure=
- RAM
-> @@ -280,6 +279,10 @@ struct optee_smc_get_shm_config_result {
->  #define OPTEE_SMC_SEC_CAP_RPC_ARG              BIT(6)
->  /* Secure world supports probing for RPMB device if needed */
->  #define OPTEE_SMC_SEC_CAP_RPMB_PROBE           BIT(7)
-> +/* Secure world supports protected memory */
-> +#define OPTEE_SMC_SEC_CAP_PROTMEM              BIT(8)
-> +/* Secure world supports dynamic protected memory */
-> +#define OPTEE_SMC_SEC_CAP_DYNAMIC_PROTMEM      BIT(9)
->
->  #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES 9
->  #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
-> @@ -451,6 +454,72 @@ struct optee_smc_disable_shm_cache_result {
->
->  /* See OPTEE_SMC_CALL_WITH_REGD_ARG above */
->  #define OPTEE_SMC_FUNCID_CALL_WITH_REGD_ARG    19
-> +/*
-> + * Get protected memory config
-> + *
-> + * Returns the protected memory config.
-> + *
-> + * Call register usage:
-> + * a0   SMC Function ID, OPTEE_SMC_GET_PROTMEM_CONFIG
-> + * a2-6        Not used, must be zero
-> + * a7  Hypervisor Client ID register
-> + *
-> + * Have config return register usage:
-> + * a0  OPTEE_SMC_RETURN_OK
-> + * a1  Physical address of start of protected memory
-> + * a2  Size of protected memory
-> + * a3  Not used
-> + * a4-7        Preserved
-> + *
-> + * Not available register usage:
-> + * a0  OPTEE_SMC_RETURN_ENOTAVAIL
-> + * a1-3 Not used
-> + * a4-7        Preserved
-> + */
-> +#define OPTEE_SMC_FUNCID_GET_PROTMEM_CONFIG            20
-> +#define OPTEE_SMC_GET_PROTMEM_CONFIG \
-> +       OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_PROTMEM_CONFIG)
-> +
-> +struct optee_smc_get_protmem_config_result {
-> +       unsigned long status;
-> +       unsigned long start;
-> +       unsigned long size;
-> +       unsigned long flags;
 
-The ABI comment does not document a flags return argument, either
-this can be removed or the ABI comment needs to be fixed.
-Same for
-> +};
-> +
-> +/*
-> + * Get dynamic protected memory config
-> + *
-> + * Returns the dynamic protected memory config.
-> + *
-> + * Call register usage:
-> + * a0  SMC Function ID, OPTEE_SMC_GET_DYN_SHM_CONFIG
+Only users in the closing context are affected. So, if multiple
+processes have opened the device file, only the resources belonging to
+that process -- along with the resources in that context obtained by QTEE
+-- are released.
 
-should be OPTEE_SMC_GET_DYN_PROTMEM_CONFIG
 
-> + * a2-6        Not used, must be zero
-> + * a7  Hypervisor Client ID register
-> + *
-> + * Have config return register usage:
-> + * a0  OPTEE_SMC_RETURN_OK
-> + * a1  Minamal size of protected memory
+>>
+>> Relocate teedev_ctx_get, teedev_ctx_put, tee_device_get, and
+>> tee_device_get functions to tee_drv.h to make them accessible
+>> outside the TEE subsystem.
+>=20
+> These should rather be relocated to tee_core.h as tee_drv.h is rather
+> meant for kernel TEE client drivers.
+>=20
 
-Nit: Typo, should be "Minimal"
+Ack.
 
-> + * a2  Required alignment of size and start of registered protected memory
-> + * a3  Not used
-> + * a4-7        Preserved
-> + *
-> + * Not available register usage:
-> + * a0  OPTEE_SMC_RETURN_ENOTAVAIL
-> + * a1-3 Not used
-> + * a4-7        Preserved
-> + */
-> +
-> +#define OPTEE_SMC_FUNCID_GET_DYN_PROTMEM_CONFIG        21
-> +#define OPTEE_SMC_GET_DYN_PROTMEM_CONFIG \
-> +       OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_DYN_PROTMEM_CONFIG)
-> +
-> +struct optee_smc_get_dyn_protmem_config_result {
-> +       unsigned long status;
-> +       unsigned long size;
-> +       unsigned long align;
-> +       unsigned long flags;
-> +};
+>>
+>> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>> ---
+>>  drivers/tee/tee_core.c    | 39 +++++++++++++++++++++++++++++++++++++++
+>>  drivers/tee/tee_private.h |  6 ------
+>>  include/linux/tee_core.h  | 11 +++++++++--
+>>  include/linux/tee_drv.h   | 40 ++++++++++++++++++++++++++++++++++++++++
+>>  4 files changed, 88 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+>> index 24edce4cdbaa..22cc7d624b0c 100644
+>> --- a/drivers/tee/tee_core.c
+>> +++ b/drivers/tee/tee_core.c
+>> @@ -72,6 +72,20 @@ struct tee_context *teedev_open(struct tee_device *teed=
+ev)
+>>  }
+>>  EXPORT_SYMBOL_GPL(teedev_open);
+>> =20
+>> +/**
+>> + * teedev_ctx_get() - Increment the reference count of a context
+>> + *
+>> + * This function increases the refcount of the context, which is tied to
+>> + * resources shared by the same tee_device. During the unregistration pro=
+cess,
+>> + * the context may remain valid even after tee_device_unregister() has re=
+turned.
+>> + *
+>> + * Users should ensure that the context's refcount is properly decreased =
+before
+>> + * calling tee_device_put(), typically within the context's release() fun=
+ction.
+>> + * Alternatively, users can call tee_device_get() and teedev_ctx_get() to=
+gether
+>> + * and release them simultaneously (see shm_alloc_helper()).
+>> + *
+>> + * @ctx: Pointer to the context
+>> + */
+>=20
+> Let's not duplicate the documentation here when it has already been
+> documented in the header file.
+>=20
+> Same for other places below.
+>=20
+> -Sumit
 >
->  /*
->   * Resume from RPC (for example after processing a foreign interrupt)
-> --
-> 2.43.0
 
-- Rouven
+I was trying to follow how the TEE subsystem has already documented
+other functions. I believe the documentation in the C file is the standard
+practice. But I'll remove these.
 
---===============0200833726810587140==--
+Best regards,
+Amir
+
+=20
+>>  void teedev_ctx_get(struct tee_context *ctx)
+>>  {
+>>  	if (ctx->releasing)
+>> @@ -79,6 +93,7 @@ void teedev_ctx_get(struct tee_context *ctx)
+>> =20
+>>  	kref_get(&ctx->refcount);
+>>  }
+>> +EXPORT_SYMBOL_GPL(teedev_ctx_get);
+>> =20
+>>  static void teedev_ctx_release(struct kref *ref)
+>>  {
+>> @@ -89,6 +104,10 @@ static void teedev_ctx_release(struct kref *ref)
+>>  	kfree(ctx);
+>>  }
+>> =20
+>> +/**
+>> + * teedev_ctx_put() - Decrease reference count on a context
+>> + * @ctx: pointer to the context
+>> + */
+>>  void teedev_ctx_put(struct tee_context *ctx)
+>>  {
+>>  	if (ctx->releasing)
+>> @@ -96,11 +115,15 @@ void teedev_ctx_put(struct tee_context *ctx)
+>> =20
+>>  	kref_put(&ctx->refcount, teedev_ctx_release);
+>>  }
+>> +EXPORT_SYMBOL_GPL(teedev_ctx_put);
+>> =20
+>>  void teedev_close_context(struct tee_context *ctx)
+>>  {
+>>  	struct tee_device *teedev =3D ctx->teedev;
+>> =20
+>> +	if (teedev->desc->ops->close_context)
+>> +		teedev->desc->ops->close_context(ctx);
+>> +
+>>  	teedev_ctx_put(ctx);
+>>  	tee_device_put(teedev);
+>>  }
+>> @@ -1024,6 +1047,10 @@ int tee_device_register(struct tee_device *teedev)
+>>  }
+>>  EXPORT_SYMBOL_GPL(tee_device_register);
+>> =20
+>> +/**
+>> + * tee_device_put() - Decrease the user count for a tee_device
+>> + * @teedev: pointer to the tee_device
+>> + */
+>>  void tee_device_put(struct tee_device *teedev)
+>>  {
+>>  	mutex_lock(&teedev->mutex);
+>> @@ -1037,7 +1064,18 @@ void tee_device_put(struct tee_device *teedev)
+>>  	}
+>>  	mutex_unlock(&teedev->mutex);
+>>  }
+>> +EXPORT_SYMBOL_GPL(tee_device_put);
+>> =20
+>> +/**
+>> + * tee_device_get() - Increment the user count for a tee_device
+>> + * @teedev: Pointer to the tee_device
+>> + *
+>> + * If tee_device_unregister() has been called and the final user of @teed=
+ev
+>> + * has already released the device, this function will fail to prevent ne=
+w users
+>> + * from accessing the device during the unregistration process.
+>> + *
+>> + * Returns: true if @teedev remains valid, otherwise false
+>> + */
+>>  bool tee_device_get(struct tee_device *teedev)
+>>  {
+>>  	mutex_lock(&teedev->mutex);
+>> @@ -1049,6 +1087,7 @@ bool tee_device_get(struct tee_device *teedev)
+>>  	mutex_unlock(&teedev->mutex);
+>>  	return true;
+>>  }
+>> +EXPORT_SYMBOL_GPL(tee_device_get);
+>> =20
+>>  /**
+>>   * tee_device_unregister() - Removes a TEE device
+>> diff --git a/drivers/tee/tee_private.h b/drivers/tee/tee_private.h
+>> index 9bc50605227c..d3f40a03de36 100644
+>> --- a/drivers/tee/tee_private.h
+>> +++ b/drivers/tee/tee_private.h
+>> @@ -14,12 +14,6 @@
+>> =20
+>>  int tee_shm_get_fd(struct tee_shm *shm);
+>> =20
+>> -bool tee_device_get(struct tee_device *teedev);
+>> -void tee_device_put(struct tee_device *teedev);
+>> -
+>> -void teedev_ctx_get(struct tee_context *ctx);
+>> -void teedev_ctx_put(struct tee_context *ctx);
+>> -
+>>  struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t si=
+ze);
+>>  struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+>>  					  unsigned long addr, size_t length);
+>> diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+>> index a38494d6b5f4..8a4c9e30b652 100644
+>> --- a/include/linux/tee_core.h
+>> +++ b/include/linux/tee_core.h
+>> @@ -65,8 +65,9 @@ struct tee_device {
+>>  /**
+>>   * struct tee_driver_ops - driver operations vtable
+>>   * @get_version:	returns version of driver
+>> - * @open:		called when the device file is opened
+>> - * @release:		release this open file
+>> + * @open:		called for a context when the device file is opened
+>> + * @close_context:	called when the device file is closed
+>> + * @release:		called to release the context
+>>   * @open_session:	open a new session
+>>   * @close_session:	close a session
+>>   * @system_session:	declare session as a system session
+>> @@ -76,11 +77,17 @@ struct tee_device {
+>>   * @supp_send:		called for supplicant to send a response
+>>   * @shm_register:	register shared memory buffer in TEE
+>>   * @shm_unregister:	unregister shared memory buffer in TEE
+>> + *
+>> + * The context given to @open might last longer than the device file if i=
+t is
+>> + * tied to other resources in the TEE driver. @close_context is called wh=
+en the
+>> + * client closes the device file, even if there are existing references t=
+o the
+>> + * context. The TEE driver can use @close_context to start cleaning up.
+>>   */
+>>  struct tee_driver_ops {
+>>  	void (*get_version)(struct tee_device *teedev,
+>>  			    struct tee_ioctl_version_data *vers);
+>>  	int (*open)(struct tee_context *ctx);
+>> +	void (*close_context)(struct tee_context *ctx);
+>>  	void (*release)(struct tee_context *ctx);
+>>  	int (*open_session)(struct tee_context *ctx,
+>>  			    struct tee_ioctl_open_session_arg *arg,
+>> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+>> index a54c203000ed..ce23fd42c5d4 100644
+>> --- a/include/linux/tee_drv.h
+>> +++ b/include/linux/tee_drv.h
+>> @@ -96,6 +96,46 @@ struct tee_param {
+>>  	} u;
+>>  };
+>> =20
+>> +/**
+>> + * tee_device_get() - Increment the user count for a tee_device
+>> + * @teedev: Pointer to the tee_device
+>> + *
+>> + * If tee_device_unregister() has been called and the final user of @teed=
+ev
+>> + * has already released the device, this function will fail to prevent ne=
+w users
+>> + * from accessing the device during the unregistration process.
+>> + *
+>> + * Returns: true if @teedev remains valid, otherwise false
+>> + */
+>> +bool tee_device_get(struct tee_device *teedev);
+>> +
+>> +/**
+>> + * tee_device_put() - Decrease the user count for a tee_device
+>> + * @teedev: pointer to the tee_device
+>> + */
+>> +void tee_device_put(struct tee_device *teedev);
+>> +
+>> +/**
+>> + * teedev_ctx_get() - Increment the reference count of a context
+>> + *
+>> + * This function increases the refcount of the context, which is tied to
+>> + * resources shared by the same tee_device. During the unregistration pro=
+cess,
+>> + * the context may remain valid even after tee_device_unregister() has re=
+turned.
+>> + *
+>> + * Users should ensure that the context's refcount is properly decreased =
+before
+>> + * calling tee_device_put(), typically within the context's release() fun=
+ction.
+>> + * Alternatively, users can call tee_device_get() and teedev_ctx_get() to=
+gether
+>> + * and release them simultaneously (see shm_alloc_helper()).
+>> + *
+>> + * @ctx: Pointer to the context
+>> + */
+>> +void teedev_ctx_get(struct tee_context *ctx);
+>> +
+>> +/**
+>> + * teedev_ctx_put() - Decrease reference count on a context
+>> + * @ctx: pointer to the context
+>> + */
+>> +void teedev_ctx_put(struct tee_context *ctx);
+>> +
+>>  /**
+>>   * tee_shm_alloc_kernel_buf() - Allocate kernel shared memory for a
+>>   *                              particular TEE client driver
+>>
+>> --=20
+>> 2.34.1
+>>
+>>
+
+
+--===============0423674585062395059==--
 
