@@ -1,73 +1,114 @@
-From: Richelle Mae Jaicten <rtj.whs@andokscorp.com>
+From: David Laight <david.laight.linux@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: INTERNATIONAL MONETARY FUND {IMF} OFFICE
-Date: Thu, 01 May 2025 20:03:46 +0800
-Message-ID: <1746101026971155086@andokscorp.com>
+Subject: 
+ Re: [PATCH] tee: Prevent size calculation wraparound on 32-bit kernels
+Date: Thu, 01 May 2025 21:01:58 +0100
+Message-ID: <20250501210158.5b2c86a7@pumpkin>
+In-Reply-To: <20250428-tee-sizecheck-v1-1-5c3c25a2fa79@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3053032560468798977=="
+Content-Type: multipart/mixed; boundary="===============7467279370255715690=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3053032560468798977==
+--===============7467279370255715690==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
- INTERNATIONAL MONETARY FUND {IMF} OFFICE
-IMF Headquarters. 700 19th Street, N.W,
-In Affiliation with West African Economic
-and the Monetary Union (WAEMU).
-Website:www.imf.org.
-C/O Kristalina Georgieva
-E-mail:kristalina.georgieva(a)outlook.com
+On Mon, 28 Apr 2025 15:06:43 +0200
+Jann Horn <jannh@google.com> wrote:
+
+> The current code around TEE_IOCTL_PARAM_SIZE() is a bit wrong on
+> 32-bit kernels: Multiplying a user-provided 32-bit value with the
+> size of a structure can wrap around on such platforms.
+>=20
+> Fix it by using saturating arithmetic for the size calculation.
+
+Why not just add a sanity check on 'num_params' after it is read.
+Max is 31 (1024-32)/32), but any sane limit will do because of
+the buf.buf_len test.
+
+	David
+
+>=20
+> This has no security consequences because, in all users of
+> TEE_IOCTL_PARAM_SIZE(), the subsequent kcalloc() implicitly checks
+> for wrapping.
+>=20
+> Signed-off-by: Jann Horn <jannh@google.com>
+> ---
+> Note that I don't have a test device with a TEE; I only compile-tested
+> the change on an x86-64 build.
+> ---
+>  drivers/tee/tee_core.c | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> index d113679b1e2d..acc7998758ad 100644
+> --- a/drivers/tee/tee_core.c
+> +++ b/drivers/tee/tee_core.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/fs.h>
+>  #include <linux/idr.h>
+>  #include <linux/module.h>
+> +#include <linux/overflow.h>
+>  #include <linux/slab.h>
+>  #include <linux/tee_core.h>
+>  #include <linux/uaccess.h>
+> @@ -19,7 +20,7 @@
+> =20
+>  #define TEE_NUM_DEVICES	32
+> =20
+> -#define TEE_IOCTL_PARAM_SIZE(x) (sizeof(struct tee_param) * (x))
+> +#define TEE_IOCTL_PARAM_SIZE(x) (size_mul(sizeof(struct tee_param), (x)))
+> =20
+>  #define TEE_UUID_NS_NAME_SIZE	128
+> =20
+> @@ -487,7 +488,7 @@ static int tee_ioctl_open_session(struct tee_context *c=
+tx,
+>  	if (copy_from_user(&arg, uarg, sizeof(arg)))
+>  		return -EFAULT;
+> =20
+> -	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) !=3D buf.buf_len)
+> +	if (size_add(sizeof(arg), TEE_IOCTL_PARAM_SIZE(arg.num_params)) !=3D buf.=
+buf_len)
+>  		return -EINVAL;
+> =20
+>  	if (arg.num_params) {
+> @@ -565,7 +566,7 @@ static int tee_ioctl_invoke(struct tee_context *ctx,
+>  	if (copy_from_user(&arg, uarg, sizeof(arg)))
+>  		return -EFAULT;
+> =20
+> -	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) !=3D buf.buf_len)
+> +	if (size_add(sizeof(arg), TEE_IOCTL_PARAM_SIZE(arg.num_params)) !=3D buf.=
+buf_len)
+>  		return -EINVAL;
+> =20
+>  	if (arg.num_params) {
+> @@ -699,7 +700,7 @@ static int tee_ioctl_supp_recv(struct tee_context *ctx,
+>  	if (get_user(num_params, &uarg->num_params))
+>  		return -EFAULT;
+> =20
+> -	if (sizeof(*uarg) + TEE_IOCTL_PARAM_SIZE(num_params) !=3D buf.buf_len)
+> +	if (size_add(sizeof(*uarg), TEE_IOCTL_PARAM_SIZE(num_params)) !=3D buf.bu=
+f_len)
+>  		return -EINVAL;
+> =20
+>  	params =3D kcalloc(num_params, sizeof(struct tee_param), GFP_KERNEL);
+> @@ -798,7 +799,7 @@ static int tee_ioctl_supp_send(struct tee_context *ctx,
+>  	    get_user(num_params, &uarg->num_params))
+>  		return -EFAULT;
+> =20
+> -	if (sizeof(*uarg) + TEE_IOCTL_PARAM_SIZE(num_params) > buf.buf_len)
+> +	if (size_add(sizeof(*uarg), TEE_IOCTL_PARAM_SIZE(num_params)) > buf.buf_l=
+en)
+>  		return -EINVAL;
+> =20
+>  	params =3D kcalloc(num_params, sizeof(struct tee_param), GFP_KERNEL);
+>=20
+> ---
+> base-commit: b4432656b36e5cc1d50a1f2dc15357543add530e
+> change-id: 20250428-tee-sizecheck-299d5eff8fc7
+>=20
 
 
-Attention Beneficiary,
-Your Long overdue Payment Is Ready.
-
-It came to our notice today that your long overdue unpaid contracts inheritan=
-ce fund, next of kin and lotto benefits that was originated from Africa, Euro=
-pe, Asia Plus Middle east and American is among the list of individuals and c=
-ompanies that your unpaid fund has been located to the CITY BANK LONDON, UNIT=
-ED KINGDOM. Your email appeared among the beneficiaries, who will receive a p=
-art-payment of your contractual sum and has been approved already for months =
-now. You are requested to get back to us for more directions and instructions=
- on how to receive your fund. However, we received an email from one Mr. Robe=
-rt Dean Randolph who told us that he is your next of kin and that you died in=
- a car accident last week. He has also submitted his account for us to transf=
-er the fund to him including his International passport.
-
-We want to hear from you before we can make the transfer to confirm if you ar=
-e dead or not. Please in confirmation that you are still alive, you are advis=
-ed to reconfirm the below listed information to enable us facilitate an immed=
-iate payment for you.
-
-1 Your full name
-2 Your present contact address.
-3 Your telephone & Fax numbers.
-4 Your Occupations/age/sex.
-5 Your Private Email Address.
-
-
-Once again, We apologize to you on behalf Of IMF (International Monetary Fund=
-) for the delays on paying your funds, which according to records in the syst=
-em had been long overdue. You can contact the IMF director/chairperson Ms. Kr=
-istalina Georgieva on her
-E-mail:(kristalina.georgieva(a)outlook.com).
-
-Sincerely,
-Kristalina Georgieva
-Chairperson/Director IMF,
-www.imf.org.
-Phone#:+1
-
-
-
-CONFIDENTIALITY NOTICE: This e-mail message (including attachments, if any) i=
-s intended for the use of the individual or the entity to whom it is addresse=
-d and may contain information that is privileged, proprietary, confidential a=
-nd exempt from disclosure. If you are not the intended   recipient, you are n=
-otified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, Pl=
-ease notify the sender and delete this E-mail message immediately.
-
---===============3053032560468798977==--
+--===============7467279370255715690==--
 
