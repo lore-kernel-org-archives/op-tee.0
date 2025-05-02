@@ -1,53 +1,43 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 09/14] cma: export cma_alloc() and cma_release()
-Date: Fri, 02 May 2025 11:59:23 +0200
-Message-ID: <20250502100049.1746335-10-jens.wiklander@linaro.org>
+Subject: [PATCH v8 10/14] dma-contiguous: export dma_contiguous_default_area
+Date: Fri, 02 May 2025 11:59:24 +0200
+Message-ID: <20250502100049.1746335-11-jens.wiklander@linaro.org>
 In-Reply-To: <20250502100049.1746335-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6946604230758164661=="
+Content-Type: multipart/mixed; boundary="===============6678599862749050328=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6946604230758164661==
+--===============6678599862749050328==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Export the two functions cma_alloc() and cma_release().
+Export the global variable dma_contiguous_default_area so
+dev_get_cma_area() can be called a module.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm(a)kvack.org
-Cc: linux-kernel(a)vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: iommu(a)lists.linux.dev
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- mm/cma.c | 2 ++
- 1 file changed, 2 insertions(+)
+ kernel/dma/contiguous.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/mm/cma.c b/mm/cma.c
-index 15632939f20a..c60901e73a26 100644
---- a/mm/cma.c
-+++ b/mm/cma.c
-@@ -915,6 +915,7 @@ struct page *cma_alloc(struct cma *cma, unsigned long cou=
-nt,
- {
- 	return __cma_alloc(cma, count, align, GFP_KERNEL | (no_warn ? __GFP_NOWARN =
-: 0));
- }
-+EXPORT_SYMBOL(cma_alloc);
-=20
- struct folio *cma_alloc_folio(struct cma *cma, int order, gfp_t gfp)
- {
-@@ -1002,6 +1003,7 @@ bool cma_release(struct cma *cma, const struct page *pa=
-ges,
-=20
- 	return true;
- }
-+EXPORT_SYMBOL(cma_release);
-=20
- bool cma_free_folio(struct cma *cma, const struct folio *folio)
- {
---=20
+diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
+index 8df0dfaaca18..eb361794a9c5 100644
+--- a/kernel/dma/contiguous.c
++++ b/kernel/dma/contiguous.c
+@@ -53,6 +53,7 @@
+ #endif
+ 
+ struct cma *dma_contiguous_default_area;
++EXPORT_SYMBOL(dma_contiguous_default_area);
+ 
+ /*
+  * Default global CMA area size can be defined in kernel's .config.
+-- 
 2.43.0
 
 
---===============6946604230758164661==--
+--===============6678599862749050328==--
 
