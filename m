@@ -1,36 +1,48 @@
-From: Jann Horn <jannh@google.com>
+From: Robin Murphy <robin.murphy@arm.com>
 To: op-tee@lists.trustedfirmware.org
 Subject: 
- Re: [PATCH] tee: Prevent size calculation wraparound on 32-bit kernels
-Date: Fri, 02 May 2025 14:28:21 +0200
-Message-ID: 
- <CAG48ez1DPWhT2dhd1iptFawWjteh_=pZ4M6Yq5KKCq2DTArnqw@mail.gmail.com>
-In-Reply-To: <20250501210158.5b2c86a7@pumpkin>
+ Re: [PATCH v8 10/14] dma-contiguous: export dma_contiguous_default_area
+Date: Fri, 02 May 2025 14:11:02 +0100
+Message-ID: <43e85d6a-ef99-4d61-910e-1d62814fd9ed@arm.com>
+In-Reply-To: <20250502100049.1746335-11-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4891763262978630770=="
+Content-Type: multipart/mixed; boundary="===============0401666850676375647=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4891763262978630770==
+--===============0401666850676375647==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On Thu, May 1, 2025 at 10:02 PM David Laight
-<david.laight.linux@gmail.com> wrote:
->
-> On Mon, 28 Apr 2025 15:06:43 +0200
-> Jann Horn <jannh@google.com> wrote:
->
-> > The current code around TEE_IOCTL_PARAM_SIZE() is a bit wrong on
-> > 32-bit kernels: Multiplying a user-provided 32-bit value with the
-> > size of a structure can wrap around on such platforms.
-> >
-> > Fix it by using saturating arithmetic for the size calculation.
->
-> Why not just add a sanity check on 'num_params' after it is read.
-> Max is 31 (1024-32)/32), but any sane limit will do because of
-> the buf.buf_len test.
+On 02/05/2025 10:59 am, Jens Wiklander wrote:
+> Export the global variable dma_contiguous_default_area so
+> dev_get_cma_area() can be called a module.
 
-That would work, too. I don't know which way looks nicer.
+What dma_map_ops implementation is in a module? Without any other 
+context, I can't help thinking this smells of something sketchy.
 
---===============4891763262978630770==--
+Thanks,
+Robin.
+
+> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+> Cc: Robin Murphy <robin.murphy@arm.com>
+> Cc: iommu(a)lists.linux.dev
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> ---
+>   kernel/dma/contiguous.c | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
+> index 8df0dfaaca18..eb361794a9c5 100644
+> --- a/kernel/dma/contiguous.c
+> +++ b/kernel/dma/contiguous.c
+> @@ -53,6 +53,7 @@
+>   #endif
+>   
+>   struct cma *dma_contiguous_default_area;
+> +EXPORT_SYMBOL(dma_contiguous_default_area);
+>   
+>   /*
+>    * Default global CMA area size can be defined in kernel's .config.
+
+--===============0401666850676375647==--
 
