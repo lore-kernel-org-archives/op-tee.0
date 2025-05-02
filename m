@@ -1,39 +1,49 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: David Laight <david.laight.linux@gmail.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 09/14] cma: export cma_alloc() and cma_release()
-Date: Mon, 05 May 2025 13:38:38 +0200
-Message-ID: 
- <CAHUa44HOq91O0yUWVUKcUzYv9j3xqOU3WsDg9KDXiExcdPO8fQ@mail.gmail.com>
-In-Reply-To: <aBTpiMIevmAmp5vr@casper.infradead.org>
+Subject: 
+ Re: [PATCH] tee: Prevent size calculation wraparound on 32-bit kernels
+Date: Fri, 02 May 2025 12:41:01 +0000
+Message-ID: <20250502134058.0f3e79cc@pumpkin>
+In-Reply-To: <
+ <CAG48ez1DPWhT2dhd1iptFawWjteh_=pZ4M6Yq5KKCq2DTArnqw@mail.gmail.com>>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8047552041624080589=="
+Content-Type: multipart/mixed; boundary="===============5127824033870539956=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============8047552041624080589==
+--===============5127824033870539956==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi,
+On Fri, 2 May 2025 14:28:21 +0200
+Jann Horn <jannh@google.com> wrote:
 
-On Fri, May 2, 2025 at 5:50=E2=80=AFPM Matthew Wilcox <willy@infradead.org>=
- wrote:
->
-> On Fri, May 02, 2025 at 11:59:23AM +0200, Jens Wiklander wrote:
-> > Export the two functions cma_alloc() and cma_release().
->
-> Why?  This is clearly part of a larger series, but you've given those of
-> us who are subscribed to linux-mm absolutely no information about why
-> you want to do this.
+> On Thu, May 1, 2025 at 10:02 PM David Laight
+> <david.laight.linux@gmail.com> wrote:
+> >
+> > On Mon, 28 Apr 2025 15:06:43 +0200
+> > Jann Horn <jannh@google.com> wrote:
+> >  
+> > > The current code around TEE_IOCTL_PARAM_SIZE() is a bit wrong on
+> > > 32-bit kernels: Multiplying a user-provided 32-bit value with the
+> > > size of a structure can wrap around on such platforms.
+> > >
+> > > Fix it by using saturating arithmetic for the size calculation.  
+> >
+> > Why not just add a sanity check on 'num_params' after it is read.
+> > Max is 31 (1024-32)/32), but any sane limit will do because of
+> > the buf.buf_len test.  
+> 
+> That would work, too. I don't know which way looks nicer.
 
-I'm sorry, it's part of this patch: set
-https://lore.kernel.org/lkml/20250502100049.1746335-1-jens.wiklander(a)linaro=
-.org/
- I'll CC a bit more in the next version of the patch set.
+The saturating arithmetic functions are non-obvious and non-trivial.
+I looked at the code to check where buf.buf_len came from,
+without its sanity check the user could craft a request where it
+matched the saturated size.
 
-It's needed if the TEE subsystem is built as a load module.
+I think I'd sanity check the number of items and then check that that
+buffer length is right for the number of items.
 
-Thanks,
-Jens
+	David
 
---===============8047552041624080589==--
+--===============5127824033870539956==--
 
