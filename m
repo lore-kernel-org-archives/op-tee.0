@@ -1,43 +1,144 @@
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 10/14] dma-contiguous: export dma_contiguous_default_area
-Date: Fri, 02 May 2025 11:59:24 +0200
-Message-ID: <20250502100049.1746335-11-jens.wiklander@linaro.org>
+Subject: [PATCH v8 11/14] tee: add tee_shm_alloc_cma_phys_mem()
+Date: Fri, 02 May 2025 11:59:25 +0200
+Message-ID: <20250502100049.1746335-12-jens.wiklander@linaro.org>
 In-Reply-To: <20250502100049.1746335-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6678599862749050328=="
+Content-Type: multipart/mixed; boundary="===============2984228848949120620=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============6678599862749050328==
+--===============2984228848949120620==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-Export the global variable dma_contiguous_default_area so
-dev_get_cma_area() can be called a module.
+Add tee_shm_alloc_cma_phys_mem() to allocate a physical memory using
+from the default CMA pool. The memory is represented by a tee_shm object
+using the new flag TEE_SHM_CMA_BUF to identify it as physical memory
+from CMA.
 
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: iommu(a)lists.linux.dev
 Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 ---
- kernel/dma/contiguous.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/tee/tee_shm.c    | 55 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/tee_core.h |  4 +++
+ 2 files changed, 57 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
-index 8df0dfaaca18..eb361794a9c5 100644
---- a/kernel/dma/contiguous.c
-+++ b/kernel/dma/contiguous.c
-@@ -53,6 +53,7 @@
- #endif
- 
- struct cma *dma_contiguous_default_area;
-+EXPORT_SYMBOL(dma_contiguous_default_area);
- 
- /*
-  * Default global CMA area size can be defined in kernel's .config.
--- 
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index e1ed52ee0a16..faaa0a87bb18 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -3,8 +3,11 @@
+  * Copyright (c) 2015-2017, 2019-2021 Linaro Limited
+  */
+ #include <linux/anon_inodes.h>
++#include <linux/cma.h>
+ #include <linux/device.h>
+ #include <linux/dma-buf.h>
++#include <linux/dma-map-ops.h>
++#include <linux/highmem.h>
+ #include <linux/idr.h>
+ #include <linux/io.h>
+ #include <linux/mm.h>
+@@ -13,7 +16,6 @@
+ #include <linux/tee_core.h>
+ #include <linux/uaccess.h>
+ #include <linux/uio.h>
+-#include <linux/highmem.h>
+ #include "tee_private.h"
+=20
+ static void shm_put_kernel_pages(struct page **pages, size_t page_count)
+@@ -49,7 +51,14 @@ static void tee_shm_release(struct tee_device *teedev, str=
+uct tee_shm *shm)
+ 	struct tee_shm *parent_shm =3D NULL;
+ 	void *p =3D shm;
+=20
+-	if (shm->flags & TEE_SHM_DMA_BUF) {
++	if (shm->flags & TEE_SHM_CMA_BUF) {
++#if IS_ENABLED(CONFIG_CMA)
++		struct page *page =3D phys_to_page(shm->paddr);
++		struct cma *cma =3D dev_get_cma_area(&shm->ctx->teedev->dev);
++
++		cma_release(cma, page, shm->size / PAGE_SIZE);
++#endif
++	} else if (shm->flags & TEE_SHM_DMA_BUF) {
+ 		struct tee_shm_dmabuf_ref *ref;
+=20
+ 		ref =3D container_of(shm, struct tee_shm_dmabuf_ref, shm);
+@@ -306,6 +315,48 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_contex=
+t *ctx, size_t size)
+ }
+ EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
+=20
++struct tee_shm *tee_shm_alloc_cma_phys_mem(struct tee_context *ctx,
++					   size_t page_count, size_t align)
++{
++#if IS_ENABLED(CONFIG_CMA)
++	struct tee_device *teedev =3D ctx->teedev;
++	struct cma *cma =3D dev_get_cma_area(&teedev->dev);
++	struct tee_shm *shm;
++	struct page *page;
++
++	if (!tee_device_get(teedev))
++		return ERR_PTR(-EINVAL);
++
++	page =3D cma_alloc(cma, page_count, align, true/*no_warn*/);
++	if (!page)
++		goto err_put_teedev;
++
++	shm =3D kzalloc(sizeof(*shm), GFP_KERNEL);
++	if (!shm)
++		goto err_cma_crelease;
++
++	refcount_set(&shm->refcount, 1);
++	shm->ctx =3D ctx;
++	shm->paddr =3D page_to_phys(page);
++	shm->size =3D page_count * PAGE_SIZE;
++	shm->flags =3D TEE_SHM_CMA_BUF;
++
++	teedev_ctx_get(ctx);
++
++	return shm;
++
++err_cma_crelease:
++	cma_release(cma, page, page_count);
++err_put_teedev:
++	tee_device_put(teedev);
++
++	return ERR_PTR(-ENOMEM);
++#else
++	return ERR_PTR(-EINVAL);
++#endif
++}
++EXPORT_SYMBOL_GPL(tee_shm_alloc_cma_phys_mem);
++
+ int tee_dyn_shm_alloc_helper(struct tee_shm *shm, size_t size, size_t align,
+ 			     int (*shm_register)(struct tee_context *ctx,
+ 						 struct tee_shm *shm,
+diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+index 02c07f661349..3a4e1b00fcc7 100644
+--- a/include/linux/tee_core.h
++++ b/include/linux/tee_core.h
+@@ -29,6 +29,7 @@
+ #define TEE_SHM_POOL		BIT(2)  /* Memory allocated from pool */
+ #define TEE_SHM_PRIV		BIT(3)  /* Memory private to TEE driver */
+ #define TEE_SHM_DMA_BUF		BIT(4)	/* Memory with dma-buf handle */
++#define TEE_SHM_CMA_BUF		BIT(5)	/* CMA allocated memory */
+=20
+ #define TEE_DEVICE_FLAG_REGISTERED	0x1
+ #define TEE_MAX_DEV_NAME_LEN		32
+@@ -310,6 +311,9 @@ void *tee_get_drvdata(struct tee_device *teedev);
+  */
+ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
+=20
++struct tee_shm *tee_shm_alloc_cma_phys_mem(struct tee_context *ctx,
++					   size_t page_count, size_t align);
++
+ int tee_dyn_shm_alloc_helper(struct tee_shm *shm, size_t size, size_t align,
+ 			     int (*shm_register)(struct tee_context *ctx,
+ 						 struct tee_shm *shm,
+--=20
 2.43.0
 
 
---===============6678599862749050328==--
+--===============2984228848949120620==--
 
