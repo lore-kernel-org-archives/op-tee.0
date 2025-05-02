@@ -1,183 +1,36 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Jann Horn <jannh@google.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: [PATCH v8 14/14] optee: smc abi: dynamic protected memory allocation
-Date: Fri, 02 May 2025 11:59:28 +0200
-Message-ID: <20250502100049.1746335-15-jens.wiklander@linaro.org>
-In-Reply-To: <20250502100049.1746335-1-jens.wiklander@linaro.org>
+Subject: 
+ Re: [PATCH] tee: Prevent size calculation wraparound on 32-bit kernels
+Date: Fri, 02 May 2025 14:28:21 +0200
+Message-ID: 
+ <CAG48ez1DPWhT2dhd1iptFawWjteh_=pZ4M6Yq5KKCq2DTArnqw@mail.gmail.com>
+In-Reply-To: <20250501210158.5b2c86a7@pumpkin>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7557216621403607243=="
+Content-Type: multipart/mixed; boundary="===============4891763262978630770=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============7557216621403607243==
+--===============4891763262978630770==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Add support in the OP-TEE backend driver for dynamic protected memory
-allocation using the SMC ABI.
+On Thu, May 1, 2025 at 10:02 PM David Laight
+<david.laight.linux@gmail.com> wrote:
+>
+> On Mon, 28 Apr 2025 15:06:43 +0200
+> Jann Horn <jannh@google.com> wrote:
+>
+> > The current code around TEE_IOCTL_PARAM_SIZE() is a bit wrong on
+> > 32-bit kernels: Multiplying a user-provided 32-bit value with the
+> > size of a structure can wrap around on such platforms.
+> >
+> > Fix it by using saturating arithmetic for the size calculation.
+>
+> Why not just add a sanity check on 'num_params' after it is read.
+> Max is 31 (1024-32)/32), but any sane limit will do because of
+> the buf.buf_len test.
 
-Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
----
- drivers/tee/optee/smc_abi.c | 103 +++++++++++++++++++++++++++++-------
- 1 file changed, 85 insertions(+), 18 deletions(-)
+That would work, too. I don't know which way looks nicer.
 
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 7acb43852c4b..766e7f5a3953 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1001,6 +1001,70 @@ static int optee_smc_do_call_with_arg(struct tee_conte=
-xt *ctx,
- 	return rc;
- }
-=20
-+static int optee_smc_lend_protmem(struct optee *optee, struct tee_shm *protm=
-em,
-+				  u16 *end_points, unsigned int ep_count,
-+				  u32 use_case)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 2, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_LEND_PROTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-+	msg_arg->params[0].u.value.a =3D use_case;
-+	msg_arg->params[1].attr =3D OPTEE_MSG_ATTR_TYPE_TMEM_INPUT;
-+	msg_arg->params[1].u.tmem.buf_ptr =3D protmem->paddr;
-+	msg_arg->params[1].u.tmem.size =3D protmem->size;
-+	msg_arg->params[1].u.tmem.shm_ref =3D (u_long)protmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS) {
-+		rc =3D -EINVAL;
-+		goto out;
-+	}
-+	protmem->sec_world_id =3D (u_long)protmem;
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
-+static int optee_smc_reclaim_protmem(struct optee *optee,
-+				     struct tee_shm *protmem)
-+{
-+	struct optee_shm_arg_entry *entry;
-+	struct optee_msg_arg *msg_arg;
-+	struct tee_shm *shm;
-+	u_int offs;
-+	int rc;
-+
-+	msg_arg =3D optee_get_msg_arg(optee->ctx, 1, &entry, &shm, &offs);
-+	if (IS_ERR(msg_arg))
-+		return PTR_ERR(msg_arg);
-+
-+	msg_arg->cmd =3D OPTEE_MSG_CMD_RECLAIM_PROTMEM;
-+	msg_arg->params[0].attr =3D OPTEE_MSG_ATTR_TYPE_RMEM_INPUT;
-+	msg_arg->params[0].u.rmem.shm_ref =3D (u_long)protmem;
-+
-+	rc =3D optee->ops->do_call_with_arg(optee->ctx, shm, offs, false);
-+	if (rc)
-+		goto out;
-+	if (msg_arg->ret !=3D TEEC_SUCCESS)
-+		rc =3D -EINVAL;
-+
-+out:
-+	optee_free_msg_arg(optee->ctx, entry, offs);
-+	return rc;
-+}
-+
- /*
-  * 5. Asynchronous notification
-  */
-@@ -1252,6 +1316,8 @@ static const struct optee_ops optee_ops =3D {
- 	.do_call_with_arg =3D optee_smc_do_call_with_arg,
- 	.to_msg_param =3D optee_to_msg_param,
- 	.from_msg_param =3D optee_from_msg_param,
-+	.lend_protmem =3D optee_smc_lend_protmem,
-+	.reclaim_protmem =3D optee_smc_reclaim_protmem,
- };
-=20
- static int enable_async_notif(optee_invoke_fn *invoke_fn)
-@@ -1622,11 +1688,14 @@ static inline int optee_load_fw(struct platform_devic=
-e *pdev,
-=20
- static int optee_protmem_pool_init(struct optee *optee)
- {
-+	bool protm =3D optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_PROTMEM;
-+	bool dyn_protm =3D optee->smc.sec_caps &
-+			 OPTEE_SMC_SEC_CAP_DYNAMIC_PROTMEM;
- 	enum tee_dma_heap_id heap_id =3D TEE_DMA_HEAP_SECURE_VIDEO_PLAY;
--	struct tee_protmem_pool *pool;
--	int rc;
-+	struct tee_protmem_pool *pool =3D ERR_PTR(-EINVAL);
-+	int rc =3D -EINVAL;
-=20
--	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_PROTMEM) {
-+	if (protm) {
- 		union {
- 			struct arm_smccc_res smccc;
- 			struct optee_smc_get_protmem_config_result result;
-@@ -1634,25 +1703,24 @@ static int optee_protmem_pool_init(struct optee *opte=
-e)
-=20
- 		optee->smc.invoke_fn(OPTEE_SMC_GET_PROTMEM_CONFIG, 0, 0, 0, 0,
- 				     0, 0, 0, &res.smccc);
--		if (res.result.status !=3D OPTEE_SMC_RETURN_OK) {
--			pr_err("Secure Data Path service not available\n");
--			return 0;
--		}
-+		if (res.result.status =3D=3D OPTEE_SMC_RETURN_OK)
-+			pool =3D tee_protmem_static_pool_alloc(res.result.start,
-+							     res.result.size);
-+	}
-=20
--		pool =3D tee_protmem_static_pool_alloc(res.result.start,
--						     res.result.size);
--		if (IS_ERR(pool))
--			return PTR_ERR(pool);
-+	if (dyn_protm && IS_ERR(pool))
-+		pool =3D optee_protmem_alloc_cma_pool(optee, heap_id);
-=20
-+	if (!IS_ERR(pool)) {
- 		rc =3D tee_device_register_dma_heap(optee->teedev, heap_id, pool);
- 		if (rc)
--			goto err;
-+			pool->ops->destroy_pool(pool);
- 	}
-=20
-+	if (protm || dyn_protm)
-+		return rc;
-+
- 	return 0;
--err:
--	pool->ops->destroy_pool(pool);
--	return rc;
- }
-=20
- static int optee_probe(struct platform_device *pdev)
-@@ -1823,9 +1891,8 @@ static int optee_probe(struct platform_device *pdev)
- 		pr_info("Asynchronous notifications enabled\n");
- 	}
-=20
--	rc =3D optee_protmem_pool_init(optee);
--	if (rc)
--		goto err_notif_uninit;
-+	if (optee_protmem_pool_init(optee))
-+		pr_info("Protected memory service not available\n");
-=20
- 	/*
- 	 * Ensure that there are no pre-existing shm objects before enabling
---=20
-2.43.0
-
-
---===============7557216621403607243==--
+--===============4891763262978630770==--
 
