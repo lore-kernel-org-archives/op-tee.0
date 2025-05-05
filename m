@@ -1,83 +1,61 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 01/14] tee: tee_device_alloc(): copy dma_mask from
- parent device
-Date: Mon, 05 May 2025 14:10:11 +0200
-Message-ID: 
- <CAHUa44EhdHZofZHRWQ8SJUn4OcAuMwzxxdfjhLQuXQXx4KEaUA@mail.gmail.com>
-In-Reply-To: <6236d3cb-fbf2-4a41-a84a-276aa8079b9a@arm.com>
+Subject: Re: [PATCH v4 06/11] firmware: qcom: scm: remove unused arguments to
+ the shm_brige
+Date: Tue, 06 May 2025 09:18:49 +1000
+Message-ID: <2a0df02a-1657-4b59-8f31-791a8aff523e@oss.qualcomm.com>
+In-Reply-To: <246da659-2add-4ccf-b914-f737fb93f3f2@quicinc.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3010756910458350486=="
+Content-Type: multipart/mixed; boundary="===============8199628527749787846=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============3010756910458350486==
+--===============8199628527749787846==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
 
-On Fri, May 2, 2025 at 3:36=E2=80=AFPM Robin Murphy <robin.murphy@arm.com> =
-wrote:
->
-> On 02/05/2025 10:59 am, Jens Wiklander wrote:
-> > If a parent device is supplied to tee_device_alloc(), copy the dma_mask
-> > field into the new device. This avoids future warnings when mapping a
-> > DMA-buf for the device.
->
-> That also sounds dodgy. If the parent device is the hardware device
-> physically performing the DMA, then that is the device which should be
-> passed to the DMA API. Trying to copy random bits of one device's
-> configuration to another device and hoping it will work is not robust -
-> not only is DMA-relevant information all over the place, including in
-> archdata and/or bus/IOMMU driver-private data, but it can also opens up
-> a whole can of subtle lifecycle issues...
 
-We have a reference to the parent device until the teedev goes away.
-The dma_maks needed by tee_shm_register_fd() in
-https://lore.kernel.org/lkml/20250502100049.1746335-9-jens.wiklander(a)linaro=
-.org/
-to be able to extract the PA from a DMA-buf allocated from another DMA
-heap. We can drop this patch and support for unrelated DMA heaps in
-tee_shm_register_fd() without losing critical features from the patch
-set if we can't handle dma_mask in this way.
+On 5/5/2025 8:58 PM, Kuldeep Singh wrote:
+>=20
+>=20
+> On 4/29/2025 11:36 AM, Amirreza Zarrabi wrote:
+>> shm_bridge create/delete functions always use the scm device.
+>> There is no need to pass it as an argument.
+>>
+>> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>=20
+>=20
+> There are 2 type of APIs exposed by tzmem driver for pool creation.
+> devm_qcom_tzmem_pool_new and qcom_tzmem_pool_new.
+>=20
+> Device managed pool is created with devm_qcom_tzmem_pool_new but
+> currently qcom_scm is using it's own dev to create/delete bridge which
+> is problamatic here.
+>=20
+> https://elixir.bootlin.com/linux/v6.14.5/source/drivers/firmware/qcom/qcom_=
+scm.c#L1653
+>=20
+> If pool is device managed, same dev should be used in qcom_scm to
+> create/delete bridge rather than using qcom_scm dev.
+> The dev passed as an argument to function should be used instead of
+> __scm->dev.
+> https://elixir.bootlin.com/linux/v6.14.5/source/drivers/firmware/qcom/qcom_=
+scm.c#L1634
+>=20
+> To summarize, I believe correct solution should be to pass corresponding
+> dev to bridge create/delete APIs instead of always assuming to be
+> qcom_scm dev for devm_qcom_tzmem_pool_new scenarios.
+> For qcom_tzmem_pool_new, qcom_scm/qcom_tzmem_dev can be used.
+>=20
+> Bartosz/Amirreza, please share your thoughts as well.
+>=20
 
->
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > Reviewed-by: Sumit Garg <sumit.garg@kernel.org>
-> > ---
-> >   drivers/tee/tee_core.c | 2 ++
-> >   1 file changed, 2 insertions(+)
-> >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index d113679b1e2d..685afcaa3ea1 100644
-> > --- a/drivers/tee/tee_core.c
-> > +++ b/drivers/tee/tee_core.c
-> > @@ -922,6 +922,8 @@ struct tee_device *tee_device_alloc(const struct tee_=
-desc *teedesc,
-> >       teedev->dev.class =3D &tee_class;
-> >       teedev->dev.release =3D tee_release_device;
-> >       teedev->dev.parent =3D dev;
-> > +     if (dev)
-> > +             teedev->dev.dma_mask =3D dev->dma_mask;
->
-> ...for instance, I don't see any obvious guarantee that "dev" can't go
-> away during the lifetime of "teedev" and leave this pointer dangling.
+It is not true.
+Why should shmbridge need to have access to random devices, while the resourc=
+es
+are obtained from the scm device, if any?
 
-A successful call to tee_device_alloc() must be followed by a call to
-tee_device_register() or tee_device_unregister(). The former calls
-cdev_device_add(), which results in a call to device_add() and an
-increased reference to teedev->dev.parent, "dev" in question.
+- Amir
 
-Thanks,
-Jens
-
->
-> Thanks,
-> Robin.
->
-> >
-> >       teedev->dev.devt =3D MKDEV(MAJOR(tee_devt), teedev->id);
-> >
-
---===============3010756910458350486==--
+--===============8199628527749787846==--
 
