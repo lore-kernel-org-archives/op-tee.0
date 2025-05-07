@@ -1,115 +1,61 @@
-From: Jens Wiklander <jens.wiklander@linaro.org>
+From: kernel test robot <lkp@intel.com>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v8 06/14] tee: implement protected DMA-heap
-Date: Tue, 06 May 2025 08:50:20 +0200
-Message-ID: 
- <CAHUa44EQV5O+KZbE19-d-Z6Wu=HAQuGQmZe+mXZRpmdvRDbmSA@mail.gmail.com>
-In-Reply-To: <6a33e85f-6b60-4260-993d-974dd29cf8e6@arm.com>
+Subject: Re: [PATCH v4 08/11] tee: add Qualcomm TEE driver
+Date: Wed, 07 May 2025 15:58:20 +0800
+Message-ID: <202505071540.hAeEOUWt-lkp@intel.com>
+In-Reply-To: <=?utf-8?q?=3C20250428-qcom-tee-using-tee-ss-without-mem-obj-v4-?=
+ =?utf-8?q?8-6a143640a6cb=40oss=2Equalcomm=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4436348586464263414=="
+Content-Type: multipart/mixed; boundary="===============0630298819061121152=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============4436348586464263414==
+--===============0630298819061121152==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Amirreza,
 
-On Fri, May 2, 2025 at 3:59 PM Robin Murphy <robin.murphy@arm.com> wrote:
->
-> On 02/05/2025 10:59 am, Jens Wiklander wrote:
-> > Implement DMA heap for protected DMA-buf allocation in the TEE
-> > subsystem.
-> >
-> > Restricted memory refers to memory buffers behind a hardware enforced
-> > firewall. It is not accessible to the kernel during normal circumstances
-> > but rather only accessible to certain hardware IPs or CPUs executing in
-> > higher or differently privileged mode than the kernel itself. This
-> > interface allows to allocate and manage such protected memory buffers
-> > via interaction with a TEE implementation.
-> >
-> > The protected memory is allocated for a specific use-case, like Secure
-> > Video Playback, Trusted UI, or Secure Video Recording where certain
-> > hardware devices can access the memory.
-> >
-> > The DMA-heaps are enabled explicitly by the TEE backend driver. The TEE
-> > backend drivers needs to implement protected memory pool to manage the
-> > protected memory.
->
-> [...]> +static struct sg_table *
-> > +tee_heap_map_dma_buf(struct dma_buf_attachment *attachment,
-> > +                  enum dma_data_direction direction)
-> > +{
-> > +     struct tee_heap_attachment *a = attachment->priv;
-> > +     int ret;
-> > +
-> > +     ret = dma_map_sgtable(attachment->dev, &a->table, direction,
-> > +                           DMA_ATTR_SKIP_CPU_SYNC);
->
-> If the memory is inaccessible to the kernel, what does this DMA mapping
-> even mean? What happens when it tries to perform cache maintenance or
-> bounce-buffering on inaccessible memory (which presumably doesn't even
-> have a VA if it's not usable as normal kernel memory)?
+kernel test robot noticed the following build warnings:
 
-Doesn't DMA_ATTR_SKIP_CPU_SYNC say that the kernel shouldn't perform
-cache maintenance on the buffer since it's already in the device
-domain? The device is expected to be permitted to access the memory.
+[auto build test WARNING on 33035b665157558254b3c21c3f049fd728e72368]
 
->
-> If we're simply housekeeping the TEE's resources on its behalf, and
-> giving it back some token to tell it which resource to go do its thing
-> with, then that's really not "DMA" as far as the kernel is concerned.
+url:    https://github.com/intel-lab-lkp/linux/commits/Amirreza-Zarrabi/tee-a=
+llow-a-driver-to-allocate-a-tee_device-without-a-pool/20250429-140908
+base:   33035b665157558254b3c21c3f049fd728e72368
+patch link:    https://lore.kernel.org/r/20250428-qcom-tee-using-tee-ss-witho=
+ut-mem-obj-v4-8-6a143640a6cb%40oss.qualcomm.com
+patch subject: [PATCH v4 08/11] tee: add Qualcomm TEE driver
+config: sh-allmodconfig (https://download.01.org/0day-ci/archive/20250507/202=
+505071540.hAeEOUWt-lkp(a)intel.com/config)
+compiler: sh4-linux-gcc (GCC) 14.2.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive/2=
+0250507/202505071540.hAeEOUWt-lkp(a)intel.com/reproduce)
 
-These buffers are supposed to be passed to devices that might be under
-only partial control of the kernel.
+If you fix the issue in a separate patch/commit (i.e. not just a new version =
+of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202505071540.hAeEOUWt-lkp(a)i=
+ntel.com/
 
->
-> [...]
-> > +static int protmem_pool_op_static_alloc(struct tee_protmem_pool *pool,
-> > +                                     struct sg_table *sgt, size_t size,
-> > +                                     size_t *offs)
-> > +{
-> > +     struct tee_protmem_static_pool *stp = to_protmem_static_pool(pool);
-> > +     phys_addr_t pa;
-> > +     int ret;
-> > +
-> > +     pa = gen_pool_alloc(stp->gen_pool, size);
-> > +     if (!pa)
-> > +             return -ENOMEM;
-> > +
-> > +     ret = sg_alloc_table(sgt, 1, GFP_KERNEL);
-> > +     if (ret) {
-> > +             gen_pool_free(stp->gen_pool, pa, size);
-> > +             return ret;
-> > +     }
-> > +
-> > +     sg_set_page(sgt->sgl, phys_to_page(pa), size, 0);
->
-> Where does "pa" come from here (i.e. what's the provenance of the
-> initial "paddr" passed to tee_protmem_static_pool_alloc())? In general
-> we can't call {phys,pfn}_to_page() an arbitrary addresses without
-> checking pfn_valid() first. A bogus address might even crash
-> __pfn_to_page() itself under CONFIG_SPARSEMEM.
+All warnings (new ones prefixed by >>):
 
-That's a good point. Would it be enough to check the address with
-pfn_valid() in tee_protmem_static_pool_alloc()?
+>> Warning: drivers/tee/qcomtee/async.c:101 function parameter 'async_msg' no=
+t described in 'async_release'
+>> Warning: drivers/tee/qcomtee/async.c:101 Excess function parameter 'msg' d=
+escription in 'async_release'
 
-I expect that the memory is normally carved out of DDR and made secure
-or protected in a platform-specific way, either at boot with a static
-carveout or dynamically after boot.
+Kconfig warnings: (for reference only)
+   WARNING: unmet direct dependencies detected for DRM_AUX_HPD_BRIDGE
+   Depends on [n]: HAS_IOMEM [=3Dy] && DRM [=3Dn] && DRM_BRIDGE [=3Dn] && OF =
+[=3Dy]
+   Selected by [m]:
+   - UCSI_HUAWEI_GAOKUN [=3Dm] && USB_SUPPORT [=3Dy] && TYPEC [=3Dm] && TYPEC=
+_UCSI [=3Dm] && EC_HUAWEI_GAOKUN [=3Dm]
 
-Thanks,
-Jens
+--=20
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
-
->
-> Thanks,
-> Robin.
->
-> > +     *offs = pa - stp->pa_base;
-> > +
-> > +     return 0;
-> > +}
-
---===============4436348586464263414==--
+--===============0630298819061121152==--
 
