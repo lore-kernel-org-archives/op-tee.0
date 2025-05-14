@@ -1,269 +1,195 @@
 From: Sumit Garg <sumit.garg@kernel.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: 
- Re: [PATCH v4 05/11] firmware: qcom: scm: add support for object invocation
-Date: Wed, 14 May 2025 15:07:09 +0530
-Message-ID: <aCRkRTMFi65zBODh@sumit-X1>
+Subject: Re: [PATCH v4 09/11] qcomtee: add primordial object
+Date: Wed, 14 May 2025 19:14:57 +0530
+Message-ID: <aCSeWWCYNyGJakRp@sumit-X1>
 In-Reply-To: <=?utf-8?q?=3C20250428-qcom-tee-using-tee-ss-without-mem-obj-v4-?=
- =?utf-8?q?5-6a143640a6cb=40oss=2Equalcomm=2Ecom=3E?=>
+ =?utf-8?q?9-6a143640a6cb=40oss=2Equalcomm=2Ecom=3E?=>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2497683284797916020=="
+Content-Type: multipart/mixed; boundary="===============4854511449205217142=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============2497683284797916020==
+--===============4854511449205217142==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Amir,
-
-On Mon, Apr 28, 2025 at 11:06:26PM -0700, Amirreza Zarrabi wrote:
-> Qualcomm TEE (QTEE) hosts Trusted Applications (TAs) and services in
-> the secure world, accessed via objects. A QTEE client can invoke these
-> objects to request services. Similarly, QTEE can request services from
-> the nonsecure world using objects exported to the secure world.
->=20
-> Add low-level primitives to facilitate the invocation of objects hosted
-> in QTEE, as well as those hosted in the nonsecure world.
->=20
-> If support for object invocation is available, the qcom_scm allocates
-> a dedicated child platform device. The driver for this device communicates
-> with QTEE using low-level primitives.
+On Mon, Apr 28, 2025 at 11:06:30PM -0700, Amirreza Zarrabi wrote:
+> After booting, the kernel provides a static object known as the
+> primordial object. This object is utilized by QTEE for native
+> kernel services such as yield or privileged operations.
 >=20
 > Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 > ---
->  drivers/firmware/qcom/qcom_scm.c       | 128 +++++++++++++++++++++++++++++=
+>  drivers/tee/qcomtee/Makefile          |  1 +
+>  drivers/tee/qcomtee/core.c            | 19 +++++++---
+>  drivers/tee/qcomtee/primordial_obj.c  | 65 +++++++++++++++++++++++++++++++=
 ++++
->  drivers/firmware/qcom/qcom_scm.h       |   7 ++
->  include/linux/firmware/qcom/qcom_scm.h |  27 +++++++
->  3 files changed, 162 insertions(+)
->=20
-> diff --git a/drivers/firmware/qcom/qcom_scm.c b/drivers/firmware/qcom/qcom_=
-scm.c
-> index fc4d67e4c4a6..bff1b0d3306e 100644
-> --- a/drivers/firmware/qcom/qcom_scm.c
-> +++ b/drivers/firmware/qcom/qcom_scm.c
-> @@ -2084,6 +2084,124 @@ static int qcom_scm_qseecom_init(struct qcom_scm *s=
-cm)
-> =20
->  #endif /* CONFIG_QCOM_QSEECOM */
-> =20
-> +#ifdef CONFIG_QCOMTEE
-> +
-> +/**
-> + * qcom_scm_qtee_invoke_smc() - Invoke a QTEE object.
-> + * @inbuf: start address of memory area used for inbound buffer.
-> + * @inbuf_size: size of the memory area used for inbound buffer.
-> + * @outbuf: start address of memory area used for outbound buffer.
-> + * @outbuf_size: size of the memory area used for outbound buffer.
-> + * @result: result of QTEE object invocation.
-> + * @response_type: response type returned by QTEE.
-> + *
-> + * @response_type determines how the contents of @inbuf and @outbuf
-> + * should be processed.
-> + *
-> + * Return: On success, return 0 or <0 on failure.
-> + */
-> +int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_size,
-> +			     phys_addr_t outbuf, size_t outbuf_size,
-> +			     u64 *result, u64 *response_type)
-> +{
-> +	struct qcom_scm_desc desc =3D {
-> +		.svc =3D QCOM_SCM_SVC_SMCINVOKE,
-> +		.cmd =3D QCOM_SCM_SMCINVOKE_INVOKE,
-> +		.owner =3D ARM_SMCCC_OWNER_TRUSTED_OS,
-> +		.args[0] =3D inbuf,
-> +		.args[1] =3D inbuf_size,
-> +		.args[2] =3D outbuf,
-> +		.args[3] =3D outbuf_size,
-> +		.arginfo =3D QCOM_SCM_ARGS(4, QCOM_SCM_RW, QCOM_SCM_VAL,
-> +					 QCOM_SCM_RW, QCOM_SCM_VAL),
-> +	};
-> +	struct qcom_scm_res res;
-> +	int ret;
-> +
-> +	ret =3D qcom_scm_call(__scm->dev, &desc, &res);
-> +	if (ret)
-> +		return ret;
-> +
-> +	*response_type =3D res.result[0];
-> +	*result =3D res.result[1];
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(qcom_scm_qtee_invoke_smc);
-> +
-> +/**
-> + * qcom_scm_qtee_callback_response() - Submit response for callback reques=
-t.
-> + * @buf: start address of memory area used for outbound buffer.
-> + * @buf_size: size of the memory area used for outbound buffer.
-> + * @result: Result of QTEE object invocation.
-> + * @response_type: Response type returned by QTEE.
-> + *
-> + * @response_type determines how the contents of @buf should be processed.
-> + *
-> + * Return: On success, return 0 or <0 on failure.
-> + */
-> +int qcom_scm_qtee_callback_response(phys_addr_t buf, size_t buf_size,
-> +				    u64 *result, u64 *response_type)
-> +{
-> +	struct qcom_scm_desc desc =3D {
-> +		.svc =3D QCOM_SCM_SVC_SMCINVOKE,
-> +		.cmd =3D QCOM_SCM_SMCINVOKE_CB_RSP,
-> +		.owner =3D ARM_SMCCC_OWNER_TRUSTED_OS,
-> +		.args[0] =3D buf,
-> +		.args[1] =3D buf_size,
-> +		.arginfo =3D QCOM_SCM_ARGS(2, QCOM_SCM_RW, QCOM_SCM_VAL),
-> +	};
-> +	struct qcom_scm_res res;
-> +	int ret;
-> +
-> +	ret =3D qcom_scm_call(__scm->dev, &desc, &res);
-> +	if (ret)
-> +		return ret;
-> +
-> +	*response_type =3D res.result[0];
-> +	*result =3D res.result[1];
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(qcom_scm_qtee_callback_response);
-> +
-> +static void qcom_scm_qtee_free(void *data)
-> +{
-> +	struct platform_device *qtee_dev =3D data;
-> +
-> +	platform_device_unregister(qtee_dev);
-> +}
-> +
-> +static int qcom_scm_qtee_init(struct qcom_scm *scm)
-> +{
-> +	struct platform_device *qtee_dev;
-> +	int ret;
-> +
+>  drivers/tee/qcomtee/qcomtee_private.h |  3 ++
+>  4 files changed, 83 insertions(+), 5 deletions(-)
 
-I am still unable to get the QCOMTEE driver to work on db845c. As I can
-see machine: "qcom,sdm845" is not supported for tzmem based on SHM
-brigde here: drivers/firmware/qcom/qcom_tzmem.c +81. I am still seeing
-following logs from userspace:
+Looks reasonable to me, feel free to add:
 
-# /mnt/unittest -d
-[test_print_diagnostics_info][31] test_get_client_env_object.
-[test_supplicant_release][65] test_supplicant_worker killed.
-
-I think you should first check here for SHM bridge support. If available
-then only add a QTEE platform device.
+Acked-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
 -Sumit
 
-> +	/* Setup QTEE interface device. */
-> +	qtee_dev =3D platform_device_alloc("qcomtee", -1);
-> +	if (!qtee_dev)
-> +		return -ENOMEM;
+>=20
+> diff --git a/drivers/tee/qcomtee/Makefile b/drivers/tee/qcomtee/Makefile
+> index 1b14b943e5f5..a3a2d00e83f0 100644
+> --- a/drivers/tee/qcomtee/Makefile
+> +++ b/drivers/tee/qcomtee/Makefile
+> @@ -3,6 +3,7 @@ obj-$(CONFIG_QCOMTEE) +=3D qcomtee.o
+>  qcomtee-objs +=3D async.o
+>  qcomtee-objs +=3D call.o
+>  qcomtee-objs +=3D core.o
+> +qcomtee-objs +=3D primordial_obj.o
+>  qcomtee-objs +=3D qcom_scm.o
+>  qcomtee-objs +=3D release.o
+>  qcomtee-objs +=3D shm.o
+> diff --git a/drivers/tee/qcomtee/core.c b/drivers/tee/qcomtee/core.c
+> index ad3b28f32529..a1ac492fd21a 100644
+> --- a/drivers/tee/qcomtee/core.c
+> +++ b/drivers/tee/qcomtee/core.c
+> @@ -39,10 +39,12 @@ int qcomtee_next_arg_type(struct qcomtee_arg *u, int i,
+>  }
+> =20
+>  /*
+> - * QTEE expects IDs with the QCOMTEE_MSG_OBJECT_NS_BIT set for objects
+> - * of the QCOMTEE_OBJECT_TYPE_CB type.
+> + * QTEE expects IDs with QCOMTEE_MSG_OBJECT_NS_BIT set for objects of
+> + * QCOMTEE_OBJECT_TYPE_CB type. The first ID with QCOMTEE_MSG_OBJECT_NS_BIT
+> + * set is reserved for the primordial object.
+>   */
+> -#define QCOMTEE_OBJECT_ID_START (QCOMTEE_MSG_OBJECT_NS_BIT + 1)
+> +#define QCOMTEE_OBJECT_PRIMORDIAL (QCOMTEE_MSG_OBJECT_NS_BIT)
+> +#define QCOMTEE_OBJECT_ID_START (QCOMTEE_OBJECT_PRIMORDIAL + 1)
+>  #define QCOMTEE_OBJECT_ID_END (U32_MAX)
+> =20
+>  #define QCOMTEE_OBJECT_SET(p, type, ...) \
+> @@ -127,7 +129,9 @@ static void qcomtee_object_release(struct kref *refcoun=
+t)
+>   */
+>  int qcomtee_object_get(struct qcomtee_object *object)
+>  {
+> -	if (object !=3D NULL_QCOMTEE_OBJECT && object !=3D ROOT_QCOMTEE_OBJECT)
+> +	if (object !=3D &qcomtee_primordial_object &&
+> +	    object !=3D NULL_QCOMTEE_OBJECT &&
+> +	    object !=3D ROOT_QCOMTEE_OBJECT)
+>  		return kref_get_unless_zero(&object->refcount);
+> =20
+>  	return 0;
+> @@ -140,7 +144,9 @@ EXPORT_SYMBOL_GPL(qcomtee_object_get);
+>   */
+>  void qcomtee_object_put(struct qcomtee_object *object)
+>  {
+> -	if (object !=3D NULL_QCOMTEE_OBJECT && object !=3D ROOT_QCOMTEE_OBJECT)
+> +	if (object !=3D &qcomtee_primordial_object &&
+> +	    object !=3D NULL_QCOMTEE_OBJECT &&
+> +	    object !=3D ROOT_QCOMTEE_OBJECT)
+>  		kref_put(&object->refcount, qcomtee_object_release);
+>  }
+>  EXPORT_SYMBOL_GPL(qcomtee_object_put);
+> @@ -222,6 +228,9 @@ static struct qcomtee_object *qcomtee_local_object_get(=
+unsigned int object_id)
+>  {
+>  	struct qcomtee_object *object;
+> =20
+> +	if (object_id =3D=3D QCOMTEE_OBJECT_PRIMORDIAL)
+> +		return &qcomtee_primordial_object;
 > +
-> +	qtee_dev->dev.parent =3D scm->dev;
+>  	guard(rcu)();
+>  	object =3D xa_load(&xa_qcom_local_objects, object_id);
+>  	/* It already checks for %NULL_QCOMTEE_OBJECT. */
+> diff --git a/drivers/tee/qcomtee/primordial_obj.c b/drivers/tee/qcomtee/pri=
+mordial_obj.c
+> new file mode 100644
+> index 000000000000..a30967d89c91
+> --- /dev/null
+> +++ b/drivers/tee/qcomtee/primordial_obj.c
+> @@ -0,0 +1,65 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+> + */
 > +
-> +	ret =3D platform_device_add(qtee_dev);
-> +	if (ret) {
-> +		platform_device_put(qtee_dev);
-> +		return ret;
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/delay.h>
+> +#include "qcomtee_private.h"
+> +
+> +/**
+> + * DOC: Primordial Object
+> + *
+> + * After boot, the kernel provides a static object of type
+> + * %QCOMTEE_OBJECT_TYPE_CB called the primordial object. This object is us=
+ed
+> + * for native kernel services or privileged operations.
+> + *
+> + * We support:
+> + *  - %QCOMTEE_OBJECT_OP_YIELD to yield by the thread running in QTEE.
+> + *  - %QCOMTEE_OBJECT_OP_SLEEP to wait for a period of time.
+> + */
+> +
+> +#define QCOMTEE_OBJECT_OP_YIELD 1
+> +#define QCOMTEE_OBJECT_OP_SLEEP 2
+> +
+> +static int
+> +qcomtee_primordial_obj_dispatch(struct qcomtee_object_invoke_ctx *oic,
+> +				struct qcomtee_object *primordial_object_unused,
+> +				u32 op, struct qcomtee_arg *args)
+> +{
+> +	int err =3D 0;
+> +
+> +	switch (op) {
+> +	case QCOMTEE_OBJECT_OP_YIELD:
+> +		cond_resched();
+> +		/* No output object. */
+> +		oic->data =3D NULL;
+> +		break;
+> +	case QCOMTEE_OBJECT_OP_SLEEP:
+> +		/* Check message format matched QCOMTEE_OBJECT_OP_SLEEP op. */
+> +		if (qcomtee_args_len(args) !=3D 1 ||
+> +		    args[0].type !=3D QCOMTEE_ARG_TYPE_IB ||
+> +		    args[0].b.size < sizeof(u32))
+> +			return -EINVAL;
+> +
+> +		msleep(*(u32 *)(args[0].b.addr));
+> +		/* No output object. */
+> +		oic->data =3D NULL;
+> +		break;
+> +	default:
+> +		err =3D -EINVAL;
 > +	}
 > +
-> +	return devm_add_action_or_reset(scm->dev, qcom_scm_qtee_free, qtee_dev);
+> +	return err;
 > +}
 > +
-> +#else
+> +static struct qcomtee_object_operations qcomtee_primordial_obj_ops =3D {
+> +	.dispatch =3D qcomtee_primordial_obj_dispatch,
+> +};
 > +
-> +static int qcom_scm_qtee_init(struct qcom_scm *scm)
-> +{
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_QCOMTEE */
-> +
->  /**
->   * qcom_scm_is_available() - Checks if SCM is available
->   */
-> @@ -2319,6 +2437,16 @@ static int qcom_scm_probe(struct platform_device *pd=
-ev)
->  	ret =3D qcom_scm_qseecom_init(scm);
->  	WARN(ret < 0, "failed to initialize qseecom: %d\n", ret);
+> +struct qcomtee_object qcomtee_primordial_object =3D {
+> +	.name =3D "primordial",
+> +	.object_type =3D QCOMTEE_OBJECT_TYPE_CB,
+> +	.ops =3D &qcomtee_primordial_obj_ops
+> +};
+> diff --git a/drivers/tee/qcomtee/qcomtee_private.h b/drivers/tee/qcomtee/qc=
+omtee_private.h
+> index a6f2c0591580..e59cfb3b79dd 100644
+> --- a/drivers/tee/qcomtee/qcomtee_private.h
+> +++ b/drivers/tee/qcomtee/qcomtee_private.h
+> @@ -219,4 +219,7 @@ int qcomtee_user_object_submit(struct tee_context *ctx,
+>  			       struct tee_param *params, int num_params,
+>  			       int req_id, int errno);
 > =20
-> +	/*
-> +	 * Initialize the QTEE object interface.
-> +	 *
-> +	 * This only represents the availability for QTEE object invocation
-> +	 * and callback support. On failure, ignore the result. Any subsystem
-> +	 * depending on it may fail if it tries to access this interface.
-> +	 */
-> +	ret =3D qcom_scm_qtee_init(scm);
-> +	WARN(ret < 0, "failed to initialize qcomtee: %d\n", ret);
+> +/* (2) Primordial Object. */
+> +extern struct qcomtee_object qcomtee_primordial_object;
 > +
->  	return 0;
-> =20
->  err:
-> diff --git a/drivers/firmware/qcom/qcom_scm.h b/drivers/firmware/qcom/qcom_=
-scm.h
-> index 097369d38b84..a25202e99f7c 100644
-> --- a/drivers/firmware/qcom/qcom_scm.h
-> +++ b/drivers/firmware/qcom/qcom_scm.h
-> @@ -152,6 +152,13 @@ struct qcom_tzmem_pool *qcom_scm_get_tzmem_pool(void);
->  #define QCOM_SCM_SVC_GPU			0x28
->  #define QCOM_SCM_SVC_GPU_INIT_REGS		0x01
-> =20
-> +/* ARM_SMCCC_OWNER_TRUSTED_OS calls */
-> +
-> +#define QCOM_SCM_SVC_SMCINVOKE			0x06
-> +#define QCOM_SCM_SMCINVOKE_INVOKE_LEGACY	0x00
-> +#define QCOM_SCM_SMCINVOKE_CB_RSP		0x01
-> +#define QCOM_SCM_SMCINVOKE_INVOKE		0x02
-> +
->  /* common error codes */
->  #define QCOM_SCM_V2_EBUSY	-12
->  #define QCOM_SCM_ENOMEM		-5
-> diff --git a/include/linux/firmware/qcom/qcom_scm.h b/include/linux/firmwar=
-e/qcom/qcom_scm.h
-> index 983e1591bbba..bf5e64f6deba 100644
-> --- a/include/linux/firmware/qcom/qcom_scm.h
-> +++ b/include/linux/firmware/qcom/qcom_scm.h
-> @@ -176,4 +176,31 @@ static inline int qcom_scm_qseecom_app_send(u32 app_id,
-> =20
->  #endif /* CONFIG_QCOM_QSEECOM */
-> =20
-> +#ifdef CONFIG_QCOMTEE
-> +
-> +int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_size,
-> +			     phys_addr_t outbuf, size_t outbuf_size,
-> +			     u64 *result, u64 *response_type);
-> +int qcom_scm_qtee_callback_response(phys_addr_t buf, size_t buf_size,
-> +				    u64 *result, u64 *response_type);
-> +
-> +#else /* CONFIG_QCOMTEE */
-> +
-> +static inline int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf=
-_size,
-> +					   phys_addr_t outbuf,
-> +					   size_t outbuf_size, u64 *result,
-> +					   u64 *response_type)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int qcom_scm_qtee_callback_response(phys_addr_t buf,
-> +						  size_t buf_size, u64 *result,
-> +						  u64 *response_type)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +#endif /* CONFIG_QCOMTEE */
-> +
->  #endif
+>  #endif /* QCOMTEE_PRIVATE_H */
 >=20
 > --=20
 > 2.34.1
 >=20
->=20
 
---===============2497683284797916020==--
+--===============4854511449205217142==--
 
