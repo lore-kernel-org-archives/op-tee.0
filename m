@@ -1,178 +1,40 @@
-From: Sumit Garg <sumit.garg@kernel.org>
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 To: op-tee@lists.trustedfirmware.org
-Subject: Re: [PATCH v4 03/11] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
-Date: Wed, 14 May 2025 19:16:37 +0530
-Message-ID: <aCSevYV7G6P-pqJd@sumit-X1>
-In-Reply-To: <=?utf-8?q?=3C20250428-qcom-tee-using-tee-ss-without-mem-obj-v4-?=
- =?utf-8?q?3-6a143640a6cb=40oss=2Equalcomm=2Ecom=3E?=>
+Subject: 
+ Re: [PATCH v4 05/11] firmware: qcom: scm: add support for object invocation
+Date: Wed, 14 May 2025 17:27:44 +0200
+Message-ID: 
+ <CACMJSev2qqnxLN6OiSEKhUqxeewY09to0Jd2oPNoE39YFS6i3A@mail.gmail.com>
+In-Reply-To: <aCRkRTMFi65zBODh@sumit-X1>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1324470111887538257=="
+Content-Type: multipart/mixed; boundary="===============4995020326311568452=="
 List-Id: <op-tee.lists.trustedfirmware.org>
 
---===============1324470111887538257==
+--===============4995020326311568452==
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 28, 2025 at 11:06:24PM -0700, Amirreza Zarrabi wrote:
-> For drivers that can transfer data to the TEE without using shared
-> memory from client, it is necessary to receive the user address
-> directly, bypassing any processing by the TEE subsystem. Introduce
-> TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT/OUTPUT/INOUT to represent
-> userspace buffers.
->=20
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
->  drivers/tee/tee_core.c   | 33 +++++++++++++++++++++++++++++++++
->  include/linux/tee_drv.h  |  6 ++++++
->  include/uapi/linux/tee.h | 22 ++++++++++++++++------
->  3 files changed, 55 insertions(+), 6 deletions(-)
+On Wed, 14 May 2025 at 11:37, Sumit Garg <sumit.garg@kernel.org> wrote:
+>
+> Hi Amir,
+>
+> I am still unable to get the QCOMTEE driver to work on db845c. As I can
+> see machine: "qcom,sdm845" is not supported for tzmem based on SHM
+> brigde here: drivers/firmware/qcom/qcom_tzmem.c +81. I am still seeing
+> following logs from userspace:
+>
+> # /mnt/unittest -d
+> [test_print_diagnostics_info][31] test_get_client_env_object.
+> [test_supplicant_release][65] test_supplicant_worker killed.
+>
+> I think you should first check here for SHM bridge support. If available
+> then only add a QTEE platform device.
+>
 
-Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+On platforms not supporting SHM Bridge, the module should fall back to
+non-SHM mode. Isn't it the case?
 
--Sumit
+Bart
 
->=20
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index 721522fe5c63..7bf265c4ac65 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -386,6 +386,17 @@ static int params_from_user(struct tee_context *ctx, s=
-truct tee_param *params,
->  			params[n].u.value.b =3D ip.b;
->  			params[n].u.value.c =3D ip.c;
->  			break;
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +			params[n].u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
-> +			params[n].u.ubuf.size =3D ip.b;
-> +
-> +			if (!access_ok(params[n].u.ubuf.uaddr,
-> +				       params[n].u.ubuf.size))
-> +				return -EFAULT;
-> +
-> +			break;
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> @@ -454,6 +465,11 @@ static int params_to_user(struct tee_ioctl_param __use=
-r *uparams,
->  			    put_user(p->u.value.c, &up->c))
->  				return -EFAULT;
->  			break;
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +			if (put_user((u64)p->u.ubuf.size, &up->b))
-> +				return -EFAULT;
-> +			break;
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
->  			if (put_user((u64)p->u.memref.size, &up->b))
-> @@ -654,6 +670,13 @@ static int params_to_supp(struct tee_context *ctx,
->  			ip.b =3D p->u.value.b;
->  			ip.c =3D p->u.value.c;
->  			break;
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +			ip.a =3D (u64)p->u.ubuf.uaddr;
-> +			ip.b =3D p->u.ubuf.size;
-> +			ip.c =3D 0;
-> +			break;
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> @@ -756,6 +779,16 @@ static int params_from_supp(struct tee_param *params, =
-size_t num_params,
->  			p->u.value.b =3D ip.b;
->  			p->u.value.c =3D ip.c;
->  			break;
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +			p->u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
-> +			p->u.ubuf.size =3D ip.b;
-> +
-> +			if (!access_ok(params[n].u.ubuf.uaddr,
-> +				       params[n].u.ubuf.size))
-> +				return -EFAULT;
-> +
-> +			break;
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->  		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
->  			/*
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index a54c203000ed..78bbf12f02f0 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -82,6 +82,11 @@ struct tee_param_memref {
->  	struct tee_shm *shm;
->  };
-> =20
-> +struct tee_param_ubuf {
-> +	void * __user uaddr;
-> +	size_t size;
-> +};
-> +
->  struct tee_param_value {
->  	u64 a;
->  	u64 b;
-> @@ -92,6 +97,7 @@ struct tee_param {
->  	u64 attr;
->  	union {
->  		struct tee_param_memref memref;
-> +		struct tee_param_ubuf ubuf;
->  		struct tee_param_value value;
->  	} u;
->  };
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index d0430bee8292..3e9b1ec5dfde 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -151,6 +151,13 @@ struct tee_ioctl_buf_data {
->  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT	6
->  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT	7	/* input and output */
-> =20
-> +/*
-> + * These defines userspace buffer parameters.
-> + */
-> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT	8
-> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT	9
-> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT	10	/* input and output */
-> +
->  /*
->   * Mask for the type part of the attribute, leaves room for more types
->   */
-> @@ -186,14 +193,17 @@ struct tee_ioctl_buf_data {
->  /**
->   * struct tee_ioctl_param - parameter
->   * @attr: attributes
-> - * @a: if a memref, offset into the shared memory object, else a value par=
-ameter
-> - * @b: if a memref, size of the buffer, else a value parameter
-> + * @a: if a memref, offset into the shared memory object,
-> + *     else if a ubuf, address of the user buffer,
-> + *     else a value parameter
-> + * @b: if a memref or ubuf, size of the buffer, else a value parameter
->   * @c: if a memref, shared memory identifier, else a value parameter
->   *
-> - * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref or value is used in
-> - * the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value and
-> - * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref. TEE_PARAM_ATTR_TYPE_NONE
-> - * indicates that none of the members are used.
-> + * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref, ubuf, or value is
-> + * used in the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value,
-> + * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref, and TEE_PARAM_ATTR_TYPE_=
-UBUF_*
-> + * indicates ubuf. TEE_PARAM_ATTR_TYPE_NONE indicates that none of the mem=
-bers
-> + * are used.
->   *
->   * Shared memory is allocated with TEE_IOC_SHM_ALLOC which returns an
->   * identifier representing the shared memory object. A memref can reference
->=20
-> --=20
-> 2.34.1
->=20
-
---===============1324470111887538257==--
+--===============4995020326311568452==--
 
