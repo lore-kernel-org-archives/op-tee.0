@@ -4,251 +4,171 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67383C2D0CD
-	for <op-tee@archiver.kernel.org>; Wed, 21 May 2025 07:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8660BC54ED0
+	for <op-tee@archiver.kernel.org>; Thu, 22 May 2025 06:57:02 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 88DF64306E
-	for <op-tee@archiver.kernel.org>; Wed, 21 May 2025 07:13:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1747811627;
-	bh=C+bdtUHIxw1PFTzYI2jL2KMqvLIWsXz/MRdE7S6YHQQ=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=ATFs7mLidLRWYUEWULsrUcMxJHrRF/0+pusNRAR5obJ1mcn0eWzEfWCj/JVGW02ha
-	 O3V5gfYhTNRnC8ry7ElDpjaz+k7/PSHyy5i4ItxJ9sFhwMwaGKNnXlxWsmmTUU4UE8
-	 Dqc5eo0RAWmh1/XH3JyjCpdr4vEeHv8oxckwg1kCwkXYwKkGk0qQhla+xtYaCgnAax
-	 VpuKd0SK9U10dwrZbcjz/XDw0E53BVS8vqMZVDyyWeQ66MIiu2FMVVI0I4KqPMrem+
-	 +KWJCViZkywOyjvHSR2CT/QnkvkoSgsATmJ5BPrPjovKrF5wlCy9XpmOqp4dD0M4tP
-	 myJ975YF+yFdQ==
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2056.outbound.protection.outlook.com [40.107.223.56])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 990593F82E
-	for <op-tee@lists.trustedfirmware.org>; Wed, 21 May 2025 07:13:26 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A941240940
+	for <op-tee@archiver.kernel.org>; Thu, 22 May 2025 06:57:01 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ZMPD0nZ1;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=sa9KtRh6;
 	dkim-atps=neutral
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Jv1EWIg7JeSQaN/WcLgyUAcEH+1fMcqCLDurit9wjtqhr3+EwIlgPPBqYlwPERC0Qfe+seLHsZzUeR1Nyj24F9k2cYfEvjJH99N3TSkZSOYzTe5oksxKEGExH+tNfJ01MYQy7Vx2HkaKfKO22o74ABi6JowUZXd/XygCPXVi9iXUcnwS0waRd9ovl2Fnx0W9Lxd/SpXuHmROKHkHZ1uhegfug0AOqk2Fk3e79JQF1oG4SO0bgl4HNJWpDnxPI3Ps2MXs0jKktwzr1Zwr6SKZ4Yb/trE788ph1qcV8SXlKcDMsiB0FDghXW90z6gMY+kk/ZY4YTwYPIvz8YBxqBTPHw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=d3Zc+HE3zAeuA4amKvHN4n7m1wlVxVe1VnraaL1MD0E=;
- b=VoU1MMAsXS6fywFSjEI+VRFsKcbpepzXFTc95HJeSFPeFPnk6Yj4fEyDMbww0PbiT4xnxC5s/8Kb3Gb+75dWsMpBiNLmHTKpUfPTKXNG37v547Hu92LYz/HXHXDaeblJVwDM9BVY8Ho+EwkeIh6n+AgHJnOGsuLKbXmROUExhDmiu2FQ4Z6DiTQKTXsGkYTYD9iBYAV/ELthl/BC52A7XLeoYIfvpCKXqNOMM8sQIK9DsE3P98Wd5ebwJfEzjX50qU57x7NPoDA7LT6RkoEg2B3DFhnv5f/CFuBesfDC8yOV9C2UlvaQWybP9pk1qhjkneahBpUCtPQQbYvdZumvHg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=d3Zc+HE3zAeuA4amKvHN4n7m1wlVxVe1VnraaL1MD0E=;
- b=ZMPD0nZ1WMBJzppQ/jYnAAUxh+Jok3MuDhMhzs4smQ8o1MvVVUci0jQ6UGk0XG2oKnetCPn29Ifz6IL5q994qMwqAPfmY1VjdMYlkOz0zX+zqs8T7ilLEAapXI+GuHFmwpZDJUFg/V6YNlSLUzGyzgU08Kiv40bczB36nKN+Zco=
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by LV3PR12MB9265.namprd12.prod.outlook.com (2603:10b6:408:215::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8746.30; Wed, 21 May
- 2025 07:13:24 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5%7]) with mapi id 15.20.8722.031; Wed, 21 May 2025
- 07:13:24 +0000
-Message-ID: <dffbd709-def0-47af-93ff-a48686f04153@amd.com>
-Date: Wed, 21 May 2025 09:13:15 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v9 2/9] dma-buf: dma-heap: export declared functions
-To: Jens Wiklander <jens.wiklander@linaro.org>, linux-kernel@vger.kernel.org,
- linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linaro-mm-sig@lists.linaro.org, op-tee@lists.trustedfirmware.org,
- linux-arm-kernel@lists.infradead.org
-References: <20250520152436.474778-1-jens.wiklander@linaro.org>
- <20250520152436.474778-3-jens.wiklander@linaro.org>
-Content-Language: en-US
-In-Reply-To: <20250520152436.474778-3-jens.wiklander@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BL1PR13CA0019.namprd13.prod.outlook.com
- (2603:10b6:208:256::24) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com [209.85.167.172])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id C7D2E4093C
+	for <op-tee@lists.trustedfirmware.org>; Thu, 22 May 2025 06:56:43 +0000 (UTC)
+Received: by mail-oi1-f172.google.com with SMTP id 5614622812f47-3feb3f54339so8004588b6e.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 21 May 2025 23:56:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1747897003; x=1748501803; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WeKMC6ZBMvoz5mZGPjKGgi0Ohr2T8fh1E4A0BZHhyCM=;
+        b=sa9KtRh6XVblV0xGkxFAmvbpR3VRK4efm8Z2mqOTI34Yy7hCsBV4+oFwhwM1DWKgae
+         75/Br6yLDFNC301MZ8GBVfjswbPiQo/6uFGyZC018dIJ3m8EONpUb8f/l2OLDV3saCSm
+         DuVC8qxu+4dMa2UvzNzz7q9J4eZuLm2ICd+bQSSOi+14frF4Zuc/SVtdfDpl1qIW9iJ5
+         dEYPB8lq/bXFLhngynpEc0yN4yu69M1MGaL79a86VseJgmJAJxlt2ZQ7Tr+ugIG2wFSC
+         FiftUVz58QhpM5Co50cybqOnjY582jj+CgvyPK1eNWOKuvWxRTEF4ZY/VboP+oi2tqmf
+         JPAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747897003; x=1748501803;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WeKMC6ZBMvoz5mZGPjKGgi0Ohr2T8fh1E4A0BZHhyCM=;
+        b=G0rkxJHs9EIuEItuCrR1e9fKIPFLEhHRDQowX4OrWZH3UE3vEtxcOIDFMJBi4gPk9N
+         VkFU9ZTey1bvmf3hpY/ZskI65a4M1jOC1XIKusM1HxBhx7V4p/GoXCd9xBazGbVrFJsi
+         W/DedvHA351O+4bX0WIxpJckcCM6wXoYJuejXVWbNRcNqqc2D5BfZ8g12K3QssFV6REg
+         nyp48mP9mgZECyeX9o4RWXT+4QZwr7u/3eSRCGqLE9VasiTxNNxBPjrnlhtWjMcYzI+Z
+         PuAuJvU2c3K48U94fM7OcvawwZdoVUDjklaTwlsFgf02b5ID/iQBTIZZWzgt1J7qObx+
+         aP/Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXlA4jshTjnaLqP1iPKKkX7QADWnqtMoGSyb2zspTMuuJNbirEemm2krwpsf87E/usOy19aXv8=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzK3EnAh78mrf3VRlGSQJtjOzK2He7u058dr1VKQnvUd98HxzWI
+	JktOS5b0lMEsgZS549q6HS1uFYc3xCuaXBKZ7yL9VBb8cADupOMo/7iI5tWvS+NImKNLYLGM6gS
+	gypovGc0FUNnYcE5a98oD4+9UzrurOBkBc07+mEbCM/eN
+X-Gm-Gg: ASbGncv9dCYz81qeTRg6VbG978ZZ3MWcVOzNbKSRTtMqynIYZkImI25JkLsgJ2eJljt
+	Y4tkajEe8FA8Af2+hfKZb73hZ/loMnsXImeiN+5+5DBeEqOM84j7O5WUSku7DnyTImqESSieqcY
+	rPqMr0NZFtn6QeYfGP6IUWeaYp/VOd7uDS0A==
+X-Google-Smtp-Source: AGHT+IHkFUemf1YsBa7Ra5vRLLSyYkClMUJvfuEYqOo7C5Q/HY7RUEskcqp+LiC0Z8m9NvJveoTaK0UdZlaYOd03Who=
+X-Received: by 2002:a05:6808:6410:b0:3f7:ff67:1d8c with SMTP id
+ 5614622812f47-404d88d532amr14478281b6e.36.1747897003075; Wed, 21 May 2025
+ 23:56:43 -0700 (PDT)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|LV3PR12MB9265:EE_
-X-MS-Office365-Filtering-Correlation-Id: b432b7d6-730f-484e-d195-08dd9836f9f2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|366016|7416014|1800799024|376014|7053199007;
-X-Microsoft-Antispam-Message-Info: 
-	=?utf-8?B?dnRTOGUvTnRPR0lQQUs5eWpLaXlxdjM4Z3VtYk5pMHl6bUtoL1V2dk5SV2Uz?=
- =?utf-8?B?RnlNTW5tWi9ibXNLM3hVclNwNjRra1MycFR5aVVqUk5MeFkvNUs4N2R0WU0z?=
- =?utf-8?B?enU2N0JUTlNCUW5WaE12L1NNdGdkaHpUSEt2M2ZVVGg2b1AxMnY5MkdoeGcv?=
- =?utf-8?B?UFJRRjVEWVJFTCtmRE5WNUZRbm8yTU5Uc0gwUFNMcTltczQrVXBaRHN4T0Uv?=
- =?utf-8?B?Z3dCRjlteGZnaW5McGZLWTNIWkZCUTcveWRIdE4veSs4ZnducGozT3dEcVhG?=
- =?utf-8?B?UHVUY3hjK1ltOGkvS3AxVWZzTTFBaWZLc3pyeGdZYU84anBRTUlFcEs3bCs1?=
- =?utf-8?B?bHlhK21PSmRkOEFNK0JqcGRiQVYzZXQ1Snh4YkdZOSsvZjZFRUtNUjdEeUV0?=
- =?utf-8?B?d21BOEZQV3B4MEczSnM2ckxtS3R6a1BBUXYwSTNvRlloNGo5MGJlalhKejN1?=
- =?utf-8?B?SHlUbWxvOUkzcDNBNHd0Ti9YZk9jMk4wZXlGdkxsTG51NXJrbGF5SnA5L2lL?=
- =?utf-8?B?M01nR25KZXVkTit0eDNtc3B3U1VTVlpIUWhhTGwwQlBmYVhnQmliYWJzRWth?=
- =?utf-8?B?YXl2QkQrYVNaRmpCcVRKMjNMUW5UNURwMnRlM29JQlJ6RGs2dUp0aFVhSENX?=
- =?utf-8?B?K1NZSWRYMUhxT0puNFIwdjVEZWwxNWpXMkNmTnY3c2wrL2NFYUFpZVlRQ2h1?=
- =?utf-8?B?Q1I0bWladko4MnRwZlE2b3VTT2lpZVgyUmpoVGxXa3BlTEgrVU1oRmdteTVi?=
- =?utf-8?B?cXFPMG5ybEpWa1ZZQlRCK0RnWkhNS05odzdZNk9wRkR5MERDU2k1ZzRjdzl6?=
- =?utf-8?B?ZlYwUWhqV1pVa2U5ZUxPU21DeXN5b1UzMTRPK3B6alZLb2YrdDI1RnVBcXk0?=
- =?utf-8?B?bGttcnNYdnQ2NldxWkVjcjhJMXB3U3cvME5MRkU3MlhHK1pNK1BCZTZaMktS?=
- =?utf-8?B?N0xDdElVdjRjSy96eHpiNkUvQzh5UG4xZzFHbCtZWFloalRBMWxrRmFmcmh3?=
- =?utf-8?B?U29haklvNWR1WUZRSXpBaURLeFpHNVJPWE5MQU52Rk5wbzNhRXk4d0VmYWM4?=
- =?utf-8?B?MU5OSFpXUlZJK0VaWnEyNElSUmFYTjFacUNuZDVKazVEdXhaU3JRcXZUM1lR?=
- =?utf-8?B?KzhpazdYZzVnSDV3T2tCSTZrcnNneWM0NHkrcHJMZ1ZHbzBtNVVQOVlOQ2N6?=
- =?utf-8?B?OTBwSDFqQzZSOXRaSjZpc2RJZE9EWllTc1ZDV3hmZVRZVEFKQm1xVk1Vbmd2?=
- =?utf-8?B?VTNUM2hLaTBhcHRrc291N3BrMDNEdER4OTBCeldQeXovdldJUTdBUmhSMGww?=
- =?utf-8?B?OWZIOXp1T1I4dEJEMERla2lFTVJsV1c3QlhxSFBmZk1UeGJSazZMVkdzZGIw?=
- =?utf-8?B?bUFIWGM0dTV0YXFIQkY5cFNjUnF4QnVIMUZiNmIxT3o5YVJTUVdEbkE3V0Zs?=
- =?utf-8?B?UHU0WDM1SDhHcGFaeGIxU3grbkhNYVU0T3lDbUZRVGFweXQwUDUxUzRmemJq?=
- =?utf-8?B?TXBzTXp0OXFOSU1hUTVQS3ZMaFdmSy94S2RlVkhmeXlYVVVKdzI3YXZmTmVT?=
- =?utf-8?B?c3JaL1dham9IeEYrYml4U0hoVjBjMVlSSno0TDRrT0pnaDcrNUltdXFlWFR6?=
- =?utf-8?B?YnlLMmV6ZFJJRHJyN0FFazdZcUxtWVg4N0E3b0ovSU9Sbyt2Uk1iRFVxVEZo?=
- =?utf-8?B?M3d0SDVkWGJtOWhjelNCVDFUR3RCRUY4SG04NHZLMG5OVWg4aU92OHBGb1Yz?=
- =?utf-8?B?eEdaK3VQMHZtU1RCd3VvTjA1YUhNdmNFZ1hnVUVabVFub3IxQkdyN2xqRmZw?=
- =?utf-8?B?b1JOQWtOSC91TXY1UjVDVHhaaFBDcUg0cm1oWVlPcXV1OGRxQmNxb3FQTi9o?=
- =?utf-8?B?Qk9MQmZXYXh5VlRJeG11UDBNYXJDL29QNEpjK1FFRG9icFNoMThnbnNKd1JB?=
- =?utf-8?Q?2ilKW+T7N30=3D?=
-X-Forefront-Antispam-Report: 
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(1800799024)(376014)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 
-	=?utf-8?B?NEFtTll2amExZEpNU3R2dHBSeGRLbVg2S1Vla0hzTjNpUG5wL09wd2NtbVNn?=
- =?utf-8?B?b0xidDVwOWVId2svQjBNZ00xMFR1K2VlY2l5bHprbUdYa00ybUY2T0JXQmdm?=
- =?utf-8?B?UllKMFc0UDNHUUJUT25rK2h4WkF4OVVMTjJYOE8zUTBpOXliYkhoSU1rS202?=
- =?utf-8?B?M2x2eVp1UG5Sc1lxQjFDZTA5Q2p4aWlaL3RFM29Qc1ErL1pVQWJrSWRNNndH?=
- =?utf-8?B?TkJQWHlXdVk3aFd5bVJCR3Q3cmpPVlEzQytPTi9WQWc4NnkrY2d2K3lOTWdi?=
- =?utf-8?B?VTlBYmJ4dzlzM252WkdWSFVCVnR5N3JkWENwY28wWnNYZjFuUThnRkFycXNE?=
- =?utf-8?B?QUFXUDd3WmJzMWwrY1oxbXp6RmtSQlFLanh3VkVySlRROGxpaDJhZTRKU2JT?=
- =?utf-8?B?c3lpRGw4aS93cjh6ZU8xZzZRQmhuRkp4cEV4NG02YVhTN3FFQ1ZQQ0RsRFl2?=
- =?utf-8?B?K2ZGaFZVNmlrT2dna3NpM0M4K2pTbkVkSUNLZHIycjFKNzllRkdjRUtIWTVJ?=
- =?utf-8?B?c2tpY2wzOHNSN09XTnBTRHh3Z3lPV2N0MGQ3MmViMUZkY3ZrQW5XOWNuSTVE?=
- =?utf-8?B?WlVZaVR4eENyaTNLUlBLaENvYk51VHZqTUpDdXM5YnA2SGNZVjhzazBoeStZ?=
- =?utf-8?B?TmhMVmFUTE9iOXZJWHYrMGRxbDBGdE5zSEZvdXQvd3N2a2NEeDdLcDdIS0Fs?=
- =?utf-8?B?blU2NDFuM1pKUzJNVjNDb2dFbTdtd0ZreUdqUU9zbGw4K09Ia1c4TzRCcHYz?=
- =?utf-8?B?YnhmY2dka255NldUQktDMVhHOTJmS2pNdHlkUGQ2UFhPOWpKbUs1YWdZT2Q2?=
- =?utf-8?B?bjRnL0JoTFhxd00vZitFSGh1dytCa2hybndMMk9DRko1K1RlWEc2SDAwei9u?=
- =?utf-8?B?VWxXeHVwR2p6aVEya0lCa29KWUN3aENBcFFCVDcrdW5xZU5kTkUzSDNHcDd1?=
- =?utf-8?B?eEcxVmxCNjVBbGNnM0hDbUgzeDRGNjN3aWxEelJudWVpdEkwVHFOdUZEWXMr?=
- =?utf-8?B?QWtSY21wVWxvK2V4WUx6ajlzYkVzQU9tcmFUYVBZWUlRUXBiaWxCeHVMckFt?=
- =?utf-8?B?czZWQ1pGQzhjS0s1eW5YZUptSEY2ZmhnbkhMcWxPdEtKS2Nia2hwWndlVFVN?=
- =?utf-8?B?anRxTWtKQk96UVhIeHRaZDYvZFRUb0RJYjU3aXU0akpZQ0U2MGFnWHlKUHY3?=
- =?utf-8?B?enBQMVYrQklpVGdlWms2Y2dvOGVaeXpjL05pbnFsOHg4N1VNbSt6cWNjZHM4?=
- =?utf-8?B?MmxWMlBaN3dLS3ZJcXRmVXcwU1VoYkZQS2MrMEhHTUV5aTE2UGJ0TmxxcDg3?=
- =?utf-8?B?QUVKMEo0ZFZiUlN6Qjc5bnNVL3ArYjN0MGNhcExCTW5rN05DVDFJcHpISExB?=
- =?utf-8?B?WmE4ZkM2WVl1MUJDVXd4UzFTNnVINjRhdkJweU84N1FQT29BYTZxVDFnUUxk?=
- =?utf-8?B?OE8rS1BXaHJFaWpaOC9lM0dXdlBnT3h3QXprVWxiZklzWHgraFdkTU1zcG1G?=
- =?utf-8?B?MWsyWXM5b0lIRThRSmxybXdFRmdBTzBuZnhhUmRUaFVCYXVzbGFWQ3BQNUZR?=
- =?utf-8?B?NW1LQVBJc0dYcXgrVWZwQ3JpNUtYYVpLZ3JISktaMGI4VTkrL1BCa3RLVVF1?=
- =?utf-8?B?SWVUeDlGUTNjQXBER0NwRVF1S1FRcVhuRG9UajdtNXdIVU1DYXZxcW5wN296?=
- =?utf-8?B?aXcrbk0zbUpRNUM0VkpvZFB6YnpGS1M4c1FWOHpRR09XT0JSbWR0YWx5anN6?=
- =?utf-8?B?Ny9jVFlHYnVHSnRuSnZ3RU0xb0NETWhwK3h2QS8wMjRWRVdBdkFZajZmdXRm?=
- =?utf-8?B?Rkc4TVpFTE45eFRhVGplK3VUa2R5bnRxUktPRmlSOHFrdHNBd0FyVnRDRElI?=
- =?utf-8?B?N05FRlJTc3JJWThRbk4yekcreFBUMG14RUVteG44N2VkTWl4TFFhTUpEL3I2?=
- =?utf-8?B?TWlTUjVOalAvZUFrS2Z2b0VUNmhUTFZZdkpkTml5RU4razZDMHBKemd4M0xz?=
- =?utf-8?B?emVhK2p1RlAwYVovS1N1S0pmNkdPYmlHUDlMajF6S0NKd0xvbWFISXd4Y2JG?=
- =?utf-8?B?QThab2l3VktHdHh3ZE9hU3lJVDBNOExMRmw1dWhxSFFReG1mWjFmQmhLTkJB?=
- =?utf-8?Q?RxSX+MkQzmKgvnsEN5eADA5vV?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b432b7d6-730f-484e-d195-08dd9836f9f2
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 May 2025 07:13:24.7140
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AZF1vLwbmgYxMBouhf12MpMjocBBsILmHK9i+/9wB9Ppv/Dk3+HFxxGFosx+z7KO
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9265
-X-Spamd-Bar: -------
-X-Spamd-Result: default: False [-7.50 / 15.00];
+References: <20250520152436.474778-1-jens.wiklander@linaro.org>
+ <20250520152436.474778-3-jens.wiklander@linaro.org> <dffbd709-def0-47af-93ff-a48686f04153@amd.com>
+In-Reply-To: <dffbd709-def0-47af-93ff-a48686f04153@amd.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Thu, 22 May 2025 08:56:31 +0200
+X-Gm-Features: AX0GCFsuHYqDh1JYpWH8r8xDir4J3V2XXHJjiARqLynYHFcDQxMIIZpQ5oYhZd4
+Message-ID: <CAHUa44Ec0+GPoDkcEG+Vg9_TY1NC=nh3yr0F=ezHMbaeX_A0Bg@mail.gmail.com>
+Subject: Re: [PATCH v9 2/9] dma-buf: dma-heap: export declared functions
+To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spamd-Bar: ------
+X-Spamd-Result: default: False [-6.50 / 15.00];
 	REPLY(-4.00)[];
 	BAYES_HAM(-3.00)[99.99%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[amd.com,quarantine];
-	R_DKIM_ALLOW(-0.20)[amd.com:s=selector1];
-	R_SPF_ALLOW(-0.20)[+ip4:40.107.0.0/16];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:8075, ipnet:40.104.0.0/14, country:US];
-	MIME_TRACE(0.00)[0:+];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[40.107.223.56:from];
-	TO_DN_SOME(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
 	RCPT_COUNT_TWELVE(0.00)[22];
+	MIME_TRACE(0.00)[0:+];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	TO_DN_SOME(0.00)[];
+	RBL_SENDERSCORE_REPUT_8(0.00)[209.85.167.172:from];
+	RCVD_COUNT_ONE(0.00)[1];
 	TAGGED_RCPT(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[40.107.223.56:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.167.172:from];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[nxp.com,gmail.com,mediatek.com,linaro.org,collabora.com,arm.com,google.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org];
-	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[40.107.223.56:from];
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,lists.linaro.org,lists.trustedfirmware.org,lists.infradead.org,nxp.com,gmail.com,mediatek.com,linaro.org,collabora.com,arm.com,google.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.167.172:from];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[amd.com:+]
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 990593F82E
-Message-ID-Hash: Y2R5RVPUSCMZXX33673E745MDVKVJQIH
-X-Message-ID-Hash: Y2R5RVPUSCMZXX33673E745MDVKVJQIH
-X-MailFrom: Christian.Koenig@amd.com
+X-Rspamd-Queue-Id: C7D2E4093C
+Message-ID-Hash: MDBN4IQUUYHLLOOZ6XV5JWRSZMTP54U2
+X-Message-ID-Hash: MDBN4IQUUYHLLOOZ6XV5JWRSZMTP54U2
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Sumit Semwal <sumit.semwal@linaro.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>
+CC: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, op-tee@lists.trustedfirmware.org, linux-arm-kernel@lists.infradead.org, Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Sumit Semwal <sumit.semwal@linaro.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/Y2R5RVPUSCMZXX33673E745MDVKVJQIH/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MDBN4IQUUYHLLOOZ6XV5JWRSZMTP54U2/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: =?utf-8?q?Christian_K=C3=B6nig_via_OP-TEE?= <op-tee@lists.trustedfirmware.org>
-Reply-To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
 
-On 5/20/25 17:16, Jens Wiklander wrote:
-> Export the dma-buf heap functions declared in <linux/dma-heap.h>.
+On Wed, May 21, 2025 at 9:13=E2=80=AFAM Christian K=C3=B6nig
+<christian.koenig@amd.com> wrote:
+>
+> On 5/20/25 17:16, Jens Wiklander wrote:
+> > Export the dma-buf heap functions declared in <linux/dma-heap.h>.
+>
+> That is what this patch does and that should be obvious by looking at it.=
+ You need to explain why you do this.
+>
+> Looking at the rest of the series it's most likely ok, but this commit me=
+ssage should really be improved.
 
-That is what this patch does and that should be obvious by looking at it. You need to explain why you do this.
+I'm considering something like this for the next version:
+Export the dma-buf heap functions declared in <linux/dma-heap.h> to allow
+them to be used by kernel modules. This will enable drivers like the OP-TEE
+driver, to utilize these interfaces for registering and managing their
+specific DMA heaps.
 
-Looking at the rest of the series it's most likely ok, but this commit message should really be improved.
+Thanks,
+Jens
 
-Regards,
-Christian.
-
-> 
-> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> ---
->  drivers/dma-buf/dma-heap.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
-> index 3cbe87d4a464..cdddf0e24dce 100644
-> --- a/drivers/dma-buf/dma-heap.c
-> +++ b/drivers/dma-buf/dma-heap.c
-> @@ -202,6 +202,7 @@ void *dma_heap_get_drvdata(struct dma_heap *heap)
->  {
->  	return heap->priv;
->  }
-> +EXPORT_SYMBOL(dma_heap_get_drvdata);
->  
->  /**
->   * dma_heap_get_name - get heap name
-> @@ -214,6 +215,7 @@ const char *dma_heap_get_name(struct dma_heap *heap)
->  {
->  	return heap->name;
->  }
-> +EXPORT_SYMBOL(dma_heap_get_name);
->  
->  /**
->   * dma_heap_add - adds a heap to dmabuf heaps
-> @@ -303,6 +305,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
->  	kfree(heap);
->  	return err_ret;
->  }
-> +EXPORT_SYMBOL(dma_heap_add);
->  
->  static char *dma_heap_devnode(const struct device *dev, umode_t *mode)
->  {
-
+>
+> Regards,
+> Christian.
+>
+> >
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> >  drivers/dma-buf/dma-heap.c | 3 +++
+> >  1 file changed, 3 insertions(+)
+> >
+> > diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
+> > index 3cbe87d4a464..cdddf0e24dce 100644
+> > --- a/drivers/dma-buf/dma-heap.c
+> > +++ b/drivers/dma-buf/dma-heap.c
+> > @@ -202,6 +202,7 @@ void *dma_heap_get_drvdata(struct dma_heap *heap)
+> >  {
+> >       return heap->priv;
+> >  }
+> > +EXPORT_SYMBOL(dma_heap_get_drvdata);
+> >
+> >  /**
+> >   * dma_heap_get_name - get heap name
+> > @@ -214,6 +215,7 @@ const char *dma_heap_get_name(struct dma_heap *heap=
+)
+> >  {
+> >       return heap->name;
+> >  }
+> > +EXPORT_SYMBOL(dma_heap_get_name);
+> >
+> >  /**
+> >   * dma_heap_add - adds a heap to dmabuf heaps
+> > @@ -303,6 +305,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap=
+_export_info *exp_info)
+> >       kfree(heap);
+> >       return err_ret;
+> >  }
+> > +EXPORT_SYMBOL(dma_heap_add);
+> >
+> >  static char *dma_heap_devnode(const struct device *dev, umode_t *mode)
+> >  {
+>
