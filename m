@@ -4,51 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC71EC5AD49
-	for <op-tee@archiver.kernel.org>; Wed, 28 May 2025 00:05:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18A9CC5AE59
+	for <op-tee@archiver.kernel.org>; Wed, 28 May 2025 05:22:29 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 06D5C45452
-	for <op-tee@archiver.kernel.org>; Wed, 28 May 2025 00:05:12 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 41A6840927
+	for <op-tee@archiver.kernel.org>; Wed, 28 May 2025 05:22:29 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BPvHBE8Q;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=AUOWXhyS;
 	dkim-atps=neutral
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B5FCF3E979
-	for <op-tee@lists.trustedfirmware.org>; Wed, 28 May 2025 00:04:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1748390693; x=1779926693;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=0EUqTd8s0a0nZiI7FjdMX0MsV8D/5MPI3MWQmgodAv4=;
-  b=BPvHBE8QHvcxKZ3o/6Iz14Z0JyiNeLVMiX8nFVKIvZWC3IGW7Z5ifurk
-   Do8fhmdj16KTOSEKtmJyLulbXpPjROgtSWiwSrD30fGMeYJUvjoCZzt0q
-   T8CQxwpE8yWAIQztlzqQBF4HHnEmAdRrhdJUBKT6kH1JJQSuLNzoxcrBT
-   b4UzVzEadHaHjiU9c8dY/soDEcudTXzlFPtQCIZg4mBsu77ZQdqaV53LI
-   OacOwhbsS4I4BeuBH7gEMWhxjcpTqCGuNGWWAM9atigin8/8jp6Ge8LQK
-   l2p8aMjPod/xNsKbTsU2t05Ygv4CtGfAMKST5o9g8cixw0ij/XafbCln4
-   A==;
-X-CSE-ConnectionGUID: DpudDCQMR7SDdfLtpSDTgA==
-X-CSE-MsgGUID: +o11reLHQDmba9hC7Ug7EQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11446"; a="75791718"
-X-IronPort-AV: E=Sophos;i="6.15,319,1739865600";
-   d="scan'208";a="75791718"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 May 2025 17:04:51 -0700
-X-CSE-ConnectionGUID: Z0dzMtooSOi3rlQ5YDayog==
-X-CSE-MsgGUID: w/x9uTQuS320aQAasX4eig==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,319,1739865600";
-   d="scan'208";a="147790475"
-Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
-  by orviesa003.jf.intel.com with ESMTP; 27 May 2025 17:04:46 -0700
-Received: from kbuild by 1992f890471c with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uK4Hk-000V6u-00;
-	Wed, 28 May 2025 00:04:44 +0000
-Date: Wed, 28 May 2025 08:04:27 +0800
-From: kernel test robot <lkp@intel.com>
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 316AA3F90A
+	for <op-tee@lists.trustedfirmware.org>; Wed, 28 May 2025 05:22:11 +0000 (UTC)
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-43ede096d73so31449055e9.2
+        for <op-tee@lists.trustedfirmware.org>; Tue, 27 May 2025 22:22:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1748409730; x=1749014530; darn=lists.trustedfirmware.org;
+        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
+         :to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=hQoa0JY92XB83bF0hiIU1JdZJVH9XdUX6CbZ3gHnktA=;
+        b=AUOWXhySDml/PyzkZVLPlFIt3oZsUISNwkjctef7LRJo+NVN0tZ8EK4iIeQaaH9R8n
+         mOl0UmZKF1D7t/U+NpuzX1FY2M/bNuN/WE0NFVEa9JZ2F6Tp6I0ge1j3waQceHfel1dM
+         xfENBDFAeZIRh8alS55Lv3XmN6K1sKaVWR0PcJzm827dM+2Nmsapw6CNoJBaKRU2g1ob
+         t3s1pp91WVuCSe9vVfnHBaphmOC2J2tilWRwvPDuhNaoTiyLv8eQJZjpTFtGYi3t5oLE
+         kyenc97u0Or07NwbDGNNachl3T6HEFyMlZUY1LO2O3P0xoXczLKFWPreLOvGI6neMv+y
+         /S5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1748409730; x=1749014530;
+        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
+         :to:from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=hQoa0JY92XB83bF0hiIU1JdZJVH9XdUX6CbZ3gHnktA=;
+        b=MZpbFitPAN6lPeZIsDW7ZR4SVTuuTBOVzMMD7cxnsehCfyBY8W/dQr7xLhAbtMiTMz
+         MZxEWSNOPjSlHWmTaiUrAT1hI19Xf8SsZI60t6rQ86mPFic+Hn3w3pf9/9X/oKUx8pzI
+         Tpdv/mnu6PrS4O6PVrATMUtqUXog+CB+pI+D6NOi8HjXsw9pZJuSvpY1Q3+hkzXmStBo
+         5BgcvbaDtxfIq/qnJPZobcNHFkMuFW2JubZBBif8ABaoR2/vT+XidTx/i7/xOwXeXszG
+         5+zQJ25cAcdl+wtIp9iDIfPxMcV5M52hOLMRnB+1UKHn7ZlMWMoZNGP2wx7c7TFBOqiN
+         tKVQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXnRZEzWcuL1Bf11iXvQphGeoAr1A8pdZooQAFzLX/nrnlqUn9VdQSjxf3LTkJ4XMgoeddl6ro=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yz0xtmtBT2nQboBqfntyAmGXiN5mwUbrJXZYNg1kkxj9UZaQRVl
+	kqLNX9psu5sSJRdsM3BKh1P3g1ne8xjhALMNap7EuhdNSYYHscllQ7rtZlFD/CdTjEo4Ig==
+X-Gm-Gg: ASbGncvAuU15JkgvBaPhGOvxCpKXGaB1KzVRkO7AKt06bXck9jbmP1S+orw9Som9eWg
+	DVV7G+ZVns1toejrTsMWcA0Mf/VnoAXGdSaRqBoWLJzHQH6lu/efn038fbr6efPSsFXz6CFTASc
+	XAEHh1QDJ5mgMHsTeE4WX3H8jWUsn7g0Q7UNITETBrXsJQGLL7TmGVDJ8EOQXjICI8MKmAnMSbJ
+	JyVMwrxk7LtWGMEgOPEsU1RZVeijwoymWFdW/IpvKYKl1Xq1DOQdIWyeOtmElQYRQkcncXFnEeF
+	C3sk2jmp3skG/bOWaEAsyFFVKUSzSfA4yCjKPvpGatYcm/S7wQfZyOph
+X-Google-Smtp-Source: AGHT+IFRt79F9Nml3doFVgCAm1e3lBsDWSa75/5HWtnFCBSWr87OHZCH/XypCJ2QyEheeH/6O/16gw==
+X-Received: by 2002:a05:600c:621b:b0:43c:fffc:786c with SMTP id 5b1f17b1804b1-44fafbf883dmr53519405e9.19.1748409729976;
+        Tue, 27 May 2025 22:22:09 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-45072559736sm5617525e9.19.2025.05.27.22.22.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 May 2025 22:22:09 -0700 (PDT)
+Date: Wed, 28 May 2025 08:22:06 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: oe-kbuild@lists.linux.dev,
+	Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
 	Jens Wiklander <jens.wiklander@linaro.org>,
 	Sumit Garg <sumit.garg@kernel.org>,
 	Bjorn Andersson <andersson@kernel.org>,
@@ -59,51 +69,50 @@ To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
 	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
 	Sumit Semwal <sumit.semwal@linaro.org>,
 	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>
-Subject: Re: [PATCH v5 03/12] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
-Message-ID: <202505280721.abBn0GaE-lkp@intel.com>
-References: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-3-024e3221b0b9@oss.qualcomm.com>
+Subject: Re: [PATCH v5 09/12] tee: add Qualcomm TEE driver
+Message-ID: <202505280653.Y79JKqDd-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-3-024e3221b0b9@oss.qualcomm.com>
-X-Spamd-Bar: ----------
-X-Spamd-Result: default: False [-10.70 / 15.00];
+In-Reply-To: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-9-024e3221b0b9@oss.qualcomm.com>
+X-Spamd-Bar: -----
+X-Spamd-Result: default: False [-5.00 / 15.00];
 	REPLY(-4.00)[];
-	WHITELIST_SPF_DKIM(-3.00)[intel.com:d:+,intel.com:s:+];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[intel.com,none];
-	R_DKIM_ALLOW(-0.20)[intel.com:s=Intel];
-	RCVD_IN_DNSWL_MED(-0.20)[192.198.163.7:from];
-	R_SPF_ALLOW(-0.20)[+ip4:192.198.163.0/26];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:4983, ipnet:192.198.162.0/23, country:US];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[22];
-	RCVD_COUNT_THREE(0.00)[3];
-	ARC_NA(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[intel.com:dkim];
+	BAYES_HAM(-0.00)[29.65%];
 	NEURAL_HAM(-0.00)[-1.000];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	ARC_NA(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[24];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.45:from];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_TRACE(0.00)[intel.com:+]
+	FROM_HAS_DN(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.45:from];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B5FCF3E979
-Message-ID-Hash: 36TP2GFU66Y2V6HXYSU4R5675ANJGILP
-X-Message-ID-Hash: 36TP2GFU66Y2V6HXYSU4R5675ANJGILP
-X-MailFrom: lkp@intel.com
+X-Rspamd-Queue-Id: 316AA3F90A
+Message-ID-Hash: AB3TBEFW5SML6AQ6S6CDJLLEBBV64ROE
+X-Message-ID-Hash: AB3TBEFW5SML6AQ6S6CDJLLEBBV64ROE
+X-MailFrom: dan.carpenter@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: oe-kbuild-all@lists.linux.dev, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Neil Armstrong <neil.armstrong@linaro.org>
+CC: lkp@intel.com, oe-kbuild-all@lists.linux.dev, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/36TP2GFU66Y2V6HXYSU4R5675ANJGILP/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AB3TBEFW5SML6AQ6S6CDJLLEBBV64ROE/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -115,134 +124,104 @@ Hi Amirreza,
 
 kernel test robot noticed the following build warnings:
 
-[auto build test WARNING on 3be1a7a31fbda82f3604b6c31e4f390110de1b46]
-
 url:    https://github.com/intel-lab-lkp/linux/commits/Amirreza-Zarrabi/tee-allow-a-driver-to-allocate-a-tee_device-without-a-pool/20250527-151020
 base:   3be1a7a31fbda82f3604b6c31e4f390110de1b46
-patch link:    https://lore.kernel.org/r/20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-3-024e3221b0b9%40oss.qualcomm.com
-patch subject: [PATCH v5 03/12] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
-config: arm64-randconfig-r121-20250527 (https://download.01.org/0day-ci/archive/20250528/202505280721.abBn0GaE-lkp@intel.com/config)
-compiler: aarch64-linux-gcc (GCC) 8.5.0
-reproduce: (https://download.01.org/0day-ci/archive/20250528/202505280721.abBn0GaE-lkp@intel.com/reproduce)
+patch link:    https://lore.kernel.org/r/20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-9-024e3221b0b9%40oss.qualcomm.com
+patch subject: [PATCH v5 09/12] tee: add Qualcomm TEE driver
+config: x86_64-randconfig-161-20250528 (https://download.01.org/0day-ci/archive/20250528/202505280653.Y79JKqDd-lkp@intel.com/config)
+compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202505280721.abBn0GaE-lkp@intel.com/
+| Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+| Closes: https://lore.kernel.org/r/202505280653.Y79JKqDd-lkp@intel.com/
 
-sparse warnings: (new ones prefixed by >>)
-   drivers/tee/tee_core.c:393:48: sparse: sparse: incorrect type in assignment (different address spaces) @@     expected void *[noderef] uaddr @@     got void [noderef] __user * @@
-   drivers/tee/tee_core.c:393:48: sparse:     expected void *[noderef] uaddr
-   drivers/tee/tee_core.c:393:48: sparse:     got void [noderef] __user *
->> drivers/tee/tee_core.c:396:56: sparse: sparse: incorrect type in argument 1 (different address spaces) @@     expected void const [noderef] __user *addr @@     got void *[noderef] uaddr @@
-   drivers/tee/tee_core.c:396:56: sparse:     expected void const [noderef] __user *addr
-   drivers/tee/tee_core.c:396:56: sparse:     got void *[noderef] uaddr
-   drivers/tee/tee_core.c:785:41: sparse: sparse: incorrect type in assignment (different address spaces) @@     expected void *[noderef] uaddr @@     got void [noderef] __user * @@
-   drivers/tee/tee_core.c:785:41: sparse:     expected void *[noderef] uaddr
-   drivers/tee/tee_core.c:785:41: sparse:     got void [noderef] __user *
-   drivers/tee/tee_core.c:788:56: sparse: sparse: incorrect type in argument 1 (different address spaces) @@     expected void const [noderef] __user *addr @@     got void *[noderef] uaddr @@
-   drivers/tee/tee_core.c:788:56: sparse:     expected void const [noderef] __user *addr
-   drivers/tee/tee_core.c:788:56: sparse:     got void *[noderef] uaddr
-   drivers/tee/tee_core.c:396:46: sparse: sparse: dereference of noderef expression
-   drivers/tee/tee_core.c:396:46: sparse: sparse: dereference of noderef expression
-   drivers/tee/tee_core.c:677:37: sparse: sparse: dereference of noderef expression
-   drivers/tee/tee_core.c:788:46: sparse: sparse: dereference of noderef expression
-   drivers/tee/tee_core.c:788:46: sparse: sparse: dereference of noderef expression
+smatch warnings:
+drivers/tee/qcomtee/call.c:748 qcomtee_probe() warn: missing error code 'err'
 
-vim +396 drivers/tee/tee_core.c
+vim +/err +748 drivers/tee/qcomtee/call.c
 
-   361	
-   362	static int params_from_user(struct tee_context *ctx, struct tee_param *params,
-   363				    size_t num_params,
-   364				    struct tee_ioctl_param __user *uparams)
-   365	{
-   366		size_t n;
-   367	
-   368		for (n = 0; n < num_params; n++) {
-   369			struct tee_shm *shm;
-   370			struct tee_ioctl_param ip;
-   371	
-   372			if (copy_from_user(&ip, uparams + n, sizeof(ip)))
-   373				return -EFAULT;
-   374	
-   375			/* All unused attribute bits has to be zero */
-   376			if (ip.attr & ~TEE_IOCTL_PARAM_ATTR_MASK)
-   377				return -EINVAL;
-   378	
-   379			params[n].attr = ip.attr;
-   380			switch (ip.attr & TEE_IOCTL_PARAM_ATTR_TYPE_MASK) {
-   381			case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-   382			case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
-   383				break;
-   384			case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
-   385			case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
-   386				params[n].u.value.a = ip.a;
-   387				params[n].u.value.b = ip.b;
-   388				params[n].u.value.c = ip.c;
-   389				break;
-   390			case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-   391			case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-   392			case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-   393				params[n].u.ubuf.uaddr = u64_to_user_ptr(ip.a);
-   394				params[n].u.ubuf.size = ip.b;
-   395	
- > 396				if (!access_ok(params[n].u.ubuf.uaddr,
-   397					       params[n].u.ubuf.size))
-   398					return -EFAULT;
-   399	
-   400				break;
-   401			case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-   402			case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-   403			case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-   404				/*
-   405				 * If a NULL pointer is passed to a TA in the TEE,
-   406				 * the ip.c IOCTL parameters is set to TEE_MEMREF_NULL
-   407				 * indicating a NULL memory reference.
-   408				 */
-   409				if (ip.c != TEE_MEMREF_NULL) {
-   410					/*
-   411					 * If we fail to get a pointer to a shared
-   412					 * memory object (and increase the ref count)
-   413					 * from an identifier we return an error. All
-   414					 * pointers that has been added in params have
-   415					 * an increased ref count. It's the callers
-   416					 * responibility to do tee_shm_put() on all
-   417					 * resolved pointers.
-   418					 */
-   419					shm = tee_shm_get_from_id(ctx, ip.c);
-   420					if (IS_ERR(shm))
-   421						return PTR_ERR(shm);
-   422	
-   423					/*
-   424					 * Ensure offset + size does not overflow
-   425					 * offset and does not overflow the size of
-   426					 * the referred shared memory object.
-   427					 */
-   428					if ((ip.a + ip.b) < ip.a ||
-   429					    (ip.a + ip.b) > shm->size) {
-   430						tee_shm_put(shm);
-   431						return -EINVAL;
-   432					}
-   433				} else if (ctx->cap_memref_null) {
-   434					/* Pass NULL pointer to OP-TEE */
-   435					shm = NULL;
-   436				} else {
-   437					return -EINVAL;
-   438				}
-   439	
-   440				params[n].u.memref.shm_offs = ip.a;
-   441				params[n].u.memref.size = ip.b;
-   442				params[n].u.memref.shm = shm;
-   443				break;
-   444			default:
-   445				/* Unknown attribute */
-   446				return -EINVAL;
-   447			}
-   448		}
-   449		return 0;
-   450	}
-   451	
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  711  static int qcomtee_probe(struct platform_device *pdev)
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  712  {
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  713  	struct workqueue_struct *async_wq;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  714  	struct tee_device *teedev;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  715  	struct tee_shm_pool *pool;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  716  	struct tee_context *ctx;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  717  	struct qcomtee *qcomtee;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  718  	int err;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  719  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  720  	qcomtee = kzalloc(sizeof(*qcomtee), GFP_KERNEL);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  721  	if (!qcomtee)
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  722  		return -ENOMEM;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  723  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  724  	pool = qcomtee_shm_pool_alloc();
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  725  	if (IS_ERR(pool)) {
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  726  		err = PTR_ERR(pool);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  727  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  728  		goto err_free_qcomtee;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  729  	}
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  730  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  731  	teedev = tee_device_alloc(&qcomtee_desc, NULL, pool, qcomtee);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  732  	if (IS_ERR(teedev)) {
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  733  		err = PTR_ERR(teedev);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  734  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  735  		goto err_pool_destroy;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  736  	}
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  737  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  738  	qcomtee->teedev = teedev;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  739  	qcomtee->pool = pool;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  740  	err = tee_device_register(qcomtee->teedev);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  741  	if (err)
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  742  		goto err_unreg_teedev;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  743  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  744  	platform_set_drvdata(pdev, qcomtee);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  745  	/* Start async wq. */
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  746  	async_wq = alloc_ordered_workqueue("qcomtee_wq", 0);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  747  	if (!async_wq)
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26 @748  		goto err_unreg_teedev;
+
+err = -ENOMEM;
+
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  749  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  750  	qcomtee->wq = async_wq;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  751  	/* Driver context used for async operations of teedev. */
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  752  	ctx = teedev_open(qcomtee->teedev);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  753  	if (IS_ERR(ctx)) {
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  754  		err = PTR_ERR(ctx);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  755  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  756  		goto err_dest_wq;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  757  	}
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  758  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  759  	qcomtee->ctx = ctx;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  760  	/* Init Object table. */
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  761  	qcomtee->xa_last_id = 0;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  762  	xa_init_flags(&qcomtee->xa_local_objects, XA_FLAGS_ALLOC);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  763  	/* Get QTEE verion. */
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  764  	qcomtee_get_qtee_feature_list(qcomtee->ctx,
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  765  				      QCOMTEE_FEATURE_VER_OP_GET_QTEE_ID,
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  766  				      &qtee_version);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  767  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  768  	pr_info("QTEE version %u.%u.%u\n",
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  769  		QTEE_VERSION_GET_MAJOR(qtee_version),
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  770  		QTEE_VERSION_GET_MINOR(qtee_version),
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  771  		QTEE_VERSION_GET_PATCH(qtee_version));
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  772  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  773  	return 0;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  774  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  775  err_dest_wq:
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  776  	destroy_workqueue(qcomtee->wq);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  777  err_unreg_teedev:
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  778  	tee_device_unregister(qcomtee->teedev);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  779  err_pool_destroy:
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  780  	tee_shm_pool_free(pool);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  781  err_free_qcomtee:
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  782  	kfree(qcomtee);
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  783  
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  784  	return err;
+accd33ce59c3367 Amirreza Zarrabi 2025-05-26  785  }
 
 -- 
 0-DAY CI Kernel Test Service
 https://github.com/intel/lkp-tests/wiki
+
