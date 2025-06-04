@@ -4,74 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B3CEC5B549
-	for <op-tee@archiver.kernel.org>; Wed,  4 Jun 2025 11:50:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA915C5B549
+	for <op-tee@archiver.kernel.org>; Wed,  4 Jun 2025 11:50:36 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 304E042BE9
-	for <op-tee@archiver.kernel.org>; Wed,  4 Jun 2025 11:50:00 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id EE9AA4661A
+	for <op-tee@archiver.kernel.org>; Wed,  4 Jun 2025 11:50:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1749037800;
+	d=lists.trustedfirmware.org; s=2024; t=1749037836;
 	bh=wyS1JsG4h0n8o5hTOcoB/tM1xa53mQrzY9716Kqurgc=;
 	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=Yx6uZqNFS1El3WlrMKmAM9giljFvhgYVP/Z45p0oStYmyijUEZZZzd8Ppze2tUSdN
-	 qSg7v5gT38tAAVN4HL3LNhvhLvQJ5Ho4YdbeiO5vLMn6gSFgSrxt5mD5R/Z9Rxi2z5
-	 zM6QjW5qgYEAITHyhiB6dC3lNokoV2jifTZ6aDqlYdrZ8H3JombJCxdUhcmvnccyMy
-	 1cKmqL6c5a4EZihEq4KIDdO6Pqpm94t8QmIxggsHU/P1VUGACz5SgXm9q1lsuDqqxu
-	 F7KWtzrB2mwv86/f6Rjucx4ScUdDExLQcD7k75Qsg/cTJagi03FqvR+/h/76TALNC5
-	 HWGwFYRiTgwqg==
+	b=NeJTHADSIQIZ43MhscnF3VYgFCZhgiY6RWLHf0tFTA3OGB+A4aUsrp5VgA+FmBDB1
+	 /qotaEZWxsa57QyLC8V/y+dPWmzx/g3OQu22w/S2dy466iJ6fchU0lEJyjHK0mQns4
+	 piwHjXSob6MyValm2VaSydCbWSs/HIjLrzhydK9wrs63GQpEk43YjV9CuB8MmJdaHd
+	 FB60wcfqCtjLbdVPwajbFahPZdkfU0bjlNY1v1bx+u9XI+XzkIQhYbPW5pKIVkUaUE
+	 9DCQowWk4cFY2aH4kbm2nfYZOv9NBy4a5nKJsG5M+N4rxGmkY8b66wBWn1hfg3zAjt
+	 wvo+9y1kn9VqA==
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4C4E942BE9
-	for <op-tee@lists.trustedfirmware.org>; Wed,  4 Jun 2025 11:49:42 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 83CC746467
+	for <op-tee@lists.trustedfirmware.org>; Wed,  4 Jun 2025 11:49:57 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aEj9fhw6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ncMAFWRl;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 8DC635C579B;
-	Wed,  4 Jun 2025 11:47:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 410E3C4CEE7;
-	Wed,  4 Jun 2025 11:49:40 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4BFE65C579B;
+	Wed,  4 Jun 2025 11:47:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1277C4CEEF;
+	Wed,  4 Jun 2025 11:49:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749037781;
+	s=k20201202; t=1749037796;
 	bh=tgQ+7dXJVLEmXXZsc2FE5/IqiHvoNXrTwS6epwFe/UE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=aEj9fhw6XPwEZ6DsiQTEM2zs0ITaI54m2vo+/SYgBqFCv+ht1MikFcBeORPS5vh+t
-	 bt2V9tv5bBrmwBp57T2lDbmuZcxDGHEg7l6VhvqO8RQk4ZYvZ+ljmehZeXQlBm9Mw2
-	 11tuy9mZ9s1nss362uMja1gFlh2p3XfTYQVi88inG+zfmcaoir/CGJ0cKhVlNFyLfV
-	 7YoT3x7PLqFOLU5zyngvPlR/mFEBuPuDdb6364mxRTii67CBDMgj6pI0Np5qM2hJ24
-	 p+XGKZ0/hrsv1fZ7r6WjBvKz/98M+B/j0MNAkd1P8NqHpj7sKXcVPzXU95u/c4/2WA
-	 3FFvFKp4I+qAg==
+	b=ncMAFWRlOXFNe5M5H0fubCEPShPzbN9AonLpSQjycbrrn58ehBlynfjuSv6DnibRq
+	 vVZ7w2Bt0zjQ9vBlHhyTsiGETl6+cZXGXEb7NrKddMccH9tziou8thUxqMpdGW3fZw
+	 IvpBQaQAIlnWysb+B59HJAFwdMmkJmhDnrkEZdgUG9hZmSVmsJjSVXsFswVe3cr0Sm
+	 unqytrJwz58aMlGjYdmGSs1plT9WUEXM3BPk5p3l6IuhGqeWYnFfO+OFAoTW4+g8OX
+	 dv3aHwicS6mSioxWFYxa/1kDPwAmWw2M63jjVMfsIpTID3Mqg62ixxJrmpuBUheF1B
+	 0A9vkRoBB5hbA==
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.15 8/9] tee: Prevent size calculation wraparound on 32-bit kernels
-Date: Wed,  4 Jun 2025 07:49:21 -0400
-Message-Id: <20250604114923.208380-8-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.14 7/8] tee: Prevent size calculation wraparound on 32-bit kernels
+Date: Wed,  4 Jun 2025 07:49:42 -0400
+Message-Id: <20250604114944.208828-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250604114923.208380-1-sashal@kernel.org>
-References: <20250604114923.208380-1-sashal@kernel.org>
+In-Reply-To: <20250604114944.208828-1-sashal@kernel.org>
+References: <20250604114944.208828-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.15
+X-stable-base: Linux 6.14.9
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 X-Spamd-Bar: ------
 X-Spamd-Result: default: False [-6.50 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
-	RCVD_DKIM_ARC_DNSWL_HI(-1.00)[];
 	MID_CONTAINS_FROM(1.00)[];
+	RCVD_DKIM_ARC_DNSWL_HI(-1.00)[];
 	RCVD_IN_DNSWL_HI(-0.50)[139.178.84.217:from];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:139.178.84.217];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	R_SPF_ALLOW(-0.20)[+ip4:139.178.84.217:c];
 	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ASN(0.00)[asn:54825, ipnet:139.178.80.0/21, country:US];
 	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
 	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_TLS_LAST(0.00)[];
 	FROM_HAS_DN(0.00)[];
@@ -82,16 +82,16 @@ X-Spamd-Result: default: False [-6.50 / 15.00];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4C4E942BE9
-Message-ID-Hash: PJ52CTQQY27CNVHNYPBB6A55V7ILKAKK
-X-Message-ID-Hash: PJ52CTQQY27CNVHNYPBB6A55V7ILKAKK
+X-Rspamd-Queue-Id: 83CC746467
+Message-ID-Hash: LKR4UUWOO2XWZ5WUIFY25D44TRTX52VX
+X-Message-ID-Hash: LKR4UUWOO2XWZ5WUIFY25D44TRTX52VX
 X-MailFrom: sashal@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Jann Horn <jannh@google.com>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, Sasha Levin <sashal@kernel.org>, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/PJ52CTQQY27CNVHNYPBB6A55V7ILKAKK/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/LKR4UUWOO2XWZ5WUIFY25D44TRTX52VX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
