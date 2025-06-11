@@ -4,131 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63180C61CE7
-	for <op-tee@archiver.kernel.org>; Wed, 11 Jun 2025 13:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 104DEC71141
+	for <op-tee@archiver.kernel.org>; Wed, 11 Jun 2025 18:10:03 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 91E16413F6
-	for <op-tee@archiver.kernel.org>; Wed, 11 Jun 2025 13:03:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1749646992;
-	bh=GWYTVxKC93YJVMhVzanm/CX1o4JT55CaAW87EgvJi2k=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=yjkdtM6mpLobSSFTJp5EH7cuYI8yNZrfXP7abFj/tr/30rKjsb/efUneJKQe4NYYq
-	 iYlm4mWQ5xwYis+xF2MvpOeWk0n8aoJCJ8kwgRwuSHQOt88oRlbsuoGzSupOFphK1X
-	 c75EYEdVjEoRgRbHK5PmU8AfFB3fm7fQkdAMSBNzfEIkmxRJ1ULJAooQrEAGfRqAng
-	 A46kQjeokQbNsbFfSuvBnn0Rf1fMNEQAp7p9cvlaET77A3wRL/sqbSCooWIC53ITpv
-	 c55BbYnO/yuPZPYs/6V7etWzEb/GhCGz59YYWebRHsQS87ZFiKxzQMvkGcldjmvRrj
-	 AwzBCeGN2rFvg==
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CBE4B3F5BF
-	for <op-tee@lists.trustedfirmware.org>; Wed, 11 Jun 2025 13:02:52 +0000 (UTC)
-Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hG2DfL5J;
-	dkim-atps=neutral
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id A1B61A4E5E3;
-	Wed, 11 Jun 2025 13:02:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1C76C4CEEE;
-	Wed, 11 Jun 2025 13:02:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749646972;
-	bh=GWYTVxKC93YJVMhVzanm/CX1o4JT55CaAW87EgvJi2k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=hG2DfL5JR+8qDvnZmSLi/lKndMr1EnbHqsT75jBCcqxPrs46YBWQs78lBKvfIE+aC
-	 Ft54mn2k1z/VL94FG/gGRpAFTrRaNC2WrIJddrIdSTxXBdhZ11poBFM5GyIKizdlje
-	 XLei3+O+DuE8lYoCRgHIF7PTD81y3M8EX7/gvgRuJe7aWmOSpRkCP450dZW1rVp1Z+
-	 271mRK0wm/Wxo+Pbymb6PpDzhp7/YZF5km8FQlnR2xbYKftcYV784uiCDkHso6pVrU
-	 yVZ1Vy0MKOlQ4a+FR2WvVC+7/32bydLAzh0g3S0E3MX5pQZwhALd++Sh1U+r04u37P
-	 Y8AgWtX7mANzQ==
-Date: Wed, 11 Jun 2025 18:32:43 +0530
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: Re: [PATCH v5 05/12] tee: increase TEE_MAX_ARG_SIZE to 4096
-Message-ID: <aEl-c-eoezGYKOpE@sumit-X1>
-References: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-0-024e3221b0b9@oss.qualcomm.com>
- <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-5-024e3221b0b9@oss.qualcomm.com>
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3F2DB4312A
+	for <op-tee@archiver.kernel.org>; Wed, 11 Jun 2025 18:10:03 +0000 (UTC)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B855F40928
+	for <op-tee@lists.trustedfirmware.org>; Wed, 11 Jun 2025 18:09:42 +0000 (UTC)
+Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[127.0.0.1])
+	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
+	(envelope-from <a.fatoum@pengutronix.de>)
+	id 1uPPtN-00012L-8z; Wed, 11 Jun 2025 20:09:41 +0200
+Message-ID: <89ad64f2-fbda-48a3-9a27-5eaff5be9292@pengutronix.de>
+Date: Wed, 11 Jun 2025 20:09:40 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-5-024e3221b0b9@oss.qualcomm.com>
-X-Spamd-Bar: ------
-X-Spamd-Result: default: False [-6.20 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	MID_RHS_NOT_FQDN(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:147.75.193.91];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
-	RCVD_IN_DNSWL_MED(-0.20)[147.75.193.91:from];
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US, de-DE, de-BE
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+To: manish.pandey2@arm.com
+Subject: Firmware Handoff for DT Overlay created by OP-TEE?
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
+X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: op-tee@lists.trustedfirmware.org
+X-Spamd-Bar: --
+X-Spamd-Result: default: False [-2.24 / 15.00];
+	BAYES_HAM(-2.94)[99.73%];
+	SUBJECT_ENDS_QUESTION(1.00)[];
+	RCVD_IN_DNSWL_MED(-0.20)[2a0a:edc0:0:900:1d::77:received];
+	ONCE_RECEIVED(0.20)[];
+	R_SPF_ALLOW(-0.20)[+mx];
 	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[18];
+	TO_DN_EQ_ADDR_SOME(0.00)[];
+	ASN(0.00)[asn:209379, ipnet:185.203.200.0/22, country:DE];
+	RCVD_COUNT_ONE(0.00)[1];
 	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:54825, ipnet:147.75.192.0/21, country:US];
+	MIME_TRACE(0.00)[0:+];
+	NEURAL_SPAM(0.00)[0.940];
 	ARC_NA(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
 	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	MID_RHS_MATCH_FROM(0.00)[];
+	R_DKIM_NA(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	DNSWL_BLOCKED(0.00)[185.203.201.7:from];
+	DMARC_NA(0.00)[pengutronix.de];
+	RCVD_TLS_LAST(0.00)[];
+	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[185.203.201.7:from]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CBE4B3F5BF
-Message-ID-Hash: S4X54JGUFCC25JMOIYQVS4JBSMS6PYRX
-X-Message-ID-Hash: S4X54JGUFCC25JMOIYQVS4JBSMS6PYRX
-X-MailFrom: sumit.garg@kernel.org
+X-Rspamd-Queue-Id: B855F40928
+Message-ID-Hash: NJEEVUGANXBL3JORAB5KTA6E5TFB76TS
+X-Message-ID-Hash: NJEEVUGANXBL3JORAB5KTA6E5TFB76TS
+X-MailFrom: a.fatoum@pengutronix.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org
+CC: op-tee@lists.trustedfirmware.org, BAREBOX <barebox@lists.infradead.org>, rouven.czerwinski@linaro.org, Michael Tretter <m.tretter@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/S4X54JGUFCC25JMOIYQVS4JBSMS6PYRX/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NJEEVUGANXBL3JORAB5KTA6E5TFB76TS/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Mon, May 26, 2025 at 11:56:50PM -0700, Amirreza Zarrabi wrote:
-> Increase TEE_MAX_ARG_SIZE to accommodate worst-case scenarios where
-> additional buffer space is required to pass all arguments to TEE.
-> This change is necessary for upcoming support for Qualcomm TEE, which
-> requires a larger buffer for argument marshaling.
-> 
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
->  include/uapi/linux/tee.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Hello Manish,
 
-Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+In your recent talk[1] at LinaroConnect about the Firmware Handoff
+specification, you were asking about what other use cases it could
+address for OP-TEE.
 
--Sumit
+We ran into a possible use case that we would like to share:
 
-> 
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index 441d97add53f..71a365afb89b 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -42,7 +42,7 @@
->  #define TEE_IOC_MAGIC	0xa4
->  #define TEE_IOC_BASE	0
->  
-> -#define TEE_MAX_ARG_SIZE	1024
-> +#define TEE_MAX_ARG_SIZE	4096
->  
->  #define TEE_GEN_CAP_GP		(1 << 0)/* GlobalPlatform compliant TEE */
->  #define TEE_GEN_CAP_PRIVILEGED	(1 << 1)/* Privileged device (for supplicant) */
-> 
-> -- 
-> 2.34.1
-> 
-> 
+BL2 can pass a DT to OP-TEE, which it would use to discover memory and
+to fix up with memory reservations covering the memory it carves out for
+itself.
+
+OP-TEE also supports passing along the reservations as a device tree
+overlay. AFAICS, there is no way currently to have both: A DT for OP-TEE
+to probe hardware from and a way to pass the normal world a device tree
+overlay in return.
+
+I think this could be neatly addressed with Firmware Handoff and would
+be a motivation for us to implement support in barebox BL2/BL33 to take
+advantage of this. The current way is suboptimal as we would prefer the
+DT passed to OP-TEE to be read-only. This avoids either having to copy
+it or to pad it sufficiently in anticipation of it growing with the
+addition of the new nodes.
+
+[1]: https://www.youtube.com/watch?v=RxU798h8aiE
+
+Cheers,
+Ahmad
+
+-- 
+Pengutronix e.K.                  |                             |
+Steuerwalder Str. 21              | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany         | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686  | Fax:   +49-5121-206917-5555 |
+
