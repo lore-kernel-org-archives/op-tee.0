@@ -4,223 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78D31C71136
-	for <op-tee@archiver.kernel.org>; Thu, 12 Jun 2025 10:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4B2CC71136
+	for <op-tee@archiver.kernel.org>; Thu, 12 Jun 2025 10:44:50 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A660743091
-	for <op-tee@archiver.kernel.org>; Thu, 12 Jun 2025 10:14:05 +0000 (UTC)
-Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=NdUO5VEz;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=NdUO5VEz;
-	dkim-atps=neutral
-Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012000.outbound.protection.outlook.com [52.101.66.0])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 96E3540B62
-	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Jun 2025 10:13:39 +0000 (UTC)
-ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=CSDMcZSbon1cLKAwLZJpuXcJCe1X+528wRoVqNBE57NHaMYClrU0xrqi1/zqZSiumlbHBudmSKk+Y4peHNbtwplIbs3K4v4upkzbNAhjy4bkAiPFLX0qAm6TvnrYkEcYyoCaBba8MunK36sV5WJDGR1brHIyac3iC6qcYZPRovWv49hfUAP+uAw3sNyvMcLedOhcCPemK6yHge3Vu3uqTK7G3LhHdagxXgbSrb3CAKv3aQbb7mHTuo2s6S6JiTh/dhSQ6ymIi8Mjzz3Aiqwz8WC/siLH6fATAKyPNnlwFRFg1aYu3R4oK6s30/Piyk0qmQM3z1VDGhYTBOjtmAUSWg==
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=pHqpcO1Q+8Jh4lBnuIXUF4CReVx4dLhljbZSC68Fw7k=;
- b=a/rMr44e2oDN/Dkb9IWRqeBKp8V2uak9CB6yJm2e4nxa0KzAn2yxS0AFgm990xKCOkXAjY+6x3ZD2MYHBcH7AJ1b5KTjp79Izt9m3HOe/KPGDdv8gW7tw86BTkGpWaJDngZ112/0Ufp7iflXj7U/TE/OoqxwmDT2tir1mhmAGm2icvtEtfEV/GTiOnKbNRILZDTs7LhZLONBuc4MnG0AY1XxFGo3olKEZ3gLzzEEztgb3wkJvIOXUDe53RE4EN6dTB1jDALIu/8DhXy/OnA9ugLLkvCxMitluCjqD7Dh86hjAFWdW/YvyjkYIj545Go+yw61MCRkfsMVan2+n3AZ0w==
-ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=pengutronix.de smtp.mailfrom=arm.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=arm.com;
- dkim=pass (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
- spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
- dmarc=[1,1,header.from=arm.com])
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=pHqpcO1Q+8Jh4lBnuIXUF4CReVx4dLhljbZSC68Fw7k=;
- b=NdUO5VEzWflqmGy552XbwwQVFj1xE26b0JEP8+34BD4zaMBAwvrwc89dIEfZX7cBlApdA40bWWe/VEkMqVabAqrDXLE7GDddoRa8H44SoQYhczWit8Ua6wAzYiLrqcvEjn0p9mHQWVulALTPFPtIv72BKGvYzFLP8+hzhRUPr4Y=
-Received: from DU2PR04CA0226.eurprd04.prod.outlook.com (2603:10a6:10:2b1::21)
- by VI0PR08MB10991.eurprd08.prod.outlook.com (2603:10a6:800:250::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.18; Thu, 12 Jun
- 2025 10:13:34 +0000
-Received: from DU6PEPF00009523.eurprd02.prod.outlook.com
- (2603:10a6:10:2b1:cafe::72) by DU2PR04CA0226.outlook.office365.com
- (2603:10a6:10:2b1::21) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.8835.19 via Frontend Transport; Thu,
- 12 Jun 2025 10:13:34 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
- smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=arm.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
- client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
-Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- DU6PEPF00009523.mail.protection.outlook.com (10.167.8.4) with Microsoft SMTP
- Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.8835.15 via
- Frontend Transport; Thu, 12 Jun 2025 10:13:33 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gFlw1DyGpD0NYCO91UWJhhz2ZqoQz7+J5gdAElKFVmeU1DghOE0Ex2GJNFbaxzeFJxJBRA/AvyfK0A79PeiLqIDuj+NOeGTsTpbML8EO8LWyBryAB589Z4kHKsScpY5mc/eZsCdJ7UPq59og8PBzMVxk+dubynweVNcywQ8Gsrr+7fGr0Kr2wshamFbxvTnsfmaCyHPg3sgW7R0+t+zcV8QQjcrp58u75OrySJmb+yB7uUl1DNM8ZETangTZGRJyBh5Q94WrocN82QLRvAxOFRpDaMdnLmQ5guPt0XLot9PSmcrW/bPsn/GjDNZ7zzKCOmGmMEzXPvjEv4a9S/MucQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=pHqpcO1Q+8Jh4lBnuIXUF4CReVx4dLhljbZSC68Fw7k=;
- b=LxijA6wP4KhGeTPBCiie4lQDsKgPvhykInv04gj0d/4/1QZqnSv5utwBWPR0EKcKHm8UTeVVRvO5q5u2xvIpJ51knfEWn1bQJizkByvNBY4f7UcRdH43pC2EAOiqQNuuKB+rSB0I+9YssyRrKq/6noT1FhMm5qSqPLN7lwgzYrRaCqMvFpOAcREhPsulcfKvNccZQZrfeuwuNEM0TYI3WiJ48vQbTGI9SzoACkHyUlhOTgPYTc/xq3XuBmB9/ScMu6qi5DOxijak4GlTYOFKvs1ltSeT7LU8SVOzyIF3Ri+IYjjGShl2Jqs5x21EvMePH8d50yWk8jZ6h3rmWIPF3w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=pHqpcO1Q+8Jh4lBnuIXUF4CReVx4dLhljbZSC68Fw7k=;
- b=NdUO5VEzWflqmGy552XbwwQVFj1xE26b0JEP8+34BD4zaMBAwvrwc89dIEfZX7cBlApdA40bWWe/VEkMqVabAqrDXLE7GDddoRa8H44SoQYhczWit8Ua6wAzYiLrqcvEjn0p9mHQWVulALTPFPtIv72BKGvYzFLP8+hzhRUPr4Y=
-Received: from VI1PR08MB10217.eurprd08.prod.outlook.com (2603:10a6:800:1bc::9)
- by AS8PR08MB9430.eurprd08.prod.outlook.com (2603:10a6:20b:5ee::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.19; Thu, 12 Jun
- 2025 10:13:00 +0000
-Received: from VI1PR08MB10217.eurprd08.prod.outlook.com
- ([fe80::fc12:614:8138:64ca]) by VI1PR08MB10217.eurprd08.prod.outlook.com
- ([fe80::fc12:614:8138:64ca%2]) with mapi id 15.20.8835.018; Thu, 12 Jun 2025
- 10:13:00 +0000
-From: Manish Pandey2 <Manish.Pandey2@arm.com>
-To: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Subject: Re: Firmware Handoff for DT Overlay created by OP-TEE?
-Thread-Topic: Firmware Handoff for DT Overlay created by OP-TEE?
-Thread-Index: AQHb2vwC9bCJB3BWBEiCB2zqbQSWPbP/RKM+
-Date: Thu, 12 Jun 2025 10:13:00 +0000
-Message-ID: 
- <VI1PR08MB1021788AAFA0E6A859BA3C18CC074A@VI1PR08MB10217.eurprd08.prod.outlook.com>
-References: <89ad64f2-fbda-48a3-9a27-5eaff5be9292@pengutronix.de>
-In-Reply-To: <89ad64f2-fbda-48a3-9a27-5eaff5be9292@pengutronix.de>
-Accept-Language: en-GB, en-US
-Content-Language: en-GB
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-msip_labels: 
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-x-ms-traffictypediagnostic: 
-	VI1PR08MB10217:EE_|AS8PR08MB9430:EE_|DU6PEPF00009523:EE_|VI0PR08MB10991:EE_
-X-MS-Office365-Filtering-Correlation-Id: b40d10b9-c81f-41f0-d53b-08dda999c9af
-x-checkrecipientrouted: true
-nodisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted: 
- BCL:0;ARA:13230040|1800799024|366016|376014|38070700018|13003099007|8096899003|7053199007;
-X-Microsoft-Antispam-Message-Info-Original: 
- =?us-ascii?Q?LiLRmaqa76+fERJPZEQr0sDF8bpHHN3VWHKTyO159Xvch5CV8redPa2YlPe0?=
- =?us-ascii?Q?j/kGnL2P4xzvYl798qn+sy31jOthrWYAcL3/bMKCFvkfnh4VX1lstgJxsrsa?=
- =?us-ascii?Q?K4n8wDWpoMOTyKRQkPQ2kJcxRJS9f3CXa18gMR0wNROM7eNnlUf7U8pzM3ms?=
- =?us-ascii?Q?B1uIKFA5YykieafRJ7SVwS0lOLjJDk/vHEqTDPFOSKcTjnGABPMMHui4GOmb?=
- =?us-ascii?Q?J6yDG5Flwl9DsoPoXvy4SrNZdieVpYR6DaZJhDzSeUcKe45yQKdy5qC5ykLT?=
- =?us-ascii?Q?iCIL063IDuBkFrOQxESROgAXnvAY4BDppzvZmogteWlMBUr7SBjVJ9D5CDRD?=
- =?us-ascii?Q?j8H3qcsVdRCh+e8PNHZPxXlQKM0dcuNK6fJoO6+LJDzagQknsmdMWTyayLCC?=
- =?us-ascii?Q?3HP1jqCUjwewpVBsBWgVW3cdlZCwv39R4JSyqUYRYQJ6YbzlUY7xqWj3iZdE?=
- =?us-ascii?Q?luMGqfVSxBu7sqeR+UhbjttMGiVi1+OTIBo30K/RvmiRQ8WSfqRlNDBQ2k/+?=
- =?us-ascii?Q?HNBrJLhGuxly6Vy4Orf/mHbr2CdFUf1b+1ja2KWGuvfvTQ5icWCpZSokvNWI?=
- =?us-ascii?Q?Ra4IAP9iiWCR2hQ6jGs9z95cUSyJJ6LctZm1LGPGcCzY3Ljd4z+pZ0eMrUQ6?=
- =?us-ascii?Q?bePfSQTxSTZAO569MLsuVFHRRcbgKPP8e2kGimXVOHg/c6v8Uw8zypCIMlOD?=
- =?us-ascii?Q?CU81fLLX+uMQARR5wa6lxDFE4EETSCvh1YZ3StjQP9Ph+3eTkrzrloRXJ0je?=
- =?us-ascii?Q?tCk9r7nhz56GQsHGGBmfkgH7RBMdP1RTh601lOEp1h9RlLLhIlx5czpxZWxU?=
- =?us-ascii?Q?bSofd8XZaV5yh1ChEzosc5J0ud2L0V8/Rnod0Z9Zd5ksS+Ayj/ClRs3gSoUl?=
- =?us-ascii?Q?0iyrFDSatNDNeG2BsJjfDdL05NmG9/yW72hSGvfKnKGuED/HDSicyeESE1ls?=
- =?us-ascii?Q?Dx8KRF7lUrvvV+l2oJ2pkB3YZhhJOr49zUvlVQxP7hw7hgUx/YOVFqleR1qz?=
- =?us-ascii?Q?7ljU3FINlglBhiGRJYTlopgudg9A8NyVWqof1fkFZ7rD1DZlCIWrZHd7nVE2?=
- =?us-ascii?Q?w3clRgpWQNmk1xc8hZTJ1Jgr7VLfQBzgkAMIu87RCHFvQvEyXthGDqXLQLdi?=
- =?us-ascii?Q?6yGmvnbd50fKzeGRvw4uBwAeMgGztRGAOrNY6HctzcCUqa9Vq6ZQQw3MfS4H?=
- =?us-ascii?Q?UjMJow2j+FMowcss7yEz+EmSi8A345BeR8eiDHeZbzw/R25TpfVc4nUqRGcz?=
- =?us-ascii?Q?IJZvYkd5zJZ/PHlGBntbW5/63oqZWEGFrL9yFgFnTbV8fN94KFkez4G/3Zkq?=
- =?us-ascii?Q?WfFNoM6dvEHRQjUs7OitlO7oTvU9DB7stQHqWo+93F4+m81lluskGAgkA8Sh?=
- =?us-ascii?Q?3NryXdvy+gzIUNBW9tloV41vdYckO2I0nA0i45fJUvFuClwLYUbWzS90skPv?=
- =?us-ascii?Q?ZIA9FACensI=3D?=
-X-Forefront-Antispam-Report-Untrusted: 
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR08MB10217.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(38070700018)(13003099007)(8096899003)(7053199007);DIR:OUT;SFP:1101;
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1DB7C430C9
+	for <op-tee@archiver.kernel.org>; Thu, 12 Jun 2025 10:44:50 +0000 (UTC)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0B09140B62
+	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Jun 2025 10:44:27 +0000 (UTC)
+Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[127.0.0.1])
+	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
+	(envelope-from <a.fatoum@pengutronix.de>)
+	id 1uPfPx-0007O1-0q; Thu, 12 Jun 2025 12:44:21 +0200
+Message-ID: <88d6ff32-3303-4e66-b886-b2c459913648@pengutronix.de>
+Date: Thu, 12 Jun 2025 12:44:20 +0200
 MIME-Version: 1.0
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR08MB9430
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped: 
- DU6PEPF00009523.eurprd02.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 
-	50b323fb-9004-4547-4c25-08dda999b609
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|1800799024|36860700013|14060799003|82310400026|376014|35042699022|13003099007|7053199007|8096899003;
-X-Microsoft-Antispam-Message-Info: 
-	=?iso-8859-1?Q?rCAum7cfjt96RkfK36amKzYJ8OPRrOqUvVB8OVR9GmtxQ+CuLX5+1Ld8qh?=
- =?iso-8859-1?Q?OGac8s8EqbD5laKz9KHrLhyWCyxnVHv87+m/DbZ7Bf28R6Dozt8kADEXP3?=
- =?iso-8859-1?Q?Tnsz8/RCoR5URKGYg+A42Grmq03xrAYfzhiwTRgz9G2NK6K0367prOf0CR?=
- =?iso-8859-1?Q?OJxf60u0rrgrKXRUSqcPkBpIApVlg10r31NPGWb1OejDqSYxizRMsYC08n?=
- =?iso-8859-1?Q?f6NSj6a6pKt8tHNQiwfcs3T+DaQ4YvjZ4AOU4xUSRzfU1xu1Syt6aGJq/D?=
- =?iso-8859-1?Q?lHeloEOU6trmx3UexwkZcfx7Zo5vHVbsv76zA0itnJ9ALJ4BTWyyVqn8uj?=
- =?iso-8859-1?Q?+711uHWEWfVearbCuiWt+bCL013ZTDYr+dBWiri6TYkKGVPsjHtCY7yPsZ?=
- =?iso-8859-1?Q?AlU0kOw3ARqyvszrbrRW6xrY2RPqW3RRAE4YMYbuUdBXAmlaD7xvelUU1y?=
- =?iso-8859-1?Q?3FLu4UJMTTNttM5qkbR3zvRPDU0iCCVyUfkHKIUr9YDQUI+FkeSC3g/dIz?=
- =?iso-8859-1?Q?Qe8R9DaQmRBl0JN8vy9lUerfQev2nSeon8u341e1zEcjulT74+TJIb/wNb?=
- =?iso-8859-1?Q?92n0HFY/5F5EcUrTxtqHFsYd94bmkJqFe0CiUGeUWc8s0gczyYxv59ZTiy?=
- =?iso-8859-1?Q?oyR7hTG6cppoDo2BrcBYP50GN5JUNivjOupSpN2HdAUcXE0D4rqb5t5jGL?=
- =?iso-8859-1?Q?AaW6bPm7XLZLBNHk6x3NKpz642qMNkrvGQdFgvf3waKB4zA1GSGfF/tVag?=
- =?iso-8859-1?Q?dsWxJFR56rnpPjO3smStQvvpIgihKejdlq1PLivuSak9A01ALzjFVh147N?=
- =?iso-8859-1?Q?h1YBqECHrRXvRmybU2CHDjbXqx854jxw/VVMs6+N/epXg40nZhC8snMDgh?=
- =?iso-8859-1?Q?L2BFx0jEFxdwqG8/Gv6gxdcRkWDLdos/Ec8ex4zDawEGzWHiqeJ2p7sdaW?=
- =?iso-8859-1?Q?GMv+TGGMpnYWGmq721HBDr67Qe5ncCZmzcmqh7spDN3DA9wtgkQwXWK8sz?=
- =?iso-8859-1?Q?yVA2rooRMbxNYVt1Ufyp2yycl9mX9Fhy8PPxUdhFws40RFUk5bwqYw8EVP?=
- =?iso-8859-1?Q?+oBCi+Bgaa0S7IJaYr84tK+5VFhydsSqYfSdXoEip+JrirLaOfKdbqiqJG?=
- =?iso-8859-1?Q?l6MqhcfPMy93pUzaO6s2I67wVmk23rH942Vkjn8cv3aDmXqbRNgxugzyu8?=
- =?iso-8859-1?Q?HS+IZmEx4KjbDcALVS9YGZZbxHgytSlSLK4GpKqsIvgLMioJ9wkFhgR08Y?=
- =?iso-8859-1?Q?Y/pCUWrnBwMbWhVt5wlGtcw7CsxA/jueDDowkVsyrQUPFBV8GiwdjKnPvf?=
- =?iso-8859-1?Q?EiEMtA43oMI9MCyWCzumIyeSrb13W8z0Jk50RXFpE2Fajc7b7whzmGn08S?=
- =?iso-8859-1?Q?XqFiCqXqsPaT3ZF73oSd8JBSsVJ79jcnUXhnSbK8ZU4vqzYL9Cz0LLzwlk?=
- =?iso-8859-1?Q?cEJPxVEcZwSjpim3ECAppb0x6di4lfdYeV6B8M0uoV3DGykYM0rcM49oUM?=
- =?iso-8859-1?Q?p9QcEqcwyzO75YdJTvdPyMMJyW9h63OUiwzekLdrPQMQ=3D=3D?=
-X-Forefront-Antispam-Report: 
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700013)(14060799003)(82310400026)(376014)(35042699022)(13003099007)(7053199007)(8096899003);DIR:OUT;SFP:1101;
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Jun 2025 10:13:33.4231
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: b40d10b9-c81f-41f0-d53b-08dda999c9af
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
-X-MS-Exchange-CrossTenant-AuthSource: 
-	DU6PEPF00009523.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR08MB10991
-X-Spamd-Bar: --------
-X-Spamd-Result: default: False [-9.00 / 15.00];
+User-Agent: Mozilla Thunderbird
+Subject: Re: Firmware Handoff for DT Overlay created by OP-TEE?
+To: Manish Pandey2 <Manish.Pandey2@arm.com>
+References: <89ad64f2-fbda-48a3-9a27-5eaff5be9292@pengutronix.de>
+ <VI1PR08MB1021788AAFA0E6A859BA3C18CC074A@VI1PR08MB10217.eurprd08.prod.outlook.com>
+Content-Language: en-US, de-DE, de-BE
+From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+In-Reply-To: <VI1PR08MB1021788AAFA0E6A859BA3C18CC074A@VI1PR08MB10217.eurprd08.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
+X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: op-tee@lists.trustedfirmware.org
+X-Spamd-Bar: ------
+X-Spamd-Result: default: False [-6.50 / 15.00];
 	REPLY(-4.00)[];
 	BAYES_HAM(-3.00)[99.98%];
 	SUBJECT_ENDS_QUESTION(1.00)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=2];
-	DWL_DNSWL_LOW(-1.00)[arm.com:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[arm.com,none];
-	R_DKIM_ALLOW(-0.20)[arm.com:s=selector1];
-	R_SPF_ALLOW(-0.20)[+ip4:52.100.0.0/15];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
+	RCVD_IN_DNSWL_MED(-0.40)[2a0a:edc0:0:900:1d::77:received,185.203.201.7:from];
+	R_SPF_ALLOW(-0.20)[+mx];
+	ONCE_RECEIVED(0.20)[];
+	MIME_GOOD(-0.10)[text/plain];
 	TO_DN_EQ_ADDR_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
+	MIME_TRACE(0.00)[0:+];
+	ASN(0.00)[asn:209379, ipnet:185.203.200.0/22, country:DE];
 	TO_DN_SOME(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:8075, ipnet:52.96.0.0/12, country:US];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.66.0:from];
-	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
 	FROM_HAS_DN(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.66.0:from];
-	RCVD_COUNT_FIVE(0.00)[5];
-	RCVD_TLS_LAST(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	ARC_NA(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	DKIM_TRACE(0.00)[arm.com:+]
+	FROM_EQ_ENVFROM(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	R_DKIM_NA(0.00)[];
+	DMARC_NA(0.00)[pengutronix.de];
+	NEURAL_SPAM(0.00)[0.942]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 96E3540B62
-Message-ID-Hash: P2BDTWOYZHHHVFQFGE5S4VYFP5XAYBJE
-X-Message-ID-Hash: P2BDTWOYZHHHVFQFGE5S4VYFP5XAYBJE
-X-MailFrom: Manish.Pandey2@arm.com
+X-Rspamd-Queue-Id: 0B09140B62
+Message-ID-Hash: CQOUYNCQPOPVF3CHOSE77ZKX376NDAOX
+X-Message-ID-Hash: CQOUYNCQPOPVF3CHOSE77ZKX376NDAOX
+X-MailFrom: a.fatoum@pengutronix.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>, BAREBOX <barebox@lists.infradead.org>, "rouven.czerwinski@linaro.org" <rouven.czerwinski@linaro.org>, Michael Tretter <m.tretter@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Raymond Mao <raymond.mao@linaro.org>, Dan Handley <Dan.Handley@arm.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Jose Marinho <Jose.Marinho@arm.com>
+CC: BAREBOX <barebox@lists.infradead.org>, Raymond Mao <raymond.mao@linaro.org>, Jose Marinho <Jose.Marinho@arm.com>, "rouven.czerwinski@linaro.org" <rouven.czerwinski@linaro.org>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Michael Tretter <m.tretter@pengutronix.de>, Dan Handley <Dan.Handley@arm.com>, "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/Q5SADJP7MQPZV3774M4622APUYQ7YCCB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/CQOUYNCQPOPVF3CHOSE77ZKX376NDAOX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -228,68 +76,71 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Thanks Ahmad for reaching out!
-
-There is a PR [1] on the Firmware Handoff specification that is still under=
- discussion. Could you take a look and see if it could accommodate your use=
- case?
-
-To confirm my understanding, would the desired flow be something like:
-
-  1.
-BL31 passes a read-only DT to OP-TEE via the Transfer List (TL)
-  2.
-OP-TEE consumes the DT, adds memory reservations via a DTO, and appends thi=
-s DTO to the TL
-  3.
-BL31 then forwards the updated TL to BL33
-
-Does that match what you had in mind?
-
-[1]: https://github.com/FirmwareHandoff/firmware_handoff/pull/74
-
-________________________________
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Sent: 11 June 2025 19:09
-To: Manish Pandey2 <Manish.Pandey2@arm.com>
-Cc: op-tee@lists.trustedfirmware.org <op-tee@lists.trustedfirmware.org>; BA=
-REBOX <barebox@lists.infradead.org>; rouven.czerwinski@linaro.org <rouven.c=
-zerwinski@linaro.org>; Michael Tretter <m.tretter@pengutronix.de>; kernel@p=
-engutronix.de <kernel@pengutronix.de>
-Subject: Firmware Handoff for DT Overlay created by OP-TEE?
-
-Hello Manish,
-
-In your recent talk[1] at LinaroConnect about the Firmware Handoff
-specification, you were asking about what other use cases it could
-address for OP-TEE.
-
-We ran into a possible use case that we would like to share:
-
-BL2 can pass a DT to OP-TEE, which it would use to discover memory and
-to fix up with memory reservations covering the memory it carves out for
-itself.
-
-OP-TEE also supports passing along the reservations as a device tree
-overlay. AFAICS, there is no way currently to have both: A DT for OP-TEE
-to probe hardware from and a way to pass the normal world a device tree
-overlay in return.
-
-I think this could be neatly addressed with Firmware Handoff and would
-be a motivation for us to implement support in barebox BL2/BL33 to take
-advantage of this. The current way is suboptimal as we would prefer the
-DT passed to OP-TEE to be read-only. This avoids either having to copy
-it or to pad it sufficiently in anticipation of it growing with the
-addition of the new nodes.
-
-[1]: https://www.youtube.com/watch?v=3DRxU798h8aiE
-
-Cheers,
-Ahmad
-
---
-Pengutronix e.K.                  |                             |
-Steuerwalder Str. 21              | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany         | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686  | Fax:   +49-5121-206917-5555 |
-
+SGVsbG8gTWFuaXNoLA0KDQpPbiA2LzEyLzI1IDEyOjEzLCBNYW5pc2ggUGFuZGV5MiB3cm90ZToN
+Cj4gVGhhbmtzIEFobWFkIGZvciByZWFjaGluZyBvdXQhDQoNClRoYW5rcyBmb3IgdGhlIHF1aWNr
+IHJlc3BvbnNlLg0KDQo+IFRoZXJlIGlzIGEgUFIgWzFdIG9uIHRoZSBGaXJtd2FyZSBIYW5kb2Zm
+IHNwZWNpZmljYXRpb24gdGhhdCBpcyBzdGlsbA0KPiB1bmRlciBkaXNjdXNzaW9uLiBDb3VsZCB5
+b3UgdGFrZSBhIGxvb2sgYW5kIHNlZSBpZiBpdCBjb3VsZCBhY2NvbW1vZGF0ZQ0KPiB5b3VyIHVz
+ZSBjYXNlPw0KDQpDb29sLCB0aGFua3MgZm9yIHBvaW50aW5nIGl0IG91dC4gSSB3aWxsIGNoZWNr
+IGl0IG91dCBpbiBkZXRhaWwuDQoNCj4gVG8gY29uZmlybSBteSB1bmRlcnN0YW5kaW5nLCB3b3Vs
+ZCB0aGUgZGVzaXJlZCBmbG93IGJlIHNvbWV0aGluZyBsaWtlOg0KPiANCj4gIDEuDQo+ICAgICAq
+QkwzMSBwYXNzZXMgYSByZWFkLW9ubHkgRFQqwqB0byBPUC1URUUgdmlhIHRoZSBUcmFuc2ZlciBM
+aXN0IChUTCkNCg0KRFQgY29tZXMgZnJvbSBCTDIgb3JpZ2luYWxseSwgYnV0IHllcywgQkwzMSBw
+YXNzZXMgaXQgYWxvbmcuDQoNCj4gIDIuDQo+ICAgICAqT1AtVEVFIGNvbnN1bWVzKsKgdGhlIERU
+LCBhZGRzIG1lbW9yeSByZXNlcnZhdGlvbnMgdmlhIGEgKkRUTyosIGFuZA0KPiAgICAgYXBwZW5k
+cyB0aGlzIERUTyB0byB0aGUgVEwNCg0KTXkgb3JpZ2luYWwgdGhvdWdodCB3YXMgdGhhdCBCTDIg
+KHZpYSBCTDMxKSBhbGxvY2F0ZXMgc29tZSBtZW1vcnkgYW5kDQpwYXNzZXMgaXQgdmlhIHRyYW5z
+ZmVyIGxpc3QgZm9yIE9QLVRFRSB0byBmaWxsIG91dC4NCg0KVGhpcyBhbGxvd3MgcmVjbGFpbWlu
+ZyB0aGUgc3BhY2UgdXNlZCBieSB0aGUgb3ZlcmxheSwgd2hpY2ggd291bGQNCm90aGVyd2lzZSBu
+b3QgYmUgcG9zc2libGU6DQoNCiAgLSBJZiBPUC1URUUgdXNlcyBhcmJpdHJhcnkgbWVtb3J5LCBp
+dCBtYXkgdHVybiBvdXQgdG8gYmUgdXNlZA0KICAgIG90aGVyd2lzZQ0KDQogIC0gSWYgT1AtVEVF
+IHVzZXMgaXRzIG93biBtZW1vcnkgdGhhdCBpdCByZXNlcnZlcywgdGhlIHNwYWNlIGlzDQogICAg
+bmV2ZXIgcmVjbGFpbWVkIGFzIGl0IGRvZXNuJ3Qga25vdyB3aGVuIGl0J3Mgbm8gbG9uZ2VyIG5l
+ZWRlZA0KDQo+ICAzLg0KPiAgICAgKkJMMzEgdGhlbiBmb3J3YXJkcyrCoHRoZSB1cGRhdGVkIFRM
+IHRvIEJMMzMNCg0KUmlnaHQuDQoNCj4gDQo+IERvZXMgdGhhdCBtYXRjaCB3aGF0IHlvdSBoYWQg
+aW4gbWluZD8NCg0KVGhhbmtzLA0KQWhtYWQNCg0KPiANCj4gDQo+IFsxXTogaHR0cHM6Ly9naXRo
+dWIuY29tL0Zpcm13YXJlSGFuZG9mZi9maXJtd2FyZV9oYW5kb2ZmL3B1bGwvNzQNCj4gPGh0dHBz
+Oi8vZ2l0aHViLmNvbS9GaXJtd2FyZUhhbmRvZmYvZmlybXdhcmVfaGFuZG9mZi9wdWxsLzc0Pg0K
+PiANCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICpGcm9tOirCoEFobWFkIEZhdG91bSA8YS5mYXRvdW1A
+cGVuZ3V0cm9uaXguZGU+DQo+ICpTZW50OirCoDExIEp1bmUgMjAyNSAxOTowOQ0KPiAqVG86KsKg
+TWFuaXNoIFBhbmRleTIgPE1hbmlzaC5QYW5kZXkyQGFybS5jb20+DQo+ICpDYzoqwqBvcC10ZWVA
+bGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZyA8b3AtDQo+IHRlZUBsaXN0cy50cnVzdGVkZmlybXdh
+cmUub3JnPjsgQkFSRUJPWCA8YmFyZWJveEBsaXN0cy5pbmZyYWRlYWQub3JnPjsNCj4gcm91dmVu
+LmN6ZXJ3aW5za2lAbGluYXJvLm9yZyA8cm91dmVuLmN6ZXJ3aW5za2lAbGluYXJvLm9yZz47IE1p
+Y2hhZWwNCj4gVHJldHRlciA8bS50cmV0dGVyQHBlbmd1dHJvbml4LmRlPjsga2VybmVsQHBlbmd1
+dHJvbml4LmRlDQo+IDxrZXJuZWxAcGVuZ3V0cm9uaXguZGU+DQo+ICpTdWJqZWN0OirCoEZpcm13
+YXJlIEhhbmRvZmYgZm9yIERUIE92ZXJsYXkgY3JlYXRlZCBieSBPUC1URUU/DQo+IMKgDQo+IEhl
+bGxvIE1hbmlzaCwNCj4gDQo+IEluIHlvdXIgcmVjZW50IHRhbGtbMV0gYXQgTGluYXJvQ29ubmVj
+dCBhYm91dCB0aGUgRmlybXdhcmUgSGFuZG9mZg0KPiBzcGVjaWZpY2F0aW9uLCB5b3Ugd2VyZSBh
+c2tpbmcgYWJvdXQgd2hhdCBvdGhlciB1c2UgY2FzZXMgaXQgY291bGQNCj4gYWRkcmVzcyBmb3Ig
+T1AtVEVFLg0KPiANCj4gV2UgcmFuIGludG8gYSBwb3NzaWJsZSB1c2UgY2FzZSB0aGF0IHdlIHdv
+dWxkIGxpa2UgdG8gc2hhcmU6DQo+IA0KPiBCTDIgY2FuIHBhc3MgYSBEVCB0byBPUC1URUUsIHdo
+aWNoIGl0IHdvdWxkIHVzZSB0byBkaXNjb3ZlciBtZW1vcnkgYW5kDQo+IHRvIGZpeCB1cCB3aXRo
+IG1lbW9yeSByZXNlcnZhdGlvbnMgY292ZXJpbmcgdGhlIG1lbW9yeSBpdCBjYXJ2ZXMgb3V0IGZv
+cg0KPiBpdHNlbGYuDQo+IA0KPiBPUC1URUUgYWxzbyBzdXBwb3J0cyBwYXNzaW5nIGFsb25nIHRo
+ZSByZXNlcnZhdGlvbnMgYXMgYSBkZXZpY2UgdHJlZQ0KPiBvdmVybGF5LiBBRkFJQ1MsIHRoZXJl
+IGlzIG5vIHdheSBjdXJyZW50bHkgdG8gaGF2ZSBib3RoOiBBIERUIGZvciBPUC1URUUNCj4gdG8g
+cHJvYmUgaGFyZHdhcmUgZnJvbSBhbmQgYSB3YXkgdG8gcGFzcyB0aGUgbm9ybWFsIHdvcmxkIGEg
+ZGV2aWNlIHRyZWUNCj4gb3ZlcmxheSBpbiByZXR1cm4uDQo+IA0KPiBJIHRoaW5rIHRoaXMgY291
+bGQgYmUgbmVhdGx5IGFkZHJlc3NlZCB3aXRoIEZpcm13YXJlIEhhbmRvZmYgYW5kIHdvdWxkDQo+
+IGJlIGEgbW90aXZhdGlvbiBmb3IgdXMgdG8gaW1wbGVtZW50IHN1cHBvcnQgaW4gYmFyZWJveCBC
+TDIvQkwzMyB0byB0YWtlDQo+IGFkdmFudGFnZSBvZiB0aGlzLiBUaGUgY3VycmVudCB3YXkgaXMg
+c3Vib3B0aW1hbCBhcyB3ZSB3b3VsZCBwcmVmZXIgdGhlDQo+IERUIHBhc3NlZCB0byBPUC1URUUg
+dG8gYmUgcmVhZC1vbmx5LiBUaGlzIGF2b2lkcyBlaXRoZXIgaGF2aW5nIHRvIGNvcHkNCj4gaXQg
+b3IgdG8gcGFkIGl0IHN1ZmZpY2llbnRseSBpbiBhbnRpY2lwYXRpb24gb2YgaXQgZ3Jvd2luZyB3
+aXRoIHRoZQ0KPiBhZGRpdGlvbiBvZiB0aGUgbmV3IG5vZGVzLg0KPiANCj4gWzFdOiBodHRwczov
+L3d3dy55b3V0dWJlLmNvbS93YXRjaD92PVJ4VTc5OGg4YWlFIDxodHRwczovLw0KPiB3d3cueW91
+dHViZS5jb20vd2F0Y2g/dj1SeFU3OThoOGFpRT4NCj4gDQo+IENoZWVycywNCj4gQWhtYWQNCj4g
+DQo+IC0tDQo+IFBlbmd1dHJvbml4IGUuSy7CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgIHzCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoCB8DQo+IFN0ZXVlcndhbGRlciBTdHIuIDIxwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAg
+fCBodHRwOi8vd3d3LnBlbmd1dHJvbml4LmRlLyA8aHR0cDovLw0KPiB3d3cucGVuZ3V0cm9uaXgu
+ZGUvPsKgIHwNCj4gMzExMzcgSGlsZGVzaGVpbSwgR2VybWFuecKgwqDCoMKgwqDCoMKgwqAgfCBQ
+aG9uZTogKzQ5LTUxMjEtMjA2OTE3LTDCoMKgwqAgfA0KPiBBbXRzZ2VyaWNodCBIaWxkZXNoZWlt
+LCBIUkEgMjY4NsKgIHwgRmF4OsKgwqAgKzQ5LTUxMjEtMjA2OTE3LTU1NTUgfA0KPiANCg0KLS0g
+DQpQZW5ndXRyb25peCBlLksuICAgICAgICAgICAgICAgICAgfCAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgfA0KU3RldWVyd2FsZGVyIFN0ci4gMjEgICAgICAgICAgICAgIHwgaHR0cDovL3d3
+dy5wZW5ndXRyb25peC5kZS8gIHwNCjMxMTM3IEhpbGRlc2hlaW0sIEdlcm1hbnkgICAgICAgICB8
+IFBob25lOiArNDktNTEyMS0yMDY5MTctMCAgICB8DQpBbXRzZ2VyaWNodCBIaWxkZXNoZWltLCBI
+UkEgMjY4NiAgfCBGYXg6ICAgKzQ5LTUxMjEtMjA2OTE3LTU1NTUgfA0KDQo=
