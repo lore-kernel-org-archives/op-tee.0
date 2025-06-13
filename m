@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF0C7C71135
-	for <op-tee@archiver.kernel.org>; Fri, 13 Jun 2025 09:20:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AD87C61DB2
+	for <op-tee@archiver.kernel.org>; Fri, 13 Jun 2025 09:20:37 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id E010643135
-	for <op-tee@archiver.kernel.org>; Fri, 13 Jun 2025 09:20:04 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id BEFD445EEF
+	for <op-tee@archiver.kernel.org>; Fri, 13 Jun 2025 09:20:36 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector1 header.b=xmCVzlKQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector1 header.b=pr4mpQIe;
 	dkim-atps=neutral
-Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com [91.207.212.93])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 82C413F791
-	for <op-tee@lists.trustedfirmware.org>; Fri, 13 Jun 2025 09:19:37 +0000 (UTC)
-Received: from pps.filterd (m0046660.ppops.net [127.0.0.1])
-	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55D8wHNm020220;
-	Fri, 13 Jun 2025 11:19:28 +0200
+Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com [185.132.182.106])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 70FD742DCE
+	for <op-tee@lists.trustedfirmware.org>; Fri, 13 Jun 2025 09:19:38 +0000 (UTC)
+Received: from pps.filterd (m0369458.ppops.net [127.0.0.1])
+	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55D7AgiR006683;
+	Fri, 13 Jun 2025 11:19:25 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=selector1; bh=
-	Qukd4stYOCYEBe2KGcf2tpYpRWJZmwskg2vfqUfUsKY=; b=xmCVzlKQCtuGgHtz
-	pUXCmVGQ3ONSiquNM8AvJbe2b/bd2r1R7FQVmDfjwI6Ztf/N52gp85Y3iOSOAnYc
-	t+4L78ug3jzrEG0441Cs8UX4zGFErHHGupHayHwXXjmacQCRLOzX0OYroE6ImLUv
-	WOdeCRhWKnajWFJasN7CCOYOu4nLybchNgNt8DnWqPWWxspQ61ErvQ4/j8V/7Gcr
-	c7eZEkL7meNLk1I7QE7nGYAsdhpig1zoHCZiJJDfWzdy516k/04MfKmGcIcMs+Nv
-	bQgcwFa1QXBntuBa+UI484nKk78R/Kd+yCqish+Gu/u8sBLN4xWYnQXsVoLqCvK0
-	uLj8lg==
+	oRoK+To3ECSWyMsKvQou69OpviNdWWWWDeXdSq5d7yw=; b=pr4mpQIeSXtd+rbr
+	jUatBWMeCdQYqJVXl+Npik+SHcZKuDxc9MPWOeVXc1RZUd9Y7r4q0OwOBD2lYb95
+	ZY7gSjYR7W+HaxC+z2RUsUXJ/8DaSOslpAuT96eUI4oPwgYtvtGQCfhWoAav82eN
+	YiM35Afbvc+MwSnluJfAo5dSTe8pYAI0T0mJumox/dW0dq7q1GnsUOh6RwOO17C5
+	j8Ed68/4g2rnfXTj6Vy9nKS2nuX5sDS31GqzSWeeIMdVzsFUsPK5oyBvLbIW7zpZ
+	KiDC9AScJemIUPWLZ42EPupxAFIMT2k3qExsN4gXCDwRJuskkDcMMBQAaIjJoj1S
+	no/NMA==
 Received: from beta.dmz-ap.st.com (beta.dmz-ap.st.com [138.198.100.35])
-	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 474ajakwn4-1
+	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 474y05jd4r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Jun 2025 11:19:27 +0200 (MEST)
+	Fri, 13 Jun 2025 11:19:25 +0200 (MEST)
 Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-	by beta.dmz-ap.st.com (STMicroelectronics) with ESMTP id 38AE340056;
-	Fri, 13 Jun 2025 11:18:08 +0200 (CEST)
-Received: from Webmail-eu.st.com (eqndag1node5.st.com [10.75.129.134])
-	by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 7B050BAD4D4;
-	Fri, 13 Jun 2025 11:17:19 +0200 (CEST)
-Received: from SAFDAG1NODE1.st.com (10.75.90.17) by EQNDAG1NODE5.st.com
- (10.75.129.134) with Microsoft SMTP Server (version=TLS1_2,
+	by beta.dmz-ap.st.com (STMicroelectronics) with ESMTP id C95D34005B;
+	Fri, 13 Jun 2025 11:18:11 +0200 (CEST)
+Received: from Webmail-eu.st.com (eqndag1node4.st.com [10.75.129.133])
+	by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 63A06BAD714;
+	Fri, 13 Jun 2025 11:17:22 +0200 (CEST)
+Received: from SAFDAG1NODE1.st.com (10.75.90.17) by EQNDAG1NODE4.st.com
+ (10.75.129.133) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Fri, 13 Jun
- 2025 11:17:19 +0200
+ 2025 11:17:22 +0200
 Received: from localhost (10.48.86.121) by SAFDAG1NODE1.st.com (10.75.90.17)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Fri, 13 Jun
- 2025 11:17:19 +0200
+ 2025 11:17:21 +0200
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: Bjorn Andersson <andersson@kernel.org>,
         Mathieu Poirier
@@ -54,9 +54,9 @@ To: Bjorn Andersson <andersson@kernel.org>,
         "Rob Herring" <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
         "Conor Dooley" <conor+dt@kernel.org>
-Subject: [PATCH v17 1/6] remoteproc: core: Introduce rproc_pa_to_va helper
-Date: Fri, 13 Jun 2025 11:16:45 +0200
-Message-ID: <20250613091650.2337411-2-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v17 5/6] remoteproc: stm32: Create sub-functions to request shutdown and release
+Date: Fri, 13 Jun 2025 11:16:49 +0200
+Message-ID: <20250613091650.2337411-6-arnaud.pouliquen@foss.st.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20250613091650.2337411-1-arnaud.pouliquen@foss.st.com>
 References: <20250613091650.2337411-1-arnaud.pouliquen@foss.st.com>
@@ -77,8 +77,8 @@ X-Spamd-Result: default: False [-1.10 / 15.00];
 	R_MISSING_CHARSET(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
 	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector1];
-	R_SPF_ALLOW(-0.20)[+ip4:91.207.212.93];
-	RCVD_IN_DNSWL_LOW(-0.10)[91.207.212.93:from];
+	R_SPF_ALLOW(-0.20)[+ip4:185.132.182.106:c];
+	RCVD_IN_DNSWL_LOW(-0.10)[185.132.182.106:from];
 	MIME_GOOD(-0.10)[text/plain];
 	RCPT_COUNT_TWELVE(0.00)[13];
 	MIME_TRACE(0.00)[0:+];
@@ -87,7 +87,7 @@ X-Spamd-Result: default: False [-1.10 / 15.00];
 	ARC_NA(0.00)[];
 	RECEIVED_HELO_LOCALHOST(0.00)[];
 	DKIM_TRACE(0.00)[foss.st.com:+];
-	ASN(0.00)[asn:52129, ipnet:91.207.212.0/23, country:US];
+	ASN(0.00)[asn:52129, ipnet:185.132.182.0/24, country:US];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_COUNT_FIVE(0.00)[6];
 	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=82594f44e5=arnaud.pouliquen@foss.st.com];
@@ -100,16 +100,16 @@ X-Spamd-Result: default: False [-1.10 / 15.00];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 82C413F791
-Message-ID-Hash: IT3OI245L7PKPEMXHDMSUTYTJELZB2O7
-X-Message-ID-Hash: IT3OI245L7PKPEMXHDMSUTYTJELZB2O7
+X-Rspamd-Queue-Id: 70FD742DCE
+Message-ID-Hash: JJWPZFE7BIDBPRI2X5PSWFSZGU2QQNAN
+X-Message-ID-Hash: JJWPZFE7BIDBPRI2X5PSWFSZGU2QQNAN
 X-MailFrom: prvs=82594f44e5=arnaud.pouliquen@foss.st.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IT3OI245L7PKPEMXHDMSUTYTJELZB2O7/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JJWPZFE7BIDBPRI2X5PSWFSZGU2QQNAN/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -117,87 +117,122 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-When a resource table is loaded by an external entity such as U-boot or
-OP-TEE, we do not necessarily get the device address(da) but the physical
-address(pa).
-This helper performs similar translation than the rproc_da_to_va()
-but based on a physical address.
+To prepare for the support of TEE remoteproc, create sub-functions
+that can be used in both cases, with and without remoteproc TEE support.
 
 Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 ---
- drivers/remoteproc/remoteproc_core.c | 46 ++++++++++++++++++++++++++++
- include/linux/remoteproc.h           |  1 +
- 2 files changed, 47 insertions(+)
+ drivers/remoteproc/stm32_rproc.c | 82 +++++++++++++++++++-------------
+ 1 file changed, 49 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remoteproc_core.c
-index 81b2ccf988e8..d06eef1fa424 100644
---- a/drivers/remoteproc/remoteproc_core.c
-+++ b/drivers/remoteproc/remoteproc_core.c
-@@ -230,6 +230,52 @@ void *rproc_da_to_va(struct rproc *rproc, u64 da, size_t len, bool *is_iomem)
+diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rproc.c
+index 431648607d53..db82d4308376 100644
+--- a/drivers/remoteproc/stm32_rproc.c
++++ b/drivers/remoteproc/stm32_rproc.c
+@@ -209,6 +209,52 @@ static int stm32_rproc_mbox_idx(struct rproc *rproc, const unsigned char *name)
+ 	return -EINVAL;
  }
- EXPORT_SYMBOL(rproc_da_to_va);
  
-+/**
-+ * rproc_pa_to_va() - lookup the kernel virtual address for a physical address of a remoteproc
-+ * memory
-+ *
-+ * @rproc: handle of a remote processor
-+ * @pa: remoteproc physical address
-+ * @len: length of the memory region @pa is pointing to
-+ * @is_iomem: optional pointer filled in to indicate if @da is iomapped memory
-+ *
-+ * This function is a helper function similar to rproc_da_to_va() but it deals with physical
-+ * addresses instead of device addresses.
-+ *
-+ * Return: a valid kernel address on success or NULL on failure
-+ */
-+void *rproc_pa_to_va(struct rproc *rproc, phys_addr_t pa, size_t len, bool *is_iomem)
++static void stm32_rproc_request_shutdown(struct rproc *rproc)
 +{
-+	struct rproc_mem_entry *carveout;
-+	void *ptr = NULL;
++	struct stm32_rproc *ddata = rproc->priv;
++	int err, idx;
 +
-+	list_for_each_entry(carveout, &rproc->carveouts, node) {
-+		int offset = pa - carveout->dma;
++	/* Request shutdown of the remote processor */
++	if (rproc->state != RPROC_OFFLINE && rproc->state != RPROC_CRASHED) {
++		idx = stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
++		if (idx >= 0 && ddata->mb[idx].chan) {
++			err = mbox_send_message(ddata->mb[idx].chan, "detach");
++			if (err < 0)
++				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
++		}
++	}
++}
 +
-+		/*  Verify that carveout is allocated */
-+		if (!carveout->va)
-+			continue;
++static int stm32_rproc_release(struct rproc *rproc)
++{
++	struct stm32_rproc *ddata = rproc->priv;
++	unsigned int err = 0;
 +
-+		/* try next carveout if da is too small */
-+		if (offset < 0)
-+			continue;
-+
-+		/* try next carveout if da is too large */
-+		if (offset + len > carveout->len)
-+			continue;
-+
-+		ptr = carveout->va + offset;
-+
-+		if (is_iomem)
-+			*is_iomem = carveout->is_iomem;
-+
-+		break;
++	/* To allow platform Standby power mode, set remote proc Deep Sleep */
++	if (ddata->pdds.map) {
++		err = regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
++					 ddata->pdds.mask, 1);
++		if (err) {
++			dev_err(&rproc->dev, "failed to set pdds\n");
++			return err;
++		}
 +	}
 +
-+	return ptr;
-+}
-+EXPORT_SYMBOL(rproc_pa_to_va);
++	/* Update coprocessor state to OFF if available */
++	if (ddata->m4_state.map) {
++		err = regmap_update_bits(ddata->m4_state.map,
++					 ddata->m4_state.reg,
++					 ddata->m4_state.mask,
++					 M4_STATE_OFF);
++		if (err) {
++			dev_err(&rproc->dev, "failed to set copro state\n");
++			return err;
++		}
++	}
 +
- /**
-  * rproc_find_carveout_by_name() - lookup the carveout region by a name
-  * @rproc: handle of a remote processor
-diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
-index b4795698d8c2..8fd0d7f63c8e 100644
---- a/include/linux/remoteproc.h
-+++ b/include/linux/remoteproc.h
-@@ -690,6 +690,7 @@ int rproc_detach(struct rproc *rproc);
- int rproc_set_firmware(struct rproc *rproc, const char *fw_name);
- void rproc_report_crash(struct rproc *rproc, enum rproc_crash_type type);
- void *rproc_da_to_va(struct rproc *rproc, u64 da, size_t len, bool *is_iomem);
-+void *rproc_pa_to_va(struct rproc *rproc, phys_addr_t pa, size_t len, bool *is_iomem);
++	return 0;
++}
++
+ static int stm32_rproc_prepare(struct rproc *rproc)
+ {
+ 	struct device *dev = rproc->dev.parent;
+@@ -519,17 +565,9 @@ static int stm32_rproc_detach(struct rproc *rproc)
+ static int stm32_rproc_stop(struct rproc *rproc)
+ {
+ 	struct stm32_rproc *ddata = rproc->priv;
+-	int err, idx;
++	int err;
  
- /* from remoteproc_coredump.c */
- void rproc_coredump_cleanup(struct rproc *rproc);
+-	/* request shutdown of the remote processor */
+-	if (rproc->state != RPROC_OFFLINE && rproc->state != RPROC_CRASHED) {
+-		idx = stm32_rproc_mbox_idx(rproc, STM32_MBX_SHUTDOWN);
+-		if (idx >= 0 && ddata->mb[idx].chan) {
+-			err = mbox_send_message(ddata->mb[idx].chan, "detach");
+-			if (err < 0)
+-				dev_warn(&rproc->dev, "warning: remote FW shutdown without ack\n");
+-		}
+-	}
++	stm32_rproc_request_shutdown(rproc);
+ 
+ 	err = stm32_rproc_set_hold_boot(rproc, true);
+ 	if (err)
+@@ -541,29 +579,7 @@ static int stm32_rproc_stop(struct rproc *rproc)
+ 		return err;
+ 	}
+ 
+-	/* to allow platform Standby power mode, set remote proc Deep Sleep */
+-	if (ddata->pdds.map) {
+-		err = regmap_update_bits(ddata->pdds.map, ddata->pdds.reg,
+-					 ddata->pdds.mask, 1);
+-		if (err) {
+-			dev_err(&rproc->dev, "failed to set pdds\n");
+-			return err;
+-		}
+-	}
+-
+-	/* update coprocessor state to OFF if available */
+-	if (ddata->m4_state.map) {
+-		err = regmap_update_bits(ddata->m4_state.map,
+-					 ddata->m4_state.reg,
+-					 ddata->m4_state.mask,
+-					 M4_STATE_OFF);
+-		if (err) {
+-			dev_err(&rproc->dev, "failed to set copro state\n");
+-			return err;
+-		}
+-	}
+-
+-	return 0;
++	return stm32_rproc_release(rproc);
+ }
+ 
+ static void stm32_rproc_kick(struct rproc *rproc, int vqid)
 -- 
 2.25.1
 
