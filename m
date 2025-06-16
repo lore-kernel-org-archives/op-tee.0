@@ -4,47 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A571C71135
-	for <op-tee@archiver.kernel.org>; Mon, 16 Jun 2025 08:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26017C71135
+	for <op-tee@archiver.kernel.org>; Mon, 16 Jun 2025 08:02:07 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id AD7EE43130
-	for <op-tee@archiver.kernel.org>; Mon, 16 Jun 2025 08:01:26 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 68FF742E92
+	for <op-tee@archiver.kernel.org>; Mon, 16 Jun 2025 08:02:06 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector1 header.b=ZLfW2q0Q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector1 header.b=zr82XDFI;
 	dkim-atps=neutral
 Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com [185.132.182.106])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id A0BF042E92
-	for <op-tee@lists.trustedfirmware.org>; Mon, 16 Jun 2025 07:58:33 +0000 (UTC)
-Received: from pps.filterd (m0369458.ppops.net [127.0.0.1])
-	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55G5r8s6029809;
-	Mon, 16 Jun 2025 09:58:17 +0200
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id C6CE242E92
+	for <op-tee@lists.trustedfirmware.org>; Mon, 16 Jun 2025 07:58:35 +0000 (UTC)
+Received: from pps.filterd (m0241204.ppops.net [127.0.0.1])
+	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55G7Xpxd029583;
+	Mon, 16 Jun 2025 09:58:27 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=selector1; bh=NyB0mRiXHZcUCfvsSXVUOl
-	9pdyI01pDLPd6x09yUw/0=; b=ZLfW2q0Q9G4XZc8Cg562YLJlvFRjgl0doA41bR
-	WpGCfg8NcsHyYK1fbpVNw1P4LjId/lZE1gb3oPBC3Te2q18cQMQObDPBufb9jAkS
-	X39ONKaIf5PDP0pORAueNjOh7jXfV47pi6oYlTCyHQam0abuFX+2OS+eytME8/v8
-	/J0YdEPN+/FjpMYlnPBuZFEzWvoVktznjTtiR1xZvqdT7AXzyPmC22ShxNf7wBco
-	ZejEpqDxHvksmpL87Fxhoz8UeSwHsDZztcaujFzUwkcUSQKiRqLwinQg/KD8DofU
-	bJdlgxe3iLR8/l3bGKgV0MuO4mCtUtY3JaKr4JLXeWKl0zAg==
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=selector1; bh=
+	Jeq5JI4lCT6ZEy/eg01EjyjLaJrHnzpFREfAtoOf8ec=; b=zr82XDFIJemNGefZ
+	scZbCyNeYiLbmKJZFI+0cN+rkV3vdE7GyMh46T6kpU2FR920zOYl5NOnNF2AW6pl
+	iwSWlSTBv+4yGgwxBn1GeQp0z093MumsJqCPgVGoguEZQWsfKAid6ULOpFNcYZGo
+	5gjQ84JGzJ2u9Bw8gojcnv3ep3huhkl8fjVr6eqAegap482t/aaB/c5j7ycM3f2J
+	xbh/suHmB/7pojzHBc1Q1kLnuGMt81mMa0s6eDH1hjesIF2cgRVuGurH87+sLxve
+	Nj6YBx6802mwBlQHf5wE+Ks6toHo3Qci9vlU7Bxd+R6N0vBs/XesoSR850CMifxx
+	kOQ9IQ==
 Received: from beta.dmz-ap.st.com (beta.dmz-ap.st.com [138.198.100.35])
-	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 479jn4m30w-1
+	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 4790e1yc80-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 16 Jun 2025 09:58:17 +0200 (MEST)
+	Mon, 16 Jun 2025 09:58:27 +0200 (MEST)
 Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-	by beta.dmz-ap.st.com (STMicroelectronics) with ESMTP id 9DF6940070;
-	Mon, 16 Jun 2025 09:57:08 +0200 (CEST)
-Received: from Webmail-eu.st.com (eqndag1node6.st.com [10.75.129.135])
-	by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id AE8A94CB026;
-	Mon, 16 Jun 2025 09:56:19 +0200 (CEST)
-Received: from SAFDAG1NODE1.st.com (10.75.90.17) by EQNDAG1NODE6.st.com
- (10.75.129.135) with Microsoft SMTP Server (version=TLS1_2,
+	by beta.dmz-ap.st.com (STMicroelectronics) with ESMTP id 2E91640046;
+	Mon, 16 Jun 2025 09:57:12 +0200 (CEST)
+Received: from Webmail-eu.st.com (eqndag1node5.st.com [10.75.129.134])
+	by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 95EBF4CB033;
+	Mon, 16 Jun 2025 09:56:22 +0200 (CEST)
+Received: from SAFDAG1NODE1.st.com (10.75.90.17) by EQNDAG1NODE5.st.com
+ (10.75.129.134) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Mon, 16 Jun
- 2025 09:56:19 +0200
+ 2025 09:56:22 +0200
 Received: from localhost (10.48.86.121) by SAFDAG1NODE1.st.com (10.75.90.17)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Mon, 16 Jun
- 2025 09:56:19 +0200
+ 2025 09:56:22 +0200
 From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 To: Bjorn Andersson <andersson@kernel.org>,
         Mathieu Poirier
@@ -53,10 +54,12 @@ To: Bjorn Andersson <andersson@kernel.org>,
         "Rob Herring" <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
         "Conor Dooley" <conor+dt@kernel.org>
-Subject: [PATCH v18 0/6] Introduction of a remoteproc tee to load signed firmware
-Date: Mon, 16 Jun 2025 09:55:24 +0200
-Message-ID: <20250616075530.4106090-1-arnaud.pouliquen@foss.st.com>
+Subject: [PATCH v18 4/6] dt-bindings: remoteproc: Add compatibility for TEE support
+Date: Mon, 16 Jun 2025 09:55:28 +0200
+Message-ID: <20250616075530.4106090-5-arnaud.pouliquen@foss.st.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20250616075530.4106090-1-arnaud.pouliquen@foss.st.com>
+References: <20250616075530.4106090-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -68,7 +71,7 @@ X-Proofpoint-Virus-Version: vendor=baseguard
  definitions=2025-06-16_03,2025-06-13_01,2025-03-28_01
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: A0BF042E92
+X-Rspamd-Queue-Id: C6CE242E92
 X-Spamd-Bar: -
 X-Spamd-Result: default: False [-1.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
@@ -97,15 +100,15 @@ X-Spamd-Result: default: False [-1.10 / 15.00];
 	DWL_DNSWL_BLOCKED(0.00)[st.com:dkim];
 	TAGGED_RCPT(0.00)[dt];
 	FROM_HAS_DN(0.00)[]
-Message-ID-Hash: YU3UK5QUAVOQTAJGVNB57VWRSEV67XGV
-X-Message-ID-Hash: YU3UK5QUAVOQTAJGVNB57VWRSEV67XGV
+Message-ID-Hash: RH4KQCX6RN37L7N4DFPHY5AD5GDQRBH4
+X-Message-ID-Hash: RH4KQCX6RN37L7N4DFPHY5AD5GDQRBH4
 X-MailFrom: prvs=8262f63a79=arnaud.pouliquen@foss.st.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YU3UK5QUAVOQTAJGVNB57VWRSEV67XGV/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RH4KQCX6RN37L7N4DFPHY5AD5GDQRBH4/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -113,89 +116,132 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
+The "st,stm32mp1-m4-tee" compatible is utilized in a system configuration
+where the Cortex-M4 firmware is loaded by the Trusted Execution Environment
+(TEE).
 
-Main updates from version V17[1]:
-- Fix:  warning: EXPORT_SYMBOL() is used, but #include <linux/export.h>
-  is missing
+For instance, this compatible is used in both the Linux and OP-TEE device
+trees:
+- In OP-TEE, a node is defined in the device tree with the
+  "st,stm32mp1-m4-tee" compatible to support signed remoteproc firmware.
+  Based on DT properties, the OP-TEE remoteproc framework is initiated to
+  expose a trusted application service to authenticate and load the remote
+  processor firmware provided by the Linux remoteproc framework, as well
+  as to start and stop the remote processor.
+- In Linux, when the compatibility is set, the Cortex-M resets should not
+  be declared in the device tree. In such a configuration, the reset is
+  managed by the OP-TEE remoteproc driver and is no longer accessible from
+  the Linux kernel.
 
-More details are available in each patch commit message.
+Associated with this new compatible, add the "st,proc-id" property to
+identify the remote processor. This ID is used to define a unique ID,
+common between Linux, U-Boot, and OP-TEE, to identify a coprocessor.
+This ID will be used in requests to the OP-TEE remoteproc Trusted
+Application to specify the remote processor.
 
-[1] https://lore.kernel.org/linux-remoteproc/20250613091650.2337411-1-arnaud.pouliquen@foss.st.com/
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ .../bindings/remoteproc/st,stm32-rproc.yaml   | 58 ++++++++++++++++---
+ 1 file changed, 50 insertions(+), 8 deletions(-)
 
-Tested-on: commit 19272b37aa4f ("Linux 6.16-rc1")
-
-Description of the feature:
---------------------------
-This series proposes the implementation of a remoteproc tee driver to
-communicate with a TEE trusted application responsible for authenticating
-and loading the remoteproc firmware image in an Arm secure context.
-
-1) Principle:
-
-The remoteproc tee driver provides services to communicate with the OP-TEE
-trusted application running on the Trusted Execution Context (TEE).
-The trusted application in TEE manages the remote processor lifecycle:
-
-- authenticating and loading firmware images,
-- isolating and securing the remote processor memories,
-- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
-- managing the start and stop of the firmware by the TEE.
-
-2) Format of the signed image:
-
-Refer to:
-https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_core.c#L18-L57
-
-3) OP-TEE trusted application API:
-
-Refer to:
-https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remoteproc.h
-
-4) OP-TEE signature script
-
-Refer to:
-https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
-
-Example of usage:
-sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key ${OP-TEE_PATH}/keys/default.pem
-
-
-5) Impact on User space Application
-
-No sysfs impact. The user only needs to provide the signed firmware image
-instead of the ELF image.
-
-
-For more information about the implementation, a presentation is available here
-(note that the format of the signed image has evolved between the presentation
-and the integration in OP-TEE).
-
-https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
-
-Arnaud Pouliquen (6):
-  remoteproc: core: Introduce rproc_pa_to_va helper
-  remoteproc: Add TEE support
-  remoteproc: Introduce release_fw optional operation
-  dt-bindings: remoteproc: Add compatibility for TEE support
-  remoteproc: stm32: Create sub-functions to request shutdown and
-    release
-  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
-
- .../bindings/remoteproc/st,stm32-rproc.yaml   |  58 +-
- drivers/remoteproc/Kconfig                    |  10 +
- drivers/remoteproc/Makefile                   |   1 +
- drivers/remoteproc/remoteproc_core.c          |  52 ++
- drivers/remoteproc/remoteproc_internal.h      |   6 +
- drivers/remoteproc/remoteproc_tee.c           | 620 ++++++++++++++++++
- drivers/remoteproc/stm32_rproc.c              | 139 +++-
- include/linux/remoteproc.h                    |   4 +
- include/linux/remoteproc_tee.h                |  90 +++
- 9 files changed, 936 insertions(+), 44 deletions(-)
- create mode 100644 drivers/remoteproc/remoteproc_tee.c
- create mode 100644 include/linux/remoteproc_tee.h
-
-
-base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+diff --git a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+index 843679c557e7..58da07e536fc 100644
+--- a/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/st,stm32-rproc.yaml
+@@ -16,7 +16,12 @@ maintainers:
+ 
+ properties:
+   compatible:
+-    const: st,stm32mp1-m4
++    enum:
++      - st,stm32mp1-m4
++      - st,stm32mp1-m4-tee
++    description:
++      Use "st,stm32mp1-m4" for the Cortex-M4 coprocessor management by non-secure context
++      Use "st,stm32mp1-m4-tee" for the Cortex-M4 coprocessor management by secure context
+ 
+   reg:
+     description:
+@@ -43,6 +48,10 @@ properties:
+           - description: The offset of the hold boot setting register
+           - description: The field mask of the hold boot
+ 
++  st,proc-id:
++    description: remote processor identifier
++    $ref: /schemas/types.yaml#/definitions/uint32
++
+   st,syscfg-tz:
+     deprecated: true
+     description:
+@@ -146,21 +155,43 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - resets
+ 
+ allOf:
+   - if:
+       properties:
+-        reset-names:
+-          not:
+-            contains:
+-              const: hold_boot
++        compatible:
++          contains:
++            const: st,stm32mp1-m4
+     then:
++      if:
++        properties:
++          reset-names:
++            not:
++              contains:
++                const: hold_boot
++      then:
++        required:
++          - st,syscfg-holdboot
++      else:
++        properties:
++          st,syscfg-holdboot: false
++        required:
++          - reset-names
+       required:
+-        - st,syscfg-holdboot
+-    else:
++        - resets
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: st,stm32mp1-m4-tee
++    then:
+       properties:
+         st,syscfg-holdboot: false
++        reset-names: false
++        resets: false
++      required:
++        - st,proc-id
+ 
+ additionalProperties: false
+ 
+@@ -192,5 +223,16 @@ examples:
+       st,syscfg-rsc-tbl = <&tamp 0x144 0xFFFFFFFF>;
+       st,syscfg-m4-state = <&tamp 0x148 0xFFFFFFFF>;
+     };
++  - |
++    #include <dt-bindings/reset/stm32mp1-resets.h>
++    m4@10000000 {
++      compatible = "st,stm32mp1-m4-tee";
++      reg = <0x10000000 0x40000>,
++            <0x30000000 0x40000>,
++            <0x38000000 0x10000>;
++      st,proc-id = <0>;
++      st,syscfg-rsc-tbl = <&tamp 0x144 0xFFFFFFFF>;
++      st,syscfg-m4-state = <&tamp 0x148 0xFFFFFFFF>;
++    };
+ 
+ ...
 -- 
 2.25.1
 
