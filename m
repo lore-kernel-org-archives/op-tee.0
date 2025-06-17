@@ -4,220 +4,140 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4687C71155
-	for <op-tee@archiver.kernel.org>; Tue, 17 Jun 2025 04:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF8B2C71157
+	for <op-tee@archiver.kernel.org>; Tue, 17 Jun 2025 07:32:37 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 175E745EF1
-	for <op-tee@archiver.kernel.org>; Tue, 17 Jun 2025 04:44:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1750135495;
-	bh=H7GANlnHbRQ0PuyObSnaelRfAXM+A9g6rqgPH2m/yv0=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=xnLsvvZd9NSufzkKKhnSV/KwjCEa1Qe+fS3jwDkls9Xjk5pTdzVrbCS0WS4O1WzVu
-	 ZstgupWeyFWaD2JUiASL3hAj6kPwJk78O1WFoJkA0AfaJPhxbnmu6da2GJIQS3U/zc
-	 1jH4qvcrT2RHltcBWThD3dVOHeNXljhPvggvbJMZt/fE5dhzjHaTrJ9Mi4UfuLE8rQ
-	 jzVKP4/hOKbvvY+nsOx0BfHgnCZqXEs8T+euEX8O0j7Kgu5WOIhZ0L2EikZn1ngWkL
-	 b4pctih18Skgm4dXjzYU3bb/hv6HlGlmXN3ZJ1mtdQo00+Q/kUOCt6QiMkVO0U9Ya5
-	 AKvAwpTEgHDDg==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id AF2153E96B
-	for <op-tee@lists.trustedfirmware.org>; Tue, 17 Jun 2025 04:44:33 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id EE4A142F89
+	for <op-tee@archiver.kernel.org>; Tue, 17 Jun 2025 07:32:36 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MfLtu92n;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Bd07tbf2;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0941344935;
-	Tue, 17 Jun 2025 04:44:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 110A7C4CEE3;
-	Tue, 17 Jun 2025 04:44:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750135472;
-	bh=H7GANlnHbRQ0PuyObSnaelRfAXM+A9g6rqgPH2m/yv0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MfLtu92nyNSb3F2sQDQ/ODu41QB2CvwMUBmPhR71EM1n1U7SKPkOGBJ78GcKamBEJ
-	 gn7v6p6J4YacC+uhPooq9P7M/jmxtZR0h2aeH8+2V3+0enbewIa1JNmGYCtURoj3Dj
-	 P1UFGOMjYvOfUKY3tMTnzh/Jqy4KB8dCjleIlK9z48MGCRVflAsAaFFrOZkaeK8uSr
-	 NgxhVQ3rj/7a1ehnQ8kDQfNvNAktlshGRg/VmyOim4xHXHfiFVgqGWn4fkRDw4lpGZ
-	 jeu2Zf4DO4MX4USmoLPUgjhq/zMmqoq9acyukuxynaTjuRfmUWU5vh31y7XwsP96Kn
-	 25msb2rPXD4YQ==
-Date: Mon, 16 Jun 2025 23:44:30 -0500
-To: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-Subject: Re: [PATCH v18 3/6] remoteproc: Introduce release_fw optional
- operation
-Message-ID: <6ekro2uytz7kguphtub54wivmclpnfkjobduhsom4kvxlmov2l@hgcjoposj3md>
-References: <20250616075530.4106090-1-arnaud.pouliquen@foss.st.com>
- <20250616075530.4106090-4-arnaud.pouliquen@foss.st.com>
+Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id CD4783E96B
+	for <op-tee@lists.trustedfirmware.org>; Tue, 17 Jun 2025 07:32:14 +0000 (UTC)
+Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-607cf70b00aso10804762a12.2
+        for <op-tee@lists.trustedfirmware.org>; Tue, 17 Jun 2025 00:32:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1750145534; x=1750750334; darn=lists.trustedfirmware.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=DitCPFk6i35uURXkN5+J10Jk6mGckO0efyDQ/Ffatgo=;
+        b=Bd07tbf2M5RgP6wT+dzH+dvCX+PrzO2z+DGgXPgiJMjqgKhnKENlotlI/bNywElW8W
+         8LmlZNDHVZ2ZdaxALjJnhya09iZh8npIFixMX8wjjo8n5big9khtt+eSdyM69Qqny3xP
+         Al6rd2TbIlcjcvcjakzCJxc7dXhPIB6cYL84kDmZpYOglYAn+awApY2+wrQQW1rlKHKJ
+         CKZF70TqyE0FfHMwPtfEoyjLiacuf16oisN1fzx6pOD4fX4q5xsghT+OrK3hDU6ETFP1
+         rSOLVoExRKjuBpKWANVAJrJHGeqUslxjGBUPa+x1jh+6WVb6guDRylSC2lkXxTAY4kWU
+         dLIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750145534; x=1750750334;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=DitCPFk6i35uURXkN5+J10Jk6mGckO0efyDQ/Ffatgo=;
+        b=AcBW3lFMxoiwXeWci2wFsPDU8IXJ7bPbKW1nNuhtY5rZ2qIdeA3JirW2LyN0bNoDEQ
+         U6xqWC5aIgL0iaBFExA0Gi6b0aNFOEwlsrtMDs1sCpkbA81mQ0tnJ6ZPl206nU5yloCh
+         PcOtaovm3cPVxuNfFiMacKUnPI9nAm/gzEobPMPLH5FwQnZ3KGB+nh+WwcVTCkSBo3v5
+         ErOmCDmrvau4sAzkmLXnN5RUn0L/aRnwVRMv5jou8DsoR+IWLBTjTnPJcsH6kI1WM6kX
+         Y8BKWcHLiXd8fbCdquFoeLAGhPFLH5rYS7eddJUsCtdlWt9+4Myl7QMZQAUzbFHc0D5o
+         Y8pg==
+X-Forwarded-Encrypted: i=1; AJvYcCUGLNmLIGy1ojcbUxEkjx2GpD5xlu59p2KYabjopVBClGwyIMaLnasZH+gYt56ttZJ3N5Pzh7o=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzYzsQRcvVot/uDbz2GqkHZCfw5NDYny/Aui0HoRO6/1jbSONWS
+	mRMfeHMpMtBKzL+ObXdkA+cGfGSfDniJFKM3JuzEp9YokBR0mqJ2IQ6QpeG2tVH/RD1Eyg==
+X-Gm-Gg: ASbGncv8j0O0pHWgggZV/g6bB3pZ4fPCfh77MpbO4JUqYudzfXz01xPotVp4tBCupA6
+	3l0u4O+Zjzii88y2J2uNswrBw7myghi++/HqpUq8F8ItyNJbdoGMM6wJelrzGL3rcMKcA/aPyDc
+	JEIuu2k8Mh6rJhZYktk5NBnhsgWcnbEn/hIKxpbYyvsadPWD3cegu5l16ekhpLn7UcbO0P/W8Db
+	iW9I3WqejQqGM6uE2xEbX6SCRggEs2MNtF0dsjNiGHBQz5L2WoDuVqx94YhGoSUMwhqLX2ghTB9
+	1a0PH1MgdqIz30PtqT8l39aVIV5EQAqbbA9Bv3i2ppf+J4Wmz6DLhR2Kov9RPqxzbCD0p7QBnzJ
+	Cc2+Vj+sFw7jatpvEKPKNo/G2uR3/
+X-Google-Smtp-Source: AGHT+IH9/yGt1B2R5aOqGlO4giU7a4MpvEhipVbdlnV+bODahZF4ciyHZm2yTFfr8OIZsO0wiR54nQ==
+X-Received: by 2002:a05:6402:4402:b0:607:d234:7d8f with SMTP id 4fb4d7f45d1cf-608d09af98emr11886262a12.33.1750145533721;
+        Tue, 17 Jun 2025 00:32:13 -0700 (PDT)
+Received: from rayden (h-98-128-140-123.A175.priv.bahnhof.se. [98.128.140.123])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-608b4a5e72csm7605436a12.48.2025.06.17.00.32.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Jun 2025 00:32:13 -0700 (PDT)
+Date: Tue, 17 Jun 2025 09:32:11 +0200
+From: Jens Wiklander <jens.wiklander@linaro.org>
+To: arm@kernel.org, soc@kernel.org
+Subject: [GIT PULL] OP-TEE fix for 6.16
+Message-ID: <20250617073211.GA1005592@rayden>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20250616075530.4106090-4-arnaud.pouliquen@foss.st.com>
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: AF2153E96B
-X-Spamd-Bar: --
-X-Spamd-Result: default: False [-2.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
+X-Rspamd-Queue-Id: CD4783E96B
+X-Spamd-Bar: ---
+X-Spamd-Result: default: False [-3.50 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	MID_RHS_NOT_FQDN(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[172.234.252.31:from];
-	MIME_TRACE(0.00)[0:+];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
 	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[209.85.208.50:from];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	RCPT_COUNT_THREE(0.00)[4];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.50:from];
 	RCVD_COUNT_TWO(0.00)[2];
-	DNSWL_BLOCKED(0.00)[172.234.252.31:from];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+]
-Message-ID-Hash: JR54NI3CE46PIABNFTTWCZQ552BHLQBV
-X-Message-ID-Hash: JR54NI3CE46PIABNFTTWCZQ552BHLQBV
-X-MailFrom: andersson@kernel.org
+	DKIM_TRACE(0.00)[linaro.org:+]
+Message-ID-Hash: TXOOWJ4BY5VH2UFXLMKNNZ5M27C4QM55
+X-Message-ID-Hash: TXOOWJ4BY5VH2UFXLMKNNZ5M27C4QM55
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JR54NI3CE46PIABNFTTWCZQ552BHLQBV/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TXOOWJ4BY5VH2UFXLMKNNZ5M27C4QM55/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Bjorn Andersson via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Bjorn Andersson <andersson@kernel.org>
 
-On Mon, Jun 16, 2025 at 09:55:27AM +0200, Arnaud Pouliquen wrote:
-> The release_fw operation is the inverse operation of the load, responsible
-> for releasing the remote processor resources configured from the loading
-> of the remoteproc firmware (e.g., memories).
-> 
+Hello arm-soc maintainers,
 
-I was under the impression that we agreed that this would unroll
-rproc_parse_fw() not the "load" in general.
+Please pull this patch for the optee driver. It relates to the FF-A driver
+PR https://lore.kernel.org/all/20250609105207.1185570-1-sudeep.holla@arm.com
+but it makes sense on its own and can be applied independently.
 
-> The operation is called in the following cases:
->  - An error occurs on boot of the remote processor.
->  - An error occurs on recovery start of the remote processor.
->  - After stopping the remote processor.
-> 
-> This operation is needed for the remoteproc_tee implementation after stop
-> and on error.
+Thanks,
+Jens
 
-And if it's defined to unroll rproc_parse_fw() it can be used for other
-things where some resources was allocated to set up the resource table.
+The following changes since commit 0ff41df1cb268fc69e703a08a57ee14ae967d0ca:
 
-> Indeed, as the remoteproc image is loaded when we parse the resource
-> table, there are many situations where something can go wrong before
-> the start of the remote processor(resource handling, carveout allocation,
-> ...).
+  Linux 6.15 (2025-05-25 16:09:23 -0700)
 
-Unbalanced parenthesis? I think you can write this in less
-conversational style.
+are available in the Git repository at:
 
-> 
-> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
-> ---
->  drivers/remoteproc/remoteproc_core.c     | 6 ++++++
->  drivers/remoteproc/remoteproc_internal.h | 6 ++++++
->  include/linux/remoteproc.h               | 3 +++
->  3 files changed, 15 insertions(+)
-> 
-> diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remoteproc_core.c
-> index d06eef1fa424..4c1a4bc9e7b7 100644
-> --- a/drivers/remoteproc/remoteproc_core.c
-> +++ b/drivers/remoteproc/remoteproc_core.c
-> @@ -1857,6 +1857,8 @@ static int rproc_boot_recovery(struct rproc *rproc)
->  
->  	/* boot the remote processor up again */
->  	ret = rproc_start(rproc, firmware_p);
-> +	if (ret)
-> +		rproc_release_fw(rproc);
->  
->  	release_firmware(firmware_p);
->  
-> @@ -1998,6 +2000,8 @@ int rproc_boot(struct rproc *rproc)
->  		}
->  
->  		ret = rproc_fw_boot(rproc, firmware_p);
-> +		if (ret)
-> +			rproc_release_fw(rproc);
->  
->  		release_firmware(firmware_p);
->  	}
-> @@ -2067,6 +2071,8 @@ int rproc_shutdown(struct rproc *rproc)
->  
->  	rproc_disable_iommu(rproc);
->  
-> +	rproc_release_fw(rproc);
-> +
->  	/* Free the copy of the resource table */
->  	kfree(rproc->cached_table);
->  	rproc->cached_table = NULL;
+  git://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-tee.git tags/optee-fix-for-v6.16
 
-These are allocated in rproc_parse_fw(), would it not make sense to
-clean them up in your newly introduced function?
+for you to fetch changes up to 312d02adb959ea199372f375ada06e0186f651e4:
 
-> diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
-> index 0cd09e67ac14..c7fb908f8652 100644
-> --- a/drivers/remoteproc/remoteproc_internal.h
-> +++ b/drivers/remoteproc/remoteproc_internal.h
-> @@ -221,4 +221,10 @@ bool rproc_u64_fit_in_size_t(u64 val)
->  	return (val <= (size_t) -1);
->  }
->  
-> +static inline void rproc_release_fw(struct rproc *rproc)
-> +{
-> +	if (rproc->ops->release_fw)
-> +		rproc->ops->release_fw(rproc);
-> +}
-> +
->  #endif /* REMOTEPROC_INTERNAL_H */
-> diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
-> index 8fd0d7f63c8e..80128461972b 100644
-> --- a/include/linux/remoteproc.h
-> +++ b/include/linux/remoteproc.h
-> @@ -381,6 +381,8 @@ enum rsc_handling_status {
->   * @panic:	optional callback to react to system panic, core will delay
->   *		panic at least the returned number of milliseconds
->   * @coredump:	  collect firmware dump after the subsystem is shutdown
-> + * @release_fw:	optional function to release the loaded firmware, called after
-> + *              stopping the remote processor or in case of error
+  optee: ffa: fix sleep in atomic context (2025-06-12 12:04:57 +0200)
 
-The struct firmware is released at the end of startup and the typical
-carveout memory where the firmware is loaded into is released at
-rproc_shutdown().
+----------------------------------------------------------------
+A fix in the OP-TEE driver for v6.16
 
-As such, this won't help anyone understand the purpose of the ops unless
-they know your system design (and know you added it).
+Fixing a sleep in atomic context in the FF-A notification callback by
+adding a work queue to process in a non-atomic context.
 
-Regards,
-Bjorn
+----------------------------------------------------------------
+Jens Wiklander (1):
+      optee: ffa: fix sleep in atomic context
 
->   */
->  struct rproc_ops {
->  	int (*prepare)(struct rproc *rproc);
-> @@ -403,6 +405,7 @@ struct rproc_ops {
->  	u64 (*get_boot_addr)(struct rproc *rproc, const struct firmware *fw);
->  	unsigned long (*panic)(struct rproc *rproc);
->  	void (*coredump)(struct rproc *rproc);
-> +	void (*release_fw)(struct rproc *rproc);
->  };
->  
->  /**
-> -- 
-> 2.25.1
-> 
+ drivers/tee/optee/ffa_abi.c       | 41 ++++++++++++++++++++++++++++++---------
+ drivers/tee/optee/optee_private.h |  2 ++
+ 2 files changed, 34 insertions(+), 9 deletions(-)
