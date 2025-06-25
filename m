@@ -4,104 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EDF2C7EE2A
-	for <op-tee@archiver.kernel.org>; Tue, 24 Jun 2025 07:39:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91472C7EE30
+	for <op-tee@archiver.kernel.org>; Wed, 25 Jun 2025 09:42:42 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 570AC45AA4
-	for <op-tee@archiver.kernel.org>; Tue, 24 Jun 2025 07:39:16 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id C30C245A1F
+	for <op-tee@archiver.kernel.org>; Wed, 25 Jun 2025 09:42:41 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=S8GNRoyT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector1 header.b=TjYA1M/i;
 	dkim-atps=neutral
-Received: from mail-oo1-f46.google.com (mail-oo1-f46.google.com [209.85.161.46])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id ED5CE409F7
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Jun 2025 07:38:55 +0000 (UTC)
-Received: by mail-oo1-f46.google.com with SMTP id 006d021491bc7-610d86b3da9so23362eaf.0
-        for <op-tee@lists.trustedfirmware.org>; Tue, 24 Jun 2025 00:38:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1750750735; x=1751355535; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/btdfiDxU5+NfLXwgveKgggXqAGO0bFMTRE67tAX7B4=;
-        b=S8GNRoyTG//BlYUfteu7wohwNb0aiXJRMRD7cDqgsn1Rif+9ezv8/P1BXt38WgYCId
-         mO+8KulBgNgSFuORDl1HUMdWjVl8BCan1q7RkXO+6bxgDNP9dRERoJObEVfiRdnN8I/h
-         k99kJJMi3FLSi3H0VO1RUTg+xWGX0v7fMXKGRZkKTehNr1aFk8NYktc9KYszbIchHiRN
-         iGTejDDgzcRO8E7bWNZSpZFeka1XMYXRp/h4ur0tHp6SB+/3oQMyOXwKHNx3SZ47thQ0
-         TBQ/K/ssn/NcVMCGvUmg94OkraHwVo/Mf4h0ahegj4+5nS/YDUND8tOFd8ynWWj0mJr7
-         EByg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750750735; x=1751355535;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/btdfiDxU5+NfLXwgveKgggXqAGO0bFMTRE67tAX7B4=;
-        b=H7gGBatD4/5y705Cn5BFLn7N4hUnq1fc3zu20ejlq5qffjYmuCD6Yu9BdKo04cVbSU
-         f8AKcmLeqCBAruyAsqJTOBRPGwAESYMCr93uy5u0BOYHgopC7MvkyLyQoDv5PW2vffvy
-         d4ysNRKmegZvb0rDEhWupcgEowqWtVFregS46iJYuJgpS/Y2zmz0kknS++rU4m1bK965
-         +xAo8zAVSrQRmkDsW03liWoG1wWpxrC6gzVOSPDYoWoywXyWiO8woEQoVCLHJ55TgsVW
-         H2acdw2qT1gb7NFi71AMwM9H0/koViO2bIHUV2wjNMxpehlOTI6sbWOw9jw9podtlwrl
-         N5UA==
-X-Forwarded-Encrypted: i=1; AJvYcCWOsKRA+b9oqMTHIo6ovVb1VRENIqFFwE4nIqhewNN51Nued96kAIu30l2DXgXNiBzdDxWozgs=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YwIofJEnk0LI+onjGmeIs/CztXfiaq9wLcUCEr4AFUc5A13O0sk
-	hfoWZkpY3utVgansMM6gfHEvyG3oIUUzTA8QCSgQMNKAdiQQJbvg1G7b9D2r4UyP7EIZCTsD03X
-	5viuJGWQW4UreohKlh4NUCqRd4021lz+nRpmv2raCQFoO
-X-Gm-Gg: ASbGnctIZ2OY6FnzcoUWZYql+Rxc5bypaElJ606Xk4a+TFtL37QX7fs+wIpUiSvSg9x
-	HGVFWATTVIgjVpZ3NH5B8s5YGIMvC/ifk8huJABrclCWdShFSJ9KlfXrp5hPeCVJkIWD/Ft2dOT
-	GZxyV8W1s0LorM6lrog9wNdAg9HGCgDuake8wXrDGarveH
-X-Google-Smtp-Source: AGHT+IFv5Vd9I2g8ShfadWNai4MGcPsTVNYM9JBJbAh0Rl83gxR175ZIBNF3BJDM4El7jyE4KTKddR9JG2+zTp5dAx4=
-X-Received: by 2002:a05:6820:f08:b0:611:4042:bcfa with SMTP id
- 006d021491bc7-6115ba3be83mr13813272eaf.6.1750750735187; Tue, 24 Jun 2025
- 00:38:55 -0700 (PDT)
+Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com [185.132.182.106])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B39DE42FC8
+	for <op-tee@lists.trustedfirmware.org>; Wed, 25 Jun 2025 09:42:17 +0000 (UTC)
+Received: from pps.filterd (m0369458.ppops.net [127.0.0.1])
+	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55P6TNdK008602;
+	Wed, 25 Jun 2025 11:42:05 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=selector1; bh=dWT/lq3ezUgwjJtZ7iXKMD
+	5/gM55U+METxpHEphd3xI=; b=TjYA1M/i9kiwj0xW7K69CkB715jG9Tc1/NBvhN
+	13rdzv3F59kAvAv7F57DPvkyhTUGm9i/ecoUFus0YFUhx0LDKiBdplSAYpzM6ejd
+	DCdDg/I2D6GsUR0IHaSS7wvbk5MxFfLGxkHCD2EYQbS56TjMNZ5R8sKlfEvVNebc
+	YX4leCmbCJeLrn2l+DpK4HKpHsD2By7MTdMVMvjZpR3XiRZiW1lT7XiIzMC7xry7
+	NNdNzit9ccjjjrFo/VDHuVKsqwM+qaEfUrRLXSyh/Rg9qL/5cv+0uuZG3ro4NuUT
+	nVfoTzVqpwGFnepelzieT4jaLh27s0DvdsNXBKy4HtGmX87w==
+Received: from beta.dmz-ap.st.com (beta.dmz-ap.st.com [138.198.100.35])
+	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 47e6a6q3m1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Jun 2025 11:42:05 +0200 (MEST)
+Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
+	by beta.dmz-ap.st.com (STMicroelectronics) with ESMTP id 3968740047;
+	Wed, 25 Jun 2025 11:40:57 +0200 (CEST)
+Received: from Webmail-eu.st.com (eqndag1node4.st.com [10.75.129.133])
+	by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 8270364326D;
+	Wed, 25 Jun 2025 11:40:41 +0200 (CEST)
+Received: from SAFDAG1NODE1.st.com (10.75.90.17) by EQNDAG1NODE4.st.com
+ (10.75.129.133) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Wed, 25 Jun
+ 2025 11:40:41 +0200
+Received: from localhost (10.48.86.121) by SAFDAG1NODE1.st.com (10.75.90.17)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Wed, 25 Jun
+ 2025 11:40:41 +0200
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier
+	<mathieu.poirier@linaro.org>,
+        Jens Wiklander <jens.wiklander@linaro.org>,
+        "Rob Herring" <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        "Conor Dooley" <conor+dt@kernel.org>
+Subject: [PATCH v19 0/6] Introduction of a remoteproc tee to load signed firmware
+Date: Wed, 25 Jun 2025 11:40:22 +0200
+Message-ID: <20250625094028.758016-1-arnaud.pouliquen@foss.st.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20250610131600.2972232-1-jens.wiklander@linaro.org>
- <20250610131600.2972232-8-jens.wiklander@linaro.org> <2d93ee96-0c36-4651-b6ad-9fddd0f6ad88@oss.qualcomm.com>
-In-Reply-To: <2d93ee96-0c36-4651-b6ad-9fddd0f6ad88@oss.qualcomm.com>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Tue, 24 Jun 2025 09:38:43 +0200
-X-Gm-Features: AX0GCFuM5JcuB2movGdmuDiMPV5NoYMd-NK6xp4w95s0PznpYBirMN1LlHfC1B8
-Message-ID: <CAHUa44GXCVaShPhw_Yw0+CWovX+pi7=UOXXGr5dKKSXz4JppeA@mail.gmail.com>
-Subject: Re: [PATCH v10 7/9] optee: support protected memory allocation
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.48.86.121]
+X-ClientProxiedBy: EQNCAS1NODE4.st.com (10.75.129.82) To SAFDAG1NODE1.st.com
+ (10.75.90.17)
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-06-25_02,2025-06-23_07,2025-03-28_01
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: ED5CE409F7
-X-Spamd-Bar: --
-X-Spamd-Result: default: False [-2.60 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Rspamd-Queue-Id: B39DE42FC8
+X-Spamd-Bar: +
+X-Spamd-Result: default: False [1.00 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	MID_CONTAINS_FROM(1.00)[];
+	RBL_SENDERSCORE_REPUT_6(1.00)[185.132.182.106:from];
+	R_MISSING_CHARSET(0.50)[];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.46:from];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[24];
-	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MISSING_XM_UA(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.46:from];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,lists.linaro.org,lists.trustedfirmware.org,lists.infradead.org,nxp.com,gmail.com,mediatek.com,linaro.org,collabora.com,arm.com,google.com,amd.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org];
-	TAGGED_RCPT(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	BAD_REP_POLICIES(0.10)[];
+	DNSWL_BLOCKED(0.00)[185.132.182.106:from];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	R_DKIM_ALLOW(0.00)[foss.st.com:s=selector1];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[linaro.org:+]
-Message-ID-Hash: G55SPEZKSUCQ55E76WJXGIZLSLJBPW7T
-X-Message-ID-Hash: G55SPEZKSUCQ55E76WJXGIZLSLJBPW7T
-X-MailFrom: jens.wiklander@linaro.org
+	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=82719a3f78=arnaud.pouliquen@foss.st.com];
+	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	HAS_XOIP(0.00)[];
+	RCVD_COUNT_FIVE(0.00)[6];
+	DMARC_POLICY_ALLOW(0.00)[foss.st.com,none];
+	TAGGED_RCPT(0.00)[dt];
+	FORGED_SENDER_VERP_SRS(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[st.com:dkim];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	R_SPF_ALLOW(0.00)[+ip4:185.132.182.106:c];
+	TO_DN_SOME(0.00)[];
+	ASN(0.00)[asn:52129, ipnet:185.132.182.0/24, country:US];
+	DKIM_TRACE(0.00)[foss.st.com:+];
+	FROM_HAS_DN(0.00)[]
+Message-ID-Hash: AQEYTPVMVUIVFQUN4DUK57YM2CZ6OG42
+X-Message-ID-Hash: AQEYTPVMVUIVFQUN4DUK57YM2CZ6OG42
+X-MailFrom: prvs=82719a3f78=arnaud.pouliquen@foss.st.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, op-tee@lists.trustedfirmware.org, linux-arm-kernel@lists.infradead.org, Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Sumit Semwal <sumit.semwal@linaro.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, robin.murphy@arm.com
+CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/G55SPEZKSUCQ55E76WJXGIZLSLJBPW7T/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AQEYTPVMVUIVFQUN4DUK57YM2CZ6OG42/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -109,218 +115,95 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi Amir,
+Main updates from version V18[2]:
+- rework documentation for the release_fw ops 
+- rework function documentation in remoteproc_tee.c
+- replace spinlock by mutex and generalize usage in remoteproc_tee.c
 
-On Tue, Jun 24, 2025 at 8:54=E2=80=AFAM Amirreza Zarrabi
-<amirreza.zarrabi@oss.qualcomm.com> wrote:
->
-> Hi Jens,
->
-> On 6/10/2025 11:13 PM, Jens Wiklander wrote:
-> > Add support in the OP-TEE backend driver for protected memory
-> > allocation. The support is limited to only the SMC ABI and for secure
-> > video buffers.
-> >
-> > OP-TEE is probed for the range of protected physical memory and a
-> > memory pool allocator is initialized if OP-TEE have support for such
-> > memory.
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/optee/Kconfig         |  5 +++
-> >  drivers/tee/optee/core.c          | 10 +++++
-> >  drivers/tee/optee/optee_private.h |  2 +
-> >  drivers/tee/optee/smc_abi.c       | 70 ++++++++++++++++++++++++++++++-
-> >  4 files changed, 85 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
-> > index 7bb7990d0b07..50d2051f7f20 100644
-> > --- a/drivers/tee/optee/Kconfig
-> > +++ b/drivers/tee/optee/Kconfig
-> > @@ -25,3 +25,8 @@ config OPTEE_INSECURE_LOAD_IMAGE
-> >
-> >         Additional documentation on kernel security risks are at
-> >         Documentation/tee/op-tee.rst.
-> > +
-> > +config OPTEE_STATIC_PROTMEM_POOL
-> > +     bool
-> > +     depends on HAS_IOMEM && TEE_DMABUF_HEAPS
-> > +     default y
-> > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> > index c75fddc83576..4b14a7ac56f9 100644
-> > --- a/drivers/tee/optee/core.c
-> > +++ b/drivers/tee/optee/core.c
-> > @@ -56,6 +56,15 @@ int optee_rpmb_intf_rdev(struct notifier_block *intf=
-, unsigned long action,
-> >       return 0;
-> >  }
-> >
-> > +int optee_set_dma_mask(struct optee *optee, u_int pa_width)
-> > +{
-> > +     u64 mask =3D DMA_BIT_MASK(min(64, pa_width));
-> > +
->
-> nit: Why not dma_coerce_mask_and_coherent() instead of bellow?
 
-Good point, I'll update in the next version.
+Main updates from version V17[1]:
+- Fix:  warning: EXPORT_SYMBOL() is used, but #include <linux/export.h>
+  is missing
 
-Thanks,
-Jens
+More details are available in each patch commit message.
 
->
-> - Amir
->
-> > +     optee->teedev->dev.dma_mask =3D &optee->teedev->dev.coherent_dma_=
-mask;
-> > +
-> > +     return dma_set_mask_and_coherent(&optee->teedev->dev, mask);
-> > +}
-> > +
-> >  static void optee_bus_scan(struct work_struct *work)
-> >  {
-> >       WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
-> > @@ -181,6 +190,7 @@ void optee_remove_common(struct optee *optee)
-> >       tee_device_unregister(optee->supp_teedev);
-> >       tee_device_unregister(optee->teedev);
-> >
-> > +     tee_device_unregister_all_dma_heaps(optee->teedev);
-> >       tee_shm_pool_free(optee->pool);
-> >       optee_supp_uninit(&optee->supp);
-> >       mutex_destroy(&optee->call_queue.mutex);
-> > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/opte=
-e_private.h
-> > index dc0f355ef72a..5e3c34802121 100644
-> > --- a/drivers/tee/optee/optee_private.h
-> > +++ b/drivers/tee/optee/optee_private.h
-> > @@ -272,6 +272,8 @@ struct optee_call_ctx {
-> >
-> >  extern struct blocking_notifier_head optee_rpmb_intf_added;
-> >
-> > +int optee_set_dma_mask(struct optee *optee, u_int pa_width);
-> > +
-> >  int optee_notif_init(struct optee *optee, u_int max_key);
-> >  void optee_notif_uninit(struct optee *optee);
-> >  int optee_notif_wait(struct optee *optee, u_int key, u32 timeout);
-> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> > index f0c3ac1103bb..cf106d15e64e 100644
-> > --- a/drivers/tee/optee/smc_abi.c
-> > +++ b/drivers/tee/optee/smc_abi.c
-> > @@ -1584,6 +1584,68 @@ static inline int optee_load_fw(struct platform_=
-device *pdev,
-> >  }
-> >  #endif
-> >
-> > +static struct tee_protmem_pool *static_protmem_pool_init(struct optee =
-*optee)
-> > +{
-> > +#if IS_ENABLED(CONFIG_OPTEE_STATIC_PROTMEM_POOL)
-> > +     union {
-> > +             struct arm_smccc_res smccc;
-> > +             struct optee_smc_get_protmem_config_result result;
-> > +     } res;
-> > +     struct tee_protmem_pool *pool;
-> > +     void *p;
-> > +     int rc;
-> > +
-> > +     optee->smc.invoke_fn(OPTEE_SMC_GET_PROTMEM_CONFIG, 0, 0, 0, 0,
-> > +                          0, 0, 0, &res.smccc);
-> > +     if (res.result.status !=3D OPTEE_SMC_RETURN_OK)
-> > +             return ERR_PTR(-EINVAL);
-> > +
-> > +     rc =3D optee_set_dma_mask(optee, res.result.pa_width);
-> > +     if (rc)
-> > +             return ERR_PTR(rc);
-> > +
-> > +     /*
-> > +      * Map the memory as uncached to make sure the kernel can work wi=
-th
-> > +      * __pfn_to_page() and friends since that's needed when passing t=
-he
-> > +      * protected DMA-buf to a device. The memory should otherwise not
-> > +      * be touched by the kernel since it's likely to cause an externa=
-l
-> > +      * abort due to the protection status.
-> > +      */
-> > +     p =3D devm_memremap(&optee->teedev->dev, res.result.start,
-> > +                       res.result.size, MEMREMAP_WC);
-> > +     if (IS_ERR(p))
-> > +             return p;
-> > +
-> > +     pool =3D tee_protmem_static_pool_alloc(res.result.start, res.resu=
-lt.size);
-> > +     if (IS_ERR(pool))
-> > +             devm_memunmap(&optee->teedev->dev, p);
-> > +
-> > +     return pool;
-> > +#else
-> > +     return ERR_PTR(-EINVAL);
-> > +#endif
-> > +}
-> > +
-> > +static int optee_protmem_pool_init(struct optee *optee)
-> > +{
-> > +     enum tee_dma_heap_id heap_id =3D TEE_DMA_HEAP_SECURE_VIDEO_PLAY;
-> > +     struct tee_protmem_pool *pool =3D ERR_PTR(-EINVAL);
-> > +     int rc;
-> > +
-> > +     if (!(optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_PROTMEM))
-> > +             return 0;
-> > +
-> > +     pool =3D static_protmem_pool_init(optee);
-> > +     if (IS_ERR(pool))
-> > +             return PTR_ERR(pool);
-> > +
-> > +     rc =3D tee_device_register_dma_heap(optee->teedev, heap_id, pool)=
-;
-> > +     if (rc)
-> > +             pool->ops->destroy_pool(pool);
-> > +
-> > +     return rc;
-> > +}
-> > +
-> >  static int optee_probe(struct platform_device *pdev)
-> >  {
-> >       optee_invoke_fn *invoke_fn;
-> > @@ -1679,7 +1741,7 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> >       optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
-> >       if (!optee) {
-> >               rc =3D -ENOMEM;
-> > -             goto err_free_pool;
-> > +             goto err_free_shm_pool;
-> >       }
-> >
-> >       optee->ops =3D &optee_ops;
-> > @@ -1752,6 +1814,9 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> >               pr_info("Asynchronous notifications enabled\n");
-> >       }
-> >
-> > +     if (optee_protmem_pool_init(optee))
-> > +             pr_info("Protected memory service not available\n");
-> > +
-> >       /*
-> >        * Ensure that there are no pre-existing shm objects before enabl=
-ing
-> >        * the shm cache so that there's no chance of receiving an invali=
-d
-> > @@ -1787,6 +1852,7 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> >               optee_disable_shm_cache(optee);
-> >       optee_smc_notif_uninit_irq(optee);
-> >       optee_unregister_devices();
-> > +     tee_device_unregister_all_dma_heaps(optee->teedev);
-> >  err_notif_uninit:
-> >       optee_notif_uninit(optee);
-> >  err_close_ctx:
-> > @@ -1803,7 +1869,7 @@ static int optee_probe(struct platform_device *pd=
-ev)
-> >       tee_device_unregister(optee->teedev);
-> >  err_free_optee:
-> >       kfree(optee);
-> > -err_free_pool:
-> > +err_free_shm_pool:
-> >       tee_shm_pool_free(pool);
-> >       if (memremaped_shm)
-> >               memunmap(memremaped_shm);
->
+[1] https://lore.kernel.org/linux-remoteproc/20250613091650.2337411-1-arnaud.pouliquen@foss.st.com/
+[2] https://lore.kernel.org/linux-remoteproc/20250616075530.4106090-1-arnaud.pouliquen@foss.st.com/
+
+Tested-on: commit 19272b37aa4f ("Linux 6.16-rc1")
+
+Description of the feature:
+--------------------------
+This series proposes the implementation of a remoteproc tee driver to
+communicate with a TEE trusted application responsible for authenticating
+and loading the remoteproc firmware image in an Arm secure context.
+
+1) Principle:
+
+The remoteproc tee driver provides services to communicate with the OP-TEE
+trusted application running on the Trusted Execution Context (TEE).
+The trusted application in TEE manages the remote processor lifecycle:
+
+- authenticating and loading firmware images,
+- isolating and securing the remote processor memories,
+- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
+- managing the start and stop of the firmware by the TEE.
+
+2) Format of the signed image:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_core.c#L18-L57
+
+3) OP-TEE trusted application API:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remoteproc.h
+
+4) OP-TEE signature script
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
+
+Example of usage:
+sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key ${OP-TEE_PATH}/keys/default.pem
+
+
+5) Impact on User space Application
+
+No sysfs impact. The user only needs to provide the signed firmware image
+instead of the ELF image.
+
+
+For more information about the implementation, a presentation is available here
+(note that the format of the signed image has evolved between the presentation
+and the integration in OP-TEE).
+
+https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+
+Arnaud Pouliquen (6):
+  remoteproc: core: Introduce rproc_pa_to_va helper
+  remoteproc: Add TEE support
+  remoteproc: Introduce optional release_fw operation
+  dt-bindings: remoteproc: Add compatibility for TEE support
+  remoteproc: stm32: Create sub-functions to request shutdown and
+    release
+  remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
+
+ .../bindings/remoteproc/st,stm32-rproc.yaml   |  58 +-
+ drivers/remoteproc/Kconfig                    |  10 +
+ drivers/remoteproc/Makefile                   |   1 +
+ drivers/remoteproc/remoteproc_core.c          |  52 ++
+ drivers/remoteproc/remoteproc_internal.h      |   6 +
+ drivers/remoteproc/remoteproc_tee.c           | 708 ++++++++++++++++++
+ drivers/remoteproc/stm32_rproc.c              | 139 +++-
+ include/linux/remoteproc.h                    |   6 +
+ include/linux/remoteproc_tee.h                |  87 +++
+ 9 files changed, 1023 insertions(+), 44 deletions(-)
+ create mode 100644 drivers/remoteproc/remoteproc_tee.c
+ create mode 100644 include/linux/remoteproc_tee.h
+
+
+base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+-- 
+2.25.1
+
