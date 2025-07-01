@@ -4,106 +4,135 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F378C7EE39
-	for <op-tee@archiver.kernel.org>; Mon, 30 Jun 2025 09:13:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38E91C7EE30
+	for <op-tee@archiver.kernel.org>; Tue,  1 Jul 2025 11:48:29 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7222C459F2
-	for <op-tee@archiver.kernel.org>; Mon, 30 Jun 2025 09:13:06 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 543224FBBA
+	for <op-tee@archiver.kernel.org>; Tue,  1 Jul 2025 11:48:28 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=eBoFF3XM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=MPBgrhp7;
 	dkim-atps=neutral
-Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com [209.85.208.53])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 138DB3F66F
-	for <op-tee@lists.trustedfirmware.org>; Mon, 30 Jun 2025 09:12:51 +0000 (UTC)
-Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6097b404f58so7237602a12.3
-        for <op-tee@lists.trustedfirmware.org>; Mon, 30 Jun 2025 02:12:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1751274770; x=1751879570; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :to:from:subject:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ukb6NGxA5RLj1sf3aa1YZKV0mHtaYpOfTcidTCe2adw=;
-        b=eBoFF3XMkZ0lEo+FuT8C+r3bo7LIemPgm+BVx8yeNYPex2ns9rJO0bY0qjLO1Gd6pl
-         nW5yysiJkVA/mWJxtsnaqIF1WlPFXnLk9xf8Xgr+HgR37sF/cEZswiVeTY3MXy3Lpa9s
-         9nCckGkzhZ05RIeiAvj5ciJ+w0tg2yQuDHb1N+L04wm7bCnfk29gkgCdeJ+jJ14TOZ+G
-         zLEgD3m/j0qTk82z6wRWje+bll8ToTY/NJ4Tg3A0UO193WNTgC+3x0pRv5XW4nH1ONp+
-         EZ6hmfYtd7m6QnkzWJS787fPyhwBnmIndZBJTfP2GoBVE0zvcO57eklk2SXBbXor5oLu
-         kcyw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751274770; x=1751879570;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :to:from:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ukb6NGxA5RLj1sf3aa1YZKV0mHtaYpOfTcidTCe2adw=;
-        b=LQm1TmuUD0wHVK4qFfb3yvPdqzQc19zMithZPWhLLO2fYcSh7zohtRnSLery8smvmJ
-         ak4nGQtdZzblhXdsVPSCi2bNStsNMW5ezaN8vFoKoRLL7mYiisgFF/i/deW0SUZ8XP8g
-         rmw0HFI76NzDsj9Is5L/j+v7XHMzdzDpT/8IIbWa1WduHQYWfW8F7kfDcHmtkWQlC3ys
-         +EofwDxJ5kyUan/xvqab8qBGbgwR5NoeLLV+3C40dnPkam2e/JPDra1GoYrYiJZqcSeC
-         DRK4LxN77Ke5M5iUPnsRBIQBi5BDurmpVRmA8WdVszYkdNO+o+2QA468T+oCfn3AQZcv
-         jd3A==
-X-Gm-Message-State: AOJu0YwUrJ5gSkFRSt2V5fLGC7BQgGV0zLncm0q9kgmwNbU5rjGunUpZ
-	xBSMDtI0+5hCB2zNtZRKDSgdzvXKmuIQPFRgnxouMAALYr+EnlOpGx2BrXpfrTTJch01y56feSE
-	BWxIXGuDHRSEOElhKeg==
-X-Gm-Gg: ASbGncu27mTtUM2sKjXioYTv7n74IN4kx19gMUTSuOU6eH0uA/B0h9bAJgm+5LhX9Tu
-	GNjvI7LvrurQS9r2eipbRUCS2VJmo+nOnWsb1tsrztIk6z9faiRooKd89H48n5W9wc9a/uXERuv
-	p+py9JHLeggg//JDPMRBFk91zQMYOkWvFw6luQ/XWLv5AJMzp1+WGxW0CxJXTvSukXpf2OQiw1e
-	c1aduvrdwsVSRlFVE6mNsY1r/O6NgomUuMnkY+HaJAorlqMgCPBnFQbvvK1Li5oabZ2TnDKrr38
-	onBJQpVT6KlXFAhxLaDuChV1ldKTD1eU7XeRz2Uio8dt8Pur055nYKuI53ZAmwcVI4EM
-X-Google-Smtp-Source: AGHT+IEYQbljOGQp8iFpW+WWRPp+bJQImYk+909Yl3mkTeKfi46U2ZOuaZhA7Dwe71H8MOrwatFNXg==
-X-Received: by 2002:a17:907:1b1b:b0:ae0:d332:f637 with SMTP id a640c23a62f3a-ae35010ffd3mr1178897466b.31.1751274769591;
-        Mon, 30 Jun 2025 02:12:49 -0700 (PDT)
-Received: from [10.5.0.2] ([45.11.80.135])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae3a0adb7eesm38132466b.73.2025.06.30.02.12.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 30 Jun 2025 02:12:49 -0700 (PDT)
-Message-ID: <0436a1be-5c76-4b66-980b-cb50a2070f3a@linaro.org>
-Date: Mon, 30 Jun 2025 11:12:45 +0200
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id EF8F13F08D
+	for <op-tee@lists.trustedfirmware.org>; Tue,  1 Jul 2025 11:48:04 +0000 (UTC)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5618lCvZ026544;
+	Tue, 1 Jul 2025 11:47:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	rCGpL5WtLCGHD7lGDK/ISop6wOAMqbvqcoNsJwiihW0=; b=MPBgrhp7EkFMuk/i
+	WvA1LuBdxuKhUs5pH0lkPCj+KvzspP8lCVgVeCn0zUo4mgxPfhWYjB9a3U7PAd56
+	Bo1VuKvFgqBOIFWnInNfxIg9/YFOrK8a8V1iiW/dpwciJPdpf6EoiuFPCsNQUZOn
+	/DogWUZySNf+K7FVN0tz7KuTX0fauaLt2fi12l5J7gDWa4hnxeDHTxqjliJ+lBK6
+	gIWHrLPmxm7N762zm9lPUDEOhBf920q8jRjVqHcsNhmyA584VA8+cbuEy+O2idMw
+	Fp7Urk6tyqY+yb+lkX5ZvVWM0qTfgYy6pPfqSzvDt7yT3Ss2LEKMi7BSBiQHBpsT
+	p1HHtw==
+Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 47j9pcrm2p-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 01 Jul 2025 11:47:54 +0000 (GMT)
+Received: from nalasex01b.na.qualcomm.com (nalasex01b.na.qualcomm.com [10.47.209.197])
+	by NALASPPMTA04.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTPS id 561BlrvZ020980
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 1 Jul 2025 11:47:53 GMT
+Received: from [10.217.222.28] (10.80.80.8) by nalasex01b.na.qualcomm.com
+ (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 1 Jul
+ 2025 04:47:47 -0700
+Message-ID: <2455f20c-130c-4f27-9cf4-6411e485b845@quicinc.com>
+Date: Tue, 1 Jul 2025 17:17:44 +0530
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: Preparing for OP-TEE 4.7.0
-From: Jerome Forissier <jerome.forissier@linaro.org>
-To: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>
-References: <3ee43fd2-676e-4c6e-a0df-a98c43c694c3@linaro.org>
- <b2adf419-48ff-4702-98ab-5c2895621326@linaro.org>
+Subject: Re: [PATCH v5 08/12] firmware: qcom: tzmem: export shm_bridge
+ create/delete
+To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
+        Jens Wiklander
+	<jens.wiklander@linaro.org>,
+        Sumit Garg <sumit.garg@kernel.org>,
+        "Bjorn
+ Andersson" <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Apurupa Pattapu
+	<quic_apurupa@quicinc.com>,
+        Kees Cook <kees@kernel.org>,
+        "Gustavo A. R.
+ Silva" <gustavoars@kernel.org>,
+        Sumit Semwal <sumit.semwal@linaro.org>,
+        =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+References: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-0-024e3221b0b9@oss.qualcomm.com>
+ <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-8-024e3221b0b9@oss.qualcomm.com>
 Content-Language: en-US
-In-Reply-To: <b2adf419-48ff-4702-98ab-5c2895621326@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+From: Kuldeep Singh <quic_kuldsing@quicinc.com>
+In-Reply-To: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-8-024e3221b0b9@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nalasex01b.na.qualcomm.com (10.47.209.197)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: ztKxMaTHEsgXeingGXCKylzfZjaG2-ty
+X-Proofpoint-ORIG-GUID: ztKxMaTHEsgXeingGXCKylzfZjaG2-ty
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzAxMDA3MyBTYWx0ZWRfX74DO11z9dMYF
+ 62b2TucWlwr7aP2wLjZ5GJ8VxyRAYqmoReJedk6CNfnGBZJatEM1OJrxmydL4DRvLfDVKk0HSaA
+ glGZa43wXvVkw2RNorrrDsT4ohoJw23givoio+J4JT9e/Hl2q/3PXbKXE+zYKGWyQ4nIZf/gX/x
+ 0ygEgUAUl4FzOcg4AoT3/bKo4Ebv9c//GZKuU6wOBpOmIJ8xM3KNdFtLFJeJVYgtJ/wQHRhXx5t
+ 8smIEsHc/qD5i5mML4oYknS7mIIQko5H7+L0qHY+ISOyaPPxqcBIb2UT8LymslIwxMEQzt9YzTg
+ n4t9AjjbkwFN7EiF6/75yhn9k5v8CoFMGTOfN3Gk1JPh9kXi6WPxG7qRXFFayej7yueJMXnlc23
+ +VdTOVUtCt62g4uAKYeR/hiM109i/duCv/ogYnnAOajxoeL8VSKAQRXcAvhJEhkPTRXvgCNO
+X-Authority-Analysis: v=2.4 cv=QMFoRhLL c=1 sm=1 tr=0 ts=6863caea cx=c_pps
+ a=ouPCqIW2jiPt+lZRy3xVPw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+ a=GEpy-HfZoHoA:10 a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=KKAkSRfTAAAA:8
+ a=EUspDBNiAAAA:8 a=T2KzT_qPCcxtbzpLTyEA:9 a=QEXdDO2ut3YA:10
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-07-01_02,2025-06-27_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 priorityscore=1501 bulkscore=0 spamscore=0 adultscore=0
+ mlxlogscore=999 mlxscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ clxscore=1011 phishscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
+ definitions=main-2507010073
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 138DB3F66F
-X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-3.69 / 15.00];
-	BAYES_HAM(-2.69)[98.62%];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+X-Rspamd-Queue-Id: EF8F13F08D
+X-Spamd-Bar: ----
+X-Spamd-Result: default: False [-4.80 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[quicinc.com,none];
+	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
+	R_DKIM_ALLOW(-0.20)[quicinc.com:s=qcppdkim1];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.53:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	RCPT_COUNT_ONE(0.00)[1];
 	ARC_NA(0.00)[];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
+	RCPT_COUNT_TWELVE(0.00)[20];
 	MIME_TRACE(0.00)[0:+];
-	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[209.85.208.53:from];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
+	TO_DN_SOME(0.00)[];
+	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
+	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[205.220.168.131:from];
+	RCVD_COUNT_THREE(0.00)[4];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.208.53:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	TO_DN_EQ_ADDR_ALL(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[linaro.org:+]
-Message-ID-Hash: 7ZZ6X7P5T7OATMY3TSXNX2TNWTYHR2XY
-X-Message-ID-Hash: 7ZZ6X7P5T7OATMY3TSXNX2TNWTYHR2XY
-X-MailFrom: jerome.forissier@linaro.org
+	MID_RHS_MATCH_FROM(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	HAS_XOIP(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	DKIM_TRACE(0.00)[quicinc.com:+]
+Message-ID-Hash: QNJCPR6EMH6FRYU67E3E24RHFAEAW65W
+X-Message-ID-Hash: QNJCPR6EMH6FRYU67E3E24RHFAEAW65W
+X-MailFrom: quic_kuldsing@quicinc.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7ZZ6X7P5T7OATMY3TSXNX2TNWTYHR2XY/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QNJCPR6EMH6FRYU67E3E24RHFAEAW65W/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -112,17 +141,69 @@ List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 
-
-On 6/27/25 14:16, Jerome Forissier wrote:
-> Hi everyone,
+On 5/27/2025 12:26 PM, Amirreza Zarrabi wrote:
+> Anyone with access to contiguous physical memory should be able to
+> share memory with QTEE using shm_bridge.
 > 
-> I've created and pushed the 4.7.0-rc1 tag to our repositories. Please proceed
-> with testing as necessary.
+> Tested-by: Neil Armstrong <neil.armstrong@linaro.org>
+> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+> ---
+>  drivers/firmware/qcom/qcom_tzmem.c       | 57 +++++++++++++++++++++++++-------
+>  include/linux/firmware/qcom/qcom_tzmem.h | 15 +++++++++
+>  2 files changed, 60 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_tzmem.c
+> index 4fe333fd2f07..e9e4f06924ae 100644
+> --- a/drivers/firmware/qcom/qcom_tzmem.c
+> +++ b/drivers/firmware/qcom/qcom_tzmem.c
+> @@ -108,25 +108,61 @@ static int qcom_tzmem_init(void)
+>  	return 0;
+>  }
+>  
+> -static int qcom_tzmem_init_area(struct qcom_tzmem_area *area)
+> +/**
+> + * qcom_tzmem_shm_bridge_create() - Create a SHM bridge.
+> + * @paddr: Physical address of the memory to share.
+> + * @size: Size of the memory to share.
+> + * @handle: Handle to the SHM bridge.
+> + *
+> + * On platforms that support SHM bridge, this function creates a SHM bridge
+> + * for the given memory region with QTEE. The handle returned by this function
+> + * must be passed to qcom_tzmem_shm_bridge_delete() to free the SHM bridge.
+> + *
+> + * Return: On success, returns 0; on failure, returns < 0.
+> + */
+> +int qcom_tzmem_shm_bridge_create(phys_addr_t paddr, size_t size, u64 *handle)
+>  {
+>  	u64 pfn_and_ns_perm, ipfn_and_s_perm, size_and_flags;
+> -	int ret;
+>  
+>  	if (!qcom_tzmem_using_shm_bridge)
+>  		return 0;
+>  
+> -	pfn_and_ns_perm = (u64)area->paddr | QCOM_SCM_PERM_RW;
+> -	ipfn_and_s_perm = (u64)area->paddr | QCOM_SCM_PERM_RW;
+> -	size_and_flags = area->size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
+> +	pfn_and_ns_perm = paddr | QCOM_SCM_PERM_RW;
+> +	ipfn_and_s_perm = paddr | QCOM_SCM_PERM_RW;
+> +	size_and_flags = size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
+> +	if (qcom_scm_shm_bridge_create(pfn_and_ns_perm, ipfn_and_s_perm,
+> +				       size_and_flags, QCOM_SCM_VMID_HLOS,
+> +				       handle))
 
-FYI, I messed up when creating the 4.7.0-rc1 tag in the build.git repo :-/
-I forced-pushed a new one. And optee_ftpm.git had no 4.7.0-rc1 tag, this is
-now fixed as well. Sorry for the inconvenience.
+Can we add a debug log here to ease debugging in future?
+Something like this can also work.
 
-Regards,
+pr_err("Shm bridge creation failed, ret: %d, NS PA|Perm: 0x%llx,
+size|flags: 0x%llx\n", ret, pfn_and_ns_perm_flags, size_and_flags);
+
+> +		return -EINVAL;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(qcom_tzmem_shm_bridge_create);
+
 -- 
-Jerome
+Regards
+Kuldeep
+
