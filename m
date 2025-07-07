@@ -4,92 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11068C8303C
-	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 12:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9AF2C8303C
+	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 12:37:30 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 42F3645A1F
-	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 12:20:32 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 093F2430CC
+	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 12:37:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1751890832;
-	bh=i7f9jXQ6vVn/S9Pa4ajyd/jAV+aMvJRzmZ0iGq6/XQI=;
+	d=lists.trustedfirmware.org; s=2024; t=1751891850;
+	bh=nBjQJ5Wn0ehY32llVPcBxlYv0tJwRb5+rabu0BAiQEo=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=meRrw6upWcztYc1itGE+a8FHc4e7wjOBdRjzmpJQd4R0Xqpsdd1rUgeNqrghUYWYi
-	 t5Ca7mlO/PTVckURKnidHanz237t9ilY0sm8AdhTgp0TCA76vSzC0WdHiafA4rN3rL
-	 dW3KS/1hOzpdnzYMKkLgymUEQUtCeE0oQj2ZEVJmic15tUXv8vQw5AetyvyhyJd6dE
-	 RG1OAMb9RyjqhLJ8zTSl6oDuXLx8vjBCrS64UhNXElH4TBiRo9gi6zuCwUT1HcfVro
-	 vsnLPVJAH3vMlb3pROwzCzSHB74fHIx9pCPeNtD8nNOpfsljMtXwmvVC9u/PC8UQjG
-	 GZkdM2atHyitQ==
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id A243E40B6B
-	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Jul 2025 12:20:07 +0000 (UTC)
+	b=Kwng6WDsK7WgZety2ivTNzHe4x8GBTqsMJoyofLT11J5XNr7qbMZTzePkKf2D1p3s
+	 eJ9SmArhYRuhqVgnQ8GDtY6y5vSOnztQZhdnEvHLE4gEiHEoi9msVJ6qVRp2Mxudg/
+	 BtD6m30Z2EogK1g4FBpIHzH7Udh/pgmFBNC2l+SftpCq2GSGTLWlHtCVnlJ8/Pq9NF
+	 cP9dI0W/m6UFsBCmvzEKvRr8/ftudz9ie+lZbRQG/jHff7DYaNrJ+5JF4seGmaL30U
+	 /UuyZzHSZxLEtd20V3l2KpFYnP5119TMcOEqosRLsya+q/gTiJJxO9kIpXyzr7bv2I
+	 0wGqx5xgz2ynQ==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id AC0323F6B0
+	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Jul 2025 12:37:07 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iABEEMq0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eNQI3tqy;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 14FFD5C48A2;
-	Mon,  7 Jul 2025 12:20:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28380C4CEE3;
-	Mon,  7 Jul 2025 12:20:00 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F0D2545059;
+	Mon,  7 Jul 2025 12:37:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E7B2C4CEE3;
+	Mon,  7 Jul 2025 12:37:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751890806;
-	bh=i7f9jXQ6vVn/S9Pa4ajyd/jAV+aMvJRzmZ0iGq6/XQI=;
+	s=k20201202; t=1751891826;
+	bh=aXefSW8u73uhesaby/quxrwQtn0umxAwODIuttM0MfQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=iABEEMq0FT7NEV8qEQxKrr16p0ypX1VdXlEXf35cheTi7S+U3vtHTYirrDABjFr8B
-	 ix/d9aR2Jk+JUj8+ej4oU5UamKOqAu0x1/afIopZvXX0xtC10Yyncg1c8iNZPMkCeS
-	 oZz+pR4e/X6n0tB+iefmxXNKqg6gIYAYi7AzszSALuc4WXwSvAiBIsWdAo785uC2cS
-	 tJg5sZCUZmR130UP3p/Ju/vP94fqLvtzvUHhgvgYvApB08VH3msQe9gdRw8+EakMGl
-	 Gp99M6XEbGgdVfVKJ4nbcj1t4SxqxLXGxCNxG0S1D3nU9bmZVI5sle997o4BhgRwSV
-	 VYNNGueoOuGYA==
-Date: Mon, 7 Jul 2025 17:49:58 +0530
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: Re: [PATCH v5 12/12] Documentation: tee: Add Qualcomm TEE driver
-Message-ID: <aGu7boxOTB3TFRNU@sumit-X1>
-References: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-0-024e3221b0b9@oss.qualcomm.com>
- <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-12-024e3221b0b9@oss.qualcomm.com>
+	b=eNQI3tqy+5/Gxraoq67KEs1JIuhnAPkqesxyrE/kXrVlYH5iIOvarGHR38hRTNS4U
+	 AHEPLJjK9mxWZ6ADoZ5k9ewhBGSkWJOP6V3UKAlcmIiZget+0zLk3RijNkJTZINoym
+	 7Fimjm6vPcdNjyGo7poz3lOpTGA1o0yurHf0KVOVHo3h4chNzHPEmOqbQlLog8EaJY
+	 F+bLcysHgB4NCQ3V7hk9T5OOYZ8HWtKXz0sjsxZcEILKCJgMgmuwqS98UraYZEXLPC
+	 Wsi1lEsSdzDbl98HuSsjWAgzjfDb7KeZ4IP9zBlUy4I7DVEOePgRRZI9xWsJTipJVl
+	 kohjI7Yovb7TQ==
+Date: Mon, 7 Jul 2025 18:07:02 +0530
+To: Jens Wiklander <jens.wiklander@linaro.org>
+Subject: Re: [PATCH v10 3/9] tee: implement protected DMA-heap
+Message-ID: <aGu_bgKuSDJUKUoP@sumit-X1>
+References: <20250610131600.2972232-1-jens.wiklander@linaro.org>
+ <20250610131600.2972232-4-jens.wiklander@linaro.org>
+ <b1a71f06-901e-47fb-9e27-9d401d26f7fc@oss.qualcomm.com>
+ <CAHUa44FV_maNF1Xx0hnqGT3=DnM3zEnLj6CLcz7pZvxEPmiGJw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-12-024e3221b0b9@oss.qualcomm.com>
+Content-Transfer-Encoding: base64
+In-Reply-To: <CAHUa44FV_maNF1Xx0hnqGT3=DnM3zEnLj6CLcz7pZvxEPmiGJw@mail.gmail.com>
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: A243E40B6B
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-5.00 / 15.00];
+X-Rspamd-Queue-Id: AC0323F6B0
+X-Spamd-Bar: ------
+X-Spamd-Result: default: False [-6.50 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	RCVD_DKIM_ARC_DNSWL_HI(-1.00)[];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	RBL_SENDERSCORE_REPUT_9(-1.00)[172.234.252.31:from];
 	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	RCVD_IN_DNSWL_HI(-0.50)[139.178.84.217:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
-	R_SPF_ALLOW(-0.20)[+ip4:139.178.84.217:c];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_DN_SOME(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:15830, ipnet:139.178.80.0/21, country:NL];
-	MISSING_XM_UA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[18];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
 	ARC_NA(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_TLS_LAST(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
+	RCPT_COUNT_THREE(0.00)[3];
 	RCVD_COUNT_TWO(0.00)[2];
-	DNSWL_BLOCKED(0.00)[100.75.92.58:received];
+	DNSWL_BLOCKED(0.00)[100.75.92.58:received,172.234.252.31:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
-Message-ID-Hash: 57OTK4JQLN6752HMCZ3MMW2ULA3LEOZW
-X-Message-ID-Hash: 57OTK4JQLN6752HMCZ3MMW2ULA3LEOZW
+Message-ID-Hash: 7HOABNTEVMCTQGWQHWQE3R7T76LJRZPC
+X-Message-ID-Hash: 7HOABNTEVMCTQGWQHWQE3R7T76LJRZPC
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org
+CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/57OTK4JQLN6752HMCZ3MMW2ULA3LEOZW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7HOABNTEVMCTQGWQHWQE3R7T76LJRZPC/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -99,203 +101,90 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Mon, May 26, 2025 at 11:56:57PM -0700, Amirreza Zarrabi wrote:
-> Add documentation for the Qualcomm TEE driver.
-> 
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
->  Documentation/tee/index.rst |   1 +
->  Documentation/tee/qtee.rst  | 150 ++++++++++++++++++++++++++++++++++++++++++++
->  MAINTAINERS                 |   1 +
->  3 files changed, 152 insertions(+)
-> 
-> diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
-> index 4be6e69d7837..62afb7ee9b52 100644
-> --- a/Documentation/tee/index.rst
-> +++ b/Documentation/tee/index.rst
-> @@ -11,6 +11,7 @@ TEE Subsystem
->     op-tee
->     amd-tee
->     ts-tee
-> +   qtee
->  
->  .. only::  subproject and html
->  
-> diff --git a/Documentation/tee/qtee.rst b/Documentation/tee/qtee.rst
-> new file mode 100644
-> index 000000000000..8ae4da17c3a7
-> --- /dev/null
-> +++ b/Documentation/tee/qtee.rst
-> @@ -0,0 +1,150 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=============================================
-> +QTEE (Qualcomm Trusted Execution Environment)
-> +=============================================
-> +
-> +The QTEE driver handles communication with Qualcomm TEE [1].
-> +
-> +The lowest level of communication with QTEE builds on the ARM SMC Calling
-> +Convention (SMCCC) [2], which is the foundation for QTEE's Secure Channel
-> +Manager (SCM) [3] used internally by the driver [4].
-> +
-> +In a QTEE-based system, services are represented as objects with a series of
-> +operations that can be called to produce results, including other objects.
-> +
-> +When an object is hosted within QTEE, executing its operations is referred
-> +to as direct invocation. QTEE can invoke objects hosted in the kernel or
-> +userspace using a method known as callback requests.
-> +
-> +The SCM provides two functions for direct invocation and callback request:
-> +
-> +- QCOM_SCM_SMCINVOKE_INVOKE for direct invocation. It can return either
-> +  a result or a callback request.
-> +- QCOM_SCM_SMCINVOKE_CB_RSP submits a response for a previous callback request.
-> +
-> +The QTEE Transport Message [5] is stacked on top of the SCM driver functions.
-> +
-> +A message consists of two buffers shared with QTEE: inbound and outbound
-> +buffers. The inbound buffer is used for direct invocation, and the outbound
-> +buffer is used to make callback requests. This picture shows the contents of
-> +a QTEE transport message::
-> +
-> +                                      +---------------------+
-> +                                      |                     v
-> +    +-----------------+-------+-------+------+--------------------------+
-> +    | qcomtee_msg_    |object | buffer       |                          |
-> +    |  object_invoke  |  id   | offset, size |                          | (inbound buffer)
-> +    +-----------------+-------+--------------+--------------------------+
-> +    <---- header -----><---- arguments ------><- in/out buffer payload ->
-> +
-> +                                      +-----------+
-> +                                      |           v
-> +    +-----------------+-------+-------+------+----------------------+
-> +    | qcomtee_msg_    |object | buffer       |                      |
-> +    |  callback       |  id   | offset, size |                      | (outbound buffer)
-> +    +-----------------+-------+--------------+----------------------+
-> +
-> +Each buffer is started with a header and array of arguments.
-> +
-> +QTEE Transport Message supports four types of arguments:
-> +
-> +- Input Object (IO) is an object parameter to the current invocation
-> +  or callback request.
-> +- Output Object (OO) is an object parameter from the current invocation
-> +  or callback request.
-> +- Input Buffer (IB) is (offset, size) pair to the inbound or outbound region
-> +  to store parameter to the current invocation or callback request.
-> +- Output Buffer (OB) is (offset, size) pair to the inbound or outbound region
-> +  to store parameter from the current invocation or callback request.
-> +
-> +The QTEE driver provides the qcomtee_object, which represents an object within
-> +both QTEE and the kernel. To access any service in QTEE, a client needs to
-> +invoke an instance of this object. Any structure intended to represent a service
-> +for export to QTEE should include an instance of qcomtee_object::
-> +
-> +	struct driver_service {
-> +		struct qcomtee_object object;
-> +		...
-> +	};
-> +
-> +	#define to_driver_service_object(o) container_of((o), struct driver_service, object)
-> +
-> +	static int driver_service_dispatch(struct qcomtee_object *object, u32 op,
-> +					   struct qcomtee_arg *args)
-> +	{
-> +		struct driver_service *so = to_driver_service_object(object);
-> +
-> +		switch(op) {
-> +		case OBJECT_OP1:
-> +			...
-> +			break;
-> +		default:
-> +			return -EINVAL;
-> +		}
-> +	}
-> +
-> +	static void driver_service_object_release(struct si_object *object)
-> +	{
-> +		struct driver_service *so = to_driver_service_object(object);
-> +		kfree(so);
-> +	}
-> +
-> +	struct si_object_operations driver_service_ops = {
-> +		.release = driver_service_object_release;
-> +		.dispatch = driver_service_dispatch;
-> +	};
-> +
-> +	void service_init(void)
-> +	{
-> +		struct driver_service *so = kzalloc(sizeof(*so), GFP_KERNEL);
-> +
-> +		/* Initialize so->object as a callback object. */
-> +		qcomtee_object_user_init(&so->object, QCOMTEE_OBJECT_TYPE_CB_OBJECT,
-> +					 &driver_service_ops, "driver_service_object");
-> +
-> +		/* Invoke a QTEE object and pass/register 'so->object' with QTEE. */
-> +		...
-> +	}
-> +	module_init(service_init);
-
-Lets drop any reference for kernel client/services since they aren't
-supported by this patch-set yet.
-
--Sumit
-
-> +
-> +The QTEE driver utilizes qcomtee_object to encapsulate userspace objects. When
-> +a callback request is made, it translates into calling the dispatch operation.
-> +For userspace objects, this is converted into requests accessible to callback
-> +servers and available through generic TEE API IOCTLs.
-> +
-> +Picture of the relationship between the different components in the QTEE
-> +architecture::
-> +
-> +         User space               Kernel                     Secure world
-> +         ~~~~~~~~~~               ~~~~~~                     ~~~~~~~~~~~~
-> +   +--------+   +----------+                                +--------------+
-> +   | Client |   |callback  |                                | Trusted      |
-> +   +--------+   |server    |                                | Application  |
-> +      /\        +----------+                                +--------------+
-> +      ||  +----------+ /\                                          /\
-> +      ||  |callback  | ||                                          ||
-> +      ||  |server    | ||                                          \/
-> +      ||  +----------+ ||                                   +--------------+
-> +      \/       /\      ||                                   | TEE Internal |
-> +   +-------+   ||      ||                                   | API          |
-> +   | TEE   |   ||      ||   +--------+--------+             +--------------+
-> +   | Client|   ||      ||   | TEE    | QTEE   |             | QTEE         |
-> +   | API   |   \/      \/   | subsys | driver |             | Trusted OS   |
-> +   +-------+----------------+----+-------+----+-------------+--------------+
-> +   |      Generic TEE API        |       |   QTEE MSG                      |
-> +   |      IOCTL (TEE_IOC_*)      |       |   SMCCC (QCOM_SCM_SMCINVOKE_*)  |
-> +   +-----------------------------+       +---------------------------------+
-> +
-> +References
-> +==========
-> +
-> +[1] https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-11/qualcomm-trusted-execution-environment.html
-> +
-> +[2] http://infocenter.arm.com/help/topic/com.arm.doc.den0028a/index.html
-> +
-> +[3] drivers/firmware/qcom/qcom_scm.c
-> +
-> +[4] drivers/tee/qcomtee/qcom_scm.c
-> +
-> +[5] drivers/tee/qcomtee/qcomtee_msg.h
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 99fe1ae22ae0..42823d33cc03 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -20515,6 +20515,7 @@ QUALCOMM TEE (QCOMTEE) DRIVER
->  M:	Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
->  L:	linux-arm-msm@vger.kernel.org
->  S:	Maintained
-> +F:	Documentation/tee/qtee.rst
->  F:	drivers/tee/qcomtee/
->  F:	include/linux/firmware/qcom/qcom_tee.h
->  
-> 
-> -- 
-> 2.34.1
-> 
+T24gTW9uLCBKdWwgMDcsIDIwMjUgYXQgMDE6MjI6MTlQTSArMDIwMCwgSmVucyBXaWtsYW5kZXIg
+d3JvdGU6DQo+IEhpIEFtaXIsDQo+IA0KPiBPbiBNb24sIEp1bCA3LCAyMDI1IGF0IDQ6MjLigK9B
+TSBBbWlycmV6YSBaYXJyYWJpIHZpYSBPUC1URUUNCj4gPG9wLXRlZUBsaXN0cy50cnVzdGVkZmly
+bXdhcmUub3JnPiB3cm90ZToNCj4gPg0KPiA+IEhpIEplbnMsDQo+ID4NCj4gPiBPbiA2LzEwLzIw
+MjUgMTE6MTMgUE0sIEplbnMgV2lrbGFuZGVyIHdyb3RlOg0KPiA+ID4gSW1wbGVtZW50IERNQSBo
+ZWFwIGZvciBwcm90ZWN0ZWQgRE1BLWJ1ZiBhbGxvY2F0aW9uIGluIHRoZSBURUUNCj4gPiA+IHN1
+YnN5c3RlbS4NCj4gPiA+DQo+ID4gPiBQcm90ZWN0ZWQgbWVtb3J5IHJlZmVycyB0byBtZW1vcnkg
+YnVmZmVycyBiZWhpbmQgYSBoYXJkd2FyZSBlbmZvcmNlZA0KPiA+ID4gZmlyZXdhbGwuIEl0IGlz
+IG5vdCBhY2Nlc3NpYmxlIHRvIHRoZSBrZXJuZWwgZHVyaW5nIG5vcm1hbCBjaXJjdW1zdGFuY2Vz
+DQo+ID4gPiBidXQgcmF0aGVyIG9ubHkgYWNjZXNzaWJsZSB0byBjZXJ0YWluIGhhcmR3YXJlIElQ
+cyBvciBDUFVzIGV4ZWN1dGluZyBpbg0KPiA+ID4gaGlnaGVyIG9yIGRpZmZlcmVudGx5IHByaXZp
+bGVnZWQgbW9kZSB0aGFuIHRoZSBrZXJuZWwgaXRzZWxmLiBUaGlzDQo+ID4gPiBpbnRlcmZhY2Ug
+YWxsb3dzIHRvIGFsbG9jYXRlIGFuZCBtYW5hZ2Ugc3VjaCBwcm90ZWN0ZWQgbWVtb3J5IGJ1ZmZl
+cnMNCj4gPiA+IHZpYSBpbnRlcmFjdGlvbiB3aXRoIGEgVEVFIGltcGxlbWVudGF0aW9uLg0KPiA+
+ID4NCj4gPiA+IFRoZSBwcm90ZWN0ZWQgbWVtb3J5IGlzIGFsbG9jYXRlZCBmb3IgYSBzcGVjaWZp
+YyB1c2UtY2FzZSwgbGlrZSBTZWN1cmUNCj4gPiA+IFZpZGVvIFBsYXliYWNrLCBUcnVzdGVkIFVJ
+LCBvciBTZWN1cmUgVmlkZW8gUmVjb3JkaW5nIHdoZXJlIGNlcnRhaW4NCj4gPiA+IGhhcmR3YXJl
+IGRldmljZXMgY2FuIGFjY2VzcyB0aGUgbWVtb3J5Lg0KPiA+ID4NCj4gPiA+IFRoZSBETUEtaGVh
+cHMgYXJlIGVuYWJsZWQgZXhwbGljaXRseSBieSB0aGUgVEVFIGJhY2tlbmQgZHJpdmVyLiBUaGUg
+VEVFDQo+ID4gPiBiYWNrZW5kIGRyaXZlcnMgbmVlZHMgdG8gaW1wbGVtZW50IHByb3RlY3RlZCBt
+ZW1vcnkgcG9vbCB0byBtYW5hZ2UgdGhlDQo+ID4gPiBwcm90ZWN0ZWQgbWVtb3J5Lg0KPiA+ID4N
+Cj4gPiA+IFNpZ25lZC1vZmYtYnk6IEplbnMgV2lrbGFuZGVyIDxqZW5zLndpa2xhbmRlckBsaW5h
+cm8ub3JnPg0KPiA+ID4gLS0tDQo+ID4gPiAgZHJpdmVycy90ZWUvS2NvbmZpZyAgICAgICB8ICAg
+NSArDQo+ID4gPiAgZHJpdmVycy90ZWUvTWFrZWZpbGUgICAgICB8ICAgMSArDQo+ID4gPiAgZHJp
+dmVycy90ZWUvdGVlX2hlYXAuYyAgICB8IDQ3MiArKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKw0KPiA+ID4gIGRyaXZlcnMvdGVlL3RlZV9wcml2YXRlLmggfCAgIDYgKw0KPiA+
+ID4gIGluY2x1ZGUvbGludXgvdGVlX2NvcmUuaCAgfCAgNjUgKysrKysrDQo+ID4gPiAgNSBmaWxl
+cyBjaGFuZ2VkLCA1NDkgaW5zZXJ0aW9ucygrKQ0KPiA+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBk
+cml2ZXJzL3RlZS90ZWVfaGVhcC5jDQo+ID4gPg0KPiBbc25pcF0NCj4gPg0KPiA+IEknbSBoYXZp
+bmcgYSBiaXQgb2YgdHJvdWJsZSB1bmRlcnN0YW5kaW5nIHRoZSByYXRpb25hbGUgYmVoaW5kDQo+
+ID4gc3VwcG9ydGluZyB0ZWVfZGV2aWNlX3VucmVnaXN0ZXJfYWxsX2RtYV9oZWFwcygpLiBDb25z
+aWRlcmluZyB0aGF0DQo+ID4gdGhlIGhlYXAgcmVtYWlucyBhY2Nlc3NpYmxlIGZyb20gdXNlcnNw
+YWNlLCB3b3VsZG4ndCB0aGlzIGxlYWQNCj4gPiB0byB1bmRlZmluZWQgYmVoYXZpb3I/IEZvciBl
+eGFtcGxlLCB3aGF0IGhhcHBlbnMgaWYgYSB1c2VyIGlzDQo+ID4gaW4gdGhlIG1pZGRsZSBvZiBh
+IHRlZV9kbWFfaGVhcF9hbGxvYygpIC0tIHNwZWNpZmljYWxseSBiZWZvcmUNCj4gPiB0ZWVfZGV2
+aWNlX2dldCgpIC0tIHdoaWxlIHRoZSBiYWNrZW5kIGNhbGxzIHRlZV9kZXZpY2VfdW5yZWdpc3Rl
+cl9hbGxfZG1hX2hlYXBzKCk/DQo+IA0KPiBUaGF0IGNhbid0IGhhcHBlbiBzaW5jZSB0ZWVfZGV2
+aWNlX3VucmVnaXN0ZXIoKSBoYXMgYmVlbiBjYWxsZWQNCj4gYmVmb3JlLCBndWFyYW50ZWVpbmcg
+dGhhdCBubyBmdXJ0aGVyIGNhbGxzIHRvIHRlZV9kZXZpY2VfZ2V0KCkgY2FuDQo+IHN1Y2NlZWQu
+DQo+IA0KPiA+DQo+ID4gSSB1bmRlcnN0YW5kIHRoYXQgeW91IHdhbnQgdG8gdXNlIHRlZWRldiBy
+ZWZjb3VudCB0byBwcm90ZWN0IGFnYWluc3QNCj4gPiB0aGUgVEVFIGRyaXZlciB1bmJpbmRpbmcg
+aWYgdGhlcmUgaXMgYSBidWZmZXIgYWxsb2NhdGVkLiBCdXQgd2hhdCBhYm91dA0KPiA+IHRoZSBo
+ZWFwIGRldmljZT8NCj4gPg0KPiA+IEFkZGl0aW9uYWxseSwgd2hhdCBpZiB0aGUgdXNlciBkZWNp
+ZGVzIHRvIHVuYmluZCB0aGUgVEVFIGJhY2tlbmQgZHJpdmVyPw0KPiA+IFdvdWxkIHRoZSBkbWFf
+aGVhcCBkZXZpY2Ugc3RpbGwgcGVyc2lzdCB3aXRob3V0IGFueSBhbGxvYyBmdW5jdGlvbj8NCj4g
+DQo+IFllcywgdGhlIGRldmljZSB3b3VsZCBzdGlsbCBiZSB0aGVyZSwgYnV0IGFsbG9jIHdvdWxk
+IHJldHVybiAtRUlOVkFMDQo+IHVudGlsIGEgbmV3IGhlYXAgaGFzIGJlZW4gcmVnaXN0ZXJlZC4N
+Cj4gQnV0IEkgdGhpbmsgeW91J3JlIG9uIHRvIHNvbWV0aGluZywgd2Ugc2hvdWxkIHBlcmhhcHMg
+aW5jcmVhc2UgdGhlIFRFRQ0KPiBtb2R1bGUgcmVmY291bnQgd2hlbiBjYWxsaW5nIGRtYV9oZWFw
+X2FkZCgpLiBEbyB5b3UgYWdyZWU/DQoNCkJ1dCB0aGF0IHdvbid0IGFsbG93IHRvIGNsZWFubHkg
+dW4tYmluZC9iaW5kIE9QLVRFRSBtb2R1bGUuIEl0IGxvb2tzDQpsaWtlIHdlIHJhdGhlciBuZWVk
+IHRvIGVuZm9yY2UgdGhlIE9QLVRFRSBkcml2ZXIgdG8gYmUgYnVpbHQtaW4gaW4gY2FzZQ0KaXQg
+aXMgdGhlIHByb3ZpZGVyIG9mIERNQSBoZWFwcy4NCg0KPiANCj4gPg0KPiA+IEluIHRoZSBjYXNl
+IG9mIHFjb210ZWUsIG15IG9yaWdpbmFsIGlkZWEgd2FzIHRvIGhhdmUgdHdvIHNlcGFyYXRlDQo+
+ID4gZHJpdmVycyBsb2FkZWQgYWxvbmdzaWRlIGVhY2ggb3RoZXIuIFRoaXMgc2V0dXAgd291bGQg
+YWxsb3cgdGhlDQo+ID4gVEVFIGJhY2tlbmQgZHJpdmVyIHRvIHN1cHBvcnQgdW5iaW5kaW5nLCB3
+aGlsZSB0aGUgcHJvdGVjdGVkIG1lbW9yeQ0KPiA+IGJhY2tlbmQgY291bGQgcmVtYWluIGxvYWRl
+ZC4gVGhpcyBzZXBhcmF0aW9uIGlzIHBhcnRpY3VsYXJseSB1c2VmdWwNCj4gPiBmb3IgRkZBLCBv
+ciBzY2VuYXJpb3Mgd2hlcmUgdGhlIHByb3RlY3RlZCBidWZmZXIgZG9lcyBub3QgbmVlZCB0byBi
+ZQ0KPiA+IHRyYW5zZmVyZWQgdG8gVEVFLg0KPiA+DQo+ID4gT3INCj4gPg0KPiA+IEEgcmVmZXJl
+bmNlIHRvIHRlZWRldiBjb3VsZCBiZSBvYnRhaW5lZCB3aGVuIHRoZSBoZWFwIGlzIHJlZ2lzdGVy
+ZWQsDQo+ID4gcmF0aGVyIHRoYW4gZm9yIGVhY2ggYnVmZmVyIGFsbG9jYXRpb24uIEluIG90aGVy
+IHdvcmRzLCBvbmNlIHRoZSBoZWFwDQo+ID4gaXMgcmVnaXN0ZXJlZCwgdGhlIGJhY2tlbmQgbXVz
+dCByZW1haW4gYWN0aXZlIGFuZCBjYW5ub3QgYmUgdW5sb2FkZWQuDQo+ID4NCj4gPiBPcg0KPiA+
+DQo+ID4gRmluZCBhIHdheSB0byBoYXZlIHNvbWV0aGluZyBsaWtlIGRtYV9oZWFwX3JtKCk/DQo+
+IA0KPiBUaGF0IHdvdWxkIGJlIGhlbHBmdWwsIGJ1dCBJJ2QgcHJlZmVyIHRvIGtlZXAgaXQgb3V0
+IG9mIHRoZSBzY29wZSBvZg0KPiB0aGUgcGF0Y2hzZXQgaWYgcG9zc2libGUuDQoNClllYWggbGV0
+cyBrZWVwIHRoYXQgZm9yIG5leHQgZmVhdHVyZSBwYXRjaC1zZXQuDQoNCi1TdW1pdA0KDQo+IA0K
+PiBUaGFua3MsDQo+IEplbnMNCj4gDQo+ID4NCj4gPiBQbGVhc2UgbGV0IG1lIGtub3cgaWYgSSBt
+aXMtdW5kZXJzdG9vZCBzb21ldGhpbmc/IG9yIG1pc3Npbmcgc29tZXRoaW5nIDopDQo+ID4NCj4g
+PiBSZWdhcmRzLA0KPiA+IEFtaXINCj4gPg0KPiA+ID4gK3ZvaWQgdGVlX2RldmljZV91bnJlZ2lz
+dGVyX2FsbF9kbWFfaGVhcHMoc3RydWN0IHRlZV9kZXZpY2UgKnRlZWRldikNCj4gPiA+ICt7DQo+
+ID4gPiArICAgICBzdHJ1Y3QgdGVlX3Byb3RtZW1fcG9vbCAqcG9vbDsNCj4gPiA+ICsgICAgIHN0
+cnVjdCB0ZWVfZG1hX2hlYXAgKmg7DQo+ID4gPiArICAgICB1X2xvbmcgaTsNCj4gPiA+ICsNCj4g
+PiA+ICsgICAgIHhhX2Zvcl9lYWNoKCZ0ZWVfZG1hX2hlYXAsIGksIGgpIHsNCj4gPiA+ICsgICAg
+ICAgICAgICAgaWYgKGgpIHsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBwb29sID0gTlVM
+TDsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBtdXRleF9sb2NrKCZoLT5tdSk7DQo+ID4g
+PiArICAgICAgICAgICAgICAgICAgICAgaWYgKGgtPnRlZWRldiA9PSB0ZWVkZXYpIHsNCj4gPiA+
+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvb2wgPSBoLT5wb29sOw0KPiA+ID4gKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgaC0+dGVlZGV2ID0gTlVMTDsNCj4gPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIGgtPnBvb2wgPSBOVUxMOw0KPiA+ID4gKyAgICAgICAg
+ICAgICAgICAgICAgIH0NCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBtdXRleF91bmxvY2so
+JmgtPm11KTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBpZiAocG9vbCkNCj4gPiA+ICsg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvb2wtPm9wcy0+ZGVzdHJveV9wb29sKHBvb2wp
+Ow0KPiA+ID4gKyAgICAgICAgICAgICB9DQo+ID4gPiArICAgICB9DQo+ID4gPiArfQ0KPiA+ID4g
+K0VYUE9SVF9TWU1CT0xfR1BMKHRlZV9kZXZpY2VfdW5yZWdpc3Rlcl9hbGxfZG1hX2hlYXBzKTsN
+Cg==
