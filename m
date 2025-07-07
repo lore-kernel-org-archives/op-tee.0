@@ -4,102 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13109C8303C
-	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 11:22:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17F18C83F07
+	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 11:26:00 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 462F442EC2
-	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 11:22:52 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 48C9742BFA
+	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 11:26:00 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=O0so0Jho;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jPVilgQj;
 	dkim-atps=neutral
-Received: from mail-oo1-f54.google.com (mail-oo1-f54.google.com [209.85.161.54])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 30F2341AE6
-	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Jul 2025 11:22:31 +0000 (UTC)
-Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-611f48c6e30so1885754eaf.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 07 Jul 2025 04:22:31 -0700 (PDT)
+Received: from mail-oo1-f53.google.com (mail-oo1-f53.google.com [209.85.161.53])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 09EE23F6B0
+	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Jul 2025 07:18:41 +0000 (UTC)
+Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-6120049f09fso1668575eaf.2
+        for <op-tee@lists.trustedfirmware.org>; Mon, 07 Jul 2025 00:18:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1751887350; x=1752492150; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WBD6cWteD3zVqlVT5kPTDbHAwMFUvPNKcObEJcscu+0=;
-        b=O0so0JhogWuW2k4D21DpOslcuW4Nva/ETDyswQI4osZ8EINnTPdQYosYGTS+T9/YWz
-         UJvM8WyitciobkHotSApKa8N2+6R/1xF5LmbHEAZxuLFQJVA0tktEh3tqIfUJV1J1W75
-         DYacfN0J1092X+IpXFkQyA1/juFmL5yLXuhsgwaOjNFkdf6cPohzdJ5fNMZXbRzuDE19
-         8D5LrEVcoHrl2D9VSpj0IgEUG1Jg/8gTU0ZtEDxMajIBY2CZ0AfK9eVODQZvNFDnMClJ
-         v68qXdB3awem5MC6X2pXwPtMW1s7TeNgFuibJhWCZ57uLlUGtMyovzmNjwnnWMU0HXwf
-         vt6w==
+        d=gmail.com; s=20230601; t=1751872720; x=1752477520; darn=lists.trustedfirmware.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=Dii6nHNGqkKV38PPLrNqnhdq6HEwzfLWRA5316t8Kog=;
+        b=jPVilgQjBsyI9lORmjOjxfKwB28FRN2GB3AxUnDzuUGN1MDvJOh4cSw8UTlRLu7oym
+         C/iSUPVm9kcaBVnJdNuY7WGGM6POn4y8dZsPcB1b7eHx6V6ZjYkK/+9wzDtWCrnMgXFa
+         AkZuaTquh7zIuG+hEnHbJaq4g/YsalVX4lK3s+76odmWLUedmTBnm9mzmn+yWvMQss0s
+         mZCWVS9YtEfD7/pPXPEp3Yawt/E2LVdE+a1uSUkivMYqzqaMNtmBBu5U4fK3v3DATAD6
+         KPh/TOQmIpNAC/1gdK13uU1qbPFpk9a5+BnyIvbPpO91pz4lbGpyM027KS5BqR8LToFB
+         Ov1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751887350; x=1752492150;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WBD6cWteD3zVqlVT5kPTDbHAwMFUvPNKcObEJcscu+0=;
-        b=nvLLSX1E6WailR8WYuuogeS4lcIeCdBDckkShWmaG29NaF92/L2FjWqGOrrx5CwpT4
-         8/9klhQmB5MehKPJzhaEIkyxU3EhoYHvT0MNpa7tFDEotYGDM41FSOZYc3VK0fjD7qft
-         yESHzxAOMEBBI58wDjSkhqoraK59qXS3dKvfGed3+I1ORj7of/gAeBpLI5eOiMlXzE3u
-         y93fSojz9zqB6TkppuuQKV8IZn6rBnTWVxFVUNijCdnc6O7EpGPC4TK44QoURiOvnWUI
-         nRkz/Va9iGRlkRryyRDmSaFCC3TVJSwjAK8tJI1J8lUHXUzkjWqSUs1aKGbLPET+2BWB
-         LNPw==
-X-Gm-Message-State: AOJu0Yxo2U7QouuiIMURcCbDtvUTeTDKetklE7Q4hK0+TT6HdfEfITBF
-	VDt+PwTbbvlBRZ4xG2WDd7AjNN11R3EhWHRxwLUvUbjD6tR+DtRVNPBlMQPCKMBq4PmVYkEM2vl
-	w+JPwso/sGlAbWCE82k7zQp4OeOf76B0sQzeWsymyGa7/
-X-Gm-Gg: ASbGnctVgNmo20Go5dfZnQrg+4inV/Cnc9IXPegP58zKiRUxRSbPyfHMmS4mK8IxFGw
-	ReTkIAhVylFFyYd/Rwy461akEaEG3aEGbsRLLw50qEw6vfJKaH2AnSll3Lvvjlk+O3xt4GIjoE9
-	Ti5qcJVzNb7HffnS5A9AZhXNx7/Ma/7Kc41jpZQcmKD0W/
-X-Google-Smtp-Source: AGHT+IHsMAOIk4i24Gjic5VH4AZhVHLaKmE7ltbZOigNJvNVFlPl/fZ2O7z2kpsMU5mZJnC7vI21C3vgGoc59YiQgT8=
-X-Received: by 2002:a05:6820:6ae5:b0:611:a799:c21e with SMTP id
- 006d021491bc7-613a009248fmr5517918eaf.5.1751887350395; Mon, 07 Jul 2025
- 04:22:30 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1751872720; x=1752477520;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Dii6nHNGqkKV38PPLrNqnhdq6HEwzfLWRA5316t8Kog=;
+        b=gXqE586k3WNxvp17YGKc9ebSyK6n+/aIh6zbjXqFqSi+ooW49/8C28L7HbordUgmQg
+         zmyA0CV/7K+TZAhITTYbJ1OUkf5IqYARA/ZiahN52RmsiGWmToe8nOt3PZFUycqeeDn8
+         o13++HslY8RyurhApym4OHLSofrfhP3Dl8JtumORKp+AHDO6I5A4vXtjDzKtv4CnefZk
+         UanBCqGfeX7mR4AbQ4i2fzyDCR8kmxC9ap6XnD6AKuTlbQDDiL+QIf0Pzq1A81rgWW/p
+         TjmMnoz6YA04YXlA8R5sv/3jZhrR+dBEEW3eoApBD30rXT2PB689Ir5c4tXPGo7NyFyd
+         yznw==
+X-Forwarded-Encrypted: i=1; AJvYcCUQW31Yoc5vL2csA+y8VOky5HfbVcIs/RAwwT0JwUpah9E/pxxrle/LqhnsA6ednqINY4UbmLI=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxirWXOzK+UIjbZWHFgyXn99Lu0fhmFbs2m33Pj3tMrqqIwYY/8
+	YMeHS6I/NjRYFEZZe2j95j1FPpH/+al4DYCQXHkS+0Mn8I3k9wam0qRnMMyDOGG4lSQcEiTROot
+	2GCfNHMiAjy0XlbzZdV6m47CHp8x0dc0=
+X-Gm-Gg: ASbGnct+lBlXsULwvJB7v5rV8d7Khvw0yViOobJ328rpGSUAVjZ/RZzD7DSSunVVq7W
+	kllHzoRkla0jLdxrZG9e/APhzWWRzIw6JejTkqNvhoLfCRPB/r0rXmRFKCEP9H0DWVqtIt/nAP3
+	xut02qbo2Ei9IsWWXoP6hiX7g2oXjFge3si7Vp1ELJk0ruU/tGSxSy6rRaWtJHmbBGMYjwdBc3t
+	VWl
+X-Google-Smtp-Source: AGHT+IHuuLI/4RS8KwBW22mp4P9uiUcK+/+J9CzVnEFso4ZPPDKXkgx2yRdnK09lmyiSmH0g7kSV56/YbrCwNPnSulQ=
+X-Received: by 2002:a05:6820:3093:b0:611:b00b:baa with SMTP id
+ 006d021491bc7-61392b6e733mr9338671eaf.3.1751872720185; Mon, 07 Jul 2025
+ 00:18:40 -0700 (PDT)
 MIME-Version: 1.0
-References: <20250610131600.2972232-1-jens.wiklander@linaro.org>
- <20250610131600.2972232-4-jens.wiklander@linaro.org> <b1a71f06-901e-47fb-9e27-9d401d26f7fc@oss.qualcomm.com>
-In-Reply-To: <b1a71f06-901e-47fb-9e27-9d401d26f7fc@oss.qualcomm.com>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 7 Jul 2025 13:22:19 +0200
-X-Gm-Features: Ac12FXzVqeFo4lsjW73yP3fEmrIu90xmfGjQsV1RDuAqpGfIpTpXEYSj_1WMMv0
-Message-ID: <CAHUa44FV_maNF1Xx0hnqGT3=DnM3zEnLj6CLcz7pZvxEPmiGJw@mail.gmail.com>
-Subject: Re: [PATCH v10 3/9] tee: implement protected DMA-heap
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+References: <CAE3nP4gt44hNp_GNzfYXCqXpsw+WSwFnY+Xz=jJAQzdNQ5D6KA@mail.gmail.com>
+ <CAHUa44FxVseYXptcKf2_C1AHgGOD_eGyR=2A3FXzwd42XSqcMQ@mail.gmail.com> <CAE3nP4jkU_MioO41z2d7UoswSdeDJWfbwPB04iinvb34pXx0Kw@mail.gmail.com>
+In-Reply-To: <CAE3nP4jkU_MioO41z2d7UoswSdeDJWfbwPB04iinvb34pXx0Kw@mail.gmail.com>
+From: ANAND MOHAN Tiwari <anandmohantiwari94@gmail.com>
+Date: Mon, 7 Jul 2025 12:48:28 +0530
+X-Gm-Features: Ac12FXx6I3HTA_vTHxH8NbBqbjpxKEzRx_zlVaz36x-FSXQfVoXGrE-8zBmZads
+Message-ID: <CAE3nP4iG_K6fwAQx=P6m7HAXsZcrauJp-UvKmBO7dyOMHJWreA@mail.gmail.com>
+Subject: Re: Compilation Issue for plat-k3 for am67a beagleY-AI Board
+To: Jens Wiklander <jens.wiklander@linaro.org>
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 30F2341AE6
+X-Rspamd-Queue-Id: 09EE23F6B0
 X-Spamd-Bar: ----
 X-Spamd-Result: default: False [-4.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.54:from];
-	RCVD_TLS_LAST(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.53:from];
 	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	TO_DN_EQ_ADDR_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.53:from];
+	FREEMAIL_FROM(0.00)[gmail.com];
 	TO_DN_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RBL_SENDERSCORE_REPUT_8(0.00)[209.85.161.54:from];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+,1:+,2:~];
 	FROM_HAS_DN(0.00)[];
+	DKIM_TRACE(0.00)[gmail.com:+];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[5];
+	MID_RHS_MATCH_FROMTLD(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.54:from];
-	RCPT_COUNT_TWO(0.00)[2];
-	DKIM_TRACE(0.00)[linaro.org:+]
-Message-ID-Hash: FFYUZMYRNOFX26R3NS7E35E7DOX4EJXC
-X-Message-ID-Hash: FFYUZMYRNOFX26R3NS7E35E7DOX4EJXC
-X-MailFrom: jens.wiklander@linaro.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org
+	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
+	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[209.85.161.53:from]
+X-MailFrom: anandmohantiwari94@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: DI5BYVPFXAG5KBXXCA4NF2PONERBZZ6R
+X-Message-ID-Hash: DI5BYVPFXAG5KBXXCA4NF2PONERBZZ6R
+X-Mailman-Approved-At: Mon, 07 Jul 2025 11:25:39 +0000
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+X-Content-Filtered-By: Mailman/MimeDel 3.3.5
+CC: "jerome.forissier@linaro.org" <jerome.forissier@linaro.org>, etienna.carriere@linaro.org, "afd@ti.com" <afd@ti.com>, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FFYUZMYRNOFX26R3NS7E35E7DOX4EJXC/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/DI5BYVPFXAG5KBXXCA4NF2PONERBZZ6R/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -107,119 +115,57 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi Amir,
-
-On Mon, Jul 7, 2025 at 4:22=E2=80=AFAM Amirreza Zarrabi via OP-TEE
-<op-tee@lists.trustedfirmware.org> wrote:
->
-> Hi Jens,
->
-> On 6/10/2025 11:13 PM, Jens Wiklander wrote:
-> > Implement DMA heap for protected DMA-buf allocation in the TEE
-> > subsystem.
-> >
-> > Protected memory refers to memory buffers behind a hardware enforced
-> > firewall. It is not accessible to the kernel during normal circumstance=
-s
-> > but rather only accessible to certain hardware IPs or CPUs executing in
-> > higher or differently privileged mode than the kernel itself. This
-> > interface allows to allocate and manage such protected memory buffers
-> > via interaction with a TEE implementation.
-> >
-> > The protected memory is allocated for a specific use-case, like Secure
-> > Video Playback, Trusted UI, or Secure Video Recording where certain
-> > hardware devices can access the memory.
-> >
-> > The DMA-heaps are enabled explicitly by the TEE backend driver. The TEE
-> > backend drivers needs to implement protected memory pool to manage the
-> > protected memory.
-> >
-> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > ---
-> >  drivers/tee/Kconfig       |   5 +
-> >  drivers/tee/Makefile      |   1 +
-> >  drivers/tee/tee_heap.c    | 472 ++++++++++++++++++++++++++++++++++++++
-> >  drivers/tee/tee_private.h |   6 +
-> >  include/linux/tee_core.h  |  65 ++++++
-> >  5 files changed, 549 insertions(+)
-> >  create mode 100644 drivers/tee/tee_heap.c
-> >
-[snip]
->
-> I'm having a bit of trouble understanding the rationale behind
-> supporting tee_device_unregister_all_dma_heaps(). Considering that
-> the heap remains accessible from userspace, wouldn't this lead
-> to undefined behavior? For example, what happens if a user is
-> in the middle of a tee_dma_heap_alloc() -- specifically before
-> tee_device_get() -- while the backend calls tee_device_unregister_all_dma=
-_heaps()?
-
-That can't happen since tee_device_unregister() has been called
-before, guaranteeing that no further calls to tee_device_get() can
-succeed.
-
->
-> I understand that you want to use teedev refcount to protect against
-> the TEE driver unbinding if there is a buffer allocated. But what about
-> the heap device?
->
-> Additionally, what if the user decides to unbind the TEE backend driver?
-> Would the dma_heap device still persist without any alloc function?
-
-Yes, the device would still be there, but alloc would return -EINVAL
-until a new heap has been registered.
-But I think you're on to something, we should perhaps increase the TEE
-module refcount when calling dma_heap_add(). Do you agree?
-
->
-> In the case of qcomtee, my original idea was to have two separate
-> drivers loaded alongside each other. This setup would allow the
-> TEE backend driver to support unbinding, while the protected memory
-> backend could remain loaded. This separation is particularly useful
-> for FFA, or scenarios where the protected buffer does not need to be
-> transfered to TEE.
->
-> Or
->
-> A reference to teedev could be obtained when the heap is registered,
-> rather than for each buffer allocation. In other words, once the heap
-> is registered, the backend must remain active and cannot be unloaded.
->
-> Or
->
-> Find a way to have something like dma_heap_rm()?
-
-That would be helpful, but I'd prefer to keep it out of the scope of
-the patchset if possible.
-
-Thanks,
-Jens
-
->
-> Please let me know if I mis-understood something? or missing something :)
->
-> Regards,
-> Amir
->
-> > +void tee_device_unregister_all_dma_heaps(struct tee_device *teedev)
-> > +{
-> > +     struct tee_protmem_pool *pool;
-> > +     struct tee_dma_heap *h;
-> > +     u_long i;
-> > +
-> > +     xa_for_each(&tee_dma_heap, i, h) {
-> > +             if (h) {
-> > +                     pool =3D NULL;
-> > +                     mutex_lock(&h->mu);
-> > +                     if (h->teedev =3D=3D teedev) {
-> > +                             pool =3D h->pool;
-> > +                             h->teedev =3D NULL;
-> > +                             h->pool =3D NULL;
-> > +                     }
-> > +                     mutex_unlock(&h->mu);
-> > +                     if (pool)
-> > +                             pool->ops->destroy_pool(pool);
-> > +             }
-> > +     }
-> > +}
-> > +EXPORT_SYMBOL_GPL(tee_device_unregister_all_dma_heaps);
+SGkgVGVhbSwNCg0KDQpSZXF1ZXN0IHlvdSB0byBhZGQgc3VwcG9ydCBmb3IgYW02N2EgYmVhZ2xl
+WS1BSSBib2FyZC4NCkxldCBtZSBrbm93IGlmIGkgY2FuIGhlbHAgaW4gYW55IHdheSBmb3IgdGhl
+IHNhbWUuDQoNClRoYW5rcyAmIFJlZ2FyZHMsDQpBbmFuZCBNb2hhbiBUaXdhcmkNCihNKSArOTEg
+ODIgOTkxMDY4MzkNCihNKSArOTEgODcgNjU2OTY5NDANCg0KDQpPbiBNb24sIDcgSnVsIDIwMjUg
+YXQgMTI6NDXigK9QTSwgQU5BTkQgTU9IQU4gVGl3YXJpIDwNCmFuYW5kbW9oYW50aXdhcmk5NEBn
+bWFpbC5jb20+IHdyb3RlOg0KDQo+IEhpIEplbnMsDQo+DQo+IFRoYW5rcyBmb3IgdGhlIGNvbmZp
+cm1hdGlvbi4gSeKAmWxsIHJlcG9ydCB0aGlzIHRvIG9wdGVlLiBIb3cgd2UgY2FuIG1ha2UNCj4g
+c3VyZSB0byBnZXQgaXRzIHN1cHBvcnQgYWRkZWQgPz8NCj4NCj4NCj4gVGhhbmtzICYgUmVnYXJk
+cywNCj4gQW5hbmQgTW9oYW4gVGl3YXJpDQo+IChNKSArOTEgODIgOTkxMDY4MzkNCj4gKE0pICs5
+MSA4NyA2NTY5Njk0MA0KPg0KPg0KPiBPbiBNb24sIDcgSnVsIDIwMjUgYXQgMTI6MTnigK9QTSwg
+SmVucyBXaWtsYW5kZXIgPGplbnMud2lrbGFuZGVyQGxpbmFyby5vcmc+DQo+IHdyb3RlOg0KPg0K
+Pj4gSGkgQW5hbmQsDQo+Pg0KPj4gaHR0cHM6Ly9naXRodWIuY29tL09QLVRFRS9vcHRlZV9vcy9p
+c3N1ZXMvIGlzIHRoZSBiZXN0IHBsYWNlIHRvIHJlcG9ydA0KPj4gaXNzdWVzIGxpa2UgdGhpcywg
+b3IgcG9zc2libHkgb3AtdGVlQGxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmcuDQo+Pg0KPj4gQW55
+d2F5LCBmcm9tIHRoZSBzb3VyY2UgY29kZSwgaXQgbG9va3MgbGlrZSBrMy1hbTY3YSBpc24ndCBz
+dXBwb3J0ZWQuDQo+Pg0KPj4gQ2hlZXJzLA0KPj4gSmVucw0KPj4NCj4+IE9uIE1vbiwgSnVsIDcs
+IDIwMjUgYXQgODozNOKAr0FNIEFOQU5EIE1PSEFOIFRpd2FyaQ0KPj4gPGFuYW5kbW9oYW50aXdh
+cmk5NEBnbWFpbC5jb20+IHdyb3RlOg0KPj4gPg0KPj4gPiBEZWFyIEFsbCwNCj4+ID4NCj4+ID4g
+VGhpcyBpcyB0byBicmluZyB5b3VyIGF0dGVudGlvbiB0b3dhcmRzICBjb21waWxhdGlvbiBpc3N1
+ZSBmYWNlZCBieSBtZQ0KPj4gZm9yIGszLWFtNjdhIGJvYXJkLiBJIGNhbiBzZWUgY29tcGlsYXRp
+b24gd29ya3MgdGlsbCBQTEFURk9STT1rMy02NXggZm9yDQo+PiBvcHRlZV9vcyBidXQgd2hlbiBp
+IHRyaWVkIGNvbXBpbGluZyB0aGUgc2FtZSBhbTY3eCBpdCB0aHJvd3MNCj4+IGNvcmUvYXJjaC9h
+cm0vcGxhdC1rMy9kcml2ZXJzL3NhMnVsLmM6MzYgZXJyb3I6IOKAmFNBMlVMX0JBU0XigJkgdW5k
+ZWNsYXJlZA0KPj4gaGVyZSBzYW1lIGVycm9yIGlzIHRocm93biBmb3IgU0EyVUxfVElfU0NJX0ZX
+X0lELA0KPj4gPiBTQTJVTF9USV9TQ0lfRldfUkdOX0lELA0KPj4gPiBTQTJVTF9USV9TQ0lfREVW
+X0lELA0KPj4gPg0KPj4gPiBjb3JlL2FyY2gvYXJtL3BsYXQtazMvLi9wbGF0Zm9ybV9jb25maWdz
+Lmg6OTENCj4+ID4g4oCYU0EyVUxfQkFTReKAmSB1bmRlY2xhcmVkDQo+PiA+DQo+PiA+IE5vdCBz
+dXJlIHdob20gdG8gY29udGFjdCB0byByZXBvcnQgdGhpcyBidXQgaSBmb3VuZCB0aGVzZSBtYWls
+cyBpbg0KPj4gY29tbWl0IG1lc3NhZ2VzLiBSZXF1ZXN0IHlvdSB0byBjaGVjayBvbiB0aGlzIG9y
+IGxldCBtZSBrbm93IGlmIEnigJltIG1pc3NpbmcNCj4+IHNvbWV0aGluZw0KPj4gPiBUcmllZCBi
+ZWxvdyBzdGVwcy4NCj4+ID4NCj4+ID4gZ2l0IGNsb25lIC1iIDExLjAxLjAzDQo+PiBodHRwczov
+L2dpdGh1Yi5jb20vYmVhZ2xlYm9hcmQvdGktbGludXgtZmlybXdhcmUuZ2l0IC0tZGVwdGg9MQ0K
+Pj4gPg0KPj4gPiBnaXQgY2xvbmUgLWIgbHRzLXYyLjEyLjQNCj4+IGh0dHBzOi8vZ2l0aHViLmNv
+bS9UcnVzdGVkRmlybXdhcmUtQS90cnVzdGVkLWZpcm13YXJlLWEuZ2l0IC0tZGVwdGg9MQ0KPj4g
+Pg0KPj4gPiBtYWtlIC1DIC4vdHJ1c3RlZC1maXJtd2FyZS1hLyAtajQgQ1JPU1NfQ09NUElMRT0k
+e0NDNjR9IFBMQVQ9azMNCj4+IEFSQ0g9YWFyY2g2NCBTUEQ9b3B0ZWVkIFRBUkdFVF9CT0FSRD1s
+aXRlIGFsbA0KPj4gPg0KPj4gPg0KPj4gPiBnaXQgY2xvbmUgLWIgNC42LjAgaHR0cHM6Ly9naXRo
+dWIuY29tL09QLVRFRS9vcHRlZV9vcy5naXQgLS1kZXB0aD0xDQo+PiA+DQo+PiA+DQo+PiA+IG1h
+a2UgLUMgLi9vcHRlZV9vcy8gLWo0IENST1NTX0NPTVBJTEU9JHtDQzMyfSBDUk9TU19DT01QSUxF
+NjQ9JHtDQzY0fQ0KPj4gQ0ZHX0FSTTY0X2NvcmU9eSBQTEFURk9STT1rMy1hbTYyeCBhbGwg4oCU
+4oCU4oCU4oCULT4gd29ya2luZw0KPj4gPg0KPj4gPiBtYWtlIC1DIC4vb3B0ZWVfb3MvIC1qNCBD
+Uk9TU19DT01QSUxFPSR7Q0MzMn0gQ1JPU1NfQ09NUElMRTY0PSR7Q0M2NH0NCj4+IENGR19BUk02
+NF9jb3JlPXkgUExBVEZPUk09azMtYW02NXggYWxsIOKAlOKAlOKAlOKAlC0+IHdvcmtpbmcgdGls
+bCB0aGlzIGJ1dCB0cmllZA0KPj4gZm9yIGNvbXBpbGluZyBiZWxvdw0KPj4gPg0KPj4gPiBtYWtl
+IC1DIC4vb3B0ZWVfb3MvIC1qNCBDUk9TU19DT01QSUxFPSR7Q0MzMn0gQ1JPU1NfQ09NUElMRTY0
+PSR7Q0M2NH0NCj4+IENGR19BUk02NF9jb3JlPXkgUExBVEZPUk09azMtYW02N3ggYWxsIOKAlOKA
+lOKAlOKAlC0+IG5vdCB3b3JraW5nIGFsc28gdHJpZWQgYnkNCj4+IHB1dHRpbmcgazMtYW02N2Eg
+4oCUdGhpcyBteSBib2FyZCBiZWFnbGVZLUFJDQo+PiA+DQo+PiA+IExldCBtZSBrbm93IGlmIEni
+gJltIG1pc3Npbmcgc29tZXRoaW5nIG9yIHdlIG5lZWQgdG8gZm9sbG93IGRpZmZlcmVudA0KPj4g
+cHJvY2VkdXJlcyBhcGFydCBmcm9tIGFib3ZlDQo+PiA+DQo+PiA+IFRoYW5rcyBpbiBhZHZhbmNl
+LiBZb3UgY2FuIHJlYWNoIG91dCBtZSB2aWEgYmVsb3cgbnVtYmVycyBvciByZXBseSBvbg0KPj4g
+c2FtZSBlbWFpbC4NCj4+ID4NCj4+ID4gVGhhbmtzICYgUmVnYXJkcywNCj4+ID4gQW5hbmQgTW9o
+YW4gVGl3YXJpDQo+PiA+IChNKSArOTEgODIgOTkxMDY4MzkNCj4+ID4gKE0pICs5MSA4NyA2NTY5
+Njk0MA0KPj4NCj4NCg==
