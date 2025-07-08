@@ -4,256 +4,243 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47251C83F07
-	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 13:38:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 828FFC83030
+	for <op-tee@archiver.kernel.org>; Tue,  8 Jul 2025 00:18:42 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7D7B845AAA
-	for <op-tee@archiver.kernel.org>; Mon,  7 Jul 2025 13:38:27 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id BB69F4FB8C
+	for <op-tee@archiver.kernel.org>; Tue,  8 Jul 2025 00:18:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1751933921;
+	bh=kFt6Oom5g+9QGUKhUH0b2chcUL/hscbZVZ8LC4C1q8I=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=AM+ulkDB+vOD/vnqEqXm2NBXccpJ4eWz/tV6dWcWpmFypQgSzLMLJ38WawjZjp5+3
+	 LzKlqSvjaTtZ7UpXlWDXOTWGnHzvjJaRZB0qEm7w0ijzgaFMZxWyi07dyvA39iCYtS
+	 XQsMWslWPyj3QyjXf5tBENepLPAwUpfWt1UdDPRtxtdxkkc3zisSmoNlRA4mw2zhBU
+	 IKblMSAlZC3o7KRT50uvvCmnHinVtEM7BvXP9216NeAl3cSTRy+R33MKSKMqXqAIaq
+	 bcC4bq8vVIN8hG9t+ouLYySf9T9EgQ/Z73Whq3/ZW2IbF1syT0GxKyPEYL04ASvvao
+	 CD1M5/qR4Gs1w==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E73FA3F6B0
+	for <op-tee@lists.trustedfirmware.org>; Tue,  8 Jul 2025 00:18:19 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=XAYVU96v;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=nHH0sG8E;
 	dkim-atps=neutral
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 6EB0940B61
-	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Jul 2025 13:38:05 +0000 (UTC)
-Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-6120049f09fso1815132eaf.2
-        for <op-tee@lists.trustedfirmware.org>; Mon, 07 Jul 2025 06:38:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1751895485; x=1752500285; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WPtEo+284Dik3ngmlwaHHrU4cBbgVxQpmRaZKXUJ5Jo=;
-        b=XAYVU96vK6LJXoCqHli0KRaLRYwQPR8Wbzb34ykRENmszfF1CqOVx8p854NDzc7zhK
-         A8LiMiwsuSjNcyHcy2fUaKmR057w/FOBsta3EptfOQSGll3TccUP3cicKAc4Z93RWRg0
-         /Pxo7eBW841NRidWHQrsD2Adfw0bHSMesedbn2G8Ury8vw7ZS64oKthIUJHM6a5AIwXd
-         3m3t+oTTGyvTJrwyLDfLgCD6XNWMXNfbGfcMHsW/MJHY2/EqVU8kJLJcp0uH+4aen4GJ
-         toVO4SsfVwZ0SaJxtx0/aoR0Z6XSlLlcs2Cwlvpr7wtuo+gyMK7CNfUZ7lCUC0lCSULT
-         S/Jw==
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 567DNBXc013805
+	for <op-tee@lists.trustedfirmware.org>; Tue, 8 Jul 2025 00:18:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	oaTOEkIO8yrsO0UKiWwZlqMg1M5J5KL8pwQLxI4CLgg=; b=nHH0sG8E+AXC4w4U
+	T4O+a6q0EEjbnZQYFWebBAmLf1LFy5Z5grmBAUj38+fCP789t8D5bX+71ZNR6c6O
+	GLAMa7KnfJMTt7SB1HVCtKMcZkAM8evugiLo9SgqYP5JUPcyDLNcn+Egu7JLPVcr
+	c9hJKiCNhXIgebs3eEnBzEf/l8lpJyfuykGn8tx8AJt85i7j5zQ3DmYD5xJXoTGS
+	16ndMIsTGrgYwojG+OE8FyCp6Kil7m92n/qQ36Av0+ueocIKULV+rC6qWTCg0svQ
+	SNez+wSpq1uksn32XBms6yrpuna1MZ3yV5Roa5dKd8RGFg+NtwH1Jfwj+zKsisf8
+	UBPw1Q==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 47r9b0q2p6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 08 Jul 2025 00:18:18 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-234a102faa3so28105585ad.0
+        for <op-tee@lists.trustedfirmware.org>; Mon, 07 Jul 2025 17:18:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751895485; x=1752500285;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WPtEo+284Dik3ngmlwaHHrU4cBbgVxQpmRaZKXUJ5Jo=;
-        b=UEYflZQ2/ayt7IQW4ntncX4euNQ0qr1za9fu5+vKm3jPgcyeq2HSo+p3vC+BnAF78s
-         +hWboAuVH7rPDaIeIhNmgbvGNj/d+q9jCkAYWe4VJuT8UeEpru7U8yao6NOIk2i+MxH2
-         1AC4nEvkX4Jjip9Rzarwkt4DcgliZ15INFm471eD3ZMlMceULtcV1395ZoXPH64XqNEX
-         ZBc6dM3o4F5ztFDxazsXYQnTn75JN53c/NrkkCOhnQFYr5bthqwuig37LxhvZ/KbLjBZ
-         6c5J0W59XtLt8cTqQ6AS4VqWB3CgrqUo+EtvVaSC9sLKH0w4HSJvXboZryw/O8f9xW9R
-         WnUg==
-X-Forwarded-Encrypted: i=1; AJvYcCUl+0pCJAWd6u/gKJZpyWWb3Hl1FytCnldhdTHUrAsOB98WTJXgsPHPUajot3WkwvmlyUaR7JE=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yzbkb45WAR5oO6GkRlIbLxXLnBTEXhYqAdvPdbbUPDTHi62N5wN
-	IK5i9SanF6BmVZTEoJpSXU278IdP9q5vEXwvdgGpKUE/sfxjtfB9bUokoCNkRqyMhTisYSXH/IC
-	xlh68QYSWfE8ci7jYDKATn/Ai0zVnWpBbHsb57e7LDhT4
-X-Gm-Gg: ASbGncuH+CsNeb+0Wf2JcSBrtIlmi+xI/1qLeTngijtJmXC/omsIC+nXqxuSfUapdlu
-	PoTNPxbbujVrtPZLm93decZ5cqjz3ApEWGp5J9sYt9sMnskunl30FSbJM0v5c1BlOhiuZ6WWXCP
-	NIcjqeg4PVWAVNJ1KmdEP2zutwiM+/ZZ6NVnwkuXOnWAyL
-X-Google-Smtp-Source: AGHT+IEZ3yGtE2FU/0QWUjraPLFFt+Z1/vBLFwkNdtWliU4sU2mLbMGkNn3Aw1OyF4v+P+g/k20BlqBdrqjrRIoeNb8=
-X-Received: by 2002:a05:6820:6acf:b0:611:e00a:598d with SMTP id
- 006d021491bc7-61392c2c5a8mr8978260eaf.8.1751895484701; Mon, 07 Jul 2025
- 06:38:04 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1751933898; x=1752538698;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=oaTOEkIO8yrsO0UKiWwZlqMg1M5J5KL8pwQLxI4CLgg=;
+        b=hv24x3krd+EVd8Z6lEGhzs9C53nR8ZybjITcdrvzoB7W48w1ONq0UrOSidHchymCNN
+         9JfGwoh71+T/MxxUxdzsEYQhUMpsLFD4Dr1F0LSFFqZdz1J0SnlRcx5xM3y62kcCsBC7
+         M+UaLclceU0KV3UrkszJHxulNyREUbWnxcSzuB0xnanDso8EoPGKX1UqtpAlbr5RpBq6
+         XPUAyBoxdXlkTC0y04mXyFo+5TRMFL7WsHO8s04HXQH5ZQrVUi2Qq54boT5e0EunYQr8
+         pB2sfZ6+Z22pW/gRM+cSduMIYnFWQSmP8VrF6Sd8QYq2T/KFNxocFEkRN37YnyfTy0br
+         Jp2g==
+X-Forwarded-Encrypted: i=1; AJvYcCWib776iZQvPettSpnqmpvucScBJRqlRhh3765KucFkqqph/teGqwxwxkxIvAW9NKxbJSYPpiY=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yx3SAnlepZuY+RmQ6eEpuSRBDqAcugjbIRxrbuL8foQ0tCkNp2V
+	8uyjLmsoiiuKJl8bqp8IvEYICrnDb8a+dLqUhE95RTNG+GY5kh2nP3iqn/DG/aM4UHGZZTuxzm4
+	sfwpAEyH9U98YD9eGPcF4lMVolXHhsrQJI5ljMI1ZeBt1vAqntZEpz5GqyhnU5hnVTGolsA0=
+X-Gm-Gg: ASbGncsUTNSGFWv4aVjPr8K/0m2NfS+LKhcG9kLSYYOwLoRS6ko2Ckw9PKasGhb1MG8
+	0zWs4GC8NDn3mxKYuadmYU4rshuxBACNUoOT+bvu/tup4y20u4RpRDUIphRBzz2gamuvX67soCQ
+	0Dr2Gxb9ICj3kHeMxJEAw78MipapnMvqFLqx+rjuyS8EtXeBAWR3xTP7Q7WDXz1iWmrewMmJfLL
+	1HwWpWW6cuyNFu3Q3jqwvjtVRQSWTTwNcDySW1hstu+Y9U/8p2Xee71SvgwXxC/OBTvnNthowoQ
+	dFXVtYn2hnEZvQe+NyWACHchux2sus9naa0fpcQAialWWt+zt4TgavOl3FQgtlW2yQNS4s+hMPm
+	3soi1JCy5vPPkFwYqBuNO
+X-Received: by 2002:a17:903:244c:b0:234:d679:72e3 with SMTP id d9443c01a7336-23dd1d80da1mr8271175ad.42.1751933897825;
+        Mon, 07 Jul 2025 17:18:17 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFMM+Gbo9/WjlZPVlIIUZQ4YQst2yhj+gXkh09Rr5WiqbDyV2/LPR3+ycOzSMRJJQfm2+cqXA==
+X-Received: by 2002:a17:903:244c:b0:234:d679:72e3 with SMTP id d9443c01a7336-23dd1d80da1mr8270825ad.42.1751933897349;
+        Mon, 07 Jul 2025 17:18:17 -0700 (PDT)
+Received: from [192.168.0.74] (n1-41-240-65.bla22.nsw.optusnet.com.au. [1.41.240.65])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23c8457e4d2sm103006315ad.148.2025.07.07.17.18.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 07 Jul 2025 17:18:13 -0700 (PDT)
+Message-ID: <07cd8098-2d2e-4f90-96c0-64f8547e291f@oss.qualcomm.com>
+Date: Tue, 8 Jul 2025 10:18:02 +1000
 MIME-Version: 1.0
-References: <20250610131600.2972232-1-jens.wiklander@linaro.org>
- <20250610131600.2972232-4-jens.wiklander@linaro.org> <b1a71f06-901e-47fb-9e27-9d401d26f7fc@oss.qualcomm.com>
- <CAHUa44FV_maNF1Xx0hnqGT3=DnM3zEnLj6CLcz7pZvxEPmiGJw@mail.gmail.com> <aGu_bgKuSDJUKUoP@sumit-X1>
-In-Reply-To: <aGu_bgKuSDJUKUoP@sumit-X1>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 7 Jul 2025 15:37:52 +0200
-X-Gm-Features: Ac12FXykqyF9TyRtbnayj5wiwMr1vGNBNa7XguVZcQTGIeozHv4fR-XtyeR_SVE
-Message-ID: <CAHUa44EAbRuGRk7HvmHaCTGBnFE1JCfSLAdFtJ8FWOaiDt4uHQ@mail.gmail.com>
-Subject: Re: [PATCH v10 3/9] tee: implement protected DMA-heap
-To: Sumit Garg <sumit.garg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 08/12] firmware: qcom: tzmem: export shm_bridge
+ create/delete
+To: Kuldeep Singh <quic_kuldsing@quicinc.com>,
+        Jens Wiklander <jens.wiklander@linaro.org>,
+        Sumit Garg <sumit.garg@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Apurupa Pattapu <quic_apurupa@quicinc.com>,
+        Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Sumit Semwal <sumit.semwal@linaro.org>,
+        =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+References: <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-0-024e3221b0b9@oss.qualcomm.com>
+ <20250526-qcom-tee-using-tee-ss-without-mem-obj-v5-8-024e3221b0b9@oss.qualcomm.com>
+ <2455f20c-130c-4f27-9cf4-6411e485b845@quicinc.com>
+Content-Language: en-US
+In-Reply-To: <2455f20c-130c-4f27-9cf4-6411e485b845@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=dYuA3WXe c=1 sm=1 tr=0 ts=686c63ca cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=hi51d+lTLNy/RbqRqnOomQ==:17
+ a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8
+ a=pz6wV3uveH3Zlr5Ofa0A:9 a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzA4MDAwMSBTYWx0ZWRfX5G2rNjEgEHNZ
+ xw9S90J+EfEqe3tDcBA/O6fKU2ALbYKL/cIoc6PwdmulZ7XKhr+Rys1NL0IRbDS5a7Szj8Mwhtq
+ g5BH+n0mMKQN3u8kA78myds8GzWVJnOEGzjqA+j7lHEvfGW0FUbASyXZGDC9bAKu1VgptXlNqB2
+ Hj5H6MVc6LjZzwmwooV+wJVssc+9oHPKnRa2unfIZBdexE5R/Syz62ZxK2ZImJAFGcacPnIbDVH
+ RxTZYrXAI4m5Do0pU5c9XYXaWlxD84ciSW+eBRjfE87+FuC/y+NG+0XSEndhrv6cQeYA+ic6cmj
+ FFuQarlnphiqawFxnUVo9Ro8RtHgZvvJ5V2z3MBTa4f0j7aoAZ5btP7/x4y1QySK33xA6/Xf+Gf
+ CE1kXUCtiMcz1XcKrE9rPGLhsfTatvgUd75nmTlud5shejOIBnfzQEVKF57VNH52vto4ARrp
+X-Proofpoint-GUID: ywgAsD6ZZsTNEpUYl0d9uJvGKPZmnXYS
+X-Proofpoint-ORIG-GUID: ywgAsD6ZZsTNEpUYl0d9uJvGKPZmnXYS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-07-07_06,2025-07-07_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 suspectscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0
+ priorityscore=1501 spamscore=0 adultscore=0 mlxlogscore=999 malwarescore=0
+ mlxscore=0 bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
+ definitions=main-2507080001
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 6EB0940B61
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.10 / 15.00];
+X-Rspamd-Queue-Id: E73FA3F6B0
+X-Spamd-Bar: -------
+X-Spamd-Result: default: False [-7.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	RBL_SENDERSCORE_REPUT_9(-1.00)[205.220.168.131:from];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.50:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	TO_DN_SOME(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[209.85.161.50:from];
-	DNSWL_BLOCKED(0.00)[209.85.161.50:from];
 	ARC_NA(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[20];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
+	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3];
+	FROM_HAS_DN(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	DKIM_TRACE(0.00)[linaro.org:+]
-Message-ID-Hash: XZ3LIA3U3EVHAFQWAHZY5HGONQBNODFT
-X-Message-ID-Hash: XZ3LIA3U3EVHAFQWAHZY5HGONQBNODFT
-X-MailFrom: jens.wiklander@linaro.org
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DNSWL_BLOCKED(0.00)[209.85.214.198:received];
+	RCVD_TLS_LAST(0.00)[];
+	DKIM_TRACE(0.00)[qualcomm.com:+]
+Message-ID-Hash: SIZ7S52TIYIG4COZYOQPF54D3K536IPR
+X-Message-ID-Hash: SIZ7S52TIYIG4COZYOQPF54D3K536IPR
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, op-tee@lists.trustedfirmware.org
+CC: Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/XZ3LIA3U3EVHAFQWAHZY5HGONQBNODFT/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/SIZ7S52TIYIG4COZYOQPF54D3K536IPR/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-On Mon, Jul 7, 2025 at 2:37=E2=80=AFPM Sumit Garg <sumit.garg@kernel.org> w=
-rote:
->
-> On Mon, Jul 07, 2025 at 01:22:19PM +0200, Jens Wiklander wrote:
-> > Hi Amir,
-> >
-> > On Mon, Jul 7, 2025 at 4:22=E2=80=AFAM Amirreza Zarrabi via OP-TEE
-> > <op-tee@lists.trustedfirmware.org> wrote:
-> > >
-> > > Hi Jens,
-> > >
-> > > On 6/10/2025 11:13 PM, Jens Wiklander wrote:
-> > > > Implement DMA heap for protected DMA-buf allocation in the TEE
-> > > > subsystem.
-> > > >
-> > > > Protected memory refers to memory buffers behind a hardware enforce=
-d
-> > > > firewall. It is not accessible to the kernel during normal circumst=
-ances
-> > > > but rather only accessible to certain hardware IPs or CPUs executin=
-g in
-> > > > higher or differently privileged mode than the kernel itself. This
-> > > > interface allows to allocate and manage such protected memory buffe=
-rs
-> > > > via interaction with a TEE implementation.
-> > > >
-> > > > The protected memory is allocated for a specific use-case, like Sec=
-ure
-> > > > Video Playback, Trusted UI, or Secure Video Recording where certain
-> > > > hardware devices can access the memory.
-> > > >
-> > > > The DMA-heaps are enabled explicitly by the TEE backend driver. The=
- TEE
-> > > > backend drivers needs to implement protected memory pool to manage =
-the
-> > > > protected memory.
-> > > >
-> > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
-> > > > ---
-> > > >  drivers/tee/Kconfig       |   5 +
-> > > >  drivers/tee/Makefile      |   1 +
-> > > >  drivers/tee/tee_heap.c    | 472 ++++++++++++++++++++++++++++++++++=
-++++
-> > > >  drivers/tee/tee_private.h |   6 +
-> > > >  include/linux/tee_core.h  |  65 ++++++
-> > > >  5 files changed, 549 insertions(+)
-> > > >  create mode 100644 drivers/tee/tee_heap.c
-> > > >
-> > [snip]
-> > >
-> > > I'm having a bit of trouble understanding the rationale behind
-> > > supporting tee_device_unregister_all_dma_heaps(). Considering that
-> > > the heap remains accessible from userspace, wouldn't this lead
-> > > to undefined behavior? For example, what happens if a user is
-> > > in the middle of a tee_dma_heap_alloc() -- specifically before
-> > > tee_device_get() -- while the backend calls tee_device_unregister_all=
-_dma_heaps()?
-> >
-> > That can't happen since tee_device_unregister() has been called
-> > before, guaranteeing that no further calls to tee_device_get() can
-> > succeed.
-> >
-> > >
-> > > I understand that you want to use teedev refcount to protect against
-> > > the TEE driver unbinding if there is a buffer allocated. But what abo=
-ut
-> > > the heap device?
-> > >
-> > > Additionally, what if the user decides to unbind the TEE backend driv=
-er?
-> > > Would the dma_heap device still persist without any alloc function?
-> >
-> > Yes, the device would still be there, but alloc would return -EINVAL
-> > until a new heap has been registered.
-> > But I think you're on to something, we should perhaps increase the TEE
-> > module refcount when calling dma_heap_add(). Do you agree?
->
-> But that won't allow to cleanly un-bind/bind OP-TEE module. It looks
-> like we rather need to enforce the OP-TEE driver to be built-in in case
-> it is the provider of DMA heaps.
+Hi Kuldeep,
 
-Yes, it will. The allocation function is tee_dma_heap_alloc() in the TEE SS=
-.
+On 7/1/2025 9:47 PM, Kuldeep Singh wrote:
+> 
+> On 5/27/2025 12:26 PM, Amirreza Zarrabi wrote:
+>> Anyone with access to contiguous physical memory should be able to
+>> share memory with QTEE using shm_bridge.
+>>
+>> Tested-by: Neil Armstrong <neil.armstrong@linaro.org>
+>> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>> ---
+>>  drivers/firmware/qcom/qcom_tzmem.c       | 57 +++++++++++++++++++++++++-------
+>>  include/linux/firmware/qcom/qcom_tzmem.h | 15 +++++++++
+>>  2 files changed, 60 insertions(+), 12 deletions(-)
+>>
+>> diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_tzmem.c
+>> index 4fe333fd2f07..e9e4f06924ae 100644
+>> --- a/drivers/firmware/qcom/qcom_tzmem.c
+>> +++ b/drivers/firmware/qcom/qcom_tzmem.c
+>> @@ -108,25 +108,61 @@ static int qcom_tzmem_init(void)
+>>  	return 0;
+>>  }
+>>  
+>> -static int qcom_tzmem_init_area(struct qcom_tzmem_area *area)
+>> +/**
+>> + * qcom_tzmem_shm_bridge_create() - Create a SHM bridge.
+>> + * @paddr: Physical address of the memory to share.
+>> + * @size: Size of the memory to share.
+>> + * @handle: Handle to the SHM bridge.
+>> + *
+>> + * On platforms that support SHM bridge, this function creates a SHM bridge
+>> + * for the given memory region with QTEE. The handle returned by this function
+>> + * must be passed to qcom_tzmem_shm_bridge_delete() to free the SHM bridge.
+>> + *
+>> + * Return: On success, returns 0; on failure, returns < 0.
+>> + */
+>> +int qcom_tzmem_shm_bridge_create(phys_addr_t paddr, size_t size, u64 *handle)
+>>  {
+>>  	u64 pfn_and_ns_perm, ipfn_and_s_perm, size_and_flags;
+>> -	int ret;
+>>  
+>>  	if (!qcom_tzmem_using_shm_bridge)
+>>  		return 0;
+>>  
+>> -	pfn_and_ns_perm = (u64)area->paddr | QCOM_SCM_PERM_RW;
+>> -	ipfn_and_s_perm = (u64)area->paddr | QCOM_SCM_PERM_RW;
+>> -	size_and_flags = area->size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
+>> +	pfn_and_ns_perm = paddr | QCOM_SCM_PERM_RW;
+>> +	ipfn_and_s_perm = paddr | QCOM_SCM_PERM_RW;
+>> +	size_and_flags = size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
+>> +	if (qcom_scm_shm_bridge_create(pfn_and_ns_perm, ipfn_and_s_perm,
+>> +				       size_and_flags, QCOM_SCM_VMID_HLOS,
+>> +				       handle))
+> 
+> Can we add a debug log here to ease debugging in future?
+> Something like this can also work.
+> 
+> pr_err("Shm bridge creation failed, ret: %d, NS PA|Perm: 0x%llx,
+> size|flags: 0x%llx\n", ret, pfn_and_ns_perm_flags, size_and_flags);
+> 
 
-Cheers,
-Jens
+Sure.
 
->
-> >
-> > >
-> > > In the case of qcomtee, my original idea was to have two separate
-> > > drivers loaded alongside each other. This setup would allow the
-> > > TEE backend driver to support unbinding, while the protected memory
-> > > backend could remain loaded. This separation is particularly useful
-> > > for FFA, or scenarios where the protected buffer does not need to be
-> > > transfered to TEE.
-> > >
-> > > Or
-> > >
-> > > A reference to teedev could be obtained when the heap is registered,
-> > > rather than for each buffer allocation. In other words, once the heap
-> > > is registered, the backend must remain active and cannot be unloaded.
-> > >
-> > > Or
-> > >
-> > > Find a way to have something like dma_heap_rm()?
-> >
-> > That would be helpful, but I'd prefer to keep it out of the scope of
-> > the patchset if possible.
->
-> Yeah lets keep that for next feature patch-set.
->
-> -Sumit
->
-> >
-> > Thanks,
-> > Jens
-> >
-> > >
-> > > Please let me know if I mis-understood something? or missing somethin=
-g :)
-> > >
-> > > Regards,
-> > > Amir
-> > >
-> > > > +void tee_device_unregister_all_dma_heaps(struct tee_device *teedev=
-)
-> > > > +{
-> > > > +     struct tee_protmem_pool *pool;
-> > > > +     struct tee_dma_heap *h;
-> > > > +     u_long i;
-> > > > +
-> > > > +     xa_for_each(&tee_dma_heap, i, h) {
-> > > > +             if (h) {
-> > > > +                     pool =3D NULL;
-> > > > +                     mutex_lock(&h->mu);
-> > > > +                     if (h->teedev =3D=3D teedev) {
-> > > > +                             pool =3D h->pool;
-> > > > +                             h->teedev =3D NULL;
-> > > > +                             h->pool =3D NULL;
-> > > > +                     }
-> > > > +                     mutex_unlock(&h->mu);
-> > > > +                     if (pool)
-> > > > +                             pool->ops->destroy_pool(pool);
-> > > > +             }
-> > > > +     }
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(tee_device_unregister_all_dma_heaps);
+Regards,
+Amir
+
+>> +		return -EINVAL;
+>> +
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(qcom_tzmem_shm_bridge_create);
+> 
+
