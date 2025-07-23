@@ -4,147 +4,176 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A6BBC87FCB
-	for <op-tee@archiver.kernel.org>; Mon,  4 Aug 2025 19:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C114AC87FCF
+	for <op-tee@archiver.kernel.org>; Mon,  4 Aug 2025 19:22:01 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id BFAE64FC58
-	for <op-tee@archiver.kernel.org>; Mon,  4 Aug 2025 19:21:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1754335289;
-	bh=f3LSdoYYmURS1rjz0097H7ejp033uVg7byHFkNuPVVE=;
-	h=Date:To:Subject:CC:List-Id:List-Archive:List-Help:List-Owner:
-	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=zbp6RFEAt21EH+/bBBovbDs9doMd+9vGtKJ3ujMxKUBScCYxdgJMj6Geb2jAhV3xV
-	 8udlDhLhSYP5fpWTQJmI1iKYXhPh+gyFS7uS0NR3q61xd5JHBHdBkfOjNwJr6a2GdN
-	 IBnDGiI3hYidOeGvsFsWewWHZBto9sPhjGzd2fbOhkSXqpR+6ROoQfZdHV6U2x1RgH
-	 Kb3a7wcMj8FYEq40Mme0o5W6J+opw/bYzfqza1/kDSuG31Mah9kfHRflU14yCkukq1
-	 CiGzlcZb/Zf95oEdXYJeyrLvSLhB1O6B1J6vWHip9sMTFy5nwy6Z4cKDQkySjRZrRT
-	 eawtcnbhJqoKA==
-Received: from smtp1.iitb.ac.in (smtpd7.iitb.ac.in [103.21.126.62])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8478342E7D
-	for <op-tee@lists.trustedfirmware.org>; Fri, 18 Jul 2025 15:30:26 +0000 (UTC)
-Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=iitb.ac.in header.i=@iitb.ac.in header.a=rsa-sha256 header.s=mail header.b=lev25uV9;
-	dkim-atps=neutral
-Received: from ldns2.iitb.ac.in (ldns2.iitb.ac.in [10.200.12.2])
-	by smtp1.iitb.ac.in (Postfix) with SMTP id F2220101C931
-	for <op-tee@lists.trustedfirmware.org>; Fri, 18 Jul 2025 21:00:23 +0530 (IST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.iitb.ac.in F2220101C931
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=iitb.ac.in; s=mail;
-	t=1752852623; bh=f3LSdoYYmURS1rjz0097H7ejp033uVg7byHFkNuPVVE=;
-	h=Date:From:To:Cc:Subject:From;
-	b=lev25uV9L6S8T9uZxe+yu2+fKUbS2pCyuZfta79tZWvM3/B4GvdekxUth7VnAvNWr
-	 aMIAw/s3/QoWvXFMbkk+EUPzxeztrG8NF2+Izz06vCRTDoBe7GBY8eOufwx2hTtAsJ
-	 EsVzUpmG3bAuaScxO8wjZBMiB1Zt6z72WMGMDWVc=
-Received: (qmail 13141 invoked by uid 510); 18 Jul 2025 21:00:23 +0530
-X-Qmail-Scanner-Diagnostics: from 10.200.1.25 by ldns2 (envelope-from <akhilesh@ee.iitb.ac.in>, uid 501) with qmail-scanner-2.11
- spamassassin: 3.4.1. mhr: 1.0. {clamdscan: 0.100.0/26337}
- Clear:RC:1(10.200.1.25):SA:0(0.0/7.0):. Processed in 4.023033 secs; 18 Jul 2025 21:00:23 +0530
-X-Envelope-From: akhilesh@ee.iitb.ac.in
-X-Qmail-Scanner-Mime-Attachments: |
-X-Qmail-Scanner-Zip-Files: |
-Received: from unknown (HELO ldns2.iitb.ac.in) (10.200.1.25)
-  by ldns2.iitb.ac.in with SMTP; 18 Jul 2025 21:00:19 +0530
-Received: from bhairav.ee.iitb.ac.in (bhairav.ee.iitb.ac.in [10.107.1.1])
-	by ldns2.iitb.ac.in (Postfix) with ESMTP id 84B093414EF;
-	Fri, 18 Jul 2025 21:00:19 +0530 (IST)
-Received: from bhairav-test.ee.iitb.ac.in (bhairav.ee.iitb.ac.in [10.107.1.1])
-	(Authenticated sender: akhilesh)
-	by bhairav.ee.iitb.ac.in (Postfix) with ESMTPSA id 5DFEA1E814D3;
-	Fri, 18 Jul 2025 21:00:19 +0530 (IST)
-Date: Fri, 18 Jul 2025 21:00:13 +0530
-To: jens.wiklander@linaro.org, sumit.garg@kernel.org
-Subject: [PATCH] drivers: tee: improve sysfs interface by using sysfs_emit()
-Message-ID: <aHpohUxxSH42w16U@bhairav-test.ee.iitb.ac.in>
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 19FFD4FCD5
+	for <op-tee@archiver.kernel.org>; Mon,  4 Aug 2025 19:22:01 +0000 (UTC)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A8FFC42F33
+	for <op-tee@lists.trustedfirmware.org>; Wed, 23 Jul 2025 02:09:19 +0000 (UTC)
+X-UUID: 06dadac6676a11f0b29709d653e92f7d-20250723
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.45,REQID:508bbe8b-b8ab-44f5-a05f-78d394b8e0de,IP:0,U
+	RL:0,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:25
+X-CID-META: VersionHash:6493067,CLOUDID:1e6794a25d96a091028edbdfd983aca7,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0|50,EDM:5,IP:nil,URL
+	:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SP
+	R:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0,NGT
+X-CID-BAS: 0,NGT,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 06dadac6676a11f0b29709d653e92f7d-20250723
+X-User: xiaopei01@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <xiaopei01@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 672945437; Wed, 23 Jul 2025 10:09:12 +0800
+From: Pei Xiao <xiaopei01@kylinos.cn>
+To: jens.wiklander@linaro.org,
+	sumit.garg@kernel.org,
+	larper@axis.com,
+	op-tee@lists.trustedfirmware.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] tee: fix NULL pointer dereference in tee_shm_put
+Date: Wed, 23 Jul 2025 10:09:07 +0800
+Message-Id: <fabd3d7560119e52dd83f4a19ad1f8087862993f.1753236468.git.xiaopei01@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 8478342E7D
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.00 / 15.00];
+X-Rspamd-Queue-Id: A8FFC42F33
+X-Spamd-Bar: -
+X-Spamd-Result: default: False [-1.80 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DMARC_POLICY_ALLOW(-0.50)[iitb.ac.in,reject];
-	R_DKIM_ALLOW(-0.20)[iitb.ac.in:s=mail];
-	R_SPF_ALLOW(-0.20)[+ip4:103.21.126.56/29];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:124.126.103.232];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	ASN(0.00)[asn:132423, ipnet:103.21.124.0/22, country:IN];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
+	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	RCVD_COUNT_THREE(0.00)[4];
-	DKIM_TRACE(0.00)[iitb.ac.in:+];
-	RCVD_TLS_LAST(0.00)[];
+	ARC_NA(0.00)[];
+	ASN(0.00)[asn:4847, ipnet:124.126.0.0/16, country:CN];
+	RCVD_COUNT_ONE(0.00)[1];
+	R_DKIM_NA(0.00)[];
+	DMARC_NA(0.00)[kylinos.cn];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[lists.trustedfirmware.org,vger.kernel.org,gmail.com,linuxfoundation.org];
 	RCPT_COUNT_FIVE(0.00)[6];
 	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	TO_DN_NONE(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[103.21.126.62:from]
+	RBL_SENDERSCORE_REPUT_BLOCKED(0.00)[124.126.103.232:from]
 X-Rspamd-Action: no action
-X-MailFrom: akhilesh@ee.iitb.ac.in
+X-MailFrom: xiaopei01@kylinos.cn
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: 64QEEMMRXDSWJO4SV3FZOHXJ35Y3XG5M
-X-Message-ID-Hash: 64QEEMMRXDSWJO4SV3FZOHXJ35Y3XG5M
+Message-ID-Hash: BZ45SR7VPHJY3KKZHJZPLGGVFOC2N3M7
+X-Message-ID-Hash: BZ45SR7VPHJY3KKZHJZPLGGVFOC2N3M7
 X-Mailman-Approved-At: Mon, 04 Aug 2025 19:21:07 +0000
-CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, akhileshpatilvnit@gmail.com, skhan@linuxfoundation.org
+CC: Pei Xiao <xiaopei01@kylinos.cn>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/64QEEMMRXDSWJO4SV3FZOHXJ35Y3XG5M/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BZ45SR7VPHJY3KKZHJZPLGGVFOC2N3M7/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Akhilesh Patil via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Akhilesh Patil <akhilesh@ee.iitb.ac.in>
 
-Replace scnprintf() with sysfs_emit() while formatting buffer that is
-passed to userspace as per the recommendation in
-Documentation/filesystems/sysfs.rst. sysfs _show() callbacks should use
-sysfs_emit() or sysfs_emit_at() while returning values to the userspace.
-This change does not impact functionality, but aligns with sysfs
-interface usage guidelines for the tee driver.
+tee_shm_put have NULL pointer dereference:
 
-Signed-off-by: Akhilesh Patil <akhilesh@ee.iitb.ac.in>
+__optee_disable_shm_cache -->
+	shm = reg_pair_to_ptr(...);//shm maybe return NULL
+        tee_shm_free(shm); -->
+		tee_shm_put(shm);//crash
+
+Add check in tee_shm_put to fix it.
+
+panic log:
+Unable to handle kernel paging request at virtual address 0000000000100cca
+Mem abort info:
+ESR = 0x0000000096000004
+EC = 0x25: DABT (current EL), IL = 32 bits
+SET = 0, FnV = 0
+EA = 0, S1PTW = 0
+FSC = 0x04: level 0 translation fault
+Data abort info:
+ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000
+CM = 0, WnR = 0, TnD = 0, TagAccess = 0
+GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
+user pgtable: 4k pages, 48-bit VAs, pgdp=0000002049d07000
+[0000000000100cca] pgd=0000000000000000, p4d=0000000000000000
+Internal error: Oops: 0000000096000004 [#1] SMP
+CPU: 2 PID: 14442 Comm: systemd-sleep Tainted: P OE ------- ----
+6.6.0-39-generic #38
+Source Version: 938b255f6cb8817c95b0dd5c8c2944acfce94b07
+Hardware name: greatwall GW-001Y1A-FTH, BIOS Great Wall BIOS V3.0
+10/26/2022
+pstate: 80000005 (Nzcv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+pc : tee_shm_put+0x24/0x188
+lr : tee_shm_free+0x14/0x28
+sp : ffff001f98f9faf0
+x29: ffff001f98f9faf0 x28: ffff0020df543cc0 x27: 0000000000000000
+x26: ffff001f811344a0 x25: ffff8000818dac00 x24: ffff800082d8d048
+x23: ffff001f850fcd18 x22: 0000000000000001 x21: ffff001f98f9fb88
+x20: ffff001f83e76218 x19: ffff001f83e761e0 x18: 000000000000ffff
+x17: 303a30303a303030 x16: 0000000000000000 x15: 0000000000000003
+x14: 0000000000000001 x13: 0000000000000000 x12: 0101010101010101
+x11: 0000000000000001 x10: 0000000000000001 x9 : ffff800080e08d0c
+x8 : ffff001f98f9fb88 x7 : 0000000000000000 x6 : 0000000000000000
+x5 : 0000000000000000 x4 : 0000000000000000 x3 : 0000000000000000
+x2 : ffff001f83e761e0 x1 : 00000000ffff001f x0 : 0000000000100cca
+Call trace:
+tee_shm_put+0x24/0x188
+tee_shm_free+0x14/0x28
+__optee_disable_shm_cache+0xa8/0x108
+optee_shutdown+0x28/0x38
+platform_shutdown+0x28/0x40
+device_shutdown+0x144/0x2b0
+kernel_power_off+0x3c/0x80
+hibernate+0x35c/0x388
+state_store+0x64/0x80
+kobj_attr_store+0x14/0x28
+sysfs_kf_write+0x48/0x60
+kernfs_fop_write_iter+0x128/0x1c0
+vfs_write+0x270/0x370
+ksys_write+0x6c/0x100
+__arm64_sys_write+0x20/0x30
+invoke_syscall+0x4c/0x120
+el0_svc_common.constprop.0+0x44/0xf0
+do_el0_svc+0x24/0x38
+el0_svc+0x24/0x88
+el0t_64_sync_handler+0x134/0x150
+el0t_64_sync+0x14c/0x15
+
+Fixes: dfd0743f1d9e ("tee: handle lookup of shm with reference count 0")
+Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
 ---
- drivers/tee/optee/core.c | 2 +-
- drivers/tee/tee_core.c   | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/tee/tee_shm.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index c75fddc83576..ce44e3498d37 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -72,7 +72,7 @@ static ssize_t rpmb_routing_model_show(struct device *dev,
- 	else
- 		s = "user";
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index daf6e5cfd59a..915239b033f5 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -560,9 +560,13 @@ EXPORT_SYMBOL_GPL(tee_shm_get_from_id);
+  */
+ void tee_shm_put(struct tee_shm *shm)
+ {
+-	struct tee_device *teedev = shm->ctx->teedev;
++	struct tee_device *teedev;
+ 	bool do_release = false;
  
--	return scnprintf(buf, PAGE_SIZE, "%s\n", s);
-+	return sysfs_emit(buf, "%s\n", s);
- }
- static DEVICE_ATTR_RO(rpmb_routing_model);
- 
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index acc7998758ad..944f913f8592 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -977,7 +977,7 @@ static ssize_t implementation_id_show(struct device *dev,
- 	struct tee_ioctl_version_data vers;
- 
- 	teedev->desc->ops->get_version(teedev, &vers);
--	return scnprintf(buf, PAGE_SIZE, "%d\n", vers.impl_id);
-+	return sysfs_emit(buf, "%d\n", vers.impl_id);
- }
- static DEVICE_ATTR_RO(implementation_id);
- 
++	if (!shm || !shm->ctx || !shm->ctx->teedev)
++		return;
++
++	teedev = shm->ctx->teedev;
+ 	mutex_lock(&teedev->mutex);
+ 	if (refcount_dec_and_test(&shm->refcount)) {
+ 		/*
 -- 
-2.34.1
+2.25.1
 
