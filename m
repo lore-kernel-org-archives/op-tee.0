@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B96DDCA0EC0
-	for <op-tee@archiver.kernel.org>; Mon, 11 Aug 2025 09:58:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74298C87FDB
+	for <op-tee@archiver.kernel.org>; Mon, 11 Aug 2025 10:00:44 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id EC08E4FCC5
-	for <op-tee@archiver.kernel.org>; Mon, 11 Aug 2025 09:58:15 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id AB3E44FCC5
+	for <op-tee@archiver.kernel.org>; Mon, 11 Aug 2025 10:00:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1754906296;
-	bh=r+WJBTUmBi3wWh94OlFaRTF2lXgz9Sh0FsgnQjxYUXQ=;
+	d=lists.trustedfirmware.org; s=2024; t=1754906443;
+	bh=CGG4/LStlBzu2dJDOHxK2vgfiyGVVv1osWtJefo6e3U=;
 	h=To:Subject:Date:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=SDUFMgOB4UjnzNLZcFoaDMf+7tm/BZmWB8FtzCNqU5WWlZPZ1q0DdcJm9Mo5RMF29
-	 utQD8f3wDUoLuETsn2ddxsEGabY7kV2G10oBnwQCAzVsy6i4twsGWbLKimH9PYjFNT
-	 d1UjM3B/+ci1zJ7GTOQToaQgFP/5wUW6DqWtgpjEA/4TS4Qnw6ks0CV1o5JDyRNmOI
-	 qNH2U6fbcra7Baqakw50d77UF+hjC6O9Q0GiXYhpUWLQFiqEHwnaxN84oRAW9mRAGa
-	 PiNmJU76pt9SHRoRjZ7JDXUzvTCaw7kUSaYo0Yygyquju01zJvWq/ElaClcvwmRqu1
-	 01yVyT0i1bGmw==
-Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2083.outbound.protection.outlook.com [40.107.100.83])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1368C3F08F
-	for <op-tee@lists.trustedfirmware.org>; Mon, 11 Aug 2025 09:58:00 +0000 (UTC)
+	b=CY5oeX4ouiK3rgChtI0xZ7RSBx7xDs8pVBdceanrkwGc3ZP54IrVNBDihHWorbT58
+	 +62svKH1lGWoa67H0mA7qJZsx499uExPkUDUaeum/Rm8eWU9OVRrOJUfUd0wzOe3qI
+	 P7DXFIKvOSA/6edGc8Qd5YJz4Hngv/fd8ocvCJ1lCip61IH8JMtNkNHp8um9+JsWPh
+	 zZt1vyWrhk5yxEXqfWG44aCeNouuOXy7YQoV0HMIn5u9T+/Dx+yFmYi+QHvV3BaB2b
+	 tpttCWupgrPUxtlmD4xeJ8KaCT6P7WDj5qQ2q+HOd9nTB2OgFkEVGwVb7CVWahOn7A
+	 Njd/3mPjCtwjw==
+Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2049.outbound.protection.outlook.com [40.107.100.49])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 3F71F3F67A
+	for <op-tee@lists.trustedfirmware.org>; Mon, 11 Aug 2025 10:00:28 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=qCAmMoZN;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=GgzRQN/3;
 	dkim-atps=neutral
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cloPwjYwUF1OXBF0qOLvigaWwO6bsSvgFleD8EzfiQ0hSeRrFErsVzwZui+ot6aBDdgvtjUslpQAsWcGClEaOoLVz2DlAdY1WNkLgqE1jEnkycg924whZRVTQo2yS3VHHu9YeAlAYILHMxr+OvH69K9lLlu4X5//xhF04VTv1Xqb+kVxCi88rCKxpLTdRqAGD+1REyPFTFxPDd85Rurnf4DaG/Wjx+UR7OvrrbktGnne7xEqS7+yEYo8ryx8WbhZVCLoFG2WqJOdWtriJu9899cl1sTrgGIVoqCsaLmueTur4H3BSiZw7pJLxG2ABTNwWFiJuA95C1H3in2E1YVezQ==
+ b=QbYHLvw8fwawAXJu4H1YgBmSrTDtvXREV45Zbv+PtdqoEotJKMbNS3zOzCgS6Qk0BkaIMUVQo1ZJQsbOU2gq8FajcZLx6JAzdJ0fiGXVELiGOCW4KwjDgqzZNojZjKyrqiZO6Tqf4t0n7l/1Fk67n39TU+C93N2XLPUgI4qU4kXlQRWFRAUHRNo0XWqQE9qluCZZDI1rooBDxvqWzvIlZE3NL3FXmCw2/n6386Zi9qu69s837UwSIt5nNb36ONL1kbgnQ0Vqq79Gy12vySFHz2lvJDre1L7w8qHEq+fNGLakoWSi+8RAmd5KdebIJ3NXkBgF1jUIZfNhtZXeXGII5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bwTg9nVIb1C/xfG3A3wpkRzya1EcS95rUdY+EYKKQP8=;
- b=t7VHYiqqkLkGHZvtmY//YAqSUj8/tYJN4u//+7PBVGx+NuXJ5Gs6ABqsYNhyG27cgxyfMGOGgZUncqbdFwvvnnn/0TepXzZj5BMfcHPeX0DtwIyQ7lk9pEF39nee+a3D/e3M53EGg90mQEdDrIHQDrssmDp/3BFzpfPooiBoHgbGpftEuENuVc3EojkM3n4L02I29zo0MPg2jk0OLqc9cmYUQ8bmpsA6erduYjglN4bc4vCsM+Nf+8S17qgppSMZcuS3ig/7NXT6aSffu5wdSNBGz+wbShWaDZre1Gb/ErFu05yNHGyb5DPdbzSnv53EQMeHPUVcMo/9mmz3j1yJSQ==
+ bh=3lRXBuWTabxhxFXcRVKd4RtEJhamM+L4oNRxFKsX21A=;
+ b=CxyjX/83FFSB7veMDGhht7Dgl2dbs1rdAAw1t7i7OrAjqp62YvIQlnGhcew7qh/+3ylQmFs2XaLmLci6bDJ5c7oGYke4S7SROe5gSdVBtb3n3W3QQmP35oP8Nkdqz33kNPBZR+2QKtWlBMxtsyJib1lkcy5tBqiKuIGGNHrurckUnO+3RbS/lOIjopuSUPKDT5QZL0C3rCvBNSYWxhB8C6MwKjagh2c9NBBND6Jb8//JUOqY4/6iLyK9joyIF46pXyz7MgIrkmDVPHYbRe+1FMTHngF4M5J1A9Jlyo5Lc3UCCFJAnBc6ULc1pgztdUNGqm6yPfDmEgHIcDrqHm7wPg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=bwTg9nVIb1C/xfG3A3wpkRzya1EcS95rUdY+EYKKQP8=;
- b=qCAmMoZN3zJnTnp924SsBAuUaGn7mwLDmbNphZRkT4e0bwJ9qDypk1l6apLl65k5ASGgFmho2cT2ZDFINbnBRZcydEAoYRBLBx05PENnfFbTU/uDtKevDbtnyT9sei9bizeOUUQeVfj4thBL8VUCwuKp0wPX9s/EdlCc8MWV40KvzK/I3cnlF+GljNKqa2/USHmsAvZbrWqVJpZKFS0+RDj/it6G6Az3UehfqcSaowSPbIXm6oY7j79xemmLY+ONoQfoHrQVPrDI/bJ4WbkPtI9TyHUSC0SM1ZUM7E1ez9ujz4s5C8G6DjxqHKx8lEM2bWaR34ETzcIly4yWHK6Hog==
+ bh=3lRXBuWTabxhxFXcRVKd4RtEJhamM+L4oNRxFKsX21A=;
+ b=GgzRQN/3qceAnQdfo90nJryCvh7WN1AjxIlG+q55TOYvhgxCXkClCr9Oy654QNHQJXs9Coc/geo074Cc83w8WhWkNEuSDYAhYvM9KyYxrTKD5WfBHiZ84lxmFxKdZzQQDaW56yHxTGnse4qM9VfHlvxsUK6XXSTbQvONmydSGvsTop01zE9WgKCxl+zsb/hUevxp0DCzJNky/VUErE93OSUUXYLBeCf+KtbuHAL+80RL/9e8zZ3CZkHd+hgGdnaAwT6vVZcHgP96TblfbraQtiFeIutuVoeS8ZMaei1FisZstCcyHlwymz+kFKFLJ8M3Vie4BZZolef4f1kHWvO9ww==
 Received: from SJ2PR12MB8689.namprd12.prod.outlook.com (2603:10b6:a03:53d::22)
  by SJ5PPFF6E64BC2C.namprd12.prod.outlook.com (2603:10b6:a0f:fc02::9aa) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.33; Mon, 11 Aug
- 2025 09:57:55 +0000
+ 2025 10:00:17 +0000
 Received: from SJ2PR12MB8689.namprd12.prod.outlook.com
  ([fe80::3cb1:e344:6d7d:106a]) by SJ2PR12MB8689.namprd12.prod.outlook.com
  ([fe80::3cb1:e344:6d7d:106a%3]) with mapi id 15.20.9009.018; Mon, 11 Aug 2025
- 09:57:54 +0000
+ 10:00:17 +0000
 To: Sumit Garg <sumit.garg@kernel.org>
 Subject: Re: [PATCH] tee: optee: ffa: fix a typo of
  "optee_ffa_api_is_compatible"
 Thread-Topic: [PATCH] tee: optee: ffa: fix a typo of
  "optee_ffa_api_is_compatible"
-Thread-Index: AQHcBs/od8WYF4SHx06Prusko333frRc94UAgABHQNM=
-Date: Mon, 11 Aug 2025 09:57:54 +0000
+Thread-Index: AQHcBs/od8WYF4SHx06Prusko333frRc94UAgABIFO0=
+Date: Mon, 11 Aug 2025 10:00:17 +0000
 Message-ID: 
- <SJ2PR12MB8689638595F93CC5CC23C94EB828A@SJ2PR12MB8689.namprd12.prod.outlook.com>
+ <SJ2PR12MB8689AE34D74E657EFC3055F7B828A@SJ2PR12MB8689.namprd12.prod.outlook.com>
 References: 
  <SJ2PR12MB86897F31237163137445D7CAB82DA@SJ2PR12MB8689.namprd12.prod.outlook.com>
  <aJmChHa_BxNO74cB@sumit-X1>
@@ -71,84 +71,84 @@ X-MS-TNEF-Correlator:
 msip_labels: 
 x-ms-publictraffictype: Email
 x-ms-traffictypediagnostic: SJ2PR12MB8689:EE_|SJ5PPFF6E64BC2C:EE_
-x-ms-office365-filtering-correlation-id: d3d7372e-1ae4-4a6e-90da-08ddd8bd8acb
+x-ms-office365-filtering-correlation-id: 4f1df01c-c9f2-45aa-74e3-08ddd8bddfd2
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam: BCL:0;ARA:13230040|1800799024|376014|366016|38070700018;
 x-microsoft-antispam-message-info: 
- =?iso-8859-1?Q?UfgkqVMGI08A4eN2el8k2rQ+Bjvn9Qg9EVKcwWj6YoYasqzeEY6jozg2C2?=
- =?iso-8859-1?Q?Ii3JxjQU+v5u8oKtzMVC5nS7rXp0u8jNLWKhuOqt+WKqlOrUPL9gwlo8C4?=
- =?iso-8859-1?Q?mazKfoTyd22oaPidHYkZIG2sC/SL1UCiBCj4vOWv0V3iuUCYTPpZodPj3g?=
- =?iso-8859-1?Q?xklCYXrlZlfSfRBCCIsO2jBwYntlEwDAOvQ8oTN2ym8iq+4pdFntwsVSrn?=
- =?iso-8859-1?Q?4Ob+GSmslnXWCAmCE1j7UHpgCb5PvzlRlvYfbMuo/xx9dentrZG9zj59fE?=
- =?iso-8859-1?Q?XkRQ1fCKNdCheSOu+xkxuAsYTLXpYfHIhM3tjjP1rGqBkUAVqmk8yuNcod?=
- =?iso-8859-1?Q?/TqBDiS2SDqClE94PqHeT4hCoIVk3W8QFOnXPS8rfIldZK6/Dr/0Tb6Kny?=
- =?iso-8859-1?Q?vPmF/58jYzH632RqiVVqoRAyhKz5iBJFIYELJBIuCUsPKSXctTToJ/GXbl?=
- =?iso-8859-1?Q?ZUMdJ6IeI1RXbry7jYyUHL0XDMuI5LQZ7h2hcXnKtzf+EOiiclB++Zt3cT?=
- =?iso-8859-1?Q?hOPpjUVkWmo5W0To5TFBGF/SIkO+tjgvS25FGICG+Q+ZavSphXhPTpb4Q6?=
- =?iso-8859-1?Q?4Ca4TAtk7taYWAYtrPL0Dt45/5/73saAsE3wdaOUalyx3WNQtSvJ9qGpPZ?=
- =?iso-8859-1?Q?0u0y6Bw0iyOSVadAc55crsdG6i0LBx/Iv4WnV7glzOwO6uC4Z0eeglrCHg?=
- =?iso-8859-1?Q?M+nSxke65npU4Tpol3xJUAbPPn7mdO2KMc5t2aRA43KUksODob4QUlL0ry?=
- =?iso-8859-1?Q?iRQVtU84jkniABXN08xqxYPK48WEkK/bBa2UGLEnHXzf5GhXxR4BRabV8X?=
- =?iso-8859-1?Q?Y9xoMeEugu7JUsT5rveAbM4la8nzFdDjqBd+nImAUyFHkc0MpMXSTFW8l4?=
- =?iso-8859-1?Q?ydtlIyLt2+6F4UJMVkKkYJBAiy0aSzLRHBIKeT12uz328NC/6YfY5uh+mm?=
- =?iso-8859-1?Q?JpVFhBrnhh/zAVWv7su4Jks6Xh+v70G3qrBvawyt+bSgVqDhN0WFigl3Oj?=
- =?iso-8859-1?Q?CIbDRsFK7794AO/MWVxQNxTcEPGTA8D80uhIth492m/R5LQyF+02YqqHnf?=
- =?iso-8859-1?Q?YKQARVZja1W+tGK6yVFrkcciyGPTtaQZJvA4TjnK2nAFnq3JleHfI84K6h?=
- =?iso-8859-1?Q?wx3/s1CXv6ZNUYxnmeYuoVo4gE12E8lqqOtvFKXd53HrJVekFCSc/LhdNV?=
- =?iso-8859-1?Q?a4WKxVfzGSktloE2ZPe4r/A2Otvd/aWGbaJaPlrS6NVq+DHDNiE5QWdKIa?=
- =?iso-8859-1?Q?SctOFF3fFdllvob08RIHWYg18e61CoR4CfO6rx8rHmTdBynPghn79Ad0z1?=
- =?iso-8859-1?Q?7kikMh+VgR9daUqE1m3oHk3o/fcf753uQL/RgLC8fK26y3DwYlb+cPkehb?=
- =?iso-8859-1?Q?/SyVHUunA6TMXoO2nWbvroDnFGVePiX3E6sd6jEK+l4VdM5z5M7LkdCkBt?=
- =?iso-8859-1?Q?ICnX4kaUS62yQceLkJtuEVgM4tRloFu/gJZVSZf9zg1I93b2+iuJF3kT8R?=
- =?iso-8859-1?Q?E2bp1t3ojtzmRF6xlyU9VmMW+e5Haso4NOvr4CdV9TXA=3D=3D?=
+ =?iso-8859-1?Q?r2lhUw1Pkg4ZIj6jQRJZ3HR+twO25rUimpVkdBxJF2w50e2rYOrlDqfTZu?=
+ =?iso-8859-1?Q?Z0iY+aRsVo46Y1HKbQ9Z1EBLMZtdsFE/1lqeGzqPa8fa6m1wPnUjI+s6sU?=
+ =?iso-8859-1?Q?QzFf2P0ia17RUD8na7kyGs8VaEXaD2d7hVEMWVUol276K6do5MgSBHMKEH?=
+ =?iso-8859-1?Q?Wp+c2esGX0+EAC9OYDdwaC4xbCgD+oKQYtAbstUgqG2ZOR2p/IeYOwG1/8?=
+ =?iso-8859-1?Q?k3ggQf2J8BXse5IupJfoDK6YqM95Eg6gKd7P8zD0slr4Pg9rBOGGAv2aCA?=
+ =?iso-8859-1?Q?LP8igmMOUVJV6o6g235POxJ67JmSK9Wd6NX8y+iqiCZfa4I2R/jMZfm9hi?=
+ =?iso-8859-1?Q?q0/sjZ7WzceEgOFcBQofvakhL8DliUm6q7Icw4WJcqGc+Egkxv0UHF0rEp?=
+ =?iso-8859-1?Q?kJebvHro8i7YH+0GPknF9Lh4kpaDcu8ezIOvt5R895WTytSOxJRrZTwOEb?=
+ =?iso-8859-1?Q?j/VRAPysKHYRJ4eO1yYnNYldrpWtiit42TuDL1MsaP+XcSmqDhDH/SobUY?=
+ =?iso-8859-1?Q?xO4V0BdM/yvq1GRt7PY7Pi/19Rfkyn3yGsjQ6RCsz7JdlTZ5s9CKpj26nt?=
+ =?iso-8859-1?Q?orsJWjbRahvP8O+w0kgjQVynCouSRZ/ghdyij4B3LwEwAhD43FA78ToZjV?=
+ =?iso-8859-1?Q?WCOikjdf/rQFDNGLa4GJp9AbBNTBMd50Gd4VAm0JNnAjRlsfQUcHt+RzPP?=
+ =?iso-8859-1?Q?/Ylwhc7MjLTSLfUojWgPEAMzrNTa9XQrwkkKBjqQYoIw8jLOadi2eb32SV?=
+ =?iso-8859-1?Q?3BC9s6ZjrfREUc8oBXi/PowHSOdwJpOm9nz9A30PZcIcDq1Qy9vZOTvFbG?=
+ =?iso-8859-1?Q?akOeQwnciai3fawiVWCEXLiRfU0YUuTslUTdTsU3+5GkdZSdaRbQUYxnfl?=
+ =?iso-8859-1?Q?mPz/i/FfHgJqiBWq4UxgR9RC8JmNfqxrkAgzC5K0QTTa1qjOq+/LHU7jZn?=
+ =?iso-8859-1?Q?hlDxkqOGgPOTrJiqC8NObtr2SgyWoaOYfOyLpnHiqjQ0z5saBsITNhB2EE?=
+ =?iso-8859-1?Q?xFO+UtryNc1Kk0w9FJi6C/8dBy+Th+Nw5J/Nl9qo5u2TNSoWrUZob0ZlSb?=
+ =?iso-8859-1?Q?JLQbc2eqdiDgtPy5d3B9NQBvufE4CIoYq4FjMWWktDmPQ7hJZfJOcEPtRa?=
+ =?iso-8859-1?Q?lawYLNu0I1B/ugxY24RJG33XqprOOqlxvZzRifn/1xKAk2vwcK4Uaqi/bv?=
+ =?iso-8859-1?Q?LVjSkED3enboGZO++zQ8Ziw4r8BCpZIpeN8NYDzH029cyOttFJ6GQpuU8i?=
+ =?iso-8859-1?Q?dF6a+7eH2xRn3ch56WZpMxhaLj32T1phQ5ARRr7bkJncsHMFEkaJzhqLJQ?=
+ =?iso-8859-1?Q?xC/Oq5HVEcdkswVOwtLqWVxSTE+oQAf1twxKI4uDEo8jCziqpy8RW8GFs8?=
+ =?iso-8859-1?Q?30wyT9g1adVqKS7Qu1jF3loXOtI+XOlWbmT0+LD5PD/mAWrVwAsCJ2i4ye?=
+ =?iso-8859-1?Q?doLowkukLj12RVy1LoI4BTBsPHMaly+nkyCSOvX24mpA2VoYgpy1zti7dj?=
+ =?iso-8859-1?Q?uTzoPsJv7R5aO8nzPEngANACFCMvwtQ4QJ5NFEO/7WkQ=3D=3D?=
 x-forefront-antispam-report: 
  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR12MB8689.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(38070700018);DIR:OUT;SFP:1101;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0: 
- =?iso-8859-1?Q?ilJtH6/Z2rkfvpyypMatDRHX6rjQoqUrIU8ZNjY4tGJPPPLjlKzROAjip1?=
- =?iso-8859-1?Q?yJHVoajARCeJZCw2DiIdy3OjP+OGgn26CO/1nWylb9q9AQCy5YVbI+cqg4?=
- =?iso-8859-1?Q?k7yyj7BAK9Gjx4XW47LNQtFqlgpYM25Hw+mzeBnhXOExlDjciClYrXahCP?=
- =?iso-8859-1?Q?wwnPS/BZ0dohNILJojaCxjn4sUfIA6S8KO2nbvOgaDeWrSbQmsv0UyC0qJ?=
- =?iso-8859-1?Q?pwl4s5M0wqWAxqVT0fGXPI/FcbvBI4755ZXH587Jm4ZlZxOyw/vt3K+9lZ?=
- =?iso-8859-1?Q?TA7DyKWa2vFlbXGY8eZ3CQdwnOA4yCMJi5UXWXlNtK3WCC/T3WAqZj3tPP?=
- =?iso-8859-1?Q?odauhS6roSO3udhsdHcHR/Y7kWPz+qRLaK2MY2w0Y3REiNp42mfp3RzDBN?=
- =?iso-8859-1?Q?R5pzonoFJNncKt3bfdpV6u1/Ft1t3hmGLT74wIjZwToX0mEuA54XgoiKNV?=
- =?iso-8859-1?Q?caIoUAAui3O0ixlZYPn9TKX2HJrN/NGXLdftbXHC4ffk3R5fB5Dl2LWcgg?=
- =?iso-8859-1?Q?etVptoXuovC0fKiGt1k+kisM0TGmQxn/otbLfS8n0jTUMPzzcnbaIX0a/K?=
- =?iso-8859-1?Q?l28wf2zr+IeG2ThqSvZlF/phoJ2eLVVKHxHFF5FjsWYByMG9ErmI32gvb2?=
- =?iso-8859-1?Q?3bZfhbW5ByJAlrV+TpMbDDLL2Un8Ej+tEfZmI31HJKgPYDiDoFq4YY+lnD?=
- =?iso-8859-1?Q?9UAq/xGCw4HqffYo4sOr8o9evRruI8mpagrKJj2PiUw7CiWoMtFEC/rwcK?=
- =?iso-8859-1?Q?ZlMeYQXuu8kHQgHm4hWwyhhsRfpf6geeyqhDejo5jv21ogGham4O8uAY7S?=
- =?iso-8859-1?Q?Ql3bPakoACl21EO8ea2RDtGqKk0APYO+XrfMFy7WoRgN97/xFxR8Z/gmaG?=
- =?iso-8859-1?Q?pm6J/GADzePypGrhoH7M/AFfTtI9ORfbJCf/L6sqgAxN4afF1/hlqsE7xM?=
- =?iso-8859-1?Q?BYelFlyGo0cZhG5TcNt/4d0UAVptkKb3mY1x/zayjx69tIZlf/fXEAYkbf?=
- =?iso-8859-1?Q?ZO9c4rW04FLenaJeZ83SJkltBKtCkJGZEm7ER8i/nBTWYH/FncZ0FGWcm4?=
- =?iso-8859-1?Q?VAap6SDb8YvdqTxTlZU6JeDsEIWOJddcqxNyW5GjhGsoZbSvEsT8mPpLlw?=
- =?iso-8859-1?Q?otGeMjBxo21eNPbPMADGvd+OjKuk73ntbO4E+UaxvwsEdSDaHizXeYAQEK?=
- =?iso-8859-1?Q?0TPUsN4nCHJ3zl9jyca36b0R+80p7AMqt+KVOtPOJmpuNZm15t+OYLVjq5?=
- =?iso-8859-1?Q?cFWqdJzGq/mPxLkvvQKQLoVPkWZOPY3f0eCnetmp3q8Aj0l7098Ib4w0YI?=
- =?iso-8859-1?Q?1XY/jdiFzD0GWAeRiAz4m3LgQ504yA3xgdVO1Mrj+WwWz7uzhfgZDtYrIs?=
- =?iso-8859-1?Q?t6IgfvU7fi2+bikVawTkgGszMd/+49/zN1pMfqdXWwycStQr7V+3i+JWs+?=
- =?iso-8859-1?Q?d5eZ1++V9AuNDk6qBBN/JW9JAoPLR94LWPnsmnYBEvFgi38dEkRxPUMlv+?=
- =?iso-8859-1?Q?BrEmR79d5VF8+TByuTyJuzPUBWP4KT1OEWoYmw/LLevdb+C3V6QsgrZuQY?=
- =?iso-8859-1?Q?PXZ5jmhIcmTQk4NZpHb8uhHdCXdELw93j/rKfy6Sgcuz4V+FJyB9eTfrN/?=
- =?iso-8859-1?Q?1D9hlp1+SZAzM=3D?=
+ =?iso-8859-1?Q?9F158vHB7epSJ9MsMUxFi9blm6Pylycw8Qr9PnmNkl0LNDqsDuRzq3JaFm?=
+ =?iso-8859-1?Q?dV2MkZ11sZVad03fDIEl8Uva8wIrEV8hUo3JA7+QAUdFDjNGSfBjfQ9XFb?=
+ =?iso-8859-1?Q?0NbiHmw3qmSKYW4/FsBknl7B2mHIQUQH4G8VDC1F3KGdIG96rnnCdAApTg?=
+ =?iso-8859-1?Q?60ImPIskJc64PIeEIAWmRtiaztlea1SZAOE/MG1wJe6sfnkKbB5CtmxkhG?=
+ =?iso-8859-1?Q?agad90jjYjJmLL4UHJW08rEtBLsVwaN8bbzizVbFNoAEaV/DGNHpQvcz+o?=
+ =?iso-8859-1?Q?QP/CziVyth+YInXNzIK2npG1vei291KumCCurm9Ew+uh09Tg12JJW6HEQj?=
+ =?iso-8859-1?Q?9xyw+9iauHZ7U8Pax+E2/tX9HTD7jyHWDHXV+4pt5nELrpvOAqzgqdd7kl?=
+ =?iso-8859-1?Q?HQ2xtIn9pm8NUAQFPZfoR4KGVaYBIGFacCGC0VW98wUZX0dWDVhB5lm1m5?=
+ =?iso-8859-1?Q?WfmHnC+T+mDi4LnpSHxOb9TFgAMIpKxjlBPyIxUu3nKuW+N8r8jM/BediU?=
+ =?iso-8859-1?Q?YEkDobOGidfRpYExf+hO2hZKhXj1p8wc5YV0CioeRgFqjsILuoktZFaIoq?=
+ =?iso-8859-1?Q?MfoBbEF0lykqk+othYtYLGegMqwzFVFmnU6Fx0VlhSUK8Hjl2/j9+r0Xrr?=
+ =?iso-8859-1?Q?4qMNHZbwTO9po18OFOZ4phNsWkYfQRozn3KQhaSwH7bMUgcYzGhyzviN6r?=
+ =?iso-8859-1?Q?x5WCVt+MufROSAu+bWDdyqVfYKxScYuMSohRWOwxxLQGvbYrMERJm5wxYB?=
+ =?iso-8859-1?Q?ICvHYwfUE5o+Rtj2z58/nJMg2y/iHSP4YkUY6BPOlkpoYJqH0qMYSSvDgt?=
+ =?iso-8859-1?Q?zL4ePJFesI2PIAPoeZQwBlUfa0y2ymZwgUMbNMDFFI+RW0jSx4eses/ZUH?=
+ =?iso-8859-1?Q?P0aNP1emlLnuZ6D0UXud4p6WV4zjtw1o80QNuW6VVJIWyU3HLL2baO7eMR?=
+ =?iso-8859-1?Q?M4oVUmVRNpIEu20E1gj77Q30lXfQajT/CLKnbtorxaWNJVPJklWkX10hbE?=
+ =?iso-8859-1?Q?jVR1LsU+4LQC9Exhi192sgHZ1SrSNeqwjL86dJ3hzZh1eziuq79S8sFJNx?=
+ =?iso-8859-1?Q?80XMguq+R77JGkOWl/P0SnFW5E29Sv0FHF4A3VhTGbzYg5den873kyMgrQ?=
+ =?iso-8859-1?Q?iiZ47fWg6stozInobBjzJUA7t+Mh8md6sH+bWTy1R5xVivmQrQ0ZjVcyuo?=
+ =?iso-8859-1?Q?PYThfn5fzj+fK2sNWzQ7PAAlWxgjaMr+8ST8TYOK2q7G2CZqVxhm0R7KBR?=
+ =?iso-8859-1?Q?SmT211+qBMkjezExxCf7K6FBLUh649Nz9/7g4m4da9gonWkifO5iK+C1WV?=
+ =?iso-8859-1?Q?t/8MwrisOWc0bIx9kENFm9lEvDCmgI32T83baRDMGGttSwmPmhUSJl7fQk?=
+ =?iso-8859-1?Q?VV16+A+J+LI64ZzuAjmNv7CxcNHZrOPhtOZh/XmuiqcM3XlgFdvxjutmEN?=
+ =?iso-8859-1?Q?PoC9FaRN433gxDQT5loNXTqoWp83TxL6Sz2ZKDWVIa0entVoaLCyIHqlAo?=
+ =?iso-8859-1?Q?OXQJBcQu+OhShs3h73VM3RA8dmWU3hKE7mNrT23Gz2N4pbSdSvUQthHvU3?=
+ =?iso-8859-1?Q?Cq7dYei3U9Sg6gOdvcQFT6m7vGcysobyfC7p8GFhveJRTL/GtNgEEbxNdl?=
+ =?iso-8859-1?Q?Rsket85ZJAvdk=3D?=
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: Nvidia.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: SJ2PR12MB8689.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d3d7372e-1ae4-4a6e-90da-08ddd8bd8acb
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Aug 2025 09:57:54.5059
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4f1df01c-c9f2-45aa-74e3-08ddd8bddfd2
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Aug 2025 10:00:17.1444
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: lJMe/GOZXz0Edw7e6az5+0Iuh2AJdzvdXP/2gxLPLwp5sgp+OAsP5FTOuJmZLyFJOoiK3NqUWJ1rziC+lwGeDA==
+X-MS-Exchange-CrossTenant-userprincipalname: hWGfsx9sNOwNT4etFeuAmFSSh6r7B2LgMwcJLf8o0KRkw8LVn/7XLi4vQq69oOMJGPm6xZ9YTeRvBYqxuA004A==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ5PPFF6E64BC2C
-X-Rspamd-Queue-Id: 1368C3F08F
+X-Rspamd-Queue-Id: 3F71F3F67A
 X-Spamd-Bar: -----
 X-Spamd-Result: default: False [-6.00 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
@@ -158,31 +158,31 @@ X-Spamd-Result: default: False [-6.00 / 15.00];
 	R_DKIM_ALLOW(-0.20)[Nvidia.com:s=selector2];
 	R_SPF_ALLOW(-0.20)[+ip4:40.107.0.0/16];
 	MIME_GOOD(-0.10)[text/plain];
-	MIME_TRACE(0.00)[0:+];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[40.107.100.83:from];
+	RCVD_IN_DNSWL_NONE(0.00)[40.107.100.49:from];
 	MISSING_XM_UA(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
 	ASN(0.00)[asn:8075, ipnet:40.104.0.0/14, country:US];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
 	TO_DN_EQ_ADDR_SOME(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[40.107.100.83:from];
 	RCPT_COUNT_THREE(0.00)[4];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[40.107.100.49:from];
 	DKIM_TRACE(0.00)[Nvidia.com:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: NRKFYUQUZPKFPEMMIATH3RJTSKVKAQDY
-X-Message-ID-Hash: NRKFYUQUZPKFPEMMIATH3RJTSKVKAQDY
+Message-ID-Hash: KER5R5HAECTBLQ5E5B44YKIEE4URBPJV
+X-Message-ID-Hash: KER5R5HAECTBLQ5E5B44YKIEE4URBPJV
 X-MailFrom: sungbaey@nvidia.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZMEH7RZVAWOZT6V3MSPK7G7GMBD5UGDE/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/T4UPIM2BEWQ4UE6IZIMNMLHQ4YLD7KLM/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -192,54 +192,36 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sungbae Yoo via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sungbae Yoo <sungbaey@nvidia.com>
 
-On Mon, Aug 11, 2025 at 11:11:24AM +0530, Sumit Garg via OP-TEE wrote:=0A=
-> On Wed, Aug 06, 2025 at 12:47:35PM +0000, Sungbae Yoo wrote:=0A=
->=0A=
-> Add some commit description.=0A=
-=0A=
-Will add the commit description like this :=0A=
-=0A=
 Fixes optee_ffa_api_is_compatbile() to optee_ffa_api_is_compatible()=0A=
 because compatbile is a typo of compatible.=0A=
 =0A=
->=0A=
-> > Fix: commit 4615e5a34b95 ("optee: add FF-A support")=0A=
->=0A=
-> Correct fixes tag, should be instead:=0A=
->=0A=
-> Fixes: 4615e5a34b95 ("optee: add FF-A support")=0A=
+Fixes: 4615e5a34b95 ("optee: add FF-A support")=0A=
 =0A=
-Thank you for correcting this!=0A=
+Signed-off-by: Sungbae Yoo <sungbaey@nvidia.com>=0A=
 =0A=
->=0A=
-> -Sumit=0A=
->=0A=
-> > Signed-off-by: Sungbae Yoo <sungbaey@nvidia.com>=0A=
-> >=0A=
-> > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c=
+diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c=0A=
+index f9ef7d94cebd..a963eed70c1d 100644=0A=
+--- a/drivers/tee/optee/ffa_abi.c=0A=
++++ b/drivers/tee/optee/ffa_abi.c=0A=
+@@ -657,7 +657,7 @@ static int optee_ffa_do_call_with_arg(struct tee_contex=
+t *ctx,=0A=
+  * with a matching configuration.=0A=
+  */=0A=
 =0A=
-> > index f9ef7d94cebd..a963eed70c1d 100644=0A=
-> > --- a/drivers/tee/optee/ffa_abi.c=0A=
-> > +++ b/drivers/tee/optee/ffa_abi.c=0A=
-> > @@ -657,7 +657,7 @@ static int optee_ffa_do_call_with_arg(struct tee_co=
-ntext *ctx,=0A=
-> >   * with a matching configuration.=0A=
-> >   */=0A=
-> >=0A=
-> > -static bool optee_ffa_api_is_compatbile(struct ffa_device *ffa_dev,=0A=
-> > +static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,=0A=
-> >                                         const struct ffa_ops *ops)=0A=
-> >  {=0A=
-> >         const struct ffa_msg_ops *msg_ops =3D ops->msg_ops;=0A=
-> > @@ -908,7 +908,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_d=
-ev)=0A=
-> >         ffa_ops =3D ffa_dev->ops;=0A=
-> >         notif_ops =3D ffa_ops->notifier_ops;=0A=
-> >=0A=
-> > -       if (!optee_ffa_api_is_compatbile(ffa_dev, ffa_ops))=0A=
-> > +       if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops))=0A=
-> >                 return -EINVAL;=0A=
-> >=0A=
-> >         if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,=0A=
-> > --=0A=
-> > 2.34.1=0A=
+-static bool optee_ffa_api_is_compatbile(struct ffa_device *ffa_dev,=0A=
++static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,=0A=
+                    const struct ffa_ops *ops)=0A=
+ {=0A=
+    const struct ffa_msg_ops *msg_ops =3D ops->msg_ops;=0A=
+@@ -908,7 +908,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)=
+=0A=
+    ffa_ops =3D ffa_dev->ops;=0A=
+    notif_ops =3D ffa_ops->notifier_ops;=0A=
+=0A=
+-   if (!optee_ffa_api_is_compatbile(ffa_dev, ffa_ops))=0A=
++   if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops))=0A=
+        return -EINVAL;=0A=
+=0A=
+    if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,=0A=
+--=0A=
+2.34.1=
