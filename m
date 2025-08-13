@@ -4,59 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4732ACA0EC4
-	for <op-tee@archiver.kernel.org>; Wed, 13 Aug 2025 06:04:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89387C87FCF
+	for <op-tee@archiver.kernel.org>; Wed, 13 Aug 2025 06:04:51 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 77EC34FCD5
-	for <op-tee@archiver.kernel.org>; Wed, 13 Aug 2025 06:04:14 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id C78C24FCD8
+	for <op-tee@archiver.kernel.org>; Wed, 13 Aug 2025 06:04:50 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=FdfyPId/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=q4tJMZts;
 	dkim-atps=neutral
-Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9A39442C16
-	for <op-tee@lists.trustedfirmware.org>; Wed, 13 Aug 2025 06:03:49 +0000 (UTC)
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-618690a80e8so909106a12.1
-        for <op-tee@lists.trustedfirmware.org>; Tue, 12 Aug 2025 23:03:49 -0700 (PDT)
+Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 283A44300F
+	for <op-tee@lists.trustedfirmware.org>; Wed, 13 Aug 2025 06:03:52 +0000 (UTC)
+Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-61867b0238bso1276166a12.3
+        for <op-tee@lists.trustedfirmware.org>; Tue, 12 Aug 2025 23:03:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1755065028; x=1755669828; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=5L1eqv4g8UH06X+GlBP44uLgWu6jy6OPxp8xkG8YMas=;
-        b=FdfyPId/711Iam13Fu8oeiwdB9FfI+fyAFrg5GUPzyM4bgcoc9PItXgUahPtTMUYJ/
-         UY3BVj9WcNnCFGvs88z9XZDcwl0OiPy1kEbmdjpZ7bxL4mM6vtaVVIq0kXrOB87h8NF7
-         8odd913Iol/aqp7kxFvI/QnANNmo949JXTRy/PACrUaNS97SjuHtn8BT7AcGg89MMQEI
-         DfxrrSFtXhbpRg2bwSuAKANBx/10yNOREXNaothkvRFJpBRgb44b4MMD1/ukztU2mDT2
-         7mWEZMV9ibnfXpvymeQ4lz6jizQZdEAnt/gFXU0TlV3Ltc1/xTES4+CqDsGwAbPFDy5G
-         ubLA==
+        d=linaro.org; s=google; t=1755065031; x=1755669831; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nRMYzGhOSMRi00YSM38TcGWVAJXFsKQy06jgg+FF2rE=;
+        b=q4tJMZts2W2k+mgljncF1DGzDkOoRFGvpY1On/4C/ziX4YrNLR6h71XrmI1VRz6DJj
+         6qDxlQU9DAA0TY0a3Bv7QEeIUXarb1B7U824DSDVz5QUVzsC8TxxsjUpQEPkXd3Ab+E3
+         WzjdF8K0QuBW+c5aexmAYEE5vK9L0+c9iFr1HQMq4mwinwxHpx4L/l3IqSXedElGb04H
+         Y5jh8QwpZmsCsDeXzzMTIBJfLJDnIDPnCieMr3tr3p/fQGvGjzSrhEXUZ0JqGje4UAhY
+         o2Febsv2v/lR6fEUpd/svXuf4XZCeDSHFNKDwckfd54WR6U0Q2R4UsJL+p66ssjsVJAW
+         5JmQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755065028; x=1755669828;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5L1eqv4g8UH06X+GlBP44uLgWu6jy6OPxp8xkG8YMas=;
-        b=nYncMk2BiDEdsm03Jznq1cvDLNp0PPPtgGqDqhg+s9qb6uhh0qaS8+XKCvSn4tgWrt
-         /e1kcmrItFtjR0u5FoeREwWxn8hvPU3ULUdPRzIwsm/8oH/sLa4nHAWDZ2ukOo4aoC2L
-         CFlPA5aoWTmT1nE0cmdDyzfJBel3PvhPBc9cIFw8kBbqYNTPWyvlbfGHES5mn0WmAVso
-         FXEcwHn/jT1SrIEKXo4mffMAUVNNmWUfF5mlveni3M0eBK18efhAQ2ZYOeCw9UgCcLm8
-         H5q6Qh4nb34jHAdQgOph+i+pnHPeS3SANaSXoDPBO1UC1uLKyeAs1kgBL1WMi+FL1ozD
-         h7sQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWRTEN/Kk7AOVhAyXyvqE9vfL9FCFFUwGBxz027nIyiiTty6MYMD65vivCBnBeaxFw/vlD2TF0=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxHlOuTerlzwjXjRWKyiW3ZGorXPCi0sWRVaOUv5tcFH1qzVG8U
-	X6WRQJhYu4RSXupoF8YAeiIDKqCukoaKMBFDsz8AqB8VLySJl4hfjnuz61tl+J2wOdYsgA==
-X-Gm-Gg: ASbGnctqH+rZc+HJVmi9iMyvLWdgrkLHcNJTt7XFUOmnOt4xT5nftfaHRsgujhDSQg5
-	OxbFjiblbiOsTuVTg4JxP/1TIX5a/QvboZEj0sClFbstXoUTD+bcIdewVP1p9xyKV2y/8YtAzBm
-	jjIsKAqbYnqyy/+bylYbLWIinON6B170CvMSRxgZ8SJ9Oc+Dz7RtIy19hQXs8jWVI402xOcXooO
-	KpYpvYKV8mbyqyehxL7qlQ+NaqVOzhkfvcbYAOIIbFFQ5PvbqAlMxI4EZpq6ym20m9424TOwZOk
-	mX/SwAjAvUFQzpIMIx21Su+Nph6KQbkyYYHe6R7EnaUcCx+mDSczvsiGhmimofiY2LsuXURrNOC
-	VgBHh9Yj4OmwdoH+aUUpRUeGZkYlTMm8dG12icFBstwigqhGIMdi0hz+PC8ldCevW4YBuJYSNXY
-	U=
-X-Google-Smtp-Source: AGHT+IEl5KlQ1OQsRT+8MymxRhVXcCwqYnfnZOiUI9p8uB2/KISK2gfzRGYSvuyuDTfjBUbTVhWoKQ==
-X-Received: by 2002:a05:6402:354d:b0:618:1705:83fb with SMTP id 4fb4d7f45d1cf-6186e2a5f41mr1159978a12.4.1755065028255;
-        Tue, 12 Aug 2025 23:03:48 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1755065031; x=1755669831;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nRMYzGhOSMRi00YSM38TcGWVAJXFsKQy06jgg+FF2rE=;
+        b=f660K1NmZbNAG7/aamSI1Xbfr3gFHlGPMUSN8WF6yJ5G7/Q11GV9sNy1n/0ICIzmzs
+         Kuq+mUSDzdTppdGV8iCqej5FXGexwg+4xWSSvkJYc6kHqMyH2MhZ79TI2RdEaRkV5sWi
+         d7ddbjxypaMU+Eq+KBgoqNEPC0mTKXHuSrfQoFXYcnJ2VkETCH0Te6vAn0pcfgBsO4kn
+         Z0LFX74Cn9CRR+Cvmxq6bgsGaVLCryG30Spr71onKrvmOT1vlYQLvp0JBGj6LTpJ9e+8
+         MmvlXDSY7CdxHtac6jWKH6yswm0PbhxjCYPIKeJ02mBiQ+CDE5oh06nuBjIcVK1cFK2F
+         EDQw==
+X-Forwarded-Encrypted: i=1; AJvYcCWMvuqOJmtPIYqw5lqRvEWuV7EbxbY4VRWzV05xFl7an2Iv/xGx/W9FNfAKRwu/VRu54O1PRvc=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yz4vnAZ4G/RHGxIUaoZ6RyXzSx+RZLDETVKYOc+W+mPfhG2/THj
+	CQCsXkOXWowuWh8Gs5AFYFFljt4kvoKkKcTMiG5VZVsvE7vsv6Vk+Lbc/dScrf7ucIyRbGyWppC
+	cl4UYalvChg==
+X-Gm-Gg: ASbGncvhLHv8DP0ThdzDnK7sqrajbn6+JDoF+b5fQ58vu8SfPvE0oRlSruT9vq4jTKI
+	8dbYuhniroMu8eRQKbkqeMvpj8jR0h7NiaM50minWQIdSKBwsmiWtZGByIfJwgNwdlEn+jHE3VV
+	fRQ4SeDP2DtmTZrzRBtBikRNV4xAB2hlmPrzR+YJ+1GKE4J10ohFW3m+WzGuF2mP4G7fOHW2fnD
+	JV4Gf69EDI5vNo2n2X9tJ2E1zNVKHasmA325OfJDhAviwmY6enYz3XwQ98nYJi6LgAFuuEyY3Nq
+	4+FSwv5YzNVcEVBV7/Eoa0RJnt2KHOJoN8tLgpDw8oJ4pIycDtc1j5vlo8IrDbTSlfcQVxJd/2D
+	PDh21hy+rPCoU2lZrmnXPm4r1W4FfCZHrwgmadLQM8oYWx5BYCAeZFnjOWn9WzU6TUBYyG2JlIu
+	f0Er/UpdFj8g==
+X-Google-Smtp-Source: AGHT+IESz7sY75MZEYJlNFDCMXqqy9HHT+W+mreLkuWcYGas2OheGV4v3f3HmO2S6T6YSl3Fg7PFjw==
+X-Received: by 2002:a05:6402:27cf:b0:615:cb9c:d5a2 with SMTP id 4fb4d7f45d1cf-6186bfd2d6amr1298331a12.18.1755065030954;
+        Tue, 12 Aug 2025 23:03:50 -0700 (PDT)
 Received: from rayden.urgonet (h-37-123-177-177.A175.priv.bahnhof.se. [37.123.177.177])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-615a8f2b892sm21498679a12.25.2025.08.12.23.03.43
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-615a8f2b892sm21498679a12.25.2025.08.12.23.03.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Aug 2025 23:03:46 -0700 (PDT)
+        Tue, 12 Aug 2025 23:03:50 -0700 (PDT)
 From: Jens Wiklander <jens.wiklander@linaro.org>
 To: linux-kernel@vger.kernel.org,
 	linux-media@vger.kernel.org,
@@ -64,51 +66,53 @@ To: linux-kernel@vger.kernel.org,
 	linaro-mm-sig@lists.linaro.org,
 	op-tee@lists.trustedfirmware.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v11 0/9] TEE subsystem for protected dma-buf allocations
-Date: Wed, 13 Aug 2025 08:02:49 +0200
-Message-ID: <20250813060339.2977604-1-jens.wiklander@linaro.org>
+Subject: [PATCH v11 1/9] optee: sync secure world ABI headers
+Date: Wed, 13 Aug 2025 08:02:50 +0200
+Message-ID: <20250813060339.2977604-2-jens.wiklander@linaro.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250813060339.2977604-1-jens.wiklander@linaro.org>
+References: <20250813060339.2977604-1-jens.wiklander@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 9A39442C16
-X-Spamd-Bar: /
+X-Rspamd-Queue-Id: 283A44300F
+X-Spamd-Bar: -
 X-Spamd-Result: default: False [-1.00 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	MID_CONTAINS_FROM(1.00)[];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
 	R_MISSING_CHARSET(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ARC_NA(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[24];
+	RCPT_COUNT_TWELVE(0.00)[25];
 	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.52:from];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.49:from];
 	TAGGED_RCPT(0.00)[];
-	FREEMAIL_CC(0.00)[nxp.com,gmail.com,mediatek.com,linaro.org,collabora.com,arm.com,google.com,amd.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org];
+	FREEMAIL_CC(0.00)[nxp.com,gmail.com,mediatek.com,linaro.org,collabora.com,arm.com,google.com,amd.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org,oss.qualcomm.com];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	FROM_HAS_DN(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.208.52:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.208.49:from];
 	RCVD_COUNT_TWO(0.00)[2];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: 3UFYMG6BACGZXFBQ3H6MALNTL3CHASMN
-X-Message-ID-Hash: 3UFYMG6BACGZXFBQ3H6MALNTL3CHASMN
+Message-ID-Hash: TH4L725WTYFZNEUMPMXZI6VYEY2LOYUP
+X-Message-ID-Hash: TH4L725WTYFZNEUMPMXZI6VYEY2LOYUP
 X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Sumit Semwal <sumit.semwal@linaro.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, robin.murphy@arm.com
+CC: Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Sumit Semwal <sumit.semwal@linaro.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, robin.murphy@arm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/3UFYMG6BACGZXFBQ3H6MALNTL3CHASMN/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TH4L725WTYFZNEUMPMXZI6VYEY2LOYUP/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -116,264 +120,267 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi,
+Update the header files describing the secure world ABI, both with and
+without FF-A. The ABI is extended to deal with protected memory, but as
+usual backward compatible.
 
-This patch set allocates the protected DMA-bufs from a DMA-heap
-instantiated from the TEE subsystem.
+Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+---
+ drivers/tee/optee/optee_ffa.h | 27 ++++++++---
+ drivers/tee/optee/optee_msg.h | 84 ++++++++++++++++++++++++++++++-----
+ drivers/tee/optee/optee_smc.h | 37 ++++++++++++++-
+ 3 files changed, 130 insertions(+), 18 deletions(-)
 
-The TEE subsystem handles the DMA-buf allocations since it is the TEE
-(OP-TEE, AMD-TEE, TS-TEE, or perhaps a future QTEE) which sets up the
-protection for the memory used for the DMA-bufs.
-
-The DMA-heap uses a protected memory pool provided by the backend TEE
-driver, allowing it to choose how to allocate the protected physical
-memory.
-
-The allocated DMA-bufs must be imported with a new TEE_IOC_SHM_REGISTER_FD
-before they can be passed as arguments when requesting services from the
-secure world.
-
-Three use-cases (Secure Video Playback, Trusted UI, and Secure Video
-Recording) have been identified so far to serve as examples of what can be
-expected. The use-cases have predefined DMA-heap names,
-"protected,secure-video", "protected,trusted-ui", and
-"protected,secure-video-record". The backend driver registers protected
-memory pools for the use-cases it supports.
-
-Each use-case has its own protected memory pool since different use-cases
-require isolation from different parts of the system. A protected memory
-pool can be based on a static carveout instantiated while probing the TEE
-backend driver, or dynamically allocated from CMA (dma_alloc_pages()) and
-made protected as needed by the TEE.
-
-This can be tested on a RockPi 4B+ with the following steps:
-repo init -u https://github.com/jenswi-linaro/manifest.git -m rockpi4.xml \
-        -b prototype/sdp-v11
-repo sync -j8
-cd build
-make toolchains -j$(nproc)
-make all -j$(nproc)
-# Copy ../out/rockpi4.img to an SD card and boot the RockPi from that
-# Connect a monitor to the RockPi
-# login and at the prompt:
-gst-launch-1.0 videotestsrc ! \
-        aesenc key=1f9423681beb9a79215820f6bda73d0f \
-                iv=e9aa8e834d8d70b7e0d254ff670dd718 serialize-iv=true ! \
-        aesdec key=1f9423681beb9a79215820f6bda73d0f ! \
-        kmssink
-
-The aesdec module has been hacked to use an OP-TEE TA to decrypt the stream
-into protected DMA-bufs which are consumed by the kmssink.
-
-The primitive QEMU tests from previous patch sets can be tested on RockPi
-in the same way using:
-xtest --sdp-basic
-
-The primitive tests are tested on QEMU with the following steps:
-repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml \
-        -b prototype/sdp-v11
-repo sync -j8
-cd build
-make toolchains -j$(nproc)
-make SPMC_AT_EL=1 all -j$(nproc)
-make SPMC_AT_EL=1 run-only
-# login and at the prompt:
-xtest --sdp-basic
-
-The SPMC_AT_EL=1 parameter configures the build with FF-A and an SPMC at
-S-EL1 inside OP-TEE. The parameter can be changed to SPMC_AT_EL=n to test
-without FF-A using the original SMC ABI instead. Please remember to do
-%make arm-tf-clean
-for TF-A to be rebuilt properly using the new configuration.
-
-https://optee.readthedocs.io/en/latest/building/prerequisites.html
-list dependencies required to build the above.
-
-The primitive tests are pretty basic, mostly checking that a Trusted
-Application in the secure world can access and manipulate the memory. There
-are also some negative tests for out of bounds buffers, etc.
-
-Thanks,
-Jens
-
-Changes since V10:
-* Changed the new ABI OPTEE_MSG_CMD_GET_PROTMEM_CONFIG to report a list
-  of u32 memory attributes instead of u16 endpoints to make room for both
-  endpoint and access permissions in each entry.
-* In "tee: new ioctl to a register tee_shm from a dmabuf file descriptor",
-  remove the unused path for DMA-bufs allocated by other means than the on
-  in the TEE SS.
-* In "tee: implement protected DMA-heap", handle unloading of the
-  backend driver module implementing the heap. The heap is reference
-  counted and also calls tee_device_get() to guarantee that the module
-  remains available while the heap is instantiated.
-* In "optee: support protected memory allocation", use
-  dma_coerce_mask_and_coherent() instead of open-coding the function.
-* Added Sumit's R-B to
-  - "optee: smc abi: dynamic protected memory allocation"
-  - "optee: FF-A: dynamic protected memory allocation"
-  - "optee: support protected memory allocation"
-  - "tee: implement protected DMA-heap"
-  - "dma-buf: dma-heap: export declared functions"
-
-Changes since V9:
-* Adding Sumit's R-B to "optee: sync secure world ABI headers"
-* Update commit message as requested for "dma-buf: dma-heap: export
-  declared functions".
-* In "tee: implement protected DMA-heap":
-  - add the hidden config option TEE_DMABUF_HEAPS to tell if the TEE
-    subsystem can support DMA heaps
-  - add a pfn_valid() to check that the passed physical address can be
-    used by __pfn_to_page() and friends
-  - remove the memremap() call, the caller is should do that instead if
-    needed
-* In "tee: add tee_shm_alloc_dma_mem()" guard the calls to
-  dma_alloc_pages() and dma_free_pages() with TEE_DMABUF_HEAPS to avoid
-  linking errors in some configurations
-* In "optee: support protected memory allocation":
-  - add the hidden config option OPTEE_STATIC_PROTMEM_POOL to tell if the
-    driver can support a static protected memory pool
-  - optee_protmem_pool_init() is slightly refactored to make the patches
-    that follow easier
-  - Call devm_memremap() before calling tee_protmem_static_pool_alloc()
-
-Changes since V8:
-* Using dma_alloc_pages() instead of cma_alloc() so the direct dependency on
-  CMA can be removed together with the patches
-  "cma: export cma_alloc() and cma_release()" and
-  "dma-contiguous: export dma_contiguous_default_area". The patch
-* Renaming the patch "tee: add tee_shm_alloc_cma_phys_mem()" to
-  "tee: add tee_shm_alloc_dma_mem()"
-* Setting DMA mask for the OP-TEE TEE device based on input from the secure
-  world instead of relying on the parent device so following patches are
-  removed: "tee: tee_device_alloc(): copy dma_mask from parent device" and
-  "optee: pass parent device to tee_device_alloc()".
-* Adding Sumit Garg's R-B to "tee: refactor params_from_user()"
-* In the patch "tee: implement protected DMA-heap", map the physical memory
-  passed to tee_protmem_static_pool_alloc().
-
-Changes since V7:
-* Adding "dma-buf: dma-heap: export declared functions",
-  "cma: export cma_alloc() and cma_release()", and
-  "dma-contiguous: export dma_contiguous_default_area" to export the symbols
-  needed to keep the TEE subsystem as a load module.
-* Removing CONFIG_TEE_DMABUF_HEAP and CONFIG_TEE_CMA since they aren't
-  needed any longer.
-* Addressing review comments in "optee: sync secure world ABI headers"
-* Better align protected memory pool initialization between the smc-abi and
-  ffa-abi parts of the optee driver.
-* Removing the patch "optee: account for direction while converting parameters"
-
-Changes since V6:
-* Restricted memory is now known as protected memory since to use the same
-  term as https://docs.vulkan.org/guide/latest/protected.html. Update all
-  patches to consistently use protected memory.
-* In "tee: implement protected DMA-heap" add the hidden config option
-  TEE_DMABUF_HEAP to tell if the DMABUF_HEAPS functions are available
-  for the TEE subsystem
-* Adding "tee: refactor params_from_user()", broken out from the patch
-  "tee: new ioctl to a register tee_shm from a dmabuf file descriptor"
-* For "tee: new ioctl to a register tee_shm from a dmabuf file descriptor":
-  - Update commit message to mention protected memory
-  - Remove and open code tee_shm_get_parent_shm() in param_from_user_memref()
-* In "tee: add tee_shm_alloc_cma_phys_mem" add the hidden config option
-  TEE_CMA to tell if the CMA functions are available for the TEE subsystem
-* For "tee: tee_device_alloc(): copy dma_mask from parent device" and
-  "optee: pass parent device to tee_device_alloc", added
-  Reviewed-by: Sumit Garg <sumit.garg@kernel.org>
-
-Changes since V5:
-* Removing "tee: add restricted memory allocation" and
-  "tee: add TEE_IOC_RSTMEM_FD_INFO"
-* Adding "tee: implement restricted DMA-heap",
-  "tee: new ioctl to a register tee_shm from a dmabuf file descriptor",
-  "tee: add tee_shm_alloc_cma_phys_mem()",
-  "optee: pass parent device to tee_device_alloc()", and
-  "tee: tee_device_alloc(): copy dma_mask from parent device"
-* The two TEE driver OPs "rstmem_alloc()" and "rstmem_free()" are replaced
-  with a struct tee_rstmem_pool abstraction.
-* Replaced the the TEE_IOC_RSTMEM_ALLOC user space API with the DMA-heap API
-
-Changes since V4:
-* Adding the patch "tee: add TEE_IOC_RSTMEM_FD_INFO" needed by the
-  GStreamer demo
-* Removing the dummy CPU access and mmap functions from the dma_buf_ops
-* Fixing a compile error in "optee: FF-A: dynamic restricted memory allocation"
-  reported by kernel test robot <lkp@intel.com>
-
-Changes since V3:
-* Make the use_case and flags field in struct tee_shm u32's instead of
-  u16's
-* Add more description for TEE_IOC_RSTMEM_ALLOC in the header file
-* Import namespace DMA_BUF in module tee, reported by lkp@intel.com
-* Added a note in the commit message for "optee: account for direction
-  while converting parameters" why it's needed
-* Factor out dynamic restricted memory allocation from
-  "optee: support restricted memory allocation" into two new commits
-  "optee: FF-A: dynamic restricted memory allocation" and
-  "optee: smc abi: dynamic restricted memory allocation"
-* Guard CMA usage with #ifdef CONFIG_CMA, effectively disabling dynamic
-  restricted memory allocate if CMA isn't configured
-
-Changes since the V2 RFC:
-* Based on v6.12
-* Replaced the flags for SVP and Trusted UID memory with a u32 field with
-  unique id for each use case
-* Added dynamic allocation of restricted memory pools
-* Added OP-TEE ABI both with and without FF-A for dynamic restricted memory
-* Added support for FF-A with FFA_LEND
-
-Changes since the V1 RFC:
-* Based on v6.11
-* Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALLOC
-
-Changes since Olivier's post [2]:
-* Based on Yong Wu's post [1] where much of dma-buf handling is done in
-  the generic restricted heap
-* Simplifications and cleanup
-* New commit message for "dma-buf: heaps: add Linaro restricted dmabuf heap
-  support"
-* Replaced the word "secure" with "restricted" where applicable
-
-Etienne Carriere (1):
-  tee: new ioctl to a register tee_shm from a dmabuf file descriptor
-
-Jens Wiklander (8):
-  optee: sync secure world ABI headers
-  dma-buf: dma-heap: export declared functions
-  tee: implement protected DMA-heap
-  tee: refactor params_from_user()
-  tee: add tee_shm_alloc_dma_mem()
-  optee: support protected memory allocation
-  optee: FF-A: dynamic protected memory allocation
-  optee: smc abi: dynamic protected memory allocation
-
- drivers/dma-buf/dma-heap.c        |   3 +
- drivers/tee/Kconfig               |   5 +
- drivers/tee/Makefile              |   1 +
- drivers/tee/optee/Kconfig         |   5 +
- drivers/tee/optee/Makefile        |   1 +
- drivers/tee/optee/core.c          |   7 +
- drivers/tee/optee/ffa_abi.c       | 146 ++++++++-
- drivers/tee/optee/optee_ffa.h     |  27 +-
- drivers/tee/optee/optee_msg.h     |  84 ++++-
- drivers/tee/optee/optee_private.h |  15 +-
- drivers/tee/optee/optee_smc.h     |  37 ++-
- drivers/tee/optee/protmem.c       | 335 ++++++++++++++++++++
- drivers/tee/optee/smc_abi.c       | 141 ++++++++-
- drivers/tee/tee_core.c            | 157 +++++++---
- drivers/tee/tee_heap.c            | 500 ++++++++++++++++++++++++++++++
- drivers/tee/tee_private.h         |  14 +
- drivers/tee/tee_shm.c             | 157 +++++++++-
- include/linux/tee_core.h          |  59 ++++
- include/linux/tee_drv.h           |  10 +
- include/uapi/linux/tee.h          |  31 ++
- 20 files changed, 1668 insertions(+), 67 deletions(-)
- create mode 100644 drivers/tee/optee/protmem.c
- create mode 100644 drivers/tee/tee_heap.c
-
-
-base-commit: 038d61fd642278bab63ee8ef722c50d10ab01e8f
+diff --git a/drivers/tee/optee/optee_ffa.h b/drivers/tee/optee/optee_ffa.h
+index 257735ae5b56..cc257e7956a3 100644
+--- a/drivers/tee/optee/optee_ffa.h
++++ b/drivers/tee/optee/optee_ffa.h
+@@ -81,7 +81,7 @@
+  *                   as the second MSG arg struct for
+  *                   OPTEE_FFA_YIELDING_CALL_WITH_ARG.
+  *        Bit[31:8]: Reserved (MBZ)
+- * w5:	  Bitfield of secure world capabilities OPTEE_FFA_SEC_CAP_* below,
++ * w5:	  Bitfield of OP-TEE capabilities OPTEE_FFA_SEC_CAP_*
+  * w6:	  The maximum secure world notification number
+  * w7:	  Not used (MBZ)
+  */
+@@ -94,6 +94,8 @@
+ #define OPTEE_FFA_SEC_CAP_ASYNC_NOTIF	BIT(1)
+ /* OP-TEE supports probing for RPMB device if needed */
+ #define OPTEE_FFA_SEC_CAP_RPMB_PROBE	BIT(2)
++/* OP-TEE supports Protected Memory for secure data path */
++#define OPTEE_FFA_SEC_CAP_PROTMEM	BIT(3)
+ 
+ #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
+ 
+@@ -108,7 +110,7 @@
+  *
+  * Return register usage:
+  * w3:    Error code, 0 on success
+- * w4-w7: Note used (MBZ)
++ * w4-w7: Not used (MBZ)
+  */
+ #define OPTEE_FFA_UNREGISTER_SHM	OPTEE_FFA_BLOCKING_CALL(3)
+ 
+@@ -119,16 +121,31 @@
+  * Call register usage:
+  * w3:    Service ID, OPTEE_FFA_ENABLE_ASYNC_NOTIF
+  * w4:	  Notification value to request bottom half processing, should be
+- *	  less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE.
++ *	  less than OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE
+  * w5-w7: Not used (MBZ)
+  *
+  * Return register usage:
+  * w3:    Error code, 0 on success
+- * w4-w7: Note used (MBZ)
++ * w4-w7: Not used (MBZ)
+  */
+ #define OPTEE_FFA_ENABLE_ASYNC_NOTIF	OPTEE_FFA_BLOCKING_CALL(5)
+ 
+-#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE 64
++#define OPTEE_FFA_MAX_ASYNC_NOTIF_VALUE	64
++
++/*
++ * Release Protected memory
++ *
++ * Call register usage:
++ * w3:    Service ID, OPTEE_FFA_RECLAIM_PROTMEM
++ * w4:    Shared memory handle, lower bits
++ * w5:    Shared memory handle, higher bits
++ * w6-w7: Not used (MBZ)
++ *
++ * Return register usage:
++ * w3:    Error code, 0 on success
++ * w4-w7: Note used (MBZ)
++ */
++#define OPTEE_FFA_RELEASE_PROTMEM	OPTEE_FFA_BLOCKING_CALL(8)
+ 
+ /*
+  * Call with struct optee_msg_arg as argument in the supplied shared memory
+diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+index e8840a82b983..838e1d4a22f0 100644
+--- a/drivers/tee/optee/optee_msg.h
++++ b/drivers/tee/optee/optee_msg.h
+@@ -133,13 +133,13 @@ struct optee_msg_param_rmem {
+ };
+ 
+ /**
+- * struct optee_msg_param_fmem - ffa memory reference parameter
++ * struct optee_msg_param_fmem - FF-A memory reference parameter
+  * @offs_lower:	   Lower bits of offset into shared memory reference
+  * @offs_upper:	   Upper bits of offset into shared memory reference
+  * @internal_offs: Internal offset into the first page of shared memory
+  *		   reference
+  * @size:	   Size of the buffer
+- * @global_id:	   Global identifier of Shared memory
++ * @global_id:	   Global identifier of the shared memory
+  */
+ struct optee_msg_param_fmem {
+ 	u32 offs_low;
+@@ -165,7 +165,7 @@ struct optee_msg_param_value {
+  * @attr:	attributes
+  * @tmem:	parameter by temporary memory reference
+  * @rmem:	parameter by registered memory reference
+- * @fmem:	parameter by ffa registered memory reference
++ * @fmem:	parameter by FF-A registered memory reference
+  * @value:	parameter by opaque value
+  * @octets:	parameter by octet string
+  *
+@@ -296,6 +296,18 @@ struct optee_msg_arg {
+  */
+ #define OPTEE_MSG_FUNCID_GET_OS_REVISION	0x0001
+ 
++/*
++ * Values used in OPTEE_MSG_CMD_LEND_PROTMEM below
++ * OPTEE_MSG_PROTMEM_RESERVED		Reserved
++ * OPTEE_MSG_PROTMEM_SECURE_VIDEO_PLAY	Secure Video Playback
++ * OPTEE_MSG_PROTMEM_TRUSTED_UI		Trused UI
++ * OPTEE_MSG_PROTMEM_SECURE_VIDEO_RECORD	Secure Video Recording
++ */
++#define OPTEE_MSG_PROTMEM_RESERVED		0
++#define OPTEE_MSG_PROTMEM_SECURE_VIDEO_PLAY	1
++#define OPTEE_MSG_PROTMEM_TRUSTED_UI		2
++#define OPTEE_MSG_PROTMEM_SECURE_VIDEO_RECORD	3
++
+ /*
+  * Do a secure call with struct optee_msg_arg as argument
+  * The OPTEE_MSG_CMD_* below defines what goes in struct optee_msg_arg::cmd
+@@ -337,15 +349,63 @@ struct optee_msg_arg {
+  * OPTEE_MSG_CMD_STOP_ASYNC_NOTIF informs secure world that from now is
+  * normal world unable to process asynchronous notifications. Typically
+  * used when the driver is shut down.
++ *
++ * OPTEE_MSG_CMD_LEND_PROTMEM lends protected memory. The passed normal
++ * physical memory is protected from normal world access. The memory
++ * should be unmapped prior to this call since it becomes inaccessible
++ * during the request.
++ * Parameters are passed as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
++ * [in] param[0].u.value.a		OPTEE_MSG_PROTMEM_* defined above
++ * [in] param[1].attr			OPTEE_MSG_ATTR_TYPE_TMEM_INPUT
++ * [in] param[1].u.tmem.buf_ptr		physical address
++ * [in] param[1].u.tmem.size		size
++ * [in] param[1].u.tmem.shm_ref		holds protected memory reference
++ *
++ * OPTEE_MSG_CMD_RECLAIM_PROTMEM reclaims a previously lent protected
++ * memory reference. The physical memory is accessible by the normal world
++ * after this function has return and can be mapped again. The information
++ * is passed as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
++ * [in] param[0].u.value.a		holds protected memory cookie
++ *
++ * OPTEE_MSG_CMD_GET_PROTMEM_CONFIG get configuration for a specific
++ * protected memory use case. Parameters are passed as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INOUT
++ * [in] param[0].value.a		OPTEE_MSG_PROTMEM_*
++ * [in] param[1].attr			OPTEE_MSG_ATTR_TYPE_{R,F}MEM_OUTPUT
++ * [in] param[1].u.{r,f}mem		Buffer or NULL
++ * [in] param[1].u.{r,f}mem.size	Provided size of buffer or 0 for query
++ * output for the protected use case:
++ * [out] param[0].value.a		Minimal size of protected memory
++ * [out] param[0].value.b		Required alignment of size and start of
++ *					protected memory
++ * [out] param[0].value.c               PA width, max 64
++ * [out] param[1].{r,f}mem.size		Size of output data
++ * [out] param[1].{r,f}mem		If non-NULL, contains an array of
++ *					uint32_t memory attributes that must be
++ *					included when lending memory for this
++ *					use case
++ *
++ * OPTEE_MSG_CMD_ASSIGN_PROTMEM assigns use-case to protected memory
++ * previously lent using the FFA_LEND framework ABI. Parameters are passed
++ * as:
++ * [in] param[0].attr			OPTEE_MSG_ATTR_TYPE_VALUE_INPUT
++ * [in] param[0].u.value.a		holds protected memory cookie
++ * [in] param[0].u.value.b		OPTEE_MSG_PROTMEM_* defined above
+  */
+-#define OPTEE_MSG_CMD_OPEN_SESSION	0
+-#define OPTEE_MSG_CMD_INVOKE_COMMAND	1
+-#define OPTEE_MSG_CMD_CLOSE_SESSION	2
+-#define OPTEE_MSG_CMD_CANCEL		3
+-#define OPTEE_MSG_CMD_REGISTER_SHM	4
+-#define OPTEE_MSG_CMD_UNREGISTER_SHM	5
+-#define OPTEE_MSG_CMD_DO_BOTTOM_HALF	6
+-#define OPTEE_MSG_CMD_STOP_ASYNC_NOTIF	7
+-#define OPTEE_MSG_FUNCID_CALL_WITH_ARG	0x0004
++#define OPTEE_MSG_CMD_OPEN_SESSION		0
++#define OPTEE_MSG_CMD_INVOKE_COMMAND		1
++#define OPTEE_MSG_CMD_CLOSE_SESSION		2
++#define OPTEE_MSG_CMD_CANCEL			3
++#define OPTEE_MSG_CMD_REGISTER_SHM		4
++#define OPTEE_MSG_CMD_UNREGISTER_SHM		5
++#define OPTEE_MSG_CMD_DO_BOTTOM_HALF		6
++#define OPTEE_MSG_CMD_STOP_ASYNC_NOTIF		7
++#define OPTEE_MSG_CMD_LEND_PROTMEM		8
++#define OPTEE_MSG_CMD_RECLAIM_PROTMEM		9
++#define OPTEE_MSG_CMD_GET_PROTMEM_CONFIG	10
++#define OPTEE_MSG_CMD_ASSIGN_PROTMEM		11
++#define OPTEE_MSG_FUNCID_CALL_WITH_ARG		0x0004
+ 
+ #endif /* _OPTEE_MSG_H */
+diff --git a/drivers/tee/optee/optee_smc.h b/drivers/tee/optee/optee_smc.h
+index 879426300821..accf76a99288 100644
+--- a/drivers/tee/optee/optee_smc.h
++++ b/drivers/tee/optee/optee_smc.h
+@@ -264,7 +264,6 @@ struct optee_smc_get_shm_config_result {
+ #define OPTEE_SMC_SEC_CAP_HAVE_RESERVED_SHM	BIT(0)
+ /* Secure world can communicate via previously unregistered shared memory */
+ #define OPTEE_SMC_SEC_CAP_UNREGISTERED_SHM	BIT(1)
+-
+ /*
+  * Secure world supports commands "register/unregister shared memory",
+  * secure world accepts command buffers located in any parts of non-secure RAM
+@@ -280,6 +279,10 @@ struct optee_smc_get_shm_config_result {
+ #define OPTEE_SMC_SEC_CAP_RPC_ARG		BIT(6)
+ /* Secure world supports probing for RPMB device if needed */
+ #define OPTEE_SMC_SEC_CAP_RPMB_PROBE		BIT(7)
++/* Secure world supports protected memory */
++#define OPTEE_SMC_SEC_CAP_PROTMEM		BIT(8)
++/* Secure world supports dynamic protected memory */
++#define OPTEE_SMC_SEC_CAP_DYNAMIC_PROTMEM	BIT(9)
+ 
+ #define OPTEE_SMC_FUNCID_EXCHANGE_CAPABILITIES	9
+ #define OPTEE_SMC_EXCHANGE_CAPABILITIES \
+@@ -451,6 +454,38 @@ struct optee_smc_disable_shm_cache_result {
+ 
+ /* See OPTEE_SMC_CALL_WITH_REGD_ARG above */
+ #define OPTEE_SMC_FUNCID_CALL_WITH_REGD_ARG	19
++/*
++ * Get protected memory config
++ *
++ * Returns the protected memory config.
++ *
++ * Call register usage:
++ * a0   SMC Function ID, OPTEE_SMC_GET_PROTMEM_CONFIG
++ * a2-6	Not used, must be zero
++ * a7	Hypervisor Client ID register
++ *
++ * Have config return register usage:
++ * a0	OPTEE_SMC_RETURN_OK
++ * a1	Physical address of start of protected memory
++ * a2	Size of protected memory
++ * a3	PA width, max 64
++ * a4-7	Preserved
++ *
++ * Not available register usage:
++ * a0	OPTEE_SMC_RETURN_ENOTAVAIL
++ * a1-3 Not used
++ * a4-7	Preserved
++ */
++#define OPTEE_SMC_FUNCID_GET_PROTMEM_CONFIG		20
++#define OPTEE_SMC_GET_PROTMEM_CONFIG \
++	OPTEE_SMC_FAST_CALL_VAL(OPTEE_SMC_FUNCID_GET_PROTMEM_CONFIG)
++
++struct optee_smc_get_protmem_config_result {
++	unsigned long status;
++	unsigned long start;
++	unsigned long size;
++	unsigned long pa_width;
++};
+ 
+ /*
+  * Resume from RPC (for example after processing a foreign interrupt)
 -- 
 2.43.0
 
