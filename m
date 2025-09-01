@@ -4,259 +4,418 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0504ACA0EFF
-	for <op-tee@archiver.kernel.org>; Wed, 27 Aug 2025 06:06:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33418CA0FF0
+	for <op-tee@archiver.kernel.org>; Mon,  1 Sep 2025 06:33:53 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3C56D46644
-	for <op-tee@archiver.kernel.org>; Wed, 27 Aug 2025 06:06:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1756274801;
-	bh=wMGz6LtFcqKacfGBJToPMAl+pHQslhvTR58QLzr0q7I=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=3JMoOx9Lp7Kg1mDCuqLSj4VaVC4gYG6P5J9a+tgvLuZSuEOKK5pN/9k7FqbS8Lzyx
-	 66w8kkyhWia4cTqvYEl64F8l2ZNi5P6bi814g90eH9vlTg+8cA6HvxZ1oeBsb7DSmt
-	 fZqui8f88mkqLguy+ExvvfzJbeEcfH4A3eFPiccjGLM0jf9j2J/lIChxweyV/zC789
-	 UbKkgKuO59VZ/OL1qgKa4wyU6qLqC3FJKHNtP/UggbvEGzL0sIAx2kaFP0rFAZ9cx2
-	 4gFdpLh9Da2Qwyt0pO5XIBlwoLQYm1882KvKEfTC/Zy4u73z0b+DVlSRfLQkUPGIO+
-	 3+Lhj1/RuEtGA==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7722342F16
-	for <op-tee@lists.trustedfirmware.org>; Wed, 27 Aug 2025 06:06:27 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 5315B4FB2F
+	for <op-tee@archiver.kernel.org>; Mon,  1 Sep 2025 06:33:52 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=n06+6yXW;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OXKNagp9;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57R5Yr19023583
-	for <op-tee@lists.trustedfirmware.org>; Wed, 27 Aug 2025 06:06:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IvtoMULgukZ1V1cgtQetdWBAfSoYzONqp4myym0U6ZU=; b=n06+6yXW0wU0IpKz
-	/+cogiaPfyl+lmuJ7TkprUJ72V/3CKRv7h/oJxp36crzCJpUNmcMeyRp09RunAMn
-	C21412ZnXj3muBeVY7sPWwXYZ+vkj9n3ZZEehipGEvQAXd7J0BY3VBxwbvuOX4qi
-	6KmthjfMvu8hO4TkUwZQzP1C8fyypOa/EylDhNmDMHedafqFBS7SQj706WS/YC39
-	SLkxUBa39PGF7SHrIoO/Bg9etaQjwvWUl0LcaiJM4b/BduiSIBozd/bJ3EmK61+Y
-	h4FQlyPWG4avYytuEIDHAXJq33C7x91FRUn6hYgjQLMUC2475PDhbS/nq3ou/dWt
-	SE9oQw==
-Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48q5unufqg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Wed, 27 Aug 2025 06:06:26 +0000 (GMT)
-Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-77053dd5eecso6590707b3a.3
-        for <op-tee@lists.trustedfirmware.org>; Tue, 26 Aug 2025 23:06:26 -0700 (PDT)
+Received: from mail-oo1-f45.google.com (mail-oo1-f45.google.com [209.85.161.45])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 79B9942E22
+	for <op-tee@lists.trustedfirmware.org>; Mon,  1 Sep 2025 06:33:36 +0000 (UTC)
+Received: by mail-oo1-f45.google.com with SMTP id 006d021491bc7-61e06547f73so3422782eaf.2
+        for <op-tee@lists.trustedfirmware.org>; Sun, 31 Aug 2025 23:33:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1756708416; x=1757313216; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=d63K7XgJLStqHBkCXJov9ds+/KtdkB+0f/lWfkHrdc0=;
+        b=OXKNagp9hgorOoxj3I3pMK/Gg/Md6NV9zteaTlKdd0vXPusivhdYeuDntQCClKlMD7
+         WuDlVpAQIfkldGwuQtlly1V6OXhYgUrZKlGolLg6DQD9X6Dv3Iq1sR52bvhtWkE1PQCy
+         7dzd0KFMpKe48cZWw6/nXdzx2MwmtAZvKxmMaInnLGuvOUNVQHKlxZ73J+h0BxhIEBOr
+         cKxh4iKPOFOcy3Cx+VQAG97Hr88q2KPZFdBSTugwEV8ev9loZigERdKhBklokr81/tvM
+         JaAhineXpZz4hCJbBu4ymmOniVRdEy8uMW+AlVDhgpB6b+Z3hIRwNpeMsp6Sw0ZJ+oUF
+         R0ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756274786; x=1756879586;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=IvtoMULgukZ1V1cgtQetdWBAfSoYzONqp4myym0U6ZU=;
-        b=HdBVYgTHZqyHwOXy7WYrQPTWMj9RwDCBK2wMcTy0UrLqW19zQiCqRSkSXzmfHqjLw7
-         CbvxOANcR/hYmpNgwvZvz4pislynLAfOimUQJXBCgkgpNaRyQdDKId9l3bUeF0swodaW
-         qYxxVcP2PBOf7CyLeLdGK3xsDdhQhPk0usVrgsMgW5rNS2ASWRHe6nYV18a37uxtJcTo
-         y4lCbkZnZZlrjSQZ8rj/idsOvsX4YgRfkYQAvFn0taehIZQaKLGh/iBXWkGqZQZNyRNR
-         wRpd4KocDbcw6s3Ca0zzJKkNHqCsVDGCg6YLIAqejhRYiiV4SWViLg/I4ITU4b6RWmUc
-         mjSg==
-X-Forwarded-Encrypted: i=1; AJvYcCWsOs7qclYrBQtyn4zjl67uVrKQN3kHSZcIO3sbAuxayjJmjaahGG5PIDK8CgTbhec0xC8y8ko=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yw0CUaVN8EaEfVXeGxWi8O0ZlJfj/CnLNzzQtlLYkjbfeYASQcN
-	2l80lNzpPwoqGu5tytMA3MszyUK5l6qTLdTt4h3PrzsERJt3dVoBrQzksrd4px2w9nTMnOTKxNk
-	6jnenxCYwSPcRpLLssCyVVEuQEntwdMs/DPi01xHXOI0qOxuCoDptsmI5vU18ipre7fOAyLA=
-X-Gm-Gg: ASbGncswk1MW2VYES/n+SwjMVOGSPnzL3vG6Lz/yhrBoyZfVcWB7yiwyh/XEklFSjvx
-	PANzYaq8mFibF3f33xXYqHqg/FFrUvtHot3g7TJb6gk4TwRkgp6Yg/5j5iLLxwpMh9RHL/Gdvah
-	4HTQvfGo5/VqYneAH+8fPhH9ht51aHlx8mXU3R6jBdjDv+UPR3tqytzVNI3rjY+5DkEWChErcCI
-	ZmcjAdGll7WeOTrMVVuyOs5UZDVU6mUZOy3Y5odzYeWjq41mvyyKFQWi14bO7+7zyXnYTZzHycZ
-	mAI/78wDUUXpErTSmcoa0B3x0+3ARBM6Rucf7SjkMgmFSCIktsX6vJtb6dKaDEtFuE4rWx5VBBO
-	vtYMjA9drvW9Kgd/lBZYQSlPGwWje6fAmgsJS/A==
-X-Received: by 2002:a05:6a00:340e:b0:771:ea51:690e with SMTP id d2e1a72fcca58-771ea5170d6mr9587245b3a.20.1756274785582;
-        Tue, 26 Aug 2025 23:06:25 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEjXY9tZYbdaHdBkaKUQPtpmPxg/EWHTA5baJ83nFS3+u9isarHBBJ/FYnGHhPcbEv04uBR8Q==
-X-Received: by 2002:a05:6a00:340e:b0:771:ea51:690e with SMTP id d2e1a72fcca58-771ea5170d6mr9587212b3a.20.1756274785081;
-        Tue, 26 Aug 2025 23:06:25 -0700 (PDT)
-Received: from [192.168.0.74] (n1-41-240-65.bla22.nsw.optusnet.com.au. [1.41.240.65])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-771ecc4454esm6208226b3a.0.2025.08.26.23.06.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 26 Aug 2025 23:06:24 -0700 (PDT)
-Message-ID: <265e23fb-8865-4dee-99ed-f08450975ba8@oss.qualcomm.com>
-Date: Wed, 27 Aug 2025 16:06:16 +1000
+        d=1e100.net; s=20230601; t=1756708416; x=1757313216;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=d63K7XgJLStqHBkCXJov9ds+/KtdkB+0f/lWfkHrdc0=;
+        b=m0JTtq1gEhAcaXoFNsXnh77GySvM8CNpaidhegWJQf70fmi3EZldF5uMu5ppVqRls4
+         CN6fSjPY2w+mqS4MzpKV/hjecUBmkHjuXrrw39z/XXbd9tAx0W3RhyYpuWPDTgWEDiBC
+         GfeS7ks4svixj+niJraF82pM9yXZ1GBfcctFNRcvJlCAtk7DgWAybV49QGAHGlCXK3HA
+         ibgiuC71JkUxODz816IIsBGjwjMzbev776R5rCC4ej1NopFeTaFTQTBlryyQSK6nFcPU
+         GYlBtRhYt2Sh5LvjT2wxpUE7LebXDGyByhj+kY4aAqqwm1vsDamv6VDSluqxpLoR1NJM
+         UFVg==
+X-Forwarded-Encrypted: i=1; AJvYcCUi1+/lpegJLbB4u3uapE8cQGSyhCrOD6evy15bNJSAT0vTgMt1YbOR5n+2aq9tAwF/pyk/uDE=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxTeLbL1DHnPouEER0ctf/yCTClcf04TBTREVlnw9kh1XoVJSqj
+	px7mZu/TSEy3FMfJej+UnvgCvxiJtn73pNNSTzbX7UjnMy5IFSkbH2kZSl7eNtU0GS0PBlXnUaL
+	AXkxGeaxL/dST38Uxrvc97qZ7gdORv6xlo4k6OwymbNwn
+X-Gm-Gg: ASbGnct+CkfwHGrtk0crZHUObMw6/eNbJdDfv9j8CuK1vUNzU8lqtchQIcjUcnFBrI8
+	OPAyRLk7UjSs17r1kp3fzdxJMBCUFScWTPY3/BsJjIxqNGgMLDddcN/QlRp8PqYm0SYIbfe5Vla
+	BjQQ1YUJ6eh1ykH1c/pJnsHauSeZ8lOIBQhXY8WDelPLL9NLHb+dZDI+TccLd/GbAtsh3Qb3V+H
+	dK59yVICSirlvOhkrI=
+X-Google-Smtp-Source: AGHT+IGvK8UHszhPVcTQDm4PYPeHKoM8Xc6DU6kEPwujbuVG97/aq3T0q92Sw2QRqj3+fHA/py0znAHyw/IOtESFYaE=
+X-Received: by 2002:a05:6808:4a4c:10b0:437:75ea:6c6a with SMTP id
+ 5614622812f47-437f7db934cmr3281100b6e.45.1756708415476; Sun, 31 Aug 2025
+ 23:33:35 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 06/11] firmware: qcom: scm: add support for object
- invocation
-To: Bjorn Andersson <andersson@kernel.org>
-References: <20250820-qcom-tee-using-tee-ss-without-mem-obj-v8-0-7066680f138a@oss.qualcomm.com>
- <20250820-qcom-tee-using-tee-ss-without-mem-obj-v8-6-7066680f138a@oss.qualcomm.com>
- <itpdolgmxp4ofdv3vf2ghulo7slj5wjby2tvawehihwvenbep2@ub5sdgf6gxeh>
-Content-Language: en-US
-In-Reply-To: <itpdolgmxp4ofdv3vf2ghulo7slj5wjby2tvawehihwvenbep2@ub5sdgf6gxeh>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: 0L5KMLVXFDOBKohet77Vq0Wx5Ge6jMro
-X-Proofpoint-ORIG-GUID: 0L5KMLVXFDOBKohet77Vq0Wx5Ge6jMro
-X-Authority-Analysis: v=2.4 cv=JJo7s9Kb c=1 sm=1 tr=0 ts=68aea062 cx=c_pps
- a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=hi51d+lTLNy/RbqRqnOomQ==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=3sczFqAQEyrjP0LPqEUA:9
- a=QEXdDO2ut3YA:10 a=OpyuDcXvxspvyRM73sMx:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODIzMDAzMSBTYWx0ZWRfX2184MVvhDp8Q
- fPjV2gbiwm4iiPdLmOqrQBoNfogt9NhDe5seiGlwsdlAHvuLq30+Rpmkm7+wiTcwYzgrqwKlNBN
- k3VWRGyc1nesu4NmPiDSNe3i80mDOw1LZNlcFvLigL8eT5MK7W5iW71m+PTtq5+tJ+TCJG3Cl78
- XgFoIdNGxTj/ATt1kVdWJBVnBKP4kv/aig1CfkSyQ7xylBmBPECS/n88OFtqFXHAULxY4l7brdn
- bfYsYt7BFYJZi+2mAX/fL3Rnk6BzdIUJ9NrjURR+L/xzxnjBPJTNdWnsHvtMA1CDDa03Peyp/Nx
- l7nj38Hr8pWhodMKoVMepVR9XokHIUWBxwrvfLhg1EEdzg85vrZ5wNph8EfIw94a/fTKHM9qdlD
- KlxlttmU
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-26_02,2025-08-26_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 bulkscore=0 spamscore=0 impostorscore=0
- malwarescore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508230031
-X-Rspamd-Queue-Id: 7722342F16
-X-Spamd-Bar: -----
-X-Spamd-Result: default: False [-5.10 / 15.00];
+References: <20250813060339.2977604-1-jens.wiklander@linaro.org>
+In-Reply-To: <20250813060339.2977604-1-jens.wiklander@linaro.org>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Mon, 1 Sep 2025 08:33:24 +0200
+X-Gm-Features: Ac12FXxQzc53bIvBXHa9YRffmUij0YGcmyZEnStV0BX1gqYTdbY2BHTJlmPBFDU
+Message-ID: <CAHUa44Gy62JK-zsw=C92_8rybfDG98WQjkpimzvi1Z45Nu8xCA@mail.gmail.com>
+Subject: Re: [PATCH v11 0/9] TEE subsystem for protected dma-buf allocations
+To: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+	op-tee@lists.trustedfirmware.org, linux-arm-kernel@lists.infradead.org,
+	Sumit Semwal <sumit.semwal@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Rspamd-Queue-Id: 79B9942E22
+X-Spamd-Bar: --
+X-Spamd-Result: default: False [-2.60 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_LOW(-1.00)[qualcomm.com:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1];
+	SUSPICIOUS_RECIPS(1.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.45:from];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[19];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.199:received];
-	ARC_NA(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_COUNT_THREE(0.00)[4];
-	FROM_EQ_ENVFROM(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[23];
+	DNSWL_BLOCKED(0.00)[209.85.161.45:from];
+	FREEMAIL_CC(0.00)[nxp.com,gmail.com,mediatek.com,collabora.com,arm.com,google.com,amd.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org,linaro.org];
 	FROM_HAS_DN(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[qualcomm.com:+]
+	TAGGED_RCPT(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: UFSLDYIC7QQCTEZH3YVVNRUXDKDPG75Y
-X-Message-ID-Hash: UFSLDYIC7QQCTEZH3YVVNRUXDKDPG75Y
-X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
+Message-ID-Hash: WUCPLQQBKAOON2BTRYOT3MJ5CDRN7QWB
+X-Message-ID-Hash: WUCPLQQBKAOON2BTRYOT3MJ5CDRN7QWB
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>
+CC: Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, robin.murphy@arm.com
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UFSLDYIC7QQCTEZH3YVVNRUXDKDPG75Y/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/WUCPLQQBKAOON2BTRYOT3MJ5CDRN7QWB/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Hi Bjorn,
+Hi,
 
-On 8/27/2025 1:52 AM, Bjorn Andersson wrote:
-> On Wed, Aug 20, 2025 at 04:38:53PM -0700, Amirreza Zarrabi wrote:
->> diff --git a/drivers/firmware/qcom/qcom_scm.c b/drivers/firmware/qcom/qcom_scm.c
-> [..]
->> +static void qcom_scm_qtee_free(void *data)
->> +{
->> +	struct platform_device *qtee_dev = data;
->> +
->> +	platform_device_unregister(qtee_dev);
->> +}
->> +
->> +static int qcom_scm_qtee_init(struct qcom_scm *scm)
->> +{
->> +	struct platform_device *qtee_dev;
->> +	u64 result, response_type;
->> +	int ret;
->> +
->> +	/*
->> +	 * Check if QTEE supports smcinvoke:
->> +	 * This will fail due to invalid buffers, but first, it checks whether
->> +	 * the call is supported in QTEE syscall handler.
->> +	 * If not supported, -EIO is returned.
->> +	 */
->> +	ret = qcom_scm_qtee_invoke_smc(0, 0, 0, 0, &result, &response_type);
->> +	if (ret == -EIO)
->> +		return -EIO;
->> +
->> +	/* Setup QTEE interface device. */
->> +	qtee_dev = platform_device_alloc("qcomtee", -1);
->> +	if (!qtee_dev)
->> +		return -ENOMEM;
->> +
->> +	qtee_dev->dev.parent = scm->dev;
->> +
->> +	ret = platform_device_add(qtee_dev);
->> +	if (ret) {
->> +		platform_device_put(qtee_dev);
->> +		return ret;
->> +	}
-> 
-> Wouldn't this work instead of the alloc + parent + add?
-> 
-> 	qtee_dev = platform_device_alloc_data(scm->dev, "qcomtee", -1, NULL, 0);
-> 	if (IS_ERR(qtee_dev))
-> 		return PTR_ERR(qtee_dev);
+On Wed, Aug 13, 2025 at 8:03=E2=80=AFAM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
 >
+> Hi,
+>
+> This patch set allocates the protected DMA-bufs from a DMA-heap
+> instantiated from the TEE subsystem.
+>
+> The TEE subsystem handles the DMA-buf allocations since it is the TEE
+> (OP-TEE, AMD-TEE, TS-TEE, or perhaps a future QTEE) which sets up the
+> protection for the memory used for the DMA-bufs.
+>
+> The DMA-heap uses a protected memory pool provided by the backend TEE
+> driver, allowing it to choose how to allocate the protected physical
+> memory.
+>
+> The allocated DMA-bufs must be imported with a new TEE_IOC_SHM_REGISTER_F=
+D
+> before they can be passed as arguments when requesting services from the
+> secure world.
+>
+> Three use-cases (Secure Video Playback, Trusted UI, and Secure Video
+> Recording) have been identified so far to serve as examples of what can b=
+e
+> expected. The use-cases have predefined DMA-heap names,
+> "protected,secure-video", "protected,trusted-ui", and
+> "protected,secure-video-record". The backend driver registers protected
+> memory pools for the use-cases it supports.
+>
+> Each use-case has its own protected memory pool since different use-cases
+> require isolation from different parts of the system. A protected memory
+> pool can be based on a static carveout instantiated while probing the TEE
+> backend driver, or dynamically allocated from CMA (dma_alloc_pages()) and
+> made protected as needed by the TEE.
 
-You are right, I'll replace it with platform_device_register_data().
+All the patches in this patchset have now been reviewed, and I believe
+I've addressed all comments from the reviews.
+I'm adding these patches to my next branch and am aiming to get them
+merged in the next merge window.
 
->> +
->> +	return devm_add_action_or_reset(scm->dev, qcom_scm_qtee_free, qtee_dev);
->> +}
->> +
->>  /**
->>   * qcom_scm_is_available() - Checks if SCM is available
->>   */
->> @@ -2326,6 +2450,16 @@ static int qcom_scm_probe(struct platform_device *pdev)
->>  	ret = qcom_scm_qseecom_init(scm);
->>  	WARN(ret < 0, "failed to initialize qseecom: %d\n", ret);
->>  
->> +	/*
->> +	 * Initialize the QTEE object interface.
->> +	 *
->> +	 * This only represents the availability for QTEE object invocation
->> +	 * and callback support. On failure, ignore the result. Any subsystem
->> +	 * depending on it may fail if it tries to access this interface.
->> +	 */
->> +	ret = qcom_scm_qtee_init(scm);
->> +	dev_warn_probe(scm->dev, ret, "Failed to initialize qcomtee\n");
-> 
-> A successful boot of db410c (APQ8016) now has the following in the log:
-> 
-> [    0.161437] qcom_scm firmware:scm: error -EIO: Failed to initialize qcomtee
-> 
-> If the target doesn't implement qtee, I'd expect that you tell me that -
-> or preferably stay silent.
-> 
-> Looking at the other error conditions, we find -ENOMEM, for which you
-> should also avoid printing. In fact, I believe all other error paths of
-> qcom_scm_qtee_init() will have printed an error already (if not, please
-> move the error print to the place(s) where it's needed).
-> 
-> As you're ignoring the return value, please then also change the return
-> type of the function to void.
-> 
-> Regards,
-> Bjorn
-> 
+All patches but one, "dma-buf: dma-heap: export declared functions"
+are within the TEE subsystem. Sumit Semwal, is it OK to take that
+patch via my tree since some of the patches here depend on it?
 
-Sure, a successful QTEE boot already logs its version from TEE SS,
-along with any internal error messages. Based on those logs,
-it's quite clear whether this function failed or succeeded at the
-beginning. I'll remove the print statements.
+Thanks,
+Jens
 
-Regards,
-Amir
 
->> +
->>  	return 0;
->>  }
-
+>
+> This can be tested on a RockPi 4B+ with the following steps:
+> repo init -u https://github.com/jenswi-linaro/manifest.git -m rockpi4.xml=
+ \
+>         -b prototype/sdp-v11
+> repo sync -j8
+> cd build
+> make toolchains -j$(nproc)
+> make all -j$(nproc)
+> # Copy ../out/rockpi4.img to an SD card and boot the RockPi from that
+> # Connect a monitor to the RockPi
+> # login and at the prompt:
+> gst-launch-1.0 videotestsrc ! \
+>         aesenc key=3D1f9423681beb9a79215820f6bda73d0f \
+>                 iv=3De9aa8e834d8d70b7e0d254ff670dd718 serialize-iv=3Dtrue=
+ ! \
+>         aesdec key=3D1f9423681beb9a79215820f6bda73d0f ! \
+>         kmssink
+>
+> The aesdec module has been hacked to use an OP-TEE TA to decrypt the stre=
+am
+> into protected DMA-bufs which are consumed by the kmssink.
+>
+> The primitive QEMU tests from previous patch sets can be tested on RockPi
+> in the same way using:
+> xtest --sdp-basic
+>
+> The primitive tests are tested on QEMU with the following steps:
+> repo init -u https://github.com/jenswi-linaro/manifest.git -m qemu_v8.xml=
+ \
+>         -b prototype/sdp-v11
+> repo sync -j8
+> cd build
+> make toolchains -j$(nproc)
+> make SPMC_AT_EL=3D1 all -j$(nproc)
+> make SPMC_AT_EL=3D1 run-only
+> # login and at the prompt:
+> xtest --sdp-basic
+>
+> The SPMC_AT_EL=3D1 parameter configures the build with FF-A and an SPMC a=
+t
+> S-EL1 inside OP-TEE. The parameter can be changed to SPMC_AT_EL=3Dn to te=
+st
+> without FF-A using the original SMC ABI instead. Please remember to do
+> %make arm-tf-clean
+> for TF-A to be rebuilt properly using the new configuration.
+>
+> https://optee.readthedocs.io/en/latest/building/prerequisites.html
+> list dependencies required to build the above.
+>
+> The primitive tests are pretty basic, mostly checking that a Trusted
+> Application in the secure world can access and manipulate the memory. The=
+re
+> are also some negative tests for out of bounds buffers, etc.
+>
+> Thanks,
+> Jens
+>
+> Changes since V10:
+> * Changed the new ABI OPTEE_MSG_CMD_GET_PROTMEM_CONFIG to report a list
+>   of u32 memory attributes instead of u16 endpoints to make room for both
+>   endpoint and access permissions in each entry.
+> * In "tee: new ioctl to a register tee_shm from a dmabuf file descriptor"=
+,
+>   remove the unused path for DMA-bufs allocated by other means than the o=
+n
+>   in the TEE SS.
+> * In "tee: implement protected DMA-heap", handle unloading of the
+>   backend driver module implementing the heap. The heap is reference
+>   counted and also calls tee_device_get() to guarantee that the module
+>   remains available while the heap is instantiated.
+> * In "optee: support protected memory allocation", use
+>   dma_coerce_mask_and_coherent() instead of open-coding the function.
+> * Added Sumit's R-B to
+>   - "optee: smc abi: dynamic protected memory allocation"
+>   - "optee: FF-A: dynamic protected memory allocation"
+>   - "optee: support protected memory allocation"
+>   - "tee: implement protected DMA-heap"
+>   - "dma-buf: dma-heap: export declared functions"
+>
+> Changes since V9:
+> * Adding Sumit's R-B to "optee: sync secure world ABI headers"
+> * Update commit message as requested for "dma-buf: dma-heap: export
+>   declared functions".
+> * In "tee: implement protected DMA-heap":
+>   - add the hidden config option TEE_DMABUF_HEAPS to tell if the TEE
+>     subsystem can support DMA heaps
+>   - add a pfn_valid() to check that the passed physical address can be
+>     used by __pfn_to_page() and friends
+>   - remove the memremap() call, the caller is should do that instead if
+>     needed
+> * In "tee: add tee_shm_alloc_dma_mem()" guard the calls to
+>   dma_alloc_pages() and dma_free_pages() with TEE_DMABUF_HEAPS to avoid
+>   linking errors in some configurations
+> * In "optee: support protected memory allocation":
+>   - add the hidden config option OPTEE_STATIC_PROTMEM_POOL to tell if the
+>     driver can support a static protected memory pool
+>   - optee_protmem_pool_init() is slightly refactored to make the patches
+>     that follow easier
+>   - Call devm_memremap() before calling tee_protmem_static_pool_alloc()
+>
+> Changes since V8:
+> * Using dma_alloc_pages() instead of cma_alloc() so the direct dependency=
+ on
+>   CMA can be removed together with the patches
+>   "cma: export cma_alloc() and cma_release()" and
+>   "dma-contiguous: export dma_contiguous_default_area". The patch
+> * Renaming the patch "tee: add tee_shm_alloc_cma_phys_mem()" to
+>   "tee: add tee_shm_alloc_dma_mem()"
+> * Setting DMA mask for the OP-TEE TEE device based on input from the secu=
+re
+>   world instead of relying on the parent device so following patches are
+>   removed: "tee: tee_device_alloc(): copy dma_mask from parent device" an=
+d
+>   "optee: pass parent device to tee_device_alloc()".
+> * Adding Sumit Garg's R-B to "tee: refactor params_from_user()"
+> * In the patch "tee: implement protected DMA-heap", map the physical memo=
+ry
+>   passed to tee_protmem_static_pool_alloc().
+>
+> Changes since V7:
+> * Adding "dma-buf: dma-heap: export declared functions",
+>   "cma: export cma_alloc() and cma_release()", and
+>   "dma-contiguous: export dma_contiguous_default_area" to export the symb=
+ols
+>   needed to keep the TEE subsystem as a load module.
+> * Removing CONFIG_TEE_DMABUF_HEAP and CONFIG_TEE_CMA since they aren't
+>   needed any longer.
+> * Addressing review comments in "optee: sync secure world ABI headers"
+> * Better align protected memory pool initialization between the smc-abi a=
+nd
+>   ffa-abi parts of the optee driver.
+> * Removing the patch "optee: account for direction while converting param=
+eters"
+>
+> Changes since V6:
+> * Restricted memory is now known as protected memory since to use the sam=
+e
+>   term as https://docs.vulkan.org/guide/latest/protected.html. Update all
+>   patches to consistently use protected memory.
+> * In "tee: implement protected DMA-heap" add the hidden config option
+>   TEE_DMABUF_HEAP to tell if the DMABUF_HEAPS functions are available
+>   for the TEE subsystem
+> * Adding "tee: refactor params_from_user()", broken out from the patch
+>   "tee: new ioctl to a register tee_shm from a dmabuf file descriptor"
+> * For "tee: new ioctl to a register tee_shm from a dmabuf file descriptor=
+":
+>   - Update commit message to mention protected memory
+>   - Remove and open code tee_shm_get_parent_shm() in param_from_user_memr=
+ef()
+> * In "tee: add tee_shm_alloc_cma_phys_mem" add the hidden config option
+>   TEE_CMA to tell if the CMA functions are available for the TEE subsyste=
+m
+> * For "tee: tee_device_alloc(): copy dma_mask from parent device" and
+>   "optee: pass parent device to tee_device_alloc", added
+>   Reviewed-by: Sumit Garg <sumit.garg@kernel.org>
+>
+> Changes since V5:
+> * Removing "tee: add restricted memory allocation" and
+>   "tee: add TEE_IOC_RSTMEM_FD_INFO"
+> * Adding "tee: implement restricted DMA-heap",
+>   "tee: new ioctl to a register tee_shm from a dmabuf file descriptor",
+>   "tee: add tee_shm_alloc_cma_phys_mem()",
+>   "optee: pass parent device to tee_device_alloc()", and
+>   "tee: tee_device_alloc(): copy dma_mask from parent device"
+> * The two TEE driver OPs "rstmem_alloc()" and "rstmem_free()" are replace=
+d
+>   with a struct tee_rstmem_pool abstraction.
+> * Replaced the the TEE_IOC_RSTMEM_ALLOC user space API with the DMA-heap =
+API
+>
+> Changes since V4:
+> * Adding the patch "tee: add TEE_IOC_RSTMEM_FD_INFO" needed by the
+>   GStreamer demo
+> * Removing the dummy CPU access and mmap functions from the dma_buf_ops
+> * Fixing a compile error in "optee: FF-A: dynamic restricted memory alloc=
+ation"
+>   reported by kernel test robot <lkp@intel.com>
+>
+> Changes since V3:
+> * Make the use_case and flags field in struct tee_shm u32's instead of
+>   u16's
+> * Add more description for TEE_IOC_RSTMEM_ALLOC in the header file
+> * Import namespace DMA_BUF in module tee, reported by lkp@intel.com
+> * Added a note in the commit message for "optee: account for direction
+>   while converting parameters" why it's needed
+> * Factor out dynamic restricted memory allocation from
+>   "optee: support restricted memory allocation" into two new commits
+>   "optee: FF-A: dynamic restricted memory allocation" and
+>   "optee: smc abi: dynamic restricted memory allocation"
+> * Guard CMA usage with #ifdef CONFIG_CMA, effectively disabling dynamic
+>   restricted memory allocate if CMA isn't configured
+>
+> Changes since the V2 RFC:
+> * Based on v6.12
+> * Replaced the flags for SVP and Trusted UID memory with a u32 field with
+>   unique id for each use case
+> * Added dynamic allocation of restricted memory pools
+> * Added OP-TEE ABI both with and without FF-A for dynamic restricted memo=
+ry
+> * Added support for FF-A with FFA_LEND
+>
+> Changes since the V1 RFC:
+> * Based on v6.11
+> * Complete rewrite, replacing the restricted heap with TEE_IOC_RSTMEM_ALL=
+OC
+>
+> Changes since Olivier's post [2]:
+> * Based on Yong Wu's post [1] where much of dma-buf handling is done in
+>   the generic restricted heap
+> * Simplifications and cleanup
+> * New commit message for "dma-buf: heaps: add Linaro restricted dmabuf he=
+ap
+>   support"
+> * Replaced the word "secure" with "restricted" where applicable
+>
+> Etienne Carriere (1):
+>   tee: new ioctl to a register tee_shm from a dmabuf file descriptor
+>
+> Jens Wiklander (8):
+>   optee: sync secure world ABI headers
+>   dma-buf: dma-heap: export declared functions
+>   tee: implement protected DMA-heap
+>   tee: refactor params_from_user()
+>   tee: add tee_shm_alloc_dma_mem()
+>   optee: support protected memory allocation
+>   optee: FF-A: dynamic protected memory allocation
+>   optee: smc abi: dynamic protected memory allocation
+>
+>  drivers/dma-buf/dma-heap.c        |   3 +
+>  drivers/tee/Kconfig               |   5 +
+>  drivers/tee/Makefile              |   1 +
+>  drivers/tee/optee/Kconfig         |   5 +
+>  drivers/tee/optee/Makefile        |   1 +
+>  drivers/tee/optee/core.c          |   7 +
+>  drivers/tee/optee/ffa_abi.c       | 146 ++++++++-
+>  drivers/tee/optee/optee_ffa.h     |  27 +-
+>  drivers/tee/optee/optee_msg.h     |  84 ++++-
+>  drivers/tee/optee/optee_private.h |  15 +-
+>  drivers/tee/optee/optee_smc.h     |  37 ++-
+>  drivers/tee/optee/protmem.c       | 335 ++++++++++++++++++++
+>  drivers/tee/optee/smc_abi.c       | 141 ++++++++-
+>  drivers/tee/tee_core.c            | 157 +++++++---
+>  drivers/tee/tee_heap.c            | 500 ++++++++++++++++++++++++++++++
+>  drivers/tee/tee_private.h         |  14 +
+>  drivers/tee/tee_shm.c             | 157 +++++++++-
+>  include/linux/tee_core.h          |  59 ++++
+>  include/linux/tee_drv.h           |  10 +
+>  include/uapi/linux/tee.h          |  31 ++
+>  20 files changed, 1668 insertions(+), 67 deletions(-)
+>  create mode 100644 drivers/tee/optee/protmem.c
+>  create mode 100644 drivers/tee/tee_heap.c
+>
+>
+> base-commit: 038d61fd642278bab63ee8ef722c50d10ab01e8f
+> --
+> 2.43.0
+>
