@@ -4,105 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD70DCA1007
-	for <op-tee@archiver.kernel.org>; Tue,  2 Sep 2025 21:35:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20A65CA0FF2
+	for <op-tee@archiver.kernel.org>; Wed,  3 Sep 2025 14:36:06 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id ECE5C4FD3A
-	for <op-tee@archiver.kernel.org>; Tue,  2 Sep 2025 21:35:47 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 47B6D4FC5A
+	for <op-tee@archiver.kernel.org>; Wed,  3 Sep 2025 14:36:05 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QxqCNRQr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zres8FKy;
 	dkim-atps=neutral
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9380E430D3
-	for <op-tee@lists.trustedfirmware.org>; Tue,  2 Sep 2025 21:35:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1756848933; x=1788384933;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=feSylG8v5RU948ye3Aa4+gNuJQDlGa8ABq1tWoE+Wc4=;
-  b=QxqCNRQrh9bw0gFuYrwwij1jnuj1v23W5Q1zPIHSb7h//9oxMc0oPugD
-   8GZ8eXzxi7rs3hR/bDX1CEXHkhWIm+dkBCbwAyDHWFxUtxSnyxSJabFfn
-   MUOIT5xSQHvdi7H4Ul941aPI3tnb24N6jmZNoDnClXyeVa9i6+UbvM7+U
-   xKp7YB7KACyBbiZRKPQS90sQ1ctVq9VZzypcawPFlytvvwH/8dTSPImbj
-   p0WWGehwG1pL5Dr/q76kxTGHdLCadkfHgmtZi4Dz0qiI58FB8+1WfD5Ps
-   f+LjuC+wpFQ76bvaIt45LBz6uOQCB9vc35Ohka8qShwU03Mm7sRqsS0eF
-   g==;
-X-CSE-ConnectionGUID: NYvfZVVhQTy7tplIrI8vmQ==
-X-CSE-MsgGUID: UapgIzWESYKgJHHjvzFAFw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11541"; a="59001798"
-X-IronPort-AV: E=Sophos;i="6.18,233,1751266800";
-   d="scan'208";a="59001798"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2025 14:35:32 -0700
-X-CSE-ConnectionGUID: DLHUacnhR3mqLdlPaKYduA==
-X-CSE-MsgGUID: /Bh1eTHdThyfOCxrG7T+XA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,233,1751266800";
-   d="scan'208";a="171553507"
-Received: from lkp-server02.sh.intel.com (HELO 06ba48ef64e9) ([10.239.97.151])
-  by orviesa008.jf.intel.com with ESMTP; 02 Sep 2025 14:35:15 -0700
-Received: from kbuild by 06ba48ef64e9 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1utYeh-00033D-0S;
-	Tue, 02 Sep 2025 21:35:07 +0000
-Date: Wed, 3 Sep 2025 05:35:05 +0800
-From: kernel test robot <lkp@intel.com>
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
-	Jens Wiklander <jens.wiklander@linaro.org>,
-	Sumit Garg <sumit.garg@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-	Apurupa Pattapu <quic_apurupa@quicinc.com>,
-	Kees Cook <kees@kernel.org>,
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
-	Sumit Semwal <sumit.semwal@linaro.org>,
-	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>
-Subject: Re: [PATCH v9 06/11] firmware: qcom: scm: add support for object
- invocation
-Message-ID: <202509030554.WR3MNpCE-lkp@intel.com>
-References: <20250901-qcom-tee-using-tee-ss-without-mem-obj-v9-6-a2af23f132d5@oss.qualcomm.com>
+Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 65A4943039
+	for <op-tee@lists.trustedfirmware.org>; Wed,  3 Sep 2025 14:35:47 +0000 (UTC)
+Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b042cc39551so501999466b.0
+        for <op-tee@lists.trustedfirmware.org>; Wed, 03 Sep 2025 07:35:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1756910146; x=1757514946; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:in-reply-to:cc:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=4shK9EBnP1XTLra0+voq+VDSiZ3w8vJk2bGPz8ooVso=;
+        b=zres8FKyHSh31nst93E2GB9QTS6mkCFagjEwbq5tye6bMUnDtTmhytoNVjsGHq3RLF
+         wwuSLF8KOeHxZ6EhS2RFOQjbOalQErpgw8LAYpbg++tIzLSo2b/dSATh1ycuh0kbpT01
+         0jiSazZlGtN7RraGvev5M+iBIqrng8lUxOL6kE/XNf5EEkWAGl4jyEgUrjJFoO35vO++
+         Yq+XCJXOD8y0KYi58kQ0ZuAEykCBVd6NHmonF8iGDP8sMaYVszTX4kZRrgIJRAn+YVIt
+         um8jkfvF84XsbLVSnE/wt4wTYFJ/+QkgrpiYy6p5U7TWfG0vT7laCk2d1ExwAFSaL2Rv
+         2UFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756910146; x=1757514946;
+        h=content-transfer-encoding:in-reply-to:cc:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4shK9EBnP1XTLra0+voq+VDSiZ3w8vJk2bGPz8ooVso=;
+        b=HQH6gKyzitgfmOr+4kVccIUs/yXcuBYVWYnND+Q26nTxEy0ocqJ7jfi6LyxPIJKSi+
+         1n/YxorGWXe2nuF8EMlcfVA8CxOqTtbNyVdXTLDaOUiXE7m34TuXY5WKPhOCrVWiqdGZ
+         kJyRGx2VU5dJLiyYu2BxPgmAtq4aYKjyfyJuI4omN7tPr6HPcnG8OyZ0YZNz18lj03yp
+         U4v7zT35gqgLLRunFcR/ODFYL8qvcmCNW1QkmX4YU4/wEI8KjRHfdfjNgIlXsHqt54xR
+         mzZ5VkWsPUF0IDI2N9supk8lyZ5Og8PVylsIsWW3kYr6Gkse2eLNJEUy3CdKvhNoXPgD
+         MmFg==
+X-Forwarded-Encrypted: i=1; AJvYcCVPFCtciIiyZBZ5PyXZ8NNvWOnTp09hXpccU4MRTnTiTmlZvuBa6PV/tSbgngi5VqW20axnlIE=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yx4WfCbD8x/yrhKn1PpVEVp2T5GPAV9y1HNwwrMpCjdLp7vV1e/
+	U9eNSVOwFi3Xo4T/BNIO0fQKbyYTsWLww/jG7NvJuEfO1T5uMkMYb1n655CVLu5fd7fcAw==
+X-Gm-Gg: ASbGnctsJI0xA2MoT/82paI2tMLz23akpVVlqnSzFm9zutFcEz8W+9o93WLFg8xu7l0
+	CgpH+du0FAdsX0U9J/PtKLsq9YhS5pp5nNgBcRCNDtFm37p85LrEP39wHUw4MElISmvEyucCQHF
+	ANBr5tTB9Nn71lg9hQu/24wDnWsUhAaTD+dkHH/ed+bO6AFliKlnpVVCoOfMR4YbJ7hehuvLaRL
+	eLr3Pt1ppUtAyugjBjQzkyVyf7UG9GV16ldGfI8N3AyzMU0AvEhCZ2vREEQuTnDFWHBXf0aEiRz
+	Xz3Vy4p2+ZfaSmZOGZhEyC7nGZx3rKIX7V2VGjrL6gs4TD3Su/XTk2paP3dnneaCM6ipdehn5lA
+	YeiEyNlfcGyWa7iuuPPQ+A6GFvPtFIo91gHGensSbrd7h8ag23Ka6ReVm2QYwn3lAwnRiXXD9Nl
+	o=
+X-Google-Smtp-Source: AGHT+IFBTJJv/7sjdaQXVSAdJ4KduD6LWhTJFbzo19k/hpnMgGB0FeNaA69nzxx1+gq4eyHGDxdWRA==
+X-Received: by 2002:a17:907:7f14:b0:b04:7107:9758 with SMTP id a640c23a62f3a-b047107c8famr141417266b.43.1756910146042;
+        Wed, 03 Sep 2025 07:35:46 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:3cb:7bb0:32e2:48f6:bf2:9a98? ([2a01:e0a:3cb:7bb0:32e2:48f6:bf2:9a98])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-aff138a8d76sm1188241066b.104.2025.09.03.07.35.45
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 03 Sep 2025 07:35:45 -0700 (PDT)
+Message-ID: <6879f437-5a5c-4c24-942d-09220d801784@linaro.org>
+Date: Wed, 3 Sep 2025 16:35:44 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250901-qcom-tee-using-tee-ss-without-mem-obj-v9-6-a2af23f132d5@oss.qualcomm.com>
-X-Rspamd-Queue-Id: 9380E430D3
-X-Spamd-Bar: ------
-X-Spamd-Result: default: False [-6.70 / 15.00];
-	WHITELIST_SPF_DKIM(-3.00)[intel.com:d:+,intel.com:s:+];
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/8] sd: Add RPMB emulation to eMMC model
+To: Jan Kiszka <jan.kiszka@siemens.com>,
+ OP-TEE TrustedFirmware <op-tee@lists.trustedfirmware.org>,
+ cip-dev <cip-dev@lists.cip-project.org>
+References: <cover.1756019920.git.jan.kiszka@siemens.com>
+ <43295d5c-c939-42a9-a684-b7d7f3eed4cd@siemens.com>
+Content-Language: en-US
+From: Jerome Forissier <jerome.forissier@linaro.org>
+In-Reply-To: <43295d5c-c939-42a9-a684-b7d7f3eed4cd@siemens.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+X-Rspamd-Queue-Id: 65A4943039
+X-Spamd-Bar: ----
+X-Spamd-Result: default: False [-4.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	MID_CONTAINS_FROM(1.00)[];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[intel.com,none];
-	RCVD_IN_DNSWL_MED(-0.20)[198.175.65.19:from];
-	R_DKIM_ALLOW(-0.20)[intel.com:s=Intel];
-	R_SPF_ALLOW(-0.20)[+ip4:198.175.65.0/26];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.218.46:from];
 	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:4983, ipnet:198.175.64.0/23, country:US];
-	RCPT_COUNT_TWELVE(0.00)[22];
 	MIME_TRACE(0.00)[0:+];
 	ARC_NA(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[intel.com:dkim];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	MID_RHS_MATCH_FROM(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
+	TO_DN_ALL(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
+	RCVD_COUNT_TWO(0.00)[2];
+	DNSWL_BLOCKED(0.00)[209.85.218.46:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DKIM_TRACE(0.00)[intel.com:+]
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: T6K6OAQA4ICHLR2KQNOKCKF6XZQFDADB
-X-Message-ID-Hash: T6K6OAQA4ICHLR2KQNOKCKF6XZQFDADB
-X-MailFrom: lkp@intel.com
+Message-ID-Hash: QWRLT4L2CLZMFV22PSAL4OJGXGFLMTKF
+X-Message-ID-Hash: QWRLT4L2CLZMFV22PSAL4OJGXGFLMTKF
+X-MailFrom: jerome.forissier@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: oe-kbuild-all@lists.linux.dev, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Neil Armstrong <neil.armstrong@linaro.org>
+CC: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/T6K6OAQA4ICHLR2KQNOKCKF6XZQFDADB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QWRLT4L2CLZMFV22PSAL4OJGXGFLMTKF/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -110,84 +115,65 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi Amirreza,
-
-kernel test robot noticed the following build warnings:
-
-[auto build test WARNING on 33bcf93b9a6b028758105680f8b538a31bc563cf]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Amirreza-Zarrabi/tee-allow-a-driver-to-allocate-a-tee_device-without-a-pool/20250902-125821
-base:   33bcf93b9a6b028758105680f8b538a31bc563cf
-patch link:    https://lore.kernel.org/r/20250901-qcom-tee-using-tee-ss-without-mem-obj-v9-6-a2af23f132d5%40oss.qualcomm.com
-patch subject: [PATCH v9 06/11] firmware: qcom: scm: add support for object invocation
-config: i386-buildonly-randconfig-001-20250903 (https://download.01.org/0day-ci/archive/20250903/202509030554.WR3MNpCE-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14+deb12u1) 12.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250903/202509030554.WR3MNpCE-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202509030554.WR3MNpCE-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   In file included from include/linux/device.h:15,
-                    from include/linux/dma-mapping.h:5,
-                    from drivers/firmware/qcom/qcom_scm.c:13:
-   drivers/firmware/qcom/qcom_scm.c: In function 'qcom_scm_qtee_init':
->> drivers/firmware/qcom/qcom_scm.c:2208:35: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long int' [-Wformat=]
-    2208 |                 dev_err(scm->dev, "qcomtee: register failed: %d\n",
-         |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/linux/dev_printk.h:110:30: note: in definition of macro 'dev_printk_index_wrap'
-     110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
-         |                              ^~~
-   include/linux/dev_printk.h:154:56: note: in expansion of macro 'dev_fmt'
-     154 |         dev_printk_index_wrap(_dev_err, KERN_ERR, dev, dev_fmt(fmt), ##__VA_ARGS__)
-         |                                                        ^~~~~~~
-   drivers/firmware/qcom/qcom_scm.c:2208:17: note: in expansion of macro 'dev_err'
-    2208 |                 dev_err(scm->dev, "qcomtee: register failed: %d\n",
-         |                 ^~~~~~~
-   drivers/firmware/qcom/qcom_scm.c:2208:63: note: format string is defined here
-    2208 |                 dev_err(scm->dev, "qcomtee: register failed: %d\n",
-         |                                                              ~^
-         |                                                               |
-         |                                                               int
-         |                                                              %ld
-
-
-vim +2208 drivers/firmware/qcom/qcom_scm.c
-
-  2188	
-  2189	static void qcom_scm_qtee_init(struct qcom_scm *scm)
-  2190	{
-  2191		struct platform_device *qtee_dev;
-  2192		u64 result, response_type;
-  2193		int ret;
-  2194	
-  2195		/*
-  2196		 * Probe for smcinvoke support. This will fail due to invalid buffers,
-  2197		 * but first, it checks whether the call is supported in QTEE syscall
-  2198		 * handler. If it is not supported, -EIO is returned.
-  2199		 */
-  2200		ret = qcom_scm_qtee_invoke_smc(0, 0, 0, 0, &result, &response_type);
-  2201		if (ret == -EIO)
-  2202			return;
-  2203	
-  2204		/* Setup QTEE interface device. */
-  2205		qtee_dev = platform_device_register_data(scm->dev, "qcomtee",
-  2206							 PLATFORM_DEVID_NONE, NULL, 0);
-  2207		if (IS_ERR(qtee_dev)) {
-> 2208			dev_err(scm->dev, "qcomtee: register failed: %d\n",
-  2209				PTR_ERR(qtee_dev));
-  2210			return;
-  2211		}
-  2212	
-  2213		ret = devm_add_action_or_reset(scm->dev, qcom_scm_qtee_free, qtee_dev);
-  2214		if (ret)
-  2215			dev_err(scm->dev, "qcomtee: add action failed: %d\n", ret);
-  2216	}
-  2217	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+SGkgSmFuLA0KDQpPbiA4LzI0LzI1IDA5OjQxLCBKYW4gS2lzemthIHZpYSBPUC1URUUgd3JvdGU6
+DQo+IEZZSTogUUVNVSBtb2RlbCBpcyB3b3JraW5nIGZpbmUsIHVwc3RyZWFtaW5nIHN0YXJ0ZWQs
+IGZlZWRiYWNrIHdlbGNvbWUuDQoNClRoaXMgaXMgYXdlc29tZS4gSSBwdWxsZWQgdGhlIHZhcmlv
+dXMgYml0cyAoUUVNVSB2MTAuMS4wICsgeW91ciBwYXRjaGVzLA0KVS1Cb290IG5leHQsIEJ1aWxk
+cm9vdCAyMDI1LjEwLXJjMyB3aXRoIG1tYy11dGlscyB2MS4wKSBhbmQgd2FzIGFibGUgdG8NCnJ1
+biB0aGUgT1AtVEVFIE9TIHRlc3RzIHN1Y2Nlc3NmdWxseSAoIm1ha2UgY2hlY2siKSwgdXNpbmcg
+dGhlIGluLWtlcm5lbA0KUlBNQiByb3V0aW5nLiBUQkggdGhlcmUgaXMgb25lIGZhaWx1cmUgd2l0
+aCB0aGUgVFBNIHRlc3QgKHh0ZXN0DQpyZWdyZXNzaW9uXzEwNDEpIHdoaWNoIEkgd2lsbCBuZWVk
+IHRvIGZpZ3VyZSBvdXQgaW4gZHVlIHRpbWUgYnV0IEkgYW0NCmFscmVhZHkgdmVyeSBoYXBweSB3
+aXRoIHRoZSBzaXR1YXRpb24uIEFzIHNvb24gYXMgZXZlcnl0aGluZyBpcyB1cHN0cmVhbQ0KSSds
+bCB1cGRhdGUgdGhlIE9QLVRFRSBkZXYgZW52aXJvbm1lbnQgYW5kIGFkZCBhIGpvYiB0byB0aGUg
+b3B0ZWVfb3MgQ0kuDQoNCk1hbnkgdGhhbmtzIGZvciB5b3VyIHdvcmsgYW5kIGZvciBzaGFyaW5n
+IGl0IQ0KDQotLSANCkplcm9tZSANCg0KPiANCj4gSmFuDQo+IA0KPiBPbiAyNC4wOC4yNSAwOTox
+OCwgSmFuIEtpc3prYSB3cm90ZToNCj4+IFRoaXMgY2xvc2VzIGFuIG9sZCBnYXAgaW4gc3lzdGVt
+IGludGVncmF0aW9uIHRlc3RpbmcgZm9yIHRoZSB2ZXJ5DQo+PiBjb21wbGV4IEFSTSBmaXJtd2Fy
+ZSBzdGFja3MgYnkgYWRkaW5nIGZhaXJseSBhZHZhbmNlZCBSZXBsYXkgUHJvdGVjdGVkDQo+PiBN
+ZW1vcnkgQmxvY2sgKFJQTUIpIGVtdWxhdGlvbiB0byB0aGUgZU1NQyBkZXZpY2UgbW9kZWwuIEtl
+eSBwcm9ncmFtbWluZw0KPj4gYW5kIG1lc3NhZ2UgYXV0aGVudGljYXRpb24gYXJlIHdvcmtpbmcs
+IHNvIGlzIHRoZSB3cml0ZSBjb3VudGVyLiBLbm93bg0KPj4gdXNlcnMgYXJlIGhhcHB5IHdpdGgg
+dGhlIHJlc3VsdC4gV2hhdCBpcyBtaXNzaW5nLCBidXQgbm90IG9ubHkgZm9yIFJQTUItDQo+PiBy
+ZWxhdGVkIHJlZ2lzdGVycywgaXMgc3RhdGUgcGVyc2lzdGVuY2UgYWNyb3NzIFFFTVUgcmVzdGFy
+dHMuIFRoaXMgaXMgT0sNCj4+IGF0IHRoaXMgc3RhZ2UgZm9yIG1vc3QgdGVzdCBzY2VuYXJpb3Ms
+IHRob3VnaCwgYW5kIGNvdWxkIHN0aWxsIGJlIGFkZGVkDQo+PiBsYXRlciBvbi4NCj4+DQo+PiBX
+aGF0IGNhbiBhbHJlYWR5IGJlIGRvbmUgd2l0aCBpdCBpcyBkZW1vbnN0cmF0ZWQgaW4gdGhlIFdJ
+UCBicmFuY2ggb2YNCj4+IGlzYXItY2lwLWNvcmUgYXQgWzFdOiBURi1BICsgT1AtVEVFICsgU3Rh
+bmRhbG9uZU1NIFRBICsgZlRQTSBUQSwgdXNlZCBieQ0KPj4gVS1Cb290IGFuZCBMaW51eCBmb3Ig
+VUVGSSB2YXJpYWJsZSBzdG9yYWdlIGFuZCBUUE0gc2NlbmFyaW9zLiBJZiB5b3UNCj4+IHdhbnQg
+dG8gdHJ5OiBidWlsZCBxZW11LWFybTY0IHRhcmdldCBmb3IgdHJpeGllIHdpdGggNi4xMi1jaXAg
+KmhlYWQqDQo+PiBrZXJuZWwsIGVuYWJsZSBzZWN1cmUgYm9vdCBhbmQgZGlzayBlbmNyeXB0aW9u
+LCB0aGVuIHJ1bg0KPj4NCj4+ICQgUUVNVV9QQVRIPS9wYXRoL3RvL3FlbXUtYnVpbGQvIC4vc3Rh
+cnQtcWVtdS5zaA0KPj4NCj4+IERlcGxveSBzbmFrZW9pbCBrZXlzIGludG8gUEssIEtFSyBhbmQg
+ZGIgYWZ0ZXIgZmlyc3QgYm9vdCB0byBlbmFibGUNCj4+IHNlY3VyZSBib290aW5nOg0KPj4NCj4+
+IHJvb3RAZGVtbzp+IyBjZXJ0LXRvLWVmaS1zaWctbGlzdCBQa0tlay0xLXNuYWtlb2lsLnBlbSBQ
+Sy5lc2wNCj4+IHJvb3RAZGVtbzp+IyBzaWduLWVmaS1zaWctbGlzdCAtayBQa0tlay0xLXNuYWtl
+b2lsLmtleSAtYyBQa0tlay0xLXNuYWtlb2lsLnBlbSBQSyBQSy5lc2wgUEsuYXV0aA0KPj4gcm9v
+dEBkZW1vOn4jIGVmaS11cGRhdGV2YXIgLWYgUEsuYXV0aCBkYg0KPj4gcm9vdEBkZW1vOn4jIGVm
+aS11cGRhdGV2YXIgLWYgUEsuYXV0aCBLRUsNCj4+IHJvb3RAZGVtbzp+IyBlZmktdXBkYXRldmFy
+IC1mIFBLLmF1dGggUEsNCj4+DQo+PiBOb3RlIHRoYXQgZW11bGF0aW9uIGlzIGEgYml0IHNsb3cg
+aW4gZ2VuZXJhbCwgYW5kIHNwZWNpZmljYWxseSB0aGUNCj4+IHBhcnRpdGlvbiBlbmNyeXB0aW9u
+IG9uIGZpcnN0IGJvb3QgaXMgdGFraW5nIDIwIG1pbi4gLSB3ZSBzaG91bGQNCj4+IHByb2JhYmx5
+IHJlZHVjZSBpdHMgc2l6ZSBvciB1bmRlcnN0YW5kIGlmIHRoZXJlIGlzIHN0aWxsIHNvbWV0aGlu
+ZyB0bw0KPj4gb3B0aW1pemUuDQo+Pg0KPj4gSmFuDQo+Pg0KPj4gWzFdIGh0dHBzOi8vZ2l0bGFi
+LmNvbS9jaXAtcHJvamVjdC9jaXAtY29yZS9pc2FyLWNpcC1jb3JlLy0vY29tbWl0cy93aXAvcWVt
+dS1ycG1iDQo+Pg0KPj4gQ2M6ICJEYW5pZWwgUC4gQmVycmFuZ8OpIiA8YmVycmFuZ2VAcmVkaGF0
+LmNvbT4NCj4+DQo+PiBKYW4gS2lzemthICg4KToNCj4+ICAgaHcvc2Qvc2RjYXJkOiBGaXggc2l6
+ZSBjaGVjayBmb3IgYmFja2luZyBibG9jayBpbWFnZQ0KPj4gICBody9zZC9zZGNhcmQ6IEFkZCB2
+YWxpZGF0aW9uIGZvciBib290LXBhcnRpdGlvbi1zaXplDQo+PiAgIGh3L3NkL3NkY2FyZDogQWxs
+b3cgdXNlci1pbnN0YW50aWF0ZWQgZU1NQw0KPj4gICBody9zZC9zZGNhcmQ6IFJlZmFjdG9yIHNk
+X2Jvb3RwYXJ0X29mZnNldA0KPj4gICBody9zZC9zZGNhcmQ6IEFkZCBiYXNpYyBzdXBwb3J0IGZv
+ciBSUE1CIHBhcnRpdGlvbg0KPj4gICBjcnlwdG8vaG1hYzogQWxsb3cgdG8gYnVpbGQgaG1hYyBv
+dmVyIG11bHRpcGxlDQo+PiAgICAgcWNyeXB0b19nbnV0bHNfaG1hY19ieXRlc1t2XSBjYWxscw0K
+Pj4gICBody9zZC9zZGNhcmQ6IEhhbmRsZSBSUE1CIE1BQyBmaWVsZA0KPj4gICBzY3JpcHRzOiBB
+ZGQgaGVscGVyIHNjcmlwdCB0byBnZW5lcmF0ZSBlTU1DIGJsb2NrIGRldmljZSBpbWFnZXMNCj4+
+DQo+PiAgY3J5cHRvL2htYWMtZ2NyeXB0LmMgICB8ICAgNCArLQ0KPj4gIGNyeXB0by9obWFjLWds
+aWIuYyAgICAgfCAgIDQgKy0NCj4+ICBjcnlwdG8vaG1hYy1nbnV0bHMuYyAgIHwgICA0ICstDQo+
+PiAgY3J5cHRvL2htYWMtbmV0dGxlLmMgICB8ICAgNCArLQ0KPj4gIGh3L3NkL3NkLmMgICAgICAg
+ICAgICAgfCAzMTQgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0NCj4+
+ICBody9zZC9zZG1tYy1pbnRlcm5hbC5oIHwgIDI0ICsrKy0NCj4+ICBody9zZC90cmFjZS1ldmVu
+dHMgICAgIHwgICAyICsNCj4+ICBpbmNsdWRlL2NyeXB0by9obWFjLmggIHwgIDEyICsrDQo+PiAg
+c2NyaXB0cy9ta2VtbWMuc2ggICAgICB8IDE4NSArKysrKysrKysrKysrKysrKysrKysrKysNCj4+
+ICA5IGZpbGVzIGNoYW5nZWQsIDUzMCBpbnNlcnRpb25zKCspLCAyMyBkZWxldGlvbnMoLSkNCj4+
+ICBjcmVhdGUgbW9kZSAxMDA3NTUgc2NyaXB0cy9ta2VtbWMuc2gNCj4+DQo+IA0K
