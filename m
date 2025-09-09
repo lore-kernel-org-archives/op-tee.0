@@ -4,140 +4,309 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74469CAC587
-	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 07:27:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87752CAC583
+	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 14:58:20 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A74554FD98
-	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 07:27:53 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B10BD430FA
+	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 14:58:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1757429899;
+	bh=AhYS1yMvT6UZY4gb3lSyTd7YEFXttTdUlw02kjzCzS8=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=w0ZyC56NiVf1UVqlvXdyqlAmjvjUIFm2OCWOMfuiAZ/3dTtCl5cVqLlNBOop1h8xo
+	 cwI8VQ8paDeYo2XgpRSOlEB5dBgam0kZ0N2qS02x0evcn6TqTgN+qHhe+hwS9yB+E7
+	 y4gNK2TKkDuMxxnn6B4DocaEyBfcbN4Ahw+VcX1l+0SJp/HVqjN+dd9zcvKo0kZaXv
+	 QcyRWYSGRx2jaMgsFNzI7eo1r4B04dqmfeZUOoGXHTwPtz+cZjeW2WSKJd80gJ68R6
+	 Ke6rffxAW/iKLZDkINUNDUJ23vMfusUTK614cSOGBgPbLfns0PsxX7qJVbGpNhM7jg
+	 MhYIZs+KhklqQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id BC5E542E34
+	for <op-tee@lists.trustedfirmware.org>; Tue,  9 Sep 2025 14:58:04 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xg-auto.20200927.dkim.feishu.cn header.i=@xg-auto.20200927.dkim.feishu.cn header.a=rsa-sha256 header.s=s1 header.b=Afg4aNuv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CyBnTsH3;
 	dkim-atps=neutral
-Received: from sg-1-36.ptr.blmpb.com (sg-1-36.ptr.blmpb.com [118.26.132.36])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id BE3AD4313D
-	for <op-tee@lists.trustedfirmware.org>; Tue,  9 Sep 2025 07:19:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=s1; d=xg-auto.20200927.dkim.feishu.cn; t=1757402384;
-  h=from:subject:mime-version:from:date:message-id:subject:to:cc:
- reply-to:content-type:mime-version:in-reply-to:message-id;
- bh=G5XGEkyG8pibu63a9Xj2bQc+I3vtdWqA/fTMKjUSAYY=;
- b=Afg4aNuvNnaVnJEBpsht6pJ5z+a611RLpUkWWJwEYA5cMagR2XLgqVtH182mwXS+0sXGzm
- /Go1nLqRL+dtixYE+YwLuxNL7Pc+7c5m6muguXXfvLF+X85pyFnDxtXKoIEwW3jV520ngB
- zUwem88+Q+h/930Z4F/wyO8LZ5/0vr70GYn4SvyytbHvC5CsZCmdOcxHt5s6F0ZJD2ECsB
- oLvSTMXi9LB8AnBebPGMcRrWK6T+mSE7GDbjJTdwCFuWxE03cyUcUr2aspODfPyAd0r/49
- G3r8TkqZwJom0kMWUzFCv6TlUbV5bEofzhkOx7HgBeA0Yon1jb4vKvQjD97z7Q==
-Subject: Re: [BUG] mobj_ffa_get_by_cookie() fails with 16K/64K kernel page size
-In-Reply-To: <aL_TRb9wCnCAYDdW@sumit-X1>
-Message-Id: <eb57f0258749e983b3423f1620c8d6876113f7cc.c2322d50.059d.4ff5.80b7.4faaae8d0edc@feishu.cn>
-To: "Sumit Garg" <sumit.garg@kernel.org>
-From: =?utf-8?q?=E6=88=B4=E7=9D=BF?= <rui.dai@xg.auto>
-Mime-Version: 1.0
-References: <eb57f0258749e983b3423f1620c8d6876113f7cc.953132d2.6e78.4432.8309.0d0d57874c64@feishu.cn>
-	<aL_TRb9wCnCAYDdW@sumit-X1>
-X-Lms-Return-Path: <lba+168bfd50f+1f5af3+lists.trustedfirmware.org+rui.dai@xg.auto>
-Date: Tue, 09 Sep 2025 15:19:42 +0800
-X-Rspamd-Queue-Id: BE3AD4313D
-X-Spamd-Bar: --
-X-Spamd-Result: default: False [-2.90 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	MV_CASE(0.50)[];
-	R_DKIM_ALLOW(-0.20)[xg-auto.20200927.dkim.feishu.cn:s=s1];
-	R_SPF_ALLOW(-0.20)[+ip4:118.26.132.0/24];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	ONCE_RECEIVED(0.10)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:138699, ipnet:118.26.132.0/24, country:SG];
-	TO_DN_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DMARC_NA(0.00)[xg.auto];
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 200A660226;
+	Tue,  9 Sep 2025 14:58:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76645C4CEF4;
+	Tue,  9 Sep 2025 14:58:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757429883;
+	bh=AhYS1yMvT6UZY4gb3lSyTd7YEFXttTdUlw02kjzCzS8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=CyBnTsH3dRriP5kf2uS4+LiBcDagW9pxeN1obzP2gB0inxfxry/Tr2XjeGKUW34To
+	 T99k4lgGErOmGZ+5GPVORAWpL1vSJxJzxC80p4snLHbce4fxgizBofDswGSn5old7D
+	 gsiKG/wfauBHy+4x1ZIExll1W9M82wPu3zCrUo+lfQAd3CcPj5c6dr1Nx9ben30pVO
+	 sOLnRlunffd1xDbIzaJA6scW5bDrqNTizK5Nh2kNnJnjpJwmtDzYqVpXtlsjVarJFb
+	 YR8rsjMrb/2ZA1eH63dxmDTji8CxLgKB1K7qXwXE8HrAo/lfm1Lyf9HQ3Km/dHirQA
+	 rOZ2YeIhs9v1w==
+Date: Tue, 9 Sep 2025 09:58:00 -0500
+To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+Subject: Re: [PATCH v9 06/11] firmware: qcom: scm: add support for object
+ invocation
+Message-ID: <67c676glro2asxtavghtvczdjcvtxlb5yd6rg2y5ln7ahj2gfq@yqtkle5tnal6>
+References: <20250901-qcom-tee-using-tee-ss-without-mem-obj-v9-0-a2af23f132d5@oss.qualcomm.com>
+ <20250901-qcom-tee-using-tee-ss-without-mem-obj-v9-6-a2af23f132d5@oss.qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250901-qcom-tee-using-tee-ss-without-mem-obj-v9-6-a2af23f132d5@oss.qualcomm.com>
+X-Rspamd-Queue-Id: BC5E542E34
+X-Spamd-Bar: -----
+X-Spamd-Result: default: False [-5.50 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	MID_RHS_NOT_FQDN(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	MIME_GOOD(-0.10)[text/plain];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[19];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	DNSWL_BLOCKED(0.00)[172.105.4.254:from];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_TLS_LAST(0.00)[];
+	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	DNSWL_BLOCKED(0.00)[118.26.132.36:from];
-	NEURAL_HAM(-0.00)[-0.958];
-	RCPT_COUNT_TWO(0.00)[2];
-	DKIM_TRACE(0.00)[xg-auto.20200927.dkim.feishu.cn:+]
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-X-MailFrom: rui.dai@xg.auto
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: AMWU3ZCWO2MX3YJR2R4QOIE2YFRRO4TN
-X-Message-ID-Hash: AMWU3ZCWO2MX3YJR2R4QOIE2YFRRO4TN
-X-Mailman-Approved-At: Tue, 09 Sep 2025 07:27:39 +0000
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>
+Message-ID-Hash: 5BHWCHRAJ3OMCCXDU5WS3CEQVYUTWNTG
+X-Message-ID-Hash: 5BHWCHRAJ3OMCCXDU5WS3CEQVYUTWNTG
+X-MailFrom: andersson@kernel.org
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: Sumit Garg <sumit.garg@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AMWU3ZCWO2MX3YJR2R4QOIE2YFRRO4TN/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5BHWCHRAJ3OMCCXDU5WS3CEQVYUTWNTG/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Bjorn Andersson via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Bjorn Andersson <andersson@kernel.org>
 
-VGhhbmtzIGZvciBjbGFyaWZ5aW5nLiBJIGFncmVlIHRoaXMgaXMgbm90IHJlYWxseSBhIGJ1Zywg
-YnV0IHJhdGhlciBhIGZlYXR1cmUgdGhhdCBPUC1URUUgbWF5IG5lZWQgdG8gc3VwcG9ydCBpbiB0
-aGUgZnV0dXJlLg0KDQpBcyBJIG1lbnRpb25lZCBlYXJsaWVyLCBHb29nbGUgaXMgYWN0aXZlbHkg
-bW92aW5nIHRoZSBBbmRyb2lkIGVjb3N5c3RlbSB0b3dhcmQgMTYgS0IgcGFnZSBzaXplcy4gRm9y
-IGV4YW1wbGU6DQotIEFuZHJvaWQgRGV2ZWxvcGVycyBkb2N1bWVudGF0aW9uOiBodHRwczovL2Rl
-dmVsb3Blci5hbmRyb2lkLmNvbS9ndWlkZS9wcmFjdGljZXMvcGFnZS1zaXplcz91dG1fc291cmNl
-PWNoYXRncHQuY29tKHVwZGF0ZWQgSnVseSAyOCwgMjAyNSkgwqANCi0gQW5kcm9pZCBEZXZlbG9w
-ZXJzIEJsb2c6IGh0dHBzOi8vYW5kcm9pZC1kZXZlbG9wZXJzLmdvb2dsZWJsb2cuY29tLzIwMjUv
-MDUvcHJlcGFyZS1wbGF5LWFwcHMtZm9yLWRldmljZXMtd2l0aC0xNmtiLXBhZ2Utc2l6ZS5odG1s
-P3V0bV9zb3VyY2U9Y2hhdGdwdC5jb23CoChNYXkgOCwgMjAyNSkgwqANCg0KU3RhcnRpbmcgTm92
-ZW1iZXIgMSwgMjAyNSwgYWxsIGFwcHMgdGFyZ2V0aW5nIEFuZHJvaWQgMTUrIG9uIEdvb2dsZSBQ
-bGF5IG11c3Qgc3VwcG9ydCAxNiBLQiBwYWdlIHNpemVzLiBUaGlzIHNob3dzIHRoYXQgdGhlIGxv
-bmctdGVybSB0cmVuZCBpcyBjbGVhcmx5IHRvd2FyZCBsYXJnZXIga2VybmVsIHBhZ2Ugc2l6ZXMu
-DQoNCkluIG15IGxvY2FsIHRlc3RpbmcsIEkgbWFkZSBhIHNtYWxsIGFkanVzdG1lbnQgaW4gT1At
-VEVFIGJ5IGFkZGluZyBoYW5kbGluZyBmb3IgYGludGVybmFsX29mZnNgIGluIGJvdGggYHNldF9m
-bWVtX3BhcmFtKClgIGFuZCBgbW9ial9mZmFfZ2V0X2J5X2Nvb2tpZSgpYC4gVGhpcyByZXNvbHZl
-cyB0aGUgaXNzdWUgd2l0aG91dCBjaGFuZ2luZyBgU01BTExfUEFHRV9TSVpFYC4gVXBkYXRpbmcg
-YFNNQUxMX1BBR0VfU0laRWAgaXRzZWxmIHdvdWxkIGJlIGEgbXVjaCBtb3JlIGRpZmZpY3VsdCBj
-aGFuZ2UsIHNvIGhhbmRsaW5nIHRoZSBvZmZzZXQgc2VlbXMgbGlrZSBhIHByYWN0aWNhbCBjb21w
-cm9taXNlLg0KPiBGcm9tOiAiU3VtaXQgR2FyZyI8c3VtaXQuZ2FyZ0BrZXJuZWwub3JnPg0KPiBE
-YXRlOiAgVHVlLCBTZXAgOSwgMjAyNSwgMTU6MTINCj4gU3ViamVjdDogIFJlOiBbQlVHXSBtb2Jq
-X2ZmYV9nZXRfYnlfY29va2llKCkgZmFpbHMgd2l0aCAxNksvNjRLIGtlcm5lbCBwYWdlIHNpemUN
-Cj4gVG86ICLmiLTnnb8iPHJ1aS5kYWlAeGcuYXV0bz4NCj4gQ2M6ICJvcC10ZWVAbGlzdHMudHJ1
-c3RlZGZpcm13YXJlLm9yZyI8b3AtdGVlQGxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc+DQo+IEhp
-LA0KDQo+IA0KPiBPbiBNb24sIFNlcCAwOCwgMjAyNSBhdCAwMzozNTowMlBNICswODAwLCDmiLTn
-nb8gd3JvdGU6DQoNCj4gPiBIaSBPUC1URUUgbWFpbnRhaW5lcnMsDQoNCj4gPiANCg0KPiA+IEkg
-Zm91bmQgYW4gaXNzdWUgaW4gb3B0ZWVfb3MgcmVsYXRlZCB0byBGRkEgbWVtb3J5IGhhbmRsaW5n
-IGFjcm9zcyBkaWZmZXJlbnQga2VybmVsIHBhZ2Ugc2l6ZXMuDQoNCj4gPiANCg0KPiA+IEZpbGU6
-IGNvcmUvYXJjaC9hcm0vbW0vbW9ial9mZmEuYw0KDQo+ID4gRnVuY3Rpb246IG1vYmpfZmZhX2dl
-dF9ieV9jb29raWUoKQ0KDQo+ID4gDQoNCj4gPiBBdCB0aGUgYmVnaW5uaW5nIG9mIHRoaXMgZnVu
-Y3Rpb24gdGhlcmUgaXMgYSBjaGVjazoNCg0KPiA+IA0KDQo+ID4gwqDCoMKgIGlmIChpbnRlcm5h
-bF9vZmZzID49IFNNQUxMX1BBR0VfU0laRSkNCg0KPiA+IMKgwqAgwqAgwqDCoCByZXR1cm4gTlVM
-TDsNCg0KPiA+IA0KDQo+ID4gSGVyZSwgU01BTExfUEFHRV9TSVpFwqBpcyBmaXhlZCB0byA0S0Iu
-IFdoZW4gcnVubmluZyB3aXRoIGEgTGludXgga2VybmVsIGJ1aWx0IHdpdGggMTZLIG9yIDY0SyBw
-YWdlIHNpemVzDQoNCj4gPiAoQ09ORklHX0FSTTY0XzE2S19QQUdFUyBvciBDT05GSUdfQVJNNjRf
-NjRLX1BBR0VTKSwgdGhpcyBjaGVjayBpbmNvcnJlY3RseSByZWplY3RzIHZhbGlkIG9mZnNldHMu
-DQoNCj4gPiBBcyBhIHJlc3VsdCwgbW9ial9mZmFfZ2V0X2J5X2Nvb2tpZSgpIHJldHVybnMgTlVM
-TCwgd2hpY2ggbGVhZHMgdG8gVEVFX0VSUk9SX0JBRF9QQVJBTUVURVJTIGR1cmluZyBGRkENCg0K
-PiA+IGNvbW11bmljYXRpb24gKGZvciBleGFtcGxlIHdoZW4gc2V0X2ZtZW1fcGFyYW0oKSBjYWxs
-cyBpdCkuDQoNCj4gPiANCg0KPiA+IEltcGFjdDoNCg0KPiA+IC0gRkZBIGNvbW11bmljYXRpb24g
-ZmFpbHMgb24gc3lzdGVtcyB3aGVyZSB0aGUga2VybmVsIHVzZXMgMTZLIG9yIDY0SyBwYWdlcy4N
-Cg0KPiA+IC0gV2l0aCAxNksgYmVjb21pbmcgbW9yZSB3aWRlbHkgYWRvcHRlZCAoZS5nLiBHb29n
-bGXigJlzIHN0YW5kYXJkaXphdGlvbiksIHRoaXMgcHJvYmxlbSB3aWxsIGJlIG1vcmUgY29tbW9u
-Lg0KDQo+ID4gDQoNCj4gPiBFeHBlY3RlZCBiZWhhdmlvcjoNCg0KPiA+IFRoZSBmdW5jdGlvbiBz
-aG91bGQgbm90IGFzc3VtZSBhIGZpeGVkIDRLIHBhZ2Ugc2l6ZSwgYnV0IGFkYXB0IHRvIHRoZSBh
-Y3R1YWwga2VybmVsIHBhZ2Ugc2l6ZS4NCg0KPiA+IA0KDQo+ID4gRW52aXJvbm1lbnQ6DQoNCj4g
-PiAtIE9QLVRFRSB2ZXJzaW9uOiBvYnNlcnZlZCBpbiBtdWx0aXBsZSB2ZXJzaW9ucyBpbmNsdWRp
-bmcgbGF0ZXN0IG1hc3Rlcg0KDQo+ID4gLSBQbGF0Zm9ybTogQVJNNjQgd2l0aCBGRkEgZW5hYmxl
-ZA0KDQo+ID4gLSBLZXJuZWwgY29uZmlnOiBDT05GSUdfQVJNNjRfMTZLX1BBR0VTIC8gQ09ORklH
-X0FSTTY0XzY0S19QQUdFUw0KDQo+ID4gDQoNCj4gPiBQb3NzaWJsZSBmaXg6DQoNCj4gPiAtIFJl
-cGxhY2UgdGhlIFNNQUxMX1BBR0VfU0laRSBjaGVjayB3aXRoIGEgZHluYW1pYyBjaGVjayBiYXNl
-ZCBvbiB0aGUga2VybmVs4oCZcyBhY3R1YWwgcGFnZSBzaXplLA0KDQo+ID4gwqAgb3IgbWFrZSB0
-aGUgdmFsaWRhdGlvbiBjb25maWd1cmFibGUuDQoNCj4gDQo+IEkgZG9uJ3QgdGhpbmsgaXQgaXMg
-YW4gT1AtVEVFIGJ1ZyBhcyBvZiBub3cgYnV0IGEgbWlzc2luZyBmZWF0dXJlIGluDQoNCj4gT1At
-VEVFIHRvIHN1cHBvcnQgMTZLIGFuZCA2NEsgcGFnZXMuIFdvdWxkIHlvdSBiZSBhYmxlIHRvIGVu
-YWJsZSB0aGlzDQoNCj4gZmVhdHVyZSBmb3IgT1AtVEVFPw0KDQo+IA0KPiAtU3VtaXQNCg0KPiAN
-Cj4gPiANCg0KPiA+IFBsZWFzZSBsZXQgbWUga25vdyBpZiB5b3UgbmVlZCBtb3JlIGRldGFpbHMu
-IEkgYW0gaGFwcHkgdG8gdGVzdCBvciBwcm92aWRlIGEgcGF0Y2ggc3VnZ2VzdGlvbiBpZiB0aGF0
-IGhlbHBzLg0KDQo+ID4gDQoNCj4gPiBCZXN0IHJlZ2FyZHMsDQoNCj4gPiBkZHJkdGRuDQo+IA==
+On Mon, Sep 01, 2025 at 09:55:53PM -0700, Amirreza Zarrabi wrote:
+> Qualcomm TEE (QTEE) hosts Trusted Applications (TAs) and services in
+> the secure world, accessed via objects. A QTEE client can invoke these
+> objects to request services. Similarly, QTEE can request services from
+> the nonsecure world using objects exported to the secure world.
+> 
+> Add low-level primitives to facilitate the invocation of objects hosted
+> in QTEE, as well as those hosted in the nonsecure world.
+> 
+> If support for object invocation is available, the qcom_scm allocates
+> a dedicated child platform device. The driver for this device communicates
+> with QTEE using low-level primitives.
+> 
+> Tested-by: Neil Armstrong <neil.armstrong@linaro.org>
+> Tested-by: Harshal Dev <quic_hdev@quicinc.com>
+> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+> ---
+>  drivers/firmware/qcom/qcom_scm.c       | 124 +++++++++++++++++++++++++++++++++
+>  drivers/firmware/qcom/qcom_scm.h       |   7 ++
+>  include/linux/firmware/qcom/qcom_scm.h |   6 ++
+>  3 files changed, 137 insertions(+)
+> 
+> diff --git a/drivers/firmware/qcom/qcom_scm.c b/drivers/firmware/qcom/qcom_scm.c
+> index edeae6cdcf31..739ee9819549 100644
+> --- a/drivers/firmware/qcom/qcom_scm.c
+> +++ b/drivers/firmware/qcom/qcom_scm.c
+> @@ -2094,6 +2094,127 @@ static int qcom_scm_qseecom_init(struct qcom_scm *scm)
+>  
+>  #endif /* CONFIG_QCOM_QSEECOM */
+>  
+> +/**
+> + * qcom_scm_qtee_invoke_smc() - Invoke a QTEE object.
+> + * @inbuf: start address of memory area used for inbound buffer.
+> + * @inbuf_size: size of the memory area used for inbound buffer.
+> + * @outbuf: start address of memory area used for outbound buffer.
+> + * @outbuf_size: size of the memory area used for outbound buffer.
+> + * @result: result of QTEE object invocation.
+> + * @response_type: response type returned by QTEE.
+> + *
+> + * @response_type determines how the contents of @inbuf and @outbuf
+> + * should be processed.
+> + *
+> + * Return: On success, return 0 or <0 on failure.
+> + */
+> +int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_size,
+> +			     phys_addr_t outbuf, size_t outbuf_size,
+> +			     u64 *result, u64 *response_type)
+> +{
+> +	struct qcom_scm_desc desc = {
+> +		.svc = QCOM_SCM_SVC_SMCINVOKE,
+> +		.cmd = QCOM_SCM_SMCINVOKE_INVOKE,
+> +		.owner = ARM_SMCCC_OWNER_TRUSTED_OS,
+> +		.args[0] = inbuf,
+> +		.args[1] = inbuf_size,
+> +		.args[2] = outbuf,
+> +		.args[3] = outbuf_size,
+> +		.arginfo = QCOM_SCM_ARGS(4, QCOM_SCM_RW, QCOM_SCM_VAL,
+> +					 QCOM_SCM_RW, QCOM_SCM_VAL),
+> +	};
+> +	struct qcom_scm_res res;
+> +	int ret;
+> +
+> +	ret = qcom_scm_call(__scm->dev, &desc, &res);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (response_type)
+> +		*response_type = res.result[0];
+> +
+> +	if (result)
+> +		*result = res.result[1];
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(qcom_scm_qtee_invoke_smc);
+> +
+> +/**
+> + * qcom_scm_qtee_callback_response() - Submit response for callback request.
+> + * @buf: start address of memory area used for outbound buffer.
+> + * @buf_size: size of the memory area used for outbound buffer.
+> + * @result: Result of QTEE object invocation.
+> + * @response_type: Response type returned by QTEE.
+> + *
+> + * @response_type determines how the contents of @buf should be processed.
+> + *
+> + * Return: On success, return 0 or <0 on failure.
+> + */
+> +int qcom_scm_qtee_callback_response(phys_addr_t buf, size_t buf_size,
+> +				    u64 *result, u64 *response_type)
+> +{
+> +	struct qcom_scm_desc desc = {
+> +		.svc = QCOM_SCM_SVC_SMCINVOKE,
+> +		.cmd = QCOM_SCM_SMCINVOKE_CB_RSP,
+> +		.owner = ARM_SMCCC_OWNER_TRUSTED_OS,
+> +		.args[0] = buf,
+> +		.args[1] = buf_size,
+> +		.arginfo = QCOM_SCM_ARGS(2, QCOM_SCM_RW, QCOM_SCM_VAL),
+> +	};
+> +	struct qcom_scm_res res;
+> +	int ret;
+> +
+> +	ret = qcom_scm_call(__scm->dev, &desc, &res);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (response_type)
+> +		*response_type = res.result[0];
+> +
+> +	if (result)
+> +		*result = res.result[1];
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(qcom_scm_qtee_callback_response);
+> +
+> +static void qcom_scm_qtee_free(void *data)
+> +{
+> +	struct platform_device *qtee_dev = data;
+> +
+> +	platform_device_unregister(qtee_dev);
+> +}
+> +
+> +static void qcom_scm_qtee_init(struct qcom_scm *scm)
+> +{
+> +	struct platform_device *qtee_dev;
+> +	u64 result, response_type;
+> +	int ret;
+> +
+> +	/*
+> +	 * Probe for smcinvoke support. This will fail due to invalid buffers,
+> +	 * but first, it checks whether the call is supported in QTEE syscall
+> +	 * handler. If it is not supported, -EIO is returned.
+> +	 */
+> +	ret = qcom_scm_qtee_invoke_smc(0, 0, 0, 0, &result, &response_type);
+> +	if (ret == -EIO)
+> +		return;
+> +
+> +	/* Setup QTEE interface device. */
+> +	qtee_dev = platform_device_register_data(scm->dev, "qcomtee",
+> +						 PLATFORM_DEVID_NONE, NULL, 0);
+> +	if (IS_ERR(qtee_dev)) {
+> +		dev_err(scm->dev, "qcomtee: register failed: %d\n",
+> +			PTR_ERR(qtee_dev));
+
+This isn't going to fail, and all expected paths that it would fail will
+be -ENOMEM which already printed a warning. So, I'd suggest that you
+resolve the LKP build warning by dropping the print.
+
+> +		return;
+> +	}
+> +
+> +	ret = devm_add_action_or_reset(scm->dev, qcom_scm_qtee_free, qtee_dev);
+> +	if (ret)
+> +		dev_err(scm->dev, "qcomtee: add action failed: %d\n", ret);
+
+The only possible error here is -ENOMEM, so you can skip the print.
+
+Regards,
+Bjorn
+
+> +}
+> +
+>  /**
+>   * qcom_scm_is_available() - Checks if SCM is available
+>   */
+> @@ -2326,6 +2447,9 @@ static int qcom_scm_probe(struct platform_device *pdev)
+>  	ret = qcom_scm_qseecom_init(scm);
+>  	WARN(ret < 0, "failed to initialize qseecom: %d\n", ret);
+>  
+> +	/* Initialize the QTEE object interface. */
+> +	qcom_scm_qtee_init(scm);
+> +
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/firmware/qcom/qcom_scm.h b/drivers/firmware/qcom/qcom_scm.h
+> index 0e8dd838099e..a56c8212cc0c 100644
+> --- a/drivers/firmware/qcom/qcom_scm.h
+> +++ b/drivers/firmware/qcom/qcom_scm.h
+> @@ -156,6 +156,13 @@ int qcom_scm_shm_bridge_enable(struct device *scm_dev);
+>  #define QCOM_SCM_SVC_GPU			0x28
+>  #define QCOM_SCM_SVC_GPU_INIT_REGS		0x01
+>  
+> +/* ARM_SMCCC_OWNER_TRUSTED_OS calls */
+> +
+> +#define QCOM_SCM_SVC_SMCINVOKE			0x06
+> +#define QCOM_SCM_SMCINVOKE_INVOKE_LEGACY	0x00
+> +#define QCOM_SCM_SMCINVOKE_CB_RSP		0x01
+> +#define QCOM_SCM_SMCINVOKE_INVOKE		0x02
+> +
+>  /* common error codes */
+>  #define QCOM_SCM_V2_EBUSY	-12
+>  #define QCOM_SCM_ENOMEM		-5
+> diff --git a/include/linux/firmware/qcom/qcom_scm.h b/include/linux/firmware/qcom/qcom_scm.h
+> index 0f667bf1d4d9..a55ca771286b 100644
+> --- a/include/linux/firmware/qcom/qcom_scm.h
+> +++ b/include/linux/firmware/qcom/qcom_scm.h
+> @@ -175,4 +175,10 @@ static inline int qcom_scm_qseecom_app_send(u32 app_id,
+>  
+>  #endif /* CONFIG_QCOM_QSEECOM */
+>  
+> +int qcom_scm_qtee_invoke_smc(phys_addr_t inbuf, size_t inbuf_size,
+> +			     phys_addr_t outbuf, size_t outbuf_size,
+> +			     u64 *result, u64 *response_type);
+> +int qcom_scm_qtee_callback_response(phys_addr_t buf, size_t buf_size,
+> +				    u64 *result, u64 *response_type);
+> +
+>  #endif
+> 
+> -- 
+> 2.34.1
+> 
