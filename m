@@ -4,351 +4,313 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A0CACA0FED
-	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 06:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2235CA0FED
+	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 06:41:51 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 1DF1C4FD95
-	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 06:17:16 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 2DD7B4FD94
+	for <op-tee@archiver.kernel.org>; Tue,  9 Sep 2025 06:41:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1757400111;
+	bh=uc8X8v1b0utjS7N7MPawruuByXbuvZjiSpik5VCDNAo=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=2HQ/jnSxsb4/ltxT2dgQVjdSZGUrzVERkpsPq4Hs5K2qMEofXpf+dW/h9jfjW42CX
+	 qjiAcWhO39LARac236wadvVtsk1mY8nZxDVDPONRO+ZjqLm0S6iTEuM18XbTaHIxIq
+	 oV8RFm0vHXfngdu7m0otCsFPpm0up4dbLAESttf2ABSzfqd9zdvtOSUwsn5P+dO9O1
+	 KT82e08sJ+SDKcvsNwmCZKogxR57RMUy74+uyUTYaR42jyqoTbOm6hS5jAiHObiCAU
+	 ABKfmVT1osra78XJChPLaqgqBd5I7sZ1SkFesBEpr8ipOn1EDap7XR2aBuMVCbzK7m
+	 AFQqnPrz2H0KQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0D1DD4508E
+	for <op-tee@lists.trustedfirmware.org>; Tue,  9 Sep 2025 06:41:37 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=DKfEv2Gf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X4pYO2h7;
 	dkim-atps=neutral
-Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 99F4243131
-	for <op-tee@lists.trustedfirmware.org>; Tue,  9 Sep 2025 06:17:00 +0000 (UTC)
-Received: by mail-ot1-f54.google.com with SMTP id 46e09a7af769-746c06937c3so2405382a34.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 08 Sep 2025 23:17:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1757398620; x=1758003420; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Yo6ffDWub4okELhRpitpTPAQAp1vCcd2HCwvbQ9oskY=;
-        b=DKfEv2GfHUm2QDFjXTMFLJd5k1ZH1i9+CUMqUvScACkEa04gsomVN6+0neCqtF4bWv
-         jXjbKkAfFL3QNogK1ryF/2NQmDzPPTWd9XnYv4Adqno59DZVwzc1fbHJ+7kvu4TVE0X9
-         HVoOXTQtWYeDBbxAAyCeCQyA6EVQGQFQxVPhdNJTkNN3d6E+AhE5CrJzuvrt7Gz45CA8
-         k0OwPSjcwMdronWtln8MIDBdIfgi4QsVE87QEsAAZRabLRzJs78AvL+j9DLwYzy+dUeX
-         WrNLfJTwG9Aui0qJ4copf8Le2NAMHyMCQsXrOLri3E74FSUWLRXjEsnxgPAP1I8Z/c0r
-         yvOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757398620; x=1758003420;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Yo6ffDWub4okELhRpitpTPAQAp1vCcd2HCwvbQ9oskY=;
-        b=Ap8T7xuPdLrLhAMIBA1STjl1Wd5b7Wp8J16/fmxHWP1vwQndveSvprooGoPgO32/x0
-         rn9B5VbJ772rwGsbK6h/sKCn0Xy2bctAMHmzy2BnR1k23D42HB5NhHUF09icudkhMIrT
-         wf1YBY/x0H0UV/wZZexzUMtZ6m4zWgKGQJ/5Zf4SB9TFaG3W6ZVlpDBeWwe17nGy632Q
-         vIFgVGO6U14r5HXhYrtT3p4YfxhvFb2LIxZeBxNu3JVZKyWxvfr1KkIBLFaV+AU2afUO
-         bAbXeUI9qiXwMFbNculHbsWgFaMYS/io7YYekiSWTYTnY6rgpW81iomPVxj2fFyaIEdb
-         3gOg==
-X-Forwarded-Encrypted: i=1; AJvYcCXRUYdQCNzt1tNqiYLyuZNOzgAOwqfIu+bR6aLrpwAa5W7axpZCbwM29ZNmmGaj1xqGs2/6yFs=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yzi4qZEVxjOKdKQDIQMDn5/u9j/bvMMgyb68IjFyMK/BqmlV+E0
-	YoiWXNp7bteEfUJyXK77+GCitoJoip+btBdQab/WEcvfXgNywHjEQSPY2AZVoBGkAl3cKH49xOD
-	IdHQ4OGs+IT+RSCOPp8q+wE9Yl/EedWFq8L2vKY34F/Xt
-X-Gm-Gg: ASbGncuVd1k0KaahJXiH58ByVaVtIkE1OUukXmPDLgDuVD8+Ckpp0SjBmGdwkIMMTMw
-	IYVAfrgFPaDqLrztmbdUqkuE3T7oKvgjpMqewhj1HQ/HnwFSaK907SuZyADuVIk9mgMQuOa2AoC
-	hlJZ43aa/n1hsVNxmbOMQ6+A9e+m3KmjSl45dvVUmAupsEgs1ZzdIbnwWhn/hBelMpqTrOzWCwv
-	POFyA88
-X-Google-Smtp-Source: AGHT+IFdWd1+vb/Rl4PyiuASXINuF9rhsbEjXGlN27AUAvNG+S3/oT+E/Sl0ISuJwz6n95Ct9NcfS1g0fMrD6zw15s0=
-X-Received: by 2002:a05:6830:26d9:b0:745:5fcc:e70b with SMTP id
- 46e09a7af769-746d92f6d9emr5801485a34.14.1757398619808; Mon, 08 Sep 2025
- 23:16:59 -0700 (PDT)
-MIME-Version: 1.0
-References: <20250812-qcom-tee-using-tee-ss-without-mem-obj-v7-0-ce7a1a774803@oss.qualcomm.com>
- <aL-uOEByKImuvIYF@sumit-X1>
-In-Reply-To: <aL-uOEByKImuvIYF@sumit-X1>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Tue, 9 Sep 2025 08:16:48 +0200
-X-Gm-Features: Ac12FXy83iDtr2MlreSn2K-a4Ho9ZbQ2XYunPWu-01PDMz9YAYPkq_r6L4oHrE8
-Message-ID: <CAHUa44FQVQ1AE3nSjCjcB07XGowYPN6srwG2dknT76qqdtEV+g@mail.gmail.com>
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 19952601A6;
+	Tue,  9 Sep 2025 06:41:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE6ECC4CEF4;
+	Tue,  9 Sep 2025 06:41:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757400095;
+	bh=PUJF7OqUw+L6xZT6DVeW5n5B5oZ+SC/DPgAHqo4GG2A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=X4pYO2h7uPOpyJZ+6IyVpxH4zCxgmlh6OXiqOVYPppHz9JpC8vzRYHebdOOlw7HCS
+	 hed3yBhz/pthG6YA3Dbsxdvb2tt1Ocr/DAZf52Uqn6TwCbjTTUCOfFV/aYlirIxsQq
+	 OgxIs05HphnTIE9GIYpuAwaPt0nAeL6O6OksE2l5iRBMrJCqsQkeOv+wCVedvfKRTf
+	 VZJV2wKCX6gmNpNO4Ya/j4gaF3zxZ3LHRcnenzJXtH9UFlE7Lo9r48ozuBCkauSEdc
+	 3aM/lysoTrEmIVTC6Pd4hYd72n2uQNTu+tTMcbFNo3apOB/msBPU6ubxfJ6PT4Plr0
+	 EEZsFBfBDv7VA==
+Date: Tue, 9 Sep 2025 12:11:13 +0530
+To: Jens Wiklander <jens.wiklander@linaro.org>,
+	Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 Subject: Re: [PATCH v7 00/11] Trusted Execution Environment (TEE) driver for
  Qualcomm TEE (QTEE)
-To: Sumit Garg <sumit.garg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Rspamd-Queue-Id: 99F4243131
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.10 / 15.00];
+Message-ID: <aL_MCagNVIDXW0wp@sumit-X1>
+References: <20250812-qcom-tee-using-tee-ss-without-mem-obj-v7-0-ce7a1a774803@oss.qualcomm.com>
+ <aL-uOEByKImuvIYF@sumit-X1>
+ <CAHUa44FQVQ1AE3nSjCjcB07XGowYPN6srwG2dknT76qqdtEV+g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: base64
+In-Reply-To: <CAHUa44FQVQ1AE3nSjCjcB07XGowYPN6srwG2dknT76qqdtEV+g@mail.gmail.com>
+X-Rspamd-Queue-Id: 0D1DD4508E
+X-Spamd-Bar: -----
+X-Spamd-Result: default: False [-5.50 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.54:from];
-	RCVD_TLS_LAST(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ONE(0.00)[1];
 	RCPT_COUNT_TWELVE(0.00)[20];
 	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.54:from];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	NEURAL_HAM(-0.00)[-1.000];
-	DKIM_TRACE(0.00)[linaro.org:+]
+	RCVD_TLS_LAST(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: 5FO6UBCJ756LAPMG64R2BROO7C64YK3R
-X-Message-ID-Hash: 5FO6UBCJ756LAPMG64R2BROO7C64YK3R
-X-MailFrom: jens.wiklander@linaro.org
+Message-ID-Hash: G2DJ3K2ZLTQFPDNFBX2DZFTQKA4DW6HB
+X-Message-ID-Hash: G2DJ3K2ZLTQFPDNFBX2DZFTQKA4DW6HB
+X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Neil Armstrong <neil.armstrong@linaro.org>
+CC: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5FO6UBCJ756LAPMG64R2BROO7C64YK3R/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/G2DJ3K2ZLTQFPDNFBX2DZFTQKA4DW6HB/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Tue, Sep 9, 2025 at 6:34=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> w=
-rote:
->
-> On Tue, Aug 12, 2025 at 05:35:29PM -0700, Amirreza Zarrabi wrote:
-> > This patch series introduces a Trusted Execution Environment (TEE)
-> > driver for Qualcomm TEE (QTEE). QTEE enables Trusted Applications (TAs)
-> > and services to run securely. It uses an object-based interface, where
-> > each service is an object with sets of operations. Clients can invoke
-> > these operations on objects, which can generate results, including othe=
-r
-> > objects. For example, an object can load a TA and return another object
-> > that represents the loaded TA, allowing access to its services.
-> >
-> > Kernel and userspace services are also available to QTEE through a
-> > similar approach. QTEE makes callback requests that are converted into
-> > object invocations. These objects can represent services within the
-> > kernel or userspace process.
-> >
-> > Note: This patch series focuses on QTEE objects and userspace services.
-> >
-> > Linux already provides a TEE subsystem, which is described in [1]. The
-> > tee subsystem provides a generic ioctl interface, TEE_IOC_INVOKE, which
-> > can be used by userspace to talk to a TEE backend driver. We extend the
-> > Linux TEE subsystem to understand object parameters and an ioctl call s=
-o
-> > client can invoke objects in QTEE:
-> >
-> >   - TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_*
-> >   - TEE_IOC_OBJECT_INVOKE
-> >
-> > The existing ioctl calls TEE_IOC_SUPPL_RECV and TEE_IOC_SUPPL_SEND are
-> > used for invoking services in the userspace process by QTEE.
-> >
-> > The TEE backend driver uses the QTEE Transport Message to communicate
-> > with QTEE. Interactions through the object INVOKE interface are
-> > translated into QTEE messages. Likewise, object invocations from QTEE
-> > for userspace objects are converted into SEND/RECV ioctl calls to
-> > supplicants.
-> >
-> > The details of QTEE Transport Message to communicate with QTEE is
-> > available in [PATCH 12/12] Documentation: tee: Add Qualcomm TEE driver.
-> >
-> > You can run basic tests with following steps:
-> > git clone https://github.com/quic/quic-teec.git
-> > cd quic-teec
-> > mkdir build
-> > cmake .. -DCMAKE_TOOLCHAIN_FILE=3DCMakeToolchain.txt -DBUILD_UNITTEST=
-=3DON
-> >
-> > https://github.com/quic/quic-teec/blob/main/README.md lists dependencie=
-s
-> > needed to build the above.
-> >
-> > More comprehensive tests are availabe at
-> > https://github.com/qualcomm/minkipc.
-> >
-> > root@qcom-armv8a:~# qtee_supplicant &
-> > root@qcom-armv8a:~# qtee_supplicant: process entry PPID =3D 378
-> > Total listener services to start =3D 4
-> > Opening CRequestTABuffer_open
-> > Path /data/
-> > register_service ::Opening CRegisterTABufCBO_UID
-> > Calling TAbufCBO Register
-> > QTEE_SUPPLICANT RUNNING
-> >
-> > root@qcom-armv8a:~# smcinvoke_client -c /data 1
-> > Run callback obj test...
-> > Load /data/tzecotestapp.mbn, size 52192, buf 0x1e44ba0.
-> > System Time: 2024-02-27 17:26:31
-> > PASSED - Callback tests with Buffer inputs.
-> > PASSED - Callback tests with Remote and Callback object inputs.
-> > PASSED - Callback tests with Memory Object inputs.
-> > TEST PASSED!
-> > root@qcom-armv8a:~#
-> > root@qcom-armv8a:~# smcinvoke_client -m /data 1
-> > Run memory obj test...
-> > Load /data/tzecotestapp.mbn, size 52192, buf 0x26cafba0.
-> > System Time: 2024-02-27 17:26:39
-> > PASSED - Single Memory Object access Test.
-> > PASSED - Two Memory Object access Test.
-> > TEST PASSED!
-> >
-> > This series has been tested for QTEE object invocations, including
-> > loading a TA, requesting services from the TA, memory sharing, and
-> > handling callback requests to a supplicant.
-> >
-> > Tested platforms: sm8650-mtp, sm8550-qrd, sm8650-qrd, sm8650-hdk
-> >
-> > [1] https://www.kernel.org/doc/Documentation/tee.txt
-> >
-> > Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> >
->
-> At this point, I think this series is ready to be applied to linux-next.
-
-There are still some warnings in "[PATCH v9 06/11] firmware: qcom:
-scm: add support for object invocation"
-
-/Jens
-
->
-> > Changes in v7:
-> > - Updated copyrights.
-> > - Updated Acked-by: tags.
-> > - Fixed kernel bot errors.
-> > - Link to v6:
-> >   https://lore.kernel.org/r/20250713-qcom-tee-using-tee-ss-without-mem-=
-obj-v6-0-697fb7d41c36@oss.qualcomm.com
-> >
-> > Changes in v6:
-> > - Relocate QTEE version into the driver's main service structure.
-> > - Simplfies qcomtee_objref_to_arg() and qcomtee_objref_from_arg().
-> > - Enhanced the return logic of qcomtee_object_do_invoke_internal().
-> > - Improve comments and remove redundant checks.
-> > - Improve helpers in qcomtee_msh.h to use GENMASK() and FIELD_GET().
-> > - updated Tested-by:, Acked-by:, and Reviewed-by: tags
-> > - Link to v5:
-> >   https://lore.kernel.org/r/20250526-qcom-tee-using-tee-ss-without-mem-=
-obj-v5-0-024e3221b0b9@oss.qualcomm.com
-> >
-> > Changes in v5:
-> > - Remove references to kernel services and public APIs.
-> > - Support auto detection for failing devices (e.g., RB1, RB4).
-> > - Add helpers for obtaining client environment and service objects.
-> > - Query the QTEE version and print it.
-> > - Move remaining static variables, including the object table, to struc=
-t
-> >   qcomtee.
-> > - Update TEE_MAX_ARG_SIZE to 4096.
-> > - Add a dependancy to QCOM_TZMEM_MODE_SHMBRIDGE in Kconfig
-> > - Reorganize code by removing release.c and qcom_scm.c.
-> > - Add more error messages and improve comments.
-> > - updated Tested-by:, Acked-by:, and Reviewed-by: tags
-> > - Link to v4: https://lore.kernel.org/r/20250428-qcom-tee-using-tee-ss-=
-without-mem-obj-v4-0-6a143640a6cb@oss.qualcomm.com
-> >
-> > Changes in v4:
-> > - Move teedev_ctx_get/put and tee_device_get/put to tee_core.h.
-> > - Rename object to id in struct tee_ioctl_object_invoke_arg.
-> > - Replace spinlock with mutex for qtee_objects_idr.
-> > - Move qcomtee_object_get to qcomtee_user/memobj_param_to_object.
-> > - More code cleanup following the comments.
-> > - Cleanup documentations.
-> > - Update MAINTAINERS file.
-> > - Link to v3: https://lore.kernel.org/r/20250327-qcom-tee-using-tee-ss-=
-without-mem-obj-v3-0-7f457073282d@oss.qualcomm.com
-> >
-> > Changes in v3:
-> > - Export shm_bridge create/delete APIs.
-> > - Enable support for QTEE memory objects.
-> > - Update the memory management code to use the TEE subsystem for all
-> >   allocations using the pool.
-> > - Move all driver states into the driver's main service struct.
-> > - Add more documentations.
-> > - Link to v2: https://lore.kernel.org/r/20250202-qcom-tee-using-tee-ss-=
-without-mem-obj-v2-0-297eacd0d34f@quicinc.com
-> >
-> > Changes in v2:
-> > - Clean up commit messages and comments.
-> > - Use better names such as ubuf instead of membuf or QCOMTEE prefix
-> >   instead of QCOM_TEE, or names that are more consistent with other
-> >   TEE-backend drivers such as qcomtee_context_data instead of
-> >   qcom_tee_context.
-> > - Drop the DTS patch and instantiate the device from the scm driver.
-> > - Use a single structure for all driver's internal states.
-> > - Drop srcu primitives and use the existing mutex for synchronization
-> >   between the supplicant and QTEE.
-> > - Directly use tee_context to track the lifetime of qcomtee_context_dat=
-a.
-> > - Add close_context() to be called when the user closes the tee_context=
-.
-> > - Link to v1: https://lore.kernel.org/r/20241202-qcom-tee-using-tee-ss-=
-without-mem-obj-v1-0-f502ef01e016@quicinc.com
-> >
-> > Changes in v1:
-> > - It is a complete rewrite to utilize the TEE subsystem.
-> > - Link to RFC: https://lore.kernel.org/all/20240702-qcom-tee-object-and=
--ioctls-v1-0-633c3ddf57ee@quicinc.com
-> >
-> > ---
-> > Amirreza Zarrabi (11):
-> >       tee: allow a driver to allocate a tee_device without a pool
-> >       tee: add close_context to TEE driver operation
-> >       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
-> >       tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF
-> >       tee: increase TEE_MAX_ARG_SIZE to 4096
->
-> >       firmware: qcom: scm: add support for object invocation
-> >       firmware: qcom: tzmem: export shm_bridge create/delete
->
-> Bjorn/Konrad,
->
-> Since majority of this series belong to TEE subsystem, are you folks
-> fine to ack these patches for Jens to pick them up for next?
->
-> -Sumit
->
-> >       tee: add Qualcomm TEE driver
-> >       qcomtee: add primordial object
-> >       qcomtee: enable TEE_IOC_SHM_ALLOC ioctl
-> >       Documentation: tee: Add Qualcomm TEE driver
->
->
->
-> >
-> >  Documentation/tee/index.rst              |   1 +
-> >  Documentation/tee/qtee.rst               |  96 ++++
-> >  MAINTAINERS                              |   7 +
-> >  drivers/firmware/qcom/qcom_scm.c         | 128 +++++
-> >  drivers/firmware/qcom/qcom_scm.h         |   7 +
-> >  drivers/firmware/qcom/qcom_tzmem.c       |  63 ++-
-> >  drivers/tee/Kconfig                      |   1 +
-> >  drivers/tee/Makefile                     |   1 +
-> >  drivers/tee/qcomtee/Kconfig              |  11 +
-> >  drivers/tee/qcomtee/Makefile             |   9 +
-> >  drivers/tee/qcomtee/async.c              | 183 ++++++
-> >  drivers/tee/qcomtee/call.c               | 820 +++++++++++++++++++++++=
-++++
-> >  drivers/tee/qcomtee/core.c               | 920 +++++++++++++++++++++++=
-++++++++
-> >  drivers/tee/qcomtee/mem_obj.c            | 169 ++++++
-> >  drivers/tee/qcomtee/primordial_obj.c     | 116 ++++
-> >  drivers/tee/qcomtee/qcomtee.h            | 185 +++++++
-> >  drivers/tee/qcomtee/qcomtee_msg.h        | 300 ++++++++++
-> >  drivers/tee/qcomtee/qcomtee_object.h     | 316 +++++++++++
-> >  drivers/tee/qcomtee/shm.c                | 150 +++++
-> >  drivers/tee/qcomtee/user_obj.c           | 692 +++++++++++++++++++++++
-> >  drivers/tee/tee_core.c                   | 127 ++++-
-> >  drivers/tee/tee_private.h                |   6 -
-> >  include/linux/firmware/qcom/qcom_scm.h   |   6 +
-> >  include/linux/firmware/qcom/qcom_tzmem.h |  15 +
-> >  include/linux/tee_core.h                 |  54 +-
-> >  include/linux/tee_drv.h                  |  12 +
-> >  include/uapi/linux/tee.h                 |  56 +-
-> >  27 files changed, 4423 insertions(+), 28 deletions(-)
-> > ---
-> > base-commit: 2674d1eadaa2fd3a918dfcdb6d0bb49efe8a8bb9
-> > change-id: 20241202-qcom-tee-using-tee-ss-without-mem-obj-362c66340527
-> >
-> > Best regards,
-> > --
-> > Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> >
-> >
+T24gVHVlLCBTZXAgMDksIDIwMjUgYXQgMDg6MTY6NDhBTSArMDIwMCwgSmVucyBXaWtsYW5kZXIg
+d3JvdGU6DQo+IE9uIFR1ZSwgU2VwIDksIDIwMjUgYXQgNjozNOKAr0FNIFN1bWl0IEdhcmcgPHN1
+bWl0LmdhcmdAa2VybmVsLm9yZz4gd3JvdGU6DQo+ID4NCj4gPiBPbiBUdWUsIEF1ZyAxMiwgMjAy
+NSBhdCAwNTozNToyOVBNIC0wNzAwLCBBbWlycmV6YSBaYXJyYWJpIHdyb3RlOg0KPiA+ID4gVGhp
+cyBwYXRjaCBzZXJpZXMgaW50cm9kdWNlcyBhIFRydXN0ZWQgRXhlY3V0aW9uIEVudmlyb25tZW50
+IChURUUpDQo+ID4gPiBkcml2ZXIgZm9yIFF1YWxjb21tIFRFRSAoUVRFRSkuIFFURUUgZW5hYmxl
+cyBUcnVzdGVkIEFwcGxpY2F0aW9ucyAoVEFzKQ0KPiA+ID4gYW5kIHNlcnZpY2VzIHRvIHJ1biBz
+ZWN1cmVseS4gSXQgdXNlcyBhbiBvYmplY3QtYmFzZWQgaW50ZXJmYWNlLCB3aGVyZQ0KPiA+ID4g
+ZWFjaCBzZXJ2aWNlIGlzIGFuIG9iamVjdCB3aXRoIHNldHMgb2Ygb3BlcmF0aW9ucy4gQ2xpZW50
+cyBjYW4gaW52b2tlDQo+ID4gPiB0aGVzZSBvcGVyYXRpb25zIG9uIG9iamVjdHMsIHdoaWNoIGNh
+biBnZW5lcmF0ZSByZXN1bHRzLCBpbmNsdWRpbmcgb3RoZXINCj4gPiA+IG9iamVjdHMuIEZvciBl
+eGFtcGxlLCBhbiBvYmplY3QgY2FuIGxvYWQgYSBUQSBhbmQgcmV0dXJuIGFub3RoZXIgb2JqZWN0
+DQo+ID4gPiB0aGF0IHJlcHJlc2VudHMgdGhlIGxvYWRlZCBUQSwgYWxsb3dpbmcgYWNjZXNzIHRv
+IGl0cyBzZXJ2aWNlcy4NCj4gPiA+DQo+ID4gPiBLZXJuZWwgYW5kIHVzZXJzcGFjZSBzZXJ2aWNl
+cyBhcmUgYWxzbyBhdmFpbGFibGUgdG8gUVRFRSB0aHJvdWdoIGENCj4gPiA+IHNpbWlsYXIgYXBw
+cm9hY2guIFFURUUgbWFrZXMgY2FsbGJhY2sgcmVxdWVzdHMgdGhhdCBhcmUgY29udmVydGVkIGlu
+dG8NCj4gPiA+IG9iamVjdCBpbnZvY2F0aW9ucy4gVGhlc2Ugb2JqZWN0cyBjYW4gcmVwcmVzZW50
+IHNlcnZpY2VzIHdpdGhpbiB0aGUNCj4gPiA+IGtlcm5lbCBvciB1c2Vyc3BhY2UgcHJvY2Vzcy4N
+Cj4gPiA+DQo+ID4gPiBOb3RlOiBUaGlzIHBhdGNoIHNlcmllcyBmb2N1c2VzIG9uIFFURUUgb2Jq
+ZWN0cyBhbmQgdXNlcnNwYWNlIHNlcnZpY2VzLg0KPiA+ID4NCj4gPiA+IExpbnV4IGFscmVhZHkg
+cHJvdmlkZXMgYSBURUUgc3Vic3lzdGVtLCB3aGljaCBpcyBkZXNjcmliZWQgaW4gWzFdLiBUaGUN
+Cj4gPiA+IHRlZSBzdWJzeXN0ZW0gcHJvdmlkZXMgYSBnZW5lcmljIGlvY3RsIGludGVyZmFjZSwg
+VEVFX0lPQ19JTlZPS0UsIHdoaWNoDQo+ID4gPiBjYW4gYmUgdXNlZCBieSB1c2Vyc3BhY2UgdG8g
+dGFsayB0byBhIFRFRSBiYWNrZW5kIGRyaXZlci4gV2UgZXh0ZW5kIHRoZQ0KPiA+ID4gTGludXgg
+VEVFIHN1YnN5c3RlbSB0byB1bmRlcnN0YW5kIG9iamVjdCBwYXJhbWV0ZXJzIGFuZCBhbiBpb2N0
+bCBjYWxsIHNvDQo+ID4gPiBjbGllbnQgY2FuIGludm9rZSBvYmplY3RzIGluIFFURUU6DQo+ID4g
+Pg0KPiA+ID4gICAtIFRFRV9JT0NUTF9QQVJBTV9BVFRSX1RZUEVfT0JKUkVGXyoNCj4gPiA+ICAg
+LSBURUVfSU9DX09CSkVDVF9JTlZPS0UNCj4gPiA+DQo+ID4gPiBUaGUgZXhpc3RpbmcgaW9jdGwg
+Y2FsbHMgVEVFX0lPQ19TVVBQTF9SRUNWIGFuZCBURUVfSU9DX1NVUFBMX1NFTkQgYXJlDQo+ID4g
+PiB1c2VkIGZvciBpbnZva2luZyBzZXJ2aWNlcyBpbiB0aGUgdXNlcnNwYWNlIHByb2Nlc3MgYnkg
+UVRFRS4NCj4gPiA+DQo+ID4gPiBUaGUgVEVFIGJhY2tlbmQgZHJpdmVyIHVzZXMgdGhlIFFURUUg
+VHJhbnNwb3J0IE1lc3NhZ2UgdG8gY29tbXVuaWNhdGUNCj4gPiA+IHdpdGggUVRFRS4gSW50ZXJh
+Y3Rpb25zIHRocm91Z2ggdGhlIG9iamVjdCBJTlZPS0UgaW50ZXJmYWNlIGFyZQ0KPiA+ID4gdHJh
+bnNsYXRlZCBpbnRvIFFURUUgbWVzc2FnZXMuIExpa2V3aXNlLCBvYmplY3QgaW52b2NhdGlvbnMg
+ZnJvbSBRVEVFDQo+ID4gPiBmb3IgdXNlcnNwYWNlIG9iamVjdHMgYXJlIGNvbnZlcnRlZCBpbnRv
+IFNFTkQvUkVDViBpb2N0bCBjYWxscyB0bw0KPiA+ID4gc3VwcGxpY2FudHMuDQo+ID4gPg0KPiA+
+ID4gVGhlIGRldGFpbHMgb2YgUVRFRSBUcmFuc3BvcnQgTWVzc2FnZSB0byBjb21tdW5pY2F0ZSB3
+aXRoIFFURUUgaXMNCj4gPiA+IGF2YWlsYWJsZSBpbiBbUEFUQ0ggMTIvMTJdIERvY3VtZW50YXRp
+b246IHRlZTogQWRkIFF1YWxjb21tIFRFRSBkcml2ZXIuDQo+ID4gPg0KPiA+ID4gWW91IGNhbiBy
+dW4gYmFzaWMgdGVzdHMgd2l0aCBmb2xsb3dpbmcgc3RlcHM6DQo+ID4gPiBnaXQgY2xvbmUgaHR0
+cHM6Ly9naXRodWIuY29tL3F1aWMvcXVpYy10ZWVjLmdpdA0KPiA+ID4gY2QgcXVpYy10ZWVjDQo+
+ID4gPiBta2RpciBidWlsZA0KPiA+ID4gY21ha2UgLi4gLURDTUFLRV9UT09MQ0hBSU5fRklMRT1D
+TWFrZVRvb2xjaGFpbi50eHQgLURCVUlMRF9VTklUVEVTVD1PTg0KPiA+ID4NCj4gPiA+IGh0dHBz
+Oi8vZ2l0aHViLmNvbS9xdWljL3F1aWMtdGVlYy9ibG9iL21haW4vUkVBRE1FLm1kIGxpc3RzIGRl
+cGVuZGVuY2llcw0KPiA+ID4gbmVlZGVkIHRvIGJ1aWxkIHRoZSBhYm92ZS4NCj4gPiA+DQo+ID4g
+PiBNb3JlIGNvbXByZWhlbnNpdmUgdGVzdHMgYXJlIGF2YWlsYWJlIGF0DQo+ID4gPiBodHRwczov
+L2dpdGh1Yi5jb20vcXVhbGNvbW0vbWlua2lwYy4NCj4gPiA+DQo+ID4gPiByb290QHFjb20tYXJt
+djhhOn4jIHF0ZWVfc3VwcGxpY2FudCAmDQo+ID4gPiByb290QHFjb20tYXJtdjhhOn4jIHF0ZWVf
+c3VwcGxpY2FudDogcHJvY2VzcyBlbnRyeSBQUElEID0gMzc4DQo+ID4gPiBUb3RhbCBsaXN0ZW5l
+ciBzZXJ2aWNlcyB0byBzdGFydCA9IDQNCj4gPiA+IE9wZW5pbmcgQ1JlcXVlc3RUQUJ1ZmZlcl9v
+cGVuDQo+ID4gPiBQYXRoIC9kYXRhLw0KPiA+ID4gcmVnaXN0ZXJfc2VydmljZSA6Ok9wZW5pbmcg
+Q1JlZ2lzdGVyVEFCdWZDQk9fVUlEDQo+ID4gPiBDYWxsaW5nIFRBYnVmQ0JPIFJlZ2lzdGVyDQo+
+ID4gPiBRVEVFX1NVUFBMSUNBTlQgUlVOTklORw0KPiA+ID4NCj4gPiA+IHJvb3RAcWNvbS1hcm12
+OGE6fiMgc21jaW52b2tlX2NsaWVudCAtYyAvZGF0YSAxDQo+ID4gPiBSdW4gY2FsbGJhY2sgb2Jq
+IHRlc3QuLi4NCj4gPiA+IExvYWQgL2RhdGEvdHplY290ZXN0YXBwLm1ibiwgc2l6ZSA1MjE5Miwg
+YnVmIDB4MWU0NGJhMC4NCj4gPiA+IFN5c3RlbSBUaW1lOiAyMDI0LTAyLTI3IDE3OjI2OjMxDQo+
+ID4gPiBQQVNTRUQgLSBDYWxsYmFjayB0ZXN0cyB3aXRoIEJ1ZmZlciBpbnB1dHMuDQo+ID4gPiBQ
+QVNTRUQgLSBDYWxsYmFjayB0ZXN0cyB3aXRoIFJlbW90ZSBhbmQgQ2FsbGJhY2sgb2JqZWN0IGlu
+cHV0cy4NCj4gPiA+IFBBU1NFRCAtIENhbGxiYWNrIHRlc3RzIHdpdGggTWVtb3J5IE9iamVjdCBp
+bnB1dHMuDQo+ID4gPiBURVNUIFBBU1NFRCENCj4gPiA+IHJvb3RAcWNvbS1hcm12OGE6fiMNCj4g
+PiA+IHJvb3RAcWNvbS1hcm12OGE6fiMgc21jaW52b2tlX2NsaWVudCAtbSAvZGF0YSAxDQo+ID4g
+PiBSdW4gbWVtb3J5IG9iaiB0ZXN0Li4uDQo+ID4gPiBMb2FkIC9kYXRhL3R6ZWNvdGVzdGFwcC5t
+Ym4sIHNpemUgNTIxOTIsIGJ1ZiAweDI2Y2FmYmEwLg0KPiA+ID4gU3lzdGVtIFRpbWU6IDIwMjQt
+MDItMjcgMTc6MjY6MzkNCj4gPiA+IFBBU1NFRCAtIFNpbmdsZSBNZW1vcnkgT2JqZWN0IGFjY2Vz
+cyBUZXN0Lg0KPiA+ID4gUEFTU0VEIC0gVHdvIE1lbW9yeSBPYmplY3QgYWNjZXNzIFRlc3QuDQo+
+ID4gPiBURVNUIFBBU1NFRCENCj4gPiA+DQo+ID4gPiBUaGlzIHNlcmllcyBoYXMgYmVlbiB0ZXN0
+ZWQgZm9yIFFURUUgb2JqZWN0IGludm9jYXRpb25zLCBpbmNsdWRpbmcNCj4gPiA+IGxvYWRpbmcg
+YSBUQSwgcmVxdWVzdGluZyBzZXJ2aWNlcyBmcm9tIHRoZSBUQSwgbWVtb3J5IHNoYXJpbmcsIGFu
+ZA0KPiA+ID4gaGFuZGxpbmcgY2FsbGJhY2sgcmVxdWVzdHMgdG8gYSBzdXBwbGljYW50Lg0KPiA+
+ID4NCj4gPiA+IFRlc3RlZCBwbGF0Zm9ybXM6IHNtODY1MC1tdHAsIHNtODU1MC1xcmQsIHNtODY1
+MC1xcmQsIHNtODY1MC1oZGsNCj4gPiA+DQo+ID4gPiBbMV0gaHR0cHM6Ly93d3cua2VybmVsLm9y
+Zy9kb2MvRG9jdW1lbnRhdGlvbi90ZWUudHh0DQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTog
+QW1pcnJlemEgWmFycmFiaSA8YW1pcnJlemEuemFycmFiaUBvc3MucXVhbGNvbW0uY29tPg0KPiA+
+ID4NCj4gPg0KPiA+IEF0IHRoaXMgcG9pbnQsIEkgdGhpbmsgdGhpcyBzZXJpZXMgaXMgcmVhZHkg
+dG8gYmUgYXBwbGllZCB0byBsaW51eC1uZXh0Lg0KPiANCj4gVGhlcmUgYXJlIHN0aWxsIHNvbWUg
+d2FybmluZ3MgaW4gIltQQVRDSCB2OSAwNi8xMV0gZmlybXdhcmU6IHFjb206DQo+IHNjbTogYWRk
+IHN1cHBvcnQgZm9yIG9iamVjdCBpbnZvY2F0aW9uIg0KDQpBZ3JlZSwgZm9sbG93aW5nIHNob3Vs
+ZCBiZSBhIHRyaXZpYWwgZml4IGJ1dCBJIHdhbnRlZCB0byBtYWtlIHN1cmUgdGhhdA0Kd2UgZG9u
+J3QgbWlzcyB2Ni4xOCBtZXJnZSB3aW5kb3cuDQoNCkhvd2V2ZXIsIHdoaWxlIHRyeWluZyB0byBh
+cHBseSBvbiB5b3UgbmV4dCBicmFuY2ggWzFdLiBJIHNlZSBzb21lIGNvbmZsaWN0cw0KYXJpc2lu
+ZyBkdWUgdG8gdGhlIHByb3RlY3RlZCBETUFidWYgc2VyaWVzIGJlaW5nIGFscmVhZHkgYXBwbGll
+ZC4NCg0KQW1pciwNCg0KQ2FuIHlvdSByZWJhc2UgdGhpcyBzZXJpZXMgb24gdG9wIG9mIEplbnMg
+bmV4dCBbMV0gYnJhbmNoPyBBbHNvLCBhcHBseQ0KdGhlIGZvbGxvd2luZyBkaWZmIHRvIGZpeCB0
+aGUgYm90IHdhcm5pbmcuDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL2Zpcm13YXJlL3Fjb20vcWNv
+bV9zY20uYyBiL2RyaXZlcnMvZmlybXdhcmUvcWNvbS9xY29tX3NjbS5jDQppbmRleCA5NzUzNDk2
+YWFjZTAuLmJkYTAwNzZjZmJkZiAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvZmlybXdhcmUvcWNvbS9x
+Y29tX3NjbS5jDQorKysgYi9kcml2ZXJzL2Zpcm13YXJlL3Fjb20vcWNvbV9zY20uYw0KQEAgLTIy
+MDQsNyArMjIwNCw3IEBAIHN0YXRpYyB2b2lkIHFjb21fc2NtX3F0ZWVfaW5pdChzdHJ1Y3QgcWNv
+bV9zY20gKnNjbSkNCiAgICAgICAgcXRlZV9kZXYgPSBwbGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXJf
+ZGF0YShzY20tPmRldiwgInFjb210ZWUiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIFBMQVRGT1JNX0RFVklEX05PTkUsIE5VTEwsIDApOw0KICAgICAg
+ICBpZiAoSVNfRVJSKHF0ZWVfZGV2KSkgew0KLSAgICAgICAgICAgICAgIGRldl9lcnIoc2NtLT5k
+ZXYsICJxY29tdGVlOiByZWdpc3RlciBmYWlsZWQ6ICVkXG4iLA0KKyAgICAgICAgICAgICAgIGRl
+dl9lcnIoc2NtLT5kZXYsICJxY29tdGVlOiByZWdpc3RlciBmYWlsZWQ6ICVsZFxuIiwNCiAgICAg
+ICAgICAgICAgICAgICAgICAgIFBUUl9FUlIocXRlZV9kZXYpKTsNCiAgICAgICAgICAgICAgICBy
+ZXR1cm47DQogICAgICAgIH0NCg0KWzFdIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9s
+aW51eC9rZXJuZWwvZ2l0L2plbnN3aS9saW51eC10ZWUuZ2l0L2xvZy8/aD1uZXh0IA0KDQotU3Vt
+aXQNCg0KPiANCj4gL0plbnMNCj4gDQo+ID4NCj4gPiA+IENoYW5nZXMgaW4gdjc6DQo+ID4gPiAt
+IFVwZGF0ZWQgY29weXJpZ2h0cy4NCj4gPiA+IC0gVXBkYXRlZCBBY2tlZC1ieTogdGFncy4NCj4g
+PiA+IC0gRml4ZWQga2VybmVsIGJvdCBlcnJvcnMuDQo+ID4gPiAtIExpbmsgdG8gdjY6DQo+ID4g
+PiAgIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3IvMjAyNTA3MTMtcWNvbS10ZWUtdXNpbmctdGVl
+LXNzLXdpdGhvdXQtbWVtLW9iai12Ni0wLTY5N2ZiN2Q0MWMzNkBvc3MucXVhbGNvbW0uY29tDQo+
+ID4gPg0KPiA+ID4gQ2hhbmdlcyBpbiB2NjoNCj4gPiA+IC0gUmVsb2NhdGUgUVRFRSB2ZXJzaW9u
+IGludG8gdGhlIGRyaXZlcidzIG1haW4gc2VydmljZSBzdHJ1Y3R1cmUuDQo+ID4gPiAtIFNpbXBs
+ZmllcyBxY29tdGVlX29ianJlZl90b19hcmcoKSBhbmQgcWNvbXRlZV9vYmpyZWZfZnJvbV9hcmco
+KS4NCj4gPiA+IC0gRW5oYW5jZWQgdGhlIHJldHVybiBsb2dpYyBvZiBxY29tdGVlX29iamVjdF9k
+b19pbnZva2VfaW50ZXJuYWwoKS4NCj4gPiA+IC0gSW1wcm92ZSBjb21tZW50cyBhbmQgcmVtb3Zl
+IHJlZHVuZGFudCBjaGVja3MuDQo+ID4gPiAtIEltcHJvdmUgaGVscGVycyBpbiBxY29tdGVlX21z
+aC5oIHRvIHVzZSBHRU5NQVNLKCkgYW5kIEZJRUxEX0dFVCgpLg0KPiA+ID4gLSB1cGRhdGVkIFRl
+c3RlZC1ieTosIEFja2VkLWJ5OiwgYW5kIFJldmlld2VkLWJ5OiB0YWdzDQo+ID4gPiAtIExpbmsg
+dG8gdjU6DQo+ID4gPiAgIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3IvMjAyNTA1MjYtcWNvbS10
+ZWUtdXNpbmctdGVlLXNzLXdpdGhvdXQtbWVtLW9iai12NS0wLTAyNGUzMjIxYjBiOUBvc3MucXVh
+bGNvbW0uY29tDQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBpbiB2NToNCj4gPiA+IC0gUmVtb3ZlIHJl
+ZmVyZW5jZXMgdG8ga2VybmVsIHNlcnZpY2VzIGFuZCBwdWJsaWMgQVBJcy4NCj4gPiA+IC0gU3Vw
+cG9ydCBhdXRvIGRldGVjdGlvbiBmb3IgZmFpbGluZyBkZXZpY2VzIChlLmcuLCBSQjEsIFJCNCku
+DQo+ID4gPiAtIEFkZCBoZWxwZXJzIGZvciBvYnRhaW5pbmcgY2xpZW50IGVudmlyb25tZW50IGFu
+ZCBzZXJ2aWNlIG9iamVjdHMuDQo+ID4gPiAtIFF1ZXJ5IHRoZSBRVEVFIHZlcnNpb24gYW5kIHBy
+aW50IGl0Lg0KPiA+ID4gLSBNb3ZlIHJlbWFpbmluZyBzdGF0aWMgdmFyaWFibGVzLCBpbmNsdWRp
+bmcgdGhlIG9iamVjdCB0YWJsZSwgdG8gc3RydWN0DQo+ID4gPiAgIHFjb210ZWUuDQo+ID4gPiAt
+IFVwZGF0ZSBURUVfTUFYX0FSR19TSVpFIHRvIDQwOTYuDQo+ID4gPiAtIEFkZCBhIGRlcGVuZGFu
+Y3kgdG8gUUNPTV9UWk1FTV9NT0RFX1NITUJSSURHRSBpbiBLY29uZmlnDQo+ID4gPiAtIFJlb3Jn
+YW5pemUgY29kZSBieSByZW1vdmluZyByZWxlYXNlLmMgYW5kIHFjb21fc2NtLmMuDQo+ID4gPiAt
+IEFkZCBtb3JlIGVycm9yIG1lc3NhZ2VzIGFuZCBpbXByb3ZlIGNvbW1lbnRzLg0KPiA+ID4gLSB1
+cGRhdGVkIFRlc3RlZC1ieTosIEFja2VkLWJ5OiwgYW5kIFJldmlld2VkLWJ5OiB0YWdzDQo+ID4g
+PiAtIExpbmsgdG8gdjQ6IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3IvMjAyNTA0MjgtcWNvbS10
+ZWUtdXNpbmctdGVlLXNzLXdpdGhvdXQtbWVtLW9iai12NC0wLTZhMTQzNjQwYTZjYkBvc3MucXVh
+bGNvbW0uY29tDQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBpbiB2NDoNCj4gPiA+IC0gTW92ZSB0ZWVk
+ZXZfY3R4X2dldC9wdXQgYW5kIHRlZV9kZXZpY2VfZ2V0L3B1dCB0byB0ZWVfY29yZS5oLg0KPiA+
+ID4gLSBSZW5hbWUgb2JqZWN0IHRvIGlkIGluIHN0cnVjdCB0ZWVfaW9jdGxfb2JqZWN0X2ludm9r
+ZV9hcmcuDQo+ID4gPiAtIFJlcGxhY2Ugc3BpbmxvY2sgd2l0aCBtdXRleCBmb3IgcXRlZV9vYmpl
+Y3RzX2lkci4NCj4gPiA+IC0gTW92ZSBxY29tdGVlX29iamVjdF9nZXQgdG8gcWNvbXRlZV91c2Vy
+L21lbW9ial9wYXJhbV90b19vYmplY3QuDQo+ID4gPiAtIE1vcmUgY29kZSBjbGVhbnVwIGZvbGxv
+d2luZyB0aGUgY29tbWVudHMuDQo+ID4gPiAtIENsZWFudXAgZG9jdW1lbnRhdGlvbnMuDQo+ID4g
+PiAtIFVwZGF0ZSBNQUlOVEFJTkVSUyBmaWxlLg0KPiA+ID4gLSBMaW5rIHRvIHYzOiBodHRwczov
+L2xvcmUua2VybmVsLm9yZy9yLzIwMjUwMzI3LXFjb20tdGVlLXVzaW5nLXRlZS1zcy13aXRob3V0
+LW1lbS1vYmotdjMtMC03ZjQ1NzA3MzI4MmRAb3NzLnF1YWxjb21tLmNvbQ0KPiA+ID4NCj4gPiA+
+IENoYW5nZXMgaW4gdjM6DQo+ID4gPiAtIEV4cG9ydCBzaG1fYnJpZGdlIGNyZWF0ZS9kZWxldGUg
+QVBJcy4NCj4gPiA+IC0gRW5hYmxlIHN1cHBvcnQgZm9yIFFURUUgbWVtb3J5IG9iamVjdHMuDQo+
+ID4gPiAtIFVwZGF0ZSB0aGUgbWVtb3J5IG1hbmFnZW1lbnQgY29kZSB0byB1c2UgdGhlIFRFRSBz
+dWJzeXN0ZW0gZm9yIGFsbA0KPiA+ID4gICBhbGxvY2F0aW9ucyB1c2luZyB0aGUgcG9vbC4NCj4g
+PiA+IC0gTW92ZSBhbGwgZHJpdmVyIHN0YXRlcyBpbnRvIHRoZSBkcml2ZXIncyBtYWluIHNlcnZp
+Y2Ugc3RydWN0Lg0KPiA+ID4gLSBBZGQgbW9yZSBkb2N1bWVudGF0aW9ucy4NCj4gPiA+IC0gTGlu
+ayB0byB2MjogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvci8yMDI1MDIwMi1xY29tLXRlZS11c2lu
+Zy10ZWUtc3Mtd2l0aG91dC1tZW0tb2JqLXYyLTAtMjk3ZWFjZDBkMzRmQHF1aWNpbmMuY29tDQo+
+ID4gPg0KPiA+ID4gQ2hhbmdlcyBpbiB2MjoNCj4gPiA+IC0gQ2xlYW4gdXAgY29tbWl0IG1lc3Nh
+Z2VzIGFuZCBjb21tZW50cy4NCj4gPiA+IC0gVXNlIGJldHRlciBuYW1lcyBzdWNoIGFzIHVidWYg
+aW5zdGVhZCBvZiBtZW1idWYgb3IgUUNPTVRFRSBwcmVmaXgNCj4gPiA+ICAgaW5zdGVhZCBvZiBR
+Q09NX1RFRSwgb3IgbmFtZXMgdGhhdCBhcmUgbW9yZSBjb25zaXN0ZW50IHdpdGggb3RoZXINCj4g
+PiA+ICAgVEVFLWJhY2tlbmQgZHJpdmVycyBzdWNoIGFzIHFjb210ZWVfY29udGV4dF9kYXRhIGlu
+c3RlYWQgb2YNCj4gPiA+ICAgcWNvbV90ZWVfY29udGV4dC4NCj4gPiA+IC0gRHJvcCB0aGUgRFRT
+IHBhdGNoIGFuZCBpbnN0YW50aWF0ZSB0aGUgZGV2aWNlIGZyb20gdGhlIHNjbSBkcml2ZXIuDQo+
+ID4gPiAtIFVzZSBhIHNpbmdsZSBzdHJ1Y3R1cmUgZm9yIGFsbCBkcml2ZXIncyBpbnRlcm5hbCBz
+dGF0ZXMuDQo+ID4gPiAtIERyb3Agc3JjdSBwcmltaXRpdmVzIGFuZCB1c2UgdGhlIGV4aXN0aW5n
+IG11dGV4IGZvciBzeW5jaHJvbml6YXRpb24NCj4gPiA+ICAgYmV0d2VlbiB0aGUgc3VwcGxpY2Fu
+dCBhbmQgUVRFRS4NCj4gPiA+IC0gRGlyZWN0bHkgdXNlIHRlZV9jb250ZXh0IHRvIHRyYWNrIHRo
+ZSBsaWZldGltZSBvZiBxY29tdGVlX2NvbnRleHRfZGF0YS4NCj4gPiA+IC0gQWRkIGNsb3NlX2Nv
+bnRleHQoKSB0byBiZSBjYWxsZWQgd2hlbiB0aGUgdXNlciBjbG9zZXMgdGhlIHRlZV9jb250ZXh0
+Lg0KPiA+ID4gLSBMaW5rIHRvIHYxOiBodHRwczovL2xvcmUua2VybmVsLm9yZy9yLzIwMjQxMjAy
+LXFjb20tdGVlLXVzaW5nLXRlZS1zcy13aXRob3V0LW1lbS1vYmotdjEtMC1mNTAyZWYwMWUwMTZA
+cXVpY2luYy5jb20NCj4gPiA+DQo+ID4gPiBDaGFuZ2VzIGluIHYxOg0KPiA+ID4gLSBJdCBpcyBh
+IGNvbXBsZXRlIHJld3JpdGUgdG8gdXRpbGl6ZSB0aGUgVEVFIHN1YnN5c3RlbS4NCj4gPiA+IC0g
+TGluayB0byBSRkM6IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI0MDcwMi1xY29tLXRl
+ZS1vYmplY3QtYW5kLWlvY3Rscy12MS0wLTYzM2MzZGRmNTdlZUBxdWljaW5jLmNvbQ0KPiA+ID4N
+Cj4gPiA+IC0tLQ0KPiA+ID4gQW1pcnJlemEgWmFycmFiaSAoMTEpOg0KPiA+ID4gICAgICAgdGVl
+OiBhbGxvdyBhIGRyaXZlciB0byBhbGxvY2F0ZSBhIHRlZV9kZXZpY2Ugd2l0aG91dCBhIHBvb2wN
+Cj4gPiA+ICAgICAgIHRlZTogYWRkIGNsb3NlX2NvbnRleHQgdG8gVEVFIGRyaXZlciBvcGVyYXRp
+b24NCj4gPiA+ICAgICAgIHRlZTogYWRkIFRFRV9JT0NUTF9QQVJBTV9BVFRSX1RZUEVfVUJVRg0K
+PiA+ID4gICAgICAgdGVlOiBhZGQgVEVFX0lPQ1RMX1BBUkFNX0FUVFJfVFlQRV9PQkpSRUYNCj4g
+PiA+ICAgICAgIHRlZTogaW5jcmVhc2UgVEVFX01BWF9BUkdfU0laRSB0byA0MDk2DQo+ID4NCj4g
+PiA+ICAgICAgIGZpcm13YXJlOiBxY29tOiBzY206IGFkZCBzdXBwb3J0IGZvciBvYmplY3QgaW52
+b2NhdGlvbg0KPiA+ID4gICAgICAgZmlybXdhcmU6IHFjb206IHR6bWVtOiBleHBvcnQgc2htX2Jy
+aWRnZSBjcmVhdGUvZGVsZXRlDQo+ID4NCj4gPiBCam9ybi9Lb25yYWQsDQo+ID4NCj4gPiBTaW5j
+ZSBtYWpvcml0eSBvZiB0aGlzIHNlcmllcyBiZWxvbmcgdG8gVEVFIHN1YnN5c3RlbSwgYXJlIHlv
+dSBmb2xrcw0KPiA+IGZpbmUgdG8gYWNrIHRoZXNlIHBhdGNoZXMgZm9yIEplbnMgdG8gcGljayB0
+aGVtIHVwIGZvciBuZXh0Pw0KPiA+DQo+ID4gLVN1bWl0DQo+ID4NCj4gPiA+ICAgICAgIHRlZTog
+YWRkIFF1YWxjb21tIFRFRSBkcml2ZXINCj4gPiA+ICAgICAgIHFjb210ZWU6IGFkZCBwcmltb3Jk
+aWFsIG9iamVjdA0KPiA+ID4gICAgICAgcWNvbXRlZTogZW5hYmxlIFRFRV9JT0NfU0hNX0FMTE9D
+IGlvY3RsDQo+ID4gPiAgICAgICBEb2N1bWVudGF0aW9uOiB0ZWU6IEFkZCBRdWFsY29tbSBURUUg
+ZHJpdmVyDQo+ID4NCj4gPg0KPiA+DQo+ID4gPg0KPiA+ID4gIERvY3VtZW50YXRpb24vdGVlL2lu
+ZGV4LnJzdCAgICAgICAgICAgICAgfCAgIDEgKw0KPiA+ID4gIERvY3VtZW50YXRpb24vdGVlL3F0
+ZWUucnN0ICAgICAgICAgICAgICAgfCAgOTYgKysrKw0KPiA+ID4gIE1BSU5UQUlORVJTICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDcgKw0KPiA+ID4gIGRyaXZlcnMvZmlybXdhcmUv
+cWNvbS9xY29tX3NjbS5jICAgICAgICAgfCAxMjggKysrKysNCj4gPiA+ICBkcml2ZXJzL2Zpcm13
+YXJlL3Fjb20vcWNvbV9zY20uaCAgICAgICAgIHwgICA3ICsNCj4gPiA+ICBkcml2ZXJzL2Zpcm13
+YXJlL3Fjb20vcWNvbV90em1lbS5jICAgICAgIHwgIDYzICsrLQ0KPiA+ID4gIGRyaXZlcnMvdGVl
+L0tjb25maWcgICAgICAgICAgICAgICAgICAgICAgfCAgIDEgKw0KPiA+ID4gIGRyaXZlcnMvdGVl
+L01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgfCAgIDEgKw0KPiA+ID4gIGRyaXZlcnMvdGVl
+L3Fjb210ZWUvS2NvbmZpZyAgICAgICAgICAgICAgfCAgMTEgKw0KPiA+ID4gIGRyaXZlcnMvdGVl
+L3Fjb210ZWUvTWFrZWZpbGUgICAgICAgICAgICAgfCAgIDkgKw0KPiA+ID4gIGRyaXZlcnMvdGVl
+L3Fjb210ZWUvYXN5bmMuYyAgICAgICAgICAgICAgfCAxODMgKysrKysrDQo+ID4gPiAgZHJpdmVy
+cy90ZWUvcWNvbXRlZS9jYWxsLmMgICAgICAgICAgICAgICB8IDgyMCArKysrKysrKysrKysrKysr
+KysrKysrKysrKysNCj4gPiA+ICBkcml2ZXJzL3RlZS9xY29tdGVlL2NvcmUuYyAgICAgICAgICAg
+ICAgIHwgOTIwICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiA+ICBkcml2ZXJz
+L3RlZS9xY29tdGVlL21lbV9vYmouYyAgICAgICAgICAgIHwgMTY5ICsrKysrKw0KPiA+ID4gIGRy
+aXZlcnMvdGVlL3Fjb210ZWUvcHJpbW9yZGlhbF9vYmouYyAgICAgfCAxMTYgKysrKw0KPiA+ID4g
+IGRyaXZlcnMvdGVlL3Fjb210ZWUvcWNvbXRlZS5oICAgICAgICAgICAgfCAxODUgKysrKysrKw0K
+PiA+ID4gIGRyaXZlcnMvdGVlL3Fjb210ZWUvcWNvbXRlZV9tc2cuaCAgICAgICAgfCAzMDAgKysr
+KysrKysrKw0KPiA+ID4gIGRyaXZlcnMvdGVlL3Fjb210ZWUvcWNvbXRlZV9vYmplY3QuaCAgICAg
+fCAzMTYgKysrKysrKysrKysNCj4gPiA+ICBkcml2ZXJzL3RlZS9xY29tdGVlL3NobS5jICAgICAg
+ICAgICAgICAgIHwgMTUwICsrKysrDQo+ID4gPiAgZHJpdmVycy90ZWUvcWNvbXRlZS91c2VyX29i
+ai5jICAgICAgICAgICB8IDY5MiArKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ID4gIGRyaXZl
+cnMvdGVlL3RlZV9jb3JlLmMgICAgICAgICAgICAgICAgICAgfCAxMjcgKysrKy0NCj4gPiA+ICBk
+cml2ZXJzL3RlZS90ZWVfcHJpdmF0ZS5oICAgICAgICAgICAgICAgIHwgICA2IC0NCj4gPiA+ICBp
+bmNsdWRlL2xpbnV4L2Zpcm13YXJlL3Fjb20vcWNvbV9zY20uaCAgIHwgICA2ICsNCj4gPiA+ICBp
+bmNsdWRlL2xpbnV4L2Zpcm13YXJlL3Fjb20vcWNvbV90em1lbS5oIHwgIDE1ICsNCj4gPiA+ICBp
+bmNsdWRlL2xpbnV4L3RlZV9jb3JlLmggICAgICAgICAgICAgICAgIHwgIDU0ICstDQo+ID4gPiAg
+aW5jbHVkZS9saW51eC90ZWVfZHJ2LmggICAgICAgICAgICAgICAgICB8ICAxMiArDQo+ID4gPiAg
+aW5jbHVkZS91YXBpL2xpbnV4L3RlZS5oICAgICAgICAgICAgICAgICB8ICA1NiArLQ0KPiA+ID4g
+IDI3IGZpbGVzIGNoYW5nZWQsIDQ0MjMgaW5zZXJ0aW9ucygrKSwgMjggZGVsZXRpb25zKC0pDQo+
+ID4gPiAtLS0NCj4gPiA+IGJhc2UtY29tbWl0OiAyNjc0ZDFlYWRhYTJmZDNhOTE4ZGZjZGI2ZDBi
+YjQ5ZWZlOGE4YmI5DQo+ID4gPiBjaGFuZ2UtaWQ6IDIwMjQxMjAyLXFjb20tdGVlLXVzaW5nLXRl
+ZS1zcy13aXRob3V0LW1lbS1vYmotMzYyYzY2MzQwNTI3DQo+ID4gPg0KPiA+ID4gQmVzdCByZWdh
+cmRzLA0KPiA+ID4gLS0NCj4gPiA+IEFtaXJyZXphIFphcnJhYmkgPGFtaXJyZXphLnphcnJhYmlA
+b3NzLnF1YWxjb21tLmNvbT4NCj4gPiA+DQo+ID4gPg0KPiANCg==
