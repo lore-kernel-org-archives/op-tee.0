@@ -4,102 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D46ECAC58D
-	for <op-tee@archiver.kernel.org>; Thu, 11 Sep 2025 07:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3467FCAC587
+	for <op-tee@archiver.kernel.org>; Thu, 11 Sep 2025 08:01:04 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id D51574FDB8
-	for <op-tee@archiver.kernel.org>; Thu, 11 Sep 2025 07:56:50 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3FEAF4FDF6
+	for <op-tee@archiver.kernel.org>; Thu, 11 Sep 2025 08:01:03 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=jsILwdLD;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=A2WtBrC9;
 	dkim-atps=neutral
-Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com [209.85.210.49])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2835C43135
-	for <op-tee@lists.trustedfirmware.org>; Thu, 11 Sep 2025 07:56:35 +0000 (UTC)
-Received: by mail-ot1-f49.google.com with SMTP id 46e09a7af769-74542b1b2bcso472872a34.3
-        for <op-tee@lists.trustedfirmware.org>; Thu, 11 Sep 2025 00:56:35 -0700 (PDT)
+Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1CF9C4E14D
+	for <op-tee@lists.trustedfirmware.org>; Thu, 11 Sep 2025 08:00:48 +0000 (UTC)
+Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-b02c719a117so73911466b.1
+        for <op-tee@lists.trustedfirmware.org>; Thu, 11 Sep 2025 01:00:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1757577394; x=1758182194; darn=lists.trustedfirmware.org;
+        d=linaro.org; s=google; t=1757577647; x=1758182447; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=gcHgyDkcspweVIk7kRhliSymO4E+l9imWizmqVG+IwQ=;
-        b=jsILwdLD8FVtLWYgKX8E539L6fAQ+3aE5qCl0vMmMZB3+cDeeqtvBbOcFWoBzEARVG
-         /S+iMUDvFnkZBR15ma5fY5SIvQka/vnFYuhFz6XT0EBki5rJIsHQ2A4M6P/z6q5QSDO8
-         sVM7ggSunv4fh9l8uR4CylZvr+F+Q+0yn1rxeJDl3hOtpsth8+b6qC4+XqBHu6DTIjyx
-         Fs5507a43XiZ/BAoTxS8QdTydqX5pZqwgspxwbf+oJ7Uwo0Ky1gmNqolOa8cqxnJx3PG
-         uQyOtauaH9lz4HeYEw5GKzYRsAlf2tF6noeAIPC7M6TlG0EjRgN0rNWWCopuzu7095SO
-         ZhYA==
+        bh=p1PODi6H2K7+3LlGxoQuwHZt3UE/qkC9ZdWrwkyFJNM=;
+        b=A2WtBrC9jl9rgneB4AUBce5c55lU0So+Ognh5b3QTVRK+iDOCI4MeinklNZREAcTa1
+         CoYglPUi+nidRb/6YUR2iyENudHQ72rdDM95hglM4mX2Copx/b9gY3DQiZRu1QsXWFwb
+         B86pdYH2qvp4mYvZlSKQyT1lNLs+Q+A9TNgZqDVRc+uFQmIxGA2bYsR/lI7tekZAwzzG
+         qtK8EHpgdYyOy27f4uwi0/n7dw7zcKBqTdPFuV7KHMwYuVI+ZndlB9DdukobtISz1emf
+         mVeQLiSRnxzFgSo6IcnpcwJvbUx6+hGdzwnrZIh6Sd/+9a7AE9XukxDpJsaJzVvXR876
+         Ywfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757577394; x=1758182194;
+        d=1e100.net; s=20230601; t=1757577647; x=1758182447;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=gcHgyDkcspweVIk7kRhliSymO4E+l9imWizmqVG+IwQ=;
-        b=oVOJu93o2KKC+KPsI4XRqEY1tG9KJIXXx6EKYZXXUtUuaRVKpZLuddqXKu4WN+PVrn
-         o3rVoLfBJyQj2h+uF0zD5zIZN7I9aJCXAkIk5vdyNHAY4LargWthSvVK4vTyL49mLvfy
-         ucaoRDLJtrC3dQjvjk8v/cpsA7R6cYhkLBnF7DYjbAADwnjHZ+NRJvRV2dKWJNZjwUut
-         1cMPgC1B6BHEVJuIA+4DUWovz9sTkzmSoo4hWTQCAmC7yIg3JvrjDaYjF6WSyeEXhwUJ
-         KuhCW+uqtb/Xaewpc9edMs5Zrzp/aB42uV38x6l1YmocUUjErZ6o0kXB34/xP/sEN/QQ
-         CN6g==
-X-Forwarded-Encrypted: i=1; AJvYcCVtkcFRBR9OiGWOtCcdPR/SMH0iKAszTnMZD0EKd4wwAxq0zRJaZa5pGHwKU8AMjY6ccf4WZn4=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzxE8+elSSm7k79AQZ1qs7JjBpJgx3cAfyuMgXWB3PvaitjACuf
-	bMTioRyUgKsgHV8mRLEvnDAxl3GjpbmkTGqS7UGAoXDZ3xj3ds6aozOsa0QiIBIMBkefEvWit8R
-	WjD7mMaI/s3aX7a0m4AoB5D+TSV4tbU+qJT7pog1J5fIN
-X-Gm-Gg: ASbGncuzuvacWDGd1Yp+vMKAY77aFGcq6Vos34rbLDWkl12V1VCBqsZlzmKi2tA/Fcz
-	bOVWYzRGrxva2wozf6poLvl8+Cf/vakewP5ISilQEFwIf6Yl0cvlMrUTOqTWs0jIr9+UKgP2ZRR
-	pEM+jHA0Fq+Vow9TM/ZIcG35hiWoWDSG+UCqg28YrP0RNfmJYsWGnMIop//XV0sq34LYex0ukQf
-	WmhiiYLQwxbPNbeSv8=
-X-Google-Smtp-Source: AGHT+IG9ZMBIi6nBb96Zia9gSrtbi78A+YjqGi7eJdd43h+fxHz0Dsu/RXvlzn6cV1ytlcXB923nl0QOCRHh3jcErhM=
-X-Received: by 2002:a05:6830:67c5:b0:746:d4d3:c8b3 with SMTP id
- 46e09a7af769-74c720f972bmr10157224a34.15.1757577394426; Thu, 11 Sep 2025
- 00:56:34 -0700 (PDT)
+        bh=p1PODi6H2K7+3LlGxoQuwHZt3UE/qkC9ZdWrwkyFJNM=;
+        b=id8JYSMmTpV6C/6Zg9ABDUyCAx2BvhGk+iCcX4y5IwoQ38/kcda1ymy668Ul1Yl98O
+         yg8FLy9Qu2/AWC737rA1OG5Y42dfHNJTPwKSMDcRdl5ki57Vwtwgc18ASqyJPlE0+2xc
+         /Zgc1Bsk2VYbEyC1A6kBNijoGfEvuyB6ummzKoN3YGj3HgH7mzZHziRonwdAgWXwlqP5
+         Bb1+T1wvyBF2K9RdUn5tR4G0c/5UAysIWvOpW+fAuoICF9WMA7c3AE0W/DIqYH4Rq+tM
+         XI/Ck2D5ItAr5jjBU+YxxZryEE3Xnob+RTg6Tz7ZXynYKmqtG6YjqY98zW6Jrk9ezXue
+         XGhA==
+X-Forwarded-Encrypted: i=1; AJvYcCX8TUpSiq5A0qCchYk5I26AhvnbuT1T2kzGWaNgfadLpMAE/Ob2mXYWKVQB1E7/sbE+tsobNEM=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxQ8DuD53uegqFCx+T2jiwVmD/pC8V7hK2zbCY+gNoqf8gU86jm
+	Lovo0t+bsbpFZ6Plj4DykxPxaVzRXY9OQI47SYNAgw1kG3wIITODmWqkatW4eKlV/9rhmaa7vm3
+	At3F1O4yu3wPs+cBSca7tYZAQxFlE9UZWv+pkfN5WeMWS
+X-Gm-Gg: ASbGncuRzIKTN2rkRwTzBQ1R5rRw0bPx99zJpqAy6ChmN/g4hxnk0bEokVR2Iytac/w
+	pBuSXyzctR6aKSkNvYgyLPlrwcZYBWFtFaX4TU8WE0vz7TqsUNSBvUo64iRh7fj8+BvYqO9NY/7
+	QVQu0truUHOrbBtxxrTz+MbrccdS/z666M/2NdcBtull+kt9QTf/b3P3/HdA24xEtkRiGLnL0+p
+	Qfggw6r/3eBLogxiJw1yhMekrmjueQN0JipXpFvQplccePedA==
+X-Google-Smtp-Source: AGHT+IGzEzYwQLiPc3IcgYMCTY8qsO9y3WwakWS4JOu30bLWGh1BqDh6LLf50f7d7Tw863clhJFa4G2RQKg6ioIUUPY=
+X-Received: by 2002:a17:907:d16:b0:b04:568b:8a42 with SMTP id
+ a640c23a62f3a-b04b14bbbf0mr1838289166b.29.1757577646906; Thu, 11 Sep 2025
+ 01:00:46 -0700 (PDT)
 MIME-Version: 1.0
-References: <20250910-qcom-tee-using-tee-ss-without-mem-obj-v11-0-520e867b3d74@oss.qualcomm.com>
- <20250910-qcom-tee-using-tee-ss-without-mem-obj-v11-5-520e867b3d74@oss.qualcomm.com>
-In-Reply-To: <20250910-qcom-tee-using-tee-ss-without-mem-obj-v11-5-520e867b3d74@oss.qualcomm.com>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Thu, 11 Sep 2025 09:56:23 +0200
-X-Gm-Features: Ac12FXyIP0WtPINFQV_xAL4fJ4Nl0DDdmiM8KSkVr4BQuuRBN2IjnhZ18XWv8gI
-Message-ID: <CAHUa44EsGNuYzjZo_kBJfa6O6u0o14tfDNo2fhSeo+g0BpwX7Q@mail.gmail.com>
-Subject: Re: [PATCH v11 05/11] tee: add TEE_IOCTL_PARAM_ATTR_TYPE_UBUF
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+References: <20250813060339.2977604-1-jens.wiklander@linaro.org>
+ <20250813060339.2977604-3-jens.wiklander@linaro.org> <aJ1-YpgvGt4_6CFU@sumit-X1>
+ <CABdmKX2FPg+hO55qWndMajuWP0kZH=OWEh9v-d8aO6HQWyxJtQ@mail.gmail.com>
+ <CAO_48GEqkf_Jm8kSTPEDZkZy-YmT56Zs1Jx9zCvzETPsCzrkEg@mail.gmail.com> <CAHUa44HHSKwiBYPMSY5hj6wyWc9-uvtQVx+JLx4M5yjD5AwyTg@mail.gmail.com>
+In-Reply-To: <CAHUa44HHSKwiBYPMSY5hj6wyWc9-uvtQVx+JLx4M5yjD5AwyTg@mail.gmail.com>
+From: Sumit Semwal <sumit.semwal@linaro.org>
+Date: Thu, 11 Sep 2025 13:30:35 +0530
+X-Gm-Features: Ac12FXxwSUSxE1PNcza1ZTKnBgiGX0FqXLDfvqSE4P5WPQr00OaAEtYCSrcigho
+Message-ID: <CAO_48GE=FHaNzybUxjY=igyOO1oasKb9yu_yAjJEdjTQXicaJA@mail.gmail.com>
+Subject: Re: [PATCH v11 2/9] dma-buf: dma-heap: export declared functions
+To: Jens Wiklander <jens.wiklander@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Rspamd-Queue-Id: 2835C43135
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.10 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Rspamd-Queue-Id: 1CF9C4E14D
+X-Spamd-Bar: --
+X-Spamd-Result: default: False [-2.60 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.49:from];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[20];
-	ARC_NA(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
-	NEURAL_HAM(-0.00)[-1.000];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.218.52:from];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCPT_COUNT_TWELVE(0.00)[24];
 	MISSING_XM_UA(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TO_DN_SOME(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[209.85.210.49:from];
+	ARC_NA(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FREEMAIL_CC(0.00)[google.com,kernel.org,amd.com,vger.kernel.org,lists.freedesktop.org,lists.linaro.org,lists.trustedfirmware.org,lists.infradead.org,nxp.com,gmail.com,mediatek.com,collabora.com,arm.com,qti.qualcomm.com,ffwll.ch,fooishbar.org,linaro.org,oss.qualcomm.com];
+	NEURAL_HAM(-0.00)[-1.000];
+	FROM_HAS_DN(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.218.52:from];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: U2IOZP2GDKP37LBFOEHMSDXQ7AZ5PCZY
-X-Message-ID-Hash: U2IOZP2GDKP37LBFOEHMSDXQ7AZ5PCZY
-X-MailFrom: jens.wiklander@linaro.org
+Message-ID-Hash: 7272EEUO2OAIWSHOVYNZWSK4TOD56ILQ
+X-Message-ID-Hash: 7272EEUO2OAIWSHOVYNZWSK4TOD56ILQ
+X-MailFrom: sumit.semwal@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, Apurupa Pattapu <quic_apurupa@quicinc.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Harshal Dev <quic_hdev@quicinc.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-doc@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Neil Armstrong <neil.armstrong@linaro.org>
+CC: "T.J. Mercier" <tjmercier@google.com>, Sumit Garg <sumit.garg@kernel.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, op-tee@lists.trustedfirmware.org, linux-arm-kernel@lists.infradead.org, Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, robin.murphy@arm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/U2IOZP2GDKP37LBFOEHMSDXQ7AZ5PCZY/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7272EEUO2OAIWSHOVYNZWSK4TOD56ILQ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -107,184 +112,112 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi Amir,
+Hi Jens,
 
-On Thu, Sep 11, 2025 at 5:41=E2=80=AFAM Amirreza Zarrabi
-<amirreza.zarrabi@oss.qualcomm.com> wrote:
+On Thu, 11 Sept 2025 at 13:20, Jens Wiklander <jens.wiklander@linaro.org> w=
+rote:
 >
-> For drivers that can transfer data to the TEE without using shared
-> memory from client, it is necessary to receive the user address
-> directly, bypassing any processing by the TEE subsystem. Introduce
-> TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT/OUTPUT/INOUT to represent
-> userspace buffers.
+> Hi Sumit,
 >
-> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
-> Tested-by: Neil Armstrong <neil.armstrong@linaro.org>
-> Tested-by: Harshal Dev <quic_hdev@quicinc.com>
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
->  drivers/tee/tee_core.c   | 33 +++++++++++++++++++++++++++++++++
->  include/linux/tee_drv.h  |  6 ++++++
->  include/uapi/linux/tee.h | 22 ++++++++++++++++------
->  3 files changed, 55 insertions(+), 6 deletions(-)
+> On Thu, Sep 11, 2025 at 9:15=E2=80=AFAM Sumit Semwal <sumit.semwal@linaro=
+.org> wrote:
+> >
+> > Hello Jens,
+> >
+> > On Fri, 15 Aug 2025 at 05:00, T.J. Mercier <tjmercier@google.com> wrote=
+:
+> > >
+> > > On Wed, Aug 13, 2025 at 11:13=E2=80=AFPM Sumit Garg <sumit.garg@kerne=
+l.org> wrote:
+> > > >
+> > > > On Wed, Aug 13, 2025 at 08:02:51AM +0200, Jens Wiklander wrote:
+> > > > > Export the dma-buf heap functions to allow them to be used by the=
+ OP-TEE
+> > > > > driver. The OP-TEE driver wants to register and manage specific s=
+ecure
+> > > > > DMA heaps with it.
+> > Thank you for the series.
+> >
+> > Could you please use EXPORT_SYMBOL_GPL_NS instead of EXPORT_SYMBOL for =
+these?
 >
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index f8534a00c56c..bb2e3a6c23a3 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -457,6 +457,17 @@ static int params_from_user(struct tee_context *ctx,=
- struct tee_param *params,
->                         params[n].u.value.b =3D ip.b;
->                         params[n].u.value.c =3D ip.c;
->                         break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +                       params[n].u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
-> +                       params[n].u.ubuf.size =3D ip.b;
-> +
-> +                       if (!access_ok(params[n].u.ubuf.uaddr,
-> +                                      params[n].u.ubuf.size))
-> +                               return -EFAULT;
-> +
-> +                       break;
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> @@ -490,6 +501,11 @@ static int params_to_user(struct tee_ioctl_param __u=
-ser *uparams,
->                             put_user(p->u.value.c, &up->c))
->                                 return -EFAULT;
->                         break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +                       if (put_user((u64)p->u.ubuf.size, &up->b))
-> +                               return -EFAULT;
-> +                       break;
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
->                         if (put_user((u64)p->u.memref.size, &up->b))
-> @@ -690,6 +706,13 @@ static int params_to_supp(struct tee_context *ctx,
->                         ip.b =3D p->u.value.b;
->                         ip.c =3D p->u.value.c;
->                         break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +                       ip.a =3D (__force u64)p->u.ubuf.uaddr;
+> Sure, what namespace do you want in the argument for
+> EXPORT_SYMBOL_GPL_NS()? "DMA_BUF"?
 
-There's a warning on arm32:
-drivers/tee/tee_core.c: In function 'params_to_supp':
-drivers/tee/tee_core.c:821:32: warning: cast from pointer to integer
-of different size [-Wpointer-to-int-cast]
-  821 |                         ip.a =3D (__force u64)p->u.ubuf.uaddr;
-
-I think you need to cast to unsigned long instead.
-
-Cheers,
-Jens
-
-
-> +                       ip.b =3D p->u.ubuf.size;
-> +                       ip.c =3D 0;
-> +                       break;
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> @@ -792,6 +815,16 @@ static int params_from_supp(struct tee_param *params=
-, size_t num_params,
->                         p->u.value.b =3D ip.b;
->                         p->u.value.c =3D ip.c;
->                         break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT:
-> +                       p->u.ubuf.uaddr =3D u64_to_user_ptr(ip.a);
-> +                       p->u.ubuf.size =3D ip.b;
-> +
-> +                       if (!access_ok(params[n].u.ubuf.uaddr,
-> +                                      params[n].u.ubuf.size))
-> +                               return -EFAULT;
-> +
-> +                       break;
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
->                 case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
->                         /*
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index 824f1251de60..7915e8869cbd 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -82,6 +82,11 @@ struct tee_param_memref {
->         struct tee_shm *shm;
->  };
+I think "DMA_BUF_HEAP" may be better?
 >
-> +struct tee_param_ubuf {
-> +       void __user *uaddr;
-> +       size_t size;
-> +};
-> +
->  struct tee_param_value {
->         u64 a;
->         u64 b;
-> @@ -92,6 +97,7 @@ struct tee_param {
->         u64 attr;
->         union {
->                 struct tee_param_memref memref;
-> +               struct tee_param_ubuf ubuf;
->                 struct tee_param_value value;
->         } u;
->  };
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index d843cf980d98..0e3b735dcfca 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -151,6 +151,13 @@ struct tee_ioctl_buf_data {
->  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT        6
->  #define TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT 7       /* input and outp=
-ut */
+> >
+> > With that change, please feel free to use my
+> > Acked-by: Sumit Semwal <sumit.semwal@linaro.org>
 >
-> +/*
-> + * These defines userspace buffer parameters.
-> + */
-> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT   8
-> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT  9
-> +#define TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INOUT   10      /* input and outp=
-ut */
-> +
->  /*
->   * Mask for the type part of the attribute, leaves room for more types
->   */
-> @@ -186,14 +193,17 @@ struct tee_ioctl_buf_data {
->  /**
->   * struct tee_ioctl_param - parameter
->   * @attr: attributes
-> - * @a: if a memref, offset into the shared memory object, else a value p=
-arameter
-> - * @b: if a memref, size of the buffer, else a value parameter
-> + * @a: if a memref, offset into the shared memory object,
-> + *     else if a ubuf, address of the user buffer,
-> + *     else a value parameter
-> + * @b: if a memref or ubuf, size of the buffer, else a value parameter
->   * @c: if a memref, shared memory identifier, else a value parameter
->   *
-> - * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref or value is used=
- in
-> - * the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value and
-> - * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref. TEE_PARAM_ATTR_TYPE_NO=
-NE
-> - * indicates that none of the members are used.
-> + * @attr & TEE_PARAM_ATTR_TYPE_MASK indicates if memref, ubuf, or value =
-is
-> + * used in the union. TEE_PARAM_ATTR_TYPE_VALUE_* indicates value,
-> + * TEE_PARAM_ATTR_TYPE_MEMREF_* indicates memref, and TEE_PARAM_ATTR_TYP=
-E_UBUF_*
-> + * indicates ubuf. TEE_PARAM_ATTR_TYPE_NONE indicates that none of the m=
-embers
-> + * are used.
->   *
->   * Shared memory is allocated with TEE_IOC_SHM_ALLOC which returns an
->   * identifier representing the shared memory object. A memref can refere=
-nce
+> Thanks,
+> Jens
 >
-> --
-> 2.34.1
->
+> > > > >
+> > > > > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > > > > Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> > > > > ---
+> > > > >  drivers/dma-buf/dma-heap.c | 3 +++
+> > > > >  1 file changed, 3 insertions(+)
+> > > > >
+> > > >
+> > > > Can we get an ack from DMAbuf maintainers here? With that we should=
+ be
+> > > > able to queue this patch-set for linux-next targetting the 6.18 mer=
+ge
+> > > > window.
+> > > >
+> > > > -Sumit
+> > >
+> > > Reviewed-by: T.J. Mercier <tjmercier@google.com>
+> > >
+> > > Sorry I haven't been able to participate much upstream lately.
+> > > >
+> > > > > diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-hea=
+p.c
+> > > > > index 3cbe87d4a464..cdddf0e24dce 100644
+> > > > > --- a/drivers/dma-buf/dma-heap.c
+> > > > > +++ b/drivers/dma-buf/dma-heap.c
+> > > > > @@ -202,6 +202,7 @@ void *dma_heap_get_drvdata(struct dma_heap *h=
+eap)
+> > > > >  {
+> > > > >       return heap->priv;
+> > > > >  }
+> > > > > +EXPORT_SYMBOL(dma_heap_get_drvdata);
+> > > > >
+> > > > >  /**
+> > > > >   * dma_heap_get_name - get heap name
+> > > > > @@ -214,6 +215,7 @@ const char *dma_heap_get_name(struct dma_heap=
+ *heap)
+> > > > >  {
+> > > > >       return heap->name;
+> > > > >  }
+> > > > > +EXPORT_SYMBOL(dma_heap_get_name);
+> > > > >
+> > > > >  /**
+> > > > >   * dma_heap_add - adds a heap to dmabuf heaps
+> > > > > @@ -303,6 +305,7 @@ struct dma_heap *dma_heap_add(const struct dm=
+a_heap_export_info *exp_info)
+> > > > >       kfree(heap);
+> > > > >       return err_ret;
+> > > > >  }
+> > > > > +EXPORT_SYMBOL(dma_heap_add);
+> > > > >
+> > > > >  static char *dma_heap_devnode(const struct device *dev, umode_t =
+*mode)
+> > > > >  {
+> > > > > --
+> > > > > 2.43.0
+> > > > >
+> >
+> > Best,
+> > Sumit.
+
+
+
+--=20
+Thanks and regards,
+
+Sumit Semwal (he / him)
+Senior Tech Lead - Android, Platforms and Virtualisation
+Linaro.org =E2=94=82 Arm Solutions at Light Speed
