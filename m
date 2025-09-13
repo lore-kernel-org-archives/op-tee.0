@@ -4,208 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13C83CAC582
-	for <op-tee@archiver.kernel.org>; Fri, 12 Sep 2025 16:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48749CAC587
+	for <op-tee@archiver.kernel.org>; Sat, 13 Sep 2025 06:07:11 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 2215743138
-	for <op-tee@archiver.kernel.org>; Fri, 12 Sep 2025 16:04:40 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 889CE4182B
+	for <op-tee@archiver.kernel.org>; Sat, 13 Sep 2025 06:07:10 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector1 header.b=Bx6TH2kc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hE4JRMVG;
 	dkim-atps=neutral
-Received: from mx08-00178001.pphosted.com (mx08-00178001.pphosted.com [91.207.212.93])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 42DBE406C5
-	for <op-tee@lists.trustedfirmware.org>; Fri, 12 Sep 2025 16:04:19 +0000 (UTC)
-Received: from pps.filterd (m0369457.ppops.net [127.0.0.1])
-	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58CFUFw0029599;
-	Fri, 12 Sep 2025 18:04:01 +0200
-Received: from gvxpr05cu001.outbound.protection.outlook.com (mail-swedencentralazon11013037.outbound.protection.outlook.com [52.101.83.37])
-	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 490ywn0bfm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Sep 2025 18:04:01 +0200 (MEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=av2uBWVFngVafYop2IOV/3lyK7UvLU5NO/v0Fh4r83KEm9aa989H5YJfI5XK8uq+zKFwKemp/SZFV7HkT/jr8j+c/DVVF5KSjyVMW7jHnLMC52uGrndfw/YRaGe27kW40VqKD8hDTLiF+IuCPW/kT6aBf0zQj+4wQb5/1MyoHG9c6znKiOCtJbU9VlleLE9S5chYG86alyPxbdtpJKu/5Da8HbE0LFwgR/+C7cnzSyNvKraWq9pJUJ44wmS61ZC2kUG+FehLDd6r0z4duSfD6uDhbPpKxvb9fYfmS+8DYxy/bHqjzLsQvcqa1EnFhrUJwgS5GI9PQC56couM9YL/vQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=shFndJ4soXqjZfay1OZSf17vidnwrY2UyeKVO6HGEQE=;
- b=omxZVCdLlJuYrqNVkaGg6jIpKhGvG3vn8zNufq+T0Au0MFCda6WrqKcWAga08FOjVtqCZKYaT5pIYX8hEbyussX2V8vnRcUv4l6P5BsnJWW7QC0BhwhFi2OTCj8t5WlQfpAdIXQfxahOdkvZR8qZVmh8q9V5J+SFYoyMhO3uzdzfYST4faEWa39TE5tD6Onv1tFRRBXNdrz1cdDcrLiuuL00PrHg0VYkA0fvnkqc2KQCu4wCUGl984zJDFe28sj3UtX8FrLd3Y2lQMmusvD+APgh+tgcQo7DflzwDFGqy9W8ZMYT88KcbyLKzWey8wiqqcO2rcwV+O7p/mXSt5jweQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.43) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=shFndJ4soXqjZfay1OZSf17vidnwrY2UyeKVO6HGEQE=;
- b=Bx6TH2kcJyYnPSqQZ2OYc4eax65WpElN0yvKr9r7IrxQ7uYei8hDSG/5JleaA4gNPjxu5Ms9pd8iNOBdih3VJS6AQzAZQDzQ0iqV17cBkGGhcZxrpfHqhIkLVchn4bdELyXO3tqGthcKNwCqmV3g2zd3scWTwIe7RRkwn2TPD2AWVhbwoVqCAJYi0nv4Dz/6uFz4BedB7m7NCvixGHBWktaObYptTn4AXTd07CXNJvd8k/ni3htUpQ8SjUPbZX48KXWjIsfLRqC/hCgyjFPJIsOilhFtNOCMXYW6i/pfnp2AhsIlXcbrBgJz64WjZlkKAYHobfke86s9Gt3SJpGbZQ==
-Received: from AM0PR04CA0093.eurprd04.prod.outlook.com (2603:10a6:208:be::34)
- by AM7PR10MB3938.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:20b:14e::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Fri, 12 Sep
- 2025 16:03:52 +0000
-Received: from AM3PEPF0000A792.eurprd04.prod.outlook.com
- (2603:10a6:208:be:cafe::3e) by AM0PR04CA0093.outlook.office365.com
- (2603:10a6:208:be::34) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9115.17 via Frontend Transport; Fri,
- 12 Sep 2025 16:03:52 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.43)
- smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.43 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.43; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.43) by
- AM3PEPF0000A792.mail.protection.outlook.com (10.167.16.121) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9115.13 via Frontend Transport; Fri, 12 Sep 2025 16:03:52 +0000
-Received: from SHFDAG1NODE1.st.com (10.75.129.69) by smtpO365.st.com
- (10.250.44.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Fri, 12 Sep
- 2025 18:01:29 +0200
-Received: from SAFDAG1NODE1.st.com (10.75.90.17) by SHFDAG1NODE1.st.com
- (10.75.129.69) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Fri, 12 Sep
- 2025 18:03:51 +0200
-Received: from [10.48.87.127] (10.48.87.127) by SAFDAG1NODE1.st.com
- (10.75.90.17) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Fri, 12 Sep
- 2025 18:03:50 +0200
-Message-ID: <cc53b15e-f0a4-413d-95cb-174996344d64@foss.st.com>
-Date: Fri, 12 Sep 2025 18:03:50 +0200
+Received: from mail-yx1-f50.google.com (mail-yx1-f50.google.com [74.125.224.50])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 673B140ACC
+	for <op-tee@lists.trustedfirmware.org>; Sat, 13 Sep 2025 06:06:54 +0000 (UTC)
+Received: by mail-yx1-f50.google.com with SMTP id 956f58d0204a3-60296e4926eso1396923d50.1
+        for <op-tee@lists.trustedfirmware.org>; Fri, 12 Sep 2025 23:06:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757743614; x=1758348414; darn=lists.trustedfirmware.org;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=j3DloXtBXCiPNPZKuwJVMOHp22SjYajZ2gkxD7ZsEvY=;
+        b=hE4JRMVGUMQZoNqr35kfSdfHLhBNPuK/2/yvSguOTfrco3bosxecdIzlJimjRGCcXg
+         uJKd6793yyGDEIcD40CbUkd0+HEeGrKKc/uIXX4Vb/1pxe2k8bz38yl5/qF04RTkMMiI
+         wRuUUxbTZeH+v5wbD6pEC/968k2pR6oQ5n1MgwAJsg1W1KtgLJ7wNCLh1fkwoftd1giI
+         vhxtRN8O/NhtBG0V5KiOdEocaZqgHGwlu8zAZUvEW7jou6kmjffZK8bPI1lj9M0qZMfF
+         2fvbtwigCoU4ne5K3UTakCjdY+GIOvXlDUGi9GDxTMAdzYBmkiE6jCWsQ6N0Ah53u3Uv
+         FRpw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757743614; x=1758348414;
+        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=j3DloXtBXCiPNPZKuwJVMOHp22SjYajZ2gkxD7ZsEvY=;
+        b=QUZelwN61Pk4BPQl/7MfUvItoYfnHJVJxRBD4wg34DU6UdAYXq6FIQWfOZqrttLQ8o
+         6T/RElMGvpUy2qDAqwqi7AVFlttxc0v5cRDo/2V02VgxEWAqtlGgGI7s/0O8Nzy/tuBT
+         +ion1t1uVGbzrO7N3Vri3FHxKK1kJtCqlIfs+2a8RyYyF9qF5dozr4BYmQrOP6SxBJDM
+         3rZ8imRd9aizMluPLmq+FcoGkwKhyd+ib9dtbDfaGhwd8VgSi9ZtQJqhTIcmEgMQhIdV
+         NTqj9BjZT+6tmvzUQWj0WyEgGlQQtqtBiHbf9hebcXdIwY6ZyoVQUDjH3Lb32SMMPDso
+         B12A==
+X-Gm-Message-State: AOJu0YyiM36y/40pl/EO3lgaK3EXRQLUb+NKhETlE7kt90ZS0xUNYFjQ
+	RNJTQAo+5KlNEw4bpMDLQwHr/uO4+lrldlCWvbJtQLUZoK2oxKQVfpL7UBdQtu1JpCvdzQX4WlA
+	ryXBETIdJK1sY9ikLD56qinizqSLFQOuK44zlrVk=
+X-Gm-Gg: ASbGnctFfFd9FoAHWZnvt4xPTcEt6DpMWZclw8RstD3oJrKjfgBMBtXJkU5+FNaLEy+
+	T9wvxcci/iq+zW+zimbLKMNBQ/e7DRlu0CFcDIVpG5DCKvlMO5ovwoLQ0y1/m0mcpcofP6+TyPT
+	wr+a+R8pSZGSxb9GG/ppA1+XfV6wBjHaCqcOyQut+biLozjStqnM1DwM+/r0gXVNlIZNqOXlvlq
+	Bzdm1RzHPhYFhwS/A==
+X-Google-Smtp-Source: AGHT+IGKpIERV4QP0xyACjs6k8sJU+pmkxEhqDYhpW3AdMkoQi3uIsyjujSlIhEg7aQ5M2Bq5cZ9kC7qbXhoaOcMG5w=
+X-Received: by 2002:a53:b4c3:0:b0:62b:c97a:502e with SMTP id
+ 956f58d0204a3-62bc97a5aaamr821980d50.11.1757743613547; Fri, 12 Sep 2025
+ 23:06:53 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
-Subject: Re: [PATCH v19 0/6] Introduction of a remoteproc tee to load signed
- firmware
-To: Bjorn Andersson <andersson@kernel.org>,
-        Mathieu Poirier
-	<mathieu.poirier@linaro.org>,
-        Jens Wiklander <jens.wiklander@linaro.org>,
-        Rob
- Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor
- Dooley <conor+dt@kernel.org>
-References: <20250625094028.758016-1-arnaud.pouliquen@foss.st.com>
-Content-Language: en-US
-In-Reply-To: <20250625094028.758016-1-arnaud.pouliquen@foss.st.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.48.87.127]
-X-ClientProxiedBy: EQNCAS1NODE4.st.com (10.75.129.82) To SAFDAG1NODE1.st.com
- (10.75.90.17)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM3PEPF0000A792:EE_|AM7PR10MB3938:EE_
-X-MS-Office365-Filtering-Correlation-Id: 41ec35a4-383d-48ae-17b8-08ddf215f7cd
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|7416014|376014|82310400026|1800799024|36860700013|13003099007;
-X-Microsoft-Antispam-Message-Info: 
-	=?utf-8?B?THgzTy96V2xtYVdISXZIMEpocEFnOXBIbTZXOFhrZnNMaUVFeWFpTmtpY2Rn?=
- =?utf-8?B?RzhPYUtsZkQvbXYzc2cxb0V5MmRNWitNdVZLUElqQ2krUEh5VU52UUhMeU41?=
- =?utf-8?B?YU9qdlBRUGJzQWlDR2F5UFJZWGp4Z1p4TCszK0ZiUDNQZkdyNTJsRkMrQXRo?=
- =?utf-8?B?dXU0VGFYM213QllDcGdZZ1ZpeG1VaktvdStWN0IwSHBuQ2t0QlZvZXd5U0lB?=
- =?utf-8?B?Uk1DVG5pN1NrSzZvQktwMHYvS255OWZ2MmNVVGk0QWpMZ3d1eWYydUE2emdP?=
- =?utf-8?B?Vm5EcXhjY1dvVG9wUFNMUlIxSElxMzQzdEtqU3Z0WFltZXYyTEd6ZEJuZHlM?=
- =?utf-8?B?cFY1SE9JZXhVL2hWOVZDdUNmS0cwNi9CdTVCK2xBa0dhWUMzMXNMRUsydDRM?=
- =?utf-8?B?b0FOYlJIQlFiNkdXWENiVElYQlB0T2p5aDltR1lPNm1rUnBrVlpRditoSUpm?=
- =?utf-8?B?dTlkRjlTNXFPVWtBNFlaTlVVZnc1NTVlRWRueFEzOEFsaFJXYUVXRndpZGFW?=
- =?utf-8?B?eVFyNzBLWk01MFFaN1VIVFRrOWtaUXEwb214aDdzQTlnanZpTWFocEZOZGdY?=
- =?utf-8?B?TjRDQS9reStsaStTdjhGNkhMMTlFdGFqa2duSTREL2dGU3NKL2NKSHZRZTlX?=
- =?utf-8?B?S1dZZm1zT211OFdmb0x0eFp2UHNBWmE4ZkVQWGNOU3A0QXpUR3VKdmsxOUdN?=
- =?utf-8?B?Q2xiUTU4RGVFNlVqSlZlNW9tN3hBUWp0aEwrNGlhaWdKQVh6TDZZQmZWc2pC?=
- =?utf-8?B?NjdXSzNFL1YvVEZ3Tm5acEF5QlVmbk5Zb2FRY1pCeWt6MTkybHAzOG1CU0ZX?=
- =?utf-8?B?QWpYS0ZYMUVubVNsTENhNUN6UUJFL09FOUQvYzRXemtSQWUwbW40WVgweDEz?=
- =?utf-8?B?RjNsRk5TbHZWZFk1dmhZTHlERDl6cE5ocFZiZGJPVE03Z2g0NWdMLzM5VGVS?=
- =?utf-8?B?d1NSeTB4ZkNyaG1qSFNnK1E1MlZKWUJsOGRxMGpFVDlLWmFCeGtTUisvUExy?=
- =?utf-8?B?TTFFcDZQVmxFVTJ1MTR4SDBBTjlJTFpyNHVBR28xUEJ3RnAzb3ZsSjVMMUJ4?=
- =?utf-8?B?clpUd1NuVVZSVEljdzE0UmsvOVZYQnBFYW5WMkthNFpudEw1dURPeXp1VjFM?=
- =?utf-8?B?Tnc0Nm56bTNSMTRBL2xRMGc1eGpYaUFiUEpZSEUzQy9scjJISE1pZ1QxTGV5?=
- =?utf-8?B?OFZVNlZIVjBjUERhWGFld292ZXlic3QwYThJdUFWT3EvRmJsUW41aXZuTENh?=
- =?utf-8?B?UXNPV3l4Rk4wQkNwaTBVamM2eE53TkM3OWJ1QmZXQTVZSTBuTm9MY21oV1do?=
- =?utf-8?B?L2lGREFtMUJwZFFha2xwRnh5T0laSWt0M3E0YUhvbEVYTXZOMWlRazhWbGVJ?=
- =?utf-8?B?VlNxOXd3TVdVZko3aU4yV1NlbkFxTndZeGhucUJlRUxOOVEwU1YxZjUydndS?=
- =?utf-8?B?OFNMeVFDQTNPeFVpdVNvaFNkT29Kdytud3h6aWpmZDJXT1FJUGR3cGkvb1Jj?=
- =?utf-8?B?TnQ1S0M0Y0lNZklXcXN5NDdyMjZ1dTZvYlVyV01BU1JUd3doSzEvV0tEMVBS?=
- =?utf-8?B?OTltVzRPdUxCTmh0RVlvMWRqUXd5SHJRdVNsMlZPYkZLQlp4U2dyNllaVkpi?=
- =?utf-8?B?R3c4SjREeEhZc1Z0U2dldXJJakhWeDJhTU5MR0tFeGNDa1ZjcVN2RTlQNlNy?=
- =?utf-8?B?cHA5WG9ia3J3bE03QWRHUzdUd1BGcXNzREJNUUVQRHZOYVVBWlI5am1xM2c4?=
- =?utf-8?B?S1h2OTg0cWpibkE1TFJuSnhCM2hlWW1YWld5SVdONmZmQVNyM2FXUjJmZTNx?=
- =?utf-8?B?YUpRRHl6NEFqaTVwaUorUDBtbXdkOWRtREdqK1FFZkRudUZIbFp2UXlucTNj?=
- =?utf-8?B?aUdiUXFML0hUY3BhOXFIVjNBY1d3allMeDZxRkJadjdPaWZ6dFhoMDdJNFpP?=
- =?utf-8?B?eDhEejc4WGhBSDNLSDYwRE5XYVcyejN2UnVoUjJSQXpjZkJrb2w1RFJTWXly?=
- =?utf-8?B?ODZlZjhNU1hnPT0=?=
-X-Forefront-Antispam-Report: 
-	CIP:164.130.1.43;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(376014)(82310400026)(1800799024)(36860700013)(13003099007);DIR:OUT;SFP:1101;
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Sep 2025 16:03:52.1230
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 41ec35a4-383d-48ae-17b8-08ddf215f7cd
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.43];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource: 
-	AM3PEPF0000A792.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR10MB3938
-X-Authority-Analysis: v=2.4 cv=OaqYDgTY c=1 sm=1 tr=0 ts=68c44471 cx=c_pps a=RjD04lOnQ4Lz5/88gw47hg==:117 a=peP7VJn1Wk7OJvVWh4ABVQ==:17 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=h8e1o3o8w34MuCiiGQrqVE4VwXA=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
- a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=FOPVHIcnkjUA:10 a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=s63m1ICgrNkA:10 a=KrXZwBdWH7kA:10 a=VwQbUJbxAAAA:8 a=8b9GpE9nAAAA:8 a=NEAV23lmAAAA:8 a=KKAkSRfTAAAA:8 a=xw-PHShiiOY97SZu4-oA:9 a=QEXdDO2ut3YA:10
- a=T3LWEMljR5ZiDmsYVIUa:22 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-ORIG-GUID: bNPVEa56AIYNM6znhVe8x73PIMedoeLr
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA3MDAwNiBTYWx0ZWRfX530NuF79EQ5B tKrT9ESVkrIsmXV9uspnZSsFckEVVfmumx0ryN7JE8QzyscMebS1BqtXF4IPIzHWw89FdYtR6Fx nQX7qPqsWv/NUAOwSoF3YD6MPwWJ1+ACa9p9PyPU2duLbp6zAZFVGsss8leVNtS/CLkIYBfqovP
- 1Lx26qnvKC4+pr7+1DVrhFc0CpM80wamYr4vzBk4z4Ontcx0Hm5MCl4DUL9x4wGKIMmqXEkTtq5 tnTid1Xu59p70a8fR/hSfD/5vUqh10OI26YLREQeyyyhJLcCMoIj7xhnPGh5eZQW02RcK6qTWnX HXc238Qd4L8eTDLZ5tKI6g0cY4G8E5cdP5FuRQzQHC0Z8IEcDjAH8rdUxyQUQ9PoLail19HlI3L A4D49b/I
-X-Proofpoint-GUID: bNPVEa56AIYNM6znhVe8x73PIMedoeLr
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-12_05,2025-09-12_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 clxscore=1011
- suspectscore=0 bulkscore=0 adultscore=0 priorityscore=1501 malwarescore=0
- spamscore=0 impostorscore=0 classifier=typeunknown authscore=0 authtc=
- authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2507300000 definitions=main-2509070006
-X-Rspamd-Queue-Id: 42DBE406C5
-X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-3.60 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:91.207.212.93];
-	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector1];
+From: Masami Ichikawa <masami256@gmail.com>
+Date: Sat, 13 Sep 2025 15:06:42 +0900
+X-Gm-Features: AS18NWDUKfK5nKrFpeFS-4HKsEA1y3ubomJSoJTXYf4BNHilPUWMvzTo1lvBWww
+Message-ID: <CACOXgS-Bo2W72Nj1_44c7bntyNYOavnTjJAvUbEiQfq=u9W+-g@mail.gmail.com>
+Subject: [BUG] tee_shm: NULL pointer dereference in unpin_user_pages() on
+ invalid shm pages
+To: op-tee@lists.trustedfirmware.org
+Content-Type: text/plain; charset="UTF-8"
+X-Rspamd-Queue-Id: 673B140ACC
+X-Spamd-Bar: -
+X-Spamd-Result: default: False [-1.00 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	RBL_VIRUSFREE_BOTNET(2.00)[74.125.224.50:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[91.207.212.93:from];
-	RCVD_TLS_LAST(0.00)[];
-	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DKIM_TRACE(0.00)[foss.st.com:+];
-	RCPT_COUNT_TWELVE(0.00)[12];
+	BAD_REP_POLICIES(0.10)[];
 	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	RCPT_COUNT_ONE(0.00)[1];
+	RCVD_TLS_LAST(0.00)[];
+	DMARC_POLICY_ALLOW(0.00)[gmail.com,none];
+	R_DKIM_ALLOW(0.00)[gmail.com:s=20230601];
+	ARC_NA(0.00)[];
+	DKIM_TRACE(0.00)[gmail.com:+];
 	FROM_HAS_DN(0.00)[];
-	ASN(0.00)[asn:52129, ipnet:91.207.212.0/23, country:US];
-	TAGGED_RCPT(0.00)[dt];
-	DNSWL_BLOCKED(0.00)[164.130.1.43:received];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=13503fc744=arnaud.pouliquen@foss.st.com];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.83.37:received];
-	HAS_XOIP(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	FORGED_SENDER_VERP_SRS(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[st.com:dkim];
-	RCVD_COUNT_SEVEN(0.00)[8]
+	MISSING_XM_UA(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	MID_RHS_MATCH_FROMTLD(0.00)[];
+	TO_DN_NONE(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	NEURAL_HAM(-0.00)[-0.679];
+	R_SPF_ALLOW(0.00)[+ip4:74.125.0.0/16];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[74.125.224.50:from];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:74.125.0.0/16, country:US];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: GDP2TVDYZAC3Y3VLAAZDS46APRUII2LM
-X-Message-ID-Hash: GDP2TVDYZAC3Y3VLAAZDS46APRUII2LM
-X-MailFrom: prvs=13503fc744=arnaud.pouliquen@foss.st.com
+Message-ID-Hash: IE4UTIKLYYMVEQB5I3IQ5CGYG5M5JI33
+X-Message-ID-Hash: IE4UTIKLYYMVEQB5I3IQ5CGYG5M5JI33
+X-MailFrom: masami256@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GDP2TVDYZAC3Y3VLAAZDS46APRUII2LM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IE4UTIKLYYMVEQB5I3IQ5CGYG5M5JI33/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -213,106 +105,204 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hello BJorn, Mathieu,
+Hi.
 
-Do you think, you could find time to review this series before the
-next merge window.
+While doing my fuzzing work, I found the following kernel crash by
+NULL pointer dereference in Linux 6.17-rc5.
 
-Regarding the discussion between Harshal and Sumit, I did not notice any
-comments requesting immediate updates; the conversation focused more
-on potential future extensions for FF-A.
+[   16.143987] Unable to handle kernel NULL pointer dereference at
+virtual address 0000000000000008
+[   16.144141] Mem abort info:
+[   16.144215]   ESR = 0x0000000096000004
+[   16.144246]   EC = 0x25
+** replaying previous printk message **
+[   16.144246]   EC = 0x25: DABT (current EL), IL = 32 bits
+[   16.144271]   SET = 0, FnV = 0
+[   16.144289]   EA = 0, S1PTW = 0
+[   16.144308]   FSC = 0x04: level 0 translation fault
+[   16.144325] Data abort info:
+[   16.144335]   ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000
+[   16.144346]   CM = 0, WnR = 0, TnD = 0, TagAccess = 0
+[   16.144358]   GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
+[   16.144412] user pgtable: 4k pages, 52-bit VAs, pgdp=0000000048b34b00
+[   16.144432] [0000000000000008] pgd=0800000040bb3403, p4d=0000000000000000
+[   16.144876] Internal error: Oops: 0000000096000004 [#1]  SMP
+[   16.146429] Modules linked in:
+[   16.146775] CPU: 0 UID: 0 PID: 148 Comm: xtest Not tainted
+6.17.0-rc5 #58 PREEMPT
+[   16.146995] Hardware name: linux,dummy-virt (DT)
+[   16.147181] pstate: 21402005 (nzCv daif +PAN -UAO -TCO +DIT -SSBS BTYPE=--)
+[   16.147330] pc : unpin_user_pages+0x78/0xd0
+[   16.147763] lr : unpin_user_pages+0xa0/0xd0
+[   16.147842] sp : ffff800084403d20
+[   16.147912] x29: ffff800084403d20 x28: fff00000054aa300 x27: 0000000000000000
+[   16.148089] x26: 0000000000000000 x25: 0000000000000000 x24: 0000000000000000
+[   16.148235] x23: fff00000004fb5a8 x22: 0000000000000001 x21: 000000000000000d
+[   16.148401] x20: fff0000000b2f9c0 x19: 0000000000000011 x18: 0000000000000001
+[   16.148544] x17: 0000000000000000 x16: 0000000000000000 x15: 0000000000000000
+[   16.148659] x14: 0000000000000002 x13: 0000000000000002 x12: 0000000000037d0f
+[   16.148786] x11: fff0000001dad708 x10: 000000000000003f x9 : 0000000000000d1b
+[   16.148925] x8 : 00000000000007e0 x7 : 0000000000000001 x6 : 000000000000000d
+[   16.149039] x5 : ffffffffffffffff x4 : ffffffffffffffff x3 : 000000000000000e
+[   16.149167] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffc1ffc0fd68c0
+[   16.149351] Call trace:
+[   16.149520]  unpin_user_pages+0x78/0xd0 (P)
+[   16.149684]  tee_shm_put+0x134/0x184
+[   16.149783]  tee_shm_fop_release+0x14/0x24
+[   16.149866]  __fput+0xcc/0x2dc
+[   16.149925]  fput_close_sync+0x40/0x108
+[   16.149991]  __arm64_sys_close+0x38/0x7c
+[   16.150058]  invoke_syscall+0x48/0x110
+[   16.150127]  el0_svc_common.constprop.0+0x40/0xe8
+[   16.150227]  do_el0_svc+0x20/0x2c
+[   16.150303]  el0_svc+0x34/0xf0
+[   16.150369]  el0t_64_sync_handler+0xa0/0xe4
+[   16.150439]  el0t_64_sync+0x198/0x19c
+[   16.150629] Code: aa0203e3 eb02027f 54000109 f8627a82 (f9400444)
+[   16.150940] ---[ end trace 0000000000000000 ]---
+[   16.151230] Kernel panic - not syncing: Oops: Fatal exception
+[   16.151466] SMP: stopping secondary CPUs
+[   16.151838] Kernel Offset: disabled
+[   16.151911] CPU features: 0x000000,0000d180,2bbe33e1,957e7f3f
+[   16.152019] Memory Limit: none
+[   16.152284] ---[ end Kernel panic - not syncing: Oops: Fatal exception ]---
 
-Thanks and Regards,
-Arnaud.
+decode_stacktrace.sh shows the following call sequence.
 
-On 6/25/25 11:40, Arnaud Pouliquen wrote:
-> Main updates from version V18[2]:
-> - rework documentation for the release_fw ops
-> - rework function documentation in remoteproc_tee.c
-> - replace spinlock by mutex and generalize usage in remoteproc_tee.c
->
->
-> Main updates from version V17[1]:
-> - Fix:  warning: EXPORT_SYMBOL() is used, but #include <linux/export.h>
->    is missing
->
-> More details are available in each patch commit message.
->
-> [1]https://lore.kernel.org/linux-remoteproc/20250613091650.2337411-1-arnaud.pouliquen@foss.st.com/
-> [2]https://lore.kernel.org/linux-remoteproc/20250616075530.4106090-1-arnaud.pouliquen@foss.st.com/
->
-> Tested-on: commit 19272b37aa4f ("Linux 6.16-rc1")
->
-> Description of the feature:
-> --------------------------
-> This series proposes the implementation of a remoteproc tee driver to
-> communicate with a TEE trusted application responsible for authenticating
-> and loading the remoteproc firmware image in an Arm secure context.
->
-> 1) Principle:
->
-> The remoteproc tee driver provides services to communicate with the OP-TEE
-> trusted application running on the Trusted Execution Context (TEE).
-> The trusted application in TEE manages the remote processor lifecycle:
->
-> - authenticating and loading firmware images,
-> - isolating and securing the remote processor memories,
-> - supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
-> - managing the start and stop of the firmware by the TEE.
->
-> 2) Format of the signed image:
->
-> Refer to:
-> https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_core.c#L18-L57
->
-> 3) OP-TEE trusted application API:
->
-> Refer to:
-> https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remoteproc.h
->
-> 4) OP-TEE signature script
->
-> Refer to:
-> https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
->
-> Example of usage:
-> sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key ${OP-TEE_PATH}/keys/default.pem
->
->
-> 5) Impact on User space Application
->
-> No sysfs impact. The user only needs to provide the signed firmware image
-> instead of the ELF image.
->
->
-> For more information about the implementation, a presentation is available here
-> (note that the format of the signed image has evolved between the presentation
-> and the integration in OP-TEE).
->
-> https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
->
-> Arnaud Pouliquen (6):
->    remoteproc: core: Introduce rproc_pa_to_va helper
->    remoteproc: Add TEE support
->    remoteproc: Introduce optional release_fw operation
->    dt-bindings: remoteproc: Add compatibility for TEE support
->    remoteproc: stm32: Create sub-functions to request shutdown and
->      release
->    remoteproc: stm32: Add support of an OP-TEE TA to load the firmware
->
->   .../bindings/remoteproc/st,stm32-rproc.yaml   |  58 +-
->   drivers/remoteproc/Kconfig                    |  10 +
->   drivers/remoteproc/Makefile                   |   1 +
->   drivers/remoteproc/remoteproc_core.c          |  52 ++
->   drivers/remoteproc/remoteproc_internal.h      |   6 +
->   drivers/remoteproc/remoteproc_tee.c           | 708 ++++++++++++++++++
->   drivers/remoteproc/stm32_rproc.c              | 139 +++-
->   include/linux/remoteproc.h                    |   6 +
->   include/linux/remoteproc_tee.h                |  87 +++
->   9 files changed, 1023 insertions(+), 44 deletions(-)
->   create mode 100644 drivers/remoteproc/remoteproc_tee.c
->   create mode 100644 include/linux/remoteproc_tee.h
->
->
-> base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+[   20.554057] unpin_user_pages (./include/linux/page-flags.h:284
+mm/gup.c:259 mm/gup.c:420 mm/gup.c:400) (P)
+[   20.554204] tee_shm_put (drivers/tee/tee_shm.c:42
+drivers/tee/tee_shm.c:57 drivers/tee/tee_shm.c:587)
+[   20.554291] tee_shm_fop_release (drivers/tee/tee_shm.c:437)
+[   20.554366] __fput (fs/file_table.c:469)
+[   20.554429] fput_close_sync (fs/file_table.c:574)
+[   20.554496] __arm64_sys_close (fs/open.c:1590 fs/open.c:1572 fs/open.c:1572)
+[   20.554565] invoke_syscall (./arch/arm64/include/asm/current.h:19
+arch/arm64/kernel/syscall.c:54)
+[   20.554639] el0_svc_common.constprop.0
+(./include/linux/thread_info.h:135 arch/arm64/kernel/syscall.c:140)
+[   20.554719] do_el0_svc (arch/arm64/kernel/syscall.c:152)
+[   20.554782] el0_svc (./arch/arm64/include/asm/irqflags.h:55
+./arch/arm64/include/asm/irqflags.h:76
+arch/arm64/kernel/entry-common.c:169
+arch/arm64/kernel/entry-common.c:182
+arch/arm64/kernel/entry-common.c:880)
+[   20.554842] el0t_64_sync_handler (arch/arm64/kernel/entry-common.c:899)
+[   20.554914] el0t_64_sync (arch/arm64/kernel/entry.S:596)
 
+I set up a test environment using  qemu_v8.xml in the OP-TEE/manifest
+repository.
+
+## Test case
+
+This test is based on xtest_tee_test_1004 included in xtest in the
+optee_test repository. For fuzzing, the following data is created
+using xtest_crypto_test().
+It creates parameters like this.
+
+op.params[0].tmpref.buffer = crypt_in;   // crypt_in =
+malloc(sizeof(uint8_t) * 0xff);
+op.params[0].tmpref.size = input_len;    // 0xffff
+op.params[1].tmpref.buffer = crypt_out;  // crypt_out =
+malloc(sizeof(uint8_t) * 0xff);
+op.params[1].tmpref.size = input_len;    // 0xffff
+
+When TEEC_InvokeCommand() in libteec was called with above parameters,
+it printed folloing errorr then, linux kernel was crashed.
+
+ERR [152] LT:TEEC_InvokeCommand:730: TEE_IOC_INVOKE failed
+
+## Crash scenario
+
+1. modified version of xtest_crypto_test() creates parameters.
+2. xtest_crypto_test() calls TEEC_InvokeCommand() in the libteec.
+3. TEEC_InvokeCommand calls ioctl(2).
+4. tee_ioctl_invoke() in the tee_core.c is called by ioctl(2).
+5. tee_ioctl_invoke() calles params_from_user().
+6. In the params_from_user(), it returned -EINVAL because of following
+if condition was true.
+        if ((ip.a + ip.b) < ip.a ||
+            (ip.a + ip.b) > shm->size) {
+                tee_shm_put(shm);
+                return -EINVAL;
+        }
+
+7. tee_ioctl_invoke() recive an error from params_from_user() so that
+it run clean up process(in the out label).
+8. tee_ioctl_invoke() returns -EINVAL.
+9. TEEC_InvokeCommand() prints an error log then calls
+teec_free_temp_refs() in libteec.
+10. teec_free_temp_refs() calls TEEC_ReleaseSharedMemory().
+11. TEEC_ReleaseSharedMemory() calls close(2).
+12. tee_shm_put() in the tee_shm.c is called.
+13. tee_shm_put() calls tee_shm_release().
+14. tee_shm_release() calls release_registered_pages().
+15. release_registered_pages() calls unpin_user_pages().
+16. Null pointer dereference is happened in unpin_user_pages().
+
+## Debugging
+
+I added following debug logs in the tee_shm_release()
+
+        } else if (shm->flags & TEE_SHM_DYNAMIC) {
+                int rc = teedev->desc->ops->shm_unregister(shm->ctx, shm);
+                size_t i;
+                if (rc)
+                        dev_err(teedev->dev.parent,
+                                "unregister shm %p failed: %d", shm, rc);
+
+                pr_info("%s:%d: shm->num_pages: 0x%lx, shm->size:
+0x%lx\n", __func__, __LINE__, shm->num_pages, shm->size);
+                for (i = 0; i < shm->num_pages; i++) {
+                        if (!shm->pages[i]) {
+                                pr_info("%s:%d: shm->pages[%ld] is
+NULL", __func__, __LINE__, i);
+                        }
+                }
+                release_registered_pages(shm);
+        }
+
+It showed the following logs.
+[   21.350894] tee_shm_release:57: shm->num_pages: 0x11, shm->size: 0xd690
+[   21.350977] tee_shm_release:60: shm->pages[14] is NULL
+[   21.351003] tee_shm_release:60: shm->pages[15] is NULL
+[   21.351012] tee_shm_release:60: shm->pages[16] is NULL
+
+According to the above logs, shm->num_pages is 17 but the pages array
+contains NULL pointers so that it causes a NULL pointer dereference
+bug.
+
+I have confirmed that I can prevent NULL pointer dereference by making
+the following changes.
+
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 2a7d253d9c55..c5d39a0efbdb 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -34,9 +34,16 @@ static void shm_get_kernel_pages(struct page
+**pages, size_t page_count)
+ static void release_registered_pages(struct tee_shm *shm)
+ {
+        if (shm->pages) {
+-               if (shm->flags & TEE_SHM_USER_MAPPED)
+-                       unpin_user_pages(shm->pages, shm->num_pages);
+-               else
++               if (shm->flags & TEE_SHM_USER_MAPPED) {
++                       size_t num_pages = 0;
++                       size_t i;
++                       for (i = 0; i < shm->num_pages; i++, num_pages++) {
++                               if (!shm->pages[i])
++                                       break;
++                       }
++
++                       unpin_user_pages(shm->pages, num_pages);
++               } else
+                        shm_put_kernel_pages(shm->pages, shm->num_pages);
+
+                kfree(shm->pages);
+
+
+Regards,
+
+-- 
+Masami Ichikawa
