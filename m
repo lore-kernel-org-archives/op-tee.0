@@ -4,201 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B631ECAC59D
-	for <op-tee@archiver.kernel.org>; Wed, 17 Sep 2025 13:48:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7A40CAC59A
+	for <op-tee@archiver.kernel.org>; Wed, 17 Sep 2025 13:58:39 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id C8DBF41874
-	for <op-tee@archiver.kernel.org>; Wed, 17 Sep 2025 13:48:51 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0A2FB431A4
+	for <op-tee@archiver.kernel.org>; Wed, 17 Sep 2025 13:58:39 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=Oeg1blQt;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=fvohezho;
 	dkim-atps=neutral
-Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com [185.132.182.106])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id C957640AF2
-	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Sep 2025 13:48:34 +0000 (UTC)
-Received: from pps.filterd (m0241204.ppops.net [127.0.0.1])
-	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58HB7AXr022993;
-	Wed, 17 Sep 2025 15:48:15 +0200
-Received: from duzpr83cu001.outbound.protection.outlook.com (mail-northeuropeazon11012026.outbound.protection.outlook.com [52.101.66.26])
-	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 497fxuv2ts-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 17 Sep 2025 15:48:15 +0200 (MEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VbHTUIaFkoXoDaT58eKhiHJhvYkaJhhm/NEEfDx3qxbgy/KF+BboZ6ThI0UmoOKhbmHSn/wJVeAWwMU2hYfq9NZRkL45UOjysc2GqjaNb5254EfpdKA0q9ahmq7F5sfSoAJfijUCgeVnuyvbLA73dOWdXkOkETZi9Z/pQVOLQJJwj0NuPLQaQuQhmzyQQkYPOc0Ni8RmGKFm3TmNT1/q22zI6NYouzzuKzn581QLm+yukuAcEOviBhRmCiCz4x1DcxxnvtEEYyFuk2YFyKRJUA/33HyLIqs859rlUdRo69a2NQTZ0s8fvS7uGMm8X5Sjizzeo/UQWZbJAnWlSiMr9Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+7QlJx5YkaYf4BSoOsr67PuqI+N1OPJZr4jBrjlAJhU=;
- b=rUOeY7F86Vbt1kSve2gGgcS5WKezDwWFalUe24OWEM6Rp8ZB5LTPRBha0pkLvjcsppSVssA5lUSWFldSYO537RZIRAz34T38tdsV1YQg4EHaGEpFxNZrg41L01ZUYWZlULMdtisUglzspTkqDL4D7gLu0AOVjfG67hRLkHh5CiizNhxQr9sOSGcHr+ioWIZfMyTCWsBv+KuOLxspeZHQMNRoPi6K/F7cL529ClZiPuRrputqf1nD9ikwqDlz8VuBzr48rNjoIzngFVaXg2PY6CtpnqQg7QTdiYh9IAB9JRNftDXk4otSM6Drk5EqUN6vIZi1Oj/VKrHK86Go/ZE4vQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.43) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+7QlJx5YkaYf4BSoOsr67PuqI+N1OPJZr4jBrjlAJhU=;
- b=Oeg1blQtEuD4v/Sx7j+b18PYNtXeHa25YoLCDDOxU7E+Ttx8rRb/IKd+aPWf3v5M1yNX4b7QDw3XE+uJPqNR1mUW9J3w/Px1MOM6TZrKdkAFGHWmRxDZR9Nu11K+gRqQ1SZwDLaZSOlgWjvIYfXx/FXW1BOO8AYCSu4u4EUtyDEiFUb7PvVuewMJ5tqlwsQ89WP2Pspi+OgO+0S8VwPJBlwWX067oBSVsQbmA1VSNpjpeX5Sfp//7p+ctQCNYOVA8OGnknSPLq7ec6xzIBPp9E8rnF0z1FUZM4uLEXVQn2lVICdNJQvdghI23K42vF38C4Tgr1g61EKhSaf0I12xkQ==
-Received: from DB9PR05CA0019.eurprd05.prod.outlook.com (2603:10a6:10:1da::24)
- by GV1PR10MB5914.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:150:59::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9137.13; Wed, 17 Sep
- 2025 13:48:04 +0000
-Received: from DB5PEPF00014B9E.eurprd02.prod.outlook.com
- (2603:10a6:10:1da:cafe::8d) by DB9PR05CA0019.outlook.office365.com
- (2603:10a6:10:1da::24) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9137.13 via Frontend Transport; Wed,
- 17 Sep 2025 13:48:03 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.43)
- smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.43 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.43; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.43) by
- DB5PEPF00014B9E.mail.protection.outlook.com (10.167.8.171) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9137.12 via Frontend Transport; Wed, 17 Sep 2025 13:48:03 +0000
-Received: from SHFDAG1NODE2.st.com (10.75.129.70) by smtpO365.st.com
- (10.250.44.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Wed, 17 Sep
- 2025 15:45:18 +0200
-Received: from SAFDAG1NODE1.st.com (10.75.90.17) by SHFDAG1NODE2.st.com
- (10.75.129.70) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Wed, 17 Sep
- 2025 15:47:42 +0200
-Received: from [10.48.87.127] (10.48.87.127) by SAFDAG1NODE1.st.com
- (10.75.90.17) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Wed, 17 Sep
- 2025 15:47:41 +0200
-Message-ID: <8d385f2e-6470-4d66-be0b-a2a448a81fa4@foss.st.com>
-Date: Wed, 17 Sep 2025 15:47:40 +0200
+Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com [209.85.219.176])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id DC5654186B
+	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Sep 2025 13:58:23 +0000 (UTC)
+Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-ea3dbcc5410so3478809276.2
+        for <op-tee@lists.trustedfirmware.org>; Wed, 17 Sep 2025 06:58:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1758117503; x=1758722303; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Shu+bspJQL0TnLBtHD+UPDCWTFnNsaatRhoZeEidqLI=;
+        b=fvohezhoajsP9yQ/Is3vi9b0L+qr4vMBOPQTBsA7jdoqUB5/VADjfVDNPuaA2gDaJi
+         45nkXDWyQUrWMHkLQiUcAtcDOSHeaZTF6Mt4uET11xBT+gsPCo5/Yy7bJr0DQvCIip6z
+         Rbx1nOa/sQ1CBx/sQ5MvEN5TNcw9TkdBF6mBjBVWjo4WpXt7LTGwiRXtz18VijT0Hr8Q
+         GnuOfVNMS9/eS0t5hx4Ef/9oFDKmXY6vQykLTaFig4L+/i07w7Sb6KKMqtpjwqSkn8BU
+         1BbatQKog6mAYukRhEzm6/r3+ItOOI6lnoC9m4PsfayGJ6XJ4rI9F8OnZXtN9JIggGa6
+         IcQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758117503; x=1758722303;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Shu+bspJQL0TnLBtHD+UPDCWTFnNsaatRhoZeEidqLI=;
+        b=VUWi0B/NVlWnlS4QU0rwP4hFclf9BJf2+4iMvDPyBpIWKi+s3bxa48kzZtAL1eeK8f
+         QUEQtI0kkQUkJyuyvOLM2aCOIBqinfypk/M2/UufnKalU/bAsDqPCt/7U/nTEi+K5yVd
+         dpHV2qK/c/ZiE/gQoBq4IA5vOzwo+Z3PsI7RurxCctDA7yn0XmvmZ2LGQZ3m/mOXB0ay
+         O+I11t4AAkPnAlJzP17mVg5FCwTqlktJXUL9ssSE7vIEy+uNi4slNd1KBlaiPTgZ0y3a
+         U4Cy4TK4e/Vhy0kOGC5s+XPeAujUJAcHLcK9FozEducoW5YqNdxcmKv90BkE3ivSdGQB
+         JrCA==
+X-Gm-Message-State: AOJu0Yyp3s+hZWjBP7UslHX7loqVMp2zT/VbQdHptyD9EdaU0iW7JKWI
+	rxUJ8HXV0zy7pN+q/fmoXGtddSur01XvLcvtvdxDD6gxmmVHdO1ZdqFafqXkQGRbk0xQEdY5fIb
+	dPmumO/Z0p/lcOd4h8yjdAJjnYRTH/Ho1tmQOZTwQmQ==
+X-Gm-Gg: ASbGncukEV5phRoHcYAnGZr6iQED2wqIr2zO43zro1/gE1Wpvxye+hOE04QZPboeeod
+	Ymn+e9w7Co4saCMwemCHoBUJ02EAsVt4p4xb/F0OLnfO6YLxSYa7/ZBPZIj5I2XJh1M3HIg3kdS
+	DuvkffHI7xz8sMVbkarRtLmq6SvtTB2i369MANEIhbaycIbGjTPOyhVYIfk/3LgBTE4PmtRF8WZ
+	YVFes0=
+X-Google-Smtp-Source: AGHT+IELNjjjC0BwfjYcdwjdO3tMgqIBmcWRVakY39ytAhG+/gYDiAcyJjtb2DGIKRN0oDAR97WZG6XE/hXpIQd3aLs=
+X-Received: by 2002:a05:6902:2b02:b0:ea4:e116:3831 with SMTP id
+ 3f1490d57ef6-ea5c022cebamr2093529276.0.1758117503139; Wed, 17 Sep 2025
+ 06:58:23 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v19 4/6] dt-bindings: remoteproc: Add compatibility for
- TEE support
-To: Sumit Garg <sumit.garg@kernel.org>
-References: <20250625094028.758016-1-arnaud.pouliquen@foss.st.com>
- <20250625094028.758016-5-arnaud.pouliquen@foss.st.com>
- <aMkqifHSdlCs4VjA@sumit-X1>
- <62bdb238-7440-451b-84ef-79f846b10ba0@foss.st.com>
- <aMqIhFdIqp5auH22@sumit-X1>
-Content-Language: en-US
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
-In-Reply-To: <aMqIhFdIqp5auH22@sumit-X1>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: base64
-X-Originating-IP: [10.48.87.127]
-X-ClientProxiedBy: SHFCAS1NODE1.st.com (10.75.129.72) To SAFDAG1NODE1.st.com
- (10.75.90.17)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB5PEPF00014B9E:EE_|GV1PR10MB5914:EE_
-X-MS-Office365-Filtering-Correlation-Id: b473709f-9fb0-47d9-f832-08ddf5f0d2bd
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|36860700013|376014|7416014|1800799024|82310400026|13003099007;
-X-Microsoft-Antispam-Message-Info: 
-	=?utf-8?B?NkhFeW9ubVlIekJjdWVGSXFSdVhtU0ozNGorZzJXRTJMTjY4QTlqOWt1Rkla?=
- =?utf-8?B?VGpoZGQ4VVI1M2wzU3lCbXBEQ1NSNFZja0MvckQvSmovNzRVM3h1YnRaS1li?=
- =?utf-8?B?TVhQT0RqOHVJWklmK1FvMjZkZVF4S1V5TzgyT1pycHZUL1VMSU1KWktVM2cy?=
- =?utf-8?B?cVlwMTY1VDRLYXFaSld3Nnhrek42UFlmVHlOdUloTXdHZ3VSNlJseVMzcEpQ?=
- =?utf-8?B?QTY4VDNocEc0VE5vYmNDakJMQlBWRE1XYnZHVkM4dGhqa2ZTUWdxQlFmU1dN?=
- =?utf-8?B?RW1uNHVyeWczdDhtckttU2IzUHMxY3ptUnNVQlhIcVZEYkd0cjNDa2hhRGZP?=
- =?utf-8?B?bHVqRVYrUUhXRnlRSzRxRTgxUkdMWWludUpLUzV3K0wraWtzQjZWWmtzNGh4?=
- =?utf-8?B?ckZiQVpxZkppaTFOdGplMXpOTkJ3ZDBBRjlLU05scXNSeW1palRYYitwakJC?=
- =?utf-8?B?b1ZabXZCVVNwMFQ5N0NNdnJOV1ZacFVvdnBOR29zVzJWWHE3RU5pN0xyZzRU?=
- =?utf-8?B?WVk1Ylo3eS8yVklYR1FKdXdHUndGVU50RTE2bXFVZWZSempuVkxkRUcvaDVS?=
- =?utf-8?B?YUw1QlQyQ2lkQjA1ZWlwUVg4U3Z1c05VeTd4YnhsVDdvL2twb0NqZ2ZuSnEw?=
- =?utf-8?B?MEUxUmZoN3BmVDgrMTFTYjBFZFpoRWEwbnB0OWlSSXBtYTgrRzRGN3lFTGF6?=
- =?utf-8?B?WHg1bC82aW5iTk1qMVZOcTJuaEsxQUJvcFQ3WFkxZlBLeTZBSFpMT25XUHR4?=
- =?utf-8?B?cGNYUGFNNDVjTHBReTJjWmtFNm93NllrU2FnTE5pRjd6ZTdXdWJXWXFMcm1k?=
- =?utf-8?B?VC9WS0F0UG1BWjdNOEFkbXF6SGJpQU9oTXRSZTBtcHZOOHoyYkd2K1ZhN0V0?=
- =?utf-8?B?dDRuYVFIZ2tpWnk5MkpWK1Ezd29HN2tUb1phdDV1alNjeUtJZmxjOGx1eGVj?=
- =?utf-8?B?Nm5VL2swMWMxVE8xamhuekZ4YjZNckpDMEI1eVI4QmY5eHdBbjE1YjZ0Vm1W?=
- =?utf-8?B?b3BSZnRPN2NHRGo4c1Fwa0o3TGFDMzVJdXpoTkUwMU1pS3VmYjlkaXRLMnd1?=
- =?utf-8?B?aW5Xa01ieTVQcWhKcWJ3S2hsTllIQ0UvYWRDQjNoVmN1clVMUDA1aGRQZVBq?=
- =?utf-8?B?TzVVQmhhMlY3ZFJWaGN1RU53WFAzNVljempOUTF2bW52Z1JjV1NWMGVrY3RO?=
- =?utf-8?B?SUxnT2pzaFg2S093ejl5Und2Y3htdTU2UW5NOUh0ZHBVRmlZakNtNldzR2Fz?=
- =?utf-8?B?WThBR2xSU1ZVblFDNGlBVmo5VXRRT2NDVzZRZWErNm5NL2ZDL0hBdlRpNHdX?=
- =?utf-8?B?bWxzMExIeWJ2aWJxVklGaURlS3V4a3ZsL3ZBVHNxcFNuQW12dkFuaTQ0Y0NU?=
- =?utf-8?B?ejRGVHVlcUg1Q1Y5UFRXMUJkL2xmbVJmSGhWTG81RjVCdDdwK3h1eTI3QUZh?=
- =?utf-8?B?Nnhld1FtK2VvdGw1SEZNSTFocUltSFFaaW44dWI0MzNWOFAvS0ZmQ09PcUVO?=
- =?utf-8?B?cmpwMzF6aDdrd2FzamhZUzZVNTdGZUxuSHlKSWp6VlVmRysxeHZaTXV0YzVG?=
- =?utf-8?B?YVFSN0I1Sy9vMGxSa0V1OWQzNUVBY1Z4cWI4ejdzL205WWdtZlgzTE5mVkJk?=
- =?utf-8?B?cFJ6d3RRdEhKUkprN0JKcFpidlpHZTZhanBucW5rSkxLMHhnYlNGSlpJVkl1?=
- =?utf-8?B?Tm1xeWRjTVNEeUxyaGNLY3dMbWVPYmM2NjhTdWhrMVJ6dVRaMllvZ3A5c2lI?=
- =?utf-8?B?RDA0OTJsNDV3VTU3SjJGWjd3RVdyQitWRW1aaWF1MmhzOVIwUHUzV1lCbDFm?=
- =?utf-8?B?WVBzdWExcktwOW0yNFo4VlRnMTZtWHd1YVBlazZlaTJxaVpOa0FQZUJtRkZy?=
- =?utf-8?B?c0Fsajk2QktwQ0FuczZMdlViUTVaQzNQMkpBdkhrYVV4Mi9IY3U4SWJycVJC?=
- =?utf-8?B?NUxpVGNHUW16d3RkbWV3a0NvZ3ZLZk4xNHhOYWUxU1Y1bFFRZ09sa2tpbkp0?=
- =?utf-8?B?a1Nuam9td1lBPT0=?=
-X-Forefront-Antispam-Report: 
-	CIP:164.130.1.43;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700013)(376014)(7416014)(1800799024)(82310400026)(13003099007);DIR:OUT;SFP:1101;
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Sep 2025 13:48:03.1819
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: b473709f-9fb0-47d9-f832-08ddf5f0d2bd
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.43];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource: 
-	DB5PEPF00014B9E.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR10MB5914
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwMiBTYWx0ZWRfXyBTHGch09Etv MAa1JAVo5K65Tfbbzqeo6hNM7rq5D9XbrKqcoFRaARzc+ptn3nkpADeATEZa77t5tRRRcmvlboX B8gUtaSrwN/oodfScda6wXwDJljYS9+p7NCqtY7VDaItZEn20KgjadFVWNlN/kzLZjVj5uxg5ai
- 0stBY/4aWuayywUwRYIgYckUlZDRQTt8VW2rP5Dmi5buYQf+h4SOeBCSQezFbhnL3KraJh9rOQ7 iuMzuZ/SvTEqBmiLf9Ycmf2WhKAeXZP+7LrR7qXZpYsZrrGaex8TAUZR/ZWXFzfhmcmTWYXMsnK QfvKyfr8k9bt6wFE4QcaLs5+sb0EFGJABh5Xpwa7nWP3kwUnMTbYOVhmuMGcNZk+yymzZKImrAN pA/j+ng4
-X-Authority-Analysis: v=2.4 cv=TtLmhCXh c=1 sm=1 tr=0 ts=68cabc1f cx=c_pps a=+fiFqpvOFuJZRCDDiTTDmA==:117 a=peP7VJn1Wk7OJvVWh4ABVQ==:17 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=h8e1o3o8w34MuCiiGQrqVE4VwXA=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
- a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=FOPVHIcnkjUA:10 a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=s63m1ICgrNkA:10 a=KrXZwBdWH7kA:10 a=P-IC7800AAAA:8 a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=8b9GpE9nAAAA:8 a=k1Nz3SOlCHzJLuWz7wEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=d3PnA9EDa4IxuAV0gXij:22 a=T3LWEMljR5ZiDmsYVIUa:22
-X-Proofpoint-ORIG-GUID: sVL-Eb20qOgTUsL_9fhgv9HuYCwjTAi9
-X-Proofpoint-GUID: sVL-Eb20qOgTUsL_9fhgv9HuYCwjTAi9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-17_01,2025-09-17_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 impostorscore=0
- malwarescore=0 spamscore=0 clxscore=1015 adultscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 classifier=typeunknown authscore=0 authtc=
- authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2507300000 definitions=main-2509160202
-X-Rspamd-Queue-Id: C957640AF2
-X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-3.50 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:185.132.182.106];
-	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector2];
+References: <CACOXgS-Bo2W72Nj1_44c7bntyNYOavnTjJAvUbEiQfq=u9W+-g@mail.gmail.com>
+ <CAHUa44FmMj-=5cd4TNGS0ve6jryeCUWeYt=2Um4c_1St5wvL3A@mail.gmail.com>
+In-Reply-To: <CAHUa44FmMj-=5cd4TNGS0ve6jryeCUWeYt=2Um4c_1St5wvL3A@mail.gmail.com>
+From: Masami Ichikawa <masami256@gmail.com>
+Date: Wed, 17 Sep 2025 22:58:11 +0900
+X-Gm-Features: AS18NWBzo4TFL37_gaH0hDuh0gGU4jbnv1FgNDbOMvAZ19_k-4t6cZAsMy_3Xoc
+Message-ID: <CACOXgS85UPo04u4z35M+sKe21gU6=8a-y1kALqeTWXv7UkZkag@mail.gmail.com>
+Subject: Re: [BUG] tee_shm: NULL pointer dereference in unpin_user_pages() on
+ invalid shm pages
+To: Jens Wiklander <jens.wiklander@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Rspamd-Queue-Id: DC5654186B
+X-Spamd-Bar: ----
+X-Spamd-Result: default: False [-4.00 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_LAST(0.00)[];
-	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
-	DKIM_TRACE(0.00)[foss.st.com:+];
-	RCPT_COUNT_TWELVE(0.00)[13];
+	ARC_NA(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_COUNT_ONE(0.00)[1];
 	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:52129, ipnet:185.132.182.0/24, country:US];
-	FROM_HAS_DN(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	DNSWL_BLOCKED(0.00)[185.132.182.106:from,2603:10a6:10:1da:cafe::8d:received];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=1355adc703=arnaud.pouliquen@foss.st.com];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.219.176:from];
+	FREEMAIL_FROM(0.00)[gmail.com];
 	TO_DN_SOME(0.00)[];
-	HAS_XOIP(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	FORGED_SENDER_VERP_SRS(0.00)[];
-	RCVD_COUNT_SEVEN(0.00)[8]
+	NEURAL_HAM(-0.00)[-0.999];
+	DWL_DNSWL_BLOCKED(0.00)[gmail.com:dkim];
+	RCPT_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	DNSWL_BLOCKED(0.00)[209.85.219.176:from];
+	RCVD_TLS_LAST(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	MID_RHS_MATCH_FROMTLD(0.00)[];
+	DKIM_TRACE(0.00)[gmail.com:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: WJBMUKZRNEXXSTR27AEGVY7QNMPPE7ND
-X-Message-ID-Hash: WJBMUKZRNEXXSTR27AEGVY7QNMPPE7ND
-X-MailFrom: prvs=1355adc703=arnaud.pouliquen@foss.st.com
+Message-ID-Hash: MJM7L6M54MIB5556XRX2NW63NDK24ENE
+X-Message-ID-Hash: MJM7L6M54MIB5556XRX2NW63NDK24ENE
+X-MailFrom: masami256@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org
+CC: op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/WJBMUKZRNEXXSTR27AEGVY7QNMPPE7ND/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MJM7L6M54MIB5556XRX2NW63NDK24ENE/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -206,161 +111,297 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-DQoNCk9uIDkvMTcvMjUgMTI6MDgsIFN1bWl0IEdhcmcgd3JvdGU6DQo+IE9uIFR1ZSwgU2VwIDE2
-LCAyMDI1IGF0IDAzOjI2OjQ3UE0gKzAyMDAsIEFybmF1ZCBQT1VMSVFVRU4gd3JvdGU6DQo+PiBI
-ZWxsbyBTdW1pdCwNCj4+DQo+PiBPbiA5LzE2LzI1IDExOjE0LCBTdW1pdCBHYXJnIHdyb3RlOg0K
-Pj4+IEhpIEFybmF1ZCwNCj4+Pg0KPj4+IEZpcnN0IG9mIGFsbCBhcG9sb2dpZXMgZm9yIHN1Y2gg
-YSBsYXRlIHJldmlldyBjb21tZW50IGFzIHByZXZpb3VzbHkgSQ0KPj4+IHdhc24ndCBDQ2VkIG9y
-IGludm9sdmVkIGluIHRoZSByZXZpZXcgb2YgdGhpcyBwYXRjaC1zZXQuIEluIGNhc2UgYW55IG9m
-DQo+Pj4gbXkgZm9sbG93aW5nIGNvbW1lbnRzIGhhdmUgYmVlbiBkaXNjdXNzZWQgaW4gdGhlIHBh
-c3QgdGhlbiBmZWVsIGZyZWUgdG8NCj4+PiBwb2ludCBtZSBhdCByZWxldmFudCBkaXNjdXNzaW9u
-cy4NCj4+IE5vIHdvcnJpZXMsIHRoZXJlIGFyZSB0b28gbWFueSB2ZXJzaW9ucyBvZiB0aGlzIHNl
-cmllcyB0byBmb2xsb3cgYWxsIHRoZQ0KPj4gcGFzdCBkaXNjdXNzaW9ucy4gSSBzb21ldGltZXMg
-aGF2ZSBkaWZmaWN1bHR5IHJlbWVtYmVyaW5nIGFsbCB0aGUNCj4+IGRpc2N1c3Npb25zIG15c2Vs
-ZiA6KQ0KPj4NCj4+PiBPbiBXZWQsIEp1biAyNSwgMjAyNSBhdCAxMTo0MDoyNkFNICswMjAwLCBB
-cm5hdWQgUG91bGlxdWVuIHdyb3RlOg0KPj4+PiBUaGUgInN0LHN0bTMybXAxLW00LXRlZSIgY29t
-cGF0aWJsZSBpcyB1dGlsaXplZCBpbiBhIHN5c3RlbSBjb25maWd1cmF0aW9uDQo+Pj4+IHdoZXJl
-IHRoZSBDb3J0ZXgtTTQgZmlybXdhcmUgaXMgbG9hZGVkIGJ5IHRoZSBUcnVzdGVkIEV4ZWN1dGlv
-biBFbnZpcm9ubWVudA0KPj4+PiAoVEVFKS4NCj4+PiBIYXZpbmcgYSBEVCBiYXNlZCBjb21wYXRp
-YmxlIGZvciBhIFRFRSBzZXJ2aWNlIHRvIG1lIGp1c3QgZmVlbHMgbGlrZSBpdA0KPj4+IGlzIHJl
-ZHVuZGFudCBoZXJlLiBJIGNhbiBzZWUgeW91IGhhdmUgYWxzbyB1c2VkIGEgVEVFIGJ1cyBiYXNl
-ZCBkZXZpY2UNCj4+PiB0b28gYnV0IHRoYXQgaXMgbm90IGJlaW5nIHByb3Blcmx5IHVzZWQuIEkg
-a25vdyBzdWJzeXN0ZW1zIGxpa2UNCj4+PiByZW1vdGVwcm9jLCBTQ01JIGFuZCBvdGhlcnMgaGVh
-dmlseSByZWx5IG9uIERUIHRvIGhhcmRjb2RlIHByb3BlcnRpZXMgb2YNCj4+PiBzeXN0ZW0gZmly
-bXdhcmUgd2hpY2ggYXJlIHJhdGhlciBiZXR0ZXIgdG8gYmUgZGlzY292ZXJlZCBkeW5hbWljYWxs
-eS4NCj4+Pg0KPj4+IFNvIEkgaGF2ZSBhbiBvcGVuIHF1ZXN0aW9uIGZvciB5b3UgYW5kIHRoZSBy
-ZW1vdGVwcm9jIHN1YnN5c3RlbQ0KPj4+IG1haW50YWluZXJzIGJlaW5nOg0KPj4+DQo+Pj4gSXMg
-aXQgZmVhc2libGUgdG8gcmF0aGVyIGxldmVyYWdlIHRoZSBiZW5lZml0cyBvZiBhIGZ1bGx5IGRp
-c2NvdmVyYWJsZQ0KPj4+IFRFRSBidXMgcmF0aGVyIHRoYW4gcmVseWluZyBvbiBwbGF0Zm9ybSBi
-dXMvIERUIHRvIGhhcmRjb2RlIGZpcm13YXJlDQo+Pj4gcHJvcGVydGllcz8NCj4+IFRoZSBkaXNj
-b3ZlcmFibGUgVEVFIGJ1cyBkb2VzIG5vdCB3b3JrcyBpZiB0aGUgcmVtb3RlcHJvYyBpcyBwcm9i
-ZWQNCj4+IGJlZm9yZSB0aGUgT1AtVEVFIGJ1cywgaW4gc3VjaCBjYXNlwqAgbm8gcG9zc2liaWxp
-dHkgdG8ga25vdyBpZiB0aGUgVEVFDQo+PiBUQSBpcyBub3QgeWV0IGF2YWlsYWJsZSBvciBub3Qg
-YXZhaWxhYmxlIGF0IGFsbC4NCj4+IFRoaXMgcG9pbnQgaXMgbWVudGlvbmVkIGluIGEgY29tbWVu
-dCBpbiBycHJvY190ZWVfcmVnaXN0ZXIoKS4NCg0KRm9yIHRoZSBkaXNjdXNzaW9uLCBpdOKAmXMg
-cHJvYmFibHkgYmV0dGVyIGlmIEkgcHJvdmlkZSBtb3JlIGRldGFpbHMgb24gdGhlDQpjdXJyZW50
-IE9QLVRFRSBpbXBsZW1lbnRhdGlvbiBhbmQgdGhlIHN0bTMybXAgcHJvY2Vzc29ycy4NCg0KMSkg
-U1RNMzJNUCB0b3BvbG9neToNCiDCoCAtIFNUTTMyTVAxOiBvbmx5IGEgQ29ydGV4LU00IHJlbW90
-ZSBwcm9jZXNzb3INCiDCoCAtwqAgU1RNMzJNUDJ4OiBhIENvcnRleC1NMzMgYW5kIGEgQ29ydGV4
-LU0wIHJlbW90ZSBwcm9jZXNzb3JzDQogwqAgQXQgdGhpcyBzdGFnZSwgb25seSB0aGUgU1RNMzJN
-UDE1IGlzIHVwc3RyZWFtZWQ7IHRoZSBTVE0zMk1QMjUgaXMgd2FpdGluZw0KIMKgIGZvciB0aGlz
-IHNlcmllcyB0byBiZSBtZXJnZWQuDQoNCjIpIE9QLVRFRSBhcmNoaXRlY3R1cmU6DQotIEEgcGxh
-dGZvcm0tYWdub3N0aWMgVHJ1c3RlZCBBcHBsaWNhdGlvbiAoVEEpIGhhbmRsZXMgdGhlIGJ1cyBz
-ZXJ2aWNlLlsxXQ0KIMKgIFRoaXMgVEEgc3VwcG9ydHMgbWFuYWdpbmcgbXVsdGlwbGUgcmVtb3Rl
-IHByb2Nlc3NvcnMuIEl0IGNhbiBiZSBlbWJlZGRlZA0KIMKgIHJlZ2FyZGxlc3Mgb2YgdGhlIG51
-bWJlciBvZiByZW1vdGUgcHJvY2Vzc29ycyBtYW5hZ2VkIGluIE9QLVRFRS4NCiDCoCBUaGUgZGVj
-aXNpb24gdG8gZW1iZWQgdGhpcyBzZXJ2aWNlIGlzIG1hZGUgYXQgYnVpbGQgdGltZSBiYXNlZCBv
-biB0aGUNCiDCoCBwcmVzZW5jZSBvZiB0aGUgcmVtb3RlcHJvYyBkcml2ZXIsIHNvIGl0IGlzIG5v
-dCBkZXZpY2UgdHJlZSBkZXBlbmRlbnQuDQogwqAgLSBTVE0zMk1QMTU6IFRBIGFjdGl2YXRlZCBv
-bmx5IGlmIHRoZSByZW1vdGVwcm9jIE9QLVRFRSBkcml2ZXIgaXMgcHJvYmVkDQogwqAgLSBTVE0z
-Mk1QMng6IFRBIGFsd2F5cyBhY3RpdmF0ZWQgYXMgdGhlIE9QLVRFRSByZW1vdGVwcm9jIGRyaXZl
-ciBpcyANCmFsd2F5cyBwcm9iZWQNCg0KLSBBIHBzZXVkbyBUcnVzdGVkIEFwcGxpY2F0aW9uIGlt
-cGxlbWVudHMgdGhlIHBsYXRmb3JtIHBvcnRpbmdbMl0sDQogwqAgcmVseWluZyBvbiByZWdpc3Rl
-cmVkIHJlbW90ZXByb2MgcGxhdGZvcm0gZHJpdmVycy4NCg0KLSBQbGF0Zm9ybSBkcml2ZXIocykg
-bWFuYWdlIHRoZSByZW1vdGUgcHJvY2Vzc29ycy5bM11bNF0NCiDCoCAtIElmIHJlbW90ZXByb2Mg
-aXMgbWFuYWdlZCBieSBPUC1URUU6IG1hbmFnZXMgdGhlIHJlbW90ZXByb2MgbGlmZWN5Y2xlDQog
-wqAgLSBJZiByZW1vdGVwcm9jIGlzIG1hbmFnZWQgYnkgTGludXg6IHByb3ZpZGVzIGFjY2VzcyBy
-aWdodHMgdG8gTGludXggDQp0byBtYW5hZ2UNCiDCoCDCoCB0aGUgcmVtb3RlcHJvYw0KDQogwqAg
-LSBTVE0zMk1QMTU6IGRyaXZlciBwcm9iZWQgb25seSBpZiB0aGUgcmVtb3RlcHJvYyBpcyBtYW5h
-Z2VkIGluIE9QLVRFRQ0KIMKgIC0gU1RNMzJNUDJ4OiBkcml2ZXIgcHJvYmVkIGluIGJvdGggY2Fz
-ZXMgZm9yIHRoZSBDb3J0ZXgtTTMzDQogwqDCoMKgIEZvciB0aGUgU1RNMzJNUDI1LCB0aGUgVEEg
-aXMgYWx3YXlzIHByZXNlbnQgYW5kIHF1ZXJpZXMgdGhlIGRyaXZlciANCnRvIGNoZWNrDQogwqAg
-wqAgaWYgaXQgc3VwcG9ydHMgc2VjdXJlIGxvYWRpbmcuDQoNCg0KWzFdIGh0dHBzOi8vZWxpeGly
-LmJvb3RsaW4uY29tL29wLXRlZS80LjcuMC9zb3VyY2UvdGEvcmVtb3RlcHJvYw0KWzJdIA0KaHR0
-cHM6Ly9lbGl4aXIuYm9vdGxpbi5jb20vb3AtdGVlLzQuNy4wL3NvdXJjZS9jb3JlL3B0YS9zdG0z
-Mm1wL3JlbW90ZXByb2NfcHRhLmMNClszXWh0dHBzOi8vZWxpeGlyLmJvb3RsaW4uY29tL29wLXRl
-ZS80LjcuMC9zb3VyY2UvY29yZS9kcml2ZXJzL3JlbW90ZXByb2Mvc3RtMzJfcmVtb3RlcHJvYy5j
-DQpbNF1odHRwczovL2dpdGh1Yi5jb20vU1RNaWNyb2VsZWN0cm9uaWNzL29wdGVlX29zL2Jsb2Iv
-NC4wLjAtc3RtMzJtcC9jb3JlL2RyaXZlcnMvcmVtb3RlcHJvYy9zdG0zMl9yZW1vdGVwcm9jLmMg
-DQoNCj4gVGhlIHJlYXNvbiBoZXJlIGlzIHRoYXQgeW91IGFyZSBtaXhpbmcgcGxhdGZvcm0gYW5k
-IFRFRSBidXMgZm9yIHJlbW90ZXByb2MNCj4gZHJpdmVyLiBGb3IgcHJvYmUsIHlvdSByZWx5IG9u
-IHBsYXRmb3JtIGJ1cyBhbmQgdGhlbiB0cnkgdG8gbWlncmF0ZSB0bw0KPiBURUUgYnVzIHZpYSBy
-cHJvY190ZWVfcmVnaXN0ZXIoKSBpcyB0aGUgcHJvYmxlbSBoZXJlLiBJbnN0ZWFkIHlvdSBzaG91
-bGQNCj4gcmF0aGVyIHByb2JlIHJlbW90ZXByb2MgZGV2aWNlIG9uIFRFRSBidXMgZnJvbSB0aGUg
-YmVnaW5uaW5nLg0KDQpUaGUgYXBwcm9hY2ggaXMgaW50ZXJlc3RpbmcsIGJ1dCBob3cgY2FuIHdl
-IHJlbHkgb24gRGV2aWNlIFRyZWUgKERUKSBmb3INCmhhcmR3YXJlIGNvbmZpZ3VyYXRpb24gaW4g
-dGhpcyBjYXNlPw0KQXQgYSBtaW5pbXVtLCBJIG5lZWQgdG8gZGVmaW5lIG1lbW9yeSByZWdpb25z
-IGFuZCBtYWlsYm94ZXMuDQoNCiBGcm9tIG15IHBlcnNwZWN0aXZlLCBJIHdvdWxkIHN0aWxsIG5l
-ZWQgYSBkcml2ZXIgcHJvYmVkIGJ5IERUIHRoYXQgDQpyZWdpc3RlcnMNCmEgZHJpdmVyIG9uIHRo
-ZSBURUUgYnVzLiBUaGVyZWZvcmUsIEkgc3RpbGwgbmVlZCBhIG1lY2hhbmlzbSB0byBkZWNpZGUN
-CndoZXRoZXIgdGhlIHJlbW90ZSBmaXJtd2FyZSBpcyBtYW5hZ2VkIGJ5IHRoZSBzZWN1cmUgb3Ig
-bm9uLXNlY3VyZSBjb250ZXh0Lg0KDQpBbm90aGVyIGlzc3VlIHdvdWxkIGJlIHRvIGJlIGFibGUg
-dG8gc2hhcmUgdGhlIHJlbW90ZXByb2MgVEVFIHNlcnZpY2UgDQpiZXR3ZWVuDQpzZXZlcmFsIHBs
-YXRmb3JtIHJlbW90ZXByb2MgZHJpdmVycywgaW4gY2FzZSBvZiBtdWx0aSByZW1vdGUgcHJvY2Vz
-c29yIA0Kc3VwcG9ydC4NCg0KPg0KPj4gVGhlbiwgaXQgaXMgbm90IG9ubHkgYSBmaXJtd2FyZSBw
-cm9wZXJ0eSBpbiBvdXIgY2FzZS4gRGVwZW5kaW5nIG9uIHRoZQ0KPj4gY29tcGF0aWJsZSBzdHJp
-bmcsIHdlIG1hbmFnZSB0aGUgaGFyZHdhcmUgZGlmZmVyZW50bHkuIFRoZSBzYW1lIGNvbXBhdGli
-bGVzDQo+PiBhcmUgdXNlZCBpbiBib3RoIE9QLVRFRSBhbmQgTGludXguIEJhc2VkIG9uIHRoZSBj
-b21wYXRpYmxlLCB3ZSBjYW4gYXNzaWduDQo+PiBtZW1vcmllcywgY2xvY2tzLCBhbmQgcmVzZXRz
-IHRvIGVpdGhlciB0aGUgc2VjdXJlIG9yIG5vbi1zZWN1cmUgY29udGV4dC4NCj4+IFRoaXMgYXBw
-cm9hY2ggaXMgaW1wbGVtZW50ZWQgb24gdGhlIFNUTTMyTVAxNSBhbmQgU1RNMzJNUDJ4IHBsYXRm
-b3Jtcy4NCj4gWW91IHNob3VsZCBoYXZlIHJhdGhlciB1c2VkIHRoZSBEVCBwcm9wZXJ0eSAic2Vj
-dXJlLXN0YXR1cyIgWzFdIHRvIHNheQ0KPiB0aGUgcmVtb3RlcHJvYyBkZXZpY2UgaXMgYmVpbmcg
-bWFuYWdlZCBieSBPUC1URUUgaW5zdGVhZCBvZiBMaW51eC4gVGhlbg0KPiB0aGUgTGludXggZHJp
-dmVyIHdpbGwgc29sZWx5IHJlbHkgb24gVEVFIGJ1cyB0byBoYXZlIE9QLVRFRSBtZWRpYXRlZA0K
-PiByZW1vdGVwcm9jIGRldmljZS4NCj4NCj4gWzFdIGh0dHBzOi8vZ2l0aHViLmNvbS9kZXZpY2V0
-cmVlLW9yZy9kdC1zY2hlbWEvYmxvYi80YjI4YmM3OWZkYzU1MmYzZTBiODcwZWYxMzYyYmI3MTE5
-MjVmNGYzL2R0c2NoZW1hL3NjaGVtYXMvZHQtY29yZS55YW1sI0w1Mg0KDQpNeSBpc3N1ZSB3aXRo
-IHRoaXMgcHJvcGVydHkgaXMgdGhhdCB0aGlzIHdvdWxkIGJyZWFrIHRoZSBjb21wYXRpYmlsaXR5
-IHdpdGgNCmxlZ2FjeSBEVCB0aGF0IG9ubHkgc3VwcG9ydCBsb2FkaW5nIGJ5IExpbnV4DQpBcyBz
-cGVjaWZpZWQgaW4gWzVdIDpJZiAic2VjdXJlLXN0YXR1cyIgaXMgbm90IHNwZWNpZmllZCBpdCBk
-ZWZhdWx0cyB0byANCnRoZSBzYW1lIHZhbHVlIGFzICJzdGF0dXMiOyBbNV0gDQpodHRwczovL3d3
-dy5rZXJuZWwub3JnL2RvYy9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL3Nl
-Y3VyZS50eHQNCg0KPj4gTW9yZSBkZXRhaWxzIGFyZSBhdmFpbGFibGUgaW4gdGhlIFNUIFdJS0k6
-DQo+PiBodHRwczovL3dpa2kuc3QuY29tL3N0bTMybXB1L3dpa2kvT1AtVEVFX3JlbW90ZXByb2Nf
-ZnJhbWV3b3JrX292ZXJ2aWV3I0RldmljZV90cmVlX2NvbmZpZ3VyYXRpb24NCj4+IGh0dHBzOi8v
-d2lraS5zdC5jb20vc3RtMzJtcHUvd2lraS9MaW51eF9yZW1vdGVwcm9jX2ZyYW1ld29ya19vdmVy
-dmlldyNEZXZpY2VfdHJlZV9jb25maWd1cmF0aW9uDQo+Pg0KPj4+PiBGb3IgaW5zdGFuY2UsIHRo
-aXMgY29tcGF0aWJsZSBpcyB1c2VkIGluIGJvdGggdGhlIExpbnV4IGFuZCBPUC1URUUgZGV2aWNl
-DQo+Pj4+IHRyZWVzOg0KPj4+PiAtIEluIE9QLVRFRSwgYSBub2RlIGlzIGRlZmluZWQgaW4gdGhl
-IGRldmljZSB0cmVlIHdpdGggdGhlDQo+Pj4+ICAgICAic3Qsc3RtMzJtcDEtbTQtdGVlIiBjb21w
-YXRpYmxlIHRvIHN1cHBvcnQgc2lnbmVkIHJlbW90ZXByb2MgZmlybXdhcmUuDQo+Pj4+ICAgICBC
-YXNlZCBvbiBEVCBwcm9wZXJ0aWVzLCB0aGUgT1AtVEVFIHJlbW90ZXByb2MgZnJhbWV3b3JrIGlz
-IGluaXRpYXRlZCB0bw0KPj4+PiAgICAgZXhwb3NlIGEgdHJ1c3RlZCBhcHBsaWNhdGlvbiBzZXJ2
-aWNlIHRvIGF1dGhlbnRpY2F0ZSBhbmQgbG9hZCB0aGUgcmVtb3RlDQo+Pj4+ICAgICBwcm9jZXNz
-b3IgZmlybXdhcmUgcHJvdmlkZWQgYnkgdGhlIExpbnV4IHJlbW90ZXByb2MgZnJhbWV3b3JrLCBh
-cyB3ZWxsDQo+Pj4+ICAgICBhcyB0byBzdGFydCBhbmQgc3RvcCB0aGUgcmVtb3RlIHByb2Nlc3Nv
-ci4NCj4+Pj4gLSBJbiBMaW51eCwgd2hlbiB0aGUgY29tcGF0aWJpbGl0eSBpcyBzZXQsIHRoZSBD
-b3J0ZXgtTSByZXNldHMgc2hvdWxkIG5vdA0KPj4+PiAgICAgYmUgZGVjbGFyZWQgaW4gdGhlIGRl
-dmljZSB0cmVlLiBJbiBzdWNoIGEgY29uZmlndXJhdGlvbiwgdGhlIHJlc2V0IGlzDQo+Pj4+ICAg
-ICBtYW5hZ2VkIGJ5IHRoZSBPUC1URUUgcmVtb3RlcHJvYyBkcml2ZXIgYW5kIGlzIG5vIGxvbmdl
-ciBhY2Nlc3NpYmxlIGZyb20NCj4+Pj4gICAgIHRoZSBMaW51eCBrZXJuZWwuDQo+Pj4+DQo+Pj4+
-IEFzc29jaWF0ZWQgd2l0aCB0aGlzIG5ldyBjb21wYXRpYmxlLCBhZGQgdGhlICJzdCxwcm9jLWlk
-IiBwcm9wZXJ0eSB0bw0KPj4+PiBpZGVudGlmeSB0aGUgcmVtb3RlIHByb2Nlc3Nvci4gVGhpcyBJ
-RCBpcyB1c2VkIHRvIGRlZmluZSBhIHVuaXF1ZSBJRCwNCj4+Pj4gY29tbW9uIGJldHdlZW4gTGlu
-dXgsIFUtQm9vdCwgYW5kIE9QLVRFRSwgdG8gaWRlbnRpZnkgYSBjb3Byb2Nlc3Nvci4NCj4+PiBU
-aGlzICJzdCxwcm9jLWlkIiBpcyBqdXN0IG9uZSBzdWNoIHByb3BlcnR5IHdoaWNoIGNhbiByYXRo
-ZXIgYmUgZGlyZWN0bHkNCj4+PiBwcm9iZWQgZnJvbSB0aGUgVEVFL09QLVRFRSBzZXJ2aWNlIHJh
-dGhlciB0aGFuIGhhcmRjb2RpbmcgaXQgaW4gRFQgaGVyZS4NCj4+IERvIHlvdSBtZWFuIGEgdG9w
-b2xvZ3kgZGlzY292ZXJ5IG1lY2hhbmlzbSB0aHJvdWdoIHRoZSBURUUgcmVtb3RlcHJvYw0KPj4g
-c2VydmljZT8NCj4+DQo+PiBGb3IgdGhlIFNUTTMyTVAxNSwgaXQgY291bGQgd29yayBzaW5jZSB3
-ZSBoYXZlIG9ubHkgb25lIHJlbW90ZSBwcm9jZXNzb3IuDQo+PiBIb3dldmVyLCB0aGlzIGlzIG5v
-dCB0aGUgY2FzZSBmb3IgdGhlIFNUTTMyTVAyNSwgd2hpY2ggZW1iZWRzIGJvdGggYQ0KPj4gQ29y
-dGV4LU0zMyBhbmQgYSBDb3J0ZXgtTTAuDQo+IEkgcmF0aGVyIG1lYW4gaGVyZSB3aGljaGV2ZXIg
-cHJvcGVydGllcyB5b3UgY2FuIGN1cnJlbnRseSBkaWNvdmVyaW5nIHZpYQ0KPiBEVCBjYW4gcmF0
-aGVyIGJlIGRpc2NvdmVyZWQgYnkgaW52b2tlIGNvbW1hbmQgdGFraW5nIHByb3BlcnR5IG5hbWUg
-YXMgaW5wdXQNCj4gYW5kIHZhbHVlIGFzIG91dHB1dC4NCg0KVGhhdCB3b3VsZCBtZWFucyBzZXJ2
-aWNlcyB0byBnZXQgc3lzdGVtIHJlc291cmNlcyBzdWNoIGFzIG1lbW9yeSByZWdpb24NCm1haWxi
-b3gsIHJpZ2h0Pw0KDQo+DQo+PiBDb3VsZCB5b3UgcGxlYXNlIGVsYWJvcmF0ZSBvbiBob3cgeW91
-IHNlZSB0aGUgc3VwcG9ydCBvZiBtdWx0aXBsZSByZW1vdGUNCj4+IHByb2Nlc3NvcnMgd2l0aG91
-dCB1c2luZyBhbiBoYXJkY29kZWQgaWRlbnRpZmllcj8NCj4gQnkgbXVsdGlwbGUgcmVtb3RlIHBy
-b2Nlc3NvcnMsIGRvIHlvdSBtZWFuIHRoZXJlIGNhbiBiZSBtdWx0aXBsZQ0KPiBjb21iaW5hdGlv
-bnMgb2Ygd2hpY2ggcmVtb3RlIHByb2Nlc3NvciBnZXRzIG1hbmFnZWQgdmlhIE9QLVRFRSBvciBu
-b3Q/DQoNCk9uIHN0bTMybXAyNSB3ZSBoYXZlIDIgcmVtb3RlIHByb2Nlc3NvcnMgYSBjb3J0ZXgt
-TTMzIGFuZCBhIGNvcnRleC1NMA0KV2Ugc2hvdWxkIGJlIGFibGUgdG8gbWFuYWdlIHRoZW0gdXNp
-bmcgdGhlIHByb2NfaWRBbm90aGVyIHBvaW50IGlzIHRoYXQgDQpXZSBzaG91bGQgYWxsb3cgYW4g
-b3RoZXIgU2VjdXJlIE9TIGNvdWxkIGltcGxlbWVudCB0aGUgVEVFIHJlbW90ZXByb2MgDQpzZXJ2
-aWNlIG1hbmFnaW5nIHRoZSByZW1vdGUgcHJvY2Vzc29ycyB3aXRoIGRpZmZlcmVudCBwcm9jX2lk
-IHZhbHVlcywgdG8gDQphdm9pZCB0byBzcGVjaWZ5IHNvbWV3aGVyZSBhbiB1bmlxdWUgcHJvYyBJ
-RCBwZXIgcmVtb3RlIHByb2Nlc3Nvci4NCg0KPj4+IEkgdGhpbmsgdGhlIHNhbWUgd2lsbCBhcHBs
-eSB0byBvdGhlciBwcm9wZXJ0aWVzIGFzIHdlbGwuDQo+PiBDb3VsZCB5b3UgZGV0YWlscyB0aGUg
-b3RoZXIgcHJvcGVydGllcyB5b3UgaGF2ZSBpbiBtaW5kPw0KPiBJIHRoaW5rIHRoZSBtZW1vcnkg
-cmVnaW9ucyBpbmNsdWRpbmcgdGhlIHJlc291cmNlIHRhYmxlIGNhbiBhbHNvIGJlDQo+IHByb2Jl
-ZCBkaXJlY3RseSBmcm9tIHRoZSBURUUgc2VydmljZSB0b28uIElzIHRoZXJlIGFueSBvdGhlciBE
-VCBwcm9wZXJ0eQ0KPiB5b3UgcmVseSB1cG9uIHdoZW4gcmVtb3RlcHJvYyBpcyBtYW5hZ2VkIHZp
-YSBPUC1URUU/DQoNClRoZSBtZW1vcnkgcmVnaW9ucyB0aGF0IGluY2x1ZGUgdGhlIHJlc291cmNl
-IHRhYmxlIGFyZSBhbHJlYWR5IGRlY2xhcmVkDQppbiBPUC1URUUuIFRoZSBtZW1vcnkgcmVnaW9u
-cyBkZWZpbmVkIGluIHRoZSBMaW51eCBkZXZpY2UgdHJlZSBhcmUgZm9yDQpSUE1zZyAoSVBDKS4g
-VGhlc2UgbWVtb3JpZXMgYXJlIHJlZ2lzdGVyZWQgYnkgdGhlIExpbnV4IHJlbW90ZXByb2MgZHJp
-dmVyDQppbiB0aGUgTGludXggcnByb2MgY29yZS4NCg0KVGhhbmtzLA0KQXJuYXVkDQoNCj4NCj4g
-LVN1bWl0DQoNCg==
+Hi Jens,
+
+Thank you for your time to check my report.
+
+On Tue, Sep 16, 2025 at 4:46=E2=80=AFPM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> Hi Masami,
+>
+> Thanks for the report. Does the problem also occur with earlier
+> versions of the kernel? I have more comments inline below.
+>
+> On Sat, Sep 13, 2025 at 8:07=E2=80=AFAM Masami Ichikawa <masami256@gmail.=
+com> wrote:
+> >
+> > Hi.
+> >
+> > While doing my fuzzing work, I found the following kernel crash by
+> > NULL pointer dereference in Linux 6.17-rc5.
+> >
+> > [   16.143987] Unable to handle kernel NULL pointer dereference at
+> > virtual address 0000000000000008
+> > [   16.144141] Mem abort info:
+> > [   16.144215]   ESR =3D 0x0000000096000004
+> > [   16.144246]   EC =3D 0x25
+> > ** replaying previous printk message **
+> > [   16.144246]   EC =3D 0x25: DABT (current EL), IL =3D 32 bits
+> > [   16.144271]   SET =3D 0, FnV =3D 0
+> > [   16.144289]   EA =3D 0, S1PTW =3D 0
+> > [   16.144308]   FSC =3D 0x04: level 0 translation fault
+> > [   16.144325] Data abort info:
+> > [   16.144335]   ISV =3D 0, ISS =3D 0x00000004, ISS2 =3D 0x00000000
+> > [   16.144346]   CM =3D 0, WnR =3D 0, TnD =3D 0, TagAccess =3D 0
+> > [   16.144358]   GCS =3D 0, Overlay =3D 0, DirtyBit =3D 0, Xs =3D 0
+> > [   16.144412] user pgtable: 4k pages, 52-bit VAs, pgdp=3D0000000048b34=
+b00
+> > [   16.144432] [0000000000000008] pgd=3D0800000040bb3403, p4d=3D0000000=
+000000000
+> > [   16.144876] Internal error: Oops: 0000000096000004 [#1]  SMP
+> > [   16.146429] Modules linked in:
+> > [   16.146775] CPU: 0 UID: 0 PID: 148 Comm: xtest Not tainted
+> > 6.17.0-rc5 #58 PREEMPT
+> > [   16.146995] Hardware name: linux,dummy-virt (DT)
+> > [   16.147181] pstate: 21402005 (nzCv daif +PAN -UAO -TCO +DIT -SSBS BT=
+YPE=3D--)
+> > [   16.147330] pc : unpin_user_pages+0x78/0xd0
+> > [   16.147763] lr : unpin_user_pages+0xa0/0xd0
+> > [   16.147842] sp : ffff800084403d20
+> > [   16.147912] x29: ffff800084403d20 x28: fff00000054aa300 x27: 0000000=
+000000000
+> > [   16.148089] x26: 0000000000000000 x25: 0000000000000000 x24: 0000000=
+000000000
+> > [   16.148235] x23: fff00000004fb5a8 x22: 0000000000000001 x21: 0000000=
+00000000d
+> > [   16.148401] x20: fff0000000b2f9c0 x19: 0000000000000011 x18: 0000000=
+000000001
+> > [   16.148544] x17: 0000000000000000 x16: 0000000000000000 x15: 0000000=
+000000000
+> > [   16.148659] x14: 0000000000000002 x13: 0000000000000002 x12: 0000000=
+000037d0f
+> > [   16.148786] x11: fff0000001dad708 x10: 000000000000003f x9 : 0000000=
+000000d1b
+> > [   16.148925] x8 : 00000000000007e0 x7 : 0000000000000001 x6 : 0000000=
+00000000d
+> > [   16.149039] x5 : ffffffffffffffff x4 : ffffffffffffffff x3 : 0000000=
+00000000e
+> > [   16.149167] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffc1f=
+fc0fd68c0
+> > [   16.149351] Call trace:
+> > [   16.149520]  unpin_user_pages+0x78/0xd0 (P)
+> > [   16.149684]  tee_shm_put+0x134/0x184
+> > [   16.149783]  tee_shm_fop_release+0x14/0x24
+> > [   16.149866]  __fput+0xcc/0x2dc
+> > [   16.149925]  fput_close_sync+0x40/0x108
+> > [   16.149991]  __arm64_sys_close+0x38/0x7c
+> > [   16.150058]  invoke_syscall+0x48/0x110
+> > [   16.150127]  el0_svc_common.constprop.0+0x40/0xe8
+> > [   16.150227]  do_el0_svc+0x20/0x2c
+> > [   16.150303]  el0_svc+0x34/0xf0
+> > [   16.150369]  el0t_64_sync_handler+0xa0/0xe4
+> > [   16.150439]  el0t_64_sync+0x198/0x19c
+> > [   16.150629] Code: aa0203e3 eb02027f 54000109 f8627a82 (f9400444)
+> > [   16.150940] ---[ end trace 0000000000000000 ]---
+> > [   16.151230] Kernel panic - not syncing: Oops: Fatal exception
+> > [   16.151466] SMP: stopping secondary CPUs
+> > [   16.151838] Kernel Offset: disabled
+> > [   16.151911] CPU features: 0x000000,0000d180,2bbe33e1,957e7f3f
+> > [   16.152019] Memory Limit: none
+> > [   16.152284] ---[ end Kernel panic - not syncing: Oops: Fatal excepti=
+on ]---
+> >
+> > decode_stacktrace.sh shows the following call sequence.
+> >
+> > [   20.554057] unpin_user_pages (./include/linux/page-flags.h:284
+> > mm/gup.c:259 mm/gup.c:420 mm/gup.c:400) (P)
+> > [   20.554204] tee_shm_put (drivers/tee/tee_shm.c:42
+> > drivers/tee/tee_shm.c:57 drivers/tee/tee_shm.c:587)
+> > [   20.554291] tee_shm_fop_release (drivers/tee/tee_shm.c:437)
+> > [   20.554366] __fput (fs/file_table.c:469)
+> > [   20.554429] fput_close_sync (fs/file_table.c:574)
+> > [   20.554496] __arm64_sys_close (fs/open.c:1590 fs/open.c:1572 fs/open=
+.c:1572)
+> > [   20.554565] invoke_syscall (./arch/arm64/include/asm/current.h:19
+> > arch/arm64/kernel/syscall.c:54)
+> > [   20.554639] el0_svc_common.constprop.0
+> > (./include/linux/thread_info.h:135 arch/arm64/kernel/syscall.c:140)
+> > [   20.554719] do_el0_svc (arch/arm64/kernel/syscall.c:152)
+> > [   20.554782] el0_svc (./arch/arm64/include/asm/irqflags.h:55
+> > ./arch/arm64/include/asm/irqflags.h:76
+> > arch/arm64/kernel/entry-common.c:169
+> > arch/arm64/kernel/entry-common.c:182
+> > arch/arm64/kernel/entry-common.c:880)
+> > [   20.554842] el0t_64_sync_handler (arch/arm64/kernel/entry-common.c:8=
+99)
+> > [   20.554914] el0t_64_sync (arch/arm64/kernel/entry.S:596)
+> >
+> > I set up a test environment using  qemu_v8.xml in the OP-TEE/manifest
+> > repository.
+> >
+> > ## Test case
+> >
+> > This test is based on xtest_tee_test_1004 included in xtest in the
+> > optee_test repository. For fuzzing, the following data is created
+> > using xtest_crypto_test().
+> > It creates parameters like this.
+> >
+> > op.params[0].tmpref.buffer =3D crypt_in;   // crypt_in =3D
+> > malloc(sizeof(uint8_t) * 0xff);
+> > op.params[0].tmpref.size =3D input_len;    // 0xffff
+> > op.params[1].tmpref.buffer =3D crypt_out;  // crypt_out =3D
+> > malloc(sizeof(uint8_t) * 0xff);
+> > op.params[1].tmpref.size =3D input_len;    // 0xffff
+>
+> So you have a small allocation and then report a larger one in
+> tmpref.size. This is an out-of-bounds reference. Memory might follow
+> the buffer, or it might be unmapped, depending on the state of the
+> heap. However, this alone isn't enough for param_from_user() to return
+> -EINVAL as described below.
+>
+> I've tried making changes in teec_pre_process_tmpref() to so it can
+> trigger the condition in param_from_user() below. I think I succeeded
+> in that, but I'm unable to reproduce the crash.
+>
+> Can you double-check to see if something is missing to reproduce the prob=
+lem?
+>
+
+I wrote a test program and ran it on both 6.17-rc5 and 6.14. I was
+able to reproduce the crash on both kernels.
+
+I uploaded test code and test results to my gist.
+https://gist.github.com/masami256/11e21a7503812af7ee1e890080093a2c
+
+The test code is crash_test.c. This program takes 2 arguments. First
+argument is malicious buffer size and second one is actual buffer
+size.
+I can reproduce the crash with the following pair.
+
+malicious buffer size: 0xffffff
+actual buffer size: 0xff
+
+The test_log.md file contains the test results for 6.17-rc5.
+
+> >
+> > When TEEC_InvokeCommand() in libteec was called with above parameters,
+> > it printed folloing errorr then, linux kernel was crashed.
+> >
+> > ERR [152] LT:TEEC_InvokeCommand:730: TEE_IOC_INVOKE failed
+> >
+> > ## Crash scenario
+> >
+> > 1. modified version of xtest_crypto_test() creates parameters.
+> > 2. xtest_crypto_test() calls TEEC_InvokeCommand() in the libteec.
+> > 3. TEEC_InvokeCommand calls ioctl(2).
+> > 4. tee_ioctl_invoke() in the tee_core.c is called by ioctl(2).
+> > 5. tee_ioctl_invoke() calles params_from_user().
+> > 6. In the params_from_user(), it returned -EINVAL because of following
+> > if condition was true.
+> >         if ((ip.a + ip.b) < ip.a ||
+> >             (ip.a + ip.b) > shm->size) {
+> >                 tee_shm_put(shm);
+> >                 return -EINVAL;
+> >         }
+>
+> The tee_shm_put() is supposed to balance with the earlier
+> tee_shm_get_from_id(), so this in itself should be OK.
+>
+> >
+> > 7. tee_ioctl_invoke() recive an error from params_from_user() so that
+> > it run clean up process(in the out label).
+> > 8. tee_ioctl_invoke() returns -EINVAL.
+> > 9. TEEC_InvokeCommand() prints an error log then calls
+> > teec_free_temp_refs() in libteec.
+> > 10. teec_free_temp_refs() calls TEEC_ReleaseSharedMemory().
+> > 11. TEEC_ReleaseSharedMemory() calls close(2).
+> > 12. tee_shm_put() in the tee_shm.c is called.
+> > 13. tee_shm_put() calls tee_shm_release().
+> > 14. tee_shm_release() calls release_registered_pages().
+> > 15. release_registered_pages() calls unpin_user_pages().
+> > 16. Null pointer dereference is happened in unpin_user_pages().
+> >
+> > ## Debugging
+> >
+> > I added following debug logs in the tee_shm_release()
+> >
+> >         } else if (shm->flags & TEE_SHM_DYNAMIC) {
+> >                 int rc =3D teedev->desc->ops->shm_unregister(shm->ctx, =
+shm);
+> >                 size_t i;
+> >                 if (rc)
+> >                         dev_err(teedev->dev.parent,
+> >                                 "unregister shm %p failed: %d", shm, rc=
+);
+> >
+> >                 pr_info("%s:%d: shm->num_pages: 0x%lx, shm->size:
+> > 0x%lx\n", __func__, __LINE__, shm->num_pages, shm->size);
+> >                 for (i =3D 0; i < shm->num_pages; i++) {
+> >                         if (!shm->pages[i]) {
+> >                                 pr_info("%s:%d: shm->pages[%ld] is
+> > NULL", __func__, __LINE__, i);
+> >                         }
+> >                 }
+> >                 release_registered_pages(shm);
+> >         }
+> >
+> > It showed the following logs.
+> > [   21.350894] tee_shm_release:57: shm->num_pages: 0x11, shm->size: 0xd=
+690
+> > [   21.350977] tee_shm_release:60: shm->pages[14] is NULL
+> > [   21.351003] tee_shm_release:60: shm->pages[15] is NULL
+> > [   21.351012] tee_shm_release:60: shm->pages[16] is NULL
+> >
+> > According to the above logs, shm->num_pages is 17 but the pages array
+> > contains NULL pointers so that it causes a NULL pointer dereference
+> > bug.
+>
+> This doesn't make sense shm->size =3D=3D 0xd690 should require 14 or 15
+> pages, depending on shm->offset. The tee_shm is in an inconsistent
+> state, besides the fact that we have NULL pointers in shm->pages[].
+>
+> >
+> > I have confirmed that I can prevent NULL pointer dereference by making
+> > the following changes.
+>
+> The patch below works around the problem rather than fixing it. The
+> problem occurred earlier when the tee_shm became inconsistent.
+>
+
+Yes, that's right.
+
+Please let me know if I can help with the debugging.
+
+> Cheers,
+> Jens
+>
+> >
+> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> > index 2a7d253d9c55..c5d39a0efbdb 100644
+> > --- a/drivers/tee/tee_shm.c
+> > +++ b/drivers/tee/tee_shm.c
+> > @@ -34,9 +34,16 @@ static void shm_get_kernel_pages(struct page
+> > **pages, size_t page_count)
+> >  static void release_registered_pages(struct tee_shm *shm)
+> >  {
+> >         if (shm->pages) {
+> > -               if (shm->flags & TEE_SHM_USER_MAPPED)
+> > -                       unpin_user_pages(shm->pages, shm->num_pages);
+> > -               else
+> > +               if (shm->flags & TEE_SHM_USER_MAPPED) {
+> > +                       size_t num_pages =3D 0;
+> > +                       size_t i;
+> > +                       for (i =3D 0; i < shm->num_pages; i++, num_page=
+s++) {
+> > +                               if (!shm->pages[i])
+> > +                                       break;
+> > +                       }
+> > +
+> > +                       unpin_user_pages(shm->pages, num_pages);
+> > +               } else
+> >                         shm_put_kernel_pages(shm->pages, shm->num_pages=
+);
+> >
+> >                 kfree(shm->pages);
+> >
+> >
+> > Regards,
+> >
+> > --
+> > Masami Ichikawa
+
+
+Regards,
+--=20
+Masami Ichikawa
