@@ -4,100 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66CC7CAC597
-	for <op-tee@archiver.kernel.org>; Thu, 18 Sep 2025 09:51:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC0F4CAC59A
+	for <op-tee@archiver.kernel.org>; Thu, 18 Sep 2025 12:26:02 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id AFE6540B18
-	for <op-tee@archiver.kernel.org>; Thu, 18 Sep 2025 09:51:55 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0A98341855
+	for <op-tee@archiver.kernel.org>; Thu, 18 Sep 2025 12:26:02 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=E+8TPGYW;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Pwrowh5Y;
 	dkim-atps=neutral
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 458EE41830
-	for <op-tee@lists.trustedfirmware.org>; Thu, 18 Sep 2025 09:51:03 +0000 (UTC)
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-45decc9e83eso7680265e9.3
-        for <op-tee@lists.trustedfirmware.org>; Thu, 18 Sep 2025 02:51:03 -0700 (PDT)
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 6937441847
+	for <op-tee@lists.trustedfirmware.org>; Thu, 18 Sep 2025 12:25:46 +0000 (UTC)
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-b07e3a77b72so286831366b.0
+        for <op-tee@lists.trustedfirmware.org>; Thu, 18 Sep 2025 05:25:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1758189062; x=1758793862; darn=lists.trustedfirmware.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=vd9YJyuasogZ3vzFKLT5do3n+B1U6jLbIr+pA7cmozI=;
-        b=E+8TPGYW3iDmtyJvTjWD1O2mTxd5Z4958FFgstIfJoCADahop3YcKbOWJglPMee8Al
-         S8qNKdHstbt4Ikcg3coEM6EbSo9gqOvjYXsEwJanVsTyMzQTagh/GKBk9AQDn+5eqGvN
-         1lGyVznkh/s6aq2K3pqpJYyCGmXadf1xk9MBlY6sGzm3dWLRfnDJc9196JitVMUQPGD/
-         b1OfMx3L/5FMgefDea2TlUcRSTS4JKUDkXqLS0ul6Gz4qi18iKBb+lp+LLeT0v/kxAbY
-         Sp4NX9lNYVN8kzUv5g37Nz/CCzMg9zRAx/loYAG1rXuCd7dcKo3N0nFw66rr76cp7s5p
-         GXSg==
+        d=linaro.org; s=google; t=1758198345; x=1758803145; darn=lists.trustedfirmware.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=WO5w8wVpyDMRZrArSRp3gDeYYYwk2gERvSbhsNUFqqY=;
+        b=Pwrowh5YxlQmlW8VA0RZ59Vet9rV+Dcp8uxXm4W6UIv1cVE4QeS9b/Gja+1xuiFTzO
+         LUJKk76R77Uswl5ymaVQrghdroytYStwRsFBTS4aPzHnkqpcGrjuNS4dTseDFU4mICD2
+         wfnzx3tZNo6htwBAiEJpOBNUFZ4f82amPEqo1PYfnI1rUxjJgmCscLFFnJmquXcA18Y2
+         4uBlp5g8FqZk5L2HQe5xGMNZ9c8e0LaZUq+fbjBz1SJv1rd9iH++BC4MXxa8HNG9QlOC
+         hI5cO0PPydJtuKcWrRDiRc6WBuDVyoXohKahM+jQfwRQkKYdm7/rjlINYa+pk4O/5h8k
+         voJw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758189062; x=1758793862;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=vd9YJyuasogZ3vzFKLT5do3n+B1U6jLbIr+pA7cmozI=;
-        b=kdyqYL9Shz/UJWOmY+gUaRU5OC+bp+8OMQw3/kNCmQJ6ee+IZ8CxPKuR4Axv+5PLv6
-         OljB5InN8i0tGkSpTXl8F7IWtQN+XKJ3Q3eDcJ3o7K+HUb3iTm5mwGZo5S08hxxeqBFC
-         NcsHAMs++xrVK8fI4ktS6VMQfnn+QSkZDRMgjITvu8guJJd+4Bn2PUqr5L6W5ft6ZG3s
-         OvvqkFVXxrfyXvX5cs8hB8DqQWiSTFhxS+NLBFv5QuPQd3i4T5HjzaJ2Fa3kIRjHqQQD
-         mPBgcJB2x4D/Sg1BKNAYGUovDJIGef3ULnQAQNqmgz2bsoUQO4KZ3HoaS/r92KjGft/s
-         Y38w==
-X-Gm-Message-State: AOJu0YylHmv8PXRnUj1B82/TNTHwjFDFmdNeGuhe2RzSueZvcv6uri80
-	kx5J+ccaIS8/6EWZVlWM5Gq9DjdUIOskfSXyjpVyWdlLL93oe9ZXngtQKIqQjMjNXYoUGA==
-X-Gm-Gg: ASbGncsIFXtBkvwSdTZ4otp2hb8qp5lMyM9Nn5wbLk6x0fS35HhP2vV+i/2OjQIgNJQ
-	iHcS68bTDeK/AQgEXiRA7mo8U9JA434My7nWl/gYpCuJOVTY0Zf0EJVP7nygQYxXM2Lf7+ZD9zu
-	6yvhf5SUZlGqERC0pldzzamO2EqQTFBnj6RTlNFsXOe/mx45FBwz8Hit3Is1urd+WJSNangURLc
-	3fW0IvnrG/e5S5BwyZP4clAfDAdoPOyup1iO4T40DoJP/IJybSECD384GniMykJyIY2FDzZGOAj
-	BePWSww3kTk8BbZnpPXpZ75+PKMaPFsJAzmDZ3+JtZc4Oxqcl/UYpCGMAyUbaKA6W7te6q9H16G
-	xBsdvP6HOkVqVageFbvBSS2N9eLtdGYh7mqQUAa1pnw6q7g==
-X-Google-Smtp-Source: AGHT+IGCI3MiOrMhC3Vc/xJF5zz0pDGVKp6gOe7J7uXvD52hxafpd7QmgoA/Dy3E60bixJkgF++xBg==
-X-Received: by 2002:a05:600c:198f:b0:45c:b6b1:29a7 with SMTP id 5b1f17b1804b1-4620348f564mr66619075e9.16.1758189062192;
-        Thu, 18 Sep 2025 02:51:02 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3ee0fbd63a2sm2911815f8f.48.2025.09.18.02.51.01
+        d=1e100.net; s=20230601; t=1758198345; x=1758803145;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WO5w8wVpyDMRZrArSRp3gDeYYYwk2gERvSbhsNUFqqY=;
+        b=OLd8PtVVBeWd4ce354u0LD88GXv7Y4kxwUrBDD3KUgGiAcpRssTEHxCE8xVK2FVUtt
+         jFNzXxcDzmwed+JOPi2TUFq1ypEeWHFclXZFldPEx5svfLoU6ZSCVGh9+xMCdEyh9jkH
+         o+oeMd+I6mFZUYd+vS/8eWQmmHFP0uSAXBXFimfnKtZV9GUVw7JdM71Kh/VQXpt8GmvC
+         tE02kyBlSKcJb94xIuZUHp6kRD4H+7o7FHxhAB6l6kmdFj6YoZ9aiaghl2z+Afsm6ZmW
+         +m69jNZxelWFuhs5JFXg1oYwuzMUhNyyANkaZLaTSzZ0hoiwvPpLoYT3FSe3TY5diYK2
+         Z/Iw==
+X-Gm-Message-State: AOJu0YzUYgVAhhMmfrzCH6m/NcU5wxAJPc2+e3KjeipgvDYD8I7ps9hG
+	0Ihk35Jd/WKn3pwkob6jpxUYLku07AeZEy5Kgfo2K6Zx05azC39ImGqhEqod2oOaYL23GQ==
+X-Gm-Gg: ASbGnctMPRYa+Y7Rd19ozrRAsHRAfGUnuCZ0CRS6zXedN/tn9ZzwH8gTRaQ4ZYAMYy9
+	7vXF3J/Tw0P7JNQr4EUkcEu4kHH3KLO0Rb+GNU8448IDnP0CMs70kpPsC3VleY+xuPpQR9JM5+K
+	wZB2iDpj/Ij/RwKaij29uwcT+1ZBpA6uPiAxgvjJkHxxNyD51Af8j18hpbOdTEjLiU2/lwJPjRL
+	dcLOAgUm/0jrzTvyCJOTtMXNgNuhdps7B8CfqfmQUZubY5ORBLHydpxjEG42gCu7/ad6X54fSjZ
+	SxmxZAZvSpRvBWEd7FNTz5+ie/qX2psyI1juqFz9mBO9yKT5eE4j0ShJvKkBuBGeKjliqBFfgDl
+	wUk8otxHB7URgf+lW9VM92M/zYxjeOUe9EZ/FFxxR9Tv6t75bO7NTmpfYAGKfMiP34jHfBITE5P
+	vb7AAJeek=
+X-Google-Smtp-Source: AGHT+IFod7PCz+PgFskqGgur7UPoiBS4D10R8MBJ/w/wG7+WkAk/PIFajsLe5vKpzLiCrvlZ7LEYBw==
+X-Received: by 2002:a17:907:3d4c:b0:b07:6390:322d with SMTP id a640c23a62f3a-b1faa40a70cmr335569466b.9.1758198345235;
+        Thu, 18 Sep 2025 05:25:45 -0700 (PDT)
+Received: from rayden (h-37-123-177-177.A175.priv.bahnhof.se. [37.123.177.177])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-62fa5cf9bf2sm1341237a12.3.2025.09.18.05.25.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Sep 2025 02:51:01 -0700 (PDT)
-Date: Thu, 18 Sep 2025 12:50:58 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: [bug report] tee: add Qualcomm TEE driver
-Message-ID: <aMvWAiMky0k4nHlh@stanley.mountain>
+        Thu, 18 Sep 2025 05:25:43 -0700 (PDT)
+Date: Thu, 18 Sep 2025 14:25:41 +0200
+From: Jens Wiklander <jens.wiklander@linaro.org>
+To: Masami Ichikawa <masami256@gmail.com>
+Subject: Re: [BUG] tee_shm: NULL pointer dereference in unpin_user_pages() on
+ invalid shm pages
+Message-ID: <20250918122541.GA2693176@rayden>
+References: <CACOXgS-Bo2W72Nj1_44c7bntyNYOavnTjJAvUbEiQfq=u9W+-g@mail.gmail.com>
+ <CAHUa44FmMj-=5cd4TNGS0ve6jryeCUWeYt=2Um4c_1St5wvL3A@mail.gmail.com>
+ <CACOXgS85UPo04u4z35M+sKe21gU6=8a-y1kALqeTWXv7UkZkag@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Rspamd-Queue-Id: 458EE41830
+In-Reply-To: <CACOXgS85UPo04u4z35M+sKe21gU6=8a-y1kALqeTWXv7UkZkag@mail.gmail.com>
+X-Rspamd-Queue-Id: 6937441847
 X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-4.00 / 15.00];
+X-Spamd-Result: default: False [-3.50 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
+	MID_RHS_NOT_FQDN(0.50)[];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.46:from];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	RECEIVED_HELO_LOCALHOST(0.00)[];
-	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_TWO(0.00)[2];
-	NEURAL_HAM(-0.00)[-1.000];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.46:from];
 	RCVD_COUNT_TWO(0.00)[2];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.218.44:from];
+	FREEMAIL_TO(0.00)[gmail.com];
+	FROM_HAS_DN(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
+	RCPT_COUNT_THREE(0.00)[3];
+	NEURAL_HAM(-0.00)[-1.000];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: HPPMHIGIAGG3CIP22EHOZD7L3VETJIJL
-X-Message-ID-Hash: HPPMHIGIAGG3CIP22EHOZD7L3VETJIJL
-X-MailFrom: dan.carpenter@linaro.org
+Message-ID-Hash: QOVJZYP2PLMFLMWSA4AUYVHREILCW7TB
+X-Message-ID-Hash: QOVJZYP2PLMFLMWSA4AUYVHREILCW7TB
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org
+CC: op-tee@lists.trustedfirmware.org, sumit.garg@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HPPMHIGIAGG3CIP22EHOZD7L3VETJIJL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QOVJZYP2PLMFLMWSA4AUYVHREILCW7TB/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -105,47 +112,47 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hello Amirreza Zarrabi,
+Hi Masami,
 
-Commit d6e290837e50 ("tee: add Qualcomm TEE driver") from Sep 11,
-2025 (linux-next), leads to the following Smatch static checker
-warning:
+[+Sumit in CC]
 
-	drivers/tee/qcomtee/core.c:104 qcomtee_do_release_qtee_object()
-	error: uninitialized symbol 'result'.
+On Wed, Sep 17, 2025 at 10:58:11PM +0900, Masami Ichikawa wrote:
+[snip]
+> I wrote a test program and ran it on both 6.17-rc5 and 6.14. I was
+> able to reproduce the crash on both kernels.
+> 
+> I uploaded test code and test results to my gist.
+> https://gist.github.com/masami256/11e21a7503812af7ee1e890080093a2c
+> 
+> The test code is crash_test.c. This program takes 2 arguments. First
+> argument is malicious buffer size and second one is actual buffer
+> size.
+> I can reproduce the crash with the following pair.
+> 
+> malicious buffer size: 0xffffff
+> actual buffer size: 0xff
 
-drivers/tee/qcomtee/core.c
-    81 static void qcomtee_do_release_qtee_object(struct work_struct *work)
-    82 {
-    83         struct qcomtee_object *object;
-    84         struct qcomtee *qcomtee;
-    85         int ret, result;
-    86 
-    87         /* RELEASE does not require any argument. */
-    88         struct qcomtee_arg args[] = { { .type = QCOMTEE_ARG_TYPE_INV } };
-    89 
-    90         object = container_of(work, struct qcomtee_object, work);
-    91         qcomtee = tee_get_drvdata(object->info.qcomtee_async_ctx->teedev);
-    92         /* Get the TEE context used for asynchronous operations. */
-    93         qcomtee->oic.ctx = object->info.qcomtee_async_ctx;
-    94 
-    95         ret = qcomtee_object_do_invoke_internal(&qcomtee->oic, object,
-    96                                                 QCOMTEE_MSG_OBJECT_OP_RELEASE,
-    97                                                 args, &result);
-    98 
-    99         /* Is it safe to retry the release? */
-    100         if (ret && ret != -ENODEV) {
-    101                 queue_work(qcomtee->wq, &object->work);
-    102         } else {
-    103                 if (ret || result)
---> 104                         pr_err("%s release failed, ret = %d (%x)\n",
-    105                                qcomtee_object_name(object), ret, result);
-                                                                         ^^^^^^
-result could be uninitialized if ret is non-zero.
+Thanks, that easily reproduces the problem. The following diff should fix it:
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -318,7 +318,16 @@ register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flags,
+ 
+ 	len = iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0,
+ 				     &off);
+-	if (unlikely(len <= 0)) {
++	if (unlikely(len < num_pages * PAGE_SIZE)) {
++		if (len > 0) {
++			/*
++			 * If we only got a few pages, update to release
++			 * the correct amount below.
++			 */
++			shm->num_pages = len / PAGE_SIZE;
++			ret = ERR_PTR(-ENOMEM);
++			goto err_put_shm_pages;
++		}
+ 		ret = len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
+ 		goto err_free_shm_pages;
+ 	}
 
-    106                 qcomtee_qtee_object_free(object);
-    107         }
-    108 }
-
-regards,
-dan carpenter
+Cheers,
+Jens
