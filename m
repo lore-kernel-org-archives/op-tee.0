@@ -4,106 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7A40CAC59A
-	for <op-tee@archiver.kernel.org>; Wed, 17 Sep 2025 13:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFD47CAC597
+	for <op-tee@archiver.kernel.org>; Thu, 18 Sep 2025 09:50:46 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 0A2FB431A4
-	for <op-tee@archiver.kernel.org>; Wed, 17 Sep 2025 13:58:39 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1BEA143198
+	for <op-tee@archiver.kernel.org>; Thu, 18 Sep 2025 09:50:46 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=fvohezho;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=DCHpwJYU;
 	dkim-atps=neutral
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com [209.85.219.176])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DC5654186B
-	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Sep 2025 13:58:23 +0000 (UTC)
-Received: by mail-yb1-f176.google.com with SMTP id 3f1490d57ef6-ea3dbcc5410so3478809276.2
-        for <op-tee@lists.trustedfirmware.org>; Wed, 17 Sep 2025 06:58:23 -0700 (PDT)
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4CCA640B18
+	for <op-tee@lists.trustedfirmware.org>; Thu, 18 Sep 2025 09:50:31 +0000 (UTC)
+Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-3ece0e4c5faso781738f8f.1
+        for <op-tee@lists.trustedfirmware.org>; Thu, 18 Sep 2025 02:50:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758117503; x=1758722303; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Shu+bspJQL0TnLBtHD+UPDCWTFnNsaatRhoZeEidqLI=;
-        b=fvohezhoajsP9yQ/Is3vi9b0L+qr4vMBOPQTBsA7jdoqUB5/VADjfVDNPuaA2gDaJi
-         45nkXDWyQUrWMHkLQiUcAtcDOSHeaZTF6Mt4uET11xBT+gsPCo5/Yy7bJr0DQvCIip6z
-         Rbx1nOa/sQ1CBx/sQ5MvEN5TNcw9TkdBF6mBjBVWjo4WpXt7LTGwiRXtz18VijT0Hr8Q
-         GnuOfVNMS9/eS0t5hx4Ef/9oFDKmXY6vQykLTaFig4L+/i07w7Sb6KKMqtpjwqSkn8BU
-         1BbatQKog6mAYukRhEzm6/r3+ItOOI6lnoC9m4PsfayGJ6XJ4rI9F8OnZXtN9JIggGa6
-         IcQw==
+        d=linaro.org; s=google; t=1758189030; x=1758793830; darn=lists.trustedfirmware.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=eQwKqTQzxVu8vPTkPS6AVCaGBlFPjm0mxCJ88MPBe7I=;
+        b=DCHpwJYUIuzpX+0E6GUC2NjQRv4PhDA4+Gy1O6pesaF+5UtEIbmLfmn+2AmbeRz0Kf
+         3JGFhFIMqJCDtHhqb1vOAZdTgkd3+bQ6VIQ742E3V0R+Q03vcuSB+zNvGN/AXK2rrnvo
+         xglqYawmhOSNnHsOTnNQbky7LfSWQT5FckKH3vRvvRZrlYvs3g9mqbQTCLnG17R85/iN
+         KscOlqhylS49sP5epck59CQLiKVNSbX9X0TIuXVCWGyIvnwRnQq8w+KcNSLiZQKnIaIG
+         v6AGN36/jND+4eL31J66dMmMQqxH2jRbFy1b58WgxaCmwtZj8IgSJzTDPU6oRjyt2NWm
+         bo/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758117503; x=1758722303;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Shu+bspJQL0TnLBtHD+UPDCWTFnNsaatRhoZeEidqLI=;
-        b=VUWi0B/NVlWnlS4QU0rwP4hFclf9BJf2+4iMvDPyBpIWKi+s3bxa48kzZtAL1eeK8f
-         QUEQtI0kkQUkJyuyvOLM2aCOIBqinfypk/M2/UufnKalU/bAsDqPCt/7U/nTEi+K5yVd
-         dpHV2qK/c/ZiE/gQoBq4IA5vOzwo+Z3PsI7RurxCctDA7yn0XmvmZ2LGQZ3m/mOXB0ay
-         O+I11t4AAkPnAlJzP17mVg5FCwTqlktJXUL9ssSE7vIEy+uNi4slNd1KBlaiPTgZ0y3a
-         U4Cy4TK4e/Vhy0kOGC5s+XPeAujUJAcHLcK9FozEducoW5YqNdxcmKv90BkE3ivSdGQB
-         JrCA==
-X-Gm-Message-State: AOJu0Yyp3s+hZWjBP7UslHX7loqVMp2zT/VbQdHptyD9EdaU0iW7JKWI
-	rxUJ8HXV0zy7pN+q/fmoXGtddSur01XvLcvtvdxDD6gxmmVHdO1ZdqFafqXkQGRbk0xQEdY5fIb
-	dPmumO/Z0p/lcOd4h8yjdAJjnYRTH/Ho1tmQOZTwQmQ==
-X-Gm-Gg: ASbGncukEV5phRoHcYAnGZr6iQED2wqIr2zO43zro1/gE1Wpvxye+hOE04QZPboeeod
-	Ymn+e9w7Co4saCMwemCHoBUJ02EAsVt4p4xb/F0OLnfO6YLxSYa7/ZBPZIj5I2XJh1M3HIg3kdS
-	DuvkffHI7xz8sMVbkarRtLmq6SvtTB2i369MANEIhbaycIbGjTPOyhVYIfk/3LgBTE4PmtRF8WZ
-	YVFes0=
-X-Google-Smtp-Source: AGHT+IELNjjjC0BwfjYcdwjdO3tMgqIBmcWRVakY39ytAhG+/gYDiAcyJjtb2DGIKRN0oDAR97WZG6XE/hXpIQd3aLs=
-X-Received: by 2002:a05:6902:2b02:b0:ea4:e116:3831 with SMTP id
- 3f1490d57ef6-ea5c022cebamr2093529276.0.1758117503139; Wed, 17 Sep 2025
- 06:58:23 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1758189030; x=1758793830;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=eQwKqTQzxVu8vPTkPS6AVCaGBlFPjm0mxCJ88MPBe7I=;
+        b=BbvJUTA35V50ja6DzCV1pljrUTG1WO/kyhBViSaL43N5YmZvG7Rza58HPUsFU+HpRu
+         1msQux11tugcH9I490tti4KZ/FD6f1njyxOnDoSgjvTyy5cKEjMp4+YWcHukk2CBLd+W
+         lvefA5zoJsOWjOtHt9A3211g5lNatHckU5OctXZUKB4Fhqg1CTyOlc2MzppTcXNyywdm
+         TCCjijrTWPmL6VZ2+hDs49hu04uoqHrzNKgm8+yytw5C84HC+R2Fh3ukXSMLHq34jlRs
+         uN9CDUEcAi7mnWA/p3FDLgk7JEUC+yaCib9+9V2Tr8yda4uH5ddmZcZ3Mi/L3QXM7ZVM
+         meCw==
+X-Forwarded-Encrypted: i=1; AJvYcCV9bcw0NywgqYMM5mMLXF6nFapeW9tbBynZ7RHZq3kUCMbgPYFLdVpCwUD2DXOMYyg94FcEwvE=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxSvz46KOeffyI38iOufL7TScuFBm/f3LHpaiU4LekJIGfrlgtQ
+	8IJ6MKJ6qidXGysUfW0kElXQ+SkHwA9hjBuQl9RetiZyesEfh+gbzDxc8jsX4exuvvo9Dg==
+X-Gm-Gg: ASbGncvbvN8ath0n/xfgqQteq9FdLM7C7MQsgJkSuKdLGVb9YCNkFskCcXoz+SdAhoM
+	R6OXbXnXfuKAF/HA3GsTwQToSODLNCrXAr9NwLyBC+U7kZq19IkIrXPph/YY8n3ZlGfH7a0wmgD
+	y6LBNW+a3R45a/CBxut3HCUHOPpLnjbf8fdnPZiz/vsZ0i21fXM0hjw0dEHpvEI62gqsJbXakQW
+	p32A4YU9sClxeWT3THoHEMui/LZ73h3DHVEdYyVEAOZA1cdHogVVKXs/0SHaQFM5rfDO93LzoG9
+	R+lLK31wNBokcWQ1cPKS295++0Yggnoire8yWlvkRc/52evIrKsHPjgYqre21DOWR8ludR/eHhz
+	FZ/4ezAoajJjFKC2v+ENsLkTfQgsuwfAf1bglG5tNcl1Xiw==
+X-Google-Smtp-Source: AGHT+IGoCMIZSYVGVdr+LonBDIWcYYTv19TLhpipu3kLj9HY+JsSF6G9ZNs6lLtq6lsBFQeD0PjV6w==
+X-Received: by 2002:a05:6000:1a8e:b0:3e7:ff70:1b41 with SMTP id ffacd0b85a97d-3ecdf9c9fc7mr4630089f8f.25.1758189030108;
+        Thu, 18 Sep 2025 02:50:30 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3ee0fbc7107sm3078259f8f.30.2025.09.18.02.50.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 18 Sep 2025 02:50:29 -0700 (PDT)
+Date: Thu, 18 Sep 2025 12:50:26 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+Subject: [PATCH next] tee: qcom: prevent potential off by one read
+Message-ID: <aMvV4kK386Sni10i@stanley.mountain>
 MIME-Version: 1.0
-References: <CACOXgS-Bo2W72Nj1_44c7bntyNYOavnTjJAvUbEiQfq=u9W+-g@mail.gmail.com>
- <CAHUa44FmMj-=5cd4TNGS0ve6jryeCUWeYt=2Um4c_1St5wvL3A@mail.gmail.com>
-In-Reply-To: <CAHUa44FmMj-=5cd4TNGS0ve6jryeCUWeYt=2Um4c_1St5wvL3A@mail.gmail.com>
-From: Masami Ichikawa <masami256@gmail.com>
-Date: Wed, 17 Sep 2025 22:58:11 +0900
-X-Gm-Features: AS18NWBzo4TFL37_gaH0hDuh0gGU4jbnv1FgNDbOMvAZ19_k-4t6cZAsMy_3Xoc
-Message-ID: <CACOXgS85UPo04u4z35M+sKe21gU6=8a-y1kALqeTWXv7UkZkag@mail.gmail.com>
-Subject: Re: [BUG] tee_shm: NULL pointer dereference in unpin_user_pages() on
- invalid shm pages
-To: Jens Wiklander <jens.wiklander@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Rspamd-Queue-Id: DC5654186B
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.00 / 15.00];
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
+X-Rspamd-Queue-Id: 4CCA640B18
+X-Spamd-Bar: ---
+X-Spamd-Result: default: False [-3.99 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
 	ARC_NA(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	RCVD_COUNT_ONE(0.00)[1];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.219.176:from];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	TO_DN_SOME(0.00)[];
-	NEURAL_HAM(-0.00)[-0.999];
-	DWL_DNSWL_BLOCKED(0.00)[gmail.com:dkim];
-	RCPT_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.219.176:from];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.50:from];
+	RCPT_COUNT_SEVEN(0.00)[7];
 	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	DKIM_TRACE(0.00)[gmail.com:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.221.50:from];
+	NEURAL_HAM(-0.00)[-1.000];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: MJM7L6M54MIB5556XRX2NW63NDK24ENE
-X-Message-ID-Hash: MJM7L6M54MIB5556XRX2NW63NDK24ENE
-X-MailFrom: masami256@gmail.com
+Message-ID-Hash: EQAAJ7KY6L5QHTTKSVR34SRQCEEMVRVV
+X-Message-ID-Hash: EQAAJ7KY6L5QHTTKSVR34SRQCEEMVRVV
+X-MailFrom: dan.carpenter@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org
+CC: Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MJM7L6M54MIB5556XRX2NW63NDK24ENE/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/EQAAJ7KY6L5QHTTKSVR34SRQCEEMVRVV/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -111,297 +107,28 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi Jens,
+Re-order these checks to check if "i" is a valid array index before using
+it.  This prevents a potential off by one read access.
 
-Thank you for your time to check my report.
+Fixes: d6e290837e50 ("tee: add Qualcomm TEE driver")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+---
+ drivers/tee/qcomtee/call.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Tue, Sep 16, 2025 at 4:46=E2=80=AFPM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
->
-> Hi Masami,
->
-> Thanks for the report. Does the problem also occur with earlier
-> versions of the kernel? I have more comments inline below.
->
-> On Sat, Sep 13, 2025 at 8:07=E2=80=AFAM Masami Ichikawa <masami256@gmail.=
-com> wrote:
-> >
-> > Hi.
-> >
-> > While doing my fuzzing work, I found the following kernel crash by
-> > NULL pointer dereference in Linux 6.17-rc5.
-> >
-> > [   16.143987] Unable to handle kernel NULL pointer dereference at
-> > virtual address 0000000000000008
-> > [   16.144141] Mem abort info:
-> > [   16.144215]   ESR =3D 0x0000000096000004
-> > [   16.144246]   EC =3D 0x25
-> > ** replaying previous printk message **
-> > [   16.144246]   EC =3D 0x25: DABT (current EL), IL =3D 32 bits
-> > [   16.144271]   SET =3D 0, FnV =3D 0
-> > [   16.144289]   EA =3D 0, S1PTW =3D 0
-> > [   16.144308]   FSC =3D 0x04: level 0 translation fault
-> > [   16.144325] Data abort info:
-> > [   16.144335]   ISV =3D 0, ISS =3D 0x00000004, ISS2 =3D 0x00000000
-> > [   16.144346]   CM =3D 0, WnR =3D 0, TnD =3D 0, TagAccess =3D 0
-> > [   16.144358]   GCS =3D 0, Overlay =3D 0, DirtyBit =3D 0, Xs =3D 0
-> > [   16.144412] user pgtable: 4k pages, 52-bit VAs, pgdp=3D0000000048b34=
-b00
-> > [   16.144432] [0000000000000008] pgd=3D0800000040bb3403, p4d=3D0000000=
-000000000
-> > [   16.144876] Internal error: Oops: 0000000096000004 [#1]  SMP
-> > [   16.146429] Modules linked in:
-> > [   16.146775] CPU: 0 UID: 0 PID: 148 Comm: xtest Not tainted
-> > 6.17.0-rc5 #58 PREEMPT
-> > [   16.146995] Hardware name: linux,dummy-virt (DT)
-> > [   16.147181] pstate: 21402005 (nzCv daif +PAN -UAO -TCO +DIT -SSBS BT=
-YPE=3D--)
-> > [   16.147330] pc : unpin_user_pages+0x78/0xd0
-> > [   16.147763] lr : unpin_user_pages+0xa0/0xd0
-> > [   16.147842] sp : ffff800084403d20
-> > [   16.147912] x29: ffff800084403d20 x28: fff00000054aa300 x27: 0000000=
-000000000
-> > [   16.148089] x26: 0000000000000000 x25: 0000000000000000 x24: 0000000=
-000000000
-> > [   16.148235] x23: fff00000004fb5a8 x22: 0000000000000001 x21: 0000000=
-00000000d
-> > [   16.148401] x20: fff0000000b2f9c0 x19: 0000000000000011 x18: 0000000=
-000000001
-> > [   16.148544] x17: 0000000000000000 x16: 0000000000000000 x15: 0000000=
-000000000
-> > [   16.148659] x14: 0000000000000002 x13: 0000000000000002 x12: 0000000=
-000037d0f
-> > [   16.148786] x11: fff0000001dad708 x10: 000000000000003f x9 : 0000000=
-000000d1b
-> > [   16.148925] x8 : 00000000000007e0 x7 : 0000000000000001 x6 : 0000000=
-00000000d
-> > [   16.149039] x5 : ffffffffffffffff x4 : ffffffffffffffff x3 : 0000000=
-00000000e
-> > [   16.149167] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffc1f=
-fc0fd68c0
-> > [   16.149351] Call trace:
-> > [   16.149520]  unpin_user_pages+0x78/0xd0 (P)
-> > [   16.149684]  tee_shm_put+0x134/0x184
-> > [   16.149783]  tee_shm_fop_release+0x14/0x24
-> > [   16.149866]  __fput+0xcc/0x2dc
-> > [   16.149925]  fput_close_sync+0x40/0x108
-> > [   16.149991]  __arm64_sys_close+0x38/0x7c
-> > [   16.150058]  invoke_syscall+0x48/0x110
-> > [   16.150127]  el0_svc_common.constprop.0+0x40/0xe8
-> > [   16.150227]  do_el0_svc+0x20/0x2c
-> > [   16.150303]  el0_svc+0x34/0xf0
-> > [   16.150369]  el0t_64_sync_handler+0xa0/0xe4
-> > [   16.150439]  el0t_64_sync+0x198/0x19c
-> > [   16.150629] Code: aa0203e3 eb02027f 54000109 f8627a82 (f9400444)
-> > [   16.150940] ---[ end trace 0000000000000000 ]---
-> > [   16.151230] Kernel panic - not syncing: Oops: Fatal exception
-> > [   16.151466] SMP: stopping secondary CPUs
-> > [   16.151838] Kernel Offset: disabled
-> > [   16.151911] CPU features: 0x000000,0000d180,2bbe33e1,957e7f3f
-> > [   16.152019] Memory Limit: none
-> > [   16.152284] ---[ end Kernel panic - not syncing: Oops: Fatal excepti=
-on ]---
-> >
-> > decode_stacktrace.sh shows the following call sequence.
-> >
-> > [   20.554057] unpin_user_pages (./include/linux/page-flags.h:284
-> > mm/gup.c:259 mm/gup.c:420 mm/gup.c:400) (P)
-> > [   20.554204] tee_shm_put (drivers/tee/tee_shm.c:42
-> > drivers/tee/tee_shm.c:57 drivers/tee/tee_shm.c:587)
-> > [   20.554291] tee_shm_fop_release (drivers/tee/tee_shm.c:437)
-> > [   20.554366] __fput (fs/file_table.c:469)
-> > [   20.554429] fput_close_sync (fs/file_table.c:574)
-> > [   20.554496] __arm64_sys_close (fs/open.c:1590 fs/open.c:1572 fs/open=
-.c:1572)
-> > [   20.554565] invoke_syscall (./arch/arm64/include/asm/current.h:19
-> > arch/arm64/kernel/syscall.c:54)
-> > [   20.554639] el0_svc_common.constprop.0
-> > (./include/linux/thread_info.h:135 arch/arm64/kernel/syscall.c:140)
-> > [   20.554719] do_el0_svc (arch/arm64/kernel/syscall.c:152)
-> > [   20.554782] el0_svc (./arch/arm64/include/asm/irqflags.h:55
-> > ./arch/arm64/include/asm/irqflags.h:76
-> > arch/arm64/kernel/entry-common.c:169
-> > arch/arm64/kernel/entry-common.c:182
-> > arch/arm64/kernel/entry-common.c:880)
-> > [   20.554842] el0t_64_sync_handler (arch/arm64/kernel/entry-common.c:8=
-99)
-> > [   20.554914] el0t_64_sync (arch/arm64/kernel/entry.S:596)
-> >
-> > I set up a test environment using  qemu_v8.xml in the OP-TEE/manifest
-> > repository.
-> >
-> > ## Test case
-> >
-> > This test is based on xtest_tee_test_1004 included in xtest in the
-> > optee_test repository. For fuzzing, the following data is created
-> > using xtest_crypto_test().
-> > It creates parameters like this.
-> >
-> > op.params[0].tmpref.buffer =3D crypt_in;   // crypt_in =3D
-> > malloc(sizeof(uint8_t) * 0xff);
-> > op.params[0].tmpref.size =3D input_len;    // 0xffff
-> > op.params[1].tmpref.buffer =3D crypt_out;  // crypt_out =3D
-> > malloc(sizeof(uint8_t) * 0xff);
-> > op.params[1].tmpref.size =3D input_len;    // 0xffff
->
-> So you have a small allocation and then report a larger one in
-> tmpref.size. This is an out-of-bounds reference. Memory might follow
-> the buffer, or it might be unmapped, depending on the state of the
-> heap. However, this alone isn't enough for param_from_user() to return
-> -EINVAL as described below.
->
-> I've tried making changes in teec_pre_process_tmpref() to so it can
-> trigger the condition in param_from_user() below. I think I succeeded
-> in that, but I'm unable to reproduce the crash.
->
-> Can you double-check to see if something is missing to reproduce the prob=
-lem?
->
+diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
+index cc17a48d0ab7..ac134452cc9c 100644
+--- a/drivers/tee/qcomtee/call.c
++++ b/drivers/tee/qcomtee/call.c
+@@ -308,7 +308,7 @@ static int qcomtee_params_from_args(struct tee_param *params,
+ 	}
+ 
+ 	/* Release any IO and OO objects not processed. */
+-	for (; u[i].type && i < num_params; i++) {
++	for (; i < num_params && u[i].type; i++) {
+ 		if (u[i].type == QCOMTEE_ARG_TYPE_OO ||
+ 		    u[i].type == QCOMTEE_ARG_TYPE_IO)
+ 			qcomtee_object_put(u[i].o);
+-- 
+2.51.0
 
-I wrote a test program and ran it on both 6.17-rc5 and 6.14. I was
-able to reproduce the crash on both kernels.
-
-I uploaded test code and test results to my gist.
-https://gist.github.com/masami256/11e21a7503812af7ee1e890080093a2c
-
-The test code is crash_test.c. This program takes 2 arguments. First
-argument is malicious buffer size and second one is actual buffer
-size.
-I can reproduce the crash with the following pair.
-
-malicious buffer size: 0xffffff
-actual buffer size: 0xff
-
-The test_log.md file contains the test results for 6.17-rc5.
-
-> >
-> > When TEEC_InvokeCommand() in libteec was called with above parameters,
-> > it printed folloing errorr then, linux kernel was crashed.
-> >
-> > ERR [152] LT:TEEC_InvokeCommand:730: TEE_IOC_INVOKE failed
-> >
-> > ## Crash scenario
-> >
-> > 1. modified version of xtest_crypto_test() creates parameters.
-> > 2. xtest_crypto_test() calls TEEC_InvokeCommand() in the libteec.
-> > 3. TEEC_InvokeCommand calls ioctl(2).
-> > 4. tee_ioctl_invoke() in the tee_core.c is called by ioctl(2).
-> > 5. tee_ioctl_invoke() calles params_from_user().
-> > 6. In the params_from_user(), it returned -EINVAL because of following
-> > if condition was true.
-> >         if ((ip.a + ip.b) < ip.a ||
-> >             (ip.a + ip.b) > shm->size) {
-> >                 tee_shm_put(shm);
-> >                 return -EINVAL;
-> >         }
->
-> The tee_shm_put() is supposed to balance with the earlier
-> tee_shm_get_from_id(), so this in itself should be OK.
->
-> >
-> > 7. tee_ioctl_invoke() recive an error from params_from_user() so that
-> > it run clean up process(in the out label).
-> > 8. tee_ioctl_invoke() returns -EINVAL.
-> > 9. TEEC_InvokeCommand() prints an error log then calls
-> > teec_free_temp_refs() in libteec.
-> > 10. teec_free_temp_refs() calls TEEC_ReleaseSharedMemory().
-> > 11. TEEC_ReleaseSharedMemory() calls close(2).
-> > 12. tee_shm_put() in the tee_shm.c is called.
-> > 13. tee_shm_put() calls tee_shm_release().
-> > 14. tee_shm_release() calls release_registered_pages().
-> > 15. release_registered_pages() calls unpin_user_pages().
-> > 16. Null pointer dereference is happened in unpin_user_pages().
-> >
-> > ## Debugging
-> >
-> > I added following debug logs in the tee_shm_release()
-> >
-> >         } else if (shm->flags & TEE_SHM_DYNAMIC) {
-> >                 int rc =3D teedev->desc->ops->shm_unregister(shm->ctx, =
-shm);
-> >                 size_t i;
-> >                 if (rc)
-> >                         dev_err(teedev->dev.parent,
-> >                                 "unregister shm %p failed: %d", shm, rc=
-);
-> >
-> >                 pr_info("%s:%d: shm->num_pages: 0x%lx, shm->size:
-> > 0x%lx\n", __func__, __LINE__, shm->num_pages, shm->size);
-> >                 for (i =3D 0; i < shm->num_pages; i++) {
-> >                         if (!shm->pages[i]) {
-> >                                 pr_info("%s:%d: shm->pages[%ld] is
-> > NULL", __func__, __LINE__, i);
-> >                         }
-> >                 }
-> >                 release_registered_pages(shm);
-> >         }
-> >
-> > It showed the following logs.
-> > [   21.350894] tee_shm_release:57: shm->num_pages: 0x11, shm->size: 0xd=
-690
-> > [   21.350977] tee_shm_release:60: shm->pages[14] is NULL
-> > [   21.351003] tee_shm_release:60: shm->pages[15] is NULL
-> > [   21.351012] tee_shm_release:60: shm->pages[16] is NULL
-> >
-> > According to the above logs, shm->num_pages is 17 but the pages array
-> > contains NULL pointers so that it causes a NULL pointer dereference
-> > bug.
->
-> This doesn't make sense shm->size =3D=3D 0xd690 should require 14 or 15
-> pages, depending on shm->offset. The tee_shm is in an inconsistent
-> state, besides the fact that we have NULL pointers in shm->pages[].
->
-> >
-> > I have confirmed that I can prevent NULL pointer dereference by making
-> > the following changes.
->
-> The patch below works around the problem rather than fixing it. The
-> problem occurred earlier when the tee_shm became inconsistent.
->
-
-Yes, that's right.
-
-Please let me know if I can help with the debugging.
-
-> Cheers,
-> Jens
->
-> >
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index 2a7d253d9c55..c5d39a0efbdb 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -34,9 +34,16 @@ static void shm_get_kernel_pages(struct page
-> > **pages, size_t page_count)
-> >  static void release_registered_pages(struct tee_shm *shm)
-> >  {
-> >         if (shm->pages) {
-> > -               if (shm->flags & TEE_SHM_USER_MAPPED)
-> > -                       unpin_user_pages(shm->pages, shm->num_pages);
-> > -               else
-> > +               if (shm->flags & TEE_SHM_USER_MAPPED) {
-> > +                       size_t num_pages =3D 0;
-> > +                       size_t i;
-> > +                       for (i =3D 0; i < shm->num_pages; i++, num_page=
-s++) {
-> > +                               if (!shm->pages[i])
-> > +                                       break;
-> > +                       }
-> > +
-> > +                       unpin_user_pages(shm->pages, num_pages);
-> > +               } else
-> >                         shm_put_kernel_pages(shm->pages, shm->num_pages=
-);
-> >
-> >                 kfree(shm->pages);
-> >
-> >
-> > Regards,
-> >
-> > --
-> > Masami Ichikawa
-
-
-Regards,
---=20
-Masami Ichikawa
