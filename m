@@ -4,76 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7417FCAC59A
-	for <op-tee@archiver.kernel.org>; Fri, 19 Sep 2025 07:59:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 179E8CAC59A
+	for <op-tee@archiver.kernel.org>; Fri, 19 Sep 2025 07:59:52 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 9667F43148
-	for <op-tee@archiver.kernel.org>; Fri, 19 Sep 2025 07:59:14 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 54F9B43102
+	for <op-tee@archiver.kernel.org>; Fri, 19 Sep 2025 07:59:51 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=qtfGRMyR;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=M7SLbBmM;
 	dkim-atps=neutral
-Received: from mail-oo1-f44.google.com (mail-oo1-f44.google.com [209.85.161.44])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1127B40B16
-	for <op-tee@lists.trustedfirmware.org>; Fri, 19 Sep 2025 07:58:58 +0000 (UTC)
-Received: by mail-oo1-f44.google.com with SMTP id 006d021491bc7-621a3c43df3so789738eaf.0
-        for <op-tee@lists.trustedfirmware.org>; Fri, 19 Sep 2025 00:58:58 -0700 (PDT)
+Received: from mail-oo1-f45.google.com (mail-oo1-f45.google.com [209.85.161.45])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 18ECF43190
+	for <op-tee@lists.trustedfirmware.org>; Fri, 19 Sep 2025 07:59:25 +0000 (UTC)
+Received: by mail-oo1-f45.google.com with SMTP id 006d021491bc7-6236479c8d6so939839eaf.3
+        for <op-tee@lists.trustedfirmware.org>; Fri, 19 Sep 2025 00:59:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1758268737; x=1758873537; darn=lists.trustedfirmware.org;
+        d=linaro.org; s=google; t=1758268764; x=1758873564; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=AHJ3UbPpS3D5IfXMLoQP0sFO1NEt5wlea5HnZpiaQh0=;
-        b=qtfGRMyRU0MDNqxnjSJ9wpCzaRX3aBIYb38cuw0aMJhCNWAe8GUuKXebYYrUU5GN2p
-         +gWAye64werd1LKh2pl0LAPHuFpH3X550h29nPfXTsexWuLMTzl1QbgfDiausqRE8ruS
-         B5WW0bFqKV54fJBK/56L+LOaWrnqVEexQrSnxAagzUbvTIt86OiJY+tkrvI1YOvcxF01
-         zePm/5RMhbowrOVsgPsMyPl4WtNcUs5N9jH7thlOfoGzfj5iQUPjaud0TZHa1DFBbdhw
-         LOe/QUF6vxTBB33TlnCqW2//iTB2Mkns06W5yBV8e5NOxcGNdU2rd0L/q1Y/Xj/m7XDZ
-         noiA==
+        bh=ASDqAkH4cmxDPZSFWYENHrs1T7W+4jRPHJP2+bsh1GM=;
+        b=M7SLbBmMdZyT3YG6hJnMNGy4NhodlQ/mxO1nBmCaciaC7XtNBdxVtPx1xWn9JUCQPw
+         NAVjIWLNKGbs3i7C+15Sb1g03Cf9GCfj6EVmswxa7UZYLPMRqAMakgZP7TomQD8RVRke
+         WGakb0eqUq8lx1y3JQMraX8aaleEk6hapeOYI5Slqyy6i6b/vJ06GDhqpvLb94RCknHx
+         ILvoRt3gXaTCpG4MLR1662xLvRsU9yo882NFtiaE9al9Bm1BqRW6OwHiXTqiRCir8j/x
+         rUmHSNx16kdh6uljs2S3/hs1tjowTev41wXZsC8yvxqrB7wreQ1iysZfN+nkn27gSi7f
+         njnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758268737; x=1758873537;
+        d=1e100.net; s=20230601; t=1758268764; x=1758873564;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=AHJ3UbPpS3D5IfXMLoQP0sFO1NEt5wlea5HnZpiaQh0=;
-        b=gviLuJstmkuATaMi8Y0Tw6tJnmL5e/YEbua162rSicEE0M0JItjeDeAJlbmMg2a8Kf
-         Z3ouz/3IB/gWc8Ka4cmlsjSPmCeAOyUuDuHxlgouAFHvQjvdSOZ/bOhBshRmxYAyitCB
-         svmG7hM2eNAMuacznOg5RxjehdKRMbDNgUjpsQL+w5Bu+AjMHyI35wYVrfyiTGiRWR2S
-         AT1es5I+sX8mEBD+3dUq7X4jk31BofijNrc3SRbI5UnhUI1KnzuXNs6GGsQLhQcb8GBR
-         DhXTqDg+lv1WMZYMufqEPEFyXxDP1rezEU+GFlgIrNNLW1F8Y84lypZRxpWSoDna2raz
-         xieQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVumcu6sByrO6UOsNQ03SrEV5Ad/dvgcD9zAuTA9rUsV1q9b95mrBw8dGKAK1kgtvd4ffibMpo=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YwvUxtc0dJxEtSfAOOIcQO6kwGdjiojEbtoryFvWh1BmQQCGSk+
-	LmdWs1u1nEsyKS+mWCXU8LuAgCw36yzou9PtkkAZS1kZHJsw8nAG4trBawXELd0QcWtk+PzD54s
-	NeR64xF9UjFNhmj2bPYkenC2d9U/L0Qe5OoV0d8wXjRTb
-X-Gm-Gg: ASbGncvrDZoxvJRcnZqGkCzUuuqKsuGX/QCj3mlKZNgQFSkETDUbRG0w1TeLyGm/8dG
-	hVOAx5hhJlW0eDiwJehOotQDhd7CakOewyty41ITUFFWIMmLCWjOkD+efym2Qfw5qyu/NmyjQle
-	cXt1swcW9bbrBKBcecMp8Afd9Uavq8nDO7QSkYsJfhQ6BCPH8PwfODPNABYWkIrlQ1cqNUA+mY6
-	TN+CxrO
-X-Google-Smtp-Source: AGHT+IFkd+gNrjrot18Zo5hmp077YMeppKIoRCZvWMh3/mqyMghiA3DIyH1IQhZkyQF86NUjQQnEf00dsGPBqTCeBfU=
-X-Received: by 2002:a05:6808:6f85:b0:43d:6b7b:2469 with SMTP id
- 5614622812f47-43d6c129f19mr966534b6e.4.1758268737218; Fri, 19 Sep 2025
- 00:58:57 -0700 (PDT)
+        bh=ASDqAkH4cmxDPZSFWYENHrs1T7W+4jRPHJP2+bsh1GM=;
+        b=aUlbAX0GGS/lRah3XPz8nHwk8+1hVclEyuWSiIcajsOA6oRFQIuGyQHDuDl+s3PCId
+         2DdxQkaTCZxAl80zmZJ0lpz5rTd/sKqf1jNLw1yTaqezSDEEb87M6zF8NNtn5bG1Q1k5
+         SOObrEpQOEElX1XpTCAH3mqI1C4qkd/xMIk3DZ07r1vQRbBb1SoHmFU0wdsxUSOIN0cw
+         Kzj6wDhQomKnanmuNQUzqamGSgDy3vt729zQGUtuWeRwEemsQsxpH9oxLcBJ06ms1/la
+         2GIHctaGyktuTFStnsovYnWa9D1dMmTF8rQi23MEdhgdNZhX/4rpsa/0AZMpimnmHqPm
+         HA8Q==
+X-Forwarded-Encrypted: i=1; AJvYcCWoPAsf8UFrbusFS0zyQx0czIYmXRSXH4a/4Z2M5w9Kzzvsn5k6Weg/i3yqXQ1htX7iteC+2FI=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzYPT0U2oVOZCWCp00pVW6eBvRukFtWJWy9buOoDLdPAsdYtq4l
+	IK1pqzzMVOoc5u37uxyGb4iU1Ry++Q0fiusUf4/5AsItSOyl1r3wMhg9CXpvy9gTqGqPdLeburf
+	8uHpIzKZbQ4P0dS6dk1q5kQuYK+gSsRzjFXMaCWLYgP4k
+X-Gm-Gg: ASbGncvrU/A6lJ6+UdWPh9eu+Nw8dW86B1pJ4k/8aBQ3wLqKzRtXMK1gCVmfIH5Ls6w
+	d2Wpt8WPVs3CEf1Ib03+Jyg8AzvKuxpi1YljCSCdCvic7vDs4DQmjsWIgOHhVK1nwbd8j+uhLPP
+	nbUWhArv1MjaHWYwpEZOwxghXKDsyAbx980kIZTAqgIAfC95MWZx/0m+JzPS6bY1WC8VucSstfk
+	gc227qd
+X-Google-Smtp-Source: AGHT+IEekOH9/D2Na5uJOAYH+Gd3gYDqTSm7RjBTFazB5QY2j1Nx/k/QnGRih+TMOqi+VBgoo9dEC9T1EDeBavQpFxI=
+X-Received: by 2002:a05:6808:5094:b0:439:b674:d9a3 with SMTP id
+ 5614622812f47-43d6c26736fmr1011006b6e.35.1758268764408; Fri, 19 Sep 2025
+ 00:59:24 -0700 (PDT)
 MIME-Version: 1.0
-References: <aMvV8WIKnqLN3w6R@stanley.mountain> <aMzodGIvL88HNi0d@sumit-X1>
-In-Reply-To: <aMzodGIvL88HNi0d@sumit-X1>
+References: <aMvV4kK386Sni10i@stanley.mountain> <aMzoPc67ws5NMpKS@sumit-X1>
+In-Reply-To: <aMzoPc67ws5NMpKS@sumit-X1>
 From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Fri, 19 Sep 2025 09:58:46 +0200
-X-Gm-Features: AS18NWD_RyD3kl7DRtBl_0VNsyLANW3lHRdWn6UrulYuNqtupf3pr3qBMXZkBaU
-Message-ID: <CAHUa44HLULAZ3XXimqDzCfG8rc8OzU-ACmv2Gaee7Xbi=w3VEg@mail.gmail.com>
-Subject: Re: [PATCH] tee: qcom: return -EFAULT instead of -EINVAL if
- copy_from_user() fails
+Date: Fri, 19 Sep 2025 09:59:11 +0200
+X-Gm-Features: AS18NWA3C9LQrIakhvqgeKImPW9n-BTnckAYGagXPywalztGB_Wmp1fHsBSux6w
+Message-ID: <CAHUa44G96pdFL+08Rn8yr_5fp2MpUCjLAUsUcgprnrZCcSyLxg@mail.gmail.com>
+Subject: Re: [PATCH next] tee: qcom: prevent potential off by one read
 To: Sumit Garg <sumit.garg@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Rspamd-Queue-Id: 1127B40B16
+X-Rspamd-Queue-Id: 18ECF43190
 X-Spamd-Bar: ----
 X-Spamd-Result: default: False [-4.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.44:from];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.45:from];
 	RCVD_TLS_LAST(0.00)[];
 	RCVD_COUNT_ONE(0.00)[1];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
@@ -86,20 +85,20 @@ X-Spamd-Result: default: False [-4.10 / 15.00];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.44:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.45:from];
 	NEURAL_HAM(-0.00)[-1.000];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: FLJPIZN3NARP67L5TIAI54IVLEU67JWG
-X-Message-ID-Hash: FLJPIZN3NARP67L5TIAI54IVLEU67JWG
+Message-ID-Hash: K5OWV65SGKJEMBHD7PHLJFFJLTKOAP6B
+X-Message-ID-Hash: K5OWV65SGKJEMBHD7PHLJFFJLTKOAP6B
 X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Dan Carpenter <dan.carpenter@linaro.org>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FLJPIZN3NARP67L5TIAI54IVLEU67JWG/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/K5OWV65SGKJEMBHD7PHLJFFJLTKOAP6B/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -107,16 +106,18 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-On Fri, Sep 19, 2025 at 7:22=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
+On Fri, Sep 19, 2025 at 7:21=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
 wrote:
 >
-> On Thu, Sep 18, 2025 at 12:50:41PM +0300, Dan Carpenter wrote:
-> > If copy_from_user() fails, the correct error code is -EFAULT, not
-> > -EINVAL.
+> On Thu, Sep 18, 2025 at 12:50:26PM +0300, Dan Carpenter wrote:
+> > Re-order these checks to check if "i" is a valid array index before usi=
+ng
+> > it.  This prevents a potential off by one read access.
 > >
+> > Fixes: d6e290837e50 ("tee: add Qualcomm TEE driver")
 > > Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
 > > ---
-> >  drivers/tee/qcomtee/core.c | 2 +-
+> >  drivers/tee/qcomtee/call.c | 2 +-
 > >  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
@@ -129,21 +130,21 @@ Applied.
 > -Sumit
 >
 > >
-> > diff --git a/drivers/tee/qcomtee/core.c b/drivers/tee/qcomtee/core.c
-> > index 783acc59cfa9..b6715ada7700 100644
-> > --- a/drivers/tee/qcomtee/core.c
-> > +++ b/drivers/tee/qcomtee/core.c
-> > @@ -424,7 +424,7 @@ static int qcomtee_prepare_msg(struct qcomtee_objec=
-t_invoke_ctx *oic,
-> >               if (!(u[i].flags & QCOMTEE_ARG_FLAGS_UADDR))
-> >                       memcpy(msgptr, u[i].b.addr, u[i].b.size);
-> >               else if (copy_from_user(msgptr, u[i].b.uaddr, u[i].b.size=
-))
-> > -                     return -EINVAL;
-> > +                     return -EFAULT;
+> > diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
+> > index cc17a48d0ab7..ac134452cc9c 100644
+> > --- a/drivers/tee/qcomtee/call.c
+> > +++ b/drivers/tee/qcomtee/call.c
+> > @@ -308,7 +308,7 @@ static int qcomtee_params_from_args(struct tee_para=
+m *params,
+> >       }
 > >
-> >               offset +=3D qcomtee_msg_offset_align(u[i].b.size);
-> >               ib++;
+> >       /* Release any IO and OO objects not processed. */
+> > -     for (; u[i].type && i < num_params; i++) {
+> > +     for (; i < num_params && u[i].type; i++) {
+> >               if (u[i].type =3D=3D QCOMTEE_ARG_TYPE_OO ||
+> >                   u[i].type =3D=3D QCOMTEE_ARG_TYPE_IO)
+> >                       qcomtee_object_put(u[i].o);
 > > --
 > > 2.51.0
+> >
 > >
