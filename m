@@ -4,170 +4,163 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C4EDCAC5A7
-	for <op-tee@archiver.kernel.org>; Sun, 21 Sep 2025 06:14:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55262CAC592
+	for <op-tee@archiver.kernel.org>; Mon, 22 Sep 2025 04:11:32 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A82DA43103
-	for <op-tee@archiver.kernel.org>; Sun, 21 Sep 2025 06:14:42 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7E046431BC
+	for <op-tee@archiver.kernel.org>; Mon, 22 Sep 2025 04:11:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1758514291;
+	bh=qLe5+D3p/KCHuEXmJDeqOmQHa8PWtS/4MQOlxPYDX7E=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=Ef1YcTnRy5wtZiSUrsGUmNmliXtoirWxLaSU4MsZ01wiCFsk6nkkKEXOFHK1FE5wL
+	 eY397doMrSt6+IIMfY8HZrwfUVJzPCn5IGz+IBpE3OaqglgjrAazi+WLWqRQeb9bt2
+	 VcWO/qvx+o6diHscIV1n574svIbA27UQfdabGS1CsvemzOKgJTGIXK/cZrcF6hyQuZ
+	 DTc0eifQ6yZQy6ce3C7uYdzOVjRJ8/B9DPoaXCiH6oCx1FCtVeTQco67yBCoV3Q8FB
+	 GRbB7VSaZVS/SkLy9vMmStShoakP+0gvi2WZINOdVO53bLcznx1NPVDke1f2Jx07F6
+	 OHMZkHOA/XW9Q==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 3903B40B1E
+	for <op-tee@lists.trustedfirmware.org>; Mon, 22 Sep 2025 04:11:18 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Q1WvjaeC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LA1B5JnG;
 	dkim-atps=neutral
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 09B6240B35
-	for <op-tee@lists.trustedfirmware.org>; Sun, 21 Sep 2025 06:14:28 +0000 (UTC)
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-71d60150590so22869997b3.0
-        for <op-tee@lists.trustedfirmware.org>; Sat, 20 Sep 2025 23:14:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758435267; x=1759040067; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=AojnXTuhkuopZDJGSIrifi2m6vfKyheuFT3tQ1DZFd4=;
-        b=Q1WvjaeCP8rXD32aU4K3xHPjCS5yB/u7/TYzYzExy8+VSKrO6w83JKgAwlgK2jslLd
-         UH/6A7F0423yRMwk9xkaSE6k+5owUlyGhO49Pl1UfKjYn/arsnIgawqyk3fe7Faknh6x
-         25R33i9o4+7TMAekLb3lv9MoqJ1cZl+/rtGe0gDvUURSXfT5txpatOb6y0k2kJeLDOYk
-         CBQ6Qqc/zd/JBwkPNuq1FcbCktQNt3QCcD8ZN9tJajuSuoXDtkFhgeqe177/zyAIEWB1
-         8PXV4ITw8eU7PlKPFnqeCOoB550M81rMJYQrTCh97psMstlV6icyDtzYgV084YSzFs8f
-         /x1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758435267; x=1759040067;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=AojnXTuhkuopZDJGSIrifi2m6vfKyheuFT3tQ1DZFd4=;
-        b=xQsc+EtbhOn2pRwQCz8ZwvpymCJVzZ9iKDRf2/Fk5f9lQf/WKKvTq6X9kmzrvQx2d0
-         x6A9j5SHiEUj1kZCSM4HTtcyPvkE+dndvSmL48vYGR7HJptNRq6HgddVbkM+jodJre3o
-         yUDyRUvPxJPjSN/u267S4HVT4O7LRF+O1i5E0YcAhgshUR6AlfkeZPNaW0mPSh9XitoQ
-         NCI8C3Hh0ZZwwSvy0cAK2EpW0uG3Lh8XdxAVCVOBIAS+1OWNK7N7wX0TZvzsqr0/QSg4
-         b8UNPeAdHJ0Q6wHs4XkAMYMyVsKbQsEhitKt4fY2B0kw2AxIOZTSZG4GcN0+I3RsYsZq
-         VROw==
-X-Forwarded-Encrypted: i=1; AJvYcCVpJNV7kNfk7VLMvOsPJxwsrpvKBSmJ7PJdGS0Lwv4TuTV40fe7H9YHGkaGL849AQo3O1cMdZo=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxvPTDY8xtqHL8nwn/HOnaOJ+AahXQ5TxZ0D03x356eVw4BM4bx
-	DWRzBnOeyKrxeH/8kGi719jKGS+uIeOcga0f8mJfSzXLDUj5bmxvYrrCHeQmYRwLqoirrvKQQRg
-	KezGTNQ7sZBaF5eYMX2AmIM93eDBu3+g=
-X-Gm-Gg: ASbGnctc4BNjai/NGtmmoDk2meOVeZyq/Ann4KVfrAS0zAcSSPvArmPG1F2o9//VpdQ
-	jNgdNY+jT4OxI7wJpYVW2ecfwmrKb4JJOX7HOWehjg+MbXa/s1nbcjWoh4dZN3vV/I6J9H99OD+
-	0CKms9GdbPSXnaByKtjmDCCRsk63YSM6LngIXM2t0cC1w2njhtx8HkKZapXn4rI5ntB6MNeQpW2
-	yKrHTM=
-X-Google-Smtp-Source: AGHT+IEshwwZOaE95eNfvPs+ev8aG1Akgfm3NpGOGPxgdxXazdfE91ijPAySFiDD2wkPtUo8g45aZzylIGiDlySCImc=
-X-Received: by 2002:a05:690c:6182:b0:71f:9a36:d5bd with SMTP id
- 00721157ae682-73d3ef2b466mr69139097b3.43.1758435267450; Sat, 20 Sep 2025
- 23:14:27 -0700 (PDT)
-MIME-Version: 1.0
-References: <20250919124217.2934718-1-jens.wiklander@linaro.org>
-In-Reply-To: <20250919124217.2934718-1-jens.wiklander@linaro.org>
-From: Masami Ichikawa <masami256@gmail.com>
-Date: Sun, 21 Sep 2025 15:14:16 +0900
-X-Gm-Features: AS18NWCiSCvSKiAJ1yM15ZzGP6XX-bMqSWPpOjNvuBcqsSil-IxTILIg5W2DemA
-Message-ID: <CACOXgS9rA=tEfJ85Mw8550Yfq2XvBMLjknzOV+vnR0KTTLGHkQ@mail.gmail.com>
-Subject: Re: [PATCH] tee: fix register_shm_helper()
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 703C8601DC;
+	Mon, 22 Sep 2025 04:11:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3EED2C4CEF5;
+	Mon, 22 Sep 2025 04:11:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758514276;
+	bh=qLe5+D3p/KCHuEXmJDeqOmQHa8PWtS/4MQOlxPYDX7E=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=LA1B5JnGwrN9VzNVeM/dbIS00PgdcxFS4733F2v2T9YlH3M5yujhhvRNDpVcR4vtz
+	 yKbWstSh5+BAbFl2n4jD2hTE8bmJaYVdU7LRWUOnrgfFEmaIpsE1e6RI4gfTjGaEsc
+	 85VFdX7B2MIYH4SYEs0Ivqwo+TO7+n+dR3Vl5kHTlMLcTGnaJ2EbbWAj5rw2NLFKpu
+	 6r9EQIChNAGv1G7HYfGXHB53zhT6apKxF1sdDqWm0sWwBTQ3uqGB2up4ntxnaBcWDi
+	 kA2g7nHKA4D5oBZSNt1ROCBEnJc5QVbhuoT5Xre+fv8cuA34uaqpAS6L1SwCv3vMae
+	 WT9ve0Qz92AYg==
+Date: Mon, 22 Sep 2025 09:41:10 +0530
 To: Jens Wiklander <jens.wiklander@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Rspamd-Queue-Id: 09B6240B35
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.00 / 15.00];
+Subject: Re: [PATCH] tee: fix register_shm_helper()
+Message-ID: <aNDMXvTriEiSLwPb@sumit-X1>
+References: <20250919124217.2934718-1-jens.wiklander@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250919124217.2934718-1-jens.wiklander@linaro.org>
+X-Rspamd-Queue-Id: 3903B40B1E
+X-Spamd-Bar: -----
+X-Spamd-Result: default: False [-5.50 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	MID_RHS_NOT_FQDN(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	RCVD_COUNT_ONE(0.00)[1];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	TO_DN_SOME(0.00)[];
 	MISSING_XM_UA(0.00)[];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.182:from];
-	NEURAL_HAM(-0.00)[-0.999];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.182:from];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	TO_DN_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[gmail.com:+]
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.trustedfirmware.org,linaro.org,gmail.com];
+	RCPT_COUNT_FIVE(0.00)[6];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: SZNDKOKJLJVC2DU3RT6DEN5NK7DDD47B
-X-Message-ID-Hash: SZNDKOKJLJVC2DU3RT6DEN5NK7DDD47B
-X-MailFrom: masami256@gmail.com
+Message-ID-Hash: RKOXGCJALUUY3E53OSYZVIHCWPZVEQE4
+X-Message-ID-Hash: RKOXGCJALUUY3E53OSYZVIHCWPZVEQE4
+X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, Sumit Garg <sumit.garg@kernel.org>, Jerome Forissier <jerome.forissier@linaro.org>, stable@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, Jerome Forissier <jerome.forissier@linaro.org>, stable@vger.kernel.org, Masami Ichikawa <masami256@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/SZNDKOKJLJVC2DU3RT6DEN5NK7DDD47B/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RKOXGCJALUUY3E53OSYZVIHCWPZVEQE4/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-Hi Jens,
-
-
-On Fri, Sep 19, 2025 at 9:42=E2=80=AFPM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
->
+On Fri, Sep 19, 2025 at 02:40:16PM +0200, Jens Wiklander wrote:
 > In register_shm_helper(), fix incorrect error handling for a call to
 > iov_iter_extract_pages(). A case is missing for when
 > iov_iter_extract_pages() only got some pages and return a number larger
 > than 0, but not the requested amount.
->
+> 
 > This fixes a possible NULL pointer dereference following a bad input from
 > ioctl(TEE_IOC_SHM_REGISTER) where parts of the buffer isn't mapped.
->
+> 
 > Cc: stable@vger.kernel.org
 > Reported-by: Masami Ichikawa <masami256@gmail.com>
-> Closes: https://lore.kernel.org/op-tee/CACOXgS-Bo2W72Nj1_44c7bntyNYOavnTj=
-JAvUbEiQfq=3Du9W+-g@mail.gmail.com/
-> Fixes: 7bdee4157591 ("tee: Use iov_iter to better support shared buffer r=
-egistration")
+> Closes: https://lore.kernel.org/op-tee/CACOXgS-Bo2W72Nj1_44c7bntyNYOavnTjJAvUbEiQfq=u9W+-g@mail.gmail.com/
+> Fixes: 7bdee4157591 ("tee: Use iov_iter to better support shared buffer registration")
 > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
 >  drivers/tee/tee_shm.c | 11 ++++++++++-
 >  1 file changed, 10 insertions(+), 1 deletion(-)
->
+> 
 > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
 > index daf6e5cfd59a..6ed7d030f4ed 100644
 > --- a/drivers/tee/tee_shm.c
 > +++ b/drivers/tee/tee_shm.c
-> @@ -316,7 +316,16 @@ register_shm_helper(struct tee_context *ctx, struct =
-iov_iter *iter, u32 flags,
->
->         len =3D iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_p=
-ages, 0,
->                                      &off);
-> -       if (unlikely(len <=3D 0)) {
-> +       if (DIV_ROUND_UP(len + off, PAGE_SIZE) !=3D num_pages) {
-> +               if (len > 0) {
-> +                       /*
-> +                        * If we only got a few pages, update to release
-> +                        * the correct amount below.
-> +                        */
-> +                       shm->num_pages =3D len / PAGE_SIZE;
-> +                       ret =3D ERR_PTR(-ENOMEM);
-> +                       goto err_put_shm_pages;
-> +               }
->                 ret =3D len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
->                 goto err_free_shm_pages;
->         }
-> --
+> @@ -316,7 +316,16 @@ register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flags,
+>  
+>  	len = iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0,
+>  				     &off);
+> -	if (unlikely(len <= 0)) {
+> +	if (DIV_ROUND_UP(len + off, PAGE_SIZE) != num_pages) {
+> +		if (len > 0) {
+> +			/*
+> +			 * If we only got a few pages, update to release
+> +			 * the correct amount below.
+> +			 */
+> +			shm->num_pages = len / PAGE_SIZE;
+> +			ret = ERR_PTR(-ENOMEM);
+> +			goto err_put_shm_pages;
+> +		}
+>  		ret = len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
+>  		goto err_free_shm_pages;
+>  	}
+
+Rather than operating directly on "len" without checking for error code
+first doesn't seems appropriate to me. How about following diff instead?
+
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index daf6e5cfd59a..cb52bc51943e 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -319,6 +319,14 @@ register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flags,
+        if (unlikely(len <= 0)) {
+                ret = len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
+                goto err_free_shm_pages;
++       } else if (DIV_ROUND_UP(len + off, PAGE_SIZE) != num_pages) {
++               /*
++                * If we only got a few pages, update to release the correct
++                * amount below.
++                */
++               shm->num_pages = len / PAGE_SIZE;
++               ret = ERR_PTR(-ENOMEM);
++               goto err_put_shm_pages;
+        }
+ 
+        /*
+
+-Sumit
+
+> -- 
 > 2.43.0
->
-
-Thank you for the patch. I confirmed that the patch fixes a kernel
-crash caused by a NULL pointer dereference.
-
-Tested-by: Masami Ichikawa <masami256@gmail.com>
-
-Regrads,
---
-Masami Ichikawa
+> 
