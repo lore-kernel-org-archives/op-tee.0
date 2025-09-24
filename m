@@ -4,108 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 879D2CAC59A
-	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 07:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E95ECAC5A5
+	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 08:28:31 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id B4A3D431F4
-	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 07:36:19 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 6D0F043125
+	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 08:28:30 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=V8X1b+2y;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Hge/eu6B;
 	dkim-atps=neutral
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id D342440AD4
-	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 07:36:02 +0000 (UTC)
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-45ddc7d5731so43620255e9.1
-        for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 00:36:02 -0700 (PDT)
+Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com [209.85.160.42])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id D718540B68
+	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 08:28:15 +0000 (UTC)
+Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-30cceb749d7so2846996fac.2
+        for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 01:28:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1758699362; x=1759304162; darn=lists.trustedfirmware.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=MzuWivt0fPkNm9SrHmJP3+hKkJHDd8JHQlpF6y9yW5k=;
-        b=V8X1b+2yMmJyzRKGKtTsEey2ByIdVRfl4CRwU2NGjp+F47EzUjIIrq0CpntM4sIpBt
-         LTfwKqN92Kfsi5uFKUtt0bmLqVzWNo0TeipxnECsoXbN4HNR3mmGkTqCGokqIBaKhHwV
-         juIs71cSFcnqIrjYNYqEwvbSOWYXzfmzTwx7o57pmpV4IHf9gqaFiZpPJq+R4qbAdIJs
-         FExOENxCX9hKj8/tmohMY3jkP409KEffcdh7x/9wJsEpFQc+FK+NUoCnOoELo8GXEik7
-         dhqImkDXFsgQbn+vT7+jvqao1+eNH/Ai69D1zapg0CIh5tzlWFO017BE2C1zb5BP1rfB
-         Hamw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758699362; x=1759304162;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1758702495; x=1759307295; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=MzuWivt0fPkNm9SrHmJP3+hKkJHDd8JHQlpF6y9yW5k=;
-        b=r0wEQGYj9z8584JZZa1A8whqiPqnKTr9i8g2CahHJ6gqdhQeNV+wvcv4YoIxk3gq2K
-         AQHpRQ9qgOl365aBxPlKVVkGXpMdrO25Bl9N2Kgm4CG81gbUsR+tdc9dQLgU2axxXtpj
-         9A8H0yZEbzTBSShHVp9Sk3L0PXTo/rKLCvLNSAtPnx49+LH4WP3zLH0C6WST/J5ixqD3
-         mHRY4AmSLRBsRyfcwFtOnChLD5DkyGmoFg4aV0vDuy175ur1WdkMXWNcpLZ2oFXAQ7hn
-         1Ayl4DQoVFl6YWsaErAZy0PDd7OCiJmrdk6sN44n79LsdEnHdPBKJ7O3tfASiCnNtN5P
-         QREQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXgflAbiNHTPk+BDMcP2PZFReN7jZQHfSlU7MhXJD3PWO8JBYCAMejlcwd/0plqPkObveZQ9qA=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzdMKsnZsv+tqlg3yMexLTXqYKoHEAsWOXJevqCoNG8bhTYZx4t
-	16gN01p+i78SwBAYCA6uR1DhJRNwOqtsPu8g4dfljv5nJ8JP1Ubf6pQikfzj9CVb0Og7WA==
-X-Gm-Gg: ASbGnctOfGYnofhwzR9Gm3EoU29SNdigEvtje+I5RSL5zUH8Olim+p40+qiZ5XN8LH5
-	wO/NsDaKSwuQDsEjO8G/u7nnXTRqLKcplk8XctntOOgckJxdsj/KayXA40Zyh+Xei9i5EXcAulp
-	OMx899P+mJAl/OzNF3ewKe8oV4iQLWazcnq+11GUjh0qDr2zClI/yMKPKIK7NGVBHicSEqGjZvH
-	L4lcuAgLWsHyND5T5NR9V4YEpC1pMq4wcthYQqSzL5vdxZnVVsEJB5vexfUMpGrFSPPCrNxV261
-	kFjoMbxM/wNzhXoKtFXrQox4Nu9sLT3topBVRG7ZO1QwDCi3vX+/G5XxvSNwjiwURxvWI08HOEn
-	pDbcsNXkSZ0DxqL7LiSzNwJTRrtJK
-X-Google-Smtp-Source: AGHT+IEH42ZDWAD5VbXw0upHtx03eZMIIKwgq7R48zFJHivJhT6Mw26u/WOxCLoqGho2YLgjitB5+Q==
-X-Received: by 2002:a05:600c:4fd3:b0:45b:7e86:7378 with SMTP id 5b1f17b1804b1-46e1daccb44mr41847475e9.34.1758699361781;
-        Wed, 24 Sep 2025 00:36:01 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3f3c118cd47sm17190189f8f.29.2025.09.24.00.36.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Sep 2025 00:36:01 -0700 (PDT)
-Date: Wed, 24 Sep 2025 10:35:58 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: Re: [PATCH next] tee: qcom: prevent potential off by one read
-Message-ID: <aNOfXlG21HIBR18E@stanley.mountain>
-References: <aMvV4kK386Sni10i@stanley.mountain>
- <adbccfc0-0f9c-4b71-9fb5-5582c8180ac7@oss.qualcomm.com>
- <bb776102-310b-4a84-943a-86d4138592d8@oss.qualcomm.com>
+        bh=tTVkzl6UYOFqbtfOkUTSEgWlYPfNoRJvRz5e440qqv8=;
+        b=Hge/eu6BvSx5BCHoprkPSUVk3OjhZuL4vQKJMNU2tdD2gJ1wEFon9LX8PDHoJ4ps2R
+         E3snbtUFfAU4v/JEhxoXiyb6kgjr6c9NN47Eql47Z3F6wkPZe1ZTOSLhELIqRcsr7gX5
+         Ut/ENebLojv5xGsGAgSjXPpvQmDpRjRxeWhe9Z/uYF1W6s3ZZjOwghrXVagNI+SzvZt7
+         BjgznBLO1mi7IIj1iXtsh4fR8a1/ykNDSXP1ZpBCVnFTz20jk9sVi4lznoEZ8QKlm/5v
+         TfXjNxrealbE/ag9s30GAe1uOP/9LirABfPW9XNolnCaCtmaBklLZ+/SH9qvYYIhczbw
+         iRFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758702495; x=1759307295;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=tTVkzl6UYOFqbtfOkUTSEgWlYPfNoRJvRz5e440qqv8=;
+        b=FmA8ohPX+JwKgMkzm7YbP9gxV1shFERZUX63XWC4i0jWEh0N1sv6bJ3cc+GeS+Rnoc
+         iV9fjR7ExOA7RDLJQHFs//yuOr7OdhHbrW0Iv3+/7JDYKGZ1uTgX+Eq8MFjVR7ZsCTCx
+         Rr4jpJKdFukpZN3LjMuc31CBS3jvLswL7HCei1Ak/Sis7dqCQ8ivhFnVp2DT0j/UJaGr
+         6ZnJ+qqRvJOj/DKYqx/Z2m2IVtwEGJviGTHKL4lvNEtun36vqdYsQXUGqXbVwXgb/Dx1
+         wbvxRhxg9x+AYqYYLtRzydRdvN2k6+SiyMT+A843Ff6vLCd4kvtAdVC2k4yhdQedeDwA
+         1KLQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWQXUIq/QaVSO2RZy7Yd/s3wu9mVuH3TZY1YezcoioXtF5QcZa/xTRcPjIO+0cJNwV4rJGnuE4=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yz5VTVr588Ni0YLGxW4h9P3UbgCUGctzkdYe3NrEtoAvkhCq950
+	x/+ld09I4NBUMXAiDCVvV3K9k2p++S4YAJEBDkgHuvt7TOmxY+RshhWKeqyy7cZK7FYr7Lt6kxz
+	a1p6fRsx8feBJs0yEfu27IoFNfsLY0hvz8f0JBootbmrp
+X-Gm-Gg: ASbGnctKSsw9OCi86DM6nO0JrkEGMXLn5ErXV4szLN01HEmyeVrN35aEl6YB6g9cOvM
+	iqi/Hlkow2sE8kDR8PPKgFDOvrmAWE5TDbmVkYMVMEXrIYoHTA1zUMYTGStV620JcPlXWrkv0Dd
+	XMN4LJni3x7kkJ6RJ0ELvwGWebFbeRbsgUHQLttszo1Zd9sg4s7octRiQJnhhiwzMtN7JrGzQE+
+	klZkRCr
+X-Google-Smtp-Source: AGHT+IFiZs3fit7JmrwTrcdOE3PuEb7BgKG0XRjkXlRJI66gxsYXWU/izU5IO2sIbpWcGOQKmMbdO6vVroeM7IP2Zhw=
+X-Received: by 2002:a05:6870:a908:b0:347:b473:5f58 with SMTP id
+ 586e51a60fabf-34c781131f2mr3086804fac.1.1758702495151; Wed, 24 Sep 2025
+ 01:28:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bb776102-310b-4a84-943a-86d4138592d8@oss.qualcomm.com>
-X-Rspamd-Queue-Id: D342440AD4
-X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-4.00 / 15.00];
+References: <20250922083211.3341508-2-jens.wiklander@linaro.org> <aNENxpvdpW7ItjgT@sumit-X1>
+In-Reply-To: <aNENxpvdpW7ItjgT@sumit-X1>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Wed, 24 Sep 2025 10:28:03 +0200
+X-Gm-Features: AS18NWBtHMnzvD8ACh0gV2MjOlJFNbL_oo8xYwwc8TnXxOERP-GW5Ztr25D4Hzo
+Message-ID: <CAHUa44FtbqOnbBvOSNkX+jdqUK-+hTAM3hYseMPbhOt0U_Nxqw@mail.gmail.com>
+Subject: Re: [PATCH v2] tee: fix register_shm_helper()
+To: Sumit Garg <sumit.garg@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Rspamd-Queue-Id: D718540B68
+X-Spamd-Bar: ----
+X-Spamd-Result: default: False [-4.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.160.42:from];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MIME_TRACE(0.00)[0:+];
 	MISSING_XM_UA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.46:from];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[196.207.164.177:received];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_TLS_LAST(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
 	NEURAL_HAM(-0.00)[-1.000];
-	RECEIVED_HELO_LOCALHOST(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.46:from];
+	RCPT_COUNT_FIVE(0.00)[6];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.trustedfirmware.org,linaro.org,gmail.com];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.42:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: IPNURQQNOOEGKXZM37ESQWQU22O5BVRB
-X-Message-ID-Hash: IPNURQQNOOEGKXZM37ESQWQU22O5BVRB
-X-MailFrom: dan.carpenter@linaro.org
+Message-ID-Hash: 5FZLBZOTXKEL3YGTIZAQRKFLPHBMGZ3H
+X-Message-ID-Hash: 5FZLBZOTXKEL3YGTIZAQRKFLPHBMGZ3H
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, Jerome Forissier <jerome.forissier@linaro.org>, stable@vger.kernel.org, Masami Ichikawa <masami256@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IPNURQQNOOEGKXZM37ESQWQU22O5BVRB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5FZLBZOTXKEL3YGTIZAQRKFLPHBMGZ3H/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -113,48 +107,41 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-On Wed, Sep 24, 2025 at 08:58:45AM +1000, Amirreza Zarrabi wrote:
-> 
-> 
-> On 9/24/2025 8:48 AM, Amirreza Zarrabi wrote:
-> > On 9/18/2025 7:50 PM, Dan Carpenter wrote:
-> >> Re-order these checks to check if "i" is a valid array index before using
-> >> it.  This prevents a potential off by one read access.
-> >>
-> >> Fixes: d6e290837e50 ("tee: add Qualcomm TEE driver")
-> >> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
-> >> ---
-> >>  drivers/tee/qcomtee/call.c | 2 +-
-> >>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
-> >> index cc17a48d0ab7..ac134452cc9c 100644
-> >> --- a/drivers/tee/qcomtee/call.c
-> >> +++ b/drivers/tee/qcomtee/call.c
-> >> @@ -308,7 +308,7 @@ static int qcomtee_params_from_args(struct tee_param *params,
-> >>  	}
-> >>  
-> >>  	/* Release any IO and OO objects not processed. */
-> >> -	for (; u[i].type && i < num_params; i++) {
-> >> +	for (; i < num_params && u[i].type; i++) {
-> >>  		if (u[i].type == QCOMTEE_ARG_TYPE_OO ||
-> >>  		    u[i].type == QCOMTEE_ARG_TYPE_IO)
-> >>  			qcomtee_object_put(u[i].o);
-> > 
-> > This is not required, considering the sequence of clean up, this
-> > would never happen. `i` at least have been accessed once in the
-> > switch above.
-> > 
-> > Regards,
-> > Amir
-> > 
+On Mon, Sep 22, 2025 at 10:50=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org>=
+ wrote:
+>
+> On Mon, Sep 22, 2025 at 10:31:58AM +0200, Jens Wiklander wrote:
+> > In register_shm_helper(), fix incorrect error handling for a call to
+> > iov_iter_extract_pages(). A case is missing for when
+> > iov_iter_extract_pages() only got some pages and return a number larger
+> > than 0, but not the requested amount.
 > >
-> 
-> Also, size of u is always num_params + 1 for the ending 0.
-> (basically means `i < num_params` can be removed).
-> 
+> > This fixes a possible NULL pointer dereference following a bad input fr=
+om
+> > ioctl(TEE_IOC_SHM_REGISTER) where parts of the buffer isn't mapped.
+> >
+> > Cc: stable@vger.kernel.org
+> > Reported-by: Masami Ichikawa <masami256@gmail.com>
+> > Closes: https://lore.kernel.org/op-tee/CACOXgS-Bo2W72Nj1_44c7bntyNYOavn=
+TjJAvUbEiQfq=3Du9W+-g@mail.gmail.com/
+> > Tested-by: Masami Ichikawa <masami256@gmail.com>
+> > Fixes: 7bdee4157591 ("tee: Use iov_iter to better support shared buffer=
+ registration")
+> > Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
+> > ---
+> > Changes from v1
+> > - Refactor the if statement as requested by Sumit
+> > - Adding Tested-by: Masami Ichikawa <masami256@gmail.com
+> > - Link to v1:
+> >   https://lore.kernel.org/op-tee/20250919124217.2934718-1-jens.wiklande=
+r@linaro.org/
+> > ---
+> >  drivers/tee/tee_shm.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+>
+> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-Yes.  This is true.
+I'm picking up this.
 
-regards,
-dan carpenter
+Thanks,
+Jens
