@@ -4,102 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74F35CAC5B2
-	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 08:34:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EC8ECAC5A5
+	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 09:22:05 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 99279430CE
-	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 08:34:24 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 576F9431CD
+	for <op-tee@archiver.kernel.org>; Wed, 24 Sep 2025 09:22:02 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Mel5RyJE;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=lpEfam0r;
 	dkim-atps=neutral
-Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8932F41823
-	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 08:34:08 +0000 (UTC)
-Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-b2ac72dbf48so85430566b.0
-        for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 01:34:08 -0700 (PDT)
+Received: from mail-oo1-f46.google.com (mail-oo1-f46.google.com [209.85.161.46])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0091D41881
+	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 09:21:47 +0000 (UTC)
+Received: by mail-oo1-f46.google.com with SMTP id 006d021491bc7-62f5f5cfc58so1394695eaf.0
+        for <op-tee@lists.trustedfirmware.org>; Wed, 24 Sep 2025 02:21:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1758702847; x=1759307647; darn=lists.trustedfirmware.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=T2GuLi6XyMMBKMY8TiQINu19CGtecqHLNQuiswEu7fo=;
-        b=Mel5RyJEw/Lpos368LWxvNJZnY7+DmAro2wJcjaD2/DOJ2cjV6V7WPkpF7wu3APflf
-         FpK6IVqRFi9yEQN2xl5TCY3YuOErx+gO6C/crYlxuCf0tqx3YV6PJVJAGyGI3DJgINqK
-         mP0PFo2lodYYQo+kraPAJjGqRAyhlN0AZg3EyU1r/W7YFjSZzlZmrhfiI2v6tW6iNDSw
-         mSWDWrNalEYgcfySYp+tyqMxd/bKsOkVKga4JCf9jJ9EDZzMksGmx5dQhVluflo628zj
-         DlTvQRMDT/CoXSn3WjkibdQnUp2gXJ9Pdt5c0c76dInTJhoNqid8aFM9fAEzZdg6OxT9
-         m8+Q==
+        d=linaro.org; s=google; t=1758705706; x=1759310506; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fxVruqv640FOouJsJqQA7LKvaemFmmPlp5hTqabzSp4=;
+        b=lpEfam0rqBagKgqgX+SLlVdEeCYsVeJJ9WRBZOmBmT88f/ZUHQM864OPrFRyeJ8WV/
+         ipCiGv+fr24pGt25Znlu/0DYHnCbVHHayHKTnIHF0ClDm0MP/LSzJNbx26ztycFhl909
+         6JRwI/9htsbeEeaNbEKG6f1XWW6plPFQ9DlJ96C39CzTJstUCMevbl9ZoUVzKjJy7nM+
+         9fPXQ+rWL6hb70XdzOuGKW3k+sb03GXAFUFe7IB9+k4K+ds+GuysM2rFLly6R6OP3c0V
+         kWF9TTD0MPgX4Nq7p7QdhxtEvTPWlsqabv35w8aiY/v0WemKtuFuWtuaQU7A5f30IH3e
+         1p4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758702847; x=1759307647;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=T2GuLi6XyMMBKMY8TiQINu19CGtecqHLNQuiswEu7fo=;
-        b=BRNw3ydw8Vdo6RED0bk1JVMoOiURSk2/TGJXsAKtYVoQ7ndzWzoqNk3BbmAqjs4itv
-         XdWNG3QyF56DzHXfD9cFGCMG5oaQpANPv0I30G6hu/6I42IerpBKxuI5pAjsF/I+2Fbd
-         /wOKCjZsvo2+LVibOOwZUSohR1JYpVO2pqdksuYnDL2SKC45HsbyC50tgl0kwfP1Movp
-         HSW1+2T96sJVqdmHmaMUR0/n63TOMpPCXCsXrAaWqRxc+1tfupC2yvm5bTA/ID73oO23
-         fkvi2zwNnIs5+q/3JFcpzIxBtie0eU3W/90/kmPbagrZG/PUMhV2t8NYNEL8KsxPThBF
-         YjgA==
-X-Forwarded-Encrypted: i=1; AJvYcCXam1mVBWr4W5dLgABlsVA8TTk5YoY0v8R3AIORWE4x+tw4BzYPJtnQzNGltYA1j2LzT4iuNlk=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzLBsPl4LzbTRFSah32Q8B8/TipLb1cEbk+z27/ockaF8oBiPCv
-	V4C9Obszs8rnnS8NRjPfvnmmc085QBmMVqPpg5MHa1/FvgitEI8bUV0y+rPTLQ2L3Eydfg==
-X-Gm-Gg: ASbGncvr79SAeTK428nSYaXXYSAc7MJBKCbxNdrqZtulAhkmBT8fwh4p4RuT5RxReeX
-	Jd7c0docY6IvmLzkKSosGfqzPDdTcqcTu/+vdQDyhOOwcupJn+1H0FCeAA+yzir1lO5HpWXSNZC
-	T+vi6QVVyFnOCl9fPzzkOy4HAulBV1EO5AX4bSDvmpq5JTGVH+vMZAZl684Jj4bmKQWDD/rS5rS
-	Pu/Ky+Zl6x5oG6h75E7E3DAeaNpebb9Pan13oq8y/Mvrh2IkG3uPPUOg7h7wzXCXBg85bZbBA4s
-	I5kHHLbRmxup8aSoSOAarh4+Y1CZe4PL39wFXOSzunmyFcacs8XEVns7M3BY1Z+S3vsYTv35BOE
-	Ck5Fm0HRkbkNY6Zpe2JJinuIwY64+EbBx/CdZKigURmweRz58PeLwraY39XCIFp/+
-X-Google-Smtp-Source: AGHT+IH1aDoALWFRsO0oVLqVi+ToUZna4cdMnC32Rm3fsJgeudeKUR1iGh2aJbkhuYEWll04azdH2g==
-X-Received: by 2002:a17:907:7e88:b0:b2f:5c41:49c with SMTP id a640c23a62f3a-b30267964c0mr565741666b.3.1758702847411;
-        Wed, 24 Sep 2025 01:34:07 -0700 (PDT)
-Received: from rayden (h-37-123-177-177.A175.priv.bahnhof.se. [37.123.177.177])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b338b404a3dsm46227966b.11.2025.09.24.01.34.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Sep 2025 01:34:06 -0700 (PDT)
-Date: Wed, 24 Sep 2025 10:34:04 +0200
-From: Jens Wiklander <jens.wiklander@linaro.org>
-To: arm@kernel.org, soc@kernel.org
-Subject: [GIT PULL] TEE fix2 for v6.17
-Message-ID: <20250924083404.GA3747732@rayden>
+        d=1e100.net; s=20230601; t=1758705706; x=1759310506;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fxVruqv640FOouJsJqQA7LKvaemFmmPlp5hTqabzSp4=;
+        b=ha1eeQP+j5iVJxEvjRtuEAMZuWqQf2277SXfE4Srav+HaGdb8KsPb42drI3i6x7Lux
+         +3EEQFS2Wfk6MrFweTtotS/zjlGhL2k93fehwCDhEd0Q1SjN7P+CGEPurr70fw/ijW6N
+         7u9vsJ5q5fowWNkkSbmE7wz58Lpl/dKCyClnUyiAUVe2VC6jTZpUUt8kkKkERQxIEcGj
+         MgrnfUZATK4feA5WJIXLrf76G+ovWCVhk4Uva4eD8XzouCQfixv5JA3VlbIIKbQtSgmo
+         OcosFtsaUs+d5quFisvsC1VTVo7nfVgK5ndwj6jyHEkLVYgazAre6HPDWKTFN63GfERQ
+         K0qA==
+X-Forwarded-Encrypted: i=1; AJvYcCXHwX/akbsT0grnTAtUo76ddqcVnSBFwqXOMXRMdvJA4VkVTMtFWRGdIYfB6QqwQnzkXnjjleo=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yw/SVbOf351058Qok8c1TlXV8imxMm1M9aGR4AD8+Su/eb65F3Y
+	YFtqkp/qwzYLr5IsZlCVZydPhfNOQXXNnr8HTLiyz/a4hvtvS8m4Dp3ehbQBpRkk/MAHWG1OVwd
+	oRrTNVSVTnMAqyCsgj1xkJ8YwUBGnMWM4xsED74ur+NLZ
+X-Gm-Gg: ASbGncuQYtxXOOqUkdfCErlaQtwD786a+q0dV6Nm8riW/bQk7JEbSjnTnI6qdBrE/lf
+	EC9zVZ4CQon3NUzjwrdHQ5ha/1cbHI8eBxzrM4s+DnIlXx4hMCg68wJJjXnqj6FI+3bZuYK4GPY
+	Y1yILcJ0z+uvRaZ2vBb0cSahJmB1caGgFXUwWwLtWXGv4c0KrscnijsBohgGZIleBhHZ2Ox1Dx5
+	6yscPdG
+X-Google-Smtp-Source: AGHT+IF9MUcsTpqeMRCCkmOByiXncoZ6aC5AAkRn9kos4HYZSgn1UCyuiasgjldg/eI9Gic3np9EBS9bfwc5jv78a7A=
+X-Received: by 2002:a05:6808:17a0:b0:43b:516a:6a3a with SMTP id
+ 5614622812f47-43f2d4a0853mr2953120b6e.46.1758705706106; Wed, 24 Sep 2025
+ 02:21:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-Rspamd-Queue-Id: 8932F41823
-X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-3.60 / 15.00];
+References: <aMvV4kK386Sni10i@stanley.mountain> <adbccfc0-0f9c-4b71-9fb5-5582c8180ac7@oss.qualcomm.com>
+ <bb776102-310b-4a84-943a-86d4138592d8@oss.qualcomm.com> <aNOfXlG21HIBR18E@stanley.mountain>
+In-Reply-To: <aNOfXlG21HIBR18E@stanley.mountain>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Wed, 24 Sep 2025 11:21:34 +0200
+X-Gm-Features: AS18NWBAFawQ8-QtJaveVkFxCVFVwvIAoDOcJ1zhiDc0CJ08YKpktCHoZXO_RhA
+Message-ID: <CAHUa44G2yaB28sd0FjkjyCNJKXjx2Jg9j-9HXytyvsmiQ3ThAA@mail.gmail.com>
+Subject: Re: [PATCH next] tee: qcom: prevent potential off by one read
+To: Dan Carpenter <dan.carpenter@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Rspamd-Queue-Id: 0091D41881
+X-Spamd-Bar: ----
+X-Spamd-Result: default: False [-4.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.218.42:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.46:from];
 	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
+	RCVD_COUNT_ONE(0.00)[1];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_TLS_LAST(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.46:from];
 	FROM_EQ_ENVFROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCPT_COUNT_THREE(0.00)[4];
-	RCVD_COUNT_TWO(0.00)[2];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: EAPFBCXWLW2CGEKZZT5IRRMLZWCCG3TB
-X-Message-ID-Hash: EAPFBCXWLW2CGEKZZT5IRRMLZWCCG3TB
+Message-ID-Hash: FJBSNAW3SOFVFX47AK4LDTN533N6KWJG
+X-Message-ID-Hash: FJBSNAW3SOFVFX47AK4LDTN533N6KWJG
 X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, op-tee@lists.trustedfirmware.org
+CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/EAPFBCXWLW2CGEKZZT5IRRMLZWCCG3TB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FJBSNAW3SOFVFX47AK4LDTN533N6KWJG/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -107,33 +106,55 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hello arm-soc maintainers,
+On Wed, Sep 24, 2025 at 9:36=E2=80=AFAM Dan Carpenter <dan.carpenter@linaro=
+.org> wrote:
+>
+> On Wed, Sep 24, 2025 at 08:58:45AM +1000, Amirreza Zarrabi wrote:
+> >
+> >
+> > On 9/24/2025 8:48 AM, Amirreza Zarrabi wrote:
+> > > On 9/18/2025 7:50 PM, Dan Carpenter wrote:
+> > >> Re-order these checks to check if "i" is a valid array index before =
+using
+> > >> it.  This prevents a potential off by one read access.
+> > >>
+> > >> Fixes: d6e290837e50 ("tee: add Qualcomm TEE driver")
+> > >> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+> > >> ---
+> > >>  drivers/tee/qcomtee/call.c | 2 +-
+> > >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >>
+> > >> diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
+> > >> index cc17a48d0ab7..ac134452cc9c 100644
+> > >> --- a/drivers/tee/qcomtee/call.c
+> > >> +++ b/drivers/tee/qcomtee/call.c
+> > >> @@ -308,7 +308,7 @@ static int qcomtee_params_from_args(struct tee_p=
+aram *params,
+> > >>    }
+> > >>
+> > >>    /* Release any IO and OO objects not processed. */
+> > >> -  for (; u[i].type && i < num_params; i++) {
+> > >> +  for (; i < num_params && u[i].type; i++) {
+> > >>            if (u[i].type =3D=3D QCOMTEE_ARG_TYPE_OO ||
+> > >>                u[i].type =3D=3D QCOMTEE_ARG_TYPE_IO)
+> > >>                    qcomtee_object_put(u[i].o);
+> > >
+> > > This is not required, considering the sequence of clean up, this
+> > > would never happen. `i` at least have been accessed once in the
+> > > switch above.
+> > >
+> > > Regards,
+> > > Amir
+> > >
+> > >
+> >
+> > Also, size of u is always num_params + 1 for the ending 0.
+> > (basically means `i < num_params` can be removed).
+> >
+>
+> Yes.  This is true.
 
-Please pull this fix in the TEE subsystem.
+So this patch isn't needed. I'll drop it if no one objects.
 
-Thanks,
+Cheers,
 Jens
-
-The following changes since commit 8f5ae30d69d7543eee0d70083daf4de8fe15d585:
-
-  Linux 6.17-rc1 (2025-08-10 19:41:16 +0300)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-tee.git tags/tee-shm-register-fix-for-v6.17
-
-for you to fetch changes up to d5cf5b37064b1699d946e8b7ab4ac7d7d101814c:
-
-  tee: fix register_shm_helper() (2025-09-22 08:47:00 +0200)
-
-----------------------------------------------------------------
-TEE fix2 for v6.17
-
-Fixing incorrect error handling for a call to iov_iter_extract_pages().
-
-----------------------------------------------------------------
-Jens Wiklander (1):
-      tee: fix register_shm_helper()
-
- drivers/tee/tee_shm.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
