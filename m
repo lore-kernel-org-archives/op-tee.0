@@ -4,171 +4,220 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80181CCA470
-	for <op-tee@archiver.kernel.org>; Wed,  1 Oct 2025 08:23:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9348CAC5B0
+	for <op-tee@archiver.kernel.org>; Thu,  2 Oct 2025 07:48:00 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id C1A134306B
-	for <op-tee@archiver.kernel.org>; Wed,  1 Oct 2025 08:23:28 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id D091F41BA9
+	for <op-tee@archiver.kernel.org>; Thu,  2 Oct 2025 07:47:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1759307008;
-	bh=6qX378YfIp9QrbNMz0Pxbr6TFYT3iKxK+48OaAx5WCg=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1759391279;
+	bh=o5Ski1KE2v6C3aWnVPjLwK3jMJPNXrvIgg9TOn5sZUg=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=uo9/NHXpguABHuqOTqE3zw/URXd/3PJInvIF4P7kv9+YE0RBmLxanC+sVEx2TO3jY
-	 HFUVNNlmhYeR52VfxcLKD9iz25BaPEhABFiJeiclAbYu5+oQBnw1j+rAY1EqnhpX4g
-	 JmonM61yRR85NL+dCxXitAvQr0bPYcBZ5uuihGQZ46kuSnW7fWhX/DHXW5NqP1HstB
-	 J7H5JaqexfbMOYgZ2lS2wqOrOTNyRf3DuZlfvGFlXQQbSEGDqSVQlgFgUEzUKEDtbR
-	 u0RaxCXdpXc0RrR1dbXGV6Gwa9MAtCW2Qur2TqE/bSk6kJUDEAHKlRvOp2W4Zll8EW
-	 JL9OT40DOtWJA==
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 303484185E
-	for <op-tee@lists.trustedfirmware.org>; Wed,  1 Oct 2025 08:23:13 +0000 (UTC)
+	b=1j9sEpdgitRqOUIzVj7Dez/8ayzzY0SsC9vdGm7vDS6bO2E7oizEuhvB76/du777W
+	 jKlpYX4UMNElRcpGxFlj27o6LdLM0VuQFangUNNjVLqnKrgyRREROlEtH6SOpRJFBy
+	 H3CQlhNc5xxhEm5u/2+I4jGT5GBISrvw970qUkwIaN2FRNNjup2T/xOLcb3fQPAXC1
+	 JnEgHpDcC0T8MVY7+nV+xO1rBo6oW8PPskAkagZgo5BSoLwWNz2ev3Bph6CpI2t7PH
+	 vKSlBGoSduIjGhc9qWfcBXTscE0GJOX/IqKPRmcrU3DcUIJ/uY8htiKd+IXknWAyI9
+	 KbzU6ZHnWDUPg==
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 684954187E
+	for <op-tee@lists.trustedfirmware.org>; Thu,  2 Oct 2025 07:47:45 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=d43vyIYE;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Feo45RUn;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58ULFGQj028127
-	for <op-tee@lists.trustedfirmware.org>; Wed, 1 Oct 2025 08:23:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	BfqDjr2vHvMLSpelJZSSDQAyOp1sqU85uHcOi6EeR9M=; b=d43vyIYE8peS22gl
-	RaiBsLJGpH0xAWW/ubA1bNyiMc+R28AAo7E7Lw5wJZTAnbLA5W92hEmKRjMDBapS
-	VoxIURn73FGmZbNhpM/jHtpp7XBPRyomW+SGdRxs+BPAfrNThN3JHP70B/gm8lsw
-	/kVOoR+ZYbXgSpfBh9YmP5IgEG+tB31cdu1//8v4F3NrU40udh97dTuSFzt6sy9e
-	pZMIistL2DRplvNwZEDDUn8kZ6IGqQFhPtlRJWXq7oe+9zz5W1JVKPEHa/Bq2cPL
-	GStqNNbIHldPYNI13CTSV8dgRrxolzW/CJBfFoUfUGmgwnOLosYC9jL/B9Ycbo46
-	6D9K+g==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 49e851kud6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Wed, 01 Oct 2025 08:23:12 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-7e8707701f2so218500785a.3
-        for <op-tee@lists.trustedfirmware.org>; Wed, 01 Oct 2025 01:23:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1759391265;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=CgVDpIUaXbRIFaGTvmSsiE/BFfaSBmSlnmsfDON0gMA=;
+	b=Feo45RUn5sJEzBNX3IBbDb+Dn/lix3vmjA9pySojguy1Xop7mYMj2yN/yH3iotbrD+CLYp
+	KGKsRwvEd4Lw8k6ChnnJZA74ttDxHnRzWI28FdehjaPQkR8S0uJL1q89R9wmOL2g8sdXq9
+	L2gGBuYL8nIrR5OUBrVPlz6Rs27zsfM=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-611-n6foCJgLM0qXqALeeOS7rg-1; Thu, 02 Oct 2025 03:47:43 -0400
+X-MC-Unique: n6foCJgLM0qXqALeeOS7rg-1
+X-Mimecast-MFC-AGG-ID: n6foCJgLM0qXqALeeOS7rg_1759391262
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-3f42b54d159so442799f8f.2
+        for <op-tee@lists.trustedfirmware.org>; Thu, 02 Oct 2025 00:47:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759306991; x=1759911791;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=BfqDjr2vHvMLSpelJZSSDQAyOp1sqU85uHcOi6EeR9M=;
-        b=t7HMjLFHr/Mnv2o/Ghc07ix9nI+JTh9gnOT/HJQQ8jE13ds6HqX19gvcVeCf3BEvZ8
-         HmwVVC8Oh/Otc2Btkkt7h0MKGOQaLFDOq933kIeP7Pc342YIUwN26TkmiAHeJJstq791
-         7+0qpcBT4Zy1ZZ5kblJsiCZ5gFli0FtUj28rxWjga2PKQy4MHEmG/xAsMzDqjwf2kEnU
-         sB8Ntdq4Odmbw/tzh3N69V31Lxn7XUfv0DEaOhc1KZGxdrSKVO3U8PdK8PjAc+Jd5crP
-         av5UYAucJRfzCJuWNFs2TVk74NC0PlrlnktgQJqb5QIcjoda/e054HJYIMaPfE1/txk4
-         FMdw==
-X-Forwarded-Encrypted: i=1; AJvYcCXcq375BGE/knazRDsqF91FpLXgED7FoBDab6U43qWRnX9aXSr4WiwQ8VEWP3inNomGAAuCPYU=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yy4Usv+viiO5DlLE4u0CM0LzHT0EFnXKJKpT/Ki/8SRWSRyy04+
-	mhJrN6nVYcw30cfU5okeD2zs5asyUhiZfbUU/hWIhckRsPk8oUFUGWldciPVqTwbjkcUYTLw7HT
-	eRKRGMf+O22+cvmQstZjesNpfD/fcMPtDnh19qlccFjTdlIMd2Ey5csBZFYvVXswkDiSG1vsk
-X-Gm-Gg: ASbGncvX9NXU3GnYbV8rThjJPvjPt/twiL91pVTDX0QwoZZOHBTcNCwNUwKr1+GbtgD
-	2884y3AGK8uhUDg9k4aU+1uUGSYyYeWZHe+Db+jYrIThRlmFZhfVVSr8t1mMT3mOHbxfHo+RsYo
-	/5FZNN3Wy3I5FgnODCJCOP1rW1adyLORgbMCuIVnOBhlOlkr9MoZ2DFXYfmHXVfGypdIIpKVVl5
-	SowUCZ1PO05OOqakQ0HXHrtl1Cen4dhtYw+iq51NO8aeoWETOubrOswnG404Rb61Du1Sl1hotMT
-	4Ed0FAFydyv+Rnq9i4j3FjIeMF0cG86LrFqBo8h68UzMkMdmGALqCeRhPamdqBGXMbHdcTXTsex
-	CuLCh7vUIcTyQBDZI2Tc5mZbHN6I=
-X-Received: by 2002:a05:620a:1a90:b0:86a:79f0:6b30 with SMTP id af79cd13be357-87375f08125mr218916585a.10.1759306990799;
-        Wed, 01 Oct 2025 01:23:10 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHGnFUTD4TkfM05gLH1wKBu6EI4TJguWDNzVTARV3sTq77NHeGIczqd8JoSF98aSUiX1VzeMw==
-X-Received: by 2002:a05:620a:1a90:b0:86a:79f0:6b30 with SMTP id af79cd13be357-87375f08125mr218915785a.10.1759306990262;
-        Wed, 01 Oct 2025 01:23:10 -0700 (PDT)
-Received: from [192.168.149.223] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b3a79fdbcb4sm894030066b.85.2025.10.01.01.23.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Oct 2025 01:23:09 -0700 (PDT)
-Message-ID: <a5907537-cecc-4564-bae5-981d3ad85d7c@oss.qualcomm.com>
-Date: Wed, 1 Oct 2025 10:23:07 +0200
+        d=1e100.net; s=20230601; t=1759391262; x=1759996062;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CgVDpIUaXbRIFaGTvmSsiE/BFfaSBmSlnmsfDON0gMA=;
+        b=U1RqitNRkjNquG5p0Or/Rcy1//64GE0DyKS8HP1h4VolDYzFptGWCu9gEYax6cijim
+         YuXwWJmIoCCXK97tTsWuKaMB7BPcNHrPscLq80hLhZHgpynH/+pX3Y5y4X31h0XL/IYg
+         Sdy2w5RX/qTcERhnZ75W7tAkkXCM69Tbn2uR4fW3dsdkQEfU35zDjKqP7uwZdzLZZJ6U
+         fgbc4chX8bxLHMy+ZRZIrb8l2OhsuAXYTBZ3J3KVjRTVpjxymXUY9np5qD1J34mx1X3E
+         twbwMrg7iTXFMjHgFWXJRe40+2KFKivUIykOWgtm4Il2LSfNOtXJ7rFaGveVHD/sOIkp
+         AlVA==
+X-Forwarded-Encrypted: i=1; AJvYcCUd/xJe20y9stfcY818O/aqjyO1Mot9RMwRwl9VWPcWq6yUkosJ0WFRDf7AVrT9PTw5Pd0XSEY=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzS6TTs+YhZz22xjalB8nNeeEgQBagCThxNtV3OEnYWPELYT5iX
+	3bn8KU1dETBiyFjPzcw/CMFh3WpywXVY6KxQuycX8rcfpeGlpdzj7018juFCHY3DGzXtevHFkbk
+	0jOw/qtnpOoszo6DjiwBW6jDjXVJ/XZo2LAK1iHM9A8ayrDQ/ev5l59c0rm3Gu2Mc54tBCpA=
+X-Gm-Gg: ASbGncua5BB8c3FuIpXXjAPSbMU6k2AWm/Jr9wfG7dDtP1NnKxhd+2Cx7gWU6FYMwkl
+	YOz5x0JyAYmsU3ZEB/v5NTvPkI1km+NWChzb5hu6nqPn2lPpAoLlkpZTEl0dBLFA/rbPuXZ7m/a
+	ECjm3f9axTTwvgR9i0KYgrttyed56q0NxeeLtY1V7WOFGFhB1O4Wl9ny7rD8ewy0Yly478/00dh
+	sUc7GWCqM3Shs3UxJTmqoItF3CBbhjhgTNLBgOA2C1etzk4TQIy50r1xL8NlH2xt2HgVcFOraDS
+	unklEHP0Ym3cA236iSB1ww==
+X-Received: by 2002:a05:6000:615:b0:3eb:4e88:585 with SMTP id ffacd0b85a97d-4255780bf79mr4246073f8f.29.1759391262072;
+        Thu, 02 Oct 2025 00:47:42 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFP/KnwbkkSVeQQvgR4f/j6yP7T3XyqaNDmBwlBCTQIJSAplcQo89U5KExVEQ0LiNnNhN8Wxw==
+X-Received: by 2002:a05:6000:615:b0:3eb:4e88:585 with SMTP id ffacd0b85a97d-4255780bf79mr4246043f8f.29.1759391261558;
+        Thu, 02 Oct 2025 00:47:41 -0700 (PDT)
+Received: from localhost ([2a01:e0a:b25:f902::ff])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4255d8a6b5csm2470879f8f.5.2025.10.02.00.47.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Oct 2025 00:47:41 -0700 (PDT)
+Date: Thu, 2 Oct 2025 09:47:40 +0200
+To: Jens Wiklander <jens.wiklander@linaro.org>
+Subject: Re: [PATCH v12 2/9] dma-buf: dma-heap: export declared functions
+Message-ID: <20251002-shaggy-mastiff-of-elevation-c8e1f0@houat>
+References: <20250911135007.1275833-1-jens.wiklander@linaro.org>
+ <20250911135007.1275833-3-jens.wiklander@linaro.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] tee: QCOMTEE should depend on ARCH_QCOM
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
-        Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
-        Jens Wiklander <jens.wiklander@linaro.org>,
-        Sumit Garg <sumit.garg@kernel.org>
-References: <d0b14c3d51245f9eda2341504c05bd0f5b0828b7.1759243439.git.geert+renesas@glider.be>
-Content-Language: en-US
-In-Reply-To: <d0b14c3d51245f9eda2341504c05bd0f5b0828b7.1759243439.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=OJoqHCaB c=1 sm=1 tr=0 ts=68dce4f0 cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
- a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10 a=EUspDBNiAAAA:8 a=yXkz1KN_3VbnnYl-rMQA:9
- a=QEXdDO2ut3YA:10 a=PEH46H7Ffwr30OY-TuGO:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTI3MDAzMiBTYWx0ZWRfX+HWU9ayFdHUt
- gsf4kWydYDrs1wEYVhwUuaSBDk3gszaQnB4SAftYgSQFRpOKMaT1Og1LuN3xzjbsHrhM8JuD6//
- SotWBdp0chdjMTaAQwet4ekkL1PltAFyr+A89fKwKMNWwHAiGFsNs4NkhmSr43AqyY1PsgKOuE8
- 0WedCjcSLl52xm6L/th/A5qyUH4K1hk3pYiagYwK+l4nrP5QOWNkPgSTwBJ9nvnp+C1NrRBnGi4
- 0+FKaz4e2XIhUw+yax5m85p3mO4Z1htTuG5GCLUVpznCpZWpkyqacPhrLY2Nu1a2lJlE9heJy0e
- aVfEhcdDPtuDlDj6DYnUxtt/C86e973FEyAiQSxj/YcLniiBYO6YGAzFGnyhn6HcMXCf1q5tpV/
- psKLeIoCa3sYV7kmLf1/9umYno9jXw==
-X-Proofpoint-ORIG-GUID: 18TCsqsxcJDSgSvpLQLmeTDGlrJSbflX
-X-Proofpoint-GUID: 18TCsqsxcJDSgSvpLQLmeTDGlrJSbflX
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-10-01_02,2025-09-29_04,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 priorityscore=1501 bulkscore=0 impostorscore=0
- suspectscore=0 lowpriorityscore=0 phishscore=0 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2509150000 definitions=main-2509270032
-X-Rspamd-Queue-Id: 303484185E
-X-Spamd-Bar: ----
-X-Spamd-Result: default: False [-4.49 / 15.00];
-	BAYES_HAM(-2.89)[99.54%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+Content-Type: multipart/signed; micalg=pgp-sha384;
+	protocol="application/pgp-signature"; boundary="gqzh2ah3mmdu76ac"
+Content-Disposition: inline
+In-Reply-To: <20250911135007.1275833-3-jens.wiklander@linaro.org>
+X-Rspamd-Queue-Id: 684954187E
+X-Spamd-Bar: -----
+X-Spamd-Result: default: False [-5.20 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SIGNED_PGP(-2.00)[];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DWL_DNSWL_LOW(-1.00)[redhat.com:dkim];
+	MID_RHS_NOT_FQDN(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[redhat.com,quarantine];
+	MIME_GOOD(-0.20)[multipart/signed,text/plain];
+	R_SPF_ALLOW(-0.20)[+ip4:170.10.129.0/24];
+	R_DKIM_ALLOW(-0.20)[redhat.com:s=mimecast20190719];
+	RWL_MAILSPIKE_GOOD(-0.10)[170.10.129.124:from];
+	RCVD_TLS_LAST(0.00)[];
+	MIME_TRACE(0.00)[0:+,1:+,2:~];
+	RCVD_COUNT_THREE(0.00)[3];
 	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[25];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	FROM_HAS_DN(0.00)[];
 	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TAGGED_RCPT(0.00)[renesas];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.222.200:received];
+	DNSWL_BLOCKED(0.00)[2a01:e0a:b25:f902::ff:received];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RCVD_COUNT_THREE(0.00)[4];
-	RCVD_TLS_LAST(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,lists.linaro.org,lists.trustedfirmware.org,lists.infradead.org,nxp.com,gmail.com,mediatek.com,linaro.org,collabora.com,arm.com,google.com,amd.com,kernel.org,qti.qualcomm.com,ffwll.ch,fooishbar.org,oss.qualcomm.com];
 	NEURAL_HAM(-0.00)[-1.000];
-	DKIM_TRACE(0.00)[qualcomm.com:+]
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	DKIM_TRACE(0.00)[redhat.com:+];
+	MISSING_XM_UA(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[170.10.129.124:from,209.85.221.72:received]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: BY44MU7AR2AULNOZSIG7DJT7HQR3VCEL
-X-Message-ID-Hash: BY44MU7AR2AULNOZSIG7DJT7HQR3VCEL
-X-MailFrom: konrad.dybcio@oss.qualcomm.com
+Message-ID-Hash: UDWJJMVBDID5H7AJJF2F5WRG3OPMSVLS
+X-Message-ID-Hash: UDWJJMVBDID5H7AJJF2F5WRG3OPMSVLS
+X-MailFrom: mripard@redhat.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, op-tee@lists.trustedfirmware.org, linux-arm-kernel@lists.infradead.org, Olivier Masse <olivier.masse@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Yong Wu <yong.wu@mediatek.com>, Sumit Semwal <sumit.semwal@linaro.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T . J . Mercier" <tjmercier@google.com>, Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>, Sumit Garg <sumit.garg@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, azarrabi@qti.qualcomm.com, Simona Vetter <simona.vetter@ffwll.ch>, Daniel Stone <daniel@fooishbar.org>, Rouven Czerwinski <rouven.czerwinski@linaro.org>, robin.murphy@arm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BY44MU7AR2AULNOZSIG7DJT7HQR3VCEL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UDWJJMVBDID5H7AJJF2F5WRG3OPMSVLS/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Konrad Dybcio via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+From: Maxime Ripard via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Maxime Ripard <mripard@redhat.com>
 
-On 9/30/25 4:44 PM, Geert Uytterhoeven wrote:
-> The Qualcomm Trusted Execution Environment (QTEE) is only available on
-> Qualcomm SoCs.  Hence add a dependency on ARCH_QCOM, to prevent asking
-> the user about this driver when configuring a kernel without Qualcomm
-> platform support.
-> 
-> Fixes: d6e290837e50f73f ("tee: add Qualcomm TEE driver")
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+--gqzh2ah3mmdu76ac
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v12 2/9] dma-buf: dma-heap: export declared functions
+MIME-Version: 1.0
+
+Hi,
+
+On Thu, Sep 11, 2025 at 03:49:43PM +0200, Jens Wiklander wrote:
+> Export the dma-buf heap functions to allow them to be used by the OP-TEE
+> driver. The OP-TEE driver wants to register and manage specific secure
+> DMA heaps with it.
+>=20
+> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> Reviewed-by: T.J. Mercier <tjmercier@google.com>
+> Acked-by: Sumit Semwal <sumit.semwal@linaro.org>
+> Signed-off-by: Jens Wiklander <jens.wiklander@linaro.org>
 > ---
+>  drivers/dma-buf/dma-heap.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>=20
+> diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
+> index 3cbe87d4a464..8ab49924f8b7 100644
+> --- a/drivers/dma-buf/dma-heap.c
+> +++ b/drivers/dma-buf/dma-heap.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/dma-buf.h>
+>  #include <linux/dma-heap.h>
+>  #include <linux/err.h>
+> +#include <linux/export.h>
+>  #include <linux/list.h>
+>  #include <linux/nospec.h>
+>  #include <linux/syscalls.h>
+> @@ -202,6 +203,7 @@ void *dma_heap_get_drvdata(struct dma_heap *heap)
+>  {
+>  	return heap->priv;
+>  }
+> +EXPORT_SYMBOL_NS_GPL(dma_heap_get_drvdata, "DMA_BUF_HEAP");
+> =20
+>  /**
+>   * dma_heap_get_name - get heap name
+> @@ -214,6 +216,7 @@ const char *dma_heap_get_name(struct dma_heap *heap)
+>  {
+>  	return heap->name;
+>  }
+> +EXPORT_SYMBOL_NS_GPL(dma_heap_get_name, "DMA_BUF_HEAP");
+> =20
+>  /**
+>   * dma_heap_add - adds a heap to dmabuf heaps
+> @@ -303,6 +306,7 @@ struct dma_heap *dma_heap_add(const struct dma_heap_e=
+xport_info *exp_info)
+>  	kfree(heap);
+>  	return err_ret;
+>  }
+> +EXPORT_SYMBOL_NS_GPL(dma_heap_add, "DMA_BUF_HEAP");
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+It's not clear to me why we would need to export those symbols.
 
-Konrad
+As far as I know, heaps cannot be removed, and compiling them as module
+means that we would be able to remove them.
+
+Now, if we don't expect the users to be compiled as modules, then we
+don't need to export these symbols at all.
+
+Am I missing something?
+
+Maxime
+
+--gqzh2ah3mmdu76ac
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCaN4uFwAKCRAnX84Zoj2+
+dgXFAYCRqMeTP57unkLdOGOydUleXNO4Hyw5XxsQDOrGvzMhBXOO+wkmNxAyspbp
+Ufq67PMBfjTtOUKXQIyMWncxOakNOIj4KKpCcpuXU8G+m0dpGkCeFoK4Z85nhhK9
+lbC1byfHEQ==
+=wMRm
+-----END PGP SIGNATURE-----
+
+--gqzh2ah3mmdu76ac--
+
