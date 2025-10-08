@@ -4,216 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B2A1CCA470
-	for <op-tee@archiver.kernel.org>; Tue,  7 Oct 2025 13:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B151CCA470
+	for <op-tee@archiver.kernel.org>; Wed,  8 Oct 2025 16:38:36 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 367FC431C3
-	for <op-tee@archiver.kernel.org>; Tue,  7 Oct 2025 13:51:23 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7620641B87
+	for <op-tee@archiver.kernel.org>; Wed,  8 Oct 2025 16:38:35 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=nt/Q98Pa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mp9hR8+O;
 	dkim-atps=neutral
-Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com [91.207.212.93])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9DBEC41830
-	for <op-tee@lists.trustedfirmware.org>; Tue,  7 Oct 2025 13:51:04 +0000 (UTC)
-Received: from pps.filterd (m0046661.ppops.net [127.0.0.1])
-	by mx07-00178001.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 597CcLjx002022;
-	Tue, 7 Oct 2025 15:50:43 +0200
-Received: from gvxpr05cu001.outbound.protection.outlook.com (mail-swedencentralazon11013057.outbound.protection.outlook.com [52.101.83.57])
-	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 49myucs53h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Oct 2025 15:50:43 +0200 (MEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xy6FX0m3iYCYP1Zg/DGg5VlA/4qnUGN15Xkyoe4qpc76lmGn5s7QSvdVmAj2rqDbQvmoYnqNJNET9/ojVnZis4Rx9zfOnrEZ+3GZsIgdLdehDRDSxI+6GBL6rMm2g9yhzwfbpM4ECCOB6bl4QS4SeKxDD6U4SSfOVBzymw2amILu2cAFAvvjVnDXQuZD+VDGlSB6jWsR+BDbT0FhGs+eZWlHPiTJeEeBbcW1tqyaCq0X52VqEl0Iqcy/7E9KqL4B+M48RGQomtHKzFK1qGEgrAuHwoq8gtHc/VQrDRH9a2QfcVr4WQvJNngnko853wg7JI8LuxQERCofKZZDQ0srDg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+kscynjedeA0dHNyctVoMd/GafjnM6r98Zw2CBukFZQ=;
- b=xh88gJdhS+ApOSE8hjm+/qBI1GRsg1Jw2FYuEKAZdaKJshGQjRsOQF/4OyeOFqC2xhKj8B77pJoQiEY/bCGSlQWwcVp6pBmrGLoj/d/94UFkcIJD6Mcxd7z5IJhLFvY1exdl0/lCXRdA0L5g9Q5qUPdNW4LJRnhUIO8EiH/Hke7jw9jqaJ7vgCVq37GNldM/j9maJ2s74eBEoabF1s0bwRMsUxZeeFfV0idTyphPkk+/9PCgnfCMAKqn6gybfFF+CoBtxaigZ3slEPxQO6BpIOc6nwU6OZ3/jb7X60ZHPhwGsp8lY7vLT0IMqiCEeGVRNxvRec8yif1W5IrF/3JTWw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.43) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+kscynjedeA0dHNyctVoMd/GafjnM6r98Zw2CBukFZQ=;
- b=nt/Q98PagjcLPMpzH1/C2sjnv1T4lu/bCcc92n3OremHvJycTIbl1F+/f6AxYc9M+RlZa8HQHouMf2S+8+z3wktm3k8qqRSaMIuxDbWQrVj5jHxvenjrsFmMjXpPC6FiV+tjOgmO8YOSSUhyeNNaUIPL298a3fdyQxCCx1sMa5/PC0/Erfky6EaMdbJzHaMzt2GcBTV37HG9aQ170vKivSIpBQsLR/ZofN+fHNQawt9rq1QfNSQtgdonR0ohAum55i1MmE7HTIUq+QM02my16yjlw3xOY4OLl/k/3TBEW4vDpt343tjmB5hIlGc59mSh6YLXwVMQ59EW7nhkKSR+yg==
-Received: from PAZP264CA0166.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:236::6)
- by VI0PR10MB8953.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:800:216::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9182.20; Tue, 7 Oct
- 2025 13:50:35 +0000
-Received: from AM4PEPF00025F95.EURPRD83.prod.outlook.com
- (2603:10a6:102:236:cafe::7d) by PAZP264CA0166.outlook.office365.com
- (2603:10a6:102:236::6) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9160.17 via Frontend Transport; Tue,
- 7 Oct 2025 13:50:35 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.43)
- smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.43 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.43; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.43) by
- AM4PEPF00025F95.mail.protection.outlook.com (10.167.16.4) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9228.3 via Frontend Transport; Tue, 7 Oct 2025 13:50:34 +0000
-Received: from EQNCAS1NODE3.st.com (10.75.129.80) by smtpO365.st.com
- (10.250.44.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Tue, 7 Oct
- 2025 15:48:14 +0200
-Received: from SAFDAG1NODE1.st.com (10.75.90.17) by EQNCAS1NODE3.st.com
- (10.75.129.80) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Tue, 7 Oct
- 2025 15:50:34 +0200
-Received: from [10.252.28.134] (10.252.28.134) by SAFDAG1NODE1.st.com
- (10.75.90.17) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.57; Tue, 7 Oct
- 2025 15:50:33 +0200
-Message-ID: <f5b0e106-a731-461b-b401-1aa1f9892465@foss.st.com>
-Date: Tue, 7 Oct 2025 15:50:32 +0200
+Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 121F84182B
+	for <op-tee@lists.trustedfirmware.org>; Wed,  8 Oct 2025 16:38:20 +0000 (UTC)
+Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-634a3327ff7so35486a12.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 08 Oct 2025 09:38:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1759941499; x=1760546299; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=IpoineAZsS/O1PBo6hjFOxIAdK8lFJMmlZFDPhwt2Go=;
+        b=mp9hR8+ORNQqztDjavYPxaY9F1MkfLlDqPEyKuePB+yByMtbbkCiNHW+brAqtUKP9q
+         kbN8VbtrKhORasqMmmniDtoGWWjXWVyJGZrgHPn5MHZtzlnqw4lqPjgNUl7mHqEsV9tv
+         a8rFIAxihWpDwWoLEXWCaCjbI8gmQu+vbsJFKtWddcqlGV5YDt9OR7lyDmIsSxX9COGX
+         PW2c1xPpID8Y/y//Cs94QFccyqIG/6V6IfHS7F62sbWY5HjtwDhKDSl/V/E/t5+OWNJ0
+         a24VQ7OG2MTFZS7S3m8ej/xHWwJ0FdDKWPpcG8UAOP4FzUDnzF0fjFAaETX9g4SWtWfD
+         IWAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759941499; x=1760546299;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=IpoineAZsS/O1PBo6hjFOxIAdK8lFJMmlZFDPhwt2Go=;
+        b=m8SOlotAlZiHEypdmiO1srP1lTcqU8YmtmXr2y/TFxfdNGUo9IswwC6SdJ4bmO3g7V
+         K35r8iU1vQHsqg5LS7UbvumRrorc12LVdXyfVBCjz5Ta/dxfD13u/5hUai9305E3XJTc
+         K5eGpRE3iAynGbCYYowWQeWZTe7hi/99MLep761eFhJ/OhoUSL/43rFJBsU31hoGnYMZ
+         WpdeFNhpac1Rb3PiJ0zeSFN6Isq994eNvXbk5FvF07SGYQSfDGctSPYMpWqZ5VIJ2A1d
+         XTPYMlgEl020AKrkZ0vKwPZYYvW4UhKYo2+uwU+opTx3KMmphgBnlQViF65RogTjwwxI
+         iMtA==
+X-Forwarded-Encrypted: i=1; AJvYcCURa0SRNVgKkePa+pjJlkxwktMqU9UXyzTRa0GuJx4n1ZjhvP870ZaEZHqFpVEK/74ORPr8rV0=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YyRq/D+biwbwKbflYoZu7m4mgly4dolknN/m9yPYQ+U4hIN1k+L
+	CB4247vBvUPZ/PigGaG+zGLzfTfVI5kSO0cjnJdEqr7z5vhF1lWeLPtv8/0SCkSl++5XRzzJrC1
+	TdNC3P06D5xbIvtY0Peit6afnImj8RGUneVgEd+Dm76WW
+X-Gm-Gg: ASbGncutl9ZjZSm0EuF9YFU/wbK/4hUAreOVKfjxy3U1l8ycnMZnL7B0nfAW3asF0UE
+	p+H1iefe7A+zwY1aWyIZfW42mZvV/LalTyXYst6M3YltCYTUfdQ+QBHAxMaqtmA9ld99ypiZgsS
+	lhfCnUL03xGWRD621jRlWyaOSHW5z6NPU80nvgci+v/ArOL3RoqH8V1uotcAQCqxhIZBj87ZhCB
+	qlJnYlJgawXIuF4n4nPuyBtUP53Aqc8hnUagCu51CYgFhdjBh4QY8WSRQzu76PQoEscgr28zDJp
+	hpmXlaMYcdXL9Qo62M85m7VG+mg0yR5ORFKUHfca8LXxixZAuL3liibm/s2RMytMSzbt
+X-Google-Smtp-Source: AGHT+IFUSouzzahEE0ZXiMAzh0PP4/V5SLYKNAVEEQ3aHZvPryhFs7/um/zmAcJHxRpbEIqHnshdklRUPARiLL52/44=
+X-Received: by 2002:a05:6402:3546:b0:638:1599:6c25 with SMTP id
+ 4fb4d7f45d1cf-639d5b5db50mr3657752a12.1.1759941498665; Wed, 08 Oct 2025
+ 09:38:18 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+References: <20250625094028.758016-1-arnaud.pouliquen@foss.st.com>
+ <20250625094028.758016-5-arnaud.pouliquen@foss.st.com> <aMkqifHSdlCs4VjA@sumit-X1>
+ <62bdb238-7440-451b-84ef-79f846b10ba0@foss.st.com> <aMqIhFdIqp5auH22@sumit-X1>
+ <8d385f2e-6470-4d66-be0b-a2a448a81fa4@foss.st.com> <aMz8XuHzIomNhmra@sumit-X1>
+ <0e5a44df-f60a-4523-a791-6318b3c81425@foss.st.com> <f5b0e106-a731-461b-b401-1aa1f9892465@foss.st.com>
+In-Reply-To: <f5b0e106-a731-461b-b401-1aa1f9892465@foss.st.com>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
+Date: Wed, 8 Oct 2025 10:38:07 -0600
+X-Gm-Features: AS18NWCf-4pbSm4V2cCNzLsqw4ewfJdvM1S_DUhnEjZ4V-PHM0kzNUE7Jh8-rzE
+Message-ID: <CANLsYkz58-TFhbPcsMMV27WBGphPc7UP5HfgMZZMrqxnqWqhNA@mail.gmail.com>
 Subject: Re: [Linux-stm32] [PATCH v19 4/6] dt-bindings: remoteproc: Add
  compatibility for TEE support
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
-To: Sumit Garg <sumit.garg@kernel.org>
-References: <20250625094028.758016-1-arnaud.pouliquen@foss.st.com>
- <20250625094028.758016-5-arnaud.pouliquen@foss.st.com>
- <aMkqifHSdlCs4VjA@sumit-X1>
- <62bdb238-7440-451b-84ef-79f846b10ba0@foss.st.com>
- <aMqIhFdIqp5auH22@sumit-X1>
- <8d385f2e-6470-4d66-be0b-a2a448a81fa4@foss.st.com>
- <aMz8XuHzIomNhmra@sumit-X1>
- <0e5a44df-f60a-4523-a791-6318b3c81425@foss.st.com>
-Content-Language: en-US
-In-Reply-To: <0e5a44df-f60a-4523-a791-6318b3c81425@foss.st.com>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: base64
-X-Originating-IP: [10.252.28.134]
-X-ClientProxiedBy: EQNCAS1NODE3.st.com (10.75.129.80) To SAFDAG1NODE1.st.com
- (10.75.90.17)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM4PEPF00025F95:EE_|VI0PR10MB8953:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7e1dec7e-cac1-4411-a6a3-08de05a87d76
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|7416014|376014|1800799024|82310400026|36860700013;
-X-Microsoft-Antispam-Message-Info: 
-	=?utf-8?B?ektyM3E0Q1QzQnI4bGFZKyt0dVB0UFlSNEZxaGhkMGM3YktvWXhFayt4djhR?=
- =?utf-8?B?OEQ3WExhZENkaTNRWnpkUWpkMlllZzhYUmtnRU9VQ3p3aEx6K21kejZiOVpR?=
- =?utf-8?B?bzkrQ0lyUEswd2hIclVzVStWMTNvNG01elRqRzJKSkxORmc0WnAwTDJFVm9O?=
- =?utf-8?B?ek8wQnZxaWR1NWdLdlluNkxSRzhrZUNnMFZNRm84dHB1L25haUpsTXRSbWY5?=
- =?utf-8?B?bXRpNm5nTVFxNjF2SE1ac0NoY2FFK083T3RXd3hLeitlZFFyRkd2c3RzTmYr?=
- =?utf-8?B?Ym9VOWxmMzVaU3pDVjRYbTMyc3NoZGdoMEk3SXZzV2xEYTBsU0NublA1Y3pi?=
- =?utf-8?B?bG1aY3NTY0VYVko2VU9tV1crZWdob1duWnFYZGU4SlcxSHJJV2Y4NlZEVTZ5?=
- =?utf-8?B?elk2UWlxMUFCZFZJeTQ4Sm1QeU11aEpVTkY4TVVudVNUa2s4RmdMZm94TERQ?=
- =?utf-8?B?c3VrNlk5R09mWVQzdDBURE0vUVEwV2FZRGV1SWI2bFVJcFF5NnErbEZQMSt1?=
- =?utf-8?B?OVJCbXdCQ04yQUhpVFY4L0V3cUV0S01lL0FleVpidCs3cTc1Znh4eVJkMmR3?=
- =?utf-8?B?T1FyQ2gzeEdrdHlWNVVta1pUdzZOdU9IMFdycjl0TFkxYjFoenNYZUNFMHlZ?=
- =?utf-8?B?NGJHdzU1NWxQZi81TkIxR2tRa0VZdm9WOWNDR1U4Qjh6cVUxcXBYaUV5Tzdu?=
- =?utf-8?B?MHlHWUFVeWNvcmtKTVR5L2NXRy9VMnVrazJzdWdJU3NmSnJlVlVvVUhYWlU0?=
- =?utf-8?B?aUZtRHBDVGhiQnVhVVVJc0J2YytkdWNpSitTYXpBNk5IaWw4ZHhkTWN3VzU4?=
- =?utf-8?B?YlVBUGVpejA3UFR2cE9UbjJiU3hzODZUR29PVjFEamUramthQzNYbVpGT1FW?=
- =?utf-8?B?UnYwd1JSUGd1QnVwZ3FHUFR0YTBoTFUrenBzT1RWUmI0RnR0MEMzR2hTTEJJ?=
- =?utf-8?B?ZXh4dndTTXh0UFRLdUMybWxuWk1NWG5zbUxZdldYV2w4WVljRUw0RkRDOFph?=
- =?utf-8?B?NlBGaC8wcnlvQWtZdDlSbzZMek1TQnZkTXp4bUdLSlVHc3pWNDhZUVZpMXAx?=
- =?utf-8?B?b2YzNHMyVTN6elJiWTVMaXJtTHI0YTdtQWZlUVRONEcrODIzbWYxQmlrVFdK?=
- =?utf-8?B?TlBHeFNrK3plcWl6OTcwa0hTdGdNVWlRdlFUUlpmaFdXa1FLYkRzNHBmNVc4?=
- =?utf-8?B?NkJsTjhvcmVPb1VwS2hpNXN6V0ZoNm9ST1kxNWpUR2FaUTRJUnJGS0VydUpU?=
- =?utf-8?B?VThOU1dLQStuQVpLQ0tLOVJ4bVZ6NnVMWDdrZkd1ZDREMG55MnhqSzZtOUJX?=
- =?utf-8?B?bGt5R0pWSStFYW05QWpmSkI4NkRlTUlWNjV5WE5WQ01FTEw3N1hudFBxeGJk?=
- =?utf-8?B?b0NYc1BFVndST2NpazJPVWp3U1JPK3d2L3VjUy9xbjFGMXFOWE1sbmpWeTA2?=
- =?utf-8?B?MDYvV0NZQmlBVFZ1elRzNVV3RnhOSHVEQzA1dEx1TUF4eXRHSnNFV3dnL09I?=
- =?utf-8?B?bGkvVkVCbnFTSDlCbmFBVFdoOTVHSkpkck5JZ1pKUmRoTHhsdUNVcTFZQVZ1?=
- =?utf-8?B?RGdoV0NhTDBKWXIwVEpRNTkxK1VIZTBRVHFTMzB5Zk11a2Z6OExiRXV2SFJh?=
- =?utf-8?B?M2VtbkhKY0s1MitYNlpqSjFGaU0rSmdaTWcxbjdrOEdBK3hrQWxkQmFGb3pv?=
- =?utf-8?B?eU8zMDVzQm52MytYdGxlYTdHa09wNVZuTFhidFZxcWZJR3RCODlJbGIwcVdq?=
- =?utf-8?B?YVpnMmo3UWtFK2NsTDRKRE9hek9OVE5jK2EwYmtTWEJ0bnliek1oRjNLck5l?=
- =?utf-8?B?MEFKWmZPTnpHM3IvUVFpR0ZraFJBZEZYRCtmdEJPdmQzb3AyczFZdXlHK1c0?=
- =?utf-8?B?eit0UHkvc3ZQYmxGcVlvQXFXMEJVRGM2Uy9KZnNEVk8wSHlmM1hycFM2eko5?=
- =?utf-8?B?MXVHVjFlSlJobkdLU1c1Rjd4eWtHS2Fqb0YxWHE5WVFtd29vRnZaUFpMeWpn?=
- =?utf-8?B?dm5qQzZlNmtHcGVTelA3cDV0UmJtZFg2aTVlNG9vNVRJL092U3RMTXIvUXli?=
- =?utf-8?Q?gOrBcV?=
-X-Forefront-Antispam-Report: 
-	CIP:164.130.1.43;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(82310400026)(36860700013);DIR:OUT;SFP:1101;
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Oct 2025 13:50:34.9569
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7e1dec7e-cac1-4411-a6a3-08de05a87d76
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.43];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource: 
-	AM4PEPF00025F95.EURPRD83.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR10MB8953
-X-Proofpoint-GUID: ME3Umm13hN8F5kY-kKM97F2ahdG3T_YJ
-X-Authority-Analysis: v=2.4 cv=KrxAGGWN c=1 sm=1 tr=0 ts=68e51ab3 cx=c_pps
- a=j9DvOQ6BGrSku+OOwBPc6Q==:117 a=peP7VJn1Wk7OJvVWh4ABVQ==:17
- a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=ESwrQ9yjESUA:10 a=IkcTkHD0fZMA:10
- a=x6icFKpwvdMA:10 a=s63m1ICgrNkA:10 a=KrXZwBdWH7kA:10 a=P-IC7800AAAA:8
- a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=8b9GpE9nAAAA:8 a=phlkwaE_AAAA:8
- a=ZNfEsUQXn-wfoG2fjfkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=d3PnA9EDa4IxuAV0gXij:22 a=T3LWEMljR5ZiDmsYVIUa:22 a=uKTQOUHymn4LaG7oTSIC:22
- a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-ORIG-GUID: ME3Umm13hN8F5kY-kKM97F2ahdG3T_YJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDA3MDA3MSBTYWx0ZWRfX03lwOTmGHI0g
- E9QkJiBKmEgbsEeU4GRijXA3GaLphqsdzVKHPutuysP4peYze8CxRNZ84W1q/CG5KIzmwVljIRT
- 2EjxobuA1zhKWUWq9zbJyOR54d1GPyS49w1G3cI9Klw/RrigF+fVE7APbxTPNyNnbRXX2fjIeQC
- UdGJUMGN834KBOnJhMCP4sEhVxVls+3ujcYODa/LDVRftTtuR5P5PM+y4UqE+33G28lZv88l0bt
- H2HYgkf8rIbUJf5/uLH4Yl26nDkKDadf3lzvkD5sLyI0p4/fet7AFBM4chln7vXeXGNE6EsQC2/
- NfAR9ZpKIP/BLLINh2zLzQcBpUCqhspC6z/HxDSgBOB3NjwqYVVi3ZIdHMB3kBSQYAPfmYOSvnx
- DJd8HXWL1cZfgW/EmrgO/tK42mihiA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-10-07_01,2025-10-06_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0
- clxscore=1015 priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2509150000 definitions=main-2510070071
-X-Rspamd-Queue-Id: 9DBEC41830
-X-Spamd-Bar: ---
-X-Spamd-Result: default: False [-3.60 / 15.00];
+To: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>,
+	Abdellatif El Khlifi <abdellatif.elkhlifi@arm.com>, Sumit Garg <sumit.garg@kernel.org>,
+	quic_hdev@quicinc.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Rspamd-Queue-Id: 121F84182B
+X-Spamd-Bar: --
+X-Spamd-Result: default: False [-2.50 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:91.207.212.93];
-	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector2];
-	RCVD_IN_DNSWL_LOW(-0.10)[91.207.212.93:from];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[15];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	TO_DN_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[13];
 	MIME_TRACE(0.00)[0:+];
-	DKIM_TRACE(0.00)[foss.st.com:+];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	ASN(0.00)[asn:52129, ipnet:91.207.212.0/23, country:US];
-	HAS_XOIP(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=2375843314=arnaud.pouliquen@foss.st.com];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.83.57:received];
-	NEURAL_HAM(-0.00)[-1.000];
-	FORGED_SENDER_VERP_SRS(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.49:from];
 	TAGGED_RCPT(0.00)[dt];
-	RCVD_COUNT_SEVEN(0.00)[8]
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.208.49:from];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Action: no action
 X-Rspamd-Server: lists.trustedfirmware.org
-Message-ID-Hash: B7SVZLUYUZKHM7H2RAQEZFUZVPGVVGOM
-X-Message-ID-Hash: B7SVZLUYUZKHM7H2RAQEZFUZVPGVVGOM
-X-MailFrom: prvs=2375843314=arnaud.pouliquen@foss.st.com
+Message-ID-Hash: WXVNTSDNEQMWNHTRJ7KRAZSG3VED3NYZ
+X-Message-ID-Hash: WXVNTSDNEQMWNHTRJ7KRAZSG3VED3NYZ
+X-MailFrom: mathieu.poirier@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, op-tee@lists.trustedfirmware.org, Bjorn Andersson <andersson@kernel.org>, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
+CC: devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, op-tee@lists.trustedfirmware.org, Bjorn Andersson <andersson@kernel.org>, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/B7SVZLUYUZKHM7H2RAQEZFUZVPGVVGOM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/WXVNTSDNEQMWNHTRJ7KRAZSG3VED3NYZ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -221,302 +117,462 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-SGVsbG8gQmpvcm4sIE1hdGhpZXUsIFN1bWl0LA0KDQpPbiA5LzIyLzI1IDEwOjU3LCBBcm5hdWQg
-UE9VTElRVUVOIHdyb3RlOg0KPiANCj4gDQo+IE9uIDkvMTkvMjUgMDg6NDYsIFN1bWl0IEdhcmcg
-d3JvdGU6DQo+PiBPbiBXZWQsIFNlcCAxNywgMjAyNSBhdCAwMzo0Nzo0MFBNICswMjAwLCBBcm5h
-dWQgUE9VTElRVUVOIHdyb3RlOg0KPj4+DQo+Pj4gT24gOS8xNy8yNSAxMjowOCwgU3VtaXQgR2Fy
-ZyB3cm90ZToNCj4+Pj4gT24gVHVlLCBTZXAgMTYsIDIwMjUgYXQgMDM6MjY6NDdQTSArMDIwMCwg
-QXJuYXVkIFBPVUxJUVVFTiB3cm90ZToNCj4+Pj4+IEhlbGxvIFN1bWl0LA0KPj4+Pj4NCj4+Pj4+
-IE9uIDkvMTYvMjUgMTE6MTQsIFN1bWl0IEdhcmcgd3JvdGU6DQo+Pj4+Pj4gSGkgQXJuYXVkLA0K
-Pj4+Pj4+DQo+Pj4+Pj4gRmlyc3Qgb2YgYWxsIGFwb2xvZ2llcyBmb3Igc3VjaCBhIGxhdGUgcmV2
-aWV3IGNvbW1lbnQgYXMgcHJldmlvdXNseSBJDQo+Pj4+Pj4gd2Fzbid0IENDZWQgb3IgaW52b2x2
-ZWQgaW4gdGhlIHJldmlldyBvZiB0aGlzIHBhdGNoLXNldC4gSW4gY2FzZSANCj4+Pj4+PiBhbnkg
-b2YNCj4+Pj4+PiBteSBmb2xsb3dpbmcgY29tbWVudHMgaGF2ZSBiZWVuIGRpc2N1c3NlZCBpbiB0
-aGUgcGFzdCB0aGVuIGZlZWwgDQo+Pj4+Pj4gZnJlZSB0bw0KPj4+Pj4+IHBvaW50IG1lIGF0IHJl
-bGV2YW50IGRpc2N1c3Npb25zLg0KPj4+Pj4gTm8gd29ycmllcywgdGhlcmUgYXJlIHRvbyBtYW55
-IHZlcnNpb25zIG9mIHRoaXMgc2VyaWVzIHRvIGZvbGxvdyANCj4+Pj4+IGFsbCB0aGUNCj4+Pj4+
-IHBhc3QgZGlzY3Vzc2lvbnMuIEkgc29tZXRpbWVzIGhhdmUgZGlmZmljdWx0eSByZW1lbWJlcmlu
-ZyBhbGwgdGhlDQo+Pj4+PiBkaXNjdXNzaW9ucyBteXNlbGYgOikNCj4+Pj4+DQo+Pj4+Pj4gT24g
-V2VkLCBKdW4gMjUsIDIwMjUgYXQgMTE6NDA6MjZBTSArMDIwMCwgQXJuYXVkIFBvdWxpcXVlbiB3
-cm90ZToNCj4+Pj4+Pj4gVGhlICJzdCxzdG0zMm1wMS1tNC10ZWUiIGNvbXBhdGlibGUgaXMgdXRp
-bGl6ZWQgaW4gYSBzeXN0ZW0gDQo+Pj4+Pj4+IGNvbmZpZ3VyYXRpb24NCj4+Pj4+Pj4gd2hlcmUg
-dGhlIENvcnRleC1NNCBmaXJtd2FyZSBpcyBsb2FkZWQgYnkgdGhlIFRydXN0ZWQgRXhlY3V0aW9u
-IA0KPj4+Pj4+PiBFbnZpcm9ubWVudA0KPj4+Pj4+PiAoVEVFKS4NCj4+Pj4+PiBIYXZpbmcgYSBE
-VCBiYXNlZCBjb21wYXRpYmxlIGZvciBhIFRFRSBzZXJ2aWNlIHRvIG1lIGp1c3QgZmVlbHMgDQo+
-Pj4+Pj4gbGlrZSBpdA0KPj4+Pj4+IGlzIHJlZHVuZGFudCBoZXJlLiBJIGNhbiBzZWUgeW91IGhh
-dmUgYWxzbyB1c2VkIGEgVEVFIGJ1cyBiYXNlZCANCj4+Pj4+PiBkZXZpY2UNCj4+Pj4+PiB0b28g
-YnV0IHRoYXQgaXMgbm90IGJlaW5nIHByb3Blcmx5IHVzZWQuIEkga25vdyBzdWJzeXN0ZW1zIGxp
-a2UNCj4+Pj4+PiByZW1vdGVwcm9jLCBTQ01JIGFuZCBvdGhlcnMgaGVhdmlseSByZWx5IG9uIERU
-IHRvIGhhcmRjb2RlIA0KPj4+Pj4+IHByb3BlcnRpZXMgb2YNCj4+Pj4+PiBzeXN0ZW0gZmlybXdh
-cmUgd2hpY2ggYXJlIHJhdGhlciBiZXR0ZXIgdG8gYmUgZGlzY292ZXJlZCBkeW5hbWljYWxseS4N
-Cj4+Pj4+Pg0KPj4+Pj4+IFNvIEkgaGF2ZSBhbiBvcGVuIHF1ZXN0aW9uIGZvciB5b3UgYW5kIHRo
-ZSByZW1vdGVwcm9jIHN1YnN5c3RlbQ0KPj4+Pj4+IG1haW50YWluZXJzIGJlaW5nOg0KPj4+Pj4+
-DQo+Pj4+Pj4gSXMgaXQgZmVhc2libGUgdG8gcmF0aGVyIGxldmVyYWdlIHRoZSBiZW5lZml0cyBv
-ZiBhIGZ1bGx5IA0KPj4+Pj4+IGRpc2NvdmVyYWJsZQ0KPj4+Pj4+IFRFRSBidXMgcmF0aGVyIHRo
-YW4gcmVseWluZyBvbiBwbGF0Zm9ybSBidXMvIERUIHRvIGhhcmRjb2RlIGZpcm13YXJlDQo+Pj4+
-Pj4gcHJvcGVydGllcz8NCj4+Pj4+IFRoZSBkaXNjb3ZlcmFibGUgVEVFIGJ1cyBkb2VzIG5vdCB3
-b3JrcyBpZiB0aGUgcmVtb3RlcHJvYyBpcyBwcm9iZWQNCj4+Pj4+IGJlZm9yZSB0aGUgT1AtVEVF
-IGJ1cywgaW4gc3VjaCBjYXNlwqAgbm8gcG9zc2liaWxpdHkgdG8ga25vdyBpZiB0aGUgVEVFDQo+
-Pj4+PiBUQSBpcyBub3QgeWV0IGF2YWlsYWJsZSBvciBub3QgYXZhaWxhYmxlIGF0IGFsbC4NCj4+
-Pj4+IFRoaXMgcG9pbnQgaXMgbWVudGlvbmVkIGluIGEgY29tbWVudCBpbiBycHJvY190ZWVfcmVn
-aXN0ZXIoKS4NCj4+PiBGb3IgdGhlIGRpc2N1c3Npb24sIGl04oCZcyBwcm9iYWJseSBiZXR0ZXIg
-aWYgSSBwcm92aWRlIG1vcmUgZGV0YWlscyBvbiANCj4+PiB0aGUNCj4+PiBjdXJyZW50IE9QLVRF
-RSBpbXBsZW1lbnRhdGlvbiBhbmQgdGhlIHN0bTMybXAgcHJvY2Vzc29ycy4NCj4+Pg0KPj4+IDEp
-IFNUTTMyTVAgdG9wb2xvZ3k6DQo+Pj4gwqDCoCAtIFNUTTMyTVAxOiBvbmx5IGEgQ29ydGV4LU00
-IHJlbW90ZSBwcm9jZXNzb3INCj4+PiDCoMKgIC3CoCBTVE0zMk1QMng6IGEgQ29ydGV4LU0zMyBh
-bmQgYSBDb3J0ZXgtTTAgcmVtb3RlIHByb2Nlc3NvcnMNCj4+PiDCoMKgIEF0IHRoaXMgc3RhZ2Us
-IG9ubHkgdGhlIFNUTTMyTVAxNSBpcyB1cHN0cmVhbWVkOyB0aGUgU1RNMzJNUDI1IGlzIA0KPj4+
-IHdhaXRpbmcNCj4+PiDCoMKgIGZvciB0aGlzIHNlcmllcyB0byBiZSBtZXJnZWQuDQo+Pj4NCj4+
-PiAyKSBPUC1URUUgYXJjaGl0ZWN0dXJlOg0KPj4+IC0gQSBwbGF0Zm9ybS1hZ25vc3RpYyBUcnVz
-dGVkIEFwcGxpY2F0aW9uIChUQSkgaGFuZGxlcyB0aGUgYnVzIA0KPj4+IHNlcnZpY2UuWzFdDQo+
-Pj4gwqDCoCBUaGlzIFRBIHN1cHBvcnRzIG1hbmFnaW5nIG11bHRpcGxlIHJlbW90ZSBwcm9jZXNz
-b3JzLiBJdCBjYW4gYmUgDQo+Pj4gZW1iZWRkZWQNCj4+PiDCoMKgIHJlZ2FyZGxlc3Mgb2YgdGhl
-IG51bWJlciBvZiByZW1vdGUgcHJvY2Vzc29ycyBtYW5hZ2VkIGluIE9QLVRFRS4NCj4+PiDCoMKg
-IFRoZSBkZWNpc2lvbiB0byBlbWJlZCB0aGlzIHNlcnZpY2UgaXMgbWFkZSBhdCBidWlsZCB0aW1l
-IGJhc2VkIG9uIHRoZQ0KPj4+IMKgwqAgcHJlc2VuY2Ugb2YgdGhlIHJlbW90ZXByb2MgZHJpdmVy
-LCBzbyBpdCBpcyBub3QgZGV2aWNlIHRyZWUgDQo+Pj4gZGVwZW5kZW50Lg0KPj4+IMKgwqAgLSBT
-VE0zMk1QMTU6IFRBIGFjdGl2YXRlZCBvbmx5IGlmIHRoZSByZW1vdGVwcm9jIE9QLVRFRSBkcml2
-ZXIgaXMgDQo+Pj4gcHJvYmVkDQo+Pj4gwqDCoCAtIFNUTTMyTVAyeDogVEEgYWx3YXlzIGFjdGl2
-YXRlZCBhcyB0aGUgT1AtVEVFIHJlbW90ZXByb2MgZHJpdmVyIA0KPj4+IGlzIGFsd2F5cw0KPj4+
-IHByb2JlZA0KPj4+DQo+Pj4gLSBBIHBzZXVkbyBUcnVzdGVkIEFwcGxpY2F0aW9uIGltcGxlbWVu
-dHMgdGhlIHBsYXRmb3JtIHBvcnRpbmdbMl0sDQo+Pj4gwqDCoCByZWx5aW5nIG9uIHJlZ2lzdGVy
-ZWQgcmVtb3RlcHJvYyBwbGF0Zm9ybSBkcml2ZXJzLg0KPj4+DQo+Pj4gLSBQbGF0Zm9ybSBkcml2
-ZXIocykgbWFuYWdlIHRoZSByZW1vdGUgcHJvY2Vzc29ycy5bM11bNF0NCj4+PiDCoMKgIC0gSWYg
-cmVtb3RlcHJvYyBpcyBtYW5hZ2VkIGJ5IE9QLVRFRTogbWFuYWdlcyB0aGUgcmVtb3RlcHJvYyAN
-Cj4+PiBsaWZlY3ljbGUNCj4+PiDCoMKgIC0gSWYgcmVtb3RlcHJvYyBpcyBtYW5hZ2VkIGJ5IExp
-bnV4OiBwcm92aWRlcyBhY2Nlc3MgcmlnaHRzIHRvIA0KPj4+IExpbnV4IHRvDQo+Pj4gbWFuYWdl
-DQo+Pj4gwqDCoCDCoCB0aGUgcmVtb3RlcHJvYw0KPj4+DQo+Pj4gwqDCoCAtIFNUTTMyTVAxNTog
-ZHJpdmVyIHByb2JlZCBvbmx5IGlmIHRoZSByZW1vdGVwcm9jIGlzIG1hbmFnZWQgaW4gDQo+Pj4g
-T1AtVEVFDQo+Pj4gwqDCoCAtIFNUTTMyTVAyeDogZHJpdmVyIHByb2JlZCBpbiBib3RoIGNhc2Vz
-IGZvciB0aGUgQ29ydGV4LU0zMw0KPj4+IMKgwqDCoMKgIEZvciB0aGUgU1RNMzJNUDI1LCB0aGUg
-VEEgaXMgYWx3YXlzIHByZXNlbnQgYW5kIHF1ZXJpZXMgdGhlIA0KPj4+IGRyaXZlciB0bw0KPj4+
-IGNoZWNrDQo+Pj4gwqDCoCDCoCBpZiBpdCBzdXBwb3J0cyBzZWN1cmUgbG9hZGluZy4NCj4+Pg0K
-Pj4+DQo+Pj4gWzFdIGh0dHBzOi8vZWxpeGlyLmJvb3RsaW4uY29tL29wLXRlZS80LjcuMC9zb3Vy
-Y2UvdGEvcmVtb3RlcHJvYw0KPj4+IFsyXSBodHRwczovL2VsaXhpci5ib290bGluLmNvbS9vcC10
-ZWUvNC43LjAvc291cmNlL2NvcmUvcHRhL3N0bTMybXAvIA0KPj4+IHJlbW90ZXByb2NfcHRhLmMN
-Cj4+PiBbM11odHRwczovL2VsaXhpci5ib290bGluLmNvbS9vcC10ZWUvNC43LjAvc291cmNlL2Nv
-cmUvZHJpdmVycy8gDQo+Pj4gcmVtb3RlcHJvYy9zdG0zMl9yZW1vdGVwcm9jLmMNCj4+PiBbNF1o
-dHRwczovL2dpdGh1Yi5jb20vU1RNaWNyb2VsZWN0cm9uaWNzL29wdGVlX29zL2Jsb2IvNC4wLjAt
-c3RtMzJtcC8gDQo+Pj4gY29yZS9kcml2ZXJzL3JlbW90ZXByb2Mvc3RtMzJfcmVtb3RlcHJvYy5j
-DQo+PiBUaGFua3MgZm9yIHRoZSBiYWNrZ3JvdW5kIGhlcmUuDQo+Pg0KPj4+PiBUaGUgcmVhc29u
-IGhlcmUgaXMgdGhhdCB5b3UgYXJlIG1peGluZyBwbGF0Zm9ybSBhbmQgVEVFIGJ1cyBmb3IgDQo+
-Pj4+IHJlbW90ZXByb2MNCj4+Pj4gZHJpdmVyLiBGb3IgcHJvYmUsIHlvdSByZWx5IG9uIHBsYXRm
-b3JtIGJ1cyBhbmQgdGhlbiB0cnkgdG8gbWlncmF0ZSB0bw0KPj4+PiBURUUgYnVzIHZpYSBycHJv
-Y190ZWVfcmVnaXN0ZXIoKSBpcyB0aGUgcHJvYmxlbSBoZXJlLiBJbnN0ZWFkIHlvdSANCj4+Pj4g
-c2hvdWxkDQo+Pj4+IHJhdGhlciBwcm9iZSByZW1vdGVwcm9jIGRldmljZSBvbiBURUUgYnVzIGZy
-b20gdGhlIGJlZ2lubmluZy4NCj4+PiBUaGUgYXBwcm9hY2ggaXMgaW50ZXJlc3RpbmcsIGJ1dCBo
-b3cgY2FuIHdlIHJlbHkgb24gRGV2aWNlIFRyZWUgKERUKSBmb3INCj4+PiBoYXJkd2FyZSBjb25m
-aWd1cmF0aW9uIGluIHRoaXMgY2FzZT8NCj4+PiBBdCBhIG1pbmltdW0sIEkgbmVlZCB0byBkZWZp
-bmUgbWVtb3J5IHJlZ2lvbnMgYW5kIG1haWxib3hlcy4NCj4+IFRoZSBoYXJkd2FyZSBjb25maWd1
-cmF0aW9uIGluIERUIHNob3VsZCBiZSBjb25zdW1lZCBieSBPUC1URUUgYW5kIHRoZQ0KPj4ga2Vy
-bmVsIHByb2JlcyByZW1vdGVwcm9jIHByb3BlcnRpZXMgZnJvbSBPUC1URUUgc2luY2UgaXQncyBh
-biBPUC1URUUNCj4+IG1lZGlhdGVkIHJlbW90ZXByb2Mgc2VydmljZSB5b3UgYXJlIGFkZGluZyBo
-ZXJlLg0KPj4+IMKgRnJvbSBteSBwZXJzcGVjdGl2ZSwgSSB3b3VsZCBzdGlsbCBuZWVkIGEgZHJp
-dmVyIHByb2JlZCBieSBEVCB0aGF0IA0KPj4+IHJlZ2lzdGVycw0KPj4+IGEgZHJpdmVyIG9uIHRo
-ZSBURUUgYnVzLiBUaGVyZWZvcmUsIEkgc3RpbGwgbmVlZCBhIG1lY2hhbmlzbSB0byBkZWNpZGUN
-Cj4+PiB3aGV0aGVyIHRoZSByZW1vdGUgZmlybXdhcmUgaXMgbWFuYWdlZCBieSB0aGUgc2VjdXJl
-IG9yIG5vbi1zZWN1cmUgDQo+Pj4gY29udGV4dC4NCj4+IEFzIEkgbWVudGlvbmVkIGJlbG93LCB0
-aGlzIHNob3VsZCBiZSBhY2hpZXZhYmxlIHVzaW5nIHRoZSBzZWN1cmUtc3RhdHVzDQo+PiBwcm9w
-ZXJ0eSB3aXRob3V0IGludHJvZHVjaW5nIHRoZSBuZXcgY29tcGF0aWJsZToNCj4+DQo+PiBLZXJu
-ZWwgbWFuYWdlZCByZW1vdGVwcm9jOg0KPj4gwqDCoMKgIHN0YXR1cyA9ICJva2F5Ijsgc2VjdXJl
-LXN0YXR1cyA9ICJkaXNhYmxlZCI7wqDCoMKgwqAgLyogTlMtb25seSAqLw0KPj4NCj4+IE9QLVRF
-RSBtYW5hZ2VkIHJlbW90ZXByb2M6DQo+PiDCoMKgwqAgc3RhdHVzID0gImRpc2FibGVkIjsgc2Vj
-dXJlLXN0YXR1cyA9ICJva2F5IjvCoMKgwqDCoCAvKiBTLW9ubHkgKi8NCj4+DQo+Pj4gQW5vdGhl
-ciBpc3N1ZSB3b3VsZCBiZSB0byBiZSBhYmxlIHRvIHNoYXJlIHRoZSByZW1vdGVwcm9jIFRFRSBz
-ZXJ2aWNlDQo+Pj4gYmV0d2Vlbg0KPj4+IHNldmVyYWwgcGxhdGZvcm0gcmVtb3RlcHJvYyBkcml2
-ZXJzLCBpbiBjYXNlIG9mIG11bHRpIHJlbW90ZSBwcm9jZXNzb3INCj4+PiBzdXBwb3J0Lg0KPj4g
-TWFraW5nIHRoZSBURUUgYmFzZWQgcmVtb3RlcHJvYyBzZXJ2aWNlIGluZGVwZW5kZW50IG9mIERU
-IHdpbGwgc3VyZWx5DQo+PiBtYWtlIGl0IG1vcmUgc2NhbGFibGUgdG8gb3RoZXIgcGxhdGZvcm1z
-IHRvby4gSGF2ZSBhIGxvb2sgYXQgaG93IE9QLVRFRQ0KPj4gYmFzZWQgSFdSTkcgc2VydmljZSBz
-Y2FsZXMgYWNyb3NzIHBsYXRmb3Jtcy4NCj4gDQo+IEFub3RoZXIgaW1wb3J0YW50IHNlcnZpY2Ug
-aXMgU0NNSSwgd2hpY2ggZHJpdmVycyB1c2UgdG8gbWFuYWdlIGNsb2NrcyANCj4gYW5kIHJlc2V0
-cy4NCj4gVGhlc2UgY2xvY2tzIGFuZCByZXNldHMgYXJlIGRlY2xhcmVkIGluIHRoZSBEZXZpY2Ug
-VHJlZSAoRFQpLiBJdCBzZWVtcyANCj4gdG8gbWUgdGhhdA0KPiBpbiB0aGlzIGNhc2UsIHdlIGFy
-ZSBjbG9zZXIgdG8gU0NNSSB0aGFuIHRvIHRoZSBSTkcgc2VydmljZS4NCj4gDQo+IEkgcHJvcG9z
-ZSB3ZSBkaXNjdXNzIHRoaXMgYmFzZWQgb24gYSBjb25jcmV0ZSBleGFtcGxlIHdpdGggdGhlIFNU
-TTMyTVAyNS4NCj4gQWx0aG91Z2ggbm90IHlldCB1cHN0cmVhbWVkLCBvdXIgcGxhbiBpcyB0byBt
-YW5hZ2Ugc2lnbmVkIGZpcm13YXJlIGZvciB0aGUNCj4gQ29ydGV4LU0zMyBhbmQgQ29ydGV4LU0w
-Lg0KPiANCj4gUGxlYXNlIGZpbmQgYmVsb3cgbXkgdmlldyBvZiB0aGUgRFQgcmVzb3VyY2VzIHRv
-IGFkZHJlc3MuDQo+IA0KPiBTVE0zMk1QMjXCoCBDb3J0ZXgtTTMzIGFuZCBDb3J0ZXgtTTAgbm9k
-ZXM6DQo+IA0KPiBtMzNfcnByb2Mgew0KPiAgwqAgLyogTTMzIHdhdGNoZG9nIGludGVycnVwdCAq
-Lw0KPiAgwqAgaW50ZXJydXB0LXBhcmVudCA9IDwmaW50Yz47DQo+ICDCoCBpbnRlcnJ1cHRzID0g
-PEdJQ19TUEkgNCBJUlFfVFlQRV9MRVZFTF9ISUdIPjsNCj4gIMKgIC8qIHBvd2VyIGRvbWFpbiBt
-YW5hZ2VtZW50ICovDQo+ICDCoCBwb3dlci1kb21haW5zID0gPCZjbHVzdGVyX3BkPiwgPCZyZXRf
-cGQ+Ow0KPiAgwqAgcG93ZXItZG9tYWluLW5hbWVzID0gImRlZmF1bHQiLCAic2xlZXAiOw0KPiAg
-wqAgLyogUlBNc2cgbWFpbGJveGVzICsgTTMzIGdyYWNlZnVsIHNodXRkb3duIHJlcXVlc3QgKi8N
-Cj4gIMKgIG1ib3hlcyA9IDwmaXBjYzEgMHgwPiwgPCZpcGNjMSAweDE+LCA8JmlwY2MxIDI+Ow0K
-PiAgwqAgbWJveC1uYW1lcyA9ICJ2cTAiLCAidnExIiwgInNodXRkb3duIjsNCj4gIMKgIG1lbW9y
-eS1yZWdpb24gPSA8JnZkZXYwdnJpbmcwPiwgPCZ2ZGV2MHZyaW5nMT4sIDwmdmRldjBidWZmZXI+
-Ow0KPiAgwqAgc3RhdHVzID0gIm9rYXkiOw0KPiB9Ow0KPiANCj4gbTBfcnByb2Mgew0KPiAgwqAg
-LyogbWFpbGJveCBmb3IgZ3JhY2VmdWwgc2h1dGRvd24gKi8NCj4gIMKgIG1ib3hlcyA9IDwmaXBj
-YzIgMj47DQo+ICDCoCBtYm94LW5hbWVzID0gInNodXRkb3duIjsNCj4gIMKgIC8qIE0wIHdhdGNo
-ZG9nICovDQo+ICDCoGludGVycnVwdC1wYXJlbnQgPSA8JmludGM+Ow0KPiAgwqBpbnRlcnJ1cHRz
-ID0gPEdJQ19TUEkgNyBJUlFfVFlQRV9MRVZFTF9ISUdIPjsNCj4gIMKgLyogTTAgcGVyaXBoZXJh
-bCBjbG9ja2luZyAobm90IGFjY2Vzc2libGUgYnkgdGhlIE0wKSAqLw0KPiAgwqBjbG9ja3MgPSA8
-JnNjbWlfY2xrIENLX1NDTUlfR1BJT1pfQU0+LA0KPiAgwqA8JnNjbWlfY2xrIENLX1NDTUlfR1BJ
-T1o+LA0KPiAgwqA8JnNjbWlfY2xrIENLX1NDTUlfSVBDQzI+LA0KPiAgwqA8JnNjbWlfY2xrIENL
-X1NDTUlfSVBDQzJfQU0+LA0KPiAgwqA8JnJjYyBDS19MUFRJTTNfQU0+LA0KPiAgwqA8JnJjYyBD
-S19MUFVBUlQxX0FNPiwNCj4gIMKgPCZyY2MgQ0tfQ1BVM19BTT4sDQo+ICDCoDwmcmNjIENLX0NQ
-VTM+LA0KPiAgwqA8JnJjYyBDS19MUFVBUlQxX0MzPiwNCj4gIMKgPCZyY2MgQ0tfR1BJT1pfQzM+
-LA0KPiAgwqA8JnJjYyBDS19MUFRJTTNfQzM+LA0KPiAgwqA8JnJjYyBDS19LRVJfTFBVQVJUMT4s
-DQo+ICDCoDwmcmNjIENLX0tFUl9MUFRJTTM+LA0KPiAgwqA8JnNjbWlfY2xrIENLX1NDTUlfR1BJ
-T1o+LA0KPiAgwqA8JnNjbWlfY2xrIENLX1NDTUlfSVBDQzI+Ow0KPiAgwqBzdGF0dXMgPSAib2th
-eSI7DQo+IH07DQo+IA0KPiBJZiB3ZSB3YW50IHRvIHJlbW92ZSB0aGUgRFQsIHdlIG5lZWQgdG8g
-Y29uc2lkZXI6DQo+IA0KPiAtIE1lY2hhbmlzbSB0byBkaWZmZXJlbnRpYXRlIENvcnRleC1NMzMg
-YW5kIENvcnRleC1NMDoNCj4gIMKgIFNpbWlsYXIgdG8gU0NNSSwgdGhlIHJlbW90ZXByb2MgT1At
-VEVFIHNlcnZpY2Ugc2hvdWxkIHN1cHBvcnQNCj4gIMKgbXVsdGlwcm9jZXNzb3Igc2V0dXBzIHdp
-dGhvdXQgaW5zdGFudGlhdGluZyBtdWx0aXBsZSBzZXJ2aWNlcy4NCj4gDQo+IC0gTWFpbGJveGVz
-Og0KPiANCj4gIMKgIEEgcGhhbmRsZSBpcyBuZWVkZWQgYmVjYXVzZSB0aGUgbWFpbGJveCBkcml2
-ZXIgaXMgbWFuYWdlZCBieSB0aGUNCj4gIMKgIExpbnV4IG1haWxib3ggZHJpdmVyLiBTVE0zMk1Q
-MiBoYXMgdHdvIG1haWxib3hlcy4NCj4gIMKgIE1vdmluZyB0b3dhcmRzIHlvdXIgcHJvcG9zYWwg
-d291bGQgaW1wbHkgY3JlYXRpbmcgYSBtYWlsYm94IHNlcnZpY2UNCj4gIMKgIGluIFRFRSB0byBt
-YW5hZ2Ugbm9uLXNlY3VyZSBtYWlsYm94ZXMgZm9yIG5vbi1zZWN1cmUgSVBDLiBUaGlzIG1pZ2h0
-DQo+ICDCoCBub3QgYmUgZWZmaWNpZW50IGZvciBpbnRlci1wcm9jZXNzb3IgY29tbXVuaWNhdGlv
-bi4gSGFyZHdhcmUtd2lzZSwgaXQNCj4gIMKgIHdvdWxkIHJlcXVpcmUgdGhlIElSUSB0byBiZSBo
-YW5kbGVkIGJ5IHRoZSBzZWN1cmUgY29udGV4dC4NCj4gDQo+IC0gTWVtb3J5IHJlZ2lvbnM6DQo+
-ICDCoC0gSGFyZHdhcmUgbGltaXRhdGlvbjogT1AtVEVFIGlzIGxpbWl0ZWQgaW4gdGhlIG51bWJl
-ciBvZiBtZW1vcnkgcmVnaW9ucw0KPiAgwqAgwqBpdCBjYW4gZGVjbGFyZSBkdWUgdG8gRmlyZXdh
-bGwgY29uZmlndXJhdGlvbi4gTW92aW5nIElQQyBtZW1vcnkgcmVnaW9ucw0KPiAgwqAgwqByZWFj
-aGVzIHRoaXMgbGltaXQuIEN1cnJlbnRseSwgT1AtVEVFIGRlZmluZXMgYSBzaW5nbGUgcmVnaW9u
-IHdpdGggDQo+IHNoYXJlYWJsZQ0KPiAgwqAgwqBhY2Nlc3MgcmlnaHRzLCB3aGljaCBMaW51eCBz
-cGxpdHMgaW50byBhdCBsZWFzdCB0aHJlZSBtZW1vcnkgcmVnaW9ucyANCj4gZm9yIFJQTXNnLg0K
-PiAgwqAtIE1lbW9yeSBtYXBwaW5nOiBNZW1vcnkgcmVnaW9ucyBzdGlsbCBuZWVkIHRvIGJlIGRl
-Y2xhcmVkIGluIExpbnV4IHRvIA0KPiBwcmV2ZW50DQo+ICDCoCDCoExpbnV4IGZyb20gdXNpbmcg
-dGhlbS4NCj4gIMKgLSBWaXJ0aW8vUlBNc2c6IE1lbW9yeSByZWdpb24gbmFtZXMgYXJlIGZpeGVk
-IChlLmcuLCBkZXY8WD52cmluZzxZPiksIA0KPiBzbyBPUC1URUUNCj4gIMKgIG11c3QgZGVjbGFy
-ZSBtZW1vcnkgcmVnaW9ucyBpbiBpdHMgRFQgYWNjb3JkaW5nIHRvIExpbnV4IG5hbWluZyANCj4g
-Y29udmVudGlvbnMuDQo+IA0KPiAtIENsb2NrIGFuZCByZXNldDoNCj4gIMKgIMKgU29tZSBjbG9j
-a3MgYW5kIHJlc2V0cyBhcmUgbWFuYWdlZCB2aWEgU0NNSSwgb3RoZXJzIGFyZSBub3QuIFRoaXMg
-DQo+IHdvdWxkIHJlcXVpcmUNCj4gIMKgIG1hbmFnaW5nIGFsbCBjbG9ja3MgYW5kIHJlc2V0cyB0
-aHJvdWdoIFNDTUksIHdpdGggcG9zc2libGUgc2lkZSANCj4gZWZmZWN0IG9uIHRoZQ0KPiAgwqAg
-InVudXNlZCIgY2xvY2sgbWVjaGFuaXNtIGluIExpbnV4ICggdG8gYmUgY29uZmlybWVkKQ0KPiAN
-Cj4gLSBQb3dlciBkb21haW46DQo+ICDCoCBJbmZvcm1hdGlvbiBpcyBuZWVkZWQgYXQgdGhlIExp
-bnV4IGxldmVsIHRvIGRldGVybWluZSB0aGUgbG93IHBvd2VyIA0KPiBtb2RlLg0KPiANCj4gLSBX
-YXRjaGRvZyBpbnRlcnJ1cHQ6DQo+ICDCoCBTaG91bGQgYmUgbWFuYWdlZCBieSBPUC1URUUsIHdo
-aWNoIHJlcXVpcmVzIHRoZSBoYXJkd2FyZSB0byBoYXZlIGFuIA0KPiBhc3NvY2lhdGVkDQo+ICDC
-oCBzZWN1cmUgSVJRLg0KPiANCj4gLSBNaXNjZWxsYW5lb3VzIHZlbmRvciBEVCBwcm9wZXJ0aWVz
-Og0KPiAgwqAgwqBIb3cgdG8gYmUgc3VyZSB0aGF0IHRoZXNlIGNhbiBiZSBhZGRyZXNzZWQgdGhy
-b3VnaCBURUUgc2VydmljZXM/DQo+IA0KPiBSZWdhcmRpbmcgdGhlIGV4aXN0aW5nIERUIG5lZWRz
-LCBpdCBzZWVtcyB0byBtZSB0aGF0IHJlbW92aW5nIHRoZSBEVCANCj4gd291bGQgcmVxdWlyZQ0K
-PiBtb3ZpbmcgYWxsIG5vZGUgcmVzb3VyY2UgbWFuYWdlbWVudCBpbnRvIFRFRSAoIGlmIHJlYWxs
-eSBwb3NzaWJsZSkuIFRoaXMgDQo+IHdvdWxkDQo+IGluY3JlYXNlIFRFRSBjb21wbGV4aXR5IGFu
-ZCBmb290cHJpbnQsIHJlZHVjZSBzeXN0ZW0gZWZmaWNpZW5jeSwgYW5kIA0KPiBtYWtlIHN1cHBv
-cnRpbmcNCj4gb3RoZXIgcGxhdGZvcm1zIGxlc3Mgc2NhbGFibGUuDQo+IA0KPiBUaGF0IHNhaWQs
-IGl0IHByb2JhYmx5IGFsc28gZGVwZW5kcyBvbiB0aGUgVEVFIGltcGxlbWVudGF0aW9uLg0KPiBB
-bmTCoCB3ZSBzaG91bGQgc3VwcG9ydCBib3RoLiBUaGlzIGNvdWxkIGJlIGRvbmUgYnkgaW50cm9k
-dWNpbmcgYSBzZWNvbmQgDQo+IFVVSUQuDQo+IGJ1dCBpbiB0aGlzIGNhc2Ugc2hvdWxkIGl0IGJl
-IHRoZSBzYW1lIGRyaXZlcj8NCg0KSSBhbSB1bnN1cmUgaG93IHRvIG1vdmUgZm9yd2FyZCBoZXJl
-LiBJdCBzZWVtcyB0byBtZSB0aGF0IGFkZHJlc3NpbmcgU3VtaXQncw0KcmVxdWVzdCBmb3IgYSBU
-RUUgd2l0aG91dCBhIGRldmljZSB0cmVlIGlzIG5vdCBjb21wYXRpYmxlIHdpdGggdGhlIGN1cnJl
-bnQNCk9QLVRFRSBpbXBsZW1lbnRhdGlvbiwgYXQgbGVhc3QgZm9yIHRoZSBTVE0zMk1QIHBsYXRm
-b3Jtcy4NCg0KUGVyaGFwcyB0aGUgc2ltcGxlc3QgYXBwcm9hY2ggaXMgdG8gYWJhbmRvbiB0aGUg
-ZWZmb3J0IHRvIG1ha2UgdGhpcyBnZW5lcmljDQphbmQgaW5zdGVhZCByZW5hbWUgdGVlX3JlbW90
-ZXByb2MuYyB0byBzdG0zMl90ZWVfcmVtb3RlcHJvYy5jLCBtYWtpbmcgaXQNCnBsYXRmb3JtLWRl
-cGVuZGVudC4gVGhlbiwgaWYgYW5vdGhlciBwbGF0Zm9ybSB3YW50cyB0byByZXVzZSBpdCB3aXRo
-IE9QLVRFRQ0KRkZBIG9yIGFub3RoZXIgVEVFLCB0aGUgZmlsZSBjYW4gYmUgcmVuYW1lZC4NCg0K
-RG9lcyB0aGlzIHByb3Bvc2FsIHdvdWxkIG1ha2Ugc2Vuc2UgdG8geW91Pw0KDQpUaGFua3MgYW5k
-IFJlZ2FyZHMsDQpBcm5hdWQNCg0KPiANCj4+DQo+Pj4+PiBUaGVuLCBpdCBpcyBub3Qgb25seSBh
-IGZpcm13YXJlIHByb3BlcnR5IGluIG91ciBjYXNlLiBEZXBlbmRpbmcgb24gdGhlDQo+Pj4+PiBj
-b21wYXRpYmxlIHN0cmluZywgd2UgbWFuYWdlIHRoZSBoYXJkd2FyZSBkaWZmZXJlbnRseS4gVGhl
-IHNhbWUgDQo+Pj4+PiBjb21wYXRpYmxlcw0KPj4+Pj4gYXJlIHVzZWQgaW4gYm90aCBPUC1URUUg
-YW5kIExpbnV4LiBCYXNlZCBvbiB0aGUgY29tcGF0aWJsZSwgd2UgY2FuIA0KPj4+Pj4gYXNzaWdu
-DQo+Pj4+PiBtZW1vcmllcywgY2xvY2tzLCBhbmQgcmVzZXRzIHRvIGVpdGhlciB0aGUgc2VjdXJl
-IG9yIG5vbi1zZWN1cmUgDQo+Pj4+PiBjb250ZXh0Lg0KPj4+Pj4gVGhpcyBhcHByb2FjaCBpcyBp
-bXBsZW1lbnRlZCBvbiB0aGUgU1RNMzJNUDE1IGFuZCBTVE0zMk1QMnggcGxhdGZvcm1zLg0KPj4+
-PiBZb3Ugc2hvdWxkIGhhdmUgcmF0aGVyIHVzZWQgdGhlIERUIHByb3BlcnR5ICJzZWN1cmUtc3Rh
-dHVzIiBbMV0gdG8gc2F5DQo+Pj4+IHRoZSByZW1vdGVwcm9jIGRldmljZSBpcyBiZWluZyBtYW5h
-Z2VkIGJ5IE9QLVRFRSBpbnN0ZWFkIG9mIExpbnV4LiBUaGVuDQo+Pj4+IHRoZSBMaW51eCBkcml2
-ZXIgd2lsbCBzb2xlbHkgcmVseSBvbiBURUUgYnVzIHRvIGhhdmUgT1AtVEVFIG1lZGlhdGVkDQo+
-Pj4+IHJlbW90ZXByb2MgZGV2aWNlLg0KPj4+Pg0KPj4+PiBbMV0gaHR0cHM6Ly9naXRodWIuY29t
-L2RldmljZXRyZWUtb3JnL2R0LXNjaGVtYS8gDQo+Pj4+IGJsb2IvNGIyOGJjNzlmZGM1NTJmM2Uw
-Yjg3MGVmMTM2MmJiNzExOTI1ZjRmMy9kdHNjaGVtYS9zY2hlbWFzL2R0LSANCj4+Pj4gY29yZS55
-YW1sI0w1Mg0KPj4+IE15IGlzc3VlIHdpdGggdGhpcyBwcm9wZXJ0eSBpcyB0aGF0IHRoaXMgd291
-bGQgYnJlYWsgdGhlIA0KPj4+IGNvbXBhdGliaWxpdHkgd2l0aA0KPj4+IGxlZ2FjeSBEVCB0aGF0
-IG9ubHkgc3VwcG9ydCBsb2FkaW5nIGJ5IExpbnV4DQo+PiBObywgaXQncyBub3QgYSBEVCBBQkkg
-YnJlYWsgYXQgYWxsLiBJdCBpcyBhbHdheXMgcG9zc2libGUgZm9yIGENCj4+IGhhcmR3YXJlIHRv
-IGJlIHJlLWNvbmZpZ3VyZWQgdG8gY2hhbmdlIGFzc2lnbm1lbnQgb2YgcGVyaXBoZXJhbHMgYW1v
-bmcNCj4+IE9QLVRFRSBhbmQgTGludXgga2VybmVsLg0KPj4NCj4+PiBBcyBzcGVjaWZpZWQgaW4g
-WzVdIDpJZiAic2VjdXJlLXN0YXR1cyIgaXMgbm90IHNwZWNpZmllZCBpdCBkZWZhdWx0cyANCj4+
-PiB0byB0aGUNCj4+PiBzYW1lIHZhbHVlIGFzICJzdGF0dXMiOyBbNV0NCj4+PiBodHRwczovL3d3
-dy5rZXJuZWwub3JnL2RvYy9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtLyAN
-Cj4+PiBzZWN1cmUudHh0DQo+PiBUaGlzIGlzIG1vc3RseSBtZWFudCBmb3IgcGVyaXBoZXJhbHMg
-dGhhdCBjYW4gYmUgcHJvYmVkIGJ5IGJvdGggT1AtVEVFDQo+PiBhbmQgTGludXgga2VybmVsIHZp
-YSBEVC4gQnV0IGhlcmUgaW4gY2FzZSBvZiByZW1vdGVwcm9jLCB0aGVyZSBuZWVkcyB0bw0KPj4g
-ZXhjbHVzaXZlIGFjY2VzcyBjb250cm9sIGZvciBlaXRoZXIgdmlhIExpbnV4IGtlcm5lbCBvciBP
-UC1URUUuIEhlbmNlLCANCj4+IHRoZQ0KPj4gInN0YXR1cyIgYW5kICJzZWN1cmUtc3RhdHVzIiBw
-cm9wZXJ0aWVzIHNob3VsZCBiZSB1cGRhdGVkIGFjY29yZGluZ2x5Lg0KPj4NCj4+Pj4+IE1vcmUg
-ZGV0YWlscyBhcmUgYXZhaWxhYmxlIGluIHRoZSBTVCBXSUtJOg0KPj4+Pj4gaHR0cHM6Ly93aWtp
-LnN0LmNvbS9zdG0zMm1wdS93aWtpL09QLSANCj4+Pj4+IFRFRV9yZW1vdGVwcm9jX2ZyYW1ld29y
-a19vdmVydmlldyNEZXZpY2VfdHJlZV9jb25maWd1cmF0aW9uDQo+Pj4+PiBodHRwczovL3dpa2ku
-c3QuY29tL3N0bTMybXB1L3dpa2kvIA0KPj4+Pj4gTGludXhfcmVtb3RlcHJvY19mcmFtZXdvcmtf
-b3ZlcnZpZXcjRGV2aWNlX3RyZWVfY29uZmlndXJhdGlvbg0KPj4+Pj4NCj4+Pj4+Pj4gRm9yIGlu
-c3RhbmNlLCB0aGlzIGNvbXBhdGlibGUgaXMgdXNlZCBpbiBib3RoIHRoZSBMaW51eCBhbmQgT1At
-IA0KPj4+Pj4+PiBURUUgZGV2aWNlDQo+Pj4+Pj4+IHRyZWVzOg0KPj4+Pj4+PiAtIEluIE9QLVRF
-RSwgYSBub2RlIGlzIGRlZmluZWQgaW4gdGhlIGRldmljZSB0cmVlIHdpdGggdGhlDQo+Pj4+Pj4+
-IMKgwqDCoMKgICJzdCxzdG0zMm1wMS1tNC10ZWUiIGNvbXBhdGlibGUgdG8gc3VwcG9ydCBzaWdu
-ZWQgcmVtb3RlcHJvYyANCj4+Pj4+Pj4gZmlybXdhcmUuDQo+Pj4+Pj4+IMKgwqDCoMKgIEJhc2Vk
-IG9uIERUIHByb3BlcnRpZXMsIHRoZSBPUC1URUUgcmVtb3RlcHJvYyBmcmFtZXdvcmsgaXMgDQo+
-Pj4+Pj4+IGluaXRpYXRlZCB0bw0KPj4+Pj4+PiDCoMKgwqDCoCBleHBvc2UgYSB0cnVzdGVkIGFw
-cGxpY2F0aW9uIHNlcnZpY2UgdG8gYXV0aGVudGljYXRlIGFuZCANCj4+Pj4+Pj4gbG9hZCB0aGUg
-cmVtb3RlDQo+Pj4+Pj4+IMKgwqDCoMKgIHByb2Nlc3NvciBmaXJtd2FyZSBwcm92aWRlZCBieSB0
-aGUgTGludXggcmVtb3RlcHJvYyANCj4+Pj4+Pj4gZnJhbWV3b3JrLCBhcyB3ZWxsDQo+Pj4+Pj4+
-IMKgwqDCoMKgIGFzIHRvIHN0YXJ0IGFuZCBzdG9wIHRoZSByZW1vdGUgcHJvY2Vzc29yLg0KPj4+
-Pj4+PiAtIEluIExpbnV4LCB3aGVuIHRoZSBjb21wYXRpYmlsaXR5IGlzIHNldCwgdGhlIENvcnRl
-eC1NIHJlc2V0cyANCj4+Pj4+Pj4gc2hvdWxkIG5vdA0KPj4+Pj4+PiDCoMKgwqDCoCBiZSBkZWNs
-YXJlZCBpbiB0aGUgZGV2aWNlIHRyZWUuIEluIHN1Y2ggYSBjb25maWd1cmF0aW9uLCB0aGUgDQo+
-Pj4+Pj4+IHJlc2V0IGlzDQo+Pj4+Pj4+IMKgwqDCoMKgIG1hbmFnZWQgYnkgdGhlIE9QLVRFRSBy
-ZW1vdGVwcm9jIGRyaXZlciBhbmQgaXMgbm8gbG9uZ2VyIA0KPj4+Pj4+PiBhY2Nlc3NpYmxlIGZy
-b20NCj4+Pj4+Pj4gwqDCoMKgwqAgdGhlIExpbnV4IGtlcm5lbC4NCj4+Pj4+Pj4NCj4+Pj4+Pj4g
-QXNzb2NpYXRlZCB3aXRoIHRoaXMgbmV3IGNvbXBhdGlibGUsIGFkZCB0aGUgInN0LHByb2MtaWQi
-IA0KPj4+Pj4+PiBwcm9wZXJ0eSB0bw0KPj4+Pj4+PiBpZGVudGlmeSB0aGUgcmVtb3RlIHByb2Nl
-c3Nvci4gVGhpcyBJRCBpcyB1c2VkIHRvIGRlZmluZSBhIHVuaXF1ZSANCj4+Pj4+Pj4gSUQsDQo+
-Pj4+Pj4+IGNvbW1vbiBiZXR3ZWVuIExpbnV4LCBVLUJvb3QsIGFuZCBPUC1URUUsIHRvIGlkZW50
-aWZ5IGEgY29wcm9jZXNzb3IuDQo+Pj4+Pj4gVGhpcyAic3QscHJvYy1pZCIgaXMganVzdCBvbmUg
-c3VjaCBwcm9wZXJ0eSB3aGljaCBjYW4gcmF0aGVyIGJlIA0KPj4+Pj4+IGRpcmVjdGx5DQo+Pj4+
-Pj4gcHJvYmVkIGZyb20gdGhlIFRFRS9PUC1URUUgc2VydmljZSByYXRoZXIgdGhhbiBoYXJkY29k
-aW5nIGl0IGluIERUIA0KPj4+Pj4+IGhlcmUuDQo+Pj4+PiBEbyB5b3UgbWVhbiBhIHRvcG9sb2d5
-IGRpc2NvdmVyeSBtZWNoYW5pc20gdGhyb3VnaCB0aGUgVEVFIHJlbW90ZXByb2MNCj4+Pj4+IHNl
-cnZpY2U/DQo+Pj4+Pg0KPj4+Pj4gRm9yIHRoZSBTVE0zMk1QMTUsIGl0IGNvdWxkIHdvcmsgc2lu
-Y2Ugd2UgaGF2ZSBvbmx5IG9uZSByZW1vdGUgDQo+Pj4+PiBwcm9jZXNzb3IuDQo+Pj4+PiBIb3dl
-dmVyLCB0aGlzIGlzIG5vdCB0aGUgY2FzZSBmb3IgdGhlIFNUTTMyTVAyNSwgd2hpY2ggZW1iZWRz
-IGJvdGggYQ0KPj4+Pj4gQ29ydGV4LU0zMyBhbmQgYSBDb3J0ZXgtTTAuDQo+Pj4+IEkgcmF0aGVy
-IG1lYW4gaGVyZSB3aGljaGV2ZXIgcHJvcGVydGllcyB5b3UgY2FuIGN1cnJlbnRseSBkaWNvdmVy
-aW5nIA0KPj4+PiB2aWENCj4+Pj4gRFQgY2FuIHJhdGhlciBiZSBkaXNjb3ZlcmVkIGJ5IGludm9r
-ZSBjb21tYW5kIHRha2luZyBwcm9wZXJ0eSBuYW1lIA0KPj4+PiBhcyBpbnB1dA0KPj4+PiBhbmQg
-dmFsdWUgYXMgb3V0cHV0Lg0KPj4+IFRoYXQgd291bGQgbWVhbnMgc2VydmljZXMgdG8gZ2V0IHN5
-c3RlbSByZXNvdXJjZXMgc3VjaCBhcyBtZW1vcnkgcmVnaW9uDQo+Pj4gbWFpbGJveCwgcmlnaHQ/
-DQo+PiBZZWFoLg0KPj4NCj4+Pj4+IENvdWxkIHlvdSBwbGVhc2UgZWxhYm9yYXRlIG9uIGhvdyB5
-b3Ugc2VlIHRoZSBzdXBwb3J0IG9mIG11bHRpcGxlIA0KPj4+Pj4gcmVtb3RlDQo+Pj4+PiBwcm9j
-ZXNzb3JzIHdpdGhvdXQgdXNpbmcgYW4gaGFyZGNvZGVkIGlkZW50aWZpZXI/DQo+Pj4+IEJ5IG11
-bHRpcGxlIHJlbW90ZSBwcm9jZXNzb3JzLCBkbyB5b3UgbWVhbiB0aGVyZSBjYW4gYmUgbXVsdGlw
-bGUNCj4+Pj4gY29tYmluYXRpb25zIG9mIHdoaWNoIHJlbW90ZSBwcm9jZXNzb3IgZ2V0cyBtYW5h
-Z2VkIHZpYSBPUC1URUUgb3Igbm90Pw0KPj4+IE9uIHN0bTMybXAyNSB3ZSBoYXZlIDIgcmVtb3Rl
-IHByb2Nlc3NvcnMgYSBjb3J0ZXgtTTMzIGFuZCBhIGNvcnRleC1NMA0KPj4+IFdlIHNob3VsZCBi
-ZSBhYmxlIHRvIG1hbmFnZSB0aGVtIHVzaW5nIHRoZSBwcm9jX2lkQW5vdGhlciBwb2ludCBpcyAN
-Cj4+PiB0aGF0IFdlDQo+Pj4gc2hvdWxkIGFsbG93IGFuIG90aGVyIFNlY3VyZSBPUyBjb3VsZCBp
-bXBsZW1lbnQgdGhlIFRFRSByZW1vdGVwcm9jIA0KPj4+IHNlcnZpY2UNCj4+PiBtYW5hZ2luZyB0
-aGUgcmVtb3RlIHByb2Nlc3NvcnMgd2l0aCBkaWZmZXJlbnQgcHJvY19pZCB2YWx1ZXMsIHRvIA0K
-Pj4+IGF2b2lkIHRvDQo+Pj4gc3BlY2lmeSBzb21ld2hlcmUgYW4gdW5pcXVlIHByb2MgSUQgcGVy
-IHJlbW90ZSBwcm9jZXNzb3IuDQo+PiBPa2F5IEkgc2VlLCBzbyB5b3UgY2FuIGFkZCB1bmlxdWUg
-cHJvYyBJRCB0byBEVCB3aGljaCBnZXRzIGNvbnN1bWVkIGJ5DQo+PiBPUC1URUUgYW5kIExpbnV4
-IGRpc2NvdmVycyB0aGUgc2FtZSB2aWEgdGhlIFRFRSBzZXJ2aWNlLg0KPiBZZXMgdGhlIExpbnV4
-IHBhc3NlcyB0aGUgcHJvYyBJRCBhcyBhcmd1bWVudCBvZiB0aGUgDQo+IHRlZV9jbGllbnRfb3Bl
-bl9zZXNzaW9uKCkuDQo+IEluIE9QLVRFRSwgdGhlIFRFRSBzZXJ2aWNlIGNoZWNrcyB0aGUgbWF0
-Y2ggd2l0aCB0aGUgcHJvYyBJRCByZWdpc3RlcmVkIA0KPiBieSB0aGUNCj4gT1AtVEVFIHJlbW90
-ZSBwcm9jIGRyaXZlcnMuDQo+IA0KPiBSZWdhcmRzLA0KPiBBcm5hdWQNCj4gDQo+Pg0KPj4+Pj4+
-IEkgdGhpbmsgdGhlIHNhbWUgd2lsbCBhcHBseSB0byBvdGhlciBwcm9wZXJ0aWVzIGFzIHdlbGwu
-DQo+Pj4+PiBDb3VsZCB5b3UgZGV0YWlscyB0aGUgb3RoZXIgcHJvcGVydGllcyB5b3UgaGF2ZSBp
-biBtaW5kPw0KPj4+PiBJIHRoaW5rIHRoZSBtZW1vcnkgcmVnaW9ucyBpbmNsdWRpbmcgdGhlIHJl
-c291cmNlIHRhYmxlIGNhbiBhbHNvIGJlDQo+Pj4+IHByb2JlZCBkaXJlY3RseSBmcm9tIHRoZSBU
-RUUgc2VydmljZSB0b28uIElzIHRoZXJlIGFueSBvdGhlciBEVCANCj4+Pj4gcHJvcGVydHkNCj4+
-Pj4geW91IHJlbHkgdXBvbiB3aGVuIHJlbW90ZXByb2MgaXMgbWFuYWdlZCB2aWEgT1AtVEVFPw0K
-Pj4+IFRoZSBtZW1vcnkgcmVnaW9ucyB0aGF0IGluY2x1ZGUgdGhlIHJlc291cmNlIHRhYmxlIGFy
-ZSBhbHJlYWR5IGRlY2xhcmVkDQo+Pj4gaW4gT1AtVEVFLiBUaGUgbWVtb3J5IHJlZ2lvbnMgZGVm
-aW5lZCBpbiB0aGUgTGludXggZGV2aWNlIHRyZWUgYXJlIGZvcg0KPj4+IFJQTXNnIChJUEMpLiBU
-aGVzZSBtZW1vcmllcyBhcmUgcmVnaXN0ZXJlZCBieSB0aGUgTGludXggcmVtb3RlcHJvYyANCj4+
-PiBkcml2ZXINCj4+PiBpbiB0aGUgTGludXggcnByb2MgY29yZS4NCj4+Pg0KPj4gU3VyZSwgc28g
-dGhleSBjYW4gYWxzbyBiZSBkaXNjb3ZlcmVkIGJ5IFRFRSBzZXJ2aWNlLg0KPj4NCj4+IC1TdW1p
-dA0KPiANCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18N
-Cj4gTGludXgtc3RtMzIgbWFpbGluZyBsaXN0DQo+IExpbnV4LXN0bTMyQHN0LW1kLW1haWxtYW4u
-c3Rvcm1yZXBseS5jb20NCj4gaHR0cHM6Ly9zdC1tZC1tYWlsbWFuLnN0b3JtcmVwbHkuY29tL21h
-aWxtYW4vbGlzdGluZm8vbGludXgtc3RtMzINCg0K
+On Tue, 7 Oct 2025 at 07:50, Arnaud POULIQUEN
+<arnaud.pouliquen@foss.st.com> wrote:
+>
+> Hello Bjorn, Mathieu, Sumit,
+>
+> On 9/22/25 10:57, Arnaud POULIQUEN wrote:
+> >
+> >
+> > On 9/19/25 08:46, Sumit Garg wrote:
+> >> On Wed, Sep 17, 2025 at 03:47:40PM +0200, Arnaud POULIQUEN wrote:
+> >>>
+> >>> On 9/17/25 12:08, Sumit Garg wrote:
+> >>>> On Tue, Sep 16, 2025 at 03:26:47PM +0200, Arnaud POULIQUEN wrote:
+> >>>>> Hello Sumit,
+> >>>>>
+> >>>>> On 9/16/25 11:14, Sumit Garg wrote:
+> >>>>>> Hi Arnaud,
+> >>>>>>
+> >>>>>> First of all apologies for such a late review comment as previousl=
+y I
+> >>>>>> wasn't CCed or involved in the review of this patch-set. In case
+> >>>>>> any of
+> >>>>>> my following comments have been discussed in the past then feel
+> >>>>>> free to
+> >>>>>> point me at relevant discussions.
+> >>>>> No worries, there are too many versions of this series to follow
+> >>>>> all the
+> >>>>> past discussions. I sometimes have difficulty remembering all the
+> >>>>> discussions myself :)
+> >>>>>
+> >>>>>> On Wed, Jun 25, 2025 at 11:40:26AM +0200, Arnaud Pouliquen wrote:
+> >>>>>>> The "st,stm32mp1-m4-tee" compatible is utilized in a system
+> >>>>>>> configuration
+> >>>>>>> where the Cortex-M4 firmware is loaded by the Trusted Execution
+> >>>>>>> Environment
+> >>>>>>> (TEE).
+> >>>>>> Having a DT based compatible for a TEE service to me just feels
+> >>>>>> like it
+> >>>>>> is redundant here. I can see you have also used a TEE bus based
+> >>>>>> device
+> >>>>>> too but that is not being properly used. I know subsystems like
+> >>>>>> remoteproc, SCMI and others heavily rely on DT to hardcode
+> >>>>>> properties of
+> >>>>>> system firmware which are rather better to be discovered dynamical=
+ly.
+> >>>>>>
+> >>>>>> So I have an open question for you and the remoteproc subsystem
+> >>>>>> maintainers being:
+> >>>>>>
+> >>>>>> Is it feasible to rather leverage the benefits of a fully
+> >>>>>> discoverable
+> >>>>>> TEE bus rather than relying on platform bus/ DT to hardcode firmwa=
+re
+> >>>>>> properties?
+> >>>>> The discoverable TEE bus does not works if the remoteproc is probed
+> >>>>> before the OP-TEE bus, in such case  no possibility to know if the =
+TEE
+> >>>>> TA is not yet available or not available at all.
+> >>>>> This point is mentioned in a comment in rproc_tee_register().
+> >>> For the discussion, it=E2=80=99s probably better if I provide more de=
+tails on
+> >>> the
+> >>> current OP-TEE implementation and the stm32mp processors.
+> >>>
+> >>> 1) STM32MP topology:
+> >>>    - STM32MP1: only a Cortex-M4 remote processor
+> >>>    -  STM32MP2x: a Cortex-M33 and a Cortex-M0 remote processors
+> >>>    At this stage, only the STM32MP15 is upstreamed; the STM32MP25 is
+> >>> waiting
+> >>>    for this series to be merged.
+> >>>
+> >>> 2) OP-TEE architecture:
+> >>> - A platform-agnostic Trusted Application (TA) handles the bus
+> >>> service.[1]
+> >>>    This TA supports managing multiple remote processors. It can be
+> >>> embedded
+> >>>    regardless of the number of remote processors managed in OP-TEE.
+> >>>    The decision to embed this service is made at build time based on =
+the
+> >>>    presence of the remoteproc driver, so it is not device tree
+> >>> dependent.
+> >>>    - STM32MP15: TA activated only if the remoteproc OP-TEE driver is
+> >>> probed
+> >>>    - STM32MP2x: TA always activated as the OP-TEE remoteproc driver
+> >>> is always
+> >>> probed
+> >>>
+> >>> - A pseudo Trusted Application implements the platform porting[2],
+> >>>    relying on registered remoteproc platform drivers.
+> >>>
+> >>> - Platform driver(s) manage the remote processors.[3][4]
+> >>>    - If remoteproc is managed by OP-TEE: manages the remoteproc
+> >>> lifecycle
+> >>>    - If remoteproc is managed by Linux: provides access rights to
+> >>> Linux to
+> >>> manage
+> >>>      the remoteproc
+> >>>
+> >>>    - STM32MP15: driver probed only if the remoteproc is managed in
+> >>> OP-TEE
+> >>>    - STM32MP2x: driver probed in both cases for the Cortex-M33
+> >>>      For the STM32MP25, the TA is always present and queries the
+> >>> driver to
+> >>> check
+> >>>      if it supports secure loading.
+> >>>
+> >>>
+> >>> [1] https://elixir.bootlin.com/op-tee/4.7.0/source/ta/remoteproc
+> >>> [2] https://elixir.bootlin.com/op-tee/4.7.0/source/core/pta/stm32mp/
+> >>> remoteproc_pta.c
+> >>> [3]https://elixir.bootlin.com/op-tee/4.7.0/source/core/drivers/
+> >>> remoteproc/stm32_remoteproc.c
+> >>> [4]https://github.com/STMicroelectronics/optee_os/blob/4.0.0-stm32mp/
+> >>> core/drivers/remoteproc/stm32_remoteproc.c
+> >> Thanks for the background here.
+> >>
+> >>>> The reason here is that you are mixing platform and TEE bus for
+> >>>> remoteproc
+> >>>> driver. For probe, you rely on platform bus and then try to migrate =
+to
+> >>>> TEE bus via rproc_tee_register() is the problem here. Instead you
+> >>>> should
+> >>>> rather probe remoteproc device on TEE bus from the beginning.
+> >>> The approach is interesting, but how can we rely on Device Tree (DT) =
+for
+> >>> hardware configuration in this case?
+> >>> At a minimum, I need to define memory regions and mailboxes.
+> >> The hardware configuration in DT should be consumed by OP-TEE and the
+> >> kernel probes remoteproc properties from OP-TEE since it's an OP-TEE
+> >> mediated remoteproc service you are adding here.
+> >>>  From my perspective, I would still need a driver probed by DT that
+> >>> registers
+> >>> a driver on the TEE bus. Therefore, I still need a mechanism to decid=
+e
+> >>> whether the remote firmware is managed by the secure or non-secure
+> >>> context.
+> >> As I mentioned below, this should be achievable using the secure-statu=
+s
+> >> property without introducing the new compatible:
+> >>
+> >> Kernel managed remoteproc:
+> >>     status =3D "okay"; secure-status =3D "disabled";     /* NS-only */
+> >>
+> >> OP-TEE managed remoteproc:
+> >>     status =3D "disabled"; secure-status =3D "okay";     /* S-only */
+> >>
+> >>> Another issue would be to be able to share the remoteproc TEE service
+> >>> between
+> >>> several platform remoteproc drivers, in case of multi remote processo=
+r
+> >>> support.
+> >> Making the TEE based remoteproc service independent of DT will surely
+> >> make it more scalable to other platforms too. Have a look at how OP-TE=
+E
+> >> based HWRNG service scales across platforms.
+> >
+> > Another important service is SCMI, which drivers use to manage clocks
+> > and resets.
+> > These clocks and resets are declared in the Device Tree (DT). It seems
+> > to me that
+> > in this case, we are closer to SCMI than to the RNG service.
+> >
+> > I propose we discuss this based on a concrete example with the STM32MP2=
+5.
+> > Although not yet upstreamed, our plan is to manage signed firmware for =
+the
+> > Cortex-M33 and Cortex-M0.
+> >
+> > Please find below my view of the DT resources to address.
+> >
+> > STM32MP25  Cortex-M33 and Cortex-M0 nodes:
+> >
+> > m33_rproc {
+> >    /* M33 watchdog interrupt */
+> >    interrupt-parent =3D <&intc>;
+> >    interrupts =3D <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
+> >    /* power domain management */
+> >    power-domains =3D <&cluster_pd>, <&ret_pd>;
+> >    power-domain-names =3D "default", "sleep";
+> >    /* RPMsg mailboxes + M33 graceful shutdown request */
+> >    mboxes =3D <&ipcc1 0x0>, <&ipcc1 0x1>, <&ipcc1 2>;
+> >    mbox-names =3D "vq0", "vq1", "shutdown";
+> >    memory-region =3D <&vdev0vring0>, <&vdev0vring1>, <&vdev0buffer>;
+> >    status =3D "okay";
+> > };
+> >
+> > m0_rproc {
+> >    /* mailbox for graceful shutdown */
+> >    mboxes =3D <&ipcc2 2>;
+> >    mbox-names =3D "shutdown";
+> >    /* M0 watchdog */
+> >   interrupt-parent =3D <&intc>;
+> >   interrupts =3D <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
+> >   /* M0 peripheral clocking (not accessible by the M0) */
+> >   clocks =3D <&scmi_clk CK_SCMI_GPIOZ_AM>,
+> >   <&scmi_clk CK_SCMI_GPIOZ>,
+> >   <&scmi_clk CK_SCMI_IPCC2>,
+> >   <&scmi_clk CK_SCMI_IPCC2_AM>,
+> >   <&rcc CK_LPTIM3_AM>,
+> >   <&rcc CK_LPUART1_AM>,
+> >   <&rcc CK_CPU3_AM>,
+> >   <&rcc CK_CPU3>,
+> >   <&rcc CK_LPUART1_C3>,
+> >   <&rcc CK_GPIOZ_C3>,
+> >   <&rcc CK_LPTIM3_C3>,
+> >   <&rcc CK_KER_LPUART1>,
+> >   <&rcc CK_KER_LPTIM3>,
+> >   <&scmi_clk CK_SCMI_GPIOZ>,
+> >   <&scmi_clk CK_SCMI_IPCC2>;
+> >   status =3D "okay";
+> > };
+> >
+> > If we want to remove the DT, we need to consider:
+> >
+> > - Mechanism to differentiate Cortex-M33 and Cortex-M0:
+> >    Similar to SCMI, the remoteproc OP-TEE service should support
+> >   multiprocessor setups without instantiating multiple services.
+> >
+> > - Mailboxes:
+> >
+> >    A phandle is needed because the mailbox driver is managed by the
+> >    Linux mailbox driver. STM32MP2 has two mailboxes.
+> >    Moving towards your proposal would imply creating a mailbox service
+> >    in TEE to manage non-secure mailboxes for non-secure IPC. This might
+> >    not be efficient for inter-processor communication. Hardware-wise, i=
+t
+> >    would require the IRQ to be handled by the secure context.
+> >
+> > - Memory regions:
+> >   - Hardware limitation: OP-TEE is limited in the number of memory regi=
+ons
+> >     it can declare due to Firewall configuration. Moving IPC memory reg=
+ions
+> >     reaches this limit. Currently, OP-TEE defines a single region with
+> > shareable
+> >     access rights, which Linux splits into at least three memory region=
+s
+> > for RPMsg.
+> >   - Memory mapping: Memory regions still need to be declared in Linux t=
+o
+> > prevent
+> >     Linux from using them.
+> >   - Virtio/RPMsg: Memory region names are fixed (e.g., dev<X>vring<Y>),
+> > so OP-TEE
+> >    must declare memory regions in its DT according to Linux naming
+> > conventions.
+> >
+> > - Clock and reset:
+> >     Some clocks and resets are managed via SCMI, others are not. This
+> > would require
+> >    managing all clocks and resets through SCMI, with possible side
+> > effect on the
+> >    "unused" clock mechanism in Linux ( to be confirmed)
+> >
+> > - Power domain:
+> >    Information is needed at the Linux level to determine the low power
+> > mode.
+> >
+> > - Watchdog interrupt:
+> >    Should be managed by OP-TEE, which requires the hardware to have an
+> > associated
+> >    secure IRQ.
+> >
+> > - Miscellaneous vendor DT properties:
+> >     How to be sure that these can be addressed through TEE services?
+> >
+> > Regarding the existing DT needs, it seems to me that removing the DT
+> > would require
+> > moving all node resource management into TEE ( if really possible). Thi=
+s
+> > would
+> > increase TEE complexity and footprint, reduce system efficiency, and
+> > make supporting
+> > other platforms less scalable.
+> >
+> > That said, it probably also depends on the TEE implementation.
+> > And  we should support both. This could be done by introducing a second
+> > UUID.
+> > but in this case should it be the same driver?
+>
+> I am unsure how to move forward here. It seems to me that addressing Sumi=
+t's
+> request for a TEE without a device tree is not compatible with the curren=
+t
+> OP-TEE implementation, at least for the STM32MP platforms.
+>
+> Perhaps the simplest approach is to abandon the effort to make this gener=
+ic
+> and instead rename tee_remoteproc.c to stm32_tee_remoteproc.c, making it
+> platform-dependent. Then, if another platform wants to reuse it with OP-T=
+EE
+> FFA or another TEE, the file can be renamed.
+>
+> Does this proposal would make sense to you?
+
+I would certainly like to see a consensus, and more specifically, an
+implementation that follows what other drivers that interact with the
+secure world do.  I currently do not have a clear understanding of
+what those other drivers do, and doing the research will take
+bandwidth that I also currently do not have.  This situation is
+expected to persist at least until December.
+
+As such I see two avenues for this patchset:
+(1) You seek to find a solution that is amenable to you, Sumit,
+Abdellatif and Harshal (I had to add the latter two to this email
+thread).
+(2) You wait until December, and likely beyond, until I have time to
+do the research needed to advise on the way forward.
+
+>
+> Thanks and Regards,
+> Arnaud
+>
+> >
+> >>
+> >>>>> Then, it is not only a firmware property in our case. Depending on =
+the
+> >>>>> compatible string, we manage the hardware differently. The same
+> >>>>> compatibles
+> >>>>> are used in both OP-TEE and Linux. Based on the compatible, we can
+> >>>>> assign
+> >>>>> memories, clocks, and resets to either the secure or non-secure
+> >>>>> context.
+> >>>>> This approach is implemented on the STM32MP15 and STM32MP2x platfor=
+ms.
+> >>>> You should have rather used the DT property "secure-status" [1] to s=
+ay
+> >>>> the remoteproc device is being managed by OP-TEE instead of Linux. T=
+hen
+> >>>> the Linux driver will solely rely on TEE bus to have OP-TEE mediated
+> >>>> remoteproc device.
+> >>>>
+> >>>> [1] https://github.com/devicetree-org/dt-schema/
+> >>>> blob/4b28bc79fdc552f3e0b870ef1362bb711925f4f3/dtschema/schemas/dt-
+> >>>> core.yaml#L52
+> >>> My issue with this property is that this would break the
+> >>> compatibility with
+> >>> legacy DT that only support loading by Linux
+> >> No, it's not a DT ABI break at all. It is always possible for a
+> >> hardware to be re-configured to change assignment of peripherals among
+> >> OP-TEE and Linux kernel.
+> >>
+> >>> As specified in [5] :If "secure-status" is not specified it defaults
+> >>> to the
+> >>> same value as "status"; [5]
+> >>> https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/
+> >>> secure.txt
+> >> This is mostly meant for peripherals that can be probed by both OP-TEE
+> >> and Linux kernel via DT. But here in case of remoteproc, there needs t=
+o
+> >> exclusive access control for either via Linux kernel or OP-TEE. Hence,
+> >> the
+> >> "status" and "secure-status" properties should be updated accordingly.
+> >>
+> >>>>> More details are available in the ST WIKI:
+> >>>>> https://wiki.st.com/stm32mpu/wiki/OP-
+> >>>>> TEE_remoteproc_framework_overview#Device_tree_configuration
+> >>>>> https://wiki.st.com/stm32mpu/wiki/
+> >>>>> Linux_remoteproc_framework_overview#Device_tree_configuration
+> >>>>>
+> >>>>>>> For instance, this compatible is used in both the Linux and OP-
+> >>>>>>> TEE device
+> >>>>>>> trees:
+> >>>>>>> - In OP-TEE, a node is defined in the device tree with the
+> >>>>>>>      "st,stm32mp1-m4-tee" compatible to support signed remoteproc
+> >>>>>>> firmware.
+> >>>>>>>      Based on DT properties, the OP-TEE remoteproc framework is
+> >>>>>>> initiated to
+> >>>>>>>      expose a trusted application service to authenticate and
+> >>>>>>> load the remote
+> >>>>>>>      processor firmware provided by the Linux remoteproc
+> >>>>>>> framework, as well
+> >>>>>>>      as to start and stop the remote processor.
+> >>>>>>> - In Linux, when the compatibility is set, the Cortex-M resets
+> >>>>>>> should not
+> >>>>>>>      be declared in the device tree. In such a configuration, the
+> >>>>>>> reset is
+> >>>>>>>      managed by the OP-TEE remoteproc driver and is no longer
+> >>>>>>> accessible from
+> >>>>>>>      the Linux kernel.
+> >>>>>>>
+> >>>>>>> Associated with this new compatible, add the "st,proc-id"
+> >>>>>>> property to
+> >>>>>>> identify the remote processor. This ID is used to define a unique
+> >>>>>>> ID,
+> >>>>>>> common between Linux, U-Boot, and OP-TEE, to identify a coprocess=
+or.
+> >>>>>> This "st,proc-id" is just one such property which can rather be
+> >>>>>> directly
+> >>>>>> probed from the TEE/OP-TEE service rather than hardcoding it in DT
+> >>>>>> here.
+> >>>>> Do you mean a topology discovery mechanism through the TEE remotepr=
+oc
+> >>>>> service?
+> >>>>>
+> >>>>> For the STM32MP15, it could work since we have only one remote
+> >>>>> processor.
+> >>>>> However, this is not the case for the STM32MP25, which embeds both =
+a
+> >>>>> Cortex-M33 and a Cortex-M0.
+> >>>> I rather mean here whichever properties you can currently dicovering
+> >>>> via
+> >>>> DT can rather be discovered by invoke command taking property name
+> >>>> as input
+> >>>> and value as output.
+> >>> That would means services to get system resources such as memory regi=
+on
+> >>> mailbox, right?
+> >> Yeah.
+> >>
+> >>>>> Could you please elaborate on how you see the support of multiple
+> >>>>> remote
+> >>>>> processors without using an hardcoded identifier?
+> >>>> By multiple remote processors, do you mean there can be multiple
+> >>>> combinations of which remote processor gets managed via OP-TEE or no=
+t?
+> >>> On stm32mp25 we have 2 remote processors a cortex-M33 and a cortex-M0
+> >>> We should be able to manage them using the proc_idAnother point is
+> >>> that We
+> >>> should allow an other Secure OS could implement the TEE remoteproc
+> >>> service
+> >>> managing the remote processors with different proc_id values, to
+> >>> avoid to
+> >>> specify somewhere an unique proc ID per remote processor.
+> >> Okay I see, so you can add unique proc ID to DT which gets consumed by
+> >> OP-TEE and Linux discovers the same via the TEE service.
+> > Yes the Linux passes the proc ID as argument of the
+> > tee_client_open_session().
+> > In OP-TEE, the TEE service checks the match with the proc ID registered
+> > by the
+> > OP-TEE remote proc drivers.
+> >
+> > Regards,
+> > Arnaud
+> >
+> >>
+> >>>>>> I think the same will apply to other properties as well.
+> >>>>> Could you details the other properties you have in mind?
+> >>>> I think the memory regions including the resource table can also be
+> >>>> probed directly from the TEE service too. Is there any other DT
+> >>>> property
+> >>>> you rely upon when remoteproc is managed via OP-TEE?
+> >>> The memory regions that include the resource table are already declar=
+ed
+> >>> in OP-TEE. The memory regions defined in the Linux device tree are fo=
+r
+> >>> RPMsg (IPC). These memories are registered by the Linux remoteproc
+> >>> driver
+> >>> in the Linux rproc core.
+> >>>
+> >> Sure, so they can also be discovered by TEE service.
+> >>
+> >> -Sumit
+> >
+> > _______________________________________________
+> > Linux-stm32 mailing list
+> > Linux-stm32@st-md-mailman.stormreply.com
+> > https://st-md-mailman.stormreply.com/mailman/listinfo/linux-stm32
+>
