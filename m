@@ -4,101 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2166CCFA1A
-	for <op-tee@archiver.kernel.org>; Mon, 10 Nov 2025 07:03:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3228FCCF9E3
+	for <op-tee@archiver.kernel.org>; Mon, 10 Nov 2025 08:58:02 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 2A2A85001E
-	for <op-tee@archiver.kernel.org>; Mon, 10 Nov 2025 07:03:44 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 203065001D
+	for <op-tee@archiver.kernel.org>; Mon, 10 Nov 2025 08:58:01 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=gqlEMOP0;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=MzTQ4zv1;
 	dkim-atps=neutral
-Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com [209.85.167.170])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DCBBF431B1
-	for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 07:03:33 +0000 (UTC)
-Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-4501e8152d7so374381b6e.2
-        for <op-tee@lists.trustedfirmware.org>; Sun, 09 Nov 2025 23:03:33 -0800 (PST)
+Received: from mail-oa1-f41.google.com (mail-oa1-f41.google.com [209.85.160.41])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id D7A5F43147
+	for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 08:57:50 +0000 (UTC)
+Received: by mail-oa1-f41.google.com with SMTP id 586e51a60fabf-3e2d1477b9cso1569450fac.2
+        for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 00:57:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1762758213; x=1763363013; darn=lists.trustedfirmware.org;
+        d=linaro.org; s=google; t=1762765070; x=1763369870; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=kZH9HBphOAagtoFjePNpMdaPRYh83TbkuAlXlrLr400=;
-        b=gqlEMOP0eDhSNrcYBUCQUohtWhaZQgk6Am4UJ6KDu0h7iH3jbdFMI89jOunyPqSpvr
-         3rGS/eIxix+tM9K6A6uJGMzc3qb5wfRSjWSqF8uAUsi8hsMQSY0WQPH6uEovCEE/mPP/
-         W10HH5lnt2LOHPigoCqMYDErY55uv/CQ4eKDzaxbxjny2LhZ4uSe1paQlAGLTYdaoPbt
-         89uexP2XMzInsvo/KO23rBE9EjGVpyuo7akdXUnrwJIgluoe+q+DqdJLhJ+tvEWOi3p3
-         Pd0wn8mczFQb8tDVDhLWT0cJviviqe0RjHeT0dIZlo6MuY13BSfvX7swnCvDhCp0xChR
-         HUkw==
+        bh=I+DU4bC9oY8isR66wkaZVD1cgl7C2T/3TuAVsgHOOjs=;
+        b=MzTQ4zv1jEWuZkb/dhV6VvI0Mi0BrzekaVR0QTYcPUkG/rSFqhgWEyVpg5MB0cDPgD
+         iUp4PkcFLVVJDN0l7srekNHd3GykWbH9Dt/LF/z3JsZApHX76pkv7WAY+glhfBnk8dwj
+         WNSlTo4GlCS/jCH8OmHq9kyHsV70GGpcKeT2oPkkoaoqyWG73jYNdBSd0Pby1G7FZ4V0
+         KAxhExsFfIX2XAZF4Y5SdjBJ5e4adyIDy6b22ABcAWGIYtX8R3kU0YnisbIaFQL/NnR7
+         nXX2ZNdag8O7dRPDUhyPr1Nuic5rbLQPVtixPfltZNbruLITjzkTM0gpthYCdY52DBMU
+         TRWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762758213; x=1763363013;
+        d=1e100.net; s=20230601; t=1762765070; x=1763369870;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=kZH9HBphOAagtoFjePNpMdaPRYh83TbkuAlXlrLr400=;
-        b=tGMzBEExB44p47xAwz9n+YFqPvEhsLx9t16TZZfkaUwG4E4iC3x/EZ/Wj4r7KuHFTF
-         hsz0Q4DYWyki0AeduOlwemBdIDid4//1GmWhyBNTzzJX6A3ChqgBPljKii9gpVoREX5T
-         7oaTXI/yqu6b+JvbIDl8XroItxEhSH14kgKTitZ2aPhzYpe2OSdeJhQROU4/h5R1D1pV
-         /6Se+GgFBPsr1Nodo6ANTE3lc1tNldiBdWX4L2boaMbB6/0iYklnLGUsxIFk0kLCvvxZ
-         aY1LLHHGxvrUmNi2wxv4fQvfif5cl9zhlZ9HiKFTT3RXEuMpS6cfWdX9/JbVd9+D7thC
-         sd8Q==
-X-Gm-Message-State: AOJu0Yzo5B0HGLJSA1d/D6eheG2zGayqKO0ePkK/P4xEU84qz++Rh3JM
-	G9jt0bmJ3t1Npp7vLQe7jqKpXiIJhnp4xIqowevL4vCP7LpGmnOVNKIJLOrgluOjG/OeiOm0axw
-	qXAtt0r4V0TdYaDGNwfnXg5J79LXTzsYt0HF5xiHUYFQg
-X-Gm-Gg: ASbGncsfvkjA6AnmWm2E8X8lWVJQYa7kbCDbNfPwJLxKLA3hC+TQwTEFiw2x7EOLG5O
-	RWTaoGEi9pCQeAwgLwSu7NgY8rpIrPsCspNkkFp5XEeu3tQyCf1WKP0R4h4/kRm+e3KdvWnPwB7
-	vspO3RBxBRyID1GBjsOBuwSv1CCUVNobuSWtFJxF7MCEpPQlPD5rR3k+2Kf/XhS+JhN+NC7DlJM
-	hsym/tPFYlsYYjHY/rXMa4ke9wy13UnkL+ZlQ5Cd+RdidSVbcoVHKdVd+rTc+hjNXYRmCpu6W8H
-	5euD
-X-Google-Smtp-Source: AGHT+IGfcMCh8A+6KX8WwI3t/ZpN/O6TB7L+kmvdmryqmExFqyiRM6QCUcw0qA75XS8PzWEIgZCQDItmCsRNchsPauU=
-X-Received: by 2002:a05:6808:3006:b0:450:9f5:dcbb with SMTP id
- 5614622812f47-4502a1ba355mr3085976b6e.22.1762758213078; Sun, 09 Nov 2025
- 23:03:33 -0800 (PST)
+        bh=I+DU4bC9oY8isR66wkaZVD1cgl7C2T/3TuAVsgHOOjs=;
+        b=g2s2Gesax9UOFikK2xNwFZKQt83qfoBrtrDK+e3sGqu0rPA6YlYcWSj5cOTacG+OPu
+         /S7bGK2aXOAcETIKS0KHukCUKKd/wEe+1bS9HvuSOPgApKF4Vk5zEgVBThl/MiCMD9lJ
+         dcv9bQR1EYPDGmZTYMKxU6mpovQXA/ZYS6hYq/rKkdP6A7jlPDbbHaNmB7XG/SXJ5oZ6
+         GwuMVlO/Tcp/xQv/5qRVQmXBeWQrcPF5DtQgQ7cYTKK66wmZ2KfXFhxGOwevyKGkR5PU
+         ZnEYaE+GbTZpH57iWPjjOWoo5Lyizux6ugk91rdd283w5sYd9pNP0iOLLHk8Qy/iIKul
+         bfAw==
+X-Forwarded-Encrypted: i=1; AJvYcCUKgix/an35i414cZhC+kBzHjqNTiHALtn+geapX8FgQ5uAO+FQO0TpsSU64G3u/jsiZFJ6G6k=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YyFLygg73zF1ceX+J5Ls9GAGa+WUgO75JfEhSYo9QLUIYqE7YJE
+	//k6vgPflTSsyqwnAY+WnRlKBoPy8p2DiZlqMokW5+BfH9iOBm3H4jizdaKVv7CwPF41m2/HV6s
+	v1QVr3McUjsE4N+ur2b/p29BtCaCt45OdMeTlrBSLK925
+X-Gm-Gg: ASbGncvd8OI9Bqo8YmvhZgJWBDADldpv1xG3ciJbnf1nQPHmZ1f2ra1UiZ8l6qJ2f41
+	NtcQfF/YnyhXFxIH0jFJvP34ySYK5i0Em26VdmCv+7+LfCQIDc1XmGb1LOrUWA/V1uCKIQ3Ssih
+	M0HqYh9w5TtNW4fDog2CafO4vk7VZOsPMLTrIOf3vP7on50vNESKqhMXl/gYmcD+YSILwo6qWQF
+	U/LJX+0uVEX7EY02MxoqK6ZqDSwPTSub24tyf7HnkLyuJ7jlcoRivaOPsk9X8GEX1fqeSYRVW6O
+	iR96
+X-Google-Smtp-Source: AGHT+IEvNSWQF8V50WXZvHvTh5vdg6c1kYKSH5fDM/Ta6RUD/FEZDy3lz08IzLZFRWp24NzfBrjEWgoxjvYDKgubZn0=
+X-Received: by 2002:a05:6870:899a:b0:3d4:760f:544b with SMTP id
+ 586e51a60fabf-3e7c294ab31mr5259236fac.46.1762765070045; Mon, 10 Nov 2025
+ 00:57:50 -0800 (PST)
 MIME-Version: 1.0
-References: <20251106102008.1310234-1-yangzhao@kylinos.cn> <CAHUa44FAUyQNBKmzugu-_gv_Jy_AftZqq=RSbKUnK1QQbL8Z9A@mail.gmail.com>
- <900f69d4-6ef9-fe1e-d664-e248e41da752@kylinos.cn>
-In-Reply-To: <900f69d4-6ef9-fe1e-d664-e248e41da752@kylinos.cn>
+References: <20251105-aheev-uninitialized-free-attr-tee-v1-1-2e1ee8483bc5@gmail.com>
+In-Reply-To: <20251105-aheev-uninitialized-free-attr-tee-v1-1-2e1ee8483bc5@gmail.com>
 From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 10 Nov 2025 08:03:21 +0100
-X-Gm-Features: AWmQ_blYhauiyF-OMkjBxubo-x9ZLpIW-Wp0gXh6FaZH1ZHsThtizotDjFMWNFI
-Message-ID: <CAHUa44EXPtdfPogjRirGB=aZ+ex-bD-iRf7m_=1OVk_KAY03_g@mail.gmail.com>
-Subject: Re: [PATCH] tee: fix illegal pointer dereference in tee_shm_put()
-To: yangzhao <yangzhao@kylinos.cn>
+Date: Mon, 10 Nov 2025 09:57:38 +0100
+X-Gm-Features: AWmQ_bmbfwlbuD27u393tcu35e2C0scPDS3Uy66i-DK7aOy74DFrH1rStFwJq9A
+Message-ID: <CAHUa44GYnZFaZQBNbV0=RSR7r61+ErYdQtEsRObNALz2CwT_Gg@mail.gmail.com>
+Subject: Re: [PATCH] tee: fix uninitialized pointers with free attr
+To: Ally Heev <allyheev@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Spamd-Bar: ----
 X-Rspamd-Server: lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: DCBBF431B1
-X-Spamd-Result: default: False [-4.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Rspamd-Queue-Id: D7A5F43147
+X-Spamd-Result: default: False [-4.10 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.160.41:from];
 	MIME_GOOD(-0.10)[text/plain];
-	DNSWL_BLOCKED(0.00)[209.85.167.170:from];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
 	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MISSING_XM_UA(0.00)[];
 	ARC_NA(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.167.170:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_COUNT_ONE(0.00)[1];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.41:from];
 	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	DKIM_TRACE(0.00)[linaro.org:+]
-Message-ID-Hash: JR4CHBNYISZPDXHV3H3UX22PWIKFDWLW
-X-Message-ID-Hash: JR4CHBNYISZPDXHV3H3UX22PWIKFDWLW
+Message-ID-Hash: HBP52TMJMYQNT7SE5FRPEQEXEPAOFYDY
+X-Message-ID-Hash: HBP52TMJMYQNT7SE5FRPEQEXEPAOFYDY
 X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@kernel.org>
+CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JR4CHBNYISZPDXHV3H3UX22PWIKFDWLW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HBP52TMJMYQNT7SE5FRPEQEXEPAOFYDY/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -108,99 +109,60 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 Hi,
 
-On Fri, Nov 7, 2025 at 7:14=E2=80=AFAM yangzhao <yangzhao@kylinos.cn> wrote=
+On Wed, Nov 5, 2025 at 3:20=E2=80=AFPM Ally Heev <allyheev@gmail.com> wrote=
 :
 >
-> Hi=EF=BC=8C
+> Uninitialized pointers with `__free` attribute can cause undefined
+> behaviour as the memory assigned(randomly) to the pointer is freed
+> automatically when the pointer goes out of scope
 >
-> This issue is indeed caused by the mismatch between the TEE version and
-> the kernel version. Currently, this patch is only designed to address
-> the problem of ensuring that the kernel does not panic when the TEE
-> version is incorrect.
+> tee doesn't have any bugs related to this as of now, but
+> it is better to initialize and assign pointers with `__free` attr
+> in one statement to ensure proper scope-based cleanup
 >
-> The virt_addr_valid() is used to check the validity of the pointer
-> address, because during the test, it did occur that the shm->ctx pointer
-> address is the address between the user space and the kernel space. At
-> this point, using IS_ERR_OR_NULL cannot detect the legitimacy of the
-> pointer address.
+> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Closes: https://lore.kernel.org/all/aPiG_F5EBQUjZqsl@stanley.mountain/
+> Signed-off-by: Ally Heev <allyheev@gmail.com>
+> ---
+>  drivers/tee/qcomtee/call.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 >
-> The problem can be viewed at the link:
-> https://github.com/OP-TEE/optee_os/issues/7575
+> diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
+> index ac134452cc9cfd384c28d41547545f2c5748d86c..8b7b4decddd8d1811dc0a7cc4=
+6a4a4fbada45526 100644
+> --- a/drivers/tee/qcomtee/call.c
+> +++ b/drivers/tee/qcomtee/call.c
+> @@ -645,12 +645,13 @@ static void qcomtee_get_version(struct tee_device *=
+teedev,
+>  static void qcomtee_get_qtee_feature_list(struct tee_context *ctx, u32 i=
+d,
+>                                           u32 *version)
+>  {
+> -       struct qcomtee_object_invoke_ctx *oic __free(kfree);
+>         struct qcomtee_object *client_env, *service;
+>         struct qcomtee_arg u[3] =3D { 0 };
+>         int result;
+>
+> -       oic =3D qcomtee_object_invoke_ctx_alloc(ctx);
+> +       struct qcomtee_object_invoke_ctx *oic __free(kfree) =3D
+> +               qcomtee_object_invoke_ctx_alloc(ctx);
 
-OK, let's sort out the secure world side of things in that issue.
+Can we zero-initialize oic at its original location instead? Doing it
+here looks messy.
 
-Cheers,
+Thanks,
 Jens
 
+> +
+>         if (!oic)
+>                 return;
 >
-> Thanks.
 >
-> On 2025/11/6 19:31, Jens Wiklander wrote:
-> > Hi,
-> >
-> > On Thu, Nov 6, 2025 at 11:20=E2=80=AFAM yangzhao <yangzhao@kylinos.cn> =
-wrote:
-> >> In tee_shm_put(), there is not only the NULL pointer dereference,
-> >> but also the illegal pointer dereference.
-> >>
-> >> shutdown() --->
-> >>      __optee_disable_shm_cache -->
-> >>          shm =3D reg_pair_to_ptr(...);
-> >>          tee_shm_free(shm); -->
-> >>              tee_shm_put(shm); //crash: shm->ctx maybe NULL pointer or=
- illegal pointer
-> >>
-> >> Check whether the pointer is NULL and whether the pointer address is v=
-alid.
-> >>
-> >> This issue occurs when rich world uses the 6.x version of the kernel a=
-nd
-> >> optee secure world uses a lower version (such as version 3.2), and it =
-is
-> >> highly likely to trigger a kernel panic when conducting hibernate test=
-s.
-> > It sounds like the root of the problem is in the TEE rather than in
-> > the kernel. How about fixing the TEE to avoid supplying garbage
-> > pointers?
-> >
-> >> Fixes: e4a718a3a47e ("tee: fix NULL pointer dereference in tee_shm_put=
-")
-> >> Signed-off-by: yangzhao <yangzhao@kylinos.cn>
-> >> ---
-> >>   drivers/tee/tee_shm.c | 9 ++++++++-
-> >>   1 file changed, 8 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> >> index 4a47de4bb2e5..de01d16409c1 100644
-> >> --- a/drivers/tee/tee_shm.c
-> >> +++ b/drivers/tee/tee_shm.c
-> >> @@ -722,7 +722,14 @@ void tee_shm_put(struct tee_shm *shm)
-> >>          struct tee_device *teedev;
-> >>          bool do_release =3D false;
-> >>
-> >> -       if (!shm || !shm->ctx || !shm->ctx->teedev)
-> >> +       /* checking pointer */
-> >> +       if (IS_ERR_OR_NULL(shm) || !virt_addr_valid(shm))
-> > The IS_ERR_OR_NULL() check might make sense, but the virt_addr_valid()
-> > does not. virt_addr_valid() might catch a few garbage pointers, but
-> > the real problem is that someone is supplying garbage pointers.
-> >
-> >> +               return;
-> >> +
-> >> +       if (IS_ERR_OR_NULL(shm->ctx) || !virt_addr_valid(shm->ctx))
-> >> +               return;
-> >> +
-> >> +       if (IS_ERR_OR_NULL(shm->ctx->teedev) || !virt_addr_valid(shm->=
-ctx->teedev))
-> >>                  return;
-> > shm->ctx or shm->ctx->teedev should never be an ERR pointer. The
-> > virt_addr_valid() test doesn't make sense.
-> >
-> > Cheers,
-> > Jens
-> >
-> >>          teedev =3D shm->ctx->teedev;
-> >> --
-> >> 2.25.1
-> >>
+> ---
+> base-commit: c9cfc122f03711a5124b4aafab3211cf4d35a2ac
+> change-id: 20251105-aheev-uninitialized-free-attr-tee-0221e45ec5a2
+>
+> Best regards,
+> --
+> Ally Heev <allyheev@gmail.com>
 >
