@@ -4,94 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F890CCFA18
-	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 13:58:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF099CCFA1A
+	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 13:58:46 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id E507250040
-	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 13:58:15 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3A4F750041
+	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 13:58:46 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I8IZ6Bhu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y7CfyVK4;
 	dkim-atps=neutral
-Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id A065350017
-	for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 15:17:51 +0000 (UTC)
-Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-b62e7221351so2600824a12.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 07:17:51 -0800 (PST)
+Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 90F7841BB7
+	for <op-tee@lists.trustedfirmware.org>; Tue, 11 Nov 2025 07:57:06 +0000 (UTC)
+Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-34361025290so2674704a91.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 23:57:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762787870; x=1763392670; darn=lists.trustedfirmware.org;
+        d=gmail.com; s=20230601; t=1762847826; x=1763452626; darn=lists.trustedfirmware.org;
         h=cc:to:message-id:content-transfer-encoding:mime-version:subject
          :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=proAMupxnU1cqn8ppHXktvWmCFOk0d+KB4vZ0hwkHKs=;
-        b=I8IZ6BhuJCRzeO5N7AGJ7fOHN6PgF5TCgFZ+xpxdRe1GR8H6jQXMnpFqZi/3xvU7VW
-         2AcnW/+xTz7NX6xQUHy+k4Y5ByRztcazcbiZgmoWn86bZFQK2ixXBD7tXqqGBR0o7i+I
-         sd8XHtXkK7/0OfRyNpjbBWgKDLfN42p6yqzsz+73kAlPgY+ZP/rQEpNwusQTPdhnNY+U
-         QSnSUIO9Qsm6b3pJ2jYbhDZEc24C4rpAj/kpo+3QI+EwH8DH0aBo4W8nt0nwnhktl6X/
-         bK9cZXEQvZxVxy1+5OHu4gpv64n1ksJboNCE3U9IjtvPF6YWxN1k6BUhRpLX3D6KA8zO
-         cOGQ==
+        bh=Sx/V++xyadOUZoH/bSkYK6cIm5d5YSgG1Ih7qmUz09M=;
+        b=Y7CfyVK4eSBlxQ+a/FigHSlD6jxmn221jnXi1VlU1NWnKhl5S7rVWrRspKBPTzWehB
+         tzBWhXO7m4Sqw3noDvndToqpPSaq6Ne5xDYVajMwQHTUKrFRmOqYf/67ki9QQ7M6C+qV
+         mio1ggDAXJVfKjzUc+hl0pGp6tyM83XfRD4ggefYwacjSKuOWw0D7OQQxPupeNx1qHg4
+         8oKeQT5BFE9/PpPx6VPoU3Jpvn/TY8B54PeN6jjqLvWFTcHQvJ/1Q7o/BSNF+A5dRd0Z
+         sE2UOm7JTqxI90jgjuKdrUzqw1XvOFPMKSJt8eyYXH1w4/gNzHZbDp1Ufgvj2u3/Yd1Y
+         V6mg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762787870; x=1763392670;
+        d=1e100.net; s=20230601; t=1762847826; x=1763452626;
         h=cc:to:message-id:content-transfer-encoding:mime-version:subject
          :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=proAMupxnU1cqn8ppHXktvWmCFOk0d+KB4vZ0hwkHKs=;
-        b=cp01VNvM26gnQWxCkmcuVR7edpDLVIRykKmPpqsjLPqcBuUBe6ADWjv2NUhCdAfQ/g
-         bi3Fymwv26v872qso+z8cQ2Ohfjj+XE7szgWo0SqPreLTFTrSnYfUxu4LmxDALmzLXXV
-         AmU0kjjQDa8Y2vCbscLrMCF/Ly13oPth53JAl4uSxXV9KLUMMVqBcDqMp6AqTqv8e/LK
-         K/x5/s25ZcPYCS0S2jEGj9TP1/58h9h0ctymp3gsLDZ/uB6OVuVurs8nBV8LDWG++EkG
-         VCQqri/072B9LYYZCWMuXlC5zXPbxvC2S3Fd8bM+YHE49D2DUBioMS2K0FE504FDv6j7
-         Bl6Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVE/kWgMpl/NDvRZqpyz2spm8p2qOVqbHxeNnpS3n5sxjYMxdsBEdFAf1UB3a+gAKkHhkGvyUE=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxOeidbKbDo9GJ9uB1nd7er9gPrS+mVDzf/m+/tXT1YR3rhyA/B
-	W4C/hpGAJVbneRcWTgIS0Y8Rt9LtKOeRfhUZlOr88BEL5qj+Nei//Xk2L3eHamCg
-X-Gm-Gg: ASbGncvSrgcd2HXjF9/IVrexO7U6ebTnrw67eU03vK1HKpp9lWfEMN64YuGuvY9QdHw
-	fbuyuC9RcB+5X7sI7C0nArdiR17QzEw3p1rchL0uWr4f2UjVcbH4EuPcJcrKUFt59alQ0r7DR3N
-	kq9lpQ3JaR9ztNWvxqqYpL509ys+3GAqv4YM/eBPrcNQZNliWY4cTC2dO8z0w0XBgeZn7BZo61B
-	czBn4KuaMX06q/0R2yt7wsEHdViVsurhTHhHxRfZskVhdL0ySQcnKMdBQn4xhJcSO/pdWVlkomM
-	meyI26wG6s5RJPi0lHhfzHnxoZ/8gULafkbs1RwKKKswlic/eXBvCwL0tKSG9kso45iG7AtRYv5
-	Ymv3CnOq0QwA9kW0rme4+KDtTs1kvw3eAiYOc75s8z/zfUo9AffL2prN4Dk5KvWMQVJvKBhPksI
-	EgMOUFsCd0rw==
-X-Google-Smtp-Source: AGHT+IFColOTEFc+YKuJfWoz7iYZVyQkHiGnmwgGT/THEbSZlWqrZVd6iPqWGf0bCjSVP6LSnEfm3g==
-X-Received: by 2002:a17:902:dace:b0:297:e59c:63cc with SMTP id d9443c01a7336-297e59c644dmr114215475ad.35.1762787870219;
-        Mon, 10 Nov 2025 07:17:50 -0800 (PST)
+        bh=Sx/V++xyadOUZoH/bSkYK6cIm5d5YSgG1Ih7qmUz09M=;
+        b=oXuL4E9VkRBHqFywNsHSzqmpIzMWvkDp2nqKQMnNDMMkXPKMFoFR8kUQee3ziotsHe
+         hiIl8wIS1F6cLsNVKvciGwraqhb5sM6fhs0SQ5M8OPDmnvwBFssE9dsD18OfYj9KymwP
+         mhVRyXQo0Xp/k0/7SU34cU/nXt0Zu/jmNuRWiwrEFed6NIJq5IOzqdjGRr60J/a0C/bG
+         NZHNzbrg/e9XwoRCL5lQwULvv9rGuzioDb6xAp02ToZoI6koUHbFPBAm9ZqTol5yQGJp
+         VeCKi8OwZx6d6/xRPXzmrWveKS4Q87M+MIlawl37JdwJKBTtI0fViXgfq+Gd3vpxJex1
+         hmkg==
+X-Forwarded-Encrypted: i=1; AJvYcCVJct0DsalH352XfNFbL81PoekorrgVnzV1dB+2JxJtRRkckzuo1DweIrTQG7DSd3m3rv+ByGI=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YwIjk6xLE9oerjAQPcFi9T6jxIppQuTsja2lFDdCwBOUWm209TE
+	5B/1bpeCkKi5u6TvE0BW2tHDisUm12aEX1E6H0zL9S2wEkOYH+jd8Hde
+X-Gm-Gg: ASbGncsbGrY4o5NOUIKPHMPG1ADKiEYESvxMb1+vGCEGN5v9gjYit6/zFabr+fQSCSW
+	PlLWPWAsy3kaDUjwCDXGLwaP9mX7eaUQMavH0SXYjkutc6DHPMqX7zxh4/is+genluA4UyV2/lQ
+	BdFdDVO3C5lUFaDSv60n/P6jrEnQ5wBHq0MJByRFwX8hzE0EUP7UPfSf669atHdxgs6/CPkuJ7m
+	PluT3obxVVvyg2DVOmr821C93dZrv/0MCcxm6aXuJqOrq3qtiBAqiTO9Z912M/c87HawogthkJr
+	cXgZkkwSZCH9WfzVQ/0xjE/5gKjiHa+rCj5fjf0ED2J8QOIA+EcwF9E6GRU222a1wPcCT0Ulqd4
+	qo/aRSFkZ74knsJ2hzLzBjgzXhfEqAbml7qpqA/O7o4+H1jgHw6OBlCQfO5n4FKX5TBNNHxqIvu
+	8=
+X-Google-Smtp-Source: AGHT+IHlgCsPGufic8ljFUM/F3tgYW1VFs7jgyf3xF1GaO+oK0dfmfAL1LcwALg8bAVga+ecAJtk8g==
+X-Received: by 2002:a17:90b:3c87:b0:341:124f:4746 with SMTP id 98e67ed59e1d1-3436cd0bd38mr11876908a91.31.1762847825598;
+        Mon, 10 Nov 2025 23:57:05 -0800 (PST)
 Received: from aheev.home ([2401:4900:8fcc:9f81:b4f9:45ad:465b:1f4a])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29650c5c6b3sm147976145ad.24.2025.11.10.07.17.43
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-341a68a7a62sm20318454a91.2.2025.11.10.23.56.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Nov 2025 07:17:49 -0800 (PST)
+        Mon, 10 Nov 2025 23:57:05 -0800 (PST)
 From: Ally Heev <allyheev@gmail.com>
-Date: Mon, 10 Nov 2025 20:47:30 +0530
-Subject: [PATCH v2] tee: fix uninitialized pointers with free attribute
+Date: Tue, 11 Nov 2025 13:26:42 +0530
+Subject: [PATCH v3] tee: qcomtee: fix uninitialized pointers with free
+ attribute
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251110-aheev-uninitialized-free-attr-tee-v2-1-023ffba9ea0f@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAkCEmkC/5WNQQ6CMBBFr2Jm7RhaaUJceQ/DopYPTALFtLVRC
- Xe3cgN3//3FeytFBEGky2GlgCxRFl9AHw/kRusHsHSFSVfaKFUZtiOQ+enFSxI7yQcd9wFgm1L
- gVEaltUJt4IzVVDyPgF5ee+PWFh4lpiW892RWv/cfe1asWEMBTd2c785ch9nKdHLLTO22bV9A+
- ZMd0gAAAA==
+Message-Id: <20251111-aheev-uninitialized-free-attr-tee-v3-1-57905b913359@gmail.com>
+X-B4-Tracking: v=1; b=H4sIADnsEmkC/5XNPQ7CMAyG4augzATFbiMVJu6BGNLUaS31ByUhA
+ qrenbRTR9j8eni+WQTyTEFcDrPwlDjwNOYojgdhOzO2JLnJLVChBlBamo4oyefII0c2PX+okc4
+ TSROjlzEfChGo1GS1QZGdhyfHr23jds/dcYiTf2+TCdbvP3oCCRIJiKqyKmqrr+1guD/ZaRCrn
+ nAngvpFxCwqLJyrzZmMcntxWZYvCxm82CQBAAA=
 X-Change-ID: 20251105-aheev-uninitialized-free-attr-tee-0221e45ec5a2
 To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
  Jens Wiklander <jens.wiklander@linaro.org>,
  Sumit Garg <sumit.garg@kernel.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1646; i=allyheev@gmail.com;
- h=from:subject:message-id; bh=ngcsiD/ajXiiBpABsVazTz+tJLwYwSvVxHi2KUe+7xI=;
- b=owGbwMvMwCU2zXbRFfvr1TKMp9WSGDKFmMTyPKQjFeOe379RKLJCf2GU64vwyMLnUfwcPRkvp
- i2R17PrKGVhEONikBVTZGEUlfLT2yQ1Ie5w0jeYOaxMIEMYuDgFYCIqMxj+is02uvih40zJtqz9
- X4yntCVqKjb2i1pu0bqkrdmyy+OQKCPDgeg1WYmx74ScDp3h2WN48kMOh/jCRfwdxfJ/djJyp3/
- lAgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1820; i=allyheev@gmail.com;
+ h=from:subject:message-id; bh=DjujQ4Ip3o0Fr7W1bLZTv2QT33O7HU1A7IoeReKU2rE=;
+ b=owGbwMvMwCU2zXbRFfvr1TKMp9WSGDKF3rhu2LG09/gzQZP8axXa7j0R6UG1515US927qBTuI
+ McXluzbUcrCIMbFICumyMIoKuWnt0lqQtzhpG8wc1iZQIYwcHEKwESOsDD8r/X3m9BS3uzHO6nw
+ mtQKjc3noi/8+tcb9n3iXpduFseZLAz/FPpfBaZFPTK5eayTs0uq/E63+JnotNdvzULy/ZiM3vN
+ yAAA=
 X-Developer-Key: i=allyheev@gmail.com; a=openpgp;
  fpr=01151A4E2EB21A905EC362F6963DA2D43FD77B1C
 X-Spamd-Bar: ----
 X-Rspamd-Server: lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: A065350017
+X-Rspamd-Queue-Id: 90F7841BB7
 X-Spamd-Result: default: False [-4.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.215.177:from];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.216.44:from];
 	MIME_TRACE(0.00)[0:+];
 	FREEMAIL_ENVFROM(0.00)[gmail.com];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
@@ -104,7 +105,7 @@ X-Spamd-Result: default: False [-4.10 / 15.00];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	FREEMAIL_CC(0.00)[vger.kernel.org,lists.trustedfirmware.org,linaro.org,gmail.com];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.215.177:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.44:from];
 	RCVD_COUNT_TWO(0.00)[2];
 	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
@@ -114,14 +115,14 @@ X-Spamd-Result: default: False [-4.10 / 15.00];
 X-MailFrom: allyheev@gmail.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: XDUZPURKI7TUIBKRHG6QS4HONBAHJ6XQ
-X-Message-ID-Hash: XDUZPURKI7TUIBKRHG6QS4HONBAHJ6XQ
+Message-ID-Hash: YS74RWCMGLYYM6SFGBYSWVNMEBFAFCUH
+X-Message-ID-Hash: YS74RWCMGLYYM6SFGBYSWVNMEBFAFCUH
 X-Mailman-Approved-At: Tue, 11 Nov 2025 13:58:05 +0000
 CC: linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>, Ally Heev <allyheev@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/XDUZPURKI7TUIBKRHG6QS4HONBAHJ6XQ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YS74RWCMGLYYM6SFGBYSWVNMEBFAFCUH/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -133,7 +134,7 @@ Uninitialized pointers with `__free` attribute can cause undefined
 behavior as the memory assigned randomly to the pointer is freed
 automatically when the pointer goes out of scope.
 
-tee doesn't have any bugs related to this as of now, but
+qcomtee doesn't have any bugs related to this as of now, but
 it is better to initialize and assign pointers with `__free`
 attribute in one statement to ensure proper scope-based cleanup
 
@@ -141,6 +142,10 @@ Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
 Closes: https://lore.kernel.org/all/aPiG_F5EBQUjZqsl@stanley.mountain/
 Signed-off-by: Ally Heev <allyheev@gmail.com>
 ---
+Changes in v3:
+- fixed commit message and description
+- Link to v2: https://lore.kernel.org/r/20251110-aheev-uninitialized-free-attr-tee-v2-1-023ffba9ea0f@gmail.com
+
 Changes in v2:
 - initializing variables to NULL at the declaration
 - Link to v1: https://lore.kernel.org/r/20251105-aheev-uninitialized-free-attr-tee-v1-1-2e1ee8483bc5@gmail.com
