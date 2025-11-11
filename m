@@ -4,174 +4,202 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF099CCFA1A
-	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 13:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D099BCCFA18
+	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 19:42:25 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3A4F750041
-	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 13:58:46 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 113B55004C
+	for <op-tee@archiver.kernel.org>; Tue, 11 Nov 2025 19:42:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1762890145;
+	bh=M2sDWEeUR9wyYZdDuHzVdWOO7pOk0IfE9mNfrusgQ/U=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=yVr9ApFhijiFTA/Fj6gSBf8Gg8UUzVQbzJ9wnhrdZH+uue+xj0eXfYimYfSTX3qz8
+	 o07BM1QlUIXjw5XQsP3whKD0uqUcx+KDac4hn1+WrUk29WO6DPhuicLVvbwbIlGZdh
+	 bVmiwdTyM0WzYBTmBMmbmVMZJcmUoQI29IUNZ6ZrJowtely6gO5BH1Kl/iSvaG0SR4
+	 4h3B8S69LeTJwRtFZTy3eu3kPxiaLSmXd/1SQF28JFSesRW27zwe/HwTT50r8A7D7m
+	 ObMGZfv2KZa0pcZyxfsmOVTF92aLEWAjyU0fmzvlVEmWhntSOMVQJ81upfaRJ8lGst
+	 13uN0wBnhKmEg==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A9B2A4317C
+	for <op-tee@lists.trustedfirmware.org>; Tue, 11 Nov 2025 19:42:12 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y7CfyVK4;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=dOGWTEhJ;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=SeNtGkYT;
 	dkim-atps=neutral
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 90F7841BB7
-	for <op-tee@lists.trustedfirmware.org>; Tue, 11 Nov 2025 07:57:06 +0000 (UTC)
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-34361025290so2674704a91.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 10 Nov 2025 23:57:06 -0800 (PST)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5ABBGIZx2117330
+	for <op-tee@lists.trustedfirmware.org>; Tue, 11 Nov 2025 19:42:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	aqnoVw51UCIsT26Oa4weRLY+7NAvoYQK7MEQUSq3sb4=; b=dOGWTEhJr5/jhzIH
+	+FhylHABGhJ9Sp9IyfG2pgavk1/MZLBJEvj5y3515gXq/7kX4axiiNLHLDTUXw9i
+	k8w4tmj95DulWiWDdcoJg4bYn3VuA+hVX7JotI2Awj1PiaWwy1ZJjJv3AVbGGicP
+	d00J28g0FMRh3wZgTKcYymCcqFacCSPedxEaDLGSY48LPnndwet/lu0bl1CKhWvl
+	H6TwuXZZ2Sz4k32sh0Ua2vU/3yLhSKaukKwJVu+tqR2J3+oKK8szpb9yYw/iFCBP
+	fVz6SfOmRDzYWP5wM2zGMufkQb0xd5hyn7aVTAxK6fuAvbFl0aQSPE37DjzI8Uw4
+	2LEM5A==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4abpy8kn49-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 11 Nov 2025 19:42:11 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2958c80fcabso1626575ad.0
+        for <op-tee@lists.trustedfirmware.org>; Tue, 11 Nov 2025 11:42:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762847826; x=1763452626; darn=lists.trustedfirmware.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Sx/V++xyadOUZoH/bSkYK6cIm5d5YSgG1Ih7qmUz09M=;
-        b=Y7CfyVK4eSBlxQ+a/FigHSlD6jxmn221jnXi1VlU1NWnKhl5S7rVWrRspKBPTzWehB
-         tzBWhXO7m4Sqw3noDvndToqpPSaq6Ne5xDYVajMwQHTUKrFRmOqYf/67ki9QQ7M6C+qV
-         mio1ggDAXJVfKjzUc+hl0pGp6tyM83XfRD4ggefYwacjSKuOWw0D7OQQxPupeNx1qHg4
-         8oKeQT5BFE9/PpPx6VPoU3Jpvn/TY8B54PeN6jjqLvWFTcHQvJ/1Q7o/BSNF+A5dRd0Z
-         sE2UOm7JTqxI90jgjuKdrUzqw1XvOFPMKSJt8eyYXH1w4/gNzHZbDp1Ufgvj2u3/Yd1Y
-         V6mg==
+        d=oss.qualcomm.com; s=google; t=1762890131; x=1763494931; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aqnoVw51UCIsT26Oa4weRLY+7NAvoYQK7MEQUSq3sb4=;
+        b=SeNtGkYTfug7sqIXiH8U34TD3izTtI4zPa7JALlo6t/yI07MDo+6gVjYsyy8lMwaOB
+         1Tzycz/aznHB/Dti2hLj0yEmrbZ4/4ckFC2g6MVgpZIBsS1vpTEt8fmA0G27ogcyWR2U
+         vQY+s2O6FUl17tPrmBu7guD10KvwQWvRadhLUaXQzBL0CqnZEvPtGuVovsjHfsm7WTk8
+         PWFZpW6fOFaM7l/iDc9AL7njMuxpmzd5XSfOUwpPu8iKqjDvjBS++HuErGqDIwSJKWvI
+         Zw8mg/CO0g+l8/CYj+bShSbbkM2wzY0yClAOMPmBWxPbMTQjtMUV1OQrNUWy42E3CP+r
+         dVWQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762847826; x=1763452626;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Sx/V++xyadOUZoH/bSkYK6cIm5d5YSgG1Ih7qmUz09M=;
-        b=oXuL4E9VkRBHqFywNsHSzqmpIzMWvkDp2nqKQMnNDMMkXPKMFoFR8kUQee3ziotsHe
-         hiIl8wIS1F6cLsNVKvciGwraqhb5sM6fhs0SQ5M8OPDmnvwBFssE9dsD18OfYj9KymwP
-         mhVRyXQo0Xp/k0/7SU34cU/nXt0Zu/jmNuRWiwrEFed6NIJq5IOzqdjGRr60J/a0C/bG
-         NZHNzbrg/e9XwoRCL5lQwULvv9rGuzioDb6xAp02ToZoI6koUHbFPBAm9ZqTol5yQGJp
-         VeCKi8OwZx6d6/xRPXzmrWveKS4Q87M+MIlawl37JdwJKBTtI0fViXgfq+Gd3vpxJex1
-         hmkg==
-X-Forwarded-Encrypted: i=1; AJvYcCVJct0DsalH352XfNFbL81PoekorrgVnzV1dB+2JxJtRRkckzuo1DweIrTQG7DSd3m3rv+ByGI=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YwIjk6xLE9oerjAQPcFi9T6jxIppQuTsja2lFDdCwBOUWm209TE
-	5B/1bpeCkKi5u6TvE0BW2tHDisUm12aEX1E6H0zL9S2wEkOYH+jd8Hde
-X-Gm-Gg: ASbGncsbGrY4o5NOUIKPHMPG1ADKiEYESvxMb1+vGCEGN5v9gjYit6/zFabr+fQSCSW
-	PlLWPWAsy3kaDUjwCDXGLwaP9mX7eaUQMavH0SXYjkutc6DHPMqX7zxh4/is+genluA4UyV2/lQ
-	BdFdDVO3C5lUFaDSv60n/P6jrEnQ5wBHq0MJByRFwX8hzE0EUP7UPfSf669atHdxgs6/CPkuJ7m
-	PluT3obxVVvyg2DVOmr821C93dZrv/0MCcxm6aXuJqOrq3qtiBAqiTO9Z912M/c87HawogthkJr
-	cXgZkkwSZCH9WfzVQ/0xjE/5gKjiHa+rCj5fjf0ED2J8QOIA+EcwF9E6GRU222a1wPcCT0Ulqd4
-	qo/aRSFkZ74knsJ2hzLzBjgzXhfEqAbml7qpqA/O7o4+H1jgHw6OBlCQfO5n4FKX5TBNNHxqIvu
-	8=
-X-Google-Smtp-Source: AGHT+IHlgCsPGufic8ljFUM/F3tgYW1VFs7jgyf3xF1GaO+oK0dfmfAL1LcwALg8bAVga+ecAJtk8g==
-X-Received: by 2002:a17:90b:3c87:b0:341:124f:4746 with SMTP id 98e67ed59e1d1-3436cd0bd38mr11876908a91.31.1762847825598;
-        Mon, 10 Nov 2025 23:57:05 -0800 (PST)
-Received: from aheev.home ([2401:4900:8fcc:9f81:b4f9:45ad:465b:1f4a])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-341a68a7a62sm20318454a91.2.2025.11.10.23.56.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Nov 2025 23:57:05 -0800 (PST)
-From: Ally Heev <allyheev@gmail.com>
-Date: Tue, 11 Nov 2025 13:26:42 +0530
-Subject: [PATCH v3] tee: qcomtee: fix uninitialized pointers with free
- attribute
+        d=1e100.net; s=20230601; t=1762890131; x=1763494931;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=aqnoVw51UCIsT26Oa4weRLY+7NAvoYQK7MEQUSq3sb4=;
+        b=eWrBhHujCyNP9aIJm44fu8NV3xsrhdQKAsLdROEcnXjT1PL3Lkj9VrQpq469WA1XDQ
+         P9NXFtm0j4swXbgeYdpUEKy33IzbIwCNvjrqAy+cecjpRtL3yeYbqOwtetfVNFYKW4eS
+         tszvGVzajV5MLJfqJ+bFZWVIFHZ0Z3GexLzoltegNEaUKTC4zaq+ZrJ1FmniyG6oCS0Q
+         bLzngbB74qLOiS0dEwm2dASf2NL5Cq+NLa+0lSbpFp9Oy+vw07pikR4xO760XWxrEcDs
+         5J2QvlHhd/MBgvedIrsJBx9rV690PXnVghSULIJ7VRyT8yOo2ROnwjKJ0hYSG4b2NM/N
+         0peg==
+X-Forwarded-Encrypted: i=1; AJvYcCWR5AeMPs3rDr3OlZeXBic2eYphbjKtv+b6wNK5FYnuQey3Le9YkCjO8YlvBxy8L7iVc+HLhrM=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yw9j8BP1aOdkeTIuTpd+2UKMJuetLYpeSbnI9jSVq4VL7/bazMV
+	NKmgSRXAwbbYrHcMnRmhF+a+2LGN2Dx/Du2oJ6BZOBPo+eb0XRpZ/q8yVFSZmhc1ib3fi3m8Kqs
+	dUQZwy6UWajUroue1bRj8va0UC2UbzZ8lUsIf0xA7XaA35gde4DyLBrqi34NF7WpTra/4C1c=
+X-Gm-Gg: ASbGncuKCS06hzGRuihUXpt4AJnFurf0d8eSjgjQFKAJzTkzLd9niU/Q/mXAudbvMWK
+	5nBciVM5z9hhDQKaGnWH0P4hpnIrYNMzYFRzhTm96SQYIBcCx3YaLMIRs9MW83Hhp73z57xXo8N
+	gHsZ92e+IwRiVUyIxteVWZfGrrXSDlyJ04jWPSIBJ82hnI3dCTGqXxRpZkx/1hQF8zdFQzxzyew
+	nT+Uc+sCHO/shX7Y2rnnSRshZvduimVA//jL+apxLyM9baoLMNXC9g/KDnopfZovJlULbxo273S
+	yvX5InPmZLm7dLfKmmmnLKJ75cgGUktuC1DmHsxAMni7x/m3lPmDCGuY3QWzotpXMbyG8qVoxjI
+	B1qml+dl50WH4GwqQoGZ573pksJA2AGUiVHdFOHg1QaqC3l4pM4PdEWzXzO5nyMMugozBhPR3
+X-Received: by 2002:a17:903:2f88:b0:298:250b:a547 with SMTP id d9443c01a7336-2984ee2c611mr5010365ad.56.1762890130936;
+        Tue, 11 Nov 2025 11:42:10 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHWfumxVDHLJVJniJ5/kUPbPPfATDyVpTigTkiqrDKAayaaoggxw+dyqtCM41ZXJhxvIUxbTA==
+X-Received: by 2002:a17:903:2f88:b0:298:250b:a547 with SMTP id d9443c01a7336-2984ee2c611mr5010145ad.56.1762890130404;
+        Tue, 11 Nov 2025 11:42:10 -0800 (PST)
+Received: from [192.168.0.74] (n1-41-240-65.bla22.nsw.optusnet.com.au. [1.41.240.65])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2984dc9fc6fsm5313105ad.73.2025.11.11.11.42.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 11 Nov 2025 11:42:09 -0800 (PST)
+Message-ID: <2ec200e4-cf28-4881-837b-4455da047619@oss.qualcomm.com>
+Date: Wed, 12 Nov 2025 06:42:04 +1100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] tee: qcom: initialize result before use in release worker
+To: Sumit Garg <sumit.garg@kernel.org>
+References: <20251110-qcom-tee-fix-warning-v1-1-d962f99f385d@oss.qualcomm.com>
+ <aRLcO7dveqChPNb0@sumit-X1>
+Content-Language: en-US
+In-Reply-To: <aRLcO7dveqChPNb0@sumit-X1>
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251111-aheev-uninitialized-free-attr-tee-v3-1-57905b913359@gmail.com>
-X-B4-Tracking: v=1; b=H4sIADnsEmkC/5XNPQ7CMAyG4augzATFbiMVJu6BGNLUaS31ByUhA
- qrenbRTR9j8eni+WQTyTEFcDrPwlDjwNOYojgdhOzO2JLnJLVChBlBamo4oyefII0c2PX+okc4
- TSROjlzEfChGo1GS1QZGdhyfHr23jds/dcYiTf2+TCdbvP3oCCRIJiKqyKmqrr+1guD/ZaRCrn
- nAngvpFxCwqLJyrzZmMcntxWZYvCxm82CQBAAA=
-X-Change-ID: 20251105-aheev-uninitialized-free-attr-tee-0221e45ec5a2
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
- Jens Wiklander <jens.wiklander@linaro.org>,
- Sumit Garg <sumit.garg@kernel.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1820; i=allyheev@gmail.com;
- h=from:subject:message-id; bh=DjujQ4Ip3o0Fr7W1bLZTv2QT33O7HU1A7IoeReKU2rE=;
- b=owGbwMvMwCU2zXbRFfvr1TKMp9WSGDKF3rhu2LG09/gzQZP8axXa7j0R6UG1515US927qBTuI
- McXluzbUcrCIMbFICumyMIoKuWnt0lqQtzhpG8wc1iZQIYwcHEKwESOsDD8r/X3m9BS3uzHO6nw
- mtQKjc3noi/8+tcb9n3iXpduFseZLAz/FPpfBaZFPTK5eayTs0uq/E63+JnotNdvzULy/ZiM3vN
- yAAA=
-X-Developer-Key: i=allyheev@gmail.com; a=openpgp;
- fpr=01151A4E2EB21A905EC362F6963DA2D43FD77B1C
-X-Spamd-Bar: ----
+Content-Transfer-Encoding: base64
+X-Proofpoint-ORIG-GUID: WmTeb9gwJioxHEy_NJ00LckikeM6VCh4
+X-Authority-Analysis: v=2.4 cv=AYW83nXG c=1 sm=1 tr=0 ts=69139193 cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=hi51d+lTLNy/RbqRqnOomQ==:17
+ a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=KKAkSRfTAAAA:8
+ a=i4atl9h2owgdAyLMJb8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=GvdueXVYPmCkWapjIL-Q:22 a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTExMDE2MCBTYWx0ZWRfX8rHBhCUGH9PT
+ 5lgwFb+t86UTQG8f3e/Wn+fQRPSNBapJ193y20j1B4kl4dJbD5DwXi+JUY9SGrNCqWYMv5tqXG1
+ 45/44BIcpEqmiYlrG22/Jnyn1G/MLPC5HdZaqRXrk6bt7lspLK2W6fJbuMzGxNRpiBOk6ierCYL
+ wvDAN7TrOTugtUa844DilR5V+ow6yRTYvwqQf1zMV43UDP2tQSQBmN0y1H77CGR/RzdpIo3QLwb
+ 2RxY0x1zZ9knLVwjTwZR1kyR9A1Jl6XLk2Y0cOHx3taRspqtyGYPUYzI+Ts+ZiH8ekD2sRbHm9O
+ Fd54LRB0k40w9m5ndY8IOG1qsfzFzF1zsdMV0xbFSQ+2FtTRCno8BxehEztxIZ2WlGBVnJ0dMMV
+ G0G7184GxiW/Y0VYHzn/urT6ohYKoQ==
+X-Proofpoint-GUID: WmTeb9gwJioxHEy_NJ00LckikeM6VCh4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-11_03,2025-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 impostorscore=0 malwarescore=0 adultscore=0 clxscore=1015
+ suspectscore=0 priorityscore=1501 lowpriorityscore=0 bulkscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2510240001 definitions=main-2511110160
+X-Spamd-Bar: ------
 X-Rspamd-Server: lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 90F7841BB7
-X-Spamd-Result: default: False [-4.10 / 15.00];
+X-Rspamd-Queue-Id: A9B2A4317C
+X-Spamd-Result: default: False [-6.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.216.44:from];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[8];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.198:received];
+	TO_DN_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.trustedfirmware.org,linaro.org,gmail.com];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.44:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	RCPT_COUNT_FIVE(0.00)[6];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[gmail.com:+]
-X-MailFrom: allyheev@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: YS74RWCMGLYYM6SFGBYSWVNMEBFAFCUH
-X-Message-ID-Hash: YS74RWCMGLYYM6SFGBYSWVNMEBFAFCUH
-X-Mailman-Approved-At: Tue, 11 Nov 2025 13:58:05 +0000
-CC: linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>, Ally Heev <allyheev@gmail.com>
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+Message-ID-Hash: WEZS4JEOZLU3QN6MG444FOR3APSFK6TW
+X-Message-ID-Hash: WEZS4JEOZLU3QN6MG444FOR3APSFK6TW
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YS74RWCMGLYYM6SFGBYSWVNMEBFAFCUH/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/WEZS4JEOZLU3QN6MG444FOR3APSFK6TW/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Uninitialized pointers with `__free` attribute can cause undefined
-behavior as the memory assigned randomly to the pointer is freed
-automatically when the pointer goes out of scope.
-
-qcomtee doesn't have any bugs related to this as of now, but
-it is better to initialize and assign pointers with `__free`
-attribute in one statement to ensure proper scope-based cleanup
-
-Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-Closes: https://lore.kernel.org/all/aPiG_F5EBQUjZqsl@stanley.mountain/
-Signed-off-by: Ally Heev <allyheev@gmail.com>
----
-Changes in v3:
-- fixed commit message and description
-- Link to v2: https://lore.kernel.org/r/20251110-aheev-uninitialized-free-attr-tee-v2-1-023ffba9ea0f@gmail.com
-
-Changes in v2:
-- initializing variables to NULL at the declaration
-- Link to v1: https://lore.kernel.org/r/20251105-aheev-uninitialized-free-attr-tee-v1-1-2e1ee8483bc5@gmail.com
----
- drivers/tee/qcomtee/call.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
-index ac134452cc9cfd384c28d41547545f2c5748d86c..65f9140d4e1f8909d072004fd24730543e320d74 100644
---- a/drivers/tee/qcomtee/call.c
-+++ b/drivers/tee/qcomtee/call.c
-@@ -645,7 +645,7 @@ static void qcomtee_get_version(struct tee_device *teedev,
- static void qcomtee_get_qtee_feature_list(struct tee_context *ctx, u32 id,
- 					  u32 *version)
- {
--	struct qcomtee_object_invoke_ctx *oic __free(kfree);
-+	struct qcomtee_object_invoke_ctx *oic __free(kfree) = NULL;
- 	struct qcomtee_object *client_env, *service;
- 	struct qcomtee_arg u[3] = { 0 };
- 	int result;
-
----
-base-commit: c9cfc122f03711a5124b4aafab3211cf4d35a2ac
-change-id: 20251105-aheev-uninitialized-free-attr-tee-0221e45ec5a2
-
-Best regards,
--- 
-Ally Heev <allyheev@gmail.com>
-
+SGkgU3VtaXQsDQoNCk9uIDExLzExLzIwMjUgNTo0OCBQTSwgU3VtaXQgR2FyZyB3cm90ZToNCj4g
+T24gTW9uLCBOb3YgMTAsIDIwMjUgYXQgMDE6Mjg6MzJQTSAtMDgwMCwgQW1pcnJlemEgWmFycmFi
+aSB3cm90ZToNCj4gDQo+IEZvciB0aGUgc3ViamVjdCBwcmVmaXggbGV0cyB0cnkgdG8gZm9sbG93
+IHRoZSBkaXJlY3Rvcnkgc3RydWN0dXJlOg0KPiANCj4gdGVlOiBxY29tdGVlOiAuLi4NCj4gDQoN
+CkkgYmVsaWV2ZSB3ZSBwcmV2aW91c2x5IGFncmVlZCBvbiB1c2luZyB0ZWU6IHFjb206IGJhc2Vk
+IG9uIHRoZSByZXZpZXdlcuKAmXMNCmNvbW1lbnRzLiBDdXJyZW50bHksIHRoZXJl4oCZcyBubyBj
+b21taXQgbWVzc2FnZSB3aXRoIHFjb210ZWU6Lg0KDQpodHRwczovL2xvcmUua2VybmVsLm9yZy9v
+cC10ZWUvNHJiZnB1YnNheGd2MmJ1a3NvbmZpZ2Jka3c2Z2VhczZsN3B5Y3h1dWtkeW1xZm9oZ2FA
+b2hkNGhxenZyYTN3Lw0KDQpCZXN0IFJlZ2FyZHMsDQpBbWlyDQoNCj4+IEluaXRpYWxpemUgcmVz
+dWx0IHRvIDAgc28gdGhlIGVycm9yIHBhdGggZG9lc24ndCByZWFkIGl0DQo+PiB1bmluaXRpYWxp
+emVkIHdoZW4gdGhlIGludm9rZSBmYWlscy4gRml4ZXMgYSBTbWF0Y2ggd2FybmluZy4NCj4+DQo+
+PiBSZXBvcnRlZC1ieTogRGFuIENhcnBlbnRlciA8ZGFuLmNhcnBlbnRlckBsaW5hcm8ub3JnPg0K
+Pj4gQ2xvc2VzOiBodHRwczovL2xvcmUua2VybmVsLm9yZy9vcC10ZWUvN2MxZTBkZTItN2Q0Mi00
+YzZiLTkyZmUtMGU0ZmU1ZDY1MGI1QG9zcy5xdWFsY29tbS5jb20vDQo+PiBGaXhlczogZDZlMjkw
+ODM3ZTUwICgidGVlOiBhZGQgUXVhbGNvbW0gVEVFIGRyaXZlciIpDQo+PiBTaWduZWQtb2ZmLWJ5
+OiBBbWlycmV6YSBaYXJyYWJpIDxhbWlycmV6YS56YXJyYWJpQG9zcy5xdWFsY29tbS5jb20+DQo+
+PiAtLS0NCj4+ICBkcml2ZXJzL3RlZS9xY29tdGVlL2NvcmUuYyB8IDIgKy0NCj4+ICAxIGZpbGUg
+Y2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4+DQo+PiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy90ZWUvcWNvbXRlZS9jb3JlLmMgYi9kcml2ZXJzL3RlZS9xY29tdGVlL2NvcmUu
+Yw0KPj4gaW5kZXggYjY3MTVhZGE3NzAwLi5lY2QwNDQwMzU5MWMgMTAwNjQ0DQo+PiAtLS0gYS9k
+cml2ZXJzL3RlZS9xY29tdGVlL2NvcmUuYw0KPj4gKysrIGIvZHJpdmVycy90ZWUvcWNvbXRlZS9j
+b3JlLmMNCj4+IEBAIC04Miw3ICs4Miw3IEBAIHN0YXRpYyB2b2lkIHFjb210ZWVfZG9fcmVsZWFz
+ZV9xdGVlX29iamVjdChzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmspDQo+PiAgew0KPj4gIAlzdHJ1
+Y3QgcWNvbXRlZV9vYmplY3QgKm9iamVjdDsNCj4+ICAJc3RydWN0IHFjb210ZWUgKnFjb210ZWU7
+DQo+PiAtCWludCByZXQsIHJlc3VsdDsNCj4+ICsJaW50IHJldCwgcmVzdWx0ID0gMDsNCj4+ICAN
+Cj4gDQo+IFRoZSBjaGFuZ2UgbG9va3MgZmluZSB0byBtZS4NCj4gDQo+IC1TdW1pdA0KPiANCj4+
+ICAJLyogUkVMRUFTRSBkb2VzIG5vdCByZXF1aXJlIGFueSBhcmd1bWVudC4gKi8NCj4+ICAJc3Ry
+dWN0IHFjb210ZWVfYXJnIGFyZ3NbXSA9IHsgeyAudHlwZSA9IFFDT01URUVfQVJHX1RZUEVfSU5W
+IH0gfTsNCj4+DQo+PiAtLS0NCj4+IGJhc2UtY29tbWl0OiBhYjQwYzkyYzc0YzZiMGM2MTFjODk1
+MTY3OTQ1MDJiM2EzMTczOTY2DQo+PiBjaGFuZ2UtaWQ6IDIwMjUxMTEwLXFjb20tdGVlLWZpeC13
+YXJuaW5nLTNkNThkNzRhMjJkOA0KPj4NCj4+IEJlc3QgcmVnYXJkcywNCj4+IC0tIA0KPj4gQW1p
+cnJlemEgWmFycmFiaSA8YW1pcnJlemEuemFycmFiaUBvc3MucXVhbGNvbW0uY29tPg0KPj4NCg0K
