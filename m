@@ -4,279 +4,190 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DB0BCFD364
-	for <op-tee@archiver.kernel.org>; Tue, 25 Nov 2025 07:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F298AD116F9
+	for <op-tee@archiver.kernel.org>; Mon,  1 Dec 2025 13:06:29 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 79D474FEB6
-	for <op-tee@archiver.kernel.org>; Tue, 25 Nov 2025 07:56:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1764057368;
-	bh=aW+6Ry7mqRiGQp6CheeE9rVYo1NzB4b999V31c+cpxs=;
-	h=Date:To:Subject:References:In-Reply-To:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=zeZI/aWx2LyRe+ny5aAH+Y1ZtrLM2rSlgHQlveq2R4YVFmzeUhJpgpXsk13vbTNqi
-	 A9kUooTsnJOCIcrIFtuNFs0ohuLS/OGyC7OxV/kZPcwMZ5EjOcxswnnQghlN8c3GBh
-	 JqD+Qo2PXti0alzcjshtXGbyvnqypZI9SF/nKPC3JdTo7Zc4QV3tYLvYwcm2d2K7vJ
-	 dVmcuVUqlm8ZMS7yAD5kTZfjylBOJsAg+ndlA+gBSzmNC0khj2ip+xQiQDA3f5dDg/
-	 owNYxYhoQlWjNDNeKdqvXeGI0lY0PXlyh2yRwgnSDLdvWa5UODGW0OKC25zbALpemf
-	 n3E2Wfj2NDifA==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 306DA4146F
-	for <op-tee@lists.trustedfirmware.org>; Tue, 25 Nov 2025 07:55:57 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 41B025007B
+	for <op-tee@archiver.kernel.org>; Mon,  1 Dec 2025 13:06:29 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EvNWlMfK;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=uy7AML/O;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A74186018A;
-	Tue, 25 Nov 2025 07:55:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F685C4CEF1;
-	Tue, 25 Nov 2025 07:55:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764057356;
-	bh=A6rDhDmAqEUuVzcAU7iaX3wlVHuIZ3R498p6EKYHLkc=;
-	h=Date:From:To:Subject:References:In-Reply-To:From;
-	b=EvNWlMfKt7VjItGXGF4nJ2pSzJ0CkiKG/vm/+7u/I/bFKVnVF6aNsv69LBfe4FwqZ
-	 kWSHozmZ6pgPcQt5wjCjjh636cRenAbWGFmlAzjFLHDj4SxfFb0C4NAkLM4xJRG8cY
-	 0+YfeePLcWO9sB1odGd56EoysNL7iFu7anrXvME7NIMNO+nMphz4y145q+xLv1VvHr
-	 TRsvQhJaZa93JdNbfaXmbXhPIN9BQ6shqHh9HBtb1l4QWpbgJbpNCot7FGedrXrABW
-	 ZDJ5eF0yP42mC/RYaqNMurAoM2P1yCLX9CkcbIcsSAteDOdA9+ndxUtmN1G52Icjl3
-	 Nk5SO/0yiNo5A==
-Date: Tue, 25 Nov 2025 13:25:50 +0530
-To: Jens Wiklander <jens.wiklander@linaro.org>,
-	Wei Ming Chen <jj251510319013@gmail.com>,
-	linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org,
-	harshal.dev@oss.qualcomm.com,
-	Aristo Chen <aristo.chen@canonical.com>, mario.limonciello@amd.com,
-	Rijo Thomas <Rijo-john.Thomas@amd.com>,
-	Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: Re: [PATCH v2 1/1] tee: optee: expose OS revision via sysfs
-Message-ID: <aSVhBn0LR2CwM9p3@sumit-X1>
-References: <20251121141230.489294-1-jj251510319013@gmail.com>
- <20251122145924.381725-1-jj251510319013@gmail.com>
- <CAHUa44HFC+BTO3KfaNF1LHiM7frgt2myzZ_85Mbf1t2gUY9iSg@mail.gmail.com>
- <aSVgctqRSy5_vvkN@sumit-X1>
+Received: from mail-oo1-f46.google.com (mail-oo1-f46.google.com [209.85.161.46])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E1A4243154
+	for <op-tee@lists.trustedfirmware.org>; Mon,  1 Dec 2025 13:06:19 +0000 (UTC)
+Received: by mail-oo1-f46.google.com with SMTP id 006d021491bc7-6579872f00dso1655303eaf.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 01 Dec 2025 05:06:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1764594379; x=1765199179; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=pXgYSo9DDqXry8M/Vh0opQUukTDcLEBMhcfDTzUT1bc=;
+        b=uy7AML/OeWpJErqwR0pyKy6hySUhteLV3dWUXvwY8FDqHu1FkfCS4mHRbDvqgIRxLs
+         duB24ZFxCCAR5fEE/OjXghcBjBQO4TmcUbfdG4ldRp+mvrbkhN+G80XQur1SDPao2Iyj
+         bcCFwg15tl55FGL3tWhivGhCJMBgSDMBN9yNx6PA6u47lYaSQmCofK918vUVcgov3ZRk
+         wqK1nhr8+Qb7GqHqWdEJobG7jVqS59rD+oZkNlUCMmgZ4+fLbvLA0wjvcmBzcIm1aR7F
+         WkVxFLx0LFbAkjUrJvl+J+wDZxuXNbDhbH3CpBBriFfm2w11LjUlwgpbQTBYiyhbjsGb
+         MCOg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764594379; x=1765199179;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=pXgYSo9DDqXry8M/Vh0opQUukTDcLEBMhcfDTzUT1bc=;
+        b=PxDiyLCkGlvm0q2OhQ+3zzj83Ewm6pUoHGNUp8JV4QbadJRF+UXCbwYPSHlcnLG1uJ
+         aVcdPJrOBEEYkZU2MFPL9WZYQyPTaNTMoJt4fLDZ9ZGdm0xuaSQ0Otp2hZGooYuSnvdg
+         UEmd0y+oSa3BJcOxJqtoBtpBf7sbNYtcmNFu3yYyESoEidwabYhc5NgjrGgDfp/NAEe0
+         G/fD/JlNeWDH8Eraox1G194wNU3EvZNV7R9sboVRrZb3QBVGUTq2uBWEAua99MxPMz/Y
+         2wxYqMmx2op8xBa5IAM5BvExlKrEK1zBqt2WF7/cqCmLDPtErMNJgsEoJlC7YLfPUQuA
+         9mgA==
+X-Forwarded-Encrypted: i=1; AJvYcCU1a25gMP9uI62TvYlgZj8cKdQCd4OSurJAlzXyGnD3KkGzwfV+15Ljog0tqRiiSYs0nq+oVRg=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yx9d1neGdutl2ZRDpOTUltmKuS6wrWDA0l0yK+i0sLiodLf29Ni
+	6tQ3QRN4pwG/LXTzQzKDCeR9fYL1acsMYKiXRi2vguFmmeiXaLQVHTsgbZT6ipn0W//J1/pFhnu
+	y2rm5yOiRaP62nREB28C5DV/xNteNk8WJStkPby8B3DX1
+X-Gm-Gg: ASbGncuL47KM968p5a+rpYAuN6xzOOs5Xy+LRkmZCWexZZTwlVSz9WUDB51aDsgFl7e
+	YQX+2KFGe0btw2mm1636ckTC3pktt020bddvbhyJzQE272D5lf099jXhTX9pPD9XTFfRmym2SFh
+	zZWFdssRFvdNd2fX/g8G9fh55CogewzWILRYi8Q8OwZLswQZ3M8PKjz64kUGDWdy8n2z3BdHTq0
+	6iv9uJJP+GlOBvZuHDgcNSVeJYZrR7UcsyfkfDHqyDCOONvtstyDSXa8Qy9MsOqUP/a1MZYeI/r
+	CAv8PrEK7V5H67S+6C9L8igRDw==
+X-Google-Smtp-Source: AGHT+IG0s21RD5xZevbEnRCRTE7dSd1xq3a60tl4/3CVlMBvBhYeUyMRW7tqqGJDP4St5aDzgiXgE32tb6HA0jWrmoY=
+X-Received: by 2002:a05:6820:4c09:b0:657:61da:5089 with SMTP id
+ 006d021491bc7-65790b6080fmr13558965eaf.7.1764594379052; Mon, 01 Dec 2025
+ 05:06:19 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: base64
-In-Reply-To: <aSVgctqRSy5_vvkN@sumit-X1>
-X-Spamd-Bar: -----
+References: <20251121141230.489294-1-jj251510319013@gmail.com>
+ <20251122145924.381725-1-jj251510319013@gmail.com> <CAHUa44HFC+BTO3KfaNF1LHiM7frgt2myzZ_85Mbf1t2gUY9iSg@mail.gmail.com>
+ <aSVgctqRSy5_vvkN@sumit-X1> <aSVhBn0LR2CwM9p3@sumit-X1> <CAJwFiGKuSuiq5LhMS+wVcnhjfiBEDiSCOG9FwhEic+cxmnKJhQ@mail.gmail.com>
+In-Reply-To: <CAJwFiGKuSuiq5LhMS+wVcnhjfiBEDiSCOG9FwhEic+cxmnKJhQ@mail.gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Mon, 1 Dec 2025 14:06:07 +0100
+X-Gm-Features: AWmQ_bl9RXhEdnLAZcxF5QHjZiNA8ySjAy9b7eIh-WctpwaiCBwIlim_h70BQVQ
+Message-ID: <CAHUa44HUFPy24wZrA03z0KHZqUmbT+dSP+7zOT-zrrFq_-h8mg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] tee: optee: expose OS revision via sysfs
+To: Aristo Chen <jj251510319013@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spamd-Bar: ----
 X-Rspamd-Server: lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 306DA4146F
-X-Spamd-Result: default: False [-5.50 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	MID_RHS_NOT_FQDN(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+X-Rspamd-Queue-Id: E1A4243154
+X-Spamd-Result: default: False [-4.10 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.46:from];
 	MIME_GOOD(-0.10)[text/plain];
 	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	MIME_TRACE(0.00)[0:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
 	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	FREEMAIL_TO(0.00)[linaro.org,gmail.com,vger.kernel.org,lists.trustedfirmware.org,oss.qualcomm.com,canonical.com,amd.com];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	URIBL_BLOCKED(0.00)[linaro.org:dkim];
 	RCPT_COUNT_SEVEN(0.00)[9];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.46:from];
 	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DKIM_TRACE(0.00)[kernel.org:+]
-Message-ID-Hash: BX4W3ERKQDIPZ6G7RJHFCFMNNGLH3YCD
-X-Message-ID-Hash: BX4W3ERKQDIPZ6G7RJHFCFMNNGLH3YCD
-X-MailFrom: sumit.garg@kernel.org
+	RCVD_TLS_LAST(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	NEURAL_HAM(-0.00)[-1.000];
+	DKIM_TRACE(0.00)[linaro.org:+]
+Message-ID-Hash: PDFG3PQIMRSJ3M3RFDEMXTTLSSDP2QES
+X-Message-ID-Hash: PDFG3PQIMRSJ3M3RFDEMXTTLSSDP2QES
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: Sumit Garg <sumit.garg@kernel.org>, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>, mario.limonciello@amd.com, Rijo Thomas <Rijo-john.Thomas@amd.com>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BX4W3ERKQDIPZ6G7RJHFCFMNNGLH3YCD/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/PDFG3PQIMRSJ3M3RFDEMXTTLSSDP2QES/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-T24gVHVlLCBOb3YgMjUsIDIwMjUgYXQgMDE6MjM6MjJQTSArMDUzMCwgU3VtaXQgR2FyZyB2aWEg
-T1AtVEVFIHdyb3RlOg0KPiBPbiBNb24sIE5vdiAyNCwgMjAyNSBhdCAwODoxNTowNEFNICswMTAw
-LCBKZW5zIFdpa2xhbmRlciB3cm90ZToNCj4gPiBIaSwNCj4gPiANCj4gPiBPbiBTYXQsIE5vdiAy
-MiwgMjAyNSBhdCA0OjAw4oCvUE0gV2VpIE1pbmcgQ2hlbiA8amoyNTE1MTAzMTkwMTNAZ21haWwu
-Y29tPiB3cm90ZToNCj4gPiA+DQo+ID4gPiBGcm9tOiBBcmlzdG8gQ2hlbiA8YXJpc3RvLmNoZW5A
-Y2Fub25pY2FsLmNvbT4NCj4gPiA+DQo+ID4gPiBUb2RheSB0aGUgb25seSB3YXkgdG8gcmVhZCB0
-aGUgT1AtVEVFIE9TIHZlcnNpb24gaXMgZnJvbSBkbWVzZy9qb3VybmFsDQo+ID4gPiBsb2dzLCB3
-aGljaCBjYW4gYmUgbG9zdCBhcyBidWZmZXJzIHJvbGwgb3Zlci4gQ2FwdHVyZSB0aGUgT1MgcmV2
-aXNpb24NCj4gPiA+IChtYWpvci9taW5vci9idWlsZF9pZCkgZnJvbSBzZWN1cmUgd29ybGQgZm9y
-IGJvdGggU01DIGFuZCBGRi1BIEFCSXMsIHN0b3JlDQo+ID4gPiBpdCBpbiB0aGUgT1AtVEVFIGRy
-aXZlciwgYW5kIGV4cG9zZSBhIHN0YWJsZSB1c2Vyc3BhY2UgcmVhZG91dCB2aWENCj4gPiA+IC9z
-eXMvY2xhc3MvdGVlL3RlZSovb3B0ZWVfb3NfcmV2aXNpb24uDQo+ID4gPg0KPiA+ID4gU2lnbmVk
-LW9mZi1ieTogQXJpc3RvIENoZW4gPGFyaXN0by5jaGVuQGNhbm9uaWNhbC5jb20+DQo+ID4gPiAt
-LS0NCj4gPiA+ICBkcml2ZXJzL3RlZS9vcHRlZS9jb3JlLmMgICAgICAgICAgfCAxOSArKysrKysr
-KysrKysrKysrKysrDQo+ID4gPiAgZHJpdmVycy90ZWUvb3B0ZWUvZmZhX2FiaS5jICAgICAgIHwg
-MTMgKysrKysrKysrKystLQ0KPiA+ID4gIGRyaXZlcnMvdGVlL29wdGVlL29wdGVlX3ByaXZhdGUu
-aCB8IDE3ICsrKysrKysrKysrKysrKysrDQo+ID4gPiAgZHJpdmVycy90ZWUvb3B0ZWUvc21jX2Fi
-aS5jICAgICAgIHwgMTMgKysrKysrKysrKystLQ0KPiA+ID4gIDQgZmlsZXMgY2hhbmdlZCwgNTgg
-aW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPiANCj4gPiBUaGlzIGFwcGVhcnMgdG8g
-YmUgYSBmZWF0dXJlIHRoYXQgY291bGQgYmUgdXNlZnVsIGZvciBhbGwgVEVFcy4NCj4gDQo+IFRy
-dWUsIGl0IGlzIHNvbWV0aGluZyB0aGF0IFRFRSBjb3JlIHNob3VsZCBzdXBwb3J0LiBBbHRob3Vn
-aCBJIHdvdWxkDQo+IGhhdmUgcHJlZmVycmVkIHRvIGV4dGVuZCBURUVfSU9DX1ZFUlNJT04gc2lu
-Y2UgdGhhdCdzIHRoZSBjb21tb24gd2F5IHRoZQ0KPiB1c2VyLXNwYWNlIGxpYnJhcnkgZ2V0J3Mg
-VEVFIGltcGxlbWVudGF0aW9uIHNwZWNpZmljIGluZm9ybWF0aW9uLiBCdXQNCj4gc2luY2UgaXQg
-YmVpbmcgYWxyZWFkeSBhIHVzZXItc3BhY2UgQUJJIHdoaWNoIGRvZXNuJ3Qgb2ZmZXIgZXh0ZW5z
-aW9uLg0KPiBNYXliZSB3ZSBjYW4gY29uc2lkZXIgYWRkaW5nIFRFRV9JT0NfUkVWRVJTSU9OIGlu
-c3RlYWQgb2Ygc3lzZnMuDQoNCkFoLCB0eXBvIGhlcmU6DQoNCnMvVEVFX0lPQ19SRVZFUlNJT04v
-VEVFX0lPQ19SRVZJU0lPTi8NCg0KLVN1bWl0DQoNCj4gDQo+IEJ1dCBiZWZvcmUgZG9pbmcgdGhh
-dCB3ZSBuZWVkIHRvIGtub3cgd2hvIGlzIHRoZSBhY3R1YWwgY29uc3VtZXIgaGVyZQ0KPiBmcm9t
-IHVzZXItc3BhY2UgcGVyc3BlY3RpdmU/IFdpbGwgdGhlIGNsaWVudCBhcHBsaWNhdGlvbnMgYWxz
-byBkZXBlbmQgb24NCj4gdGhlIFRFRSBpbXBsZW1lbnRhdGlvbiByZXZpc2lvbj8NCj4gDQo+ID4g
-SWYgc28sDQo+ID4gbGV0J3MgdGFrZSBhIHN0ZXAgYmFjayB0byBzZWUgd2hhdCdzIG5lZWRlZC4g
-V2UgY2FuIGFkZCB0aGUgc3lzZnMNCj4gPiBhdHRyaWJ1dGUgZnJvbSBkcml2ZXJzL3RlZS90ZWVf
-Y29yZS5jIGFuZCBhZGQgYW5vdGhlciBvcHRpb25hbA0KPiA+IGNhbGxiYWNrIHRvIHN0cnVjdCB0
-ZWVfZHJpdmVyX29wcywgc3VjaCBhcyBnZXRfdGVlX3JldmlzaW9uKCkuIEZvcg0KPiA+IE9QLVRF
-RSwgdGhlIHNwZWNpZmljIGluZm9ybWF0aW9uIHdlIHdhbnQgdG8gc2hhcmUgaXMgY2xlYXIsIGJ1
-dCBvdGhlcg0KPiA+IFRFRXMgbWlnaHQgaGF2ZSBhZGRpdGlvbmFsIG9yIGRpZmZlcmVudCBkYXRh
-LiBXaGF0IGRvIG90aGVycyB0aGluaz8NCj4gDQo+IEltcGxlbWVudGF0aW9uIHdpc2UsIHRoaXMg
-c291bmRzIGxpa2UgYSByZWFzb25hYmxlIGFwcHJvYWNoLg0KPiANCj4gLVN1bWl0DQo+IA0KPiA+
-IA0KPiA+IENoZWVycywNCj4gPiBKZW5zDQo+ID4gDQo+ID4gPg0KPiA+ID4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdGVlL29wdGVlL2NvcmUuYyBiL2RyaXZlcnMvdGVlL29wdGVlL2NvcmUuYw0KPiA+
-ID4gaW5kZXggNWI2MjEzOTcxNGNlLi42NjQwOWNmNWRhMWMgMTAwNjQ0DQo+ID4gPiAtLS0gYS9k
-cml2ZXJzL3RlZS9vcHRlZS9jb3JlLmMNCj4gPiA+ICsrKyBiL2RyaXZlcnMvdGVlL29wdGVlL2Nv
-cmUuYw0KPiA+ID4gQEAgLTgzLDggKzgzLDI3IEBAIHN0YXRpYyBzc2l6ZV90IHJwbWJfcm91dGlu
-Z19tb2RlbF9zaG93KHN0cnVjdCBkZXZpY2UgKmRldiwNCj4gPiA+ICB9DQo+ID4gPiAgc3RhdGlj
-IERFVklDRV9BVFRSX1JPKHJwbWJfcm91dGluZ19tb2RlbCk7DQo+ID4gPg0KPiA+ID4gK3N0YXRp
-YyBzc2l6ZV90IG9wdGVlX29zX3JldmlzaW9uX3Nob3coc3RydWN0IGRldmljZSAqZGV2LA0KPiA+
-ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJ1Y3QgZGV2aWNlX2F0
-dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQ0KPiA+ID4gK3sNCj4gPiA+ICsgICAgICAgc3RydWN0
-IG9wdGVlICpvcHRlZSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiA+ID4gKyAgICAgICBzdHJ1
-Y3Qgb3B0ZWVfdmVyc2lvbl9pbmZvICp2Ow0KPiA+ID4gKw0KPiA+ID4gKyAgICAgICBpZiAoIW9w
-dGVlKQ0KPiA+ID4gKyAgICAgICAgICAgICAgIHJldHVybiAtRU5PREVWOw0KPiA+ID4gKw0KPiA+
-ID4gKyAgICAgICB2ID0gJm9wdGVlLT52ZXJzaW9uX2luZm87DQo+ID4gPiArICAgICAgIGlmICh2
-LT5vc19idWlsZF9pZCkNCj4gPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gc3lzZnNfZW1pdChi
-dWYsICIldS4ldSAoJTAxNmxseClcbiIsIHYtPm9zX21ham9yLA0KPiA+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIHYtPm9zX21pbm9yLCAodW5zaWduZWQgbG9uZyBsb25nKXYt
-Pm9zX2J1aWxkX2lkKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAgcmV0dXJuIHN5c2ZzX2VtaXQo
-YnVmLCAiJXUuJXVcbiIsIHYtPm9zX21ham9yLCB2LT5vc19taW5vcik7DQo+ID4gPiArfQ0KPiA+
-ID4gK3N0YXRpYyBERVZJQ0VfQVRUUl9STyhvcHRlZV9vc19yZXZpc2lvbik7DQo+ID4gPiArDQo+
-ID4gPiAgc3RhdGljIHN0cnVjdCBhdHRyaWJ1dGUgKm9wdGVlX2Rldl9hdHRyc1tdID0gew0KPiA+
-ID4gICAgICAgICAmZGV2X2F0dHJfcnBtYl9yb3V0aW5nX21vZGVsLmF0dHIsDQo+ID4gPiArICAg
-ICAgICZkZXZfYXR0cl9vcHRlZV9vc19yZXZpc2lvbi5hdHRyLA0KPiA+ID4gICAgICAgICBOVUxM
-DQo+ID4gPiAgfTsNCj4gPiA+DQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90ZWUvb3B0ZWUv
-ZmZhX2FiaS5jIGIvZHJpdmVycy90ZWUvb3B0ZWUvZmZhX2FiaS5jDQo+ID4gPiBpbmRleCBiZjgz
-OTA3ODllY2YuLjNkNGYzNTU5OWRkMSAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMvdGVlL29w
-dGVlL2ZmYV9hYmkuYw0KPiA+ID4gKysrIGIvZHJpdmVycy90ZWUvb3B0ZWUvZmZhX2FiaS5jDQo+
-ID4gPiBAQCAtNzc2LDcgKzc3Niw4IEBAIHN0YXRpYyBpbnQgb3B0ZWVfZmZhX3JlY2xhaW1fcHJv
-dG1lbShzdHJ1Y3Qgb3B0ZWUgKm9wdGVlLA0KPiA+ID4gICAqLw0KPiA+ID4NCj4gPiA+ICBzdGF0
-aWMgYm9vbCBvcHRlZV9mZmFfYXBpX2lzX2NvbXBhdGlibGUoc3RydWN0IGZmYV9kZXZpY2UgKmZm
-YV9kZXYsDQo+ID4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29u
-c3Qgc3RydWN0IGZmYV9vcHMgKm9wcykNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBjb25zdCBzdHJ1Y3QgZmZhX29wcyAqb3BzLA0KPiA+ID4gKyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCBvcHRlZV92ZXJzaW9uX2luZm8g
-KnZlcnNpb25faW5mbykNCj4gPiA+ICB7DQo+ID4gPiAgICAgICAgIGNvbnN0IHN0cnVjdCBmZmFf
-bXNnX29wcyAqbXNnX29wcyA9IG9wcy0+bXNnX29wczsNCj4gPiA+ICAgICAgICAgc3RydWN0IGZm
-YV9zZW5kX2RpcmVjdF9kYXRhIGRhdGEgPSB7DQo+ID4gPiBAQCAtODA2LDYgKzgwNywxMiBAQCBz
-dGF0aWMgYm9vbCBvcHRlZV9mZmFfYXBpX2lzX2NvbXBhdGlibGUoc3RydWN0IGZmYV9kZXZpY2Ug
-KmZmYV9kZXYsDQo+ID4gPiAgICAgICAgICAgICAgICAgcHJfZXJyKCJVbmV4cGVjdGVkIGVycm9y
-ICVkXG4iLCByYyk7DQo+ID4gPiAgICAgICAgICAgICAgICAgcmV0dXJuIGZhbHNlOw0KPiA+ID4g
-ICAgICAgICB9DQo+ID4gPiArICAgICAgIGlmICh2ZXJzaW9uX2luZm8pIHsNCj4gPiA+ICsgICAg
-ICAgICAgICAgICB2ZXJzaW9uX2luZm8tPm9zX21ham9yID0gZGF0YS5kYXRhMDsNCj4gPiA+ICsg
-ICAgICAgICAgICAgICB2ZXJzaW9uX2luZm8tPm9zX21pbm9yID0gZGF0YS5kYXRhMTsNCj4gPiA+
-ICsgICAgICAgICAgICAgICB2ZXJzaW9uX2luZm8tPm9zX2J1aWxkX2lkID0gZGF0YS5kYXRhMjsN
-Cj4gPiA+ICsgICAgICAgfQ0KPiA+ID4gKw0KPiA+ID4gICAgICAgICBpZiAoZGF0YS5kYXRhMikN
-Cj4gPiA+ICAgICAgICAgICAgICAgICBwcl9pbmZvKCJyZXZpc2lvbiAlbHUuJWx1ICglMDhseCki
-LA0KPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgZGF0YS5kYXRhMCwgZGF0YS5kYXRhMSwg
-ZGF0YS5kYXRhMik7DQo+ID4gPiBAQCAtMTAzNCw2ICsxMDQxLDcgQEAgc3RhdGljIGludCBvcHRl
-ZV9mZmFfcHJvYmUoc3RydWN0IGZmYV9kZXZpY2UgKmZmYV9kZXYpDQo+ID4gPiAgew0KPiA+ID4g
-ICAgICAgICBjb25zdCBzdHJ1Y3QgZmZhX25vdGlmaWVyX29wcyAqbm90aWZfb3BzOw0KPiA+ID4g
-ICAgICAgICBjb25zdCBzdHJ1Y3QgZmZhX29wcyAqZmZhX29wczsNCj4gPiA+ICsgICAgICAgc3Ry
-dWN0IG9wdGVlX3ZlcnNpb25faW5mbyB2ZXJzaW9uX2luZm8gPSB7IH07DQo+ID4gPiAgICAgICAg
-IHVuc2lnbmVkIGludCBtYXhfbm90aWZfdmFsdWU7DQo+ID4gPiAgICAgICAgIHVuc2lnbmVkIGlu
-dCBycGNfcGFyYW1fY291bnQ7DQo+ID4gPiAgICAgICAgIHN0cnVjdCB0ZWVfc2htX3Bvb2wgKnBv
-b2w7DQo+ID4gPiBAQCAtMTA0Nyw3ICsxMDU1LDcgQEAgc3RhdGljIGludCBvcHRlZV9mZmFfcHJv
-YmUoc3RydWN0IGZmYV9kZXZpY2UgKmZmYV9kZXYpDQo+ID4gPiAgICAgICAgIGZmYV9vcHMgPSBm
-ZmFfZGV2LT5vcHM7DQo+ID4gPiAgICAgICAgIG5vdGlmX29wcyA9IGZmYV9vcHMtPm5vdGlmaWVy
-X29wczsNCj4gPiA+DQo+ID4gPiAtICAgICAgIGlmICghb3B0ZWVfZmZhX2FwaV9pc19jb21wYXRp
-YmxlKGZmYV9kZXYsIGZmYV9vcHMpKQ0KPiA+ID4gKyAgICAgICBpZiAoIW9wdGVlX2ZmYV9hcGlf
-aXNfY29tcGF0aWJsZShmZmFfZGV2LCBmZmFfb3BzLCAmdmVyc2lvbl9pbmZvKSkNCj4gPiA+ICAg
-ICAgICAgICAgICAgICByZXR1cm4gLUVJTlZBTDsNCj4gPiA+DQo+ID4gPiAgICAgICAgIGlmICgh
-b3B0ZWVfZmZhX2V4Y2hhbmdlX2NhcHMoZmZhX2RldiwgZmZhX29wcywgJnNlY19jYXBzLA0KPiA+
-ID4gQEAgLTEwNTksNiArMTA2Nyw3IEBAIHN0YXRpYyBpbnQgb3B0ZWVfZmZhX3Byb2JlKHN0cnVj
-dCBmZmFfZGV2aWNlICpmZmFfZGV2KQ0KPiA+ID4gICAgICAgICBvcHRlZSA9IGt6YWxsb2Moc2l6
-ZW9mKCpvcHRlZSksIEdGUF9LRVJORUwpOw0KPiA+ID4gICAgICAgICBpZiAoIW9wdGVlKQ0KPiA+
-ID4gICAgICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+ID4gKyAgICAgICBvcHRlZS0+
-dmVyc2lvbl9pbmZvID0gdmVyc2lvbl9pbmZvOw0KPiA+ID4NCj4gPiA+ICAgICAgICAgcG9vbCA9
-IG9wdGVlX2ZmYV9zaG1fcG9vbF9hbGxvY19wYWdlcygpOw0KPiA+ID4gICAgICAgICBpZiAoSVNf
-RVJSKHBvb2wpKSB7DQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90ZWUvb3B0ZWUvb3B0ZWVf
-cHJpdmF0ZS5oIGIvZHJpdmVycy90ZWUvb3B0ZWUvb3B0ZWVfcHJpdmF0ZS5oDQo+ID4gPiBpbmRl
-eCBkYjllYTY3M2ZiY2EuLjNlN2JjZDQ0OTc2YiAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMv
-dGVlL29wdGVlL29wdGVlX3ByaXZhdGUuaA0KPiA+ID4gKysrIGIvZHJpdmVycy90ZWUvb3B0ZWUv
-b3B0ZWVfcHJpdmF0ZS5oDQo+ID4gPiBAQCAtMTksNiArMTksMjIgQEANCj4gPiA+DQo+ID4gPiAg
-I2RlZmluZSBPUFRFRV9NQVhfQVJHX1NJWkUgICAgIDEwMjQNCj4gPiA+DQo+ID4gPiArLyoqDQo+
-ID4gPiArICogc3RydWN0IG9wdGVlX3ZlcnNpb25faW5mbyAtIE9QLVRFRSBPUyByZXZpc2lvbiBy
-ZXBvcnRlZCBieSBzZWN1cmUgd29ybGQNCj4gPiA+ICsgKiBAb3NfbWFqb3I6ICAgICAgICAgIE9Q
-LVRFRSBPUyBtYWpvciB2ZXJzaW9uDQo+ID4gPiArICogQG9zX21pbm9yOiAgICAgICAgICBPUC1U
-RUUgT1MgbWlub3IgdmVyc2lvbg0KPiA+ID4gKyAqIEBvc19idWlsZF9pZDogICAgICAgT1AtVEVF
-IE9TIGJ1aWxkIGlkZW50aWZpZXIgKDAgaWYgdW5zcGVjaWZpZWQpDQo+ID4gPiArICoNCj4gPiA+
-ICsgKiBWYWx1ZXMgY29tZSBmcm9tIE9QVEVFX1NNQ19DQUxMX0dFVF9PU19SRVZJU0lPTiAoU01D
-IEFCSSkgb3INCj4gPiA+ICsgKiBPUFRFRV9GRkFfR0VUX09TX1ZFUlNJT04gKEZGLUEgQUJJKTsg
-dGhpcyBpcyB0aGUgdHJ1c3RlZCBPUyByZXZpc2lvbiwgbm90IGFuDQo+ID4gPiArICogRkYtQSBB
-QkkgdmVyc2lvbi4NCj4gPiA+ICsgKi8NCj4gPiA+ICtzdHJ1Y3Qgb3B0ZWVfdmVyc2lvbl9pbmZv
-IHsNCj4gPiA+ICsgICAgICAgdTMyIG9zX21ham9yOw0KPiA+ID4gKyAgICAgICB1MzIgb3NfbWlu
-b3I7DQo+ID4gPiArICAgICAgIHU2NCBvc19idWlsZF9pZDsNCj4gPiA+ICt9Ow0KPiA+ID4gKw0K
-PiA+ID4gIC8qIFNvbWUgR2xvYmFsIFBsYXRmb3JtIGVycm9yIGNvZGVzIHVzZWQgaW4gdGhpcyBk
-cml2ZXIgKi8NCj4gPiA+ICAjZGVmaW5lIFRFRUNfU1VDQ0VTUyAgICAgICAgICAgICAgICAgICAw
-eDAwMDAwMDAwDQo+ID4gPiAgI2RlZmluZSBURUVDX0VSUk9SX0JBRF9QQVJBTUVURVJTICAgICAg
-MHhGRkZGMDAwNg0KPiA+ID4gQEAgLTI0OSw2ICsyNjUsNyBAQCBzdHJ1Y3Qgb3B0ZWUgew0KPiA+
-ID4gICAgICAgICBib29sIGluX2tlcm5lbF9ycG1iX3JvdXRpbmc7DQo+ID4gPiAgICAgICAgIHN0
-cnVjdCB3b3JrX3N0cnVjdCBzY2FuX2J1c193b3JrOw0KPiA+ID4gICAgICAgICBzdHJ1Y3Qgd29y
-a19zdHJ1Y3QgcnBtYl9zY2FuX2J1c193b3JrOw0KPiA+ID4gKyAgICAgICBzdHJ1Y3Qgb3B0ZWVf
-dmVyc2lvbl9pbmZvIHZlcnNpb25faW5mbzsNCj4gPiA+ICB9Ow0KPiA+ID4NCj4gPiA+ICBzdHJ1
-Y3Qgb3B0ZWVfc2Vzc2lvbiB7DQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90ZWUvb3B0ZWUv
-c21jX2FiaS5jIGIvZHJpdmVycy90ZWUvb3B0ZWUvc21jX2FiaS5jDQo+ID4gPiBpbmRleCAwYmU2
-NjNmY2Q1MmIuLjA3YzcwMzYwOTMyMCAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMvdGVlL29w
-dGVlL3NtY19hYmkuYw0KPiA+ID4gKysrIGIvZHJpdmVycy90ZWUvb3B0ZWUvc21jX2FiaS5jDQo+
-ID4gPiBAQCAtMTMyMyw3ICsxMzIzLDggQEAgc3RhdGljIGJvb2wgb3B0ZWVfbXNnX2FwaV91aWRf
-aXNfb3B0ZWVfaW1hZ2VfbG9hZChvcHRlZV9pbnZva2VfZm4gKmludm9rZV9mbikNCj4gPiA+ICB9
-DQo+ID4gPiAgI2VuZGlmDQo+ID4gPg0KPiA+ID4gLXN0YXRpYyB2b2lkIG9wdGVlX21zZ19nZXRf
-b3NfcmV2aXNpb24ob3B0ZWVfaW52b2tlX2ZuICppbnZva2VfZm4pDQo+ID4gPiArc3RhdGljIHZv
-aWQgb3B0ZWVfbXNnX2dldF9vc19yZXZpc2lvbihvcHRlZV9pbnZva2VfZm4gKmludm9rZV9mbiwN
-Cj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IG9wdGVl
-X3ZlcnNpb25faW5mbyAqdmVyc2lvbl9pbmZvKQ0KPiA+ID4gIHsNCj4gPiA+ICAgICAgICAgdW5p
-b24gew0KPiA+ID4gICAgICAgICAgICAgICAgIHN0cnVjdCBhcm1fc21jY2NfcmVzIHNtY2NjOw0K
-PiA+ID4gQEAgLTEzMzcsNiArMTMzOCwxMiBAQCBzdGF0aWMgdm9pZCBvcHRlZV9tc2dfZ2V0X29z
-X3JldmlzaW9uKG9wdGVlX2ludm9rZV9mbiAqaW52b2tlX2ZuKQ0KPiA+ID4gICAgICAgICBpbnZv
-a2VfZm4oT1BURUVfU01DX0NBTExfR0VUX09TX1JFVklTSU9OLCAwLCAwLCAwLCAwLCAwLCAwLCAw
-LA0KPiA+ID4gICAgICAgICAgICAgICAgICAgJnJlcy5zbWNjYyk7DQo+ID4gPg0KPiA+ID4gKyAg
-ICAgICBpZiAodmVyc2lvbl9pbmZvKSB7DQo+ID4gPiArICAgICAgICAgICAgICAgdmVyc2lvbl9p
-bmZvLT5vc19tYWpvciA9IHJlcy5yZXN1bHQubWFqb3I7DQo+ID4gPiArICAgICAgICAgICAgICAg
-dmVyc2lvbl9pbmZvLT5vc19taW5vciA9IHJlcy5yZXN1bHQubWlub3I7DQo+ID4gPiArICAgICAg
-ICAgICAgICAgdmVyc2lvbl9pbmZvLT5vc19idWlsZF9pZCA9IHJlcy5yZXN1bHQuYnVpbGRfaWQ7
-DQo+ID4gPiArICAgICAgIH0NCj4gPiA+ICsNCj4gPiA+ICAgICAgICAgaWYgKHJlcy5yZXN1bHQu
-YnVpbGRfaWQpDQo+ID4gPiAgICAgICAgICAgICAgICAgcHJfaW5mbygicmV2aXNpb24gJWx1LiVs
-dSAoJTAqbHgpIiwgcmVzLnJlc3VsdC5tYWpvciwNCj4gPiA+ICAgICAgICAgICAgICAgICAgICAg
-ICAgIHJlcy5yZXN1bHQubWlub3IsIChpbnQpc2l6ZW9mKHJlcy5yZXN1bHQuYnVpbGRfaWQpICog
-MiwNCj4gPiA+IEBAIC0xNzI3LDYgKzE3MzQsNyBAQCBzdGF0aWMgaW50IG9wdGVlX3Byb2JlKHN0
-cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gPiAgICAgICAgIHVuc2lnbmVkIGludCB0
-aHJlYWRfY291bnQ7DQo+ID4gPiAgICAgICAgIHN0cnVjdCB0ZWVfZGV2aWNlICp0ZWVkZXY7DQo+
-ID4gPiAgICAgICAgIHN0cnVjdCB0ZWVfY29udGV4dCAqY3R4Ow0KPiA+ID4gKyAgICAgICBzdHJ1
-Y3Qgb3B0ZWVfdmVyc2lvbl9pbmZvIHZlcnNpb25faW5mbyA9IHsgfTsNCj4gPiA+ICAgICAgICAg
-dTMyIG1heF9ub3RpZl92YWx1ZTsNCj4gPiA+ICAgICAgICAgdTMyIGFyZ19jYWNoZV9mbGFnczsN
-Cj4gPiA+ICAgICAgICAgdTMyIHNlY19jYXBzOw0KPiA+ID4gQEAgLTE3NDUsNyArMTc1Myw3IEBA
-IHN0YXRpYyBpbnQgb3B0ZWVfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4g
-PiA+ICAgICAgICAgICAgICAgICByZXR1cm4gLUVJTlZBTDsNCj4gPiA+ICAgICAgICAgfQ0KPiA+
-ID4NCj4gPiA+IC0gICAgICAgb3B0ZWVfbXNnX2dldF9vc19yZXZpc2lvbihpbnZva2VfZm4pOw0K
-PiA+ID4gKyAgICAgICBvcHRlZV9tc2dfZ2V0X29zX3JldmlzaW9uKGludm9rZV9mbiwgJnZlcnNp
-b25faW5mbyk7DQo+ID4gPg0KPiA+ID4gICAgICAgICBpZiAoIW9wdGVlX21zZ19hcGlfcmV2aXNp
-b25faXNfY29tcGF0aWJsZShpbnZva2VfZm4pKSB7DQo+ID4gPiAgICAgICAgICAgICAgICAgcHJf
-d2FybigiYXBpIHJldmlzaW9uIG1pc21hdGNoXG4iKTsNCj4gPiA+IEBAIC0xODE0LDYgKzE4MjIs
-NyBAQCBzdGF0aWMgaW50IG9wdGVlX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYp
-DQo+ID4gPiAgICAgICAgICAgICAgICAgcmMgPSAtRU5PTUVNOw0KPiA+ID4gICAgICAgICAgICAg
-ICAgIGdvdG8gZXJyX2ZyZWVfc2htX3Bvb2w7DQo+ID4gPiAgICAgICAgIH0NCj4gPiA+ICsgICAg
-ICAgb3B0ZWUtPnZlcnNpb25faW5mbyA9IHZlcnNpb25faW5mbzsNCj4gPiA+DQo+ID4gPiAgICAg
-ICAgIG9wdGVlLT5vcHMgPSAmb3B0ZWVfb3BzOw0KPiA+ID4gICAgICAgICBvcHRlZS0+c21jLmlu
-dm9rZV9mbiA9IGludm9rZV9mbjsNCj4gPiA+IC0tDQo+ID4gPiAyLjQzLjANCj4gPiA+DQo=
+Hi,
+
+On Mon, Dec 1, 2025 at 12:48=E2=80=AFPM Aristo Chen <jj251510319013@gmail.c=
+om> wrote:
+>
+> Hi,
+>
+> Sumit Garg <sumit.garg@kernel.org> =E6=96=BC 2025=E5=B9=B411=E6=9C=8825=
+=E6=97=A5=E9=80=B1=E4=BA=8C =E4=B8=8B=E5=8D=883:55=E5=AF=AB=E9=81=93=EF=BC=
+=9A
+> >
+> > On Tue, Nov 25, 2025 at 01:23:22PM +0530, Sumit Garg via OP-TEE wrote:
+> > > On Mon, Nov 24, 2025 at 08:15:04AM +0100, Jens Wiklander wrote:
+> > > > Hi,
+> > > >
+> > > > On Sat, Nov 22, 2025 at 4:00=E2=80=AFPM Wei Ming Chen <jj2515103190=
+13@gmail.com> wrote:
+> > > > >
+> > > > > From: Aristo Chen <aristo.chen@canonical.com>
+> > > > >
+> > > > > Today the only way to read the OP-TEE OS version is from dmesg/jo=
+urnal
+> > > > > logs, which can be lost as buffers roll over. Capture the OS revi=
+sion
+> > > > > (major/minor/build_id) from secure world for both SMC and FF-A AB=
+Is, store
+> > > > > it in the OP-TEE driver, and expose a stable userspace readout vi=
+a
+> > > > > /sys/class/tee/tee*/optee_os_revision.
+> > > > >
+> > > > > Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
+> > > > > ---
+> > > > >  drivers/tee/optee/core.c          | 19 +++++++++++++++++++
+> > > > >  drivers/tee/optee/ffa_abi.c       | 13 +++++++++++--
+> > > > >  drivers/tee/optee/optee_private.h | 17 +++++++++++++++++
+> > > > >  drivers/tee/optee/smc_abi.c       | 13 +++++++++++--
+> > > > >  4 files changed, 58 insertions(+), 4 deletions(-)
+> > > >
+> > > > This appears to be a feature that could be useful for all TEEs.
+> > >
+> > > True, it is something that TEE core should support. Although I would
+> > > have preferred to extend TEE_IOC_VERSION since that's the common way =
+the
+> > > user-space library get's TEE implementation specific information. But
+> > > since it being already a user-space ABI which doesn't offer extension=
+.
+> > > Maybe we can consider adding TEE_IOC_REVERSION instead of sysfs.
+> >
+> > Ah, typo here:
+> >
+> > s/TEE_IOC_REVERSION/TEE_IOC_REVISION/
+> >
+> > -Sumit
+> >
+> > >
+> > > But before doing that we need to know who is the actual consumer here
+> > > from user-space perspective? Will the client applications also depend=
+ on
+> > > the TEE implementation revision?
+> My current thinking is that if the TEE revision is exposed, users can wri=
+te a
+> script to capture the platform state and record the exact secure OS revis=
+ion
+> even after the dmesg/journalctl logs have rolled over. This would signifi=
+cantly
+> improve bug triage and regression tracking.
+>
+> In my case, I have a package with precompiled xtest binaries for multiple
+> releases (from 3.14 to 4.6), and I work with different platforms that run
+> different OP-TEE OS versions. Having a reliable way to obtain the TEE
+> revision would help a lot, as it would allow me to select the correct xte=
+st
+> version when running tests.
+
+I'm concerned that the ABI might be misused to be part of what the
+client expects from the TEE. You even express that as a use case. I'd
+rather fix the problem with xtest.
+
+Cheers,
+Jens
