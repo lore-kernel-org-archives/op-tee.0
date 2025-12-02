@@ -4,397 +4,209 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F25D6D116F3
-	for <op-tee@archiver.kernel.org>; Mon,  1 Dec 2025 13:30:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE747CFD376
+	for <op-tee@archiver.kernel.org>; Tue,  2 Dec 2025 09:37:45 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 38F4050072
-	for <op-tee@archiver.kernel.org>; Mon,  1 Dec 2025 13:30:00 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id DB48C5007B
+	for <op-tee@archiver.kernel.org>; Tue,  2 Dec 2025 09:37:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1764668264;
+	bh=oESxKx1RpmIZ6LCbhSz860yg570UydSth6PJf3k8w58=;
+	h=Date:Subject:To:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=tpFVAS96z4NnpjrsA4GEQ0a1sN9rRXuu+sGD04tr3ISKjec23z65w/9LhdyHdDlIz
+	 KmiEQVMivGZxqW3+B6Ws4eBEAczcN6qV9R58FqXRAdMsaf+QV4djnUcyQ7PvxGHXoU
+	 45PkXxjUgbraH0uDsWuw4gpKsSQKLTmsevZlNhbM0ESN8eQSsk7AVDGPLRaPLOgbo5
+	 3X9QGGVQGrdGcgUNwC5LiuBvZKVvhEHn0XA80XR7b0/nZbPPjnDh+GIYK1J9GpdPMh
+	 zeOEkyCwmHZETQ6W8SeYmQ8y94DXETeVmcpWd6fpgmxDEiaffmAt35ayfEkSRSe4zJ
+	 G6pLHT0CZ3QFw==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id AFDF74300F
+	for <op-tee@lists.trustedfirmware.org>; Tue,  2 Dec 2025 09:37:34 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aDowLjQN;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=myMmf6Gx;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Jz8rsrBo;
 	dkim-atps=neutral
-Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com [209.85.217.42])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2FF2643154
-	for <op-tee@lists.trustedfirmware.org>; Mon,  1 Dec 2025 11:48:14 +0000 (UTC)
-Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-5dbd9c7e468so1739582137.3
-        for <op-tee@lists.trustedfirmware.org>; Mon, 01 Dec 2025 03:48:14 -0800 (PST)
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5B2673ha2821203
+	for <op-tee@lists.trustedfirmware.org>; Tue, 2 Dec 2025 09:37:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=Npr2KansqL+mF8z3wwuH37
+	m0dnF+ct0oFxh/WdUGe5c=; b=myMmf6GxNABTsT5btDd7jQkAI/y4q58FEMXJa+
+	mtqD1g/JmLQvX0+u0+I6rKdr8N+SdUAjSmHH4b0DeWiG9Hth/uD6mdLtGglO4hgC
+	pIENvVgVSZcPZBnBa3x+NZsfHyBmGWLK1K4+X4OYE13/+gs/8i3oHTQ/EbSK5lWI
+	ljUlaaokKQpfWrXazEzEyUpXabK++X9Mby4LDtzK1cV60wn/mOFkuEAq6/O/BXdE
+	6Iq2EKUKWidoey6BmkCaA1mx6RFoCgg/+An3DBhf9kWKmb4tNe2UPixGPpj4G7mW
+	/RtRW4TTkU1Mp6Y5Dadv9Vw/zWpGn9tNsIEcL/MQz7d1O1XQ==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4astjggn2m-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 02 Dec 2025 09:37:34 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2956f09f382so31588405ad.1
+        for <op-tee@lists.trustedfirmware.org>; Tue, 02 Dec 2025 01:37:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1764589693; x=1765194493; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7nnXpYDrCoaqLl8fDHiiM83WAPrZ9Fbn5oqCW111z/M=;
-        b=aDowLjQN/8UQ4vxU4zwA7LzcyYPK4H2Q+Z4Qeaf6u3Iui8Z0DFy6k28fvwStJhpVNd
-         01BxLQb2nCcT1ykJSeoiqmnRHtDNXZsKpXbMCHkMqZWJ1hQGNLXOd9zjTOO/2hyohtiC
-         rxa6rTbfxXqutkszmE90v4mKfYvfCVot/gu+gE6ypApZb1oEvs4ywhUt9sXPDyEbHHyy
-         0fdBewXzC9wmze/hDu8Qz3/SrPzH9MkomHwPH+6U1RbdQlC6dja30Gm+ontAhW3+1ilF
-         H15ZOJPYd6bvvSV09xy/iYaeIuHfljSNrrJB1aQLxfzhqYC09t+yk+12CvGGnh9zYBnx
-         ttpA==
+        d=oss.qualcomm.com; s=google; t=1764668253; x=1765273053; darn=lists.trustedfirmware.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Npr2KansqL+mF8z3wwuH37m0dnF+ct0oFxh/WdUGe5c=;
+        b=Jz8rsrBom7QI172z0Ymc1Wi50w/uMV2Tu8+MRRptws0OUF6NrGAW+u9QW+LLDwIjMA
+         fUEdim/u0vK6CLeCp89j9BToajw0mD9KyNKUHMvXuGFKHberB9QJ890TG4aSwNepO2hG
+         THbmChfkb+oy8c4fe9Eru8qRgvIyPqGBoTZAJPiXzWkj2WpB7QqSdV28inKIiKAK3H1d
+         DjBvibI/sIluf5rOzbq7RHJpwMxISJx2eBiS6F9wr5TT7EOTFCDmLUw6RrqeYnDhVQNU
+         nFV4UHYMWDIO3H/0N8iMc84mcYXipcLzm+eQ4CseS4NUQCYJ4xynuEKYBbtWOKgOlqoJ
+         Ag8A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764589693; x=1765194493;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=7nnXpYDrCoaqLl8fDHiiM83WAPrZ9Fbn5oqCW111z/M=;
-        b=PLseTdr6NCWf9gaJ+5HIaV3c39DiCPuUZ+y9cPdtyGQRgtBfu4maosbvBE/BhsZ0Sh
-         yk68mac3hl8PObikcB7dk7IbEWSK07/rFbHQhdkZAqx4EzAFsOcwdwgnbXPnrVOgBqqZ
-         kKprgS9gLCYw5CZLpz8oqJ7aF6biHXZQ816rOsxR1W1Bs19Pth3jJ49J615+pniDraAp
-         4W8yF9WeASH3SOzjYiK1F9Tij6PMn71WJNkjRQWMS5RxbFT9zNnzv0022X8SJT1kqSUs
-         yPt0VJhou+gXz934BkbeWLFfkP92k4MDvjR0FfuRkDQl5ktO+c9JnPUqegSu1a/yYP3m
-         c0Pg==
-X-Forwarded-Encrypted: i=1; AJvYcCVfOiOUhGd4Iy3SRq61bcYU3WA3rXRsVN6XlHmVyGTfIgWa0O+KJRqgHSV9YdtKat+v0Ig3Lxw=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yy2GawdYZHyRPN6UqUGj6bd2dUCQj2CKmqhX5EWqR02pFhNEqKC
-	n2a/BYffzWrr/Fnt7Qx3xVT+Gu5jAxHPu1cEMK04Kq7vuidLMVF+XDyPwk1oinwfLFji8kDRUE2
-	cUa97IdA9EfePEkmFQxe6X7kBLCy/Vhk=
-X-Gm-Gg: ASbGncumXDwT7yuC+RvPG8aI/s/fR0YTDjlyisPK6l6vvi9O6pnbWwIwb+CzlQrGprj
-	ozZwfHP2QH1XkzDQosF/9PTtzHKL30cSy5u1O2ao7Zz1DQIeNuvgfmlmQWoo/OVLSi+JbeNaw19
-	84Ki2A5mS7OraPAuZj3Zu8Nxoq6ShdAz+LDKJ9Uf16uwwPqr/SW8DfT1DCp5WxOZ8wniLCfcSoR
-	bmfczFvpr+GLiaE8PmfYOXNSb8/iDYhkWDDe/CRejeTdfzm+7aFY1vsy+SJqin2NiUBKcI=
-X-Google-Smtp-Source: AGHT+IFqY4h2NpY86j+8+RSQ2/LtjcK5xcXoPlpx7nYRJjaJ1a6+U5PGAOL0d+GW//GhuZoTtpAudzpxdJ7/aub/+7s=
-X-Received: by 2002:a67:e7cc:0:b0:5db:cc92:26e7 with SMTP id
- ada2fe7eead31-5e1de3ceb1emr12395856137.38.1764589693542; Mon, 01 Dec 2025
- 03:48:13 -0800 (PST)
+        d=1e100.net; s=20230601; t=1764668253; x=1765273053;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Npr2KansqL+mF8z3wwuH37m0dnF+ct0oFxh/WdUGe5c=;
+        b=NsRFyKvco/Vo9UU1NnrbygmsEOB3+oBzjW+4pBanvp9TxFTQonykd4frZnFDhuWE4X
+         ovN5IctUQxEwomPLWZcfKEip/xLZwJmgBLhJqbq/n6xrhIbFZSWVmNgopViOCu58D9rK
+         7qPQOrxAuzbIrs41bOYGZNoXnPHqeDUBF0AjQzrUtgD8v667H18ty00F9hxvvemF/i0E
+         1mzAyQN3igSr0fd+U0y2TrG9LLQGsH1h628wyyFioc7bVfDO+UT6Y6zVnUpI61sNEtES
+         KeUEeLxIkrgNckYQhezQCnl51O66OE5wdQnMxX3BD1B/gNyadJb9g6kXchws6U6H5NN6
+         kqEA==
+X-Forwarded-Encrypted: i=1; AJvYcCV3x6S+3by2LnCGRsZvV4+gROJiE5t+FyNFLr5DTGCcUziJzL14KNYqzKobyU9NHDBPkgAfMtQ=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzH/leTK59CvomDwP3w7+BBkKbR0s8yKP4Qwh7KUpr9zAPq0IkN
+	i3EZCPOp7KYzQttic8ZxpwYiuQ/B+V0V9rXq9WJvr8KRgpMbCdxIXkV+KrvvVUn8dUTELZWKaqv
+	ZysQywQNbTME2B9ru3n89dt4UlIT9nzTqr7KwcbxAsD0qD2z1w3VWdV2D2PinZs58Ox266LvN
+X-Gm-Gg: ASbGncvAGnKDoFjQzH6A3BZN0R9Y+Fy5n6NisbCNQjejevNyK8hDVqK99NFSHXYVFsL
+	ow2UlAKuSKTqhlWOrUmrD7rnxeCrGsf3lW7VAt2xtRtNc4H7P/CXdGNs4sLET+Tuf5OmJwH7191
+	HZk7K3AT7s8c9b8tdmeVPib3dKV6JakVij5DMf6sok/HoHDvjI+32DUQG6JSPrSv+SFLarBxsbA
+	4MB/Z78b7kAe/cRjHeBg6nHZXwfJEpkxWoJGeiqfgLv/VZBrKUFr3Y9yCNZ1/azOkIA05883Fub
+	llSW8ehOs4EU5kvX/GNnDBBLIqnRGTTAzgH4bzIcLQWPqWOmrS9CIMyJu7Ja3kYA9ro8OuDiobw
+	afgqn10+r70uiChySXPLSeHovZTTte4bHJrU=
+X-Received: by 2002:a17:902:d4d2:b0:297:f0c3:32e0 with SMTP id d9443c01a7336-29d5a4f383bmr26213415ad.12.1764668253218;
+        Tue, 02 Dec 2025 01:37:33 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHsIV4uh/fdd7yX6qZGva/N/nHFcJBN15ZRTgiW++ptNVaHfY84G6VLb8VC/t44SNeIbxgxIQ==
+X-Received: by 2002:a17:902:d4d2:b0:297:f0c3:32e0 with SMTP id d9443c01a7336-29d5a4f383bmr26213115ad.12.1764668252709;
+        Tue, 02 Dec 2025 01:37:32 -0800 (PST)
+Received: from hu-hdev-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29bcefaea48sm145369405ad.47.2025.12.02.01.37.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Dec 2025 01:37:32 -0800 (PST)
+Date: Tue, 02 Dec 2025 15:07:23 +0530
+Subject: [PATCH] arm64: defconfig: Enable QCOMTEE for Qualcomm SoCs
 MIME-Version: 1.0
-References: <20251121141230.489294-1-jj251510319013@gmail.com>
- <20251122145924.381725-1-jj251510319013@gmail.com> <CAHUa44HFC+BTO3KfaNF1LHiM7frgt2myzZ_85Mbf1t2gUY9iSg@mail.gmail.com>
- <aSVgctqRSy5_vvkN@sumit-X1> <aSVhBn0LR2CwM9p3@sumit-X1>
-In-Reply-To: <aSVhBn0LR2CwM9p3@sumit-X1>
-From: Aristo Chen <jj251510319013@gmail.com>
-Date: Mon, 1 Dec 2025 19:47:37 +0800
-X-Gm-Features: AWmQ_bkYPvRZqWrzgKEOn4NIBOirfTOtWTXTQZxsAb1oZNlrkxy_5JHX1m_P4F4
-Message-ID: <CAJwFiGKuSuiq5LhMS+wVcnhjfiBEDiSCOG9FwhEic+cxmnKJhQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] tee: optee: expose OS revision via sysfs
-To: Sumit Garg <sumit.garg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spamd-Bar: ---
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251202-qcom_qcomtee_defconfig-v1-1-11bfe40a8ea4@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAFKzLmkC/x2M0QpAMBhGX0X/tZVflLyKJLZv/Bc2NknJuxs3p
+ 87FOTdFBEGkNrsp4JQo3iXhPCO9jG6GEpOcyqKsOUHt2q/DhwMYDKz2zsqsGqMLC8MV80Qp3gK
+ sXP+465/nBTawPbpoAAAA
+X-Change-ID: 20251202-qcom_qcomtee_defconfig-8dc0fed1411b
+To: Krzysztof Kozlowski <krzk@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>,
+        Sumit Garg <sumit.garg@kernel.org>,
+        Jens Wiklander <jens.wiklander@linaro.org>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1764668249; l=850;
+ i=harshal.dev@oss.qualcomm.com; s=20251124; h=from:subject:message-id;
+ bh=oESxKx1RpmIZ6LCbhSz860yg570UydSth6PJf3k8w58=;
+ b=zjql49o962LwoA5QYxqgk74mjr/aJPetLcDBGZg2sI5Hne6TnX8Uf//7bl1da+JW+/XyVD/CI
+ /gGFLE6bru7BwS9KptoHRVLeKg/8Jor/mbb+tmgszyAqQKrsRmarmga
+X-Developer-Key: i=harshal.dev@oss.qualcomm.com; a=ed25519;
+ pk=SHJ8K4SglF5t7KmfMKXl6Mby40WczSeLs4Qus7yFO7c=
+X-Proofpoint-ORIG-GUID: uJom1LVd4qQDYDqLEv_EPfoAY2NoYKy-
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjAyMDA3NiBTYWx0ZWRfX3+wOBetb3XTs
+ +raCtTri/WcAv9P/+PpnxD4QRX5MITGWkLuCUcvW0uCsYeDeH2he1R4Jw69B1qs47jnK1cNz8nP
+ NRfkmbK+utnakHBeUlv1tNqDVkAB1AzBRvH2I7yPYinTB+T9S+aYJH4Bm3wJlVNihi1tb5L6S6g
+ D6jdPn2XL1BfFjyMEjAwzbHqqGNCvLJVp+mIVb9s9mUs1WWLtOkzZyoryiXe/vENaXsy9DMsq5q
+ DSRTAMWzFz4aTbuhLPFz4d6YhzhQrHmRsrlN5zEb/Bb8A83M7UhOx6ATQQqqzUX80ZtInW244qa
+ O777/uUKiKRqszk+yHrWDlA7+kiXq6FY5hvWOBqI7QGzq7YZjupfqmrjgN/PeqpCJDbAxA2KOVq
+ 4K49P4cIIo7odshNJNq3/cupFPvTRw==
+X-Proofpoint-GUID: uJom1LVd4qQDYDqLEv_EPfoAY2NoYKy-
+X-Authority-Analysis: v=2.4 cv=EbfFgfmC c=1 sm=1 tr=0 ts=692eb35e cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=hNBrZjDF53sj-vqV-FwA:9
+ a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-01_01,2025-11-27_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 adultscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0
+ phishscore=0 impostorscore=0 malwarescore=0 clxscore=1015 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2510240001 definitions=main-2512020076
+X-Spamd-Bar: ----
 X-Rspamd-Server: lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 2FF2643154
-X-Spamd-Result: default: False [-4.00 / 15.00];
+X-Rspamd-Queue-Id: AFDF74300F
+X-Spamd-Result: default: False [-4.60 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[gmail.com:+];
-	URIBL_BLOCKED(0.00)[canonical.com:email];
-	RCVD_TLS_LAST(0.00)[];
-	ARC_NA(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.217.42:from];
-	DNSWL_BLOCKED(0.00)[209.85.217.42:from];
+	URIBL_BLOCKED(0.00)[qualcomm.com:dkim,qualcomm.com:email,oss.qualcomm.com:dkim,oss.qualcomm.com:mid,mx0b-0031df01.pphosted.com:helo,mx0b-0031df01.pphosted.com:rdns];
+	ARC_NA(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	FROM_HAS_DN(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DNSWL_BLOCKED(0.00)[202.46.23.25:received];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_DN_SOME(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	DWL_DNSWL_BLOCKED(0.00)[gmail.com:dkim];
-	FREEMAIL_ENVFROM(0.00)[gmail.com]
-X-MailFrom: jj251510319013@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: ZC65JSVEAH72H7TRJQKNVGJBDPNBSSXK
-X-Message-ID-Hash: ZC65JSVEAH72H7TRJQKNVGJBDPNBSSXK
-X-Mailman-Approved-At: Mon, 01 Dec 2025 13:29:50 +0000
-CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>, mario.limonciello@amd.com, Rijo Thomas <Rijo-john.Thomas@amd.com>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+	RCPT_COUNT_SEVEN(0.00)[10];
+	MID_RHS_MATCH_FROM(0.00)[];
+	TAGGED_RCPT(0.00)[renesas];
+	BLOCKLISTDE_FAIL(0.00)[202.46.23.25:server fail];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.198:received]
+Message-ID-Hash: UU6T3V5E5VUGP3DSTOMTLF23H2JWI4RX
+X-Message-ID-Hash: UU6T3V5E5VUGP3DSTOMTLF23H2JWI4RX
+X-MailFrom: harshal.dev@oss.qualcomm.com
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, Geert Uytterhoeven <geert+renesas@glider.be>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Harshal Dev <harshal.dev@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZC65JSVEAH72H7TRJQKNVGJBDPNBSSXK/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UU6T3V5E5VUGP3DSTOMTLF23H2JWI4RX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Harshal Dev via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
 
-Hi,
+Enable config for the QCOMTEE driver to facilitate communication with the
+Qualcomm Trusted Execution Environment (QTEE) on Qualcomm platforms.
 
-Sumit Garg <sumit.garg@kernel.org> =E6=96=BC 2025=E5=B9=B411=E6=9C=8825=E6=
-=97=A5=E9=80=B1=E4=BA=8C =E4=B8=8B=E5=8D=883:55=E5=AF=AB=E9=81=93=EF=BC=9A
->
-> On Tue, Nov 25, 2025 at 01:23:22PM +0530, Sumit Garg via OP-TEE wrote:
-> > On Mon, Nov 24, 2025 at 08:15:04AM +0100, Jens Wiklander wrote:
-> > > Hi,
-> > >
-> > > On Sat, Nov 22, 2025 at 4:00=E2=80=AFPM Wei Ming Chen <jj251510319013=
-@gmail.com> wrote:
-> > > >
-> > > > From: Aristo Chen <aristo.chen@canonical.com>
-> > > >
-> > > > Today the only way to read the OP-TEE OS version is from dmesg/jour=
-nal
-> > > > logs, which can be lost as buffers roll over. Capture the OS revisi=
-on
-> > > > (major/minor/build_id) from secure world for both SMC and FF-A ABIs=
-, store
-> > > > it in the OP-TEE driver, and expose a stable userspace readout via
-> > > > /sys/class/tee/tee*/optee_os_revision.
-> > > >
-> > > > Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
-> > > > ---
-> > > >  drivers/tee/optee/core.c          | 19 +++++++++++++++++++
-> > > >  drivers/tee/optee/ffa_abi.c       | 13 +++++++++++--
-> > > >  drivers/tee/optee/optee_private.h | 17 +++++++++++++++++
-> > > >  drivers/tee/optee/smc_abi.c       | 13 +++++++++++--
-> > > >  4 files changed, 58 insertions(+), 4 deletions(-)
-> > >
-> > > This appears to be a feature that could be useful for all TEEs.
-> >
-> > True, it is something that TEE core should support. Although I would
-> > have preferred to extend TEE_IOC_VERSION since that's the common way th=
-e
-> > user-space library get's TEE implementation specific information. But
-> > since it being already a user-space ABI which doesn't offer extension.
-> > Maybe we can consider adding TEE_IOC_REVERSION instead of sysfs.
->
-> Ah, typo here:
->
-> s/TEE_IOC_REVERSION/TEE_IOC_REVISION/
->
-> -Sumit
->
-> >
-> > But before doing that we need to know who is the actual consumer here
-> > from user-space perspective? Will the client applications also depend o=
-n
-> > the TEE implementation revision?
-My current thinking is that if the TEE revision is exposed, users can write=
- a
-script to capture the platform state and record the exact secure OS revisio=
-n
-even after the dmesg/journalctl logs have rolled over. This would significa=
-ntly
-improve bug triage and regression tracking.
+Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-In my case, I have a package with precompiled xtest binaries for multiple
-releases (from 3.14 to 4.6), and I work with different platforms that run
-different OP-TEE OS versions. Having a reliable way to obtain the TEE
-revision would help a lot, as it would allow me to select the correct xtest
-version when running tests.
-> >
-> > > If so,
-> > > let's take a step back to see what's needed. We can add the sysfs
-> > > attribute from drivers/tee/tee_core.c and add another optional
-> > > callback to struct tee_driver_ops, such as get_tee_revision(). For
-> > > OP-TEE, the specific information we want to share is clear, but other
-> > > TEEs might have additional or different data. What do others think?
-> >
-> > Implementation wise, this sounds like a reasonable approach.
-> >
-> > -Sumit
-> >
-> > >
-> > > Cheers,
-> > > Jens
-> > >
-> > > >
-> > > > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> > > > index 5b62139714ce..66409cf5da1c 100644
-> > > > --- a/drivers/tee/optee/core.c
-> > > > +++ b/drivers/tee/optee/core.c
-> > > > @@ -83,8 +83,27 @@ static ssize_t rpmb_routing_model_show(struct de=
-vice *dev,
-> > > >  }
-> > > >  static DEVICE_ATTR_RO(rpmb_routing_model);
-> > > >
-> > > > +static ssize_t optee_os_revision_show(struct device *dev,
-> > > > +                                     struct device_attribute *attr=
-, char *buf)
-> > > > +{
-> > > > +       struct optee *optee =3D dev_get_drvdata(dev);
-> > > > +       struct optee_version_info *v;
-> > > > +
-> > > > +       if (!optee)
-> > > > +               return -ENODEV;
-> > > > +
-> > > > +       v =3D &optee->version_info;
-> > > > +       if (v->os_build_id)
-> > > > +               return sysfs_emit(buf, "%u.%u (%016llx)\n", v->os_m=
-ajor,
-> > > > +                                 v->os_minor, (unsigned long long)=
-v->os_build_id);
-> > > > +
-> > > > +       return sysfs_emit(buf, "%u.%u\n", v->os_major, v->os_minor)=
-;
-> > > > +}
-> > > > +static DEVICE_ATTR_RO(optee_os_revision);
-> > > > +
-> > > >  static struct attribute *optee_dev_attrs[] =3D {
-> > > >         &dev_attr_rpmb_routing_model.attr,
-> > > > +       &dev_attr_optee_os_revision.attr,
-> > > >         NULL
-> > > >  };
-> > > >
-> > > > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_ab=
-i.c
-> > > > index bf8390789ecf..3d4f35599dd1 100644
-> > > > --- a/drivers/tee/optee/ffa_abi.c
-> > > > +++ b/drivers/tee/optee/ffa_abi.c
-> > > > @@ -776,7 +776,8 @@ static int optee_ffa_reclaim_protmem(struct opt=
-ee *optee,
-> > > >   */
-> > > >
-> > > >  static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev=
-,
-> > > > -                                       const struct ffa_ops *ops)
-> > > > +                                       const struct ffa_ops *ops,
-> > > > +                                       struct optee_version_info *=
-version_info)
-> > > >  {
-> > > >         const struct ffa_msg_ops *msg_ops =3D ops->msg_ops;
-> > > >         struct ffa_send_direct_data data =3D {
-> > > > @@ -806,6 +807,12 @@ static bool optee_ffa_api_is_compatible(struct=
- ffa_device *ffa_dev,
-> > > >                 pr_err("Unexpected error %d\n", rc);
-> > > >                 return false;
-> > > >         }
-> > > > +       if (version_info) {
-> > > > +               version_info->os_major =3D data.data0;
-> > > > +               version_info->os_minor =3D data.data1;
-> > > > +               version_info->os_build_id =3D data.data2;
-> > > > +       }
-> > > > +
-> > > >         if (data.data2)
-> > > >                 pr_info("revision %lu.%lu (%08lx)",
-> > > >                         data.data0, data.data1, data.data2);
-> > > > @@ -1034,6 +1041,7 @@ static int optee_ffa_probe(struct ffa_device =
-*ffa_dev)
-> > > >  {
-> > > >         const struct ffa_notifier_ops *notif_ops;
-> > > >         const struct ffa_ops *ffa_ops;
-> > > > +       struct optee_version_info version_info =3D { };
-> > > >         unsigned int max_notif_value;
-> > > >         unsigned int rpc_param_count;
-> > > >         struct tee_shm_pool *pool;
-> > > > @@ -1047,7 +1055,7 @@ static int optee_ffa_probe(struct ffa_device =
-*ffa_dev)
-> > > >         ffa_ops =3D ffa_dev->ops;
-> > > >         notif_ops =3D ffa_ops->notifier_ops;
-> > > >
-> > > > -       if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops))
-> > > > +       if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops, &version=
-_info))
-> > > >                 return -EINVAL;
-> > > >
-> > > >         if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,
-> > > > @@ -1059,6 +1067,7 @@ static int optee_ffa_probe(struct ffa_device =
-*ffa_dev)
-> > > >         optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
-> > > >         if (!optee)
-> > > >                 return -ENOMEM;
-> > > > +       optee->version_info =3D version_info;
-> > > >
-> > > >         pool =3D optee_ffa_shm_pool_alloc_pages();
-> > > >         if (IS_ERR(pool)) {
-> > > > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/=
-optee_private.h
-> > > > index db9ea673fbca..3e7bcd44976b 100644
-> > > > --- a/drivers/tee/optee/optee_private.h
-> > > > +++ b/drivers/tee/optee/optee_private.h
-> > > > @@ -19,6 +19,22 @@
-> > > >
-> > > >  #define OPTEE_MAX_ARG_SIZE     1024
-> > > >
-> > > > +/**
-> > > > + * struct optee_version_info - OP-TEE OS revision reported by secu=
-re world
-> > > > + * @os_major:          OP-TEE OS major version
-> > > > + * @os_minor:          OP-TEE OS minor version
-> > > > + * @os_build_id:       OP-TEE OS build identifier (0 if unspecifie=
-d)
-> > > > + *
-> > > > + * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
-> > > > + * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS rev=
-ision, not an
-> > > > + * FF-A ABI version.
-> > > > + */
-> > > > +struct optee_version_info {
-> > > > +       u32 os_major;
-> > > > +       u32 os_minor;
-> > > > +       u64 os_build_id;
-> > > > +};
-> > > > +
-> > > >  /* Some Global Platform error codes used in this driver */
-> > > >  #define TEEC_SUCCESS                   0x00000000
-> > > >  #define TEEC_ERROR_BAD_PARAMETERS      0xFFFF0006
-> > > > @@ -249,6 +265,7 @@ struct optee {
-> > > >         bool in_kernel_rpmb_routing;
-> > > >         struct work_struct scan_bus_work;
-> > > >         struct work_struct rpmb_scan_bus_work;
-> > > > +       struct optee_version_info version_info;
-> > > >  };
-> > > >
-> > > >  struct optee_session {
-> > > > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_ab=
-i.c
-> > > > index 0be663fcd52b..07c703609320 100644
-> > > > --- a/drivers/tee/optee/smc_abi.c
-> > > > +++ b/drivers/tee/optee/smc_abi.c
-> > > > @@ -1323,7 +1323,8 @@ static bool optee_msg_api_uid_is_optee_image_=
-load(optee_invoke_fn *invoke_fn)
-> > > >  }
-> > > >  #endif
-> > > >
-> > > > -static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
-> > > > +static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn,
-> > > > +                                     struct optee_version_info *ve=
-rsion_info)
-> > > >  {
-> > > >         union {
-> > > >                 struct arm_smccc_res smccc;
-> > > > @@ -1337,6 +1338,12 @@ static void optee_msg_get_os_revision(optee_=
-invoke_fn *invoke_fn)
-> > > >         invoke_fn(OPTEE_SMC_CALL_GET_OS_REVISION, 0, 0, 0, 0, 0, 0,=
- 0,
-> > > >                   &res.smccc);
-> > > >
-> > > > +       if (version_info) {
-> > > > +               version_info->os_major =3D res.result.major;
-> > > > +               version_info->os_minor =3D res.result.minor;
-> > > > +               version_info->os_build_id =3D res.result.build_id;
-> > > > +       }
-> > > > +
-> > > >         if (res.result.build_id)
-> > > >                 pr_info("revision %lu.%lu (%0*lx)", res.result.majo=
-r,
-> > > >                         res.result.minor, (int)sizeof(res.result.bu=
-ild_id) * 2,
-> > > > @@ -1727,6 +1734,7 @@ static int optee_probe(struct platform_device=
- *pdev)
-> > > >         unsigned int thread_count;
-> > > >         struct tee_device *teedev;
-> > > >         struct tee_context *ctx;
-> > > > +       struct optee_version_info version_info =3D { };
-> > > >         u32 max_notif_value;
-> > > >         u32 arg_cache_flags;
-> > > >         u32 sec_caps;
-> > > > @@ -1745,7 +1753,7 @@ static int optee_probe(struct platform_device=
- *pdev)
-> > > >                 return -EINVAL;
-> > > >         }
-> > > >
-> > > > -       optee_msg_get_os_revision(invoke_fn);
-> > > > +       optee_msg_get_os_revision(invoke_fn, &version_info);
-> > > >
-> > > >         if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
-> > > >                 pr_warn("api revision mismatch\n");
-> > > > @@ -1814,6 +1822,7 @@ static int optee_probe(struct platform_device=
- *pdev)
-> > > >                 rc =3D -ENOMEM;
-> > > >                 goto err_free_shm_pool;
-> > > >         }
-> > > > +       optee->version_info =3D version_info;
-> > > >
-> > > >         optee->ops =3D &optee_ops;
-> > > >         optee->smc.invoke_fn =3D invoke_fn;
-> > > > --
-> > > > 2.43.0
-> > > >
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index cdb7d69e3b24..57b2b09d0479 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -1789,6 +1789,7 @@ CONFIG_FPGA_MGR_ZYNQMP_FPGA=m
+ CONFIG_FPGA_MGR_VERSAL_FPGA=m
+ CONFIG_TEE=y
+ CONFIG_OPTEE=y
++CONFIG_QCOMTEE=y
+ CONFIG_MUX_GPIO=m
+ CONFIG_MUX_MMIO=y
+ CONFIG_SLIMBUS=m
+
+---
+base-commit: 47b7b5e32bb7264b51b89186043e1ada4090b558
+change-id: 20251202-qcom_qcomtee_defconfig-8dc0fed1411b
+
+Best regards,
+-- 
+Harshal Dev <harshal.dev@oss.qualcomm.com>
+
