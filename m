@@ -4,162 +4,210 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4DF4D2F7EE
-	for <op-tee@archiver.kernel.org>; Fri,  5 Dec 2025 13:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3354D2F7FA
+	for <op-tee@archiver.kernel.org>; Fri,  5 Dec 2025 14:11:53 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 227644FEAC
-	for <op-tee@archiver.kernel.org>; Fri,  5 Dec 2025 13:56:53 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id EF1C75008E
+	for <op-tee@archiver.kernel.org>; Fri,  5 Dec 2025 14:11:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1764943913;
+	bh=PS6loR8S9zQqUVjxpUaqTYePXnFokDqyH3Z0AoSUuIE=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=YweR0CRwSVsDbLIFNz3Z4clvNWF15SYAlPieRKyKP4paX+qlWAaX9/cgUY7hkkxLg
+	 48gdVtE/s0xbekNlvUmIdVCeBSM050pgK0MtpF4nNS/MXMQ3NJnY0bf8h7txTga+Gy
+	 ZucQVYic4m/jXdO3/CvzeUfjdgXdbLB5/PslIDCDNSsF3HfEzRwIpNSSkcRzBElTjz
+	 opUXaqGh5jrmtYcMzokOswjw1jFO1ABo0pKyu0/dqB/TSeP8hD8wtOA3AHgoD4rjHt
+	 JlXlGEIQwmLVUggc44TdIdvGCod2YwDfRsdtjKfuRwZMPMYU8YYkmUnGWXaQN9teU5
+	 0/GBtvXBQbssg==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 37D66431E4
+	for <op-tee@lists.trustedfirmware.org>; Fri,  5 Dec 2025 14:11:41 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=F4xxuDGc;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=MTztJQnm;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=c1S72kir;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=adMJ5kgR;
 	dkim-atps=neutral
-Received: from fout-a5-smtp.messagingengine.com (fout-a5-smtp.messagingengine.com [103.168.172.148])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5FC884496A
-	for <op-tee@lists.trustedfirmware.org>; Fri,  5 Dec 2025 13:56:43 +0000 (UTC)
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfout.phl.internal (Postfix) with ESMTP id CFC23EC059A;
-	Fri,  5 Dec 2025 08:56:42 -0500 (EST)
-Received: from phl-imap-17 ([10.202.2.105])
-  by phl-compute-04.internal (MEProxy); Fri, 05 Dec 2025 08:56:42 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1764943002;
-	 x=1765029402; bh=6jIDgDQomoK9NQlUOGMcADl/DSu11Lk9z8Cy7t1RvbY=; b=
-	F4xxuDGc0gtaakPjCiWR79J4MlpS0Orv/CX+jp/pcae0eZCVsUG9bJJpNU16r9WC
-	Q97J0yMJhPcWHUPSJ3y7AsCKikdIcivHm5Jre7waVdfZgmlk3b5iyNWk0TUqWiH+
-	b+G6/knQa0YlX4RkBheoIqPEj12LT6mOc/fX+rAs4hyImiCdcWQ70JJZm/31Gjap
-	OxsYCr3wSN0Vd83d1+sI4ZHLKjOG2IPw3OuEDhhXJB0+SgmZ28PBcpVXyBLvCIW8
-	fM322kBRxvJv0N+pFVFuTjtlqZ1Er7X8X0N7IrEg72aWxzD/PRYsrszkIH8AAPte
-	7x6Ay4Vir6CQzwb1zWl6Fg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1764943002; x=
-	1765029402; bh=6jIDgDQomoK9NQlUOGMcADl/DSu11Lk9z8Cy7t1RvbY=; b=M
-	TztJQnmfFCAOlzNO3QmXE2FxoP9qsTsJoYtxjRbN4pB6Yj4XdrEuCfkifspBcRtz
-	SkjJjSUE4C4arq2LrkQZIJQcZHeVWw2rmIUj2/arM2tqTqq/NQOBuFz6hdZjsnpW
-	8i0fSPuYlYCbBLSdvEm3ckJieUvAsUt2mUIMPtU2n9nd3WfhhbDQU8mkLw8EWjm1
-	f7ea/FLYK8kpjgJCiS5s8y5qMSewCS/STDCnnN5OWMCSzmJFblW8cmv+x3nsQmRh
-	Khf5eK6XDigO3F/SL2ApH3nIU9uZw5DmlhCSnjWSwYq8aVf++Bgnowt7Jqm2jkAQ
-	YG7xTBprYQ+pyGjlk0X5Q==
-X-ME-Sender: <xms:meQyaQGKYQddJGduzqqBQnUiHc5aV_6Gkd3IFBE-tBJAP0uP64tR-w>
-    <xme:meQyaUJ8_7jMdbQX35mjwgAysyMdiMDn7znV7li1NrVThARFTCQq7cN_UVno1Ca6k
-    om64IJek5eneduraTsMjBcosUn6b2rHawykJ92pwHLbFAdZZdAUOlY>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdekheehucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceurghi
-    lhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurh
-    epofggfffhvfevkfgjfhfutgfgsehtqhertdertdejnecuhfhrohhmpedftehrnhguuceu
-    vghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrthhtvghrnh
-    epteefudehvedutdeugfeuveffleduheehfeehffeujeduledvheeivdffleffjedtnecu
-    ffhomhgrihhnpehgihhthhhusgdrtghomhenucevlhhushhtvghrufhiiigvpedtnecurf
-    grrhgrmhepmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphht
-    thhopeduhedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepphgrlhhmvghrsegurg
-    gssggvlhhtrdgtohhmpdhrtghpthhtoheprghouhesvggvtghsrdgsvghrkhgvlhgvhidr
-    vgguuhdprhgtphhtthhopegvthhivghnnhgvrdgtrghrrhhivghrvgesfhhoshhsrdhsth
-    drtghomhdprhgtphhtthhopegrlhgvgiesghhhihhtihdrfhhrpdhrtghpthhtoheprhgu
-    uhhnlhgrphesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopegrrhhnugeskhgvrh
-    hnvghlrdhorhhgpdhrtghpthhtohepphhjfieskhgvrhhnvghlrdhorhhgpdhrtghpthht
-    ohepshhumhhithdrghgrrhhgsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehjvghnsh
-    drfihikhhlrghnuggvrheslhhinhgrrhhordhorhhg
-X-ME-Proxy: <xmx:meQyaRO0x8kH-Lzr-tmupzBO5Za-nVg5DkNRm5olew-Ro8cvrDzWGQ>
-    <xmx:meQyaU48jQ1nPaWb9U9yNp6BhVA3jjQo1Rc4y9PesZcT1QB4IQuLGg>
-    <xmx:meQyaQnH5cNH1hkIuv7_rbKtBaXvYE1F_NT7EQKI8v9cZ5IIohMh8A>
-    <xmx:meQyacKeddFIhE7PGDAcC9tHdaTrp9luufxxWCAuQ1RMqAhzGTQJvA>
-    <xmx:muQyaQ7yxHPvJzgTkYP1Tv-IGADrMBKVmfrJMJ7wiPryQy8Cr6vvy9Rk>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 51D8AC40054; Fri,  5 Dec 2025 08:56:41 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5B58XGSh2516887
+	for <op-tee@lists.trustedfirmware.org>; Fri, 5 Dec 2025 14:11:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	QU8RQH9lmiI1HiYYmsKFuuvMvSYQmCzAce1xUwg2TNI=; b=c1S72kirhAvVDQnc
+	pRtQKH5eNiROWLzDlffYD2GeRYyv2yPIvTELQ6dweHVudlMDZZOF84A8rvriCM8V
+	RqSTUFvAUyP1z9U9SX3uodCNL0biuJneVAhOBZkkrd4b6ATPUGxA71qCGRtF9Vly
+	bava4ugsWKNXMX0JtqjTjYp9tGmL/ENdydTR1d50Lj8SQEvlC6evg6HhEL0Ww7AP
+	Bu8lotolOnrePXsjoUMi2wwynBccOJzAwpquH/pcNx9POxUGzOy5cn6PNghi6Ihb
+	01Ml18FCb6LtCL/3b2gyDwwejRTqexneVpTUk9gsbeGlm13OeROSKQFwwr/Glczf
+	522kVQ==
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4auj7n2d7b-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Fri, 05 Dec 2025 14:11:40 +0000 (GMT)
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-343823be748so2237197a91.0
+        for <op-tee@lists.trustedfirmware.org>; Fri, 05 Dec 2025 06:11:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1764943900; x=1765548700; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=QU8RQH9lmiI1HiYYmsKFuuvMvSYQmCzAce1xUwg2TNI=;
+        b=adMJ5kgRyxgETJ9ChaPo0Tc2pjtaiS2ptQiL/qGylt3ACWIYVVPOT6fueqQFs7iltp
+         qCIsQlm33+qMx8VeNICavF4b8tRNM+E5tDyf3Qew/UBhdPY6/jd3860gtms/PNNWcjrA
+         Lb33NP+GRwQM4n8V3bj4kRjF2PkTT7St8/gYz9/X+aL9C3woQGx17W4oPUoZBY3Q5DW7
+         Sgc4MgUTtIAVsjTLOQQEbz9wxsj4z6fKIum4VZNAsLfoyOZkZrEjViW46eQ5HRodHNZT
+         C2JOSuSMHX5BYZoomQD8r9FWPTrREDGOtkLnhfU/Gx7GhvT0ImjCLASKVWMc/OPxndmK
+         pD4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764943900; x=1765548700;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QU8RQH9lmiI1HiYYmsKFuuvMvSYQmCzAce1xUwg2TNI=;
+        b=b05Q21+pChdWM+HLn1H2YEKW09DBG7pDLN0OVTAnlkmWXS74ZVWdgVqq8F55eiN//m
+         CgNmHvJT/KUy+AfJHL/UGfF4cE11/wDkldBNBrI8YbhiQpbMsnGQPmKhXcN7tslLg10W
+         K6QYeOZbCEiZTglTBViSTBaEONKxE04OCzbgcnnEI7cpR2IMRE92eQgebhDDXaD4ksvo
+         Q5R5FcnoXRH8RA27vBes7ZjPh4IcNZg6loOs3awGi0n4MU+xi4YwW6jk9HSi8NKJYI2S
+         IM18Yupo/li8EVKML3ZQjwmle7uQikgqKMMFpv6DyB0T9dkHIc0hn80lDTHY2S0Gm8ru
+         5icQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWvmBOuruX/hc3+cVl25Uy+/aiTqKAWZkYWVuD1ARSag495xF3hNFvhz8pgzs8F4H0n26AU7eE=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzcMj4mMYVEmtJC6fq3+JGTFbS/BNtzgPaiu9riRwHpVMsmgdKv
+	hMr4lMzdHHldFuxyNjFKNlpIiYHxqW58+beghMom9YroBFheFmZEqmryqI8e8bc7o+fC2ieWpwy
+	Xew9xC8JI59uJukZ+mZGJNjXszbG/QdKo04ce0wJFr9dBqfXevuUqCZMuOca+t8k+ppi8ztxY
+X-Gm-Gg: ASbGncvz23g95nhp1LTeJKXfTbAnguuxPdf8xgKHqlOLmGiV9CeT1nq8qbcLlPrhnfk
+	icgjrO73Mf8B2qJLg5Qot0IocJqqGiD0ZNADkWLBJAaPN8TxPO9QW8FBM1TSgjgNsxsL2US9iZa
+	Pta+MSJ7k/WHFH/HqahTxoQk4TShPP4wEqkTrKyFAGY2Obqx9zlkvmO/g6yUm+rsbR87v3AzF29
+	9RXB4IdVXZ/WYne56oFO8pkYrkEUjdIRN8spFwW8oIhdh/jR1m52xquWv462FeMFDv6EoTatgZg
+	V2KyVb1RCJFN/MXP5zSsGmIhnZS74xiQAgK7ICVEioSJHcmdWiMNHY8osCCjnkCjvMlJ1tTwydh
+	7sstBpGFBUCrsoj+ki58DcxJLh0ld/AyMB5xA+FVO
+X-Received: by 2002:a17:90b:4d84:b0:340:7b2e:64cc with SMTP id 98e67ed59e1d1-34947dbdb27mr7161692a91.15.1764943899449;
+        Fri, 05 Dec 2025 06:11:39 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHvIgH31sFc0fv/66qnhnm47zlrTrtPCxOOCtTotJgwqisCeo7VlZObp+bX3VPQSVYZkC+CVQ==
+X-Received: by 2002:a17:90b:4d84:b0:340:7b2e:64cc with SMTP id 98e67ed59e1d1-34947dbdb27mr7161643a91.15.1764943898915;
+        Fri, 05 Dec 2025 06:11:38 -0800 (PST)
+Received: from [192.168.29.116] ([49.37.148.233])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-34912d27040sm4502133a91.5.2025.12.05.06.11.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 05 Dec 2025 06:11:38 -0800 (PST)
+Message-ID: <dbd809fd-9d1e-435c-892b-4757f7edd9b7@oss.qualcomm.com>
+Date: Fri, 5 Dec 2025 19:41:32 +0530
 MIME-Version: 1.0
-X-ThreadId: A173SAdB9O0B
-Date: Fri, 05 Dec 2025 14:56:21 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Harshal Dev" <harshal.dev@oss.qualcomm.com>,
- "Jens Wiklander" <jens.wiklander@linaro.org>,
- "Arnd Bergmann" <arnd@kernel.org>
-Message-Id: <9e44024d-a649-49d6-825f-97f2a11e1691@app.fastmail.com>
-In-Reply-To: <45b5f14b-3746-4b05-a4b4-dc9f88e89e52@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] tee: fix tee_ioctl_object_invoke_arg padding
+To: Arnd Bergmann <arnd@arndb.de>, Jens Wiklander
+ <jens.wiklander@linaro.org>,
+        Arnd Bergmann <arnd@kernel.org>
 References: <20251204101730.1036671-1-arnd@kernel.org>
  <CAHUa44H1Ejbbuzr1hF1HrT69JGgnvfkkDkh+9KvEvBT+eWBDhw@mail.gmail.com>
  <45b5f14b-3746-4b05-a4b4-dc9f88e89e52@oss.qualcomm.com>
-Subject: Re: [PATCH] tee: fix tee_ioctl_object_invoke_arg padding
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Spamd-Bar: ----
+ <9e44024d-a649-49d6-825f-97f2a11e1691@app.fastmail.com>
+Content-Language: en-US
+In-Reply-To: <9e44024d-a649-49d6-825f-97f2a11e1691@app.fastmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+X-Authority-Analysis: v=2.4 cv=DOSCIiNb c=1 sm=1 tr=0 ts=6932e81c cx=c_pps
+ a=RP+M6JBNLl+fLTcSJhASfg==:117 a=v+kbWGyw1T97G6+vs1uYIQ==:17
+ a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=-jCBhvvmAAAA:20 a=VwQbUJbxAAAA:8
+ a=u8VM9LE-TGAWi8YemUAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=iS9zxrgQBfv6-_F4QbHw:22 a=bA3UWDv6hWIuX7UZL3qL:22
+X-Proofpoint-ORIG-GUID: EE4SytoDxm0E3GHHTHVngeADmv3xgPUw
+X-Proofpoint-GUID: EE4SytoDxm0E3GHHTHVngeADmv3xgPUw
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjA1MDEwMiBTYWx0ZWRfX1UYiWXIH36dd
+ lTfDZmjPYrEdS/T9s/+CsFziAgR1J750TUlcwIhm/ewRqwkf0fEZD+I3G/F4L5K7pXZ4ViJM8Q+
+ P162xLp4OlhMbMUzsZxpmECqfvUNZ+DFx7ghzFx1WtzrY3mti8SKFqYy32yEzgv7TcsLd1B9u3g
+ CUtersH51Ypiyl0YgNywuLl2tQw2GW2mE1Da85twUdltVb1B4MwGY9jsSJC4tMs4w7fwWUDxS4+
+ 9/xM0C594Um5N/LaUz7gS4s8p8BzjeYrk0ouZ1MNzmcYzokJ5GjRvfJlcMqr9LnL9h1xqF/241x
+ lsY0BdGFc41sOebMkr6VpSFOgp2Tnvojt0zoNhQxQvLtjy8YExM5vM3DygwsnTfbdW/t9R/q6DS
+ m/8J7nSCYAwIe7mmXmIZerJnzXTkSw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-05_05,2025-12-04_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
+ suspectscore=0 spamscore=0 phishscore=0 impostorscore=0 malwarescore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2510240001
+ definitions=main-2512050102
+X-Spamd-Bar: ------
 X-Rspamd-Server: lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 5FC884496A
-X-Spamd-Result: default: False [-4.09 / 15.00];
+X-Rspamd-Queue-Id: 37D66431E4
+X-Spamd-Result: default: False [-6.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[arndb.de,none];
-	R_DKIM_ALLOW(-0.20)[arndb.de:s=fm3,messagingengine.com:s=fm1];
-	R_SPF_ALLOW(-0.20)[+ip4:103.168.172.128/27];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[103.168.172.148:from];
-	XM_UA_NO_VERSION(0.01)[];
-	ASN(0.00)[asn:151847, ipnet:103.168.172.0/24, country:AU];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	TO_DN_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
 	MIME_TRACE(0.00)[0:+];
+	URIBL_BLOCKED(0.00)[qualcomm.com:dkim,mx0b-0031df01.pphosted.com:helo,mx0b-0031df01.pphosted.com:rdns];
+	MID_RHS_MATCH_FROM(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	DWL_DNSWL_NONE(0.00)[messagingengine.com:dkim];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	URIBL_BLOCKED(0.00)[arndb.de:dkim,fout-a5-smtp.messagingengine.com:helo,fout-a5-smtp.messagingengine.com:rdns];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.72:received];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[arndb.de:+,messagingengine.com:+]
-Message-ID-Hash: SEMGBCBJESEX6JW7B6C5NJIJWO3XTDVK
-X-Message-ID-Hash: SEMGBCBJESEX6JW7B6C5NJIJWO3XTDVK
-X-MailFrom: arnd@arndb.de
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_COUNT_THREE(0.00)[4];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+Message-ID-Hash: ZMRO46HVXT5IRTMQMLNHXKEAZXRPSFLV
+X-Message-ID-Hash: ZMRO46HVXT5IRTMQMLNHXKEAZXRPSFLV
+X-MailFrom: harshal.dev@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>, Sumit Garg <sumit.garg@kernel.org>, Alexandre Ghiti <alex@ghiti.fr>, Etienne Carriere <etienne.carriere@foss.st.com>, Randy Dunlap <rdunlap@infradead.org>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/SEMGBCBJESEX6JW7B6C5NJIJWO3XTDVK/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZMRO46HVXT5IRTMQMLNHXKEAZXRPSFLV/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Harshal Dev via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
 
-On Fri, Dec 5, 2025, at 14:45, Harshal Dev wrote:
-> On 12/4/2025 6:57 PM, Jens Wiklander wrote:
->> On Thu, Dec 4, 2025 at 11:17=E2=80=AFAM Arnd Bergmann <arnd@kernel.or=
-g> wrote:
->>=20
-> The only user-space client which is currently using this ABI (as per=20
-> our knowledge)
-> is the libqcomtee library:=20
-> https://github.com/quic/quic-teec/blob/main/libqcomtee/src/linux/tee.h=
-#L432
->
-> If I understand Arnd's concern correctly, if a compiler used to build=20
-> the user-space
-> client skips the padding for tee_ioctl_object_invoke_arg, it could lea=
-d=20
-> to issues.
->
-> Let's wait for Amir's view here as well, however I do think the=20
-> explicit padding would
-> benefit here.
->
-
-The problem is much narrower: as the amount of padding is determined
-by the architecture specific ABI, kernel and userspace on the same
-architecture always agree, and specifically 32-bit Arm userspace
-and 64-bit Arm userspace (aarch64) also have the same rules, so there
-is no problem on Qualcomm's platforms even with compat 32-bit userspace.
-
-The only actual ABI problem would happen on 32-bit x86 (i386)
-userspace running on a 64-bit x86 kernel, since i386-linux compilers
-have different alignment rules from most other architectures.
-
-        Arnd
+DQoNCk9uIDEyLzUvMjAyNSA3OjI2IFBNLCBBcm5kIEJlcmdtYW5uIHdyb3RlOg0KPiBPbiBGcmks
+IERlYyA1LCAyMDI1LCBhdCAxNDo0NSwgSGFyc2hhbCBEZXYgd3JvdGU6DQo+PiBPbiAxMi80LzIw
+MjUgNjo1NyBQTSwgSmVucyBXaWtsYW5kZXIgd3JvdGU6DQo+Pj4gT24gVGh1LCBEZWMgNCwgMjAy
+NSBhdCAxMToxN+KAr0FNIEFybmQgQmVyZ21hbm4gPGFybmRAa2VybmVsLm9yZz4gd3JvdGU6DQo+
+Pj4NCj4+IFRoZSBvbmx5IHVzZXItc3BhY2UgY2xpZW50IHdoaWNoIGlzIGN1cnJlbnRseSB1c2lu
+ZyB0aGlzIEFCSSAoYXMgcGVyIA0KPj4gb3VyIGtub3dsZWRnZSkNCj4+IGlzIHRoZSBsaWJxY29t
+dGVlIGxpYnJhcnk6IA0KPj4gaHR0cHM6Ly9naXRodWIuY29tL3F1aWMvcXVpYy10ZWVjL2Jsb2Iv
+bWFpbi9saWJxY29tdGVlL3NyYy9saW51eC90ZWUuaCNMNDMyDQo+Pg0KPj4gSWYgSSB1bmRlcnN0
+YW5kIEFybmQncyBjb25jZXJuIGNvcnJlY3RseSwgaWYgYSBjb21waWxlciB1c2VkIHRvIGJ1aWxk
+IA0KPj4gdGhlIHVzZXItc3BhY2UNCj4+IGNsaWVudCBza2lwcyB0aGUgcGFkZGluZyBmb3IgdGVl
+X2lvY3RsX29iamVjdF9pbnZva2VfYXJnLCBpdCBjb3VsZCBsZWFkIA0KPj4gdG8gaXNzdWVzLg0K
+Pj4NCj4+IExldCdzIHdhaXQgZm9yIEFtaXIncyB2aWV3IGhlcmUgYXMgd2VsbCwgaG93ZXZlciBJ
+IGRvIHRoaW5rIHRoZSANCj4+IGV4cGxpY2l0IHBhZGRpbmcgd291bGQNCj4+IGJlbmVmaXQgaGVy
+ZS4NCj4+DQo+IA0KPiBUaGUgcHJvYmxlbSBpcyBtdWNoIG5hcnJvd2VyOiBhcyB0aGUgYW1vdW50
+IG9mIHBhZGRpbmcgaXMgZGV0ZXJtaW5lZA0KPiBieSB0aGUgYXJjaGl0ZWN0dXJlIHNwZWNpZmlj
+IEFCSSwga2VybmVsIGFuZCB1c2Vyc3BhY2Ugb24gdGhlIHNhbWUNCj4gYXJjaGl0ZWN0dXJlIGFs
+d2F5cyBhZ3JlZSwgYW5kIHNwZWNpZmljYWxseSAzMi1iaXQgQXJtIHVzZXJzcGFjZQ0KPiBhbmQg
+NjQtYml0IEFybSB1c2Vyc3BhY2UgKGFhcmNoNjQpIGFsc28gaGF2ZSB0aGUgc2FtZSBydWxlcywg
+c28gdGhlcmUNCj4gaXMgbm8gcHJvYmxlbSBvbiBRdWFsY29tbSdzIHBsYXRmb3JtcyBldmVuIHdp
+dGggY29tcGF0IDMyLWJpdCB1c2Vyc3BhY2UuDQo+IA0KPiBUaGUgb25seSBhY3R1YWwgQUJJIHBy
+b2JsZW0gd291bGQgaGFwcGVuIG9uIDMyLWJpdCB4ODYgKGkzODYpDQo+IHVzZXJzcGFjZSBydW5u
+aW5nIG9uIGEgNjQtYml0IHg4NiBrZXJuZWwsIHNpbmNlIGkzODYtbGludXggY29tcGlsZXJzDQo+
+IGhhdmUgZGlmZmVyZW50IGFsaWdubWVudCBydWxlcyBmcm9tIG1vc3Qgb3RoZXIgYXJjaGl0ZWN0
+dXJlcy4NCj4gDQoNCldlbGwsIGFzIEplbnMgcG9pbnRlZCBvdXQsIHRoZSBURUVfSU9DX09CSkVD
+VF9JTlZPS0UgQUJJIHdoaWNoIHN1cHBvcnRzDQpvYmplY3QtYmFzZWQgSVBDIGN1cnJlbnRseSBo
+YXMgbm8gYmFjay1lbmQgZHJpdmVycyB0aGF0IGF0dGVtcHQgdG8gY29tbXVuaWNhdGUNCndpdGgg
+YSBURUUgcnVubmluZyBvbiB4ODYgYW5kIGltcGxlbWVudGluZyB0aGVpciBlbmQgb2YgdGhlIG9i
+amVjdC1JUEMgcHJvdG9jb2wNCmluIHRoZSBmaXJtd2FyZS4gU28gdGhpcyBvYnZpb3VzbHkgd29u
+J3QgYmUgYW4gaW1tZWRpYXRlIGlzc3VlLg0KDQpCdXQgYXMgeW91IHBvaW50ZWQgb3V0LCB0aGUg
+aXNzdWUgd291bGQgcG9wIHVwIGlmIHNvbWVvbmUgb24geDg2IGRlY2lkZXMgdG8gaW1wbGVtZW50
+DQppdCBhdCBzb21lIHBvaW50IGluIHRoZSBmYXIgYXdheSBmdXR1cmUuDQoNCkkgZG8gbm90IHNl
+ZSBhbnkgaGFybSB0aGlzIHBhdGNoIHdvdWxkIGRvIGZvciBvdXIgZXhpc3RpbmcgaW1wbGVtZW50
+YXRpb24sIHdlJ2xsDQpqdXN0IHVwZGF0ZSBvdXIgdXNlci1zcGFjZSBsaWJyYXJ5IEFCSSBpbi1s
+aW5lIHdpdGggdGhpcy4NCg0KVGhhbmtzLA0KSGFyc2hhbA0KDQo+ICAgICAgICAgQXJuZA0KDQo=
