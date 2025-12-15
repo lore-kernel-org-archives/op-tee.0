@@ -4,91 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9850CD59D99
-	for <op-tee@archiver.kernel.org>; Mon, 15 Dec 2025 07:35:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9BACD59D99
+	for <op-tee@archiver.kernel.org>; Mon, 15 Dec 2025 07:37:27 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id E55614FF1F
-	for <op-tee@archiver.kernel.org>; Mon, 15 Dec 2025 07:35:17 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 057824FEE3
+	for <op-tee@archiver.kernel.org>; Mon, 15 Dec 2025 07:37:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1765784118;
-	bh=cYCiu0imrD2CvDK/A947Dr692tcTAwbCYTNODNkDCDQ=;
+	d=lists.trustedfirmware.org; s=2024; t=1765784247;
+	bh=RhPEh+Z6TqhRBapUBK4SmmDU1NEAAQMBW5ldo7oAHDM=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=liWdfDrxvQM2OPPMVUw/lIxCHP7ePdmOVfuwsB15wP0h7fpAt0ysJdSK+L6Nw+WLB
-	 BIu2m2mszk/j+1VA+XDErIqACkn+VuX2fuMMOditMpGBkI4STkxjxnN/nXgrXoExNS
-	 VDXHuniL8h+p7MQS1gMx/87RNLPHPxS7a4yyzAsc+CcZVVkpD12QR1gBrr6BT9zdMB
-	 BSUwi/pn6PrmEi+RVY7qxoWRnj7fOwtdqdV9H3GWwVG6mx5woSEiw18SruoQ/teABw
-	 +Y2kPE90kP+L0B8qe3XpYyE0xUPI1at38lrVf31gR6O4bNUNk8382m2FQKw9jd96QB
-	 fjCwdj14wQjNA==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id E23044FECE
-	for <op-tee@lists.trustedfirmware.org>; Mon, 15 Dec 2025 07:34:43 +0000 (UTC)
+	b=plrl1RVv/1zAEfjcrDrsmBZft/GYrLJygJb6MRZ72VVl6ONOgT0Wt3cywoWsfq9B3
+	 uvEXF7DCHlPEKBYuUgFlJ8BKw5iXmcNFRGpeu8r3em8v6PVAQeh6+rd6/50LDF1ywC
+	 FAivbHxeekMYJ/QPD/CldYQoAEYvKBbFh2DYGPPs3cVIlS5H/EuwtoOBqCTGdS6vxY
+	 bMTMnSu9HwqHh3lFHVa1PCj1+IiG40q8py0hiHQbgRufqu3GdePQMXyI3U4KhSzFYn
+	 mP/v/f9STXvC92eCeylO6AKdyotAa3JUfn9Mjd+g4nO7Mz4FbLAZcl4fQEl3BBx6do
+	 wLKtpeJNS99OA==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id C78B64FECE
+	for <op-tee@lists.trustedfirmware.org>; Mon, 15 Dec 2025 07:36:07 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mWu4QSRe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TKoIYD90;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5D84D60127;
-	Mon, 15 Dec 2025 07:34:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E3B1C116B1;
-	Mon, 15 Dec 2025 07:34:39 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 33C4F43EBE;
+	Mon, 15 Dec 2025 07:36:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF9B0C4CEF5;
+	Mon, 15 Dec 2025 07:36:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765784083;
-	bh=MiHBA0Fjs39oJZsLunvPoV7wu3p/ufM0CWOh6Ua3eNw=;
+	s=k20201202; t=1765784167;
+	bh=SNNUq7KU8x7V29ijpjlfv//eZVaSmLl/pwwin6AI2Pc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=mWu4QSReA7/21kROu7snleZys0FL/fADcMJTYazobHY4EbQ2Qw2f6h+b755e4I0i7
-	 bnRee12hv1iJUspSw+0J/nTby197CFFgzJpwUv4i261oSadu0Ih20pDD6pYrTD59Hf
-	 ltw2if3QFcqm41srxhL+TuT/4R9/4XIH70Jm5p3WWJfIvVX1uKL09Rk51PCzy0xDHZ
-	 MzRTnOqK/uadzI3T297337WKalt6eeYNgTnQHcU8whfTPIfC4ySnUTVvZ6AdsvhwT/
-	 M4o4PnSAiuYE9QzaItYdQwev+FPUHgEO0uGxOseJDV5ZNgR5oJj8Vzasc5XIjFbY8Z
-	 uJzbre/hCy/1A==
-Date: Mon, 15 Dec 2025 16:34:37 +0900
+	b=TKoIYD90uMhvL1iKT6lsyEsfKo1ciIMwa87/Kxr9OUecFwxG7gh9QHOVQiGdWmvRb
+	 VVD/JYfzHq1k7pZ5iDCgzZ+WMxUXYRlXqhsAOSxlOL547VDldypSJD3eBJLxbHVS0V
+	 /I8FhmP8jqpM+6rX2VTe/DG33t8qA/CqMHoNkAZL7c+n/uMpWVlioZ9gLGyZqm5g/5
+	 E8ob/bFFCirmOEx3fE2APOW59zAZ91UxMtUNQ6QK7ACtrlys8omR6RxIxeH/pjsCFa
+	 uYNDcVAe7zMj0LxOCU0CZ5Sj29V6Tbuv/gokKX1TY/76V0XxYKHS8fJaqw8a+3ehr1
+	 AX9q/Af5TPLVg==
+Date: Mon, 15 Dec 2025 16:36:00 +0900
 To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>
-Subject: Re: [PATCH v1 13/17] firmware: tee_bnxt: Make use of tee bus methods
-Message-ID: <aT-6DVAIS2sK6pxZ@sumit-X1>
+Subject: Re: [PATCH v1 14/17] KEYS: trusted: Migrate to use tee specific
+ driver registration function
+Message-ID: <aT-6YJJRaLq5BcvQ@sumit-X1>
 References: <cover.1765472125.git.u.kleine-koenig@baylibre.com>
- <f0b513d92355a53d30d8fdfcbbf7250457ec470e.1765472125.git.u.kleine-koenig@baylibre.com>
+ <0b3ce259fa26e59ef24a91ca070e2b08feeede82.1765472125.git.u.kleine-koenig@baylibre.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <f0b513d92355a53d30d8fdfcbbf7250457ec470e.1765472125.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <0b3ce259fa26e59ef24a91ca070e2b08feeede82.1765472125.git.u.kleine-koenig@baylibre.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+X-Spamd-Result: default: False [-4.00 / 15.00];
+	BAYES_HAM(-3.00)[99.98%];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
 	MID_RHS_NOT_FQDN(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
 	MIME_GOOD(-0.10)[text/plain];
-	DNSWL_BLOCKED(0.00)[172.105.4.254:from];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FREEMAIL_CC(0.00)[linaro.org,broadcom.com,gmail.com,lists.trustedfirmware.org,vger.kernel.org];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MISSING_XM_UA(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	ALIAS_RESOLVED(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DNSWL_BLOCKED(0.00)[100.75.92.58:received];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: E23044FECE
+X-Rspamd-Queue-Id: C78B64FECE
 X-Spamd-Bar: ---
-Message-ID-Hash: ZE5VALFVHUNHSMMWAOIJ5YNZIRF3NWVI
-X-Message-ID-Hash: ZE5VALFVHUNHSMMWAOIJ5YNZIRF3NWVI
+Message-ID-Hash: YM2YPFRKFEHZWSIQET4BSM5L77MG7GEA
+X-Message-ID-Hash: YM2YPFRKFEHZWSIQET4BSM5L77MG7GEA
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Michael Chan <michael.chan@broadcom.com>, Pavan Chebbi <pavan.chebbi@broadcom.com>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>, Jarkko Sakkinen <jarkko@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, op-tee@lists.trustedfirmware.org, linux-integrity@vger.kernel.org, keyrings@vger.kernel.org, linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZE5VALFVHUNHSMMWAOIJ5YNZIRF3NWVI/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YM2YPFRKFEHZWSIQET4BSM5L77MG7GEA/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -98,76 +100,53 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Thu, Dec 11, 2025 at 06:15:07PM +0100, Uwe Kleine-K=F6nig wrote:
-> The tee bus got dedicated callbacks for probe and remove.
-> Make use of these. This fixes a runtime warning about the driver needing
-> to be converted to the bus methods.
+On Thu, Dec 11, 2025 at 06:15:08PM +0100, Uwe Kleine-K=F6nig wrote:
+> The tee subsystem recently got a set of dedicated functions to register
+> (and unregister) a tee driver. Make use of them. These care for setting t=
+he
+> driver's bus (so the explicit assignment can be dropped) and the driver
+> owner (which is an improvement this driver benefits from).
 >=20
 > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
 > ---
->  drivers/firmware/broadcom/tee_bnxt_fw.c | 16 +++++++---------
->  1 file changed, 7 insertions(+), 9 deletions(-)
+>  security/keys/trusted-keys/trusted_tee.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
 
 Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
 -Sumit
 
 >=20
-> diff --git a/drivers/firmware/broadcom/tee_bnxt_fw.c b/drivers/firmware/b=
-roadcom/tee_bnxt_fw.c
-> index fbdf1aa97c82..a706c84eb2b6 100644
-> --- a/drivers/firmware/broadcom/tee_bnxt_fw.c
-> +++ b/drivers/firmware/broadcom/tee_bnxt_fw.c
-> @@ -181,9 +181,9 @@ static int optee_ctx_match(struct tee_ioctl_version_d=
-ata *ver, const void *data)
->  	return (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE);
->  }
-> =20
-> -static int tee_bnxt_fw_probe(struct device *dev)
-> +static int tee_bnxt_fw_probe(struct tee_client_device *bnxt_device)
->  {
-> -	struct tee_client_device *bnxt_device =3D to_tee_client_device(dev);
-> +	struct device *dev =3D &bnxt_device->dev;
->  	int ret, err =3D -ENODEV;
->  	struct tee_ioctl_open_session_arg sess_arg;
->  	struct tee_shm *fw_shm_pool;
-> @@ -231,17 +231,15 @@ static int tee_bnxt_fw_probe(struct device *dev)
->  	return err;
->  }
-> =20
-> -static int tee_bnxt_fw_remove(struct device *dev)
-> +static void tee_bnxt_fw_remove(struct tee_client_device *bnxt_device)
->  {
->  	tee_shm_free(pvt_data.fw_shm_pool);
->  	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
->  	tee_client_close_context(pvt_data.ctx);
->  	pvt_data.ctx =3D NULL;
-> -
-> -	return 0;
->  }
-> =20
-> -static void tee_bnxt_fw_shutdown(struct device *dev)
-> +static void tee_bnxt_fw_shutdown(struct tee_client_device *bnxt_device)
->  {
->  	tee_shm_free(pvt_data.fw_shm_pool);
->  	tee_client_close_session(pvt_data.ctx, pvt_data.session_id);
-> @@ -258,12 +256,12 @@ static const struct tee_client_device_id tee_bnxt_f=
-w_id_table[] =3D {
->  MODULE_DEVICE_TABLE(tee, tee_bnxt_fw_id_table);
-> =20
->  static struct tee_client_driver tee_bnxt_fw_driver =3D {
-> +	.probe		=3D tee_bnxt_fw_probe,
-> +	.remove		=3D tee_bnxt_fw_remove,
-> +	.shutdown	=3D tee_bnxt_fw_shutdown,
->  	.id_table	=3D tee_bnxt_fw_id_table,
+> diff --git a/security/keys/trusted-keys/trusted_tee.c b/security/keys/tru=
+sted-keys/trusted_tee.c
+> index aa3d477de6db..3cea9a377955 100644
+> --- a/security/keys/trusted-keys/trusted_tee.c
+> +++ b/security/keys/trusted-keys/trusted_tee.c
+> @@ -264,7 +264,6 @@ static struct tee_client_driver trusted_key_driver =
+=3D {
+>  	.id_table	=3D trusted_key_id_table,
 >  	.driver		=3D {
->  		.name		=3D KBUILD_MODNAME,
-> -		.probe		=3D tee_bnxt_fw_probe,
-> -		.remove		=3D tee_bnxt_fw_remove,
-> -		.shutdown	=3D tee_bnxt_fw_shutdown,
+>  		.name		=3D DRIVER_NAME,
+> -		.bus		=3D &tee_bus_type,
+>  		.probe		=3D trusted_key_probe,
+>  		.remove		=3D trusted_key_remove,
 >  	},
->  };
+> @@ -272,12 +271,12 @@ static struct tee_client_driver trusted_key_driver =
+=3D {
 > =20
+>  static int trusted_tee_init(void)
+>  {
+> -	return driver_register(&trusted_key_driver.driver);
+> +	return tee_client_driver_register(&trusted_key_driver);
+>  }
+> =20
+>  static void trusted_tee_exit(void)
+>  {
+> -	driver_unregister(&trusted_key_driver.driver);
+> +	tee_client_driver_unregister(&trusted_key_driver);
+>  }
+> =20
+>  struct trusted_key_ops trusted_key_tee_ops =3D {
 > --=20
 > 2.47.3
 >=20
