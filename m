@@ -4,109 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8956DD5CC8F
-	for <op-tee@archiver.kernel.org>; Tue, 16 Dec 2025 09:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B17DD5E128
+	for <op-tee@archiver.kernel.org>; Tue, 16 Dec 2025 10:53:33 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id B2D074FE8E
-	for <op-tee@archiver.kernel.org>; Tue, 16 Dec 2025 09:21:46 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 65FD04FEDA
+	for <op-tee@archiver.kernel.org>; Tue, 16 Dec 2025 10:53:32 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=lTDemtPP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=JypnC0O7;
 	dkim-atps=neutral
-Received: from mail-yw1-f173.google.com (mail-yw1-f173.google.com [209.85.128.173])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8D5874FE8D
-	for <op-tee@lists.trustedfirmware.org>; Tue, 16 Dec 2025 09:21:29 +0000 (UTC)
-Received: by mail-yw1-f173.google.com with SMTP id 00721157ae682-78c686aa4f9so16527517b3.3
-        for <op-tee@lists.trustedfirmware.org>; Tue, 16 Dec 2025 01:21:29 -0800 (PST)
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 65A1B4FE8E
+	for <op-tee@lists.trustedfirmware.org>; Tue, 16 Dec 2025 10:53:16 +0000 (UTC)
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-640a0812658so7589954a12.0
+        for <op-tee@lists.trustedfirmware.org>; Tue, 16 Dec 2025 02:53:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1765876889; x=1766481689; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NGYedUjMSAQqTTCfPBzG7GGpp5/HnFYa13zWq/TfU5g=;
-        b=lTDemtPPZrvP4JnS3Kc52ANL4ZJVhlFGzEsMV2nZP2PkBj2ob4jPhbhXeZAw4A2V1b
-         tWyt4LkwsCCQKmOp/uLTRo7ojR1uI9PNe61BhTmAAUC1xQPw3D5BTH1LJccIdvPUerwv
-         PuiazL8BHaGdlXbxlZnh9HkSz0cV3/dmugA2SQx6PxJl/a6qWjAmjdCax8z3bZfdayj7
-         mSDn1RI8UVmAOYdY3DMVhJsW+NxfrKcBA624t8f/outT2JaSSFu8PB5JLHkKrgU4bQNm
-         zG5XyXY/OAu9HOBYzv3a+xBKrQQ1v5GHFkxNsJ3tjlc3cLFpQdu1jVt9JsRwq1KCye4P
-         0HHQ==
+        d=linaro.org; s=google; t=1765882395; x=1766487195; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=SyLRPeLgGroQt1zWR2UffRTFVA4a7Ly7CRnPUKhzpZ0=;
+        b=JypnC0O7KojsJLRDU6PMpeDdvf1Ajsg857oqwmQtBwI25tG1gSXYgQodFO+U9VSDS1
+         t5uqS7Zj6+n7voGcx5oDt4sadH/BZ2zIgSCX8Th6avKYEJIj7z6PP6jMjgC3pTQxzdA9
+         8HqCTTn6WXyzdn/jDeUQY7e8AMiFLw2FZz+zwUH9bkWqaoRglVcjyGStNcRRQ8JsH9js
+         Y7FMWraL+rIWrGJqGJgikgHqUjoYwVO6Kujm7/KWUxmS18YwWl8leoqJiyw01576cX2p
+         SmJ8Yn9Xu+Im5GHRE9r/6yIIcvh+6vYojMPBKlw5Qy3hKH3wIC/hKhjSGKYNomMWjy6q
+         hl5A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765876889; x=1766481689;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=NGYedUjMSAQqTTCfPBzG7GGpp5/HnFYa13zWq/TfU5g=;
-        b=uxc4qLZf6i8Q7sAk8JcBSfEi3QP2D8zAzQ1Wh4YT7pXQ+vVF3t0FWF7kMlHVOiiek7
-         gVI8fe/StSoZzT+dkVH6Xn4W2i9RszUldZSgp5ftUCpTq6GgsG9VPUgoSPFC/cZ5F12S
-         z3vO0+/RyEGUcuLUnshLfo564XtutB2zSFUASMbMwSbmRhOoVtCDD4mrpYU/dxHAWR4q
-         J8MzQhlxmQQ7iSeowjSav0yP7Rdd6aNoF8x8vGIH6QgiQnYpX0Y2lA1tyTEGqCxuj5C7
-         lwLwe0w6k/vvvF+JRSeDwDA88g7b/BdD9L/kv35V45jeo6TJjfmcrvBIlidXYmP8Qs+A
-         44tw==
-X-Forwarded-Encrypted: i=1; AJvYcCV0QR9HvO597Q84VbNF/Hzesw4OMiGtkkWnwiPYHhLMY9N+3ZGuB8llvGBTWBmbvWgRYSZf/dU=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Ywb5szrR5Fqx9ZODNqhvQYlGtqyGbB3HFkyIv9CUPcTWHJvXES3
-	DqrPQWiGQN4EM2te0HEtxG7JNSxWB6o59VtsaCV11za1qcqhVX0B4nlixFEzEmjTmFxeg8I0Duy
-	MsAaolrxsP5YOdDqM+kx27hDJ+QAOxgU+QlLA9qXQFQx3
-X-Gm-Gg: AY/fxX5/h3++CzF9pYKgnROMNw+xj8JBZcKyv6gr82f7z1ICsWkp2mXRzEmK3uyoJ6x
-	Xqw18Sf5l/DvQGunli5qOcWLRqPyiORNU+pOsQaBm/mgwOd6Q38/yLSISKcjFY5b7MJJxW2+XhR
-	+MdQGLkpiukUjjprS0flUFJOSi1NyhUn6nJ7V/SJ01ff//g+xLBXTs0+6qx3TvKsHkwRoCbtYuJ
-	zfxC9o5TS/PTD1cSiD/UTmaic2fw2Hcq6dvo9P5VMaY2gGCbpEpkS5Q9ik/ahdKEtBXzkmVreL3
-	SRAuIgkCkzRAai9ZXlXjQ5TY81DIKLmpWr+E6kL6EPGXgjDXgOX7wgYiZcyQ7TIIacVbndSLFcE
-	BB1EFlVOJGfDeacI8iCBx1/iyYnonddlszSeU68bRl+0LWHv1JTiV//SuO3Jjsbl0JXOaHE6sJU
-	vofXoOK7uG6icUfmpm1YaMF7rdayJI+S/ojpcnr9mrsQQFCDwFRzHavXwGTzalKSumUcvOgMvX4
-	bO1gQoilUrc5zlxHmP9z9dNvlg9qJvPBDjlGgVVJAHAwX7nqCIpB2SgsSqo6QI2xJDGfC8Cl79f
-	A2gmwXDA2dPq3wBFw1Rj151vnX3L3sSV
-X-Google-Smtp-Source: AGHT+IEAFokQb5D1JItH9s+uj3Sa3EAOeQhnCG2QizFVOaNkP6qUDXOVMm6HltsGpBU7JI8LFSpiz0VIaHoanmm6gBM=
-X-Received: by 2002:a05:690c:688f:b0:78d:6c06:4a0f with SMTP id
- 00721157ae682-78e6809a375mr112570247b3.0.1765876889065; Tue, 16 Dec 2025
- 01:21:29 -0800 (PST)
+        d=1e100.net; s=20230601; t=1765882395; x=1766487195;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=SyLRPeLgGroQt1zWR2UffRTFVA4a7Ly7CRnPUKhzpZ0=;
+        b=mU3/5a909Z+VhkvYnJxu0qcGrvT0xZA32UMotAaoBZzqAD9tJWtNmAb0a1SB92BkxW
+         o2wkP2eO5DBDph1+E8COpGoEtN+18Fo8LHCam9niTjyph2yNsippYv0/gdYKBz1VIO3o
+         AL5d48bGhKXs2C8N4UgSiSln1BiouIsDWfgxJVOfG0GnVaGkwRL7MHiY9HaS5BVEODst
+         NzspZK4F3LZYAkegy1+7d+CI1efL/W+ykY1I8l1LAP58zntQTxPUGjXRA2dnpZdBUpWC
+         E+pwiAPNuFWdC+xiu/11sDdVN5GW/QabDafMgB25ZvtOeCfjHybWEpfsopFD7z8ibCPL
+         6kVQ==
+X-Gm-Message-State: AOJu0YyEqGSQ6xqZ3W+NZHk3SPkJ+RMJYSzDMp0ATls9KNOuTwvRCWHa
+	wCu8ePpqCDOzWCRq7TGleU6cy35ZQsaBN3WLdtLesWF0n4OOpm6CVdviNM9BKlruBHtBaQ==
+X-Gm-Gg: AY/fxX7gQ5EfMOIH5zj74y9dbGrZ0dm+lDvMKJ3j+Hqis3JgLHHRynpSsyYMPMS/GVQ
+	l1hDRjzfnMvysuUi8b9b2jPiySQZgdl0fg/nffPoSoIh2UwtDMhL11JyV4zumSI5nkgAY6oZc+x
+	U+EN1vPg4TB5aDWWmdEaaQpBoAztQSEYNxd4m3UskpaIrsWf0ddQVO921eHlTlB9eWG6/RAG61r
+	6zhxQ74QrM/fKUdVASG1YAdaZYeUl/vdKLj5z+eT5XWHtiN3WwvUzNsnDSd1tNi/yR++ePb7Pzj
+	5RkhrloYztvo4BabjKDrX1t8dGg/GbGAyUWsXP/vl+awURjyBTTstqpEQDx9MSGY6WKWtIAl6ax
+	pH0rjQeKp85R4XmDKGE6+HsNzW+RaUjEWrcZThPsKufGviyGI3On/R87IngD9sDhmvnbR43gJnc
+	RgirlqwQ9zE0VZqPNcdQ7yjA==
+X-Google-Smtp-Source: AGHT+IGbhgIaUlkNBa5tk7YK+yQOOxN8cvoTlUAxi29CMCjzL9eXhnIrcz5Oao2N22vxzMHxnmk4kQ==
+X-Received: by 2002:a05:6402:2794:b0:649:81d3:e99e with SMTP id 4fb4d7f45d1cf-6499b1ceddemr12380833a12.25.1765882395289;
+        Tue, 16 Dec 2025 02:53:15 -0800 (PST)
+Received: from [10.100.0.2] ([194.15.111.154])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6498210fd44sm15847452a12.26.2025.12.16.02.53.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 16 Dec 2025 02:53:14 -0800 (PST)
+Message-ID: <f76a7766-08b9-4bc9-9d04-0ed61087ccc0@linaro.org>
+Date: Tue, 16 Dec 2025 11:53:13 +0100
 MIME-Version: 1.0
-References: <cover.1765791463.git.u.kleine-koenig@baylibre.com> <6a56ee61e485703d548e9e44d53b2920b4e43ca6.1765791463.git.u.kleine-koenig@baylibre.com>
-In-Reply-To: <6a56ee61e485703d548e9e44d53b2920b4e43ca6.1765791463.git.u.kleine-koenig@baylibre.com>
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Date: Tue, 16 Dec 2025 11:20:52 +0200
-X-Gm-Features: AQt7F2rtv6sYjRJcPW49bnernszF66e86Q28fTD0Bfhuswf7pxXDfIzUWVoUNmU
-Message-ID: <CAC_iWjLG7o96E=9W-cjJ=_622RFg-b9t6hQnMrSmgHS+ThaXyw@mail.gmail.com>
-Subject: Re: [PATCH v2 08/17] efi: stmm: Make use of module_tee_client_driver()
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: build breakage with SCMI
+To: Dan Carpenter <dan.carpenter@linaro.org>,
+ Valentin Caron <valentin.caron@foss.st.com>
+References: <aUBbXjP7B0jDVkeN@stanley.mountain>
+Content-Language: en-US
+From: Jerome Forissier <jerome.forissier@linaro.org>
+In-Reply-To: <aUBbXjP7B0jDVkeN@stanley.mountain>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.50 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
+X-Spamd-Result: default: False [-2.98 / 15.00];
+	BAYES_HAM(-2.98)[99.93%];
+	URI_HIDDEN_PATH(1.00)[https://github.com/OP-TEE/optee_os/blob/master/.github/workflows/ci.yml#L226];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.173:from];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	ARC_NA(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.208.42:from];
 	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	BLOCKLISTDE_FAIL(0.00)[209.85.128.173:server fail];
-	ALIAS_RESOLVED(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[linaro.org,kernel.org,gmail.com,foss.st.com,oss.qualcomm.com,siemens.com,vger.kernel.org,st-md-mailman.stormreply.com,lists.trustedfirmware.org,lists.infradead.org];
-	MISSING_XM_UA(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.42:from];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	RCPT_COUNT_THREE(0.00)[3];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.128.173:from];
+	FROM_HAS_DN(0.00)[];
+	BLOCKLISTDE_FAIL(0.00)[209.85.208.42:server fail];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	MID_RHS_MATCH_FROM(0.00)[];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 8D5874FE8D
+X-Rspamd-Queue-Id: 65A1B4FE8E
 X-Spamd-Bar: --
-Message-ID-Hash: M6FXSUQIAAM2FOFCQP77S7WPS5OFQKBI
-X-Message-ID-Hash: M6FXSUQIAAM2FOFCQP77S7WPS5OFQKBI
-X-MailFrom: ilias.apalodimas@linaro.org
+Message-ID-Hash: KERSRJRDS3SLM7X6MDXALTASUJDMQKJ7
+X-Message-ID-Hash: KERSRJRDS3SLM7X6MDXALTASUJDMQKJ7
+X-MailFrom: jerome.forissier@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Ard Biesheuvel <ardb@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>, Jan Kiszka <jan.kiszka@siemens.com>, linux-efi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, op-tee@lists.trustedfirmware.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+CC: op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/M6FXSUQIAAM2FOFCQP77S7WPS5OFQKBI/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/KERSRJRDS3SLM7X6MDXALTASUJDMQKJ7/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -114,55 +116,18 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-On Mon, 15 Dec 2025 at 16:17, Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@baylibre.com> wrote:
->
-> Reduce boilerplate by using the newly introduced module_tee_client_driver=
-().
-> That takes care of assigning the driver's bus, so the explicit assigning
-> in this driver can be dropped.
->
-> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
-> ---
-
-Acked-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-
->  drivers/firmware/efi/stmm/tee_stmm_efi.c | 14 +-------------
->  1 file changed, 1 insertion(+), 13 deletions(-)
->
-> diff --git a/drivers/firmware/efi/stmm/tee_stmm_efi.c b/drivers/firmware/=
-efi/stmm/tee_stmm_efi.c
-> index 65c0fe1ba275..5903811858b6 100644
-> --- a/drivers/firmware/efi/stmm/tee_stmm_efi.c
-> +++ b/drivers/firmware/efi/stmm/tee_stmm_efi.c
-> @@ -584,24 +584,12 @@ static struct tee_client_driver tee_stmm_efi_driver=
- =3D {
->         .id_table       =3D tee_stmm_efi_id_table,
->         .driver         =3D {
->                 .name           =3D "tee-stmm-efi",
-> -               .bus            =3D &tee_bus_type,
->                 .probe          =3D tee_stmm_efi_probe,
->                 .remove         =3D tee_stmm_efi_remove,
->         },
->  };
->
-> -static int __init tee_stmm_efi_mod_init(void)
-> -{
-> -       return driver_register(&tee_stmm_efi_driver.driver);
-> -}
-> -
-> -static void __exit tee_stmm_efi_mod_exit(void)
-> -{
-> -       driver_unregister(&tee_stmm_efi_driver.driver);
-> -}
-> -
-> -module_init(tee_stmm_efi_mod_init);
-> -module_exit(tee_stmm_efi_mod_exit);
-> +module_tee_client_driver(tee_stmm_efi_driver);
->
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Ilias Apalodimas <ilias.apalodimas@linaro.org>");
-> --
-> 2.47.3
->
+SGkgRGFuLA0KDQpPbiAxMi8xNS8yNSAyMDowMiwgRGFuIENhcnBlbnRlciB3cm90ZToNCj4gV2hl
+biBJIHRyeSBidWlsZGluZyB3aXRoIGBtYWtlIHJ1biBXSVRIX1NDTUk9eWAgdGhlbiB0aGUgYnVp
+bGQgZmFpbHM6DQo+IA0KPiBjb3JlL2xpYi9zY21pLXNlcnZlci9zY21pX3NlcnZlci5jOiBJbiBm
+dW5jdGlvbiDigJhzY21pX3NlcnZlcl9pbml0aWFsaXpl4oCZOg0KPiBjb3JlL2xpYi9zY21pLXNl
+cnZlci9zY21pX3NlcnZlci5jOjgzOjIyOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2Yg
+ZnVuY3Rpb24g4oCYc2NtaV9jb25maWd1cmXigJkgWy1XaW1wbGljaXQtZnVuY3Rpb24tZGVjbGFy
+YXRpb25dDQo+ICAgIDgzIHwgICAgICAgICAgICAgICAgIHJjID0gc2NtaV9jb25maWd1cmUoY2Zn
+KTsNCj4gICAgICAgfCAgICAgICAgICAgICAgICAgICAgICBefn5+fn5+fn5+fn5+fg0KPiANCj4g
+VGhpcyB3YXMgaW50cm9kdWNlZCBpbiBjb21taXQgY2U2ZWE0MTEyMDA4ICgic2NtaS1zZXJ2ZXI6
+IGNvbmZpZ3VyZQ0KPiBTQ1AtZmlybXdhcmUgZnJvbSBEVCIpLiAgQSBncmVwIGZvciBzY21pX2Nv
+bmZpZ3VyZSgpIHR1cm5zIHVwIGVtcHR5Lg0KPiBXYXMgcGFydCBvZiB0aGUgY29tbWl0IG1pc3Np
+bmc/DQoNCkkgc3VzcGVjdCB5b3VyIFNDUC1maXJtd2FyZSBzb3VyY2UgdHJlZSBpcyB0b28gb2xk
+LiBQbGVhc2Ugc2VlOg0KaHR0cHM6Ly9naXRodWIuY29tL09QLVRFRS9vcHRlZV9vcy9ibG9iL21h
+c3Rlci8uZ2l0aHViL3dvcmtmbG93cy9jaS55bWwjTDIyNg0KDQpUaGFua3MsDQotLSANCkplcm9t
+ZQ0KDQo+IA0KPiByZWdhcmRzLA0KPiBkYW4gY2FycGVudGVyDQo+IA0K
