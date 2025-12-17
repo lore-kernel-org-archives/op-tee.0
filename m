@@ -4,158 +4,298 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39A8AD6555E
-	for <op-tee@archiver.kernel.org>; Wed, 17 Dec 2025 12:24:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8792DD65C73
+	for <op-tee@archiver.kernel.org>; Wed, 17 Dec 2025 15:40:27 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 744614315E
-	for <op-tee@archiver.kernel.org>; Wed, 17 Dec 2025 12:24:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1765974241;
-	bh=Dbw+wemE0qXv+vVK+3pEg0NFkOQ/yshufK/8XvsLiJ8=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=TP+qe8fbZsu1T0kbKZ8tFfiWSI4LKBy5eVQpg3tSSU1eVDutYcg4bf/U4R4ybK7Pa
-	 kEdsuStIpzyxpuk+/ehG0YYhpa8MzWJxynM8t+V/0t8DXSRDIHB2CrQvO6dxjiudZS
-	 EGjNUbukIlEMPADVF88mUrR2AvZwqO7NKsio3GsvdfZ2MZLHrj9Td/c6rIOBb8pCDr
-	 aJ6l04EGUmjzXytHIkdx3HUK5S1yzDfrHqmsAW4czsghGPLOvQ/HHJwuv5NUjEr6Uj
-	 MdyOKftTdzBoM7AqLkRSgxcnLu2+G8fBz3T7xROYOLnUf+QS71mpTcT4Bgq7hfsreN
-	 0w4rEkTg/XYtQ==
-Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9B87E40AD0
-	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Dec 2025 12:23:44 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B51BF4FF33
+	for <op-tee@archiver.kernel.org>; Wed, 17 Dec 2025 15:40:26 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=forissier.org header.i=@forissier.org header.a=rsa-sha256 header.s=google header.b=FUuy1ZTx;
+	dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=JP5c52y3;
 	dkim-atps=neutral
-Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-34c363eb612so4185866a91.0
-        for <op-tee@lists.trustedfirmware.org>; Wed, 17 Dec 2025 04:23:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=forissier.org; s=google; t=1765974224; x=1766579024; darn=lists.trustedfirmware.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=NNqU5G1+bOHIgyxPUjuwkHdORAAeTRQSjJBMD39z25g=;
-        b=FUuy1ZTxh6jiqpRQ7HNdBlJqmjJFc2m05sOOZPXWCBf2H3yFuPqhHANRlQUAn0mRbk
-         9Pifq5pRlZQZb/j0wWS69RWl3DfH72BU5Y2TyE34pOqSJ6nsEhH2Z8nP68+VVZOFA95m
-         DDWmcq5URk2W2p5qiInDrnimS9+Ji6hwCx9/pCtLPVCAIh3XrYaexbJ6Qpe1BH0e4NEm
-         qyQ8j53TxoE25ozlLcBq9sfLR/2RwXikNcJ5cL9NM10p6fXJ4pDFXg51UyIsxaAzQ/pg
-         NvGbqjWD//nDi0a4/yKLWo1x9atsXFhvFx3QPRCbyAV/fyR9ZA0aB5ONYEQEoxo88shW
-         89cw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765974224; x=1766579024;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NNqU5G1+bOHIgyxPUjuwkHdORAAeTRQSjJBMD39z25g=;
-        b=DK5uI+k7fl3Lxe9pRr2Aw0Drxb3OzxG/9XQtOwaNiv/J1j2Xam6v3Jcv3jVwp2WIuV
-         +boABfcem/9iDfzbLMUtrApp4FRwRz3Kk5f+CIzdeeUIc/z2sk45RQYwQEMjmwBiO3/p
-         fV4KGFdchbtKIRNDMYVhOg1g+uRLYFaAfXL1MULpOOJ+NAlr3mk5qd5pMr4XnJAjdRrX
-         WjFCgfhOVBvEXosbUW2m5JaiF2N/LLBTXI7q3KT1VtWKw+wt8L2n997y6iPE1JXU1UFj
-         u32KGHVTKQS3Ko/qJ9Wi7SlGo8AuKuACI2l/3WXBZagVKXrlMdQyC3f2yRv8kjbgnOFC
-         Ut/A==
-X-Forwarded-Encrypted: i=1; AJvYcCV08r1yUUu05tYonFH+33QrUEHDDA3GXaPSCJ0Ugm9MQWsVID6zUAcN93CA19yVzCOF7NKt7tQ=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yyr0+51Hq+nz0d584TdPJ+yRbQQKGU9LEIpu9OAWlGUnySPc1o7
-	jlZeFNxfNjuZek291RqOzetkHKEYyPe8OTJwqOefnB/qMfXpBHO0ad2q9pOKDl0E60+qOAbc4jS
-	ey2zTUkQAdqZuAPro3P2P9ihdhRgLoFnCLJmYlBap4g==
-X-Gm-Gg: AY/fxX5XtcG2SQafS3v8IkwPgQxBSwHbT81De5OepolCCbM6A/4pTvuYgD10ZWC+gE+
-	5zJRoKKysaw9UhTO+ilCgpGZj0o0VwYIc1krCpxD5w1d4oheZ2qrZyJwRG5t4na27DEMwvQaJLz
-	Rw1E5MgSbLT/b0WL4MhRCt3rq32n0W99/FQA61QrnTEFJ4MtThEGBtBhCCcHEWqyYVucCcM3eyI
-	sMxkUcPvoVcm9w/hspgkEQ4WKwLbIUDt7fVTJPdxJhq44hEC5PYwtPBcvBd4PWUx+9UWw==
-X-Google-Smtp-Source: AGHT+IGBozllb/2h1ea2qiEh7ICSHUWvUqikLzwQ3tfjItVoV9tpEMJjMoXRDDyLItiPcMewTe/HjX4bZvzBh/GbJGw=
-X-Received: by 2002:a17:90b:3910:b0:343:e2ba:e8be with SMTP id
- 98e67ed59e1d1-34abd6da7afmr16631309a91.10.1765974223546; Wed, 17 Dec 2025
- 04:23:43 -0800 (PST)
+Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com [91.207.212.93])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0954F41B70
+	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Dec 2025 15:40:07 +0000 (UTC)
+Received: from pps.filterd (m0046660.ppops.net [127.0.0.1])
+	by mx07-00178001.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5BHFUGmo499675;
+	Wed, 17 Dec 2025 16:39:56 +0100
+Received: from duzpr83cu001.outbound.protection.outlook.com (mail-northeuropeazon11012038.outbound.protection.outlook.com [52.101.66.38])
+	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 4b3de1m1mf-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 17 Dec 2025 16:39:56 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ZXe+eStgSpdtbHcTMlHHQKkCYcWGjbQHVYKkM4ZTnx+2Y+orm939NuTD29wHzXqQL4iXiQS4xFSveOZtXTHPU48yIs3gm5p7QGCMy9KN2ksop7ujGhRCgNaxUib1KQxaMct+P1QdR9NgGzOULV5GQE22FmTp3J2H8z/qtufxpY1kyiD8yZvhNFDCDwOeGkwiGyrUefzE0RkDoB9Mbx0ipGVgQAYLfScVY1vrHpNzjbaik4edeSxhq6bz+vRJQOp2MzYTC67+tLZy40OJkrxLe1ojIs6LC8Zik4bg5JYZJg+bOWC20xZ+0ddiyzcIPlEfyzKbx5YDGPt/jFAJZS4RJA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=rvU0TwiJItTMqYadl8AqJJTIeGCTej1jA0kpxBiUUCI=;
+ b=vrt/EFT7qDsAyfZefyzaiXxpnmf7S7GVQdxKAd4sfSxAZflsuZAtKzZmlthyDaI7Lom9Bv3f3oXJSClSrSe2U6OzBv9qrgBB/2SX8kPD5Qa4noLuQPbzJTuLslofDtbiU4wzAl0UrW0at3uLWvjAHV3DsPg96fDJFB4y6aMmkvZfAuLpyJNUeOhqA221ppfH3eLJqpuX2zGg1FEpeehLj5XA6GiKp1AGdaoy/xaiE2uK2WPRmqza0B9SbMn/eXUf+jwlBkMJOFqtUS0vdfxY31ozcqRDoZ3iQ9MJSlhy58lrEE3XXFkWzKtELzXT+By5/U/NvXQV8LxnJrOaAohl2g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 164.130.1.60) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rvU0TwiJItTMqYadl8AqJJTIeGCTej1jA0kpxBiUUCI=;
+ b=JP5c52y3zq51jHZHLWLMv9C6YL+O10+X7dtU2ClGVB7oLTDkYYU4qAf3jJZEJ34zhofFIatRTl7vfXUlY1iiGyYO+T2QIGZDmIBBk5gmLmrsQVYMIM8ntLOJSXlVpZxG7Xwu/Y/M7vdpYec0TTkKejZQkjqUNUGCBf0nVomak9I69qfRWBYEXKrToEUsHi8JFZUReyj5IQbeQ9BeQVCHQvuE5D1+YAa2z/RqpJOWbgl687FUQiY/zZFhCCrLpdUdIMBuQSX4unaeZjgYduKPutbATr+QseDZ7OIpjQF55jzjmsNYoTSVrkvRLLhTrk3l4sTZSgUIZO9gmszWeMUioQ==
+Received: from AS9PR06CA0461.eurprd06.prod.outlook.com (2603:10a6:20b:49a::12)
+ by AS8PR10MB7231.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:20b:619::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.13; Wed, 17 Dec
+ 2025 15:39:54 +0000
+Received: from AM2PEPF0001C70D.eurprd05.prod.outlook.com
+ (2603:10a6:20b:49a:cafe::a) by AS9PR06CA0461.outlook.office365.com
+ (2603:10a6:20b:49a::12) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.7 via Frontend Transport; Wed,
+ 17 Dec 2025 15:39:45 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.60)
+ smtp.mailfrom=foss.st.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=foss.st.com;
+Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
+ designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
+ client-ip=164.130.1.60; helo=smtpO365.st.com;
+Received: from smtpO365.st.com (164.130.1.60) by
+ AM2PEPF0001C70D.mail.protection.outlook.com (10.167.16.201) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9434.6 via Frontend Transport; Wed, 17 Dec 2025 15:39:53 +0000
+Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
+ (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 17 Dec
+ 2025 16:40:37 +0100
+Received: from localhost (10.48.87.127) by STKDAG1NODE2.st.com (10.75.128.133)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 17 Dec
+ 2025 16:39:52 +0100
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier
+	<mathieu.poirier@linaro.org>,
+        Jens Wiklander <jens.wiklander@linaro.org>,
+        "Rob Herring" <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        "Conor Dooley" <conor+dt@kernel.org>,
+        Sumit Garg <sumit.garg@kernel.org>
+Subject: [PATCH v20 1/6] dt-bindings: firmware: Add TEE remoteproc service binding
+Date: Wed, 17 Dec 2025 16:39:12 +0100
+Message-ID: <20251217153917.3998544-2-arnaud.pouliquen@foss.st.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251217153917.3998544-1-arnaud.pouliquen@foss.st.com>
+References: <20251217153917.3998544-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-References: <aUBbXjP7B0jDVkeN@stanley.mountain> <f76a7766-08b9-4bc9-9d04-0ed61087ccc0@linaro.org>
- <aUFynAjN13O_ai_P@stanley.mountain>
-In-Reply-To: <aUFynAjN13O_ai_P@stanley.mountain>
-Date: Wed, 17 Dec 2025 13:23:31 +0100
-X-Gm-Features: AQt7F2ojcinNI4rZN865Y9XIEIlXI5m-KSQFIT7ynNINpMal0_zxRa6uWBQE3zI
-Message-ID: <CAA-cTWZa2jxmBg4iWNZr948XeNECgwizkeZRKN3ZvbdxLpJ8gg@mail.gmail.com>
-Subject: Re: build breakage with SCMI
-To: Dan Carpenter <dan.carpenter@linaro.org>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.48.87.127]
+X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
+ (10.75.128.133)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM2PEPF0001C70D:EE_|AS8PR10MB7231:EE_
+X-MS-Office365-Filtering-Correlation-Id: bb3c8c8a-2055-4b37-20f1-08de3d828609
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230040|36860700013|82310400026|376014|7416014|1800799024|13003099007;
+X-Microsoft-Antispam-Message-Info: 
+	=?us-ascii?Q?T5/G8WbgQekMePmqYcASZCBl343XH+nb89ba5MXYHlLpFQde/ba63HXZIxPE?=
+ =?us-ascii?Q?49M64NK4xNBtxioAgmrhADKwFMt1OZXbohvku0zGph5wKU74pF8SLBZHXV38?=
+ =?us-ascii?Q?ZIOuLVWFjvmF6FLZCEBpK7RuLgLiw+hTmHSmVsX3bJZeFL9keA7a/rtUl2DB?=
+ =?us-ascii?Q?eRhgiehayHbCKAnNTuhmHIsx0/95d2dV5CdYnWPFGyM7Tp87FyXqfj6NG93E?=
+ =?us-ascii?Q?hl6gBhob5ilgj2Li4JmJZrwx/pRhcsEceh8hlMYnKdqbCmLBiLtfi67Yv/SV?=
+ =?us-ascii?Q?KUrbkIxtkwv2hv8u9O/poxG9Q1nNDo5wWo5RCxFo471dB15HCjMlZ8xyYirR?=
+ =?us-ascii?Q?yGOlfyUlr1RL2WTChlswIQsvSCQZZf8oJXMn4YaKmr/e00HhitPTWZWqLRRk?=
+ =?us-ascii?Q?8uEnzsz+3tvE+zlltJIxkNSqlSOp4T/MRUXy7tPr4Euw9vU3CleGISgBm4Fw?=
+ =?us-ascii?Q?QCuW0PCjfurfehP5ntWvdAX5GhFbmOTviROow1/fSKPYqh7wqyN4jfZq/oSQ?=
+ =?us-ascii?Q?fpfERySJQ2/H+4W1byPq3G3qD8Q9nQ9BaotMgwzAxE8+T+EyDXr6kYsy6/eH?=
+ =?us-ascii?Q?+4NBtvxnmwT6LK/GM1qKI2kMo+S92AzzisddP7QecS5HiRv/OUBXGeVc3LBP?=
+ =?us-ascii?Q?fGjmRJcbMLoySzEP1+QYWdzMzy0t5iiRQ4+qVyn8Q6oLcIET41VpviiNvTEY?=
+ =?us-ascii?Q?ioQR+9vX/Y0SAHIYCRbl58GnZon49kDJQLETre5EbW7rnqx/HoYk0uglUUd2?=
+ =?us-ascii?Q?1cEVWl+I7Nby1MF9y6AHku3bdp+SKSvevuesNwuy6WS8wKcIOyMYyUd4xYXz?=
+ =?us-ascii?Q?Ttt3nJya4H67egNBL/+NcqdKfAZmaqLcFDHF+11NbimriQmGKM9ZYedk1Yq8?=
+ =?us-ascii?Q?FxwQCT0yUrAKSbo+BBxTafjAnw41LwLaELcT0vdIIkaZ+q+uglFbxFnMmnVI?=
+ =?us-ascii?Q?TNklr3TtG+E6/G9GSsk3JlQo36qOv75mE254WVgeaRUU3DGwwDYPya0MLgg0?=
+ =?us-ascii?Q?yB7MQu/jRixPCllT+qbZtdAJ++BWIiEjVRFzn2VuoxSl8JEZwH78P0Q41QPZ?=
+ =?us-ascii?Q?nJZlIX3RhqIsZVSg1dquIcMoUM5XIX0bhLcwC9MuPiaTZbu5XfrY+zGILt/x?=
+ =?us-ascii?Q?MicQtSMMV4VWtwFMlOrFVhJ8e3SWYK8DNwYOM3n0QEXjEZ4KFX1ucUeBkU6r?=
+ =?us-ascii?Q?yR4jmMHNOvpSqPq0AfS2SBZE2oZg4Xj2YK3jQeR2M8/KDG7wDqJMh7ofIhzW?=
+ =?us-ascii?Q?gQe15qegynNmrlGJ9dcaajmCP9CscEKptn9W9apLwOLvHxbaz8knvJ7kXOqa?=
+ =?us-ascii?Q?3dr0VnDjifadFXxfleBU4M9E29lfGsWZxTb2UQAeHkwAt0gYE5bTbGwwIvR8?=
+ =?us-ascii?Q?wt51z5DPDJkyBKjgWuTrcBOHUeNKOuRkksL2rhpLCFdt2EljRGDgIA86vLD3?=
+ =?us-ascii?Q?m26C0XPnWO5qojrcpR9oAknyzUiVWMmw7plqGt9XgtDokrqjz4oJrF8xF/n2?=
+ =?us-ascii?Q?cVb7YANAb1+yozg=3D?=
+X-Forefront-Antispam-Report: 
+	CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700013)(82310400026)(376014)(7416014)(1800799024)(13003099007);DIR:OUT;SFP:1101;
+X-OriginatorOrg: foss.st.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Dec 2025 15:39:53.6146
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: bb3c8c8a-2055-4b37-20f1-08de3d828609
+X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
+X-MS-Exchange-CrossTenant-AuthSource: 
+	AM2PEPF0001C70D.eurprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR10MB7231
+X-Authority-Analysis: v=2.4 cv=JeOxbEKV c=1 sm=1 tr=0 ts=6942cecc cx=c_pps
+ a=Ye+NqXUjxnSxkpZHLj4hLw==:117 a=uCuRqK4WZKO1kjFMGfU4lQ==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=FOPVHIcnkjUA:10 a=wP3pNCr1ah4A:10
+ a=s63m1ICgrNkA:10 a=KrXZwBdWH7kA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=gEfo2CItAAAA:8 a=8b9GpE9nAAAA:8 a=MdngEct1hBrlLFZYPjYA:9
+ a=sptkURWiP4Gy88Gu7hUp:22 a=T3LWEMljR5ZiDmsYVIUa:22
+X-Proofpoint-GUID: 1wJA3yjZtpCkFf2bmh_YLNTEovVwyZPK
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjE3MDEyMyBTYWx0ZWRfX8UEa8sAi0bvH
+ ci2MaOLoLt5y2a+8/n7QM3kwPfwTEq3sys7VTv1gg0d5+qtEfqKlHUB6gzCZ0VyhFD+dOO6f2qm
+ NJVSaAdPJXWSt1sREq2pblBTGg7Qu2MMZGHhfjmu0w4L7vNTG3cXJoqZbPiZ5+dDN44BQGa9bC6
+ dxYIixG0jJCwrY7YJRbGB9qzDPNVNF/ZhClHhMfBK6QIctf+IqO2Ej2IW6z3lp1h33wHMaKG0/N
+ JBBdhTDt4A8h+7iontCHNn8OCJbaQzFN1HvWruUoIMeUA8x2yBpQxSokpM6mqMp+ozqImba/pb2
+ eNt6APlioWXNyxEeYACXFGnXASONi7plsVWYfVuFv/TCk+jgrYMuf0ciXUmQdauRKpvFNA3pZOe
+ g5YhAfpcgVwT4qLrZYtNjOsMt/E4zw==
+X-Proofpoint-ORIG-GUID: 1wJA3yjZtpCkFf2bmh_YLNTEovVwyZPK
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-17_03,2025-12-16_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0
+ suspectscore=0 spamscore=0 bulkscore=0 priorityscore=1501 impostorscore=0
+ adultscore=0 lowpriorityscore=0 clxscore=1011 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2510240001 definitions=main-2512170123
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-1.85 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	R_MIXED_CHARSET(1.25)[subject];
-	URI_HIDDEN_PATH(1.00)[https://github.com/OP-TEE/optee_os/blob/master/.github/workflows/ci.yml#L226];
-	DMARC_POLICY_ALLOW(-0.50)[forissier.org,reject];
-	R_DKIM_ALLOW(-0.20)[forissier.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.216.42:from];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
-	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MISSING_XM_UA(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.42:from];
+X-Spamd-Result: default: False [-1.97 / 15.00];
+	BAYES_HAM(-2.87)[99.45%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
+	R_MISSING_CHARSET(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:91.207.212.93:c];
+	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector2];
+	RCVD_IN_DNSWL_LOW(-0.10)[91.207.212.93:from];
+	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	DKIM_TRACE(0.00)[foss.st.com:+];
+	MIME_TRACE(0.00)[0:+];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	FROM_EQ_ENVFROM(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	ASN(0.00)[asn:52129, ipnet:91.207.212.0/23, country:US];
+	TAGGED_RCPT(0.00)[dt];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DKIM_TRACE(0.00)[forissier.org:+]
+	DNSWL_BLOCKED(0.00)[2603:10a6:20b:49a::12:received,2603:10a6:20b:49a:cafe::a:received];
+	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=4446e2e4b6=arnaud.pouliquen@foss.st.com];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	HAS_XOIP(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[st.com:dkim];
+	ALIAS_RESOLVED(0.00)[];
+	BLOCKLISTDE_FAIL(0.00)[91.207.212.93:server fail,164.130.1.60:server fail,2603:10a6:20b:49a:cafe::a:server fail,2603:10a6:20b:49a::12:server fail,52.101.66.38:server fail];
+	FORGED_SENDER_VERP_SRS(0.00)[];
+	RCVD_COUNT_SEVEN(0.00)[7]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 9B87E40AD0
+X-Rspamd-Queue-Id: 0954F41B70
 X-Spamd-Bar: -
-Message-ID-Hash: EJVM65Y4J7JL4AUKXDC4AFRLY3IN2E55
-X-Message-ID-Hash: EJVM65Y4J7JL4AUKXDC4AFRLY3IN2E55
-X-MailFrom: jerome@forissier.org
+Message-ID-Hash: MLILVOW2FTHIC7IKD2G2BRFJU25QPTTV
+X-Message-ID-Hash: MLILVOW2FTHIC7IKD2G2BRFJU25QPTTV
+X-MailFrom: prvs=4446e2e4b6=arnaud.pouliquen@foss.st.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="UTF-8"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: Jerome Forissier <jerome.forissier@linaro.org>, Valentin Caron <valentin.caron@foss.st.com>, op-tee@lists.trustedfirmware.org
+CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/EJVM65Y4J7JL4AUKXDC4AFRLY3IN2E55/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MLILVOW2FTHIC7IKD2G2BRFJU25QPTTV/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: =?utf-8?q?J=C3=A9r=C3=B4me_Forissier_via_OP-TEE?= <op-tee@lists.trustedfirmware.org>
-Reply-To: =?UTF-8?B?SsOpcsO0bWUgRm9yaXNzaWVy?= <jerome@forissier.org>
 
-T24gVHVlLCBEZWMgMTYsIDIwMjUgYXQgMzo1NOKAr1BNIERhbiBDYXJwZW50ZXIgPGRhbi5jYXJw
-ZW50ZXJAbGluYXJvLm9yZz4NCndyb3RlOg0KDQo+IE9uIFR1ZSwgRGVjIDE2LCAyMDI1IGF0IDEx
-OjUzOjEzQU0gKzAxMDAsIEplcm9tZSBGb3Jpc3NpZXIgd3JvdGU6DQo+ID4gSGkgRGFuLA0KPiA+
-DQo+ID4gT24gMTIvMTUvMjUgMjA6MDIsIERhbiBDYXJwZW50ZXIgd3JvdGU6DQo+ID4gPiBXaGVu
-IEkgdHJ5IGJ1aWxkaW5nIHdpdGggYG1ha2UgcnVuIFdJVEhfU0NNST15YCB0aGVuIHRoZSBidWls
-ZCBmYWlsczoNCj4gPiA+DQo+ID4gPiBjb3JlL2xpYi9zY21pLXNlcnZlci9zY21pX3NlcnZlci5j
-OiBJbiBmdW5jdGlvbg0KPiDigJhzY21pX3NlcnZlcl9pbml0aWFsaXpl4oCZOg0KPiA+ID4gY29y
-ZS9saWIvc2NtaS1zZXJ2ZXIvc2NtaV9zZXJ2ZXIuYzo4MzoyMjogZXJyb3I6IGltcGxpY2l0IGRl
-Y2xhcmF0aW9uDQo+IG9mIGZ1bmN0aW9uIOKAmHNjbWlfY29uZmlndXJl4oCZIFstV2ltcGxpY2l0
-LWZ1bmN0aW9uLWRlY2xhcmF0aW9uXQ0KPiA+ID4gICAgODMgfCAgICAgICAgICAgICAgICAgcmMg
-PSBzY21pX2NvbmZpZ3VyZShjZmcpOw0KPiA+ID4gICAgICAgfCAgICAgICAgICAgICAgICAgICAg
-ICBefn5+fn5+fn5+fn5+fg0KPiA+ID4NCj4gPiA+IFRoaXMgd2FzIGludHJvZHVjZWQgaW4gY29t
-bWl0IGNlNmVhNDExMjAwOCAoInNjbWktc2VydmVyOiBjb25maWd1cmUNCj4gPiA+IFNDUC1maXJt
-d2FyZSBmcm9tIERUIikuICBBIGdyZXAgZm9yIHNjbWlfY29uZmlndXJlKCkgdHVybnMgdXAgZW1w
-dHkuDQo+ID4gPiBXYXMgcGFydCBvZiB0aGUgY29tbWl0IG1pc3Npbmc/DQo+ID4NCj4gPiBJIHN1
-c3BlY3QgeW91ciBTQ1AtZmlybXdhcmUgc291cmNlIHRyZWUgaXMgdG9vIG9sZC4gUGxlYXNlIHNl
-ZToNCj4gPg0KPiBodHRwczovL2dpdGh1Yi5jb20vT1AtVEVFL29wdGVlX29zL2Jsb2IvbWFzdGVy
-Ly5naXRodWIvd29ya2Zsb3dzL2NpLnltbCNMMjI2DQo+ID4NCj4NCj4gSHVoLiAgVGhhbmtzLiAg
-VGhhdCBmaXhlcyB0aGUgYnVpbGQuICBJIGhhZCB1c2VkIHRoaXMgY29tbWFuZDoNCj4NCj4gcmVw
-byBpbml0IC11IGh0dHBzOi8vZ2l0aHViLmNvbS9PUC1URUUvbWFuaWZlc3QuZ2l0IC1tIHFlbXVf
-djgueG1sDQo+DQo+IGh0dHBzOi8vZ2l0aHViLmNvbS9PUC1URUUvbWFuaWZlc3QvYmxvYi9tYXN0
-ZXIvcWVtdV92OC54bWwNCj4NCj4gVGhhdCBtYW5pZmVzdCBmaWxlIGNoZWNrcyBvdXQgcmV2aXNp
-b249InJlZnMvdGFncy92Mi4xNi4wIiB3aGljaCBkb2Vzbid0DQo+IGJ1aWxkLiAgQWN0dWFsbHks
-IGFsbCB0aGUgbWFuaWZlc3QgZmlsZXMgd2hpY2ggcmVmZXJlbmNlIFNDUCBhcmUgdG9vIG9sZDoN
-Cj4NCj4gcWVtdV92OC54bWw6ICAgICAgICA8cHJvamVjdCBwYXRoPSJTQ1AtZmlybXdhcmUiDQo+
-ICBuYW1lPSJsaW5hcm8tc3dnL1NDUC1maXJtd2FyZS5naXQiDQo+ICByZXZpc2lvbj0icmVmcy90
-YWdzL3YyLjE2LjAiIGNsb25lLWRlcHRoPSIxIiAvPg0KPiBzdG0zMm1wMS54bWw6ICAgICAgICA8
-cHJvamVjdCBwYXRoPSJzY3AtZmlybXdhcmUiDQo+ICBuYW1lPSJmaXJtd2FyZS9TQ1AtZmlybXdh
-cmUuZ2l0IiByZXZpc2lvbj0icmVmcy90YWdzL3YyLjE1LjAiDQo+IHJlbW90ZT0iYXJtLWdpdGxh
-YiIgY2xvbmUtZGVwdGg9IjEiIC8+DQo+IHN5bnF1YWNlci54bWw6ICAgICAgICA8cHJvamVjdCBw
-YXRoPSJTQ1AtZmlybXdhcmUiDQo+ICBuYW1lPSJBUk0tc29mdHdhcmUvU0NQLWZpcm13YXJlLmdp
-dCINCj4gIHJldmlzaW9uPSI1NmQ0ZjUxNWJjZjFiYzFiODQzYWJlMzQzZTljZjlkYzQ0ODk4Y2Ey
-IiAvPg0KPg0KPg0KVGhlIGxhdGVzdCByZWxlYXNlIHRhZyBJIGNhbiBzZWUgb24gR2l0TGFiIGlz
-IHYyLjE2LjAsIGRvIHlvdSBrbm93IGlmIHRoZXJlDQppcyBnb2luZyB0byBiZSBhIHJlbGVhc2Ug
-c29vbj8gSW4gdGhpcyBjYXNlIHdlIGNvdWxkIHdhaXQgYmVmb3JlIHVwZGF0aW5nDQp0aGUgbWFu
-aWZlc3RzLiBPdGhlcndpc2UsIHVzaW5nIGEgU0hBLTEgaXMgZmluZS4NCldvdWxkIHlvdSBtaW5k
-IGNyZWF0aW5nIGEgcHVsbCByZXF1ZXN0Pw0KDQpUaGFua3MsDQotLSANCkplcm9tZQ0KDQpyZWdh
-cmRzLA0KPiBkYW4gY2FycGVudGVyDQo+DQo+DQo=
+Add a device tree binding for the TEE-based remote processor control
+service implemented as an OP-TEE Trusted Application identified by
+UUID 80a4c275-0a47-4905-8285-1486a9771a08.
+
+The TEE service node is a child of the "linaro,optee-tz" firmware node and
+acts as a container for remoteproc devices that are controlled via TEE.
+
+In addition, the "linaro,optee-tz" binding is updated to specify the
+'#address-cells' and '#size-cells' values used for child TEE service
+nodes.
+
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+ .../arm/firmware/linaro,optee-tz.yaml         |  6 +++
+ .../bindings/remoteproc/remoteproc-tee.yaml   | 47 +++++++++++++++++++
+ 2 files changed, 53 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+
+diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+index 5d033570b57b..ab69eecba9ad 100644
+--- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
++++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+@@ -41,6 +41,12 @@ properties:
+       HVC #0, register assignments
+       register assignments are specified in drivers/tee/optee/optee_smc.h
+ 
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
+ required:
+   - compatible
+   - method
+diff --git a/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml b/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+new file mode 100644
+index 000000000000..083ecf1f38cf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+@@ -0,0 +1,47 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/remoteproc/remoteproc-tee.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: TEE Remote Processor Control Service (UUID 80a4c275-0a47-4905-8285-1486a9771a08)
++
++maintainers:
++  - Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
++
++description: |
++  Node describing a TEE-based remote processor control service implemented as
++  a Trusted Application identified by UUID 80a4c275-0a47-4905-8285-1486a9771a08.
++
++  It is a child of the OP-TEE firmware node ("linaro,optee-tz") and acts as a
++  container for child remoteproc devices (for example, the STM32MP15 M4 core
++  described by "st,stm32mp1-tee").
++
++properties:
++  compatible:
++    const: rproc-service-80a4c275-0a47-4905-8285-1486a9771a08
++
++  reg:
++    description: |
++      Logical identifier of the TEE remoteproc service instance.
++    maxItems: 1
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++patternProperties:
++  "^[a-zA-Z0-9,._-]+@[0-9a-fA-F]+$":
++    type: object
++
++
++required:
++  - compatible
++  - reg
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties: false
++...
+-- 
+2.43.0
+
