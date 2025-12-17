@@ -4,196 +4,367 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB395D68BCB
-	for <op-tee@archiver.kernel.org>; Thu, 18 Dec 2025 07:21:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F784D68BE8
+	for <op-tee@archiver.kernel.org>; Thu, 18 Dec 2025 07:31:03 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id F265B4FF49
-	for <op-tee@archiver.kernel.org>; Thu, 18 Dec 2025 07:21:57 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id C26EA4FF3E
+	for <op-tee@archiver.kernel.org>; Thu, 18 Dec 2025 07:31:02 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=qZX2J9el;
+	dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=Kvq6K6b1;
 	dkim-atps=neutral
-Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 6A7554FF3D
-	for <op-tee@lists.trustedfirmware.org>; Thu, 18 Dec 2025 07:21:41 +0000 (UTC)
-Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-65749fe614bso80424eaf.1
-        for <op-tee@lists.trustedfirmware.org>; Wed, 17 Dec 2025 23:21:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1766042501; x=1766647301; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=u95c9TyT1XdaOnIyGBwMeLSiKMNJeuqg+7XxBfANtKE=;
-        b=qZX2J9eltoPnc9tNJJJoPRg4ZoZPHPru+Czm32mTuH1I4w83iPI/8R0VVCdtSmGbaX
-         b12gSW8j5NDpFeWzNy/Ht/V4xIaMdJ5I0b8izoo81SOr88EO3XMKB+FNrnSjQ1Tryavc
-         fy8Bttw6GBne88/DQOT8AHvp0LHa7ZLNOrRE+KFgO99ZetIZHh3/ezC9HdHi0cpbNRxw
-         FQo7zWWkZAeKQmSNLB83vKWUcFwixNo73uv2vsiL16um7lza8IOgV8luW1NsXPeG2mWn
-         grd4OdhkTxhsu1Wb2lj1qXxN7Pzo30yc8p186X4qWSeLJPxKrKdBpYcSSYKHzFq/+YQo
-         7qUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766042501; x=1766647301;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=u95c9TyT1XdaOnIyGBwMeLSiKMNJeuqg+7XxBfANtKE=;
-        b=KNWBJla9UezrUinlJfy7bPgmqhiUeyPpiqw5CSRWvIh3hRVv/aNV6LQaMafEg7ZNZC
-         /81a0pZ9dTbTX2vo2RObujvYdeKDei/xInkfJiWtDwjllA7fo0Xq/WAH5RetEe9n827R
-         sSbaH1EEu0xkaqmZJ/MsU5BFdguP9F7lLvptOdG+9ROXho9jGUxVOuKpdX/fMLlrMQu6
-         G/sdiIRZh8/JkwGbVi6ZRT/R8XfGfi1Wss71WD7LxVj/dVR5uo0lViu7yz2bQm4Az/Qc
-         mGud7b/WFIKRsihj5cZwUIJBSyp0X95hiC0CCNrUFeiekCvgdMKkqo0n/qrpQF8g0WuQ
-         4NYw==
-X-Forwarded-Encrypted: i=1; AJvYcCXQjWcPB5uoHMUiTTNYZu6KiOBXVHWLsTxmKo/irHi9Dt6YDPrMF2/LNZGGwHeCVlKciqHVtRw=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YyAv0AuW8zZfWUlpX/Yf8J3AF4JbA2G9B+M7xfcCdpmixz8vdR1
-	zSjvRbOjZCNEHQZ3pdSc0gGdfgdOq0De+no4Y3GjbYM++aAPStfQ0S9O2ms/0aSZ+Kqabq2jvPR
-	ICdQoUZ1onzRu30JQ1cw4iZ1KFYlQgLCw2GUkOBVsTf8B
-X-Gm-Gg: AY/fxX5m/0dHrYJ9JyjVBOx+h1I3O8RD233365jjPfvO5+DUA3HfPwmf3SlP4M9ROWU
-	8m0jTZZIbjqEFdG9iGkQPm3kGWIL6CjiLYn37B4nDvYWcw4BYOamRXJtDfWFt4PilRH7CDJIVXB
-	94F6UJmgrmpUz4cZliexOgnBHHh4mhP5fUsbxTjTh/n74nCeZF4af/f0hYox/DE+li4wAfutPuY
-	GLTJjEojC7KvZw3DzL5gEOI9dj3tzs4irlZIwc816r+4qP735oM6Z6kjOagb+ncgdX4O2LTgvWT
-	CQy69wZ0fYnAC1IR9XybAAWUyw==
-X-Google-Smtp-Source: AGHT+IHdzsrnh67Z+uk7sg0iAMocZMySikku48EGz5g7L5MG+hq7iSRlseyY2l5vM8LHePwozU/hD6rMNUuAq73AgFc=
-X-Received: by 2002:a05:6820:828:b0:65c:f41b:7119 with SMTP id
- 006d021491bc7-65cf41b750emr1784992eaf.5.1766042500598; Wed, 17 Dec 2025
- 23:21:40 -0800 (PST)
+Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com [91.207.212.93])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 266A640AD1
+	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Dec 2025 15:46:27 +0000 (UTC)
+Received: from pps.filterd (m0046661.ppops.net [127.0.0.1])
+	by mx07-00178001.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5BHFdn8t072175;
+	Wed, 17 Dec 2025 16:39:57 +0100
+Received: from pa4pr04cu001.outbound.protection.outlook.com (mail-francecentralazon11013009.outbound.protection.outlook.com [40.107.162.9])
+	by mx07-00178001.pphosted.com (PPS) with ESMTPS id 4b3gavkjdq-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 17 Dec 2025 16:39:56 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=So7HCY1GK9Qh+RwlMYwpkp5TNJbNC/c1lAo1mc0nbmsRHjoZsxOUip9NYRGl4zQFWc2lgXMEMjrtxmrzfhkimDkoU4Teye7UjmtevcfSA52Wty+JDq7L4jVBJd1lberCZdKBPHpmMGjJKx6OgCFTEOeotRlzyyaLMxjRfvU+yJKIn0JQGSOsDIKAZ0J7JM53blo4uJ0cwfgqi2WJVee9h14WAFXRo2putCMSJE/aZt41RUB1OQHv/WDQmjagLSCi/fylFdnwR87rloAPVBpHbJYcq+JqQ4tD0jsHlm7FHq8rgkKhfwrgZuk0CxVp2o2mGczJXZyOgcu1Di0DFMzQCw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=vVnX47y9eLUnyonTmsIYsd1TzbP1+Mgmimqn69+e4g0=;
+ b=NWvU5pGCXiE5F0/zjmCAgPyLqDZ+XLFalH0cu2vULerSnTE7sQ7xIgX4tVz4MviPQ8+ZimDb7suU6eZRVybjMkQNEVykc+2phAzbxkqf+nrxkAeWSW5Zop6tVEnMz8CMJ4vavuDaYOgR2abRNnSTnvD53cFqyZq/gKW58RgBfY08dHYlKN+6xARH+jBa8mxqcutJn49tnhGCq2QpJ+mPQ62R/pXqLvtBPKewaLld2KAzzFhWM8n6Le8GIBJulF26AzPsZbMoR17K0o92qUFG0uHGmRCPVp7AjsYBKtmdMjM5OVwFf10pwjesnamRmHJSNgbzR4+p4UUFA+0JF7spCQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 164.130.1.59) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=vVnX47y9eLUnyonTmsIYsd1TzbP1+Mgmimqn69+e4g0=;
+ b=Kvq6K6b1mqmdhtH+/yJK2pnJuaFYLuU8tMveMOginleTrW3BzBgVIsZjC7G9qCg1u81tiPq4jKPKJOzODFe5DWHrlR4Ec3K+6ef+E3zVW29Sc/mIQex4Dodcu0MCbroMi4YhUkBhoE5TSE4vVqorHdIOuEGn91TXUQXUCdRYpGnNSXhPn6rtJqI87fjQH8sn1Ln+svji+CSMUeFDcwErgak5O9WZC1XHZIYqrFcV0GKEiHzTpVAqjlpyvN7fpCUZpVbpBnwN6LgmXyofg3g7bhB08javgLasCfCJmBnhbuBMBNULDnmX1IR0sQiiORz3T+8Di/olHCRGlJU2VDN0EQ==
+Received: from AS4P251CA0014.EURP251.PROD.OUTLOOK.COM (2603:10a6:20b:5d2::14)
+ by AM7PR10MB3271.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:20b:10d::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.6; Wed, 17 Dec
+ 2025 15:39:52 +0000
+Received: from AMS0EPF00000194.eurprd05.prod.outlook.com
+ (2603:10a6:20b:5d2:cafe::d4) by AS4P251CA0014.outlook.office365.com
+ (2603:10a6:20b:5d2::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9434.6 via Frontend Transport; Wed,
+ 17 Dec 2025 15:39:51 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.59)
+ smtp.mailfrom=foss.st.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=foss.st.com;
+Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
+ designate 164.130.1.59 as permitted sender) receiver=protection.outlook.com;
+ client-ip=164.130.1.59; helo=smtpO365.st.com;
+Received: from smtpO365.st.com (164.130.1.59) by
+ AMS0EPF00000194.mail.protection.outlook.com (10.167.16.214) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9434.6 via Frontend Transport; Wed, 17 Dec 2025 15:39:52 +0000
+Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpo365.st.com
+ (10.250.44.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 17 Dec
+ 2025 16:40:40 +0100
+Received: from localhost (10.48.87.127) by STKDAG1NODE2.st.com (10.75.128.133)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 17 Dec
+ 2025 16:39:51 +0100
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier
+	<mathieu.poirier@linaro.org>,
+        Jens Wiklander <jens.wiklander@linaro.org>,
+        "Rob Herring" <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        "Conor Dooley" <conor+dt@kernel.org>,
+        Sumit Garg <sumit.garg@kernel.org>
+Subject: [PATCH v20 0/6] Introduction of a remoteproc tee to load signed firmware
+Date: Wed, 17 Dec 2025 16:39:11 +0100
+Message-ID: <20251217153917.3998544-1-arnaud.pouliquen@foss.st.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-References: <cover.1765791463.git.u.kleine-koenig@baylibre.com>
-In-Reply-To: <cover.1765791463.git.u.kleine-koenig@baylibre.com>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Thu, 18 Dec 2025 08:21:27 +0100
-X-Gm-Features: AQt7F2r_j21Nqcv1IzhOT6jk9UPtvnwA1D3etXiTv5WveGJRYXXMC9qqoGF_Yc4
-Message-ID: <CAHUa44FrDZbvRvfN8obf80_k=Eqxe9YxHpjaE5jU7nkxPUwfag@mail.gmail.com>
-Subject: Re: [PATCH v2 00/17] tee: Use bus callbacks instead of driver callbacks
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.60 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.48.87.127]
+X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
+ (10.75.128.133)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMS0EPF00000194:EE_|AM7PR10MB3271:EE_
+X-MS-Office365-Filtering-Correlation-Id: 13ff0a73-4e73-4ed9-4687-08de3d828544
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230040|36860700013|7416014|376014|30052699003|82310400026|1800799024|13003099007;
+X-Microsoft-Antispam-Message-Info: 
+	=?us-ascii?Q?/APLkWxUSO8J68BORPUBP0x2lV1vVsx6XlGESciGBywAEcuL1yrLjJ8zZIja?=
+ =?us-ascii?Q?cqK04FOVJWHPpPpfkhEYOHt1Y/1By3VsP/D5bVX/9lLhV+InYiFlLe4rP8PV?=
+ =?us-ascii?Q?N6kjD8+9kyg31K9nMrA3z3LFs82DDY+zLvjAlYFR/kDCwUChxtGWxG9CQQUr?=
+ =?us-ascii?Q?ZNbbh9L9MtEeEpG7xO4+4niDt2J3LZr0iEy08gxD5sQdTLIGc3gGwE23XTjd?=
+ =?us-ascii?Q?KH74/7Kg/mtzLGAE2gvVwl6xJpYlQlkg5GV2MFQgRhBfrJOV9P0jCwgeExZE?=
+ =?us-ascii?Q?JV54Xa04wFw6Wmh0t9p+ZCLHwtZ5X8VHUzbkKQYGTfkEk5pFeUg5n80HrPcA?=
+ =?us-ascii?Q?Ey/Oiv410u1k4RrrPcIKzeABm+pVB9xI3D00pc2o6WFDa6Mm5j9JCKGIlX+o?=
+ =?us-ascii?Q?gh1DqLqt82yh+NYwjwZocddeZgb6bBHfu7UTHE403t3AZSQWILzKS6OIljY4?=
+ =?us-ascii?Q?pxcQCztx38pWjX6nngnNJFSQ53a/GZIzeaiohFMzmq00K2BooKn++GkuHAiW?=
+ =?us-ascii?Q?4gcmSICfbKDXfGlX8bIqANQqO/O3UFAPNpH59cH3AxM2BmRNpjbSJyIPkJ1W?=
+ =?us-ascii?Q?YbhNBi9od+8b2C7tUDa7+dByyGGkT2MnMrO3+0m/Gi3g2G4ToAf44lGamt1m?=
+ =?us-ascii?Q?Rm7k8u7XK5C5GfFqF5oqDvR7RgqvKC5vmC51dWZq2UBJOdxrsBacdhpSgNb3?=
+ =?us-ascii?Q?FDsi4mLamGfTUo6+9arv6EbeO4IOVSnJlMptHVkmpLK7fEDwHy51h7L5SlDP?=
+ =?us-ascii?Q?nUGH/m2d6nQS5ppn5aczvvdbUcV+akqknrIRV/7Eoha1llwkifrwBoYjVc0t?=
+ =?us-ascii?Q?GBhJPOfuWb7FN1idqczNAob7ceZCoGrjACI/SJpiirt8CEMxqohln0EdPUhn?=
+ =?us-ascii?Q?6x/EvNb/dLL//Yxu4Amna0VYYlw3YcysGCAFOaXZ4JJKAc9d0zKzsVu5q9pR?=
+ =?us-ascii?Q?yqxr7Kbxr5pRXXeVKWFL19W/QUH39umht0GbEknSPZJLA78kzYmuw+7MWISS?=
+ =?us-ascii?Q?brUeAlfPp5MIgeCr4MLR7crpJQic2BXEVHhBQpjVa5EIz5VcCc9OkC7maKK1?=
+ =?us-ascii?Q?lAqUZvgVsQ8XUzGNMBTanCimUeerEQm2rnZizwwQuc+e2SFxsfK/jJm2QWry?=
+ =?us-ascii?Q?uGl5L15rez/YAht3czg30DSgrGV8bHjNntz+fgNtMN2UCxUhiNmo8AK8K0sx?=
+ =?us-ascii?Q?82HfpQ5hcica3id34mw6MoWJtuc/ovVhCAWPSbMIDSOh93HpcC7RnGh3u9hU?=
+ =?us-ascii?Q?pMmuTWZ6NJP6VCZq5ymxjSnxoP+61wKqsKneV3lAfEgkTrXOxfMUuDw939go?=
+ =?us-ascii?Q?9inJJegFwwibx1dovDoULsnF65WZEMJz3qRk26Q1kpwWgoNOqfzmeNW2EtAA?=
+ =?us-ascii?Q?jVg28KSkgUNQK1DRHmVwB7eKlC+TD4o3BgO+gEHVRAFo/7/QgvBMp5zbefbv?=
+ =?us-ascii?Q?ZFMojKO7EhM/4/PdIrXsEJBkCpr1BU4neDgLjk861RhiKiQitAHnirEZV4ma?=
+ =?us-ascii?Q?0vI6EacrjuespzCTjnRrWOq3zg5Rcx6knFuXXBt2cgcM49QeZz2+xs93KdKH?=
+ =?us-ascii?Q?Rcr2sUDNbFvMplc3j/bgYvrDiNerYRqZtHOmLFUn?=
+X-Forefront-Antispam-Report: 
+	CIP:164.130.1.59;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700013)(7416014)(376014)(30052699003)(82310400026)(1800799024)(13003099007);DIR:OUT;SFP:1101;
+X-OriginatorOrg: foss.st.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Dec 2025 15:39:52.3319
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 13ff0a73-4e73-4ed9-4687-08de3d828544
+X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.59];Helo=[smtpO365.st.com]
+X-MS-Exchange-CrossTenant-AuthSource: 
+	AMS0EPF00000194.eurprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR10MB3271
+X-Authority-Analysis: v=2.4 cv=Ba3VE7t2 c=1 sm=1 tr=0 ts=6942cecd cx=c_pps
+ a=LGnPzPuKiaZPXrRM6phl+Q==:117 a=d6reE3nDawwanmLcZTMRXA==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=FOPVHIcnkjUA:10 a=wP3pNCr1ah4A:10
+ a=s63m1ICgrNkA:10 a=KrXZwBdWH7kA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=8b9GpE9nAAAA:8 a=dChbvKt_AAAA:20 a=KKAkSRfTAAAA:8
+ a=CVn58vbsVnitWPl08coA:9 a=T3LWEMljR5ZiDmsYVIUa:22 a=cvBusfyB2V15izCimMoJ:22
+ a=bA3UWDv6hWIuX7UZL3qL:22
+X-Proofpoint-ORIG-GUID: Ps7pOUVlAHsT05AjUTPEt2XMDZgAz_ai
+X-Proofpoint-GUID: Ps7pOUVlAHsT05AjUTPEt2XMDZgAz_ai
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjE3MDEyMyBTYWx0ZWRfX+IDZLVVNRtHS
+ 70rzpoSjCsXuLaI3t55jltMJVmF3ywIHD6RAu2yhkg1GmG5HbIJ5+J7mRYwbjnCGDWpoUA+nRUV
+ BeXokmA3yJG8R4aFcyN8rYkEqSfAw/N/DjwHruJEhQGTL2LTfRYYCz2tFUpEKFRy6h07Kr+1jcP
+ x5fXdz36UuO3kfDmPFy7Kuw8IU0WPTtrAVRhuVA71I2aZXcBVnxEfiF4LTe9xz3qOwdqtn0fpEI
+ qLalCABEl73tD7Y7JsVeUVztSVYUCLGtqFbvkR24z6dlkZhNUzE21Uvl2uBr9TEl9uYjqKRL+Ov
+ dOBEg/9yMK05k4Kg4DCTD/BcsFEm/owVKg+pUdPa16OJeidaYOhg/4gonzFRHz6AzzzbFMPyzal
+ ejHnONZkuPa55Py/aLm6Okr67sNrAw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-17_03,2025-12-16_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
+ spamscore=0 phishscore=0 clxscore=1011 suspectscore=0 impostorscore=0
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2510240001 definitions=main-2512170123
+X-Rspamd-Action: add header
+X-Spamd-Result: default: False [4.90 / 15.00];
+	URL_BACKSLASH_PATH(4.00)[0.0.0.0];
+	URL_NUMERIC_IP(3.00)[0.0.0.0];
+	BAYES_HAM(-3.00)[99.99%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
+	R_SPF_ALLOW(-0.20)[+ip4:91.207.212.93];
+	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector2];
+	RCVD_IN_DNSWL_LOW(-0.10)[91.207.212.93:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.47:from];
-	MISSING_XM_UA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[42];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	GREYLIST(0.00)[pass,body];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ONE(0.00)[1];
-	ARC_NA(0.00)[];
-	ALIAS_RESOLVED(0.00)[];
+	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[lwn.net,kernel.org,selenic.com,gondor.apana.org.au,bootlin.com,gmail.com,foss.st.com,oss.qualcomm.com,linaro.org,siemens.com,arm.com,wanadoo.fr,broadcom.com,hansenpartnership.com,linux.ibm.com,redhat.com,paul-moore.com,namei.org,hallyn.com,gmx.de,lists.trustedfirmware.org,vger.kernel.org,st-md-mailman.stormreply.com,lists.infradead.org,ziepe.ca];
+	ASN(0.00)[asn:52129, ipnet:91.207.212.0/23, country:US];
 	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.161.47:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[linaro.org:+]
+	DNSWL_BLOCKED(0.00)[2603:10a6:20b:5d2:cafe::d4:received];
+	FROM_NEQ_ENVFROM(0.00)[arnaud.pouliquen@foss.st.com,prvs=4446e2e4b6=arnaud.pouliquen@foss.st.com];
+	FROM_HAS_DN(0.00)[];
+	DKIM_TRACE(0.00)[foss.st.com:+];
+	HAS_XOIP(0.00)[];
+	FORGED_SENDER_VERP_SRS(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	BLOCKLISTDE_FAIL(0.00)[164.130.1.59:server fail,2603:10a6:20b:5d2::14:server fail,2603:10a6:20b:5d2:cafe::d4:server fail,91.207.212.93:server fail,40.107.162.9:server fail];
+	RCVD_COUNT_SEVEN(0.00)[7]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 6A7554FF3D
-X-Spamd-Bar: --
-Message-ID-Hash: ZNRWQELCT3KE7EVQG2FO4GCIBW5MAU7W
-X-Message-ID-Hash: ZNRWQELCT3KE7EVQG2FO4GCIBW5MAU7W
-X-MailFrom: jens.wiklander@linaro.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Jonathan Corbet <corbet@lwn.net>, Sumit Garg <sumit.garg@kernel.org>, Olivia Mackall <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <clement.leger@bootlin.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Ard Biesheuvel <ardb@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Jan Kiszka <jan.kiszka@siemens.com>, Sudeep Holla <sudeep.holla@arm.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Michael Chan <michael.chan@broadcom.com>, Pavan Chebbi <pavan.chebbi@broadcom.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jarkko Sakkinen <jarkko@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" 
- <serge@hallyn.com>, Peter Huewe <peterhuewe@gmx.de>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-crypto@vger.kernel.org, linux-rtc@vger.kernel.org, linux-efi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org, linux-mips@vger.kernel.org, netdev@vger.kernel.org, linux-integrity@vger.kernel.org, keyrings@vger.kernel.org, linux-security-module@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
+X-Rspamd-Queue-Id: 266A640AD1
+X-Spamd-Bar: ++++
+X-MailFrom: prvs=4446e2e4b6=arnaud.pouliquen@foss.st.com
+X-Mailman-Rule-Hits: header-match-op-tee.lists.trustedfirmware.org-0
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation
+Message-ID-Hash: S6EP46PRFXIFKVWXR7C46IT6CYF2ZSS5
+X-Message-ID-Hash: S6EP46PRFXIFKVWXR7C46IT6CYF2ZSS5
+X-Mailman-Approved-At: Thu, 18 Dec 2025 07:30:43 +0000
+CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZNRWQELCT3KE7EVQG2FO4GCIBW5MAU7W/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/S6EP46PRFXIFKVWXR7C46IT6CYF2ZSS5/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+X-Spam: Yes
 
-Hi,
+Main updates from version V19[3]:
+--------------------------------
+The devicetree is now structured as follows:
 
-On Mon, Dec 15, 2025 at 3:17=E2=80=AFPM Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@baylibre.com> wrote:
->
-> Hello,
->
-> the objective of this series is to make tee driver stop using callbacks
-> in struct device_driver. These were superseded by bus methods in 2006
-> (commit 594c8281f905 ("[PATCH] Add bus_type probe, remove, shutdown
-> methods.")) but nobody cared to convert all subsystems accordingly.
->
-> Here the tee drivers are converted. The first commit is somewhat
-> unrelated, but simplifies the conversion (and the drivers). It
-> introduces driver registration helpers that care about setting the bus
-> and owner. (The latter is missing in all drivers, so by using these
-> helpers the drivers become more correct.)
->
-> v1 of this series is available at
-> https://lore.kernel.org/all/cover.1765472125.git.u.kleine-koenig@baylibre=
-.com
->
-> Changes since v1:
->
->  - rebase to v6.19-rc1 (no conflicts)
->  - add tags received so far
->  - fix whitespace issues pointed out by Sumit Garg
->  - fix shutdown callback to shutdown and not remove
->
-> As already noted in v1's cover letter, this series should go in during a
-> single merge window as there are runtime warnings when the series is
-> only applied partially. Sumit Garg suggested to apply the whole series
-> via Jens Wiklander's tree.
-> If this is done the dependencies in this series are honored, in case the
-> plan changes: Patches #4 - #17 depend on the first two.
->
-> Note this series is only build tested.
->
-> Uwe Kleine-K=C3=B6nig (17):
->   tee: Add some helpers to reduce boilerplate for tee client drivers
->   tee: Add probe, remove and shutdown bus callbacks to tee_client_driver
->   tee: Adapt documentation to cover recent additions
->   hwrng: optee - Make use of module_tee_client_driver()
->   hwrng: optee - Make use of tee bus methods
->   rtc: optee: Migrate to use tee specific driver registration function
->   rtc: optee: Make use of tee bus methods
->   efi: stmm: Make use of module_tee_client_driver()
->   efi: stmm: Make use of tee bus methods
->   firmware: arm_scmi: optee: Make use of module_tee_client_driver()
->   firmware: arm_scmi: Make use of tee bus methods
->   firmware: tee_bnxt: Make use of module_tee_client_driver()
->   firmware: tee_bnxt: Make use of tee bus methods
->   KEYS: trusted: Migrate to use tee specific driver registration
->     function
->   KEYS: trusted: Make use of tee bus methods
->   tpm/tpm_ftpm_tee: Make use of tee specific driver registration
->   tpm/tpm_ftpm_tee: Make use of tee bus methods
->
->  Documentation/driver-api/tee.rst             | 18 +----
->  drivers/char/hw_random/optee-rng.c           | 26 ++----
->  drivers/char/tpm/tpm_ftpm_tee.c              | 31 +++++---
->  drivers/firmware/arm_scmi/transports/optee.c | 32 +++-----
->  drivers/firmware/broadcom/tee_bnxt_fw.c      | 30 ++-----
->  drivers/firmware/efi/stmm/tee_stmm_efi.c     | 25 ++----
->  drivers/rtc/rtc-optee.c                      | 27 ++-----
->  drivers/tee/tee_core.c                       | 84 ++++++++++++++++++++
->  include/linux/tee_drv.h                      | 12 +++
->  security/keys/trusted-keys/trusted_tee.c     | 17 ++--
->  10 files changed, 164 insertions(+), 138 deletions(-)
->
-> base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
-> --
-> 2.47.3
->
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			rproc-service@0 {
+				compatible = "rproc-service-80a4c275-0a47-4905-8285-1486a9771a08";
+				reg = <0>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "okay";
+				m4: m4@0 {
+					compatible = "st,stm32mp15-m4-tee";
+					reg = <0>;
+					mboxes = <&ipcc 0>, <&ipcc 1>, <&ipcc 2>;
+					mbox-names = "vq0", "vq1", "shutdown";
+					memory-region = <&vdev0vring0>,	<&m_ipc_shm>, <&mcuram2>,
+							<&vdev0vring1>, <&vdev0buffer>, <&retram>;
+					interrupt-parent = <&exti>;
+					interrupts = <68 1>;
+					status = "okay";
+				};
+			};
+		};
+	};
 
-Thank you for the nice cleanup, Uwe.
+As a consequence, this version:
 
-I've applied patch 1-3 to the branch tee_bus_callback_for_6.20 in my
-tree at https://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-tee.gi=
-t/
+- Introduces a new stm32_rproc_tee.c remoteproc driver.
 
-The branch is based on v6.19-rc1, and I'll try to keep it stable for
-others to depend on, if needed. Let's see if we can agree on taking
-the remaining patches via that branch.
+  Instead of further complicating the existing stm32_rproc.c driver, a
+  dedicated TEE-based driver is added. Both drivers are intended to also
+  support the STM32MP2x Cortex-M33 remote processor in a next step.
 
-Cheers,
-Jens
+- Reworks the bindings:
+  - Drop the st,stm32-rproc.yaml updates that were introduced in previous
+    revisions.
+  - Add remoteproc-tee.yaml for the
+    "rproc-service-80a4c275-0a47-4905-8285-1486a9771a08" compatible.
+  - Add st,stm32-rproc-tee.yaml for the "st,stm32mp15-m4-tee" compatible.
+
+- Reworks the probing sequence:
+
+  The m4@0 device is now probed by the remoteproc-tee driver, which itself
+  is instantiated by the TEE (OP-TEE) bus.
+
+
+Main updates from version V18[2]:
+--------------------------------
+- rework documentation for the release_fw ops 
+- rework function documentation in remoteproc_tee.c
+- replace spinlock by mutex and generalize usage in remoteproc_tee.c
+
+
+Main updates from version V17[1]:
+--------------------------------
+- Fix:  warning: EXPORT_SYMBOL() is used, but #include <linux/export.h>
+  is missing
+
+
+More details are available in each patch commit message.
+
+[1] https://lore.kernel.org/linux-remoteproc/20250613091650.2337411-1-arnaud.pouliquen@foss.st.com/
+[2] https://lore.kernel.org/linux-remoteproc/20250616075530.4106090-1-arnaud.pouliquen@foss.st.com/
+[3] https://lore.kernel.org/linux-devicetree/20250625094028.758016-1-arnaud.pouliquen@foss.st.com/
+
+
+Tested-on:
+---------
+commit 7d0a66e4bb90 ("Linux 6.18")
+
+Description of the feature:
+--------------------------
+This series proposes the implementation of a remoteproc tee driver to
+communicate with a TEE trusted application responsible for authenticating
+and loading the remoteproc firmware image in an Arm secure context.
+
+1) Principle:
+
+The remoteproc tee driver provides services to communicate with the OP-TEE
+trusted application running on the Trusted Execution Context (TEE).
+The trusted application in TEE manages the remote processor lifecycle:
+
+- authenticating and loading firmware images,
+- isolating and securing the remote processor memories,
+- supporting multi-firmware (e.g., TF-M + Zephyr on a Cortex-M33),
+- managing the start and stop of the firmware by the TEE.
+
+2) Format of the signed image:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/src/remoteproc_core.c#L18-L57
+
+3) OP-TEE trusted application API:
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/ta/remoteproc/include/ta_remoteproc.h
+
+4) OP-TEE signature script
+
+Refer to:
+https://github.com/OP-TEE/optee_os/blob/master/scripts/sign_rproc_fw.py
+
+Example of usage:
+sign_rproc_fw.py --in <fw1.elf> --in <fw2.elf> --out <signed_fw.sign> --key ${OP-TEE_PATH}/keys/default.pem
+
+
+5) Impact on User space Application
+
+No sysfs impact. The user only needs to provide the signed firmware image
+instead of the ELF image.
+
+
+For more information about the implementation, a presentation is available here
+(note that the format of the signed image has evolved between the presentation
+and the integration in OP-TEE).
+
+https://resources.linaro.org/en/resource/6c5bGvZwUAjX56fvxthxds
+
+Arnaud Pouliquen (6):
+  dt-bindings: firmware: Add TEE remoteproc service binding
+  dt-bindings: remoteproc: Add STM32 TEE-controlled rproc binding
+  remoteproc: core: Introduce rproc_pa_to_va helper
+  remoteproc: Introduce optional release_fw operation
+  remoteproc: Add TEE support
+  remoteproc: stm32: Add TEE-controlled STM32 driver
+
+ .../arm/firmware/linaro,optee-tz.yaml         |   6 +
+ .../bindings/remoteproc/remoteproc-tee.yaml   |  47 ++
+ .../remoteproc/st,stm32-rproc-tee.yaml        | 100 +++
+ drivers/remoteproc/Kconfig                    |  10 +
+ drivers/remoteproc/Makefile                   |   3 +-
+ drivers/remoteproc/remoteproc_core.c          |  52 ++
+ drivers/remoteproc/remoteproc_internal.h      |   6 +
+ drivers/remoteproc/remoteproc_tee.c           | 771 ++++++++++++++++++
+ drivers/remoteproc/stm32_rproc_tee.c          | 526 ++++++++++++
+ include/linux/remoteproc.h                    |   6 +
+ include/linux/remoteproc_tee.h                |  89 ++
+ 11 files changed, 1615 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+ create mode 100644 Documentation/devicetree/bindings/remoteproc/st,stm32-rproc-tee.yaml
+ create mode 100644 drivers/remoteproc/remoteproc_tee.c
+ create mode 100644 drivers/remoteproc/stm32_rproc_tee.c
+ create mode 100644 include/linux/remoteproc_tee.h
+
+
+base-commit: 7d0a66e4bb9081d75c82ec4957c50034cb0ea449
+-- 
+2.43.0
+
