@@ -4,288 +4,499 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3933AD3B7E5
-	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 08:11:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78790E8FDB1
+	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 08:11:57 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 70E2F4FE91
-	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 08:11:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1766995881;
-	bh=0TV5dj0yRk85CYXlwkY2tzU/i7OpJdaJiQyK8mcULgA=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=eqzxz3nen/UBV+q0tZHhV6jFSfC30CsqQRajxd4qwhJeULg1pUd44S2eoOuEfz23r
-	 HK8yWB4oYLm6REFwmhUF2jCKxN73dxkkIilVhYbId9tuh6OQqoKOKNSLq+Ka4FCEFp
-	 SNjvRP/VGDFljacWfVVIH484Vj7D3DIFLCr2x7gjP+Cx7prgz1imFCby2TCKZPyc5s
-	 1zDYCe1WSS+JoW50HX/hiI2whB6h0yPYTwCoTcYQQYh+pDTm7hc2kHGe1ld1Qg+BmL
-	 NQoCGXytLcOT41chvonxrwxwYNYWP59KXquzXBkV2TH8hxOP4g5B4+PcUyMYV2mhBZ
-	 fwwzjlcg66IZg==
-Received: from smtp-relay-internal-0.canonical.com (smtp-relay-internal-0.canonical.com [185.125.188.122])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CCD3441855
-	for <op-tee@lists.trustedfirmware.org>; Tue, 23 Dec 2025 03:33:25 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id C0BCD4618B
+	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 08:11:56 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (4096-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20251003 header.b=NZHvOwHf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VsUn6i4D;
 	dkim-atps=neutral
-Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com [209.85.218.71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id EE7D63FB7A
-	for <op-tee@lists.trustedfirmware.org>; Tue, 23 Dec 2025 03:33:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20251003; t=1766460805;
-	bh=lVCxrlF7FHwqXKZZb1CMswRbmazuR5+zvey6bIzOBUU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type;
-	b=NZHvOwHfHlN/GzbYlmcqpjWznE+4FzXSVtUfLoU2aSGLzjRRaZxRhE7q+U6pcPhMw
-	 Pzr58pQHd1pGNeuxDJgiFZtOWNx7CFhpiEaemNF5hHwZYpABwpdkGPOlnxe3Afvphx
-	 XB71EanHBpxFRoBRUuzboeenPgDU8VWOnfpoVky9IDOOJRpwv2xHPByO1vHqbvAODJ
-	 SRLGvzMjjgxGRa2VUGAeCTYDzhl7reXdSniPtKkc/p4ZkzoeNwK7RSj2ncHnLVLRsd
-	 p7BmSkEN1sQ48jRmcQkniBE/d5Cu0B4NPu3GI9AGspiFO0V8cDA3bc33L2er9d4keM
-	 z8oYixR6Z9pavqPu2YU1FgHmAjQkt493ChA11aGTCok0TmbEJ9gidhhqPm5p2LyQcO
-	 BuJxe8l/3S6dJQdRv0eDDeeT+e6tfIX3WE8vJFQDMePoszWSKiH767EOhe6RFQjMr0
-	 j7uEmFXa2bb/mduhRrlxwomxJ5cDTvdNX1Jn0jIFq9AFMpKI6X1b9rqG8XlBUpTSXf
-	 m3ostS06B425HkN0fp2U3jBgBSbVcOe+HiKPD35GIbeom91hYkiiZe2Zx+d+KOHJot
-	 yx3WStt7fsHeOuodZVEktc/m3Jf15/6r8fGXGTTLw1SETXuFNnIEraTNuip0WR5fOE
-	 LCDTMXFZb1n5Q1NpmJB2B8m0=
-Received: by mail-ej1-f71.google.com with SMTP id a640c23a62f3a-b73586b1195so18115466b.3
-        for <op-tee@lists.trustedfirmware.org>; Mon, 22 Dec 2025 19:33:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766460804; x=1767065604;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 6CA3241A32
+	for <op-tee@lists.trustedfirmware.org>; Fri, 26 Dec 2025 13:19:31 +0000 (UTC)
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2a0a33d0585so67751995ad.1
+        for <op-tee@lists.trustedfirmware.org>; Fri, 26 Dec 2025 05:19:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1766755170; x=1767359970; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=lVCxrlF7FHwqXKZZb1CMswRbmazuR5+zvey6bIzOBUU=;
-        b=iaY3v4bVpixeVy6Ul1MFC8DqqAI5nwJrZMmZo/xnLIt1tmeQY3qRMis6kixdY4Ev0r
-         i3xKgIkqJem7fjDvj1soiF4ZBGKT3eumiajGg84N2ZfxsApRGCqHqviukQqEhDL4b4XV
-         RwqU1GIkpCI+uk1ntUxwDshVGD3ROT0a4j8VE3yQM1ail0ovs3KbgO3OLJUij8UJRIfC
-         xSaWr46Novv/Bi9eex1kgduV9mcaMcGtqud656yzuaekhxfZNrYZ7G/z+cqi5rUUKrDm
-         /YizAxieVcpl/2mm6etaZcE8jFUiTB432MRwVlVBCXn4iUF9DDuL61qmuKvjZKFen093
-         53PQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWd1gFRXS8AekNS+AFG9U5B7hzX4lRJRuBw5sIuojqKeEZaVnRi9gKTyweKk2/JqeBBA3p52AY=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yzf5x8IdBVEH0H4dY+TJcmHkZ0Jfum0dPgCbH7lAF+y1tsE6EdL
-	TytNi9FGUVVhHTT8P+MiJDrzH//imdI6u4cRQdf7XGP/FyOt2/U9DufNrJagn97NKWc93Q/6uXd
-	aGjxWU0dm3YSICfjpQWOwx6b5b1bZoXK56sO1pOq3V1YhwOEdEaNQQiED+QlkMhtd29JILD5qt0
-	39DtVsDLwHoVRS4p8fxzhDiincGQJGROAWnwb3+PL0w3FOs6y09/7Ix3FmzozwmA==
-X-Gm-Gg: AY/fxX5O3w3AlblIiSKE2vzBBO/DabD9DPTCyaUAlOPR7C/tSE5mfQTrazdt6tJjVV7
-	sUIGdukXnibvAFJD0ncaKSdhMUJHQTdL7MX+A/xmeGMkTBXQSkJ5P+ISxUB/ThDCfU/ayfSkTnc
-	YYXpYwkiH9BrZ7G6ut8KLb7EQTQfq6gukzoFaWMOCuUyIBLYZCzDqPFjd3Oq5k8LxcP6k=
-X-Received: by 2002:a17:907:c14:b0:b80:1309:aa09 with SMTP id a640c23a62f3a-b803718387cmr1420034166b.47.1766460804286;
-        Mon, 22 Dec 2025 19:33:24 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IHf27rZDPe+b1nS0yyhjnDlG0ogGXtP2QwqL8pIb6VaxrVJFEYoye3YTmHNx0pTRRnB+VPylC+nYXnZUilf9hw=
-X-Received: by 2002:a17:907:c14:b0:b80:1309:aa09 with SMTP id
- a640c23a62f3a-b803718387cmr1420032366b.47.1766460803825; Mon, 22 Dec 2025
- 19:33:23 -0800 (PST)
+        bh=ztmWSYWGGyLeB3+wlITLBNjlw9ipvtgyxGzajVtnRDU=;
+        b=VsUn6i4DetR+zXQ3bB7pDqDUut7ikNV7fbvoqHFi9/kiti8yLkw0zwDIPjCsmWGTws
+         UfnmGh+8oFr6xBnnR4Mu4fdhy4KFvsmSDcVW1OTIkD5Xm3dN4/G2kEEDB+grzW3FQCA3
+         Fk+GNieH6rjUM2zDvh8nidoUWW9CYdlM0omi/pVDWIjHCOdoE8rWAM48Nna/9lIdbGkn
+         xpcsx/b0RgmCxTj1JiguXVnD41xK8956nNBj2IFEsb3uZoEwoQFnO4fNwXfzhHLBhFCQ
+         6HpMx6bMTBu99ikSn3ntd4u3RQAf5N2nUhWrs4CkN9vngAknOoHyka9qCdatFyxOmEjm
+         wpdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766755170; x=1767359970;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=ztmWSYWGGyLeB3+wlITLBNjlw9ipvtgyxGzajVtnRDU=;
+        b=jjw1eX6GhC9sMwoFhdHNPpy0a/sUPO2GlpvMk9wG740Rz7U+xK5Q8RZfqUqcXz8wPK
+         tLmDWCro8MHWeHu14RMR1VtfW5DyHfYG3rh5TibXxcp6Mhn/oncZsHOwzIMcjltKjPgO
+         P/9riWxIcb3RdzEW7GpkPReBr5b2J8/X26xqoYmvSS6Zo5U1jwjpxuJKo+LXP0cMxCJq
+         yrUnpcFYt5R/yaInC5KBRwp16g7LpkGX6BB9pE3A1gVGWcHvyRoJGgf6SywzOdWgzowi
+         VKrVLldTL1iEqDpvNF98EILvr3yOx+CmF0yYLafZBUXXLbyjB9ib1gFCZKQELu4EnV0Q
+         JCXg==
+X-Forwarded-Encrypted: i=1; AJvYcCWd7eNJbBBIHZmO73Q9iwAFcH8x+EnCGSH5j2HHrxmogY0hJmpGO9x9U7xRihp3dBrh15Mzy+c=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YyKFJJGbRTvrcJuWP5R5g48l2ipqhvKnL2PUp07LzgtOFH5uYqU
+	ViY/qCWYTc+N53XJ7TTMSXjs8+Oz6QvlwLz2whLp+GrJ4iWd4/a3V6d0
+X-Gm-Gg: AY/fxX50buqIWdblkrquqyrgUjL9diapyxvJ9G47TaU93QiYc66XwOdjAm6q67Roklc
+	W53QNWUOFhsVy1VpKOjclLiArUUamdiKiVdgqPrNqz/eeTvfwaYEJOXvB0vb3e+WvefdEaR4znx
+	UaCKSmI7XaFB7oMtoWTGsU9+E8Flria/t/haognRTMvxtJadiE/UUvsUODMiA2PryRn3fTlgU2p
+	Ot+MTp8eYSMawvJy6omA9NzJf9NXnJb9BB1stOgV9q4UHUQjgstPE1EhbV/weIuC3Q9/o7bcjws
+	EMvKFkJCu7bDauuLV38ZfH1d/PEoS89D8FMQS0QyFfxVc6StQ8UP96hYzznrxQz3rzBEIZsnXyB
+	dIW97kIRMldcE8TBUl2eK0vhaR3mS9eVK4BDfideB58VAdbh/YeOdBre1AMI4RBneVbcUQ8lFBs
+	+xBHxOzPxtGl4miOrZW7H8JLGHwAGIsB23DArNu34rXto1BhGba3skWvxL8+XNmHSnSA5RCXu9v
+	K2fP4zoU+MurlhI
+X-Google-Smtp-Source: AGHT+IF7NYBU20A8LCs6nhojTiH6GLpixmvjeNlgqFZ9VS+8tOFossACncHyfq24hgxuKpwvcH11qA==
+X-Received: by 2002:a17:902:fc8e:b0:2a0:a33f:304c with SMTP id d9443c01a7336-2a2f2a400b4mr234763275ad.57.1766755170381;
+        Fri, 26 Dec 2025 05:19:30 -0800 (PST)
+Received: from aristo-PC.tail872496.ts.net (124-218-37-86.cm.dynamic.apol.com.tw. [124.218.37.86])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3d5d6e4sm206587575ad.75.2025.12.26.05.19.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Dec 2025 05:19:29 -0800 (PST)
+From: Aristo Chen <jj251510319013@gmail.com>
+X-Google-Original-From: Aristo Chen <aristo.chen@canonical.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/1] tee: optee: expose OS revision via sysfs
+Date: Fri, 26 Dec 2025 21:19:13 +0800
+Message-ID: <20251226131920.64582-1-aristo.chen@canonical.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251122145924.381725-1-jj251510319013@gmail.com>
+References: <20251122145924.381725-1-jj251510319013@gmail.com>
 MIME-Version: 1.0
-References: <aSVgctqRSy5_vvkN@sumit-X1> <aSVhBn0LR2CwM9p3@sumit-X1>
- <CAJwFiGKuSuiq5LhMS+wVcnhjfiBEDiSCOG9FwhEic+cxmnKJhQ@mail.gmail.com>
- <CAHUa44HUFPy24wZrA03z0KHZqUmbT+dSP+7zOT-zrrFq_-h8mg@mail.gmail.com>
- <CAJwFiGLRVZyr7Hb3PtGyA319hCYEJh9t8XY_amyjhUgqnrZycQ@mail.gmail.com>
- <CAHUa44GPuP+qdw2HPBgtrQNXovA7e5+yskrPRgh4D4OMutEJTA@mail.gmail.com>
- <CAJwFiGLNh-qu9ezQOmTBh3Dujf=mPRyzKBVXLV-A=GxhwcH-0w@mail.gmail.com>
- <CAHUa44Eq=P5G4vKSq5TyJx5qF9E5q=+pHexMg41X85NCX4SpHA@mail.gmail.com>
- <CAJwFiGKw8+T3v3H+=bBtWzV1kuXKBq9gRTWGpS4iS4ictWOAtA@mail.gmail.com>
- <CAHUa44ELXMv+e8dkZ=NwYjg=YoH=1=4JGze89BK+Db8ERozPLg@mail.gmail.com> <aUkYXBz3XfVGrmjD@sumit-xelite>
-In-Reply-To: <aUkYXBz3XfVGrmjD@sumit-xelite>
-Date: Tue, 23 Dec 2025 11:33:12 +0800
-X-Gm-Features: AQt7F2okPdnd-W_UXofpnjuVH2SjoPPL9Hak4X_mGVdLXyCTx18dcU_n4y8N7r0
-Message-ID: <CAA=k7==Q8Zb4shHmYY49iAuMw2_OAwtp+TYqkbULjEgPt0b0zQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] tee: optee: expose OS revision via sysfs
-To: Sumit Garg <sumit.garg@kernel.org>
+Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.20 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+X-Spamd-Result: default: False [-2.00 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DWL_DNSWL_LOW(-1.00)[canonical.com:dkim];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[canonical.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:185.125.188.122];
-	R_DKIM_ALLOW(-0.20)[canonical.com:s=20251003];
-	RCVD_IN_DNSWL_MED(-0.20)[185.125.188.122:from];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.218.71:received];
-	MISSING_XM_UA(0.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
 	ARC_NA(0.00)[];
-	BLOCKLISTDE_FAIL(0.00)[209.85.218.71:server fail];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.214.175:from];
 	RCPT_COUNT_SEVEN(0.00)[9];
-	ALIAS_RESOLVED(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[linaro.org,gmail.com,vger.kernel.org,lists.trustedfirmware.org,oss.qualcomm.com,amd.com];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DNSWL_BLOCKED(0.00)[209.85.214.175:from];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[canonical.com:+]
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	ALIAS_RESOLVED(0.00)[];
+	DKIM_TRACE(0.00)[gmail.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CCD3441855
-X-Spamd-Bar: ----
-X-MailFrom: aristo.chen@canonical.com
+X-Rspamd-Queue-Id: 6CA3241A32
+X-Spamd-Bar: --
+X-MailFrom: jj251510319013@gmail.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: 7TAGIIXIKN3IDDZIRQAFYLS2HTENPGJW
-X-Message-ID-Hash: 7TAGIIXIKN3IDDZIRQAFYLS2HTENPGJW
+Message-ID-Hash: OVFZ4A2W73RZA5EFWBQ2KNL3VUDM7B2S
+X-Message-ID-Hash: OVFZ4A2W73RZA5EFWBQ2KNL3VUDM7B2S
 X-Mailman-Approved-At: Mon, 29 Dec 2025 08:10:27 +0000
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="UTF-8"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: Aristo Chen <jj251510319013@gmail.com>, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo Thomas <Rijo-john.Thomas@amd.com>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+CC: sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7TAGIIXIKN3IDDZIRQAFYLS2HTENPGJW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OVFZ4A2W73RZA5EFWBQ2KNL3VUDM7B2S/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Aristo Chen via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Aristo Chen <aristo.chen@canonical.com>
 
-SGkgSmVucyBhbmQgU3VtaXQsDQoNCk9uIE1vbiwgRGVjIDIyLCAyMDI1IGF0IDY6MDfigK9QTSBT
-dW1pdCBHYXJnIDxzdW1pdC5nYXJnQGtlcm5lbC5vcmc+IHdyb3RlOg0KDQo+IE9uIE1vbiwgRGVj
-IDIyLCAyMDI1IGF0IDA5OjM0OjI0QU0gKzAxMDAsIEplbnMgV2lrbGFuZGVyIHdyb3RlOg0KPiA+
-IEhpIEFyaXN0bywNCj4gPg0KPiA+IE9uIEZyaSwgRGVjIDE5LCAyMDI1IGF0IDQ6MznigK9QTSBB
-cmlzdG8gQ2hlbiA8amoyNTE1MTAzMTkwMTNAZ21haWwuY29tPg0KPiB3cm90ZToNCj4gPiA+DQo+
-ID4gPiBIaSBKZW5zDQo+ID4gPg0KPiA+ID4gSmVucyBXaWtsYW5kZXIgPGplbnMud2lrbGFuZGVy
-QGxpbmFyby5vcmc+IOaWvCAyMDI15bm0MTLmnIg55pel6YCx5LqMIOS4i+WNiDQ6MzHlr6vpgZPv
-vJoNCj4gPiA+ID4NCj4gPiA+ID4gSGkgQXJpc3RvLA0KPiA+ID4gPg0KPiA+ID4gPiBPbiBTdW4s
-IERlYyA3LCAyMDI1IGF0IDM6MDHigK9QTSBBcmlzdG8gQ2hlbiA8amoyNTE1MTAzMTkwMTNAZ21h
-aWwuY29tPg0KPiB3cm90ZToNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEhpIEplbnMsDQo+ID4gPiA+
-ID4NCj4gPiA+ID4gPiBKZW5zIFdpa2xhbmRlciA8amVucy53aWtsYW5kZXJAbGluYXJvLm9yZz4g
-5pa8IDIwMjXlubQxMuaciDPml6XpgLHkuIkNCj4g5LiL5Y2IMzo1MeWvq+mBk++8mg0KPiA+ID4g
-PiA+ID4NCj4gPiA+ID4gPiA+IEhpLA0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IE9uIFR1ZSwg
-RGVjIDIsIDIwMjUgYXQgMTA6NTTigK9BTSBBcmlzdG8gQ2hlbiA8DQo+IGpqMjUxNTEwMzE5MDEz
-QGdtYWlsLmNvbT4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IEhpIEplbnMN
-Cj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gSmVucyBXaWtsYW5kZXIgPGplbnMud2lrbGFu
-ZGVyQGxpbmFyby5vcmc+IOaWvCAyMDI15bm0MTLmnIgx5pel6YCx5LiADQo+IOS4i+WNiDk6MDbl
-r6vpgZPvvJoNCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEhpLA0KPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gT24gTW9uLCBEZWMgMSwgMjAyNSBhdCAxMjo0OOKAr1BN
-IEFyaXN0byBDaGVuIDwNCj4gamoyNTE1MTAzMTkwMTNAZ21haWwuY29tPiB3cm90ZToNCj4gPiA+
-ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiBIaSwNCj4gPiA+ID4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiA+ID4gPiBTdW1pdCBHYXJnIDxzdW1pdC5nYXJnQGtlcm5lbC5vcmc+IOaWvCAy
-MDI15bm0MTHmnIgyNeaXpemAseS6jA0KPiDkuIvljYgzOjU15a+r6YGT77yaDQo+ID4gPiA+ID4g
-PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+IE9uIFR1ZSwgTm92IDI1LCAyMDI1IGF0IDAx
-OjIzOjIyUE0gKzA1MzAsIFN1bWl0IEdhcmcgdmlhDQo+IE9QLVRFRSB3cm90ZToNCj4gPiA+ID4g
-PiA+ID4gPiA+ID4gPiBPbiBNb24sIE5vdiAyNCwgMjAyNSBhdCAwODoxNTowNEFNICswMTAwLCBK
-ZW5zDQo+IFdpa2xhbmRlciB3cm90ZToNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IEhpLA0KPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IE9uIFNhdCwgTm92
-IDIyLCAyMDI1IGF0IDQ6MDDigK9QTSBXZWkgTWluZyBDaGVuIDwNCj4gamoyNTE1MTAzMTkwMTNA
-Z21haWwuY29tPiB3cm90ZToNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gPiA+ID4gRnJvbTogQXJpc3RvIENoZW4gPGFyaXN0by5jaGVuQGNhbm9uaWNhbC5j
-b20+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
-IFRvZGF5IHRoZSBvbmx5IHdheSB0byByZWFkIHRoZSBPUC1URUUgT1MgdmVyc2lvbg0KPiBpcyBm
-cm9tIGRtZXNnL2pvdXJuYWwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gbG9ncywgd2hpY2gg
-Y2FuIGJlIGxvc3QgYXMgYnVmZmVycyByb2xsIG92ZXIuDQo+IENhcHR1cmUgdGhlIE9TIHJldmlz
-aW9uDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IChtYWpvci9taW5vci9idWlsZF9pZCkgZnJv
-bSBzZWN1cmUgd29ybGQgZm9yIGJvdGgNCj4gU01DIGFuZCBGRi1BIEFCSXMsIHN0b3JlDQo+ID4g
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+IGl0IGluIHRoZSBPUC1URUUgZHJpdmVyLCBhbmQgZXhwb3Nl
-IGEgc3RhYmxlDQo+IHVzZXJzcGFjZSByZWFkb3V0IHZpYQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiAvc3lzL2NsYXNzL3RlZS90ZWUqL29wdGVlX29zX3JldmlzaW9uLg0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBB
-cmlzdG8gQ2hlbiA8DQo+IGFyaXN0by5jaGVuQGNhbm9uaWNhbC5jb20+DQo+ID4gPiA+ID4gPiA+
-ID4gPiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAgZHJpdmVycy90ZWUv
-b3B0ZWUvY29yZS5jICAgICAgICAgIHwgMTkNCj4gKysrKysrKysrKysrKysrKysrKw0KPiA+ID4g
-PiA+ID4gPiA+ID4gPiA+ID4gPiAgZHJpdmVycy90ZWUvb3B0ZWUvZmZhX2FiaS5jICAgICAgIHwg
-MTMNCj4gKysrKysrKysrKystLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAgZHJpdmVycy90
-ZWUvb3B0ZWUvb3B0ZWVfcHJpdmF0ZS5oIHwgMTcNCj4gKysrKysrKysrKysrKysrKysNCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4gIGRyaXZlcnMvdGVlL29wdGVlL3NtY19hYmkuYyAgICAgICB8
-IDEzDQo+ICsrKysrKysrKysrLS0NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gIDQgZmlsZXMg
-Y2hhbmdlZCwgNTggaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBUaGlzIGFwcGVhcnMgdG8gYmUgYSBm
-ZWF0dXJlIHRoYXQgY291bGQgYmUgdXNlZnVsDQo+IGZvciBhbGwgVEVFcy4NCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFRydWUsIGl0IGlzIHNvbWV0aGluZyB0
-aGF0IFRFRSBjb3JlIHNob3VsZCBzdXBwb3J0Lg0KPiBBbHRob3VnaCBJIHdvdWxkDQo+ID4gPiA+
-ID4gPiA+ID4gPiA+ID4gaGF2ZSBwcmVmZXJyZWQgdG8gZXh0ZW5kIFRFRV9JT0NfVkVSU0lPTiBz
-aW5jZSB0aGF0J3MNCj4gdGhlIGNvbW1vbiB3YXkgdGhlDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
-dXNlci1zcGFjZSBsaWJyYXJ5IGdldCdzIFRFRSBpbXBsZW1lbnRhdGlvbiBzcGVjaWZpYw0KPiBp
-bmZvcm1hdGlvbi4gQnV0DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gc2luY2UgaXQgYmVpbmcgYWxy
-ZWFkeSBhIHVzZXItc3BhY2UgQUJJIHdoaWNoIGRvZXNuJ3QNCj4gb2ZmZXIgZXh0ZW5zaW9uLg0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+IE1heWJlIHdlIGNhbiBjb25zaWRlciBhZGRpbmcgVEVFX0lP
-Q19SRVZFUlNJT04gaW5zdGVhZA0KPiBvZiBzeXNmcy4NCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gQWgsIHR5cG8gaGVyZToNCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gcy9URUVfSU9DX1JFVkVSU0lPTi9URUVfSU9DX1JFVklTSU9OLw0K
-PiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiAtU3VtaXQNCj4gPiA+ID4g
-PiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
-IEJ1dCBiZWZvcmUgZG9pbmcgdGhhdCB3ZSBuZWVkIHRvIGtub3cgd2hvIGlzIHRoZQ0KPiBhY3R1
-YWwgY29uc3VtZXIgaGVyZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IGZyb20gdXNlci1zcGFjZSBw
-ZXJzcGVjdGl2ZT8gV2lsbCB0aGUgY2xpZW50DQo+IGFwcGxpY2F0aW9ucyBhbHNvIGRlcGVuZCBv
-bg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IHRoZSBURUUgaW1wbGVtZW50YXRpb24gcmV2aXNpb24/
-DQo+ID4gPiA+ID4gPiA+ID4gPiBNeSBjdXJyZW50IHRoaW5raW5nIGlzIHRoYXQgaWYgdGhlIFRF
-RSByZXZpc2lvbiBpcw0KPiBleHBvc2VkLCB1c2VycyBjYW4gd3JpdGUgYQ0KPiA+ID4gPiA+ID4g
-PiA+ID4gc2NyaXB0IHRvIGNhcHR1cmUgdGhlIHBsYXRmb3JtIHN0YXRlIGFuZCByZWNvcmQgdGhl
-IGV4YWN0DQo+IHNlY3VyZSBPUyByZXZpc2lvbg0KPiA+ID4gPiA+ID4gPiA+ID4gZXZlbiBhZnRl
-ciB0aGUgZG1lc2cvam91cm5hbGN0bCBsb2dzIGhhdmUgcm9sbGVkIG92ZXIuDQo+IFRoaXMgd291
-bGQgc2lnbmlmaWNhbnRseQ0KPiA+ID4gPiA+ID4gPiA+ID4gaW1wcm92ZSBidWcgdHJpYWdlIGFu
-ZCByZWdyZXNzaW9uIHRyYWNraW5nLg0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4g
-PiA+IEluIG15IGNhc2UsIEkgaGF2ZSBhIHBhY2thZ2Ugd2l0aCBwcmVjb21waWxlZCB4dGVzdA0K
-PiBiaW5hcmllcyBmb3IgbXVsdGlwbGUNCj4gPiA+ID4gPiA+ID4gPiA+IHJlbGVhc2VzIChmcm9t
-IDMuMTQgdG8gNC42KSwgYW5kIEkgd29yayB3aXRoIGRpZmZlcmVudA0KPiBwbGF0Zm9ybXMgdGhh
-dCBydW4NCj4gPiA+ID4gPiA+ID4gPiA+IGRpZmZlcmVudCBPUC1URUUgT1MgdmVyc2lvbnMuIEhh
-dmluZyBhIHJlbGlhYmxlIHdheSB0bw0KPiBvYnRhaW4gdGhlIFRFRQ0KPiA+ID4gPiA+ID4gPiA+
-ID4gcmV2aXNpb24gd291bGQgaGVscCBhIGxvdCwgYXMgaXQgd291bGQgYWxsb3cgbWUgdG8gc2Vs
-ZWN0DQo+IHRoZSBjb3JyZWN0IHh0ZXN0DQo+ID4gPiA+ID4gPiA+ID4gPiB2ZXJzaW9uIHdoZW4g
-cnVubmluZyB0ZXN0cy4NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEknbSBjb25j
-ZXJuZWQgdGhhdCB0aGUgQUJJIG1pZ2h0IGJlIG1pc3VzZWQgdG8gYmUgcGFydCBvZg0KPiB3aGF0
-IHRoZQ0KPiA+ID4gPiA+ID4gPiA+IGNsaWVudCBleHBlY3RzIGZyb20gdGhlIFRFRS4gWW91IGV2
-ZW4gZXhwcmVzcyB0aGF0IGFzIGEgdXNlDQo+IGNhc2UuIEknZA0KPiA+ID4gPiA+ID4gPiA+IHJh
-dGhlciBmaXggdGhlIHByb2JsZW0gd2l0aCB4dGVzdC4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4g
-PiA+ID4gVGhhbmtzIGZvciB0aGUgZmVlZGJhY2shIFRvIGNsYXJpZnk6IGN1cnJlbnRseSwgdGhl
-IE9QLVRFRSBPUw0KPiByZXZpc2lvbg0KPiA+ID4gPiA+ID4gPiBJIGV4cG9zZSBpbg0KPiA+ID4g
-PiA+ID4gPiBzeXNmcyBpcyB0aGUgc2FtZSB2YWx1ZSBhbHJlYWR5IHByaW50ZWQgaW4gZG1lc2cg
-YXQgYm9vdA0KPiA+ID4gPiA+ID4gPiAgKGUuZy4sIOKAnG9wdGVlOiByZXZpc2lvbiA0LjggKFhY
-WFhYWCnigJ0pLg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBBcmUgeW91ciBjb25jZXJu
-cyBzcGVjaWZpY2FsbHkgYWJvdXQgY2xpZW50cyBpbmZlcnJpbmcNCj4gY2FwYWJpbGl0aWVzDQo+
-ID4gPiA+ID4gPiA+IGZyb20gYSByZXZpc2lvbg0KPiA+ID4gPiA+ID4gPiBzdHJpbmcgKOKAnHJl
-diBYLlkgaW1wbGllcyBmZWF0dXJlIFrigJ0pPyBJZiBzbywgSSBhZ3JlZSB0aGF04oCZcw0KPiBm
-cmFnaWxlDQo+ID4gPiA+ID4gPiA+IGFuZCBub3QgdGhlIGludGVudC4NCj4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiBZZXMNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoYW5rcyBmb3IgY2xhcmlmeWlu
-ZyB0aGUgY29uY2VybiENCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gSeKA
-mW0gaGFwcHkgdG8gYWRkIGEgc2hvcnQgbm90ZSBpbiB0aGUgZG9jIHRoYXQgdGhpcyBpcw0KPiBp
-bmZvcm1hdGlvbmFsDQo+ID4gPiA+ID4gPiA+IG9ubHkgYW5kIHRoYXQNCj4gPiA+ID4gPiA+ID4g
-ZmVhdHVyZSBkZXRlY3Rpb24gbXVzdCB1c2UgcHJvcGVyIGNhcGFiaWxpdHkgcXVlcmllcy4NCj4g
-PiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gUGxlYXNlIGxldCBtZSBrbm93IGlmIHRoYXQgYWRk
-cmVzc2VzIHRoZSB3b3JyeSwgb3IgaWYgdGhlcmXigJlzDQo+IGFub3RoZXINCj4gPiA+ID4gPiA+
-ID4gY29uY2VybiBJ4oCZbQ0KPiA+ID4gPiA+ID4gPiBtaXNzaW5nLg0KPiA+ID4gPiA+ID4NCj4g
-PiA+ID4gPiA+IEFkZGluZyBBUElzIHRoYXQgYXJlbid0IHN1cHBvc2VkIHRvIGJlIHVzZWQgc2Vl
-bXMgb2RkLiBEbyB5b3UNCj4ga25vdyBpZg0KPiA+ID4gPiA+ID4gdGhlcmUgYXJlIGV4YW1wbGVz
-IGluIHRoZSBrZXJuZWwgZm9yIHRoaXMga2luZCBvZiB0aGluZz8NCj4gPiA+ID4gPiBJ4oCZdmUg
-ZG9uZSBzb21lIHJlc2VhcmNoIGFuZCwgYXMgZmFyIGFzIEkgY2FuIHRlbGwsIHRoZSBURUUgY29y
-ZQ0KPiBhbHJlYWR5DQo+ID4gPiA+ID4gcHJvdmlkZXMgYW4gaW5mb3JtYXRpb25hbC1vbmx5IGZp
-bGUgYXQNCj4gL3N5cy9jbGFzcy90ZWUvdGVlMC9pbXBsZW1lbnRhdGlvbl9pZC4NCj4gPiA+ID4g
-PiBNeSB1bmRlcnN0YW5kaW5nIGlzIHRoYXQgaXQgd2FzIGludHJvZHVjZWQgcm91Z2hseSAxMCB5
-ZWFycyBhZ28uDQo+IEhvd2V2ZXIsDQo+ID4gPiA+ID4gSSBoYXZlbuKAmXQgZm91bmQgYW55IGRv
-Y3VtZW50YXRpb24gY2xhcmlmeWluZyBpdHMgaW50ZW5kZWQgcHVycG9zZSwNCj4gc28gSeKAmW0N
-Cj4gPiA+ID4gPiBhc3N1bWluZyB0aGlzIG1heSBiZSBhIHNpbWlsYXIgc2l0dWF0aW9uLiBJ4oCZ
-ZCBhcHByZWNpYXRlIGl0IGlmIHlvdQ0KPiBjb3VsZCBjb3JyZWN0DQo+ID4gPiA+ID4gbWUgaWYg
-SeKAmW0gd3JvbmcuDQo+ID4gPiA+DQo+ID4gPiA+IFRoYXQgb25lIGlzIGZvciBhIHF1aWNrIHdh
-eSBmb3IgYSBjbGllbnQgdG8gdGVsbCB0aGUgZGlmZmVyZW50IFRFRQ0KPiA+ID4gPiBkZXZpY2Ug
-aW1wbGVtZW50YXRpb25zIGFwYXJ0LiBZb3UncmUgcmlnaHQsIGl0IHJlc2VtYmxlcyB5b3VyIGNh
-c2UsDQo+ID4gPiA+IGV4Y2VwdCB0aGF0IHRoaXMgaXMgcGFydCBvZiBhIHdlbGwtZGVmaW5lZCBB
-QkkuDQo+ID4gPiA+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBBbHNvLCBoZXJlIGFyZSBzb21lIGZp
-bGVzIHdpdGggc2ltaWxpYXIgcHVycG9zZXM6DQo+ID4gPiA+ID4gLSAvc3lzL2RldmljZXMvc3lz
-dGVtL2NwdS9jcHUqL21pY3JvY29kZS92ZXJzaW9uDQo+ID4gPiA+ID4gLQ0KPiAvc3lzL2Rldmlj
-ZXMvdmlydHVhbC9kbWkvaWQve2Jpb3NfZGF0ZSxiaW9zX3JlbGVhc2UsYmlvc192ZW5kb3IsYmlv
-c192ZXJzaW9ufQ0KPiA+ID4gPiA+IC0gL3N5cy9rZXJuZWwvc2VjdXJpdHkvYXBwYXJtb3IvcmV2
-aXNpb24NCj4gPiA+ID4NCj4gPiA+ID4gVGhhbmtzLCB0aGlzIGlzIGdvb2QgYmFja2dyb3VuZCBp
-bmZvcm1hdGlvbi4NCj4gPiA+ID4NCj4gPiA+ID4gV2UgaGF2ZSBhIEJvRiBzZXNzaW9uIG9uIHRo
-ZSBURUUgc3Vic3lzdGVtIGF0IExQQyBvbiBGcmlkYXkgWzFdLg0KPiBXZSdsbA0KPiA+ID4gPiB0
-YWtlIHRoZSBvcHBvcnR1bml0eSB0byBkaXNjdXNzIGl0IHRoZXJlLg0KPiA+ID4NCj4gPiA+IEp1
-c3QgYSBxdWljayBmb2xsb3ctdXAgb24gdGhpcyBwYXRjaCwgaGFzIHRoZXJlIGJlZW4gYW55IGRl
-Y2lzaW9uIG9yDQo+ID4gPiBkaXJlY3Rpb24gZnJvbSB0aGF0IGRpc2N1c3Npb24/DQo+ID4gPiBJ
-4oCZbSBoYXBweSB0byByZXdvcmsgdGhlIHBhdGNoIGluIHdoYXRldmVyIGRpcmVjdGlvbiB0aGUg
-Z3JvdXAgcHJlZmVycy4NCj4gPg0KPiA+IE5vIG9uZSB3YXMgYWdhaW5zdCBpdC4gV2UgZGlkbid0
-IGRpc2N1c3MgdGhlIGRldGFpbHMsIGJ1dCBoZXJlJ3Mgd2hhdA0KPiA+IEknZCBsaWtlIHRvIHNl
-ZToNCj4gPiAtIFRoZSBjYWxsYmFjayBuYW1lIHNob3VsZCBiZSBnZXRfdGVlX3JldmlzaW9uKCkg
-b3IgZ2V0X3RlZV9md192ZXJzaW9uKCkNCj4gPiAtIFRoZSBGVyB2ZXJzaW9uIGlzIHJldHVybmVk
-IGFzIGEgc3RyaW5nIGZvciBmbGV4aWJpbGl0eQ0KPiA+IC0gQSBub3RlIHRoYXQgdGhlIEZXIHZl
-cnNpb24gaXMgbm90IGludGVuZGVkIHRvIGJlIHVzZWQgdG8gZGV0ZXJtaW5lDQo+ID4gd2hhdCBm
-ZWF0dXJlcywgZXRjLCBhcmUgYXZhaWxhYmxlLCBURUVfSU9DX1ZFUlNJT04gc2hvdWxkIGNvdmVy
-IHRoYXQuDQo+ID4NCj4gPiBTdW1pdCwgd2hhdCBkbyB5b3UgdGhpbms/DQo+DQo+IFRoYXQgc291
-bmRzIHJlYXNvbmFibGUgdG8gbWUuDQo+DQpUaGFua3MgZm9yIHRoZSBmZWVkYmFjayEgSSB3aWxs
-IHByZXBhcmUgVjMgcGF0Y2gNCg0KDQo+DQo+IC1TdW1pdA0KPg0KDQpCZXN0IHJlZ2FyZHMsDQpB
-cmlzdG8NCg==
+Today the only way to read the OP-TEE OS version is from dmesg/journal
+logs, which can be lost as buffers roll over. Capture the OS revision
+(major/minor/build_id) from secure world for both SMC and FF-A ABIs, store
+it in the OP-TEE driver, and expose a stable userspace readout via
+/sys/class/tee/tee*/revision.
+
+Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
+---
+ Documentation/ABI/testing/sysfs-class-tee | 10 +++++
+ drivers/tee/optee/core.c                  | 22 ++++++++++
+ drivers/tee/optee/ffa_abi.c               | 25 ++++++++++-
+ drivers/tee/optee/optee_private.h         | 19 +++++++++
+ drivers/tee/optee/smc_abi.c               | 25 ++++++++++-
+ drivers/tee/tee_core.c                    | 52 ++++++++++++++++++++++-
+ include/linux/tee_core.h                  |  5 +++
+ include/linux/tee_drv.h                   |  3 ++
+ 8 files changed, 156 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Documentation/ABI/testing/sysfs-class-tee
+index c9144d16003e..6e783210104e 100644
+--- a/Documentation/ABI/testing/sysfs-class-tee
++++ b/Documentation/ABI/testing/sysfs-class-tee
+@@ -13,3 +13,13 @@ Description:
+ 		space if the variable is absent. The primary purpose
+ 		of this variable is to let systemd know whether
+ 		tee-supplicant is needed in the early boot with initramfs.
++
++What:		/sys/class/tee/tee{,priv}X/revision
++Date:		Dec 2025
++KernelVersion:	6.18
++Contact:	op-tee@lists.trustedfirmware.org
++Description:
++		Read-only revision string reported by the TEE driver. This is
++		for diagnostics only and must not be used to infer feature
++		support. Use TEE_IOC_VERSION for capability and compatibility
++		checks.
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 5b62139714ce..58ee9ac0e467 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -63,6 +63,28 @@ int optee_set_dma_mask(struct optee *optee, u_int pa_width)
+ 	return dma_coerce_mask_and_coherent(&optee->teedev->dev, mask);
+ }
+ 
++int optee_get_revision(struct optee *optee, char *buf, size_t len)
++{
++	u64 build_id;
++
++	if (!optee)
++		return -ENODEV;
++	if (!buf || !len)
++		return -EINVAL;
++
++	build_id = optee->revision.os_build_id;
++	if (build_id)
++		scnprintf(buf, len, "%u.%u (%016llx)",
++			  optee->revision.os_major,
++			  optee->revision.os_minor,
++			  (unsigned long long)build_id);
++	else
++		scnprintf(buf, len, "%u.%u", optee->revision.os_major,
++			  optee->revision.os_minor);
++
++	return 0;
++}
++
+ static void optee_bus_scan(struct work_struct *work)
+ {
+ 	WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
+diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+index bf8390789ecf..0a2990c2491e 100644
+--- a/drivers/tee/optee/ffa_abi.c
++++ b/drivers/tee/optee/ffa_abi.c
+@@ -776,7 +776,8 @@ static int optee_ffa_reclaim_protmem(struct optee *optee,
+  */
+ 
+ static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
+-					const struct ffa_ops *ops)
++					const struct ffa_ops *ops,
++					struct optee_revision *revision)
+ {
+ 	const struct ffa_msg_ops *msg_ops = ops->msg_ops;
+ 	struct ffa_send_direct_data data = {
+@@ -806,6 +807,12 @@ static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
+ 		pr_err("Unexpected error %d\n", rc);
+ 		return false;
+ 	}
++	if (revision) {
++		revision->os_major = data.data0;
++		revision->os_minor = data.data1;
++		revision->os_build_id = data.data2;
++	}
++
+ 	if (data.data2)
+ 		pr_info("revision %lu.%lu (%08lx)",
+ 			data.data0, data.data1, data.data2);
+@@ -898,8 +905,12 @@ static int optee_ffa_open(struct tee_context *ctx)
+ 	return optee_open(ctx, true);
+ }
+ 
++static int optee_ffa_get_tee_revision(struct tee_device *teedev,
++				      char *buf, size_t len);
++
+ static const struct tee_driver_ops optee_ffa_clnt_ops = {
+ 	.get_version = optee_ffa_get_version,
++	.get_tee_revision = optee_ffa_get_tee_revision,
+ 	.open = optee_ffa_open,
+ 	.release = optee_release,
+ 	.open_session = optee_open_session,
+@@ -918,6 +929,7 @@ static const struct tee_desc optee_ffa_clnt_desc = {
+ 
+ static const struct tee_driver_ops optee_ffa_supp_ops = {
+ 	.get_version = optee_ffa_get_version,
++	.get_tee_revision = optee_ffa_get_tee_revision,
+ 	.open = optee_ffa_open,
+ 	.release = optee_release_supp,
+ 	.supp_recv = optee_supp_recv,
+@@ -1034,6 +1046,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ {
+ 	const struct ffa_notifier_ops *notif_ops;
+ 	const struct ffa_ops *ffa_ops;
++	struct optee_revision revision = { };
+ 	unsigned int max_notif_value;
+ 	unsigned int rpc_param_count;
+ 	struct tee_shm_pool *pool;
+@@ -1047,7 +1060,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ 	ffa_ops = ffa_dev->ops;
+ 	notif_ops = ffa_ops->notifier_ops;
+ 
+-	if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops))
++	if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops, &revision))
+ 		return -EINVAL;
+ 
+ 	if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,
+@@ -1059,6 +1072,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ 	optee = kzalloc(sizeof(*optee), GFP_KERNEL);
+ 	if (!optee)
+ 		return -ENOMEM;
++	optee->revision = revision;
+ 
+ 	pool = optee_ffa_shm_pool_alloc_pages();
+ 	if (IS_ERR(pool)) {
+@@ -1194,3 +1208,10 @@ void optee_ffa_abi_unregister(void)
+ 	if (IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT))
+ 		ffa_unregister(&optee_ffa_driver);
+ }
++static int optee_ffa_get_tee_revision(struct tee_device *teedev,
++				      char *buf, size_t len)
++{
++	struct optee *optee = tee_get_drvdata(teedev);
++
++	return optee_get_revision(optee, buf, len);
++}
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
+index db9ea673fbca..8d65f8b16b4a 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -171,6 +171,24 @@ struct optee_ffa {
+ 
+ struct optee;
+ 
++/**
++ * struct optee_revision - OP-TEE OS revision reported by secure world
++ * @os_major:		OP-TEE OS major version
++ * @os_minor:		OP-TEE OS minor version
++ * @os_build_id:	OP-TEE OS build identifier (0 if unspecified)
++ *
++ * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
++ * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS revision, not an
++ * FF-A ABI version.
++ */
++struct optee_revision {
++	u32 os_major;
++	u32 os_minor;
++	u64 os_build_id;
++};
++
++int optee_get_revision(struct optee *optee, char *buf, size_t len);
++
+ /**
+  * struct optee_ops - OP-TEE driver internal operations
+  * @do_call_with_arg:	enters OP-TEE in secure world
+@@ -249,6 +267,7 @@ struct optee {
+ 	bool in_kernel_rpmb_routing;
+ 	struct work_struct scan_bus_work;
+ 	struct work_struct rpmb_scan_bus_work;
++	struct optee_revision revision;
+ };
+ 
+ struct optee_session {
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index 0be663fcd52b..4dc2c16147ee 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -1240,8 +1240,12 @@ static int optee_smc_open(struct tee_context *ctx)
+ 	return optee_open(ctx, sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL);
+ }
+ 
++static int optee_get_tee_revision(struct tee_device *teedev,
++				  char *buf, size_t len);
++
+ static const struct tee_driver_ops optee_clnt_ops = {
+ 	.get_version = optee_get_version,
++	.get_tee_revision = optee_get_tee_revision,
+ 	.open = optee_smc_open,
+ 	.release = optee_release,
+ 	.open_session = optee_open_session,
+@@ -1261,6 +1265,7 @@ static const struct tee_desc optee_clnt_desc = {
+ 
+ static const struct tee_driver_ops optee_supp_ops = {
+ 	.get_version = optee_get_version,
++	.get_tee_revision = optee_get_tee_revision,
+ 	.open = optee_smc_open,
+ 	.release = optee_release_supp,
+ 	.supp_recv = optee_supp_recv,
+@@ -1323,7 +1328,8 @@ static bool optee_msg_api_uid_is_optee_image_load(optee_invoke_fn *invoke_fn)
+ }
+ #endif
+ 
+-static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
++static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn,
++				      struct optee_revision *revision)
+ {
+ 	union {
+ 		struct arm_smccc_res smccc;
+@@ -1337,6 +1343,12 @@ static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
+ 	invoke_fn(OPTEE_SMC_CALL_GET_OS_REVISION, 0, 0, 0, 0, 0, 0, 0,
+ 		  &res.smccc);
+ 
++	if (revision) {
++		revision->os_major = res.result.major;
++		revision->os_minor = res.result.minor;
++		revision->os_build_id = res.result.build_id;
++	}
++
+ 	if (res.result.build_id)
+ 		pr_info("revision %lu.%lu (%0*lx)", res.result.major,
+ 			res.result.minor, (int)sizeof(res.result.build_id) * 2,
+@@ -1727,6 +1739,7 @@ static int optee_probe(struct platform_device *pdev)
+ 	unsigned int thread_count;
+ 	struct tee_device *teedev;
+ 	struct tee_context *ctx;
++	struct optee_revision revision = { };
+ 	u32 max_notif_value;
+ 	u32 arg_cache_flags;
+ 	u32 sec_caps;
+@@ -1745,7 +1758,7 @@ static int optee_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	optee_msg_get_os_revision(invoke_fn);
++	optee_msg_get_os_revision(invoke_fn, &revision);
+ 
+ 	if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
+ 		pr_warn("api revision mismatch\n");
+@@ -1814,6 +1827,7 @@ static int optee_probe(struct platform_device *pdev)
+ 		rc = -ENOMEM;
+ 		goto err_free_shm_pool;
+ 	}
++	optee->revision = revision;
+ 
+ 	optee->ops = &optee_ops;
+ 	optee->smc.invoke_fn = invoke_fn;
+@@ -1971,3 +1985,10 @@ void optee_smc_abi_unregister(void)
+ {
+ 	platform_driver_unregister(&optee_driver);
+ }
++static int optee_get_tee_revision(struct tee_device *teedev,
++				  char *buf, size_t len)
++{
++	struct optee *optee = tee_get_drvdata(teedev);
++
++	return optee_get_revision(optee, buf, len);
++}
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index d65d47cc154e..0ba0e16462b9 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -13,6 +13,7 @@
+ #include <linux/overflow.h>
+ #include <linux/slab.h>
+ #include <linux/tee_core.h>
++#include <linux/tee_drv.h>
+ #include <linux/uaccess.h>
+ #include <crypto/sha1.h>
+ #include "tee_private.h"
+@@ -1146,7 +1147,56 @@ static struct attribute *tee_dev_attrs[] = {
+ 	NULL
+ };
+ 
+-ATTRIBUTE_GROUPS(tee_dev);
++static const struct attribute_group tee_dev_group = {
++	.attrs = tee_dev_attrs,
++};
++
++static ssize_t revision_show(struct device *dev,
++			     struct device_attribute *attr, char *buf)
++{
++	struct tee_device *teedev = container_of(dev, struct tee_device, dev);
++	char version[TEE_REVISION_STR_SIZE];
++	int ret;
++
++	if (!teedev->desc->ops->get_tee_revision)
++		return -ENODEV;
++
++	ret = teedev->desc->ops->get_tee_revision(teedev, version,
++						  sizeof(version));
++	if (ret)
++		return ret;
++
++	return sysfs_emit(buf, "%s\n", version);
++}
++static DEVICE_ATTR_RO(revision);
++
++static struct attribute *tee_revision_attrs[] = {
++	&dev_attr_revision.attr,
++	NULL
++};
++
++static umode_t tee_revision_attr_is_visible(struct kobject *kobj,
++					    struct attribute *attr, int n)
++{
++	struct device *dev = kobj_to_dev(kobj);
++	struct tee_device *teedev = container_of(dev, struct tee_device, dev);
++
++	if (teedev->desc->ops->get_tee_revision)
++		return attr->mode;
++
++	return 0;
++}
++
++static const struct attribute_group tee_revision_group = {
++	.attrs = tee_revision_attrs,
++	.is_visible = tee_revision_attr_is_visible,
++};
++
++static const struct attribute_group *tee_dev_groups[] = {
++	&tee_dev_group,
++	&tee_revision_group,
++	NULL
++};
+ 
+ static const struct class tee_class = {
+ 	.name = "tee",
+diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+index 1f3e5dad6d0d..de11612afa62 100644
+--- a/include/linux/tee_core.h
++++ b/include/linux/tee_core.h
+@@ -76,6 +76,9 @@ struct tee_device {
+ /**
+  * struct tee_driver_ops - driver operations vtable
+  * @get_version:	returns version of driver
++ * @get_tee_revision:	returns revision string (diagnostic only);
++ *			do not infer feature support from this, use
++ *			TEE_IOC_VERSION instead
+  * @open:		called for a context when the device file is opened
+  * @close_context:	called when the device file is closed
+  * @release:		called to release the context
+@@ -98,6 +101,8 @@ struct tee_device {
+ struct tee_driver_ops {
+ 	void (*get_version)(struct tee_device *teedev,
+ 			    struct tee_ioctl_version_data *vers);
++	int (*get_tee_revision)(struct tee_device *teedev,
++				char *buf, size_t len);
+ 	int (*open)(struct tee_context *ctx);
+ 	void (*close_context)(struct tee_context *ctx);
+ 	void (*release)(struct tee_context *ctx);
+diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
+index 88a6f9697c89..e76238d435ce 100644
+--- a/include/linux/tee_drv.h
++++ b/include/linux/tee_drv.h
+@@ -322,4 +322,7 @@ struct tee_client_driver {
+ #define to_tee_client_driver(d) \
+ 		container_of_const(d, struct tee_client_driver, driver)
+ 
++/* Size for TEE revision string buffer used by get_tee_revision(). */
++#define TEE_REVISION_STR_SIZE	128
++
+ #endif /*__TEE_DRV_H*/
+-- 
+2.43.0
+
