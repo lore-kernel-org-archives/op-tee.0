@@ -4,57 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0C69D3B7E5
-	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 04:59:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37F8AD3B7E5
+	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 05:39:57 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id CECE14FDB0
-	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 04:59:37 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 6E6244184A
+	for <op-tee@archiver.kernel.org>; Mon, 29 Dec 2025 05:39:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1766984377;
-	bh=EQJFW7a+Y5zpfFGguXRxIZ5a0E7CT4822cKjt5oLYBo=;
+	d=lists.trustedfirmware.org; s=2024; t=1766986796;
+	bh=hUD0ESZR0fiGX+5i+A4WD58O6b8Rleo0ARVfBQND1fg=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=eWJBcLuvG+4e2JOoL1bkJ6/ORCyGz4SrnJ1jaLPrir91JS4/JYPhGFmHF1hYODBDr
-	 kybS/lfE+b6jKItw1caamdfASD9xPgyLSsViZa473/D6AZhqzAS3VV/gafjVObghaP
-	 sGLoRjlffRAxIofcGYk8j7xYDYenlf7O//cU86ZjGdJrWYid67fZkB51HXSxUq7RX0
-	 FmJYFCUz+4nkWScmgbQiIzi1zEK8YbHl57yVNqysy7uY5VTUTboYd6wkvZCypn39FY
-	 v73xPU6EgHa/3mZ+Af10pm0tXoKi4xOuYJhrgioLV8L+uUzA5cSo7pen8X3ej8DCVw
-	 8Tc1eERQjmdKA==
+	b=Vyr2lXDBYlwk8wWBvn/dhMOuS+OeIIil91331tgL3gC9UgNA+Algz4/8+Ck6CKOfY
+	 EwQoqEzsKzszLO96/goh2dC/W98A78jENVHGj3Ebjmpvh3CLUcLXpe2dOJKapgD6zZ
+	 2/ilA4RmKsQ2qfM1boNWTsGsypdEbq0KGS0OpeFcIBuxqEbCs7BkA/fntsw+rIjbLa
+	 MOyUzLjq3siJchBmpOFee8fVLyn5FRCqN8QlxvudB+yP9IWSwVpm2ajnIt1onmV6fZ
+	 qhI5sWEjASq0cIGtff0dU8LpWj6rSXQLwsBGzcujKezlFSsjj8oztM6+u4h906KL3l
+	 pWg/1LFMlEOXg==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id C036740B29
-	for <op-tee@lists.trustedfirmware.org>; Mon, 29 Dec 2025 04:59:18 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id DB3884184A
+	for <op-tee@lists.trustedfirmware.org>; Mon, 29 Dec 2025 05:39:38 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ipumCXEC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=crfK7hGE;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 30EF143FFE;
-	Mon, 29 Dec 2025 04:59:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D654C4CEF7;
-	Mon, 29 Dec 2025 04:59:14 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 188D743B25;
+	Mon, 29 Dec 2025 05:39:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37B43C4CEF7;
+	Mon, 29 Dec 2025 05:39:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766984358;
-	bh=EQJFW7a+Y5zpfFGguXRxIZ5a0E7CT4822cKjt5oLYBo=;
+	s=k20201202; t=1766986778;
+	bh=hUD0ESZR0fiGX+5i+A4WD58O6b8Rleo0ARVfBQND1fg=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ipumCXECnTHI4Qg6lPdtUkfAHDcGIdHHq/+pNwpAXqb0+wLXUAIMslDY9ioUPyM5L
-	 PJ95/7V8O6uiS//3BbVED2z8cBQhliWs0H+jK+ku95vwZzV+hV0pPzIpIHdHpOHSdw
-	 eSqxyf4pA25Ow4I9HQsHnngwkJB60x3fDhMeGT3DhHJUq/bkVnC3c8btj4bkpYaqnJ
-	 qSNZGr9WyQMeWlNLoqKzQ9Cbdo8Ewm1CDbm5Gh+Zilz0Ud1uV4tVny2l7SEvuYOegW
-	 uatYXrhYHmzeD+Z1xE7npLDziNLiqdRm0JLwY98BswuxnZdnUaCZu/l7sgd1JfGcZY
-	 J3kTZ8Hilyjyw==
-Date: Mon, 29 Dec 2025 10:29:11 +0530
-To: Aristo Chen <jj251510319013@gmail.com>
-Subject: Re: [PATCH v3 1/1] tee: optee: expose OS revision via sysfs
-Message-ID: <aVIKn4HgmCFZOcn8@sumit-xelite>
-References: <20251122145924.381725-1-jj251510319013@gmail.com>
- <20251226131920.64582-1-aristo.chen@canonical.com>
+	b=crfK7hGEKJQd+jZ/mzVVllUGC53q1JtiM6l0nfgK0VmZ+jHGITOazGfxXJsgGjzhk
+	 w+SOgDsDiiDVFhcjFx1MwfiTWZ4iCOnfJ5EpkBzLLWt/b9jfx4VxULNYVllvN1APN4
+	 uP9z7nLzBszdSpkTIk2HnRHyVqAYtM/5D1uVgjcTZIEUeFCGzWV1E/CK4ZZsoYLvVJ
+	 Pdx7fX6aZsz1Wh0NTY94/o1DY+6Z7T2Yu3GA8BDwQ7eCMrdCy6OkzGQbPbZsxhT/rF
+	 9SDLMgTzaZnjdXrCdRo8HKNS0FEwwW2jwb2iPYJjAPtXUv/IMpJLD4dKLvBVPFr6gi
+	 MQpYWX6j4BHyg==
+Date: Mon, 29 Dec 2025 11:09:29 +0530
+To: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+Subject: Re: [PATCH v20 1/6] dt-bindings: firmware: Add TEE remoteproc
+ service binding
+Message-ID: <aVIUEafDoVQv0rHf@sumit-xelite>
+References: <20251217153917.3998544-1-arnaud.pouliquen@foss.st.com>
+ <20251217153917.3998544-2-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251226131920.64582-1-aristo.chen@canonical.com>
+In-Reply-To: <20251217153917.3998544-2-arnaud.pouliquen@foss.st.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Spamd-Result: default: False [-2.95 / 15.00];
+	BAYES_HAM(-2.95)[99.79%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
@@ -62,33 +63,34 @@ X-Spamd-Result: default: False [-3.00 / 15.00];
 	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	DNSWL_BLOCKED(0.00)[172.234.252.31:from];
 	TO_DN_SOME(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com];
-	RCPT_COUNT_SEVEN(0.00)[9];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DNSWL_BLOCKED(0.00)[172.234.252.31:from];
+	TAGGED_RCPT(0.00)[dt];
+	RCVD_TLS_LAST(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
 	ALIAS_RESOLVED(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: C036740B29
-X-Spamd-Bar: ---
-Message-ID-Hash: KTLOICI4SV6CHPPYVIACYVLVPLHNUK3U
-X-Message-ID-Hash: KTLOICI4SV6CHPPYVIACYVLVPLHNUK3U
+X-Rspamd-Queue-Id: DB3884184A
+X-Spamd-Bar: --
+Message-ID-Hash: NDKXCI4ND76P5MX3LE2J7DUCILT3BF5B
+X-Message-ID-Hash: NDKXCI4ND76P5MX3LE2J7DUCILT3BF5B
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
+CC: Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/KTLOICI4SV6CHPPYVIACYVLVPLHNUK3U/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NDKXCI4ND76P5MX3LE2J7DUCILT3BF5B/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -98,416 +100,101 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-Hi Aristo,
-
-On Fri, Dec 26, 2025 at 09:19:13PM +0800, Aristo Chen wrote:
-> Today the only way to read the OP-TEE OS version is from dmesg/journal
-> logs, which can be lost as buffers roll over. Capture the OS revision
-> (major/minor/build_id) from secure world for both SMC and FF-A ABIs, store
-> it in the OP-TEE driver, and expose a stable userspace readout via
-> /sys/class/tee/tee*/revision.
+On Wed, Dec 17, 2025 at 04:39:12PM +0100, Arnaud Pouliquen wrote:
+> Add a device tree binding for the TEE-based remote processor control
+> service implemented as an OP-TEE Trusted Application identified by
+> UUID 80a4c275-0a47-4905-8285-1486a9771a08.
 > 
-> Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
+> The TEE service node is a child of the "linaro,optee-tz" firmware node and
+> acts as a container for remoteproc devices that are controlled via TEE.
+> 
+> In addition, the "linaro,optee-tz" binding is updated to specify the
+> '#address-cells' and '#size-cells' values used for child TEE service
+> nodes.
+> 
+> Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 > ---
->  Documentation/ABI/testing/sysfs-class-tee | 10 +++++
->  drivers/tee/optee/core.c                  | 22 ++++++++++
->  drivers/tee/optee/ffa_abi.c               | 25 ++++++++++-
->  drivers/tee/optee/optee_private.h         | 19 +++++++++
->  drivers/tee/optee/smc_abi.c               | 25 ++++++++++-
->  drivers/tee/tee_core.c                    | 52 ++++++++++++++++++++++-
->  include/linux/tee_core.h                  |  5 +++
->  include/linux/tee_drv.h                   |  3 ++
->  8 files changed, 156 insertions(+), 5 deletions(-)
-
-Please split up this patch properly as to what goes into the generic TEE
-driver vs the OP-TEE changes.
-
+>  .../arm/firmware/linaro,optee-tz.yaml         |  6 +++
+>  .../bindings/remoteproc/remoteproc-tee.yaml   | 47 +++++++++++++++++++
+>  2 files changed, 53 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Documentation/ABI/testing/sysfs-class-tee
-> index c9144d16003e..6e783210104e 100644
-> --- a/Documentation/ABI/testing/sysfs-class-tee
-> +++ b/Documentation/ABI/testing/sysfs-class-tee
-> @@ -13,3 +13,13 @@ Description:
->  		space if the variable is absent. The primary purpose
->  		of this variable is to let systemd know whether
->  		tee-supplicant is needed in the early boot with initramfs.
-> +
-> +What:		/sys/class/tee/tee{,priv}X/revision
-> +Date:		Dec 2025
-> +KernelVersion:	6.18
-> +Contact:	op-tee@lists.trustedfirmware.org
-> +Description:
-> +		Read-only revision string reported by the TEE driver. This is
-> +		for diagnostics only and must not be used to infer feature
-> +		support. Use TEE_IOC_VERSION for capability and compatibility
-> +		checks.
-> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index 5b62139714ce..58ee9ac0e467 100644
-> --- a/drivers/tee/optee/core.c
-> +++ b/drivers/tee/optee/core.c
-> @@ -63,6 +63,28 @@ int optee_set_dma_mask(struct optee *optee, u_int pa_width)
->  	return dma_coerce_mask_and_coherent(&optee->teedev->dev, mask);
->  }
+> diff --git a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> index 5d033570b57b..ab69eecba9ad 100644
+> --- a/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> +++ b/Documentation/devicetree/bindings/arm/firmware/linaro,optee-tz.yaml
+> @@ -41,6 +41,12 @@ properties:
+>        HVC #0, register assignments
+>        register assignments are specified in drivers/tee/optee/optee_smc.h
 >  
-> +int optee_get_revision(struct optee *optee, char *buf, size_t len)
-> +{
-> +	u64 build_id;
+> +  "#address-cells":
+> +    const: 1
 > +
-> +	if (!optee)
-> +		return -ENODEV;
-> +	if (!buf || !len)
-> +		return -EINVAL;
+> +  "#size-cells":
+> +    const: 0
 > +
-> +	build_id = optee->revision.os_build_id;
-> +	if (build_id)
-> +		scnprintf(buf, len, "%u.%u (%016llx)",
-> +			  optee->revision.os_major,
-> +			  optee->revision.os_minor,
-> +			  (unsigned long long)build_id);
-> +	else
-> +		scnprintf(buf, len, "%u.%u", optee->revision.os_major,
-> +			  optee->revision.os_minor);
+>  required:
+>    - compatible
+>    - method
+> diff --git a/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml b/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+> new file mode 100644
+> index 000000000000..083ecf1f38cf
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+> @@ -0,0 +1,47 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/remoteproc/remoteproc-tee.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +	return 0;
-> +}
+> +title: TEE Remote Processor Control Service (UUID 80a4c275-0a47-4905-8285-1486a9771a08)
 > +
->  static void optee_bus_scan(struct work_struct *work)
->  {
->  	WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
-> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-> index bf8390789ecf..0a2990c2491e 100644
-> --- a/drivers/tee/optee/ffa_abi.c
-> +++ b/drivers/tee/optee/ffa_abi.c
-> @@ -776,7 +776,8 @@ static int optee_ffa_reclaim_protmem(struct optee *optee,
->   */
->  
->  static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
-> -					const struct ffa_ops *ops)
-> +					const struct ffa_ops *ops,
-> +					struct optee_revision *revision)
->  {
->  	const struct ffa_msg_ops *msg_ops = ops->msg_ops;
->  	struct ffa_send_direct_data data = {
-> @@ -806,6 +807,12 @@ static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
->  		pr_err("Unexpected error %d\n", rc);
->  		return false;
->  	}
-> +	if (revision) {
-> +		revision->os_major = data.data0;
-> +		revision->os_minor = data.data1;
-> +		revision->os_build_id = data.data2;
-> +	}
+> +maintainers:
+> +  - Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 > +
->  	if (data.data2)
->  		pr_info("revision %lu.%lu (%08lx)",
->  			data.data0, data.data1, data.data2);
-> @@ -898,8 +905,12 @@ static int optee_ffa_open(struct tee_context *ctx)
->  	return optee_open(ctx, true);
->  }
->  
-> +static int optee_ffa_get_tee_revision(struct tee_device *teedev,
-> +				      char *buf, size_t len);
+> +description: |
+> +  Node describing a TEE-based remote processor control service implemented as
+> +  a Trusted Application identified by UUID 80a4c275-0a47-4905-8285-1486a9771a08.
+> +
+> +  It is a child of the OP-TEE firmware node ("linaro,optee-tz") and acts as a
+> +  container for child remoteproc devices (for example, the STM32MP15 M4 core
+> +  described by "st,stm32mp1-tee").
+> +
+> +properties:
+> +  compatible:
+> +    const: rproc-service-80a4c275-0a47-4905-8285-1486a9771a08
 
-I don't think you need a wrapper here but insted you can just use the
-generic optee_get_revision() callback.
-
-> +
->  static const struct tee_driver_ops optee_ffa_clnt_ops = {
->  	.get_version = optee_ffa_get_version,
-> +	.get_tee_revision = optee_ffa_get_tee_revision,
-
-This will then become:
-
-        .get_tee_revision = optee_get_revision,
-
->  	.open = optee_ffa_open,
->  	.release = optee_release,
->  	.open_session = optee_open_session,
-> @@ -918,6 +929,7 @@ static const struct tee_desc optee_ffa_clnt_desc = {
->  
->  static const struct tee_driver_ops optee_ffa_supp_ops = {
->  	.get_version = optee_ffa_get_version,
-> +	.get_tee_revision = optee_ffa_get_tee_revision,
-
-ditto.
-
->  	.open = optee_ffa_open,
->  	.release = optee_release_supp,
->  	.supp_recv = optee_supp_recv,
-> @@ -1034,6 +1046,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
->  {
->  	const struct ffa_notifier_ops *notif_ops;
->  	const struct ffa_ops *ffa_ops;
-> +	struct optee_revision revision = { };
->  	unsigned int max_notif_value;
->  	unsigned int rpc_param_count;
->  	struct tee_shm_pool *pool;
-> @@ -1047,7 +1060,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
->  	ffa_ops = ffa_dev->ops;
->  	notif_ops = ffa_ops->notifier_ops;
->  
-> -	if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops))
-> +	if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops, &revision))
->  		return -EINVAL;
->  
->  	if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,
-> @@ -1059,6 +1072,7 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
->  	optee = kzalloc(sizeof(*optee), GFP_KERNEL);
->  	if (!optee)
->  		return -ENOMEM;
-> +	optee->revision = revision;
->  
->  	pool = optee_ffa_shm_pool_alloc_pages();
->  	if (IS_ERR(pool)) {
-> @@ -1194,3 +1208,10 @@ void optee_ffa_abi_unregister(void)
->  	if (IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT))
->  		ffa_unregister(&optee_ffa_driver);
->  }
-> +static int optee_ffa_get_tee_revision(struct tee_device *teedev,
-> +				      char *buf, size_t len)
-> +{
-> +	struct optee *optee = tee_get_drvdata(teedev);
-> +
-> +	return optee_get_revision(optee, buf, len);
-> +}
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
-> index db9ea673fbca..8d65f8b16b4a 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -171,6 +171,24 @@ struct optee_ffa {
->  
->  struct optee;
->  
-> +/**
-> + * struct optee_revision - OP-TEE OS revision reported by secure world
-> + * @os_major:		OP-TEE OS major version
-> + * @os_minor:		OP-TEE OS minor version
-> + * @os_build_id:	OP-TEE OS build identifier (0 if unspecified)
-> + *
-> + * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
-> + * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS revision, not an
-> + * FF-A ABI version.
-> + */
-> +struct optee_revision {
-> +	u32 os_major;
-> +	u32 os_minor;
-> +	u64 os_build_id;
-> +};
-> +
-> +int optee_get_revision(struct optee *optee, char *buf, size_t len);
-> +
->  /**
->   * struct optee_ops - OP-TEE driver internal operations
->   * @do_call_with_arg:	enters OP-TEE in secure world
-> @@ -249,6 +267,7 @@ struct optee {
->  	bool in_kernel_rpmb_routing;
->  	struct work_struct scan_bus_work;
->  	struct work_struct rpmb_scan_bus_work;
-> +	struct optee_revision revision;
->  };
->  
->  struct optee_session {
-> diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-> index 0be663fcd52b..4dc2c16147ee 100644
-> --- a/drivers/tee/optee/smc_abi.c
-> +++ b/drivers/tee/optee/smc_abi.c
-> @@ -1240,8 +1240,12 @@ static int optee_smc_open(struct tee_context *ctx)
->  	return optee_open(ctx, sec_caps & OPTEE_SMC_SEC_CAP_MEMREF_NULL);
->  }
->  
-> +static int optee_get_tee_revision(struct tee_device *teedev,
-> +				  char *buf, size_t len);
-> +
->  static const struct tee_driver_ops optee_clnt_ops = {
->  	.get_version = optee_get_version,
-> +	.get_tee_revision = optee_get_tee_revision,
->  	.open = optee_smc_open,
->  	.release = optee_release,
->  	.open_session = optee_open_session,
-> @@ -1261,6 +1265,7 @@ static const struct tee_desc optee_clnt_desc = {
->  
->  static const struct tee_driver_ops optee_supp_ops = {
->  	.get_version = optee_get_version,
-> +	.get_tee_revision = optee_get_tee_revision,
->  	.open = optee_smc_open,
->  	.release = optee_release_supp,
->  	.supp_recv = optee_supp_recv,
-> @@ -1323,7 +1328,8 @@ static bool optee_msg_api_uid_is_optee_image_load(optee_invoke_fn *invoke_fn)
->  }
->  #endif
->  
-> -static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
-> +static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn,
-> +				      struct optee_revision *revision)
->  {
->  	union {
->  		struct arm_smccc_res smccc;
-> @@ -1337,6 +1343,12 @@ static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
->  	invoke_fn(OPTEE_SMC_CALL_GET_OS_REVISION, 0, 0, 0, 0, 0, 0, 0,
->  		  &res.smccc);
->  
-> +	if (revision) {
-> +		revision->os_major = res.result.major;
-> +		revision->os_minor = res.result.minor;
-> +		revision->os_build_id = res.result.build_id;
-> +	}
-> +
->  	if (res.result.build_id)
->  		pr_info("revision %lu.%lu (%0*lx)", res.result.major,
->  			res.result.minor, (int)sizeof(res.result.build_id) * 2,
-> @@ -1727,6 +1739,7 @@ static int optee_probe(struct platform_device *pdev)
->  	unsigned int thread_count;
->  	struct tee_device *teedev;
->  	struct tee_context *ctx;
-> +	struct optee_revision revision = { };
->  	u32 max_notif_value;
->  	u32 arg_cache_flags;
->  	u32 sec_caps;
-> @@ -1745,7 +1758,7 @@ static int optee_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	}
->  
-> -	optee_msg_get_os_revision(invoke_fn);
-> +	optee_msg_get_os_revision(invoke_fn, &revision);
->  
->  	if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
->  		pr_warn("api revision mismatch\n");
-> @@ -1814,6 +1827,7 @@ static int optee_probe(struct platform_device *pdev)
->  		rc = -ENOMEM;
->  		goto err_free_shm_pool;
->  	}
-> +	optee->revision = revision;
->  
->  	optee->ops = &optee_ops;
->  	optee->smc.invoke_fn = invoke_fn;
-> @@ -1971,3 +1985,10 @@ void optee_smc_abi_unregister(void)
->  {
->  	platform_driver_unregister(&optee_driver);
->  }
-> +static int optee_get_tee_revision(struct tee_device *teedev,
-> +				  char *buf, size_t len)
-
-Ditto here, you don't need this extra wrapper here.
-
-> +{
-> +	struct optee *optee = tee_get_drvdata(teedev);
-> +
-> +	return optee_get_revision(optee, buf, len);
-> +}
-> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> index d65d47cc154e..0ba0e16462b9 100644
-> --- a/drivers/tee/tee_core.c
-> +++ b/drivers/tee/tee_core.c
-> @@ -13,6 +13,7 @@
->  #include <linux/overflow.h>
->  #include <linux/slab.h>
->  #include <linux/tee_core.h>
-> +#include <linux/tee_drv.h>
-
-This include is rather meant for TEE client drivers, don't include it
-here. Instead use linux/tee_core.h.
-
->  #include <linux/uaccess.h>
->  #include <crypto/sha1.h>
->  #include "tee_private.h"
-> @@ -1146,7 +1147,56 @@ static struct attribute *tee_dev_attrs[] = {
->  	NULL
->  };
->  
-> -ATTRIBUTE_GROUPS(tee_dev);
-> +static const struct attribute_group tee_dev_group = {
-> +	.attrs = tee_dev_attrs,
-> +};
-> +
-> +static ssize_t revision_show(struct device *dev,
-> +			     struct device_attribute *attr, char *buf)
-> +{
-> +	struct tee_device *teedev = container_of(dev, struct tee_device, dev);
-> +	char version[TEE_REVISION_STR_SIZE];
-> +	int ret;
-> +
-> +	if (!teedev->desc->ops->get_tee_revision)
-> +		return -ENODEV;
-> +
-> +	ret = teedev->desc->ops->get_tee_revision(teedev, version,
-> +						  sizeof(version));
-> +	if (ret)
-> +		return ret;
-> +
-> +	return sysfs_emit(buf, "%s\n", version);
-> +}
-> +static DEVICE_ATTR_RO(revision);
-> +
-> +static struct attribute *tee_revision_attrs[] = {
-> +	&dev_attr_revision.attr,
-> +	NULL
-> +};
-> +
-> +static umode_t tee_revision_attr_is_visible(struct kobject *kobj,
-> +					    struct attribute *attr, int n)
-> +{
-> +	struct device *dev = kobj_to_dev(kobj);
-> +	struct tee_device *teedev = container_of(dev, struct tee_device, dev);
-> +
-> +	if (teedev->desc->ops->get_tee_revision)
-> +		return attr->mode;
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct attribute_group tee_revision_group = {
-> +	.attrs = tee_revision_attrs,
-> +	.is_visible = tee_revision_attr_is_visible,
-> +};
-> +
-> +static const struct attribute_group *tee_dev_groups[] = {
-> +	&tee_dev_group,
-> +	&tee_revision_group,
-> +	NULL
-> +};
->  
->  static const struct class tee_class = {
->  	.name = "tee",
-> diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
-> index 1f3e5dad6d0d..de11612afa62 100644
-> --- a/include/linux/tee_core.h
-> +++ b/include/linux/tee_core.h
-> @@ -76,6 +76,9 @@ struct tee_device {
->  /**
->   * struct tee_driver_ops - driver operations vtable
->   * @get_version:	returns version of driver
-> + * @get_tee_revision:	returns revision string (diagnostic only);
-> + *			do not infer feature support from this, use
-> + *			TEE_IOC_VERSION instead
->   * @open:		called for a context when the device file is opened
->   * @close_context:	called when the device file is closed
->   * @release:		called to release the context
-> @@ -98,6 +101,8 @@ struct tee_device {
->  struct tee_driver_ops {
->  	void (*get_version)(struct tee_device *teedev,
->  			    struct tee_ioctl_version_data *vers);
-> +	int (*get_tee_revision)(struct tee_device *teedev,
-> +				char *buf, size_t len);
->  	int (*open)(struct tee_context *ctx);
->  	void (*close_context)(struct tee_context *ctx);
->  	void (*release)(struct tee_context *ctx);
-> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-> index 88a6f9697c89..e76238d435ce 100644
-> --- a/include/linux/tee_drv.h
-> +++ b/include/linux/tee_drv.h
-> @@ -322,4 +322,7 @@ struct tee_client_driver {
->  #define to_tee_client_driver(d) \
->  		container_of_const(d, struct tee_client_driver, driver)
->  
-> +/* Size for TEE revision string buffer used by get_tee_revision(). */
-> +#define TEE_REVISION_STR_SIZE	128
-
-This should rather go to linux/tee_core.h.
+This should just be "80a4c275-0a47-4905-8285-1486a9771a08" which is the
+device/service identity on TEE bus.
 
 -Sumit
 
 > +
->  #endif /*__TEE_DRV_H*/
+> +  reg:
+> +    description: |
+> +      Logical identifier of the TEE remoteproc service instance.
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 0
+> +
+> +patternProperties:
+> +  "^[a-zA-Z0-9,._-]+@[0-9a-fA-F]+$":
+> +    type: object
+> +
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - "#address-cells"
+> +  - "#size-cells"
+> +
+> +additionalProperties: false
+> +...
 > -- 
 > 2.43.0
 > 
