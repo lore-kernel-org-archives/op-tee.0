@@ -4,231 +4,233 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C973C2A070
-	for <op-tee@archiver.kernel.org>; Sun,  4 Jan 2026 22:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50E73C2A072
+	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 04:53:43 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 529F74FF31
-	for <op-tee@archiver.kernel.org>; Sun,  4 Jan 2026 22:50:47 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 8D9474FF15
+	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 04:53:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1767567047;
-	bh=BUnBtuxk0eww1XMZ3mAG6YmWxZYPpuxsb7QXsefg4AE=;
-	h=Date:Subject:To:References:In-Reply-To:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1767588822;
+	bh=L2BPLF+zzAad5IEvfr0tR9S6DLXuYtzVCAnaigKb9v0=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=iRSH5KW/lcouzM5wMq0A9Zsf6jYsAxz0URnLsX6cI5ACAddegubjqqvEzvbDah9hj
-	 qd/LYcy78eFQlx1NEIHvavUKux52mSGj/OleSzpf1Ilo2/Vq2KlsFTHqU+JKTRaDgI
-	 8VdhONuxI4sg7zRxEHFhdEIHjaLncI6dhl69Z4onQXQJonF2FyWd7S9StcKKAfVqGP
-	 ldOZ9+Vm/o0yxCdLSzKoqeuWoaYnb1s2Ecl9phL5PPr310I9SN0OZBBHa8ySmIl5/7
-	 JJBvZO9LfSF8rIz8nv4XT3xr/e4w5UqhRF+mGARsWncx8KqlYOYEe2Dja5ZUIADMn4
-	 T1QamSHXBzD7Q==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 96E4F418F9
-	for <op-tee@lists.trustedfirmware.org>; Sun,  4 Jan 2026 22:50:29 +0000 (UTC)
+	b=KlL8cVJNsnIvrIkkpNkNovZb0N9qWxzLcZBJczOk9D8MFIq21zw1Wu73bBwqT0aLT
+	 LLV55+fhMFm9QMffToKxzeVwDMi43yFPBOEdiRph7XHDvTqVZ80N9GoPGGrn7oWlXt
+	 tFw6bhIWNd/7AW2JxQM3GEnkfKTBLpFB6eIh7VbnQs4X075wN+6Yi1LE3m5RGjlGHl
+	 a8q2waScjYJ6l/bNoHDTZLZDOD1ap55EL1hX+lFYPW5alwWF19umL2uafxCj36569h
+	 eflCddVAPek076AyOeT585NaYFWvmQt/mjQJ27FnUoA82aEXzPN5x83nS683BZZyGX
+	 0GG0zLoqH5tDw==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 19EC543216
+	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Jan 2026 04:53:24 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=kD+D91cN;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=InC4hJPW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ClYtHQU8;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 604Mfk9j3847348
-	for <op-tee@lists.trustedfirmware.org>; Sun, 4 Jan 2026 22:50:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Z4OECOH/li4HpE49npbmoa6u/pIY/YVgufugJfqG2z8=; b=kD+D91cN7PlcIJIv
-	C57BwI35lnkMtfZW5hRPub/pdbtRHDaIcQRMkjpVYBb7/w9orfJXQJ1H+hq8i6lg
-	USbD7EODB7of1qHzJJomOw2wmYmvNh4T+CU92tVqIN9s+1xJCifXKixiFWMaWkKB
-	uMV8mRu0etU+tKSIwkz2wg8oBssJN2sRWMrfl37/dKjnjYk7iicSlxjdAtMWl1pM
-	15Wgo6kNo9+tTmCaKvJBBZQman92I5ZOMDgJ6IeFYojBKX+H35RPoHQhOAn+W/fe
-	ZsdeFd2J208zlb9HJzSYHjHSjOOCraXTd/EeYy5SHipacnONlH4Mo+jntGOFuZQx
-	1G7fAg==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bfyx0g2se-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Sun, 04 Jan 2026 22:50:29 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2a09845b7faso206449535ad.3
-        for <op-tee@lists.trustedfirmware.org>; Sun, 04 Jan 2026 14:50:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1767567028; x=1768171828; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Z4OECOH/li4HpE49npbmoa6u/pIY/YVgufugJfqG2z8=;
-        b=InC4hJPWmvccIvXWx8IeVeBNmvLjV0ekYtiAjHCmH+R+SgJ5dGXJS3Uus7fC8Jg8Rd
-         nrNQLTKmEfBvcqat4fXWPe/8dIk5a1tnwO3iA+0F6dUIxiZNztpcUpO2/Hi6xyrfE3Jz
-         +S1JnLqmvnLIQEwjdkyN13sFxL4CbwoMSXzEKigqsoXuRPgh6V+d/hVJbTJn5awSphgZ
-         fqacssMimQ6mCOEWd8zAvzDHYRyLJUAqLknYj5vg4NGqompwXAwSx9Nnq7bW4BPTj2Uu
-         bF9SCFavCNi2xdMwkD9mfN/Lj11zeprZPoPwnYkz7cisF+LhuYtlwFe5HwwPklQgEEce
-         JijQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767567028; x=1768171828;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Z4OECOH/li4HpE49npbmoa6u/pIY/YVgufugJfqG2z8=;
-        b=unRFZdxDAXwu2sHzfF/YfDps6IOCS88zC/7PVmpEvrpEO4NtApvUs4OfxYWuZ/VHaD
-         N7bsRPZ6sCD7oIzVZwS1eRXZzl2LJqOp2U4Gv3BP9Y6zNSNapz6VZWop+jR0RNUrY7pr
-         ohXwmnkVWlLXwKcwxWtojpPhIrtTvBjZ9iaIKWZ0N4sNiNWH3orDX5tw08BDmfd91ck/
-         oxllNHyA8JXCdMfGi2dG8Qx5sgjBX88kg3ogqQCYkelH2ow5tvXq04krxqB2OItWwNli
-         wEIYxe3qvopxD2sIC1e2qAjEMSASKx+33CgZSyRZT4HlLSIcy9tOZ5ksMJ55qAYLvGHU
-         Argg==
-X-Forwarded-Encrypted: i=1; AJvYcCVg3oQFH9wgAkJavexK9Y2sKLbBmbE89ah65p1W7EhtziQ5rwgUJOw6pvJKchurN7jU2G9SBEM=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzIISv7uQl3oLjKX8tLiCV6tRiM5HLEl6fq2+Mh2eDwavglKHqP
-	Q8iMu5DH+uLuyu+kFma5aeZ/PYQZJafNSKCjsQbkB3zTaP106ki2fVCgKfdM4rJ39Cu8aewINPe
-	0XkzoZ/fNUnHYA4mq1jhlgUqggVGcq8tDEO6VLTNy5BZUxYLPATBkzfhmObmVhhakfgNUYx0=
-X-Gm-Gg: AY/fxX6Wv8E/c6rOYCrvxqFqGEfPxT4P83YU4Seif2IQX0pI56E9q+3sBKUkzL2g96n
-	IH5RJSr/4hvQim8lnOmngG21zquxFbqjS64+ugqqUoEykXP8Ka51tV4Rvi3TZEm9PTZvAT/SAEB
-	NC7nd7Fx9cQVN/8GWOJXPUhTsdcHm0dHWohRDXNzhfjsKfn5TDE18ZYoH4pjYeVZLcU3kCaO171
-	OPktmYCUX9II0/HWKD7I7vXBz8foJ3W0d8tw9Z+H3g63lVI8BbZd/WFkJHmdaltW1YXYeCwRAa8
-	HZuVJwODjzfrmB7poLViZ0yXuUdIDrEPjpgcLfjJlC9nCHFI4ITSxCZO4gaI4mjJnXfsBSmKDz5
-	WzmAk876Uc62fywV2np9062MnWlfcAw2ciRoAIn8I8icR5TTx5SgI/mRgwH8MJlBqsAYl3EDuJG
-	5ztTWogCI=
-X-Received: by 2002:a17:903:41cd:b0:298:55c8:eb8d with SMTP id d9443c01a7336-2a2f272bd8fmr421732175ad.35.1767567028064;
-        Sun, 04 Jan 2026 14:50:28 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGSpjXMvZibipryUoqrlDqr7k2nu+DSzDZ8V71fOSDOZKY0FvdhnKHBf75BqgIzwl7VSPS6bQ==
-X-Received: by 2002:a17:903:41cd:b0:298:55c8:eb8d with SMTP id d9443c01a7336-2a2f272bd8fmr421732095ad.35.1767567027574;
-        Sun, 04 Jan 2026 14:50:27 -0800 (PST)
-Received: from [192.168.0.74] (n1-41-240-65.bla22.nsw.optusnet.com.au. [1.41.240.65])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3c82762sm422934305ad.27.2026.01.04.14.50.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 04 Jan 2026 14:50:27 -0800 (PST)
-Message-ID: <eca4b7b7-d4de-4209-9965-4a8ce027caee@oss.qualcomm.com>
-Date: Mon, 5 Jan 2026 09:50:23 +1100
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 858B260010;
+	Mon,  5 Jan 2026 04:53:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12D45C116D0;
+	Mon,  5 Jan 2026 04:53:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767588803;
+	bh=L2BPLF+zzAad5IEvfr0tR9S6DLXuYtzVCAnaigKb9v0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ClYtHQU88+0b90+Uf2COLk0ZGIXE7wa+eMoo+Bgrl1SxtUogodkoaix5IZp6Ji9d/
+	 rEVeBk56MhlvPguxRieNCcOSD31i5LXA9x3rfHGvxWDnaaU0DQ3qDgdWxGLZN5qSrH
+	 IYjsBryB2de/SqdR/CY6bDrpKA2tWLeLyX2TAQftit/XVfsxgr3s5W8K5+g6xESFF0
+	 +Ejby+e5ndNAjABk1jpW+FoOz9/qumBHJhLpjKeAJxClUSXvL7DX6SpReBCbvVEvMN
+	 UzeapEf0yESM7V1fvFV7TswgMmWcu8u2s8JRlojqlUZC+YEmVaXhahCxGArSQvjkXI
+	 TZEBtO4RT7feA==
+Date: Mon, 5 Jan 2026 10:23:17 +0530
+To: Aristo Chen <jj251510319013@gmail.com>
+Subject: Re: [PATCH v4 1/2] tee: add revision sysfs attribute
+Message-ID: <aVtDvWY6Ik9i-C0L@sumit-xelite>
+References: <20251226131920.64582-1-aristo.chen@canonical.com>
+ <20251230051804.6230-1-aristo.chen@canonical.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] tee: qcomtee: user: Fix confusing cleanup.h syntax
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Jens Wiklander <jens.wiklander@linaro.org>,
-        Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org,
-        op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
-References: <20251208020844.5310-4-krzysztof.kozlowski@oss.qualcomm.com>
- <20251208020844.5310-6-krzysztof.kozlowski@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <20251208020844.5310-6-krzysztof.kozlowski@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=CZYFJbrl c=1 sm=1 tr=0 ts=695aeeb5 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=hi51d+lTLNy/RbqRqnOomQ==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=XSG46yrzQr2AIDBsqHYA:9
- a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA0MDIwOSBTYWx0ZWRfX6Yknzc+H3PJV
- 8RYLmQBSq/OJYI6DhH6Z2Y060VD5m6kOtYFgPwcDWUGt5ryHpueYjbNU61Mcum3FAbq+6/n0cLS
- DoqyPVaS3OCRW9c3WS2P1UGIXY7YbLzLwQqRc/yYRMf1eUm87Yowxce+3xO8oQmHsz6V3Ss/Zpx
- VwR5VY2pUF6dGaDicIXOHO993rQdxNEAF9igAO3tfskGo6ZLiE+rOX6RxGeGk+vVBd21Qu5egB/
- IoqV/G2wJozEzpqd9sbA8lc+reRELURFu5CfOqkcWYz//ZdCF212iUGmfi8ReLjx13Ob56+Umqc
- 486c2FIPCZ0svyaN2CfnR8Qzm9C8dy/525iBQHQAEkr0aZ+wmf2dLMeZ8CNZRoSt3z0MIEAWdG1
- E9ZRqiOH9vxBLceSGaR3KBogLF1qnWMkHMxcYGi/lI4Dusehf4fXrrTcR62TMNWFI14DTzDOu4W
- AfozazIyyNfVyoCFHxg==
-X-Proofpoint-GUID: A21Ek2s_6o2L808TRHyJn7pKw8Sf9bA1
-X-Proofpoint-ORIG-GUID: A21Ek2s_6o2L808TRHyJn7pKw8Sf9bA1
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-04_06,2025-12-31_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0 lowpriorityscore=0
- impostorscore=0 suspectscore=0 adultscore=0 phishscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2601040209
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251230051804.6230-1-aristo.chen@canonical.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.10 / 15.00];
+X-Spamd-Result: default: False [-2.00 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_RHS_NOT_FQDN(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.200:received];
 	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	MIME_TRACE(0.00)[0:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_COUNT_THREE(0.00)[4];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	DWL_DNSWL_NONE(0.00)[kernel.org:dkim];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
+	FREEMAIL_TO(0.00)[gmail.com];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[1.41.240.65:received];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	ALIAS_RESOLVED(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 96E4F418F9
-X-Spamd-Bar: ------
-Message-ID-Hash: FMZAHH2J5ELAS4MAC25CCG2EHC2BRTOB
-X-Message-ID-Hash: FMZAHH2J5ELAS4MAC25CCG2EHC2BRTOB
-X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
+X-Rspamd-Queue-Id: 19EC543216
+X-Spamd-Bar: --
+Message-ID-Hash: IG5U72RJFWN7FEDNYKTLDW7YNQW7MCVT
+X-Message-ID-Hash: IG5U72RJFWN7FEDNYKTLDW7YNQW7MCVT
+X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FMZAHH2J5ELAS4MAC25CCG2EHC2BRTOB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IG5U72RJFWN7FEDNYKTLDW7YNQW7MCVT/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-
-
-On 12/8/2025 1:08 PM, Krzysztof Kozlowski wrote:
-> Initializing automatic __free variables to NULL without need (e.g.
-> branches with different allocations), followed by actual allocation is
-> in contrary to explicit coding rules guiding cleanup.h:
+On Tue, Dec 30, 2025 at 01:17:58PM +0800, Aristo Chen wrote:
+> Add a generic TEE revision sysfs attribute backed by a new optional
+> get_tee_revision() callback. The revision string is diagnostic-only and
+> must not be used to infer feature support.
 > 
-> "Given that the "__free(...) = NULL" pattern for variables defined at
-> the top of the function poses this potential interdependency problem the
-> recommendation is to always define and assign variables in one statement
-> and not group variable definitions at the top of the function when
-> __free() is used."
-> 
-> Code does not have a bug, but is less readable and uses discouraged
-> coding practice, so fix that by moving declaration to the place of
-> assignment.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
 > ---
->  drivers/tee/qcomtee/user_obj.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  Documentation/ABI/testing/sysfs-class-tee | 10 +++++
+>  drivers/tee/tee_core.c                    | 51 ++++++++++++++++++++++-
+>  include/linux/tee_core.h                  |  8 ++++
+>  3 files changed, 68 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/tee/qcomtee/user_obj.c b/drivers/tee/qcomtee/user_obj.c
-> index 0139905f2684..6aa3aefd67f0 100644
-> --- a/drivers/tee/qcomtee/user_obj.c
-> +++ b/drivers/tee/qcomtee/user_obj.c
-> @@ -228,10 +228,10 @@ static int qcomtee_user_object_dispatch(struct qcomtee_object_invoke_ctx *oic,
->  {
->  	struct qcomtee_user_object *uo = to_qcomtee_user_object(object);
->  	struct qcomtee_context_data *ctxdata = uo->ctx->data;
-> -	struct qcomtee_ureq *ureq __free(kfree) = NULL;
->  	int errno;
+> diff --git a/Documentation/ABI/testing/sysfs-class-tee b/Documentation/ABI/testing/sysfs-class-tee
+> index c9144d16003e..6e783210104e 100644
+> --- a/Documentation/ABI/testing/sysfs-class-tee
+> +++ b/Documentation/ABI/testing/sysfs-class-tee
+> @@ -13,3 +13,13 @@ Description:
+>  		space if the variable is absent. The primary purpose
+>  		of this variable is to let systemd know whether
+>  		tee-supplicant is needed in the early boot with initramfs.
+> +
+> +What:		/sys/class/tee/tee{,priv}X/revision
+> +Date:		Dec 2025
+> +KernelVersion:	6.18
+> +Contact:	op-tee@lists.trustedfirmware.org
+> +Description:
+> +		Read-only revision string reported by the TEE driver. This is
+> +		for diagnostics only and must not be used to infer feature
+> +		support. Use TEE_IOC_VERSION for capability and compatibility
+> +		checks.
+> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> index d65d47cc154e..0a00499811c1 100644
+> --- a/drivers/tee/tee_core.c
+> +++ b/drivers/tee/tee_core.c
+> @@ -1146,7 +1146,56 @@ static struct attribute *tee_dev_attrs[] = {
+>  	NULL
+>  };
 >  
-> -	ureq = kzalloc(sizeof(*ureq), GFP_KERNEL);
-> +	struct qcomtee_ureq *ureq __free(kfree) = kzalloc(sizeof(*ureq),
-> +							  GFP_KERNEL);
->  	if (!ureq)
->  		return -ENOMEM;
+> -ATTRIBUTE_GROUPS(tee_dev);
+> +static const struct attribute_group tee_dev_group = {
+> +	.attrs = tee_dev_attrs,
+> +};
+> +
+> +static ssize_t revision_show(struct device *dev,
+> +			     struct device_attribute *attr, char *buf)
+> +{
+> +	struct tee_device *teedev = container_of(dev, struct tee_device, dev);
+> +	char version[TEE_REVISION_STR_SIZE];
+> +	int ret;
+> +
+> +	if (!teedev->desc->ops->get_tee_revision)
+> +		return -ENODEV;
+> +
+> +	ret = teedev->desc->ops->get_tee_revision(teedev, version,
+> +						  sizeof(version));
+> +	if (ret)
+> +		return ret;
+> +
+> +	return sysfs_emit(buf, "%s\n", version);
+> +}
+> +static DEVICE_ATTR_RO(revision);
+> +
+> +static struct attribute *tee_revision_attrs[] = {
+> +	&dev_attr_revision.attr,
+> +	NULL
+> +};
+> +
+> +static umode_t tee_revision_attr_is_visible(struct kobject *kobj,
+> +					    struct attribute *attr, int n)
+> +{
+> +	struct device *dev = kobj_to_dev(kobj);
+> +	struct tee_device *teedev = container_of(dev, struct tee_device, dev);
+> +
+> +	if (teedev->desc->ops->get_tee_revision)
+> +		return attr->mode;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct attribute_group tee_revision_group = {
+> +	.attrs = tee_revision_attrs,
+> +	.is_visible = tee_revision_attr_is_visible,
+> +};
+> +
+> +static const struct attribute_group *tee_dev_groups[] = {
+> +	&tee_dev_group,
+> +	&tee_revision_group,
+> +	NULL
+> +};
 >  
-> @@ -367,10 +367,10 @@ int qcomtee_user_param_to_object(struct qcomtee_object **object,
->  				 struct tee_param *param,
->  				 struct tee_context *ctx)
->  {
-> -	struct qcomtee_user_object *user_object __free(kfree) = NULL;
->  	int err;
+>  static const struct class tee_class = {
+>  	.name = "tee",
+> diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+> index 1f3e5dad6d0d..c214c38898ca 100644
+> --- a/include/linux/tee_core.h
+> +++ b/include/linux/tee_core.h
+> @@ -76,6 +76,9 @@ struct tee_device {
+>  /**
+>   * struct tee_driver_ops - driver operations vtable
+>   * @get_version:	returns version of driver
+> + * @get_tee_revision:	returns revision string (diagnostic only);
+> + *			do not infer feature support from this, use
+> + *			TEE_IOC_VERSION instead
+>   * @open:		called for a context when the device file is opened
+>   * @close_context:	called when the device file is closed
+>   * @release:		called to release the context
+> @@ -98,6 +101,8 @@ struct tee_device {
+>  struct tee_driver_ops {
+>  	void (*get_version)(struct tee_device *teedev,
+>  			    struct tee_ioctl_version_data *vers);
+> +	int (*get_tee_revision)(struct tee_device *teedev,
+> +				char *buf, size_t len);
+>  	int (*open)(struct tee_context *ctx);
+>  	void (*close_context)(struct tee_context *ctx);
+>  	void (*release)(struct tee_context *ctx);
+> @@ -292,6 +297,9 @@ struct tee_shm_pool *tee_shm_pool_alloc_res_mem(unsigned long vaddr,
+>  						phys_addr_t paddr, size_t size,
+>  						int min_alloc_order);
 >  
-> -	user_object = kzalloc(sizeof(*user_object), GFP_KERNEL);
-> +	struct qcomtee_user_object *user_object __free(kfree) =
-> +		kzalloc(sizeof(*user_object), GFP_KERNEL);
->  	if (!user_object)
->  		return -ENOMEM;
->  
+> +/* Size for TEE revision string buffer used by get_tee_revision(). */
+> +#define TEE_REVISION_STR_SIZE	128
+> +
 
-Reviewed-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+Move this macro alongside get_tee_revision() callback. With that feel
+free to add:
 
-- Amir
+Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
+-Sumit
+
+>  /**
+>   * tee_shm_pool_free() - Free a shared memory pool
+>   * @pool:	The shared memory pool to free
+> -- 
+> 2.43.0
+> 
