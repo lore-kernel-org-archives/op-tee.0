@@ -4,296 +4,253 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45323C2A075
-	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 08:48:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF85AC2A072
+	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 09:16:42 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 81C7141A35
-	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 08:48:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1767602911;
-	bh=FNWHsoQrO0c4Fkjgbh6dsTo4+7nALwInUCL2MnuM+1o=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=vYW0g3J3iFmAChE6vgSSLMCQA7kGOtgEUowm2nrj7A8UmhGedj0vFJuuiOeEhjC3+
-	 RLK78poqahKyqLKskzLna5an7XxwZqoP47kX9Yc7hgIcNK/OW1EFr8avtmeFxsQXFZ
-	 rQquElx+spwvyhbv2Wtk0j0E4ZASL4/+P7NZ7BdZrVb3aeE/06bfxBvv4OX1CepZt0
-	 8UuB7zyETW0uI0xqWcP5/B3G+rlvWFg+rb9rA6T18C9cE2a5C/AYwN+F90dp7wbi4Q
-	 5k+G8RJEZNJV1iY0ISrOycHOqeEWRHORkgqIbNGA05QZEgemmwcJ94j/oScgiCp3xh
-	 lFAEyWSVWaVOg==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0798841A35
-	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Jan 2026 08:48:12 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 16CC04FF2E
+	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 09:16:42 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QfoPWOm9;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PMm9xxvp;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 442E543817;
-	Mon,  5 Jan 2026 08:48:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE4D8C116D0;
-	Mon,  5 Jan 2026 08:48:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767602891;
-	bh=2JJa9XU/T6ZAbGv1R8f4336fBzCc7cHmcaC1Xb76Tfk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=QfoPWOm9r5GyzBrMvmG4+OI8F3ikEIB/upouzk9Xuq+ni4TRGnW4v8ZUeZiv+6ocq
-	 H6irmrDIzfWLK7YVVMU8NboHeQTd6kGwmAcGEHNq5ALf070xayb09zm5tembNR647h
-	 UdfdSF20Avt71lWJ8rPa+QUjpStpNZ3830vBT8YS9o5iZ8ACpUPclJd4uhFxCdv9B5
-	 pyfFmh4oXohqM+CvPZ06UeJZaE0wjbQKc/fLOF7iMsAvrvqXi9FitaAGwpU/89vzbW
-	 jb5LlFMCIx83RJYKQ4McDsgS7encF8ca/03zVACe5FGXbTdzE5J5YVA+t3W2log27E
-	 qk0UccE7bY1Hg==
-Date: Mon, 5 Jan 2026 14:18:04 +0530
-To: Aristo Chen <jj251510319013@gmail.com>
-Subject: Re: [PATCH v4 2/2] tee: optee: store OS revision for TEE core
-Message-ID: <aVt6xJE40JlWtxZi@sumit-xelite>
-References: <20251226131920.64582-1-aristo.chen@canonical.com>
- <20251230051804.6230-1-aristo.chen@canonical.com>
- <20251230051804.6230-2-aristo.chen@canonical.com>
- <aVtKHF3krwJWiCth@sumit-xelite>
- <CAJwFiGKaKUOvM42BpECMhHqOigT=HFGbaLN1Jg=AC+wgS3Cb+Q@mail.gmail.com>
+Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com [209.85.160.42])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 10C9841B30
+	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Jan 2026 09:16:22 +0000 (UTC)
+Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-3eae4e590a4so7202260fac.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 05 Jan 2026 01:16:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1767604581; x=1768209381; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xS4Pieemzy4r1o+XZyR7jxfKf1/JCiqumXmtg6ZAf0Y=;
+        b=PMm9xxvp0lx8m5dxuXIrMVUqQbwiRlxijFK1D4z7fXpxhKBhM1gng9scYnwyj9EUPd
+         LTE6JCI15jJzSGKdxdXt8HOuCDbXKlrZ3RAyLcn4RTPGyBCOyv3PBzZxadGZnR9Mw36O
+         E9n6hFP8sAHsWr+WkeXhGTb6KRnrODlMbsTT/0KPLSSctcXOCwZP/fl21TJEi28ii6Y/
+         zfTaoeSLQKcmt3d9vK1BZdsNYvmnfZoXP1BRHzNWI2DA4zCNjVhjJxGNXK0sf0wVs+Vd
+         4CZ5LzkIGnoM4bfP8IQa25LcgbQh2CaODs+nqvGld8eBvEbSFIjcDHiQIjTVqmTtWA5/
+         YcBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767604581; x=1768209381;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=xS4Pieemzy4r1o+XZyR7jxfKf1/JCiqumXmtg6ZAf0Y=;
+        b=F+ptynYkysrTDwFWhm4akAOlzUtwQhbOnZWip+iyTlSfpj1kvrULkA6gX0UG9UhDx7
+         Vdbs6gKLbX/s6i90k9VDZ1LGDmA5GZZHyr8xUObQgPgBqXiYbBDjKKbCeXM8j0mjgjl4
+         hOjq5IUiTnsOgi03V8Zhyy42DsqsOCu03cO95M3TyGLCO3B7DrtGzkLGKqxtp171I4Fy
+         wEReBr76V99Pf1i5rTgusCkpIPVLP1xwWPdhAE1rlGLvCuQaLrVVb14cQnmEggAIlgbp
+         nQVcgbC3tvOuYaKKzhghM+/3LWDiBpbcR0pkH9VEvT8C9kAh3pq8g1OFgAyVPbQHPYHI
+         ZvDA==
+X-Forwarded-Encrypted: i=1; AJvYcCWRonYQmN0pJ2SKm2GeETzF2L5NEvZrYmzfG6zNcbO9jiWqjmFiIS2INldH1vHlO2jO1/CIWGU=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxZf0nkFjFKbyWodPHdCbQCVS68pc9/J2zSY3ppzpGBEmJUo+i2
+	mVQuTk3OQwu+IOIp85zqnF9/02jGzzfwf+yo4I3hUkyFc4u2AeBLC3CdyRGW8Vk7GaOKzUTdeHU
+	XtqfCX/ku8NMWN4WikzV7MF5lwt4ejfBTNn8pS/+WNTXV
+X-Gm-Gg: AY/fxX4wBvWnuCkDFRpTDrCdpV0zxWwURCtkSgEezf4YvjUhJ9c2s6oit/sPw7Fs6DL
+	5GucBy9tjqhjdNmzKBcAYkIXU6Z55u2h+aQUS4uirwoU7KflAa+tfCcxjjeYTA77sFXD/gDEeoC
+	IpQ/5RcmeGI2VkFjl9FNlW67WjjPpWPq+BkfiuD7x54DgbuiY/SnVmVJy9xeYMzZyjARWpS/f5n
+	r3nt7SMLq30T4RxJ3rHrVSdTqngfruPewgdb1f0NHFTSc0IoeZU8gu3BnoADHnooRIn4IFjzV7N
+	IpUxViNk2WSSpIh60F2jwn5bDg==
+X-Google-Smtp-Source: AGHT+IHdtu3uK1YvLPvRXmBmsYletnr+Fy6yEnWw7FcQJMBZUAFsUyE2L/0PG3GpU/2KGeBY95bkFD0S8glmAzrpFaU=
+X-Received: by 2002:a05:6820:2289:b0:65c:f9c1:cba0 with SMTP id
+ 006d021491bc7-65d0ea16a88mr23376881eaf.37.1767604581140; Mon, 05 Jan 2026
+ 01:16:21 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: base64
-In-Reply-To: <CAJwFiGKaKUOvM42BpECMhHqOigT=HFGbaLN1Jg=AC+wgS3Cb+Q@mail.gmail.com>
+References: <cover.1765791463.git.u.kleine-koenig@baylibre.com>
+ <CAHUa44FrDZbvRvfN8obf80_k=Eqxe9YxHpjaE5jU7nkxPUwfag@mail.gmail.com>
+ <20251218135332f323fa91@mail.local> <CAHUa44GpW5aO26GDyL9RZub9vVYvVcJ7etwO0yXBN_mUi0W4AA@mail.gmail.com>
+In-Reply-To: <CAHUa44GpW5aO26GDyL9RZub9vVYvVcJ7etwO0yXBN_mUi0W4AA@mail.gmail.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Mon, 5 Jan 2026 10:16:09 +0100
+X-Gm-Features: AQt7F2q8lTcIoa5xBnvz2Mkjx2axWX5OMGPJpQNfFM5WoFI2KGlEdVoT6sJvPQg
+Message-ID: <CAHUa44HqRbCJTXsrTCm0G5iwtkQtq+Si=yOspCjpAn-N2uVSVg@mail.gmail.com>
+Subject: Re: [PATCH v2 00/17] tee: Use bus callbacks instead of driver callbacks
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.00 / 15.00];
+X-Spamd-Result: default: False [-2.60 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	MID_RHS_NOT_FQDN(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.160.42:from];
 	ARC_NA(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
-	RCPT_COUNT_SEVEN(0.00)[9];
+	RCVD_COUNT_ONE(0.00)[1];
 	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
+	RCPT_COUNT_TWELVE(0.00)[42];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
 	ALIAS_RESOLVED(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	RCVD_TLS_LAST(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[baylibre.com,lwn.net,kernel.org,selenic.com,gondor.apana.org.au,bootlin.com,gmail.com,foss.st.com,oss.qualcomm.com,linaro.org,siemens.com,arm.com,wanadoo.fr,broadcom.com,hansenpartnership.com,linux.ibm.com,redhat.com,paul-moore.com,namei.org,hallyn.com,gmx.de,lists.trustedfirmware.org,vger.kernel.org,st-md-mailman.stormreply.com,lists.infradead.org,ziepe.ca];
+	MISSING_XM_UA(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	DNSWL_BLOCKED(0.00)[209.85.160.42:from];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 0798841A35
+X-Rspamd-Queue-Id: 10C9841B30
 X-Spamd-Bar: --
-Message-ID-Hash: GKZJ2YONV253FB5QRR63IZKRZMC6B75F
-X-Message-ID-Hash: GKZJ2YONV253FB5QRR63IZKRZMC6B75F
-X-MailFrom: sumit.garg@kernel.org
+Message-ID-Hash: TW4GXA4MKLMP4CU5QUNGIXQONYMZXCWO
+X-Message-ID-Hash: TW4GXA4MKLMP4CU5QUNGIXQONYMZXCWO
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
+CC: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Jonathan Corbet <corbet@lwn.net>, Sumit Garg <sumit.garg@kernel.org>, Olivia Mackall <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <clement.leger@bootlin.com>, Ard Biesheuvel <ardb@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Jan Kiszka <jan.kiszka@siemens.com>, Sudeep Holla <sudeep.holla@arm.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Michael Chan <michael.chan@broadcom.com>, Pavan Chebbi <pavan.chebbi@broadcom.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jarkko Sakkinen <jarkko@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "
+ Serge E. Hallyn" <serge@hallyn.com>, Peter Huewe <peterhuewe@gmx.de>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-crypto@vger.kernel.org, linux-rtc@vger.kernel.org, linux-efi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org, linux-mips@vger.kernel.org, netdev@vger.kernel.org, linux-integrity@vger.kernel.org, keyrings@vger.kernel.org, linux-security-module@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GKZJ2YONV253FB5QRR63IZKRZMC6B75F/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TW4GXA4MKLMP4CU5QUNGIXQONYMZXCWO/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-T24gTW9uLCBKYW4gMDUsIDIwMjYgYXQgMDQ6MTM6NTJQTSArMDgwMCwgQXJpc3RvIENoZW4gd3Jv
-dGU6DQo+IEhpIFN1bWl0LA0KPiANCj4gU3VtaXQgR2FyZyA8c3VtaXQuZ2FyZ0BrZXJuZWwub3Jn
-PiDmlrwgMjAyNuW5tDHmnIg15pel6YCx5LiAIOS4i+WNiDE6MjDlr6vpgZPvvJoNCj4gPg0KPiA+
-IE9uIFR1ZSwgRGVjIDMwLCAyMDI1IGF0IDAxOjE3OjU5UE0gKzA4MDAsIEFyaXN0byBDaGVuIHdy
-b3RlOg0KPiA+ID4gQ29sbGVjdCBPUC1URUUgT1MgcmV2aXNpb24gZnJvbSBzZWN1cmUgd29ybGQg
-Zm9yIGJvdGggU01DIGFuZCBGRi1BIEFCSXMsDQo+ID4gPiBzdG9yZSBpdCBpbiB0aGUgT1AtVEVF
-IGRyaXZlciwgYW5kIGV4cG9zZSBpdCB0aHJvdWdoIHRoZSBnZW5lcmljDQo+ID4gPiBnZXRfdGVl
-X3JldmlzaW9uKCkgY2FsbGJhY2suDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogQXJpc3Rv
-IENoZW4gPGFyaXN0by5jaGVuQGNhbm9uaWNhbC5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBkcml2
-ZXJzL3RlZS9vcHRlZS9jb3JlLmMgICAgICAgICAgfCAyMyArKysrKysrKysrKysrKysrKysrKysr
-Kw0KPiA+ID4gIGRyaXZlcnMvdGVlL29wdGVlL2ZmYV9hYmkuYyAgICAgICB8IDE0ICsrKysrKysr
-KysrKy0tDQo+ID4gPiAgZHJpdmVycy90ZWUvb3B0ZWUvb3B0ZWVfcHJpdmF0ZS5oIHwgMTkgKysr
-KysrKysrKysrKysrKysrKw0KPiA+ID4gIGRyaXZlcnMvdGVlL29wdGVlL3NtY19hYmkuYyAgICAg
-ICB8IDE1ICsrKysrKysrKysrKystLQ0KPiA+ID4gIDQgZmlsZXMgY2hhbmdlZCwgNjcgaW5zZXJ0
-aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy90ZWUvb3B0ZWUvY29yZS5jIGIvZHJpdmVycy90ZWUvb3B0ZWUvY29yZS5jDQo+ID4gPiBpbmRl
-eCA1YjYyMTM5NzE0Y2UuLjJkODA3YmM3NDhiYyAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMv
-dGVlL29wdGVlL2NvcmUuYw0KPiA+ID4gKysrIGIvZHJpdmVycy90ZWUvb3B0ZWUvY29yZS5jDQo+
-ID4gPiBAQCAtNjMsNiArNjMsMjkgQEAgaW50IG9wdGVlX3NldF9kbWFfbWFzayhzdHJ1Y3Qgb3B0
-ZWUgKm9wdGVlLCB1X2ludCBwYV93aWR0aCkNCj4gPiA+ICAgICAgIHJldHVybiBkbWFfY29lcmNl
-X21hc2tfYW5kX2NvaGVyZW50KCZvcHRlZS0+dGVlZGV2LT5kZXYsIG1hc2spOw0KPiA+ID4gIH0N
-Cj4gPiA+DQo+ID4gPiAraW50IG9wdGVlX2dldF9yZXZpc2lvbihzdHJ1Y3QgdGVlX2RldmljZSAq
-dGVlZGV2LCBjaGFyICpidWYsIHNpemVfdCBsZW4pDQo+ID4gPiArew0KPiA+ID4gKyAgICAgc3Ry
-dWN0IG9wdGVlICpvcHRlZSA9IHRlZV9nZXRfZHJ2ZGF0YSh0ZWVkZXYpOw0KPiA+ID4gKyAgICAg
-dTY0IGJ1aWxkX2lkOw0KPiA+ID4gKw0KPiA+ID4gKyAgICAgaWYgKCFvcHRlZSkNCj4gPiA+ICsg
-ICAgICAgICAgICAgcmV0dXJuIC1FTk9ERVY7DQo+ID4gPiArICAgICBpZiAoIWJ1ZiB8fCAhbGVu
-KQ0KPiA+ID4gKyAgICAgICAgICAgICByZXR1cm4gLUVJTlZBTDsNCj4gPiA+ICsNCj4gPiA+ICsg
-ICAgIGJ1aWxkX2lkID0gb3B0ZWUtPnJldmlzaW9uLm9zX2J1aWxkX2lkOw0KPiA+ID4gKyAgICAg
-aWYgKGJ1aWxkX2lkKQ0KPiA+ID4gKyAgICAgICAgICAgICBzY25wcmludGYoYnVmLCBsZW4sICIl
-dS4ldSAoJTAxNmxseCkiLA0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgb3B0ZWUtPnJl
-dmlzaW9uLm9zX21ham9yLA0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgb3B0ZWUtPnJl
-dmlzaW9uLm9zX21pbm9yLA0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgKHVuc2lnbmVk
-IGxvbmcgbG9uZylidWlsZF9pZCk7DQo+ID4gPiArICAgICBlbHNlDQo+ID4gPiArICAgICAgICAg
-ICAgIHNjbnByaW50ZihidWYsIGxlbiwgIiV1LiV1Iiwgb3B0ZWUtPnJldmlzaW9uLm9zX21ham9y
-LA0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgb3B0ZWUtPnJldmlzaW9uLm9zX21pbm9y
-KTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgIHJldHVybiAwOw0KPiA+ID4gK30NCj4gPiA+ICsNCj4g
-PiA+ICBzdGF0aWMgdm9pZCBvcHRlZV9idXNfc2NhbihzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmsp
-DQo+ID4gPiAgew0KPiA+ID4gICAgICAgV0FSTl9PTihvcHRlZV9lbnVtZXJhdGVfZGV2aWNlcyhQ
-VEFfQ01EX0dFVF9ERVZJQ0VTX1NVUFApKTsNCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Rl
-ZS9vcHRlZS9mZmFfYWJpLmMgYi9kcml2ZXJzL3RlZS9vcHRlZS9mZmFfYWJpLmMNCj4gPiA+IGlu
-ZGV4IGJmODM5MDc4OWVjZi4uZDY3Y2ExZWM5NTA2IDEwMDY0NA0KPiA+ID4gLS0tIGEvZHJpdmVy
-cy90ZWUvb3B0ZWUvZmZhX2FiaS5jDQo+ID4gPiArKysgYi9kcml2ZXJzL3RlZS9vcHRlZS9mZmFf
-YWJpLmMNCj4gPiA+IEBAIC03NzYsNyArNzc2LDggQEAgc3RhdGljIGludCBvcHRlZV9mZmFfcmVj
-bGFpbV9wcm90bWVtKHN0cnVjdCBvcHRlZSAqb3B0ZWUsDQo+ID4gPiAgICovDQo+ID4gPg0KPiA+
-ID4gIHN0YXRpYyBib29sIG9wdGVlX2ZmYV9hcGlfaXNfY29tcGF0aWJsZShzdHJ1Y3QgZmZhX2Rl
-dmljZSAqZmZhX2RldiwNCj4gPiA+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgY29uc3Qgc3RydWN0IGZmYV9vcHMgKm9wcykNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgY29uc3Qgc3RydWN0IGZmYV9vcHMgKm9wcywNCj4gPiA+ICsgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IG9wdGVlX3JldmlzaW9uICpy
-ZXZpc2lvbikNCj4gPiA+ICB7DQo+ID4gPiAgICAgICBjb25zdCBzdHJ1Y3QgZmZhX21zZ19vcHMg
-Km1zZ19vcHMgPSBvcHMtPm1zZ19vcHM7DQo+ID4gPiAgICAgICBzdHJ1Y3QgZmZhX3NlbmRfZGly
-ZWN0X2RhdGEgZGF0YSA9IHsNCj4gPiA+IEBAIC04MDYsNiArODA3LDExIEBAIHN0YXRpYyBib29s
-IG9wdGVlX2ZmYV9hcGlfaXNfY29tcGF0aWJsZShzdHJ1Y3QgZmZhX2RldmljZSAqZmZhX2RldiwN
-Cj4gPiA+ICAgICAgICAgICAgICAgcHJfZXJyKCJVbmV4cGVjdGVkIGVycm9yICVkXG4iLCByYyk7
-DQo+ID4gPiAgICAgICAgICAgICAgIHJldHVybiBmYWxzZTsNCj4gPiA+ICAgICAgIH0NCj4gPiA+
-ICsgICAgIGlmIChyZXZpc2lvbikgew0KPiA+ID4gKyAgICAgICAgICAgICByZXZpc2lvbi0+b3Nf
-bWFqb3IgPSBkYXRhLmRhdGEwOw0KPiA+ID4gKyAgICAgICAgICAgICByZXZpc2lvbi0+b3NfbWlu
-b3IgPSBkYXRhLmRhdGExOw0KPiA+ID4gKyAgICAgICAgICAgICByZXZpc2lvbi0+b3NfYnVpbGRf
-aWQgPSBkYXRhLmRhdGEyOw0KPiA+ID4gKyAgICAgfQ0KPiA+ID4gICAgICAgaWYgKGRhdGEuZGF0
-YTIpDQo+ID4gPiAgICAgICAgICAgICAgIHByX2luZm8oInJldmlzaW9uICVsdS4lbHUgKCUwOGx4
-KSIsDQo+ID4gPiAgICAgICAgICAgICAgICAgICAgICAgZGF0YS5kYXRhMCwgZGF0YS5kYXRhMSwg
-ZGF0YS5kYXRhMik7DQo+ID4gPiBAQCAtOTAwLDYgKzkwNiw3IEBAIHN0YXRpYyBpbnQgb3B0ZWVf
-ZmZhX29wZW4oc3RydWN0IHRlZV9jb250ZXh0ICpjdHgpDQo+ID4gPg0KPiA+ID4gIHN0YXRpYyBj
-b25zdCBzdHJ1Y3QgdGVlX2RyaXZlcl9vcHMgb3B0ZWVfZmZhX2NsbnRfb3BzID0gew0KPiA+ID4g
-ICAgICAgLmdldF92ZXJzaW9uID0gb3B0ZWVfZmZhX2dldF92ZXJzaW9uLA0KPiA+ID4gKyAgICAg
-LmdldF90ZWVfcmV2aXNpb24gPSBvcHRlZV9nZXRfcmV2aXNpb24sDQo+ID4gPiAgICAgICAub3Bl
-biA9IG9wdGVlX2ZmYV9vcGVuLA0KPiA+ID4gICAgICAgLnJlbGVhc2UgPSBvcHRlZV9yZWxlYXNl
-LA0KPiA+ID4gICAgICAgLm9wZW5fc2Vzc2lvbiA9IG9wdGVlX29wZW5fc2Vzc2lvbiwNCj4gPiA+
-IEBAIC05MTgsNiArOTI1LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0ZWVfZGVzYyBvcHRlZV9m
-ZmFfY2xudF9kZXNjID0gew0KPiA+ID4NCj4gPiA+ICBzdGF0aWMgY29uc3Qgc3RydWN0IHRlZV9k
-cml2ZXJfb3BzIG9wdGVlX2ZmYV9zdXBwX29wcyA9IHsNCj4gPiA+ICAgICAgIC5nZXRfdmVyc2lv
-biA9IG9wdGVlX2ZmYV9nZXRfdmVyc2lvbiwNCj4gPiA+ICsgICAgIC5nZXRfdGVlX3JldmlzaW9u
-ID0gb3B0ZWVfZ2V0X3JldmlzaW9uLA0KPiA+ID4gICAgICAgLm9wZW4gPSBvcHRlZV9mZmFfb3Bl
-biwNCj4gPiA+ICAgICAgIC5yZWxlYXNlID0gb3B0ZWVfcmVsZWFzZV9zdXBwLA0KPiA+ID4gICAg
-ICAgLnN1cHBfcmVjdiA9IG9wdGVlX3N1cHBfcmVjdiwNCj4gPiA+IEBAIC0xMDM0LDYgKzEwNDIs
-NyBAQCBzdGF0aWMgaW50IG9wdGVlX2ZmYV9wcm9iZShzdHJ1Y3QgZmZhX2RldmljZSAqZmZhX2Rl
-dikNCj4gPiA+ICB7DQo+ID4gPiAgICAgICBjb25zdCBzdHJ1Y3QgZmZhX25vdGlmaWVyX29wcyAq
-bm90aWZfb3BzOw0KPiA+ID4gICAgICAgY29uc3Qgc3RydWN0IGZmYV9vcHMgKmZmYV9vcHM7DQo+
-ID4gPiArICAgICBzdHJ1Y3Qgb3B0ZWVfcmV2aXNpb24gcmV2aXNpb24gPSB7IH07DQo+ID4NCj4g
-PiBObyBuZWVkIGZvciB0aGlzIHJlZHVuZGFudCB2YXJpYWJsZSBvbiBzdGFjayB3aGVuLi4uDQo+
-ID4NCj4gPiA+ICAgICAgIHVuc2lnbmVkIGludCBtYXhfbm90aWZfdmFsdWU7DQo+ID4gPiAgICAg
-ICB1bnNpZ25lZCBpbnQgcnBjX3BhcmFtX2NvdW50Ow0KPiA+ID4gICAgICAgc3RydWN0IHRlZV9z
-aG1fcG9vbCAqcG9vbDsNCj4gPiA+IEBAIC0xMDQ3LDcgKzEwNTYsNyBAQCBzdGF0aWMgaW50IG9w
-dGVlX2ZmYV9wcm9iZShzdHJ1Y3QgZmZhX2RldmljZSAqZmZhX2RldikNCj4gPiA+ICAgICAgIGZm
-YV9vcHMgPSBmZmFfZGV2LT5vcHM7DQo+ID4gPiAgICAgICBub3RpZl9vcHMgPSBmZmFfb3BzLT5u
-b3RpZmllcl9vcHM7DQo+ID4gPg0KPiA+ID4gLSAgICAgaWYgKCFvcHRlZV9mZmFfYXBpX2lzX2Nv
-bXBhdGlibGUoZmZhX2RldiwgZmZhX29wcykpDQo+ID4gPiArICAgICBpZiAoIW9wdGVlX2ZmYV9h
-cGlfaXNfY29tcGF0aWJsZShmZmFfZGV2LCBmZmFfb3BzLCAmcmV2aXNpb24pKQ0KPiA+DQo+ID4g
-Li4ueW91IGNhbiBqdXN0IGludm9rZSB0aGlzIEFQSSBhcyByYXRoZXI6DQo+ID4NCj4gPiAgICAg
-ICAgIGlmICghb3B0ZWVfZmZhX2FwaV9pc19jb21wYXRpYmxlKGZmYV9kZXYsIGZmYV9vcHMsICZv
-cHRlZS0+cmV2aXNpb24pKQ0KPiA+DQo+IFRoYW5rcyBmb3IgdGhlIHJldmlldy4gVG8gYXZvaWQg
-dGhlIHRlbXBvcmFyeSBzdHJ1Y3Qgb3B0ZWVfcmV2aXNpb24sDQo+IEkgbmVlZCB0byBtb3ZlIHRo
-ZSBvcHRlZSBhbGxvY2F0aW9uIGVhcmxpZXIgc28gd2UgY2FuIHBhc3MNCj4gJm9wdGVlLT5yZXZp
-c2lvbiBpbnRvIG9wdGVlX2ZmYV9hcGlfaXNfY29tcGF0aWJsZSgpLg0KDQpJIHdvdWxkIHJhdGhl
-ciBzdWdnZXN0IHRvIHNwbGl0IHRoaXMgQVBJIHRvIGFkZCBhIG5ldyBvbmUgbGlrZQ0Kb3B0ZWVf
-ZmZhX2dldF9vc19yZXZpc2lvbigpIGFuZCB0aGVuIG1vdmUgaXQncyBpbnZvY2F0aW9uIG9uY2Ug
-b3B0ZWUNCnN0cnVjdCBoYXMgYmVlbiBhbGxvY2F0ZWQuDQoNCj4gDQo+IEFGQUlDVCwgdGhlcmUg
-YXJlbuKAmXQga2VybmVsIHNlbGZ0ZXN0cyBjb3ZlcmluZyB0aGlzLCB0aGUgb25seSB0ZXN0IHRo
-YXQNCj4gSSBhbSBhd2FyZSBvZiBpcyB0aGUgeHRlc3QsIHNvIEnigJltIHNsaWdodGx5IGNhdXRp
-b3VzIGFib3V0IHRvdWNoaW5nDQo+IHByb2JlIG9yZGVyaW5nLiBJZiB5b3UgcHJlZmVyIHRvIGF2
-b2lkIHRoZSBlYXJseSBhbGxvY2F0aW9uLCBJIGNhbiBrZWVwDQo+IHRoZSBvcmlnaW5hbCBvcmRl
-ciBhbmQgdXNlIGEgbG9jYWwgc3RydWN0IG9wdGVlX3JldmlzaW9uIGluc3RlYWQuDQoNCldpdGgg
-YWJvdmUgc3VnZ2VzdGlvbiwgdGhlIHByb2JlIG9yZGVyaW5nIHdvbid0IGNoYW5nZSBtdWNoIGJ1
-dCByYXRoZXINCnRoZSBwb2ludCBjaGFuZ2VzIHdoZW4geW91IGFzayBPUC1URUUgZm9yIGl0J3Mg
-cmV2aXNpb24uDQoNCi1TdW1pdA0KDQo+IA0KPiBQbGVhc2UgbGV0IG1lIGtub3cgd2hpY2ggeW91
-4oCZZCBwcmVmZXINCj4gDQo+ID4gPiAgICAgICAgICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiA+
-ID4NCj4gPiA+ICAgICAgIGlmICghb3B0ZWVfZmZhX2V4Y2hhbmdlX2NhcHMoZmZhX2RldiwgZmZh
-X29wcywgJnNlY19jYXBzLA0KPiA+ID4gQEAgLTEwNTksNiArMTA2OCw3IEBAIHN0YXRpYyBpbnQg
-b3B0ZWVfZmZhX3Byb2JlKHN0cnVjdCBmZmFfZGV2aWNlICpmZmFfZGV2KQ0KPiA+ID4gICAgICAg
-b3B0ZWUgPSBremFsbG9jKHNpemVvZigqb3B0ZWUpLCBHRlBfS0VSTkVMKTsNCj4gPiA+ICAgICAg
-IGlmICghb3B0ZWUpDQo+ID4gPiAgICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+ID4g
-KyAgICAgb3B0ZWUtPnJldmlzaW9uID0gcmV2aXNpb247DQo+ID4gPg0KPiA+ID4gICAgICAgcG9v
-bCA9IG9wdGVlX2ZmYV9zaG1fcG9vbF9hbGxvY19wYWdlcygpOw0KPiA+ID4gICAgICAgaWYgKElT
-X0VSUihwb29sKSkgew0KPiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGVlL29wdGVlL29wdGVl
-X3ByaXZhdGUuaCBiL2RyaXZlcnMvdGVlL29wdGVlL29wdGVlX3ByaXZhdGUuaA0KPiA+ID4gaW5k
-ZXggZGI5ZWE2NzNmYmNhLi5hY2QzMDUxYzQ4NzkgMTAwNjQ0DQo+ID4gPiAtLS0gYS9kcml2ZXJz
-L3RlZS9vcHRlZS9vcHRlZV9wcml2YXRlLmgNCj4gPiA+ICsrKyBiL2RyaXZlcnMvdGVlL29wdGVl
-L29wdGVlX3ByaXZhdGUuaA0KPiA+ID4gQEAgLTE3MSw2ICsxNzEsMjQgQEAgc3RydWN0IG9wdGVl
-X2ZmYSB7DQo+ID4gPg0KPiA+ID4gIHN0cnVjdCBvcHRlZTsNCj4gPiA+DQo+ID4gPiArLyoqDQo+
-ID4gPiArICogc3RydWN0IG9wdGVlX3JldmlzaW9uIC0gT1AtVEVFIE9TIHJldmlzaW9uIHJlcG9y
-dGVkIGJ5IHNlY3VyZSB3b3JsZA0KPiA+ID4gKyAqIEBvc19tYWpvcjogICAgICAgICAgICAgICAg
-T1AtVEVFIE9TIG1ham9yIHZlcnNpb24NCj4gPiA+ICsgKiBAb3NfbWlub3I6ICAgICAgICAgICAg
-ICAgIE9QLVRFRSBPUyBtaW5vciB2ZXJzaW9uDQo+ID4gPiArICogQG9zX2J1aWxkX2lkOiAgICAg
-T1AtVEVFIE9TIGJ1aWxkIGlkZW50aWZpZXIgKDAgaWYgdW5zcGVjaWZpZWQpDQo+ID4gPiArICoN
-Cj4gPiA+ICsgKiBWYWx1ZXMgY29tZSBmcm9tIE9QVEVFX1NNQ19DQUxMX0dFVF9PU19SRVZJU0lP
-TiAoU01DIEFCSSkgb3INCj4gPiA+ICsgKiBPUFRFRV9GRkFfR0VUX09TX1ZFUlNJT04gKEZGLUEg
-QUJJKTsgdGhpcyBpcyB0aGUgdHJ1c3RlZCBPUyByZXZpc2lvbiwgbm90IGFuDQo+ID4gPiArICog
-RkYtQSBBQkkgdmVyc2lvbi4NCj4gPiA+ICsgKi8NCj4gPiA+ICtzdHJ1Y3Qgb3B0ZWVfcmV2aXNp
-b24gew0KPiA+ID4gKyAgICAgdTMyIG9zX21ham9yOw0KPiA+ID4gKyAgICAgdTMyIG9zX21pbm9y
-Ow0KPiA+ID4gKyAgICAgdTY0IG9zX2J1aWxkX2lkOw0KPiA+ID4gK307DQo+ID4gPiArDQo+ID4g
-PiAraW50IG9wdGVlX2dldF9yZXZpc2lvbihzdHJ1Y3QgdGVlX2RldmljZSAqdGVlZGV2LCBjaGFy
-ICpidWYsIHNpemVfdCBsZW4pOw0KPiA+ID4gKw0KPiA+ID4gIC8qKg0KPiA+ID4gICAqIHN0cnVj
-dCBvcHRlZV9vcHMgLSBPUC1URUUgZHJpdmVyIGludGVybmFsIG9wZXJhdGlvbnMNCj4gPiA+ICAg
-KiBAZG9fY2FsbF93aXRoX2FyZzogICAgICAgIGVudGVycyBPUC1URUUgaW4gc2VjdXJlIHdvcmxk
-DQo+ID4gPiBAQCAtMjQ5LDYgKzI2Nyw3IEBAIHN0cnVjdCBvcHRlZSB7DQo+ID4gPiAgICAgICBi
-b29sIGluX2tlcm5lbF9ycG1iX3JvdXRpbmc7DQo+ID4gPiAgICAgICBzdHJ1Y3Qgd29ya19zdHJ1
-Y3Qgc2Nhbl9idXNfd29yazsNCj4gPiA+ICAgICAgIHN0cnVjdCB3b3JrX3N0cnVjdCBycG1iX3Nj
-YW5fYnVzX3dvcms7DQo+ID4gPiArICAgICBzdHJ1Y3Qgb3B0ZWVfcmV2aXNpb24gcmV2aXNpb247
-DQo+ID4gPiAgfTsNCj4gPiA+DQo+ID4gPiAgc3RydWN0IG9wdGVlX3Nlc3Npb24gew0KPiA+ID4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGVlL29wdGVlL3NtY19hYmkuYyBiL2RyaXZlcnMvdGVlL29w
-dGVlL3NtY19hYmkuYw0KPiA+ID4gaW5kZXggMGJlNjYzZmNkNTJiLi4wYmFhZjc5ODZhMzUgMTAw
-NjQ0DQo+ID4gPiAtLS0gYS9kcml2ZXJzL3RlZS9vcHRlZS9zbWNfYWJpLmMNCj4gPiA+ICsrKyBi
-L2RyaXZlcnMvdGVlL29wdGVlL3NtY19hYmkuYw0KPiA+ID4gQEAgLTEyNDIsNiArMTI0Miw3IEBA
-IHN0YXRpYyBpbnQgb3B0ZWVfc21jX29wZW4oc3RydWN0IHRlZV9jb250ZXh0ICpjdHgpDQo+ID4g
-Pg0KPiA+ID4gIHN0YXRpYyBjb25zdCBzdHJ1Y3QgdGVlX2RyaXZlcl9vcHMgb3B0ZWVfY2xudF9v
-cHMgPSB7DQo+ID4gPiAgICAgICAuZ2V0X3ZlcnNpb24gPSBvcHRlZV9nZXRfdmVyc2lvbiwNCj4g
-PiA+ICsgICAgIC5nZXRfdGVlX3JldmlzaW9uID0gb3B0ZWVfZ2V0X3JldmlzaW9uLA0KPiA+ID4g
-ICAgICAgLm9wZW4gPSBvcHRlZV9zbWNfb3BlbiwNCj4gPiA+ICAgICAgIC5yZWxlYXNlID0gb3B0
-ZWVfcmVsZWFzZSwNCj4gPiA+ICAgICAgIC5vcGVuX3Nlc3Npb24gPSBvcHRlZV9vcGVuX3Nlc3Np
-b24sDQo+ID4gPiBAQCAtMTI2MSw2ICsxMjYyLDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0ZWVf
-ZGVzYyBvcHRlZV9jbG50X2Rlc2MgPSB7DQo+ID4gPg0KPiA+ID4gIHN0YXRpYyBjb25zdCBzdHJ1
-Y3QgdGVlX2RyaXZlcl9vcHMgb3B0ZWVfc3VwcF9vcHMgPSB7DQo+ID4gPiAgICAgICAuZ2V0X3Zl
-cnNpb24gPSBvcHRlZV9nZXRfdmVyc2lvbiwNCj4gPiA+ICsgICAgIC5nZXRfdGVlX3JldmlzaW9u
-ID0gb3B0ZWVfZ2V0X3JldmlzaW9uLA0KPiA+ID4gICAgICAgLm9wZW4gPSBvcHRlZV9zbWNfb3Bl
-biwNCj4gPiA+ICAgICAgIC5yZWxlYXNlID0gb3B0ZWVfcmVsZWFzZV9zdXBwLA0KPiA+ID4gICAg
-ICAgLnN1cHBfcmVjdiA9IG9wdGVlX3N1cHBfcmVjdiwNCj4gPiA+IEBAIC0xMzIzLDcgKzEzMjUs
-OCBAQCBzdGF0aWMgYm9vbCBvcHRlZV9tc2dfYXBpX3VpZF9pc19vcHRlZV9pbWFnZV9sb2FkKG9w
-dGVlX2ludm9rZV9mbiAqaW52b2tlX2ZuKQ0KPiA+ID4gIH0NCj4gPiA+ICAjZW5kaWYNCj4gPiA+
-DQo+ID4gPiAtc3RhdGljIHZvaWQgb3B0ZWVfbXNnX2dldF9vc19yZXZpc2lvbihvcHRlZV9pbnZv
-a2VfZm4gKmludm9rZV9mbikNCj4gPiA+ICtzdGF0aWMgdm9pZCBvcHRlZV9tc2dfZ2V0X29zX3Jl
-dmlzaW9uKG9wdGVlX2ludm9rZV9mbiAqaW52b2tlX2ZuLA0KPiA+ID4gKyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgc3RydWN0IG9wdGVlX3JldmlzaW9uICpyZXZpc2lvbikNCj4g
-PiA+ICB7DQo+ID4gPiAgICAgICB1bmlvbiB7DQo+ID4gPiAgICAgICAgICAgICAgIHN0cnVjdCBh
-cm1fc21jY2NfcmVzIHNtY2NjOw0KPiA+ID4gQEAgLTEzMzcsNiArMTM0MCwxMiBAQCBzdGF0aWMg
-dm9pZCBvcHRlZV9tc2dfZ2V0X29zX3JldmlzaW9uKG9wdGVlX2ludm9rZV9mbiAqaW52b2tlX2Zu
-KQ0KPiA+ID4gICAgICAgaW52b2tlX2ZuKE9QVEVFX1NNQ19DQUxMX0dFVF9PU19SRVZJU0lPTiwg
-MCwgMCwgMCwgMCwgMCwgMCwgMCwNCj4gPiA+ICAgICAgICAgICAgICAgICAmcmVzLnNtY2NjKTsN
-Cj4gPiA+DQo+ID4gPiArICAgICBpZiAocmV2aXNpb24pIHsNCj4gPiA+ICsgICAgICAgICAgICAg
-cmV2aXNpb24tPm9zX21ham9yID0gcmVzLnJlc3VsdC5tYWpvcjsNCj4gPiA+ICsgICAgICAgICAg
-ICAgcmV2aXNpb24tPm9zX21pbm9yID0gcmVzLnJlc3VsdC5taW5vcjsNCj4gPiA+ICsgICAgICAg
-ICAgICAgcmV2aXNpb24tPm9zX2J1aWxkX2lkID0gcmVzLnJlc3VsdC5idWlsZF9pZDsNCj4gPiA+
-ICsgICAgIH0NCj4gPiA+ICsNCj4gPiA+ICAgICAgIGlmIChyZXMucmVzdWx0LmJ1aWxkX2lkKQ0K
-PiA+ID4gICAgICAgICAgICAgICBwcl9pbmZvKCJyZXZpc2lvbiAlbHUuJWx1ICglMCpseCkiLCBy
-ZXMucmVzdWx0Lm1ham9yLA0KPiA+ID4gICAgICAgICAgICAgICAgICAgICAgIHJlcy5yZXN1bHQu
-bWlub3IsIChpbnQpc2l6ZW9mKHJlcy5yZXN1bHQuYnVpbGRfaWQpICogMiwNCj4gPiA+IEBAIC0x
-NzI3LDYgKzE3MzYsNyBAQCBzdGF0aWMgaW50IG9wdGVlX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9k
-ZXZpY2UgKnBkZXYpDQo+ID4gPiAgICAgICB1bnNpZ25lZCBpbnQgdGhyZWFkX2NvdW50Ow0KPiA+
-ID4gICAgICAgc3RydWN0IHRlZV9kZXZpY2UgKnRlZWRldjsNCj4gPiA+ICAgICAgIHN0cnVjdCB0
-ZWVfY29udGV4dCAqY3R4Ow0KPiA+ID4gKyAgICAgc3RydWN0IG9wdGVlX3JldmlzaW9uIHJldmlz
-aW9uID0geyB9Ow0KPiA+DQo+ID4gRGl0dG8gaGVyZS4NCj4gPg0KPiA+IC1TdW1pdA0KPiA+DQo+
-ID4gPiAgICAgICB1MzIgbWF4X25vdGlmX3ZhbHVlOw0KPiA+ID4gICAgICAgdTMyIGFyZ19jYWNo
-ZV9mbGFnczsNCj4gPiA+ICAgICAgIHUzMiBzZWNfY2FwczsNCj4gPiA+IEBAIC0xNzQ1LDcgKzE3
-NTUsNyBAQCBzdGF0aWMgaW50IG9wdGVlX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBk
-ZXYpDQo+ID4gPiAgICAgICAgICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiA+ID4gICAgICAgfQ0K
-PiA+ID4NCj4gPiA+IC0gICAgIG9wdGVlX21zZ19nZXRfb3NfcmV2aXNpb24oaW52b2tlX2ZuKTsN
-Cj4gPiA+ICsgICAgIG9wdGVlX21zZ19nZXRfb3NfcmV2aXNpb24oaW52b2tlX2ZuLCAmcmV2aXNp
-b24pOw0KPiA+ID4NCj4gPiA+ICAgICAgIGlmICghb3B0ZWVfbXNnX2FwaV9yZXZpc2lvbl9pc19j
-b21wYXRpYmxlKGludm9rZV9mbikpIHsNCj4gPiA+ICAgICAgICAgICAgICAgcHJfd2FybigiYXBp
-IHJldmlzaW9uIG1pc21hdGNoXG4iKTsNCj4gPiA+IEBAIC0xODM3LDYgKzE4NDcsNyBAQCBzdGF0
-aWMgaW50IG9wdGVlX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gPiAg
-ICAgICAgICAgICAgIGdvdG8gZXJyX3VucmVnX3RlZWRldjsNCj4gPiA+ICAgICAgIH0NCj4gPiA+
-ICAgICAgIG9wdGVlLT5zdXBwX3RlZWRldiA9IHRlZWRldjsNCj4gPiA+ICsgICAgIG9wdGVlLT5y
-ZXZpc2lvbiA9IHJldmlzaW9uOw0KPiA+ID4NCj4gPiA+ICAgICAgIG9wdGVlX3NldF9kZXZfZ3Jv
-dXAob3B0ZWUpOw0KPiA+ID4NCj4gPiA+IC0tDQo+ID4gPiAyLjQzLjANCj4gPiA+DQo+IA0KPiBC
-ZXN0IHJlZ2FyZHMsDQo+IEFyaXN0bw0K
+Hi,
+
+On Thu, Dec 18, 2025 at 5:29=E2=80=AFPM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> On Thu, Dec 18, 2025 at 2:53=E2=80=AFPM Alexandre Belloni
+> <alexandre.belloni@bootlin.com> wrote:
+> >
+> > On 18/12/2025 08:21:27+0100, Jens Wiklander wrote:
+> > > Hi,
+> > >
+> > > On Mon, Dec 15, 2025 at 3:17=E2=80=AFPM Uwe Kleine-K=C3=B6nig
+> > > <u.kleine-koenig@baylibre.com> wrote:
+> > > >
+> > > > Hello,
+> > > >
+> > > > the objective of this series is to make tee driver stop using callb=
+acks
+> > > > in struct device_driver. These were superseded by bus methods in 20=
+06
+> > > > (commit 594c8281f905 ("[PATCH] Add bus_type probe, remove, shutdown
+> > > > methods.")) but nobody cared to convert all subsystems accordingly.
+> > > >
+> > > > Here the tee drivers are converted. The first commit is somewhat
+> > > > unrelated, but simplifies the conversion (and the drivers). It
+> > > > introduces driver registration helpers that care about setting the =
+bus
+> > > > and owner. (The latter is missing in all drivers, so by using these
+> > > > helpers the drivers become more correct.)
+> > > >
+> > > > v1 of this series is available at
+> > > > https://lore.kernel.org/all/cover.1765472125.git.u.kleine-koenig@ba=
+ylibre.com
+> > > >
+> > > > Changes since v1:
+> > > >
+> > > >  - rebase to v6.19-rc1 (no conflicts)
+> > > >  - add tags received so far
+> > > >  - fix whitespace issues pointed out by Sumit Garg
+> > > >  - fix shutdown callback to shutdown and not remove
+> > > >
+> > > > As already noted in v1's cover letter, this series should go in dur=
+ing a
+> > > > single merge window as there are runtime warnings when the series i=
+s
+> > > > only applied partially. Sumit Garg suggested to apply the whole ser=
+ies
+> > > > via Jens Wiklander's tree.
+> > > > If this is done the dependencies in this series are honored, in cas=
+e the
+> > > > plan changes: Patches #4 - #17 depend on the first two.
+> > > >
+> > > > Note this series is only build tested.
+> > > >
+> > > > Uwe Kleine-K=C3=B6nig (17):
+> > > >   tee: Add some helpers to reduce boilerplate for tee client driver=
+s
+> > > >   tee: Add probe, remove and shutdown bus callbacks to tee_client_d=
+river
+> > > >   tee: Adapt documentation to cover recent additions
+> > > >   hwrng: optee - Make use of module_tee_client_driver()
+> > > >   hwrng: optee - Make use of tee bus methods
+> > > >   rtc: optee: Migrate to use tee specific driver registration funct=
+ion
+> > > >   rtc: optee: Make use of tee bus methods
+> > > >   efi: stmm: Make use of module_tee_client_driver()
+> > > >   efi: stmm: Make use of tee bus methods
+> > > >   firmware: arm_scmi: optee: Make use of module_tee_client_driver()
+> > > >   firmware: arm_scmi: Make use of tee bus methods
+> > > >   firmware: tee_bnxt: Make use of module_tee_client_driver()
+> > > >   firmware: tee_bnxt: Make use of tee bus methods
+> > > >   KEYS: trusted: Migrate to use tee specific driver registration
+> > > >     function
+> > > >   KEYS: trusted: Make use of tee bus methods
+> > > >   tpm/tpm_ftpm_tee: Make use of tee specific driver registration
+> > > >   tpm/tpm_ftpm_tee: Make use of tee bus methods
+> > > >
+> > > >  Documentation/driver-api/tee.rst             | 18 +----
+> > > >  drivers/char/hw_random/optee-rng.c           | 26 ++----
+> > > >  drivers/char/tpm/tpm_ftpm_tee.c              | 31 +++++---
+> > > >  drivers/firmware/arm_scmi/transports/optee.c | 32 +++-----
+> > > >  drivers/firmware/broadcom/tee_bnxt_fw.c      | 30 ++-----
+> > > >  drivers/firmware/efi/stmm/tee_stmm_efi.c     | 25 ++----
+> > > >  drivers/rtc/rtc-optee.c                      | 27 ++-----
+> > > >  drivers/tee/tee_core.c                       | 84 ++++++++++++++++=
+++++
+> > > >  include/linux/tee_drv.h                      | 12 +++
+> > > >  security/keys/trusted-keys/trusted_tee.c     | 17 ++--
+> > > >  10 files changed, 164 insertions(+), 138 deletions(-)
+> > > >
+> > > > base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
+> > > > --
+> > > > 2.47.3
+> > > >
+> > >
+> > > Thank you for the nice cleanup, Uwe.
+> > >
+> > > I've applied patch 1-3 to the branch tee_bus_callback_for_6.20 in my
+> > > tree at https://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-=
+tee.git/
+> > >
+> > > The branch is based on v6.19-rc1, and I'll try to keep it stable for
+> > > others to depend on, if needed. Let's see if we can agree on taking
+> > > the remaining patches via that branch.
+> >
+> > 6 and 7 can go through your branch.
+>
+> Good, I've added them to my branch now.
+
+This entire patch set should go in during a single merge window. I
+will not send any pull request until I'm sure all patches will be
+merged.
+
+So far (if I'm not mistaken), only the patches I've already added to
+next have appeared next. I can take the rest of the patches, too, but
+I need OK for the following:
+
+Jarkko, you seem happy with the following patches
+- KEYS: trusted: Migrate to use tee specific driver registration function
+- KEYS: trusted: Make use of tee bus methods
+- tpm/tpm_ftpm_tee: Make use of tee specific driver registration
+- tpm/tpm_ftpm_tee: Make use of tee bus methods
+OK if I take them via my tree, or would you rather take them yourself?
+
+Herbert, you seem happy with the following patches
+- hwrng: optee - Make use of module_tee_client_driver()
+- hwrng: optee - Make use of tee bus methods
+OK if I take them via my tree, or would you rather take them yourself?
+
+Sudeep, you seem happy with the following patches
+- firmware: arm_scmi: optee: Make use of module_tee_client_driver()
+- firmware: arm_scmi: Make use of tee bus methods
+OK if I take them via my tree, or would you rather take them yourself?
+
+Michael, Pavan, are you OK with the following patches
+- firmware: tee_bnxt: Make use of module_tee_client_driver()
+- firmware: tee_bnxt: Make use of tee bus methods
+OK if I take them via my tree, or would you rather take them yourself?
+
+Thanks,
+Jens
