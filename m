@@ -4,108 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF85AC2A072
-	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 09:16:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7484EC2A07A
+	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 09:54:59 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 16CC04FF2E
-	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 09:16:42 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B11824FC3E
+	for <op-tee@archiver.kernel.org>; Mon,  5 Jan 2026 09:54:58 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PMm9xxvp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JIxQaFty;
 	dkim-atps=neutral
-Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com [209.85.160.42])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 10C9841B30
-	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Jan 2026 09:16:22 +0000 (UTC)
-Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-3eae4e590a4so7202260fac.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 05 Jan 2026 01:16:22 -0800 (PST)
+Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com [209.85.217.42])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id EF4D541A35
+	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Jan 2026 08:14:28 +0000 (UTC)
+Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-5dbd1421182so11439677137.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 05 Jan 2026 00:14:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1767604581; x=1768209381; darn=lists.trustedfirmware.org;
+        d=gmail.com; s=20230601; t=1767600868; x=1768205668; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=xS4Pieemzy4r1o+XZyR7jxfKf1/JCiqumXmtg6ZAf0Y=;
-        b=PMm9xxvp0lx8m5dxuXIrMVUqQbwiRlxijFK1D4z7fXpxhKBhM1gng9scYnwyj9EUPd
-         LTE6JCI15jJzSGKdxdXt8HOuCDbXKlrZ3RAyLcn4RTPGyBCOyv3PBzZxadGZnR9Mw36O
-         E9n6hFP8sAHsWr+WkeXhGTb6KRnrODlMbsTT/0KPLSSctcXOCwZP/fl21TJEi28ii6Y/
-         zfTaoeSLQKcmt3d9vK1BZdsNYvmnfZoXP1BRHzNWI2DA4zCNjVhjJxGNXK0sf0wVs+Vd
-         4CZ5LzkIGnoM4bfP8IQa25LcgbQh2CaODs+nqvGld8eBvEbSFIjcDHiQIjTVqmTtWA5/
-         YcBw==
+        bh=TJhLL1h0jOPmf/idWcgZBBmmjqlc+6ZgShiXhAO+z5M=;
+        b=JIxQaFty7Z0azLfqC3m+hAJYsZa+/T+AbrKaa47TF44LL/dgk+GMFvnr/3GIHq6/Zx
+         jx93Rfa4Xhv8xF8TKQxxdTmAmNbVwDe6SEYte6uyWKPjZHK6siXrM+/hdfaBs1kXxXpr
+         V3s/vrJdkCSIL7eUZkCGVidu0OlXcbhGMTpGtz4PhjtE2HoY29oQlW1xtEZBZat7ZMQy
+         Ag9pVLSIaU5wOdsAEx5BwNf/NSkR4hZBuSGY+/lrH1mLnJIrmw4emIAVbsUsFUb+oQoT
+         XeZ8Cuj+KwJY51OYbQwqEy2cvdhCx3RgLn1Jmfbsw9MI3dSJDnG/rOgxAcTTFvlQGVIk
+         opUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767604581; x=1768209381;
+        d=1e100.net; s=20230601; t=1767600868; x=1768205668;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=xS4Pieemzy4r1o+XZyR7jxfKf1/JCiqumXmtg6ZAf0Y=;
-        b=F+ptynYkysrTDwFWhm4akAOlzUtwQhbOnZWip+iyTlSfpj1kvrULkA6gX0UG9UhDx7
-         Vdbs6gKLbX/s6i90k9VDZ1LGDmA5GZZHyr8xUObQgPgBqXiYbBDjKKbCeXM8j0mjgjl4
-         hOjq5IUiTnsOgi03V8Zhyy42DsqsOCu03cO95M3TyGLCO3B7DrtGzkLGKqxtp171I4Fy
-         wEReBr76V99Pf1i5rTgusCkpIPVLP1xwWPdhAE1rlGLvCuQaLrVVb14cQnmEggAIlgbp
-         nQVcgbC3tvOuYaKKzhghM+/3LWDiBpbcR0pkH9VEvT8C9kAh3pq8g1OFgAyVPbQHPYHI
-         ZvDA==
-X-Forwarded-Encrypted: i=1; AJvYcCWRonYQmN0pJ2SKm2GeETzF2L5NEvZrYmzfG6zNcbO9jiWqjmFiIS2INldH1vHlO2jO1/CIWGU=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxZf0nkFjFKbyWodPHdCbQCVS68pc9/J2zSY3ppzpGBEmJUo+i2
-	mVQuTk3OQwu+IOIp85zqnF9/02jGzzfwf+yo4I3hUkyFc4u2AeBLC3CdyRGW8Vk7GaOKzUTdeHU
-	XtqfCX/ku8NMWN4WikzV7MF5lwt4ejfBTNn8pS/+WNTXV
-X-Gm-Gg: AY/fxX4wBvWnuCkDFRpTDrCdpV0zxWwURCtkSgEezf4YvjUhJ9c2s6oit/sPw7Fs6DL
-	5GucBy9tjqhjdNmzKBcAYkIXU6Z55u2h+aQUS4uirwoU7KflAa+tfCcxjjeYTA77sFXD/gDEeoC
-	IpQ/5RcmeGI2VkFjl9FNlW67WjjPpWPq+BkfiuD7x54DgbuiY/SnVmVJy9xeYMzZyjARWpS/f5n
-	r3nt7SMLq30T4RxJ3rHrVSdTqngfruPewgdb1f0NHFTSc0IoeZU8gu3BnoADHnooRIn4IFjzV7N
-	IpUxViNk2WSSpIh60F2jwn5bDg==
-X-Google-Smtp-Source: AGHT+IHdtu3uK1YvLPvRXmBmsYletnr+Fy6yEnWw7FcQJMBZUAFsUyE2L/0PG3GpU/2KGeBY95bkFD0S8glmAzrpFaU=
-X-Received: by 2002:a05:6820:2289:b0:65c:f9c1:cba0 with SMTP id
- 006d021491bc7-65d0ea16a88mr23376881eaf.37.1767604581140; Mon, 05 Jan 2026
- 01:16:21 -0800 (PST)
+        bh=TJhLL1h0jOPmf/idWcgZBBmmjqlc+6ZgShiXhAO+z5M=;
+        b=TF7F8QHRDaMTPWfWSrFabhKLAaWQ5IWRdSonnNuK6HnlrK4X2EgpgO+bEDav1R51kn
+         /nuEnGmI2CqlsCssZxOhYP8aX2PjIwTvxXuZ7/Kzu6PEBVzpkwow9VWTNyR24sVFDvdD
+         bSi+1c+eDXKUET3RTtpaGbXTEebOH+nZlVpEKdIWcBH1fmyBAAqmhA9w0Sr2B4LdemB+
+         O4jPoP4pcOlm+lah+UPP9CcNDiQCJJEqFMeoRE6FSnPpOMZqptbdr4kZYmmFMJrPLxT+
+         k187HaQxCzhSErvanNeQoHpq2duHVqi9CVBpjFkIkyEwFN2ZknTX528D66YnjHPOOGDI
+         r7nA==
+X-Forwarded-Encrypted: i=1; AJvYcCVafOGVWqvF4B/Gh1YGn1z4R/xbJEk1eeulD37yY359Phq0N99kID475P4gZIwOJ77RcP4qwmQ=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzEgHRRZtb3LW6rcAQqBD7R447Pe3h4uOtMFo48QOUkY+KRKXt9
+	P3MNpO+9Nnh4WKbdTH1IJ1B9jlSKu4A5O4cLv9fGkEKxBWrBj0A1MPP40vXuqUSwJcmjg0FUmgv
+	jJ/6FR7XDnx8RM9gQVQcD4zMghR9LjIY=
+X-Gm-Gg: AY/fxX5dgEtUC5SCHPVCnK45W5E4VP4cOF3jDsCh86Q+7/ne0/6YemtE6nEgnrNVdga
+	gRf2Hy51plCHIrnDtp7Wu+GH1ZN5hwkM4t6AF6qeDzCgN/jk9p8lfVcHKw8F5X4q5hYNRTcZ234
+	FtZs+dKT5tArrH6TLpipzfva9bNW6+aR9HnVejVihtgguX34QTZmM9q7G7Ltq7x8hO+zNt/Ejyd
+	iurY8hFbZogXKBFiUTQSSag4dKhCKZNkVLw9eF8llcSw1PFBNkopxcXBw3o5/IP6vTOxjCW
+X-Google-Smtp-Source: AGHT+IGO137a6z3FWQIYoryS/5RuFyoMlx97xfvC1Hvk5D3qmvkjbQvCqe5ksitZZHmPxXu+EOy/eK0WCRO8yqsFty0=
+X-Received: by 2002:a05:6102:e0e:b0:5e5:5ed7:60ae with SMTP id
+ ada2fe7eead31-5eb1a817635mr16851521137.31.1767600868311; Mon, 05 Jan 2026
+ 00:14:28 -0800 (PST)
 MIME-Version: 1.0
-References: <cover.1765791463.git.u.kleine-koenig@baylibre.com>
- <CAHUa44FrDZbvRvfN8obf80_k=Eqxe9YxHpjaE5jU7nkxPUwfag@mail.gmail.com>
- <20251218135332f323fa91@mail.local> <CAHUa44GpW5aO26GDyL9RZub9vVYvVcJ7etwO0yXBN_mUi0W4AA@mail.gmail.com>
-In-Reply-To: <CAHUa44GpW5aO26GDyL9RZub9vVYvVcJ7etwO0yXBN_mUi0W4AA@mail.gmail.com>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 5 Jan 2026 10:16:09 +0100
-X-Gm-Features: AQt7F2q8lTcIoa5xBnvz2Mkjx2axWX5OMGPJpQNfFM5WoFI2KGlEdVoT6sJvPQg
-Message-ID: <CAHUa44HqRbCJTXsrTCm0G5iwtkQtq+Si=yOspCjpAn-N2uVSVg@mail.gmail.com>
-Subject: Re: [PATCH v2 00/17] tee: Use bus callbacks instead of driver callbacks
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+References: <20251226131920.64582-1-aristo.chen@canonical.com>
+ <20251230051804.6230-1-aristo.chen@canonical.com> <20251230051804.6230-2-aristo.chen@canonical.com>
+ <aVtKHF3krwJWiCth@sumit-xelite>
+In-Reply-To: <aVtKHF3krwJWiCth@sumit-xelite>
+From: Aristo Chen <jj251510319013@gmail.com>
+Date: Mon, 5 Jan 2026 16:13:52 +0800
+X-Gm-Features: AQt7F2oW1-0O23ELZ5TwC-yulNrmeTk2MooVTxlt1L0ERpXB-stxZtPdLU4JqDo
+Message-ID: <CAJwFiGKaKUOvM42BpECMhHqOigT=HFGbaLN1Jg=AC+wgS3Cb+Q@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] tee: optee: store OS revision for TEE core
+To: Sumit Garg <sumit.garg@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.60 / 15.00];
+X-Spamd-Result: default: False [-2.50 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.160.42:from];
-	ARC_NA(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ONE(0.00)[1];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[42];
-	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
-	ALIAS_RESOLVED(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[baylibre.com,lwn.net,kernel.org,selenic.com,gondor.apana.org.au,bootlin.com,gmail.com,foss.st.com,oss.qualcomm.com,linaro.org,siemens.com,arm.com,wanadoo.fr,broadcom.com,hansenpartnership.com,linux.ibm.com,redhat.com,paul-moore.com,namei.org,hallyn.com,gmx.de,lists.trustedfirmware.org,vger.kernel.org,st-md-mailman.stormreply.com,lists.infradead.org,ziepe.ca];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	DKIM_TRACE(0.00)[gmail.com:+];
 	MISSING_XM_UA(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.160.42:from];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[linaro.org:+]
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	ALIAS_RESOLVED(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	MID_RHS_MATCH_FROMTLD(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.217.42:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.217.42:from]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 10C9841B30
+X-Rspamd-Queue-Id: EF4D541A35
 X-Spamd-Bar: --
-Message-ID-Hash: TW4GXA4MKLMP4CU5QUNGIXQONYMZXCWO
-X-Message-ID-Hash: TW4GXA4MKLMP4CU5QUNGIXQONYMZXCWO
-X-MailFrom: jens.wiklander@linaro.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Jonathan Corbet <corbet@lwn.net>, Sumit Garg <sumit.garg@kernel.org>, Olivia Mackall <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <clement.leger@bootlin.com>, Ard Biesheuvel <ardb@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Jan Kiszka <jan.kiszka@siemens.com>, Sudeep Holla <sudeep.holla@arm.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Michael Chan <michael.chan@broadcom.com>, Pavan Chebbi <pavan.chebbi@broadcom.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jarkko Sakkinen <jarkko@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "
- Serge E. Hallyn" <serge@hallyn.com>, Peter Huewe <peterhuewe@gmx.de>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-crypto@vger.kernel.org, linux-rtc@vger.kernel.org, linux-efi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, Cristian Marussi <cristian.marussi@arm.com>, arm-scmi@vger.kernel.org, linux-mips@vger.kernel.org, netdev@vger.kernel.org, linux-integrity@vger.kernel.org, keyrings@vger.kernel.org, linux-security-module@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
+X-MailFrom: jj251510319013@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: FOZGRMB74LOOAYKRHQOX3QILQV5OMZEE
+X-Message-ID-Hash: FOZGRMB74LOOAYKRHQOX3QILQV5OMZEE
+X-Mailman-Approved-At: Mon, 05 Jan 2026 09:54:42 +0000
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TW4GXA4MKLMP4CU5QUNGIXQONYMZXCWO/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FOZGRMB74LOOAYKRHQOX3QILQV5OMZEE/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -113,144 +115,279 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi,
+Hi Sumit,
 
-On Thu, Dec 18, 2025 at 5:29=E2=80=AFPM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
+Sumit Garg <sumit.garg@kernel.org> =E6=96=BC 2026=E5=B9=B41=E6=9C=885=E6=97=
+=A5=E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=881:20=E5=AF=AB=E9=81=93=EF=BC=9A
 >
-> On Thu, Dec 18, 2025 at 2:53=E2=80=AFPM Alexandre Belloni
-> <alexandre.belloni@bootlin.com> wrote:
+> On Tue, Dec 30, 2025 at 01:17:59PM +0800, Aristo Chen wrote:
+> > Collect OP-TEE OS revision from secure world for both SMC and FF-A ABIs=
+,
+> > store it in the OP-TEE driver, and expose it through the generic
+> > get_tee_revision() callback.
 > >
-> > On 18/12/2025 08:21:27+0100, Jens Wiklander wrote:
-> > > Hi,
-> > >
-> > > On Mon, Dec 15, 2025 at 3:17=E2=80=AFPM Uwe Kleine-K=C3=B6nig
-> > > <u.kleine-koenig@baylibre.com> wrote:
-> > > >
-> > > > Hello,
-> > > >
-> > > > the objective of this series is to make tee driver stop using callb=
-acks
-> > > > in struct device_driver. These were superseded by bus methods in 20=
-06
-> > > > (commit 594c8281f905 ("[PATCH] Add bus_type probe, remove, shutdown
-> > > > methods.")) but nobody cared to convert all subsystems accordingly.
-> > > >
-> > > > Here the tee drivers are converted. The first commit is somewhat
-> > > > unrelated, but simplifies the conversion (and the drivers). It
-> > > > introduces driver registration helpers that care about setting the =
-bus
-> > > > and owner. (The latter is missing in all drivers, so by using these
-> > > > helpers the drivers become more correct.)
-> > > >
-> > > > v1 of this series is available at
-> > > > https://lore.kernel.org/all/cover.1765472125.git.u.kleine-koenig@ba=
-ylibre.com
-> > > >
-> > > > Changes since v1:
-> > > >
-> > > >  - rebase to v6.19-rc1 (no conflicts)
-> > > >  - add tags received so far
-> > > >  - fix whitespace issues pointed out by Sumit Garg
-> > > >  - fix shutdown callback to shutdown and not remove
-> > > >
-> > > > As already noted in v1's cover letter, this series should go in dur=
-ing a
-> > > > single merge window as there are runtime warnings when the series i=
-s
-> > > > only applied partially. Sumit Garg suggested to apply the whole ser=
-ies
-> > > > via Jens Wiklander's tree.
-> > > > If this is done the dependencies in this series are honored, in cas=
-e the
-> > > > plan changes: Patches #4 - #17 depend on the first two.
-> > > >
-> > > > Note this series is only build tested.
-> > > >
-> > > > Uwe Kleine-K=C3=B6nig (17):
-> > > >   tee: Add some helpers to reduce boilerplate for tee client driver=
-s
-> > > >   tee: Add probe, remove and shutdown bus callbacks to tee_client_d=
-river
-> > > >   tee: Adapt documentation to cover recent additions
-> > > >   hwrng: optee - Make use of module_tee_client_driver()
-> > > >   hwrng: optee - Make use of tee bus methods
-> > > >   rtc: optee: Migrate to use tee specific driver registration funct=
-ion
-> > > >   rtc: optee: Make use of tee bus methods
-> > > >   efi: stmm: Make use of module_tee_client_driver()
-> > > >   efi: stmm: Make use of tee bus methods
-> > > >   firmware: arm_scmi: optee: Make use of module_tee_client_driver()
-> > > >   firmware: arm_scmi: Make use of tee bus methods
-> > > >   firmware: tee_bnxt: Make use of module_tee_client_driver()
-> > > >   firmware: tee_bnxt: Make use of tee bus methods
-> > > >   KEYS: trusted: Migrate to use tee specific driver registration
-> > > >     function
-> > > >   KEYS: trusted: Make use of tee bus methods
-> > > >   tpm/tpm_ftpm_tee: Make use of tee specific driver registration
-> > > >   tpm/tpm_ftpm_tee: Make use of tee bus methods
-> > > >
-> > > >  Documentation/driver-api/tee.rst             | 18 +----
-> > > >  drivers/char/hw_random/optee-rng.c           | 26 ++----
-> > > >  drivers/char/tpm/tpm_ftpm_tee.c              | 31 +++++---
-> > > >  drivers/firmware/arm_scmi/transports/optee.c | 32 +++-----
-> > > >  drivers/firmware/broadcom/tee_bnxt_fw.c      | 30 ++-----
-> > > >  drivers/firmware/efi/stmm/tee_stmm_efi.c     | 25 ++----
-> > > >  drivers/rtc/rtc-optee.c                      | 27 ++-----
-> > > >  drivers/tee/tee_core.c                       | 84 ++++++++++++++++=
-++++
-> > > >  include/linux/tee_drv.h                      | 12 +++
-> > > >  security/keys/trusted-keys/trusted_tee.c     | 17 ++--
-> > > >  10 files changed, 164 insertions(+), 138 deletions(-)
-> > > >
-> > > > base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
-> > > > --
-> > > > 2.47.3
-> > > >
-> > >
-> > > Thank you for the nice cleanup, Uwe.
-> > >
-> > > I've applied patch 1-3 to the branch tee_bus_callback_for_6.20 in my
-> > > tree at https://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-=
-tee.git/
-> > >
-> > > The branch is based on v6.19-rc1, and I'll try to keep it stable for
-> > > others to depend on, if needed. Let's see if we can agree on taking
-> > > the remaining patches via that branch.
+> > Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
+> > ---
+> >  drivers/tee/optee/core.c          | 23 +++++++++++++++++++++++
+> >  drivers/tee/optee/ffa_abi.c       | 14 ++++++++++++--
+> >  drivers/tee/optee/optee_private.h | 19 +++++++++++++++++++
+> >  drivers/tee/optee/smc_abi.c       | 15 +++++++++++++--
+> >  4 files changed, 67 insertions(+), 4 deletions(-)
 > >
-> > 6 and 7 can go through your branch.
+> > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> > index 5b62139714ce..2d807bc748bc 100644
+> > --- a/drivers/tee/optee/core.c
+> > +++ b/drivers/tee/optee/core.c
+> > @@ -63,6 +63,29 @@ int optee_set_dma_mask(struct optee *optee, u_int pa=
+_width)
+> >       return dma_coerce_mask_and_coherent(&optee->teedev->dev, mask);
+> >  }
+> >
+> > +int optee_get_revision(struct tee_device *teedev, char *buf, size_t le=
+n)
+> > +{
+> > +     struct optee *optee =3D tee_get_drvdata(teedev);
+> > +     u64 build_id;
+> > +
+> > +     if (!optee)
+> > +             return -ENODEV;
+> > +     if (!buf || !len)
+> > +             return -EINVAL;
+> > +
+> > +     build_id =3D optee->revision.os_build_id;
+> > +     if (build_id)
+> > +             scnprintf(buf, len, "%u.%u (%016llx)",
+> > +                       optee->revision.os_major,
+> > +                       optee->revision.os_minor,
+> > +                       (unsigned long long)build_id);
+> > +     else
+> > +             scnprintf(buf, len, "%u.%u", optee->revision.os_major,
+> > +                       optee->revision.os_minor);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> >  static void optee_bus_scan(struct work_struct *work)
+> >  {
+> >       WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
+> > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> > index bf8390789ecf..d67ca1ec9506 100644
+> > --- a/drivers/tee/optee/ffa_abi.c
+> > +++ b/drivers/tee/optee/ffa_abi.c
+> > @@ -776,7 +776,8 @@ static int optee_ffa_reclaim_protmem(struct optee *=
+optee,
+> >   */
+> >
+> >  static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
+> > -                                     const struct ffa_ops *ops)
+> > +                                     const struct ffa_ops *ops,
+> > +                                     struct optee_revision *revision)
+> >  {
+> >       const struct ffa_msg_ops *msg_ops =3D ops->msg_ops;
+> >       struct ffa_send_direct_data data =3D {
+> > @@ -806,6 +807,11 @@ static bool optee_ffa_api_is_compatible(struct ffa=
+_device *ffa_dev,
+> >               pr_err("Unexpected error %d\n", rc);
+> >               return false;
+> >       }
+> > +     if (revision) {
+> > +             revision->os_major =3D data.data0;
+> > +             revision->os_minor =3D data.data1;
+> > +             revision->os_build_id =3D data.data2;
+> > +     }
+> >       if (data.data2)
+> >               pr_info("revision %lu.%lu (%08lx)",
+> >                       data.data0, data.data1, data.data2);
+> > @@ -900,6 +906,7 @@ static int optee_ffa_open(struct tee_context *ctx)
+> >
+> >  static const struct tee_driver_ops optee_ffa_clnt_ops =3D {
+> >       .get_version =3D optee_ffa_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_ffa_open,
+> >       .release =3D optee_release,
+> >       .open_session =3D optee_open_session,
+> > @@ -918,6 +925,7 @@ static const struct tee_desc optee_ffa_clnt_desc =
+=3D {
+> >
+> >  static const struct tee_driver_ops optee_ffa_supp_ops =3D {
+> >       .get_version =3D optee_ffa_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_ffa_open,
+> >       .release =3D optee_release_supp,
+> >       .supp_recv =3D optee_supp_recv,
+> > @@ -1034,6 +1042,7 @@ static int optee_ffa_probe(struct ffa_device *ffa=
+_dev)
+> >  {
+> >       const struct ffa_notifier_ops *notif_ops;
+> >       const struct ffa_ops *ffa_ops;
+> > +     struct optee_revision revision =3D { };
 >
-> Good, I've added them to my branch now.
+> No need for this redundant variable on stack when...
+>
+> >       unsigned int max_notif_value;
+> >       unsigned int rpc_param_count;
+> >       struct tee_shm_pool *pool;
+> > @@ -1047,7 +1056,7 @@ static int optee_ffa_probe(struct ffa_device *ffa=
+_dev)
+> >       ffa_ops =3D ffa_dev->ops;
+> >       notif_ops =3D ffa_ops->notifier_ops;
+> >
+> > -     if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops))
+> > +     if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops, &revision))
+>
+> ...you can just invoke this API as rather:
+>
+>         if (!optee_ffa_api_is_compatible(ffa_dev, ffa_ops, &optee->revisi=
+on))
+>
+Thanks for the review. To avoid the temporary struct optee_revision,
+I need to move the optee allocation earlier so we can pass
+&optee->revision into optee_ffa_api_is_compatible().
 
-This entire patch set should go in during a single merge window. I
-will not send any pull request until I'm sure all patches will be
-merged.
+AFAICT, there aren=E2=80=99t kernel selftests covering this, the only test =
+that
+I am aware of is the xtest, so I=E2=80=99m slightly cautious about touching
+probe ordering. If you prefer to avoid the early allocation, I can keep
+the original order and use a local struct optee_revision instead.
 
-So far (if I'm not mistaken), only the patches I've already added to
-next have appeared next. I can take the rest of the patches, too, but
-I need OK for the following:
+Please let me know which you=E2=80=99d prefer
 
-Jarkko, you seem happy with the following patches
-- KEYS: trusted: Migrate to use tee specific driver registration function
-- KEYS: trusted: Make use of tee bus methods
-- tpm/tpm_ftpm_tee: Make use of tee specific driver registration
-- tpm/tpm_ftpm_tee: Make use of tee bus methods
-OK if I take them via my tree, or would you rather take them yourself?
+> >               return -EINVAL;
+> >
+> >       if (!optee_ffa_exchange_caps(ffa_dev, ffa_ops, &sec_caps,
+> > @@ -1059,6 +1068,7 @@ static int optee_ffa_probe(struct ffa_device *ffa=
+_dev)
+> >       optee =3D kzalloc(sizeof(*optee), GFP_KERNEL);
+> >       if (!optee)
+> >               return -ENOMEM;
+> > +     optee->revision =3D revision;
+> >
+> >       pool =3D optee_ffa_shm_pool_alloc_pages();
+> >       if (IS_ERR(pool)) {
+> > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/opte=
+e_private.h
+> > index db9ea673fbca..acd3051c4879 100644
+> > --- a/drivers/tee/optee/optee_private.h
+> > +++ b/drivers/tee/optee/optee_private.h
+> > @@ -171,6 +171,24 @@ struct optee_ffa {
+> >
+> >  struct optee;
+> >
+> > +/**
+> > + * struct optee_revision - OP-TEE OS revision reported by secure world
+> > + * @os_major:                OP-TEE OS major version
+> > + * @os_minor:                OP-TEE OS minor version
+> > + * @os_build_id:     OP-TEE OS build identifier (0 if unspecified)
+> > + *
+> > + * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
+> > + * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS revisio=
+n, not an
+> > + * FF-A ABI version.
+> > + */
+> > +struct optee_revision {
+> > +     u32 os_major;
+> > +     u32 os_minor;
+> > +     u64 os_build_id;
+> > +};
+> > +
+> > +int optee_get_revision(struct tee_device *teedev, char *buf, size_t le=
+n);
+> > +
+> >  /**
+> >   * struct optee_ops - OP-TEE driver internal operations
+> >   * @do_call_with_arg:        enters OP-TEE in secure world
+> > @@ -249,6 +267,7 @@ struct optee {
+> >       bool in_kernel_rpmb_routing;
+> >       struct work_struct scan_bus_work;
+> >       struct work_struct rpmb_scan_bus_work;
+> > +     struct optee_revision revision;
+> >  };
+> >
+> >  struct optee_session {
+> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> > index 0be663fcd52b..0baaf7986a35 100644
+> > --- a/drivers/tee/optee/smc_abi.c
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -1242,6 +1242,7 @@ static int optee_smc_open(struct tee_context *ctx=
+)
+> >
+> >  static const struct tee_driver_ops optee_clnt_ops =3D {
+> >       .get_version =3D optee_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_smc_open,
+> >       .release =3D optee_release,
+> >       .open_session =3D optee_open_session,
+> > @@ -1261,6 +1262,7 @@ static const struct tee_desc optee_clnt_desc =3D =
+{
+> >
+> >  static const struct tee_driver_ops optee_supp_ops =3D {
+> >       .get_version =3D optee_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_smc_open,
+> >       .release =3D optee_release_supp,
+> >       .supp_recv =3D optee_supp_recv,
+> > @@ -1323,7 +1325,8 @@ static bool optee_msg_api_uid_is_optee_image_load=
+(optee_invoke_fn *invoke_fn)
+> >  }
+> >  #endif
+> >
+> > -static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
+> > +static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn,
+> > +                                   struct optee_revision *revision)
+> >  {
+> >       union {
+> >               struct arm_smccc_res smccc;
+> > @@ -1337,6 +1340,12 @@ static void optee_msg_get_os_revision(optee_invo=
+ke_fn *invoke_fn)
+> >       invoke_fn(OPTEE_SMC_CALL_GET_OS_REVISION, 0, 0, 0, 0, 0, 0, 0,
+> >                 &res.smccc);
+> >
+> > +     if (revision) {
+> > +             revision->os_major =3D res.result.major;
+> > +             revision->os_minor =3D res.result.minor;
+> > +             revision->os_build_id =3D res.result.build_id;
+> > +     }
+> > +
+> >       if (res.result.build_id)
+> >               pr_info("revision %lu.%lu (%0*lx)", res.result.major,
+> >                       res.result.minor, (int)sizeof(res.result.build_id=
+) * 2,
+> > @@ -1727,6 +1736,7 @@ static int optee_probe(struct platform_device *pd=
+ev)
+> >       unsigned int thread_count;
+> >       struct tee_device *teedev;
+> >       struct tee_context *ctx;
+> > +     struct optee_revision revision =3D { };
+>
+> Ditto here.
+>
+> -Sumit
+>
+> >       u32 max_notif_value;
+> >       u32 arg_cache_flags;
+> >       u32 sec_caps;
+> > @@ -1745,7 +1755,7 @@ static int optee_probe(struct platform_device *pd=
+ev)
+> >               return -EINVAL;
+> >       }
+> >
+> > -     optee_msg_get_os_revision(invoke_fn);
+> > +     optee_msg_get_os_revision(invoke_fn, &revision);
+> >
+> >       if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
+> >               pr_warn("api revision mismatch\n");
+> > @@ -1837,6 +1847,7 @@ static int optee_probe(struct platform_device *pd=
+ev)
+> >               goto err_unreg_teedev;
+> >       }
+> >       optee->supp_teedev =3D teedev;
+> > +     optee->revision =3D revision;
+> >
+> >       optee_set_dev_group(optee);
+> >
+> > --
+> > 2.43.0
+> >
 
-Herbert, you seem happy with the following patches
-- hwrng: optee - Make use of module_tee_client_driver()
-- hwrng: optee - Make use of tee bus methods
-OK if I take them via my tree, or would you rather take them yourself?
-
-Sudeep, you seem happy with the following patches
-- firmware: arm_scmi: optee: Make use of module_tee_client_driver()
-- firmware: arm_scmi: Make use of tee bus methods
-OK if I take them via my tree, or would you rather take them yourself?
-
-Michael, Pavan, are you OK with the following patches
-- firmware: tee_bnxt: Make use of module_tee_client_driver()
-- firmware: tee_bnxt: Make use of tee bus methods
-OK if I take them via my tree, or would you rather take them yourself?
-
-Thanks,
-Jens
+Best regards,
+Aristo
