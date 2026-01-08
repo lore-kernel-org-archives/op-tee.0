@@ -4,364 +4,216 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FD08D0D141
-	for <op-tee@archiver.kernel.org>; Wed,  7 Jan 2026 17:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00E6AD14897
+	for <op-tee@archiver.kernel.org>; Thu,  8 Jan 2026 03:02:00 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A6A9B4FF76
-	for <op-tee@archiver.kernel.org>; Wed,  7 Jan 2026 17:13:15 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3156C4FF9C
+	for <op-tee@archiver.kernel.org>; Thu,  8 Jan 2026 03:02:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1767841320;
+	bh=Z+XcflATdHf7Lv+0lkQCtp7hl4qa9ORKiw0ydlIeufI=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=BxV5SGVPT/944GSIlKgEBdBTvxzTAfzT474KA8ixEwoEgnQ2TtTtcRdQLefK1CRiJ
+	 zBX+KbPA/+v1AJj/xB6IqO24+88im7tEu1B2nlxjEAn/lVzKn1hFcbxkhNpnJhB0pY
+	 BvWDcWz2RLa4HbWD4F4XaSHTwPnDOQKVAq2Vacen636ZfsXzrDvIj0RkECSFan+/m4
+	 BGwceF19TYoyPLa4T4rZDoHwNvLPqmtaODYpBSssw9+Qa25CDqvIsQAfnXRfiYmsDE
+	 mGEnJrdGUaRjYsvFNcm47Dzwfe4fiyNJvrs/Eqd/cAaoMNlcIMXZbIBdUH390HZfWy
+	 A2QzFKRAQ8Xyg==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id EBE2C41A43
+	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Jan 2026 03:01:42 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lRvCa9os;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cLqCrsBS;
 	dkim-atps=neutral
-Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7A6DE4FF0F
-	for <op-tee@lists.trustedfirmware.org>; Wed,  7 Jan 2026 15:26:20 +0000 (UTC)
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-29f2676bb21so21337875ad.0
-        for <op-tee@lists.trustedfirmware.org>; Wed, 07 Jan 2026 07:26:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767799579; x=1768404379; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4AgHaSdzGFhpjrKWJPhfx+okgTbgrInnDnJ59Awpc9s=;
-        b=lRvCa9os9NEBVHbwlP39v/0SovxzE55wwMwWzdlArhXXJN55QiL0HpCwA8AZl4lYHW
-         JEv17xgbX93AruZfJyhy/0KxIedisb6/HRTp7jC9EFB4XGEVQdv9wiuESkA3KU0nlisX
-         oFQTSS/LkmyRYgzb4IN0+F9RnsGSRnhUd7t3dlCSZPw4ysk8aryQXkT418MYZvac4Wj2
-         FREa0EzBF3BSPmgYQrYuD9eTeKuYNKu5wni+qB7oPsB0pZ1c6BmBwk5aJcFkFyKMnmIe
-         UFg73PTnCwzNhdzCj21gCCy0fYKHqcyELjDEFqYT/et7nRxd/c62k6MLhe4odbcuv3bN
-         uDJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767799579; x=1768404379;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=4AgHaSdzGFhpjrKWJPhfx+okgTbgrInnDnJ59Awpc9s=;
-        b=mgSO1zTNlMczY/liV5IvsEnmlKp03JeUd8ZR10F6xlJQHLwtR9py1O3gEzJnrPXz2d
-         8MRsriJrECccrj8tIy68qo0nf65UPhU8eXu84A6gQSjRweoWEqxmnOR1XwUWeiWMPVU7
-         pTWdNBk3KNBibzcg79AibtVy/fWHrTL3wX+3bY3kEyWDgYjaf0CbeHZiBrNwlm3sQiHR
-         24QyWQQo3aKrO3Cs4sF650nfen4bMV2KfQFCoJ4sbHzpLlXGbJEY7CuMd2L2PpuOZmjP
-         /pQCeAwjgyXJ56/gs8eftGlQsHkcw55abwcxb9ALgWZVur2gKUYvGhaZjr+TrGPc+s0R
-         V2dA==
-X-Forwarded-Encrypted: i=1; AJvYcCV0S5SoUMNRVwcLvyY0KDnRREsA+Drhlhrtxu3hsjW54H9idT4N2SioApyDdOIGx0c6H+t4pg0=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YyEdzg2VTqyYQ2IeQETDyOY+uQAapreWEbl4UZApm7am7IDwWRB
-	UtOeX9ZmzLR72yfeoICPo5XZk+QRAN2EJAgMH9jQV7e9Ij4znKUm8cPl
-X-Gm-Gg: AY/fxX72wUqglZrvtXxvJvIySvwrZQYasgNOHp2gw3PSohqOVJWx7G1te0U4S9P8nra
-	gHcwO/Y9D3E7PLE11/Z39D91xAGHEd+bw0BRqfi67Z04LeKxgz+Y0FjCS7m194SCilC8dpjOZI3
-	nUwihONSfO0fj5ZHDOmbUsPpDMdSXK6/YHssXPJ4y2JF2FyS57Iq9E3LuSMPa7IWV/uU3QTgsub
-	LoXbAF/iTayjoWlg1X5JjNoV0b35kfsx7sYuiJpusCx6Ldh8lmR7+fCcsSknTWwHEdJ2fcbJ4Mk
-	CzqwAhRRWLdiDSvoLz8W91og55yjbxKYvuXUjLOjtfjOZ2SxBv/7bMIJ6COaUxu84jyZ+KGBzel
-	IiLyqA4DTtrNg21yjmVOswYeFAeusoAioW3dFvXjgQuU/6oQnWKqXfO1V7D6nOlDsjm1wiMpHnL
-	85LUTgmWiS+qI14CKbvha2iodHlYnlizJ7znzHAiEbXiub5/ggKuz8Z1B769Hut7zBnRfOU39Bq
-	50EqQ==
-X-Google-Smtp-Source: AGHT+IHqL2R6W0DmU9SZv5YK+6k9iXtVXXdPCkX7hLB9CqhPZ1aVSMOLh8NdA0EDgDKo2eJ8bMISoA==
-X-Received: by 2002:a17:903:90d:b0:2a1:3ee3:d00b with SMTP id d9443c01a7336-2a3ee43617fmr29107405ad.13.1767799579473;
-        Wed, 07 Jan 2026 07:26:19 -0800 (PST)
-Received: from aristo-PC.tail872496.ts.net (124-218-37-86.cm.dynamic.apol.com.tw. [124.218.37.86])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3cb2c5bsm54957975ad.58.2026.01.07.07.26.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jan 2026 07:26:19 -0800 (PST)
-From: Aristo Chen <jj251510319013@gmail.com>
-X-Google-Original-From: Aristo Chen <aristo.chen@canonical.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v5 2/2] tee: optee: store OS revision for TEE core
-Date: Wed,  7 Jan 2026 23:26:02 +0800
-Message-ID: <20260107152607.902735-2-aristo.chen@canonical.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260107152607.902735-1-aristo.chen@canonical.com>
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 58BBF6000A;
+	Thu,  8 Jan 2026 03:01:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1EE4C4CEF1;
+	Thu,  8 Jan 2026 03:01:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767841302;
+	bh=h6fiBmn3kgiXJASgqnUpEHC6/S3AHMHkcpmkj0+Ht5w=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=cLqCrsBSuhIBNhnxJHC2AQXc84sLS0NPuvTXVj9eDsvWdBPr95Qj4wTohB7ETwjiD
+	 WuZ+3ikfAgzu9p0pgOWE1v3YEpMfIERKSsDEgoj0spb8+qHbANUUoTg5/PBSjJ4b3E
+	 AUx2AtJF0N7Us2mqZom+pNGX3CtCVUTGlYwwtLLg2s5Vi42UMfesc2srdXtwQiw2pP
+	 VEZKY0k9gha3xyeMsE98X8CVG1H5EsIW6SIX3tRNc3KJchUGIoG7d/tAHIG7z9Q9oG
+	 exvoljrTtdWpsrUhKDx71ks5TnnzEzFf3XY8C3emkvFJsLWtl1UTg/BYMHUBUTX5B1
+	 gD739gR9bxkKw==
+Message-ID: <b429613e-f543-41f4-bb7f-bbd22de7f0f0@kernel.org>
+Date: Wed, 7 Jan 2026 21:01:39 -0600
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 1/2] tee: add revision sysfs attribute
+To: Aristo Chen <jj251510319013@gmail.com>
 References: <20251230051804.6230-1-aristo.chen@canonical.com>
  <20260107152607.902735-1-aristo.chen@canonical.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ <2f4b30fd-8e0a-4482-9bab-a90e32e69839@kernel.org>
+ <CAJwFiGLJVOsu_=H-y82pVE92ZDpVZyqjB=We9ioLqjBsQx8Y5g@mail.gmail.com>
+Content-Language: en-US
+In-Reply-To: <CAJwFiGLJVOsu_=H-y82pVE92ZDpVZyqjB=We9ioLqjBsQx8Y5g@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: base64
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.10 / 15.00];
+X-Spamd-Result: default: False [-2.50 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	R_MISSING_CHARSET(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.214.173:from];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	ARC_NA(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_TRACE(0.00)[gmail.com:+];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.214.173:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	NEURAL_HAM(-0.00)[-1.000];
-	ALIAS_RESOLVED(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	RCPT_COUNT_SEVEN(0.00)[9];
-	FROM_HAS_DN(0.00)[]
+	NEURAL_HAM(-0.00)[-1.000];
+	DWL_DNSWL_NONE(0.00)[kernel.org:dkim];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DNSWL_BLOCKED(0.00)[100.75.92.58:received];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	ALIAS_RESOLVED(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 7A6DE4FF0F
+X-Rspamd-Queue-Id: EBE2C41A43
 X-Spamd-Bar: --
-X-MailFrom: jj251510319013@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: NBY6DUMDXNZPYJWNK4OJNLTVPSNFMHX4
-X-Message-ID-Hash: NBY6DUMDXNZPYJWNK4OJNLTVPSNFMHX4
-X-Mailman-Approved-At: Wed, 07 Jan 2026 17:12:24 +0000
-CC: sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
+Message-ID-Hash: S4PTT6SNKKV2B46CSRFFTSWO5R6ZJPWL
+X-Message-ID-Hash: S4PTT6SNKKV2B46CSRFFTSWO5R6ZJPWL
+X-MailFrom: superm1@kernel.org
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: linux-kernel@vger.kernel.org, sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NBY6DUMDXNZPYJWNK4OJNLTVPSNFMHX4/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/S4PTT6SNKKV2B46CSRFFTSWO5R6ZJPWL/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: "Mario Limonciello (AMD) (kernel.org) via OP-TEE" <op-tee@lists.trustedfirmware.org>
+Reply-To: "Mario Limonciello (AMD) (kernel.org)" <superm1@kernel.org>
 
-Collect OP-TEE OS revision from secure world for both SMC and FF-A
-ABIs, store it in the OP-TEE driver, and expose it through the
-generic get_tee_revision() callback.
-
-Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
----
- drivers/tee/optee/core.c          | 23 +++++++++++++
- drivers/tee/optee/ffa_abi.c       | 57 ++++++++++++++++++++++++-------
- drivers/tee/optee/optee_private.h | 19 +++++++++++
- drivers/tee/optee/smc_abi.c       | 15 ++++++--
- 4 files changed, 99 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index 5b62139714ce..2d807bc748bc 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -63,6 +63,29 @@ int optee_set_dma_mask(struct optee *optee, u_int pa_width)
- 	return dma_coerce_mask_and_coherent(&optee->teedev->dev, mask);
- }
- 
-+int optee_get_revision(struct tee_device *teedev, char *buf, size_t len)
-+{
-+	struct optee *optee = tee_get_drvdata(teedev);
-+	u64 build_id;
-+
-+	if (!optee)
-+		return -ENODEV;
-+	if (!buf || !len)
-+		return -EINVAL;
-+
-+	build_id = optee->revision.os_build_id;
-+	if (build_id)
-+		scnprintf(buf, len, "%u.%u (%016llx)",
-+			  optee->revision.os_major,
-+			  optee->revision.os_minor,
-+			  (unsigned long long)build_id);
-+	else
-+		scnprintf(buf, len, "%u.%u", optee->revision.os_major,
-+			  optee->revision.os_minor);
-+
-+	return 0;
-+}
-+
- static void optee_bus_scan(struct work_struct *work)
- {
- 	WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index bf8390789ecf..82dbed1c87e5 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -775,6 +775,42 @@ static int optee_ffa_reclaim_protmem(struct optee *optee,
-  * with a matching configuration.
-  */
- 
-+static bool optee_ffa_get_os_revision(struct ffa_device *ffa_dev,
-+					const struct ffa_ops *ops,
-+					struct optee_revision *revision,
-+					bool log)
-+{
-+	const struct ffa_msg_ops *msg_ops = ops->msg_ops;
-+	struct ffa_send_direct_data data = {
-+		.data0 = OPTEE_FFA_GET_OS_VERSION,
-+	};
-+	int rc;
-+
-+	msg_ops->mode_32bit_set(ffa_dev);
-+
-+	rc = msg_ops->sync_send_receive(ffa_dev, &data);
-+	if (rc) {
-+		pr_err("Unexpected error %d\n", rc);
-+		return false;
-+	}
-+
-+	if (revision) {
-+		revision->os_major = data.data0;
-+		revision->os_minor = data.data1;
-+		revision->os_build_id = data.data2;
-+	}
-+
-+	if (log) {
-+		if (data.data2)
-+			pr_info("revision %lu.%lu (%08lx)",
-+				data.data0, data.data1, data.data2);
-+		else
-+			pr_info("revision %lu.%lu", data.data0, data.data1);
-+	}
-+
-+	return true;
-+}
-+
- static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
- 					const struct ffa_ops *ops)
- {
-@@ -798,19 +834,8 @@ static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
- 		return false;
- 	}
- 
--	data = (struct ffa_send_direct_data){
--		.data0 = OPTEE_FFA_GET_OS_VERSION,
--	};
--	rc = msg_ops->sync_send_receive(ffa_dev, &data);
--	if (rc) {
--		pr_err("Unexpected error %d\n", rc);
-+	if (!optee_ffa_get_os_revision(ffa_dev, ops, NULL, true))
- 		return false;
--	}
--	if (data.data2)
--		pr_info("revision %lu.%lu (%08lx)",
--			data.data0, data.data1, data.data2);
--	else
--		pr_info("revision %lu.%lu", data.data0, data.data1);
- 
- 	return true;
- }
-@@ -900,6 +925,7 @@ static int optee_ffa_open(struct tee_context *ctx)
- 
- static const struct tee_driver_ops optee_ffa_clnt_ops = {
- 	.get_version = optee_ffa_get_version,
-+	.get_tee_revision = optee_get_revision,
- 	.open = optee_ffa_open,
- 	.release = optee_release,
- 	.open_session = optee_open_session,
-@@ -918,6 +944,7 @@ static const struct tee_desc optee_ffa_clnt_desc = {
- 
- static const struct tee_driver_ops optee_ffa_supp_ops = {
- 	.get_version = optee_ffa_get_version,
-+	.get_tee_revision = optee_get_revision,
- 	.open = optee_ffa_open,
- 	.release = optee_release_supp,
- 	.supp_recv = optee_supp_recv,
-@@ -1060,6 +1087,12 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	if (!optee)
- 		return -ENOMEM;
- 
-+	if (!optee_ffa_get_os_revision(ffa_dev, ffa_ops, &optee->revision,
-+					 false)) {
-+		rc = -EINVAL;
-+		goto err_free_optee;
-+	}
-+
- 	pool = optee_ffa_shm_pool_alloc_pages();
- 	if (IS_ERR(pool)) {
- 		rc = PTR_ERR(pool);
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
-index db9ea673fbca..acd3051c4879 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -171,6 +171,24 @@ struct optee_ffa {
- 
- struct optee;
- 
-+/**
-+ * struct optee_revision - OP-TEE OS revision reported by secure world
-+ * @os_major:		OP-TEE OS major version
-+ * @os_minor:		OP-TEE OS minor version
-+ * @os_build_id:	OP-TEE OS build identifier (0 if unspecified)
-+ *
-+ * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
-+ * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS revision, not an
-+ * FF-A ABI version.
-+ */
-+struct optee_revision {
-+	u32 os_major;
-+	u32 os_minor;
-+	u64 os_build_id;
-+};
-+
-+int optee_get_revision(struct tee_device *teedev, char *buf, size_t len);
-+
- /**
-  * struct optee_ops - OP-TEE driver internal operations
-  * @do_call_with_arg:	enters OP-TEE in secure world
-@@ -249,6 +267,7 @@ struct optee {
- 	bool in_kernel_rpmb_routing;
- 	struct work_struct scan_bus_work;
- 	struct work_struct rpmb_scan_bus_work;
-+	struct optee_revision revision;
- };
- 
- struct optee_session {
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index 0be663fcd52b..51fae1ab8ef8 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1242,6 +1242,7 @@ static int optee_smc_open(struct tee_context *ctx)
- 
- static const struct tee_driver_ops optee_clnt_ops = {
- 	.get_version = optee_get_version,
-+	.get_tee_revision = optee_get_revision,
- 	.open = optee_smc_open,
- 	.release = optee_release,
- 	.open_session = optee_open_session,
-@@ -1261,6 +1262,7 @@ static const struct tee_desc optee_clnt_desc = {
- 
- static const struct tee_driver_ops optee_supp_ops = {
- 	.get_version = optee_get_version,
-+	.get_tee_revision = optee_get_revision,
- 	.open = optee_smc_open,
- 	.release = optee_release_supp,
- 	.supp_recv = optee_supp_recv,
-@@ -1323,7 +1325,8 @@ static bool optee_msg_api_uid_is_optee_image_load(optee_invoke_fn *invoke_fn)
- }
- #endif
- 
--static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
-+static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn,
-+				      struct optee_revision *revision)
- {
- 	union {
- 		struct arm_smccc_res smccc;
-@@ -1337,6 +1340,12 @@ static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
- 	invoke_fn(OPTEE_SMC_CALL_GET_OS_REVISION, 0, 0, 0, 0, 0, 0, 0,
- 		  &res.smccc);
- 
-+	if (revision) {
-+		revision->os_major = res.result.major;
-+		revision->os_minor = res.result.minor;
-+		revision->os_build_id = res.result.build_id;
-+	}
-+
- 	if (res.result.build_id)
- 		pr_info("revision %lu.%lu (%0*lx)", res.result.major,
- 			res.result.minor, (int)sizeof(res.result.build_id) * 2,
-@@ -1745,8 +1754,6 @@ static int optee_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	optee_msg_get_os_revision(invoke_fn);
--
- 	if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
- 		pr_warn("api revision mismatch\n");
- 		return -EINVAL;
-@@ -1815,6 +1822,8 @@ static int optee_probe(struct platform_device *pdev)
- 		goto err_free_shm_pool;
- 	}
- 
-+	optee_msg_get_os_revision(invoke_fn, &optee->revision);
-+
- 	optee->ops = &optee_ops;
- 	optee->smc.invoke_fn = invoke_fn;
- 	optee->smc.sec_caps = sec_caps;
--- 
-2.43.0
-
+DQoNCk9uIDEvNy8yMDI2IDg6NTUgUE0sIEFyaXN0byBDaGVuIHdyb3RlOg0KPiBIaSBNYXJpbywN
+Cj4gDQo+IE1hcmlvIExpbW9uY2llbGxvIDxzdXBlcm0xQGtlcm5lbC5vcmc+IOaWvCAyMDI25bm0
+MeaciDfml6XpgLHkuIkg5LiL5Y2IMTE6Mjjlr6vpgZPvvJoNCj4+DQo+PiBPbiAxLzcvMjYgOToy
+NiBBTSwgQXJpc3RvIENoZW4gd3JvdGU6DQo+Pj4gQWRkIGEgZ2VuZXJpYyBURUUgcmV2aXNpb24g
+c3lzZnMgYXR0cmlidXRlIGJhY2tlZCBieSBhIG5ldw0KPj4+IG9wdGlvbmFsIGdldF90ZWVfcmV2
+aXNpb24oKSBjYWxsYmFjay4gVGhlIHJldmlzaW9uIHN0cmluZyBpcw0KPj4+IGRpYWdub3N0aWMt
+b25seSBhbmQgbXVzdCBub3QgYmUgdXNlZCB0byBpbmZlciBmZWF0dXJlIHN1cHBvcnQuDQo+Pj4N
+Cj4+PiBTaWduZWQtb2ZmLWJ5OiBBcmlzdG8gQ2hlbiA8YXJpc3RvLmNoZW5AY2Fub25pY2FsLmNv
+bT4NCj4+PiAtLS0NCj4+PiAgICBEb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWNsYXNz
+LXRlZSB8IDEwICsrKysrDQo+Pj4gICAgZHJpdmVycy90ZWUvdGVlX2NvcmUuYyAgICAgICAgICAg
+ICAgICAgICAgfCA1MSArKysrKysrKysrKysrKysrKysrKysrLQ0KPj4+ICAgIGluY2x1ZGUvbGlu
+dXgvdGVlX2NvcmUuaCAgICAgICAgICAgICAgICAgIHwgIDkgKysrKw0KPj4+ICAgIDMgZmlsZXMg
+Y2hhbmdlZCwgNjkgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPj4+DQo+Pj4gZGlmZiAt
+LWdpdCBhL0RvY3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcvc3lzZnMtY2xhc3MtdGVlIGIvRG9jdW1l
+bnRhdGlvbi9BQkkvdGVzdGluZy9zeXNmcy1jbGFzcy10ZWUNCj4+PiBpbmRleCBjOTE0NGQxNjAw
+M2UuLjZlNzgzMjEwMTA0ZSAxMDA2NDQNCj4+PiAtLS0gYS9Eb2N1bWVudGF0aW9uL0FCSS90ZXN0
+aW5nL3N5c2ZzLWNsYXNzLXRlZQ0KPj4+ICsrKyBiL0RvY3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcv
+c3lzZnMtY2xhc3MtdGVlDQo+Pj4gQEAgLTEzLDMgKzEzLDEzIEBAIERlc2NyaXB0aW9uOg0KPj4+
+ICAgICAgICAgICAgICAgIHNwYWNlIGlmIHRoZSB2YXJpYWJsZSBpcyBhYnNlbnQuIFRoZSBwcmlt
+YXJ5IHB1cnBvc2UNCj4+PiAgICAgICAgICAgICAgICBvZiB0aGlzIHZhcmlhYmxlIGlzIHRvIGxl
+dCBzeXN0ZW1kIGtub3cgd2hldGhlcg0KPj4+ICAgICAgICAgICAgICAgIHRlZS1zdXBwbGljYW50
+IGlzIG5lZWRlZCBpbiB0aGUgZWFybHkgYm9vdCB3aXRoIGluaXRyYW1mcy4NCj4+PiArDQo+Pj4g
+K1doYXQ6ICAgICAgICAgICAgICAgIC9zeXMvY2xhc3MvdGVlL3RlZXsscHJpdn1YL3JldmlzaW9u
+DQo+Pj4gK0RhdGU6ICAgICAgICAgICAgICAgIERlYyAyMDI1DQo+Pj4gK0tlcm5lbFZlcnNpb246
+ICAgICAgIDYuMTgNCj4+DQo+PiBUaGlzIG5lZWRzIHRvIGJlIGJ1bXBlZCB1cCBhbmQgZGF0ZXMg
+cHVzaGVkIG91dC4NCj4gDQo+IEkgd2lsbCBmaXggdGhpcyBpbiB0aGUgdjYgcGF0Y2gsIHRoYW5r
+cyENCj4gDQo+Pg0KPj4+ICtDb250YWN0OiAgICAgb3AtdGVlQGxpc3RzLnRydXN0ZWRmaXJtd2Fy
+ZS5vcmcNCj4+PiArRGVzY3JpcHRpb246DQo+Pj4gKyAgICAgICAgICAgICBSZWFkLW9ubHkgcmV2
+aXNpb24gc3RyaW5nIHJlcG9ydGVkIGJ5IHRoZSBURUUgZHJpdmVyLiBUaGlzIGlzDQo+Pj4gKyAg
+ICAgICAgICAgICBmb3IgZGlhZ25vc3RpY3Mgb25seSBhbmQgbXVzdCBub3QgYmUgdXNlZCB0byBp
+bmZlciBmZWF0dXJlDQo+Pj4gKyAgICAgICAgICAgICBzdXBwb3J0LiBVc2UgVEVFX0lPQ19WRVJT
+SU9OIGZvciBjYXBhYmlsaXR5IGFuZCBjb21wYXRpYmlsaXR5DQo+Pj4gKyAgICAgICAgICAgICBj
+aGVja3MuDQo+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGVlL3RlZV9jb3JlLmMgYi9kcml2ZXJz
+L3RlZS90ZWVfY29yZS5jDQo+Pj4gaW5kZXggZDY1ZDQ3Y2MxNTRlLi4wYTAwNDk5ODExYzEgMTAw
+NjQ0DQo+Pj4gLS0tIGEvZHJpdmVycy90ZWUvdGVlX2NvcmUuYw0KPj4+ICsrKyBiL2RyaXZlcnMv
+dGVlL3RlZV9jb3JlLmMNCj4+PiBAQCAtMTE0Niw3ICsxMTQ2LDU2IEBAIHN0YXRpYyBzdHJ1Y3Qg
+YXR0cmlidXRlICp0ZWVfZGV2X2F0dHJzW10gPSB7DQo+Pj4gICAgICAgIE5VTEwNCj4+PiAgICB9
+Ow0KPj4+DQo+Pj4gLUFUVFJJQlVURV9HUk9VUFModGVlX2Rldik7DQo+Pj4gK3N0YXRpYyBjb25z
+dCBzdHJ1Y3QgYXR0cmlidXRlX2dyb3VwIHRlZV9kZXZfZ3JvdXAgPSB7DQo+Pj4gKyAgICAgLmF0
+dHJzID0gdGVlX2Rldl9hdHRycywNCj4+PiArfTsNCj4+PiArDQo+Pj4gK3N0YXRpYyBzc2l6ZV90
+IHJldmlzaW9uX3Nob3coc3RydWN0IGRldmljZSAqZGV2LA0KPj4+ICsgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYpDQo+Pj4g
+K3sNCj4+PiArICAgICBzdHJ1Y3QgdGVlX2RldmljZSAqdGVlZGV2ID0gY29udGFpbmVyX29mKGRl
+diwgc3RydWN0IHRlZV9kZXZpY2UsIGRldik7DQo+Pj4gKyAgICAgY2hhciB2ZXJzaW9uW1RFRV9S
+RVZJU0lPTl9TVFJfU0laRV07DQo+Pj4gKyAgICAgaW50IHJldDsNCj4+PiArDQo+Pj4gKyAgICAg
+aWYgKCF0ZWVkZXYtPmRlc2MtPm9wcy0+Z2V0X3RlZV9yZXZpc2lvbikNCj4+PiArICAgICAgICAg
+ICAgIHJldHVybiAtRU5PREVWOw0KPj4+ICsNCj4+PiArICAgICByZXQgPSB0ZWVkZXYtPmRlc2Mt
+Pm9wcy0+Z2V0X3RlZV9yZXZpc2lvbih0ZWVkZXYsIHZlcnNpb24sDQo+Pj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2l6ZW9mKHZlcnNpb24pKTsNCj4+
+PiArICAgICBpZiAocmV0KQ0KPj4+ICsgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4+PiArDQo+
+Pj4gKyAgICAgcmV0dXJuIHN5c2ZzX2VtaXQoYnVmLCAiJXNcbiIsIHZlcnNpb24pOw0KPj4+ICt9
+DQo+Pj4gK3N0YXRpYyBERVZJQ0VfQVRUUl9STyhyZXZpc2lvbik7DQo+Pj4gKw0KPj4+ICtzdGF0
+aWMgc3RydWN0IGF0dHJpYnV0ZSAqdGVlX3JldmlzaW9uX2F0dHJzW10gPSB7DQo+Pj4gKyAgICAg
+JmRldl9hdHRyX3JldmlzaW9uLmF0dHIsDQo+Pj4gKyAgICAgTlVMTA0KPj4+ICt9Ow0KPj4+ICsN
+Cj4+PiArc3RhdGljIHVtb2RlX3QgdGVlX3JldmlzaW9uX2F0dHJfaXNfdmlzaWJsZShzdHJ1Y3Qg
+a29iamVjdCAqa29iaiwNCj4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBzdHJ1Y3QgYXR0cmlidXRlICphdHRyLCBpbnQgbikNCj4+PiArew0KPj4+ICsgICAgIHN0
+cnVjdCBkZXZpY2UgKmRldiA9IGtvYmpfdG9fZGV2KGtvYmopOw0KPj4+ICsgICAgIHN0cnVjdCB0
+ZWVfZGV2aWNlICp0ZWVkZXYgPSBjb250YWluZXJfb2YoZGV2LCBzdHJ1Y3QgdGVlX2RldmljZSwg
+ZGV2KTsNCj4+PiArDQo+Pj4gKyAgICAgaWYgKHRlZWRldi0+ZGVzYy0+b3BzLT5nZXRfdGVlX3Jl
+dmlzaW9uKQ0KPj4+ICsgICAgICAgICAgICAgcmV0dXJuIGF0dHItPm1vZGU7DQo+Pj4gKw0KPj4+
+ICsgICAgIHJldHVybiAwOw0KPj4+ICt9DQo+Pj4gKw0KPj4+ICtzdGF0aWMgY29uc3Qgc3RydWN0
+IGF0dHJpYnV0ZV9ncm91cCB0ZWVfcmV2aXNpb25fZ3JvdXAgPSB7DQo+Pj4gKyAgICAgLmF0dHJz
+ID0gdGVlX3JldmlzaW9uX2F0dHJzLA0KPj4+ICsgICAgIC5pc192aXNpYmxlID0gdGVlX3Jldmlz
+aW9uX2F0dHJfaXNfdmlzaWJsZSwNCj4+PiArfTsNCj4+PiArDQo+Pj4gK3N0YXRpYyBjb25zdCBz
+dHJ1Y3QgYXR0cmlidXRlX2dyb3VwICp0ZWVfZGV2X2dyb3Vwc1tdID0gew0KPj4+ICsgICAgICZ0
+ZWVfZGV2X2dyb3VwLA0KPj4+ICsgICAgICZ0ZWVfcmV2aXNpb25fZ3JvdXAsDQo+Pj4gKyAgICAg
+TlVMTA0KPj4+ICt9Ow0KPj4+DQo+Pj4gICAgc3RhdGljIGNvbnN0IHN0cnVjdCBjbGFzcyB0ZWVf
+Y2xhc3MgPSB7DQo+Pj4gICAgICAgIC5uYW1lID0gInRlZSIsDQo+Pj4gZGlmZiAtLWdpdCBhL2lu
+Y2x1ZGUvbGludXgvdGVlX2NvcmUuaCBiL2luY2x1ZGUvbGludXgvdGVlX2NvcmUuaA0KPj4+IGlu
+ZGV4IDFmM2U1ZGFkNmQwZC4uZWU1ZjBiZDQxZjQzIDEwMDY0NA0KPj4+IC0tLSBhL2luY2x1ZGUv
+bGludXgvdGVlX2NvcmUuaA0KPj4+ICsrKyBiL2luY2x1ZGUvbGludXgvdGVlX2NvcmUuaA0KPj4+
+IEBAIC03Niw2ICs3Niw5IEBAIHN0cnVjdCB0ZWVfZGV2aWNlIHsNCj4+PiAgICAvKioNCj4+PiAg
+ICAgKiBzdHJ1Y3QgdGVlX2RyaXZlcl9vcHMgLSBkcml2ZXIgb3BlcmF0aW9ucyB2dGFibGUNCj4+
+PiAgICAgKiBAZ2V0X3ZlcnNpb246ICAgIHJldHVybnMgdmVyc2lvbiBvZiBkcml2ZXINCj4+PiAr
+ICogQGdldF90ZWVfcmV2aXNpb246ICAgICAgICByZXR1cm5zIHJldmlzaW9uIHN0cmluZyAoZGlh
+Z25vc3RpYyBvbmx5KTsNCj4+DQo+PiBXaHkgaXMgdGhpcyBjb21tZW50IGhlcmUgYWJvdXQgaXQg
+YmVpbmcgZm9yIGRpYWdub3N0aWNzIG9ubHk/ICBJIGZlZWwNCj4+IGl0J3MgdXAgdG8gdGhlIGlt
+cGxlbWVudGF0aW9uIGhvdyBpdCB3b3VsZCBiZSB1c2VkLg0KPiANCj4gQWNjb3JkaW5nIHRvIHRo
+ZSBwcmV2aW91cyBkaXNjdXNzaW9uLCB3ZSB3b3VsZCBsaWtlIHRvIHByZXZlbnQgdXNlcg0KPiB0
+aGlua2luZyBhYm91dCBvcHRlZSBvcyB2ZXJzaW9uIHgueSBtZWFucyB6IGZlYXR1cmUsIGFuZCB3
+ZSBzaG91bGQNCj4gYWx3YXlzIHVzZSBURUVfSU9DX1ZFUlNJT04gZm9yIGNhcGFiaWxpdHkgYW5k
+IGNvbXBhdGliaWxpdHkNCj4gY2hlY2suDQo+IA0KPiBJcyB0aGVyZSBhbnkgb3RoZXIgc3BlY2lm
+aWMgdXNlIGNhc2UgdGhhdCBtYWtlcyB5b3UgdGhpbmsgcmVtb3ZpbmcNCj4gdGhlIHdvcmRpbmcg
+aXMgcmVxdWlyZWQ/DQoNCkFoIEkgZGlkbid0IHJlYWxpemUgdGhlcmUgd2FzIHByZXZpb3VzIGRp
+c2N1c3Npb24gdGhhdCBsZWFkIHRvIHRoaXMsIEkgDQpzYXcgc29tZSBlYXJsaWVyIHZlcnNpb25z
+IGluIG15IGhvbGlkYXkgbWFpbGJveCBnbHV0IGJ1dCBpZ25vcmVkIHRoZW0gDQp3aGVuIEkgc2F3
+IHRoZSBuZXcgb25lLg0KDQpMZWF2ZSBpdCBhcyBpcyB0aGVuLg0KDQo+IA0KPj4NCj4+PiArICog
+ICAgICAgICAgICAgICAgICAgZG8gbm90IGluZmVyIGZlYXR1cmUgc3VwcG9ydCBmcm9tIHRoaXMs
+IHVzZQ0KPj4+ICsgKiAgICAgICAgICAgICAgICAgICBURUVfSU9DX1ZFUlNJT04gaW5zdGVhZA0K
+Pj4+ICAgICAqIEBvcGVuOiAgICAgICAgICAgY2FsbGVkIGZvciBhIGNvbnRleHQgd2hlbiB0aGUg
+ZGV2aWNlIGZpbGUgaXMgb3BlbmVkDQo+Pj4gICAgICogQGNsb3NlX2NvbnRleHQ6ICBjYWxsZWQg
+d2hlbiB0aGUgZGV2aWNlIGZpbGUgaXMgY2xvc2VkDQo+Pj4gICAgICogQHJlbGVhc2U6ICAgICAg
+ICAgICAgICAgIGNhbGxlZCB0byByZWxlYXNlIHRoZSBjb250ZXh0DQo+Pj4gQEAgLTk1LDkgKzk4
+LDEyIEBAIHN0cnVjdCB0ZWVfZGV2aWNlIHsNCj4+PiAgICAgKiBjbGllbnQgY2xvc2VzIHRoZSBk
+ZXZpY2UgZmlsZSwgZXZlbiBpZiB0aGVyZSBhcmUgZXhpc3RpbmcgcmVmZXJlbmNlcyB0byB0aGUN
+Cj4+PiAgICAgKiBjb250ZXh0LiBUaGUgVEVFIGRyaXZlciBjYW4gdXNlIEBjbG9zZV9jb250ZXh0
+IHRvIHN0YXJ0IGNsZWFuaW5nIHVwLg0KPj4+ICAgICAqLw0KPj4+ICsNCj4+PiAgICBzdHJ1Y3Qg
+dGVlX2RyaXZlcl9vcHMgew0KPj4+ICAgICAgICB2b2lkICgqZ2V0X3ZlcnNpb24pKHN0cnVjdCB0
+ZWVfZGV2aWNlICp0ZWVkZXYsDQo+Pj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0
+IHRlZV9pb2N0bF92ZXJzaW9uX2RhdGEgKnZlcnMpOw0KPj4+ICsgICAgIGludCAoKmdldF90ZWVf
+cmV2aXNpb24pKHN0cnVjdCB0ZWVfZGV2aWNlICp0ZWVkZXYsDQo+Pj4gKyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgY2hhciAqYnVmLCBzaXplX3QgbGVuKTsNCj4+PiAgICAgICAgaW50ICgq
+b3Blbikoc3RydWN0IHRlZV9jb250ZXh0ICpjdHgpOw0KPj4+ICAgICAgICB2b2lkICgqY2xvc2Vf
+Y29udGV4dCkoc3RydWN0IHRlZV9jb250ZXh0ICpjdHgpOw0KPj4+ICAgICAgICB2b2lkICgqcmVs
+ZWFzZSkoc3RydWN0IHRlZV9jb250ZXh0ICpjdHgpOw0KPj4+IEBAIC0xMjMsNiArMTI5LDkgQEAg
+c3RydWN0IHRlZV9kcml2ZXJfb3BzIHsNCj4+PiAgICAgICAgaW50ICgqc2htX3VucmVnaXN0ZXIp
+KHN0cnVjdCB0ZWVfY29udGV4dCAqY3R4LCBzdHJ1Y3QgdGVlX3NobSAqc2htKTsNCj4+PiAgICB9
+Ow0KPj4+DQo+Pj4gKy8qIFNpemUgZm9yIFRFRSByZXZpc2lvbiBzdHJpbmcgYnVmZmVyIHVzZWQg
+YnkgZ2V0X3RlZV9yZXZpc2lvbigpLiAqLw0KPj4+ICsjZGVmaW5lIFRFRV9SRVZJU0lPTl9TVFJf
+U0laRSAgICAgICAgMTI4DQo+Pj4gKw0KPj4+ICAgIC8qKg0KPj4+ICAgICAqIHN0cnVjdCB0ZWVf
+ZGVzYyAtIERlc2NyaWJlcyB0aGUgVEVFIGRyaXZlciB0byB0aGUgc3Vic3lzdGVtDQo+Pj4gICAg
+ICogQG5hbWU6ICAgbmFtZSBvZiBkcml2ZXINCj4+DQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+IEFy
+aXN0bw0KDQo=
