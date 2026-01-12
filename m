@@ -4,262 +4,440 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E54CCC9EC97
-	for <op-tee@archiver.kernel.org>; Mon, 12 Jan 2026 15:25:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 925EFCF45C5
+	for <op-tee@archiver.kernel.org>; Mon, 12 Jan 2026 19:40:01 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 24F3943285
-	for <op-tee@archiver.kernel.org>; Mon, 12 Jan 2026 15:25:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1768231514;
-	bh=0hPcjqACa4c9Trx9s6SRXrJu1aZz/mhk/6kr/KEL6A0=;
-	h=To:Subject:Date:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=mHsd6xobHXKAlP9ut+WRCWFwzv/p+5b8u9vBFllmBVOjjwMA0HPabjvz4rV/mGu/L
-	 WHQWf03UYRDaDK6Bt1hHcYQcinRsTUHnvWZxmaaamo4imbABAZLiZ7Q08cc/WMyGNr
-	 qUC9vD9OhRjrQqi1lhwKAqxG95juzOkoxeLeFQU/rUdkkoza7S4BEBkeicWFubnsHC
-	 VX+JWYaePQLa2LF+LwSaOKKRP7ZZ7r3pWNojwdVMHqlBaBaTsd/YlV/Mu05q9Z9F3s
-	 CXTKkiMOtixBUo2O8+6vesOiMhAu8dkIOdiysLVIP6d6lJJnfxAItIQ0AhWLec5gWH
-	 6k+/184v0sc6w==
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazon11012007.outbound.protection.outlook.com [40.107.200.7])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 23ACE41A43
-	for <op-tee@lists.trustedfirmware.org>; Mon, 12 Jan 2026 15:24:52 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B6BA243296
+	for <op-tee@archiver.kernel.org>; Mon, 12 Jan 2026 19:40:00 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=SAv4V12X;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lYtYHCbY;
 	dkim-atps=neutral
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=UErWv0qbmVZdJuefC/gybnw9QA3RVGcLPUolg3ucpNoUc5AyhS4cjXbzNMwVBj4hfFOCQTjxIz7T+rFUF3hpLtTaD7qaY1ivVKTopbBh42MQQuoIQF1CeIyGqqXNjtM9QcSRmf844ioMgjqdh97dpYUVypw81MTV2+bDzZOe5hacwAtQ2fuIDDYJmiCu7x0/dozin2+t0oIINHfHUFpsxwF4jEgecwj9SbZBaqXIiqCNO5McBPvQpGjXDjkLvYmAbgK5JmPyn+Cr19DcXRFab88+JW4GQsFAo/RY+WzXFX+Io7hRnxTUGFJyIWCsHciBxEJg5+Ba2wSIvEnWgGoVJA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=US4pPQq2bWErb16MdERYs58zZAxyizMo+nHv8EBZnYs=;
- b=kwUnO41hsREwccqxllby62FKLKLVAyPJGnot/lUj/7hMjg84fvYaQNvRz/zt/+H39aqZ4AbY3eYcl74ZyzZOrU6mFk/y5Y2aBp7ACO6YlI8VCuue+cqnWW+7I5puANgmG3AuwTHWAsWGKHyxpRPjHZ7QVoZfqP7NKMGfW4U9dTicSKi68BXsjHy5Rwd5m1WKq0Ph2ID2XnQNTbM/Bbgk84yMgPceGXGqjnSn/w7XYsaTD9B1IOrrsOiLoG0ksyj8y/YMHts4M0qboF/LOhcVRNEyQ9/oirTTglxfhskJbqAhsm2TWFmQ6Df837G9hkXZDxsH0Wv6huQC5RQvUveqAg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=US4pPQq2bWErb16MdERYs58zZAxyizMo+nHv8EBZnYs=;
- b=SAv4V12XElN/nY+Ca8rQPLgglQeCliHie71YGwzqpjYtJw6uqJyyVVncs4rMwsQeCQutNcb+Lk2KlqxCQgjcDaXTnNJjR6vwvSDLo+OXdMCUZ/Xfkt8QIgpjuXgqJA+qr0u4PSzbU/04Hb8K6K5xpY/1ZluFsi6ObKYfPwe9Nv11nBEWoLbKSrlh3zGtVQMp9HzkBObWJUOnSuw9AkMU6CVsHEEdTBX6hpuAauM2JGH7H0oMKUi8r+PO0BWfOGjzKBa7g3hOuz+B/txNK1fkGx9Qjs7Lf/PsszUeC36CX4h/HT04SewbwsJA9sGg3BQq7lHhUhMjXE0A9T4G9UpLFg==
-Received: from DS0PR12MB8294.namprd12.prod.outlook.com (2603:10b6:8:f4::16) by
- BL4PR12MB9481.namprd12.prod.outlook.com (2603:10b6:208:591::6) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9499.7; Mon, 12 Jan 2026 15:24:49 +0000
-Received: from DS0PR12MB8294.namprd12.prod.outlook.com
- ([fe80::e6e0:ccda:fd50:c52a]) by DS0PR12MB8294.namprd12.prod.outlook.com
- ([fe80::e6e0:ccda:fd50:c52a%3]) with mapi id 15.20.9499.005; Mon, 12 Jan 2026
- 15:24:49 +0000
-To: ryan foster <foster.ryan.r@gmail.com>, Sumit Garg <sumit.garg@kernel.org>
-Subject: Re: [PATCH][next] optee: make read-only array attr static const
-Thread-Topic: [PATCH][next] optee: make read-only array attr static const
-Thread-Index: AQHcgX7h/v5OHKBUS0uSXljIUNaP6LVOaYIAgAA384CAAAnBGg==
-Date: Mon, 12 Jan 2026 15:24:49 +0000
-Message-ID: 
- <DS0PR12MB8294F8C07E39842AC16CBA21AF81A@DS0PR12MB8294.namprd12.prod.outlook.com>
-References: <20260109154442.421248-1-coking@nvidia.com>
- <aWTaUvGu9dlvnJO9@sumit-xelite>
- <CAHtS329G-H8vVVr==DZUAetzVNc4couN2OV3tH7qH_7YDGe8xA@mail.gmail.com>
-In-Reply-To: 
- <CAHtS329G-H8vVVr==DZUAetzVNc4couN2OV3tH7qH_7YDGe8xA@mail.gmail.com>
-Accept-Language: en-GB, en-US
-Content-Language: en-GB
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-msip_labels: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: DS0PR12MB8294:EE_|BL4PR12MB9481:EE_
-x-ms-office365-filtering-correlation-id: 2f2713fa-eb29-4557-9679-08de51eeb9b0
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: 
- BCL:0;ARA:13230040|376014|366016|1800799024|8096899003|7053199007|38070700021;
-x-microsoft-antispam-message-info: 
- =?utf-8?B?OU5Dc0FHeTN2TGZYRmlzY0RCcTlkT0IyOFRtYlJJM2lvdFVLSHF5QUx1SlZp?=
- =?utf-8?B?ckNITnVFTHpJeTcyc3BiemtGMDA5Q2pIK1piUXZTa3RVN2xpcTkreDZHZGJk?=
- =?utf-8?B?cnNBeFU3ZlJOYVV4ZkxnMjV4RkM2Yk5ZU00ydVVCUXZBM3RRL0F4SDdENVhT?=
- =?utf-8?B?UDBtem95dU9XdzZXcHpFTzZycTRyTnZhTnoyallBOElNWCtHTnRNSlBCNk5K?=
- =?utf-8?B?ZktlTVMya2ZNY2NaK3QrMWl4MXVzeXk4MEhZWFFhNnlRRkEzZjRzdU9XR3py?=
- =?utf-8?B?bGMvZ1lHcjNQeEYvRm9WWitCQWRrTzQwYTZYeHhuemoyL1NUeXF5c2dOYkp3?=
- =?utf-8?B?b3l1TmpBczAzZXU2a1lrQ0lCeVJJR3U2NzdDL1dManZReWtXa3VUTWJHbEM5?=
- =?utf-8?B?REpzU0dReEx4MHVxaXF5YU5xSWZsMXFZMVkzaDdqcS9XRGF3TGxYOUVlNWdk?=
- =?utf-8?B?RjJnb2VrUCtWdGpJSnNscmQvTUg5V0xxWXNRVjIxdlB3TkxUdEdZUjNkV1NH?=
- =?utf-8?B?K0RDRmRvNnBMeGFSaklDdFQ5cDlCYWJGRDJrbmI3a2d5b3grUHFUUjQ1Z1dC?=
- =?utf-8?B?OGpLMHQya1FoRXQvRyt1a1VGalh0YlBnK3grOEdEVVZ6L25jVTZuQ09vY3ow?=
- =?utf-8?B?aWlsbUsyMVN1cjF0T09RaXlVYzdKajYwNExQanNObDI3VTdFZTNIeURKR21N?=
- =?utf-8?B?V2lxUC8wTmUzVGU1VzdRRVA1aGE1YkNGQjJWNkEzU1Uyc3IwYkFCUXBCM0t0?=
- =?utf-8?B?YjZUU3JuQXN6WGNRYkp0UzJ2SkF6RzcyK1RYOW5GZGNBckMvKzBwdVdJUDQ5?=
- =?utf-8?B?bDBtMmNyV0VJTFBxd3ptMkJKWndOQll4a1pRdklxaXN1bExqUmcvTXRJWnhx?=
- =?utf-8?B?dVN2aFNqcWgwY3ZHTlBwRGxFakRBY3FRY01yTkpPYmdpcnF6dHdocWNobTNx?=
- =?utf-8?B?aGZZZjRRTXc2aUllUEVVWDdFL1dEc0I3bFZmUUNINDBEN2M1ek92d1NTbFZU?=
- =?utf-8?B?Q3I4SVZvMlhtV0dJcldyVGhaWEptOXBSWDlLSUZqWHpPeHBmYjVVdEF5Qmd2?=
- =?utf-8?B?RmxFeDJ6bnhrdTljR0J5SENHaDlCSUZnR3p5VnBGQkxvRlc4NCt1UWExZEVm?=
- =?utf-8?B?OHRUaWMyNDFmajgzUU9ObHlGNEVHTytmdVBiUE1SeUpaRVNtUWxGb2pIYkhk?=
- =?utf-8?B?dXpoUUFiTFVmKys1SE1nU1dvSGwwZW1zdmpSNW1wZXVMRUxLRThsRDJabmpI?=
- =?utf-8?B?T0lmSXhuTmo2NGJ0N3VwYnpVcGd1NWoybDI2aGN4UlAvaEhUbkZpdXMwanpT?=
- =?utf-8?B?MDdHOW9nbVRaYnM5empqbGFNWS9CU2VGcXVzdS9OK0RRWHk0ZS9JenhDaGUw?=
- =?utf-8?B?WitZV0JxVXFvTXhPWTQwbWlrdFgxaTkvYlpkcjljTmo3SXk1UzFpUnhaNnFS?=
- =?utf-8?B?T2dtbzE0OGcvRi84ZEJxcXhGeUlvcDByb0FCc0VTODRHczJGZU15bW9jNW9Q?=
- =?utf-8?B?UkdZdWlRYjRpNTVrUURwZ2kwbWNyL29yM1doNHp4RGZXSTB6eG1FMHlxZkVQ?=
- =?utf-8?B?YlFxSlRTS3lzajQxakhDTGZROVZQcCtUTHFpOHVHK3o4V2pCTEdTd3BtWGhw?=
- =?utf-8?B?L3Z1NWNFb2lQWDBxV0VyWnpjS20xTXlpTGFMTnF3bUlQTXlTK2dFYWFVVHpP?=
- =?utf-8?B?dC9USll3cDY5a1FkelQzcjJja1hLbXZTRDZQZ21qV2VKUzBnUTdQUC83VmVT?=
- =?utf-8?B?Um0vNlAzVG1QcSthWmtFRGRZZTdjTDF3WlA3dDJ1QWJ1bzRrcXlkWlJ1UVRp?=
- =?utf-8?B?TVJmSzJjNkxLMitRcFZ0QlFESmNCQSswMDlOQ3VxSGtKMGhmcUpvR0VNRndy?=
- =?utf-8?B?emFMTFl0MmF0RXNScmdQOUdOQitaTnhNcjdxYlhoZjZxTWd6a3VYempEQzdq?=
- =?utf-8?B?ZlpIamY4bjVOdjh6ajZqWVlocDR6UUFZMXhaV3prMlpLZTZoblJOL2ZNNHBw?=
- =?utf-8?B?ZVc4NjJySTA1QmxzN1BxRWgrOVh3NG01cSsvY1U4V1BRc29BMkdDbWJJNmZx?=
- =?utf-8?Q?OU7LsY?=
-x-forefront-antispam-report: 
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB8294.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(1800799024)(8096899003)(7053199007)(38070700021);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: 
- =?utf-8?B?MG5KNWRpZFFQbXdmdnExRDBKZWwydXkwYlRob09DRjYwVDJLYi9mYlR0ZXRF?=
- =?utf-8?B?TG8xeVMwWVhpdGswUUZpcVQ4em5nODZJRis2a01yRXZHTjNOd2k1NEVwZll1?=
- =?utf-8?B?Qy9uY1psSjQ3WFFid3hyRlNkWGdUU2I0Y3d6MCtQajdkd0RyZ1RFV1BXTm04?=
- =?utf-8?B?TnhvOE1WaUg2aHJSUkpmeUR2RXFtNlYwYnVKY0FMSmZHc1ZkNDdUUWxjaVhx?=
- =?utf-8?B?UzZZV1dFZWFXUENhOHRjdEloL3E4RnJXSVFGMlQ2UTk1N2dXUktML0x5KzZK?=
- =?utf-8?B?S05vMVoyNi9mTGxQcWZqcFhIQ3RxdElkQ3BUWllyL05hVmlJQkhjTkdMV2lY?=
- =?utf-8?B?L0tZVEdVa0tKaHI4V0hOM0tIRCtPbm9YTGJXMXhMMTdZeTBCN3hGOEt4SVo0?=
- =?utf-8?B?bzIzdzYyb2pSd2huZmYwSm1HaVZCTkZ6YmZTSFlzOVFuUUUxNlord0JRNnRk?=
- =?utf-8?B?c2dhemgvUWRNNisyZ3drMVdyQTFVQzVmdm5aZUxtZzhEMENoRTl6U3RneWFm?=
- =?utf-8?B?OW9JbDJidHFBdEZsaEZVYVJ6cHp5cWhZaEFIbWtUYlpBdkRTdDcxaE03eitD?=
- =?utf-8?B?VXZMR0hOb1hIbFJjd09iNnpOVjlVcW5xSjg0MjFCTUlVZ3REZVM4V1pLanNB?=
- =?utf-8?B?VDE2a0dXVE9yTUFidmNBaCtnM1JIdU5JUzluR21MMG1jNHBEc3FMV1NwcWJa?=
- =?utf-8?B?UkpBUkU5NVpCbHF4anlEOGhTVm00RlpMUElOczBqVkhZbXJxMW5GdThra1hS?=
- =?utf-8?B?TldyZ2Zhd3BLdXRyYVlXaHMwUWNrdkJRUkRxVjFCVE40aDBKY3hlR1hUKzFY?=
- =?utf-8?B?OVNiMXNvYUI0cWhOR2hhdHBCMUt6eFY2KzdwS0hzS0xkbnVGa09mVFBCU2I4?=
- =?utf-8?B?TlQrRXZVNFBiOVJGMkJPY3EvQkZMbG9RSG1TNnVzVUtLSHU3WXVRVXRxeEM0?=
- =?utf-8?B?RDRiTHkvdTh1a3RLN0RJdFgzZHlNaGRhLzdreHFZMWlzRTFHV1pET1JrQmNs?=
- =?utf-8?B?bTFLaCtaVWhZaDg0clR3Q0s5OW05NnJwa1ZOME56ejlSUFE5SjlTWWdXSmV5?=
- =?utf-8?B?YTlMTGQ1LzJFaEJiSi9JSGQ1b3BiQUJMUlcxSmgwMjB3NktoQllmOTZ4VlpO?=
- =?utf-8?B?ZkV0L1FRS3ZHaElsTlZCL0VGMCs1eGJLRnRpUmZhTHUxK2ppaW1rVDkrUkY0?=
- =?utf-8?B?RFZuTy8rbXlkck5SdEY3QXg0OXlZUlFLdWxUUFdOWmpFamJyRDdyZzFjVmJk?=
- =?utf-8?B?ZldtWERKWTh1YVdiM2N4RCt1ZGFaV1BqZnFWQW9vTkd4a3pjWFhIMXZsbEND?=
- =?utf-8?B?OTJKVVdBVGh4VFVTc0N0TDQ5T0tubGdxVFZaeHU4NHErTmJodG1SK0Q1cG1s?=
- =?utf-8?B?S2RZdmxWQlh2cWlRano5TlRINjNsRUlkeUZsOWJyYmw4Z1RhSHBZaGp5QkVZ?=
- =?utf-8?B?NVhpZzVTTjB3VDV4ZjdWT1RUOTJkazdvZjJZOUIxanlZMXZacHJNZ0dOY05U?=
- =?utf-8?B?VHlEbGk1bjJCOC92RWR0eXZaQkJkUHYycHlBUlMzdUdNV0JObDhrZlZCaUhs?=
- =?utf-8?B?Y2wrajlEWUV4SlRXNmxJNWdaSWJUZzl4dStjdFFqWVhTYTZUL0FsQzBjV1Zx?=
- =?utf-8?B?SXA3bTV5Q0hYQnIrVWNNRzRiZHZxSDV4Z2txS0JpNzgrZGlPQW90RDZQQVJN?=
- =?utf-8?B?Mm1mdXpVdEhRK0s3b3ZpRUVabGxmS04xc0NNRnJqV0V0YThRczhldXp0MW1T?=
- =?utf-8?B?Nktma1FMMjRRU3g3bDVwRnBDclg3VTNmV3BKdUtCeHFzdVZDbzBDdW5xa1hi?=
- =?utf-8?B?NXlPNXZ1THp1RVpaMzZzWDNDL0NVOHdpQkxIVUtxRVo4dzFiNjV4bGFBa29n?=
- =?utf-8?B?bkdvMm9IRXlJR2tFQlhxQkJLTkI1MDhMUWNadUR1WGRmVnJzUVhZZWtURVIz?=
- =?utf-8?B?T2NqbzR6Kyt3WjEzcUMzVjJtQ0laU3o4T3V5bDR5d1JjcytzLzZ6bGFVZHlq?=
- =?utf-8?B?eFRPTk10elBEWGlncHBnanBvSlpDSFE5YWdNR0NTVVVUMjRjNTFuKzM2eVNP?=
- =?utf-8?B?MUgrNGo4N2E2OXZhbWYxbnFUNXZyYkZMYmJXWGxoK2MrbkowQ0RKT09VdlFv?=
- =?utf-8?B?NVdVWjdma2hJQ2ZCTWFrc04wR0lVc3NES1dNK2g0ZEYzaTkzclN2MGxCMWQ4?=
- =?utf-8?B?UXF3b05VYjd0ejl3eFlQaUlvdU9MTXVCa0JadVBMd0ptVE1GNVVFVVhaM08w?=
- =?utf-8?B?Y1dnMlBKMUN3a0xUb3h5TGYxQWZnYW42alc2K1RjNk1VcCtIaDU2MzEvQ1Ri?=
- =?utf-8?Q?sHBiIX4Vcn3SxFtQHu?=
+Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com [209.85.222.41])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5EBE143275
+	for <op-tee@lists.trustedfirmware.org>; Mon, 12 Jan 2026 10:44:03 +0000 (UTC)
+Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-93f5910b06cso3101212241.0
+        for <op-tee@lists.trustedfirmware.org>; Mon, 12 Jan 2026 02:44:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1768214643; x=1768819443; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DsIPMVr2V952kp450zzumhqp0nc1hAq2gSm8efLCZlc=;
+        b=lYtYHCbY8UKgYTS3hOY/3c0r4OO2T5fuS8hLNadi7puuT2cChV9njZTAiN8e4qtK5Q
+         EKAD63M2smrnqTJH/Ud4noetnqmEOQbP326pCQl2DZIsuXUoNN4BUuZhbMrSsP+1DCu7
+         sBfD8aBT/JKvuR+Ub66xJKeQsJsRsmqkv1c7CxetJquy4wKpT0qH91GTsJWcbsTa8PAv
+         TqOiq0Z58AeZT+z1I4o5pFbTOblD1nfFeK6MqRPeSInE7PloFaywABH0iKxzYyFA7yX8
+         YLu7ftRQz/+fEmOE5P5HGPh0SNp5PHv3Qj7bPv1qIJa8/jfXj28a2pOwTsmQ4mvU8YTg
+         AIkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768214643; x=1768819443;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=DsIPMVr2V952kp450zzumhqp0nc1hAq2gSm8efLCZlc=;
+        b=buRqLDUnV489CCngCnWnA3lZSOR6y2UPJR9G4n4IE56s6FFbkPxWqOmWW/co7yyyDi
+         t0Xvu0rj4RGG9w7/MWRaEvD4bxv9OPLNmi7HpLKZceDxAoljCjUbu8B0tzLPOi+vqbK6
+         fSx9FnMpNQxF0tuTR+EkU0lYSQiBDoUhitKplinP5X5NmLFF8lSkjXqZ2tkRnGxIUk21
+         I40Hz99EJI/tOfnohm6viI2EkB94migeTHD4PxK9J3grDPPZHva+KIZl6Dvsm7F1c+Up
+         JxjfPN6DautM7BZ4rZq2FOx9bq1yqxhdtKHLUVb70rA+fen+B0OaqKYceBr4ko0q+Z+p
+         yf8Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXzlu7ogWoa7vqiOxMyjfDfF4BXAyKIdDVVXb9tk/rSTDZ8Kc0pdK8Zcu0cnvZq9aDOBvsOvHk=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yw/Tql2y38aoX1hWeW1cKcnZUYOzJufMK2PF+R4meTN9mvhQMtC
+	jmH4DRLiQftUopqBhM/d7kSvdC1A3LTLqXlh6IH4dpillDJAHosx7zKizV1T1LcBanCpaM2z2tJ
+	YmHM3oY6QugNKWd4uA10D0JHfSmeoHy0=
+X-Gm-Gg: AY/fxX4ACmhYVsBPfPUeWCk0cTW3KUSHTZfcgp+nmRx+6FLN1WLLOSej3t7r27CJdDb
+	LPwhr5/p8aTzdZA3S6mRhq6MK3DcW2uADXNbm5fJZk+FE+uGt48tOC7u1bG7fhsCskZJhtxO/Lr
+	7MoiNWq4icFWVJSY6kCsKsD5iOGkxgAKCLGTArBxowrpKE+D+HMDYtXIXt9iz8xbAH6dCVGo5kC
+	FvZarJyZ4DIM6X8r4fu5mexVwsXSoeDUMPePxR9pNxWNNAPuZXH7dyJOLqqBA47VRxIKHx4
+X-Google-Smtp-Source: AGHT+IFcmA5oRMSiPxEcN6qjbB2hTUUzRoGdD9Accc2zTM1tWA2vCGf4ykLEOzcBe830dg2fr+kSzsfOCsJf5jCCaso=
+X-Received: by 2002:a05:6102:3f01:b0:5db:de8f:3278 with SMTP id
+ ada2fe7eead31-5ec757092f3mr9074630137.10.1768214642681; Mon, 12 Jan 2026
+ 02:44:02 -0800 (PST)
 MIME-Version: 1.0
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB8294.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2f2713fa-eb29-4557-9679-08de51eeb9b0
-X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Jan 2026 15:24:49.2060
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: /CHvgIm02+KplSzuP/FpxOQpoKe6doePo0nL4DclRsyFpYIpvGFwR9hPk26ON++nxCTSKZiA4yInq+jHANA50Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL4PR12MB9481
+References: <20260107152607.902735-1-aristo.chen@canonical.com>
+ <20260108064517.13854-1-aristo.chen@canonical.com> <20260108064517.13854-2-aristo.chen@canonical.com>
+ <20260112095503.GA2835866@rayden>
+In-Reply-To: <20260112095503.GA2835866@rayden>
+From: Aristo Chen <jj251510319013@gmail.com>
+Date: Mon, 12 Jan 2026 18:43:26 +0800
+X-Gm-Features: AZwV_QiDf4meejVwH6g7tXElzTP6KLKnYm-R64qKJnr0THIY_ZFVHi8B8dhKw6E
+Message-ID: <CAJwFiGLCznis=AN-Mi_skvsEz5NWpy7CqwAs_VTfr576oDwvtQ@mail.gmail.com>
+Subject: Re: [PATCH v6 2/2] tee: optee: store OS revision for TEE core
+To: Jens Wiklander <jens.wiklander@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.40 / 15.00];
+X-Spamd-Result: default: False [-2.50 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[Nvidia.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[nvidia.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:40.107.0.0/16];
-	R_DKIM_ALLOW(-0.20)[Nvidia.com:s=selector2];
-	MIME_BASE64_TEXT(0.10)[];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	MIME_GOOD(-0.10)[text/plain];
 	RCVD_TLS_LAST(0.00)[];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com,kernel.org];
 	FROM_HAS_DN(0.00)[];
-	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
 	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_TRACE(0.00)[Nvidia.com:+];
-	DNSWL_BLOCKED(0.00)[40.107.200.7:from];
-	NEURAL_HAM(-0.00)[-1.000];
+	MIME_TRACE(0.00)[0:+];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	DKIM_TRACE(0.00)[gmail.com:+];
+	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	ALIAS_RESOLVED(0.00)[];
-	ASN(0.00)[asn:8075, ipnet:40.104.0.0/14, country:US];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[40.107.200.7:from];
-	RCPT_COUNT_FIVE(0.00)[6]
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	MID_RHS_MATCH_FROMTLD(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.222.41:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.222.41:from]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 23ACE41A43
-X-Spamd-Bar: -----
-Message-ID-Hash: L4EDC6K4DLTPLLE3E5ZOQU4EELTD4B23
-X-Message-ID-Hash: L4EDC6K4DLTPLLE3E5ZOQU4EELTD4B23
-X-MailFrom: coking@nvidia.com
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+X-Rspamd-Queue-Id: 5EBE143275
+X-Spamd-Bar: --
+X-MailFrom: jj251510319013@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: 32KSWCFBNTCB5VGTSPRCUMJYKCJWATPW
+X-Message-ID-Hash: 32KSWCFBNTCB5VGTSPRCUMJYKCJWATPW
+X-Mailman-Approved-At: Mon, 12 Jan 2026 19:39:40 +0000
+CC: linux-kernel@vger.kernel.org, sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, harshal.dev@oss.qualcomm.com, mario.limonciello@amd.com, Rijo-john.Thomas@amd.com, amirreza.zarrabi@oss.qualcomm.com, Aristo Chen <aristo.chen@canonical.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7V5ALQW5EGQND2TCGJOCEVRGM4SXSLPE/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/32KSWCFBNTCB5VGTSPRCUMJYKCJWATPW/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Colin King via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Colin King <coking@nvidia.com>
 
-SSBhZGRlZCB0aGlzIGNoYW5nZSBmb3Igc2V2ZXJhbCByZWFzb25zLCBpdCdzIHJlYWQtb25seSBz
-byBtYWtpbmcgaXQgY29uc3QgaXMgYWx3YXlzIHNlbnNpYmxlLiAgTWFraW5nIGl0IHN0YXRpYyBt
-ZWFucyB3ZSBkb24ndCBnZXQgdGhlIGNvbXBpbGVyIHRvIGdlbmVyYXRlIG9iamVjdCBjb2RlIHRo
-YXQgc3RvcmVzIHRoZSBhcnJheSBvbiB0aGUgc3RhY2sgKGVhY2ggdGltZSBpdCdzIGNhbGxlZCkg
-YW5kIHRoZW4gaW5kZXggaW50byBpdCwgaW5zdGVhZCB0aGUgZGF0YSBpcyBwdXQgaW50byBhIHJl
-YWQtb25seSBkYXRhIHNlY3Rpb24gYXQgY29tcGlsZSB0aW1uZSBhbmQgdGhlIG9iamVjdCBjb2Rl
-IGp1c3QgZmV0Y2hlZCBkYXRhIGZyb20gdGhpcyBhcnJheS4NCg0KQmFzaWNhbGx5LCBpZiBpdCdz
-IHJlYWQtb25seSBpdCdzIGdvb2QgdG8gbWFrZSBpdCBjb25zdCBhbmQgaXQncyBub3QgaW4gYW4g
-X19pbml0IHNlY3Rpb24gdGhlbiB5b3UgbWF5IGFzIHdlbGwgbWFrZSBpdCBzdGF0aWMgY29uc3Qu
-IEl0J3Mgc2NvcGVkIGluc2lkZSB0aGUgZnVuY3Rpb24sIGV2ZW4gdGhvdWdoIGl0J3MgaW4gdGhl
-IGRhdGEgc2VjdGlvbi4NCg0KDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KRnJv
-bTogcnlhbiBmb3N0ZXIgPGZvc3Rlci5yeWFuLnJAZ21haWwuY29tPg0KU2VudDogMTIgSmFudWFy
-eSAyMDI2IDE0OjQ2DQpUbzogU3VtaXQgR2FyZyA8c3VtaXQuZ2FyZ0BrZXJuZWwub3JnPg0KQ2M6
-IENvbGluIEtpbmcgPGNva2luZ0BudmlkaWEuY29tPjsgSmVucyBXaWtsYW5kZXIgPGplbnMud2lr
-bGFuZGVyQGxpbmFyby5vcmc+OyBvcC10ZWVAbGlzdHMudHJ1c3RlZGZpcm13YXJlLm9yZyA8b3At
-dGVlQGxpc3RzLnRydXN0ZWRmaXJtd2FyZS5vcmc+OyBrZXJuZWwtamFuaXRvcnNAdmdlci5rZXJu
-ZWwub3JnIDxrZXJuZWwtamFuaXRvcnNAdmdlci5rZXJuZWwub3JnPjsgbGludXgta2VybmVsQHZn
-ZXIua2VybmVsLm9yZyA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz4NClN1YmplY3Q6IFJl
-OiBbUEFUQ0hdW25leHRdIG9wdGVlOiBtYWtlIHJlYWQtb25seSBhcnJheSBhdHRyIHN0YXRpYyBj
-b25zdA0KDQpUaGlzIGxvb2tzIGxpa2UgYSBtaWNyby1vcHRpbWl6YXRpb24sIGNvbnN0IG1ha2Vz
-IHRoZSBsb29rdXAgYXJyYXkNCmV4cGxpY2l0bHkgaW1tdXRhYmxlLCBhbmQgc3RhdGljIGtlZXBz
-IGl0IG91dCBvZiB0aGUgc3RhY2sgZnJhbWUsDQphdm9pZGluZyBwZXItY2FsbCBpbml0aWFsaXph
-dGlvbi4NCg0KSXMgdGhlcmUgYSBzdHlsZSBwcmVmZXJlbmNlIGZvciByZWFkIG9ubHkgbG9va3Vw
-IGFycmF5cyBoZXJlLCBlLmcuDQpTaG91bGQgdGhlc2UgdmFyaWFibGVzIHJlbWFpbiBsb2NhbCBi
-dXQgbm90IHN0YXRpYywgb3Igc2hvdWxkIHRoZXkgYmUNCm1vdmVkIHRvIGZpbGUgc2NvcGUgc3Rh
-dGljIGNvbnN0Pw0KDQpPbiBNb24sIEphbiAxMiwgMjAyNiBhdCAzOjI24oCvQU0gU3VtaXQgR2Fy
-ZyA8c3VtaXQuZ2FyZ0BrZXJuZWwub3JnPiB3cm90ZToNCj4NCj4gT24gRnJpLCBKYW4gMDksIDIw
-MjYgYXQgMDM6NDQ6NDJQTSArMDAwMCwgQ29saW4gSWFuIEtpbmcgd3JvdGU6DQo+ID4gRG9uJ3Qg
-cG9wdWxhdGUgdGhlIHJlYWQtb25seSBhcnJheSBhdHRyIG9uIHRoZSBzdGFjayBhdCBydW4NCj4g
-PiB0aW1lLCBpbnN0ZWFkIG1ha2UgaXQgc3RhdGljIGNvbnN0Lg0KPg0KPiBJcyB0aGVyZSBhbnkg
-dmFsdWUgYWRkIHRvIGRvIHRoaXM/IEFGQUlLLCB0aGUgc3RhdGljIGxvY2FsIHZhcmlhYmxlcw0K
-PiBhcmVuJ3QgcHJlZmZlcmVkLg0KPg0KPiAtU3VtaXQNCj4NCj4gPg0KPiA+IFNpZ25lZC1vZmYt
-Ynk6IENvbGluIElhbiBLaW5nIDxjb2tpbmdAbnZpZGlhLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJp
-dmVycy90ZWUvb3B0ZWUvcnBjLmMgfCAyICstDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2Vy
-dGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGVl
-L29wdGVlL3JwYy5jIGIvZHJpdmVycy90ZWUvb3B0ZWUvcnBjLmMNCj4gPiBpbmRleCA5N2ZjNWIx
-NGRiMGMuLjE3NThlYjdlNmU4YiAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3RlZS9vcHRlZS9y
-cGMuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdGVlL29wdGVlL3JwYy5jDQo+ID4gQEAgLTQzLDcgKzQz
-LDcgQEAgc3RhdGljIHZvaWQgaGFuZGxlX3JwY19mdW5jX2NtZF9pMmNfdHJhbnNmZXIoc3RydWN0
-IHRlZV9jb250ZXh0ICpjdHgsDQo+ID4gICAgICAgc3RydWN0IGkyY19tc2cgbXNnID0geyB9Ow0K
-PiA+ICAgICAgIHNpemVfdCBpOw0KPiA+ICAgICAgIGludCByZXQgPSAtRU9QTk9UU1VQUDsNCj4g
-PiAtICAgICB1OCBhdHRyW10gPSB7DQo+ID4gKyAgICAgc3RhdGljIGNvbnN0IHU4IGF0dHJbXSA9
-IHsNCj4gPiAgICAgICAgICAgICAgIFRFRV9JT0NUTF9QQVJBTV9BVFRSX1RZUEVfVkFMVUVfSU5Q
-VVQsDQo+ID4gICAgICAgICAgICAgICBURUVfSU9DVExfUEFSQU1fQVRUUl9UWVBFX1ZBTFVFX0lO
-UFVULA0KPiA+ICAgICAgICAgICAgICAgVEVFX0lPQ1RMX1BBUkFNX0FUVFJfVFlQRV9NRU1SRUZf
-SU5PVVQsDQo+ID4gLS0NCj4gPiAyLjUxLjANCj4gPg0KPg0K
+Hi Jens,
+
+Jens Wiklander <jens.wiklander@linaro.org> =E6=96=BC 2026=E5=B9=B41=E6=9C=
+=8812=E6=97=A5=E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=885:55=E5=AF=AB=E9=81=93=
+=EF=BC=9A
+>
+> On Thu, Jan 08, 2026 at 02:45:09PM +0800, Aristo Chen wrote:
+> > Collect OP-TEE OS revision from secure world for both SMC and FF-A
+> > ABIs, store it in the OP-TEE driver, and expose it through the
+> > generic get_tee_revision() callback.
+> >
+> > Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
+> > ---
+> >  drivers/tee/optee/core.c          | 23 +++++++++++++
+> >  drivers/tee/optee/ffa_abi.c       | 57 ++++++++++++++++++++++++-------
+> >  drivers/tee/optee/optee_private.h | 19 +++++++++++
+> >  drivers/tee/optee/smc_abi.c       | 15 ++++++--
+> >  4 files changed, 99 insertions(+), 15 deletions(-)
+>
+> Checkpatch complains with:
+> CHECK: Alignment should match open parenthesis
+> #62: FILE: drivers/tee/optee/ffa_abi.c:779:
+> +static bool optee_ffa_get_os_revision(struct ffa_device *ffa_dev,
+> +                                       const struct ffa_ops *ops,
+>
+> CHECK: Alignment should match open parenthesis
+> #142: FILE: drivers/tee/optee/ffa_abi.c:1091:
+> +       if (!optee_ffa_get_os_revision(ffa_dev, ffa_ops, &optee->revision=
+,
+> +                                        false)) {
+>
+> WARNING: From:/Signed-off-by: email address mismatch: 'From: Aristo Chen =
+<jj251510319013@gmail.com>' !=3D 'Signed-off-by: Aristo Chen <aristo.chen@c=
+anonical.com>'
+>
+> total: 0 errors, 1 warnings, 2 checks, 199 lines checked
+
+Sorry for causing the inconvenience, somehow I did not get complained
+by the checkpatch.pl
+and I will fix the warnings in v7
+
+just out of curiosity and trying to prevent from making the same
+mistake again, are you using
+command like this?
+
+```
+$ ./scripts/checkpatch.pl v6_patch/*
+-------------------------------------------------------
+v6_patch/v6-0001-tee-add-revision-sysfs-attribute.patch
+-------------------------------------------------------
+total: 0 errors, 0 warnings, 100 lines checked
+
+v6_patch/v6-0001-tee-add-revision-sysfs-attribute.patch has no obvious
+style problems and is ready for submission.
+---------------------------------------------------------------
+v6_patch/v6-0002-tee-optee-store-OS-revision-for-TEE-core.patch
+---------------------------------------------------------------
+total: 0 errors, 0 warnings, 199 lines checked
+
+v6_patch/v6-0002-tee-optee-store-OS-revision-for-TEE-core.patch has no
+obvious style problems and is ready for submission.
+```
+
+As you can see, I did not see any complain from the output, so I was
+assuming they are
+in a good shape.
+
+>
+> Cheers,
+> Jens
+>
+> >
+> > diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+> > index 5b62139714ce..2d807bc748bc 100644
+> > --- a/drivers/tee/optee/core.c
+> > +++ b/drivers/tee/optee/core.c
+> > @@ -63,6 +63,29 @@ int optee_set_dma_mask(struct optee *optee, u_int pa=
+_width)
+> >       return dma_coerce_mask_and_coherent(&optee->teedev->dev, mask);
+> >  }
+> >
+> > +int optee_get_revision(struct tee_device *teedev, char *buf, size_t le=
+n)
+> > +{
+> > +     struct optee *optee =3D tee_get_drvdata(teedev);
+> > +     u64 build_id;
+> > +
+> > +     if (!optee)
+> > +             return -ENODEV;
+> > +     if (!buf || !len)
+> > +             return -EINVAL;
+> > +
+> > +     build_id =3D optee->revision.os_build_id;
+> > +     if (build_id)
+> > +             scnprintf(buf, len, "%u.%u (%016llx)",
+> > +                       optee->revision.os_major,
+> > +                       optee->revision.os_minor,
+> > +                       (unsigned long long)build_id);
+> > +     else
+> > +             scnprintf(buf, len, "%u.%u", optee->revision.os_major,
+> > +                       optee->revision.os_minor);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> >  static void optee_bus_scan(struct work_struct *work)
+> >  {
+> >       WARN_ON(optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP));
+> > diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+> > index bf8390789ecf..82dbed1c87e5 100644
+> > --- a/drivers/tee/optee/ffa_abi.c
+> > +++ b/drivers/tee/optee/ffa_abi.c
+> > @@ -775,6 +775,42 @@ static int optee_ffa_reclaim_protmem(struct optee =
+*optee,
+> >   * with a matching configuration.
+> >   */
+> >
+> > +static bool optee_ffa_get_os_revision(struct ffa_device *ffa_dev,
+> > +                                     const struct ffa_ops *ops,
+> > +                                     struct optee_revision *revision,
+> > +                                     bool log)
+> > +{
+> > +     const struct ffa_msg_ops *msg_ops =3D ops->msg_ops;
+> > +     struct ffa_send_direct_data data =3D {
+> > +             .data0 =3D OPTEE_FFA_GET_OS_VERSION,
+> > +     };
+> > +     int rc;
+> > +
+> > +     msg_ops->mode_32bit_set(ffa_dev);
+> > +
+> > +     rc =3D msg_ops->sync_send_receive(ffa_dev, &data);
+> > +     if (rc) {
+> > +             pr_err("Unexpected error %d\n", rc);
+> > +             return false;
+> > +     }
+> > +
+> > +     if (revision) {
+> > +             revision->os_major =3D data.data0;
+> > +             revision->os_minor =3D data.data1;
+> > +             revision->os_build_id =3D data.data2;
+> > +     }
+> > +
+> > +     if (log) {
+> > +             if (data.data2)
+> > +                     pr_info("revision %lu.%lu (%08lx)",
+> > +                             data.data0, data.data1, data.data2);
+> > +             else
+> > +                     pr_info("revision %lu.%lu", data.data0, data.data=
+1);
+> > +     }
+> > +
+> > +     return true;
+> > +}
+> > +
+> >  static bool optee_ffa_api_is_compatible(struct ffa_device *ffa_dev,
+> >                                       const struct ffa_ops *ops)
+> >  {
+> > @@ -798,19 +834,8 @@ static bool optee_ffa_api_is_compatible(struct ffa=
+_device *ffa_dev,
+> >               return false;
+> >       }
+> >
+> > -     data =3D (struct ffa_send_direct_data){
+> > -             .data0 =3D OPTEE_FFA_GET_OS_VERSION,
+> > -     };
+> > -     rc =3D msg_ops->sync_send_receive(ffa_dev, &data);
+> > -     if (rc) {
+> > -             pr_err("Unexpected error %d\n", rc);
+> > +     if (!optee_ffa_get_os_revision(ffa_dev, ops, NULL, true))
+> >               return false;
+> > -     }
+> > -     if (data.data2)
+> > -             pr_info("revision %lu.%lu (%08lx)",
+> > -                     data.data0, data.data1, data.data2);
+> > -     else
+> > -             pr_info("revision %lu.%lu", data.data0, data.data1);
+> >
+> >       return true;
+> >  }
+> > @@ -900,6 +925,7 @@ static int optee_ffa_open(struct tee_context *ctx)
+> >
+> >  static const struct tee_driver_ops optee_ffa_clnt_ops =3D {
+> >       .get_version =3D optee_ffa_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_ffa_open,
+> >       .release =3D optee_release,
+> >       .open_session =3D optee_open_session,
+> > @@ -918,6 +944,7 @@ static const struct tee_desc optee_ffa_clnt_desc =
+=3D {
+> >
+> >  static const struct tee_driver_ops optee_ffa_supp_ops =3D {
+> >       .get_version =3D optee_ffa_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_ffa_open,
+> >       .release =3D optee_release_supp,
+> >       .supp_recv =3D optee_supp_recv,
+> > @@ -1060,6 +1087,12 @@ static int optee_ffa_probe(struct ffa_device *ff=
+a_dev)
+> >       if (!optee)
+> >               return -ENOMEM;
+> >
+> > +     if (!optee_ffa_get_os_revision(ffa_dev, ffa_ops, &optee->revision=
+,
+> > +                                      false)) {
+> > +             rc =3D -EINVAL;
+> > +             goto err_free_optee;
+> > +     }
+> > +
+> >       pool =3D optee_ffa_shm_pool_alloc_pages();
+> >       if (IS_ERR(pool)) {
+> >               rc =3D PTR_ERR(pool);
+> > diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/opte=
+e_private.h
+> > index db9ea673fbca..acd3051c4879 100644
+> > --- a/drivers/tee/optee/optee_private.h
+> > +++ b/drivers/tee/optee/optee_private.h
+> > @@ -171,6 +171,24 @@ struct optee_ffa {
+> >
+> >  struct optee;
+> >
+> > +/**
+> > + * struct optee_revision - OP-TEE OS revision reported by secure world
+> > + * @os_major:                OP-TEE OS major version
+> > + * @os_minor:                OP-TEE OS minor version
+> > + * @os_build_id:     OP-TEE OS build identifier (0 if unspecified)
+> > + *
+> > + * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
+> > + * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS revisio=
+n, not an
+> > + * FF-A ABI version.
+> > + */
+> > +struct optee_revision {
+> > +     u32 os_major;
+> > +     u32 os_minor;
+> > +     u64 os_build_id;
+> > +};
+> > +
+> > +int optee_get_revision(struct tee_device *teedev, char *buf, size_t le=
+n);
+> > +
+> >  /**
+> >   * struct optee_ops - OP-TEE driver internal operations
+> >   * @do_call_with_arg:        enters OP-TEE in secure world
+> > @@ -249,6 +267,7 @@ struct optee {
+> >       bool in_kernel_rpmb_routing;
+> >       struct work_struct scan_bus_work;
+> >       struct work_struct rpmb_scan_bus_work;
+> > +     struct optee_revision revision;
+> >  };
+> >
+> >  struct optee_session {
+> > diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+> > index 0be663fcd52b..51fae1ab8ef8 100644
+> > --- a/drivers/tee/optee/smc_abi.c
+> > +++ b/drivers/tee/optee/smc_abi.c
+> > @@ -1242,6 +1242,7 @@ static int optee_smc_open(struct tee_context *ctx=
+)
+> >
+> >  static const struct tee_driver_ops optee_clnt_ops =3D {
+> >       .get_version =3D optee_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_smc_open,
+> >       .release =3D optee_release,
+> >       .open_session =3D optee_open_session,
+> > @@ -1261,6 +1262,7 @@ static const struct tee_desc optee_clnt_desc =3D =
+{
+> >
+> >  static const struct tee_driver_ops optee_supp_ops =3D {
+> >       .get_version =3D optee_get_version,
+> > +     .get_tee_revision =3D optee_get_revision,
+> >       .open =3D optee_smc_open,
+> >       .release =3D optee_release_supp,
+> >       .supp_recv =3D optee_supp_recv,
+> > @@ -1323,7 +1325,8 @@ static bool optee_msg_api_uid_is_optee_image_load=
+(optee_invoke_fn *invoke_fn)
+> >  }
+> >  #endif
+> >
+> > -static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
+> > +static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn,
+> > +                                   struct optee_revision *revision)
+> >  {
+> >       union {
+> >               struct arm_smccc_res smccc;
+> > @@ -1337,6 +1340,12 @@ static void optee_msg_get_os_revision(optee_invo=
+ke_fn *invoke_fn)
+> >       invoke_fn(OPTEE_SMC_CALL_GET_OS_REVISION, 0, 0, 0, 0, 0, 0, 0,
+> >                 &res.smccc);
+> >
+> > +     if (revision) {
+> > +             revision->os_major =3D res.result.major;
+> > +             revision->os_minor =3D res.result.minor;
+> > +             revision->os_build_id =3D res.result.build_id;
+> > +     }
+> > +
+> >       if (res.result.build_id)
+> >               pr_info("revision %lu.%lu (%0*lx)", res.result.major,
+> >                       res.result.minor, (int)sizeof(res.result.build_id=
+) * 2,
+> > @@ -1745,8 +1754,6 @@ static int optee_probe(struct platform_device *pd=
+ev)
+> >               return -EINVAL;
+> >       }
+> >
+> > -     optee_msg_get_os_revision(invoke_fn);
+> > -
+> >       if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
+> >               pr_warn("api revision mismatch\n");
+> >               return -EINVAL;
+> > @@ -1815,6 +1822,8 @@ static int optee_probe(struct platform_device *pd=
+ev)
+> >               goto err_free_shm_pool;
+> >       }
+> >
+> > +     optee_msg_get_os_revision(invoke_fn, &optee->revision);
+> > +
+> >       optee->ops =3D &optee_ops;
+> >       optee->smc.invoke_fn =3D invoke_fn;
+> >       optee->smc.sec_caps =3D sec_caps;
+> > --
+> > 2.43.0
+> >
+
+Best regards,
+Aristo
