@@ -4,110 +4,115 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 555FDC9832A
-	for <op-tee@archiver.kernel.org>; Sat, 17 Jan 2026 14:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D2BBC44525
+	for <op-tee@archiver.kernel.org>; Wed, 21 Jan 2026 13:27:58 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 9C7CA434B8
-	for <op-tee@archiver.kernel.org>; Sat, 17 Jan 2026 14:10:55 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 56EF7436EF
+	for <op-tee@archiver.kernel.org>; Wed, 21 Jan 2026 13:27:58 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=On5+Vokr;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=rpFI6JiT;
 	dkim-atps=neutral
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 3E2BF432AC
-	for <op-tee@lists.trustedfirmware.org>; Sat, 17 Jan 2026 14:10:37 +0000 (UTC)
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-47ee4338e01so11921805e9.2
-        for <op-tee@lists.trustedfirmware.org>; Sat, 17 Jan 2026 06:10:37 -0800 (PST)
+Received: from mail-oo1-f46.google.com (mail-oo1-f46.google.com [209.85.161.46])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A3FA642ED9
+	for <op-tee@lists.trustedfirmware.org>; Wed, 21 Jan 2026 13:27:27 +0000 (UTC)
+Received: by mail-oo1-f46.google.com with SMTP id 006d021491bc7-65f6f9d84d6so3883502eaf.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 21 Jan 2026 05:27:27 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1769002046; cv=none;
+        d=google.com; s=arc-20240605;
+        b=fmaq/eS+3sJDmfYm0q4NxzeaM6GnpDrGps3pecNuI2fe9JQpFIprYv5tkn+JkXYYNq
+         +9+UJbpDjW9/pJt2gXFyPz0QCpp3x2BVqPqWQALexzrKxwghAxMMKaGlXyiA6patBzCq
+         Hbz6frgHpqDF00ZGrn2H6DN9oIT2i+qHDQakzcznTACdVFC2Wz5pqaixu2VGElpnueu2
+         R2nzziYZlzJYl33C23ch4v5FZvsjDu4wHxExvbu5Qt3+KfhIYLTkZvCrK9Pe7T3IxX0o
+         ix5Vp+KtCt999YNRvSg81Jk0UqWdkZP0CPGA2QWcy333na65LFIGdeoZi3SqKPMh+61O
+         Y7gg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=twBmvmM9trYzAW7IpN7LUIgFKXVr1KwX2tg6MMtYXOs=;
+        fh=ti7oct0RsDXw6/2Q+S6sHhPG2CPVT/IQ9Yun4xZhon4=;
+        b=UHHEv3M0fN4OCZ5MAAnTuLN7LxqeNnlssICI85PohsEgHnUCmbe2NsjTcYhrHsoops
+         8X3E2Myp75R8Cv44hP1kFKfD/mN7X18Z2pduYoi782Y9WpdDz7VuKsApaV4o/Jt4Ke4Z
+         mwVs2fCw25lVa+7kV1JWFrEo1RFzU5NyBvTyWV8yS6M21vuDDnGcX6DTF7B85QMbYO2b
+         hEKjNNld9xRbCLAagZWF9o26Aj0R7FZbP34IoPafMYMkQJgsbLAsAQmFNmslxXV4pvzd
+         x79IzR2KscQggjrBN7WIBywqVEhPVUjTXNw7npobfVgJZ8dXMx9GmtyaV8EXchsqtMAz
+         B1yA==;
+        darn=lists.trustedfirmware.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768659036; x=1769263836; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UiKlHj+3mIbgnx+R2A3g/i2Ls37g5s26/ZzzGkqA/rc=;
-        b=On5+VokrGpii09+TRXJYB2cUAM3AUAYw/R6e5jHNPFEIbuKirpVNsjFDQShGAj9LtH
-         O7Mw0Ze2iKnc+Eeq58A5d3Z6L4mZ6t2fM0IVhkZyI+NJkqYWUr+qCIvfvoGHNcf355tw
-         sySs96/u8/l4ohh/7T9DEdqM9exZCStLnvZjyyr1cIfgCSQBH+kbK0tQK7899zPrVRTH
-         jQlt1A55gXnfiUNNfEzCBuQnfj0q6PwRuQPtodu7DHCgsjpxBfIC+Hj+tJU4PNJh+SDK
-         iKX9PGX5Nr3KJ8LJXEaRHdHeWWrrrfm+1w2kCjmRZm3bV7DYsJ3cycm1P8hFNsbXjPEl
-         5pZw==
+        d=linaro.org; s=google; t=1769002046; x=1769606846; darn=lists.trustedfirmware.org;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=twBmvmM9trYzAW7IpN7LUIgFKXVr1KwX2tg6MMtYXOs=;
+        b=rpFI6JiTVaeZbhVrifrd71vVD6K0xGZ8sgf0oz3AR7JGCpfR7j/WBLEuYTDiOZc0bO
+         hiDg6y9Jj02UzXGRkextD/newakVS6Km8X3DKSAvnxreiQ4DoL7eQ0vWyQU6//dVRckq
+         Z2C4aW3DcjYfzzGXl6SJX7cEBqlgd2no9Z6Vz1KGVwYwGq/b54o96LQmqwBEqTPaQMWF
+         U6z9DAi2RCgtu/CIfW2+qkM8ppmF0S1wQUvGydC+fl3+lgPAxb5oDO5l2Z6PNmy6bqn8
+         SoWQajx8j1mJp7k/ifk2RnbHMScz+wjPFwGYHkkf567VlRQwipuKeEaAtlnG0GHoKJkB
+         BtDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768659036; x=1769263836;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=UiKlHj+3mIbgnx+R2A3g/i2Ls37g5s26/ZzzGkqA/rc=;
-        b=Mrifp/rQgD0WIfksBaI3IHSFpwURLDm2M0bUIkXO+37VeIhEJ6TSU+Kg611hMCX/r1
-         Inxo3AnXnoUdluKBY7B9h30QH1ut4tvSk7ohql+34aLmbUw2TAEAjPMPJNuiJHmdfcfz
-         zIVb7+1oTXYl6dHWmt1bHyIjF4r1TfmPUJwsWoebNTgC0pU0yJCBMr5DcAbAHCYzp78Y
-         b1f4zt8XNqSg1vXkBKLwPfjEy5PwErDl79x8/iEscZxtKO/8aLbzXOC3YwlLl/fHVbnK
-         hlObrmJZ7zkV2dywh5tEQbKV12xRtQ0KOHxsD2Hw22aWIg4Ic7vvI7WxYvIQgbQI+GkF
-         3dIQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUxEasENYwQbxvXCgN9udRZg0ZN2xiMlvfSFDtmgCcf0YuiICfD0gFNPuaXKiQQcOGXZK1H5pI=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YyttHIHXcz/uPlclr7DUSApSJmzF0+WgUa0/JZ2cS8I4T0oiJW7
-	ix5Q82Eu1cjfihEwKlFclo7XXhrC39meEatoJpXCHvnhQgfv4qJ4Iyac
-X-Gm-Gg: AY/fxX4oKI/2U6S7HyxZoXarW5LsE8W2IX5oB9gtv7SmdK81FHHleEZsALrrTd57Kn3
-	2mazG/KHkLj3BpL+psn1jAXHHC7ZKNiyuFKoWnp/7czbrIlpvWdJT6ICYrgUt0o14vqzzWBl7Go
-	K+AmntT6jnvCu1tbj6NB3vTwp72njEXYu939Jtvgpmr/GQA2J6lpX3MF9f+9xUM5TwZNa+IDKOq
-	Lj05/C9SpWw/7Lhvst0MKoy3vY/ji2ryxLMmkeMOQ53Cn+V2q2K6E+wnqRplVDhB7gKJP75DbOk
-	qU3MBxZ+fXMiXCGECimq+UdzSmOZGK1DxqCUKUS9en8Qt+AqWdoNWO4kspQ74HNVFQNfYnMUvjJ
-	yOtYR3dQ37D3P9f4NixjKYAT4Jgevmn4HtcYLQZwe9YZEjadp83nlst+ZCU42A1ZakyoUBPuXmv
-	cyGflRLqMTnjsZqpuC3dVENE6rrNS2hOPbmp5kTQfkrOVB8nIq6uCH
-X-Received: by 2002:a05:600c:6489:b0:459:db7b:988e with SMTP id 5b1f17b1804b1-4801eac331bmr68009345e9.13.1768659035967;
-        Sat, 17 Jan 2026 06:10:35 -0800 (PST)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4801fd458aesm42726695e9.2.2026.01.17.06.10.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Jan 2026 06:10:35 -0800 (PST)
-Date: Sat, 17 Jan 2026 14:10:31 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: Colin Ian King <coking@nvidia.com>
-Subject: Re: [PATCH][next] optee: make read-only array attr static const
-Message-ID: <20260117141031.1514faf2@pumpkin>
-In-Reply-To: <20260109154442.421248-1-coking@nvidia.com>
-References: <20260109154442.421248-1-coking@nvidia.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        d=1e100.net; s=20230601; t=1769002046; x=1769606846;
+        h=to:subject:message-id:date:from:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=twBmvmM9trYzAW7IpN7LUIgFKXVr1KwX2tg6MMtYXOs=;
+        b=X6o5w+LfIXXaFoDEVxw7BZs77nVkbdvs/xrToQJfpyNDD1QbzYJLocWzkuufm3JxNa
+         zFq6UBFQK95i5CAmmTEiN0mrDuoB94+BkuFm/k2gbboDTxAt16Z3LQ/X1hC5CsACp+r3
+         uEzHAV+tVGhSXZbfqEkQZi5FrxN/zVMiLq6zRPVA4JaU6GvnpUlTufxP8nOYj6PnP85f
+         q/h5Xnibv3/Sv1Pj5BZ3YuFJ6a0KqgFhw+7IOUbuyMsl60tsI43AucEqB5wmh1JfDnz5
+         UtJXmsoZ6XhK0bjttDzihkYEPMckK03QO16Es+yffDoQR1tFY7m8bZ3L738gSYTKcds0
+         Mrkg==
+X-Gm-Message-State: AOJu0YzAZzQa3IrFa4fZJ52I+gXE5ydYHbD8Tp8AR9pm+Akh0ygP8uW8
+	+0IHl+7Q/rXIayV6DFlY2PqS3nvBHM9zeIPVH0eI6gFGOam2hTYy6eFMtY+gbAIvPayF3hJQ+0J
+	1wSq72uovxMJVSX2JbZkkzR4cQYHc1fsm1xbSCvmX0i/0JIlLscGjIdSI8A==
+X-Gm-Gg: AZuq6aK6sibl/Rq4jQLRRO+Mf7qDWCWasd9uYWhvUrf1+UWf4UQwbCuG33T/J1gA4nk
+	/VUGs6yk/qJsgwSXeyB1pyqRgDUIKdoMQaAVgGdZ4R44RUzvzRoi8hq5SyPcumuX7OVZBoeyFtW
+	4ZzgM3sRxlGjmRcx7HwhrFeZHfLPFGhMFQaKUbtYhg8dYpb40RyeY537f9Q9DD+i+b+Gj7ay6Xl
+	VHMIMyXH3dSrfPsQPtzYhsOxJ7DQqqNn+AuYvwqrJQpC4CntR9DdJaID7V7LsIBG6ToRDmrVjDF
+	vEeEcfucqHHDj5EVgRw3r1Ma8g==
+X-Received: by 2002:a05:6820:4a88:b0:660:fe2d:312e with SMTP id
+ 006d021491bc7-662b0063b8emr1637802eaf.51.1769002046223; Wed, 21 Jan 2026
+ 05:27:26 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Wed, 21 Jan 2026 14:27:15 +0100
+X-Gm-Features: AZwV_QgNwx-iZvoK8bCkW1a4e0-MMTVlrZ0kY_-NBLkS0eZpgoZZMswkyxGMXew
+Message-ID: <CAHUa44HAshBt7ZpP=kOZFpoK3hJ0f7+J5QSMvMEciyV8Vi5Q+w@mail.gmail.com>
+Subject: Rebase linaro-swg/kernel to v6.18
+To: OP-TEE TrustedFirmware <op-tee@lists.trustedfirmware.org>
+Content-Type: text/plain; charset="UTF-8"
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_RHS_NOT_FQDN(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
+X-Spamd-Result: default: False [-5.06 / 15.00];
+	BAYES_HAM(-2.96)[99.85%];
+	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_LAST(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[gmail.com:+];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.46:from];
+	RCPT_COUNT_ONE(0.00)[1];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.53:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_COUNT_ONE(0.00)[1];
+	MISSING_XM_UA(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	RCVD_TLS_LAST(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	ALIAS_RESOLVED(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.53:from];
-	RCPT_COUNT_FIVE(0.00)[6]
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.46:from];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	TO_DN_ALL(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 3E2BF432AC
-X-Spamd-Bar: ---
-Message-ID-Hash: B57WE5H5LKJ7BUYL7V367R54W7YGAAVZ
-X-Message-ID-Hash: B57WE5H5LKJ7BUYL7V367R54W7YGAAVZ
-X-MailFrom: david.laight.linux@gmail.com
+X-Rspamd-Queue-Id: A3FA642ED9
+X-Spamd-Bar: -----
+Message-ID-Hash: 2MNRLAIK6ZWEEMX6TTZWY77RXNGMWHR2
+X-Message-ID-Hash: 2MNRLAIK6ZWEEMX6TTZWY77RXNGMWHR2
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/B57WE5H5LKJ7BUYL7V367R54W7YGAAVZ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2MNRLAIK6ZWEEMX6TTZWY77RXNGMWHR2/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -115,49 +120,11 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-On Fri,  9 Jan 2026 15:44:42 +0000
-Colin Ian King <coking@nvidia.com> wrote:
+Hi,
 
-> Don't populate the read-only array attr on the stack at run
-> time, instead make it static const.
+I've just rebased the linaro-swg/kernel optee branch on v6.18 from
+v6.14. By rebasing, we eliminated a few workarounds on the optee
+branch and gained FF-A version 1.2 support in the kernel.
 
-For a 4 byte array initialising on stack is likely to generate faster code.
-In particular it avoid a very likely data-cache miss for the rodata.
-The on-stack array access might even shorter code than accessing a global
-array on some architectures.
-The compiler might, of course, decide to unroll the loop and not instantiate
-the array at all (in either case).
-Indeed, just unrolling the loop as:
-	if (params[0].attr != TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT) goto bad;
-	if (params[1].attr != TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT) goto bad;
-	if (params[2].attr != TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT) goto bad;
-	if (params[3].attr != TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT) goto bad;
-is likely to be pretty near optimal.
-(Collecting the bytes and doing a single 32bit compare may be better.)
-
-Of course this won't be a massively hot path - so the code choice won't
-make a measurable difference.
-
-	David
-
-
-> 
-> Signed-off-by: Colin Ian King <coking@nvidia.com>
-> ---
->  drivers/tee/optee/rpc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-> index 97fc5b14db0c..1758eb7e6e8b 100644
-> --- a/drivers/tee/optee/rpc.c
-> +++ b/drivers/tee/optee/rpc.c
-> @@ -43,7 +43,7 @@ static void handle_rpc_func_cmd_i2c_transfer(struct tee_context *ctx,
->  	struct i2c_msg msg = { };
->  	size_t i;
->  	int ret = -EOPNOTSUPP;
-> -	u8 attr[] = {
-> +	static const u8 attr[] = {
->  		TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
->  		TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT,
->  		TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT,
-
+Cheers,
+Jens
