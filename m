@@ -4,161 +4,236 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 030B6D6B084
-	for <op-tee@archiver.kernel.org>; Thu, 29 Jan 2026 16:05:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D4A6E6BF03
+	for <op-tee@archiver.kernel.org>; Fri, 30 Jan 2026 11:26:25 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 338EC436FD
-	for <op-tee@archiver.kernel.org>; Thu, 29 Jan 2026 16:05:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1769702754;
-	bh=yVdibtwtGBdtM6zRoTTns3ysNbJg04ECgBNHy8kebSA=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=2D1ON91wqYeQOQ35rhXwFjoTjqzl0sUX54h1swsrPHQZgKmugYrEFFAvtILcgo6wj
-	 8j8mpF2oZRNHvFOWYXzBdEOA0yzax4VwOnhaiOwKOVSRl6lpuO1QMnYrx8MqbEgWI+
-	 0vxwJZeFB/aY5wGFcXPEFVQcKRdON1Fju1tzij2qmD1d9FFBOF43IbUU2iQpkaIoW8
-	 zKuMtv5zYkk98pxw+0bLLijm5fl1kL2FpVfbJuZF9aABgaeQ9dTzKNSmnAGEj7g0uF
-	 YAN3wQo2rOKV3JOw0M87F4jvinfPl/ksCk37FIrrB4wBzqtLirABcXM9uRL2WMcjDG
-	 +pSTrNGZ0U07A==
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B343A432A4
-	for <op-tee@lists.trustedfirmware.org>; Thu, 29 Jan 2026 16:05:33 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 4A90243208
+	for <op-tee@archiver.kernel.org>; Fri, 30 Jan 2026 11:26:25 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=mNSQY84L;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=LxvWrisr;
 	dkim-atps=neutral
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 820DB1A2B01;
-	Thu, 29 Jan 2026 16:05:32 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 4FCDF60746;
-	Thu, 29 Jan 2026 16:05:32 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id C84C6119A8095;
-	Thu, 29 Jan 2026 17:05:27 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1769702731; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=Lc6wWk4IgTT559wWGEQNQjCDMW6utgy5FoBxVvSG2KM=;
-	b=mNSQY84LQ52ZnscGD18IByJvZJQQIacVebk2t/plG/whMwn+83Zl1E9OvoWX2V2RxCfoxS
-	J7FKlupj1VB7e6rJFirr6RfK/Oy8A6bsRNzcw474UsjN/FbndmiovBhMgwm4YRKoBwKFmx
-	3ZeTXY3A03ZQLaJOCIiO8R9mHEDa7oyn4WPEqgrGwV6YrglWUK6/soN5WeE49FI13rIEZA
-	q4eMBtWPKykfEWe2ps7aGWr4/JW4mG1Uq3VhlwwNdXdiVcqnGgeBHoWH5R9jClm0TjLX7V
-	OKWIWCnc7iGZ2Eb/+sESPRrxzaJ8ZnvdKXHvmTHen/Ais5igGxDQBGU8jw1rrw==
-Date: Thu, 29 Jan 2026 17:05:27 +0100
-To: rouven.czerwinski@linaro.org
-Subject: Re: [PATCH 3/3] rtc: optee: simplify OP-TEE context match
-Message-ID: <202601291605277bc279f4@mail.local>
-References: <20260126-optee-simplify-context-match-v1-0-d4104e526cb6@linaro.org>
- <20260126-optee-simplify-context-match-v1-3-d4104e526cb6@linaro.org>
+Received: from mail-wr1-f66.google.com (mail-wr1-f66.google.com [209.85.221.66])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4153A4329F
+	for <op-tee@lists.trustedfirmware.org>; Fri, 30 Jan 2026 11:26:06 +0000 (UTC)
+Received: by mail-wr1-f66.google.com with SMTP id ffacd0b85a97d-4327790c4e9so1268543f8f.2
+        for <op-tee@lists.trustedfirmware.org>; Fri, 30 Jan 2026 03:26:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1769772365; x=1770377165; darn=lists.trustedfirmware.org;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=VTSM1Hdnzd9opFai7KOO5We54G9/h05IaQO5gGw5wwg=;
+        b=LxvWrisrYZ6MFewlQRzQUjPoSC5e6su7YUuQI8fEtUQcV8ftlaocdXGGDUl7E64+7U
+         l1g7GWiEtDHsYmBl2eldG5pM9ih5iNTPx5NhKujFMztDuYMvhTx+A9ltXangIFq0yewx
+         PT5nVp7iMqI7DIQ2cUgdCruUug4ZN9xAC/Ad2RUuhWZwmqh64hxRnEkZNcWm3yOTtbCz
+         pzJ/jriKDBx8Z44fMeCrgDMCJGIW2MBPJyQn7byHvp6cRFYSALssw0CTXuFW75d4R1EF
+         q+EtwAen9J/UQI8Zi6fUB2dnDJtpuVPIvl6CVlvKCYBLZWmmaE868cDlYvkxwf2zae7l
+         BZ7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769772365; x=1770377165;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VTSM1Hdnzd9opFai7KOO5We54G9/h05IaQO5gGw5wwg=;
+        b=n4nPB3TPsS3wJf5u/9QNmrSzPIlH4jiicY8XTjFkohBY0HefaeruEP0dTH2pxuKgpk
+         IQ9YdRHIqNUoI+NuedHfGjjUgc39Bqh6OOYXfEZ2uMRymrc9mrhOU/ku0QV82Ye4ZKJH
+         rizaqQC1W8K/btcNzACyf15QAddoJ6a1VQO2NquukhOil25Ljx9uDPUugQLgIQ+u3LTO
+         hsNqJoI6o+/EcP1URrk4xJ63caE9wsjYQzkc3XGuuw+wwTS13R3lBFJGXjLu+DKBxnCl
+         AU2uP+iJYEI2VtvMQ1jGIVHwRloo61l4PWgd8i2YhxZdUxgdvkeyd/4l75Q/VQBUcJrl
+         4KpQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVrbWVE4rLum9vVp8n/Kk7vipBGkslMxt0117eDzPmrrFgyhWF6czKVlJcPc50cLMYmzp6CET8=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YyGK4Aez7aUZBZKeQT8ZAGpwnh+ONnU9kJ/YpiT6/JGKItcCTi/
+	He5zntP0TY49qhGouvPSKUO/NxMx1zlTfjEB+fUwXFzu+zUnS8M/xSLL8UWPOvGf9+EelQ==
+X-Gm-Gg: AZuq6aIse4s8+gMc/wCNGatVgq1ysHvJSNKycIFI/AgmfoM4BRgOTsSvedJj4cHu6Bt
+	xmRrijS+GsqhPs7NAtn7MWRqLn0OoOTbidicaP2ms0SW7fhJPwGoTRZ5Bad4DhoFg3cdEBWs2ND
+	N1kxFqJ5sMtH2XPfCwH+I31vM9xMmNuqjX4Y1OswavCvlfAQpx+5rUn81XdWOAOYuTKQs8UY7pB
+	IjS+nKHs5LgLjFQtDgParP+SaVR7cQLdlZFwlCgL0sPepCqr8YRoMHlToI2dqvDvGAtPNLeSL8K
+	/u0X94M1wZDcYIwy/WXlgKQQe/VOQdiT6DCmjJTG1hOmiQuObT9AA0g6U62mh1UxfaRwuSOoDko
+	FDjUVcagZ4p4Auymt7xbaRjjsylb8vGV5MEjxtPEU33kxKc9pFjb6NURoNQLGAgpckssxADPofH
+	vCtt693b2NWjOLuWiR
+X-Received: by 2002:a05:6000:25ca:b0:435:a815:dd86 with SMTP id ffacd0b85a97d-435f3abb19dmr3987305f8f.62.1769772365032;
+        Fri, 30 Jan 2026 03:26:05 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435e1353ac2sm23044115f8f.38.2026.01.30.03.26.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Jan 2026 03:26:04 -0800 (PST)
+Date: Fri, 30 Jan 2026 14:26:01 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Jens Wiklander <jens.wiklander@linaro.org>,
+	Khaled Ali Ahmed <Khaled.AliAhmed@arm.com>,
+	arm-scmi@vger.kernel.org, op-tee@lists.trustedfirmware.org
+Subject: OP-TEE: memory corruption in
+ scmi_pin_control_list_associations_handler()
+Message-ID: <aXyVSfxbrff_GX8A@stanley.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260126-optee-simplify-context-match-v1-3-d4104e526cb6@linaro.org>
-X-Last-TLS-Session-Version: TLSv1.3
+X-Mailer: git-send-email haha only kidding
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.00 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[bootlin.com,reject];
-	R_DKIM_ALLOW(-0.20)[bootlin.com:s=dkim];
-	R_SPF_ALLOW(-0.20)[+ip4:185.246.84.56];
+X-Spamd-Result: default: False [-2.49 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	XM_UA_NO_VERSION(0.01)[];
 	ARC_NA(0.00)[];
-	ASN(0.00)[asn:21409, ipnet:185.246.84.0/22, country:FR];
-	MISSING_XM_UA(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.66:from];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_TLS_LAST(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DNSWL_BLOCKED(0.00)[209.85.221.66:from];
 	RECEIVED_HELO_LOCALHOST(0.00)[];
-	DNSWL_BLOCKED(0.00)[185.246.84.56:from];
-	DKIM_TRACE(0.00)[bootlin.com:+]
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B343A432A4
-X-Spamd-Bar: ---
-Message-ID-Hash: 7I7ZYCQS3FUTJCLFNO2M2U4U47C4E3VU
-X-Message-ID-Hash: 7I7ZYCQS3FUTJCLFNO2M2U4U47C4E3VU
-X-MailFrom: alexandre.belloni@bootlin.com
+X-Rspamd-Queue-Id: 4153A4329F
+X-Spamd-Bar: --
+Message-ID-Hash: ADGDKGBI6EHKBYMBSGH5VG5XLDAEEKYH
+X-Message-ID-Hash: ADGDKGBI6EHKBYMBSGH5VG5XLDAEEKYH
+X-MailFrom: dan.carpenter@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, Olivia Mackall <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, =?iso-8859-1?Q?Cl=E9ment_L=E9ger?= <clement.leger@bootlin.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, linux-rtc@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7I7ZYCQS3FUTJCLFNO2M2U4U47C4E3VU/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ADGDKGBI6EHKBYMBSGH5VG5XLDAEEKYH/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Alexandre Belloni via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
 
-On 26/01/2026 11:11:26+0100, Rouven Czerwinski via B4 Relay wrote:
-> From: Rouven Czerwinski <rouven.czerwinski@linaro.org>
-> 
-> Simplify the TEE implementor ID match by returning the boolean
-> expression directly instead of going through an if/else.
-> 
-> Signed-off-by: Rouven Czerwinski <rouven.czerwinski@linaro.org>
-> ---
->  drivers/rtc/rtc-optee.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/drivers/rtc/rtc-optee.c b/drivers/rtc/rtc-optee.c
-> index 184c6d142801..2f18be3de684 100644
-> --- a/drivers/rtc/rtc-optee.c
-> +++ b/drivers/rtc/rtc-optee.c
-> @@ -541,10 +541,7 @@ static int optee_rtc_read_info(struct device *dev, struct rtc_device *rtc,
->  
->  static int optee_ctx_match(struct tee_ioctl_version_data *ver, const void *data)
->  {
-> -	if (ver->impl_id == TEE_IMPL_ID_OPTEE)
-> -		return 1;
-> -	else
-> -		return 0;
-> +	return (ver->impl_id == TEE_IMPL_ID_OPTEE);
+When we do SCMI on OP-TEE, the in buffer and out buffer are the same buffer.
+I added some debug code to confirm this:
 
-I guess the correct way to do this would be:
+diff --git a/module/msg_smt/src/mod_msg_smt.c b/module/msg_smt/src/mod_msg_smt.c
+index 853fe66b8d27..1e92dcd49c29 100644
+--- a/module/msg_smt/src/mod_msg_smt.c
++++ b/module/msg_smt/src/mod_msg_smt.c
+@@ -175,6 +175,11 @@ static int smt_write_payload(fwk_id_t channel_id,
+     if (!channel_ctx->locked)
+         return FWK_E_ACCESS;
+ 
++    FWK_LOG_ERR("OUT=%p IN=%p %s",
++               channel_ctx->out->payload,
++               channel_ctx->in->payload,
++               (channel_ctx->out->payload == channel_ctx->in->payload) ? "equal" : "different");
++
+     memcpy(((uint8_t*)channel_ctx->out->payload) + offset, payload, size);
+ 
+     return FWK_SUCCESS;
 
-return !!(ver->impl_id == TEE_IMPL_ID_OPTEE);
+And it's true:
 
-But is this change actually generating better code?
+[    0.000000] OUT=0x9c401004 IN=0x9c401004 equal
 
-Before:
+This normally isn't a problem because we read a few inputs at the
+start of the function and then write out the result to the output at the
+end.
 
-static int optee_ctx_match(struct tee_ioctl_version_data *ver, const void *data)
-{
-        if (ver->impl_id == TEE_IMPL_ID_OPTEE)
-       0:       e5900000        ldr     r0, [r0]
-                return 1;
-        else
-                return 0;
-}
-       4:       e2400001        sub     r0, r0, #1
-       8:       e16f0f10        clz     r0, r0
-       c:       e1a002a0        lsr     r0, r0, #5
-      10:       e12fff1e        bx      lr
+But in the scmi_pin_control_list_associations_handler() it does a loop
+where each iteration reads from parameters->index which is input and
+writes to the output with scmi_pin_control_ctx.scmi_api->write_payload()
+and that corrupts the input data.
 
-After:
+Copying the input buffer to a the stack the issue for me, but I feel
+like it is a hack.  It would be better to use separate buffers for
+input and output.
 
-static int optee_ctx_match(struct tee_ioctl_version_data *ver, const void *data)
-{
-        return !!(ver->impl_id == TEE_IMPL_ID_OPTEE);
-       0:       e5900000        ldr     r0, [r0]
-}
-       4:       e2400001        sub     r0, r0, #1
-       8:       e16f0f10        clz     r0, r0
-       c:       e1a002a0        lsr     r0, r0, #5
-      10:       e12fff1e        bx      lr
+I think this comes from:
+https://github.com/OP-TEE/optee_os/blob/master/core/kernel/pseudo_ta.c#L93
+I added a print statement to there as well:
 
-I'm in favor of keeping the current version.
+diff --git a/core/kernel/pseudo_ta.c b/core/kernel/pseudo_ta.c
+index 587faa41a770..426870fb934c 100644
+--- a/core/kernel/pseudo_ta.c
++++ b/core/kernel/pseudo_ta.c
+@@ -90,6 +90,7 @@ static TEE_Result copy_in_param(struct ts_session *s __maybe_unused,
+                                va = NULL;
+                        }
+ 
++                       EMSG("n=%lu va=%p", n, va);
+                        tee_param[n].memref.buffer = va;
+                        tee_param[n].memref.size = mem->size;
+                        break;
 
+E/TC:? 0 copy_in_param:93 n=1 va=0x9c401000
+E/TC:? 0 copy_in_param:93 n=2 va=0x9c401000
+
+Here is the patch to save "parameters" to a different buffer.
+
+---
+ .../scmi_pin_control/src/mod_scmi_pin_control.c   | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/module/scmi_pin_control/src/mod_scmi_pin_control.c b/module/scmi_pin_control/src/mod_scmi_pin_control.c
+index a0b90dd2b73f..54e613b70f69 100644
+--- a/module/scmi_pin_control/src/mod_scmi_pin_control.c
++++ b/module/scmi_pin_control/src/mod_scmi_pin_control.c
+@@ -344,7 +344,7 @@ static int scmi_pin_control_list_associations_handler(
+     fwk_id_t service_id,
+     const uint32_t *payload)
+ {
+-    const struct scmi_pin_control_list_associations_a2p *parameters;
++    const struct scmi_pin_control_list_associations_a2p parameters;
+     uint32_t payload_size;
+     uint16_t identifiers_count;
+     uint16_t total_number_of_associations;
+@@ -362,8 +362,9 @@ static int scmi_pin_control_list_associations_handler(
+     payload_size = (uint32_t)sizeof(return_values);
+ 
+     parameters = (const struct scmi_pin_control_list_associations_a2p *)payload;
++    memcpy(&parameters, payload, sizeof(parameters));
+ 
+-    status = map_identifier(parameters->identifier, &mapped_identifier);
++    status = map_identifier(parameters.identifier, &mapped_identifier);
+ 
+     if (status != FWK_SUCCESS) {
+         return_values.status = SCMI_NOT_FOUND;
+@@ -371,7 +372,7 @@ static int scmi_pin_control_list_associations_handler(
+     }
+ 
+     status = scmi_pin_control_ctx.pinctrl_api->get_total_number_of_associations(
+-        mapped_identifier, parameters->flags, &total_number_of_associations);
++        mapped_identifier, parameters.flags, &total_number_of_associations);
+     if (status != FWK_SUCCESS) {
+         return_values.status = SCMI_NOT_FOUND;
+         goto exit;
+@@ -388,11 +389,11 @@ static int scmi_pin_control_list_associations_handler(
+ 
+     identifiers_count = (uint16_t)FWK_MIN(
+         buffer_allowed_identifiers,
+-        (uint16_t)(total_number_of_associations - parameters->index));
++        (uint16_t)(total_number_of_associations - parameters.index));
+ 
+     return_values.flags = identifiers_count;
+     return_values.flags |= SHIFT_LEFT_BY_POS(
+-        (total_number_of_associations - parameters->index - identifiers_count),
++        (total_number_of_associations - parameters.index - identifiers_count),
+         NUM_OF_REMAINING_ELEMENTS_POS);
+ 
+     for (identifier_index = 0; identifier_index < identifiers_count;
+@@ -401,8 +402,8 @@ static int scmi_pin_control_list_associations_handler(
+ 
+         status = scmi_pin_control_ctx.pinctrl_api->get_list_associations(
+             mapped_identifier,
+-            parameters->flags,
+-            (parameters->index + identifier_index),
++            parameters.flags,
++            (parameters.index + identifier_index),
+             &object_id);
+         if (status != FWK_SUCCESS) {
+             return_values.status = SCMI_NOT_FOUND;
 -- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+2.51.0
+
