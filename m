@@ -4,461 +4,403 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C61E7315B
-	for <op-tee@archiver.kernel.org>; Mon,  2 Feb 2026 11:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D78FE7C714
+	for <op-tee@archiver.kernel.org>; Tue,  3 Feb 2026 02:10:20 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id B89BD436FA
-	for <op-tee@archiver.kernel.org>; Mon,  2 Feb 2026 11:36:38 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 416E343708
+	for <op-tee@archiver.kernel.org>; Tue,  3 Feb 2026 02:10:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1770084620;
+	bh=2oJaP4Ue+VE/QUAO/UwbvwnQMDkbi2xYa7mc1mVAJVA=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=BHNPaAey13fps1ubZhpqY44FARxSvUKjNL8SYWIuBoa8rUzzMH+8JFa/fZp2A4EGw
+	 GM7xzCVAZXFBe+9h+b69xtTM1UTf05qu1bTMtKqxfjeOBgjNhonI1NEesMmlpbh7CG
+	 qfQwaEic1P37+tcCTLkmaHcEQcf8jI7tQkuWk05iv6NouFrTYj88z/9YLGfn9icvy4
+	 LvUEmvaqpHDTXlW9Y3OOAtAvSlJCgk5va02hyYdImVi/B4N27bSMnlLw+SosMwAmfg
+	 BGZEWwv+Kj5p3cQ6VTCLoCrxBL5UTt4A6TtizIBrlUBRRUbeHCM7gICl5A3ARDOriT
+	 ZAYcZ6KInzw2w==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B6AF0431C1
+	for <op-tee@lists.trustedfirmware.org>; Tue,  3 Feb 2026 02:09:59 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=qmTkYagj;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AbUHt19S;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=S6n1pYs8;
 	dkim-atps=neutral
-Received: from mail-oa1-f45.google.com (mail-oa1-f45.google.com [209.85.160.45])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8D350431AF
-	for <op-tee@lists.trustedfirmware.org>; Mon,  2 Feb 2026 11:36:19 +0000 (UTC)
-Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-40423dbe98bso1936583fac.2
-        for <op-tee@lists.trustedfirmware.org>; Mon, 02 Feb 2026 03:36:19 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770032179; cv=none;
-        d=google.com; s=arc-20240605;
-        b=QIbh/lq7Fnb3Wqupw8lCRuwJSeFUBDHdt+KetPz3gd+rBix+Mfg6/pPhulFIOwTOGr
-         GthX+POoH7EcTlJcw8Zm4/ef206cGcz42g/x3UH6c4WPZSMNS3LuTBnXBhh9QiqSw/ci
-         AsWQ1cPJMWPEtW/eTTrKYClIMvSjc1jMNdAKtFKZ0rGG94/bz+Kn9HFPi517/ZB8OD/7
-         B1XTSgkf8/tg67lxCh+DJr7aojQ3PxbB2LcPmji2g/t/VwuxImWzWL+vJsuVIF9EQVgM
-         40J30loszkYDfxriWoFmf18jEi+kaaupy3XIceWwY23GWU1R4Gjhye4gSBZ9xN1PnK52
-         0zLQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=5dOXYzDQiQdPBTZLhCvuKodoTlB7hy579/On5uDSXb8=;
-        fh=E6cSqfS7WviG0GvCeXHEcHeNaiXjOSse0q+2HLWHuLM=;
-        b=FQNTvSuirSTLTd/zit/MHu+UVmJz+W+LD+JIJJN+ZDPsoakMrKMJ9T8ZzmFu2m1LUN
-         z0Z92yzGi8Nz6zmOKMmLsyvaQm98ASrX4pXXx8frcnrR3nBPayp51emETEMneuujjrmD
-         b0DcR0/DjK5NGbV3uqFHuSpLTTrxvWQ0dSmRMtpqtlPyr0DO7kw4egB7yF8TCyPWeXNA
-         157SUoAnSy1GhlvGJfIxvyCemeq912mR+Oy5acgv1E2Et15uFsBck3tmx9Y4YsXHARdv
-         6d4Jv1CATiyYFaUJxV5dmFiHVeY946uX6VFr5I84cGFPv7O2pu/J3twCN22kKWVi1PRI
-         wT/g==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 612MAvWY2357075
+	for <op-tee@lists.trustedfirmware.org>; Tue, 3 Feb 2026 02:09:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	KYRVvwXTE4/KeUkaCGAFR+ovh/hxJWmlWltuENhIjXE=; b=AbUHt19Sqag6D9SG
+	9k7kgC8fu2sXWwv470Yhj5YtJn8NURLipqCtnCg8455G0Zkg4dIio0Cka8ChEkhy
+	gkxfIDWVMO2SuXNcWCL615nrrKRE1TY0ontIqIO0EwXJLV11E34dBRx+NktWtS3D
+	TRjUHCE39wA4ihNIcdhDQ1hyASO+Vzh+2gQZ9CXmL5ur1SGK10fp6Xp5TLNfJYEm
+	jPz1QZLCesX7ztNkSo8NgVH7VerJ1bxsJ1MTELooYNLTnuCELXslxQjd/z3yPLfN
+	8eBnA0nleuKvOzzdwxuzHwVTIEC5YMNx3wQWl51GVx+5F1uKylQ0JCKhtB+l7O2H
+	4Td4/Q==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4c2v0ma7hd-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 03 Feb 2026 02:09:59 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8234ea73bdeso6381849b3a.0
+        for <op-tee@lists.trustedfirmware.org>; Mon, 02 Feb 2026 18:09:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1770032179; x=1770636979; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5dOXYzDQiQdPBTZLhCvuKodoTlB7hy579/On5uDSXb8=;
-        b=qmTkYagjidps6PNd4z2hKI9svUoxd/0ni99ZOUcSG82g/mX4w3K1UXbjMceAHAf7j6
-         8olCFbpvJ6lbUw6nVp03KBNSc5lW00ouxRUsCOyXpYf580rE0iOt6ZsLUpPmoLORBZZG
-         ku5r5JtPUSfppQE4D4ASri8445Oyme3bQ4XAyOxWQC0Y0vWV9RqyOM/SDTHr8UV9pJcL
-         faVqJkf6G07XAi55ThNyb700lMhJRZt1YIRbM1sll90OdR/koIufKfMgGStTpegRIYPd
-         URIFSJHa2GBtt/xLG4YT2lsOq20D8tmVN0E78N5K/HXLpdNPfRQNBFUEqBB1I05EvbSD
-         kb9w==
+        d=oss.qualcomm.com; s=google; t=1770084598; x=1770689398; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=KYRVvwXTE4/KeUkaCGAFR+ovh/hxJWmlWltuENhIjXE=;
+        b=S6n1pYs8Kai9ohhyeW++W+rQd/0+cZ4jI/5I90w9jPJMObV+nUo51y2v6gt9UrZiFT
+         hO9CnW1kLeIeciyTL76cRpWeKrD1IsFOl4IZQr2xkXZ0CRJcILJ74bsHlohsm7uCuf5X
+         u6Ul8BfbN2cjDzBMlDu+zAKRH6ZCITEr1wkD5kXg8d4D4a49fhiXDJZ1NJW7ZbcHqssS
+         Zte+lq5ROr9S9JqoXywdJ6EU2/6cdguBgZOZAec5QZaEKAyN5AegQvmRR2QB3BatypFI
+         erkIhhjo7xFmUag2ZGzNIceRnXGO4zf0TITe+2fb6+DZV14wYb3nnaASeqCgZzG5OXcq
+         DiwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770032179; x=1770636979;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=5dOXYzDQiQdPBTZLhCvuKodoTlB7hy579/On5uDSXb8=;
-        b=DrGH/5ByZMfHA86soc3QeRzRAYTF4/MMMEb60z1P5EhGzndvGYUqnnXCMPmG4CiBHI
-         C4T3pOfIuDTMIeb4/hjiogFBDeRXOalNQ/55GHpNwnTTUeic0YQAY9ZWhacSv3bnRRNL
-         Qo9WbaGa/cOmZZecMiofpJ1FA8CYlfFMX3uPmsHQYvNsps2Yx3/VIekDtUbcK0TxwcZi
-         IPHLQ1E/RevN4t/cg2xPB/eSX4IKLz0aqq9MO6lXISXHhoc0GXO84k02OPFqVXhv1aGB
-         sMXWLmw7nVITDsBTmIypqQfO00JkR6hlidIgW13rxZMVD0Z28qM15WmxLR6y3pweH/pS
-         BBBQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU2jUmVFcT/+GJyZc2F4x8OviGdazEwYtjm9dQdtilc9W0IDY9UxPUbnPOA2/Z8LIzr4SeoaGU=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxbuWE9GHNgZgdNGjJUrYY5uEKlWuOyXUge/1KPnjsTCRLl7UjE
-	E2fjeLFB1k0brld76vcAI9ZJ1zOzO1gkLWra75NSRb6dH5ojDowu+FCxDSh/sDIWFnEInB4xNEI
-	W9VKfAFaHTX+qvU61Xnpo9xolKihnD+FIaVJvikw+RgvS
-X-Gm-Gg: AZuq6aK32QTJT34kERDBpa5tke0NJns/F9hiX+48P+DyhCG0GvISR8QSQApRgaBDKlK
-	kpNZQX8G1Jv8dr0h28xorq+/YHjBPOOcjoS1Qm+XbpAD0UmugNEqSSvFBcAwsh8YhxN9kRKonSE
-	Znuad7XrTaUrIB0dppKOlmdTc+Kn1+dK+K+2iOULLZYAPPdojkwcrGz5QQgyBkCPNgNm2hBB+vC
-	K/3zt9zsuikv1SASeRwmZeOvQSAIo8gEog/AF7JKd1/qzvYtW3fe0sPFXJTq3E+Ml+cMBaRGzX/
-	5+rI6Ll6MAbixeh/CnLjOuDpWQ==
-X-Received: by 2002:a05:6870:f603:b0:403:fde8:ee9d with SMTP id
- 586e51a60fabf-409a6b271famr5560255fac.17.1770032178744; Mon, 02 Feb 2026
- 03:36:18 -0800 (PST)
+        d=1e100.net; s=20230601; t=1770084598; x=1770689398;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=KYRVvwXTE4/KeUkaCGAFR+ovh/hxJWmlWltuENhIjXE=;
+        b=xBMu22XJDMCKu+8PX8ImSeEtxzploeJPXub0jpsbPNoaX/04tt+JfDakIooZqb3vqC
+         4KfH+mg15w2uirz7TTFGhldM5baamgVmNFAp2MZgvBvD/PUo/DYvOyCQdJsZebPomQDS
+         F338fRuu1CCl5Nnsg6JgI3XHdNC3t5e60KeRVqo9RhfXkGZd7a5Me/V84OW/Q6iz9/6I
+         xWgM6u+1L1slQ8G0tdJgP299n1jzMNHxx6UaX1BxIMGSvYlGeUDCOwb90N9PLLII9rbm
+         8a6K1MZYB0Iy11BHRbllgpAC9+d0EHfq2OxG1AA08vgwtap+J++KHQB+hBDbxv5dn8/1
+         I5UA==
+X-Forwarded-Encrypted: i=1; AJvYcCXWvfzm9Ci8O7U8/91WbRZIFvwDZ2IyMAnLUYWu3rTvZ3L/6VCX2y5YaNVijXQo2qxdIrKe9qk=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzMrM06wmbNn03nA0agEFCqGjWq/h3Jmmh/U7GgH1/htStjHuJT
+	UjjWGJdwo8OsaTdwzA9JMn/EzybS5SKs9Reh/+6X4SOajTqAmSo8QziyJVuBgxJecOqJFIwhWnd
+	F8dQkr3n/LvTB90b1nJgljF/ooSmjG0pb1+JZkOQxMM0nAW6Ddzwiv5D1kRqbEYuPyCG8dlM=
+X-Gm-Gg: AZuq6aLVi42lhjxo3/zlsdnil5p22pY3+OmXfw49p8BHT10Lu813pCHC0BPjOeJkgFh
+	ZC+2QEc0pLHphB/T9DOnfatfYeiaLEK5lOqxBaQMV33/xy4L0i4jdxnfCtxWcePOjCnIRfXmTQB
+	I20PZOZ3ttd6jTUTet3p3WyZDY7neji2e914O9P3mUKRLu5LwWDkN2PxVHpYw6QCRINjVqc00CY
+	o4d0c0+pGo5RDdZKkA+F6HSbKOlbh3sGeDuXUrSltg36ZLiLOdphr7aDnffS5YInrtOrIieGtg/
+	A8TP+aujII8vFSyr9zwQz8N+TQKFq1jrBpDc1fctxzrbyDpMuYz141PnlnpTnqsKBJqzCKk3EWk
+	dq/5/APIR0UJ1L5eD3afhPPiX+gKwWgiqqc6+M6ZPiZ2Mgp864+4Z21wdNskr4EOeH3cQm5aZ4R
+	I5CNYl2Ig=
+X-Received: by 2002:a05:6a00:9154:b0:823:c4dc:d20 with SMTP id d2e1a72fcca58-823c4dc11e5mr8366226b3a.53.1770084597882;
+        Mon, 02 Feb 2026 18:09:57 -0800 (PST)
+X-Received: by 2002:a05:6a00:9154:b0:823:c4dc:d20 with SMTP id d2e1a72fcca58-823c4dc11e5mr8366195b3a.53.1770084597283;
+        Mon, 02 Feb 2026 18:09:57 -0800 (PST)
+Received: from [192.168.0.74] (n1-41-240-65.bla22.nsw.optusnet.com.au. [1.41.240.65])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82379bfc712sm18118584b3a.40.2026.02.02.18.09.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 02 Feb 2026 18:09:56 -0800 (PST)
+Message-ID: <55546b03-cbe6-40dd-b794-b2e81efde33a@oss.qualcomm.com>
+Date: Tue, 3 Feb 2026 13:09:51 +1100
 MIME-Version: 1.0
-References: <20260128-fix-use-after-free-v3-1-b0786670d927@oss.qualcomm.com>
-In-Reply-To: <20260128-fix-use-after-free-v3-1-b0786670d927@oss.qualcomm.com>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 2 Feb 2026 12:36:06 +0100
-X-Gm-Features: AZwV_QidVLzgAx-njwpKRe7qqHjFVfha6zhlz3U9qGFzTueyoAaugssIMPkwzfk
-Message-ID: <CAHUa44E4Htg9zEMY9XtkMsPRJq+13mq6kSd8RUznHTRvXVXKVQ@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v3] tee: optee: prevent use-after-free when the client
  exits before the supplicant
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To: Jens Wiklander <jens.wiklander@linaro.org>
+References: <20260128-fix-use-after-free-v3-1-b0786670d927@oss.qualcomm.com>
+ <CAHUa44E4Htg9zEMY9XtkMsPRJq+13mq6kSd8RUznHTRvXVXKVQ@mail.gmail.com>
+Content-Language: en-US
+In-Reply-To: <CAHUa44E4Htg9zEMY9XtkMsPRJq+13mq6kSd8RUznHTRvXVXKVQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+X-Authority-Analysis: v=2.4 cv=dceNHHXe c=1 sm=1 tr=0 ts=698158f7 cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=hi51d+lTLNy/RbqRqnOomQ==:17
+ a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=6Ujbnq6iAAAA:8
+ a=2ndy_DGNb8SQPXTkz8gA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=IoOABgeZipijB_acs4fv:22 a=-sNzveBoo8RYOSiOai2t:22
+X-Proofpoint-GUID: -mnE0UiK8BJhrqy2wh6YgiRLe6avX73K
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjAzMDAxNCBTYWx0ZWRfX9tLmXDxANeCN
+ +YNQLDX1gK54TW4VVf3mGkdnYjhH3jtpTeQ6JvkzM54nih8k81JbQXcAjGFZzbBv13r9CMEgPh7
+ pw3gMyemS2S512RfWIwk3RXEym5zb47HTncMCy8L36Z2Sai79ulJGsTA7EsL4HnxSlN263lsLkb
+ hTFqu2kQsINzO7A7YvoqPGyxvSPFTK2ToQ5JvwOECaYgyzHnV2LdGqkprUzvMoJYSQn3Wjlpc4V
+ jZVjr3OsPifDag/h/a8MmNB5nrDcqc6YMMc5cM3SvGk77q5/h8GWkdkQAeceF8m2T9msWDGb3Hw
+ XtIp+ro2CtyqvSK7czpM5oowSsMDSrqATgndxhMADCadTbETQ/PXCK+OUTIwuhHtIAqGD3XDZEH
+ FbVpyqYxfYi8734M1PSnqqxS6Sa2cywCvXrIcU8sCdOzo7eax/5cLmxeOzQq4Ieu/pXAE6WUvkG
+ 7OOl9ice6nnKPiAeTlA==
+X-Proofpoint-ORIG-GUID: -mnE0UiK8BJhrqy2wh6YgiRLe6avX73K
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-03_01,2026-02-02_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 malwarescore=0 suspectscore=0
+ lowpriorityscore=0 impostorscore=0 adultscore=0 phishscore=0 bulkscore=0
+ clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602030014
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.10 / 15.00];
+X-Spamd-Result: default: False [-6.10 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.160.45:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
 	TO_DN_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	RCPT_COUNT_SEVEN(0.00)[7];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.45:from];
-	DKIM_TRACE(0.00)[linaro.org:+]
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.198:received];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_COUNT_THREE(0.00)[4];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 8D350431AF
-X-Spamd-Bar: -----
-Message-ID-Hash: XLWESGXV6EVMAKWB7RRQC43DFKETYDTF
-X-Message-ID-Hash: XLWESGXV6EVMAKWB7RRQC43DFKETYDTF
-X-MailFrom: jens.wiklander@linaro.org
+X-Rspamd-Queue-Id: B6AF0431C1
+X-Spamd-Bar: ------
+Message-ID-Hash: KEJ4N7K5NGLD7O5VCNQJ5P2SEXTO54LA
+X-Message-ID-Hash: KEJ4N7K5NGLD7O5VCNQJ5P2SEXTO54LA
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Sumit Garg <sumit.garg@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Michael Wu <michael@allwinnertech.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/XLWESGXV6EVMAKWB7RRQC43DFKETYDTF/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/KEJ4N7K5NGLD7O5VCNQJ5P2SEXTO54LA/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Hi Amir,
-
-On Thu, Jan 29, 2026 at 4:22=E2=80=AFAM Amirreza Zarrabi
-<amirreza.zarrabi@oss.qualcomm.com> wrote:
->
-> Commit 70b0d6b0a199 ("tee: optee: Fix supplicant wait loop") made the
-> client wait as killable so it can be interrupted during shutdown or
-> after a supplicant crash. This changes the original lifetime expectations=
-:
-> the client task can now terminate while the supplicant is still processin=
-g
-> its request.
->
-> If the client exits first it removes the request from its queue and
-> kfree()s it, while the request ID remains in supp->idr. A subsequent
-> lookup on the supplicant path then dereferences freed memory, leading to
-> a use-after-free.
->
-> Serialise access to the request with supp->mutex:
->
->   * Hold supp->mutex in optee_supp_recv() and optee_supp_send() while
->     looking up and touching the request.
->   * Let optee_supp_thrd_req() notice that the client has terminated and
->     signal optee_supp_send() accordingly.
->
-> With these changes the request cannot be freed while the supplicant still
-> has a reference, eliminating the race.
->
-> Fixes: 70b0d6b0a199 ("tee: optee: Fix supplicant wait loop")
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
-> Changes in v3:
-> - Introduce processed flag instead of -1 for req->id.
-> - Update optee_supp_release() as reported by Michael Wu.
-> - Use mutex instead of guard.
-> - Link to v2: https://lore.kernel.org/r/20250617-fix-use-after-free-v2-1-=
-1fbfafec5917@oss.qualcomm.com
->
-> Changes in v2:
-> - Replace the static variable with a sentinel value.
-> - Fix the issue with returning the popped request to the supplicant.
-> - Link to v1: https://lore.kernel.org/r/20250605-fix-use-after-free-v1-1-=
-a70d23bff248@oss.qualcomm.com
-> ---
->  drivers/tee/optee/supp.c | 122 +++++++++++++++++++++++++++++++++--------=
-------
->  1 file changed, 86 insertions(+), 36 deletions(-)
-
-I had forgotten about this. I'd like to prioritize getting this fixed
-soon. By the way, how did you test this?
-
->
-> diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
-> index d0f397c90242..0ec66008df19 100644
-> --- a/drivers/tee/optee/supp.c
-> +++ b/drivers/tee/optee/supp.c
-> @@ -10,7 +10,11 @@
->  struct optee_supp_req {
->         struct list_head link;
->
-> +       int id;
-> +
->         bool in_queue;
-> +       bool processed;
-> +
->         u32 func;
->         u32 ret;
->         size_t num_params;
-> @@ -19,6 +23,9 @@ struct optee_supp_req {
->         struct completion c;
->  };
->
-> +/* It is temporary request used for invalid pending request in supp->idr=
-. */
-> +#define INVALID_REQ_PTR ((struct optee_supp_req *)ERR_PTR(-ENOENT))
-> +
->  void optee_supp_init(struct optee_supp *supp)
->  {
->         memset(supp, 0, sizeof(*supp));
-> @@ -46,6 +53,10 @@ void optee_supp_release(struct optee_supp *supp)
->         /* Abort all request retrieved by supplicant */
->         idr_for_each_entry(&supp->idr, req, id) {
->                 idr_remove(&supp->idr, id);
-> +               /* Skip if request was already marked invalid */
-> +               if (IS_ERR(req))
-> +                       continue;
-> +
->                 req->ret =3D TEEC_ERROR_COMMUNICATION;
->                 complete(&req->c);
->         }
-> @@ -102,6 +113,7 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 =
-func, size_t num_params,
->         mutex_lock(&supp->mutex);
->         list_add_tail(&req->link, &supp->reqs);
->         req->in_queue =3D true;
-> +       req->processed =3D false;
->         mutex_unlock(&supp->mutex);
->
->         /* Tell an eventual waiter there's a new request */
-> @@ -117,21 +129,40 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u3=
-2 func, size_t num_params,
->         if (wait_for_completion_killable(&req->c)) {
->                 mutex_lock(&supp->mutex);
->                 if (req->in_queue) {
-> +                       /* Supplicant has not seen this request yet. */
->                         list_del(&req->link);
->                         req->in_queue =3D false;
-> +
-> +                       ret =3D TEEC_ERROR_COMMUNICATION;
-> +               } else if (req->processed) {
-> +                       /*
-> +                        * Supplicant has processed this request. Ignore =
-the
-> +                        * kill signal for now and submit the result.
-> +                        */
-> +                       ret =3D req->ret;
-> +               } else {
-> +                       /*
-> +                        * Supplicant is in the middle of processing this
-> +                        * request. Replace req with INVALID_REQ_PTR so t=
-hat
-> +                        * the ID remains busy, causing optee_supp_send()=
- to
-> +                        * fail on the next call to supp_pop_req() with t=
-his ID.
-> +                        */
-> +                       idr_replace(&supp->idr, INVALID_REQ_PTR, req->id)=
-;
-> +                       ret =3D TEEC_ERROR_COMMUNICATION;
->                 }
-> +
->                 mutex_unlock(&supp->mutex);
-> -               req->ret =3D TEEC_ERROR_COMMUNICATION;
-> +       } else {
-> +               ret =3D req->ret;
->         }
->
-> -       ret =3D req->ret;
->         kfree(req);
->
->         return ret;
->  }
->
->  static struct optee_supp_req  *supp_pop_entry(struct optee_supp *supp,
-> -                                             int num_params, int *id)
-> +                                             int num_params)
->  {
->         struct optee_supp_req *req;
->
-> @@ -153,8 +184,8 @@ static struct optee_supp_req  *supp_pop_entry(struct =
-optee_supp *supp,
->                 return ERR_PTR(-EINVAL);
->         }
->
-> -       *id =3D idr_alloc(&supp->idr, req, 1, 0, GFP_KERNEL);
-> -       if (*id < 0)
-> +       req->id =3D idr_alloc(&supp->idr, req, 1, 0, GFP_KERNEL);
-> +       if (req->id < 0)
->                 return ERR_PTR(-ENOMEM);
-
-Since we're now storing the supplicant request ID, wouldn't it make
-sense to pre-allocate the ID when allocating the request to avoid this
-error case?
-
->
->         list_del(&req->link);
-> @@ -214,7 +245,6 @@ int optee_supp_recv(struct tee_context *ctx, u32 *fun=
-c, u32 *num_params,
->         struct optee *optee =3D tee_get_drvdata(teedev);
->         struct optee_supp *supp =3D &optee->supp;
->         struct optee_supp_req *req =3D NULL;
-> -       int id;
->         size_t num_meta;
->         int rc;
->
-> @@ -224,15 +254,48 @@ int optee_supp_recv(struct tee_context *ctx, u32 *f=
-unc, u32 *num_params,
->
->         while (true) {
->                 mutex_lock(&supp->mutex);
-> -               req =3D supp_pop_entry(supp, *num_params - num_meta, &id)=
-;
-> -               mutex_unlock(&supp->mutex);
->
-> -               if (req) {
-> -                       if (IS_ERR(req))
-> -                               return PTR_ERR(req);
-> -                       break;
-> +               req =3D supp_pop_entry(supp, *num_params - num_meta);
-> +               if (!req) {
-> +                       mutex_unlock(&supp->mutex);
-> +                       goto wait_for_request;
-> +               }
-> +
-> +               if (IS_ERR(req)) {
-> +                       rc =3D PTR_ERR(req);
-> +                       mutex_unlock(&supp->mutex);
-> +
-> +                       return rc;
->                 }
->
-> +               /*
-> +                * Process the request while holding the lock, so that
-> +                * optee_supp_thrd_req() doesn't pull the request from un=
-der us.
-> +                */
-> +
-> +               if (num_meta) {
-> +                       /*
-> +                        * tee-supplicant support meta parameters ->
-> +                        * requests can be processed asynchronously.
-> +                        */
-> +                       param->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_I=
-NOUT |
-> +                                     TEE_IOCTL_PARAM_ATTR_META;
-> +                       param->u.value.a =3D req->id;
-> +                       param->u.value.b =3D 0;
-> +                       param->u.value.c =3D 0;
-> +               } else {
-> +                       supp->req_id =3D req->id;
-> +               }
-> +
-> +               *func =3D req->func;
-> +               *num_params =3D req->num_params + num_meta;
-> +               memcpy(param + num_meta, req->param,
-> +                      sizeof(struct tee_param) * req->num_params);
-> +
-> +               mutex_unlock(&supp->mutex);
-> +               return 0;
-
-Do we really need to move this into the loop? The structure of the
-function becomes a bit unusual and harder to read.
-
-> +
-> +wait_for_request:
->                 /*
->                  * If we didn't get a request we'll block in
->                  * wait_for_completion() to avoid needless spinning.
-> @@ -243,29 +306,10 @@ int optee_supp_recv(struct tee_context *ctx, u32 *f=
-unc, u32 *num_params,
->                  */
->                 if (wait_for_completion_interruptible(&supp->reqs_c))
->                         return -ERESTARTSYS;
-> -       }
->
-> -       if (num_meta) {
-> -               /*
-> -                * tee-supplicant support meta parameters -> requsts can =
-be
-> -                * processed asynchronously.
-> -                */
-> -               param->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT |
-> -                             TEE_IOCTL_PARAM_ATTR_META;
-> -               param->u.value.a =3D id;
-> -               param->u.value.b =3D 0;
-> -               param->u.value.c =3D 0;
-> -       } else {
-> -               mutex_lock(&supp->mutex);
-> -               supp->req_id =3D id;
-> -               mutex_unlock(&supp->mutex);
-> +               /* Check for the next request in the queue. */
->         }
->
-> -       *func =3D req->func;
-> -       *num_params =3D req->num_params + num_meta;
-> -       memcpy(param + num_meta, req->param,
-> -              sizeof(struct tee_param) * req->num_params);
-> -
->         return 0;
->  }
->
-> @@ -297,12 +341,18 @@ static struct optee_supp_req *supp_pop_req(struct o=
-ptee_supp *supp,
->         if (!req)
->                 return ERR_PTR(-ENOENT);
->
-> +       /* optee_supp_thrd_req() already returned to optee. */
-> +       if (IS_ERR(req))
-> +               goto failed_req;
-> +
->         if ((num_params - nm) !=3D req->num_params)
->                 return ERR_PTR(-EINVAL);
->
-> +       *num_meta =3D nm;
-> +failed_req:
->         idr_remove(&supp->idr, id);
->         supp->req_id =3D -1;
-> -       *num_meta =3D nm;
-> +
->
->         return req;
->  }
-> @@ -328,9 +378,8 @@ int optee_supp_send(struct tee_context *ctx, u32 ret,=
- u32 num_params,
->
->         mutex_lock(&supp->mutex);
->         req =3D supp_pop_req(supp, num_params, param, &num_meta);
-> -       mutex_unlock(&supp->mutex);
-> -
->         if (IS_ERR(req)) {
-> +               mutex_unlock(&supp->mutex);
-
-We need a way to tell the difference between an id not found and an id
-removed because of a killed requester.
-How about storing NULL for revoked requests instead of an err-pointer?
-
-Cheers,
-Jens
-
->                 /* Something is wrong, let supplicant restart. */
->                 return PTR_ERR(req);
->         }
-> @@ -355,9 +404,10 @@ int optee_supp_send(struct tee_context *ctx, u32 ret=
-, u32 num_params,
->                 }
->         }
->         req->ret =3D ret;
-> -
-> +       req->processed =3D true;
->         /* Let the requesting thread continue */
->         complete(&req->c);
-> +       mutex_unlock(&supp->mutex);
->
->         return 0;
->  }
->
-> ---
-> base-commit: 3f24e4edcd1b8981c6b448ea2680726dedd87279
-> change-id: 20250604-fix-use-after-free-8ff1b5d5d774
->
-> Best regards,
-> --
-> Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
->
+SGkgSmVucywNCg0KT24gMi8yLzIwMjYgMTA6MzYgUE0sIEplbnMgV2lrbGFuZGVyIHdyb3RlOg0K
+PiBIaSBBbWlyLA0KPiANCj4gT24gVGh1LCBKYW4gMjksIDIwMjYgYXQgNDoyMuKAr0FNIEFtaXJy
+ZXphIFphcnJhYmkNCj4gPGFtaXJyZXphLnphcnJhYmlAb3NzLnF1YWxjb21tLmNvbT4gd3JvdGU6
+DQo+Pg0KPj4gQ29tbWl0IDcwYjBkNmIwYTE5OSAoInRlZTogb3B0ZWU6IEZpeCBzdXBwbGljYW50
+IHdhaXQgbG9vcCIpIG1hZGUgdGhlDQo+PiBjbGllbnQgd2FpdCBhcyBraWxsYWJsZSBzbyBpdCBj
+YW4gYmUgaW50ZXJydXB0ZWQgZHVyaW5nIHNodXRkb3duIG9yDQo+PiBhZnRlciBhIHN1cHBsaWNh
+bnQgY3Jhc2guIFRoaXMgY2hhbmdlcyB0aGUgb3JpZ2luYWwgbGlmZXRpbWUgZXhwZWN0YXRpb25z
+Og0KPj4gdGhlIGNsaWVudCB0YXNrIGNhbiBub3cgdGVybWluYXRlIHdoaWxlIHRoZSBzdXBwbGlj
+YW50IGlzIHN0aWxsIHByb2Nlc3NpbmcNCj4+IGl0cyByZXF1ZXN0Lg0KPj4NCj4+IElmIHRoZSBj
+bGllbnQgZXhpdHMgZmlyc3QgaXQgcmVtb3ZlcyB0aGUgcmVxdWVzdCBmcm9tIGl0cyBxdWV1ZSBh
+bmQNCj4+IGtmcmVlKClzIGl0LCB3aGlsZSB0aGUgcmVxdWVzdCBJRCByZW1haW5zIGluIHN1cHAt
+Pmlkci4gQSBzdWJzZXF1ZW50DQo+PiBsb29rdXAgb24gdGhlIHN1cHBsaWNhbnQgcGF0aCB0aGVu
+IGRlcmVmZXJlbmNlcyBmcmVlZCBtZW1vcnksIGxlYWRpbmcgdG8NCj4+IGEgdXNlLWFmdGVyLWZy
+ZWUuDQo+Pg0KPj4gU2VyaWFsaXNlIGFjY2VzcyB0byB0aGUgcmVxdWVzdCB3aXRoIHN1cHAtPm11
+dGV4Og0KPj4NCj4+ICAgKiBIb2xkIHN1cHAtPm11dGV4IGluIG9wdGVlX3N1cHBfcmVjdigpIGFu
+ZCBvcHRlZV9zdXBwX3NlbmQoKSB3aGlsZQ0KPj4gICAgIGxvb2tpbmcgdXAgYW5kIHRvdWNoaW5n
+IHRoZSByZXF1ZXN0Lg0KPj4gICAqIExldCBvcHRlZV9zdXBwX3RocmRfcmVxKCkgbm90aWNlIHRo
+YXQgdGhlIGNsaWVudCBoYXMgdGVybWluYXRlZCBhbmQNCj4+ICAgICBzaWduYWwgb3B0ZWVfc3Vw
+cF9zZW5kKCkgYWNjb3JkaW5nbHkuDQo+Pg0KPj4gV2l0aCB0aGVzZSBjaGFuZ2VzIHRoZSByZXF1
+ZXN0IGNhbm5vdCBiZSBmcmVlZCB3aGlsZSB0aGUgc3VwcGxpY2FudCBzdGlsbA0KPj4gaGFzIGEg
+cmVmZXJlbmNlLCBlbGltaW5hdGluZyB0aGUgcmFjZS4NCj4+DQo+PiBGaXhlczogNzBiMGQ2YjBh
+MTk5ICgidGVlOiBvcHRlZTogRml4IHN1cHBsaWNhbnQgd2FpdCBsb29wIikNCj4+IFNpZ25lZC1v
+ZmYtYnk6IEFtaXJyZXphIFphcnJhYmkgPGFtaXJyZXphLnphcnJhYmlAb3NzLnF1YWxjb21tLmNv
+bT4NCj4+IC0tLQ0KPj4gQ2hhbmdlcyBpbiB2MzoNCj4+IC0gSW50cm9kdWNlIHByb2Nlc3NlZCBm
+bGFnIGluc3RlYWQgb2YgLTEgZm9yIHJlcS0+aWQuDQo+PiAtIFVwZGF0ZSBvcHRlZV9zdXBwX3Jl
+bGVhc2UoKSBhcyByZXBvcnRlZCBieSBNaWNoYWVsIFd1Lg0KPj4gLSBVc2UgbXV0ZXggaW5zdGVh
+ZCBvZiBndWFyZC4NCj4+IC0gTGluayB0byB2MjogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvci8y
+MDI1MDYxNy1maXgtdXNlLWFmdGVyLWZyZWUtdjItMS0xZmJmYWZlYzU5MTdAb3NzLnF1YWxjb21t
+LmNvbQ0KPj4NCj4+IENoYW5nZXMgaW4gdjI6DQo+PiAtIFJlcGxhY2UgdGhlIHN0YXRpYyB2YXJp
+YWJsZSB3aXRoIGEgc2VudGluZWwgdmFsdWUuDQo+PiAtIEZpeCB0aGUgaXNzdWUgd2l0aCByZXR1
+cm5pbmcgdGhlIHBvcHBlZCByZXF1ZXN0IHRvIHRoZSBzdXBwbGljYW50Lg0KPj4gLSBMaW5rIHRv
+IHYxOiBodHRwczovL2xvcmUua2VybmVsLm9yZy9yLzIwMjUwNjA1LWZpeC11c2UtYWZ0ZXItZnJl
+ZS12MS0xLWE3MGQyM2JmZjI0OEBvc3MucXVhbGNvbW0uY29tDQo+PiAtLS0NCj4+ICBkcml2ZXJz
+L3RlZS9vcHRlZS9zdXBwLmMgfCAxMjIgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+LS0tLS0tLS0tLS0tLS0NCj4+ICAxIGZpbGUgY2hhbmdlZCwgODYgaW5zZXJ0aW9ucygrKSwgMzYg
+ZGVsZXRpb25zKC0pDQo+IA0KPiBJIGhhZCBmb3Jnb3R0ZW4gYWJvdXQgdGhpcy4gSSdkIGxpa2Ug
+dG8gcHJpb3JpdGl6ZSBnZXR0aW5nIHRoaXMgZml4ZWQNCj4gc29vbi4gQnkgdGhlIHdheSwgaG93
+IGRpZCB5b3UgdGVzdCB0aGlzPw0KPiANCg0KVGhhbmtzIGZvciB0aGUgdXBkYXRlLiBJIGN1cnJl
+bnRseSBkb24ndCBoYXZlIGFjY2VzcyB0byB0aGUgc2V0dXAgcmVxdWlyZWQgdG8gcnVuDQp0aGUg
+dGVzdHMgbXlzZWxmLiBNeSBwbGFuIGlzIHRvIGZpbmFsaXplIHRoZSBkZXNpZ24gYW5kIGltcGxl
+bWVudGF0aW9uLCB0aGVuDQphc2sgTWljaGFlbCBXdSB0byBydW4gaGlzIHVzZSBjYXNlLiBCYXNl
+ZCBvbiBoaXMgZWFybGllciBmZWVkYmFjaywgdGhlIHBhdGNoDQphcHBlYXJzIHRvIGJlIHdvcmtp
+bmcgYXMgZXhwZWN0ZWQuDQoNCmh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yOTI2NTNiYS0z
+ODM2LTAwZjEtYWNkNC1hMjhiMWM1NDM4OGNAYWxsd2lubmVydGVjaC5jb20vDQoNCj4+DQo+PiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy90ZWUvb3B0ZWUvc3VwcC5jIGIvZHJpdmVycy90ZWUvb3B0ZWUv
+c3VwcC5jDQo+PiBpbmRleCBkMGYzOTdjOTAyNDIuLjBlYzY2MDA4ZGYxOSAxMDA2NDQNCj4+IC0t
+LSBhL2RyaXZlcnMvdGVlL29wdGVlL3N1cHAuYw0KPj4gKysrIGIvZHJpdmVycy90ZWUvb3B0ZWUv
+c3VwcC5jDQo+PiBAQCAtMTAsNyArMTAsMTEgQEANCj4+ICBzdHJ1Y3Qgb3B0ZWVfc3VwcF9yZXEg
+ew0KPj4gICAgICAgICBzdHJ1Y3QgbGlzdF9oZWFkIGxpbms7DQo+Pg0KPj4gKyAgICAgICBpbnQg
+aWQ7DQo+PiArDQo+PiAgICAgICAgIGJvb2wgaW5fcXVldWU7DQo+PiArICAgICAgIGJvb2wgcHJv
+Y2Vzc2VkOw0KPj4gKw0KPj4gICAgICAgICB1MzIgZnVuYzsNCj4+ICAgICAgICAgdTMyIHJldDsN
+Cj4+ICAgICAgICAgc2l6ZV90IG51bV9wYXJhbXM7DQo+PiBAQCAtMTksNiArMjMsOSBAQCBzdHJ1
+Y3Qgb3B0ZWVfc3VwcF9yZXEgew0KPj4gICAgICAgICBzdHJ1Y3QgY29tcGxldGlvbiBjOw0KPj4g
+IH07DQo+Pg0KPj4gKy8qIEl0IGlzIHRlbXBvcmFyeSByZXF1ZXN0IHVzZWQgZm9yIGludmFsaWQg
+cGVuZGluZyByZXF1ZXN0IGluIHN1cHAtPmlkci4gKi8NCj4+ICsjZGVmaW5lIElOVkFMSURfUkVR
+X1BUUiAoKHN0cnVjdCBvcHRlZV9zdXBwX3JlcSAqKUVSUl9QVFIoLUVOT0VOVCkpDQo+PiArDQo+
+PiAgdm9pZCBvcHRlZV9zdXBwX2luaXQoc3RydWN0IG9wdGVlX3N1cHAgKnN1cHApDQo+PiAgew0K
+Pj4gICAgICAgICBtZW1zZXQoc3VwcCwgMCwgc2l6ZW9mKCpzdXBwKSk7DQo+PiBAQCAtNDYsNiAr
+NTMsMTAgQEAgdm9pZCBvcHRlZV9zdXBwX3JlbGVhc2Uoc3RydWN0IG9wdGVlX3N1cHAgKnN1cHAp
+DQo+PiAgICAgICAgIC8qIEFib3J0IGFsbCByZXF1ZXN0IHJldHJpZXZlZCBieSBzdXBwbGljYW50
+ICovDQo+PiAgICAgICAgIGlkcl9mb3JfZWFjaF9lbnRyeSgmc3VwcC0+aWRyLCByZXEsIGlkKSB7
+DQo+PiAgICAgICAgICAgICAgICAgaWRyX3JlbW92ZSgmc3VwcC0+aWRyLCBpZCk7DQo+PiArICAg
+ICAgICAgICAgICAgLyogU2tpcCBpZiByZXF1ZXN0IHdhcyBhbHJlYWR5IG1hcmtlZCBpbnZhbGlk
+ICovDQo+PiArICAgICAgICAgICAgICAgaWYgKElTX0VSUihyZXEpKQ0KPj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgY29udGludWU7DQo+PiArDQo+PiAgICAgICAgICAgICAgICAgcmVxLT5yZXQg
+PSBURUVDX0VSUk9SX0NPTU1VTklDQVRJT047DQo+PiAgICAgICAgICAgICAgICAgY29tcGxldGUo
+JnJlcS0+Yyk7DQo+PiAgICAgICAgIH0NCj4+IEBAIC0xMDIsNiArMTEzLDcgQEAgdTMyIG9wdGVl
+X3N1cHBfdGhyZF9yZXEoc3RydWN0IHRlZV9jb250ZXh0ICpjdHgsIHUzMiBmdW5jLCBzaXplX3Qg
+bnVtX3BhcmFtcywNCj4+ICAgICAgICAgbXV0ZXhfbG9jaygmc3VwcC0+bXV0ZXgpOw0KPj4gICAg
+ICAgICBsaXN0X2FkZF90YWlsKCZyZXEtPmxpbmssICZzdXBwLT5yZXFzKTsNCj4+ICAgICAgICAg
+cmVxLT5pbl9xdWV1ZSA9IHRydWU7DQo+PiArICAgICAgIHJlcS0+cHJvY2Vzc2VkID0gZmFsc2U7
+DQo+PiAgICAgICAgIG11dGV4X3VubG9jaygmc3VwcC0+bXV0ZXgpOw0KPj4NCj4+ICAgICAgICAg
+LyogVGVsbCBhbiBldmVudHVhbCB3YWl0ZXIgdGhlcmUncyBhIG5ldyByZXF1ZXN0ICovDQo+PiBA
+QCAtMTE3LDIxICsxMjksNDAgQEAgdTMyIG9wdGVlX3N1cHBfdGhyZF9yZXEoc3RydWN0IHRlZV9j
+b250ZXh0ICpjdHgsIHUzMiBmdW5jLCBzaXplX3QgbnVtX3BhcmFtcywNCj4+ICAgICAgICAgaWYg
+KHdhaXRfZm9yX2NvbXBsZXRpb25fa2lsbGFibGUoJnJlcS0+YykpIHsNCj4+ICAgICAgICAgICAg
+ICAgICBtdXRleF9sb2NrKCZzdXBwLT5tdXRleCk7DQo+PiAgICAgICAgICAgICAgICAgaWYgKHJl
+cS0+aW5fcXVldWUpIHsNCj4+ICsgICAgICAgICAgICAgICAgICAgICAgIC8qIFN1cHBsaWNhbnQg
+aGFzIG5vdCBzZWVuIHRoaXMgcmVxdWVzdCB5ZXQuICovDQo+PiAgICAgICAgICAgICAgICAgICAg
+ICAgICBsaXN0X2RlbCgmcmVxLT5saW5rKTsNCj4+ICAgICAgICAgICAgICAgICAgICAgICAgIHJl
+cS0+aW5fcXVldWUgPSBmYWxzZTsNCj4+ICsNCj4+ICsgICAgICAgICAgICAgICAgICAgICAgIHJl
+dCA9IFRFRUNfRVJST1JfQ09NTVVOSUNBVElPTjsNCj4+ICsgICAgICAgICAgICAgICB9IGVsc2Ug
+aWYgKHJlcS0+cHJvY2Vzc2VkKSB7DQo+PiArICAgICAgICAgICAgICAgICAgICAgICAvKg0KPj4g
+KyAgICAgICAgICAgICAgICAgICAgICAgICogU3VwcGxpY2FudCBoYXMgcHJvY2Vzc2VkIHRoaXMg
+cmVxdWVzdC4gSWdub3JlIHRoZQ0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICoga2lsbCBz
+aWduYWwgZm9yIG5vdyBhbmQgc3VibWl0IHRoZSByZXN1bHQuDQo+PiArICAgICAgICAgICAgICAg
+ICAgICAgICAgKi8NCj4+ICsgICAgICAgICAgICAgICAgICAgICAgIHJldCA9IHJlcS0+cmV0Ow0K
+Pj4gKyAgICAgICAgICAgICAgIH0gZWxzZSB7DQo+PiArICAgICAgICAgICAgICAgICAgICAgICAv
+Kg0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICogU3VwcGxpY2FudCBpcyBpbiB0aGUgbWlk
+ZGxlIG9mIHByb2Nlc3NpbmcgdGhpcw0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICogcmVx
+dWVzdC4gUmVwbGFjZSByZXEgd2l0aCBJTlZBTElEX1JFUV9QVFIgc28gdGhhdA0KPj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICogdGhlIElEIHJlbWFpbnMgYnVzeSwgY2F1c2luZyBvcHRlZV9z
+dXBwX3NlbmQoKSB0bw0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICogZmFpbCBvbiB0aGUg
+bmV4dCBjYWxsIHRvIHN1cHBfcG9wX3JlcSgpIHdpdGggdGhpcyBJRC4NCj4+ICsgICAgICAgICAg
+ICAgICAgICAgICAgICAqLw0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgaWRyX3JlcGxhY2Uo
+JnN1cHAtPmlkciwgSU5WQUxJRF9SRVFfUFRSLCByZXEtPmlkKTsNCj4+ICsgICAgICAgICAgICAg
+ICAgICAgICAgIHJldCA9IFRFRUNfRVJST1JfQ09NTVVOSUNBVElPTjsNCj4+ICAgICAgICAgICAg
+ICAgICB9DQo+PiArDQo+PiAgICAgICAgICAgICAgICAgbXV0ZXhfdW5sb2NrKCZzdXBwLT5tdXRl
+eCk7DQo+PiAtICAgICAgICAgICAgICAgcmVxLT5yZXQgPSBURUVDX0VSUk9SX0NPTU1VTklDQVRJ
+T047DQo+PiArICAgICAgIH0gZWxzZSB7DQo+PiArICAgICAgICAgICAgICAgcmV0ID0gcmVxLT5y
+ZXQ7DQo+PiAgICAgICAgIH0NCj4+DQo+PiAtICAgICAgIHJldCA9IHJlcS0+cmV0Ow0KPj4gICAg
+ICAgICBrZnJlZShyZXEpOw0KPj4NCj4+ICAgICAgICAgcmV0dXJuIHJldDsNCj4+ICB9DQo+Pg0K
+Pj4gIHN0YXRpYyBzdHJ1Y3Qgb3B0ZWVfc3VwcF9yZXEgICpzdXBwX3BvcF9lbnRyeShzdHJ1Y3Qg
+b3B0ZWVfc3VwcCAqc3VwcCwNCj4+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICBpbnQgbnVtX3BhcmFtcywgaW50ICppZCkNCj4+ICsgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbnQgbnVtX3BhcmFtcykNCj4+ICB7DQo+PiAg
+ICAgICAgIHN0cnVjdCBvcHRlZV9zdXBwX3JlcSAqcmVxOw0KPj4NCj4+IEBAIC0xNTMsOCArMTg0
+LDggQEAgc3RhdGljIHN0cnVjdCBvcHRlZV9zdXBwX3JlcSAgKnN1cHBfcG9wX2VudHJ5KHN0cnVj
+dCBvcHRlZV9zdXBwICpzdXBwLA0KPj4gICAgICAgICAgICAgICAgIHJldHVybiBFUlJfUFRSKC1F
+SU5WQUwpOw0KPj4gICAgICAgICB9DQo+Pg0KPj4gLSAgICAgICAqaWQgPSBpZHJfYWxsb2MoJnN1
+cHAtPmlkciwgcmVxLCAxLCAwLCBHRlBfS0VSTkVMKTsNCj4+IC0gICAgICAgaWYgKCppZCA8IDAp
+DQo+PiArICAgICAgIHJlcS0+aWQgPSBpZHJfYWxsb2MoJnN1cHAtPmlkciwgcmVxLCAxLCAwLCBH
+RlBfS0VSTkVMKTsNCj4+ICsgICAgICAgaWYgKHJlcS0+aWQgPCAwKQ0KPj4gICAgICAgICAgICAg
+ICAgIHJldHVybiBFUlJfUFRSKC1FTk9NRU0pOw0KPiANCj4gU2luY2Ugd2UncmUgbm93IHN0b3Jp
+bmcgdGhlIHN1cHBsaWNhbnQgcmVxdWVzdCBJRCwgd291bGRuJ3QgaXQgbWFrZQ0KPiBzZW5zZSB0
+byBwcmUtYWxsb2NhdGUgdGhlIElEIHdoZW4gYWxsb2NhdGluZyB0aGUgcmVxdWVzdCB0byBhdm9p
+ZCB0aGlzDQo+IGVycm9yIGNhc2U/DQo+IA0KDQpUcnVlLCBidXQgYWxsb2NhdGluZyB0aGUgSUQg
+YXQgdGhpcyBzdGFnZSBoYXMgb25lIGFkdmFudGFnZS4NCklmIGFuIElEIGlzIG5vdCBhdmFpbGFi
+bGUsIHRoZSByZXF1ZXN0IGNhbiByZW1haW4gb24gdGhlIHJlcXVlc3QgbGlzdCwNCmFsbG93aW5n
+IHRoZSBzdXBwbGljYW50IHRvIHJldHJ5IGxhdGVyIHdoZW4gcmVzb3VyY2VzIGJlY29tZSBhdmFp
+bGFibGUuDQpJZiBJRCBhbGxvY2F0aW9uIGZhaWxzIGR1cmluZyByZXF1ZXN0IGNyZWF0aW9uLCBJ
+IGhhdmUgbm8gY2hvaWNlIGJ1dA0KdG8gZHJvcCB0aGUgcmVxdWVzdCBhbmQgcmVwb3J0IGFuIGVy
+cm9yIHRvIG9wdGVlLg0KDQo+Pg0KPj4gICAgICAgICBsaXN0X2RlbCgmcmVxLT5saW5rKTsNCj4+
+IEBAIC0yMTQsNyArMjQ1LDYgQEAgaW50IG9wdGVlX3N1cHBfcmVjdihzdHJ1Y3QgdGVlX2NvbnRl
+eHQgKmN0eCwgdTMyICpmdW5jLCB1MzIgKm51bV9wYXJhbXMsDQo+PiAgICAgICAgIHN0cnVjdCBv
+cHRlZSAqb3B0ZWUgPSB0ZWVfZ2V0X2RydmRhdGEodGVlZGV2KTsNCj4+ICAgICAgICAgc3RydWN0
+IG9wdGVlX3N1cHAgKnN1cHAgPSAmb3B0ZWUtPnN1cHA7DQo+PiAgICAgICAgIHN0cnVjdCBvcHRl
+ZV9zdXBwX3JlcSAqcmVxID0gTlVMTDsNCj4+IC0gICAgICAgaW50IGlkOw0KPj4gICAgICAgICBz
+aXplX3QgbnVtX21ldGE7DQo+PiAgICAgICAgIGludCByYzsNCj4+DQo+PiBAQCAtMjI0LDE1ICsy
+NTQsNDggQEAgaW50IG9wdGVlX3N1cHBfcmVjdihzdHJ1Y3QgdGVlX2NvbnRleHQgKmN0eCwgdTMy
+ICpmdW5jLCB1MzIgKm51bV9wYXJhbXMsDQo+Pg0KPj4gICAgICAgICB3aGlsZSAodHJ1ZSkgew0K
+Pj4gICAgICAgICAgICAgICAgIG11dGV4X2xvY2soJnN1cHAtPm11dGV4KTsNCj4+IC0gICAgICAg
+ICAgICAgICByZXEgPSBzdXBwX3BvcF9lbnRyeShzdXBwLCAqbnVtX3BhcmFtcyAtIG51bV9tZXRh
+LCAmaWQpOw0KPj4gLSAgICAgICAgICAgICAgIG11dGV4X3VubG9jaygmc3VwcC0+bXV0ZXgpOw0K
+Pj4NCj4+IC0gICAgICAgICAgICAgICBpZiAocmVxKSB7DQo+PiAtICAgICAgICAgICAgICAgICAg
+ICAgICBpZiAoSVNfRVJSKHJlcSkpDQo+PiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHJldHVybiBQVFJfRVJSKHJlcSk7DQo+PiAtICAgICAgICAgICAgICAgICAgICAgICBicmVhazsN
+Cj4+ICsgICAgICAgICAgICAgICByZXEgPSBzdXBwX3BvcF9lbnRyeShzdXBwLCAqbnVtX3BhcmFt
+cyAtIG51bV9tZXRhKTsNCj4+ICsgICAgICAgICAgICAgICBpZiAoIXJlcSkgew0KPj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgbXV0ZXhfdW5sb2NrKCZzdXBwLT5tdXRleCk7DQo+PiArICAgICAg
+ICAgICAgICAgICAgICAgICBnb3RvIHdhaXRfZm9yX3JlcXVlc3Q7DQo+PiArICAgICAgICAgICAg
+ICAgfQ0KPj4gKw0KPj4gKyAgICAgICAgICAgICAgIGlmIChJU19FUlIocmVxKSkgew0KPj4gKyAg
+ICAgICAgICAgICAgICAgICAgICAgcmMgPSBQVFJfRVJSKHJlcSk7DQo+PiArICAgICAgICAgICAg
+ICAgICAgICAgICBtdXRleF91bmxvY2soJnN1cHAtPm11dGV4KTsNCj4+ICsNCj4+ICsgICAgICAg
+ICAgICAgICAgICAgICAgIHJldHVybiByYzsNCj4+ICAgICAgICAgICAgICAgICB9DQo+Pg0KPj4g
+KyAgICAgICAgICAgICAgIC8qDQo+PiArICAgICAgICAgICAgICAgICogUHJvY2VzcyB0aGUgcmVx
+dWVzdCB3aGlsZSBob2xkaW5nIHRoZSBsb2NrLCBzbyB0aGF0DQo+PiArICAgICAgICAgICAgICAg
+ICogb3B0ZWVfc3VwcF90aHJkX3JlcSgpIGRvZXNuJ3QgcHVsbCB0aGUgcmVxdWVzdCBmcm9tIHVu
+ZGVyIHVzLg0KPj4gKyAgICAgICAgICAgICAgICAqLw0KPj4gKw0KPj4gKyAgICAgICAgICAgICAg
+IGlmIChudW1fbWV0YSkgew0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgLyoNCj4+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAqIHRlZS1zdXBwbGljYW50IHN1cHBvcnQgbWV0YSBwYXJhbWV0
+ZXJzIC0+DQo+PiArICAgICAgICAgICAgICAgICAgICAgICAgKiByZXF1ZXN0cyBjYW4gYmUgcHJv
+Y2Vzc2VkIGFzeW5jaHJvbm91c2x5Lg0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICovDQo+
+PiArICAgICAgICAgICAgICAgICAgICAgICBwYXJhbS0+YXR0ciA9IFRFRV9JT0NUTF9QQVJBTV9B
+VFRSX1RZUEVfVkFMVUVfSU5PVVQgfA0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBURUVfSU9DVExfUEFSQU1fQVRUUl9NRVRBOw0KPj4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgcGFyYW0tPnUudmFsdWUuYSA9IHJlcS0+aWQ7DQo+PiArICAgICAgICAgICAgICAgICAg
+ICAgICBwYXJhbS0+dS52YWx1ZS5iID0gMDsNCj4+ICsgICAgICAgICAgICAgICAgICAgICAgIHBh
+cmFtLT51LnZhbHVlLmMgPSAwOw0KPj4gKyAgICAgICAgICAgICAgIH0gZWxzZSB7DQo+PiArICAg
+ICAgICAgICAgICAgICAgICAgICBzdXBwLT5yZXFfaWQgPSByZXEtPmlkOw0KPj4gKyAgICAgICAg
+ICAgICAgIH0NCj4+ICsNCj4+ICsgICAgICAgICAgICAgICAqZnVuYyA9IHJlcS0+ZnVuYzsNCj4+
+ICsgICAgICAgICAgICAgICAqbnVtX3BhcmFtcyA9IHJlcS0+bnVtX3BhcmFtcyArIG51bV9tZXRh
+Ow0KPj4gKyAgICAgICAgICAgICAgIG1lbWNweShwYXJhbSArIG51bV9tZXRhLCByZXEtPnBhcmFt
+LA0KPj4gKyAgICAgICAgICAgICAgICAgICAgICBzaXplb2Yoc3RydWN0IHRlZV9wYXJhbSkgKiBy
+ZXEtPm51bV9wYXJhbXMpOw0KPj4gKw0KPj4gKyAgICAgICAgICAgICAgIG11dGV4X3VubG9jaygm
+c3VwcC0+bXV0ZXgpOw0KPj4gKyAgICAgICAgICAgICAgIHJldHVybiAwOw0KPiANCj4gRG8gd2Ug
+cmVhbGx5IG5lZWQgdG8gbW92ZSB0aGlzIGludG8gdGhlIGxvb3A/IFRoZSBzdHJ1Y3R1cmUgb2Yg
+dGhlDQo+IGZ1bmN0aW9uIGJlY29tZXMgYSBiaXQgdW51c3VhbCBhbmQgaGFyZGVyIHRvIHJlYWQu
+DQo+IA0KDQpBY2suIEknbGwgcmVvcmdhbml6ZSB0aGlzIGZ1bmN0aW9uLg0KDQo+PiArDQo+PiAr
+d2FpdF9mb3JfcmVxdWVzdDoNCj4+ICAgICAgICAgICAgICAgICAvKg0KPj4gICAgICAgICAgICAg
+ICAgICAqIElmIHdlIGRpZG4ndCBnZXQgYSByZXF1ZXN0IHdlJ2xsIGJsb2NrIGluDQo+PiAgICAg
+ICAgICAgICAgICAgICogd2FpdF9mb3JfY29tcGxldGlvbigpIHRvIGF2b2lkIG5lZWRsZXNzIHNw
+aW5uaW5nLg0KPj4gQEAgLTI0MywyOSArMzA2LDEwIEBAIGludCBvcHRlZV9zdXBwX3JlY3Yoc3Ry
+dWN0IHRlZV9jb250ZXh0ICpjdHgsIHUzMiAqZnVuYywgdTMyICpudW1fcGFyYW1zLA0KPj4gICAg
+ICAgICAgICAgICAgICAqLw0KPj4gICAgICAgICAgICAgICAgIGlmICh3YWl0X2Zvcl9jb21wbGV0
+aW9uX2ludGVycnVwdGlibGUoJnN1cHAtPnJlcXNfYykpDQo+PiAgICAgICAgICAgICAgICAgICAg
+ICAgICByZXR1cm4gLUVSRVNUQVJUU1lTOw0KPj4gLSAgICAgICB9DQo+Pg0KPj4gLSAgICAgICBp
+ZiAobnVtX21ldGEpIHsNCj4+IC0gICAgICAgICAgICAgICAvKg0KPj4gLSAgICAgICAgICAgICAg
+ICAqIHRlZS1zdXBwbGljYW50IHN1cHBvcnQgbWV0YSBwYXJhbWV0ZXJzIC0+IHJlcXVzdHMgY2Fu
+IGJlDQo+PiAtICAgICAgICAgICAgICAgICogcHJvY2Vzc2VkIGFzeW5jaHJvbm91c2x5Lg0KPj4g
+LSAgICAgICAgICAgICAgICAqLw0KPj4gLSAgICAgICAgICAgICAgIHBhcmFtLT5hdHRyID0gVEVF
+X0lPQ1RMX1BBUkFNX0FUVFJfVFlQRV9WQUxVRV9JTk9VVCB8DQo+PiAtICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBURUVfSU9DVExfUEFSQU1fQVRUUl9NRVRBOw0KPj4gLSAgICAgICAgICAg
+ICAgIHBhcmFtLT51LnZhbHVlLmEgPSBpZDsNCj4+IC0gICAgICAgICAgICAgICBwYXJhbS0+dS52
+YWx1ZS5iID0gMDsNCj4+IC0gICAgICAgICAgICAgICBwYXJhbS0+dS52YWx1ZS5jID0gMDsNCj4+
+IC0gICAgICAgfSBlbHNlIHsNCj4+IC0gICAgICAgICAgICAgICBtdXRleF9sb2NrKCZzdXBwLT5t
+dXRleCk7DQo+PiAtICAgICAgICAgICAgICAgc3VwcC0+cmVxX2lkID0gaWQ7DQo+PiAtICAgICAg
+ICAgICAgICAgbXV0ZXhfdW5sb2NrKCZzdXBwLT5tdXRleCk7DQo+PiArICAgICAgICAgICAgICAg
+LyogQ2hlY2sgZm9yIHRoZSBuZXh0IHJlcXVlc3QgaW4gdGhlIHF1ZXVlLiAqLw0KPj4gICAgICAg
+ICB9DQo+Pg0KPj4gLSAgICAgICAqZnVuYyA9IHJlcS0+ZnVuYzsNCj4+IC0gICAgICAgKm51bV9w
+YXJhbXMgPSByZXEtPm51bV9wYXJhbXMgKyBudW1fbWV0YTsNCj4+IC0gICAgICAgbWVtY3B5KHBh
+cmFtICsgbnVtX21ldGEsIHJlcS0+cGFyYW0sDQo+PiAtICAgICAgICAgICAgICBzaXplb2Yoc3Ry
+dWN0IHRlZV9wYXJhbSkgKiByZXEtPm51bV9wYXJhbXMpOw0KPj4gLQ0KPj4gICAgICAgICByZXR1
+cm4gMDsNCj4+ICB9DQo+Pg0KPj4gQEAgLTI5NywxMiArMzQxLDE4IEBAIHN0YXRpYyBzdHJ1Y3Qg
+b3B0ZWVfc3VwcF9yZXEgKnN1cHBfcG9wX3JlcShzdHJ1Y3Qgb3B0ZWVfc3VwcCAqc3VwcCwNCj4+
+ICAgICAgICAgaWYgKCFyZXEpDQo+PiAgICAgICAgICAgICAgICAgcmV0dXJuIEVSUl9QVFIoLUVO
+T0VOVCk7DQo+Pg0KPj4gKyAgICAgICAvKiBvcHRlZV9zdXBwX3RocmRfcmVxKCkgYWxyZWFkeSBy
+ZXR1cm5lZCB0byBvcHRlZS4gKi8NCj4+ICsgICAgICAgaWYgKElTX0VSUihyZXEpKQ0KPj4gKyAg
+ICAgICAgICAgICAgIGdvdG8gZmFpbGVkX3JlcTsNCj4+ICsNCj4+ICAgICAgICAgaWYgKChudW1f
+cGFyYW1zIC0gbm0pICE9IHJlcS0+bnVtX3BhcmFtcykNCj4+ICAgICAgICAgICAgICAgICByZXR1
+cm4gRVJSX1BUUigtRUlOVkFMKTsNCj4+DQo+PiArICAgICAgICpudW1fbWV0YSA9IG5tOw0KPj4g
+K2ZhaWxlZF9yZXE6DQo+PiAgICAgICAgIGlkcl9yZW1vdmUoJnN1cHAtPmlkciwgaWQpOw0KPj4g
+ICAgICAgICBzdXBwLT5yZXFfaWQgPSAtMTsNCj4+IC0gICAgICAgKm51bV9tZXRhID0gbm07DQo+
+PiArDQo+Pg0KPj4gICAgICAgICByZXR1cm4gcmVxOw0KPj4gIH0NCj4+IEBAIC0zMjgsOSArMzc4
+LDggQEAgaW50IG9wdGVlX3N1cHBfc2VuZChzdHJ1Y3QgdGVlX2NvbnRleHQgKmN0eCwgdTMyIHJl
+dCwgdTMyIG51bV9wYXJhbXMsDQo+Pg0KPj4gICAgICAgICBtdXRleF9sb2NrKCZzdXBwLT5tdXRl
+eCk7DQo+PiAgICAgICAgIHJlcSA9IHN1cHBfcG9wX3JlcShzdXBwLCBudW1fcGFyYW1zLCBwYXJh
+bSwgJm51bV9tZXRhKTsNCj4+IC0gICAgICAgbXV0ZXhfdW5sb2NrKCZzdXBwLT5tdXRleCk7DQo+
+PiAtDQo+PiAgICAgICAgIGlmIChJU19FUlIocmVxKSkgew0KPj4gKyAgICAgICAgICAgICAgIG11
+dGV4X3VubG9jaygmc3VwcC0+bXV0ZXgpOw0KPiANCj4gV2UgbmVlZCBhIHdheSB0byB0ZWxsIHRo
+ZSBkaWZmZXJlbmNlIGJldHdlZW4gYW4gaWQgbm90IGZvdW5kIGFuZCBhbiBpZA0KPiByZW1vdmVk
+IGJlY2F1c2Ugb2YgYSBraWxsZWQgcmVxdWVzdGVyLg0KPiBIb3cgYWJvdXQgc3RvcmluZyBOVUxM
+IGZvciByZXZva2VkIHJlcXVlc3RzIGluc3RlYWQgb2YgYW4gZXJyLXBvaW50ZXI/DQo+IA0KDQpO
+b3Qgc3VyZSBJJ20gZm9sbG93aW5nIGNvcnJlY3RseS4gQXJlIHlvdSBleHBlY3Rpbmcgc3VwcF9w
+b3BfcmVxKCkNCnRvIHJldHVybiBOVUxMIGluc3RlYWQgb2YgYW4gZXJyLXBvaW50ZXIgd2hlbiBh
+IHJlcXVlc3QgaGFzIGJlZW4gcmV2b2tlZD8NCg0KQmVzdCBSZWFyYWRzLA0KQW1pcg0KDQo+IENo
+ZWVycywNCj4gSmVucw0KPiANCj4+ICAgICAgICAgICAgICAgICAvKiBTb21ldGhpbmcgaXMgd3Jv
+bmcsIGxldCBzdXBwbGljYW50IHJlc3RhcnQuICovDQo+PiAgICAgICAgICAgICAgICAgcmV0dXJu
+IFBUUl9FUlIocmVxKTsNCj4+ICAgICAgICAgfQ0KPj4gQEAgLTM1NSw5ICs0MDQsMTAgQEAgaW50
+IG9wdGVlX3N1cHBfc2VuZChzdHJ1Y3QgdGVlX2NvbnRleHQgKmN0eCwgdTMyIHJldCwgdTMyIG51
+bV9wYXJhbXMsDQo+PiAgICAgICAgICAgICAgICAgfQ0KPj4gICAgICAgICB9DQo+PiAgICAgICAg
+IHJlcS0+cmV0ID0gcmV0Ow0KPj4gLQ0KPj4gKyAgICAgICByZXEtPnByb2Nlc3NlZCA9IHRydWU7
+DQo+PiAgICAgICAgIC8qIExldCB0aGUgcmVxdWVzdGluZyB0aHJlYWQgY29udGludWUgKi8NCj4+
+ICAgICAgICAgY29tcGxldGUoJnJlcS0+Yyk7DQo+PiArICAgICAgIG11dGV4X3VubG9jaygmc3Vw
+cC0+bXV0ZXgpOw0KPj4NCj4+ICAgICAgICAgcmV0dXJuIDA7DQo+PiAgfQ0KPj4NCj4+IC0tLQ0K
+Pj4gYmFzZS1jb21taXQ6IDNmMjRlNGVkY2QxYjg5ODFjNmI0NDhlYTI2ODA3MjZkZWRkODcyNzkN
+Cj4+IGNoYW5nZS1pZDogMjAyNTA2MDQtZml4LXVzZS1hZnRlci1mcmVlLThmZjFiNWQ1ZDc3NA0K
+Pj4NCj4+IEJlc3QgcmVnYXJkcywNCj4+IC0tDQo+PiBBbWlycmV6YSBaYXJyYWJpIDxhbWlycmV6
+YS56YXJyYWJpQG9zcy5xdWFsY29tbS5jb20+DQo+Pg0KDQo=
