@@ -4,89 +4,105 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2047EEA3F09
-	for <op-tee@archiver.kernel.org>; Tue, 10 Feb 2026 06:08:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFB60EA3F0D
+	for <op-tee@archiver.kernel.org>; Tue, 10 Feb 2026 06:38:08 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 5C5694328A
-	for <op-tee@archiver.kernel.org>; Tue, 10 Feb 2026 06:08:30 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0C485436FB
+	for <op-tee@archiver.kernel.org>; Tue, 10 Feb 2026 06:38:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1770703710;
-	bh=yEB+we77jei6NeNin4hjlX2lMwU6tG4XNQB8aDO+nM0=;
+	d=lists.trustedfirmware.org; s=2024; t=1770705488;
+	bh=1JiESdNl6hA/KpSPNXftLlPNBImdRMt7BKPhuHuXo5M=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=H0ZoTOmgQsqTbnRaJU4L7MLA2rNjXrwyUCNjBlLNZIa2x2qly+ag05939+ShWDLnj
-	 We0AXTvSRbqMArrnxQR5VYg2jS6nRbxi1u8h3UZG0n3NV3R5bsmJZ3tyhIV/G01i/u
-	 7zFWVbKL35gFpbyJN4hzeQM6B4Tlvf7ouD1K8th+HAbQZO2Ohz7628MgdydgD3u7PU
-	 4/mf5AOh9t414lT3W7AOpF717ddmb7y4c5HzggY9m1oE2tk/n3o5TScEehzdvJTgi+
-	 T7z92NYeNjqIw/JKl18vuA+dB2Z+HotWnqZn5q4y/Lidu5VZk11SfVO0Gk+o7KG7vO
-	 31WhvvYtj9lYA==
+	b=lbvG0Ib0NG3uXDZUgCpk/HQ+2QR9sFLdQzpLqTGYlwg89jASdu+d0/7xw39rw/ypT
+	 KH0lshriOE36Y8/tsPBn1UBTUIYi2GeVlxh0iWlOKz5nJ0p6D6uDXGpA9dohR5eiJ4
+	 ChV9E9D/+nONcrwgSOLxX1qpScae+BY0Ioayswy1ijYRvScEBq1gnW2eMSIiiyuDdS
+	 STkkPaS779IZ9oGriRP8WncPpMfHNlCqomOkv/hnDVCxeSHaNYXGQMHWhxLzWRCKrG
+	 rgMoVy5A9//A+fI9Bytjh84hH/sCcFUxAPQ6fo38OqEFx9dVhdUr6pK3e8mQOL3LTu
+	 cBW37xI7NIQFQ==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id EE419431CB
-	for <op-tee@lists.trustedfirmware.org>; Tue, 10 Feb 2026 06:08:10 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id CC3F542D86
+	for <op-tee@lists.trustedfirmware.org>; Tue, 10 Feb 2026 06:23:37 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=te3z+m8z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nyF7BGSO;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4430A4090B;
-	Tue, 10 Feb 2026 06:08:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1530FC116C6;
-	Tue, 10 Feb 2026 06:08:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id CA4F843ADF;
+	Tue, 10 Feb 2026 06:14:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8796C116C6;
+	Tue, 10 Feb 2026 06:14:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770703690;
-	bh=yEB+we77jei6NeNin4hjlX2lMwU6tG4XNQB8aDO+nM0=;
+	s=k20201202; t=1770704047;
+	bh=NOoZ/TSgvmHM8MvVRv66uYCD2q1u3i1JerRCuxg/nYc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=te3z+m8zKLp6BpAJ9XkH5Lt6A75lAuun5KEtLtngmR0wtqOrJxTJ+vipb716i3uD2
-	 NIx21fcMEeS8wq0BhrtOrXS+vW6S//TbUZcrz+tIUNYwrR+Vtao3w6o6OAT+p5KtVv
-	 bPeSzQSfUpKTlzHPKHZd38Svy3JgvTRKR61jb9l3GsW5LP2Hb3qLEgr4KOlwmoL/1A
-	 CQNbgpEjtgrkdAQCNY9kFUgc8ymQRcrbb7aZE2KFtd1DI9J2wq+X7lSPhyNv5DxHuo
-	 jdwtEDNUMWEddb57ZLJUf3TVwWzHJ/ZgrieTeGUPEAtNGbYeZ9aDmCz/6Sy3uaipfh
-	 lf7FHwqnADSjg==
-Date: Tue, 10 Feb 2026 11:38:03 +0530
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: Re: [PATCH v4] tee: optee: prevent use-after-free when the client
- exits before the supplicant
-Message-ID: <aYrLQznl-OCcWCtZ@sumit-xelite>
-References: <20260209-fix-use-after-free-v4-1-7c4c4b02368f@oss.qualcomm.com>
+	b=nyF7BGSOacd8nQFeoyK69yTrIr6WEkiceyw4AmLFO/LBQGkpzoYRL1Vq5peFNPXe5
+	 2GRB93lvaDKY5I95NdSIEuSaoLOw+lFX62Vn/TwPEa9Foqr2ip4DHypDXObc0s47hm
+	 l9cluPBg1t1rZcpe3oVwhndSnk7Fq7d/VVseZG6N4sgGTylUK45zCAX5cliiSo6+jt
+	 Mo91W1qf9xn5E1n3sp/ZH6wUnhHCefuLoo6zDX0kFRKpBbjJCABmCXEKRONaCkbyhB
+	 bkeUykXpi+rRobG0QkSxwlMXFlViarS0V5Xg7DPijQAOTHtIPVfinRdmfJPm9O0Ipa
+	 SjUbczIUskKLg==
+Date: Tue, 10 Feb 2026 11:43:59 +0530
+To: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
+Subject: Re: [Linux-stm32] [PATCH v20 1/6] dt-bindings: firmware: Add TEE
+ remoteproc service binding
+Message-ID: <aYrMp9wqk91-tQXn@sumit-xelite>
+References: <20251217153917.3998544-1-arnaud.pouliquen@foss.st.com>
+ <20251217153917.3998544-2-arnaud.pouliquen@foss.st.com>
+ <20251229232530.GA2753472-robh@kernel.org>
+ <aVOzHWmlJ-eneS-2@sumit-xelite>
+ <CAL_Jsq+_S8UY7s7WQg9jXuBXCYMBWVCy=kVDMdkKTx6RctqQJA@mail.gmail.com>
+ <aVtqITUxy--E8HJt@sumit-xelite>
+ <49f1808d-1e08-4f47-ac3a-5f2274086060@foss.st.com>
+ <a17c017a-15f5-4ebc-9dd0-baab718dbe0a@foss.st.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20260209-fix-use-after-free-v4-1-7c4c4b02368f@oss.qualcomm.com>
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
+Content-Transfer-Encoding: base64
+In-Reply-To: <a17c017a-15f5-4ebc-9dd0-baab718dbe0a@foss.st.com>
+X-Rspamd-Action: add header
+X-Spamd-Result: default: False [5.00 / 15.00];
+	URL_BACKSLASH_PATH(4.00)[0.0.0.0];
+	URL_NUMERIC_IP(3.00)[0.0.0.0];
 	BAYES_HAM(-3.00)[99.99%];
-	MID_RHS_NOT_FQDN(0.50)[];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	NEURAL_HAM(-0.00)[-1.000];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DWL_DNSWL_NONE(0.00)[kernel.org:dkim];
-	RCVD_COUNT_TWO(0.00)[2];
+	RCPT_COUNT_TWELVE(0.00)[13];
 	RCVD_TLS_LAST(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	GREYLIST(0.00)[pass,body];
+	FROM_HAS_DN(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+];
+	ALIAS_RESOLVED(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	NEURAL_HAM(-0.00)[-0.996];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DWL_DNSWL_NONE(0.00)[kernel.org:dkim]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: EE419431CB
-X-Spamd-Bar: ---
-Message-ID-Hash: QG2LWZPDXHQY3HYK7M4FN43X334CDAQY
-X-Message-ID-Hash: QG2LWZPDXHQY3HYK7M4FN43X334CDAQY
+X-Rspamd-Queue-Id: CC3F542D86
+X-Spamd-Bar: +++++
 X-MailFrom: sumit.garg@kernel.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Arnd Bergmann <arnd@arndb.de>, Michael Wu <michael@allwinnertech.com>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+X-Mailman-Rule-Hits: header-match-op-tee.lists.trustedfirmware.org-0
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation
+Message-ID-Hash: FQXWSMGSYHFOBKIZKXEBQZLK6BBNUNAN
+X-Message-ID-Hash: FQXWSMGSYHFOBKIZKXEBQZLK6BBNUNAN
+X-Mailman-Approved-At: Tue, 10 Feb 2026 06:37:48 +0000
+CC: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Bjorn Andersson <andersson@kernel.org>, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, op-tee@lists.trustedfirmware.org, Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QG2LWZPDXHQY3HYK7M4FN43X334CDAQY/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FQXWSMGSYHFOBKIZKXEBQZLK6BBNUNAN/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -95,310 +111,127 @@ List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
+X-Spam: Yes
 
-On Mon, Feb 09, 2026 at 06:47:39PM -0800, Amirreza Zarrabi wrote:
-> Commit 70b0d6b0a199 ("tee: optee: Fix supplicant wait loop") made the
-> client wait as killable so it can be interrupted during shutdown or
-> after a supplicant crash. This changes the original lifetime expectations:
-> the client task can now terminate while the supplicant is still processing
-> its request.
-> 
-> If the client exits first it removes the request from its queue and
-> kfree()s it, while the request ID remains in supp->idr. A subsequent
-> lookup on the supplicant path then dereferences freed memory, leading to
-> a use-after-free.
-> 
-> Serialise access to the request with supp->mutex:
-> 
->   * Hold supp->mutex in optee_supp_recv() and optee_supp_send() while
->     looking up and touching the request.
->   * Let optee_supp_thrd_req() notice that the client has terminated and
->     signal optee_supp_send() accordingly.
-> 
-> With these changes the request cannot be freed while the supplicant still
-> has a reference, eliminating the race.
-> 
-> Fixes: 70b0d6b0a199 ("tee: optee: Fix supplicant wait loop")
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
-> Changes in v4:
-> - Pre-allocate request ID when allocating the request.
-> - Cleanup the loop in optee_supp_recv().
-> - Update the return value for revoked request from -ENOENT to -EBADF.
-> - Link to v3: https://lore.kernel.org/r/20260128-fix-use-after-free-v3-1-b0786670d927@oss.qualcomm.com
-> 
-> Changes in v3:
-> - Introduce processed flag instead of -1 for req->id.
-> - Update optee_supp_release() as reported by Michael Wu.
-> - Use mutex instead of guard.
-> - Link to v2: https://lore.kernel.org/r/20250617-fix-use-after-free-v2-1-1fbfafec5917@oss.qualcomm.com
-> 
-> Changes in v2:
-> - Replace the static variable with a sentinel value.
-> - Fix the issue with returning the popped request to the supplicant.
-> - Link to v1: https://lore.kernel.org/r/20250605-fix-use-after-free-v1-1-a70d23bff248@oss.qualcomm.com
-> ---
->  drivers/tee/optee/supp.c | 106 ++++++++++++++++++++++++++++++++---------------
->  1 file changed, 73 insertions(+), 33 deletions(-)
-
-Looks like a reasonable fix to me but needs a reproducer where this
-actually fixes the mentioned problem.
-
--Sumit
-
-> diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
-> index d0f397c90242..c1ae76df7067 100644
-> --- a/drivers/tee/optee/supp.c
-> +++ b/drivers/tee/optee/supp.c
-> @@ -10,7 +10,11 @@
->  struct optee_supp_req {
->  	struct list_head link;
->  
-> +	int id;
-> +
->  	bool in_queue;
-> +	bool processed;
-> +
->  	u32 func;
->  	u32 ret;
->  	size_t num_params;
-> @@ -19,6 +23,9 @@ struct optee_supp_req {
->  	struct completion c;
->  };
->  
-> +/* It is temporary request used for revoked pending request in supp->idr. */
-> +#define INVALID_REQ_PTR ((struct optee_supp_req *)ERR_PTR(-EBADF))
-> +
->  void optee_supp_init(struct optee_supp *supp)
->  {
->  	memset(supp, 0, sizeof(*supp));
-> @@ -39,21 +46,23 @@ void optee_supp_release(struct optee_supp *supp)
->  {
->  	int id;
->  	struct optee_supp_req *req;
-> -	struct optee_supp_req *req_tmp;
->  
->  	mutex_lock(&supp->mutex);
->  
-> -	/* Abort all request retrieved by supplicant */
-> +	/* Abort all request */
->  	idr_for_each_entry(&supp->idr, req, id) {
->  		idr_remove(&supp->idr, id);
-> -		req->ret = TEEC_ERROR_COMMUNICATION;
-> -		complete(&req->c);
-> -	}
-> +		/* Skip if request was already marked invalid */
-> +		if (IS_ERR(req))
-> +			continue;
->  
-> -	/* Abort all queued requests */
-> -	list_for_each_entry_safe(req, req_tmp, &supp->reqs, link) {
-> -		list_del(&req->link);
-> -		req->in_queue = false;
-> +		/* For queued requests where supplicant has not seen it */
-> +		if (req->in_queue) {
-> +			list_del(&req->link);
-> +			req->in_queue = false;
-> +		}
-> +
-> +		req->processed = true;
->  		req->ret = TEEC_ERROR_COMMUNICATION;
->  		complete(&req->c);
->  	}
-> @@ -93,6 +102,12 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
->  	if (!req)
->  		return TEEC_ERROR_OUT_OF_MEMORY;
->  
-> +	req->id = idr_alloc(&supp->idr, req, 1, 0, GFP_KERNEL);
-> +	if (req->id < 0) {
-> +		kfree(req);
-> +		return TEEC_ERROR_OUT_OF_MEMORY;
-> +	}
-> +
->  	init_completion(&req->c);
->  	req->func = func;
->  	req->num_params = num_params;
-> @@ -102,6 +117,7 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
->  	mutex_lock(&supp->mutex);
->  	list_add_tail(&req->link, &supp->reqs);
->  	req->in_queue = true;
-> +	req->processed = false;
->  	mutex_unlock(&supp->mutex);
->  
->  	/* Tell an eventual waiter there's a new request */
-> @@ -117,21 +133,43 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
->  	if (wait_for_completion_killable(&req->c)) {
->  		mutex_lock(&supp->mutex);
->  		if (req->in_queue) {
-> +			/* Supplicant has not seen this request yet. */
-> +			idr_remove(&supp->idr, req->id);
->  			list_del(&req->link);
->  			req->in_queue = false;
-> +
-> +			ret = TEEC_ERROR_COMMUNICATION;
-> +		} else if (req->processed) {
-> +			/*
-> +			 * Supplicant has processed this request. Ignore the
-> +			 * kill signal for now and submit the result. req is not
-> +			 * in supp->reqs (removed by supp_pop_entry()) nor in
-> +			 * supp->idr (removed by supp_pop_req()).
-> +			 */
-> +			ret = req->ret;
-> +		} else {
-> +			/*
-> +			 * Supplicant is in the middle of processing this
-> +			 * request. Replace req with INVALID_REQ_PTR so that
-> +			 * the ID remains busy, causing optee_supp_send() to
-> +			 * fail on the next call to supp_pop_req() with this ID.
-> +			 */
-> +			idr_replace(&supp->idr, INVALID_REQ_PTR, req->id);
-> +			ret = TEEC_ERROR_COMMUNICATION;
->  		}
-> +
->  		mutex_unlock(&supp->mutex);
-> -		req->ret = TEEC_ERROR_COMMUNICATION;
-> +	} else {
-> +		ret = req->ret;
->  	}
->  
-> -	ret = req->ret;
->  	kfree(req);
->  
->  	return ret;
->  }
->  
->  static struct optee_supp_req  *supp_pop_entry(struct optee_supp *supp,
-> -					      int num_params, int *id)
-> +					      int num_params)
->  {
->  	struct optee_supp_req *req;
->  
-> @@ -153,10 +191,6 @@ static struct optee_supp_req  *supp_pop_entry(struct optee_supp *supp,
->  		return ERR_PTR(-EINVAL);
->  	}
->  
-> -	*id = idr_alloc(&supp->idr, req, 1, 0, GFP_KERNEL);
-> -	if (*id < 0)
-> -		return ERR_PTR(-ENOMEM);
-> -
->  	list_del(&req->link);
->  	req->in_queue = false;
->  
-> @@ -214,7 +248,6 @@ int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
->  	struct optee *optee = tee_get_drvdata(teedev);
->  	struct optee_supp *supp = &optee->supp;
->  	struct optee_supp_req *req = NULL;
-> -	int id;
->  	size_t num_meta;
->  	int rc;
->  
-> @@ -224,15 +257,11 @@ int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
->  
->  	while (true) {
->  		mutex_lock(&supp->mutex);
-> -		req = supp_pop_entry(supp, *num_params - num_meta, &id);
-> +		req = supp_pop_entry(supp, *num_params - num_meta);
-> +		if (req)
-> +			break; /* Keep mutex held. */
->  		mutex_unlock(&supp->mutex);
->  
-> -		if (req) {
-> -			if (IS_ERR(req))
-> -				return PTR_ERR(req);
-> -			break;
-> -		}
-> -
->  		/*
->  		 * If we didn't get a request we'll block in
->  		 * wait_for_completion() to avoid needless spinning.
-> @@ -245,6 +274,13 @@ int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
->  			return -ERESTARTSYS;
->  	}
->  
-> +	/* supp->mutex held and req != NULL. */
-> +
-> +	if (IS_ERR(req)) {
-> +		mutex_unlock(&supp->mutex);
-> +		return PTR_ERR(req);
-> +	}
-> +
->  	if (num_meta) {
->  		/*
->  		 * tee-supplicant support meta parameters -> requsts can be
-> @@ -252,13 +288,11 @@ int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
->  		 */
->  		param->attr = TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT |
->  			      TEE_IOCTL_PARAM_ATTR_META;
-> -		param->u.value.a = id;
-> +		param->u.value.a = req->id;
->  		param->u.value.b = 0;
->  		param->u.value.c = 0;
->  	} else {
-> -		mutex_lock(&supp->mutex);
-> -		supp->req_id = id;
-> -		mutex_unlock(&supp->mutex);
-> +		supp->req_id = req->id;
->  	}
->  
->  	*func = req->func;
-> @@ -266,6 +300,7 @@ int optee_supp_recv(struct tee_context *ctx, u32 *func, u32 *num_params,
->  	memcpy(param + num_meta, req->param,
->  	       sizeof(struct tee_param) * req->num_params);
->  
-> +	mutex_unlock(&supp->mutex);
->  	return 0;
->  }
->  
-> @@ -297,12 +332,17 @@ static struct optee_supp_req *supp_pop_req(struct optee_supp *supp,
->  	if (!req)
->  		return ERR_PTR(-ENOENT);
->  
-> +	/* optee_supp_thrd_req() already returned to optee. */
-> +	if (IS_ERR(req))
-> +		goto failed_req;
-> +
->  	if ((num_params - nm) != req->num_params)
->  		return ERR_PTR(-EINVAL);
->  
-> +	*num_meta = nm;
-> +failed_req:
->  	idr_remove(&supp->idr, id);
->  	supp->req_id = -1;
-> -	*num_meta = nm;
->  
->  	return req;
->  }
-> @@ -328,10 +368,9 @@ int optee_supp_send(struct tee_context *ctx, u32 ret, u32 num_params,
->  
->  	mutex_lock(&supp->mutex);
->  	req = supp_pop_req(supp, num_params, param, &num_meta);
-> -	mutex_unlock(&supp->mutex);
-> -
->  	if (IS_ERR(req)) {
-> -		/* Something is wrong, let supplicant restart. */
-> +		mutex_unlock(&supp->mutex);
-> +		/* Something is wrong, let supplicant handel it. */
->  		return PTR_ERR(req);
->  	}
->  
-> @@ -355,9 +394,10 @@ int optee_supp_send(struct tee_context *ctx, u32 ret, u32 num_params,
->  		}
->  	}
->  	req->ret = ret;
-> -
-> +	req->processed = true;
->  	/* Let the requesting thread continue */
->  	complete(&req->c);
-> +	mutex_unlock(&supp->mutex);
->  
->  	return 0;
->  }
-> 
-> ---
-> base-commit: 3f24e4edcd1b8981c6b448ea2680726dedd87279
-> change-id: 20250604-fix-use-after-free-8ff1b5d5d774
-> 
-> Best regards,
-> -- 
-> Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> 
+SGkgQXJuYXVkLA0KDQpPbiBUdWUsIEZlYiAwMywgMjAyNiBhdCAwODo0MjozNEFNICswMTAwLCBB
+cm5hdWQgUE9VTElRVUVOIHdyb3RlOg0KPiANCj4gSGVsbG8gUm9iLCBTdW1pdCwNCj4gDQo+IEp1
+c3QgYSBnZW50bGUgcmVtaW5kZXIuIENvdWxkIHlvdSBwbGVhc2UgcHJvdmlkZSB5b3VyIGFkdmlj
+ZSBvciBhIGNvbmNsdXNpb24NCj4gb24gdGhlIGRpcmVjdGlvbiB3ZSBzaG91bGQgdGFrZSBmb3Ig
+dGhlIERUIGRlY2xhcmF0aW9uPyBJIG5lZWQgeW91ciBpbnB1dCB0bw0KPiBiZSBhYmxlIHRvIG1v
+dmUgZm9yd2FyZC4NCj4gDQo+IFRoYW5rcyBhbmQgcmVnYXJkcywNCj4gQXJuYXVkDQo+IA0KPiBP
+biAxLzEzLzI2IDEwOjIwLCBBcm5hdWQgUE9VTElRVUVOIHdyb3RlOg0KPiA+IEhlbGxvLA0KPiA+
+IA0KPiA+IE9uIDEvNS8yNiAwODozNywgU3VtaXQgR2FyZyB3cm90ZToNCj4gPiA+IE9uIEZyaSwg
+SmFuIDAyLCAyMDI2IGF0IDA0OjE3OjI3UE0gLTA2MDAsIFJvYiBIZXJyaW5nIHdyb3RlOg0KPiA+
+ID4gPiBPbiBUdWUsIERlYyAzMCwgMjAyNSBhdCA1OjEw4oCvQU0gU3VtaXQgR2FyZw0KPiA+ID4g
+PiA8c3VtaXQuZ2FyZ0BrZXJuZWwub3JnPiB3cm90ZToNCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBP
+biBNb24sIERlYyAyOSwgMjAyNSBhdCAwNToyNTozMFBNIC0wNjAwLCBSb2IgSGVycmluZyB3cm90
+ZToNCj4gPiA+ID4gPiA+IE9uIFdlZCwgRGVjIDE3LCAyMDI1IGF0IDA0OjM5OjEyUE0gKzAxMDAs
+IEFybmF1ZCBQb3VsaXF1ZW4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+IEFkZCBhIGRldmljZSB0cmVl
+IGJpbmRpbmcgZm9yIHRoZSBURUUtYmFzZWQgcmVtb3RlIHByb2Nlc3NvciBjb250cm9sDQo+ID4g
+PiA+ID4gPiA+IHNlcnZpY2UgaW1wbGVtZW50ZWQgYXMgYW4gT1AtVEVFIFRydXN0ZWQgQXBwbGlj
+YXRpb24gaWRlbnRpZmllZCBieQ0KPiA+ID4gPiA+ID4gPiBVVUlEIDgwYTRjMjc1LTBhNDctNDkw
+NS04Mjg1LTE0ODZhOTc3MWEwOC4NCj4gPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiA+IFRoZSBU
+RUUgc2VydmljZSBub2RlIGlzIGEgY2hpbGQgb2YgdGhlDQo+ID4gPiA+ID4gPiA+ICJsaW5hcm8s
+b3B0ZWUtdHoiIGZpcm13YXJlIG5vZGUgYW5kDQo+ID4gPiA+ID4gPiA+IGFjdHMgYXMgYSBjb250
+YWluZXIgZm9yIHJlbW90ZXByb2MgZGV2aWNlcyB0aGF0IGFyZQ0KPiA+ID4gPiA+ID4gPiBjb250
+cm9sbGVkIHZpYSBURUUuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IElzIHRoaXMgZ2VuZXJp
+YyBmb3IgYW55IHJlbW90ZXByb2MgZGV2aWNlIG9yIGp1c3QgU1Qncw0KPiA+ID4gPiA+ID4gcmVt
+b3RlcHJvYy4gTG9va3MNCj4gPiA+ID4gPiA+IGxpa2UgdGhlIGxhdHRlciB0byBtZS4NCj4gPiA+
+ID4gPiANCj4gPiA+ID4gPiBUaGF0J3MgdHJ1ZSwgdGhlIERUIGRlc2NyaXB0aW9uIG9mIHRoZSBy
+ZW1vdGVwcm9jIHN1Ym5vZGUgaXMgdmVyeQ0KPiA+ID4gPiA+IHNwZWNpZmljIHRvIHRoZSB2ZW5k
+b3Igd2hpY2ggaW4gdGhpcyBjYXNlIGlzIFNULg0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+ID4gDQo+
+ID4gPiA+ID4gPiA+IEluIGFkZGl0aW9uLCB0aGUgImxpbmFybyxvcHRlZS10eiIgYmluZGluZyBp
+cyB1cGRhdGVkIHRvIHNwZWNpZnkgdGhlDQo+ID4gPiA+ID4gPiA+ICcjYWRkcmVzcy1jZWxscycg
+YW5kICcjc2l6ZS1jZWxscycgdmFsdWVzIHVzZWQgZm9yIGNoaWxkIFRFRSBzZXJ2aWNlDQo+ID4g
+PiA+ID4gPiA+IG5vZGVzLg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiBJJ20gcHJldHR5IHN1
+cmUgSSBhbHJlYWR5IHJlamVjdGVkIHBlciBzZXJ2aWNlL2FwcCBjaGlsZCBub2RlcyBmb3INCj4g
+PiA+ID4gPiA+IE9QLVRFRSB3aGVuIGl0cyBiaW5kaW5nIHdhcyBzdWJtaXR0ZWQuDQo+ID4gPiA+
+ID4gDQo+ID4gPiA+ID4gVGhhdCB3YXMgdGhlIHJlYXNvbiB0byBoYXZlIGRpc2NvdmVyYWJsZSBU
+RUUgYnVzIGluIGZpcnN0IHBsYWNlIGFuZCBJDQo+ID4gPiA+ID4gaGF2ZSBiZWVuIG1vdGl2YXRp
+bmcgcGVvcGxlIHRvIGR5bmFtaWNhbGx5IGRpc2NvdmVyIGZpcm13YXJlIHByb3BlcnRpZXMNCj4g
+PiA+ID4gPiByYXRoZXIgdGhhbiBoYXJkY29kaW5nIGluIHRoZSBEVC4NCj4gPiA+ID4gPiANCj4g
+PiA+ID4gPiA+IElmIHdlIGRvIG5lZWQgc29tZXRoaW5nIGluIERUDQo+ID4gPiA+ID4gPiB0byBk
+ZWZpbmUgc29tZSByZXNvdXJjZXMsIHRoZW4gY2FuJ3Qgd2UgaGF2ZSBzb21lIHNvcnQgb2YNCj4g
+PiA+ID4gPiA+IHN0YW5kYXJkL2NvbW1vbiBjb21tdW5pY2F0aW9ucyBjaGFubmVsPyBJIGRvbid0
+IGNhcmUgdG8NCj4gPiA+ID4gPiA+IHNlZSBzb21lIHNvcnQgb2YNCj4gPiA+ID4gPiA+IGZyZWUt
+Zm9yLWFsbCB3aGVyZSB3ZSBoYXZlIGV2ZXJ5IHZlbmRvciBkb2luZyB0aGVpciBvd24gdGhpbmcu
+IE9QLVRFRQ0KPiA+ID4gPiA+ID4gbmVlZHMgdG8gc3RhbmRhcml6ZSB0aGlzLg0KPiA+ID4gPiA+
+IA0KPiA+ID4gPiA+IEkgc3VwcG9zZSB0aGlzIHJlcXVpcmVzIGEgd2lkZXIgc2NvcGUgd29yayBh
+cyB5b3UgY2FuIHNlZQ0KPiA+ID4gPiA+IHRoZSBEVCByZXNvdXJjZQ0KPiA+ID4gPiA+IGRlcGVu
+ZGVuY2UgZnJvbSBoZXJlIFsxXS4gQnkgc3RhbmRhcmRpemUgY29tbXVuaWNhdGlvbiBjaGFubmVs
+LCBkbyB5b3UNCj4gPiA+ID4gPiBtZWFuIHRvIHNheSBpZiBhZGRpbmcgYW4gYWx0ZXJuYXRpdmUg
+YmFja2VuZCB0byBmd25vZGUgZm9yIFRFRSBpbg0KPiA+ID4gPiA+IHBhcmFsbGVsIHRvIERULCBB
+Q1BJIG9yIHN3bm9kZSBpcyB0aGUgd2F5IHRvIGdvIGZvciBkaXNjb3ZlcmluZyBmdw0KPiA+ID4g
+PiA+IHByb3BlcnRpZXM/DQo+ID4gPiA+IA0KPiA+ID4gPiBObywgbm90IGF0IGFsbC4NCj4gPiA+
+ID4gDQo+ID4gPiA+ID4gT3IgZG8geW91IGhhdmUgYW55IG90aGVyIHN1Z2dlc3Rpb24gaGVyZT8N
+Cj4gPiA+ID4gDQo+ID4gPiA+IFdoYXQgSSBtZWFuIGlzIHdoeSBkb2Vzbid0IHRoZSBURUUgZGVm
+aW5lIHRoZSBjb21tdW5pY2F0aW9uIGNoYW5uZWwNCj4gPiA+ID4gKG1haWxib3grc2htZW0gYW5k
+IG5vdGlmaWNhdGlvbiBpbnRlcnJ1cHQpIHJhdGhlciB0aGFuIGVhY2ggVEVFIGFwcD8NCj4gPiA+
+IA0KPiA+ID4gVGhlIHN5bmNocm9ub3VzIGNvbW11bmljYXRpb24gY2hhbm5lbCBpcyBhbHJlYWR5
+IHRoZXJlIGZvciBlYWNoIFRFRSBhcHANCj4gPiA+IGJhc2VkIG9uIChpbnZva2UgY29tbWFuZHMg
+KyBURUUgc2hhcmVkIG1lbW9yeSkuIE9QLVRFRSBkb2VzIHN1cHBvcnQNCj4gPiA+IG5vdGlmaWNh
+dGlvbiBpbnRlcnJ1cHRzIHRvbyBidXQgdGhvc2UgaGF2ZW4ndCBiZWVuIGV4cG9zZWQgdG8gVEVF
+IGNsaWVudA0KPiA+ID4gZHJpdmVycyB5ZXQuIEkgc3VwcG9zZSB0aGlzIHJlbW90ZXByb2MgdXNl
+LWNhc2UgY2FuIGJlIGEgZ29vZCBleGFtcGxlIHRvDQo+ID4gPiBleHBvc2UgdGhhdCBhcyBhIGdl
+bmVyaWMgVEVFIG5vdGlmaWNhdGlvbiBpbnRlcmZhY2UgdG9vLg0KPiA+IA0KPiA+IEluIHRoZSBT
+VE0zMk1QIHNlcmllcywgdGhlIG1haWxib3hlcyBhbmQgc2hhcmVkIFJBTSBhcmUgdXNlZCBmb3Ig
+UlBNc2cNCj4gPiBjb21tdW5pY2F0aW9uIGJldHdlZW4gTGludXggYW5kIHRoZSByZW1vdGUgcHJv
+Y2Vzc29yLiBNeSBjb25jZXJuIGlzIHRoYXQNCj4gPiB1c2luZyBub3RpZmljYXRpb24gaW4gT1At
+VEVFIGNvdWxkIGltcGFjdCBwZXJmb3JtYW5jZSBieSBpbnRyb2R1Y2luZw0KPiA+IGxhdGVuY3ku
+IEFkZGl0aW9uYWxseSwgdGhpcyBtaWdodCByZXF1aXJlIGEgRE1BIGFsbG9jYXRvciBpbiBPUC1U
+RUUgdG8NCj4gPiBtYW5hZ2UgdGhlIHNoYXJlZCBtZW1vcnkuIE9uZSBSUE1zZyB2aXJ0aW8gcmVx
+dWlyZXMgdGhlIGRlY2xhcmF0aW9uIG9mDQo+ID4gYXQgbGVhc3QgdGhyZWUgY2FydmVvdXRzLiBN
+YW5hZ2luZyB0aGVzZSBhcyBtZW1vcnkgcmVnaW9ucyBpbiBPUC1URUUNCj4gPiB3b3VsZCBiZSBj
+b21wbGV4IChkdWUgdG8gbGltaXRlZCBudW1iZXIgb2YgbWVtb3J5IGFyZWEgZGVjbGFyYXRpb24g
+b24NCj4gPiBTVE0zMk1QMikuDQo+ID4gPiANCj4gPiA+ID4gDQo+ID4gPiA+IE1vcmUgZ2VuZXJh
+bGx5LCBpcyBoYXZpbmcgVEVFIGFwcHMgZGVwZW5kaW5nIG9uIHJhbmRvbSBEVCByZXNvdXJjZXMN
+Cj4gPiA+ID4gcmVhbGx5IGEgYm94IHdlIHdhbnQgdG8gb3Blbj8gSXMgdGhlIG5leHQgdGhpbmcg
+Z29pbmcgdG8gYmUgYSBURUUNCj4gPiA+ID4gY2xvY2svcmVzZXQvZ3Bpby9wb3dlciBwcm92aWRl
+cj8gV2hlcmUgZG8gd2UgZHJhdyB0aGUgbGluZT8NCj4gPiA+IA0KPiA+ID4gVGhpcyBpcyByZWFs
+bHkgYSBoYXJkIGxpbmUgdG8gZHJhdyBzaW5jZSBzaWxpY29uL09FTSB2ZW5kb3JzIGJhc2VkDQo+
+ID4gPiBvbiB0aGVpcg0KPiA+ID4gaGFyZHdhcmUgc2VjdXJpdHkgYXJjaGl0ZWN0dXJlIHBhcnRp
+dGlvbiB2YXJpb3VzIHJlc291cmNlcyBhbW9uZyBURUUgYW5kDQo+ID4gPiB0aGUgTGludXggd29y
+bGQuIEFuZCBvbmUgZ2VuZXJhbCBwcmluY2lwbGUgd2UgdHJ5IHRvIGZvbGxvdyBmb3IgdGhlIFRF
+RQ0KPiA+ID4gaXMgdG8ga2VlcCBpdCdzIFRydXN0ZWQgQ29tcHV0aW5nIEJhc2UgKFRDQikgdG8g
+YSBtaW5pbWFsIHRvby4NCj4gPiA+IA0KPiA+ID4gSU1ITywgaWYgdGhlIHRocmVhdCBtb2RlbCBp
+cyB3ZWxsIHVuZGVyc3Rvb2QgdGhlbiB3ZSBzaG91bGQgYWxsb3cgZm9yDQo+ID4gPiB0aGlzIGhl
+dHJvZ2Vub3VzIHBhcnRpdGlvbmluZyBvZiBzeXN0ZW0gcmVzb3VyY2VzLg0KPiA+IA0KPiA+IEhl
+cmUgYXJlIHNvbWUgYWRkaXRpb25hbCByZXNvdXJjZXMgd2UgbmVlZCB0byBtYW5hZ2UgdGhlIHJl
+bW90ZQ0KPiA+IHByb2Nlc3Nvciwgd2hpY2ggc2VlbSBjb21wbGV4IHRvIGhhbmRsZSB3aXRob3V0
+IERldmljZSBUcmVlIChEVCk6DQo+ID4gDQo+ID4gLSBDbG9ja3M6IE9uIFNUTTMyTVAsIHdlIG1h
+bmFnZSBjbG9ja3MgdGhyb3VnaCB0aGUgT1AtVEVFIFNDTUkgc2VydmljZQ0KPiA+ICDCoCBbMV0u
+IFRoZSBTQ01JIE9QLVRFRSBjbG9jay9yZXNldCBzZXJ2aWNlIGFscmVhZHkgZXhpc3RzIGFuZCBz
+aG91bGQgYmUNCj4gPiAgwqAgcmV1c2VkLg0KPiA+IC0gUG93ZXIgZG9tYWlucw0KPiA+IC0gUmVt
+b3RlcHJvYyBXYXRjaGRvZyBpbnRlcnJ1cHQ6IENhbm5vdCBiZSBjYXVnaHQgYnkgT1AtVEVFIG9u
+DQo+ID4gIMKgIHN0bTMybXAxNS4NCj4gPiAtIEdyYWNlZnVsIHNodXRkb3duIG9mIHRoZSByZW1v
+dGUgcHJvY2Vzc29yOiBUaGlzIGludm9sdmVzIHNlbmRpbmcgYQ0KPiA+ICDCoCBtYWlsYm94IG5v
+dGlmaWNhdGlvbiB0byByZXF1ZXN0IHNodXRkb3duIGFuZCB3YWl0aW5nIHVwIHRvIDUwMCBtcyBm
+b3INCj4gPiAgwqAgdGhlIHJlbW90ZXByb2MgdG8gZGVpbml0aWFsaXplIGl0cyByZXNvdXJjZXMu
+IFdhaXRpbmcgdGhpcyBsb25nIGluIHRoZQ0KPiA+ICDCoCBzZWN1cmUgY29udGV4dCBzZWVtcyBp
+bmVmZmljaWVudC4NCj4gPiAtIGNvbXBhdGliaWxpdHkgd2l0aCBzb21lIGNvbWluZyBJUEMgbWVj
+aGFuaXNtczogU3VjaCBhcyBycG1zZ19JMkMgb3INCj4gPiAgwqAgdmlydGlvLW1zZyBtaWdodCBy
+ZXF1aXJlIHJlbW90ZXByb2Mgc3Vibm9kZSBkZXNjcmlwdGlvbnMgaW4gdGhlDQo+ID4gIMKgIGZ1
+dHVyZS4NCj4gPiANCj4gPiBJZiB0aGUgcHJvcG9zZWQgdG9wb2xvZ3kgZG9lcyBub3QgZ2FpbiBj
+b25zZW5zdXMsIHdoYXQgYWJvdXQgYW4NCj4gPiBhbHRlcm5hdGl2ZSBhcHByb2FjaCB0aGF0IG1h
+bmFnZXMgdGhlIHJlbW90ZXByb2MgVEVFIHNpbWlsYXJseSB0byBTQ01JLA0KPiA+IGJ5IGludHJv
+ZHVjaW5nIGEgcmVtb3RlcHJvYy1iYWNrZW5kIHdpdGggdGhlIHByb2MgSUQgYXMgYSBwYXJhbWV0
+ZXI/DQo+ID4gDQo+ID4gDQo+ID4gJmZpcm13YXJlIHsNCj4gPiAgwqDCoMKgIG9wdGVlOiBvcHRl
+ZSB7DQo+ID4gIMKgwqDCoMKgwqDCoMKgIGNvbXBhdGlibGUgPSAibGluYXJvLG9wdGVlLXR6IjsN
+Cj4gPiAgwqDCoMKgwqDCoMKgwqAgbWV0aG9kID0gInNtYyI7DQo+ID4gIMKgwqDCoMKgwqDCoMKg
+IHNwcm9jOiBzcHJvYyB7DQo+ID4gIMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgY29tcGF0aWJsZSA9
+ICI4MGE0YzI3NS0wYTQ3LTQ5MDUtODI4NS0xNDg2YTk3NzFhMDgiOw0KPiA+ICDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgICNhZGRyZXNzLWNlbGxzID0gPDE+Ow0KPiA+ICDCoMKgwqDCoMKgwqDCoCAj
+c2l6ZS1jZWxscyA9IDwwPjsNCj4gPiAgwqDCoMKgwqDCoMKgwqAgfTsNCj4gPiAgwqDCoMKgIH07
+DQo+ID4gfTsNCj4gPiANCj4gPiBycHJvYzE6IG0zM0AwIHsNCj4gPiAgwqAgWy4uLl0NCj4gPiAN
+Cj4gPiAgwqAgcmVtb3RlcHJvYy1iYWNrZW5kID0gPCAmc3Byb2MgMD4NCj4gPiB9Ow0KPiA+IA0K
+PiA+IA0KPiA+IHJwcm9jMjogbTBAMCB7DQo+ID4gIMKgIFsuLi5dDQo+ID4gDQo+ID4gIMKgIHJl
+bW90ZXByb2MtYmFja2VuZCA9IDwgJnNwcm9jIDE+DQo+ID4gfTsNCg0KVXNpbmcgYSBwaGFuZGxl
+IGxpa2UgdGhpcyBtYWtlcyBpdCBhIGJpdCBtb3JlIGNsZWFuZXIgYnV0IEkgd291bGQgZGVmZXIN
+CnRvIFJvYiBzaW5jZSBoZSBoYXMgdGhlIGZpbmFsIHNheSBoZXJlLg0KDQotU3VtaXQNCg0KPiA+
+IA0KPiA+IA0KPiA+IFsxXWh0dHBzOi8vZWxpeGlyLmJvb3RsaW4uY29tL2xpbnV4L3Y2LjE4LjQv
+c291cmNlL2RyaXZlcnMvY2xrL2Nsay1zY21pLmMNCj4gPiANCj4gPiBUaGFua3MsDQo+ID4gQXJu
+YXVkDQo+ID4gDQo+ID4gPiANCj4gPiA+IC1TdW1pdA0KPiA+IA0KPiA+IF9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+ID4gTGludXgtc3RtMzIgbWFpbGlu
+ZyBsaXN0DQo+ID4gTGludXgtc3RtMzJAc3QtbWQtbWFpbG1hbi5zdG9ybXJlcGx5LmNvbQ0KPiA+
+IGh0dHBzOi8vc3QtbWQtbWFpbG1hbi5zdG9ybXJlcGx5LmNvbS9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LXN0bTMyDQo+IA0K
