@@ -4,88 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F167EF99DF
-	for <op-tee@archiver.kernel.org>; Fri, 13 Feb 2026 22:05:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86CB9EF48C4
+	for <op-tee@archiver.kernel.org>; Sat, 14 Feb 2026 12:33:50 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id D254B43804
-	for <op-tee@archiver.kernel.org>; Fri, 13 Feb 2026 22:05:21 +0000 (UTC)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id AAB1D4324B
-	for <op-tee@lists.trustedfirmware.org>; Fri, 13 Feb 2026 22:04:58 +0000 (UTC)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <mfe@pengutronix.de>)
-	id 1vr1HO-0005gD-9k; Fri, 13 Feb 2026 23:04:50 +0100
-Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <mfe@pengutronix.de>)
-	id 1vr1HL-000e8h-0S;
-	Fri, 13 Feb 2026 23:04:48 +0100
-Received: from mfe by pty.whiteo.stw.pengutronix.de with local (Exim 4.98.2)
-	(envelope-from <mfe@pengutronix.de>)
-	id 1vr1HM-000000008cL-1XIN;
-	Fri, 13 Feb 2026 23:04:48 +0100
-Date: Fri, 13 Feb 2026 23:04:48 +0100
-From: Marco Felsch <m.felsch@pengutronix.de>
-To: Sumit Garg <sumit.garg@kernel.org>
-Subject: Re: [PATCH v2] tee: shm: fix slab page refcounting
-Message-ID: <252s4lfnujhrl3bkqm3xwatdkcdd3tfge3e6fla6f2llq4szjm@xltjvpqjgffn>
-References: <20250325200740.3645331-1-m.felsch@pengutronix.de>
- <Z-Pc6C1YUqLyej3Z@casper.infradead.org>
- <20250326110718.qzbwpmaf6xlcb4xf@pengutronix.de>
- <CAHUa44FUK_73oKSaqGdiPqB3geZbTNDFsC1Mh=KN3YPWr9=7gQ@mail.gmail.com>
- <Z-TXMIXzaro0w60M@sumit-X1>
- <CAHUa44HEsMkzQHZZufdwutQyZRtig6e0qWomhwgDZAhy2qDyhg@mail.gmail.com>
- <20260212125830.jfwos3flga2l5uwk@pengutronix.de>
- <aY8N90jMp25bBZhi@sumit-xelite>
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B6E8343838
+	for <op-tee@archiver.kernel.org>; Sat, 14 Feb 2026 12:33:49 +0000 (UTC)
+Authentication-Results: lists.trustedfirmware.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YvIrwvzQ;
+	dkim-atps=neutral
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 76C754323E
+	for <op-tee@lists.trustedfirmware.org>; Sat, 14 Feb 2026 12:33:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1771072411; x=1802608411;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=YCR560SceZMWoFT+hZOGG3Q841yflpLrAjRNtMTNlqM=;
+  b=YvIrwvzQxRMYcE9mR/i+n9DnH2FbEKyhbycxsaGs0nBTzfD/hzWnh/qE
+   HUtXJRPV2JIp4vJWId5ZG7gtWcaMnBtzof8nHI7xUar6WRUyrcFJzo+mo
+   QUKjrbNJV+9kFFrhkrERV3mv7mKHw4xEJZ1zUjKqmSReoI133mBHLEdxF
+   epaAx7GDymSuI6KiCl8uxVoGi3MqbCcpVGfq/eCBJFmTTrob0XzEF42tJ
+   MdjEhWbN66T6a2T5gB0mbIWZNdYnOO/7WGLwZ2DsGDhAACmQbQHx1cUkh
+   xfTLHCInOThk0gVyr8AAmlbOcGtJjSSPp/nJ1P19TPZOcXTMs+eGbqzYg
+   Q==;
+X-CSE-ConnectionGUID: GCeJHD3ZQrmfzbElR1juNw==
+X-CSE-MsgGUID: NcxqPAEDTFCELQEBippu8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11700"; a="82565165"
+X-IronPort-AV: E=Sophos;i="6.21,290,1763452800";
+   d="scan'208";a="82565165"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2026 04:33:30 -0800
+X-CSE-ConnectionGUID: avkfkb8ZTimdIY18Uz98kA==
+X-CSE-MsgGUID: MweAp2/NQHGZTQH2fPfrMw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,290,1763452800";
+   d="scan'208";a="213269477"
+Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
+  by orviesa007.jf.intel.com with ESMTP; 14 Feb 2026 04:33:27 -0800
+Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vrEpw-00000000wWS-0fal;
+	Sat, 14 Feb 2026 12:33:24 +0000
+Date: Sat, 14 Feb 2026 20:32:36 +0800
+From: kernel test robot <lkp@intel.com>
+To: Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org
+Subject: Re: [RFT PATCH] tee: shm: Remove refcounting of kernel pages
+Message-ID: <202602142012.snNfstpn-lkp@intel.com>
+References: <20260213113317.1728769-1-sumit.garg@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aY8N90jMp25bBZhi@sumit-xelite>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: mfe@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: op-tee@lists.trustedfirmware.org
+In-Reply-To: <20260213113317.1728769-1-sumit.garg@kernel.org>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-1.20 / 15.00];
+X-Spamd-Result: default: False [-6.00 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[intel.com:d:+,intel.com:s:+];
 	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	MID_RHS_NOT_FQDN(0.50)[];
-	FORGED_SENDER(0.30)[m.felsch@pengutronix.de,mfe@pengutronix.de];
-	R_SPF_ALLOW(-0.20)[+mx];
-	RCVD_IN_DNSWL_MED(-0.20)[2a0a:edc0:0:c01:1d::a2:received];
+	MID_CONTAINS_FROM(1.00)[];
+	DMARC_POLICY_ALLOW(-0.50)[intel.com,none];
+	R_DKIM_ALLOW(-0.20)[intel.com:s=Intel];
+	R_SPF_ALLOW(-0.20)[+ip4:198.175.65.0/26];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_COUNT_THREE(0.00)[3];
-	ASN(0.00)[asn:209379, ipnet:185.203.200.0/22, country:DE];
-	MISSING_XM_UA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[17];
-	R_DKIM_NA(0.00)[];
 	ARC_NA(0.00)[];
-	ALIAS_RESOLVED(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[linaro.org,infradead.org,suse.cz,linux-foundation.org,pengutronix.de,lists.trustedfirmware.org,vger.kernel.org,st-md-mailman.stormreply.com,lists.infradead.org,gmail.com,foss.st.com,siemens.com];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:4983, ipnet:198.175.64.0/23, country:US];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[11];
+	NEURAL_HAM(-0.00)[-1.000];
 	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a0a:edc0:2:b01:1d::c5:received,185.203.201.7:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[intel.com:dkim];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_NEQ_ENVFROM(0.00)[m.felsch@pengutronix.de,mfe@pengutronix.de];
-	DMARC_NA(0.00)[pengutronix.de];
-	NEURAL_SPAM(0.00)[0.996]
+	DNSWL_BLOCKED(0.00)[198.175.65.11:from];
+	RCVD_COUNT_THREE(0.00)[3];
+	DKIM_TRACE(0.00)[intel.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: AAB1D4324B
-X-Spamd-Bar: -
-Message-ID-Hash: JPI5DCX5QAK7CYAJBZ7HJOF67XEZGWA6
-X-Message-ID-Hash: JPI5DCX5QAK7CYAJBZ7HJOF67XEZGWA6
-X-MailFrom: mfe@pengutronix.de
+X-Rspamd-Queue-Id: 76C754323E
+X-Spamd-Bar: -----
+Message-ID-Hash: JIQIXP3AS7MFGGCTBYOWLK4NJQ27G4OL
+X-Message-ID-Hash: JIQIXP3AS7MFGGCTBYOWLK4NJQ27G4OL
+X-MailFrom: lkp@intel.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Matthew Wilcox <willy@infradead.org>, vbabka@suse.cz, akpm@linux-foundation.org, kernel@pengutronix.de, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com, ilias.apalodimas@linaro.org, jan.kiszka@siemens.com, masahisa.kojima@linaro.org, spu@pengutronix.de
+CC: oe-kbuild-all@lists.linux.dev, vbabka@suse.cz, akpm@linux-foundation.org, willy@infradead.org, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Marco Felsch <m.felsch@pengutronix.de>, Sven =?iso-8859-1?Q?P=FCschel?= <s.pueschel@pengutronix.de>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JPI5DCX5QAK7CYAJBZ7HJOF67XEZGWA6/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JIQIXP3AS7MFGGCTBYOWLK4NJQ27G4OL/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -95,65 +101,129 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 Hi Sumit,
 
-On 26-02-13, Sumit Garg wrote:
-> Hi Marco,
-> 
-> On Thu, Feb 12, 2026 at 01:58:30PM +0100, Marco Felsch wrote:
-> > Hi Sumit,
-> > 
-> > TBH: I was hoping that you will take care of this since you're marked as
-> > maintainer for the tee-trusted-key and we noticed the warning with 6.14
-> > and still no fix available :/
-> 
-> Mathew did suggested a fix long back on which everybody agreed but
+kernel test robot noticed the following build errors:
 
-You agreed. I said that the current TEE API also allows non-slabed based
-backed memory and therefore I don't wanted to send this patch approach
-and instead asked you to do so since you're the maintainer and fine with
-the change.
+[auto build test ERROR on akpm-mm/mm-everything]
+[also build test ERROR on linus/master v6.19 next-20260213]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-> didn't got enough attention from you to test and report if that fixed
+url:    https://github.com/intel-lab-lkp/linux/commits/Sumit-Garg/tee-shm-Remove-refcounting-of-kernel-pages/20260213-193435
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git mm-everything
+patch link:    https://lore.kernel.org/r/20260213113317.1728769-1-sumit.garg%40kernel.org
+patch subject: [RFT PATCH] tee: shm: Remove refcounting of kernel pages
+config: x86_64-randconfig-r073-20260214 (https://download.01.org/0day-ci/archive/20260214/202602142012.snNfstpn-lkp@intel.com/config)
+compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
+smatch version: v0.5.0-8994-gd50c5a4c
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260214/202602142012.snNfstpn-lkp@intel.com/reproduce)
 
-Why should it get attention from us? Maybe we do have different views of
-being a maintainer.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202602142012.snNfstpn-lkp@intel.com/
 
-> your issue. Since you insisted further, I have created a formal fix
+All errors (new ones prefixed by >>):
 
-Why is it our issue? It's everyones issue which uses the tee trusted-key
-driver.
+   drivers/tee/tee_shm.c: In function 'register_shm_helper':
+>> drivers/tee/tee_shm.c:475:13: error: implicit declaration of function 'iter_is_uvec'; did you mean 'iter_is_iovec'? [-Wimplicit-function-declaration]
+     475 |         if (iter_is_uvec(iter))
+         |             ^~~~~~~~~~~~
+         |             iter_is_iovec
 
-> patch based on that here [1]. Care to test that?
 
-A colleague of mine is going to test it and will reply on the patch.
+vim +475 drivers/tee/tee_shm.c
 
-> [1] https://lore.kernel.org/all/20260213113317.1728769-1-sumit.garg@kernel.org/
+   399	
+   400	static struct tee_shm *
+   401	register_shm_helper(struct tee_context *ctx, struct iov_iter *iter, u32 flags,
+   402			    int id)
+   403	{
+   404		struct tee_device *teedev = ctx->teedev;
+   405		struct tee_shm *shm;
+   406		unsigned long start, addr;
+   407		size_t num_pages, off;
+   408		ssize_t len;
+   409		void *ret;
+   410		int rc;
+   411	
+   412		if (!tee_device_get(teedev))
+   413			return ERR_PTR(-EINVAL);
+   414	
+   415		if (!teedev->desc->ops->shm_register ||
+   416		    !teedev->desc->ops->shm_unregister) {
+   417			ret = ERR_PTR(-ENOTSUPP);
+   418			goto err_dev_put;
+   419		}
+   420	
+   421		teedev_ctx_get(ctx);
+   422	
+   423		shm = kzalloc(sizeof(*shm), GFP_KERNEL);
+   424		if (!shm) {
+   425			ret = ERR_PTR(-ENOMEM);
+   426			goto err_ctx_put;
+   427		}
+   428	
+   429		refcount_set(&shm->refcount, 1);
+   430		shm->flags = flags;
+   431		shm->ctx = ctx;
+   432		shm->id = id;
+   433		addr = untagged_addr((unsigned long)iter_iov_addr(iter));
+   434		start = rounddown(addr, PAGE_SIZE);
+   435		num_pages = iov_iter_npages(iter, INT_MAX);
+   436		if (!num_pages) {
+   437			ret = ERR_PTR(-ENOMEM);
+   438			goto err_ctx_put;
+   439		}
+   440	
+   441		shm->pages = kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
+   442		if (!shm->pages) {
+   443			ret = ERR_PTR(-ENOMEM);
+   444			goto err_free_shm;
+   445		}
+   446	
+   447		len = iov_iter_extract_pages(iter, &shm->pages, LONG_MAX, num_pages, 0,
+   448					     &off);
+   449		if (unlikely(len <= 0)) {
+   450			ret = len ? ERR_PTR(len) : ERR_PTR(-ENOMEM);
+   451			goto err_free_shm_pages;
+   452		} else if (DIV_ROUND_UP(len + off, PAGE_SIZE) != num_pages) {
+   453			/*
+   454			 * If we only got a few pages, update to release the
+   455			 * correct amount below.
+   456			 */
+   457			shm->num_pages = len / PAGE_SIZE;
+   458			ret = ERR_PTR(-ENOMEM);
+   459			goto err_put_shm_pages;
+   460		}
+   461	
+   462		shm->offset = off;
+   463		shm->size = len;
+   464		shm->num_pages = num_pages;
+   465	
+   466		rc = teedev->desc->ops->shm_register(ctx, shm, shm->pages,
+   467						     shm->num_pages, start);
+   468		if (rc) {
+   469			ret = ERR_PTR(rc);
+   470			goto err_put_shm_pages;
+   471		}
+   472	
+   473		return shm;
+   474	err_put_shm_pages:
+ > 475		if (iter_is_uvec(iter))
+   476			unpin_user_pages(shm->pages, shm->num_pages);
+   477	err_free_shm_pages:
+   478		kfree(shm->pages);
+   479	err_free_shm:
+   480		kfree(shm);
+   481	err_ctx_put:
+   482		teedev_ctx_put(ctx);
+   483	err_dev_put:
+   484		tee_device_put(teedev);
+   485		return ret;
+   486	}
+   487	
 
-...
-
-> > I checked the code once again and figured that we could drop/replace
-> > tee_shm_register_kernel_buf() with tee_shm_alloc_kernel_buf(). I don't
-> > see why a kernel driver needs to tee_shm_register_kernel_buf() in the
-> > first place, maybe this is legacy. The only users of
-> > tee_shm_register_kernel_buf() are trusted_tee.c and tee_stmm_efi.c.
-> 
-> No it's not legacy but allows for efficient memory reuse within the
-> kernel as to not create bounce buffers to share data with TEE.
-
-To be hones, there are only two driver using the API. The tee_stmm_efi
-driver can do the alloc during the probe(). The trusted_tee has to use a
-bounce buffer, yes but how often do you assume that (un)sealing and rng
-ops have to be done during runtime? This shouldn't be a overhead at all.
-
-Therefore my suggestion would be still to drop the internal kernel API
-and only use it for userspace pages, where it could really matter.
-
-Regards,
-  Marco
 -- 
-#gernperDu 
-#CallMeByMyFirstName
-
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | https://www.pengutronix.de/ |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-9    |
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
