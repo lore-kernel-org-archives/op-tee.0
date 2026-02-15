@@ -4,94 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86CB9EF48C4
-	for <op-tee@archiver.kernel.org>; Sat, 14 Feb 2026 12:33:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F3A2E63F06
+	for <op-tee@archiver.kernel.org>; Sun, 15 Feb 2026 17:54:16 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id B6E8343838
-	for <op-tee@archiver.kernel.org>; Sat, 14 Feb 2026 12:33:49 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 5059043848
+	for <op-tee@archiver.kernel.org>; Sun, 15 Feb 2026 17:54:15 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YvIrwvzQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BvNCg8+E;
 	dkim-atps=neutral
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 76C754323E
-	for <op-tee@lists.trustedfirmware.org>; Sat, 14 Feb 2026 12:33:30 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7AFC2436F1
+	for <op-tee@lists.trustedfirmware.org>; Sun, 15 Feb 2026 17:53:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1771072411; x=1802608411;
+  t=1771178034; x=1802714034;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=YCR560SceZMWoFT+hZOGG3Q841yflpLrAjRNtMTNlqM=;
-  b=YvIrwvzQxRMYcE9mR/i+n9DnH2FbEKyhbycxsaGs0nBTzfD/hzWnh/qE
-   HUtXJRPV2JIp4vJWId5ZG7gtWcaMnBtzof8nHI7xUar6WRUyrcFJzo+mo
-   QUKjrbNJV+9kFFrhkrERV3mv7mKHw4xEJZ1zUjKqmSReoI133mBHLEdxF
-   epaAx7GDymSuI6KiCl8uxVoGi3MqbCcpVGfq/eCBJFmTTrob0XzEF42tJ
-   MdjEhWbN66T6a2T5gB0mbIWZNdYnOO/7WGLwZ2DsGDhAACmQbQHx1cUkh
-   xfTLHCInOThk0gVyr8AAmlbOcGtJjSSPp/nJ1P19TPZOcXTMs+eGbqzYg
-   Q==;
-X-CSE-ConnectionGUID: GCeJHD3ZQrmfzbElR1juNw==
-X-CSE-MsgGUID: NcxqPAEDTFCELQEBippu8g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11700"; a="82565165"
-X-IronPort-AV: E=Sophos;i="6.21,290,1763452800";
-   d="scan'208";a="82565165"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2026 04:33:30 -0800
-X-CSE-ConnectionGUID: avkfkb8ZTimdIY18Uz98kA==
-X-CSE-MsgGUID: MweAp2/NQHGZTQH2fPfrMw==
+  bh=fbTqBfpJWT1VLT7NCAQflJCxsq4/aL+pljR7u4c1CQk=;
+  b=BvNCg8+ELAniBOlmN5j0uNa+4IWw8oxNM7RCm3jgY2/NzhjM+8VA8yr1
+   pk8RJ50+isiYRdTZhDDq//JKjyIMR6HxW/8/uq0EsWiSjq3Xf9b7PC9gM
+   72iEyYrmslAN0V/hHDMxqe9B8kqmzkn/4954UCls37yRj3U8IYMH7/ZNI
+   xkzrBhbTcjAfSTm9vFUdr31vhC4Z+YaX6+Vr9ETb6Vf6vMgG6SQQhQzop
+   3gYT6g+RVqA/LPeAoD+Fz1R7ig8Vb41uTLoHE5dD/M76GJm/pXQWd/Awa
+   pghHe+L1kY+CyrsC9qhSsKVbyao5FWge7iiubXUXx2hwrOkHhPylkdLYW
+   w==;
+X-CSE-ConnectionGUID: eQW155/FRd62k4VD8whcEw==
+X-CSE-MsgGUID: tOZEV4X4QPmgLCzXWL+0iw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11702"; a="75902228"
+X-IronPort-AV: E=Sophos;i="6.21,292,1763452800";
+   d="scan'208";a="75902228"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Feb 2026 09:53:53 -0800
+X-CSE-ConnectionGUID: cjIp6V0CRteGCYtzMakkIg==
+X-CSE-MsgGUID: UvHeBzLxTRSBbY8j9iWUMg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,290,1763452800";
-   d="scan'208";a="213269477"
+X-IronPort-AV: E=Sophos;i="6.21,292,1763452800";
+   d="scan'208";a="212449287"
 Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 14 Feb 2026 04:33:27 -0800
+  by fmviesa010.fm.intel.com with ESMTP; 15 Feb 2026 09:53:50 -0800
 Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1vrEpw-00000000wWS-0fal;
-	Sat, 14 Feb 2026 12:33:24 +0000
-Date: Sat, 14 Feb 2026 20:32:36 +0800
+	id 1vrgJX-00000000yyg-1g5O;
+	Sun, 15 Feb 2026 17:53:47 +0000
+Date: Mon, 16 Feb 2026 01:53:32 +0800
 From: kernel test robot <lkp@intel.com>
 To: Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org
 Subject: Re: [RFT PATCH] tee: shm: Remove refcounting of kernel pages
-Message-ID: <202602142012.snNfstpn-lkp@intel.com>
+Message-ID: <202602160147.pGHOLa5U-lkp@intel.com>
 References: <20260213113317.1728769-1-sumit.garg@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20260213113317.1728769-1-sumit.garg@kernel.org>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.00 / 15.00];
+X-Spamd-Result: default: False [-7.00 / 15.00];
 	WHITELIST_SPF_DKIM(-3.00)[intel.com:d:+,intel.com:s:+];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_LOW(-1.00)[intel.com:dkim];
 	MID_CONTAINS_FROM(1.00)[];
 	DMARC_POLICY_ALLOW(-0.50)[intel.com,none];
-	R_DKIM_ALLOW(-0.20)[intel.com:s=Intel];
 	R_SPF_ALLOW(-0.20)[+ip4:198.175.65.0/26];
+	R_DKIM_ALLOW(-0.20)[intel.com:s=Intel];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	MISSING_XM_UA(0.00)[];
 	ASN(0.00)[asn:4983, ipnet:198.175.64.0/23, country:US];
-	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
 	RCPT_COUNT_SEVEN(0.00)[11];
 	NEURAL_HAM(-0.00)[-1.000];
-	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[intel.com:dkim];
+	TO_DN_SOME(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	DNSWL_BLOCKED(0.00)[198.175.65.11:from];
 	RCVD_COUNT_THREE(0.00)[3];
+	RCVD_TLS_LAST(0.00)[];
 	DKIM_TRACE(0.00)[intel.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 76C754323E
-X-Spamd-Bar: -----
-Message-ID-Hash: JIQIXP3AS7MFGGCTBYOWLK4NJQ27G4OL
-X-Message-ID-Hash: JIQIXP3AS7MFGGCTBYOWLK4NJQ27G4OL
+X-Rspamd-Queue-Id: 7AFC2436F1
+X-Spamd-Bar: -------
+Message-ID-Hash: RFC5FNFWJ4CTLY6HI6QNLHZNGRZ6DBVM
+X-Message-ID-Hash: RFC5FNFWJ4CTLY6HI6QNLHZNGRZ6DBVM
 X-MailFrom: lkp@intel.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: oe-kbuild-all@lists.linux.dev, vbabka@suse.cz, akpm@linux-foundation.org, willy@infradead.org, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Marco Felsch <m.felsch@pengutronix.de>, Sven =?iso-8859-1?Q?P=FCschel?= <s.pueschel@pengutronix.de>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JIQIXP3AS7MFGGCTBYOWLK4NJQ27G4OL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RFC5FNFWJ4CTLY6HI6QNLHZNGRZ6DBVM/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -113,26 +112,30 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Sumit-Garg/tee-shm-Remove
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git mm-everything
 patch link:    https://lore.kernel.org/r/20260213113317.1728769-1-sumit.garg%40kernel.org
 patch subject: [RFT PATCH] tee: shm: Remove refcounting of kernel pages
-config: x86_64-randconfig-r073-20260214 (https://download.01.org/0day-ci/archive/20260214/202602142012.snNfstpn-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
+config: loongarch-randconfig-r071-20260214 (https://download.01.org/0day-ci/archive/20260216/202602160147.pGHOLa5U-lkp@intel.com/config)
+compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
+rustc: rustc 1.88.0 (6b00bc388 2025-06-23)
 smatch version: v0.5.0-8994-gd50c5a4c
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260214/202602142012.snNfstpn-lkp@intel.com/reproduce)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260216/202602160147.pGHOLa5U-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202602142012.snNfstpn-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202602160147.pGHOLa5U-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
-   drivers/tee/tee_shm.c: In function 'register_shm_helper':
->> drivers/tee/tee_shm.c:475:13: error: implicit declaration of function 'iter_is_uvec'; did you mean 'iter_is_iovec'? [-Wimplicit-function-declaration]
+>> drivers/tee/tee_shm.c:475:6: error: call to undeclared function 'iter_is_uvec'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
      475 |         if (iter_is_uvec(iter))
-         |             ^~~~~~~~~~~~
-         |             iter_is_iovec
+         |             ^
+   drivers/tee/tee_shm.c:475:6: note: did you mean 'iter_is_iovec'?
+   include/linux/uio.h:128:20: note: 'iter_is_iovec' declared here
+     128 | static inline bool iter_is_iovec(const struct iov_iter *i)
+         |                    ^
+   1 error generated.
 
 
-vim +475 drivers/tee/tee_shm.c
+vim +/iter_is_uvec +475 drivers/tee/tee_shm.c
 
    399	
    400	static struct tee_shm *
