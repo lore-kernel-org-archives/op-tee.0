@@ -4,90 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9F29E63F2A
-	for <op-tee@archiver.kernel.org>; Mon, 16 Feb 2026 06:12:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B27E3E63F25
+	for <op-tee@archiver.kernel.org>; Mon, 16 Feb 2026 06:28:41 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id DF46343879
-	for <op-tee@archiver.kernel.org>; Mon, 16 Feb 2026 06:12:41 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id E449143872
+	for <op-tee@archiver.kernel.org>; Mon, 16 Feb 2026 06:28:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1771222362;
-	bh=BUlrTL04YkJTg3YfYEpa5HqaEr/cdvj1LSAkgHlhiJQ=;
+	d=lists.trustedfirmware.org; s=2024; t=1771223321;
+	bh=IB6S87GqJDUeZVCDWsj9FO7zAiiLNHQjIae0NCwbIyg=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=vIB2cDSpQUktyyqjDQQpIoMt9ygsNKANu37EYCi/UDs7tXjQbiHxFxJiMybaMriyy
-	 DSRPSoFXLfHC8rkIGtXpUOV+pycYwxnG1z3A6VU8YknyojjzFv4wWlAvJAd/mWn6S4
-	 asFLfNZqjnanSQHKOcIb78oofSIaF6ys8PDswx07u1IcI6koxnygPshnrvWhKlSqPt
-	 yvGQLKnD7yqsJglUdOnoyEIbn+RBWVXdBWTivT+Z+YcbrPsC7PgOefM/jY3wP8j05q
-	 R9iCuRtOuwMDcFk4hgijSXXE1ZnVjmSTAKu3cgwzXeKuyYtHOkF6AKZ1ynJoNb5jtb
-	 fKmSYebNs14Xg==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 3A3F243868
-	for <op-tee@lists.trustedfirmware.org>; Mon, 16 Feb 2026 06:12:22 +0000 (UTC)
+	b=ARIeTzKflfive48kRtIUCEo2He46apm8rAZg50FTcOWtpV+Gf1X9ihWFhI+rwLpZI
+	 OANY3Jx07QEBWxUqV/7K1YGPM1NgAuNB4WyAoch/4Hbu2I8TXupdJkKW6vXNJ8XsP/
+	 Ip14q/tYdtQN31i3YT6ig096ftNr7oP3eJjd+9UF/KLpJSBUlwkO2+vf93jrN+28sX
+	 O+LYVFs0eh7R7noomzu24CwQMLqTeRlxLcT2oWWe3kWEoTE+r82bMWq+ewQ82PQvhi
+	 XVQkSWgZM4pHh9sGuxpavcYQyldWgMp5fGu8RRhTgKekox4o9RP9d8Vbkuwbb9gWyq
+	 wzUnf3SwkWsvQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 05FF143862
+	for <op-tee@lists.trustedfirmware.org>; Mon, 16 Feb 2026 06:28:21 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jCF5oRwf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Vvw7taDt;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A7EFC406F3;
-	Mon, 16 Feb 2026 06:12:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DA1EC116C6;
-	Mon, 16 Feb 2026 06:12:17 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 5F801600B0;
+	Mon, 16 Feb 2026 06:28:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91B66C116C6;
+	Mon, 16 Feb 2026 06:28:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771222341;
-	bh=fY+kP4YBwDjhTps+8Ev42mJuQ2PGyMnt8O2c+6gw+os=;
+	s=k20201202; t=1771223299;
+	bh=IB6S87GqJDUeZVCDWsj9FO7zAiiLNHQjIae0NCwbIyg=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=jCF5oRwfkYA1Au/svGJjtPKb1knHldnWQ2zJ/Xfr8HkSCgzajCCy+V4/nLHuCsrLZ
-	 G7Dw7l+8pTDQ+XjNNxw1E7RViBYQTlhfy+GbamI85/vBQAWgGBxr550bub17NutpBt
-	 V0+qsZ8jro6pUERz9qOcIP7SIeIqUDrRYRBf6lRBcOO8HDJEykJRKDxjIc/WMnrlyE
-	 fKw3N5qqk6oODa4zxXgREKxEuni2FvBtmepwBhzFixRaWyWGKk/rqg+plGSaLAT/Wa
-	 XgxaHjDfMbBAo1E0uT2Lu9uuNdWgBhjd5YLb4LQ+hB5NsxibRi/FeVu8mCqHhSotA0
-	 Q5RO9Sk5/LORg==
-Date: Mon, 16 Feb 2026 11:42:14 +0530
-To: Matthew Wilcox <willy@infradead.org>
-Subject: Re: [RFT PATCH] tee: shm: Remove refcounting of kernel pages
-Message-ID: <aZK1PpkK2DhZSNA3@sumit-xelite>
-References: <20260213113317.1728769-1-sumit.garg@kernel.org>
- <aY9MmQ5iVvgj3Km6@casper.infradead.org>
+	b=Vvw7taDtzIRHRPpyGWyElmvnZLUhQHz605cFYNwB67Xs3cPclrRcoUfPhUV/p1+75
+	 2AWNLD7UZLuLiQIUSuQxvIIBN07fbTMo+bamb3iFjWzFTTxVEqJvv0BS72OK+GbcQa
+	 MaGe1qIKa8LJ5Xlg3GXUwsHQHvvHz3gLFQ88OoTuAKfooJgVFServunzAKdNHlYzWM
+	 gjNSCngjfv6y6QYeB0jRGpsxVo5okoCk1MOqnLIEfZGaJBN6wS60aXFqkMnkI2TKqT
+	 /mhX+mzim3N96bnOeNAhpE8lKu7P8W+vWg6Nox4X7UttTiba7Dx09uyiWlZ7yjkhB5
+	 Euz23RmJRex/g==
+Date: Mon, 16 Feb 2026 11:58:10 +0530
+To: Marco Felsch <m.felsch@pengutronix.de>
+Subject: Re: [PATCH v2] tee: shm: fix slab page refcounting
+Message-ID: <aZK4-grGSdOFXHTK@sumit-xelite>
+References: <20250325200740.3645331-1-m.felsch@pengutronix.de>
+ <Z-Pc6C1YUqLyej3Z@casper.infradead.org>
+ <20250326110718.qzbwpmaf6xlcb4xf@pengutronix.de>
+ <CAHUa44FUK_73oKSaqGdiPqB3geZbTNDFsC1Mh=KN3YPWr9=7gQ@mail.gmail.com>
+ <Z-TXMIXzaro0w60M@sumit-X1>
+ <CAHUa44HEsMkzQHZZufdwutQyZRtig6e0qWomhwgDZAhy2qDyhg@mail.gmail.com>
+ <20260212125830.jfwos3flga2l5uwk@pengutronix.de>
+ <aY8N90jMp25bBZhi@sumit-xelite>
+ <252s4lfnujhrl3bkqm3xwatdkcdd3tfge3e6fla6f2llq4szjm@xltjvpqjgffn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <aY9MmQ5iVvgj3Km6@casper.infradead.org>
+In-Reply-To: <252s4lfnujhrl3bkqm3xwatdkcdd3tfge3e6fla6f2llq4szjm@xltjvpqjgffn>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Spamd-Result: default: False [-2.00 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
 	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	MIME_GOOD(-0.10)[text/plain];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	RCPT_COUNT_TWELVE(0.00)[17];
 	TO_DN_SOME(0.00)[];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	NEURAL_HAM(-0.00)[-1.000];
-	FROM_EQ_ENVFROM(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	NEURAL_HAM(-0.00)[-0.999];
+	ALIAS_RESOLVED(0.00)[];
 	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linaro.org,infradead.org,suse.cz,linux-foundation.org,pengutronix.de,lists.trustedfirmware.org,vger.kernel.org,st-md-mailman.stormreply.com,lists.infradead.org,gmail.com,foss.st.com,siemens.com];
 	DWL_DNSWL_NONE(0.00)[kernel.org:dkim];
+	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_TLS_LAST(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 3A3F243868
-X-Spamd-Bar: ---
-Message-ID-Hash: JFXERV6YXWUI4T6RYCNASSNHK5YAOOSL
-X-Message-ID-Hash: JFXERV6YXWUI4T6RYCNASSNHK5YAOOSL
+X-Rspamd-Queue-Id: 05FF143862
+X-Spamd-Bar: -
+Message-ID-Hash: IU3VEJFVN3HQFHLV2DCUVRYO7NEBXZKJ
+X-Message-ID-Hash: IU3VEJFVN3HQFHLV2DCUVRYO7NEBXZKJ
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org, vbabka@suse.cz, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Marco Felsch <m.felsch@pengutronix.de>, Sven =?iso-8859-1?Q?P=FCschel?= <s.pueschel@pengutronix.de>
+CC: Matthew Wilcox <willy@infradead.org>, vbabka@suse.cz, akpm@linux-foundation.org, kernel@pengutronix.de, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com, ilias.apalodimas@linaro.org, jan.kiszka@siemens.com, masahisa.kojima@linaro.org, spu@pengutronix.de
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JFXERV6YXWUI4T6RYCNASSNHK5YAOOSL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IU3VEJFVN3HQFHLV2DCUVRYO7NEBXZKJ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -97,107 +106,81 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Fri, Feb 13, 2026 at 04:08:57PM +0000, Matthew Wilcox wrote:
-> On Fri, Feb 13, 2026 at 05:03:17PM +0530, Sumit Garg wrote:
-> > From: Sumit Garg <sumit.garg@oss.qualcomm.com>
->=20
-> Um, this patch is exactly the patch I sent.  You're stealing my
-> authorship!  This patch should have my From: and Signed-off-by:
-> lines.  Your role in this is "handling and transporting the patch"
-> (see Documentation/process/submitting-patches.rst).  By all means
-> take credit for writing the commit message.
+On Fri, Feb 13, 2026 at 11:04:48PM +0100, Marco Felsch wrote:
+> Hi Sumit,
+> 
+> On 26-02-13, Sumit Garg wrote:
+> > Hi Marco,
+> > 
+> > On Thu, Feb 12, 2026 at 01:58:30PM +0100, Marco Felsch wrote:
+> > > Hi Sumit,
+> > > 
+> > > TBH: I was hoping that you will take care of this since you're marked as
+> > > maintainer for the tee-trusted-key and we noticed the warning with 6.14
+> > > and still no fix available :/
+> > 
+> > Mathew did suggested a fix long back on which everybody agreed but
+> 
+> You agreed. I said that the current TEE API also allows non-slabed based
+> backed memory and therefore I don't wanted to send this patch approach
+> and instead asked you to do so since you're the maintainer and fine with
+> the change.
+> 
+> > didn't got enough attention from you to test and report if that fixed
+> 
+> Why should it get attention from us? Maybe we do have different views of
+> being a maintainer.
 
-Not sure how I can consider that diff from you a proper patch but surely
-I tried to give your suggestion attributes. However, it's fine with me
-to keep your authorship if you really want to vet this patch. Will send
-a v2 with the authorship updated.
+It's really the basic expectation I have put here which every reporter
+of a bug needs to say if a suggested fix works for them or not.
+
+> 
+> > your issue. Since you insisted further, I have created a formal fix
+> 
+> Why is it our issue? It's everyones issue which uses the tee trusted-key
+> driver.
+> 
+> > patch based on that here [1]. Care to test that?
+> 
+> A colleague of mine is going to test it and will reply on the patch.
+> 
+> > [1] https://lore.kernel.org/all/20260213113317.1728769-1-sumit.garg@kernel.org/
+> 
+> ...
+> 
+> > > I checked the code once again and figured that we could drop/replace
+> > > tee_shm_register_kernel_buf() with tee_shm_alloc_kernel_buf(). I don't
+> > > see why a kernel driver needs to tee_shm_register_kernel_buf() in the
+> > > first place, maybe this is legacy. The only users of
+> > > tee_shm_register_kernel_buf() are trusted_tee.c and tee_stmm_efi.c.
+> > 
+> > No it's not legacy but allows for efficient memory reuse within the
+> > kernel as to not create bounce buffers to share data with TEE.
+> 
+> To be hones, there are only two driver using the API. The tee_stmm_efi
+> driver can do the alloc during the probe(). The trusted_tee has to use a
+> bounce buffer, yes but how often do you assume that (un)sealing and rng
+> ops have to be done during runtime? This shouldn't be a overhead at all.
+> 
+> Therefore my suggestion would be still to drop the internal kernel API
+> and only use it for userspace pages, where it could really matter.
+
+I don't disagree with what you are saying here but we really need to
+promote efficient memory reuse for TEE clients. There will surely be
+more use-cases coming in future which can benefit from the flexibility
+to register buffer. One another kernel client being remoteproc subsystem
+which is already under review for this API.
 
 -Sumit
 
->=20
-> > Earlier TEE subsystem assumed to refcount all the memory pages to be
-> > shared with TEE implementation to be refcounted. However, the slab
-> > allocations within the kernel don't allow refcounting kernel pages.
-> >=20
-> > It is rather better to trust the kernel clients to not free pages while
-> > being shared with TEE implementation. Hence, remove refcounting of kern=
-el
-> > pages from register_shm_helper() API.
-> >=20
-> > Fixes: b9c0e49abfca ("mm: decline to manipulate the refcount on a slab =
-page")
-> > Reported-by: Marco Felsch <m.felsch@pengutronix.de>
-> > Reported-by: Sven P=FCschel <s.pueschel@pengutronix.de>
-> > Suggested-by: Matthew Wilcox <willy@infradead.org>
-> > Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
-> > ---
-> >  drivers/tee/tee_shm.c | 29 +----------------------------
-> >  1 file changed, 1 insertion(+), 28 deletions(-)
-> >=20
-> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-> > index 4a47de4bb2e5..54e2ba3afb25 100644
-> > --- a/drivers/tee/tee_shm.c
-> > +++ b/drivers/tee/tee_shm.c
-> > @@ -23,29 +23,11 @@ struct tee_shm_dma_mem {
-> >  	struct page *page;
-> >  };
-> > =20
-> > -static void shm_put_kernel_pages(struct page **pages, size_t page_coun=
-t)
-> > -{
-> > -	size_t n;
-> > -
-> > -	for (n =3D 0; n < page_count; n++)
-> > -		put_page(pages[n]);
-> > -}
-> > -
-> > -static void shm_get_kernel_pages(struct page **pages, size_t page_coun=
-t)
-> > -{
-> > -	size_t n;
-> > -
-> > -	for (n =3D 0; n < page_count; n++)
-> > -		get_page(pages[n]);
-> > -}
-> > -
-> >  static void release_registered_pages(struct tee_shm *shm)
-> >  {
-> >  	if (shm->pages) {
-> >  		if (shm->flags & TEE_SHM_USER_MAPPED)
-> >  			unpin_user_pages(shm->pages, shm->num_pages);
-> > -		else
-> > -			shm_put_kernel_pages(shm->pages, shm->num_pages);
-> > =20
-> >  		kfree(shm->pages);
-> >  	}
-> > @@ -477,13 +459,6 @@ register_shm_helper(struct tee_context *ctx, struc=
-t iov_iter *iter, u32 flags,
-> >  		goto err_put_shm_pages;
-> >  	}
-> > =20
-> > -	/*
-> > -	 * iov_iter_extract_kvec_pages does not get reference on the pages,
-> > -	 * get a reference on them.
-> > -	 */
-> > -	if (iov_iter_is_kvec(iter))
-> > -		shm_get_kernel_pages(shm->pages, num_pages);
-> > -
-> >  	shm->offset =3D off;
-> >  	shm->size =3D len;
-> >  	shm->num_pages =3D num_pages;
-> > @@ -497,10 +472,8 @@ register_shm_helper(struct tee_context *ctx, struc=
-t iov_iter *iter, u32 flags,
-> > =20
-> >  	return shm;
-> >  err_put_shm_pages:
-> > -	if (!iov_iter_is_kvec(iter))
-> > +	if (iter_is_uvec(iter))
-> >  		unpin_user_pages(shm->pages, shm->num_pages);
-> > -	else
-> > -		shm_put_kernel_pages(shm->pages, shm->num_pages);
-> >  err_free_shm_pages:
-> >  	kfree(shm->pages);
-> >  err_free_shm:
-> > --=20
-> > 2.51.0
-> >=20
+> 
+> Regards,
+>   Marco
+> -- 
+> #gernperDu 
+> #CallMeByMyFirstName
+> 
+> Pengutronix e.K.                           |                             |
+> Steuerwalder Str. 21                       | https://www.pengutronix.de/ |
+> 31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-9    |
