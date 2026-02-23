@@ -4,85 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24A46C54FCC
-	for <op-tee@archiver.kernel.org>; Fri, 20 Feb 2026 08:50:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA514EF5865
+	for <op-tee@archiver.kernel.org>; Mon, 23 Feb 2026 05:07:45 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 4BBE4438CF
-	for <op-tee@archiver.kernel.org>; Fri, 20 Feb 2026 08:50:51 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 228E443753
+	for <op-tee@archiver.kernel.org>; Mon, 23 Feb 2026 05:07:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1771577451;
-	bh=/D6HP3qKAnFMp9MNYp4X2sCLWaKZu0NUhBd3zGC8570=;
-	h=To:Subject:Date:CC:List-Id:List-Archive:List-Help:List-Owner:
-	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=YAqsv03y9TBlXRK5C+kwssfRbsplEaZp8SB+EEteK3HUshOnYriVefa3I9lUqAWqH
-	 hciTu/faegZbRMcYhkaJK1Zn2o0juLZtOyAc/1gzcK+1sbnmHX9KV8/83jmyRpUELU
-	 zzEUutr/LzkzPwD4qIwnYrmEJCsHcsAJFRZF1yjzG8C5VTGdq1GQLBv2OsVUNGgxoS
-	 7JPwAN9qrGYRepk4Iio9mwUtLce4+2lZBtqLmNtYgP1zdzV03LcaDukYo0e/iVjNPv
-	 Te0alURyGc3O3JiqDEUJeRQaPLfK5FklsCOhY4O2v5x4oQFcA80GFDnW/6ckxzyZdI
-	 ublC+kwEHDelQ==
+	d=lists.trustedfirmware.org; s=2024; t=1771823265;
+	bh=HHRmCIipxN5xiX/HZjoYKjwj5wwfzNvvz6r1/tiMmjE=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=rJiXrAPEcyMTf5XsF17dbymn0hVdSMgsO1w1o0PQJVdGuz5EDlEch+9DLknGbs/x9
+	 kZl+y1dwiwSm7HeLeefZBQQieZpi0hO6zmEszMJKk3ExhRW86MJ+7Ms3vTFC/tb4cd
+	 oXqjFnDXg3E/OWlkGLwPLBI6m5q4NPv+9a9uaj2nBwnzbCUX3LDsklQ5WtvjZ6/hBj
+	 x7jH18MQ5vYNOtfIDzY+r0uzanOYEX9LgJcVbl6RybaMjPI+7o+yDQ4EnDLjVDvLWT
+	 kBDGED9tfzA6dZ5RTEx+kC/qIUX1DyQuoGJFCGXtxrumAJq3c1CRVRvWFx19bywtDs
+	 U1pmpsCFCI31Q==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1443543833
-	for <op-tee@lists.trustedfirmware.org>; Fri, 20 Feb 2026 08:50:30 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E2A2343751
+	for <op-tee@lists.trustedfirmware.org>; Mon, 23 Feb 2026 05:07:25 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NykkGadI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XqLBwvG0;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 640FB403FA;
-	Fri, 20 Feb 2026 08:50:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00DF9C116C6;
-	Fri, 20 Feb 2026 08:50:24 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 50D694396A;
+	Mon, 23 Feb 2026 05:07:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0CA2C116C6;
+	Mon, 23 Feb 2026 05:07:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771577429;
-	bh=rjIXc2AD+KfYAMtK9G+UrVTRs1f6gjwWMNxmefC21+A=;
-	h=From:To:Cc:Subject:Date:From;
-	b=NykkGadIpSyxkv1Ts+iqza0OoWYhC3x0nEkKJC1nHPiq+Q/tZtM3082XxYygS3k0U
-	 ERgYbDalsuPJB1aLjwMhT6PY6Ekf0x2KWoF4v4oDBWrNYGQvx76aRDULVQJnGBPz6j
-	 NadzF+L5sPkfRifh7uzvLv27M8Le62soIMxR7rW5habAVutncdD629VLok9mh1uVdd
-	 xZ4Mlq0UH2Br/OxL7hxlM5W5eySCtJlLsC7QUrogD0rrhY1GmW3UK5WrezV3KSSvuF
-	 WfOtGNegK3Il0k+sZ0bziEybFk8wWVoEY83zCbB0Fy6FeHhTzIgWBTelpqt8uSLyBP
-	 6os3ER8cQVs+Q==
-To: op-tee@lists.trustedfirmware.org
-Subject: [RFT PATCH v2] tee: shm: Remove refcounting of kernel pages
-Date: Fri, 20 Feb 2026 14:19:59 +0530
-Message-ID: <20260220084959.1966771-1-sumit.garg@kernel.org>
-X-Mailer: git-send-email 2.51.0
+	s=k20201202; t=1771823245;
+	bh=9sirl/LJPi8U+FnNQv8H6dqOhBee+XQieB7AswojCiI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XqLBwvG07QXi+ZBtqnZWIGitErhGSWf5bWPfRrGE8LjL3b2yByr0ahC5XRVw84ODy
+	 x4xq9cYqQIOBQDt7D3BHk9cG1OYPJtqJf17QCSa+ggsE9GMQbgkMcrtuEIgd9MEX6P
+	 eJ9/7JyWe5TwBHcdIaF1q3pjmFPNxj91HySVM9ANOm6jkOdBE4uIQcS2z8WMfh9YLz
+	 T5NZtNwMKCrmPEmY5cyReRXoLyVsRiADCAGvrkNEgAakRGJB3vY3XDdetDjnQcKoZq
+	 JTOCyKGMFLLXg2rDIy4zPzFSrKukE0OGHSIczrfeWbDayS/4+M98P4GQUp5RsbyyBu
+	 u7ZFXnyfVS6cw==
+Date: Mon, 23 Feb 2026 10:37:18 +0530
+To: Sven =?iso-8859-1?Q?P=FCschel?= <s.pueschel@pengutronix.de>
+Subject: Re: [RFT PATCH] tee: shm: Remove refcounting of kernel pages
+Message-ID: <aZvghsLXn3rJZBLm@sumit-xelite>
+References: <20260213113317.1728769-1-sumit.garg@kernel.org>
+ <7546a4ff-485c-4473-999c-08fdf4e815bc@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <7546a4ff-485c-4473-999c-08fdf4e815bc@pengutronix.de>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
+X-Spamd-Result: default: False [-3.50 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	TO_DN_SOME(0.00)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
 	NEURAL_HAM(-0.00)[-1.000];
-	DWL_DNSWL_NONE(0.00)[kernel.org:dkim];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[8];
+	DWL_DNSWL_NONE(0.00)[kernel.org:dkim];
 	RCVD_COUNT_TWO(0.00)[2];
 	RCVD_TLS_LAST(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 1443543833
+X-Rspamd-Queue-Id: E2A2343751
 X-Spamd-Bar: ---
-Message-ID-Hash: G4GJMD5HJ54KCSMGAIXWVNODTY46P3UB
-X-Message-ID-Hash: G4GJMD5HJ54KCSMGAIXWVNODTY46P3UB
+Message-ID-Hash: FN2PXIXUZEY6H3GHV3ZUVFWLKZM6UTY6
+X-Message-ID-Hash: FN2PXIXUZEY6H3GHV3ZUVFWLKZM6UTY6
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: vbabka@suse.cz, akpm@linux-foundation.org, willy@infradead.org, m.felsch@pengutronix.de, s.pueschel@pengutronix.de, Sumit Garg <sumit.garg@oss.qualcomm.com>
+CC: op-tee@lists.trustedfirmware.org, vbabka@suse.cz, akpm@linux-foundation.org, willy@infradead.org, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>, Marco Felsch <m.felsch@pengutronix.de>, kernel@pengutronix.de
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/G4GJMD5HJ54KCSMGAIXWVNODTY46P3UB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FN2PXIXUZEY6H3GHV3ZUVFWLKZM6UTY6/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -92,49 +97,113 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-RnJvbTogTWF0dGhldyBXaWxjb3ggPHdpbGx5QGluZnJhZGVhZC5vcmc+DQoNCkVhcmxpZXIgVEVF
-IHN1YnN5c3RlbSBhc3N1bWVkIHRvIHJlZmNvdW50IGFsbCB0aGUgbWVtb3J5IHBhZ2VzIHRvIGJl
-DQpzaGFyZWQgd2l0aCBURUUgaW1wbGVtZW50YXRpb24gdG8gYmUgcmVmY291bnRlZC4gSG93ZXZl
-ciwgdGhlIHNsYWINCmFsbG9jYXRpb25zIHdpdGhpbiB0aGUga2VybmVsIGRvbid0IGFsbG93IHJl
-ZmNvdW50aW5nIGtlcm5lbCBwYWdlcy4NCg0KSXQgaXMgcmF0aGVyIGJldHRlciB0byB0cnVzdCB0
-aGUga2VybmVsIGNsaWVudHMgdG8gbm90IGZyZWUgcGFnZXMgd2hpbGUNCmJlaW5nIHNoYXJlZCB3
-aXRoIFRFRSBpbXBsZW1lbnRhdGlvbi4gSGVuY2UsIHJlbW92ZSByZWZjb3VudGluZyBvZiBrZXJu
-ZWwNCnBhZ2VzIGZyb20gcmVnaXN0ZXJfc2htX2hlbHBlcigpIEFQSS4NCg0KRml4ZXM6IGI5YzBl
-NDlhYmZjYSAoIm1tOiBkZWNsaW5lIHRvIG1hbmlwdWxhdGUgdGhlIHJlZmNvdW50IG9uIGEgc2xh
-YiBwYWdlIikNClJlcG9ydGVkLWJ5OiBNYXJjbyBGZWxzY2ggPG0uZmVsc2NoQHBlbmd1dHJvbml4
-LmRlPg0KUmVwb3J0ZWQtYnk6IFN2ZW4gUMO8c2NoZWwgPHMucHVlc2NoZWxAcGVuZ3V0cm9uaXgu
-ZGU+DQpTaWduZWQtb2ZmLWJ5OiBNYXR0aGV3IFdpbGNveCA8d2lsbHlAaW5mcmFkZWFkLm9yZz4N
-CkNvLWRldmVsb3BlZC1ieTogU3VtaXQgR2FyZyA8c3VtaXQuZ2FyZ0Bvc3MucXVhbGNvbW0uY29t
-Pg0KU2lnbmVkLW9mZi1ieTogU3VtaXQgR2FyZyA8c3VtaXQuZ2FyZ0Bvc3MucXVhbGNvbW0uY29t
-Pg0KLS0tDQoNCkNoYW5nZXMgaW4gdjI6DQotIEF0dHJpYnV0ZSBNYXR0aGV3IGFzIHRoZSBhdXRo
-b3Igb2YgdGhpcyBwYXRjaC4NCi0gRml4IGNoZWNrIGZvciB1c2VyIHBhZ2VzLg0KDQogZHJpdmVy
-cy90ZWUvdGVlX3NobS5jIHwgMjcgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQogMSBmaWxl
-IGNoYW5nZWQsIDI3IGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy90ZWUvdGVl
-X3NobS5jIGIvZHJpdmVycy90ZWUvdGVlX3NobS5jDQppbmRleCA0YTQ3ZGU0YmIyZTUuLjg5ODcw
-N2NhMjFhOCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvdGVlL3RlZV9zaG0uYw0KKysrIGIvZHJpdmVy
-cy90ZWUvdGVlX3NobS5jDQpAQCAtMjMsMjkgKzIzLDExIEBAIHN0cnVjdCB0ZWVfc2htX2RtYV9t
-ZW0gew0KIAlzdHJ1Y3QgcGFnZSAqcGFnZTsNCiB9Ow0KIA0KLXN0YXRpYyB2b2lkIHNobV9wdXRf
-a2VybmVsX3BhZ2VzKHN0cnVjdCBwYWdlICoqcGFnZXMsIHNpemVfdCBwYWdlX2NvdW50KQ0KLXsN
-Ci0Jc2l6ZV90IG47DQotDQotCWZvciAobiA9IDA7IG4gPCBwYWdlX2NvdW50OyBuKyspDQotCQlw
-dXRfcGFnZShwYWdlc1tuXSk7DQotfQ0KLQ0KLXN0YXRpYyB2b2lkIHNobV9nZXRfa2VybmVsX3Bh
-Z2VzKHN0cnVjdCBwYWdlICoqcGFnZXMsIHNpemVfdCBwYWdlX2NvdW50KQ0KLXsNCi0Jc2l6ZV90
-IG47DQotDQotCWZvciAobiA9IDA7IG4gPCBwYWdlX2NvdW50OyBuKyspDQotCQlnZXRfcGFnZShw
-YWdlc1tuXSk7DQotfQ0KLQ0KIHN0YXRpYyB2b2lkIHJlbGVhc2VfcmVnaXN0ZXJlZF9wYWdlcyhz
-dHJ1Y3QgdGVlX3NobSAqc2htKQ0KIHsNCiAJaWYgKHNobS0+cGFnZXMpIHsNCiAJCWlmIChzaG0t
-PmZsYWdzICYgVEVFX1NITV9VU0VSX01BUFBFRCkNCiAJCQl1bnBpbl91c2VyX3BhZ2VzKHNobS0+
-cGFnZXMsIHNobS0+bnVtX3BhZ2VzKTsNCi0JCWVsc2UNCi0JCQlzaG1fcHV0X2tlcm5lbF9wYWdl
-cyhzaG0tPnBhZ2VzLCBzaG0tPm51bV9wYWdlcyk7DQogDQogCQlrZnJlZShzaG0tPnBhZ2VzKTsN
-CiAJfQ0KQEAgLTQ3NywxMyArNDU5LDYgQEAgcmVnaXN0ZXJfc2htX2hlbHBlcihzdHJ1Y3QgdGVl
-X2NvbnRleHQgKmN0eCwgc3RydWN0IGlvdl9pdGVyICppdGVyLCB1MzIgZmxhZ3MsDQogCQlnb3Rv
-IGVycl9wdXRfc2htX3BhZ2VzOw0KIAl9DQogDQotCS8qDQotCSAqIGlvdl9pdGVyX2V4dHJhY3Rf
-a3ZlY19wYWdlcyBkb2VzIG5vdCBnZXQgcmVmZXJlbmNlIG9uIHRoZSBwYWdlcywNCi0JICogZ2V0
-IGEgcmVmZXJlbmNlIG9uIHRoZW0uDQotCSAqLw0KLQlpZiAoaW92X2l0ZXJfaXNfa3ZlYyhpdGVy
-KSkNCi0JCXNobV9nZXRfa2VybmVsX3BhZ2VzKHNobS0+cGFnZXMsIG51bV9wYWdlcyk7DQotDQog
-CXNobS0+b2Zmc2V0ID0gb2ZmOw0KIAlzaG0tPnNpemUgPSBsZW47DQogCXNobS0+bnVtX3BhZ2Vz
-ID0gbnVtX3BhZ2VzOw0KQEAgLTQ5OSw4ICs0NzQsNiBAQCByZWdpc3Rlcl9zaG1faGVscGVyKHN0
-cnVjdCB0ZWVfY29udGV4dCAqY3R4LCBzdHJ1Y3QgaW92X2l0ZXIgKml0ZXIsIHUzMiBmbGFncywN
-CiBlcnJfcHV0X3NobV9wYWdlczoNCiAJaWYgKCFpb3ZfaXRlcl9pc19rdmVjKGl0ZXIpKQ0KIAkJ
-dW5waW5fdXNlcl9wYWdlcyhzaG0tPnBhZ2VzLCBzaG0tPm51bV9wYWdlcyk7DQotCWVsc2UNCi0J
-CXNobV9wdXRfa2VybmVsX3BhZ2VzKHNobS0+cGFnZXMsIHNobS0+bnVtX3BhZ2VzKTsNCiBlcnJf
-ZnJlZV9zaG1fcGFnZXM6DQogCWtmcmVlKHNobS0+cGFnZXMpOw0KIGVycl9mcmVlX3NobToNCi0t
-IA0KMi41MS4wDQoNCg==
+On Tue, Feb 17, 2026 at 12:01:55PM +0100, Sven P=FCschel wrote:
+> Hi Sumit,
+>=20
+> On 2/13/26 12:33 PM, Sumit Garg wrote:
+> > From: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> >=20
+> > Earlier TEE subsystem assumed to refcount all the memory pages to be
+> > shared with TEE implementation to be refcounted. However, the slab
+> > allocations within the kernel don't allow refcounting kernel pages.
+> >=20
+> > It is rather better to trust the kernel clients to not free pages while
+> > being shared with TEE implementation. Hence, remove refcounting of kern=
+el
+> > pages from register_shm_helper() API.
+> >=20
+> > Fixes: b9c0e49abfca ("mm: decline to manipulate the refcount on a slab =
+page")
+> > Reported-by: Marco Felsch <m.felsch@pengutronix.de>
+> > Reported-by: Sven P=FCschel <s.pueschel@pengutronix.de>
+> > Suggested-by: Matthew Wilcox <willy@infradead.org>
+> > Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> > ---
+> >   drivers/tee/tee_shm.c | 29 +----------------------------
+> >   1 file changed, 1 insertion(+), 28 deletions(-)
+> >=20
+> > diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> > index 4a47de4bb2e5..54e2ba3afb25 100644
+> > --- a/drivers/tee/tee_shm.c
+> > +++ b/drivers/tee/tee_shm.c
+> > @@ -23,29 +23,11 @@ struct tee_shm_dma_mem {
+> >   	struct page *page;
+> >   };
+> > -static void shm_put_kernel_pages(struct page **pages, size_t page_coun=
+t)
+> > -{
+> > -	size_t n;
+> > -
+> > -	for (n =3D 0; n < page_count; n++)
+> > -		put_page(pages[n]);
+> > -}
+> > -
+> > -static void shm_get_kernel_pages(struct page **pages, size_t page_coun=
+t)
+> > -{
+> > -	size_t n;
+> > -
+> > -	for (n =3D 0; n < page_count; n++)
+> > -		get_page(pages[n]);
+> > -}
+> > -
+> >   static void release_registered_pages(struct tee_shm *shm)
+> >   {
+> >   	if (shm->pages) {
+> >   		if (shm->flags & TEE_SHM_USER_MAPPED)
+> >   			unpin_user_pages(shm->pages, shm->num_pages);
+> > -		else
+> > -			shm_put_kernel_pages(shm->pages, shm->num_pages);
+> >   		kfree(shm->pages);
+> >   	}
+> > @@ -477,13 +459,6 @@ register_shm_helper(struct tee_context *ctx, struc=
+t iov_iter *iter, u32 flags,
+> >   		goto err_put_shm_pages;
+> >   	}
+> > -	/*
+> > -	 * iov_iter_extract_kvec_pages does not get reference on the pages,
+> > -	 * get a reference on them.
+> > -	 */
+> > -	if (iov_iter_is_kvec(iter))
+> > -		shm_get_kernel_pages(shm->pages, num_pages);
+> > -
+> >   	shm->offset =3D off;
+> >   	shm->size =3D len;
+> >   	shm->num_pages =3D num_pages;
+> > @@ -497,10 +472,8 @@ register_shm_helper(struct tee_context *ctx, struc=
+t iov_iter *iter, u32 flags,
+> >   	return shm;
+> >   err_put_shm_pages:
+> > -	if (!iov_iter_is_kvec(iter))
+> > +	if (iter_is_uvec(iter))
+>=20
+> I've replaced (due to compile failures noted by the kernel test robot) th=
+is
+> with the compiler suggested iter_is_iovec . I haven't checked, if this is
+> the correct fix.
+>=20
+> With this patch applied (on the upstream commit 970296997869), my reported
+> stacktrace/warning doesn't occur anymore. I didn't do any extensive testi=
+ng,
+> but creating and using a trusted key with keyctl worked fine in my short
+> test.
+
+Thanks for testing it out, I have fixed the compiler error in v2 here [1]. =
+Can
+you help to retest with a proper tested by tag?
+
+[1] https://lore.kernel.org/all/20260220084959.1966771-1-sumit.garg@kernel.=
+org/
+
+-Sumit
+
+>=20
+> Sincerely
+> =A0 =A0 Sven
+>=20
+> >   		unpin_user_pages(shm->pages, shm->num_pages);
+> > -	else
+> > -		shm_put_kernel_pages(shm->pages, shm->num_pages);
+> >   err_free_shm_pages:
+> >   	kfree(shm->pages);
+> >   err_free_shm:
