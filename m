@@ -4,123 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC3B4EB7EAC
-	for <op-tee@archiver.kernel.org>; Wed,  4 Mar 2026 09:34:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47D84F33A76
+	for <op-tee@archiver.kernel.org>; Thu,  5 Mar 2026 14:37:13 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 30AB043178
-	for <op-tee@archiver.kernel.org>; Wed,  4 Mar 2026 09:34:41 +0000 (UTC)
-Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=HCDniXjX;
-	dkim-atps=neutral
-Received: from mail-oa1-f44.google.com (mail-oa1-f44.google.com [209.85.160.44])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5C36243161
-	for <op-tee@lists.trustedfirmware.org>; Wed,  4 Mar 2026 09:34:22 +0000 (UTC)
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-415e568a7ecso802403fac.0
-        for <op-tee@lists.trustedfirmware.org>; Wed, 04 Mar 2026 01:34:22 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1772616862; cv=none;
-        d=google.com; s=arc-20240605;
-        b=cdSLqNzJWD4AHUpMnOXc0dZ6SOnFKfQH7Mb3MAf/KWdS4B0HzfzuIN7+RwmhvWZY56
-         JYpjhX4A88FCTUbMBIou7Hf5LoEpcqJRUM/FZ88pL8KiMzO61km61zs6oPsPPxm8h9WQ
-         mIfDJA3FaWzgGJAI+NyFdUGcsZv4rTt+6ouaPBOhKVuUx/4igiujfYMjor8wOd/fO5gd
-         rdqV9QihFM+Z6Pp434D+91jcWIqRzlwTtCwXaa/aOkkYaYlCK2gM2ER9G9wU1Z7PGOKN
-         FkfwCMwvYXrSLpsaeHSpMX04Ygh6vIrtatSoYZtL0lwgCKV+NfUz2uPMS5PDnumnWgNG
-         X5DA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=7hb6fY86/FrgvHUqwzAV8MUgbDVO/vkX1bjsm+eW84g=;
-        fh=uJI/ZKZfIpSbr+NWM4QY8lr/Iyb2/dAa5gIxy612s9M=;
-        b=YDpYCqBa1ZVBQdBhT4w6m44gaZWAIlHWLSatRWciax9/wrwpuWb8NOScxBqlFJUaCC
-         OLwzI3dBMDiG6nJkTVyhqqcOQi9yqbgqRgTybd86DSBiuNd9SA+XN2P8qQoylkTuKHbA
-         97ii+khpG5NMoeluVgs1AcxhJkfs36x40OWUeZjI0ZtA27ye7aUlGDkDjuYPxA/XOfB0
-         z3a2wvF2pxV8lRP2bdR8xAhypDpsryodjGGdaTkbmzD6TphuhAHV1drPmr5HOJ2YfYyV
-         aal+csx/pIX9gsqy80szNhFHeY26AkYVRj6rXDLWw+jALy3h6svpW/zRzpHMBUkxtzkM
-         gJxw==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772616862; x=1773221662; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7hb6fY86/FrgvHUqwzAV8MUgbDVO/vkX1bjsm+eW84g=;
-        b=HCDniXjXw+oUPtj2O03hb/U+AHyuNh/QdUhNmQOBOl8Mip50V5OrDwDLVXItGmU/tD
-         iv82teOf03N7/7x/ew8uhCRMqBfHgygmlXCy/jpVeNPUsjdzlJ/U6nqPAwtdYgpWS2Vp
-         5SV0LbAKnLI6cyiOnzwnvqW/q41B0FWLeU75oHxs01ZdtKm3PEzrXJR/GItMCnRVQ0l2
-         FPgoX0hSF9qLo/QoNXxEmMkyDXAyJ4iSiMqGnSS/o10cSqQkgNjWV7ZYZxF4Yk/xT/hi
-         CMwuGu4WuX+djstD44Aan8wRHIaGuG4cgvszzaEpMNt8tKFWL9HeqmvJqbmiaRZK1WNR
-         0ESQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772616862; x=1773221662;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=7hb6fY86/FrgvHUqwzAV8MUgbDVO/vkX1bjsm+eW84g=;
-        b=aoEqTyr++EtRBYYM/U58f3QmZ3UxiXOz8CXGi6sdiOG+i+rXmsVVIhiTL+hbDeh7hR
-         7pWVB37/06vM+FG0QmhlA6/EOgJZqMw5g7L4rmdaWJ6hxG77ztOKLW4XWeAIFqfyyqgq
-         sKCcOXuMF2aPdGvR+UxMoawiCbNnzXBC1ALgs/kDyMZP6W2jCzxzitam2qu+pz9Smk9Y
-         YlVLB6/8+sR5FaJoQDkH8kp2jxhgODwUolndJxM6kHVd4jOQYtGO3M455amaXEQItMTO
-         Sns/rELeJ+S9DM1y5fKFOGxPyNSS4Ka9/KC/SJLF60vsQtrLF2u78ncpCtiFOTvwLxWE
-         6szw==
-X-Forwarded-Encrypted: i=1; AJvYcCWBsYwczxJrzHSjaDw/R/2sJcBm6Z6933yMscohHJVfVIbT1jF3mIO4i8JCx73BqTiTMDx9EjA=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxvKo209/ieHmMPhUdrUDL7o4TNMSBfniujdNWGqHVzC6THqc74
-	WU6QQoawqRq1I9kyXaC+TeVs1PwtKruCscmR7R/Xzx9itrLsQUkVC0UxvVqkRpZo2GNa+BYTCIL
-	UCBGRISPUcBcTLV/ebvIyvE9XFVqKrqL18DNI2xVEpoMH
-X-Gm-Gg: ATEYQzyUMSloTDGEjCYp48azRkX2beiHKaHr88HVE4GbALpnGOM3UIg+LjuVJU1ixil
-	15MPSBJOG9vdttUpsi2s5UMxasvX6e7KjKSnxuX1tQWYX9bF4ER9r+sEFw1NXzoHYKaihVgvnlQ
-	LIypUruOyinfc2VH/lXDPhx4utYoI4cj3uSjcYyj2NZ8H+Ne8AxFCnSYECzo1YFDqFwo/RXQ5Fr
-	zSUa0oV9DtrnD9e3SW4GFeRayDXzp1Tf8XPI9wvx64CkeVu2UlWR9RjOrxPXhQ3S/1YnOmjgmoz
-	zt7p+3e5KmQ64dN5zxxDQdE3NQ/x43Z62BWyEaPNlqIV0wcL
-X-Received: by 2002:a05:6871:112:b0:3e8:8e56:671e with SMTP id
- 586e51a60fabf-416abc3c442mr740209fac.54.1772616861704; Wed, 04 Mar 2026
- 01:34:21 -0800 (PST)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 8C2C843838
+	for <op-tee@archiver.kernel.org>; Thu,  5 Mar 2026 14:37:12 +0000 (UTC)
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 885F4430A2
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Mar 2026 08:35:29 +0000 (UTC)
+Received: from localhost (unknown [124.16.138.129])
+	by APP-03 (Coremail) with SMTP id rQCowABnieBOQKlp8MneCQ--.11139S2;
+	Thu, 05 Mar 2026 16:35:26 +0800 (CST)
+From: Chen Ni <nichen@iscas.ac.cn>
+To: jens.wiklander@linaro.org
+Subject: [PATCH] optee: Check return value of tee_shm_get_va()
+Date: Thu,  5 Mar 2026 16:33:11 +0800
+Message-Id: <20260305083312.1040969-1-nichen@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20260126-optee-simplify-context-match-v1-0-d4104e526cb6@linaro.org>
- <20260126-optee-simplify-context-match-v1-1-d4104e526cb6@linaro.org> <aYrAeEiqG7iwXm_w@sumit-xelite>
-In-Reply-To: <aYrAeEiqG7iwXm_w@sumit-xelite>
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Wed, 4 Mar 2026 10:34:10 +0100
-X-Gm-Features: AaiRm52FcW-OAyIi-wAaObIfx0MwPHh0zbRqzlqQxviphSbb0F7X9gKg8pS94SE
-Message-ID: <CAHUa44G1+C47KY8UCV5+ype-NCjYPfgxFs_tivmsOA=R-H1C8g@mail.gmail.com>
-Subject: Re: [PATCH 1/3] optee: simplify OP-TEE context match
-To: Sumit Garg <sumit.garg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: rQCowABnieBOQKlp8MneCQ--.11139S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrKw1ruFy5Cr1UCrWxKryxuFg_yoWkAFc_Cr
+	9xJ3ZrGr1vyw12qF98Kan3Zr92yF4DZF4vvws2vay3Ja17Xw1xXFyxZr17Xr4xG397JFyq
+	krWUG345XFn8ujkaLaAFLSUrUUUUbb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbs8FF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
+	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
+	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
+	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
+	Jw1lc2xSY4AK67AK6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI
+	8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AK
+	xVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI
+	8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280
+	aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43
+	ZEXa7VUUcyCPUUUUU==
+X-Originating-IP: [124.16.138.129]
+X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+X-Spamd-Result: default: False [-1.80 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:159.226.251.0/25];
+	ONCE_RECEIVED(0.20)[];
+	RCVD_IN_DNSWL_MED(-0.20)[159.226.251.81:from];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	HAS_XOIP(0.00)[];
 	RCVD_COUNT_ONE(0.00)[1];
-	TO_DN_SOME(0.00)[];
+	ASN(0.00)[asn:7497, ipnet:159.226.0.0/16, country:CN];
+	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.160.44:from];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	NEURAL_HAM(-0.00)[-1.000];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.44:from];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
+	TO_DN_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[linaro.org:+]
+	FROM_HAS_DN(0.00)[];
+	DMARC_NA(0.00)[iscas.ac.cn];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	R_DKIM_NA(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	NEURAL_SPAM(0.00)[0.997]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 5C36243161
-X-Spamd-Bar: -----
-Message-ID-Hash: Y62KJOHR4PYJYJQIUQKYK5YULK4LKKJU
-X-Message-ID-Hash: Y62KJOHR4PYJYJQIUQKYK5YULK4LKKJU
-X-MailFrom: jens.wiklander@linaro.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: rouven.czerwinski@linaro.org, Olivia Mackall <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <clement.leger@bootlin.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, linux-rtc@vger.kernel.org
+X-Rspamd-Queue-Id: 885F4430A2
+X-Spamd-Bar: -
+X-MailFrom: nichen@iscas.ac.cn
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: 4HUVPAGJJ6CEQDRLAA6MBFC3WLRAC3GX
+X-Message-ID-Hash: 4HUVPAGJJ6CEQDRLAA6MBFC3WLRAC3GX
+X-Mailman-Approved-At: Thu, 05 Mar 2026 14:36:54 +0000
+CC: sumit.garg@kernel.org, ulf.hansson@linaro.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Chen Ni <nichen@iscas.ac.cn>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/Y62KJOHR4PYJYJQIUQKYK5YULK4LKKJU/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/4HUVPAGJJ6CEQDRLAA6MBFC3WLRAC3GX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -128,52 +88,35 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-On Tue, Feb 10, 2026 at 6:22=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
->
-> On Mon, Jan 26, 2026 at 11:11:24AM +0100, Rouven Czerwinski via B4 Relay =
-wrote:
-> > From: Rouven Czerwinski <rouven.czerwinski@linaro.org>
-> >
-> > Simplify the TEE implementor ID match by returning the boolean
-> > expression directly instead of going through an if/else.
-> >
-> > Signed-off-by: Rouven Czerwinski <rouven.czerwinski@linaro.org>
-> > ---
-> >  drivers/tee/optee/device.c | 5 +----
-> >  1 file changed, 1 insertion(+), 4 deletions(-)
-> >
->
-> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+The function tee_shm_get_va() can return an error pointer if the shared
+memory is not properly mapped or if the offset is invalid. Without this
+check, passing the error pointer to subsequent memory operations could
+lead to a kernel panic.
 
-I'm picking up this.
+Add a check for IS_ERR() on the return value of tee_shm_get_va().
 
-Thanks,
-Jens
+Fixes: f0c8431568ee ("optee: probe RPMB device using RPMB subsystem")
+Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
+---
+ drivers/tee/optee/rpc.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
->
-> -Sumit
->
-> > diff --git a/drivers/tee/optee/device.c b/drivers/tee/optee/device.c
-> > index 950b4661d5df..4c85b04d6004 100644
-> > --- a/drivers/tee/optee/device.c
-> > +++ b/drivers/tee/optee/device.c
-> > @@ -13,10 +13,7 @@
-> >
-> >  static int optee_ctx_match(struct tee_ioctl_version_data *ver, const v=
-oid *data)
-> >  {
-> > -     if (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE)
-> > -             return 1;
-> > -     else
-> > -             return 0;
-> > +     return (ver->impl_id =3D=3D TEE_IMPL_ID_OPTEE);
-> >  }
-> >
-> >  static int get_devices(struct tee_context *ctx, u32 session,
-> >
-> > --
-> > 2.52.0
-> >
-> >
-> >
+diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
+index b0ed4cb49452..32f7742c094c 100644
+--- a/drivers/tee/optee/rpc.c
++++ b/drivers/tee/optee/rpc.c
+@@ -393,6 +393,11 @@ static void handle_rpc_func_rpmb_frames(struct tee_context *ctx,
+ 			    params[0].u.memref.shm_offs);
+ 	p1 = tee_shm_get_va(params[1].u.memref.shm,
+ 			    params[1].u.memref.shm_offs);
++	if (IS_ERR(p0) || IS_ERR(p1)) {
++		arg->ret = TEEC_ERROR_BAD_PARAMETERS;
++		goto out;
++	}
++
+ 	if (rpmb_route_frames(rdev, p0, params[0].u.memref.size, p1,
+ 			      params[1].u.memref.size)) {
+ 		arg->ret = TEEC_ERROR_BAD_PARAMETERS;
+-- 
+2.25.1
+
