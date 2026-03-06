@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 109FDF01821
-	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 10:57:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8AD1F01821
+	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 10:58:04 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 5574843208
-	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 10:57:25 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3D1DD438D0
+	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 10:58:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1772794645;
-	bh=+WPauxWCOutLzKrZffBXMMITweY/oTZZzgDQTHSVJK0=;
+	d=lists.trustedfirmware.org; s=2024; t=1772794684;
+	bh=YzEIsUudUMGVxG7bLgWo6VW7f07ZvXO72FLtTM7Ydj8=;
 	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=ZwKIujq8heDGg2N+3j8oVA4exTp648cPsBFS5pR0qsrV9SrYOD4onjqobyDARiLbT
-	 Mh3Ya1Im6aP7SRi+SeXJ0mjwAwgWv9ZZ93bkS8ET4iViuPiSlwIZ0jY/3LYMFNVwK1
-	 yaHd4BWl7ez8G3nk1XN/ABT92WkWC0FONR3a2lioOqCtSHwevLnPSymR75VV+8aiXZ
-	 ZnByWuoqmAOSbgP++sNnzWoDcyI0SWqIdGoPGqSxdTS7ts4s2otzxdNWzRwCRVZ+Hi
-	 c/VixkkXyFbz8IZVcjh5RmPFr/8nsFJArL5nLX9X00qhbjUZHngDq7b/2p0Bc5+fgL
-	 okXgvug/Mww0A==
+	b=oFtP4/WDHJF0/9Rw3fCe0KMwH+vDlSjk9IzcKYk2kRIxPWMk0ERFPo/80FnAE6dyU
+	 P+qL60SWVkF+B4DlZiOnDg4my0JBteGuVwIhvlcqGbAa+SWGBF/nQH9zE1O4IQhbiK
+	 wrunSTbqACOviFSSf97UCF286HKSqeeKrP72bIz6NG411BB8W5pA12AtoZHm/kTV2J
+	 PpgD9tRPJkNcIXbseC6vtNfhP/ygJlhLvsNAOKsUvy3z22rPV10MiUA6V762cppNNM
+	 NNfUWQ2CmapPFMKGvpoTf68ASwZuSYZhHNFrE8Kz/bUGsPqczVu55ldBKhQXt9GjcG
+	 eV4ndlnAs2+Mw==
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DE852438A9
-	for <op-tee@lists.trustedfirmware.org>; Fri,  6 Mar 2026 10:53:12 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4A763438B4
+	for <op-tee@lists.trustedfirmware.org>; Fri,  6 Mar 2026 10:53:27 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U7PhcnFA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IXlOX9IV;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 83F326012B;
+	by tor.source.kernel.org (Postfix) with ESMTP id DF1AB6012B;
+	Fri,  6 Mar 2026 10:53:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0C99C4CEF7;
 	Fri,  6 Mar 2026 10:53:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4384C4CEF7;
-	Fri,  6 Mar 2026 10:52:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772794392;
-	bh=+WPauxWCOutLzKrZffBXMMITweY/oTZZzgDQTHSVJK0=;
+	s=k20201202; t=1772794406;
+	bh=YzEIsUudUMGVxG7bLgWo6VW7f07ZvXO72FLtTM7Ydj8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=U7PhcnFAEzRzyxgHw/cbf5mEr841YyOIWlZLl2ZNlY9PuX2vclREN3lUqy9yprLN4
-	 bZqiryg2nneuOQREQrnbzevSJb6ARUvF0/VZ0v6h3XwfDmlXzFHfNQjFj9Zoxu2ZWl
-	 wHN2maj3rGdNsvkZSHjF/bmSEPvq2NWi399tbd/OnU1VUNaU9Bq2TIjXJUrIuj9r3I
-	 FgT1lXhmePq99pV894LN0GOWaH3ov0wj8ZDX+1l4xKVfdsTfl5izbxuUgS5hMcf6Bl
-	 sUJLIR6H4Y8U6znn5OKi1ZLSZ/OspWEc8BzSQf4iB8Xgx7zRwFHNulC2d2FEuYWUwU
-	 gZk7tRNkpzqww==
+	b=IXlOX9IVaKEKt2xhRbrr/HG+HJFAXx+Z8ZzUtdtarM9As0KCj1Q4nmZdH9GLTP6C+
+	 OOKpLJg3vet6Th3Dw6SqYd7I5tT680+HpjDdpP7SEykXJETIoCvF+HERanMpE8UMDY
+	 uV0rqbaalMDgurneh0Odoqt2GyKipcqrovEronNRdi1l1ZMjP9aklspFMDRbWeHwRB
+	 zdYnHY5b8901xVF+gUn2Mn60WvHzN+mgTSPXekRBXeEBvmg/79e/ZkK/B3MM+/UGai
+	 dUtwV0G+rZvO0uxElqdt+xpSbdj3eeiy1sZBV3nmk0YpEebh3zWGI7Tq3ATOtluq/g
+	 pZgisEcBckuTw==
 To: linux-arm-msm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
@@ -51,9 +51,9 @@ To: linux-arm-msm@vger.kernel.org,
 	linux-wireless@vger.kernel.org,
 	ath12k@lists.infradead.org,
 	linux-remoteproc@vger.kernel.org
-Subject: [PATCH 09/14] remoteproc: qcom: Select QCOM_PAS_TEE service backend
-Date: Fri,  6 Mar 2026 16:20:22 +0530
-Message-ID: <20260306105027.290375-10-sumit.garg@kernel.org>
+Subject: [PATCH 10/14] drm/msm: Switch to generic PAS TZ APIs
+Date: Fri,  6 Mar 2026 16:20:23 +0530
+Message-ID: <20260306105027.290375-11-sumit.garg@kernel.org>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260306105027.290375-1-sumit.garg@kernel.org>
 References: <20260306105027.290375-1-sumit.garg@kernel.org>
@@ -61,7 +61,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-2.00 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	MID_CONTAINS_FROM(1.00)[];
 	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
@@ -88,17 +88,17 @@ X-Spamd-Result: default: False [-2.00 / 15.00];
 	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: DE852438A9
-X-Spamd-Bar: -
-Message-ID-Hash: XNMBQTGRWLROJPR7L66UMI26DCJ23ANU
-X-Message-ID-Hash: XNMBQTGRWLROJPR7L66UMI26DCJ23ANU
+X-Rspamd-Queue-Id: 4A763438B4
+X-Spamd-Bar: --
+Message-ID-Hash: YPNN3NLPLRK6YH6LDPM4YZO5FAQFKEKF
+X-Message-ID-Hash: YPNN3NLPLRK6YH6LDPM4YZO5FAQFKEKF
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/XNMBQTGRWLROJPR7L66UMI26DCJ23ANU/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YPNN3NLPLRK6YH6LDPM4YZO5FAQFKEKF/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -110,26 +110,77 @@ Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
 From: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-Select PAS TEE service backend driver for the generic PAS service to
-enable support for OP-TEE based PAS service.
+Switch drm/msm client drivers over to generic PAS TZ APIs. Generic PAS
+TZ service allows to support multiple TZ implementation backends like QTEE
+based SCM PAS service, OP-TEE based PAS service and any further future TZ
+backend service.
 
 Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 ---
- drivers/remoteproc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/gpu/drm/msm/adreno/a5xx_gpu.c   |  4 ++--
+ drivers/gpu/drm/msm/adreno/adreno_gpu.c | 11 ++++++-----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
-index ee54436fea5a..0411a38530d8 100644
---- a/drivers/remoteproc/Kconfig
-+++ b/drivers/remoteproc/Kconfig
-@@ -230,6 +230,7 @@ config QCOM_Q6V5_PAS
- 	select QCOM_Q6V5_COMMON
- 	select QCOM_RPROC_COMMON
- 	select QCOM_SCM
-+	select QCOM_PAS_TEE
- 	help
- 	  Say y here to support the TrustZone based Peripheral Image Loader for
- 	  the Qualcomm remote processors. This is commonly used to control
+diff --git a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+index ef9fd6171af7..3283852f9a14 100644
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+@@ -5,7 +5,7 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/cpumask.h>
+-#include <linux/firmware/qcom/qcom_scm.h>
++#include <linux/firmware/qcom/qcom_pas.h>
+ #include <linux/pm_opp.h>
+ #include <linux/nvmem-consumer.h>
+ #include <linux/slab.h>
+@@ -653,7 +653,7 @@ static int a5xx_zap_shader_resume(struct msm_gpu *gpu)
+ 	if (adreno_is_a506(adreno_gpu))
+ 		return 0;
+ 
+-	ret = qcom_scm_set_remote_state(SCM_GPU_ZAP_SHADER_RESUME, GPU_PAS_ID);
++	ret = qcom_pas_set_remote_state(SCM_GPU_ZAP_SHADER_RESUME, GPU_PAS_ID);
+ 	if (ret)
+ 		DRM_ERROR("%s: zap-shader resume failed: %d\n",
+ 			gpu->name, ret);
+diff --git a/drivers/gpu/drm/msm/adreno/adreno_gpu.c b/drivers/gpu/drm/msm/adreno/adreno_gpu.c
+index d5fe6f6f0dec..047df0393128 100644
+--- a/drivers/gpu/drm/msm/adreno/adreno_gpu.c
++++ b/drivers/gpu/drm/msm/adreno/adreno_gpu.c
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/ascii85.h>
+ #include <linux/interconnect.h>
++#include <linux/firmware/qcom/qcom_pas.h>
+ #include <linux/firmware/qcom/qcom_scm.h>
+ #include <linux/kernel.h>
+ #include <linux/of_reserved_mem.h>
+@@ -146,10 +147,10 @@ static int zap_shader_load_mdt(struct msm_gpu *gpu, const char *fwname,
+ 		goto out;
+ 
+ 	/* Send the image to the secure world */
+-	ret = qcom_scm_pas_auth_and_reset(pasid);
++	ret = qcom_pas_auth_and_reset(pasid);
+ 
+ 	/*
+-	 * If the scm call returns -EOPNOTSUPP we assume that this target
++	 * If the pas call returns -EOPNOTSUPP we assume that this target
+ 	 * doesn't need/support the zap shader so quietly fail
+ 	 */
+ 	if (ret == -EOPNOTSUPP)
+@@ -175,9 +176,9 @@ int adreno_zap_shader_load(struct msm_gpu *gpu, u32 pasid)
+ 	if (!zap_available)
+ 		return -ENODEV;
+ 
+-	/* We need SCM to be able to load the firmware */
+-	if (!qcom_scm_is_available()) {
+-		DRM_DEV_ERROR(&pdev->dev, "SCM is not available\n");
++	/* We need PAS to be able to load the firmware */
++	if (!qcom_pas_is_available()) {
++		DRM_DEV_ERROR(&pdev->dev, "Qcom PAS is not available\n");
+ 		return -EPROBE_DEFER;
+ 	}
+ 
 -- 
 2.51.0
 
