@@ -4,119 +4,209 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47D84F33A76
-	for <op-tee@archiver.kernel.org>; Thu,  5 Mar 2026 14:37:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C4CAF01826
+	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 10:51:26 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 8C2C843838
-	for <op-tee@archiver.kernel.org>; Thu,  5 Mar 2026 14:37:12 +0000 (UTC)
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 885F4430A2
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Mar 2026 08:35:29 +0000 (UTC)
-Received: from localhost (unknown [124.16.138.129])
-	by APP-03 (Coremail) with SMTP id rQCowABnieBOQKlp8MneCQ--.11139S2;
-	Thu, 05 Mar 2026 16:35:26 +0800 (CST)
-From: Chen Ni <nichen@iscas.ac.cn>
-To: jens.wiklander@linaro.org
-Subject: [PATCH] optee: Check return value of tee_shm_get_va()
-Date: Thu,  5 Mar 2026 16:33:11 +0800
-Message-Id: <20260305083312.1040969-1-nichen@iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A2B8243754
+	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 10:51:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1772794285;
+	bh=N/un1ct3aC4OeKYTUVQo9SBlq9RdaM42L1qkY0h+EJk=;
+	h=To:Subject:Date:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=MazIKjWGNnySArb/yxG2Ccyt/F3vDShYJOS+ommk+r9pytHJ9AtYJHVh50/EwnGrT
+	 BBEu391mDeUaBSUK4VEv7HmdBFFf5AuCcsybasb6fwWrSNoUMI/3v4R0QZL6RYdMLi
+	 aiX+YSsLn8A0K4CdWpSMaby1q2ydJNw4WCWgOvXde3fCeXK2zXJubXBVsySChc7QGK
+	 g5fKq8+Z+0i3ax9yJVh26JPf6FGQsadc3xvbv6F5KG2v6AL8imCuXGrge6r5JW3526
+	 dnyv/hyHzIlZtJReCShnyVC2ZcaMlcuvTEpC/F9XiP048P8rgcDYwpNlEM82bLu6DN
+	 KYVNRaSnRLEYg==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4E7B143754
+	for <op-tee@lists.trustedfirmware.org>; Fri,  6 Mar 2026 10:51:05 +0000 (UTC)
+Authentication-Results: lists.trustedfirmware.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FOEJ4YYe;
+	dkim-atps=neutral
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 96CE341AD7;
+	Fri,  6 Mar 2026 10:51:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE76CC4CEF7;
+	Fri,  6 Mar 2026 10:50:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772794264;
+	bh=N/un1ct3aC4OeKYTUVQo9SBlq9RdaM42L1qkY0h+EJk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=FOEJ4YYeVY/+uRUqYkk5lU/VGNZknbgr6QBcYs9Jk24o3j2FihSpo9So1NT2RiIMJ
+	 9SvHtEschlq/UlN7LoAcRN9iQ3WMaSRAYmSIDAEVFkEkBVlVvAs/SKoLy4NeTF/Lc0
+	 6145rbuUXU8SkvJlJGPqmnWam3h1QKIuJwst0Vb7EQSJ7d3DqAg4j/dYwYDgYNZbH+
+	 PEJr65S4SPBKJ0avG8pXvfU76ugRbBjluct4vvbVQV8TkG2YJgRvvnjG2UiGGuMSjK
+	 9jILTEiV0/MMhlzQD9mXBQaSEbZRj48pWLAB5KIrxbUuNi3dgcL9UBBgXd749UprpA
+	 J1RVkQMwyd1tg==
+To: linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	freedreno@lists.freedesktop.org,
+	linux-media@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-wireless@vger.kernel.org,
+	ath12k@lists.infradead.org,
+	linux-remoteproc@vger.kernel.org
+Subject: [PATCH 00/14] firmware: qcom: Add OP-TEE PAS service support
+Date: Fri,  6 Mar 2026 16:20:13 +0530
+Message-ID: <20260306105027.290375-1-sumit.garg@kernel.org>
+X-Mailer: git-send-email 2.51.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: rQCowABnieBOQKlp8MneCQ--.11139S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrKw1ruFy5Cr1UCrWxKryxuFg_yoWkAFc_Cr
-	9xJ3ZrGr1vyw12qF98Kan3Zr92yF4DZF4vvws2vay3Ja17Xw1xXFyxZr17Xr4xG397JFyq
-	krWUG345XFn8ujkaLaAFLSUrUUUUbb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbs8FF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
-	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
-	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
-	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
-	Jw1lc2xSY4AK67AK6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI
-	8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AK
-	xVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI
-	8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280
-	aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43
-	ZEXa7VUUcyCPUUUUU==
-X-Originating-IP: [124.16.138.129]
-X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-1.80 / 15.00];
+X-Spamd-Result: default: False [-2.00 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
 	MID_CONTAINS_FROM(1.00)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_MISSING_CHARSET(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:159.226.251.0/25];
-	ONCE_RECEIVED(0.20)[];
-	RCVD_IN_DNSWL_MED(-0.20)[159.226.251.81:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	HAS_XOIP(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:7497, ipnet:159.226.0.0/16, country:CN];
 	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	TO_DN_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[48];
+	MIME_TRACE(0.00)[0:+];
+	TAGGED_RCPT(0.00)[dt,netdev];
+	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_TLS_LAST(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	DMARC_NA(0.00)[iscas.ac.cn];
-	RECEIVED_HELO_LOCALHOST(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org];
+	ALIAS_RESOLVED(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	R_DKIM_NA(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
+	RCVD_COUNT_TWO(0.00)[2];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	NEURAL_SPAM(0.00)[0.997]
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 885F4430A2
+X-Rspamd-Queue-Id: 4E7B143754
 X-Spamd-Bar: -
-X-MailFrom: nichen@iscas.ac.cn
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: 4HUVPAGJJ6CEQDRLAA6MBFC3WLRAC3GX
-X-Message-ID-Hash: 4HUVPAGJJ6CEQDRLAA6MBFC3WLRAC3GX
-X-Mailman-Approved-At: Thu, 05 Mar 2026 14:36:54 +0000
-CC: sumit.garg@kernel.org, ulf.hansson@linaro.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Chen Ni <nichen@iscas.ac.cn>
+Message-ID-Hash: 34UEXMZTFHQK7D4JSHBA6QKLHBZ5PGEP
+X-Message-ID-Hash: 34UEXMZTFHQK7D4JSHBA6QKLHBZ5PGEP
+X-MailFrom: sumit.garg@kernel.org
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/4HUVPAGJJ6CEQDRLAA6MBFC3WLRAC3GX/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/34UEXMZTFHQK7D4JSHBA6QKLHBZ5PGEP/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-The function tee_shm_get_va() can return an error pointer if the shared
-memory is not properly mapped or if the offset is invalid. Without this
-check, passing the error pointer to subsequent memory operations could
-lead to a kernel panic.
+From: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-Add a check for IS_ERR() on the return value of tee_shm_get_va().
+Qcom platforms has the legacy of using non-standard SCM calls
+splintered over the various kernel drivers. These SCM calls aren't
+compliant with the standard SMC calling conventions which is a
+prerequisite to enable migration to the FF-A specifications from
+Arm.
 
-Fixes: f0c8431568ee ("optee: probe RPMB device using RPMB subsystem")
-Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
----
- drivers/tee/optee/rpc.c | 5 +++++
- 1 file changed, 5 insertions(+)
+OP-TEE as an alternative trusted OS to QTEE can't support these non-
+standard SCM calls. And even for newer architectures QTEE won't be able
+to support SCM calls either with FF-A requirements coming in. And with
+both OP-TEE and QTEE drivers well integrated in the TEE subsystem, it
+makes further sense to reuse the TEE bus client drivers infrastructure.
 
-diff --git a/drivers/tee/optee/rpc.c b/drivers/tee/optee/rpc.c
-index b0ed4cb49452..32f7742c094c 100644
---- a/drivers/tee/optee/rpc.c
-+++ b/drivers/tee/optee/rpc.c
-@@ -393,6 +393,11 @@ static void handle_rpc_func_rpmb_frames(struct tee_context *ctx,
- 			    params[0].u.memref.shm_offs);
- 	p1 = tee_shm_get_va(params[1].u.memref.shm,
- 			    params[1].u.memref.shm_offs);
-+	if (IS_ERR(p0) || IS_ERR(p1)) {
-+		arg->ret = TEEC_ERROR_BAD_PARAMETERS;
-+		goto out;
-+	}
-+
- 	if (rpmb_route_frames(rdev, p0, params[0].u.memref.size, p1,
- 			      params[1].u.memref.size)) {
- 		arg->ret = TEEC_ERROR_BAD_PARAMETERS;
+The added benefit of TEE bus infrastructure is that there is support
+for discoverable/enumerable services. With that client drivers don't
+have to manually invoke a special SCM call to know the service status.
+
+So enable the generic Peripheral Authentication Service (PAS) provided
+by the firmware. It acts as the common layer with different TZ
+backends plugged in whether it's an SCM implementation or a proper
+TEE bus based PAS service implementation.
+
+The TEE PAS service ABI is designed to be extensible with additional API
+as PTA_QCOM_PAS_CAPABILITIES. This allows to accommodate any future
+extensions of the PAS service needed while still maintaining backwards
+compatibility.
+
+Currently OP-TEE support is being added to provide the backend PAS
+service implementation which can be found as part of this PR [1].
+This implementation has been tested on Kodiak/RB3Gen2 board with lemans
+EVK board being the next target. In addition to that WIN/IPQ targets
+planning to use OP-TEE will use this service too.
+
+Patch summary:
+- Patch #1: adds Kodiak EL2 overlay since boot stack with TF-A/OP-TEE
+  only allow UEFI and Linux to boot in EL2.
+- Patch #2: adds generic PAS service.
+- Patch #3: migrates SCM backend to generic PAS service.
+- Patch #4: adds TEE/OP-TEE backend for generic PAS service.
+- Patch #5-#13: migrates all client drivers to generic PAS service.
+- Patch #14: drops legacy PAS SCM exported APIs.
+
+The patch-set is based on v7.0-rc2 tag and can be found in git tree here
+[2].
+
+Merge strategy:
+----------------
+
+It is expected due to APIs dependency, the entire patch-set to go via
+the Qcom tree. All other subsystem maintainers, it will be great if I
+can get acks for the corresponding subsystem patches.
+
+[1] https://github.com/OP-TEE/optee_os/pull/7721
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/sumit.garg/linux.git/log/?h=qcom-pas-v1
+
+Mukesh Ojha (1):
+  arm64: dts: qcom: kodiak: Add EL2 overlay
+
+Sumit Garg (13):
+  firmware: qcom: Add a generic PAS service
+  firmware: qcom_scm: Migrate to generic PAS service
+  firmware: qcom: Add a PAS TEE service
+  remoteproc: qcom_q6v5_pas: Switch over to generic PAS TZ APIs
+  remoteproc: qcom_q6v5_mss: Switch to generic PAS TZ APIs
+  soc: qcom: mdtloader: Switch to generic PAS TZ APIs
+  remoteproc: qcom_wcnss: Switch to generic PAS TZ APIs
+  remoteproc: qcom: Select QCOM_PAS_TEE service backend
+  drm/msm: Switch to generic PAS TZ APIs
+  media: qcom: Switch to generic PAS TZ APIs
+  net: ipa: Switch to generic PAS TZ APIs
+  wifi: ath12k: Switch to generic PAS TZ APIs
+  firmware: qcom_scm: Remove SCM PAS wrappers
+
+ arch/arm64/boot/dts/qcom/Makefile             |   2 +
+ arch/arm64/boot/dts/qcom/kodiak-el2.dtso      |  35 ++
+ drivers/firmware/qcom/Kconfig                 |  18 +
+ drivers/firmware/qcom/Makefile                |   2 +
+ drivers/firmware/qcom/qcom_pas.c              | 295 +++++++++++
+ drivers/firmware/qcom/qcom_pas.h              |  53 ++
+ drivers/firmware/qcom/qcom_pas_tee.c          | 478 ++++++++++++++++++
+ drivers/firmware/qcom/qcom_scm.c              | 304 ++++-------
+ drivers/gpu/drm/msm/adreno/a5xx_gpu.c         |   4 +-
+ drivers/gpu/drm/msm/adreno/adreno_gpu.c       |  11 +-
+ .../media/platform/qcom/iris/iris_firmware.c  |   9 +-
+ drivers/media/platform/qcom/venus/firmware.c  |  11 +-
+ drivers/net/ipa/ipa_main.c                    |  13 +-
+ drivers/net/wireless/ath/ath12k/ahb.c         |   8 +-
+ drivers/remoteproc/Kconfig                    |   1 +
+ drivers/remoteproc/qcom_q6v5_mss.c            |   5 +-
+ drivers/remoteproc/qcom_q6v5_pas.c            |  51 +-
+ drivers/remoteproc/qcom_wcnss.c               |  12 +-
+ drivers/soc/qcom/mdt_loader.c                 |  12 +-
+ include/linux/firmware/qcom/qcom_pas.h        |  41 ++
+ include/linux/firmware/qcom/qcom_scm.h        |  29 --
+ include/linux/soc/qcom/mdt_loader.h           |   6 +-
+ 22 files changed, 1097 insertions(+), 303 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/qcom/kodiak-el2.dtso
+ create mode 100644 drivers/firmware/qcom/qcom_pas.c
+ create mode 100644 drivers/firmware/qcom/qcom_pas.h
+ create mode 100644 drivers/firmware/qcom/qcom_pas_tee.c
+ create mode 100644 include/linux/firmware/qcom/qcom_pas.h
+
 -- 
-2.25.1
+2.51.0
 
