@@ -4,208 +4,338 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 802E2FCC076
-	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 22:16:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E455EA8554
+	for <op-tee@archiver.kernel.org>; Mon,  9 Mar 2026 04:56:13 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id BE4E941937
-	for <op-tee@archiver.kernel.org>; Fri,  6 Mar 2026 22:16:36 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 51B00438AB
+	for <op-tee@archiver.kernel.org>; Mon,  9 Mar 2026 04:56:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1772835396;
-	bh=ozp5w2u9J7nebog4KwPAIQaw9Q3GF+gWT8k1KRnFxn4=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1773032172;
+	bh=NkbTndFHxMaI3aDcM2/8HZHlz7aV3tc1b23x0wCm92M=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=yO6XMcBc+qnbLw/CFXKGLI+brWALlOx3jvP3D9EEa/7ozc9kaWYADQeHik1YjChUW
-	 CneOUzs8+kEIgwCu+/JzySq0Z80/9dmiJXxZP0ZpGMMKevgtz3WcUwUZarmlEKPchU
-	 8pzlz9fnO0+K1jGsiJg5QbWpXurliOF2PRdkuFTRilDATK4MxmXpIfETl4TLmvkJuf
-	 sZtdhI8Hd045ws3OKH3wig2w+MHBLSLh4FZvyRYYND6ZD42rlm0ZJ6mVKJtdJ2ieHU
-	 qRbrbSNyrlbee0QyErmLtwhLbETMMl7QXBH8jKtppVNVNsCE3ZytwZuXro81zQTy/E
-	 +uE3qFfxgePiw==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4646E41937
-	for <op-tee@lists.trustedfirmware.org>; Fri,  6 Mar 2026 22:16:17 +0000 (UTC)
+	b=G83oxBhFC90Pf6IhyP4qajg3qj05rQ2JkwTwlL0i00s8a1/AIdsZZkBGgq/UL3MxN
+	 HAVKai0aP7mvSBJp2ec2BcF3v8ynfDfICy1+cZnaIwKJ3Dz24Q9NfMMCnnXZD+4Vgh
+	 YX9+Z37yDq/mC7PQJYFm7Bp4IQJeeEsTCPF8j5HTKW06m/3rCpgIL/+83dyaF1tHuE
+	 XpI67Nw1ilCIBZBx/jtI6mHw6/BoLMqhS+wJ0PV8Psop5X8whfq9ZJzeHaZFwpAyN4
+	 CtIC4R5SyncntTHGFpyOQfnW28AToY+9PhKbB1Mqtrxxp5mTyGxx6FHKFqMFJAog8E
+	 krY0ulzH06hJw==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7873543742
+	for <op-tee@lists.trustedfirmware.org>; Mon,  9 Mar 2026 04:55:51 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=SfSjst4G;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=e+IPTSfI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p92/T74w;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 626KX0272042182
-	for <op-tee@lists.trustedfirmware.org>; Fri, 6 Mar 2026 22:16:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	i8xe+5eaNei8a3fpTPt0x8f/YBdZqjrjrkxNfSV82tg=; b=SfSjst4GB8hij3Ya
-	xumyToC4COQ43yIm2aQSarzCnpo0ypGv1UWid+nyf1aAiMF0Mu+lt8Jlnh6wZEzC
-	z4nAMHqTQKPfGzFi4Ldw17z950DNAf03OiMcQDe7wwE/yO+WD8U5uSjNlAz+xe+E
-	DI126rXVobs/QALLHK6ZUrp94YQkgg6+6YV5FIgosf83knfO3y+5DeVGfbKpw505
-	0N1VQxl+B1ZgE5cgBtv5aVouUiY6VafcBs3QVFZGcpXdHBxf4sdQkDacB7oeO5Xn
-	213NzZUpLBiKTugTF1ByolEGCHvJCbJb5CxMg1cmT9VYtIEhF2oy8+NVVw03lLlg
-	Bzz1rw==
-Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cqrf5u83j-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Fri, 06 Mar 2026 22:16:16 +0000 (GMT)
-Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-2bdc1b30ac8so958390eec.1
-        for <op-tee@lists.trustedfirmware.org>; Fri, 06 Mar 2026 14:16:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1772835376; x=1773440176; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=i8xe+5eaNei8a3fpTPt0x8f/YBdZqjrjrkxNfSV82tg=;
-        b=e+IPTSfIk2OV9omhrjWx4CGVaDKE8Lh3KrDj6XjMJpAYt8BmejV6yGX3iatcEJqYM5
-         MDws/cOsyBdMBl2t2eSQsnvoEvKPaEOOFkrs0iWN0QCdbGYVVDpZaNIT6Bpr4XMWC3mI
-         TcPHs0viiuKDzecheZ8xSCcOCIQrS1Xi3wU5kNa55kJkdp9Zu4D6dUH1/I6W5wnQVoBz
-         zYA+OT5LeJ6FwXaKds6hSyivvu+wiW6hbMflZAAX/GbiTuHvrvohI++T/Zbvp5igEObd
-         +c2rIiO8Gp3m6UoeOa4eIbo4NwxkZppduWmh9lys/VdKaerWl0RR0KwsW8oK+dKs0QQ7
-         C6EA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772835376; x=1773440176;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=i8xe+5eaNei8a3fpTPt0x8f/YBdZqjrjrkxNfSV82tg=;
-        b=luprhO96hmWvwOxkR3qkBIFmia2L12jvIcSDTo65ONy61Wc5RulLQE29NQjwxpB9DJ
-         xTL2yO2NHmITS8ROXbiI19clXI1n4PT6rAUJD+lrd2KDjn/+qfnAGOTp+dTYDoSzMBtd
-         DYwvEi/vXAOMocftxhKtrRG7HSI/DSE7Tz3YjmOGWw6xW6iZw1HmFZBiAuv6olugs2ni
-         nvieWd0sr5kfSLANWdQKryUir29EwO2S5LFMM/1OD4ynPzuY/HVNU5HR6DjmD1tYW1+S
-         Pu4/gPPmwIqy83xMUHRLuvd3I2qFmYvwfNomXDGEnV16eXPwmoK2l1KYb7Vyg+EYBylI
-         UX4Q==
-X-Forwarded-Encrypted: i=1; AJvYcCWV1QypLm+gyTuY+dZ5sq8lH9M0YGgKEv3N4DwYtHZXTR+ltiS3O7xx9f4AXHc4Pj+Ig+uW3tQ=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yxmb9pLUF7vF+YxuCHX12X6d6ivHEt4tixdOnXSoDryJjWdhny5
-	t16tHCtNhMIK1p9BWYi8hLl75msE3FdzyN94b7fPqR7xrN1wUqNiXqz3irB16cZ2x/jfv8UCvIq
-	T+YXBd9R6cqARHaSP6rXSNhGbFhf3T0gRnCBkRh5hwTG9OqUc2rdULv6Ge72t+8JWA81UBF6c
-X-Gm-Gg: ATEYQzwGoHvBjnVXko3ASNDCwWc7X+88TYcXP7AdA0/RDUY8hxxP6wSbN3aCQO7EfRe
-	KEANd2HYQQKMrHeLMHfjQF2BZUTKULktHAKWKrTBwJiENK7PxD1IoXR7ePdAIfYcmYEjF+efjp0
-	HicLm1YcJ3TFe2DSoI57p/NFcXGLfaaI9W5coWgtl0EE5p2P9ho1xiZWin/KF2uravKz3JPYcnr
-	1M9rFXM88/+M1VLYtJ5MjrFDiLBt75J7X8vzEIg3mugGEc+4FzsHUkhGI/8LOz7cwRxXiw2NLM6
-	5LORO8F6rHeSofGs8L9Bg08a8bwiluJ2oVkkRanrP3qaraJM68Rv7Jzxs2mNOTBtCutSDIN+VAH
-	ZQpTQz/aIqxi3bL6f7EHEK62Wu/fRXdX5Ddwn+giv6hIXmxxcb3qwz0MgZO1FaE5AFPKL53hiRU
-	Mu0gY9
-X-Received: by 2002:a05:7300:641d:b0:2be:1b95:2400 with SMTP id 5a478bee46e88-2be4e0655c8mr1446277eec.23.1772835375690;
-        Fri, 06 Mar 2026 14:16:15 -0800 (PST)
-X-Received: by 2002:a05:7300:641d:b0:2be:1b95:2400 with SMTP id 5a478bee46e88-2be4e0655c8mr1446255eec.23.1772835375083;
-        Fri, 06 Mar 2026 14:16:15 -0800 (PST)
-Received: from [10.134.65.116] (i-global254.qualcomm.com. [199.106.103.254])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2be4f94823esm2301765eec.20.2026.03.06.14.16.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 06 Mar 2026 14:16:14 -0800 (PST)
-Message-ID: <f825ae05-6285-4d10-9d66-578fb1221495@oss.qualcomm.com>
-Date: Fri, 6 Mar 2026 14:16:13 -0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id BCBA042B88;
+	Mon,  9 Mar 2026 04:55:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74FE2C4CEF7;
+	Mon,  9 Mar 2026 04:55:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773032150;
+	bh=NkbTndFHxMaI3aDcM2/8HZHlz7aV3tc1b23x0wCm92M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=p92/T74w+P9SQUfRQIyMDxe24WI07YnrDPgBGOaTAyatjkFRUgmgBphAZBCljN9ax
+	 JgkWYLKKytFEVTMuVCDXDTZP+1jKhihDmz8CStC5WFtuVt3gjsCXu7K8tSfFGdj5Gx
+	 KAaW+Ua2EW/Pbk1mu4Q9Bc5+lpLdIjCwKhTLpiIqPhSkSTpGEnD4oE8FKsSkyvOyXr
+	 P4GjMQzpqtrb2NHXkWTiKULMgrDtSUmSCwkmWbCkIalJ52h61F+G7FBC354ZNkhgY5
+	 FGGthaCLdEX0aIZS1SSDHbpkaWpNn3Y5IOTBuf/fCHXGxsO7m7/izjvoHP7/Ppin+4
+	 Tif1VRDdIeV4A==
+Date: Mon, 9 Mar 2026 10:25:31 +0530
+To: Krzysztof Kozlowski <krzk@kernel.org>
 Subject: Re: [PATCH 02/14] firmware: qcom: Add a generic PAS service
-To: Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
-        Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        freedreno@lists.freedesktop.org, linux-media@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        ath12k@lists.infradead.org, linux-remoteproc@vger.kernel.org
+Message-ID: <aa5Sw1qcCnD5clth@sumit-xelite>
 References: <20260306105027.290375-1-sumit.garg@kernel.org>
  <20260306105027.290375-3-sumit.garg@kernel.org>
- <e0a86461-c136-4371-99cf-c0b0d31443a3@oss.qualcomm.com>
- <13091f47-938d-43fb-a8c0-4b081818b557@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <13091f47-938d-43fb-a8c0-4b081818b557@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: pzCgiIniWD43I96o7-U_I60XYgo3rGap
-X-Proofpoint-GUID: pzCgiIniWD43I96o7-U_I60XYgo3rGap
-X-Authority-Analysis: v=2.4 cv=L+oQguT8 c=1 sm=1 tr=0 ts=69ab5230 cx=c_pps
- a=cFYjgdjTJScbgFmBucgdfQ==:117 a=JYp8KDb2vCoCEuGobkYCKw==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=Js8INul6CuAu6eKS1T4A:9 a=QEXdDO2ut3YA:10
- a=scEy_gLbYbu1JhEsrz4S:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzA2MDIwOSBTYWx0ZWRfXwQtv/KrFYQHZ
- R0up5DEG0JNH5Ho6M+PncMznUcHDzvlOBJn8pE4xYwBNXuJMGUCPTgaeME3mI70MHRyNihMVBO1
- sUWYAgc9biJxgth2NPnBpo/n+g2fBvyIp7mqbYL9fdaAMMAbgpGk5yLQfNoLmjTtqPIPOXGhBl8
- M/MS6NZYqGbg0tzR62aX/aMVCPfbH5mE0kRoCMRnDb1yZl9suJuYH0dW7TLedECQ4QfyZk41jMj
- s4+52+4OiA5jfd+B+8ynHG/YUeHADCEzk2uBocq1852D5k3n7N+R7cF8u1jeNAQIRyO22p6MAb5
- Xg5CH4Wb1jZTRIR60ukUq2zZm+2s7jDYmRoaixLKt/v8sPUCO774c1xzf1u8MW1ZHJM0X0bLmHT
- mbf5bidHcbh8un0AsY50pAuEo/pKCRpf0qNrj6gx3qwX4AmkLJGpN4qxEJV38R2KVc+hWDjOEVX
- h/+mCBwdqgjX8jc1NdQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-06_06,2026-03-06_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 suspectscore=0 adultscore=0 bulkscore=0 priorityscore=1501
- phishscore=0 impostorscore=0 lowpriorityscore=0 spamscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603060209
+ <5dab61a6-d8cc-431d-b59e-744d98195d90@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5dab61a6-d8cc-431d-b59e-744d98195d90@kernel.org>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.30 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+X-Spamd-Result: default: False [-3.00 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	RCVD_IN_DNSWL_MED(-0.20)[199.106.103.254:received];
+	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
-	RCPT_COUNT_TWELVE(0.00)[49];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org];
-	MIME_TRACE(0.00)[0:+];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	ARC_NA(0.00)[];
-	RCVD_COUNT_THREE(0.00)[4];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	ALIAS_RESOLVED(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[74.125.82.199:received];
-	NEURAL_HAM(-0.00)[-1.000];
-	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
-	MID_RHS_MATCH_FROM(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_TWELVE(0.00)[49];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	TAGGED_RCPT(0.00)[dt,netdev];
-	FROM_HAS_DN(0.00)[]
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,lists.infradead.org,kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4646E41937
+X-Rspamd-Queue-Id: 7873543742
 X-Spamd-Bar: ---
-Message-ID-Hash: VXPUJUFE4W7L6GKPBSKIGKFXWQDSGTCM
-X-Message-ID-Hash: VXPUJUFE4W7L6GKPBSKIGKFXWQDSGTCM
-X-MailFrom: trilokkumar.soni@oss.qualcomm.com
+Message-ID-Hash: 3OEP3WHW7V6HNQCMQF2TMJ7IB2WQCH7P
+X-Message-ID-Hash: 3OEP3WHW7V6HNQCMQF2TMJ7IB2WQCH7P
+X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
+CC: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-media@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, ath12k@lists.infradead.org, linux-remoteproc@vger.kernel.org, andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.
+ qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/VXPUJUFE4W7L6GKPBSKIGKFXWQDSGTCM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/3OEP3WHW7V6HNQCMQF2TMJ7IB2WQCH7P/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Trilok Soni via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Trilok Soni <trilokkumar.soni@oss.qualcomm.com>
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On 3/6/2026 2:00 PM, Jeff Johnson wrote:
-> On 3/6/2026 11:47 AM, Trilok Soni wrote:
->> On 3/6/2026 2:50 AM, Sumit Garg wrote:
->>> +MODULE_LICENSE("GPL");
->>> +MODULE_AUTHOR("Sumit Garg <sumit.garg@oss.qualcomm.com>");
->>
->> What is the convention for Qualcomm authored drivers? In some drivers
->> I find that Qualcomm doesn't add MODULE_AUTHOR. Can Qualcomm community
->> clarify it here. I prefer consistency here for the Qualcomm submissions. 
+On Fri, Mar 06, 2026 at 12:15:01PM +0100, Krzysztof Kozlowski wrote:
+> On 06/03/2026 11:50, Sumit Garg wrote:
+> > From: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> > 
+> > Qcom platforms has the legacy of using non-standard SCM calls
+> > splintered over the various kernel drivers. These SCM calls aren't
+> > compliant with the standard SMC calling conventions which is a
+> > prerequisite to enable migration to the FF-A specifications from
+> > Arm.
+> > 
+> > OP-TEE as an alternative trusted OS to QTEE can't support these non-
+> > standard SCM calls. And even for newer architectures QTEE won't be able
+> > to support SCM calls either with FF-A requirements coming in. And with
+> > both OP-TEE and QTEE drivers well integrated in the TEE subsystem, it
+> > makes further sense to reuse the TEE bus client drivers infrastructure.
+> > 
+> > The added benefit of TEE bus infrastructure is that there is support
+> > for discoverable/enumerable services. With that client drivers don't
+> > have to manually invoke a special SCM call to know the service status.
+> > 
+> > So enable the generic Peripheral Authentication Service (PAS) provided
+> > by the firmware. It acts as the common layer with different TZ
+> > backends plugged in whether it's an SCM implementation or a proper
+> > TEE bus based PAS service implementation.
+> > 
+> > Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> > ---
+> >  drivers/firmware/qcom/Kconfig          |   8 +
+> >  drivers/firmware/qcom/Makefile         |   1 +
+> >  drivers/firmware/qcom/qcom_pas.c       | 295 +++++++++++++++++++++++++
+> >  drivers/firmware/qcom/qcom_pas.h       |  53 +++++
+> >  include/linux/firmware/qcom/qcom_pas.h |  41 ++++
+> >  5 files changed, 398 insertions(+)
+> >  create mode 100644 drivers/firmware/qcom/qcom_pas.c
+> >  create mode 100644 drivers/firmware/qcom/qcom_pas.h
+> >  create mode 100644 include/linux/firmware/qcom/qcom_pas.h
+> > 
+> > diff --git a/drivers/firmware/qcom/Kconfig b/drivers/firmware/qcom/Kconfig
+> > index b477d54b495a..8653639d06db 100644
+> > --- a/drivers/firmware/qcom/Kconfig
+> > +++ b/drivers/firmware/qcom/Kconfig
+> > @@ -6,6 +6,14 @@
+> >  
+> >  menu "Qualcomm firmware drivers"
+> >  
+> > +config QCOM_PAS
+> > +	tristate
+> > +	help
+> > +	  Enable the generic Peripheral Authentication Service (PAS) provided
+> > +	  by the firmware. It acts as the common layer with different TZ
+> > +	  backends plugged in whether it's an SCM implementation or a proper
+> > +	  TEE bus based PAS service implementation.
+> > +
+> >  config QCOM_SCM
+> >  	select QCOM_TZMEM
+> >  	tristate
+> > diff --git a/drivers/firmware/qcom/Makefile b/drivers/firmware/qcom/Makefile
+> > index 0be40a1abc13..dc5ab45f906a 100644
+> > --- a/drivers/firmware/qcom/Makefile
+> > +++ b/drivers/firmware/qcom/Makefile
+> > @@ -8,3 +8,4 @@ qcom-scm-objs += qcom_scm.o qcom_scm-smc.o qcom_scm-legacy.o
+> >  obj-$(CONFIG_QCOM_TZMEM)	+= qcom_tzmem.o
+> >  obj-$(CONFIG_QCOM_QSEECOM)	+= qcom_qseecom.o
+> >  obj-$(CONFIG_QCOM_QSEECOM_UEFISECAPP) += qcom_qseecom_uefisecapp.o
+> > +obj-$(CONFIG_QCOM_PAS)		+= qcom_pas.o
+> > diff --git a/drivers/firmware/qcom/qcom_pas.c b/drivers/firmware/qcom/qcom_pas.c
+> > new file mode 100644
+> > index 000000000000..dc04ff1b6be0
+> > --- /dev/null
+> > +++ b/drivers/firmware/qcom/qcom_pas.c
+> > @@ -0,0 +1,295 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> > + */
+> > +
+> > +#include <linux/delay.h>
+> > +#include <linux/device/devres.h>
+> > +#include <linux/firmware/qcom/qcom_pas.h>
+> > +#include <linux/of.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/slab.h>
+> > +
+> > +#include "qcom_pas.h"
+> > +#include "qcom_scm.h"
+> > +
+> > +static struct qcom_pas_ops *ops_ptr;
 > 
-> WLAN team was told to not have MODULE_AUTHOR(), so ath10k was the last WLAN
-> driver that had a MODULE_AUTHOR() -- ath11k and ath12k do not have one.
+> I really dislike this singleton design. And it is not even needed! If
+> you were storing here some allocated instance of SCM/PAS I could
+> understand, but singleton for only ops? Just implement one driver (so
+> SCM + whatever you have here) which will decide which ops to use,
+> through the probe. Really, this is neither needed nor beneficial.
+
+The motivation here is rather quite opposite to the single monolithic
+SCM driver design. The TZ services like PAS, ICE and so on are going to
+be implemented as independent discoverable devices on TEE bus which
+rather needs independent kernel client drivers.
+
+Also, the single driver probe can't work here since the SCM driver is
+bound to the platform bus whereas the TEE PAS driver is bound to the TEE
+bus. So there is a reason for the current design.
+
 > 
-> And in reality it is very rare for a given module, over time, to only have a
-> single author. The git history contains the real authorship. So just for that
-> reason I'd drop it.
+> It actually leads to more problems with this barrier handling, see
+> further comments.
 
-I agree and that is the same guideline I follow for the drivers we write
-downstream. I just want to make sure that we discuss it here. We may not be able
-to find one single solution, but I prefer to get consistency for Qualcomm
-submissions. 
+The barrier handling is something that I carried over from existing
+implmentation but I can't see a reason why it can't be replaced with a
+simple mutex. See diff below for mutex.
 
----Trilok Soni
+> ...
+> 
+> > +
+> > +/**
+> > + * qcom_pas_shutdown() - Shut down the remote processor
+> > + * @pas_id:	peripheral authentication service id
+> > + *
+> > + * Returns 0 on success.
+> > + */
+> > +int qcom_pas_shutdown(u32 pas_id)
+> > +{
+> > +	if (ops_ptr)
+> > +		return ops_ptr->shutdown(ops_ptr->dev, pas_id);
+> > +
+> > +	return -ENODEV;
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_shutdown);
+> > +
+> > +/**
+> > + * qcom_pas_supported() - Check if the peripheral authentication service is
+> > + *			  available for the given peripheral
+> > + * @pas_id:	peripheral authentication service id
+> > + *
+> > + * Returns true if PAS is supported for this peripheral, otherwise false.
+> > + */
+> > +bool qcom_pas_supported(u32 pas_id)
+> > +{
+> > +	if (ops_ptr)
+> 
+> Lack of barriers here is not looking right. Existing/old code is not a
+> good example, I fixed only the obvious issue, but new code should be
+> correct from the beginning.
+> 
+> Barriers should normally be always paired, unless you have some clear
+> path no concurrent execution can happen here, but such explanation is
+> missing, look:
+
+Actually concurrent execution is rather required here since TZ can
+support parallel bring-up of co-processors. The synchonization is only
+needed when PAS client drivers are performing a deferred probe waiting
+for the service to be available. However, you are right explanation is
+missing here which I will add in the next version.
+
+> 
+> > +		return ops_ptr->supported(ops_ptr->dev, pas_id);
+> > +
+> > +	return false;
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_supported);
+> > +
+> > +/**
+> > + * qcom_pas_is_available() - Check for PAS service
+> > + *
+> > + * Returns true on success.
+> > + */
+> > +bool qcom_pas_is_available(void)
+> > +{
+> > +	/* The barrier is needed to synchronize with client drivers. */
+> 
+> 
+> Here. This is pretty pointless/redundant comment. Obviously barriers are
+> to synchronize with whoever is calling this and only clients are calling.
+> 
+> You must say something useful, not just barrier is a barrier... It's
+> like documenting mutex "to synchronize".
+
+Sure, I can expand the comments.
+
+> 
+> > +	return !!smp_load_acquire(&ops_ptr);
+> 
+
+
+diff --git a/drivers/firmware/qcom/qcom_pas.c b/drivers/firmware/qcom/qcom_pas.c
+index dc04ff1b6be0..82312ff5a1d0 100644
+--- a/drivers/firmware/qcom/qcom_pas.c
++++ b/drivers/firmware/qcom/qcom_pas.c
+@@ -14,6 +14,7 @@
+ #include "qcom_pas.h"
+ #include "qcom_scm.h"
+
++static DEFINE_MUTEX(ops_mutex);
+ static struct qcom_pas_ops *ops_ptr;
+
+ /**
+@@ -261,8 +262,8 @@ EXPORT_SYMBOL_GPL(qcom_pas_supported);
+  */
+ bool qcom_pas_is_available(void)
+ {
+-       /* The barrier is needed to synchronize with client drivers. */
+-       return !!smp_load_acquire(&ops_ptr);
++       guard(mutex)(&ops_mutex);
++       return !!ops_ptr;
+ }
+ EXPORT_SYMBOL_GPL(qcom_pas_is_available);
+
+@@ -272,11 +273,12 @@ EXPORT_SYMBOL_GPL(qcom_pas_is_available);
+  */
+ void qcom_pas_ops_register(struct qcom_pas_ops *ops)
+ {
+-       if (!qcom_pas_is_available())
+-               /* The barrier is needed to synchronize with client drivers. */
+-               smp_store_release(&ops_ptr, ops);
+-       else
++       if (!qcom_pas_is_available()) {
++               guard(mutex)(&ops_mutex);
++               ops_ptr = ops;
++       } else {
+                pr_err("qcom_pas: ops already registered\n");
++       }
+ }
+ EXPORT_SYMBOL_GPL(qcom_pas_ops_register);
+
+@@ -285,8 +287,8 @@ EXPORT_SYMBOL_GPL(qcom_pas_ops_register);
+  */
+ void qcom_pas_ops_unregister(void)
+ {
+-       /* The barrier is needed to synchronize with client drivers. */
+-       smp_store_release(&ops_ptr, NULL);
++       guard(mutex)(&ops_mutex);
++       ops_ptr = NULL;
+ }
+ EXPORT_SYMBOL_GPL(qcom_pas_ops_unregister);
+
+-Sumit
