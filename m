@@ -4,88 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B403FED2F4
-	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 09:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AB33FED2F6
+	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 09:17:05 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A298643958
-	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 09:05:27 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 6DB154395C
+	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 09:17:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1773306327;
-	bh=m4uDAtFZFQ07189ElyBwtchCQM82UDykc/E8xZsG8zE=;
+	d=lists.trustedfirmware.org; s=2024; t=1773307024;
+	bh=IErW45dnTmgcfI2OIFOqwwgUCJNfTNNsPmuh2sOodXs=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=i+SGYvKRwKTWX+yFn0EqKxIpePOyp3hPjeD3wDnJfpRA7ev91YRO+ylKpWUg7FKT7
-	 rN5UtKn5ooap2wY5VypUQk+nYNxJy84H3qeCnR5nRcZE/JmCQTKv/7JNTu4MCh1Lj9
-	 9g45cREBcEN76meK+KqWRxrohD7sgMAyex4gcUpzZY8FA7XRapHQji9rEfE1cf+oow
-	 64EnhQMER0Cj6holuNLRhUYfAJmEtTyXtIofkjeMgeFtD+P6MCEp9dJvzeZam2twYs
-	 0WMhtO5AUSRkmxE4FAkhMkcDy6LAP1/1BSK3QkxLMfwmvbgyRV7Qj+mInj3Wh7Af9L
-	 Mgc6TOXqPbamA==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CA06A43229
-	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Mar 2026 09:05:05 +0000 (UTC)
+	b=equ0yie2WgxeESG8ONQwgwe/Cn4+l0C7vCLMUnn++uAEjeGVjAaShO3ATy0bgw8WR
+	 F8V8sR71y1MiV+dnicx5bTluJP0aZ3+b+ZwBXbsSSRAdBhWjf3unYt/cF3kV/0AiAH
+	 8/hiCBcHRTpGqdxSOGzf8Kpso3O1fIAHVPL0J5r4pHgEGxy388UBqwi+Q9tSnCIMeu
+	 v9RutAGixT/4YwugJGNUb74rNXi1RWAGCk/Ckg4xTghT3uXY5obafvgDX45j7fYf/3
+	 Aut+LlckjTX6LeLnNG+imNDWs9q2egwbb56OeVOE+cxWWAJRzISZdcyRyJvmGZrBwE
+	 RytzcMC1T2lMQ==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7D1364394D
+	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Mar 2026 09:16:45 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=saxLpcJi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gGE4GMI6;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6A50D60054;
-	Thu, 12 Mar 2026 09:05:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8128AC4CEF7;
-	Thu, 12 Mar 2026 09:05:03 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id B354443DD4;
+	Thu, 12 Mar 2026 09:16:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4259DC4CEF7;
+	Thu, 12 Mar 2026 09:16:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773306305;
-	bh=m4uDAtFZFQ07189ElyBwtchCQM82UDykc/E8xZsG8zE=;
+	s=k20201202; t=1773307004;
+	bh=lyfvvM077w9le67FnkByCAl9dIhHMIvU1tUOdujHQuY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=saxLpcJipPNfAN7OE8uDNd2jTB6qyb5c5byk6mwDtRrYfSzjdnCNeLhG5mkhO/PY+
-	 cmY6tnZao0IijjxX2ZE83pw4+JXjzQGDXPHTwy9eUNLjtvEUA1hVR0lrWwneM+XVU5
-	 Yp9BywUXXZ9qy9j5TW2R22zjEr4bP90+eT7LATtXNMsJLl0cpZaMG3bFBkcrE4ThfV
-	 xdG13ZisvDNBMLDOtbEi6ZtydLsOBJHNRult7ph1RdZ+LrVEwJQF6H0zZcJgvTukWH
-	 PZkAMby+DMtZ3SAymGUcXq+O7ZpSvjmyn4jMRdtkim6/TlCkF1GEVHCEyT6AIMApCo
-	 mAdF/S7h19vaw==
-Date: Thu, 12 Mar 2026 14:35:00 +0530
-To: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH] tee: clean up tee_core.h kernel-doc
-Message-ID: <abKBvHRsJkeAm_Hq@sumit-xelite>
-References: <20260311052953.313121-1-rdunlap@infradead.org>
+	b=gGE4GMI6HyITs1CHJ96YXS8e/cVHS8+qIhbhZQ2SStvDWQb8Mpr12XN/Mz2J0h7eB
+	 pZu7VAMqjDup1MmxUPSlr+rK6O047C/2v1UY2oSpcgnZutAjtXVvg4xKgD0aKZZ+ZZ
+	 Xx/BXbLCLdZuQrNfmMxAbKx7Ix1l2SAb0Nj5/H+0T1heUhNS1Ol9986B2nxl5S1Yq2
+	 bhxVkA+ngm0Mg14v8V5TIr1USTw7nzWOxDm+JdZ06lxKPy+ytYpN9FBYc2Ir/8NASO
+	 /7pRR7bq+mGpE7U63tLe/iyaOg/MKStCb0aX9pgS9c+jGCuxKaJJMi+I+ulgG5BzsF
+	 A73bKM2SXT3lw==
+Date: Thu, 12 Mar 2026 14:46:38 +0530
+To: Markus Elfring <Markus.Elfring@web.de>
+Subject: Re: [PATCH] optee: Check return value of tee_shm_get_va()
+Message-ID: <abKEdk6MpkVHBlfi@sumit-xelite>
+References: <20260305083312.1040969-1-nichen@iscas.ac.cn>
+ <2e15b2b8-7dd4-4e63-b9a9-a664323ebb36@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20260311052953.313121-1-rdunlap@infradead.org>
+Content-Transfer-Encoding: base64
+In-Reply-To: <2e15b2b8-7dd4-4e63-b9a9-a664323ebb36@web.de>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_RHS_NOT_FQDN(0.50)[];
+X-Spamd-Result: default: False [-2.00 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
-	NEURAL_HAM(-0.00)[-1.000];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_TLS_LAST(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_TO(0.00)[web.de];
+	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	NEURAL_HAM(-0.00)[-1.000];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CA06A43229
-X-Spamd-Bar: ---
-Message-ID-Hash: 2CSDIUVKORTUUUNS4OEG5XKTSXJX76DZ
-X-Message-ID-Hash: 2CSDIUVKORTUUUNS4OEG5XKTSXJX76DZ
+X-Rspamd-Queue-Id: 7D1364394D
+X-Spamd-Bar: -
+Message-ID-Hash: R3WWVX6UAU3UJOGBZVJA2P6WWBKHBID6
+X-Message-ID-Hash: R3WWVX6UAU3UJOGBZVJA2P6WWBKHBID6
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
+CC: Chen Ni <nichen@iscas.ac.cn>, op-tee@lists.trustedfirmware.org, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2CSDIUVKORTUUUNS4OEG5XKTSXJX76DZ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/R3WWVX6UAU3UJOGBZVJA2P6WWBKHBID6/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -95,170 +100,22 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Tue, Mar 10, 2026 at 10:29:53PM -0700, Randy Dunlap wrote:
-> Use the correct struct member name and function parameter name in
-> kernel-doc comments.
-> Move a macro that was between a struct's documentation and its
-> declaration.
-> These eliminate the following kernel-doc warnings:
-> 
-> Warning: include/linux/tee_core.h:73 struct member 'c_no_users' not
->  described in 'tee_device'
-> Warning: include/linux/tee_core.h:132 #define TEE_DESC_PRIVILEGED
->      0x1; error: Cannot parse struct or union!
-> Warning: include/linux/tee_core.h:257 function parameter 'connection_data'
->  not described in 'tee_session_calc_client_uuid'
-> Warning: include/linux/tee_core.h:320 function parameter 'teedev'
->  not described in 'tee_get_drvdata'
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> ---
-> Cc: Jens Wiklander <jens.wiklander@linaro.org>
-> Cc: Sumit Garg <sumit.garg@kernel.org>
-> Cc: op-tee@lists.trustedfirmware.org
-> 
->  include/linux/tee_core.h |   30 ++++++++++++++++--------------
->  1 file changed, 16 insertions(+), 14 deletions(-)
-
-Thanks for the kernel-doc warnings fixes, FWIW:
-
-Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
-
--Sumit
-
-> 
-> --- linux-next-20260309.orig/include/linux/tee_core.h
-> +++ linux-next-20260309/include/linux/tee_core.h
-> @@ -50,7 +50,7 @@ enum tee_dma_heap_id {
->   * @dev:	embedded basic device structure
->   * @cdev:	embedded cdev
->   * @num_users:	number of active users of this device
-> - * @c_no_user:	completion used when unregistering the device
-> + * @c_no_users:	completion used when unregistering the device
->   * @mutex:	mutex protecting @num_users and @idr
->   * @idr:	register of user space shared memory objects allocated or
->   *		registered on this device
-> @@ -132,6 +132,7 @@ struct tee_driver_ops {
->  /* Size for TEE revision string buffer used by get_tee_revision(). */
->  #define TEE_REVISION_STR_SIZE	128
->  
-> +#define TEE_DESC_PRIVILEGED	0x1
->  /**
->   * struct tee_desc - Describes the TEE driver to the subsystem
->   * @name:	name of driver
-> @@ -139,7 +140,6 @@ struct tee_driver_ops {
->   * @owner:	module providing the driver
->   * @flags:	Extra properties of driver, defined by TEE_DESC_* below
->   */
-> -#define TEE_DESC_PRIVILEGED	0x1
->  struct tee_desc {
->  	const char *name;
->  	const struct tee_driver_ops *ops;
-> @@ -187,7 +187,7 @@ struct tee_protmem_pool_ops {
->   * Allocates a new struct tee_device instance. The device is
->   * removed by tee_device_unregister().
->   *
-> - * @returns a pointer to a 'struct tee_device' or an ERR_PTR on failure
-> + * @returns: a pointer to a 'struct tee_device' or an ERR_PTR on failure
->   */
->  struct tee_device *tee_device_alloc(const struct tee_desc *teedesc,
->  				    struct device *dev,
-> @@ -201,7 +201,7 @@ struct tee_device *tee_device_alloc(cons
->   * tee_device_unregister() need to be called to remove the @teedev if
->   * this function fails.
->   *
-> - * @returns < 0 on failure
-> + * @returns: < 0 on failure
->   */
->  int tee_device_register(struct tee_device *teedev);
->  
-> @@ -254,14 +254,14 @@ void tee_device_set_dev_groups(struct te
->   * tee_session_calc_client_uuid() - Calculates client UUID for session
->   * @uuid:		Resulting UUID
->   * @connection_method:	Connection method for session (TEE_IOCTL_LOGIN_*)
-> - * @connectuon_data:	Connection data for opening session
-> + * @connection_data:	Connection data for opening session
->   *
->   * Based on connection method calculates UUIDv5 based client UUID.
->   *
->   * For group based logins verifies that calling process has specified
->   * credentials.
->   *
-> - * @return < 0 on failure
-> + * @returns: < 0 on failure
->   */
->  int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
->  				 const u8 connection_data[TEE_IOCTL_UUID_LEN]);
-> @@ -295,7 +295,7 @@ struct tee_shm_pool_ops {
->   * @paddr:	Physical address of start of pool
->   * @size:	Size in bytes of the pool
->   *
-> - * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
-> + * @returns: pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
->   */
->  struct tee_shm_pool *tee_shm_pool_alloc_res_mem(unsigned long vaddr,
->  						phys_addr_t paddr, size_t size,
-> @@ -318,14 +318,16 @@ static inline void tee_shm_pool_free(str
->   * @paddr:	Physical address of start of pool
->   * @size:	Size in bytes of the pool
->   *
-> - * @returns pointer to a 'struct tee_protmem_pool' or an ERR_PTR on failure.
-> + * @returns: pointer to a 'struct tee_protmem_pool' or an ERR_PTR on failure.
->   */
->  struct tee_protmem_pool *tee_protmem_static_pool_alloc(phys_addr_t paddr,
->  						       size_t size);
->  
->  /**
->   * tee_get_drvdata() - Return driver_data pointer
-> - * @returns the driver_data pointer supplied to tee_register().
-> + * @teedev: Pointer to the tee_device
-> + *
-> + * @returns: the driver_data pointer supplied to tee_register().
->   */
->  void *tee_get_drvdata(struct tee_device *teedev);
->  
-> @@ -334,7 +336,7 @@ void *tee_get_drvdata(struct tee_device
->   *                            TEE driver
->   * @ctx:	The TEE context for shared memory allocation
->   * @size:	Shared memory allocation size
-> - * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-> + * @returns: a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
->   */
->  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
->  
-> @@ -354,7 +356,7 @@ void tee_dyn_shm_free_helper(struct tee_
->  /**
->   * tee_shm_is_dynamic() - Check if shared memory object is of the dynamic kind
->   * @shm:	Shared memory handle
-> - * @returns true if object is dynamic shared memory
-> + * @returns: true if object is dynamic shared memory
->   */
->  static inline bool tee_shm_is_dynamic(struct tee_shm *shm)
->  {
-> @@ -370,7 +372,7 @@ void tee_shm_put(struct tee_shm *shm);
->  /**
->   * tee_shm_get_id() - Get id of a shared memory object
->   * @shm:	Shared memory handle
-> - * @returns id
-> + * @returns: id
->   */
->  static inline int tee_shm_get_id(struct tee_shm *shm)
->  {
-> @@ -382,7 +384,7 @@ static inline int tee_shm_get_id(struct
->   * count
->   * @ctx:	Context owning the shared memory
->   * @id:		Id of shared memory object
-> - * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
-> + * @returns: a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
->   */
->  struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
->  
-> @@ -402,7 +404,7 @@ static inline bool tee_param_is_memref(s
->   * teedev_open() - Open a struct tee_device
->   * @teedev:	Device to open
->   *
-> - * @return a pointer to struct tee_context on success or an ERR_PTR on failure.
-> + * @returns: pointer to struct tee_context on success or an ERR_PTR on failure.
->   */
->  struct tee_context *teedev_open(struct tee_device *teedev);
->  
+T24gRnJpLCBNYXIgMDYsIDIwMjYgYXQgMTI6NTI6MzlQTSArMDEwMCwgTWFya3VzIEVsZnJpbmcg
+d3JvdGU6DQo+IOKApg0KPiA+ICsrKyBiL2RyaXZlcnMvdGVlL29wdGVlL3JwYy5jDQo+ID4gQEAg
+LTM5Myw2ICszOTMsMTEgQEAgc3RhdGljIHZvaWQgaGFuZGxlX3JwY19mdW5jX3JwbWJfZnJhbWVz
+KHN0cnVjdCB0ZWVfY29udGV4dCAqY3R4LA0KPiA+ICAJCQkgICAgcGFyYW1zWzBdLnUubWVtcmVm
+LnNobV9vZmZzKTsNCj4gPiAgCXAxID0gdGVlX3NobV9nZXRfdmEocGFyYW1zWzFdLnUubWVtcmVm
+LnNobSwNCj4gPiAgCQkJICAgIHBhcmFtc1sxXS51Lm1lbXJlZi5zaG1fb2Zmcyk7DQo+ID4gKwlp
+ZiAoSVNfRVJSKHAwKSB8fCBJU19FUlIocDEpKSB7DQo+ID4gKwkJYXJnLT5yZXQgPSBURUVDX0VS
+Uk9SX0JBRF9QQVJBTUVURVJTOw0KPiA+ICsJCWdvdG8gb3V0Ow0KPiA+ICsJfQ0KPiA+ICsNCj4g
+PiAgCWlmIChycG1iX3JvdXRlX2ZyYW1lcyhyZGV2LCBwMCwgcGFyYW1zWzBdLnUubWVtcmVmLnNp
+emUsIHAxLA0KPiA+ICAJCQkgICAgICBwYXJhbXNbMV0udS5tZW1yZWYuc2l6ZSkpIHsNCj4gPiAg
+CQlhcmctPnJldCA9IFRFRUNfRVJST1JfQkFEX1BBUkFNRVRFUlM7DQo+IOKApg0KPiANCj4gSG93
+IGRvIHlvdSB0aGluayBhYm91dCB0byB1c2UgYW4gYWRkaXRpb25hbCBsYWJlbCBmb3IgdGhlIHNo
+b3duDQo+IGVycm9yIGNvZGUgYXNzaWdubWVudD8NCj4gaHR0cHM6Ly9naXQua2VybmVsLm9yZy9w
+dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXguZ2l0L3RyZWUvRG9jdW1lbnRh
+dGlvbi9wcm9jZXNzL2NvZGluZy1zdHlsZS5yc3Q/aD12Ny4wLXJjMiNuNTI2DQo+DQoNCkkgc3Vw
+cG9zZSBoZXJlIHlvdSBtZWFudCB0byB1cGRhdGUgdGhlIGxhYmVsIG5hbWUgc2luY2UgaXQncyB0
+aGUgc2FtZQ0KZXJyb3IgdHlwZSB1c2VkIGJ5IG90aGVyIGNvZGUgcGF0aHMgdG9vLiBTbyBmb2xs
+b3dpbmcgbGFiZWwgcmVuYW1lDQpzaG91bGQgYmUgZmluZSBJIHRoaW5rIGFzIHBlciBjb2Rpbmcg
+Z3VpZGVsaW5lczoNCg0Kcy9vdXQvZXJyX2Rldl9wdXQvDQoNCi1TdW1pdA0K
