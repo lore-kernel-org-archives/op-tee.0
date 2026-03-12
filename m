@@ -4,101 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D4FEFED2D1
-	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 06:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B403FED2F4
+	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 09:05:28 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id EFF8D4395B
-	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 06:38:45 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A298643958
+	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 09:05:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1773297526;
-	bh=KkrCQPuk5NSp3xHqruunZhn3/8ssDm+UZVNEv0P3bms=;
-	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1773306327;
+	bh=m4uDAtFZFQ07189ElyBwtchCQM82UDykc/E8xZsG8zE=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=oMX9DLNhygZmSJE7eBbyzfQYuSreTOIpfsbG8cZVdShJUxhmZ1YUGhdNdsFDz2KJh
-	 AOe5N45KnHv4CLwHv+3hIu9JosR4R6OeYcP4m7ZLNl4tHhvL7kIchqBgLyddZ0f95L
-	 +kFMbJMrjuzLr6qdAWT37+bUjTMjfLWxItlF/uvD0nruwfppSkdy9B6rcYN758JLNy
-	 wAu5mfww74GihuEkHSN6eKCpBRQi0vxUdBTGe4S98L6X92OJ15lWgWgUsTeLoBKNSL
-	 e7jX9d0aT7yuGtNABhkMSlJON5PvcON6cGjXh0XEJ0lMP+ycvJgKkODBeoUYO1u4Uj
-	 lOFzYiRdziETA==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4024343A68
-	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Mar 2026 06:32:25 +0000 (UTC)
+	b=i+SGYvKRwKTWX+yFn0EqKxIpePOyp3hPjeD3wDnJfpRA7ev91YRO+ylKpWUg7FKT7
+	 rN5UtKn5ooap2wY5VypUQk+nYNxJy84H3qeCnR5nRcZE/JmCQTKv/7JNTu4MCh1Lj9
+	 9g45cREBcEN76meK+KqWRxrohD7sgMAyex4gcUpzZY8FA7XRapHQji9rEfE1cf+oow
+	 64EnhQMER0Cj6holuNLRhUYfAJmEtTyXtIofkjeMgeFtD+P6MCEp9dJvzeZam2twYs
+	 0WMhtO5AUSRkmxE4FAkhMkcDy6LAP1/1BSK3QkxLMfwmvbgyRV7Qj+mInj3Wh7Af9L
+	 Mgc6TOXqPbamA==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id CA06A43229
+	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Mar 2026 09:05:05 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GrEHxRTG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=saxLpcJi;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A17744083B;
-	Thu, 12 Mar 2026 06:32:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2BABC2BCB1;
-	Thu, 12 Mar 2026 06:32:08 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6A50D60054;
+	Thu, 12 Mar 2026 09:05:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8128AC4CEF7;
+	Thu, 12 Mar 2026 09:05:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773297144;
-	bh=KkrCQPuk5NSp3xHqruunZhn3/8ssDm+UZVNEv0P3bms=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GrEHxRTGyhnx0bDmrlk/KRyum1eqD0B3AOjSqC4q8LRFqLV++KI2PjmyW37gdFB/W
-	 91Wg9NVU9sQ1p/iX1X1hRQrjqizeUh+c2mEnGMPuatawW/O+mD1j6QuYQTTmDpgBeK
-	 6CTcmtlrxOh4lZ8xQ6gd9qQoWEFGnFOs5EqclVWR/Crd597GQrcHQnisTWNY+MZzNh
-	 EheRdomGAYyE3ZA2rASVMP3r0J4FcE471VjfF0qQSJRqY3f8drzeRwUl3pEPS9Ea7I
-	 xhQxui745utU9Ylv+It5WSG+rjl6MVLDnjZJbHnrKC0eSYWONPTak4CdKzcHQatrlJ
-	 PuyDGX5/W3AmQ==
-To: linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	freedreno@lists.freedesktop.org,
-	linux-media@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org,
-	ath12k@lists.infradead.org,
-	linux-remoteproc@vger.kernel.org
-Subject: [PATCH v2 15/15] MAINTAINERS: Add maintainer entry for Qualcomm PAS TZ service
-Date: Thu, 12 Mar 2026 11:57:56 +0530
-Message-ID: <20260312062756.694390-16-sumit.garg@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260312062756.694390-1-sumit.garg@kernel.org>
-References: <20260312062756.694390-1-sumit.garg@kernel.org>
+	s=k20201202; t=1773306305;
+	bh=m4uDAtFZFQ07189ElyBwtchCQM82UDykc/E8xZsG8zE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=saxLpcJipPNfAN7OE8uDNd2jTB6qyb5c5byk6mwDtRrYfSzjdnCNeLhG5mkhO/PY+
+	 cmY6tnZao0IijjxX2ZE83pw4+JXjzQGDXPHTwy9eUNLjtvEUA1hVR0lrWwneM+XVU5
+	 Yp9BywUXXZ9qy9j5TW2R22zjEr4bP90+eT7LATtXNMsJLl0cpZaMG3bFBkcrE4ThfV
+	 xdG13ZisvDNBMLDOtbEi6ZtydLsOBJHNRult7ph1RdZ+LrVEwJQF6H0zZcJgvTukWH
+	 PZkAMby+DMtZ3SAymGUcXq+O7ZpSvjmyn4jMRdtkim6/TlCkF1GEVHCEyT6AIMApCo
+	 mAdF/S7h19vaw==
+Date: Thu, 12 Mar 2026 14:35:00 +0530
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH] tee: clean up tee_core.h kernel-doc
+Message-ID: <abKBvHRsJkeAm_Hq@sumit-xelite>
+References: <20260311052953.313121-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260311052953.313121-1-rdunlap@infradead.org>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.00 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
-	MID_CONTAINS_FROM(1.00)[];
+X-Spamd-Result: default: False [-3.50 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_MISSING_CHARSET(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	TO_DN_SOME(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[49];
 	MIME_TRACE(0.00)[0:+];
-	TAGGED_RCPT(0.00)[dt,netdev];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	TO_DN_SOME(0.00)[];
+	ARC_NA(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org,vger.kernel.org];
-	ALIAS_RESOLVED(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
 	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_TLS_LAST(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4024343A68
-X-Spamd-Bar: -
-Message-ID-Hash: PRQ6RHPY3TQRLA3PTAVD7RUD2VDVUNYH
-X-Message-ID-Hash: PRQ6RHPY3TQRLA3PTAVD7RUD2VDVUNYH
+X-Rspamd-Queue-Id: CA06A43229
+X-Spamd-Bar: ---
+Message-ID-Hash: 2CSDIUVKORTUUUNS4OEG5XKTSXJX76DZ
+X-Message-ID-Hash: 2CSDIUVKORTUUUNS4OEG5XKTSXJX76DZ
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualco
- mm.com>
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/PRQ6RHPY3TQRLA3PTAVD7RUD2VDVUNYH/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2CSDIUVKORTUUUNS4OEG5XKTSXJX76DZ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -108,36 +95,170 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-From: Sumit Garg <sumit.garg@oss.qualcomm.com>
+On Tue, Mar 10, 2026 at 10:29:53PM -0700, Randy Dunlap wrote:
+> Use the correct struct member name and function parameter name in
+> kernel-doc comments.
+> Move a macro that was between a struct's documentation and its
+> declaration.
+> These eliminate the following kernel-doc warnings:
+> 
+> Warning: include/linux/tee_core.h:73 struct member 'c_no_users' not
+>  described in 'tee_device'
+> Warning: include/linux/tee_core.h:132 #define TEE_DESC_PRIVILEGED
+>      0x1; error: Cannot parse struct or union!
+> Warning: include/linux/tee_core.h:257 function parameter 'connection_data'
+>  not described in 'tee_session_calc_client_uuid'
+> Warning: include/linux/tee_core.h:320 function parameter 'teedev'
+>  not described in 'tee_get_drvdata'
+> 
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> ---
+> Cc: Jens Wiklander <jens.wiklander@linaro.org>
+> Cc: Sumit Garg <sumit.garg@kernel.org>
+> Cc: op-tee@lists.trustedfirmware.org
+> 
+>  include/linux/tee_core.h |   30 ++++++++++++++++--------------
+>  1 file changed, 16 insertions(+), 14 deletions(-)
 
-Add Sumit Garg as the maintainer for the Qualcomm generic Peripheral
-Authentication Service (PAS) as well as the PAS TEE backend driver.
+Thanks for the kernel-doc warnings fixes, FWIW:
 
-Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
----
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 61bf550fd37c..88763b3b2a4a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -21822,6 +21822,15 @@ F:	Documentation/devicetree/bindings/media/*qcom*
- F:	drivers/media/platform/qcom
- F:	include/dt-bindings/media/*qcom*
- 
-+QUALCOMM PAS TZ SERVICE
-+M:	Sumit Garg <sumit.garg@oss.qualcomm.com>
-+L:	linux-arm-msm@vger.kernel.org
-+S:	Maintained
-+F:	drivers/firmware/qcom/qcom_pas.c
-+F:	drivers/firmware/qcom/qcom_pas.h
-+F:	drivers/firmware/qcom/qcom_pas_tee.c
-+F:	include/linux/firmware/qcom/qcom_pas.h
-+
- QUALCOMM SMB CHARGER DRIVER
- M:	Casey Connolly <casey.connolly@linaro.org>
- L:	linux-arm-msm@vger.kernel.org
--- 
-2.51.0
+-Sumit
 
+> 
+> --- linux-next-20260309.orig/include/linux/tee_core.h
+> +++ linux-next-20260309/include/linux/tee_core.h
+> @@ -50,7 +50,7 @@ enum tee_dma_heap_id {
+>   * @dev:	embedded basic device structure
+>   * @cdev:	embedded cdev
+>   * @num_users:	number of active users of this device
+> - * @c_no_user:	completion used when unregistering the device
+> + * @c_no_users:	completion used when unregistering the device
+>   * @mutex:	mutex protecting @num_users and @idr
+>   * @idr:	register of user space shared memory objects allocated or
+>   *		registered on this device
+> @@ -132,6 +132,7 @@ struct tee_driver_ops {
+>  /* Size for TEE revision string buffer used by get_tee_revision(). */
+>  #define TEE_REVISION_STR_SIZE	128
+>  
+> +#define TEE_DESC_PRIVILEGED	0x1
+>  /**
+>   * struct tee_desc - Describes the TEE driver to the subsystem
+>   * @name:	name of driver
+> @@ -139,7 +140,6 @@ struct tee_driver_ops {
+>   * @owner:	module providing the driver
+>   * @flags:	Extra properties of driver, defined by TEE_DESC_* below
+>   */
+> -#define TEE_DESC_PRIVILEGED	0x1
+>  struct tee_desc {
+>  	const char *name;
+>  	const struct tee_driver_ops *ops;
+> @@ -187,7 +187,7 @@ struct tee_protmem_pool_ops {
+>   * Allocates a new struct tee_device instance. The device is
+>   * removed by tee_device_unregister().
+>   *
+> - * @returns a pointer to a 'struct tee_device' or an ERR_PTR on failure
+> + * @returns: a pointer to a 'struct tee_device' or an ERR_PTR on failure
+>   */
+>  struct tee_device *tee_device_alloc(const struct tee_desc *teedesc,
+>  				    struct device *dev,
+> @@ -201,7 +201,7 @@ struct tee_device *tee_device_alloc(cons
+>   * tee_device_unregister() need to be called to remove the @teedev if
+>   * this function fails.
+>   *
+> - * @returns < 0 on failure
+> + * @returns: < 0 on failure
+>   */
+>  int tee_device_register(struct tee_device *teedev);
+>  
+> @@ -254,14 +254,14 @@ void tee_device_set_dev_groups(struct te
+>   * tee_session_calc_client_uuid() - Calculates client UUID for session
+>   * @uuid:		Resulting UUID
+>   * @connection_method:	Connection method for session (TEE_IOCTL_LOGIN_*)
+> - * @connectuon_data:	Connection data for opening session
+> + * @connection_data:	Connection data for opening session
+>   *
+>   * Based on connection method calculates UUIDv5 based client UUID.
+>   *
+>   * For group based logins verifies that calling process has specified
+>   * credentials.
+>   *
+> - * @return < 0 on failure
+> + * @returns: < 0 on failure
+>   */
+>  int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
+>  				 const u8 connection_data[TEE_IOCTL_UUID_LEN]);
+> @@ -295,7 +295,7 @@ struct tee_shm_pool_ops {
+>   * @paddr:	Physical address of start of pool
+>   * @size:	Size in bytes of the pool
+>   *
+> - * @returns pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
+> + * @returns: pointer to a 'struct tee_shm_pool' or an ERR_PTR on failure.
+>   */
+>  struct tee_shm_pool *tee_shm_pool_alloc_res_mem(unsigned long vaddr,
+>  						phys_addr_t paddr, size_t size,
+> @@ -318,14 +318,16 @@ static inline void tee_shm_pool_free(str
+>   * @paddr:	Physical address of start of pool
+>   * @size:	Size in bytes of the pool
+>   *
+> - * @returns pointer to a 'struct tee_protmem_pool' or an ERR_PTR on failure.
+> + * @returns: pointer to a 'struct tee_protmem_pool' or an ERR_PTR on failure.
+>   */
+>  struct tee_protmem_pool *tee_protmem_static_pool_alloc(phys_addr_t paddr,
+>  						       size_t size);
+>  
+>  /**
+>   * tee_get_drvdata() - Return driver_data pointer
+> - * @returns the driver_data pointer supplied to tee_register().
+> + * @teedev: Pointer to the tee_device
+> + *
+> + * @returns: the driver_data pointer supplied to tee_register().
+>   */
+>  void *tee_get_drvdata(struct tee_device *teedev);
+>  
+> @@ -334,7 +336,7 @@ void *tee_get_drvdata(struct tee_device
+>   *                            TEE driver
+>   * @ctx:	The TEE context for shared memory allocation
+>   * @size:	Shared memory allocation size
+> - * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
+> + * @returns: a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
+>   */
+>  struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
+>  
+> @@ -354,7 +356,7 @@ void tee_dyn_shm_free_helper(struct tee_
+>  /**
+>   * tee_shm_is_dynamic() - Check if shared memory object is of the dynamic kind
+>   * @shm:	Shared memory handle
+> - * @returns true if object is dynamic shared memory
+> + * @returns: true if object is dynamic shared memory
+>   */
+>  static inline bool tee_shm_is_dynamic(struct tee_shm *shm)
+>  {
+> @@ -370,7 +372,7 @@ void tee_shm_put(struct tee_shm *shm);
+>  /**
+>   * tee_shm_get_id() - Get id of a shared memory object
+>   * @shm:	Shared memory handle
+> - * @returns id
+> + * @returns: id
+>   */
+>  static inline int tee_shm_get_id(struct tee_shm *shm)
+>  {
+> @@ -382,7 +384,7 @@ static inline int tee_shm_get_id(struct
+>   * count
+>   * @ctx:	Context owning the shared memory
+>   * @id:		Id of shared memory object
+> - * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
+> + * @returns: a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
+>   */
+>  struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
+>  
+> @@ -402,7 +404,7 @@ static inline bool tee_param_is_memref(s
+>   * teedev_open() - Open a struct tee_device
+>   * @teedev:	Device to open
+>   *
+> - * @return a pointer to struct tee_context on success or an ERR_PTR on failure.
+> + * @returns: pointer to struct tee_context on success or an ERR_PTR on failure.
+>   */
+>  struct tee_context *teedev_open(struct tee_device *teedev);
+>  
