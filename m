@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F86BFED2D1
-	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 06:32:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6921FED2CC
+	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 06:33:36 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id EF9014395B
-	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 06:32:57 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3444043953
+	for <op-tee@archiver.kernel.org>; Thu, 12 Mar 2026 06:33:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1773297178;
-	bh=O/qqg75bvo/5OO7i3M1MAcQa5DhYCAeNyUlzMs2EbZQ=;
+	d=lists.trustedfirmware.org; s=2024; t=1773297216;
+	bh=VzhDqsiFiUXfxZd81NSur10DXXCFIN3cES5W3dbPI8k=;
 	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=SZ+qeymiXgbIv3G3p2Yte78ET6qa4i5htIUukKJyG1tTouqibVpKeEkphox1A0ELv
-	 fkq5HINsypCtWUmybqGKn3zHp8pcGK/eXZYyEVIOvvk4dDtGfaORfZFwSgMYi06V+3
-	 BveLjofFMC83u7XlimUEBQa+8hqCuyJDGo+ymxFeGnTzAvP1t7+Rfnx6BZnSJDFx8y
-	 f6U21C4Db2YtfmCT1lGhE0gVj4aQVMadCR6bN5qV18SxIVnFHdgE4HmlSYcP7d/wpa
-	 WbLzK1t1wxN5EiixYviodukhpb0gYqtEWIWK4d7dTXyWhBMEZp07QC+Uhu6TXQFMX+
-	 /eK1/VFn18JcQ==
+	b=rU2ee017yHZaiXwnL3xdaDE+CpfVyKNL8YgqRuDkcVtgtQx+ak6D1Cbq+Dt7fqfJm
+	 AnKasJvaC048B0CodASY0P4x+xYULmijykedStOEwFIuga8YKd/NfX4iQ9D9SOGDNU
+	 p+6GGUqU9sbGIRCAAbWBPO4/09lEF771Dp8968W8P+aZGw+YYdVaBiG8bDd7MdC3hV
+	 8A899rT3J7DZcTVNzdEk/9ZdVpA7dHzWSJS3omQaWYX15zewIToSLuoA4tR+QFqiUt
+	 rOrvKCXY6eCNWcWhL0fxEauduNfuD4EhoYRPKm4GmnZc506eM8wxpldjryNDfUSxGA
+	 Vxf6yB8io2HHg==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B1E9843970
-	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Mar 2026 06:29:59 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E87604395A
+	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Mar 2026 06:30:15 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uVkNOxL0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nFbdc94L;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2A7CF435D1;
+	by sea.source.kernel.org (Postfix) with ESMTP id 62E7F43F86;
+	Thu, 12 Mar 2026 06:30:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF2E9C116C6;
 	Thu, 12 Mar 2026 06:29:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E4F7C4CEF7;
-	Thu, 12 Mar 2026 06:29:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773296999;
-	bh=O/qqg75bvo/5OO7i3M1MAcQa5DhYCAeNyUlzMs2EbZQ=;
+	s=k20201202; t=1773297015;
+	bh=VzhDqsiFiUXfxZd81NSur10DXXCFIN3cES5W3dbPI8k=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=uVkNOxL0edNHz+Fjjf9MhLUKcvA8FzaFxyABDNgvLBRHe9cqaU8h/1WNYhfF0KhDt
-	 IOe3Yxr/3NYH3y78VHLYU4PfwAyXodwsGfiktT8yeQi1KDQ49Wtou1Ygk1hBB2Hl7b
-	 dtGeJYCPCl90+91jWKrdGiyMs0A4qtDGevOWbh0DD6YVK5sGa8kFICkUQfPTzF2Mxj
-	 kM4qHujUZdVbEnqTrXyrp9oSGDNwWvwTsMz09M2MwQAZOhbzlfoXyojmULEiLTghQg
-	 ZHrlsqqnXIPTrTnpbLkOt4DzpwQ1tQqRb7eqqg+gRdt8aj6qfqwBFUYKWGDIiDxTC5
-	 qHc4W+4+k6sLw==
+	b=nFbdc94LElODkhTEzWXaKKcVooaypiUSvYkU/0yzY2xJQY0ARN90lcW8zsQWqKPHV
+	 sFyPXdHNFjceMPPiReeGHhKD4OHjkk2yIO3dgAj0bInN3r3ALi7ZDNY7kqLm3ZLv/v
+	 g9QmqCv/p4Mq58KHh4uqls1px9aW1LwxModvgnttwDnz54TgP6gtGovgKvSVmEAUxa
+	 LVj+HMawsuNm4w3E+bTy34vX+WJdAfH/rOwPFmEbloFpltAS6IoRN2uXMihIA6iNI8
+	 rugUR9nIEMF3U2DpZFh/B/9p47Wbmm4P16b1BgwdjV+xXwL56m8XUExj1icH+LLOhQ
+	 BbhAkTPxABflw==
 To: linux-arm-msm@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
@@ -51,9 +51,9 @@ To: linux-arm-msm@vger.kernel.org,
 	linux-wireless@vger.kernel.org,
 	ath12k@lists.infradead.org,
 	linux-remoteproc@vger.kernel.org
-Subject: [PATCH v2 06/15] remoteproc: qcom_q6v5_mss: Switch to generic PAS TZ APIs
-Date: Thu, 12 Mar 2026 11:57:47 +0530
-Message-ID: <20260312062756.694390-7-sumit.garg@kernel.org>
+Subject: [PATCH v2 07/15] soc: qcom: mdtloader: Switch to generic PAS TZ APIs
+Date: Thu, 12 Mar 2026 11:57:48 +0530
+Message-ID: <20260312062756.694390-8-sumit.garg@kernel.org>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260312062756.694390-1-sumit.garg@kernel.org>
 References: <20260312062756.694390-1-sumit.garg@kernel.org>
@@ -61,7 +61,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-2.00 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
 	MID_CONTAINS_FROM(1.00)[];
@@ -87,10 +87,10 @@ X-Spamd-Result: default: False [-2.00 / 15.00];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B1E9843970
-X-Spamd-Bar: -
-Message-ID-Hash: HRVPQKDOAI3XZMBMPGCRJMGEL3I2DNMF
-X-Message-ID-Hash: HRVPQKDOAI3XZMBMPGCRJMGEL3I2DNMF
+X-Rspamd-Queue-Id: E87604395A
+X-Spamd-Bar: --
+Message-ID-Hash: IC6D46GUOVVECZ5T6KXLDH2NQQOQ3A6M
+X-Message-ID-Hash: IC6D46GUOVVECZ5T6KXLDH2NQQOQ3A6M
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualco
@@ -98,7 +98,7 @@ CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kerne
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HRVPQKDOAI3XZMBMPGCRJMGEL3I2DNMF/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IC6D46GUOVVECZ5T6KXLDH2NQQOQ3A6M/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -110,46 +110,106 @@ Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
 From: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-Switch qcom_q6v5_mss client driver over to generic PAS TZ APIs. Generic PAS
+Switch mdtloader client driver over to generic PAS TZ APIs. Generic PAS
 TZ service allows to support multiple TZ implementation backends like QTEE
 based SCM PAS service, OP-TEE based PAS service and any further future TZ
 backend service.
 
 Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 ---
- drivers/remoteproc/qcom_q6v5_mss.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/soc/qcom/mdt_loader.c       | 12 ++++++------
+ include/linux/soc/qcom/mdt_loader.h |  6 +++---
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/remoteproc/qcom_q6v5_mss.c b/drivers/remoteproc/qcom_q6v5_mss.c
-index 91940977ca89..4d81b4af097f 100644
---- a/drivers/remoteproc/qcom_q6v5_mss.c
-+++ b/drivers/remoteproc/qcom_q6v5_mss.c
-@@ -34,6 +34,7 @@
- #include "qcom_pil_info.h"
- #include "qcom_q6v5.h"
- 
+diff --git a/drivers/soc/qcom/mdt_loader.c b/drivers/soc/qcom/mdt_loader.c
+index c004d444d698..fdde7eda538a 100644
+--- a/drivers/soc/qcom/mdt_loader.c
++++ b/drivers/soc/qcom/mdt_loader.c
+@@ -13,7 +13,7 @@
+ #include <linux/firmware.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/firmware/qcom/qcom_scm.h>
 +#include <linux/firmware/qcom/qcom_pas.h>
- #include <linux/firmware/qcom/qcom_scm.h>
+ #include <linux/sizes.h>
+ #include <linux/slab.h>
+ #include <linux/soc/qcom/mdt_loader.h>
+@@ -229,7 +229,7 @@ EXPORT_SYMBOL_GPL(qcom_mdt_read_metadata);
  
- #define MPSS_CRASH_REASON_SMEM		421
-@@ -1442,7 +1443,7 @@ static int q6v5_mpss_load(struct q6v5 *qproc)
+ static int __qcom_mdt_pas_init(struct device *dev, const struct firmware *fw,
+ 			       const char *fw_name, int pas_id, phys_addr_t mem_phys,
+-			       struct qcom_scm_pas_context *ctx)
++			       struct qcom_pas_context *ctx)
+ {
+ 	const struct elf32_phdr *phdrs;
+ 	const struct elf32_phdr *phdr;
+@@ -271,7 +271,7 @@ static int __qcom_mdt_pas_init(struct device *dev, const struct firmware *fw,
+ 		goto out;
  	}
  
- 	if (qproc->version == MSS_MSM8953) {
--		ret = qcom_scm_pas_mem_setup(MPSS_PAS_ID, qproc->mpss_phys, qproc->mpss_size);
-+		ret = qcom_pas_mem_setup(MPSS_PAS_ID, qproc->mpss_phys, qproc->mpss_size);
+-	ret = qcom_scm_pas_init_image(pas_id, metadata, metadata_len, ctx);
++	ret = qcom_pas_init_image(pas_id, metadata, metadata_len, ctx);
+ 	kfree(metadata);
+ 	if (ret) {
+ 		/* Invalid firmware metadata */
+@@ -280,7 +280,7 @@ static int __qcom_mdt_pas_init(struct device *dev, const struct firmware *fw,
+ 	}
+ 
+ 	if (relocate) {
+-		ret = qcom_scm_pas_mem_setup(pas_id, mem_phys, max_addr - min_addr);
++		ret = qcom_pas_mem_setup(pas_id, mem_phys, max_addr - min_addr);
  		if (ret) {
- 			dev_err(qproc->dev,
- 				"setting up mpss memory failed: %d\n", ret);
-@@ -2039,7 +2040,7 @@ static int q6v5_probe(struct platform_device *pdev)
- 	if (!desc)
- 		return -EINVAL;
+ 			/* Unable to set up relocation */
+ 			dev_err(dev, "error %d setting up firmware %s\n", ret, fw_name);
+@@ -472,7 +472,7 @@ EXPORT_SYMBOL_GPL(qcom_mdt_load);
+  * firmware segments (e.g., .bXX files). Authentication of the segments done
+  * by a separate call.
+  *
+- * The PAS context must be initialized using qcom_scm_pas_context_init()
++ * The PAS context must be initialized using qcom_pas_context_init()
+  * prior to invoking this function.
+  *
+  * @ctx:        Pointer to the PAS (Peripheral Authentication Service) context
+@@ -483,7 +483,7 @@ EXPORT_SYMBOL_GPL(qcom_mdt_load);
+  *
+  * Return: 0 on success or a negative error code on failure.
+  */
+-int qcom_mdt_pas_load(struct qcom_scm_pas_context *ctx, const struct firmware *fw,
++int qcom_mdt_pas_load(struct qcom_pas_context *ctx, const struct firmware *fw,
+ 		      const char *firmware, void *mem_region, phys_addr_t *reloc_base)
+ {
+ 	int ret;
+diff --git a/include/linux/soc/qcom/mdt_loader.h b/include/linux/soc/qcom/mdt_loader.h
+index 82372e0db0a1..142409555425 100644
+--- a/include/linux/soc/qcom/mdt_loader.h
++++ b/include/linux/soc/qcom/mdt_loader.h
+@@ -10,7 +10,7 @@
  
--	if (desc->need_mem_protection && !qcom_scm_is_available())
-+	if (desc->need_mem_protection && !qcom_pas_is_available())
- 		return -EPROBE_DEFER;
+ struct device;
+ struct firmware;
+-struct qcom_scm_pas_context;
++struct qcom_pas_context;
  
- 	mba_image = desc->hexagon_mba_image;
+ #if IS_ENABLED(CONFIG_QCOM_MDT_LOADER)
+ 
+@@ -20,7 +20,7 @@ int qcom_mdt_load(struct device *dev, const struct firmware *fw,
+ 		  phys_addr_t mem_phys, size_t mem_size,
+ 		  phys_addr_t *reloc_base);
+ 
+-int qcom_mdt_pas_load(struct qcom_scm_pas_context *ctx, const struct firmware *fw,
++int qcom_mdt_pas_load(struct qcom_pas_context *ctx, const struct firmware *fw,
+ 		      const char *firmware, void *mem_region, phys_addr_t *reloc_base);
+ 
+ int qcom_mdt_load_no_init(struct device *dev, const struct firmware *fw,
+@@ -45,7 +45,7 @@ static inline int qcom_mdt_load(struct device *dev, const struct firmware *fw,
+ 	return -ENODEV;
+ }
+ 
+-static inline int qcom_mdt_pas_load(struct qcom_scm_pas_context *ctx,
++static inline int qcom_mdt_pas_load(struct qcom_pas_context *ctx,
+ 				    const struct firmware *fw, const char *firmware,
+ 				    void *mem_region, phys_addr_t *reloc_base)
+ {
 -- 
 2.51.0
 
