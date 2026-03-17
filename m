@@ -4,81 +4,145 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7F7CFD8764
-	for <op-tee@archiver.kernel.org>; Tue, 17 Mar 2026 12:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6AE9FED9EF
+	for <op-tee@archiver.kernel.org>; Tue, 17 Mar 2026 18:04:33 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 11A8E43AA2
-	for <op-tee@archiver.kernel.org>; Tue, 17 Mar 2026 12:53:47 +0000 (UTC)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4769B43822
-	for <op-tee@lists.trustedfirmware.org>; Tue, 17 Mar 2026 12:53:28 +0000 (UTC)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <mfe@pengutronix.de>)
-	id 1w2Tv8-0008Au-6G; Tue, 17 Mar 2026 13:53:14 +0100
-Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <mfe@pengutronix.de>)
-	id 1w2Tv7-000kBv-2O;
-	Tue, 17 Mar 2026 13:53:13 +0100
-Received: from mfe by pty.whiteo.stw.pengutronix.de with local (Exim 4.98.2)
-	(envelope-from <mfe@pengutronix.de>)
-	id 1w2Tv7-00000007Ixy-2edw;
-	Tue, 17 Mar 2026 13:53:13 +0100
-Date: Tue, 17 Mar 2026 13:53:13 +0100
-From: Marco Felsch <m.felsch@pengutronix.de>
-To: Jens Wiklander <jens.wiklander@linaro.org>
-Subject: Re: [GIT PULL] TEE shared memory fix for 7.0
-Message-ID: <dfidrflp5p637dqnn2e6sqr6gbp47gimjlkechjjtlbr7re2e4@kgwofxcumhes>
-References: <20260316074150.GA2474723@rayden>
- <20260317-illustrious-finicky-frog-90a86c@quoll>
- <CAHUa44HXjrPbPv0sBxzrW6o1iQVWdp2p-1-jroukZ8dxSvPmMg@mail.gmail.com>
+	by lists.trustedfirmware.org (Postfix) with ESMTP id E38AB43ABB
+	for <op-tee@archiver.kernel.org>; Tue, 17 Mar 2026 18:04:32 +0000 (UTC)
+Authentication-Results: lists.trustedfirmware.org;
+	dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=YmT3LjiT;
+	dkim-atps=neutral
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011017.outbound.protection.outlook.com [52.101.65.17])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 30ECE43A9C
+	for <op-tee@lists.trustedfirmware.org>; Tue, 17 Mar 2026 18:03:54 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wftHgAt+TZkLzrjhb923pyC8UveA9RTyjvLQrLudzo3v+qNx0nqtpFW3wi9XnXEoF7pWS/GKDoEXC9zkDZn3EDVi1umgTfPt16EF9IlexAX5U1LFMHe5gvD1qkfgQdW4Lf8i82Dd3vEMXMnQYHiEyeC9LEYN9+KPWZwGZF68VG13F2UWJPhjQi1GZSPseX5Ut2xXNpz3FBgceE6bBN+cf14iIiaubpe88tJ5bLNMHSFNxFcTHkOxgsqJBUBnmzeglrvXAsW8qIbg1s9xaPcKq/bFhGa/BehvkAu3qpXe8RWmk2rTz2sf/RgtZG6Dyw9mewrQBWorqoNEGILOASbNzg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=HgVkZGEC2oWOnT8ea1yuqgmK8uNnvZiAhHg5AY06ZSk=;
+ b=TmALQK9Agzfy8NddRQaTjzWzqnC9VKBGXbgud8/CKeGvO0D5DCHErqT6tWPdnehFVjr3uw13TKe0guLJbuW8yF4m09wqd6knWztrZMdy3Kw5HG5m4MATANezxVB7ANWP7d3PDqaGvuRiiyIxjhVPI4A8+8QJJv6V/LHZgksQcOgtYp0zuWavxgrLWzBLaW1B0r+E2hkIH33h+4eaTnZF7FR9OfPnSB5UN72ZuVFTZlOxDHFozreMnNj8jkHoC2yI1vQb/7BCjEw8LIEoixOEsZESsnr0aj/IqyeJwQbx9fsbjyCvHkuL4a5I+nKC0ggaidIequymW7KLhupQv9YmmA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 164.130.1.60) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HgVkZGEC2oWOnT8ea1yuqgmK8uNnvZiAhHg5AY06ZSk=;
+ b=YmT3LjiTjYC1eHFpEVKjhY1inV2xCqfBj+4yRkXyzTI+qhOYCDlL43HWQ5V/d8kpEoD25E6PS0nvLKIoWoRIHvvywYnzEjzMP1czwoFB/PUV+og/7n23+c0fSzIsljuxCD52sSCF5SDEVZxsnq9/Qa+13u8PBI+xD2SACarKzd96yOyMjY2vXSfmZudRTWwT4VtSkLBM7WlKq7nq9DNv4pHy51pW7tpQM8wHcURIUOcG/QytNDF/kD8i4dHCIIa76jIzUkEHUGFcSork7peXWei4f4Lamkv/BcRNvTXJM7dJSNGxhihboASw5pNEOVhpA+rH4rcUwgCAfWv11+Yckw==
+Received: from AS4P195CA0010.EURP195.PROD.OUTLOOK.COM (2603:10a6:20b:5e2::20)
+ by DU0PR10MB7976.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:10:404::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.24; Tue, 17 Mar
+ 2026 18:03:50 +0000
+Received: from AM3PEPF0000A792.eurprd04.prod.outlook.com
+ (2603:10a6:20b:5e2:cafe::8) by AS4P195CA0010.outlook.office365.com
+ (2603:10a6:20b:5e2::20) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.27 via Frontend Transport; Tue,
+ 17 Mar 2026 18:03:46 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.60)
+ smtp.mailfrom=foss.st.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=foss.st.com;
+Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
+ designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
+ client-ip=164.130.1.60; helo=smtpO365.st.com;
+Received: from smtpO365.st.com (164.130.1.60) by
+ AM3PEPF0000A792.mail.protection.outlook.com (10.167.16.121) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9700.17 via Frontend Transport; Tue, 17 Mar 2026 18:03:50 +0000
+Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
+ (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Tue, 17 Mar
+ 2026 19:06:08 +0100
+Received: from localhost (10.252.21.194) by STKDAG1NODE2.st.com
+ (10.75.128.133) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Tue, 17 Mar
+ 2026 19:03:49 +0100
+From: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+To: Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier
+	<mathieu.poirier@linaro.org>, Jens Wiklander <jens.wiklander@linaro.org>,
+	"Rob Herring" <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	"Conor Dooley" <conor+dt@kernel.org>, Sumit Garg <sumit.garg@kernel.org>
+Subject: [PATCH v21 1/6] dt-bindings: firmware: Add TEE remoteproc service binding
+Date: Tue, 17 Mar 2026 19:03:22 +0100
+Message-ID: <20260317180329.1207625-2-arnaud.pouliquen@foss.st.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260317180329.1207625-1-arnaud.pouliquen@foss.st.com>
+References: <20260317180329.1207625-1-arnaud.pouliquen@foss.st.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: base64
-In-Reply-To: <CAHUa44HXjrPbPv0sBxzrW6o1iQVWdp2p-1-jroukZ8dxSvPmMg@mail.gmail.com>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: mfe@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: op-tee@lists.trustedfirmware.org
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.252.21.194]
+X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
+ (10.75.128.133)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM3PEPF0000A792:EE_|DU0PR10MB7976:EE_
+X-MS-Office365-Filtering-Correlation-Id: be1990c6-437b-4927-0430-08de844f8af5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230040|1800799024|36860700016|376014|7416014|82310400026|56012099003|22082099003|18002099003|13003099007;
+X-Microsoft-Antispam-Message-Info: 
+	HsGf+XFUzNpZaTvxvrYvFxz7p2di0VRdWBPfh/a6X4BA0pStohS387ivZpsSMt72zyX1DPShQ7SgzGDuy0puWfUMBNn2tv2pQvVKp/iZgbPZyiwZvgat+NmHNa7+f6VoVaRby65ph3jeQITQqvnO8pA8jpOkpvogBEO8wMp8lgemS6Jn/CDkFPrRW7Gq+U+J5zADwAK35rWg2Petb91ohjAN1jLur8eFmYWbKN1tltL1jXZXIcsuT1GMvzDDDIBvfONPZdaM+PTiuhMTP+W2n8WkjAakRoJRbGy/5Ayc/QGHKX+rs6AmsMo0gGwoQ7nPm84GsjEfSwPW9ZUigJP+z+NWRgMY8CggcCKto++bV1YMTE/2Ra2Rdf4szM6d2l3AumS2cbpVitNJyExXlWSTP/b5d7gnUadrjscRQ61Iwx3oDlmOVHtPk34Gri02ctHBkYL7867loZdaqIWTSRoU7J//3+vZfsj2tKBuJ+c/gj4X0NrYdVXvKaRRLgjS6sEedNlJUgZVWxzYtOTCrfUjrujXWmHhyiw7XK1NSgUQanWYV2qmN68xnpZ3DRln913HSNuQhMPobAZDdsh4HjmGCuhS+KLMmeg2/JAUeMviMEuiM15iH7/OhieZ4L+PW95iNxcBmYEbUzv77s4AwIm2Nj5HelSHyYqeZn3+s8o3aPB3JRgPvS/FLR1kDHeIdL6Kj54WQGqji+oiFaHe+BUxmlZEKwPSvCXnC9KHPU95Pos=
+X-Forefront-Antispam-Report: 
+	CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(376014)(7416014)(82310400026)(56012099003)(22082099003)(18002099003)(13003099007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	98fHLjLRqvWH6SnLaEDQrB/1w9aF8p+nN++OcIB0pO+SnpRb7Q7fLTfWkyAK0IpX95c49T65NgF/h696qRw8Tyw9NeDP80NuhSi71JGLQrsjM+OoLi3jj3wmOPvbuQwDP3EMl3wiXMrhLP/my1YLpPtaBENpPL1bhaackmE4iOKbhkJWNhhHaBM2UIU/tSN9otq8tzJqwo43QRQMTDFhWMNWthVLTIIThoNfuAfnBzmgFAeTEn2WpmkbeR0ThGKKcQtbIukBwCpvsfaR3acOGmx+pVb52Nr6HzZnTNurdkEi+J4d6fw9FDiSAk16D0WxvSNWCklnLIpou71m5g3mOKFrvTH5EmosxgRvAGv3qqve4RcBttJ5P1/Vbs9Rq9F14m2KKVAnLq8l10/d0EOX2P4UuFU7XTfIV9/In4N+nlxLvtxDZEgF5gbjEGh364FG
+X-OriginatorOrg: foss.st.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2026 18:03:50.0945
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: be1990c6-437b-4927-0430-08de844f8af5
+X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
+X-MS-Exchange-CrossTenant-AuthSource: 
+	AM3PEPF0000A792.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR10MB7976
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.60 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	MID_RHS_NOT_FQDN(0.50)[];
-	FORGED_SENDER(0.30)[m.felsch@pengutronix.de,mfe@pengutronix.de];
-	R_SPF_ALLOW(-0.20)[+mx];
+X-Spamd-Result: default: False [-1.19 / 15.00];
+	BAYES_HAM(-2.19)[96.16%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
+	MID_CONTAINS_FROM(1.00)[];
+	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector2];
+	R_SPF_ALLOW(-0.20)[+ip4:52.100.0.0/15:c];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[2a0a:edc0:0:c01:1d::a2:received];
-	FROM_HAS_DN(0.00)[];
-	ASN(0.00)[asn:209379, ipnet:185.203.200.0/22, country:DE];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	NEURAL_HAM(-0.00)[-0.750];
-	RCVD_COUNT_THREE(0.00)[3];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_NEQ_ENVFROM(0.00)[m.felsch@pengutronix.de,mfe@pengutronix.de];
-	R_DKIM_NA(0.00)[];
-	DNSWL_BLOCKED(0.00)[185.203.201.7:from];
-	DMARC_NA(0.00)[pengutronix.de];
 	RCVD_TLS_LAST(0.00)[];
-	ARC_NA(0.00)[]
+	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_TRACE(0.00)[foss.st.com:+];
+	ASN(0.00)[asn:8075, ipnet:52.96.0.0/12, country:US];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.65.17:from];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_FIVE(0.00)[5];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[52.101.65.17:from];
+	ALIAS_RESOLVED(0.00)[];
+	HAS_XOIP(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	NEURAL_HAM(-0.00)[-1.000];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4769B43822
-X-Spamd-Bar: --
-Message-ID-Hash: Q3YB5KPABPYLNEXZSDNE3ZIKJ4T6MHK5
-X-Message-ID-Hash: Q3YB5KPABPYLNEXZSDNE3ZIKJ4T6MHK5
-X-MailFrom: mfe@pengutronix.de
+X-Rspamd-Queue-Id: 30ECE43A9C
+X-Spamd-Bar: -
+Message-ID-Hash: 45MA5TL4S2COZTU2KNUY2322YER7RDKI
+X-Message-ID-Hash: 45MA5TL4S2COZTU2KNUY2322YER7RDKI
+X-MailFrom: arnaud.pouliquen@foss.st.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Krzysztof Kozlowski <krzk@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Matthew Wilcox <willy@infradead.org>, arm@kernel.org, soc@kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
+CC: linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/Q3YB5KPABPYLNEXZSDNE3ZIKJ4T6MHK5/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/45MA5TL4S2COZTU2KNUY2322YER7RDKI/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -86,47 +150,64 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-T24gMjYtMDMtMTcsIEplbnMgV2lrbGFuZGVyIHdyb3RlOg0KPiBIaSwNCj4gDQo+IE9uIFR1ZSwg
-TWFyIDE3LCAyMDI2IGF0IDk6NTHigK9BTSBLcnp5c3p0b2YgS296bG93c2tpIDxrcnprQGtlcm5l
-bC5vcmc+IHdyb3RlOg0KPiA+DQo+ID4gT24gTW9uLCBNYXIgMTYsIDIwMjYgYXQgMDg6NDE6NTBB
-TSArMDEwMCwgSmVucyBXaWtsYW5kZXIgd3JvdGU6DQo+ID4gPiBIZWxsbyBhcm0tc29jIG1haW50
-YWluZXJzLA0KPiA+ID4NCj4gPiA+IFBsZWFzZSBwdWxsIHRoaXMgcGF0Y2ggcmVtb3ZpbmcgdGhl
-IHJlZmNvdW50aW5nIG9mIGtlcm5lbCBwYWdlcyB3aXRoaW4NCj4gPiA+IHRoZSBURUUgc2hhcmVk
-IG1lbW9yeSBoZWxwZXIuDQo+ID4gPg0KPiA+ID4gVGhhbmtzLA0KPiA+ID4gSmVucw0KPiA+ID4N
-Cj4gPiA+IFRoZSBmb2xsb3dpbmcgY2hhbmdlcyBzaW5jZSBjb21taXQgNmRlMjNmODFhNWUwOGJl
-OGZiZjVlOGQ3ZTlmZWJjNzJhNWI1ZjI3ZjoNCj4gPiA+DQo+ID4gPiAgIExpbnV4IDcuMC1yYzEg
-KDIwMjYtMDItMjIgMTM6MTg6NTkgLTA4MDApDQo+ID4gPg0KPiA+ID4gYXJlIGF2YWlsYWJsZSBp
-biB0aGUgR2l0IHJlcG9zaXRvcnkgYXQ6DQo+ID4gPg0KPiA+ID4gICBnaXQ6Ly9naXQua2VybmVs
-Lm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvamVuc3dpL2xpbnV4LXRlZS5naXQgdGFncy90
-ZWUtZml4LWZvci12Ny4wDQo+ID4gPg0KPiA+ID4gZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVw
-IHRvIDA4ZDlhNDU4MGY3MTEyMGJlM2M1YjIyMWFmMzJkY2EwMGE0OGNlYjA6DQo+ID4gPg0KPiA+
-ID4gICB0ZWU6IHNobTogUmVtb3ZlIHJlZmNvdW50aW5nIG9mIGtlcm5lbCBwYWdlcyAoMjAyNi0w
-My0wMyAwOTowMzowNCArMDEwMCkNCj4gPiA+DQo+ID4gPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gPiBURUUgc2hh
-cmVkIG1lbW9yeSB1cGRhdGUgZm9yIDcuMA0KPiA+ID4NCj4gPiA+IFJlbW92ZSByZWZjb3VudGlu
-ZyBvZiBrZXJuZWwgcGFnZXMgaW4gcmVnaXN0ZXJfc2htX2hlbHBlcigpIHRvIHN1cHBvcnQNCj4g
-PiA+IHNsYWIgYWxsb2NhdGlvbnMuDQo+ID4NCj4gPiBUaGF0J3MgYSBzdXBwb3NlZCBmaXggZm9y
-IGEgeWVhciBvbGQgY29tbWl0LCBub3QgY3VycmVudCBSQywgYW5kIHRoZQ0KPiA+IGNvbW1pdCBt
-c2cgZG9lcyBub3QgZXhwbGFpbiB3aGF0IGlzIHRoZSBidWcgYmVpbmcgZml4ZWQgaGVyZS4gTG9v
-a3MgbGlrZQ0KPiA+IGl0IGlzIGRvaW5nIGltcHJvdmVtZW50LCBub3QgYSBmaXguIENhbiB5b3Ug
-cHJvdmlkZSBoZXJlIG1vcmUNCj4gPiBleHBsYW5hdGlvbiBvZiB0aGUgYWN0dWFsIGJ1ZyBiZWlu
-ZyBmaXhlZCB0byBqdXN0aWZ5IHRoaXMgZ29pbmcgdG8NCj4gPiBjdXJyZW50IFJDIGZpeGVzPw0K
-PiANCj4gSSdtIHVuZGVyIHRoZSBpbXByZXNzaW9uIHRoYXQgaXQgaXMgYSBmaXggcmF0aGVyIHRo
-YW4gYW4gaW1wcm92ZW1lbnQuDQo+IEhvd2V2ZXIsIHNpbmNlIGl0IGhhcyBiZWVuIHN0ZXdpbmcg
-Zm9yIGEgd2hpbGUsIGl0J3MgY2xlYXJseSBub3QNCj4gdXJnZW50LiBJIGRvbid0IGhhdmUgYW55
-dGhpbmcgc3BlY2lmaWMgb24gdGhlIGJ1ZyBmaXgsIG90aGVyIHRoYW4gdGhhdA0KPiB3ZSdyZSBz
-dXBwb3NlZCB0byBzdG9wIHRha2luZyB0aG9zZSByZWZjb3VudHMuIFBlcmhhcHMgU3VtaXQsIE1h
-cmNvLA0KPiBvciBNYXR0aGV3IGNhbiBhZGQgc29tZXRoaW5nPw0KDQpJdCdzIGEgbG9uZyBvdXRz
-dGFuZGluZyBmaXggcmVnYXJkaW5nIG1lbW9yeSBwYWdlIG1hbmFnZW1lbnQuIFRoZQ0KdXNlcnNw
-YWNlIGdldHMgaW5mb3JtZWQgYWJvdXQgdGhpcyBtZW1vcnkgQVBJIG1pc3VzZSB2aWEgYSB3YXJu
-aW5nIHByaW50DQppbmNsLiBhIGJhY2t0cmFjZS4gVGhpcyBnZXRzIHRyaWdnZXJlZCBvbmx5IGlm
-IHVzZXJzcGFjZSB1c2VzIE9QLVRFRQ0KdHJ1c3RlZC1rZXlzIG9yIHRoZSBPUC1URUUgRUZJIHZh
-cmlhYmxlcy4gVGhlcmVmb3JlIEkgd291bGQgbGlrZSB0byBnZXQNCml0IGludG8gNy4wIGJ1dCA3
-LjEgZmluZSB0b28uDQoNClJlZ2FyZHMsDQogIE1hcmNvDQoNCj4gDQo+IENoZWVycywNCj4gSmVu
-cw0KPiANCg0KLS0gDQojZ2VybnBlckR1IA0KI0NhbGxNZUJ5TXlGaXJzdE5hbWUNCg0KUGVuZ3V0
-cm9uaXggZS5LLiAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIHwNClN0ZXVlcndhbGRlciBTdHIuIDIxICAgICAgICAgICAgICAgICAgICAgICB8
-IGh0dHBzOi8vd3d3LnBlbmd1dHJvbml4LmRlLyB8DQozMTEzNyBIaWxkZXNoZWltLCBHZXJtYW55
-ICAgICAgICAgICAgICAgICAgfCBQaG9uZTogKzQ5LTUxMjEtMjA2OTE3LTAgICAgfA0KQW10c2dl
-cmljaHQgSGlsZGVzaGVpbSwgSFJBIDI2ODYgICAgICAgICAgIHwgRmF4OiAgICs0OS01MTIxLTIw
-NjkxNy05ICAgIHwNCg==
+Add a device tree binding for the TEE-based remote processor control
+service implemented as an OP-TEE Trusted Application identified by
+UUID 80a4c275-0a47-4905-8285-1486a9771a08.
+
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+---
+v21 update:
+- rename compatible to exactly match with the TEE UUID
+- the remoteproc device driver is no more declared as a child,
+  but use phandle as done for the SCMI.
+- remove linaro,optee-tz bindings update are now useless.
+---
+ .../bindings/remoteproc/remoteproc-tee.yaml   | 36 +++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+
+diff --git a/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml b/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+new file mode 100644
+index 000000000000..e7bf135136bf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/remoteproc/remoteproc-tee.yaml
+@@ -0,0 +1,36 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/remoteproc/remoteproc-tee.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: TEE Remote Processor Control Service (UUID 80a4c275-0a47-4905-8285-1486a9771a08)
++
++maintainers:
++  - Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
++
++description: |
++  Node describing a TEE-based remote processor control service implemented as
++  a Trusted Application identified by UUID 80a4c275-0a47-4905-8285-1486a9771a08.
++
++  This binding is intended to define the interface  for remoteproc services
++  implemented as TAs running in a TEE, and is used by the a remoteproc driver
++  to bind to such a service and control a remote processor through it.
++
++properties:
++  compatible:
++    const: 80a4c275-0a47-4905-8285-1486a9771a08
++
++required:
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |
++    firmware {
++        tee_rproc: optee-rproc {
++            compatible = "80a4c275-0a47-4905-8285-1486a9771a08";
++        };
++    };
++...
+-- 
+2.43.0
+
