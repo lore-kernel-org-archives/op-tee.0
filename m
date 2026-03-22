@@ -4,147 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3523A108B8E6
-	for <op-tee@archiver.kernel.org>; Fri, 20 Mar 2026 09:58:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3EF4EC01A6
+	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 08:41:58 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 6185043AD4
-	for <op-tee@archiver.kernel.org>; Fri, 20 Mar 2026 09:58:47 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id E7FCA43DEF
+	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 08:41:57 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=OejwxGQZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aRM1Ps6C;
 	dkim-atps=neutral
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013006.outbound.protection.outlook.com [52.101.72.6])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DD10643AC2
-	for <op-tee@lists.trustedfirmware.org>; Fri, 20 Mar 2026 09:58:25 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=AvdlmVWEnaDd/9uU/geVulVuM/BkRHd6Cn6zC39LpymsIc/Wl85ZWGmac/05kzHp6bJWoaWzOHWwwVgOJ6nJH/YRCAtFUXRXpk4iunKRpbLW014nCVmmLjhfshNojW3OpacXUbutNjBLNd2ERaxO4b5hfOv86Q9OwlO4+pSMFRZUA06cuejPn3ztQCFSfjzJxJpBU2IWjQ1uRBQBnJcfFn52e4z5iLCUD2mIKtyuxgOdw26vfuhkNswSo3Zaig3OhXAsFKGccXegMVZwaMryE2tTJHLUvlo0VfIeaCr4sJYUrAfddBRQk7myN2nqAF/lwc/g8ZpZQwi46y8YHxW1pw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=q6f8KIaTB3VIRYAauVWqQbIbdfBj7xAZYF8Z0O/Xw64=;
- b=eXGETTRkzsvYwESPO4b0ZpWRAM7HF/hWtbQL6TyN9W9F9Uj+WQJ9o1sBA+0AayAOJcAnNaOBddqC8867flbR+BC/MUVhH1g3YLwwbi5frw+sdVGL1+3ftbUusYHcE1okhNayQYA/mmSbPGbEVgeLyCQl9rtKtfdly1bWErA285Dw3IMsSrLaGN/ZhaqFvixjQCRRQacCHzsieun10KFG8qaRRabDlvzOdEKtk9GuczPQdwSZnspvTwcv+pT0wGk6WxmrmJ3alpBKze89R5bEaFEMPgvOR9Mm1hUDSzharFrb4ucaumhVIbGpO7gKOfL2pULgt/qUwlqoeHgdcd1eFA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.59) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=q6f8KIaTB3VIRYAauVWqQbIbdfBj7xAZYF8Z0O/Xw64=;
- b=OejwxGQZ+qviuiCYiUl21BkcgI5Wfi23UZJwgDTepjWJL0g7rYXkqGS3ykR48hst2nLArU+Tujt7ii6RDPFtWBkdnKivC9WK77EiAxWNav0AwYgs5a3HbDIYfQNZvuuDCXLzbdc+uv0DUDUtYk4dEd9bV79raORmKHEPrKOfELmAmpHu06RY7ke54eoOrAa73k5FMAqoMt4FmPwi6eYpPCoiYN0lurY7SXKGlGnrYPkML7wUa3RnXXuHII8UBzoNsqDOBzfGVzULd2E14ptikQYbzKxhViOLQtGiwTV+DSudvKcM7Pr5pNe2GW0ngFbdSQOUNPGfXaxwJVwi/Ib6Pg==
-Received: from DU2PR04CA0022.eurprd04.prod.outlook.com (2603:10a6:10:3b::27)
- by PAWPR10MB7675.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:102:358::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.25; Fri, 20 Mar
- 2026 09:58:19 +0000
-Received: from DB5PEPF00014B98.eurprd02.prod.outlook.com
- (2603:10a6:10:3b:cafe::c5) by DU2PR04CA0022.outlook.office365.com
- (2603:10a6:10:3b::27) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.23 via Frontend Transport; Fri,
- 20 Mar 2026 09:58:19 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.59)
- smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.59 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.59; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.59) by
- DB5PEPF00014B98.mail.protection.outlook.com (10.167.8.165) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9723.19 via Frontend Transport; Fri, 20 Mar 2026 09:58:19 +0000
-Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpo365.st.com
- (10.250.44.71) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Fri, 20 Mar
- 2026 11:00:55 +0100
-Received: from [10.48.87.127] (10.48.87.127) by STKDAG1NODE2.st.com
- (10.75.128.133) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Fri, 20 Mar
- 2026 10:58:17 +0100
-Message-ID: <df0a0d1c-5cc2-4ec6-99d3-30b8f9ac593a@foss.st.com>
-Date: Fri, 20 Mar 2026 10:58:16 +0100
+Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B8AAE41A34
+	for <op-tee@lists.trustedfirmware.org>; Sun, 22 Mar 2026 16:31:22 +0000 (UTC)
+Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-56ce54c8c82so556427e0c.2
+        for <op-tee@lists.trustedfirmware.org>; Sun, 22 Mar 2026 09:31:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1774197082; x=1774801882; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=lfCZJAbd1LpmnuBBLu17NpZwGzJ2K2NQwLQJ5IKDWMg=;
+        b=aRM1Ps6CC2SekR0gw9aOMa+5mg/bHb/PrZNEGn3XxyXSFGBMjeUd9avVueGOPuqMqJ
+         U3EuiRfzJQ/glPyeQU+0lshM+427gnMl9dugSlm69bdxTNz5dSb0QARHBroLZD037vC5
+         cq6n47q2MCxKUy6o2IMmY1kg3uBXEn9J2dwlVDDRFlgIiJFpRbopX/fQFMTMqvDCY73w
+         bQMYkCaY7dDn3td8leINTn8yIV0QBewtcv88ZkB0goEBGS0K6sAxZpOoSRzGK2ZVnjCr
+         0LAE4si1tjIZ9feWcM3O/zlDL2V1O53FCB1NP1NbXrtdEuHFah9+cxp0liPAllc1D3+4
+         hK7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774197082; x=1774801882;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lfCZJAbd1LpmnuBBLu17NpZwGzJ2K2NQwLQJ5IKDWMg=;
+        b=GJljzw6fDB2E06hwnL8sySSIW7HzgmR5toeHsIQ+TsAWlOt/B0WfHuiMJNYljT+ckV
+         JNBxtVkM+X4HBVBrATfZ7chaeFSJKEcnH1yGrAXVVwJcgrVg0tZ1XgH52nzK5K6Fw+dQ
+         JujbldkGycinHzVIVe/rRPG1T7qbRsapN1YvwoEj1GXjJ0DWBz5etdF3olKQcd5/ptvk
+         4rze4nx+0GAWReABuVKlKH94ZkuLa5ZoK+0ptppPKEE734ypnBAZ9ZFE63lQjxcTsfJ2
+         +GKzqr0WUfyeAMKHUMXQYFkJfKRz0brxTeylaXmTW1cK9QIVgZcd8C20MmkQ9WiCdJ4u
+         6KZg==
+X-Forwarded-Encrypted: i=1; AJvYcCW7KjA7eyOY+uhqAVzfR2ipisA8BreiWLWdw/W0y/hw3MtZu415zTndC0l9p6V+UEq59wbr6S0=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yyl8P59+kWfgdWRB/d7svaLPdbLGk3G9ZCkI4iWtSXSu7unZX80
+	Djp1zv+363LF/XYH3xB0nccw7RAYmLjGuNCszMi5s/f0KZ7RGiBL/pce
+X-Gm-Gg: ATEYQzyf8oOpRerdgX59BjuLKdtntO036f9daW7e/TgRsZ0aK8gAyWjDi4aHj1QYHmI
+	5Ofc1FEfc9lQKE7OpQHvY7RDJcLtIl7Ol2lC3Uc60iLXxWHvj1xWrS2rTxM4dmtEZsEyQGKZ3ZK
+	HZ3kjZpXTpmMPzF0suLIVUC+NsXBL3SbLREQUM+8fKq8MjMO4Xui9I9blCsEzbILZx6xwElwIpB
+	RyBDxzDLRYc4NoJNAxCutcC69vm491ob2VSaAN8NMSZwpMCeBW8Zk0jLw5hb0WDGdcHjY+uthVq
+	zZSbgy1N8u7OTnnfKEoiTtTzG3iS1VU3W5MMKS/0mCNPSTcx5nw/3sqKSe2hbqhaEsl+VBuKSm5
+	XCZ4rcJpEhV7eJ3uS/Cuj2rEpMu1xwb43po310sjptSUPDeSLlAMTtSkIby5e11JHdhqdEDDlq8
+	tuDyYe3NVdG+eT/AhKwv8ScQ==
+X-Received: by 2002:a05:6122:510:b0:56c:ce79:9e18 with SMTP id 71dfb90a1353d-56cde32324bmr3666294e0c.4.1774197082006;
+        Sun, 22 Mar 2026 09:31:22 -0700 (PDT)
+Received: from dream.. ([2804:1b3:a701:31ac:8f8e:b3a6:98ae:53a1])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56cddb6d041sm8202043e0c.1.2026.03.22.09.31.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Mar 2026 09:31:21 -0700 (PDT)
+From: Rodrigo Zaiden <rodrigoffzz@gmail.com>
+To: Jens Wiklander <jens.wiklander@linaro.org>
+Subject: [PATCH] tee: optee: fix kernel-doc warnings
+Date: Sun, 22 Mar 2026 13:31:14 -0300
+Message-ID: <20260322163114.17233-1-rodrigoffzz@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v21 2/6] dt-bindings: remoteproc: Add STM32 TEE-controlled
- rproc binding
-To: Krzysztof Kozlowski <krzk@kernel.org>
-References: <20260317180329.1207625-1-arnaud.pouliquen@foss.st.com>
- <20260317180329.1207625-3-arnaud.pouliquen@foss.st.com>
- <20260319-glistening-ultramarine-ibis-1eb3d6@quoll>
- <420953af-6a12-4277-8c31-062db01f78cc@foss.st.com>
- <0068d43a-e875-4f4e-aff6-3e8330e66c82@kernel.org>
-Content-Language: en-US
-From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
-In-Reply-To: <0068d43a-e875-4f4e-aff6-3e8330e66c82@kernel.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: base64
-X-Originating-IP: [10.48.87.127]
-X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
- (10.75.128.133)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB5PEPF00014B98:EE_|PAWPR10MB7675:EE_
-X-MS-Office365-Filtering-Correlation-Id: e5e1aca9-5303-4ff9-0678-08de866736bc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|7416014|36860700016|376014|1800799024|82310400026|13003099007|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info: 
-	I18KFJ5HdPw/cywMGwjEGNSVvK4KVIdI8ZF0dObBibscNKDIU+4ZkqFXC7mNUaweJeByGIvligXv52ZAnKq9B6cy1RFhVp4zw5SQ3VnHZwcJaqLJJV0audhJZOukAOYoVZ17kT8QQSJKebL2tCdLjts1bf7W7NtiBaEq77BsLyaTdSwbW530ZXvrNvAvVxN9mUkwV727mKBS7RtWIYfiNYCvZ9Z5Uld+nlVIEyImI5uNFHX0jDAmdtWv+tVf+EFoZ3syZr+4sASNaksMxMtK2SIH/hbzm1ScjRPxvlmoJHzhs1ysu4apcAWK18IYyE8ikL0pBCpI6hOd8WpOOtM09Yt+NYPpQO1oiEjE7ImHxiTIQQC7ekxy6e64nqY2F+FIPonTanOt3ovrtwyg1J1dcnuWb+b3K0hZEP4n0AlDsrZr1L9QTcRV5oIyNBK/EzwvzzpT6H4aTkdwLUEmuBknCVB213IRTH8vSZTvkLyIj7GAPiWKVvFGkAUEJtKHEylz7IxT3cYiUkjJ651WreGjUJgw+GVVotSeAyk92O+EmJ/WiO0nKsB47pz2ioKLfjkZTfpTBhDH3M3vZ4VUQuWuDRGtLNcKgYO6+Dwf+r1LyMigQ2WnTuH3PgxGODdBGJWE6/c7XTZzE0q1OoyKtTeBvdKdqI9awXopmeD6hYqox0F21dR9rIvA3zcMEZaPXPTgLtSbM/sR3L6ABsa4UsiD3BDPn/CKpH6QHyaVfPFrGHQ=
-X-Forefront-Antispam-Report: 
-	CIP:164.130.1.59;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(36860700016)(376014)(1800799024)(82310400026)(13003099007)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 
-	zDaOSdoe0ff4mUTHRLkP8ZrsqSFwHCaspMRFRUGHdoN0Br9uP3RYqwNVThx9gqXO+gPHxXxhZhfncR0en29ElzJ578HHzbEoxQOKyvZY0KKFxypYIBDjuMs6SDPl/VIpQTGrkUreEmhUT1LGBhJqsm5x+vDrnLX9jpdud+BlP209NrdfcxAsBAR8BT603Ybnzv/NX0vqRUZ5xivMDMHxVpiOb784yoNtaJ96mR/WEfe4RPaLhojc99Fl5zf3KVbdzEeERFaCk+aL8LgFUbkhjGjWuQmub6XbhexrxuxmxRWX0nZ0BNvPqEcJNFqYLgzTKsQlvMqO9ksxM3Ctc9MyhIxJ2ScqO5aUGo+PoZTU6m2wPY3f1b7oYje3qmYfAkXx8Ms0lSB9PiGfiQ7jwEH7CfS5HfNEWLNenlt/Wdb2wR/GBXW4RpCfLRQBUa6TalGe
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 09:58:19.0181
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: e5e1aca9-5303-4ff9-0678-08de866736bc
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.59];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource: 
-	DB5PEPF00014B98.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR10MB7675
+Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[foss.st.com,none];
-	R_DKIM_ALLOW(-0.20)[foss.st.com:s=selector2];
-	R_SPF_ALLOW(-0.20)[+ip4:52.100.0.0/15];
+X-Spamd-Result: default: False [-2.50 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20230601];
 	MIME_GOOD(-0.10)[text/plain];
-	DKIM_TRACE(0.00)[foss.st.com:+];
-	RCVD_TLS_LAST(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[14];
-	SUSPICIOUS_AUTH_ORIGIN(0.00)[];
+	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:8075, ipnet:52.96.0.0/12, country:US];
-	FROM_HAS_DN(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.72.6:from];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2603:10a6:10:3b::27:received];
-	RCVD_COUNT_FIVE(0.00)[5];
-	FROM_EQ_ENVFROM(0.00)[];
 	TO_DN_SOME(0.00)[];
-	HAS_XOIP(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	RCVD_TLS_LAST(0.00)[];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FREEMAIL_CC(0.00)[kernel.org,lists.trustedfirmware.org,linuxfoundation.org,brighamcampbell.com,gmail.com];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.173:from];
 	NEURAL_HAM(-0.00)[-1.000];
-	ALIAS_RESOLVED(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.72.6:from]
+	RCPT_COUNT_FIVE(0.00)[6];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[gmail.com:+];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.221.173:from];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: DD10643AC2
-X-Spamd-Bar: ---
-Message-ID-Hash: K2WWLHO2YYJQAF6AQ2ZW5G2V2OKUM5XM
-X-Message-ID-Hash: K2WWLHO2YYJQAF6AQ2ZW5G2V2OKUM5XM
-X-MailFrom: arnaud.pouliquen@foss.st.com
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org
+X-Rspamd-Queue-Id: B8AAE41A34
+X-Spamd-Bar: --
+X-MailFrom: rodrigoffzz@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: XCURA7W4ZFM4WU5OSYQRSOQMWE6NUE57
+X-Message-ID-Hash: XCURA7W4ZFM4WU5OSYQRSOQMWE6NUE57
+X-Mailman-Approved-At: Mon, 23 Mar 2026 08:41:40 +0000
+CC: Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, Shuah Khan <skhan@linuxfoundation.org>, Brigham Campbell <me@brighamcampbell.com>, Rodrigo Zaiden <rodrigoffzz@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/K2WWLHO2YYJQAF6AQ2ZW5G2V2OKUM5XM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/XCURA7W4ZFM4WU5OSYQRSOQMWE6NUE57/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -152,101 +114,300 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-DQoNCk9uIDMvMTkvMjYgMTE6NDEsIEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6DQo+IE9uIDE5
-LzAzLzIwMjYgMTE6MzEsIEFybmF1ZCBQT1VMSVFVRU4gd3JvdGU6DQo+PiBIZWxsbyBLcnp5c3p0
-b2YsDQo+Pg0KPj4NCj4+IE9uIDMvMTkvMjYgMDk6MDYsIEtyenlzenRvZiBLb3psb3dza2kgd3Jv
-dGU6DQo+Pj4gT24gVHVlLCBNYXIgMTcsIDIwMjYgYXQgMDc6MDM6MjNQTSArMDEwMCwgQXJuYXVk
-IFBvdWxpcXVlbiB3cm90ZToNCj4+Pj4gQWRkIGEgRGV2aWNlIFRyZWUgYmluZGluZyBmb3IgdGhl
-IFNUTTMyIHJlbW90ZSBwcm9jZXNzb3IgY29udHJvbGxlZA0KPj4+PiB2aWEgYSBUcnVzdGVkIEFw
-cGxpY2F0aW9uIHJ1bm5pbmcgaW4gT1AtVEVFLg0KPj4+PiBUaGlzIGJpbmRpbmcgZGVzY3JpYmVz
-IHRoZSBpbnRlcmZhY2UgYW5kIHByb3BlcnRpZXMgcmVxdWlyZWQgZm9yIFNUTTMyTVANCj4+Pj4g
-cmVtb3RlcHJvYyBpbnN0YW5jZXMgbWFuYWdlZCBieSB0aGUgVEVFIHJwcm9jIHNlcnZpY2UsIGlu
-Y2x1ZGluZyBhDQo+Pj4+IGxpbmthZ2UgdG8gdGhlIFRFRSBiYWNrZW5kIHRocm91Z2ggdGhlIHBy
-b3BlcnR5ICJycHJvYy10ZWUtcGhhbmRsZSIuDQo+Pj4+DQo+Pj4+IFNpZ25lZC1vZmYtYnk6IEFy
-bmF1ZCBQb3VsaXF1ZW4gPGFybmF1ZC5wb3VsaXF1ZW5AZm9zcy5zdC5jb20+DQo+Pj4+IC0tLQ0K
-Pj4+PiBWMjEgdXBkYXRlczoNCj4+Pj4gLSB0aGUgbTQgbm9kZSBpcyBubyBtb3JlIGRlY2xhcmVk
-IGFzIGEgY2hpbGQgb2YgdGhlIG9wdGVlLXJwcm9jIG5vZGUNCj4+Pj4gLSAicnByb2MtdGVlLXBo
-YW5kbGUiIHByb3BlcnR5IGlzIGludHJvZHVjZWQgdG8gcmVmZXJlbmNlIHRoZSBvcHRlZS1ycHJv
-Yw0KPj4+PiAtLS0NCj4+Pj4gICAgLi4uL3JlbW90ZXByb2Mvc3Qsc3RtMzItcnByb2MtdGVlLnlh
-bWwgICAgICAgIHwgMTA4ICsrKysrKysrKysrKysrKysrKw0KPj4+PiAgICAxIGZpbGUgY2hhbmdl
-ZCwgMTA4IGluc2VydGlvbnMoKykNCj4+Pj4gICAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50
-YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9yZW1vdGVwcm9jL3N0LHN0bTMyLXJwcm9jLXRlZS55
-YW1sDQo+Pj4+DQo+Pj4+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvcmVtb3RlcHJvYy9zdCxzdG0zMi1ycHJvYy10ZWUueWFtbCBiL0RvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy9yZW1vdGVwcm9jL3N0LHN0bTMyLXJwcm9jLXRlZS55YW1sDQo+
-Pj4+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+Pj4+IGluZGV4IDAwMDAwMDAwMDAwMC4uY2E0ZGQx
-YzhlN2IwDQo+Pj4+IC0tLSAvZGV2L251bGwNCj4+Pj4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3JlbW90ZXByb2Mvc3Qsc3RtMzItcnByb2MtdGVlLnlhbWwNCj4+Pj4g
-QEAgLTAsMCArMSwxMDggQEANCj4+Pj4gKyMgU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IChHUEwt
-Mi4wIE9SIEJTRC0yLUNsYXVzZSkNCj4+Pj4gKyVZQU1MIDEuMg0KPj4+PiArLS0tDQo+Pj4+ICsk
-aWQ6IGh0dHA6Ly9kZXZpY2V0cmVlLm9yZy9zY2hlbWFzL3JlbW90ZXByb2Mvc3Qsc3RtMzItcnBy
-b2MtdGVlLnlhbWwjDQo+Pj4+ICskc2NoZW1hOiBodHRwOi8vZGV2aWNldHJlZS5vcmcvbWV0YS1z
-Y2hlbWFzL2NvcmUueWFtbCMNCj4+Pj4gKw0KPj4+PiArdGl0bGU6IFNUTWljcm9lbGVjdHJvbmlj
-cyBTVE0zMiByZW1vdGUgcHJvY2Vzc29yIGNvbnRyb2xsZWQgdmlhIFRFRQ0KPj4+PiArDQo+Pj4+
-ICttYWludGFpbmVyczoNCj4+Pj4gKyAgLSBBcm5hdWQgUG91bGlxdWVuIDxhcm5hdWQucG91bGlx
-dWVuQGZvc3Muc3QuY29tPg0KPj4+PiArDQo+Pj4+ICtkZXNjcmlwdGlvbjogfA0KPj4+PiArICBT
-VE0zMk1QIHJlbW90ZSBwcm9jZXNzb3IgY29udHJvbGxlZCBieSBhIFRydXN0ZWQgQXBwbGljYXRp
-b24NCj4+Pj4gKyAgcnVubmluZyBpbiBPUC1URUUuIFRoaXMgbm9kZSBpcyBhIGNoaWxkIG9mIHRo
-ZSBURUUgcmVtb3RlcHJvYyBzZXJ2aWNlDQo+Pj4+ICsgIChVVUlEIDgwYTRjMjc1LTBhNDctNDkw
-NS04Mjg1LTE0ODZhOTc3MWEwOCkgYW5kIGV4cG9zZXMgYSByZW1vdGVwcm9jDQo+Pj4+ICsgIGlu
-c3RhbmNlIG1hbmFnZWQgYnkgdGhlIExpbnV4IHJlbW90ZXByb2MgY29yZSB2aWEgdGhlIFRFRSBy
-cHJvYyBzZXJ2aWNlLg0KPj4+PiArDQo+Pj4+ICsgIEZpcm13YXJlIGxvYWRpbmcsIGF1dGhlbnRp
-Y2F0aW9uIGFuZCByZW1vdGUgcHJvY2Vzc29yIHN0YXJ0L3N0b3AgYXJlIG1hbmFnZWQNCj4+Pj4g
-KyAgYnkgdGhlIFRFRSBhcHBsaWNhdGlvbi4gVGhlIFNUTTMyLXNwZWNpZmljIGRyaXZlciBoYW5k
-bGVzIHBsYXRmb3JtIHJlc291cmNlcw0KPj4+PiArICBzdWNoIGFzIHRoZSBtYWlsYm94ZXMgYW5k
-IHJlc2VydmVkLW1lbW9yeS4NCj4+Pj4gKw0KPj4+PiArcHJvcGVydGllczoNCj4+Pj4gKyAgY29t
-cGF0aWJsZToNCj4+Pj4gKyAgICBjb25zdDogc3Qsc3RtMzJtcDEtbTQtdGVlDQo+Pj4NCj4+PiBE
-cm9wICJ0ZWUiLCBpdCBzdWdnZXN0cyB0aGF0IGNvbXBhdGlibGUgaXMgdGllZCB0byBpbXBsZW1l
-bnRhdGlvbiBvZiBGVw0KPj4+IHlvdSBwdXQgdGhlcmUuDQo+Pg0KPj4gVGhlICJzdCxzdG0zMm1w
-MS1tNCIgY29tcGF0aWJsZSBzdHJpbmcgYWxyZWFkeSBleGlzdHMgaW4NCj4gDQo+IFRoZW4gcHJv
-YmFibHkgdGhpcyBiaW5kaW5nIG5lZWRzIGNoYW5nZXMsIGJlY2F1c2UgaW4gZ2VuZXJhbCB5b3Ug
-c2hvdWxkDQo+IG5vdCBoYXZlIHR3byBjb21wYXRpYmxlcyBmb3IgdGhlIHNhbWUgaGFyZHdhcmUu
-IE1heWJlIHRoYXQncyBzcGVjaWFsDQo+IGNhc2UsIGJ1dCB0aGVuIG5lZWRzIGV4cGxhbmF0aW9u
-cyBpbiBjb21taXQgbXNnIHdoeSBpcyB0aGF0Lg0KPiANCj4+IGRyaXZlcnMvcmVtb3RlcHJvYy9z
-dG0zMl9ycHJvYy5jLCBhbmQgInN0LHN0bTMybXAxLW00LXRlZSIgY29tcGF0aWJsZSBpcw0KPj4g
-dXBzdHJlYW1lZCBpbiBPUC1URUUuDQo+IA0KPiBUaGF0IGlzIG5vdCBvdXIgcHJvYmxlbSBhbmQg
-c3Ryb25nIG5vLWdvLiBPdGhlciBwcm9qZWN0cyBhcmUgc3VwcG9zZWQgdG8NCj4gcGFydGljaXBh
-dGUgaW4gdXBzdHJlYW0gYmluZGluZ3MgcmV2aWV3IGFuZCB0YWtlIHRoZSBiaW5kaW5ncyBvbmNl
-IHRoZXkNCj4gYXJlIHJldmlld2VkIGFuZCBhY2NlcHRlZCBoZXJlLiBJZiB0aGV5IHRha2Ugd2l0
-aG91dCByZXZpZXcsIGl0J3MgdGhlaXINCj4gcHJvYmxlbS4NCj4gDQo+IEltYWdpbmUgdGhhdDog
-c29tZSB3aGF0ZXZlciBwcm9qZWN0IHRha2VzIHdoYXRldmVyIGNyYXAgKG5vdCBzYXlpbmcNCj4g
-T3B0ZWUgaXMgbGlrZSB0aGF0LCBqdXN0IGltYWdpbmUgZm9yIHNha2Ugb2YgZGlzY3Vzc2lvbikg
-YW5kIHRoZW4geW91DQo+IHNlbmQgYmluZGluZ3MgdG8gdXBzdHJlYW0gYW5kIGNsYWltICJ0aGF0
-IHByb2plY3QgdG9vayBpdCwgc28geW91IG11c3QNCj4gZG8gYXMgd2VsbCIuIEdyZWF0IGxvb3Bo
-b2xlIHRvIHNxdWVlemUgcG9vciBzdHVmZiB0byB0aGUga2VybmVsLCBzbyBhbnkNCj4gc3VjaCBh
-cmd1bWVudCBpcyBmb3IgbWUgYSB3YXJuaW5nIHNpZ24uDQo+IA0KPiANCj4+DQo+PiBOb3RpY2Ug
-dGhhdCBJIGhhdmUgYWxzbyB0aGUgc3RtMzJtcDIgU29DIHRvIHVwc3RyZWFtIGV4cGVjdGluZyB0
-byBoYXZlDQo+PiBzaW1pbGFyIGNvbXBhdGlibGU6DQo+PiAtIHN0LHN0bTMybXAxLW0zMw0KPj4g
-LSBzdCxzdG0zMm1wMi1tMzMtdGVlDQo+Pg0KPj4gRGVwZW5kaW5nIG9uIHRoZSBjb21wYXRpYmxl
-IHN0cmluZywgdGhlIGhhcmR3YXJlIGJlaGF2aW9yIGNoYW5nZXMuDQo+PiBXaXRoIHRoZSAieHh4
-eC10ZWUiIGNvbXBhdGlibGUsIE9QLVRFRSBhbHNvIG1hbmFnZXMgdGhlIGlzb2xhdGlvbiBvZg0K
-Pj4gcmVtb3RlIHByb2Nlc3NvciByZXNvdXJjZXMgKG1lbW9yeSwgY2xvY2sgcmVzZXQsIHBlcmlw
-aGVyYWxzKS4NCj4+IFdpdGhvdXQgdGhlICJ4eHh4LXRlZSIgY29tcGF0aWJsZSwgT1AtVEVFIGhh
-dmUgdG8gZW5zdXJlIHRoYXQgdGhlIExpbnV4DQo+PiBoYXMgdGhlIGdvb2QgYWNjZXNzIHJpZ2h0
-IHRvIG1hbmFnZSB0aGUgcmVtb3RlIHByb2Nlc3Nvci4NCj4gDQo+IFN0aWxsIHRoZSBzYW1lIGRl
-dmljZSwgbm8/DQo+IA0KPiBZb3UgY2FuIGhhdmUgYSBwcm9wZXJ0eSBkZWZpbmluZyBob3cgTGlu
-dXggc2hvdWxkIGFjY2VzcyBzdWNoIGRldmljZSwNCj4gZS5nLiBiZWNhdXNlIEZXIGRvZXMgdGhp
-cyBhbmQgdGhhdC4NCj4gDQo+Pg0KPj4gRm9yIGluc3RhbmNlIGlmIHN0LHN0bTMybXAxLW00LXRl
-ZSBpcyBzZXQgaW5zdGVhZCBvZiBzdCxzdG0zMm1wMS1tNCwgb24NCj4+IGxpbnV4IHNpZGUNCj4+
-IC0gb25seSBtZW1vcnkgcmVnaW9ucyB1c2VkIGZvciBJUEMgc2hvdWxkIGJlIGRlY2xhcmVkDQo+
-PiAtIG1lbW9yeSByZWdpb25zIGNvbnRhaW5pbmcgdGhlIHJlbW90ZSBmaXJtd2FyZSBtdXN0IG5v
-dCBiZSBkZWNsYXJlZCBhcw0KPj4gbm90IGFjY2Vzc2libGUgYnkgdGhlIExpbnV4ICggbWFuYWdl
-ZCBieSBPUC1URUUpLg0KPj4gLSByZXNldHMgbXVzdCBub3QgYmUgZGVjbGFyZWQgKCBtYW5hZ2Vk
-IGJ5IE9QLVRFRSkNCj4+DQo+PiBZb3UgcHJvYmFibHkgZG9uJ3QgcmVtZW1iZXIsIGFzIGl0IHdh
-cyBhIGxvbmcgdGltZSBhZ28sIGJ1dCB3ZSBhbHJlYWR5DQo+PiBkaXNjdXNzZWQgdGhpcyBwb2lu
-dCB3aXRoIFJvYlsxXS4NCj4+IFsxXSBodHRwczovL2xrbWwub3JnL2xrbWwvMjAyNC8xLzE4LzEw
-MA0KPj4NCj4+IERvIGl0IHN0aWxsIHJlYXNvbmFibGUgdG8geW91IGFuZCBSb2Igb3Igc2hvdWxk
-IHdlIGZpbmQgYW4gYWx0ZXJuYXRpdmU/DQo+IA0KPiBHZXQgYWNrIGZyb20gUm9iIHRoZW4uDQoN
-CkEgcHJldmlvdXMgYWNrbm93bGVkZ21lbnQgZnJvbSBSb2Igd2FzIGdpdmVuIGhlcmU6IA0KaHR0
-cHM6Ly9sa21sLm9yZy9sa21sLzIwMjQvMi8yMi8xMjY0Lg0KDQpXaGF0IGZydXN0cmF0ZXMgbWUg
-aXMgdGhhdCwgaWYgdGhlIGNvbXBhdGlibGUgdXNhZ2UgaXMgbm8gbG9uZ2VyIA0KYWNjZXB0ZWQs
-IEkgaGF2ZSBsb3N0IHRpbWUgYmFzaW5nIGFsbCBteSBvdGhlciB2ZXJzaW9ucyBvbiB0aGlzIA0K
-YXNzdW1wdGlvbi4gQnV0IHRoYXTigJlzIHBhcnQgb2YgdGhlIGdhbWUsIGFuZCB0aGlzIHNlcmll
-cyBpcyBhbHJlYWR5IGEgDQpjb25jYXRlbmF0aW9uIG9mIHJlZGVzaWducyByZXN1bHRpbmcgaW4g
-dmVyc2lvbiBWMjEuDQoNCk15IGV4cGVjdGF0aW9uIGlzIHNpbXBseSB0aGF0IHlvdSBhbmQgUm9i
-IHByb3ZpZGUgbWUgd2l0aCBhIGNsZWFyIA0KZGlyZWN0aW9uIHRvIG1vdmUgZm9yd2FyZC4NCg0K
-VGhlIGNvbXBhdGlibGUgc3RyaW5nIGlzIG9uZSB0b3BpYzsgSSBhbHNvIG5lZWQgYW4gYWNrbm93
-bGVkZ21lbnQgb3IgDQpyZWplY3Rpb24gb2YgdGhlIGNvbmNlcHQgb2YgdXNpbmcgYSBwaGFuZGxl
-IHRvIGxpbmsgdGhlIHJlbW90ZXByb2MgDQpkcml2ZXIgd2l0aCB0aGUgVEVFIHNlcnZpY2UuDQoN
-ClRoYW5rcyBhbmQgcmVnYXJkcywNCkFybmF1ZA0KDQo+IA0KPiANCj4gQmVzdCByZWdhcmRzLA0K
-PiBLcnp5c3p0b2YNCg0K
+Fix kernel-doc issues in optee_private.h and optee_msg.h:
+
+- Add missing documentation for struct members: optee_msg_param_value,
+  optee_msg_param, optee_msg_arg, optee, and optee_ffa;
+- Ensure member descriptions follow the order of declaration;
+- Use consistent formatting (lowercase descriptions and ':' after
+  member names);
+- Adjust indentation for better alignment;
+
+This resolves kernel-doc warnings such as missing member descriptions
+and incorrect prototype documentation.
+No functional changes.
+
+Signed-off-by: Rodrigo Zaiden <rodrigoffzz@gmail.com>
+---
+ drivers/tee/optee/optee_msg.h     |  50 +++++++------
+ drivers/tee/optee/optee_private.h | 120 ++++++++++++++++--------------
+ 2 files changed, 92 insertions(+), 78 deletions(-)
+
+diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
+index 838e1d4a22f0..7d9b12e71c03 100644
+--- a/drivers/tee/optee/optee_msg.h
++++ b/drivers/tee/optee/optee_msg.h
+@@ -103,9 +103,9 @@
+ 
+ /**
+  * struct optee_msg_param_tmem - temporary memory reference parameter
+- * @buf_ptr:	Address of the buffer
+- * @size:	Size of the buffer
+- * @shm_ref:	Temporary shared memory reference, pointer to a struct tee_shm
++ * @buf_ptr:	address of the buffer
++ * @size:	size of the buffer
++ * @shm_ref:	temporary shared memory reference, pointer to a struct tee_shm
+  *
+  * Secure and normal world communicates pointers as physical address
+  * instead of the virtual address. This is because secure and normal world
+@@ -122,9 +122,9 @@ struct optee_msg_param_tmem {
+ 
+ /**
+  * struct optee_msg_param_rmem - registered memory reference parameter
+- * @offs:	Offset into shared memory reference
+- * @size:	Size of the buffer
+- * @shm_ref:	Shared memory reference, pointer to a struct tee_shm
++ * @offs:	offset into shared memory reference
++ * @size:	size of the buffer
++ * @shm_ref:	shared memory reference, pointer to a struct tee_shm
+  */
+ struct optee_msg_param_rmem {
+ 	u64 offs;
+@@ -134,12 +134,12 @@ struct optee_msg_param_rmem {
+ 
+ /**
+  * struct optee_msg_param_fmem - FF-A memory reference parameter
+- * @offs_lower:	   Lower bits of offset into shared memory reference
+- * @offs_upper:	   Upper bits of offset into shared memory reference
+- * @internal_offs: Internal offset into the first page of shared memory
+- *		   reference
+- * @size:	   Size of the buffer
+- * @global_id:	   Global identifier of the shared memory
++ * @offs_low:		lower bits of offset into shared memory reference
++ * @offs_high:		higher bits of offset into shared memory reference
++ * @internal_offs:	internal offset into the first page of shared memory
++ *			reference
++ * @size:		size of the buffer
++ * @global_id:		global identifier of the shared memory
+  */
+ struct optee_msg_param_fmem {
+ 	u32 offs_low;
+@@ -151,6 +151,9 @@ struct optee_msg_param_fmem {
+ 
+ /**
+  * struct optee_msg_param_value - opaque value parameter
++ * @a: first opaque value
++ * @b: second opaque value
++ * @c: third opaque value
+  *
+  * Value parameters are passed unchecked between normal and secure world.
+  */
+@@ -168,6 +171,7 @@ struct optee_msg_param_value {
+  * @fmem:	parameter by FF-A registered memory reference
+  * @value:	parameter by opaque value
+  * @octets:	parameter by octet string
++ * @u:		union holding OP-TEE msg parameter
+  *
+  * @attr & OPTEE_MSG_ATTR_TYPE_MASK indicates if tmem, rmem or value is used in
+  * the union. OPTEE_MSG_ATTR_TYPE_VALUE_* indicates value or octets,
+@@ -189,16 +193,18 @@ struct optee_msg_param {
+ 
+ /**
+  * struct optee_msg_arg - call argument
+- * @cmd: Command, one of OPTEE_MSG_CMD_* or OPTEE_MSG_RPC_CMD_*
+- * @func: Trusted Application function, specific to the Trusted Application,
+- *	     used if cmd == OPTEE_MSG_CMD_INVOKE_COMMAND
+- * @session: In parameter for all OPTEE_MSG_CMD_* except
+- *	     OPTEE_MSG_CMD_OPEN_SESSION where it's an output parameter instead
+- * @cancel_id: Cancellation id, a unique value to identify this request
+- * @ret: return value
+- * @ret_origin: origin of the return value
+- * @num_params: number of parameters supplied to the OS Command
+- * @params: the parameters supplied to the OS Command
++ * @cmd:	command, one of OPTEE_MSG_CMD_* or OPTEE_MSG_RPC_CMD_*
++ * @func:	Trusted Application function, specific to the Trusted
++ *		Application, used if cmd == OPTEE_MSG_CMD_INVOKE_COMMAND
++ * @session:	in parameter for all OPTEE_MSG_CMD_* except
++ *		OPTEE_MSG_CMD_OPEN_SESSION where it's an output parameter
++ *		instead
++ * @cancel_id:	cancellation id, a unique value to identify this request
++ * @pad:	padding for alignment
++ * @ret:	return value
++ * @ret_origin:	origin of the return value
++ * @num_params:	number of parameters supplied to the OS Command
++ * @params:	the parameters supplied to the OS Command
+  *
+  * All normal calls to Trusted OS uses this struct. If cmd requires further
+  * information than what these fields hold it can be passed as a parameter
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
+index acd3051c4879..aefe1e6f5689 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -47,11 +47,11 @@ typedef void (optee_invoke_fn)(unsigned long, unsigned long, unsigned long,
+ 				unsigned long, unsigned long,
+ 				struct arm_smccc_res *);
+ 
+-/*
++/**
+  * struct optee_call_waiter - TEE entry may need to wait for a free TEE thread
+- * @list_node		Reference in waiters list
+- * @c			Waiting completion reference
+- * @sys_thread		True if waiter belongs to a system thread
++ * @list_node:	reference in waiters list
++ * @c:		waiting completion reference
++ * @sys_thread:	true if waiter belongs to a system thread
+  */
+ struct optee_call_waiter {
+ 	struct list_head list_node;
+@@ -59,13 +59,13 @@ struct optee_call_waiter {
+ 	bool sys_thread;
+ };
+ 
+-/*
++/**
+  * struct optee_call_queue - OP-TEE call queue management
+- * @mutex			Serializes access to this struct
+- * @waiters			List of threads waiting to enter OP-TEE
+- * @total_thread_count		Overall number of thread context in OP-TEE or 0
+- * @free_thread_count		Number of threads context free in OP-TEE
+- * @sys_thread_req_count	Number of registered system thread sessions
++ * @mutex:			serializes access to this struct
++ * @waiters:			list of threads waiting to enter OP-TEE
++ * @total_thread_count:		overall number of thread context in OP-TEE or 0
++ * @free_thread_count:		number of threads context free in OP-TEE
++ * @sys_thread_req_count:	number of registered system thread sessions
+  */
+ struct optee_call_queue {
+ 	/* Serializes access to this struct */
+@@ -96,17 +96,17 @@ struct optee_shm_arg_cache {
+ 
+ /**
+  * struct optee_supp - supplicant synchronization struct
+- * @ctx			the context of current connected supplicant.
+- *			if !NULL the supplicant device is available for use,
+- *			else busy
+- * @mutex:		held while accessing content of this struct
+- * @req_id:		current request id if supplicant is doing synchronous
+- *			communication, else -1
+- * @reqs:		queued request not yet retrieved by supplicant
+- * @idr:		IDR holding all requests currently being processed
+- *			by supplicant
+- * @reqs_c:		completion used by supplicant when waiting for a
+- *			request to be queued.
++ * @mutex:	held while accessing content of this struct
++ * @ctx:	the context of current connected supplicant.
++ *		if !NULL the supplicant device is available for use,
++ *		else busy
++ * @req_id:	current request id if supplicant is doing synchronous
++ *		communication, else -1
++ * @reqs:	queued request not yet retrieved by supplicant
++ * @idr:	IDR holding all requests currently being processed
++ *		by supplicant
++ * @reqs_c:	completion used by supplicant when waiting for a
++ *		request to be queued.
+  */
+ struct optee_supp {
+ 	/* Serializes access to this struct */
+@@ -119,25 +119,25 @@ struct optee_supp {
+ 	struct completion reqs_c;
+ };
+ 
+-/*
++/**
+  * struct optee_pcpu - per cpu notif private struct passed to work functions
+- * @optee		optee device reference
++ * @optee:	optee device reference
+  */
+ struct optee_pcpu {
+ 	struct optee *optee;
+ };
+ 
+-/*
++/**
+  * struct optee_smc - optee smc communication struct
+- * @invoke_fn		handler function to invoke secure monitor
+- * @memremaped_shm	virtual address of memory in shared memory pool
++ * @invoke_fn:		handler function to invoke secure monitor
++ * @memremaped_shm:	virtual address of memory in shared memory pool
+  * @sec_caps:		secure world capabilities defined by
+  *			OPTEE_SMC_SEC_CAP_* in optee_smc.h
+- * @notif_irq		interrupt used as async notification by OP-TEE or 0
+- * @optee_pcpu		per_cpu optee instance for per cpu work or NULL
+- * @notif_pcpu_wq	workqueue for per cpu asynchronous notification or NULL
+- * @notif_pcpu_work	work for per cpu asynchronous notification
+- * @notif_cpuhp_state   CPU hotplug state assigned for pcpu interrupt management
++ * @notif_irq:		interrupt used as async notification by OP-TEE or 0
++ * @optee_pcpu:		per_cpu optee instance for per cpu work or NULL
++ * @notif_pcpu_wq:	workqueue for per cpu asynchronous notification or NULL
++ * @notif_pcpu_work:	work for per cpu asynchronous notification
++ * @notif_cpuhp_state:	CPU hotplug state assigned for pcpu interrupt management
+  */
+ struct optee_smc {
+ 	optee_invoke_fn *invoke_fn;
+@@ -151,13 +151,15 @@ struct optee_smc {
+ };
+ 
+ /**
+- * struct optee_ffa_data -  FFA communication struct
+- * @ffa_dev		FFA device, contains the destination id, the id of
++ * struct optee_ffa -  FFA communication struct
++ * @ffa_dev:		FFA device, contains the destination id, the id of
+  *			OP-TEE in secure world
+- * @bottom_half_value	Notification ID used for bottom half signalling or
++ * @bottom_half_value:	notification ID used for bottom half signalling or
+  *			U32_MAX if unused
+- * @mutex		Serializes access to @global_ids
+- * @global_ids		FF-A shared memory global handle translation
++ * @mutex:		serializes access to @global_ids
++ * @global_ids:		FF-A shared memory global handle translation
++ * @notif_wq:		workqueue for FF-A asynchronous notification
++ * @notif_work:		work for FF-A asynchronous notification
+  */
+ struct optee_ffa {
+ 	struct ffa_device *ffa_dev;
+@@ -222,26 +224,32 @@ struct optee_ops {
+ 
+ /**
+  * struct optee - main service struct
+- * @supp_teedev:	supplicant device
+- * @teedev:		client device
+- * @ops:		internal callbacks for different ways to reach secure
+- *			world
+- * @ctx:		driver internal TEE context
+- * @smc:		specific to SMC ABI
+- * @ffa:		specific to FF-A ABI
+- * @call_queue:		queue of threads waiting to call @invoke_fn
+- * @notif:		notification synchronization struct
+- * @supp:		supplicant synchronization struct for RPC to supplicant
+- * @pool:		shared memory pool
+- * @mutex:		mutex protecting @rpmb_dev
+- * @rpmb_dev:		current RPMB device or NULL
+- * @rpmb_scan_bus_done	flag if device registation of RPMB dependent devices
+- *			was already done
+- * @rpmb_scan_bus_work	workq to for an RPMB device and to scan optee bus
+- *			and register RPMB dependent optee drivers
+- * @rpc_param_count:	If > 0 number of RPC parameters to make room for
+- * @scan_bus_done	flag if device registation was already done.
+- * @scan_bus_work	workq to scan optee bus and register optee drivers
++ * @supp_teedev:		supplicant device
++ * @teedev:			client device
++ * @ops:			internal callbacks for different ways to reach
++ *				secure world
++ * @ctx:			driver internal TEE context
++ * @smc:			specific to SMC ABI
++ * @ffa:			specific to FF-A ABI
++ * @shm_arg_cache:		shared memory cache argument
++ * @call_queue:			queue of threads waiting to call @invoke_fn
++ * @notif:			notification synchronization struct
++ * @supp:			supplicant synchronization struct for RPC to
++ *				supplicant
++ * @pool:			shared memory pool
++ * @rpmb_dev_mutex:		mutex protecting @rpmb_dev
++ * @rpmb_dev:			current RPMB device or NULL
++ * @rpmb_intf:			RPMB notifier block
++ * @rpc_param_count:		if > 0 number of RPC parameters to make room for
++ * @scan_bus_done:		flag if device registation was already done
++ * @rpmb_scan_bus_done:		flag if device registation of RPMB dependent
++ *				devices was already done
++ * @in_kernel_rpmb_routing:	flag if OP-TEE supports in-kernel RPMB routing
++ * @scan_bus_work:		workq to scan optee bus and register optee
++ *				drivers
++ * @rpmb_scan_bus_work:		workq to for an RPMB device and to scan optee
++ *				bus and register RPMB dependent optee drivers
++ * @revision:			OP-TEE OS revision
+  */
+ struct optee {
+ 	struct tee_device *supp_teedev;
+-- 
+2.43.0
+
