@@ -4,140 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 850B7EC01B4
-	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 10:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F4BEC01D4
+	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 12:11:42 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id B8BF64320B
-	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 10:22:28 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7256443DFA
+	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 12:11:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1774267901;
+	bh=+V7bc4/5lTZPzVaQcdFvZeZCEi9TT7wqSQRDVxe3JGk=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=RAf9nGI1PKe19M7PE3GOtmeCjltA4KkIbvaRl4iUnzDNPvaUE+jvlwJ6RWRdXZ65A
+	 hWLGlGjDJVDqsUalQwakVNsOagEPwhqkp7d9jnD6FLQJoT7RziyxO1MVWTYwcxiDsn
+	 ygAwZMpqNoEfAa0zi8YFnU+AQBl9ZQnOxWwnye5/Iu64O4mqhzfSEtXPfvF2pW3etE
+	 VfWV3PcZPlbMPmFrZtwL5afopeWYnM6rn10DV4LLSFF/JWZkdlZfyo1dVIAZKpSQe+
+	 0WlNlovzFP4aeOCXK6aM7XBX9otrpE1JEOJTAyvTK3X6zMCe8+29bdN8gcKcsca1MW
+	 Q3zGk34BE5dxA==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id CCB8143970
+	for <op-tee@lists.trustedfirmware.org>; Mon, 23 Mar 2026 12:11:21 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=VwbN2RjF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tu0ZumBt;
 	dkim-atps=neutral
-Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id E75BB4320B
-	for <op-tee@lists.trustedfirmware.org>; Mon, 23 Mar 2026 10:22:07 +0000 (UTC)
-Received: by mail-ot1-f54.google.com with SMTP id 46e09a7af769-7d556c1a79eso4159007a34.3
-        for <op-tee@lists.trustedfirmware.org>; Mon, 23 Mar 2026 03:22:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774261326; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Jvjdz2RznURmtQmYuoQ5vXQYm5B6acmkW0wI5n/AKmn1lmzqvN5D0WNGjiiOBTJ5Q7
-         Ie2C3KUQ5klVGk1ROq7cuNBiqCfhHkN3dN3rljO2afdg9+5gc/nTdZMBnt8vOQR0c8j0
-         gHg3eQYqgDmCuhXInjZhe1FcRwT1It0nD2X6ba+MtpKpC9UUfGawTz9Cj3NI6TfvfQN+
-         uSthUcDd3a3PYsTrZJjAmROQQV4jnS/fD7HSnzM6F9d3zYHI7MKu8dPVD5dv9GVA+IjW
-         WRz69V60FgAkvgfKjUY4tJfZCRqmvAo0lE4wLuvbHFMoojhCQzgzmZk3radliW9Ynn2v
-         Obow==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=xm/9j2HLYBH5cI8dXfs4qm232p6toLiuXuEGWX/yc88=;
-        fh=h3kY0GXiFaI5Go/7H8n5Dp/iY05qzVPPzJdGA/Bb43A=;
-        b=kLU0rYCHMTCaJixI0KAXkN9NOk31dPCXU8+By5c7rWqVagi/ngsNES9kfkjwRShWJb
-         ZDaz2aQ0R3IWBlieGjoWxBaHoZXvqBBS4xbolATgT/pDdmq2ljqrvWfxx3lPHAt5kD4N
-         CTBZFA988kEt37IUq6qkGjaAQRRH5GF0mRucZ64w8WJ95rHeaYcPTO0LZpgqXzBoh/pv
-         XEmiXBV9jtePdEL4X1T6GBNXTEo5w9G5kBt9hCWAxFZZAUihOLDJ/PO6B1VrFSzNEffL
-         qzWA+dFCjqIYQCLX0evMPs40OUSyi8FM6NlZKnPRaVbPF6i33wDzXRVg3q2RwW0fpVVZ
-         f6jw==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774261326; x=1774866126; darn=lists.trustedfirmware.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=xm/9j2HLYBH5cI8dXfs4qm232p6toLiuXuEGWX/yc88=;
-        b=VwbN2RjFTHzs3RH/4RC+4yym0ew2fVJpnML6t0ZOE59XOfzE1TONpE8kAbSFHBtu5a
-         S+TgkLBz+J/wcN40RBAXJj0KH6IUrhFX+XMd8+isqoVs3eD6oc/T2zceVFlPJenOuUTv
-         u1/LT+RP0xxU02Dvz1jyTMz99yJ2LC3FZIvZomIaEmRzs0aj/Q3Lcs41TnA+nho8AiYa
-         ZW0qVA+ONzM/RBh46b/Fj6khxagOzhrtsqOzq1QN7ENjXMs4VaeML6TQ4devCwmyjGnP
-         enDcr2M2i6dRmjjTB4vqx+Q7gZig+qqVPnBqz/u4anfOWIgekfH5LIEz2lhNZKfulLfR
-         kCpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774261326; x=1774866126;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xm/9j2HLYBH5cI8dXfs4qm232p6toLiuXuEGWX/yc88=;
-        b=KbJKz1D98nj0puUVP9BsD22PF0Gvc5b3hiyHcpXHWWSSu+npF80maMYSgoDvPqlcP2
-         ICwQBb7L+WmXzBonWxO2JctMWvyHFM8hfKCgvWs5sm9EHBjOw4gp04VPOsGG25w5NGGf
-         e+NaM1Raj+v2xawzyEUgFv5wPCW5FRRED+CrfYVPl+DdQHMfhpHvnWGWKzQmcrdlVwl9
-         UOMMde33ceZz+X6wcdX2e7WLgJZyMLvaJkCBjVQ0wk0BHIjiRrAI3m+NcwIdUuCNIn8g
-         zAWO+/lcyGJ/xJxt8NOzPEbaxIiWoGmlAwMRYiKBzmXKl67pqQ5iBH1UmjZxFPHDY5Tv
-         jF0w==
-X-Gm-Message-State: AOJu0Yw3d+DNAo9ZBI2PkIFdL4keubZYcGSHnjJtLKp+K2qQdI1+03FZ
-	d3jy8/0kcFhlgOnPZiiDo+IiSxv0KIyiG1Zt3dkT9pUCwKciMysDDcidR1hV58gU++G1EFcZ4wX
-	Rlns0fernpFpdleby/VRSLoNgoRc4+gahCHLauhHue+gpqBbB2hRIQKbIxg==
-X-Gm-Gg: ATEYQzyalpxSGDd2H073zQCuAYK7i7P8Oju1Ym8eZNC0SV9EDUI5/yy8qowrwnOYAxo
-	bMj1p44grmOSTjUVOE1J9cKQ0wR6vL4XX7hYG0d+bTQDdyXVfcSC7KP+ijui564e0Tz4J/ncdbB
-	7Jwk4KSRv7pR8bxbrORzYBJyX0Hn4krjm7tcC5SNQbeoGHjzrkndzj0HFvZAxuEZXgP2Zfab0aj
-	K53KC1GwOdmxNpRBpWqcNXdGkJXHdB3qbNGM7xqvWSFZoHyr7jiFC7iTTJzYHSCWq4wi07LOglL
-	pQ8xlBgLdYlvALp7dINVMigRU0nrRm7SkZZH+w==
-X-Received: by 2002:a05:6820:628:b0:67c:2d5e:e9d6 with SMTP id
- 006d021491bc7-67c2d5eee68mr6812561eaf.34.1774261326279; Mon, 23 Mar 2026
- 03:22:06 -0700 (PDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2ADF54241E;
+	Mon, 23 Mar 2026 12:11:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE955C4CEF7;
+	Mon, 23 Mar 2026 12:11:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774267881;
+	bh=+V7bc4/5lTZPzVaQcdFvZeZCEi9TT7wqSQRDVxe3JGk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=tu0ZumBt3+UHF00v+LQcOpaXuKDg8ix9xwyiQhv9gr5cTX3PUTKm3C9iIV3ETlP3R
+	 AFrn1TQ5K517Kb73svj5AurL/EXTgh/v7P0dc4oJweP9h2bb/MEOLCOItAJXDCqMul
+	 Kwl1ZBt/Hgt0LBPvzilbHk8FwgLnQbtgZG2RT/eCb8noUhoKZLZP4HmjljKc/+vscZ
+	 aTpH0gbbFf919Rz/EsWhIJ+qi8V8MZ8iXAImA7EgiiPhWvrCGzSP/HcH6e5jzffcuj
+	 dn1oDOgPpuPk5l2UBe6UvbXvx4yrJLQoVN0zP9g5LCjHNtvPm3KHJcRFz7kRQ0C/ZQ
+	 SMQi1a36h5XAA==
+Date: Mon, 23 Mar 2026 17:41:14 +0530
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [GIT PULL] TEE shared memory fix for 7.0
+Message-ID: <acEt4roJbZJoRCJC@sumit-xelite>
+References: <20260316074150.GA2474723@rayden>
+ <20260317-illustrious-finicky-frog-90a86c@quoll>
+ <CAHUa44HXjrPbPv0sBxzrW6o1iQVWdp2p-1-jroukZ8dxSvPmMg@mail.gmail.com>
+ <dfidrflp5p637dqnn2e6sqr6gbp47gimjlkechjjtlbr7re2e4@kgwofxcumhes>
+ <c3f1a10d-8437-4d17-8dfc-286935ba9e51@app.fastmail.com>
 MIME-Version: 1.0
-From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 23 Mar 2026 11:21:55 +0100
-X-Gm-Features: AaiRm53pzWsZu85eyk4gZ2H4dvGVaKgiidshTW6liUUdG_AGFGVSmHiF8Pq5a-8
-Message-ID: <CAHUa44EePioQ-Um0-PQqN6cpEE_adGOG0FLSZB9QJA==+N92rQ@mail.gmail.com>
-Subject: OP-TEE Contributions Forum, monthly meeting March 24
-To: OP-TEE TrustedFirmware <op-tee@lists.trustedfirmware.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c3f1a10d-8437-4d17-8dfc-286935ba9e51@app.fastmail.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.09 / 15.00];
-	BAYES_HAM(-2.99)[99.96%];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+X-Spamd-Result: default: False [-4.50 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.54:from];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
+	ARC_NA(0.00)[];
 	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	NEURAL_HAM(-0.00)[-1.000];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	RCPT_COUNT_SEVEN(0.00)[9];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3];
+	NEURAL_HAM(-0.00)[-1.000];
+	FROM_EQ_ENVFROM(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[209.85.210.54:from];
-	DKIM_TRACE(0.00)[linaro.org:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: E75BB4320B
-X-Spamd-Bar: -----
-Message-ID-Hash: JMV6TF6TFKNCOOW2P4XFAJZDJV3YEQDG
-X-Message-ID-Hash: JMV6TF6TFKNCOOW2P4XFAJZDJV3YEQDG
-X-MailFrom: jens.wiklander@linaro.org
+X-Rspamd-Queue-Id: CCB8143970
+X-Spamd-Bar: ----
+Message-ID-Hash: AQWCAYSLILFWALJVWEXSA6QZBCUCCEDV
+X-Message-ID-Hash: AQWCAYSLILFWALJVWEXSA6QZBCUCCEDV
+X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linaro-open-discussions@op-lists.linaro.org, Marco Felsch <m.felsch@pengutronix.de>
+CC: Marco Felsch <m.felsch@pengutronix.de>, Krzysztof Kozlowski <krzk@kernel.org>, Matthew Wilcox <willy@infradead.org>, arm <arm@kernel.org>, soc@kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JMV6TF6TFKNCOOW2P4XFAJZDJV3YEQDG/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AQWCAYSLILFWALJVWEXSA6QZBCUCCEDV/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-Hi,
+On Wed, Mar 18, 2026 at 01:39:41PM +0100, Arnd Bergmann wrote:
+> On Tue, Mar 17, 2026, at 13:53, Marco Felsch wrote:
+> > On 26-03-17, Jens Wiklander wrote:
+> >> 
+> >> I'm under the impression that it is a fix rather than an improvement.
+> >> However, since it has been stewing for a while, it's clearly not
+> >> urgent. I don't have anything specific on the bug fix, other than that
+> >> we're supposed to stop taking those refcounts. Perhaps Sumit, Marco,
+> >> or Matthew can add something?
+> >
+> > It's a long outstanding fix regarding memory page management. The
+> > userspace gets informed about this memory API misuse via a warning print
+> > incl. a backtrace. This gets triggered only if userspace uses OP-TEE
+> > trusted-keys or the OP-TEE EFI variables. Therefore I would like to get
+> > it into 7.0 but 7.1 fine too.
+> 
+> Yes, that is clearly a bugfix. I think we'd also want this to be
+> marked 'Cc: stable@vger.kernel.org' as it should also apply
+> to 6.18-LTS and 6.19. Greg tends to also pick up bugfixes that
+> don't have this, but it's generally better to be explicit here,
+> especially when it's not obvious what the impact of the fix is.
+> 
+> I've merge the pull request now. If you think this should be
+> in 6.18-lts and Greg doesn't pick it up by himself, maybe
+> let him know about it.
 
-Tomorrow, Tuesday, it's time for another LOC monthly meeting. For time
-and connection details, see the calendar at
-https://www.trustedfirmware.org/meetings/
+Thanks Arnd for picking up this fix. Last week I was on business travel
+hence the delay in my response. I see Sasha already picked it up for
+backports.
 
-- OP-TEE version 4.10.0 to be released April 17
-- Marco Felsch is working on initial Kconfig support:
-https://github.com/OP-TEE/optee_os/pull/7714
-  + How to configure? Vanilla "make defconfig" and friends? Should we
-support passing "CFG_XXX=y" on the command line for convenience? In a
-one-step or two-step operation?
-  + Integration with the build git: Do we need a way to ensure the
-active configuration matches what the build git expects?
-  + Is it possible to make a seamless transition (with no visible
-external changes) when building OP-TEE? If so, do we want it?
-
-Any other topics?
-
-Cheers,
-Jens
+-Sumit
