@@ -4,92 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F4BEC01D4
-	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 12:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A988F4610B
+	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 13:13:32 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7256443DFA
-	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 12:11:41 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id C759143B5C
+	for <op-tee@archiver.kernel.org>; Mon, 23 Mar 2026 13:13:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1774267901;
-	bh=+V7bc4/5lTZPzVaQcdFvZeZCEi9TT7wqSQRDVxe3JGk=;
+	d=lists.trustedfirmware.org; s=2024; t=1774271611;
+	bh=74qU1/t986C2nAZ4bavaRViUUE+Cf6yDDXac2agl2dM=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=RAf9nGI1PKe19M7PE3GOtmeCjltA4KkIbvaRl4iUnzDNPvaUE+jvlwJ6RWRdXZ65A
-	 hWLGlGjDJVDqsUalQwakVNsOagEPwhqkp7d9jnD6FLQJoT7RziyxO1MVWTYwcxiDsn
-	 ygAwZMpqNoEfAa0zi8YFnU+AQBl9ZQnOxWwnye5/Iu64O4mqhzfSEtXPfvF2pW3etE
-	 VfWV3PcZPlbMPmFrZtwL5afopeWYnM6rn10DV4LLSFF/JWZkdlZfyo1dVIAZKpSQe+
-	 0WlNlovzFP4aeOCXK6aM7XBX9otrpE1JEOJTAyvTK3X6zMCe8+29bdN8gcKcsca1MW
-	 Q3zGk34BE5dxA==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CCB8143970
-	for <op-tee@lists.trustedfirmware.org>; Mon, 23 Mar 2026 12:11:21 +0000 (UTC)
+	b=VjxSLUj7eh7hP7XcMSoLjzcdsa3Kb/PSlg0KSXdg5O9uo2/g7YT0F1SJE8qPfOk9s
+	 F4jI/OHZ6oSDCho+awrHieurJ/2/gUCd6FDmLP2O/FrXI/PxLx5dbKgLwjdGekbAv0
+	 y+JB71fflTvj7uJolU3y6y9p6G7YT2Zq5U3ruRzpnVg6Y8ICZMxIaIfBvZGhu5BnBT
+	 aIYpmPTujd0vlK/MJZ9YKy9ZYSNd3lwDv2pqX9VyVbot9jvn5QFOaEC1b9zkx8cHAs
+	 KjShH+U074JBqlrapReNutHTqpIyMRzGi61lKGb+E1k5D1/skPcl1pDQaq/qO0xR63
+	 XzHZCBvl8WQhw==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 16D2D43AD7
+	for <op-tee@lists.trustedfirmware.org>; Mon, 23 Mar 2026 13:13:12 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tu0ZumBt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lRYjEckq;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2ADF54241E;
-	Mon, 23 Mar 2026 12:11:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE955C4CEF7;
-	Mon, 23 Mar 2026 12:11:17 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6909E600CB;
+	Mon, 23 Mar 2026 13:13:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE057C4CEF7;
+	Mon, 23 Mar 2026 13:12:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774267881;
-	bh=+V7bc4/5lTZPzVaQcdFvZeZCEi9TT7wqSQRDVxe3JGk=;
+	s=k20201202; t=1774271591;
+	bh=74qU1/t986C2nAZ4bavaRViUUE+Cf6yDDXac2agl2dM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=tu0ZumBt3+UHF00v+LQcOpaXuKDg8ix9xwyiQhv9gr5cTX3PUTKm3C9iIV3ETlP3R
-	 AFrn1TQ5K517Kb73svj5AurL/EXTgh/v7P0dc4oJweP9h2bb/MEOLCOItAJXDCqMul
-	 Kwl1ZBt/Hgt0LBPvzilbHk8FwgLnQbtgZG2RT/eCb8noUhoKZLZP4HmjljKc/+vscZ
-	 aTpH0gbbFf919Rz/EsWhIJ+qi8V8MZ8iXAImA7EgiiPhWvrCGzSP/HcH6e5jzffcuj
-	 dn1oDOgPpuPk5l2UBe6UvbXvx4yrJLQoVN0zP9g5LCjHNtvPm3KHJcRFz7kRQ0C/ZQ
-	 SMQi1a36h5XAA==
-Date: Mon, 23 Mar 2026 17:41:14 +0530
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [GIT PULL] TEE shared memory fix for 7.0
-Message-ID: <acEt4roJbZJoRCJC@sumit-xelite>
-References: <20260316074150.GA2474723@rayden>
- <20260317-illustrious-finicky-frog-90a86c@quoll>
- <CAHUa44HXjrPbPv0sBxzrW6o1iQVWdp2p-1-jroukZ8dxSvPmMg@mail.gmail.com>
- <dfidrflp5p637dqnn2e6sqr6gbp47gimjlkechjjtlbr7re2e4@kgwofxcumhes>
- <c3f1a10d-8437-4d17-8dfc-286935ba9e51@app.fastmail.com>
+	b=lRYjEckqteg2OKaK6EkU3qHTed8L/Kuu8nYTDY12LVL7ijOi7qNUOsPD5UHqT54Vd
+	 tsznwZRHnAKrJhII5FqZ+AisA4ZWNApAx0Pk/9fTsh3zXc1WzfKrWVr/UCllmug7sg
+	 z1bdfdxrvM3rhSxNSQFvwtn2noOGHPItPmrj39sTCgHzr/TqSgg+KOov8ZOGK2Czhe
+	 GSelAor5vaAF5iKbd8nV8/Z7LVpo2CLj5uSDSK01vsXJNevwfD5YvOmqIgqwR/0256
+	 DxasYH1b85jyJCFi/cnmD4aK9ryRrVm3XpBckheqMJw6h+O2c17MKqqdPZ3cRw+ufV
+	 vUq6ZCOK/41uw==
+Date: Mon, 23 Mar 2026 18:42:52 +0530
+To: Harshal Dev <harshal.dev@oss.qualcomm.com>
+Subject: Re: [PATCH v2 02/15] firmware: qcom: Add a generic PAS service
+Message-ID: <acE8VF9c3BDNkazL@sumit-xelite>
+References: <20260312062756.694390-1-sumit.garg@kernel.org>
+ <20260312062756.694390-3-sumit.garg@kernel.org>
+ <124f5a78-a3be-4906-bea0-a82bb74b2f96@oss.qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c3f1a10d-8437-4d17-8dfc-286935ba9e51@app.fastmail.com>
+In-Reply-To: <124f5a78-a3be-4906-bea0-a82bb74b2f96@oss.qualcomm.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.50 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+X-Spamd-Result: default: False [-3.00 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	MID_RHS_NOT_FQDN(0.50)[];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	RCVD_TLS_LAST(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+];
 	FROM_HAS_DN(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,lists.infradead.org,kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org];
+	ARC_NA(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	FROM_EQ_ENVFROM(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DNSWL_BLOCKED(0.00)[172.105.4.254:from];
+	ALIAS_RESOLVED(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[50];
+	TAGGED_RCPT(0.00)[dt,netdev];
+	NEURAL_HAM(-0.00)[-1.000];
+	TO_DN_SOME(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CCB8143970
-X-Spamd-Bar: ----
-Message-ID-Hash: AQWCAYSLILFWALJVWEXSA6QZBCUCCEDV
-X-Message-ID-Hash: AQWCAYSLILFWALJVWEXSA6QZBCUCCEDV
+X-Rspamd-Queue-Id: 16D2D43AD7
+X-Spamd-Bar: ---
+Message-ID-Hash: GPMDGTAESGHFEM66YP4GQCYVH276Q3LF
+X-Message-ID-Hash: GPMDGTAESGHFEM66YP4GQCYVH276Q3LF
 X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Marco Felsch <m.felsch@pengutronix.de>, Krzysztof Kozlowski <krzk@kernel.org>, Matthew Wilcox <willy@infradead.org>, arm <arm@kernel.org>, soc@kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
+CC: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-media@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, ath12k@lists.infradead.org, linux-remoteproc@vger.kernel.org, andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.
+ qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AQWCAYSLILFWALJVWEXSA6QZBCUCCEDV/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GPMDGTAESGHFEM66YP4GQCYVH276Q3LF/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -99,34 +103,295 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Wed, Mar 18, 2026 at 01:39:41PM +0100, Arnd Bergmann wrote:
-> On Tue, Mar 17, 2026, at 13:53, Marco Felsch wrote:
-> > On 26-03-17, Jens Wiklander wrote:
-> >> 
-> >> I'm under the impression that it is a fix rather than an improvement.
-> >> However, since it has been stewing for a while, it's clearly not
-> >> urgent. I don't have anything specific on the bug fix, other than that
-> >> we're supposed to stop taking those refcounts. Perhaps Sumit, Marco,
-> >> or Matthew can add something?
-> >
-> > It's a long outstanding fix regarding memory page management. The
-> > userspace gets informed about this memory API misuse via a warning print
-> > incl. a backtrace. This gets triggered only if userspace uses OP-TEE
-> > trusted-keys or the OP-TEE EFI variables. Therefore I would like to get
-> > it into 7.0 but 7.1 fine too.
+On Sun, Mar 15, 2026 at 10:03:16PM +0530, Harshal Dev wrote:
 > 
-> Yes, that is clearly a bugfix. I think we'd also want this to be
-> marked 'Cc: stable@vger.kernel.org' as it should also apply
-> to 6.18-LTS and 6.19. Greg tends to also pick up bugfixes that
-> don't have this, but it's generally better to be explicit here,
-> especially when it's not obvious what the impact of the fix is.
 > 
-> I've merge the pull request now. If you think this should be
-> in 6.18-lts and Greg doesn't pick it up by himself, maybe
-> let him know about it.
+> On 3/12/2026 11:57 AM, Sumit Garg wrote:
+> > From: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> > 
+> > Qcom platforms has the legacy of using non-standard SCM calls
+> > splintered over the various kernel drivers. These SCM calls aren't
+> > compliant with the standard SMC calling conventions which is a
+> > prerequisite to enable migration to the FF-A specifications from Arm.
+> > 
+> > OP-TEE as an alternative trusted OS to Qualcomm TEE (QTEE) can't
+> > support these non-standard SCM calls. And even for newer architectures
+> > with S-EL2 and Hafnium support, QTEE won't be able to support SCM
+> > calls either with FF-A requirements coming in. And with both OP-TEE
+> > and QTEE drivers well integrated in the TEE subsystem, it makes further
+> > sense to reuse the TEE bus client drivers infrastructure.
+> > 
+> > The added benefit of TEE bus infrastructure is that there is support
+> > for discoverable/enumerable services. With that client drivers don't
+> > have to manually invoke a special SCM call to know the service status.
+> > 
+> > So enable the generic Peripheral Authentication Service (PAS) provided
+> > by the firmware. It acts as the common layer with different TZ
+> > backends plugged in whether it's an SCM implementation or a proper
+> > TEE bus based PAS service implementation.
+> > 
+> > Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+> > ---
+> >  drivers/firmware/qcom/Kconfig          |   8 +
+> >  drivers/firmware/qcom/Makefile         |   1 +
+> >  drivers/firmware/qcom/qcom_pas.c       | 298 +++++++++++++++++++++++++
+> >  drivers/firmware/qcom/qcom_pas.h       |  53 +++++
+> >  include/linux/firmware/qcom/qcom_pas.h |  41 ++++
+> >  5 files changed, 401 insertions(+)
+> >  create mode 100644 drivers/firmware/qcom/qcom_pas.c
+> >  create mode 100644 drivers/firmware/qcom/qcom_pas.h
+> >  create mode 100644 include/linux/firmware/qcom/qcom_pas.h
+> > 
+> > diff --git a/drivers/firmware/qcom/Kconfig b/drivers/firmware/qcom/Kconfig
+> > index b477d54b495a..8653639d06db 100644
+> > --- a/drivers/firmware/qcom/Kconfig
+> > +++ b/drivers/firmware/qcom/Kconfig
+> > @@ -6,6 +6,14 @@
+> >  
+> >  menu "Qualcomm firmware drivers"
+> >  
+> > +config QCOM_PAS
+> > +	tristate
+> > +	help
+> > +	  Enable the generic Peripheral Authentication Service (PAS) provided
+> > +	  by the firmware. It acts as the common layer with different TZ
+> > +	  backends plugged in whether it's an SCM implementation or a proper
+> > +	  TEE bus based PAS service implementation.
+> > +
+> >  config QCOM_SCM
+> >  	select QCOM_TZMEM
+> >  	tristate
+> > diff --git a/drivers/firmware/qcom/Makefile b/drivers/firmware/qcom/Makefile
+> > index 0be40a1abc13..dc5ab45f906a 100644
+> > --- a/drivers/firmware/qcom/Makefile
+> > +++ b/drivers/firmware/qcom/Makefile
+> > @@ -8,3 +8,4 @@ qcom-scm-objs += qcom_scm.o qcom_scm-smc.o qcom_scm-legacy.o
+> >  obj-$(CONFIG_QCOM_TZMEM)	+= qcom_tzmem.o
+> >  obj-$(CONFIG_QCOM_QSEECOM)	+= qcom_qseecom.o
+> >  obj-$(CONFIG_QCOM_QSEECOM_UEFISECAPP) += qcom_qseecom_uefisecapp.o
+> > +obj-$(CONFIG_QCOM_PAS)		+= qcom_pas.o
+> > diff --git a/drivers/firmware/qcom/qcom_pas.c b/drivers/firmware/qcom/qcom_pas.c
+> > new file mode 100644
+> > index 000000000000..beb1bae55546
+> > --- /dev/null
+> > +++ b/drivers/firmware/qcom/qcom_pas.c
+> > @@ -0,0 +1,298 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> > + */
+> > +
+> > +#include <linux/device/devres.h>
+> > +#include <linux/firmware/qcom/qcom_pas.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +
+> > +#include "qcom_pas.h"
+> > +
+> > +struct qcom_pas_ops *ops_ptr;
+> > +
+> > +/**
+> > + * devm_qcom_pas_context_alloc() - Allocate peripheral authentication service
+> > + *				   context for a given peripheral
+> > + *
+> > + * PAS context is device-resource managed, so the caller does not need
+> > + * to worry about freeing the context memory.
+> > + *
+> > + * @dev:	  PAS firmware device
+> > + * @pas_id:	  peripheral authentication service id
+> > + * @mem_phys:	  Subsystem reserve memory start address
+> > + * @mem_size:	  Subsystem reserve memory size
+> > + *
+> > + * Return: The new PAS context, or ERR_PTR() on failure.
+> > + */
+> > +struct qcom_pas_context *devm_qcom_pas_context_alloc(struct device *dev,
+> > +						     u32 pas_id,
+> > +						     phys_addr_t mem_phys,
+> > +						     size_t mem_size)
+> > +{
+> > +	struct qcom_pas_context *ctx;
+> > +
+> > +	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
+> > +	if (!ctx)
+> > +		return ERR_PTR(-ENOMEM);
+> > +
+> > +	ctx->dev = dev;
+> > +	ctx->pas_id = pas_id;
+> > +	ctx->mem_phys = mem_phys;
+> > +	ctx->mem_size = mem_size;
+> > +
+> > +	return ctx;
+> > +}
+> > +EXPORT_SYMBOL_GPL(devm_qcom_pas_context_alloc);
+> > +
+> > +/**
+> > + * qcom_pas_init_image() - Initialize peripheral authentication service state
+> > + *			   machine for a given peripheral, using the metadata
+> > + * @pas_id:	peripheral authentication service id
+> > + * @metadata:	pointer to memory containing ELF header, program header table
+> > + *		and optional blob of data used for authenticating the metadata
+> > + *		and the rest of the firmware
+> > + * @size:	size of the metadata
+> > + * @ctx:	optional pas context
+> > + *
+> > + * Return: 0 on success.
+> > + *
+> > + * Upon successful return, the PAS metadata context (@ctx) will be used to
+> > + * track the metadata allocation, this needs to be released by invoking
+> > + * qcom_pas_metadata_release() by the caller.
+> > + */
+> > +int qcom_pas_init_image(u32 pas_id, const void *metadata, size_t size,
+> > +			struct qcom_pas_context *ctx)
+> > +{
+> 
+> I think we should check for !ctx everywhere the way we are doing in qcom_pas_metadata_release().
+> !ctx->ptr may be checked conditionally based on whether the underlying implementation
+> uses it.
 
-Thanks Arnd for picking up this fix. Last week I was on business travel
-hence the delay in my response. I see Sasha already picked it up for
-backports.
+The ctx for this API is optional, that means the backend should check
+apporpriately for it. I will add that check for TEE backend though.
+
+> 
+> > +	if (ops_ptr)
+> > +		return ops_ptr->init_image(ops_ptr->dev, pas_id,
+> > +					   metadata, size, ctx);
+> > +
+> > +	return -ENODEV;
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_init_image);
+> > +
+> > +/**
+> > + * qcom_pas_metadata_release() - release metadata context
+> > + * @ctx:	pas context
+> > + */
+> > +void qcom_pas_metadata_release(struct qcom_pas_context *ctx)
+> > +{
+> > +	if (!ctx || !ctx->ptr)
+> > +		return;
+> > +
+> > +	if (ops_ptr)
+> > +		ops_ptr->metadata_release(ops_ptr->dev, ctx);
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_metadata_release);
+> > +
+> > +/**
+> > + * qcom_pas_mem_setup() - Prepare the memory related to a given peripheral
+> > + *			  for firmware loading
+> > + * @pas_id:	peripheral authentication service id
+> > + * @addr:	start address of memory area to prepare
+> > + * @size:	size of the memory area to prepare
+> > + *
+> > + * Return: 0 on success.
+> > + */
+> > +int qcom_pas_mem_setup(u32 pas_id, phys_addr_t addr, phys_addr_t size)
+> > +{
+> > +	if (ops_ptr)
+> > +		return ops_ptr->mem_setup(ops_ptr->dev, pas_id, addr, size);
+> > +
+> > +	return -ENODEV;
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_mem_setup);
+> > +
+> > +/**
+> > + * qcom_pas_get_rsc_table() - Retrieve the resource table in passed output buffer
+> > + *			      for a given peripheral.
+> > + *
+> > + * Qualcomm remote processor may rely on both static and dynamic resources for
+> > + * its functionality. Static resources typically refer to memory-mapped
+> > + * addresses required by the subsystem and are often embedded within the
+> > + * firmware binary and dynamic resources, such as shared memory in DDR etc.,
+> > + * are determined at runtime during the boot process.
+> > + *
+> > + * On Qualcomm Technologies devices, it's possible that static resources are
+> > + * not embedded in the firmware binary and instead are provided by TrustZone.
+> > + * However, dynamic resources are always expected to come from TrustZone. This
+> > + * indicates that for Qualcomm devices, all resources (static and dynamic) will
+> > + * be provided by TrustZone PAS service.
+> > + *
+> > + * If the remote processor firmware binary does contain static resources, they
+> > + * should be passed in input_rt. These will be forwarded to TrustZone for
+> > + * authentication. TrustZone will then append the dynamic resources and return
+> > + * the complete resource table in output_rt_tzm.
+> > + *
+> > + * If the remote processor firmware binary does not include a resource table,
+> > + * the caller of this function should set input_rt as NULL and input_rt_size
+> > + * as zero respectively.
+> > + *
+> > + * More about documentation on resource table data structures can be found in
+> > + * include/linux/remoteproc.h
+> > + *
+> > + * @ctx:	    PAS context
+> > + * @pas_id:	    peripheral authentication service id
+> > + * @input_rt:       resource table buffer which is present in firmware binary
+> > + * @input_rt_size:  size of the resource table present in firmware binary
+> > + * @output_rt_size: TrustZone expects caller should pass worst case size for
+> > + *		    the output_rt_tzm.
+> > + *
+> > + * Return:
+> > + *  On success, returns a pointer to the allocated buffer containing the final
+> > + *  resource table and output_rt_size will have actual resource table size from
+> > + *  TrustZone. The caller is responsible for freeing the buffer. On failure,
+> > + *  returns ERR_PTR(-errno).
+> > + */
+> > +struct resource_table *qcom_pas_get_rsc_table(struct qcom_pas_context *ctx,
+> > +					      void *input_rt,
+> > +					      size_t input_rt_size,
+> > +					      size_t *output_rt_size)
+> > +{
+> 
+> Check for !ctx here as well.
+
+Ack.
+
+> 
+> > +	if (ops_ptr)
+> > +		return ops_ptr->get_rsc_table(ops_ptr->dev, ctx, input_rt,
+> > +					      input_rt_size, output_rt_size);
+> > +
+> > +	return ERR_PTR(-ENODEV);
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_get_rsc_table);
+> > +
+> > +/**
+> > + * qcom_pas_auth_and_reset() - Authenticate the given peripheral firmware
+> > + *			       and reset the remote processor
+> > + * @pas_id:	peripheral authentication service id
+> > + *
+> > + * Return: 0 on success.
+> > + */
+> > +int qcom_pas_auth_and_reset(u32 pas_id)
+> > +{
+> > +	if (ops_ptr)
+> > +		return ops_ptr->auth_and_reset(ops_ptr->dev, pas_id);
+> > +
+> > +	return -ENODEV;
+> > +}
+> > +EXPORT_SYMBOL_GPL(qcom_pas_auth_and_reset);
+> > +
+> > +/**
+> > + * qcom_pas_prepare_and_auth_reset() - Prepare, authenticate, and reset the
+> > + *				       remote processor
+> > + *
+> > + * @ctx:	Context saved during call to qcom_scm_pas_context_init()
+> > + *
+> > + * This function performs the necessary steps to prepare a PAS subsystem,
+> > + * authenticate it using the provided metadata, and initiate a reset sequence.
+> > + *
+> > + * It should be used when Linux is in control setting up the IOMMU hardware
+> > + * for remote subsystem during secure firmware loading processes. The
+> > + * preparation step sets up a shmbridge over the firmware memory before
+> > + * TrustZone accesses the firmware memory region for authentication. The
+> > + * authentication step verifies the integrity and authenticity of the firmware
+> > + * or configuration using secure metadata. Finally, the reset step ensures the
+> > + * subsystem starts in a clean and sane state.
+> > + *
+> > + * Return: 0 on success, negative errno on failure.
+> > + */
+> > +int qcom_pas_prepare_and_auth_reset(struct qcom_pas_context *ctx)
+> > +{
+> 
+> Same here.
+
+Ack.
 
 -Sumit
