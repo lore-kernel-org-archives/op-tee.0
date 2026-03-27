@@ -4,272 +4,137 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEA0B10ED677
-	for <op-tee@archiver.kernel.org>; Fri, 27 Mar 2026 13:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C31D710ED675
+	for <op-tee@archiver.kernel.org>; Fri, 27 Mar 2026 13:16:52 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 31B2944464
-	for <op-tee@archiver.kernel.org>; Fri, 27 Mar 2026 13:16:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1774617385;
-	bh=Ni6+wg4CR6E+75Ru3q2zrAVZ+Yap1oo6S9oO07k3EVk=;
-	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=cLTMB5p9UnRWfTUdge51c6kzALnq/q2rwXDdR7uKw7ZsVhLhR1lT7X9KgKf96FJtX
-	 ta3elqUlU+LAlMqT6R5J15CAyygB55EzUEDfUNYXxesl9Mo6J9x61uhkbNzFzKfQES
-	 L4PoH4k5btYiasc6KMrKXiAvbTkXinxqNe7FoRzzfTM9IOUZDmPuVVzxmMJcrlXemp
-	 LYBnZYYwpS1YmG3xLqUZx9UCxXkXJjF1oN3ybaNF4ln4Y7/0RomBvrtwECQJj8mmHm
-	 vnLmG1Xwm8p72Xi6j9ueY3nfwnaPo5R55tZhpp2hOFmt0P2+uJKIgI4721XxVO5PJV
-	 KofCLnMdlsbqw==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9525C44477
-	for <op-tee@lists.trustedfirmware.org>; Fri, 27 Mar 2026 13:14:03 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1986F3E936
+	for <op-tee@archiver.kernel.org>; Fri, 27 Mar 2026 13:16:52 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JyPhtcij;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=NyaPYEYk;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 34AAF60103;
-	Fri, 27 Mar 2026 13:14:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40482C19423;
-	Fri, 27 Mar 2026 13:13:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774617242;
-	bh=Ni6+wg4CR6E+75Ru3q2zrAVZ+Yap1oo6S9oO07k3EVk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JyPhtcijB8G9B+7Ap/ahObG1+dzJ1qg+geh/vYBdRVu1Vt1eIQRN0/0duwvcMjFrl
-	 P9CIfg4znX6HFeza+RBnyrvCLHlivr/4aZ5H4lMzFdJTUxZ0ttS2pWOLLJc/hVgeZz
-	 auXbrb479FeeJb/kqgSqpd6CkNJXqDanrioO+KLLzg1fnOcX0sSXCOQ/5vtMfEOfTy
-	 PE+odYhYjftQnmaB+yNMTYA2AdyFjNr7n54WiZb0yFzqbQB7pbLmTus6ATuUtXYipV
-	 TthSu6W3DuY5uG8NPrrqo2RWT9x2s2n0xwytx4gEsvGhPNe7KfYcsmSjWRjEcOE+Yy
-	 Ok5GHnkJz/67Q==
-To: linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	freedreno@lists.freedesktop.org,
-	linux-media@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org,
-	ath12k@lists.infradead.org,
-	linux-remoteproc@vger.kernel.org
-Subject: [PATCH v3 11/15] media: qcom: Switch to generic PAS TZ APIs
-Date: Fri, 27 Mar 2026 18:40:39 +0530
-Message-ID: <20260327131043.627120-12-sumit.garg@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260327131043.627120-1-sumit.garg@kernel.org>
-References: <20260327131043.627120-1-sumit.garg@kernel.org>
+Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id F22654306B
+	for <op-tee@lists.trustedfirmware.org>; Fri, 27 Mar 2026 13:14:10 +0000 (UTC)
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5a2a5236811so1295655e87.1
+        for <op-tee@lists.trustedfirmware.org>; Fri, 27 Mar 2026 06:14:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1774617250; x=1775222050; darn=lists.trustedfirmware.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=kz8SaXeiyhxC27qAG3dP6iPPGTlVaK8A49rXAhagzVU=;
+        b=NyaPYEYkODsaDiXeJmljmX94ONVi1l1oFq+xXxpBck+wnZgmGUaQ2DPijw70CofF80
+         intNHORtHPJgiuI3IN8/bxYYTtykrTLbmgGn3nvoBZyOSMdcS2kBSG3Qg+HpfGDJlhAC
+         9EKFRyp4ZOO+JvThfpGKL8Rz+plHgwB4Iv2yA2N9XTZ8U1Lf1OhtV7bGTnzYp54+mglg
+         3IPenGAxrlMJjB4diWgzLSgjIwyCUpfjdDbx/g0jtJrzRyqbp7ZJpPs8MUmjc1oHY60X
+         Vgms0Zp+33chKsdpxUi5ZFkjLUmVMBO1+nzTt/klQs8hD6l6ZwHjiQLkoKnNYhY3OXvM
+         CVrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774617250; x=1775222050;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=kz8SaXeiyhxC27qAG3dP6iPPGTlVaK8A49rXAhagzVU=;
+        b=pq2ZYLM4XQrJntnhiqsq3kUvwCxAhjs944QIl4O8Mspk5RXG0xq47I4mgH36lyQFW9
+         o1m5K9uTGq8OU6mTMcvCBz1JR1fWNM0fuyTal+L45JZ6Hy3XWlDQ/4F/5AWDpelUkfQo
+         AfXT3n05NR0iPl7tOzZAEwMM7gy+Fe2W+xuakW19kR7+ca8UeEeclOR4uGmFZdpU330t
+         8gglMGA1mjCas9lqskC5AhvoZVbCEUGSuflNvTMwIQwAkaXWwCI9mcIqAFUbOV3dK6H8
+         sL0Y18AKghxQ0ro82ckXZVI0pMwHy0z1cxYMa1RpJEuzhz03aYpzyUsVSGTaMsxt/KU4
+         y7tw==
+X-Forwarded-Encrypted: i=1; AJvYcCUdsz9U/8zAWmag7Eye5gnAAAPOZw2xGBucmeXKM7bsp3M5E8oHCwja+5jrFVOzneeNWGZvX8M=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YwspY3irybmBr0TZcbGlrtnHnnNH+MBswVEZFAhbF6DZujq6GEU
+	59xntVBoJAxOiDPJGlSDY+bxMSns4jAe7MQtJzYXIRVld6ze+9LyDhEsY5+yjsABFIS3Zw==
+X-Gm-Gg: ATEYQzxqlaKD3VYnPb6iBBFDr5tk57TmwaYtie4aBAQNcSptUCLPHTtDnb6SsFYz7mZ
+	OpQGZZ8WJdmEKjEymmtWzbEyYnySpCYTfaeHlQuT+yIfqwiX+65t29TijzI0tKJXorazDQz1PFj
+	jKS7bMykcuJMbXb3Ivtpdv/YJA36T7g4kjyNzrW9G3zwkElgSqgG3N5vpDa5zDG8Ko9ixNAy4oM
+	I4DCZ9aarcNtTEX33DvvyrW8q7ZZqfO+pz2T6mifw8u+y50KRuH7MVWNpeoGEJn+hRi+029TYtm
+	8jYuVhCskrKiuzWEJOCaAzB0qQqm81+4BeQSdxi9cTWpcdcnZ17Bwpi5QltC1xwh8/VmgFJjW6k
+	o5N75dAoxVfbe6iqgmOoV2l5SDxWBZojo88Eg33dsEKblRyhr1aTa224egyvPn47uE5qWy0toxL
+	L61aKAIhNMK2oKMwAKXTNYCBaEw9NWZQ/dzeNjw/iLYwhpViai0uUst6A2+F/LUdmHi4Ax/Co9N
+	IjZJJQ3XGrO6AyLsD8=
+X-Received: by 2002:a05:6512:3c87:b0:5a1:18b4:6c47 with SMTP id 2adb3069b0e04-5a2ab59d4d3mr790105e87.0.1774617249654;
+        Fri, 27 Mar 2026 06:14:09 -0700 (PDT)
+Received: from rayden (h-79-136-84-34.A175.priv.bahnhof.se. [79.136.84.34])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a2a063efd5sm1345298e87.12.2026.03.27.06.14.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Mar 2026 06:14:08 -0700 (PDT)
+Date: Fri, 27 Mar 2026 14:14:07 +0100
+From: Jens Wiklander <jens.wiklander@linaro.org>
+To: arm@kernel.org, soc@kernel.org
+Subject: [GIT PULL] TEE update for 7.1
+Message-ID: <20260327131407.GA3248701@rayden>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	MID_CONTAINS_FROM(1.00)[];
-	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
-	R_MISSING_CHARSET(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+X-Spamd-Result: default: False [-3.50 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	TO_DN_SOME(0.00)[];
-	TAGGED_RCPT(0.00)[dt,netdev];
-	MIME_TRACE(0.00)[0:+];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	MISSING_XM_UA(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.167.52:from];
 	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DNSWL_BLOCKED(0.00)[209.85.167.52:from];
 	RCVD_TLS_LAST(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[50];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org,vger.kernel.org];
-	ALIAS_RESOLVED(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[172.105.4.254:from,100.75.92.58:received];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
 	RCVD_COUNT_TWO(0.00)[2];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TO_DN_NONE(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 9525C44477
-X-Spamd-Bar: --
-Message-ID-Hash: HYSGMRJ2NT2AHYEII5WGIVX2SDZ5NNXG
-X-Message-ID-Hash: HYSGMRJ2NT2AHYEII5WGIVX2SDZ5NNXG
-X-MailFrom: sumit.garg@kernel.org
+X-Rspamd-Queue-Id: F22654306B
+X-Spamd-Bar: ---
+Message-ID-Hash: D56VVICHMJHCJXKMHUZ6ITE7ZTXZ3EXA
+X-Message-ID-Hash: D56VVICHMJHCJXKMHUZ6ITE7ZTXZ3EXA
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, harshal.dev@oss.qualcomm.com, linux-kernel@vger.kernel.org, Sum
- it Garg <sumit.garg@oss.qualcomm.com>
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HYSGMRJ2NT2AHYEII5WGIVX2SDZ5NNXG/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/D56VVICHMJHCJXKMHUZ6ITE7ZTXZ3EXA/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-From: Sumit Garg <sumit.garg@oss.qualcomm.com>
+Hello soc maintainers,
 
-Switch qcom media client drivers over to generic PAS TZ APIs. Generic PAS
-TZ service allows to support multiple TZ implementation backends like QTEE
-based SCM PAS service, OP-TEE based PAS service and any further future TZ
-backend service.
+Please pull this small patch cleaning up kernel-doc comments in tee_core.h.
 
-Along with that pass proper PAS ID to set_remote_state API. As per testing
-the SCM backend just ignores it while OP-TEE makes use of it to for proper
-book keeping purpose.
+Thanks,
+Jens
 
-Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
----
- drivers/media/platform/qcom/iris/Kconfig      | 25 ++++++++++---------
- .../media/platform/qcom/iris/iris_firmware.c  |  9 ++++---
- drivers/media/platform/qcom/venus/Kconfig     |  1 +
- drivers/media/platform/qcom/venus/firmware.c  | 11 ++++----
- 4 files changed, 25 insertions(+), 21 deletions(-)
+The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
 
-diff --git a/drivers/media/platform/qcom/iris/Kconfig b/drivers/media/platform/qcom/iris/Kconfig
-index 3c803a05305a..f54b759c18aa 100644
---- a/drivers/media/platform/qcom/iris/Kconfig
-+++ b/drivers/media/platform/qcom/iris/Kconfig
-@@ -1,13 +1,14 @@
- config VIDEO_QCOM_IRIS
--        tristate "Qualcomm iris V4L2 decoder driver"
--        depends on VIDEO_DEV
--        depends on ARCH_QCOM || COMPILE_TEST
--        select V4L2_MEM2MEM_DEV
--        select QCOM_MDT_LOADER if ARCH_QCOM
--        select QCOM_SCM
--        select VIDEOBUF2_DMA_CONTIG
--        help
--          This is a V4L2 driver for Qualcomm iris video accelerator
--          hardware. It accelerates decoding operations on various
--          Qualcomm SoCs.
--          To compile this driver as a module choose m here.
-+	tristate "Qualcomm iris V4L2 decoder driver"
-+	depends on VIDEO_DEV
-+	depends on ARCH_QCOM || COMPILE_TEST
-+	select V4L2_MEM2MEM_DEV
-+	select QCOM_MDT_LOADER if ARCH_QCOM
-+	select QCOM_SCM
-+	select QCOM_PAS
-+	select VIDEOBUF2_DMA_CONTIG
-+	help
-+	  This is a V4L2 driver for Qualcomm iris video accelerator
-+	  hardware. It accelerates decoding operations on various
-+	  Qualcomm SoCs.
-+	  To compile this driver as a module choose m here.
-diff --git a/drivers/media/platform/qcom/iris/iris_firmware.c b/drivers/media/platform/qcom/iris/iris_firmware.c
-index 5f408024e967..856fa6a79064 100644
---- a/drivers/media/platform/qcom/iris/iris_firmware.c
-+++ b/drivers/media/platform/qcom/iris/iris_firmware.c
-@@ -4,6 +4,7 @@
-  */
- 
- #include <linux/firmware.h>
-+#include <linux/firmware/qcom/qcom_pas.h>
- #include <linux/firmware/qcom/qcom_scm.h>
- #include <linux/of_address.h>
- #include <linux/of_reserved_mem.h>
-@@ -79,7 +80,7 @@ int iris_fw_load(struct iris_core *core)
- 		return -ENOMEM;
- 	}
- 
--	ret = qcom_scm_pas_auth_and_reset(core->iris_platform_data->pas_id);
-+	ret = qcom_pas_auth_and_reset(core->iris_platform_data->pas_id);
- 	if (ret)  {
- 		dev_err(core->dev, "auth and reset failed: %d\n", ret);
- 		return ret;
-@@ -93,7 +94,7 @@ int iris_fw_load(struct iris_core *core)
- 						     cp_config->cp_nonpixel_size);
- 		if (ret) {
- 			dev_err(core->dev, "qcom_scm_mem_protect_video_var failed: %d\n", ret);
--			qcom_scm_pas_shutdown(core->iris_platform_data->pas_id);
-+			qcom_pas_shutdown(core->iris_platform_data->pas_id);
- 			return ret;
- 		}
- 	}
-@@ -103,10 +104,10 @@ int iris_fw_load(struct iris_core *core)
- 
- int iris_fw_unload(struct iris_core *core)
- {
--	return qcom_scm_pas_shutdown(core->iris_platform_data->pas_id);
-+	return qcom_pas_shutdown(core->iris_platform_data->pas_id);
- }
- 
- int iris_set_hw_state(struct iris_core *core, bool resume)
- {
--	return qcom_scm_set_remote_state(resume, 0);
-+	return qcom_pas_set_remote_state(resume, core->iris_platform_data->pas_id);
- }
-diff --git a/drivers/media/platform/qcom/venus/Kconfig b/drivers/media/platform/qcom/venus/Kconfig
-index ffb731ecd48c..574172724e8f 100644
---- a/drivers/media/platform/qcom/venus/Kconfig
-+++ b/drivers/media/platform/qcom/venus/Kconfig
-@@ -6,6 +6,7 @@ config VIDEO_QCOM_VENUS
- 	select OF_DYNAMIC if ARCH_QCOM
- 	select QCOM_MDT_LOADER if ARCH_QCOM
- 	select QCOM_SCM
-+	select QCOM_PAS
- 	select VIDEOBUF2_DMA_CONTIG
- 	select V4L2_MEM2MEM_DEV
- 	help
-diff --git a/drivers/media/platform/qcom/venus/firmware.c b/drivers/media/platform/qcom/venus/firmware.c
-index 1de7436713ed..3c0727ea137d 100644
---- a/drivers/media/platform/qcom/venus/firmware.c
-+++ b/drivers/media/platform/qcom/venus/firmware.c
-@@ -12,6 +12,7 @@
- #include <linux/of_reserved_mem.h>
- #include <linux/platform_device.h>
- #include <linux/of_device.h>
-+#include <linux/firmware/qcom/qcom_pas.h>
- #include <linux/firmware/qcom/qcom_scm.h>
- #include <linux/sizes.h>
- #include <linux/soc/qcom/mdt_loader.h>
-@@ -58,7 +59,7 @@ int venus_set_hw_state(struct venus_core *core, bool resume)
- 	int ret;
- 
- 	if (core->use_tz) {
--		ret = qcom_scm_set_remote_state(resume, 0);
-+		ret = qcom_pas_set_remote_state(resume, VENUS_PAS_ID);
- 		if (resume && ret == -EINVAL)
- 			ret = 0;
- 		return ret;
-@@ -218,7 +219,7 @@ int venus_boot(struct venus_core *core)
- 	int ret;
- 
- 	if (!IS_ENABLED(CONFIG_QCOM_MDT_LOADER) ||
--	    (core->use_tz && !qcom_scm_is_available()))
-+	    (core->use_tz && !qcom_pas_is_available()))
- 		return -EPROBE_DEFER;
- 
- 	ret = of_property_read_string_index(dev->of_node, "firmware-name", 0,
-@@ -236,7 +237,7 @@ int venus_boot(struct venus_core *core)
- 	core->fw.mem_phys = mem_phys;
- 
- 	if (core->use_tz)
--		ret = qcom_scm_pas_auth_and_reset(VENUS_PAS_ID);
-+		ret = qcom_pas_auth_and_reset(VENUS_PAS_ID);
- 	else
- 		ret = venus_boot_no_tz(core, mem_phys, mem_size);
- 
-@@ -259,7 +260,7 @@ int venus_boot(struct venus_core *core)
- 						     res->cp_nonpixel_start,
- 						     res->cp_nonpixel_size);
- 		if (ret) {
--			qcom_scm_pas_shutdown(VENUS_PAS_ID);
-+			qcom_pas_shutdown(VENUS_PAS_ID);
- 			dev_err(dev, "set virtual address ranges fail (%d)\n",
- 				ret);
- 			return ret;
-@@ -274,7 +275,7 @@ int venus_shutdown(struct venus_core *core)
- 	int ret;
- 
- 	if (core->use_tz)
--		ret = qcom_scm_pas_shutdown(VENUS_PAS_ID);
-+		ret = qcom_pas_shutdown(VENUS_PAS_ID);
- 	else
- 		ret = venus_shutdown_no_tz(core);
- 
--- 
-2.51.0
+  Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
 
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-tee.git tags/tee-for-v7.1
+
+for you to fetch changes up to e416e7fa417b2d2604c1526a2f9cc38da7ced166:
+
+  tee: clean up tee_core.h kernel-doc (2026-03-13 08:22:54 +0100)
+
+----------------------------------------------------------------
+TEE update for 7.1
+
+Clean up tee_core.h kernel-doc to eliminate build warnings
+
+----------------------------------------------------------------
+Randy Dunlap (1):
+      tee: clean up tee_core.h kernel-doc
+
+ include/linux/tee_core.h | 30 ++++++++++++++++--------------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
