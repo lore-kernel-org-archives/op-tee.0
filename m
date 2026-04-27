@@ -4,89 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF17BFF885E
-	for <op-tee@archiver.kernel.org>; Mon, 27 Apr 2026 11:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29544FF8860
+	for <op-tee@archiver.kernel.org>; Mon, 27 Apr 2026 13:41:28 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id DC3F344481
-	for <op-tee@archiver.kernel.org>; Mon, 27 Apr 2026 11:41:23 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 499AD43296
+	for <op-tee@archiver.kernel.org>; Mon, 27 Apr 2026 13:41:27 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=XjdLpTyf;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=rImnEOXV;
 	dkim-atps=neutral
-Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4846141B62
-	for <op-tee@lists.trustedfirmware.org>; Mon, 27 Apr 2026 11:41:17 +0000 (UTC)
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-b941762394aso1370146166b.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 27 Apr 2026 04:41:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777290076; cv=none;
+Received: from mail-oo1-f49.google.com (mail-oo1-f49.google.com [209.85.161.49])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 448C543296
+	for <op-tee@lists.trustedfirmware.org>; Mon, 27 Apr 2026 13:41:21 +0000 (UTC)
+Received: by mail-oo1-f49.google.com with SMTP id 006d021491bc7-6948fb494a0so4140151eaf.2
+        for <op-tee@lists.trustedfirmware.org>; Mon, 27 Apr 2026 06:41:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777297280; cv=none;
         d=google.com; s=arc-20240605;
-        b=CDXrhrDLZTQVbaQbjeaf02xAJae/OwbgEbZUDOR1jpooo3iOFdnpEPOnkqFYHkGaeO
-         lRtXE/q7wwcsHPLWF+T31LpEiHGxJ2DFZNPkjxzScBAgSGlnwfQNSQw8sId71IpWOT+U
-         ZV/u5G+qoTsllmBNkZ84a+kcjkFicW1axjvd+65AcNGjcf98Vyu9wUY1u1bF14WtRzvs
-         opnIR0L0P4V6c1PYwW2d24ow9VomhNNhSx5HFSYvsIjYLfG3TY/ZGGOXUKh8RXBFQADh
-         xQSJAVYQ4I+4L1UNsbQm+qk7LSUJt9GmtQtBng4dJi1Qv4+GC4h8YHEZRDuxXol3GzsG
-         kaog==
+        b=P/TgqN0o0uKD5UMMuyKtOv0UsgWLLr31iyQJbuKPLi5wDyX8bIoAOGOthnWMDD7EWK
+         pNodiVkC+WdQSjQNzsaoRMzNMVosw1hxVJM6d0uUPaCP/XKHqoBmITX+DAWuYDYsN4xx
+         i/UfRSDIBVOBKjzcC/al9XvkT+BIwKuZh2Di00138CpaDMJ6/0+ky/HL6x4PggczX5p5
+         RqyYTCdU9IRBoe3YZWGOca7iGgS2ELU5BiFDrVju4zYBiQ5IYnPd0o5vd4ESoC2UB1x3
+         kVcnc7zfu63z6TBrtezs1Di5y606qqsrzY+gi761KjTPuPiPYrLarbKuyNc61afwj7lT
+         FWNA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=iY9GQ6SW6t/ZOmcGSE+LWGIlAvhxbOuQam/uuJbvUYk=;
-        fh=We2IdVC2+Ni7mn1xZ6Wq8HvVsb8Gpuoh38z9TL3lhHM=;
-        b=dlW5Wc38PhmoDF3H6JT5GURmqLrb+jBfUIexQqqdcxupherCPjBfz32/y2MYUQejCy
-         44V3racSOnakVisnNmqk+sIcga3+z2gFt7XN01a43z99u9l2jVtgbnUaUNfShG1ZpBQA
-         uMco+kR6vr6NRf6oWAWQP3ZVZ5PP0fR16l2mQO6QghkfxzFhYtge28TqbWYsKNZGLPSz
-         Z0rrDG4xm5cmTDQCAx7McJ7g6Q5eXv14QF1XZ+zdgCrwZcSFH1YMUuD4KCuFoxREJCpi
-         gMc6/ys9/plgSDf6lem7kpwVNz/TW2Yg8CKLCa8FlLOO00kr3RopdrOR0U4s8vpNCwXb
-         cv5A==;
+        bh=Fwyr/KMD+0QPgey2JMgc1xj/yK1FRCHF8OYBDsPQa/o=;
+        fh=uJxHwXSvWfo9wbggpACxXe6vhcyfP5aPGv4fTzcoW4U=;
+        b=RFc6AmqqsQ86V+s8NW1xmoemBHXsirS2bqk1uRVpZsDSzBk/4xVFVNRlbzwA0sDKln
+         VVADhYEtqdBCT+vrT/xyv+PV8RUBPc82XCxvvzesbjRnlhb3XZqTc6Hgh+ukDCPPxugV
+         LvfqWlIwuv+mRFS6+e9oDSkdJebgE1DlTYYIUAhNtwPNdj3pvxaQL9znS47ffVdELju8
+         C5/JqMWW5++CFPoY4p8hdJ9Z1m9mh9dIIAwSAcdooGQxfLwmauSXprAqz5r0eyMwOJNb
+         aVkJ6n9+MA4jc6ESpWeO+H9fLZKX2SlkrmQ1qKEFYnh//r1gc+sJDM6DfT/a0KdjqM4E
+         5XNQ==;
         darn=lists.trustedfirmware.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777290076; x=1777894876; darn=lists.trustedfirmware.org;
+        d=linaro.org; s=google; t=1777297280; x=1777902080; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=iY9GQ6SW6t/ZOmcGSE+LWGIlAvhxbOuQam/uuJbvUYk=;
-        b=XjdLpTyfIxvZz+VJPNL5nFTLlQ/clewC3wWOMYW9W3cYda/4z3cQPsuvu0KQr7PBsb
-         9doYiX/MEYOo1qyrw6Eux2S4H9KIbBTl67cQtcl/ZJTGKbzUA2icrYWGYql0ONYVHmUf
-         B97ZSCyjXZSL8/MDODz1RaxqriohiOlzL1qnrhi6yzsAsQqpgaIp7LOzY7DzvmltvYEv
-         q8YKzmLWP8juwh/cT+rdm9SOeSrE+KX7u5MiSx0PWQ76cZOZ8ruLCXe37ysRZ/f70p6A
-         f4b3s5Zck+sOM1Z5qQmF9+YUUw2yFvLC3OYiv7aR/49t902XQulzEOECNNMa+uBUjxjO
-         JkjA==
+        bh=Fwyr/KMD+0QPgey2JMgc1xj/yK1FRCHF8OYBDsPQa/o=;
+        b=rImnEOXV5cvZx9e2eobHMujbb0QtRsdNgRX38FYrgsGZCc5jKnP6HifMUUffRwT/3F
+         IjRmn4bhEx5d938SnX0ybgAfIxA9jjuofPW8xdFQGRnSjArfhV5FoTba1iHvW9egmZQi
+         miov5fmG/KG3FHHvJjZTTHa3upWE7YorB7tvzdi7FGydre5uY6aNZ5zpmBlF1TTyzC6x
+         4M9w5yumoPoJE3J+Tu0PaN693YD24ADlM8PKQQf8stb52GSPVeNZsyPzKOt1JcWQmxCe
+         3z2JtZtO/eBHAEaAs18+S513+oQuzt16F6oExFT3H1DSmMcCpMX4MOYCEw+ttuBSwv8l
+         w2Gg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777290076; x=1777894876;
+        d=1e100.net; s=20251104; t=1777297280; x=1777902080;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=iY9GQ6SW6t/ZOmcGSE+LWGIlAvhxbOuQam/uuJbvUYk=;
-        b=WrMjt2DF9c0uHT4xOs7vMgFHdvsAbh2YDQPYDFv0W2sfMLyut7kuzRwih3xSDTYtiz
-         9F+XiTcCeUmA2iRr9CT9MEFp6mClStyCtKCe9ee8NSJZBef3LNHRbcGKDQnqFuy8XDk0
-         A0ipnyfjoXy+CPpPvRHmEA6m/B04jp0D9wUgc52eAyuSk6P8KY/KJ6W4dcevrGDtZzyz
-         trqS1LGvImKU9MJHJ9xVNvEPACjLEYT/DpKBJXPBoAFWBBiB+A5wIsZ0HKcP42BokLSS
-         dFZMBPCkwX4JBIXvruLfFWnCSLOlDpFi75D0aoToafMMcOBYYMrw/o3d0Ly0W1DIkyn8
-         o2aA==
-X-Forwarded-Encrypted: i=1; AFNElJ9xIqCVFKkEIS67r8Nf8HYT4snpxd859iCXEBjDWKrBe3ouC7GOJyThSG3hBHmORC9h2E9XGi8=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Ywy4LV2H8gq8PgVA1GO7odWHLdyrU9v4pggfAS/z3tpt8T+/LfH
-	jiCxmqRPcZsKmwNtWtgtxJCXer2/Q+bb83vngpk5zPmvoxSmH2XT9VwrpBDxWJi7iy1kEsjaEQG
-	MpIDMXikUNjIUPs1KHL71xOwMkilayYS7PhDPaRuOUPNn
-X-Gm-Gg: AeBDievRnDqCSaZTDJ8uN9EzEwTQhXK5kyEhPtAapjY/JmmDfCLGy0k9Ipx6jcqpaIA
-	4rG527XCpbHR+WulQfbx3614jWPgzaRHE0tbPum8v7mZUh8kfGmaRpRo5RnNq0sSN91fHrq3UAV
-	scTDdKFPzlEkiT80+ADUl3PrQ/BpfW9CydsroPiGs5bjxXb4FzMJ2rRF3jKBtOceOhxbxjcPEK6
-	DDq12dwAvq4iyutzTZLPwqEAgtB/NkEMQfQvTrXxuTBrC0zJIRYKw/Y/E4/sc6SaPdepu7auvy+
-	8iDXtwroFkWL+qkTIzhs+Vk9mSBebM3dnofC8ZmCc7VeS/Xg
-X-Received: by 2002:a17:907:c002:b0:ba8:e7d5:6a7a with SMTP id
- a640c23a62f3a-ba8e7e4ae93mr1628539066b.40.1777290076003; Mon, 27 Apr 2026
- 04:41:16 -0700 (PDT)
+        bh=Fwyr/KMD+0QPgey2JMgc1xj/yK1FRCHF8OYBDsPQa/o=;
+        b=Zf9qd001ouAX+WVjHzdFm0V1SrIkYxOadCCS7z+9vs2d3PBk5OFfwvOerVRDFSoIHW
+         2PJfF7uY3JUepUEGVQ7brlvhIy1kwlTbN4SbvOxCy5UXEEJm1sZxdPjaTOB3hrecBEMe
+         RKttYOYMXL52ee0hSU4TWCGYZuOpFw6Si1IwROQH/VSq4D8554ayuyRX32/ysOTU80Vg
+         IKgNTpx10HKJ/8XJ04nR84oQPy74WBZShlCH+NuyI2xTSfjxAqMbbDTRfwrY4E1g/6h0
+         t+wqVkfGx0SK5IvD0CTRjxhVWi8iW0HBtc2zAtgA3HeAc28K92+xagGzF3f2VV47w9/c
+         IgVw==
+X-Forwarded-Encrypted: i=1; AFNElJ/bC7M/qQPaULxNuuvCFuQrXL744daGUd67qrfMwC9KM5ZFlshLXZQf/U9JMLmdX21Gxyt+diM=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YyhFzOKcANSCvRAelLZexPpNsbvtoSD7hW3iBDWyTrFAlz3+T1t
+	fGZ6PBpqeRPRXMcv9Wb4F2RvCnJHXZUrr/InI033VrsNBjpPR4CY7/7tc+TEl+eZdLgYOnKVmuc
+	eugZcTOGXmrxca96Um81eWvCCcHvPFQ41+lDxL9X6kRop
+X-Gm-Gg: AeBDieuKnScetfjBF25teZXvFGbKlsRUqicnSiPhaVCeVLyWBZ9k/RkbYr9ZzagLRos
+	550bSN86f541brzqf8nRvSkMu4j4vMm+a7Y9dBeC3dSb6wa09teQ14i6uNMDs1UEclR52+SMm0+
+	witN/4/s7kTyIhC24RM2sI1DkrHZri05nP3DgAZ6G69/6I3lYNM10xiOZ/JH2uokdegoPLqDIyP
+	9C39sFrr97QmTkKRaDEr2/e5UW5zmHRXHPg1HBuQ47XObcm6hxMpegdmflfaQoQ+fQCqNU3kRSp
+	FY7T1f0vlD0f4NLufAdLFNGyG70ihykGns2aGcbm/1aGcrBU
+X-Received: by 2002:a05:6820:2d04:b0:694:a02f:75ad with SMTP id
+ 006d021491bc7-694a02f7af1mr14774938eaf.59.1777297280605; Mon, 27 Apr 2026
+ 06:41:20 -0700 (PDT)
 MIME-Version: 1.0
-References: <20251204101730.1036671-1-arnd@kernel.org> <CAHUa44H1Ejbbuzr1hF1HrT69JGgnvfkkDkh+9KvEvBT+eWBDhw@mail.gmail.com>
- <0b061075-ab71-4ac1-93ec-438ddaaec903@oss.qualcomm.com> <aTbCqyOuprPOyU4X@sumit-X1>
- <2c0d09b7-0d8c-4bf2-a1bd-1dc4b58cd0a8@oss.qualcomm.com> <3aacf997-3a21-4e4b-b6bd-c55c36fb4c74@oss.qualcomm.com>
- <CAHUa44GO-D1YcQ_36pe-vQ83fB9rcOkny+M7a=CThAxWb6TLTQ@mail.gmail.com>
- <ba8554b7-499b-4fb8-b792-471d83cf3893@oss.qualcomm.com> <CAHUa44GaKGhDuNcMqn0c0UgK-CV3bHoUE_Q_X-0ZY+jNEs9ZcQ@mail.gmail.com>
-In-Reply-To: <CAHUa44GaKGhDuNcMqn0c0UgK-CV3bHoUE_Q_X-0ZY+jNEs9ZcQ@mail.gmail.com>
+References: <20260408155203.817744-1-g.osokin@auroraos.dev> <adyxWXpcxJ3f0w6G@sumit-xelite>
+In-Reply-To: <adyxWXpcxJ3f0w6G@sumit-xelite>
 From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Mon, 27 Apr 2026 13:41:01 +0200
-X-Gm-Features: AVHnY4LqpVnmdMXbDD6cxcuJmHloWDSIDrfMnjtLJlqIAFhprhXXROKSuZO99EE
-Message-ID: <CAHUa44GNiTeRoL_AUbge4DmCBVqpaeNEoqoWdTPrhiQDBjzOjw@mail.gmail.com>
-Subject: Re: [PATCH] tee: fix tee_ioctl_object_invoke_arg padding
-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
+Date: Mon, 27 Apr 2026 15:41:07 +0200
+X-Gm-Features: AVHnY4KGDDzcbe_kY_EznatCHWqSNW-a9BNkxArEfnRPZk4daViwyL1DENi3efE
+Message-ID: <CAHUa44H2hsPfBFvQwiC4DvSaZ8Lag8S0aOy_KTY5z+b=WQdTLA@mail.gmail.com>
+Subject: Re: [PATCH] tee: shm: fix shm leak in register_shm_helper()
+To: Sumit Garg <sumit.garg@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
@@ -94,36 +90,36 @@ X-Spamd-Result: default: False [-5.10 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.218.53:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	MIME_TRACE(0.00)[0:+];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.49:from];
 	RCVD_COUNT_ONE(0.00)[1];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	MISSING_XM_UA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
 	TO_DN_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.218.53:from];
+	RCVD_TLS_LAST(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DNSWL_BLOCKED(0.00)[209.85.161.49:from];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4846141B62
+X-Rspamd-Queue-Id: 448C543296
 X-Spamd-Bar: -----
-Message-ID-Hash: OG3M3JABZLRH5HNEWEP6K5CGJA5D4UBR
-X-Message-ID-Hash: OG3M3JABZLRH5HNEWEP6K5CGJA5D4UBR
+Message-ID-Hash: N6IVB5ZVTV7TNX3WMCNKQUKSXVCTWET5
+X-Message-ID-Hash: N6IVB5ZVTV7TNX3WMCNKQUKSXVCTWET5
 X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Sumit Garg <sumit.garg@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Sumit Garg <sumit.garg@oss.qualcomm.com>, Alexandre Ghiti <alex@ghiti.fr>, Etienne Carriere <etienne.carriere@foss.st.com>, Randy Dunlap <rdunlap@infradead.org>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org
+CC: Georgiy Osokin <g.osokin@auroraos.dev>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org, s.shtylyov@auroraos.dev, stable@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OG3M3JABZLRH5HNEWEP6K5CGJA5D4UBR/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/N6IVB5ZVTV7TNX3WMCNKQUKSXVCTWET5/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -133,121 +129,33 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 Hi,
 
-On Tue, Dec 16, 2025 at 2:17=E2=80=AFPM Jens Wiklander
-<jens.wiklander@linaro.org> wrote:
+On Mon, Apr 13, 2026 at 11:03=E2=80=AFAM Sumit Garg <sumit.garg@kernel.org>=
+ wrote:
 >
-> Hi,
->
-> On Tue, Dec 16, 2025 at 11:56=E2=80=AFAM Harshal Dev
-> <harshal.dev@oss.qualcomm.com> wrote:
+> On Wed, Apr 08, 2026 at 06:52:03PM +0300, Georgiy Osokin wrote:
+> > register_shm_helper() allocates shm before calling
+> > iov_iter_npages(). If iov_iter_npages() returns 0, the function
+> > jumps to err_ctx_put and leaks shm.
 > >
-> > Hi Jens,
+> > This can be triggered by TEE_IOC_SHM_REGISTER with
+> > struct tee_ioctl_shm_register_data where length is 0.
 > >
-> > On 12/16/2025 1:18 PM, Jens Wiklander wrote:
-> > > Hi,
-> > >
-> > > On Tue, Dec 9, 2025 at 4:54=E2=80=AFAM Amirreza Zarrabi
-> > > <amirreza.zarrabi@oss.qualcomm.com> wrote:
-> > >>
-> > >> Hi,
-> > >>
-> > >> On 12/8/2025 11:54 PM, Harshal Dev wrote:
-> > >>>
-> > >>>
-> > >>> On 12/8/2025 5:50 PM, Sumit Garg via OP-TEE wrote:
-> > >>>> On Mon, Dec 08, 2025 at 04:24:17PM +1100, Amirreza Zarrabi wrote:
-> > >>>>> Hi,
-> > >>>>>
-> > >>>>> On 12/5/2025 12:27 AM, Jens Wiklander wrote:
-> > >>>>>> Hi,
-> > >>>>>>
-> > >>>>>> On Thu, Dec 4, 2025 at 11:17=E2=80=AFAM Arnd Bergmann <arnd@kern=
-el.org> wrote:
-> > >>>>>>>
-> > >>>>>>> From: Arnd Bergmann <arnd@arndb.de>
-> > >>>>>>>
-> > >>>>>>> The tee_ioctl_object_invoke_arg structure has padding on some
-> > >>>>>>> architectures but not on x86-32 and a few others:
-> > >>>>>>>
-> > >>>>>>> include/linux/tee.h:474:32: error: padding struct to align 'par=
-ams' [-Werror=3Dpadded]
-> > >>>>>>>
-> > >>>>>>> I expect that all current users of this are on architectures th=
-at do
-> > >>>>>>> have implicit padding here (arm64, arm, x86, riscv), so make th=
-e padding
-> > >>>>>>> explicit in order to avoid surprises if this later gets used el=
-sewhere.
-> > >>>>>>>
-> > >>>>>>> Fixes: d5b8b0fa1775 ("tee: add TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF=
-")
-> > >>>>>>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > >>>>>>> ---
-> > >>>>>>> The new interface showed up in 6.18, but I only came across thi=
-s after
-> > >>>>>>> that was released. Changing it now is technically an ABI change=
- on
-> > >>>>>>> architectures with unusual padding rules, so please consider ca=
-refully
-> > >>>>>>> whether we want to do it this way or not.
-> > >>>>>>>
-> > >>>>>>> Working around the ABI differences without an ABI change is pos=
-sible,
-> > >>>>>>> but adds a lot of complexity for compat handling.
-> > >>>>>>
-> > >>>>>> This is currently only used by the recently introduced qcomtee b=
-ackend
-> > >>>>>> driver. So it's only used on a few arm64 Qualcomm platforms righ=
-t now.
-> > >>>>>>
-> > >>>>>> I think we should take this patch, but let's hear what others th=
-ink.
-> > >>>>
-> > >>>> Yeah since it's not an ABI issue on arm64 platforms where QTEE run=
-s, so:
-> > >>>>
-> > >>>> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
-> > >>>>
-> > >>>>>>
-> > >>>>>> Thanks,
-> > >>>>>> Jens
-> > >>>>>>
-> > >>>>>
-> > >>>>> I agree. We should take this patch. As noted, there are not many
-> > >>>>> clients relying on it yet, so updating the userspace should
-> > >>>>> be straightforward.
-> > >>>>
-> > >>>> You should rather test without any userspace library update to tes=
-t it's
-> > >>>> not an ABI issue. Just for correctness sake, you can update the li=
-brary
-> > >>>> too.
-> > >>>>
-> > >>>
-> > >>> I'll take the time to test it at some point this week both with and=
- without updating
-> > >>> the library ABI.
-> > >>>
-> > >>
-> > >> Summit, that was the plan from the beginning, that's why I did not a=
-dd "Reviewed-by:"
-> > >> in the first place. Thanks Harshal for volunteering.
-> > >
-> > > Are we good with this patch now?
-> > >
+> > Jump to err_free_shm instead.
 > >
-> > Yes, this is good from our side.
-> >
-> > Tested-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
+> > Fixes: 7bdee4157591 ("tee: Use iov_iter to better support shared buffer=
+ registration")
+> > Cc: stable@vger.kernel.org
+> > Cc: lvc-project@linuxtesting.org
+> > Signed-off-by: Georgiy Osokin <g.osokin@auroraos.dev>
+> > ---
+> >  drivers/tee/tee_shm.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> Good, thank you, Harshal.
+> Thanks for the fix, FWIW:
 >
-> Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
->
-> Arnd, what do you prefer, taking this directly or should I send it in
-> a pull request?
+> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
 
-I forgot about this. I'm picking up this.
+Looks good. I'm picking up this.
 
 Cheers,
 Jens
