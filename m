@@ -4,152 +4,176 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5283F8FA6A
-	for <op-tee@archiver.kernel.org>; Tue, 21 Apr 2026 12:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52058FF885E
+	for <op-tee@archiver.kernel.org>; Mon, 27 Apr 2026 08:51:51 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3E79C44DC3
-	for <op-tee@archiver.kernel.org>; Tue, 21 Apr 2026 12:43:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1776775423;
-	bh=+V8ZfRYrjzwJXgqe+fTwt5G7FKr8RN3Pd3uuU7wkOoo=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=Q7ytLnbpQxtEF8AdwhpmxhR+A6JT/ziSnCGSlXWz85jAbdQVOdO4rpYzqwt476ady
-	 HAjEw/fUCEqzPwQGXwCgFncSWdX4kMLnnI3Zp6WHMWJKfoPDCtl2QNLUgnvCeFE1ei
-	 dEmUWie112rlsLq1LmGBl5iqegRFPmaDlW7d6LLM+NPl5n+1FnTxzyDOF+xUK1QDyX
-	 cFSeMNFP3JiRZINOfwjRY6PAS5YrxL8ip09rlCeTlQ35DX/wUZOcA+SceESMpx0+AV
-	 ygWM2YOm/8QKILOzam8aJUHmpf1C6UvW3PiTuAiAsG0u8Dqsb+V/uEnEgZEZiu3M1D
-	 MSN+30t4jfcww==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 104E444935
-	for <op-tee@lists.trustedfirmware.org>; Tue, 21 Apr 2026 12:43:37 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 86F9F43EA0
+	for <op-tee@archiver.kernel.org>; Mon, 27 Apr 2026 08:51:50 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aKaBnixD;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wUX2gUbn;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 40B8960121;
-	Tue, 21 Apr 2026 12:43:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4193C2BCB0;
-	Tue, 21 Apr 2026 12:43:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776775416;
-	bh=+V8ZfRYrjzwJXgqe+fTwt5G7FKr8RN3Pd3uuU7wkOoo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aKaBnixDB559hSNI2VTzNUIPYmrAI6E00jRbjPrOokUf/IxdtI+SshEpQoAyenhw8
-	 76rWm2uvZ8+hauZIvZZX6A7nFC0SxJ6kMrA9ulppvSD3C+FJ/CzVar45/8h/DB2zcv
-	 YGLim2xCtfRLj1iQMqdaLuz8sX6dE1TTVXRbPe3a1uXohDZKA/UZJ6tPd6x5Wi16eZ
-	 T0URH9Vv45mpbG6NaRuAGhxQYk5PnNi6nxmwsm5JkQwEWynXiz5ODq1PfIo++vls3p
-	 MtaICJCnPo6Zj/5EBQN8gEOGsJsJFR+lVLiJOVhWYo/K5b9K+gK/6TjrA0rrben6Ud
-	 sTHdoBBwGyulA==
-Date: Tue, 21 Apr 2026 18:13:17 +0530
-To: Jorge Ramirez <jorge.ramirez@oss.qualcomm.com>
-Subject: Re: [PATCH v3 11/15] media: qcom: Switch to generic PAS TZ APIs
-Message-ID: <aedw5VUJvwVkYfF5@sumit-xelite>
-References: <20260327131043.627120-1-sumit.garg@kernel.org>
- <20260327131043.627120-12-sumit.garg@kernel.org>
- <ac-KQ7e8-syph1Zl@trex>
- <adOcMsk8a_Clb4WZ@sumit-xelite>
- <439f9bbf-1ba1-465f-b5af-01ba0ebb86d4@oss.qualcomm.com>
- <adYElwM6eT5T8hZM@trex>
+Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com [209.85.167.170])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 31F2C43E5D
+	for <op-tee@lists.trustedfirmware.org>; Mon, 27 Apr 2026 08:51:45 +0000 (UTC)
+Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-4779b2497b4so5741016b6e.3
+        for <op-tee@lists.trustedfirmware.org>; Mon, 27 Apr 2026 01:51:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777279904; cv=none;
+        d=google.com; s=arc-20240605;
+        b=YNw/RtvpXejxRissPT6ZSKSE6mdmcHYTkQTuvKUWZRdscZpssRD5MpSQbbfx0Z+JXR
+         5PMN3RugawbHxm2J1FZe/deVBZor6zPCIioDdVH0hI2Bj2yns2lG/PgWL+Dqj5Abqub4
+         94CdOxBCpvcwL/StjirSZPAz7FN5Y0Lx1a31MY2FrMXDsnZpJVlreRO2mE9WFcY9EnsK
+         ssERSGSPDy+/hNBG61/7lquuwUZcZhltPIQ97u0x4uVutdlKKiYtaIKHaIwc51J7+P19
+         ZcpaSg7OhqePFdhOOJmWigWViOSNP8/advF5ygGowH0kp+DbqiGCNbVChwHKcCASfKzc
+         uwZA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=XT3gbcq+fk250A9gsnTsBOtjpgbR19UnsNKNoI2tldU=;
+        fh=2MRiFYyW2yEu4bliipz6LUTPqHoxA9OTMlHWGzYnOB8=;
+        b=gyCQkodg5Wsedg5y8OgAon9mywMaxYvNta0wiI8qSpvUxI156QMKuNXnD4jMB4sfxZ
+         s7uw5H1XtEj/Trk4uWp9fYS0IrU7uDTvn0c2HG5DF8HnQCUSjWYTn0m0yzTbYUV/xqnE
+         UubSqMMUrFfdjkqvCcqWwjlZZvlqL6G/n1CPr14x7TUnUPOSap6ZWx1s5gb3nU2vb6cA
+         SmYfFe212wXNQ7gfgVIVpJls5W1+jl2h2PdNyynEYgbhvjIyJ1MSZgbex7T0H0KRvzkb
+         HqMsar22hhEJna6ieWhIez0iCNL720bdGQjieJHENxI5morebmAmzHUGkBpVKmrBdNH0
+         tVVQ==;
+        darn=lists.trustedfirmware.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1777279904; x=1777884704; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XT3gbcq+fk250A9gsnTsBOtjpgbR19UnsNKNoI2tldU=;
+        b=wUX2gUbnrCitaupdenPLUz9RReR2be9fEFIdvbDEihj92gns+PztT33B4Ximb/2aD/
+         n4BRqk71TyQrT2ZCfGQsu84pa2AJ5b45b8HZQGx7mVgf2M4VZveHVTXOKR4gNTlSveFp
+         CeNsmnxlEq9st8I725J1WR9FdHYGfiUzGtYV0ucVEQwTGqFxAayIdDRY9GkxbX+CA/A3
+         6msYPiPHR0nntT+cc54JKrB7REbE3lhSmFXB6iBuKs/2o3JYqjthk8lOOdlv2B1gRNFK
+         sM2wtIc29f0Pj76+n0aIdoxSGlpXFdrqRqS5hpdHWfoxn6zlr/2wKSYhfd773UiXftL6
+         oVyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777279904; x=1777884704;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=XT3gbcq+fk250A9gsnTsBOtjpgbR19UnsNKNoI2tldU=;
+        b=JBI9SVWf9V2bdRGQDY1ABZh87LngCD3+XLTimtGsoV1dSSay8oaChx/ufIwbPbNO8P
+         f8jvutE7WncQEQ8iEK7O/6LxlApPQ57ekzbHrqA8VZddRYhm8U6wKcgTjBbkz7u1QK/y
+         GGqglmNKZdHmLemcvKJECfkstqMp6jlya5rwqpLQmihrpV/M7yhH/816cf22TVXAlXbM
+         uha0HNfVAcwDxfKm53yv9DwsZS0AwOTQbaaWSD8/zBS5GAmo1bS3fb4IL7vsartea5Aa
+         R3h/oZ4yi9Z0+3TwMEtQ9ewgyte0o9XqUUib3/HNdm1171hv24sbCSKZC1aMa3/mYFJR
+         J0wQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/tzpqMGPn4lYVh+cdEUFeXLpl3hDmi/aHuKKd4SpiFMTKVHA08AKs/Cbni7/cVkXPRyZFsNWQ=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxtmCdN5I2FzOXMOoZXggOFhohJC3V8Bj/KdCS1Ab/8cECauW8A
+	FIK8ZunH8WfgbBa/lHmWjjuQVK1h/8Unojch554MqSkZxAyXa28+g0BiprkQCHrDAS/b01mJGZ4
+	9rRHRShCOB5u+mLhPMm1HvyDsGeB5vNpq12oYHvtdznLr
+X-Gm-Gg: AeBDievk9GdFcfEWNGMF6AzLKJmEjspuwhGhXA29L4JHpdMkiHtY/dQEX/oYoadH36A
+	OwbCwmjPMMRW2l6DsQwUxEED4u5Ll46IHpFywQaLL8sGmVqvfEKJu1DU2WRivcsC+kqzkqZsswh
+	4bM667KvmZ+/TR3ljksMwzsFyQPrID+zUqwHdGkKi1LYqJTnvyvgOxRmktxqG6qZZmqJg5Q2KDB
+	cg9dX/N1Fxw/DdOIuhZFSZof57toLnMysqfLDMEAzRa96MT6T7HJdAzqyFEwXp4VEJgvY0cFy3B
+	7tH35mMDDi6/AM+ZHi8yowiFnLaHyZvPwHlGT44s3jAoJ1GOg1yHOCRbO1k=
+X-Received: by 2002:a4a:e903:0:b0:694:8ed8:e57d with SMTP id
+ 006d021491bc7-6948ed8ec24mr16715234eaf.58.1777279904554; Mon, 27 Apr 2026
+ 01:51:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adYElwM6eT5T8hZM@trex>
+References: <20260316071210.GA2470832@rayden>
+In-Reply-To: <20260316071210.GA2470832@rayden>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Mon, 27 Apr 2026 10:51:33 +0200
+X-Gm-Features: AVHnY4LMRWaAwM9YY5FDDDuE2oBKAAMdMaxEoXqUa_2V6ezVDw7lz7SimrvLSMM
+Message-ID: <CAHUa44Fpy6Dywfe-UA0Wx0v5D=jb6=SNiE+Wi0g08EtCNLepMw@mail.gmail.com>
+Subject: Re: [GIT PULL] OP-TEE fix for 7.0
+To: arm@kernel.org, soc@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.00 / 15.00];
+X-Spamd-Result: default: False [-5.00 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
-	MID_RHS_NOT_FQDN(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20201202];
+	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	DKIM_TRACE(0.00)[kernel.org:+];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FREEMAIL_CC(0.00)[oss.qualcomm.com,vger.kernel.org,lists.freedesktop.org,lists.infradead.org,kernel.org,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org];
-	ARC_NA(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_COUNT_ONE(0.00)[1];
 	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	DNSWL_BLOCKED(0.00)[100.75.92.58:received];
-	ALIAS_RESOLVED(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[50];
-	TAGGED_RCPT(0.00)[dt,netdev];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.167.170:from];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.167.170:from];
 	NEURAL_HAM(-0.00)[-1.000];
-	TO_DN_SOME(0.00)[]
+	RCPT_COUNT_THREE(0.00)[4];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
+	TO_DN_NONE(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 104E444935
-X-Spamd-Bar: --
-Message-ID-Hash: OJ2OYA3GY5ESD4QPTLUBUK52I7NPGKAU
-X-Message-ID-Hash: OJ2OYA3GY5ESD4QPTLUBUK52I7NPGKAU
-X-MailFrom: sumit.garg@kernel.org
+X-Rspamd-Queue-Id: 31F2C43E5D
+X-Spamd-Bar: ----
+Message-ID-Hash: QNCVWETNCWCAPRAYER5TIYYECNIGHO4R
+X-Message-ID-Hash: QNCVWETNCWCAPRAYER5TIYYECNIGHO4R
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Trilok Soni <trilokkumar.soni@oss.qualcomm.com>, vikash.garodia@oss.qualcomm.com, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-media@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, ath12k@lists.infradead.org, linux-remoteproc@vger.kernel.org, andersson@kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, dikshita.agarwal@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, tonyh@qti.qualcomm.com, vign
- esh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, harshal.dev@oss.qualcomm.com, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>
+CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OJ2OYA3GY5ESD4QPTLUBUK52I7NPGKAU/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QNCVWETNCWCAPRAYER5TIYYECNIGHO4R/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-On Wed, Apr 08, 2026 at 09:32:39AM +0200, Jorge Ramirez wrote:
-> On 07/04/26 15:14:22, Trilok Soni wrote:
-> > On 4/6/2026 4:42 AM, Sumit Garg wrote:
-> > > Hi Jorge,
-> > > 
-> > > On Fri, Apr 03, 2026 at 11:37:07AM +0200, Jorge Ramirez wrote:
-> > >> On 27/03/26 18:40:39, Sumit Garg wrote:
-> > >>> From: Sumit Garg <sumit.garg@oss.qualcomm.com>
-> > >>>
-> > >>> Switch qcom media client drivers over to generic PAS TZ APIs. Generic PAS
-> > >>> TZ service allows to support multiple TZ implementation backends like QTEE
-> > >>> based SCM PAS service, OP-TEE based PAS service and any further future TZ
-> > >>> backend service.
-> > >>
-> > >> OP-TEE based PAS service relies on the linux driver to configure the
-> > >> iommu (just as it is done on the no_tz case). This generic patch does
-> > >> not cover that requirement.
-> > > 
-> > > That's exactly the reason why the kodiak EL2 dtso disables venus by
-> > > default in patch #1 due to missing IOMMU configuration.
-> > > 
-> > >>
-> > >> Because of that, it is probably better if the commit message doesnt
-> > >> mention OP-TEE and instead maybe indicate that PAS wll support TEEs that
-> > >> implement the same restrictions that QTEE (ie, iommu configuration).
-> > > 
-> > > The scope for this patch is to just adopt the generic PAS layer without
-> > > affecting the client functionality.
-> 
-> the patchset cover letter + the commit message + the OP-TEE pull request
-> being referenced gives the ilusion to users that with the current set
-> they will get something functional (they will get a broken video
-> platform instead if they try to use OP-TEE).
-> 
-> That was the point I was making: IMO the commit message walks on a thin
-> line of "completeness"
-> 
-> QTEE and OP-TEE at this time implement different use cases (Venus with
-> QTEE runs with Linux on EL1 , OP-TEE runs with Linux on EL2). So maybe
-> worth mentioning this divergence.
-> 
+Hi,
 
-Sure, I can extend the cover letter to say media support with Linux at
-EL2 is missing for both OP-TEE and QTEE which is being worked on as a
-separate effort related to missing IOMMU support.
+It appears that this pull request has been missed. Can you pull it as
+it is, or do you need a new pull request?
 
--Sumit
+Thanks,
+Jens
+
+On Mon, Mar 16, 2026 at 8:12=E2=80=AFAM Jens Wiklander
+<jens.wiklander@linaro.org> wrote:
+>
+> Hello arm-soc maintainers,
+>
+> Please pull this patch fixing a use-after-free race in the OP-TEE driver
+> where a client exiting prematurely could free a request still being
+> processed by the supplicant.
+>
+> Thanks,
+> Jens
+>
+> The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f2=
+7f:
+>
+>   Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
+>
+> are available in the Git repository at:
+>
+>   gitolite.kernel.org:pub/scm/linux/kernel/git/jenswi/linux-tee tags/opte=
+e-fix-for-v7.0
+>
+> for you to fetch changes up to 387a926ee166814611acecb960207fe2f3c4fd3e:
+>
+>   tee: optee: prevent use-after-free when the client exits before the sup=
+plicant (2026-03-02 14:36:50 +0100)
+>
+> ----------------------------------------------------------------
+> OP-TEE fix for v7.0
+>
+> Fix a use-after-free race between client and supplicant by serializing
+> request access with the supplicant mutex.
+>
+> ----------------------------------------------------------------
+> Amirreza Zarrabi (1):
+>       tee: optee: prevent use-after-free when the client exits before the=
+ supplicant
+>
+>  drivers/tee/optee/supp.c | 107 ++++++++++++++++++++++++++++++++---------=
+------
+>  1 file changed, 74 insertions(+), 33 deletions(-)
