@@ -4,116 +4,116 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31B54FF885A
-	for <op-tee@archiver.kernel.org>; Mon,  4 May 2026 12:29:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46083FF885A
+	for <op-tee@archiver.kernel.org>; Mon,  4 May 2026 12:29:35 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 87990443B5
-	for <op-tee@archiver.kernel.org>; Mon,  4 May 2026 12:29:10 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A133C443B9
+	for <op-tee@archiver.kernel.org>; Mon,  4 May 2026 12:29:34 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vtf1ZWxC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZoH4GnJr;
 	dkim-atps=neutral
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2F303431FF
-	for <op-tee@lists.trustedfirmware.org>; Sun,  3 May 2026 08:32:39 +0000 (UTC)
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-83537a80ab6so355535b3a.1
-        for <op-tee@lists.trustedfirmware.org>; Sun, 03 May 2026 01:32:39 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777797158; cv=none;
+Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 31314434BC
+	for <op-tee@lists.trustedfirmware.org>; Sun,  3 May 2026 09:27:47 +0000 (UTC)
+Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2b458ca2296so18419695ad.0
+        for <op-tee@lists.trustedfirmware.org>; Sun, 03 May 2026 02:27:47 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777800466; cv=none;
         d=google.com; s=arc-20240605;
-        b=XMWn9cVrN8oxulPWj6/t/9qoGYNS8sgsUEnwlkAZbKow/TzP7vofK1M6qQvVaoftYt
-         574ctewhZmHzZAnljNl3y3wuTnJ1CBEtP84ZJpgzQd2z53GSOUreX87Qif4OO/8BuUZM
-         Z2C2BTZHAeYoWvaaw2GpBT1PMKLEZDrYpYXRVjflD/iYLcWuRVIR+hKxv6SzAVu04GoV
-         qCiRhPQIvoJnzEudKHKlHnnGQaUy4ZMKc5kgc+eHc2VPIXA2fvbqwGkgah2u92E+fq2Q
-         IsGJDHauYD8AA6+8HU92D/Sh8SQIHHprk0qtaapMYv8koTsqGD0bAmFiH4+pjij9pkrd
-         19Ww==
+        b=P6b2GAAuORffmRdky3u7MQnJFuD+XdVU9IlbX6Zruljq6UvfycfPP3wPSXzBkdJcEI
+         lg1oaw5GwwI7/k5ofh5aDqQqsboW4f8fjtxqmA5vvvskbcX4lqrjixTSLQ9GjjKC8JVY
+         TJHj2qxwWMeRKw7txhNThR3zf0q07SSbAIqo/UxX/x6Q7E9sX6QGgyCnkPLTOw44DgGj
+         Xfhy7ymHdPIGzWOgKIvx9c9nSysMpchv16lGtGuEfBidzZeG8gc6zVsFxAnrLQURLOLF
+         K6DCOtVOOSx4WC/vE4zPsb5F58X0ryRS0o1N+IL/MEkykl9XqhdEatHrBBMOwydbDpVf
+         triA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=Pd6L2p4z/vEjj2PWWTDuqoD7HTdqPmKTwvL6NDv8+CI=;
-        fh=DBvxCipNH2RlJe8Lt8jDz73G7et6cRT4xOp4aNQo0jg=;
-        b=eezvQRKQq7N76pZmv9abixy7eyvLQ+2xLqWyRpoDjp+N7kUrNLy9MSQ8dwzpKHOCYH
-         yUmPRnaDGCPXp82jUbxvBK6P+9pa2+osuYo4RH5odcx1cVSlyuE/s+UZiCGrFF+fgGLb
-         w9aPct7Y2GZkiQlLS+pt6ay+JZCtzyKewo9dv5g3ZmrewZKmopvUnMhqC5cmXp/+q5wz
-         lHw9decnFsWXs0AmfPukYS0vui8QXnSLJAptiyxmgnKNINPMe7uPT4TFFkPx+Irw6aVi
-         qbK+6A7L8+NR4OyJg9pXah9qkTjUxqN4ysI948ig6AHpNQEwSKfZx6xHa38Yp9XI2E8D
-         G7bQ==;
+        bh=ppStw6lCt5YLOOUp21CPZrKiG2nnbITvQ6cwOBft5X0=;
+        fh=b53EzXOyAB+FVIoBPqsU39j69d8vfonKefXOHVaeaVE=;
+        b=ZQLD1HGJEwSbh6b+YVT5pEwMnjib+QtlBm4WnlVK+Ci00zMxLzaTcZzOw00pc/0U6S
+         pFlnHcMZSStJRxatT7cswyfEysEdpxIu6tluxVvXmGkOeHSQD1ZilG5AxljJ4J7LiAJZ
+         IDPWqMSDHI+t0+oFjORyZywlaTMQFqzbddx36y0cGk2P9A3ytu0gZCaS/4KWsq7BueYq
+         USt6vdxupsq7opFArqw7T16kEvTGF/3duEm+eFfhjH3XOhDIU7RfrbiPLpgPEZSqgb52
+         2auWvAIxeEuw2BAk1n6eQQ2s5XyJZRFSAiVAGDG+/MEQjNt/Pr2pivnD8CHE4njJEqkE
+         0r0Q==;
         darn=lists.trustedfirmware.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777797158; x=1778401958; darn=lists.trustedfirmware.org;
+        d=gmail.com; s=20251104; t=1777800466; x=1778405266; darn=lists.trustedfirmware.org;
         h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=Pd6L2p4z/vEjj2PWWTDuqoD7HTdqPmKTwvL6NDv8+CI=;
-        b=Vtf1ZWxC4wbAokpT/GrtYbdz5vxnsEWc2blJSzlPbIZljBoLMlMEQQCTPMSxS5Ok/x
-         VyLCJDRDC2ARaSnjYuNUrfJta1emOV01aFlU9Rtexok0xhDjY46+T8zxcOOmitOLsmH8
-         /+4yxAyaJ/1kK737eP5+Qon+DVXcbNiUT842ECa3nIvmY5dO/z3d2GpuNtjSU26H7YyG
-         9PGQqXzrvJR/GUwcdj/H0D1up47X+oik4Fu7imVgmtSxM6kKe0lvvNDQuXJXfCz5/CIu
-         8LfXRB+7vlGjoAbZXiobeiNxmRdFDRUv1j5uqRBREjUwhEjMiK79HjjbHfbsZrnRn19b
-         eB2g==
+        bh=ppStw6lCt5YLOOUp21CPZrKiG2nnbITvQ6cwOBft5X0=;
+        b=ZoH4GnJrPBF3lscE3oaKtHnya527R1j3R6tLzUGrk2iMVfL6N9XavKo75w7J1b8UZc
+         QeXGlmJrztlRI0Ll0CD784Mlplo4t0ezxKjZYcpOmRuVobRTT7A6uelkkWTp6NYj714a
+         BL/0CnB0XOcwrSOv0QJPteoF+B/7fiK1k+qVbYut8XptSD/jLvO7iz0Hw2YhBnM8MhHS
+         9PWfH/2UCNkoYIaygMwb1cB6mZDFjsR/XmUJcDuBX8B3kPFlW5xmE+ZjS5M2/MMq7jvx
+         ge3dp5m8/5ehItB5+Pux/IopcENjqrt+yy+ZsAjW/XcNYe8HdkSRDzyGi8MEiZ02JoFe
+         yRoA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777797158; x=1778401958;
+        d=1e100.net; s=20251104; t=1777800466; x=1778405266;
         h=to:subject:message-id:date:from:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Pd6L2p4z/vEjj2PWWTDuqoD7HTdqPmKTwvL6NDv8+CI=;
-        b=EZu8Eg17GdckJ8gRVJMsDghGBm6PkCqqH6qqDuruQ6+uiq+i7w0xg4u/A6MDo/IG9r
-         sf2KL5KDDVc5OElSTzkkYw0rO+nBl3W8+MXLOZrxYGkr2B9oDTA8J6lVPktqU86IvIXL
-         kqLJyI1l+YlfrqdZcyPPgVmQYeSp5TXSGAt4BvLOPO7pRufxdK4Kw0wcdD1zwtu52K9T
-         BB+Y1NhzR+ahnFtsvuR+rEtaXVHO/IcOuGWoeUmxhp4zxjH4VIsA2pcz0aEbutRe5Tfg
-         3DCsCKUvQvkQfD5A/75E0F9YLkxFjkfGcqbKWjpsu4iGgCOChRXsU1Xd4VwDXtlD+aX6
-         vIjg==
-X-Gm-Message-State: AOJu0Yz5nuWEWXgaXvTDja7M1tP5wk4y0VWuwPGKzW3bYCjNzIDmw500
-	7n7voDVgqv4v2TyGBLjXJB2nxIOl3YtmaaoshbUE+yfN7PtaLTRVSout8DruJHsAYu+FnccNuJV
-	2QG6JFIiGzVjXiDFG1PzaIW9KojEtnRc9iMbQ
-X-Gm-Gg: AeBDievXRkQ5V2IEY40ofJPP8N/5/bUWZGsRfxfRpjt315wJEQXN1xJc+rS9CTJtAy+
-	ByW7G58xjFPlhh4RjOwgfI5m9Iw/MqGclOyOCCFDH5H/i/yXZGdO9Oufes8EDFKnVFdSNY7U6ar
-	wkVg+UjW3vP/xQc3tw5N14MaDdTa2Onnttjb9hY0cs6OS/30mgVKBJgFvkf2++hONxEwXifQhrA
-	SsMnOHqQDS2efBgOwVv6zhnVw8v5xQjjVGz5Bonc2JZSz/B/0VkXFh5XhjLpIaquaX9JmTMKYjo
-	PSGhG1oBqbkW7ZU9caehYEaHn3wN1g3oLUaJILj7LRZlWAkHbA==
-X-Received: by 2002:a05:6a00:1d94:b0:82f:8a29:e3b4 with SMTP id
- d2e1a72fcca58-8352d2f7d66mr5194752b3a.50.1777797157581; Sun, 03 May 2026
- 01:32:37 -0700 (PDT)
+        bh=ppStw6lCt5YLOOUp21CPZrKiG2nnbITvQ6cwOBft5X0=;
+        b=SojgX02+P2PjRfPISAInU6urzQm8fpJyJ0xqfAyRrmzNP2UVi6YEewS+xHUV/jabpP
+         BVOQy63b++xCECZFfn1lUp//YHM5bNpbn0+F3aCd//9zb6rt7yZ1p0lW3MUPFXyaCFzm
+         gC35Y7UK461+nTp0xWxgHqAd9PoVp3rgHgiJm54qiVdWgug2FeUU9VkOKtt73857tRN3
+         B9Xie7jMLUBYaY0nsEpqxbPm86BjFhTXqNqPV2rX5Ukl3xl8rzHmd+1vP95vVOt/gdWL
+         IWy7a9hxKQmb7m4KiuvAdR+76UG3LHCd6qXkrLjMCfcaRSZHw6VpwnVQKZysXEoUzutz
+         d80g==
+X-Gm-Message-State: AOJu0Yxvajvqvi+szKuHUw7DHDZqkVQf3IAS4AmoALAGHhbeBNV0PWNw
+	ggHtsvkF1PJR5bcFmt6htApA2aGoGru/H6LEOqZFPgETqhOY/SXM3ogPxeiNR614OHgu/4V6Vso
+	qGl3ka4+Y7YiIxCL35bSYNgQuErQ8h2BJOQd7q3M=
+X-Gm-Gg: AeBDiet2DAojek5fcqSg6QEBoGbrDVeZDLGfctTreGyAsSF4pLNTL0TFj1Go/Ao36O2
+	/7lYAFSzVa51MueX3rKYAm1BjrPmDoGbgbjDPKKjLELyJMBjXP2nJcwu61e7K3c7EIqmA9+Ujq4
+	ytPVHBf8Ggy3QwFdNKL40SZLF81nifr0HNhVaXB2vmB7eIB8WlCh6yKW8wYwjJObAN04SdGk+QR
+	X76bhxraP5AEyEazDtlC8GYSEkoKk59EZKFm8gJbWKM4OTfXgbrv8cBe832XsyzBV93tyIFnqZd
+	nOHDoSbAk8r4KZE3zI405YmTRXKFub0YrDzkc6Hj937xe96vYQ==
+X-Received: by 2002:a17:90a:d2c7:b0:35c:29ba:bf92 with SMTP id
+ 98e67ed59e1d1-3650ccefbebmr5785053a91.5.1777800465635; Sun, 03 May 2026
+ 02:27:45 -0700 (PDT)
 MIME-Version: 1.0
 From: =?UTF-8?B?xLBzYSBDb8Wfa3Vu?= <isacskn94@gmail.com>
-Date: Sun, 3 May 2026 11:32:26 +0300
-X-Gm-Features: AVHnY4K3nszkQPfT_ZYpaataGbpGn4iE6rVXiylEb5JpY-l_fi81iujeVhKEhh8
-Message-ID: <CAPziTZNyW4ejdRm76bLVxU-4uY1f6W-fzVzqLA1oCAZvPZeO9g@mail.gmail.com>
+Date: Sun, 3 May 2026 12:27:34 +0300
+X-Gm-Features: AVHnY4KTWACQ5RZDt_fk1CM3oVvGTLbDOXEBPh84Lyub7UTKX0yLj4Is-BdqHrY
+Message-ID: <CAPziTZO4gvmUUAKLL69-dhGkBADHYPUQ+FwTv98pCZ1sDJUC=w@mail.gmail.com>
 Subject: KLMBG4GEUF
-To: op-tee@lists.trustedfirmware.org
+To: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-0.40 / 15.00];
+X-Spamd-Result: default: False [-1.55 / 15.00];
+	BAYES_HAM(-1.45)[91.29%];
 	R_MIXED_CHARSET(1.25)[subject];
 	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
 	SUBJ_ALL_CAPS(0.75)[10];
 	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	BAYES_HAM(-0.30)[75.09%];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[gmail.com:s=20251104];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.177:from];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.214.173:from];
 	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
-	RCVD_TLS_LAST(0.00)[];
-	RCPT_COUNT_ONE(0.00)[1];
-	FROM_HAS_DN(0.00)[];
-	MISSING_XM_UA(0.00)[];
 	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	DNSWL_BLOCKED(0.00)[209.85.210.177:from];
-	TO_DN_NONE(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
+	MIME_TRACE(0.00)[0:+,1:+,2:~];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	RCPT_COUNT_ONE(0.00)[1];
+	TO_DN_EQ_ADDR_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
 	DKIM_TRACE(0.00)[gmail.com:+];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	NEURAL_HAM(-0.00)[-1.000];
 	MID_RHS_MATCH_FROMTLD(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	FROM_EQ_ENVFROM(0.00)[];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_COUNT_ONE(0.00)[1];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim]
+	MISSING_XM_UA(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.173:from]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 2F303431FF
-X-Spamd-Bar: /
+X-Rspamd-Queue-Id: 31314434BC
+X-Spamd-Bar: -
 X-MailFrom: isacskn94@gmail.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: B45GDVBKEZCDMU2CPNGIBMMIOVPHLKWN
-X-Message-ID-Hash: B45GDVBKEZCDMU2CPNGIBMMIOVPHLKWN
+Message-ID-Hash: AXH2QDPE55NDUQWJYLLXSHO2EQJNDVPA
+X-Message-ID-Hash: AXH2QDPE55NDUQWJYLLXSHO2EQJNDVPA
 X-Mailman-Approved-At: Mon, 04 May 2026 12:28:47 +0000
 Content-Transfer-Encoding: base64
 Content-Type: text/plain; charset="UTF-8"
@@ -121,7 +121,7 @@ X-Content-Filtered-By: Mailman/MimeDel 3.3.5
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/B45GDVBKEZCDMU2CPNGIBMMIOVPHLKWN/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AXH2QDPE55NDUQWJYLLXSHO2EQJNDVPA/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -151,4 +151,4 @@ IGRhbWFnZWQgZU1NQywgaXMgdGhlcmUgYW55IHN1cHBvcnRlZCB3YXkgdG8gcmVpbml0aWFsaXpl
 DQogICBvciByZWNvdmVyIHNlY3VyZSBzdG9yYWdlPw0KDQpJIGFtIG5vdCB0cnlpbmcgdG8gYnlw
 YXNzIHNlY3VyaXR5LCBidXQgdG8gdW5kZXJzdGFuZCB0aGUgYXJjaGl0ZWN0dXJhbA0KbGltaXRh
 dGlvbiBpbiByZWFsIHJlcGFpciBzY2VuYXJpb3MuDQoNCkFueSBjbGFyaWZpY2F0aW9uIHdvdWxk
-IGJlIGhpZ2hseSBhcHByZWNpYXRlZC4NCg0KQmVzdCByZWdhcmRzLA0K
+IGJlIGhpZ2hseSBhcHByZWNpYXRlZC4NCg0KQmVzdCByZWdhcmRzDQo=
