@@ -4,130 +4,115 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1657CD342C
-	for <op-tee@archiver.kernel.org>; Wed,  6 May 2026 06:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24042CD342C
+	for <op-tee@archiver.kernel.org>; Wed,  6 May 2026 06:51:21 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id E2FEB43E8A
-	for <op-tee@archiver.kernel.org>; Wed,  6 May 2026 06:50:55 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 5E30F44E3B
+	for <op-tee@archiver.kernel.org>; Wed,  6 May 2026 06:51:20 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BvTnlQbH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YqVcKc2y;
 	dkim-atps=neutral
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 46DA843719
-	for <op-tee@lists.trustedfirmware.org>; Tue,  5 May 2026 15:09:02 +0000 (UTC)
-Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-8244105fa96so223158b3a.3
-        for <op-tee@lists.trustedfirmware.org>; Tue, 05 May 2026 08:09:02 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777993741; cv=none;
-        d=google.com; s=arc-20240605;
-        b=DICgxDdqDXWqZStIQY1gPZnOjC37yaflEg9xbwuU6UYkhUmSteFIPSkgvqDwKb3lpX
-         hbCa6hkgVm8daut/p1EuICv7mkkH226t94GDSobho7OeoFVgjaC4AOtqLOZBv3JBZTXT
-         BgvSPrzm6IALRmKnpNQKI7ds6eTYjPc+EKIosR2CQ6h7KKB5/hUmIAswy+plnIzdIt2S
-         F9vC3H8w/Ffx7Lr6KvRGt9l9e48/wHgHU5Yr0mYLIDdpRFzMyzAfJnnuM6c0MkwRqH5W
-         dlnbbEn3MSBvf6dWXftcnpZtCO+DAeRhhZhYWD62igyb/l7U6UBWA9X87SprG1oeuvOf
-         NJIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=WFLu/MrxCCBgoaOgaM41gN26RjdDkqHXm8iJaHm0dUA=;
-        fh=D7OJ7U+CULad1wFc6N7wFEOXQQ0wzv03e+n8t5XMx7s=;
-        b=I0IDx2Jd9rzDn4e0ANamqIkS9MAg2h/hMdC3/PNeCbUIbsfWAZUr53UJZFASrWtxTT
-         cZVl8rUxWkw8y9ztETZ/2sXOnhw/DzOiEmSdl8JG+LI0fT6mItszCCcQ8UeGsjWb4sDe
-         pk7uaMwifoDix0VH2tyQRTbiYtJFKQjXdxhewcx4szd+bEaBhIBK6r+swszAvGb2lzRz
-         m+W8ftP0envigFaeSlrNpdq+dap9B/SJx3+pYgVcWQCLgaZBHszeOolfB1WZKzl2D5qO
-         qKh3j5+gpbKWKNmQLGDjUzZ9u9TZXH478YJQekyTho/r0MBshQKMFwN2T7sQVKLGDFD0
-         teDA==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0E26A43719
+	for <op-tee@lists.trustedfirmware.org>; Tue,  5 May 2026 15:30:59 +0000 (UTC)
+Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-2ae1255a90bso3626285ad.1
+        for <op-tee@lists.trustedfirmware.org>; Tue, 05 May 2026 08:30:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777993741; x=1778598541; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1777995058; x=1778599858; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=WFLu/MrxCCBgoaOgaM41gN26RjdDkqHXm8iJaHm0dUA=;
-        b=BvTnlQbHX66u/WFnDrSdIzmKHwx4eragLSySLd3ToBOOrUvPz4l+Zako0iwPQTO2EF
-         6alIe1OKbXCFvqkoWkOOa7CxDBhYPOtsyCUqWIghNQNk5Eh5C+A87MHXmYfieMbmRnYC
-         0imFIvctWF1kKR+FdtzDba46jwLiZmuepzS3llsjaJByn5vWJW5D/mLxTjj2Vr8Kc6ah
-         7JiI8TEMkwdJ31UkGYpc7EPlIYYlxeUcuxXJgY6e0LVUf/Th9b8nyrQO58UOTtX9QjMa
-         fFHzeNbwSmGKaEbKh+Hxe+L34D8frlscnTeTDKGrQ2jiOSYd/a6kVhCiEoFQUl8OkF9Q
-         AI/Q==
+        bh=EFxD4yvGm/drPWf+CyREjTHAf+dc7Z5xe0nazxw0i0g=;
+        b=YqVcKc2ynHDSZPnfD2EbqdeAsQZvG+1rsoijc7Bxcc+cJdNRkQs5uoVSzCCYtJ7Qal
+         wsNH0VcuZDIMfzlwJ38JV0paVYq4LOORsOX2JtGZJLvOasdbAZ56risfscVOGROXrTBb
+         Y2moSWQ689dyuRUJkiOR/pDQzafPX5AztqteutLXcIHPtFWopz1ueH8RylUwzz2G+LFP
+         ydIY9SJiEs+J4AgMX5zXT9OuN49qKEwZrGta/zDfr0A9Ze5vEfPBr3o5GW4yFoCtJZgq
+         XCrYaHOGa40OMG6wPCVXbe5BjSifpzgqUEYgAclXBv1+tESVtbVtiXkYwSOnmUW/Gmx5
+         +dMQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777993741; x=1778598541;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1777995058; x=1778599858;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=WFLu/MrxCCBgoaOgaM41gN26RjdDkqHXm8iJaHm0dUA=;
-        b=KZEiuGD7yd5siPPBk5ttThD7/jcc2LZNdPEZYVTF5tGKwICa7wffCZbPscFU3ZiQdT
-         XHoQLPXhTgZ4a/YVrDjF0U7ukDIumQwMr86ypMM7OunFw3c00j5H/uRAT5X2fU921VzV
-         SMgE87Nb/1eMhjTVo4K6Mx2HvjcPyrhInU5Txu0N0qHNxmIp/AwAY6mI2BUCQ8kxeJlU
-         93vcfWsR/YmEWrZJkAFGznGnuG0jrSe9vyqeuv9XxhkjZpnmRs0l0PF2ZszhF/JC074p
-         qWnlac3yH5aloO7jflB1TFIrPJK7O8YuiA9DtUOP+qOhlQBxw4ihi3ns5kThtUAq607J
-         6ASg==
-X-Forwarded-Encrypted: i=1; AFNElJ8sb4KjfpBjLEVJDZd1CHOj8P1/TCJtmHkaFtHb9Lev7uZml6DZaSxas9kMGcj1avTjATOptrU=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzTHMeRUfWAV+vJHcFoKUk/30QtSEfY4hZuAZ6sSb8vWmmYLzE/
-	rF0BGpjCAe1SIKveDGIhSyDtePp/lwZjzVBsJ89pSVBJfcGhQ20Ox8jWUtNGvJE9eFhkg4h4Odu
-	Oy6NmCqKc9jh7JpYFdZ7kxU/PoPM0Y28=
-X-Gm-Gg: AeBDies6zeyzcrWAzxgySRAni9L0FNo9WcqFT6B3Y80bhfa+5ZJRyKoQoTeK1wOKzpS
-	KYohSLTTo2/1AnhOXBBFRsd/nIVgVGh97X6VeDBxTfjwQeC5gRr42WREQ1Yd6k6KFg5VD2UEo2t
-	6rV+hWKzGTg2RnQUa96MeYMXpXVvFCvQD1HnhMTJIJmMuB/BsV8821hXC0TdWzYhZbh7znIa6AW
-	QR+JpnPudUAvHvc0TJ3iO5FiDhUbNwN6bN/2Q34qbKm+z6+A5PEuW41qCRjteiMNrSUu7PqwSuq
-	GJcyMfACHig6Sq9y
-X-Received: by 2002:a05:6a00:1f17:b0:82d:1faf:775f with SMTP id
- d2e1a72fcca58-8393e36240bmr1517149b3a.5.1777993741117; Tue, 05 May 2026
- 08:09:01 -0700 (PDT)
-MIME-Version: 1.0
-References: <CAHUa44E+b9SmT++XrrzSansAjMMhgxQLwCA-LmS-GMEugSmhSw@mail.gmail.com>
- <20260429113219.88452-1-q.h.hack.winter@gmail.com> <afS5XzaeLUx1ngAl@sumit-xelite>
-In-Reply-To: <afS5XzaeLUx1ngAl@sumit-xelite>
+        bh=EFxD4yvGm/drPWf+CyREjTHAf+dc7Z5xe0nazxw0i0g=;
+        b=Da6CpDIKTlG2i9UJeZvnf6n/f0OMUrMcWehmO4h4gB9pjvj8SwZDUD3fgXXo0pYY6X
+         lItE51TYT6c+50LRD3gBytyoWEn5OOSfV10a/XLl8iVtPePR6eud3PggswzEJEiNvTd7
+         lmuQI3MzendGbHF9L6kgWYcSR/YyWOmvq0sYmpazQNw6YnCVIkV3lgtb9+r6O/4k+Lp3
+         +2/DdNnGHlZXSENDhEYP6qPvX1XWBqSx5zKISucUKmun9NFXxUYiXJPzd/v+33CHIH+b
+         NdSe6IDNd40+Fn2NZI4NT39nQ2GVD51kJhsDzqtBTZhjviif5coGFFq1IYV340Xjw38b
+         0gAg==
+X-Forwarded-Encrypted: i=1; AFNElJ9qXEokD3PRlx0Wp98ddGbLBCfeKPMjpxdOVnfTamkQ2ec56b+aZucM0Ryd5tris0IwO1S8FzI=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxXKkQOYMP4HumVJYHcoIzH9QSLwNqqhi6PdURrWPDOt+GykOSU
+	aUTaXOadyV4iIuaOZqqjNZdP4sMB1x5Nr1iBLh3wpPGnSja9nYYd6kFJxe6oPg+RO5k=
+X-Gm-Gg: AeBDievoW28tIzCsUGbtcMRcLmUt7XVCmrMKkhGy8Yh3Wd2c5R/QRJ/t1YWj72sgRlI
+	V3NY2U8eLiFzckHd1JuG63r3ZB2oiVrRCYOeMHb2TN8CMJcfHuqvd8TLjf4VOv4b3OpCQPcx08r
+	LIdnNlDOasHXR79FD5SIA9q20Y0S7UHfvc5IySTUs15g34iRh1PaUNQc8LaaD4cmFp+dseh8Jvt
+	iHTsWV49tqE27+fPQJaUyQ/xMEWu0dQ1n1Wp1lefM7h6u1nGvDfnTh66r/+5FJgMBdcfmBRU69J
+	/z/ugN+7Yc43j1DOlwdfm9zNmagovvQBOh9YUgn1+y3lQuNCVSBRKsA2YFyyz2PPP5Ge2I7DBoJ
+	Gk7RIE6X4ex0uiQHLBQxDsewcKoPrNWzorEO01qCXrJbIB81r1IFRSusHCwkjm3as8MLUOA9bpC
+	xds6FF6ntVQRup6nByQhWqn5iCxXvEYM/BEhD2XKg6ks2Y996xj94XSIzGEqGsFRjukevx
+X-Received: by 2002:a17:903:2284:b0:2ba:3376:2354 with SMTP id d9443c01a7336-2ba53e78f73mr17155245ad.5.1777995057856;
+        Tue, 05 May 2026 08:30:57 -0700 (PDT)
+Received: from localhost.localdomain ([14.150.214.40])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b9caa91671sm141910895ad.13.2026.05.05.08.30.52
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 05 May 2026 08:30:57 -0700 (PDT)
 From: Qihang <q.h.hack.winter@gmail.com>
-Date: Tue, 5 May 2026 23:08:49 +0800
-X-Gm-Features: AVHnY4IB4bLxMECzVTsn7hVK-3lykdJPcSugaGO8bkP_uNQa_Ulxgd_hEQgrMBs
-Message-ID: <CAH78GvtkW8RBmzY1y=n-RzTy-At947-TVFYQae5J95xyvVPncw@mail.gmail.com>
-Subject: Re: [PATCH] tee: fix missing shm reference cleanup in tee_ioctl_supp_recv
-To: Sumit Garg <sumit.garg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To: jens.wiklander@linaro.org
+Subject: [PATCH v2] tee: fix missing shm reference cleanup in tee_ioctl_supp_recv
+Date: Tue,  5 May 2026 23:30:41 +0800
+Message-Id: <20260505153041.17794-1-q.h.hack.winter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <afS5XzaeLUx1ngAl@sumit-xelite>
+References: <afS5XzaeLUx1ngAl@sumit-xelite>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.10 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
+X-Spamd-Result: default: False [-2.00 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	R_MISSING_CHARSET(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[gmail.com:s=20251104];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.182:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
 	FREEMAIL_FROM(0.00)[gmail.com];
+	FREEMAIL_CC(0.00)[kernel.org,lists.trustedfirmware.org,gmail.com];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	DKIM_TRACE(0.00)[gmail.com:+];
-	MISSING_XM_UA(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.182:from];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3];
-	ALIAS_RESOLVED(0.00)[];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_ONE(0.00)[1];
+	RCPT_COUNT_THREE(0.00)[4];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	FREEMAIL_ENVFROM(0.00)[gmail.com]
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[14.150.214.40:received];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.172:from];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	NEURAL_HAM(-0.00)[-0.997];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.214.172:from];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 46DA843719
-X-Spamd-Bar: -----
+X-Rspamd-Queue-Id: 0E26A43719
+X-Spamd-Bar: -
 X-MailFrom: q.h.hack.winter@gmail.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: EWMAWNECRLTS3CLB5JSCOGIJGCSTHKJB
-X-Message-ID-Hash: EWMAWNECRLTS3CLB5JSCOGIJGCSTHKJB
+Message-ID-Hash: PG4KMZ7IBS7G4UOXGY3TBLVLSW5GHGXD
+X-Message-ID-Hash: PG4KMZ7IBS7G4UOXGY3TBLVLSW5GHGXD
 X-Mailman-Approved-At: Wed, 06 May 2026 06:50:50 +0000
-CC: op-tee@lists.trustedfirmware.org
+CC: sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, Qihang <q.h.hack.winter@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/EWMAWNECRLTS3CLB5JSCOGIJGCSTHKJB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/PG4KMZ7IBS7G4UOXGY3TBLVLSW5GHGXD/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -135,169 +120,113 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-Hi Sumit,
+params_from_user() acquires tee_shm references for MEMREF parameters and
+expects the caller to release those references with tee_shm_put() during
+cleanup.
 
-Thanks, that makes sense.
+tee_ioctl_open_session(), tee_ioctl_invoke(), and
+tee_ioctl_object_invoke() all do this, but tee_ioctl_supp_recv() only
+frees the parameter array and does not drop any acquired shared-memory
+references.
 
-I had been conservative about the possibility of num_params being updated
-by supp_recv backends, but looking again at the current paths, I agree
-that alloc_num_params is unnecessary here.
+Fix this by using a common helper to release MEMREF references before
+freeing the parameter array, and apply it to tee_ioctl_supp_recv() as
+well.
 
-I'll drop that, rename the helper to free_params(), and send a v2.
+Signed-off-by: Qihang <q.h.hack.winter@gmail.com>
+---
+v2:
+- rename helper to free_params()
+- drop alloc_num_params and use num_params directly
 
-Thanks,
-Qihang
+ drivers/tee/tee_core.c | 46 +++++++++++++++++-------------------------
+ 1 file changed, 19 insertions(+), 27 deletions(-)
 
-On Fri, May 1, 2026 at 10:32=E2=80=AFPM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
->
-> On Wed, Apr 29, 2026 at 07:32:19PM +0800, Qihang wrote:
-> > params_from_user() acquires tee_shm references for MEMREF parameters an=
-d
-> > expects the caller to release those references with tee_shm_put() durin=
-g
-> > cleanup.
-> >
-> > tee_ioctl_open_session(), tee_ioctl_invoke(), and
-> > tee_ioctl_object_invoke() all do this, but tee_ioctl_supp_recv() only
-> > frees the parameter array and does not drop any acquired shared-memory
-> > references.
-> >
-> > Fix this by using a common helper to release MEMREF references before
-> > freeing the parameter array, and apply it to tee_ioctl_supp_recv() as
-> > well.
-> >
-> > Since supp_recv backends may update num_params, preserve the original
-> > allocated parameter count for cleanup.
-> >
-> > Signed-off-by: Qihang <q.h.hack.winter@gmail.com>
-> > ---
-> >  drivers/tee/tee_core.c | 49 +++++++++++++++++++-----------------------
-> >  1 file changed, 22 insertions(+), 27 deletions(-)
-> >
-> > diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-> > index ef9642d72672..adad1ea8e31b 100644
-> > --- a/drivers/tee/tee_core.c
-> > +++ b/drivers/tee/tee_core.c
-> > @@ -530,6 +530,21 @@ static int params_to_user(struct tee_ioctl_param _=
-_user *uparams,
-> >       return 0;
-> >  }
-> >
-> > +static void params_free_decref(struct tee_param *params, size_t num_pa=
-rams)
->
-> I would rather rename this API as free_params().
->
-> > +{
-> > +     size_t n;
-> > +
-> > +     if (!params)
-> > +             return;
-> > +
-> > +     for (n =3D 0; n < num_params; n++)
-> > +             if (tee_param_is_memref(params + n) &&
-> > +                 params[n].u.memref.shm)
-> > +                     tee_shm_put(params[n].u.memref.shm);
-> > +
-> > +     kfree(params);
-> > +}
-> > +
-> >  static int tee_ioctl_open_session(struct tee_context *ctx,
-> >                                 struct tee_ioctl_buf_data __user *ubuf)
-> >  {
-> > @@ -595,16 +610,7 @@ static int tee_ioctl_open_session(struct tee_conte=
-xt *ctx,
-> >        */
-> >       if (rc && have_session && ctx->teedev->desc->ops->close_session)
-> >               ctx->teedev->desc->ops->close_session(ctx, arg.session);
-> > -
-> > -     if (params) {
-> > -             /* Decrease ref count for all valid shared memory pointer=
-s */
-> > -             for (n =3D 0; n < arg.num_params; n++)
-> > -                     if (tee_param_is_memref(params + n) &&
-> > -                         params[n].u.memref.shm)
-> > -                             tee_shm_put(params[n].u.memref.shm);
-> > -             kfree(params);
-> > -     }
-> > -
-> > +     params_free_decref(params, arg.num_params);
-> >       return rc;
-> >  }
-> >
-> > @@ -657,14 +663,7 @@ static int tee_ioctl_invoke(struct tee_context *ct=
-x,
-> >       }
-> >       rc =3D params_to_user(uparams, arg.num_params, params);
-> >  out:
-> > -     if (params) {
-> > -             /* Decrease ref count for all valid shared memory pointer=
-s */
-> > -             for (n =3D 0; n < arg.num_params; n++)
-> > -                     if (tee_param_is_memref(params + n) &&
-> > -                         params[n].u.memref.shm)
-> > -                             tee_shm_put(params[n].u.memref.shm);
-> > -             kfree(params);
-> > -     }
-> > +     params_free_decref(params, arg.num_params);
-> >       return rc;
-> >  }
-> >
-> > @@ -716,14 +715,7 @@ static int tee_ioctl_object_invoke(struct tee_cont=
-ext *ctx,
-> >       }
-> >       rc =3D params_to_user(uparams, arg.num_params, params);
-> >  out:
-> > -     if (params) {
-> > -             /* Decrease ref count for all valid shared memory pointer=
-s */
-> > -             for (n =3D 0; n < arg.num_params; n++)
-> > -                     if (tee_param_is_memref(params + n) &&
-> > -                         params[n].u.memref.shm)
-> > -                             tee_shm_put(params[n].u.memref.shm);
-> > -             kfree(params);
-> > -     }
-> > +     params_free_decref(params, arg.num_params);
-> >       return rc;
-> >  }
-> >
-> > @@ -822,6 +814,7 @@ static int tee_ioctl_supp_recv(struct tee_context *=
-ctx,
-> >       struct tee_iocl_supp_recv_arg __user *uarg;
-> >       struct tee_param *params;
-> >       u32 num_params;
-> > +     u32 alloc_num_params;
-> >       u32 func;
-> >
-> >       if (!ctx->teedev->desc->ops->supp_recv)
-> > @@ -838,6 +831,8 @@ static int tee_ioctl_supp_recv(struct tee_context *=
-ctx,
-> >       if (get_user(num_params, &uarg->num_params))
-> >               return -EFAULT;
-> >
-> > +     alloc_num_params =3D num_params;
->
-> Why is this needed? Shouldn't the updated num_params will point to size
-> of params array?
->
-> -Sumit
->
-> > +
-> >       if (size_add(sizeof(*uarg), TEE_IOCTL_PARAM_SIZE(num_params)) !=
-=3D buf.buf_len)
-> >               return -EINVAL;
-> >
-> > @@ -861,7 +856,7 @@ static int tee_ioctl_supp_recv(struct tee_context *=
-ctx,
-> >
-> >       rc =3D params_to_supp(ctx, uarg->params, num_params, params);
-> >  out:
-> > -     kfree(params);
-> > +     params_free_decref(params, alloc_num_params);
-> >       return rc;
-> >  }
-> >
-> > --
-> > 2.39.5 (Apple Git-154)
-> >
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index ef9642d72672..8cdf2ec7e74f 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -530,6 +530,21 @@ static int params_to_user(struct tee_ioctl_param __user *uparams,
+ 	return 0;
+ }
+ 
++static void free_params(struct tee_param *params, size_t num_params)
++{
++	size_t n;
++
++	if (!params)
++		return;
++
++	for (n = 0; n < num_params; n++)
++		if (tee_param_is_memref(params + n) &&
++		    params[n].u.memref.shm)
++			tee_shm_put(params[n].u.memref.shm);
++
++	kfree(params);
++}
++
+ static int tee_ioctl_open_session(struct tee_context *ctx,
+ 				  struct tee_ioctl_buf_data __user *ubuf)
+ {
+@@ -595,16 +610,7 @@ static int tee_ioctl_open_session(struct tee_context *ctx,
+ 	 */
+ 	if (rc && have_session && ctx->teedev->desc->ops->close_session)
+ 		ctx->teedev->desc->ops->close_session(ctx, arg.session);
+-
+-	if (params) {
+-		/* Decrease ref count for all valid shared memory pointers */
+-		for (n = 0; n < arg.num_params; n++)
+-			if (tee_param_is_memref(params + n) &&
+-			    params[n].u.memref.shm)
+-				tee_shm_put(params[n].u.memref.shm);
+-		kfree(params);
+-	}
+-
++	free_params(params, arg.num_params);
+ 	return rc;
+ }
+ 
+@@ -657,14 +663,7 @@ static int tee_ioctl_invoke(struct tee_context *ctx,
+ 	}
+ 	rc = params_to_user(uparams, arg.num_params, params);
+ out:
+-	if (params) {
+-		/* Decrease ref count for all valid shared memory pointers */
+-		for (n = 0; n < arg.num_params; n++)
+-			if (tee_param_is_memref(params + n) &&
+-			    params[n].u.memref.shm)
+-				tee_shm_put(params[n].u.memref.shm);
+-		kfree(params);
+-	}
++	free_params(params, arg.num_params);
+ 	return rc;
+ }
+ 
+@@ -716,14 +715,7 @@ static int tee_ioctl_object_invoke(struct tee_context *ctx,
+ 	}
+ 	rc = params_to_user(uparams, arg.num_params, params);
+ out:
+-	if (params) {
+-		/* Decrease ref count for all valid shared memory pointers */
+-		for (n = 0; n < arg.num_params; n++)
+-			if (tee_param_is_memref(params + n) &&
+-			    params[n].u.memref.shm)
+-				tee_shm_put(params[n].u.memref.shm);
+-		kfree(params);
+-	}
++	free_params(params, arg.num_params);
+ 	return rc;
+ }
+ 
+@@ -861,7 +853,7 @@ static int tee_ioctl_supp_recv(struct tee_context *ctx,
+ 
+ 	rc = params_to_supp(ctx, uarg->params, num_params, params);
+ out:
+-	kfree(params);
++	free_params(params, num_params);
+ 	return rc;
+ }
+ 
+-- 
+2.39.5 (Apple Git-154)
+
