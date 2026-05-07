@@ -4,125 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E2FACD343B
-	for <op-tee@archiver.kernel.org>; Thu,  7 May 2026 07:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7687FCD3442
+	for <op-tee@archiver.kernel.org>; Thu,  7 May 2026 07:47:40 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id C9D3A44D3A
-	for <op-tee@archiver.kernel.org>; Thu,  7 May 2026 07:31:27 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B6AA444DA6
+	for <op-tee@archiver.kernel.org>; Thu,  7 May 2026 07:47:39 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=vQEccjDJ;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=UnZaoOfS;
 	dkim-atps=neutral
-Received: from mail-oa1-f50.google.com (mail-oa1-f50.google.com [209.85.160.50])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0BCA443271
-	for <op-tee@lists.trustedfirmware.org>; Thu,  7 May 2026 07:31:21 +0000 (UTC)
-Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-408778a8ec4so279527fac.0
-        for <op-tee@lists.trustedfirmware.org>; Thu, 07 May 2026 00:31:21 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778139080; cv=none;
+Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com [209.85.210.47])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id DB68643ECE
+	for <op-tee@lists.trustedfirmware.org>; Thu,  7 May 2026 07:47:32 +0000 (UTC)
+Received: by mail-ot1-f47.google.com with SMTP id 46e09a7af769-7dd73b7c757so314306a34.0
+        for <op-tee@lists.trustedfirmware.org>; Thu, 07 May 2026 00:47:32 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778140052; cv=none;
         d=google.com; s=arc-20240605;
-        b=HWweQbBieOqSHeDafu4XO2cWvZCzmohfCcVvfqMEpobbG1myjKaMV1GQJoVuwqpMxB
-         CTRic1qK7G3Z5d84ogUXZR3PcsUXhGL7RiAqU9f0qJ3O9yjoClLm9xQiY9UC4o3XWM0s
-         yIbbsz8jFGR8usor7zol3Pcu+xImp1xAEcpo/nX4IqqKmafx5gQldlGqYthqCNlEhYp5
-         Lb35PYkuANWJ6Dr87G/J1JlIUB6swGFwaakK+0RYED6rXCglPwj1hfuVXYTrzs54eJmp
-         LZ5eU7ltdof2rJf1K3pO9TTaxhqEMAYSxvaqJjxrK7jK3XcJZTsZOP/j2/zs8iRCtaB3
-         xM8A==
+        b=BMXxcvgs7CFXqnBLKhiiBxmvr3JzA0SnnstoKJsW302BuhLq4pesws6w4jvFNvZe8j
+         Xx0JLCrP2LZMEMwLAxDPVW6GYQdC41mjcXbWRWyXOE1g4iQA23MdfXudTnFNrgNLuq7h
+         V9D1Nbf0rLZOg3qq2NP8Ay2VcsI2+AjXGHXw0K/hX3S+JgV4kd6RKtJuVGwNIJew12EQ
+         8Lw7CBf65dQ8xfBGnabzeWcl9AVO/3+NgF95P4CT4hmYOeh/ZVx5qvo1Kp+1Lc0jnHv2
+         QyOMF3BAJsUSMHfZixhjuqWMvqaXfmVz0r9yXfIc9oto+HxhcW8gY+ltYr8wTNQjL6XK
+         dXJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=jFOQdIJISvoPXXvxTeBBdH00URrGZUVuDlNO/Sgrz7M=;
-        fh=a8ed3lWwtOtRX4mVqa0iqBvuOYoBJHm2lTmhvNQ+cXU=;
-        b=COmAeditc2QV3bTCPltbmCRw/Q5hrAbH7lCdn/SssUfC9A+RiCLr0KMPTsn2uWRwgj
-         NCByQVVbfFBYTfai89RvKf7amY71oAz2zBSqNWBeLxRpOhFaG7z3WolfxBmY5t7pPXJ1
-         bFrMcsXM/JIhZpW9w7wx8tMz+8FygSSDJ7oQJNO4ICe34444Wt5MaZ38NnSREANnJB8b
-         Pf0U8PUI/nrrxl5VEeVY1NdHITjH10C9atU9ImPaSNXfAYCP1zYQhgRI8mpeuiFEUMms
-         g24tGUs0wllygjKT80x9vRM/fJsgVY8gus7XHL6BHMFcT3BS7AzBsKaHT8q0l/5nDR5s
-         ZD6w==;
+        bh=Rq2ok0aSlKnK84NFw1V+oWhftvLjgXlYehWfM4IqKd8=;
+        fh=qtz08ZPdSgc+7RNghRvxWcyM7X9yd+j+C+1cIzkItaA=;
+        b=dwI1czHqgTYHXcq6siLAEVwZCXEE6ZVKj+lHck/HVyn45NNb7GAjYrhgJhfO5bQdKV
+         mczICedylZrucEJghJfxUwCuX5FB1b0/Rhvc/dPmy5VNqTMa2CJZytnETYiCB9NMMsrd
+         8thY1pco9+UGyI5DfQ7/fTBQvLKoA43lZcT7/VHkoaosA8U7aMuwzQBcmsRaXMlC0kxy
+         EaFL/Fjo9iFY6onHkrIBUte9b6CzEp4Cd03N9MYCb18D8bBZsPVTMgxHdPpo3OV80bRT
+         yr7G3gLTe/nrvtWDJTNbo5x5sPfDH1kKjvJgM5g+PRBVww/9NorJdp02D+7AV94NIMUY
+         YurA==;
         darn=lists.trustedfirmware.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1778139080; x=1778743880; darn=lists.trustedfirmware.org;
+        d=linaro.org; s=google; t=1778140052; x=1778744852; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=jFOQdIJISvoPXXvxTeBBdH00URrGZUVuDlNO/Sgrz7M=;
-        b=vQEccjDJEiv6cMSU9VTXoP4AR7YuaPzlefNszuD5dPwRcSgv22wuxBJ3xdhzeEo3fE
-         UUvPnqZ11YRUmOZOmH02hiHwAyW9IVFTPsLRTjn1dhUZ/39K/n3tcSmFQ25cNyooOe5J
-         PgSsbdT6xroqEIECjKX7lev3aGny8gjfldeR9VegCsMZQRfbPv/Mhfm1+MtVl9PSzS0b
-         lC/cIKXi0IFIG9aF3Bti9R3rInABKg9xFivRfIfQGLCiIMCMaPXLPy65Iq/oew4AA7xE
-         LyI8Rfo2wuFlMypkjPToSNFnt0UsvAxTVYKyPDDf6eNOzNo4oWADV+aIDvC/m7G6JD8y
-         3jYw==
+        bh=Rq2ok0aSlKnK84NFw1V+oWhftvLjgXlYehWfM4IqKd8=;
+        b=UnZaoOfSOXVDTLdqQVLFl6A3SocC8TP0q3AJc+v1WFLVm82u9xB+rOvKmWs5Axo9LI
+         1A24A1XobdoAUGXl7sqXrztiH9/rkchivcm17RkM5/S0gL05VY/IsaQ6D78xm+km8trL
+         VHqBVqEbYG3R63ZmgQ7s2W3Ci4m+7h/kYcMlkKcgzvq4bsoGYoIuImNhsXEd3foWi8h9
+         W0lr3vrrwdbdrqMrLipxv0orftmrNfSDsTDhrQNxygpJUzuGdehpkaCLeHgnYJI7S8sk
+         ZUA10+MYYUQrTG1eOVFVsifvoY18bVLwLU/X1MoiWbZoLkoMBAhDJEWKcnrwGo36pdqv
+         9mtA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778139080; x=1778743880;
+        d=1e100.net; s=20251104; t=1778140052; x=1778744852;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=jFOQdIJISvoPXXvxTeBBdH00URrGZUVuDlNO/Sgrz7M=;
-        b=k6qfV08/suj2OXXlMmC0ZZH+gvzz4vtH8pFYAAQ1QVSSa3sLXllGfewvOePs8q+sI8
-         NzZ7u6cvLsNx6NUjpKL6ov8uni5OkSCa97h4pviDBMjg8DDPUyQRqTi/fbfAX2pPH0ji
-         lO9buCEtOPz+dc58yZL2QEu3aqvPtT61YrIOmrSmSMWrQCvKAEC0U/qnt0SUiiu/y7bQ
-         hihaqCs5F5yww3WoiH7PvKlcmBkvnooSvhp3XCT20TeVzJEmFqXNnCE2/ko1Ja6c2Fpu
-         rw2NNCpUjCAxV3cPvCQV4KdXcOWoZbPCjmqk8Uf5qCBUIY+U8bIACap440zH9TASotv+
-         a1MQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9FeCZ1pk1rFzGnxX0vSlQbYcuSMlABIhTgLcS8PHUP2JdObvhIZBogx9DZ5iRdR4cCVC3zBYY=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YwgqZjKVj8uXn/w3c4cB82f9H1bph67ydLewDNj//SJRhlR9a8p
-	SC8Fz2wDSzn/oAxr6vm/S5wLo9vd62FTWKb+D70cMbKM5ycp/T393yttFtxyz3zArm03nQ2G3Yu
-	AbojKGXHfOcrcEzzVmlsCkloH7hx0wvaVJaVBZsCVpM8N
-X-Gm-Gg: AeBDievCaDhbc67ymnkf6Boa7gojH668ihctFfFYPBXtlFlwYnNVefX6yQIbL9mXPUy
-	yqHDXlUfM2rxPTi794aN6ly5fP56AOZ2wy1Wm8BRQhSrfpw6aQbK1ylo114zNrowgGaEVQmPL25
-	lWDIYfhCZHjFqyHyLNEabtTv2JOcNGoiFvItIHHg7WyJmOV8ADr7uxfQaQFPdxYz0siEeLeeSUg
-	+LvCtTVIRcpdERFtVwpgOvU1fVi4pr+SaY8DGLcJwu6Y6VtaFbEH/hbmK0SYCZTEmXXMP1Fo9EN
-	8sQL0lGJLJI5r75M7zB/Y6TfJUy90DnvIi5mZgT1xt8+bfFFiVxKVvztUXM=
-X-Received: by 2002:a05:6870:2108:b0:42b:d14d:38c3 with SMTP id
- 586e51a60fabf-434f5ee17eemr4432862fac.4.1778139080327; Thu, 07 May 2026
- 00:31:20 -0700 (PDT)
+        bh=Rq2ok0aSlKnK84NFw1V+oWhftvLjgXlYehWfM4IqKd8=;
+        b=Uo+wuY9da0g4mviM3rVXiQfHkLHeMOhSmubkyKcZOE+C5GV7/3JdFcWL63ggXbiwge
+         HivTDZ7XhgIQqgR1aqyRDnWXGKfDmd6Y+8qMHllfENjw+W81zhFA5zRpYNvd46NTLIs/
+         TFYGQrZ6pxRXqLgz5TlU9vwQxtgwYg6R4tZkRpQmdDHQlKP8oiSQttLe7pi9NxTWCoA6
+         MYugJzoBmCdr2TKA57CuPL4L5eier7Xeq4y3aGxdWt2eZ59GbmFUZnc4jfE+RsWNMIEb
+         7S27RCdkxrdHvGjMICnBwFFc8poHqWWkUex0JSs6xMqM0I4QJs84YQlGHXSuqJ/jGPyg
+         NfiQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8DNEKR1DX4VzdfV4wTC7Z9Fn0DE5TZ6l9mlnIRDsuOFSCd9XRsM+dtz1wVu7pVjuYEfxfw9jM=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YwcqU4nkXpaiGIgK6nfG1s6UAn9vul3aV7GllMVsuU7JEL3q+ed
+	NlRIFnn0FmChFOMzp55ohlhhXTHQmzH6uJJJCAMUnxYK/7Z53DlB22kjBOLPzpcuLooefxEgl24
+	+D9HyrHwGVKtwylUxHuTKA/osJNU9f7em6LgZPUa+Jd13
+X-Gm-Gg: AeBDiev54dghO+BaAIr6+4uwWuKlM0ent7djcgAP9WYfE5d+dMj+rbA0GAZniykNRNn
+	taFjG+oayGcT3FDe0ZrHFBaw9pIYepXc2My4oi15og3QlUhZHvHMTKleN2qfYoQMQsJ7b0izpL8
+	EfUbl8hb8aeE5zSdfEZ5J3ejxRaxOf/o2q9Fe/2ACYmiXCZwSLlIfq0pAd6jc5ipJPBN0cAA+/s
+	UGziTRg9ya7vzIGgRMy1CQb99+jzMcLAkSAkWWnI58OexPYoKeYp6wRR8uE18SdEle/SwN0lmI9
+	FokWtlLT3e96D3FihFSTnlS8kPERA0T7oKb7bclBpKpr+pTcHDxeGvTHC2tHDUUtGdlmig==
+X-Received: by 2002:a05:6820:f0c:b0:696:1262:2ac5 with SMTP id
+ 006d021491bc7-69998c8d2e1mr3513403eaf.2.1778140052107; Thu, 07 May 2026
+ 00:47:32 -0700 (PDT)
 MIME-Version: 1.0
 References: <afS5XzaeLUx1ngAl@sumit-xelite> <20260505153041.17794-1-q.h.hack.winter@gmail.com>
- <CAH78GvvE=wyZz5-LFySytq2=ChOUtj7YtR5dBAY9SLJQARa6Wg@mail.gmail.com>
-In-Reply-To: <CAH78GvvE=wyZz5-LFySytq2=ChOUtj7YtR5dBAY9SLJQARa6Wg@mail.gmail.com>
+In-Reply-To: <20260505153041.17794-1-q.h.hack.winter@gmail.com>
 From: Jens Wiklander <jens.wiklander@linaro.org>
-Date: Thu, 7 May 2026 09:31:08 +0200
-X-Gm-Features: AVHnY4KlrZOMC_vOjMC-j8wBZZva9QjauwZUMBdJGyR_gsN_h_A33R6KXTyeGH0
-Message-ID: <CAHUa44HGzi5nS2=vq7EWnbXy=a-347tqQh=GPSk95wR0=UaWKA@mail.gmail.com>
+Date: Thu, 7 May 2026 09:47:19 +0200
+X-Gm-Features: AVHnY4I3eBtv3D8rGkhC1wCK_ZWQmYetzUxgOXDCTF-kqlSTGtCM8cm09k-GAHQ
+Message-ID: <CAHUa44FYNJQp5PRijQ9i3w8h0aOcaWeF=AcVzF7qb9+G6WoFJA@mail.gmail.com>
 Subject: Re: [PATCH v2] tee: fix missing shm reference cleanup in tee_ioctl_supp_recv
 To: Qihang <q.h.hack.winter@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-5.10 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
 	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
 	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.160.50:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.50:from];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.47:from];
 	RCVD_COUNT_ONE(0.00)[1];
+	MISSING_XM_UA(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
+	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com];
 	NEURAL_HAM(-0.00)[-1.000];
 	ALIAS_RESOLVED(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	RCPT_COUNT_THREE(0.00)[3];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.47:from];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 0BCA443271
+X-Rspamd-Queue-Id: DB68643ECE
 X-Spamd-Bar: -----
-Message-ID-Hash: BWALGPAOHNWZBJCG6QNIXL3WSOFPBKEO
-X-Message-ID-Hash: BWALGPAOHNWZBJCG6QNIXL3WSOFPBKEO
+Message-ID-Hash: IQYTZVCICEH4SOEPW53RAHS65QJ7BCHX
+X-Message-ID-Hash: IQYTZVCICEH4SOEPW53RAHS65QJ7BCHX
 X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BWALGPAOHNWZBJCG6QNIXL3WSOFPBKEO/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IQYTZVCICEH4SOEPW53RAHS65QJ7BCHX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -132,28 +131,146 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 Hi Qihang,
 
-On Wed, May 6, 2026 at 4:18=E2=80=AFAM Qihang <q.h.hack.winter@gmail.com> w=
+On Tue, May 5, 2026 at 5:30=E2=80=AFPM Qihang <q.h.hack.winter@gmail.com> w=
 rote:
 >
-> Hi Jens, Sumit,
+> params_from_user() acquires tee_shm references for MEMREF parameters and
+> expects the caller to release those references with tee_shm_put() during
+> cleanup.
 >
-> While reworking this, I noticed that there may be two slightly
-> different cleanup issues involved here.
+> tee_ioctl_open_session(), tee_ioctl_invoke(), and
+> tee_ioctl_object_invoke() all do this, but tee_ioctl_supp_recv() only
+> frees the parameter array and does not drop any acquired shared-memory
+> references.
 >
-> One appears to be in tee_ioctl_supp_recv() itself. Another may be in a
-> qcomtee-specific error path where MEMREF references can already have
-> been acquired before the backend rejects the parameters.
+> Fix this by using a common helper to release MEMREF references before
+> freeing the parameter array, and apply it to tee_ioctl_supp_recv() as
+> well.
 >
-> I am not entirely sure where you would prefer the boundary between the
-> core fix and any backend-specific fix to be.
+> Signed-off-by: Qihang <q.h.hack.winter@gmail.com>
+> ---
+> v2:
+> - rename helper to free_params()
+> - drop alloc_num_params and use num_params directly
 >
-> Would you prefer that I keep the current patch strictly focused on the
-> tee_ioctl_supp_recv() cleanup path first, and handle any qcomtee-side
-> issue separately if needed?
+>  drivers/tee/tee_core.c | 46 +++++++++++++++++-------------------------
+>  1 file changed, 19 insertions(+), 27 deletions(-)
+>
+> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+> index ef9642d72672..8cdf2ec7e74f 100644
+> --- a/drivers/tee/tee_core.c
+> +++ b/drivers/tee/tee_core.c
+> @@ -530,6 +530,21 @@ static int params_to_user(struct tee_ioctl_param __u=
+ser *uparams,
+>         return 0;
+>  }
+>
+> +static void free_params(struct tee_param *params, size_t num_params)
+> +{
+> +       size_t n;
+> +
+> +       if (!params)
+> +               return;
+> +
+> +       for (n =3D 0; n < num_params; n++)
+> +               if (tee_param_is_memref(params + n) &&
+> +                   params[n].u.memref.shm)
+> +                       tee_shm_put(params[n].u.memref.shm);
+> +
+> +       kfree(params);
+> +}
+> +
+>  static int tee_ioctl_open_session(struct tee_context *ctx,
+>                                   struct tee_ioctl_buf_data __user *ubuf)
+>  {
+> @@ -595,16 +610,7 @@ static int tee_ioctl_open_session(struct tee_context=
+ *ctx,
+>          */
+>         if (rc && have_session && ctx->teedev->desc->ops->close_session)
+>                 ctx->teedev->desc->ops->close_session(ctx, arg.session);
+> -
+> -       if (params) {
+> -               /* Decrease ref count for all valid shared memory pointer=
+s */
+> -               for (n =3D 0; n < arg.num_params; n++)
+> -                       if (tee_param_is_memref(params + n) &&
+> -                           params[n].u.memref.shm)
+> -                               tee_shm_put(params[n].u.memref.shm);
+> -               kfree(params);
+> -       }
+> -
+> +       free_params(params, arg.num_params);
+>         return rc;
+>  }
+>
+> @@ -657,14 +663,7 @@ static int tee_ioctl_invoke(struct tee_context *ctx,
+>         }
+>         rc =3D params_to_user(uparams, arg.num_params, params);
+>  out:
+> -       if (params) {
+> -               /* Decrease ref count for all valid shared memory pointer=
+s */
+> -               for (n =3D 0; n < arg.num_params; n++)
+> -                       if (tee_param_is_memref(params + n) &&
+> -                           params[n].u.memref.shm)
+> -                               tee_shm_put(params[n].u.memref.shm);
+> -               kfree(params);
+> -       }
+> +       free_params(params, arg.num_params);
+>         return rc;
+>  }
+>
+> @@ -716,14 +715,7 @@ static int tee_ioctl_object_invoke(struct tee_contex=
+t *ctx,
+>         }
+>         rc =3D params_to_user(uparams, arg.num_params, params);
+>  out:
+> -       if (params) {
+> -               /* Decrease ref count for all valid shared memory pointer=
+s */
+> -               for (n =3D 0; n < arg.num_params; n++)
+> -                       if (tee_param_is_memref(params + n) &&
+> -                           params[n].u.memref.shm)
+> -                               tee_shm_put(params[n].u.memref.shm);
+> -               kfree(params);
+> -       }
+> +       free_params(params, arg.num_params);
+>         return rc;
+>  }
+>
+> @@ -861,7 +853,7 @@ static int tee_ioctl_supp_recv(struct tee_context *ct=
+x,
+>
+>         rc =3D params_to_supp(ctx, uarg->params, num_params, params);
+>  out:
+> -       kfree(params);
+> +       free_params(params, num_params);
 
-qcomtee-specific changes should preferably go into a separate patch.
-In this case, I suspect the fix is to add a similar tee_shm_put() as
-we have in supp_check_recv_params() in drivers/tee/optee/supp.c.
+This doesn't work. The supp_recv() callback is special compared to
+open_session(), invoke_func(), and object_invoke_func() callbacks.
+supp_recv() replaces the supplied parameters with other parameters.
+Eventually inserted memrefs are reference-counted separately, and
+adding it here too would only add unnecessary updates (supp_recv()
+would need to increase them, only so they can be decreased here).
+However, I think a comment before the call to supp_recv() to remind us
+of that would be nice.
+
+However, there's a bug that needs to be fixed if params_from_user()
+fails. One way of dealing with that is:
+        rc =3D params_from_user(ctx, params, num_params, uarg->params);
+        if (rc) {
+                free_params(params, num_params);
+                return rc;
+        }
+
+and then keep the end of tee_ioctl_supp_recv() unchanged.
 
 Cheers,
 Jens
+
+>         return rc;
+>  }
+>
+> --
+> 2.39.5 (Apple Git-154)
+>
