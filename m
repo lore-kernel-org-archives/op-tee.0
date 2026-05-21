@@ -4,183 +4,120 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AECA7CD4F5E
-	for <op-tee@archiver.kernel.org>; Thu, 21 May 2026 12:13:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85228CD5BB1
+	for <op-tee@archiver.kernel.org>; Thu, 21 May 2026 12:51:26 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id D0084444F0
-	for <op-tee@archiver.kernel.org>; Thu, 21 May 2026 12:13:01 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id BBAE743B60
+	for <op-tee@archiver.kernel.org>; Thu, 21 May 2026 12:51:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1779365581;
-	bh=Cf0gkJ/hqVpBhd7UkFOvMBJKVL30EatSj5Ex55m5CfE=;
-	h=Date:To:Subject:In-Reply-To:References:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1779367885;
+	bh=7jzHvKRd/On+GRBlud+zh/apk/tg0aHT5tC2fNXMtRg=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=V4PzPOU2URuMa106hdYtFD6f2hDMcQ+ThiFjz8A+H0nCOd/YM0LtvryL0YL/rlv6Z
-	 R2wALa5YpsPUGpEaH/oreFXM39MlBH8tNEeiW8KlYfQS0ZA8KJAB7I7upNRMty25Ix
-	 qwgZ2oS4aUIE/TRhuhdHoPq6vqj/gXm1sXV7SoSKVf/wy211/Pim0zf90y3A5WvP7O
-	 11tR7jM6whf7L9m+zIQ4rQ1fu62SoIRBMGG0po/0dukpLTi52uZcxej2QVGGYmREiO
-	 a9bnM20sq1Y7IjVxPA0khfY1dTdBDSwgFXz6Oox6Tq0MluOwTEUvEkm0VxsdDDM2ug
-	 cI81o33HMPa5A==
+	b=FOyDrgUwToguab9SFdcR3IjXSOnUiqyr1IOMcOFxXPUZWdq0INQmHAkSm8zVE7ZDY
+	 9nm1gXXYyscH4H5N48AKHxvVxF3G3xRCBQGVrxWvWtnuPz5B0MqTB3w0VlpKtlN5eE
+	 RbW1Ir+iaDBy3rZHXf4uqOloCvmj8DS4JQI4wX5suSsmVq8eFfAQ+vqtsva68rGekT
+	 vx9cLPJCe9kTi8otyP3qxsxGw44YPRNRnUui5j6TX3BTtEg2uCnRBK0xAnq98kWGYU
+	 bTPmBnjDuZGcMhPxd3uGDFYEkB9jz5XjHaJgoFtLa/SAHSs0HfPmCzA8zNHOyUHbj8
+	 zud+BSbW4dyCw==
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2051241BB7
-	for <op-tee@lists.trustedfirmware.org>; Thu, 21 May 2026 12:12:55 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 6C18141BB7
+	for <op-tee@lists.trustedfirmware.org>; Thu, 21 May 2026 12:51:18 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cdqQBgdX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BkToSujN;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B755F60210;
-	Thu, 21 May 2026 12:12:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D63C1F00A3B;
-	Thu, 21 May 2026 12:12:54 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 09E75601F4;
+	Thu, 21 May 2026 12:51:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 399F91F000E9;
+	Thu, 21 May 2026 12:51:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779365574;
-	bh=QXychn9L0mxdWwBTB7z2HXwk+PRqle39TGYH6NUQk0Y=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=cdqQBgdX4gUwX9OmhPoMjIGM/CW9yfN8zKNNFcfBWKNEQtv1iwpnD8xXmH+Ovdt6g
-	 Nb9QE/CeAVzuJ03zyLL92uN51RT04aSQl/xFznE6tRiHlf58QJaBsJWwrU0lje0k8w
-	 YnTKt8FQfFlOiPplGA9LmCV9emUvVMZQmScmiqmCFRwId/JxVtQOpE/FyU9Fe6QPIu
-	 dfj0QgZh8bgn0f2dB9uTTmSkp6hXfRzHMgh9Vo6s6BFgzw16Vf4QyyHsIXOQG7aQ4N
-	 65bYEZEcX95fQ4AkCJwsGS9EtUycxiIMj3VzkGIlvAs7zKOawjeHqzeCDfurqg0I+Z
-	 LKZiUfpBAQygQ==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <maz@kernel.org>)
-	id 1wQ2Gi-00000004o66-1DzI;
-	Thu, 21 May 2026 12:12:52 +0000
-Date: Thu, 21 May 2026 13:12:51 +0100
-Message-ID: <86h5o1vu4c.wl-maz@kernel.org>
+	s=k20260515; t=1779367877;
+	bh=53MBMVpYsah1G6NU1zmq3jtKdic1Gk+mrU5myoZHcTw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=BkToSujNclyXcE88OzhY40ufvQn2cBGui3KuvHUppU/C9uik42OSCjbIQqlUp0FIf
+	 01BFXGNtxBBf3a7CeCM8rndojcNt2MN8sA/1RQ2dVXcqPbR9TmXZXbD8RY7XQRqVuq
+	 vzMNbPTwmKMeuUjg4JGCRHdyGZkz/GkwGF4/E12viTb43aA+fqmDHYM2cedyi5ikYR
+	 ochACvQ3dea/2IQoJjm+7upgYdeJfdaaOItq8r+auwNgK3PZWxquM/lO3XeDuxEH7T
+	 xRvHLTIceWp0qqY40Cg6lcme/SuObotCdw1AP8VMP9uTfFKj2C5PgG+k8k8rGhLdBR
+	 BXz1IUF6qogcA==
+Date: Thu, 21 May 2026 13:51:12 +0100
 To: Mostafa Saleh <smostafa@google.com>
-Subject: Re: [PATCH v4 4/5] KVM: arm64: Fix bounds checking in do_ffa_mem_reclaim()
-In-Reply-To: <CAFgf54qpNVvzSiV89g12-4jWeacm=06LMjCooeU1Mt+3sqWDLQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] firmware: arm_ffa: Fix out-of-bound writes in
+ ffa_setup_and_transmit()
+Message-ID: <20260521-gleaming-shoebill-of-artistry-5d738c@sudeepholla>
 References: <20260520204948.2440882-1-smostafa@google.com>
-	<20260520204948.2440882-5-smostafa@google.com>
-	<86ldddw4ht.wl-maz@kernel.org>
-	<ag7eq3bfBOxfaZ59@google.com>
-	<CAFgf54qpNVvzSiV89g12-4jWeacm=06LMjCooeU1Mt+3sqWDLQ@mail.gmail.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: smostafa@google.com, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, oupton@kernel.org, joey.gouly@arm.com, suzuki.poulose@arm.com, catalin.marinas@arm.com, jens.wiklander@linaro.org, sumit.garg@kernel.org, sebastianene@google.com, vdonnefort@google.com, sudeep.holla@kernel.org
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+ <20260520204948.2440882-3-smostafa@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260520204948.2440882-3-smostafa@google.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.00 / 15.00];
+X-Spamd-Result: default: False [-4.50 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
-	MID_CONTAINS_FROM(1.00)[];
+	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_DN_SOME(0.00)[];
+	MISSING_XM_UA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
 	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	RCPT_COUNT_TWELVE(0.00)[14];
+	TO_DN_SOME(0.00)[];
 	ARC_NA(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_TLS_LAST(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 2051241BB7
-X-Spamd-Bar: ---
-Message-ID-Hash: GEHFY2TEYJKJOQDP55UW3A4XHLULMGOX
-X-Message-ID-Hash: GEHFY2TEYJKJOQDP55UW3A4XHLULMGOX
-X-MailFrom: maz@kernel.org
+X-Rspamd-Queue-Id: 6C18141BB7
+X-Spamd-Bar: ----
+Message-ID-Hash: F5ZOKXMK4TJIVVYF3UVUI52BCZYWEYWC
+X-Message-ID-Hash: F5ZOKXMK4TJIVVYF3UVUI52BCZYWEYWC
+X-MailFrom: sudeep.holla@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, oupton@kernel.org, joey.gouly@arm.com, suzuki.poulose@arm.com, catalin.marinas@arm.com, sumit.garg@kernel.org, sebastianene@google.com, vdonnefort@google.com, sudeep.holla@kernel.org
+CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@kernel.org>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, maz@kernel.org, oupton@kernel.org, joey.gouly@arm.com, suzuki.poulose@arm.com, catalin.marinas@arm.com, sumit.garg@kernel.org, sebastianene@google.com, vdonnefort@google.com
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GEHFY2TEYJKJOQDP55UW3A4XHLULMGOX/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/F5ZOKXMK4TJIVVYF3UVUI52BCZYWEYWC/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Marc Zyngier via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Marc Zyngier <maz@kernel.org>
+From: Sudeep Holla via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sudeep Holla <sudeep.holla@kernel.org>
 
-On Thu, 21 May 2026 11:43:58 +0100,
-Mostafa Saleh <smostafa@google.com> wrote:
->=20
-> On Thu, May 21, 2026 at 11:30=E2=80=AFAM Mostafa Saleh <smostafa@google.c=
-om> wrote:
-> >
-> > Hi Marc,
-> >
-> > On Thu, May 21, 2026 at 09:28:46AM +0100, Marc Zyngier wrote:
-> > > On Wed, 20 May 2026 21:49:47 +0100,
-> > > Mostafa Saleh <smostafa@google.com> wrote:
-> > > >
-> > > > Sashiko (locally) reports out of bound write possiblity if SPMD
-> > > > returns an invalid data.
-> > > >
-> > > > While SPMD is considered trusted, pKVM does some basic checks,
-> > > > for offset to be less than or equal len.
-> > > >
-> > > > However, that is incorrect as even if the offset is smaller than
-> > > > len pKVM can still access out of bound memory in the next
-> > > > ffa_host_unshare_ranges().
-> > > >
-> > > > Split this check into 2:
-> > > > 1- Check that the fixed portion of the descriptor fits.
-> > > > 2- After getting reg, check the variable array size addr_range_cnt
-> > > >    fits.
-> > > >
-> > > > Signed-off-by: Mostafa Saleh <smostafa@google.com>
-> > > > ---
-> > > >  arch/arm64/kvm/hyp/nvhe/ffa.c | 7 ++++++-
-> > > >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > > >
-> > > > diff --git a/arch/arm64/kvm/hyp/nvhe/ffa.c b/arch/arm64/kvm/hyp/nvh=
-e/ffa.c
-> > > > index 1af722771178..e6aa2bfa63b1 100644
-> > > > --- a/arch/arm64/kvm/hyp/nvhe/ffa.c
-> > > > +++ b/arch/arm64/kvm/hyp/nvhe/ffa.c
-> > > > @@ -607,7 +607,7 @@ static void do_ffa_mem_reclaim(struct arm_smccc=
-_1_2_regs *res,
-> > > >      * check that we end up with something that doesn't look _compl=
-etely_
-> > > >      * bogus.
-> > > >      */
-> > > > -   if (WARN_ON(offset > len ||
-> > > > +   if (WARN_ON(offset + CONSTITUENTS_OFFSET(0) > len ||
-> > > >                 fraglen > KVM_FFA_MBOX_NR_PAGES * PAGE_SIZE)) {
-> > >
-> > > Do you really want to keep this a WARN_ON(), given that this results
-> > > in a panic in most pKVM configurations?
-> >
-> > Which kind of configuration will that check fail on?
-> > Does that mean at the moment pKVM does out-of-bound access for
-> > the header?
-> >
-> I might have misunderstood the point. I thought you meant the new
-> change would cause a panic on most configurations, or were you
-> suggesting just removing the WARN_ON?
+On Wed, May 20, 2026 at 08:49:45PM +0000, Mostafa Saleh wrote:
+> Sashiko (locally) reports multiple out-of-bound issues in
+> ffa_setup_and_transmit:
+> 1) Writing ep_mem_access->reserved can write out of bounds for FFA
+>    versions < 1.2 as ffa_emad_size_get() returns 16 bytes in that case
+>    while reserved has an offset of 24.
+>    Instead of zeroing fields, memset the struct to zero first based on
+>    the FFA version.
+> 
 
-Just dropping the WARN_ON(), because for most users, that means just
-killing the machine (only configurations with debug will give you a
-stack trace).
+Neat, I clearly missed taking this approach when I added zero-ing of
+member initially.
 
-> I can do that, I just updated the current faulty check and left the
-> WARN_ON as is.
+> 2) Make sure there is enough size to write constituents.
+> 
+> While at it, convert the only sizeof() in the driver that uses a
+> type instead of variable.
+> 
 
-I'd be all for that.
+Reviewed-by: Sudeep Holla <sudeep.holla@kernel.org>
 
-Thanks,
-
-	M.
-
---=20
-Without deviation from the norm, progress is not possible.
+-- 
+Regards,
+Sudeep
