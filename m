@@ -4,113 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0D00CD98E2
-	for <op-tee@archiver.kernel.org>; Wed, 17 Jun 2026 14:53:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 969D0CD98E2
+	for <op-tee@archiver.kernel.org>; Wed, 17 Jun 2026 14:53:32 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id EC42843730
-	for <op-tee@archiver.kernel.org>; Wed, 17 Jun 2026 14:53:04 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id E1F6A44DA1
+	for <op-tee@archiver.kernel.org>; Wed, 17 Jun 2026 14:53:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1781707985;
-	bh=aN8Nyn9ckrh0MM/LzHi6OOLo2IpLuaUhgYlQz9xxDvk=;
+	d=lists.trustedfirmware.org; s=2024; t=1781708012;
+	bh=RYLphXY3qZrHLwVyATq2rz6ULfSNbmNMCCt4D1nRClw=;
 	h=Date:In-Reply-To:References:Subject:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=Sjli9QrsGVMPfHKlXCb003m9IoiTnTf6ZA5AjguxJ0TRq4kpiPDYr6ZRaSYiqXN1i
-	 vJs+Z/jA665OrPInW4gS0feEZnwoEHcaPQTlqY6yXSe/tAz1zwy7JtPOg/HsxPFAtl
-	 n/BejyvI2w/p5qRioGErnQ3AEg6IANouMbN3QocqE2F4aMDQsMmW8mVjXTeIU/h5Sm
-	 HNOQRVQYffC62B4pUTz9+7q+bOuJzxBu9UL5whPS6T/lgcinKfTj5kGzmjWKqlLI1I
-	 qJRKvD5ccCphS78CxohJv7G2WUHXLA41Ah+zMqhHvtxTWo72rU4KqmraseA9yyQMoI
-	 c520MajcpLtbQ==
-Received: from mail-wr1-f73.google.com (mail-wr1-f73.google.com [209.85.221.73])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id D95FB44EE0
-	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Jun 2026 14:51:45 +0000 (UTC)
+	b=DIoAyX0keE3Q/06C1rJpf0kUpVEAgrqgiXoxHN1f+lH/1FlUZWYQvnK1Ds4hHA2fs
+	 C2M5CcxryMoIvjKzvz/gFAy4UNQ2kchuLdGJAfAu33C4LvztgtWjC7RpIGIXY6+EkN
+	 yarAYYRlTE3KXZM5bbWikzNughA17/+Y0YWeC0Z13hNihXzHjm3bZw5ocErwBK9q5P
+	 l4RC8AyJXXcw245oLxyfy2xafrILSkqw8XfnWEWIxc53RqYftsVMjOwwfwTxvFU10M
+	 Nk4TJhdQO6ShiKtn6GbSHFtR0KQhHsKj3Hwn625D/XeFYl6xJPYPcVd1XDy4ZuPp3P
+	 6sSnbjALs5jNw==
+Received: from mail-wm1-f74.google.com (mail-wm1-f74.google.com [209.85.128.74])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5886744EFB
+	for <op-tee@lists.trustedfirmware.org>; Wed, 17 Jun 2026 14:51:48 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Ck4fPOiO;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=LkYOYpOe;
 	dkim-atps=neutral
-Received: by mail-wr1-f73.google.com with SMTP id ffacd0b85a97d-45ef3aeeb41so4103284f8f.1
-        for <op-tee@lists.trustedfirmware.org>; Wed, 17 Jun 2026 07:51:45 -0700 (PDT)
+Received: by mail-wm1-f74.google.com with SMTP id 5b1f17b1804b1-490b37e1f47so43422605e9.0
+        for <op-tee@lists.trustedfirmware.org>; Wed, 17 Jun 2026 07:51:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781707905; x=1782312705; darn=lists.trustedfirmware.org;
+        d=google.com; s=20251104; t=1781707907; x=1782312707; darn=lists.trustedfirmware.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=iSPN5hE9gskxSS4lEDSt/fOL7Hb/rZVNl7XMRMHJyec=;
-        b=Ck4fPOiOSvHaTJFwyfj+uZC3I7YUMNKiuE+Qkhta7oBRsAntttNTPNODHMZr67Mv17
-         kSJZYPiAK0+LGCf/yoUzkNQIgbdzbTqs0GDZV+/fVS7FHmSsdZqqMCP0UihVUFKFyB2W
-         h4CQB7qIy8gL3CAVwRaV5na/pJSvBdNv6iGQ6p7hD8GwrEmkZuV//fLC4JRMNt2WkOuL
-         2v3+INDE1CsGwKKZHNnjM3k6LLnVpjLTAH1mJRFwZBZH70uIygvPnvjDF0ixfITquyll
-         JWLYui9+xdGNGtsoR2CuBOMKhZn3nxT+ppgT0pCbAj0na6i4k8EPLdOK00+znywzaEbd
-         Kl+g==
+        bh=CQFj/8TPJyuneEGc/c18D84EbHbY3hzTyS99LAP/4do=;
+        b=LkYOYpOeOff0isJE6cAKp2oU3V1s5yKddaVdYcEQGgZvDyCDl0d9lzA7Y99aZbemnw
+         4hSR83H3G2G4ba9PLJbQQv87RlOu+78iUZ3/9fW1w3hr5JPrpiBd9Sd4JPb6eLf1s3VW
+         MMjwIkyMomccJ2TkVShMqj5ZzHcJ3WMF2z1W9ltdNXytN0ehzv5XTmsRFPynnJFMtBGe
+         vw21Jk295mPKAyRYq7HiXE8tXDxzQ/l75MC2lnszqKeJFYlXzMFdUp2uSGW++CiG0lFX
+         7dXcWj90VHM18cf7b1ftSrhS5dZ4S9PMvup4pvpLNwjqYcTV3W8H+qGF/68IO3V2FYvI
+         P1jg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781707905; x=1782312705;
+        d=1e100.net; s=20251104; t=1781707907; x=1782312707;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iSPN5hE9gskxSS4lEDSt/fOL7Hb/rZVNl7XMRMHJyec=;
-        b=Bo0vR0GgYDN6hnQZ1WvBwIwB06MfaqFrNkWxXLTyTaPNG4OLjJ49P/c0ZtTHmWL/gh
-         WfrYSVFY63YNDNFP0iAKh+Tayuus1JhXQehyGVn4v84SZwryMaTsdgNrDbNsVaBgmq/w
-         OMZXU+F83/Q49DuizwfysIOk8uJc2Plb5afRlfIq6B4qA6gdCgVSuUKdLRuHKhy+0nH3
-         yKed5dczE6MBalTaKmoPXtmsWHNdjQ7rjc5WDQnm2n/LqQ/WxtmNOHigC9D75bpsq1ti
-         Dubi9A51yjx7UzxbGHR4+10AsAG4OyyfU9wBgsMubnMchZETL6xNS3ACVyuu7C2jZP68
-         1miA==
-X-Forwarded-Encrypted: i=1; AFNElJ8sZbNq06Bw+ZWeJDVgyNTjTUBZ289DYko3sOU4vpfgguAd7NO1A19VG2G+axULXeUU3LH0v8k=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YymDWBt4+uAfk1iajfGLE7KmwmT0KR77X01IKbJ8pfwX6oSc6XI
-	d75C/66ldynq8aOrZ/1krAQoactf2cRtHKrqksVrk38iv+M6acOjz/WDpv0+xNwQ10FEKuX06a9
-	DtmGGATvQA04wDZLzbPZ9TCujj+d1rg==
-X-Received: from wmbgx24.prod.google.com ([2002:a05:600c:8598:b0:490:b0f1:3417])
+        bh=CQFj/8TPJyuneEGc/c18D84EbHbY3hzTyS99LAP/4do=;
+        b=ZsNwbTrIopRg3xFbRlP5uWqfi4roNtcYgdl+n5jbbFHYunRSi1iKOhU3BQUyJWpIc4
+         iHOUNsgDey/04hDPhXTIA7j/lbEvk6epqttWYsq8erBqcKJiYcmBHoSPSotTIXT1uikp
+         SVI/K0qzvllcDpXP8V3d3AzpHB6NA462o1qXYxTU6VQmsSUGyYUHgaWE1ZHWevMI47wu
+         F7mIoaG8HJe2Q8zWX2MASadcwjh8LHlSZ004Cs8x75qBnnd5MvhlYKHJ6vPzquAiiMUt
+         6cOZ0BXUPzYDIJn1hbp3G/rMsu/Pc/LOah8vjoAb/KtHHBNtir9OPPNWPVOpTAcupCzJ
+         lVEQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8bW1HCtcFHFRMkJ+HDkvuKXk3tNuvGkc9uJulTfe5wHovIwdgS0psZVznXStfXG5k8940mx7A=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YwT1m+EumHi6PniMXbNboy3lL6ld0i+J2AbBgX0UBC9Vzwetr4h
+	tJZ59YnSnc6ChBhaa8dvrca/ZP2Wl+0+3XrhQ0dr4yBigWvQJWy39qmUUZlZ4bauanCapVylNMp
+	IRXk1BmMeWmHEGd/1OjGiIlePr2EBEw==
+X-Received: from wmbju24.prod.google.com ([2002:a05:600c:56d8:b0:490:b18a:b4e2])
  (user=sebastianene job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:1f8f:b0:492:3670:85a7 with SMTP id 5b1f17b1804b1-4923677d803mr26521325e9.35.1781707904134;
- Wed, 17 Jun 2026 07:51:44 -0700 (PDT)
-Date: Wed, 17 Jun 2026 14:51:26 +0000
+ 2002:a05:600c:828e:b0:492:2e7a:9ba7 with SMTP id 5b1f17b1804b1-4923339fca0mr74090555e9.3.1781707906450;
+ Wed, 17 Jun 2026 07:51:46 -0700 (PDT)
+Date: Wed, 17 Jun 2026 14:51:27 +0000
 In-Reply-To: <20260617145130.3729015-1-sebastianene@google.com>
 Mime-Version: 1.0
 References: <20260617145130.3729015-1-sebastianene@google.com>
 X-Mailer: git-send-email 2.54.0.1136.gdb2ca164c4-goog
-Message-ID: <20260617145130.3729015-4-sebastianene@google.com>
-Subject: [PATCH v7 3/7] firmware: arm_ffa: Fix Endpoint Memory Access
- Descriptor offset calculation
+Message-ID: <20260617145130.3729015-5-sebastianene@google.com>
+Subject: [PATCH v7 4/7] KVM: arm64: Fix bounds checking in do_ffa_mem_reclaim()
 To: catalin.marinas@arm.com, oupton@kernel.org, sudeep.holla@kernel.org,
 	will@kernel.org
 Content-Type: text/plain; charset="UTF-8"
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-0.70 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+	BAYES_HAM(-3.00)[99.99%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	MID_CONTAINS_FROM(1.00)[];
 	DMARC_POLICY_ALLOW(-0.50)[google.com,reject];
 	MV_CASE(0.50)[];
-	FORGED_SENDER(0.30)[sebastianene@google.com,3glqyagwkaa05ron56vn0r0rt11tyr.p1z@flex--sebastianene.bounces.google.com];
+	FORGED_SENDER(0.30)[sebastianene@google.com,3grqyagwkaa87tqp78xp2t2tv33v0t.r31@flex--sebastianene.bounces.google.com];
 	R_DKIM_ALLOW(-0.20)[google.com:s=20251104];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
 	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_CC(0.00)[linaro.org,arm.com,lists.linux.dev,lists.infradead.org,vger.kernel.org,google.com,kernel.org,gmail.com,lists.trustedfirmware.org,linux.ibm.com,huawei.com];
-	FROM_HAS_DN(0.00)[];
 	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[21];
 	RCVD_TLS_LAST(0.00)[];
 	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_CC(0.00)[linaro.org,arm.com,lists.linux.dev,lists.infradead.org,vger.kernel.org,google.com,kernel.org,gmail.com,lists.trustedfirmware.org,linux.ibm.com,huawei.com];
+	FROM_HAS_DN(0.00)[];
 	DKIM_TRACE(0.00)[google.com:+];
 	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	TO_DN_NONE(0.00)[];
-	FROM_NEQ_ENVFROM(0.00)[sebastianene@google.com,3glqyagwkaa05ron56vn0r0rt11tyr.p1z@flex--sebastianene.bounces.google.com];
-	RCPT_COUNT_TWELVE(0.00)[21];
+	FROM_NEQ_ENVFROM(0.00)[sebastianene@google.com,3grqyagwkaa87tqp78xp2t2tv33v0t.r31@flex--sebastianene.bounces.google.com];
+	DWL_DNSWL_NONE(0.00)[google.com:dkim];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	ALIAS_RESOLVED(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.221.73:from];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.73:from];
 	NEURAL_HAM(-0.00)[-1.000];
-	DWL_DNSWL_NONE(0.00)[google.com:dkim]
+	ALIAS_RESOLVED(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.74:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.74:from]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: D95FB44EE0
+X-Rspamd-Queue-Id: 5886744EFB
 X-Spamd-Bar: /
-Message-ID-Hash: B3QUVLRZJRRKUOOLOBPERMQWTKGAPUPI
-X-Message-ID-Hash: B3QUVLRZJRRKUOOLOBPERMQWTKGAPUPI
-X-MailFrom: 3gLQyagwKAA05ron56vn0r0rt11tyr.p1z@flex--sebastianene.bounces.google.com
+Message-ID-Hash: NLKBPYKWFX4ADK6DUYBVENOPLOSA3WTP
+X-Message-ID-Hash: NLKBPYKWFX4ADK6DUYBVENOPLOSA3WTP
+X-MailFrom: 3grQyagwKAA87tqp78xp2t2tv33v0t.r31@flex--sebastianene.bounces.google.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: joey.gouly@arm.com, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, android-kvm@google.com, maz@kernel.org, mrigendra.chaubey@gmail.com, op-tee@lists.trustedfirmware.org, perlarsen@google.com, sebastianene@google.com, seiden@linux.ibm.com, smostafa@google.com, sumit.garg@kernel.org, suzuki.poulose@arm.com, vdonnefort@google.com, yuzenghui@huawei.com
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/B3QUVLRZJRRKUOOLOBPERMQWTKGAPUPI/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NLKBPYKWFX4ADK6DUYBVENOPLOSA3WTP/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -120,83 +119,67 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Sebastian Ene via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Sebastian Ene <sebastianene@google.com>
 
-Use the descriptor's `ep_mem_offset` to calculate the start of the endpoint
-memory access array and to comply with the FF-A spec instead of defaulting
-to `sizeof(struct ffa_mem_region)`.
-This requires moving `ffa_mem_region_additional_setup()` earlier in the setup
-flow.
-Also, add sanity checks to ensure the calculated descriptor offsets do not
-exceed `max_fragsize`.
+From: Mostafa Saleh <smostafa@google.com>
 
-Fixes: 113580530ee7 ("firmware: arm_ffa: Update memory descriptor to support v1.1 format")
-Signed-off-by: Sebastian Ene <sebastianene@google.com>
-Reviewed-by: Sudeep Holla <sudeep.holla@kernel.org>
+Sashiko (locally) reports out of bound write possiblity if SPMD
+returns an invalid data.
+
+While SPMD is considered trusted, pKVM does some basic checks,
+for offset to be less than or equal len.
+
+However, that is incorrect as even if the offset is smaller than
+len pKVM can still access out of bound memory in the next
+ffa_host_unshare_ranges().
+
+Split this check into 2:
+1- Check that the fixed portion of the descriptor fits.
+2- After getting reg, check the variable array size addr_range_cnt
+   fits.
+
+Also, drop the WARN_ONs as that will panic the kernel and in the
+next checks there are no WARNs, so that makes it consistent.
+
+Fixes: 0a9f15fd5674 ("KVM: arm64: pkvm: Add support for fragmented FF-A descriptors")
 Signed-off-by: Mostafa Saleh <smostafa@google.com>
+Signed-off-by: Sebastian Ene <sebastianene@google.com>
 ---
- drivers/firmware/arm_ffa/driver.c | 20 +++++++++++++++-----
- include/linux/arm_ffa.h           |  2 +-
- 2 files changed, 16 insertions(+), 6 deletions(-)
+ arch/arm64/kvm/hyp/nvhe/ffa.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/firmware/arm_ffa/driver.c b/drivers/firmware/arm_ffa/driver.c
-index 059e2aae7ca0..92edf397bcd2 100644
---- a/drivers/firmware/arm_ffa/driver.c
-+++ b/drivers/firmware/arm_ffa/driver.c
-@@ -703,19 +703,30 @@ ffa_setup_and_transmit(u32 func_id, void *buffer, u32 max_fragsize,
- 	struct ffa_composite_mem_region *composite;
- 	struct ffa_mem_region_addr_range *constituents;
- 	struct ffa_mem_region_attributes *ep_mem_access;
--	u32 idx, frag_len, length, buf_sz = 0, num_entries = sg_nents(args->sg);
-+	u32 idx, frag_len, length, buf_sz = 0, num_entries = sg_nents(args->sg), ep_offset;
-+	u32 emad_end, emad_size = ffa_emad_size_get(drv_info->version);
- 
- 	mem_region->tag = args->tag;
- 	mem_region->flags = args->flags;
- 	mem_region->sender_id = drv_info->vm_id;
- 	mem_region->attributes = ffa_memory_attributes_get(func_id);
-+
-+	ffa_mem_region_additional_setup(drv_info->version, mem_region);
- 	composite_offset = ffa_mem_desc_offset(buffer, args->nattrs,
- 					       drv_info->version);
-+	if (composite_offset + sizeof(*composite) > max_fragsize)
-+		return -ENXIO;
- 
- 	for (idx = 0; idx < args->nattrs; idx++) {
--		ep_mem_access = buffer +
--			ffa_mem_desc_offset(buffer, idx, drv_info->version);
--		memset(ep_mem_access, 0, ffa_emad_size_get(drv_info->version));
-+		ep_offset = ffa_mem_desc_offset(buffer, idx, drv_info->version);
-+		if (check_add_overflow(ep_offset, emad_size, &emad_end))
-+			return -ENXIO;
-+
-+		if (emad_end > max_fragsize)
-+			return -ENXIO;
-+
-+		ep_mem_access = buffer + ep_offset;
-+		memset(ep_mem_access, 0, emad_size);
- 		ep_mem_access->receiver = args->attrs[idx].receiver;
- 		ep_mem_access->attrs = args->attrs[idx].attrs;
- 		ep_mem_access->composite_off = composite_offset;
-@@ -725,7 +736,6 @@ ffa_setup_and_transmit(u32 func_id, void *buffer, u32 max_fragsize,
+diff --git a/arch/arm64/kvm/hyp/nvhe/ffa.c b/arch/arm64/kvm/hyp/nvhe/ffa.c
+index 1af722771178..2d211661952e 100644
+--- a/arch/arm64/kvm/hyp/nvhe/ffa.c
++++ b/arch/arm64/kvm/hyp/nvhe/ffa.c
+@@ -607,8 +607,8 @@ static void do_ffa_mem_reclaim(struct arm_smccc_1_2_regs *res,
+ 	 * check that we end up with something that doesn't look _completely_
+ 	 * bogus.
+ 	 */
+-	if (WARN_ON(offset > len ||
+-		    fraglen > KVM_FFA_MBOX_NR_PAGES * PAGE_SIZE)) {
++	if (offset + CONSTITUENTS_OFFSET(0) > len ||
++	    fraglen > KVM_FFA_MBOX_NR_PAGES * PAGE_SIZE) {
+ 		ret = FFA_RET_ABORTED;
+ 		ffa_rx_release(res);
+ 		goto out_unlock;
+@@ -636,11 +636,17 @@ static void do_ffa_mem_reclaim(struct arm_smccc_1_2_regs *res,
+ 		ffa_rx_release(res);
  	}
- 	mem_region->handle = 0;
- 	mem_region->ep_count = args->nattrs;
--	ffa_mem_region_additional_setup(drv_info->version, mem_region);
  
- 	composite = buffer + composite_offset;
- 	composite->total_pg_cnt = ffa_get_num_pages_sg(args->sg);
-diff --git a/include/linux/arm_ffa.h b/include/linux/arm_ffa.h
-index 81e603839c4a..62d67dae8b70 100644
---- a/include/linux/arm_ffa.h
-+++ b/include/linux/arm_ffa.h
-@@ -445,7 +445,7 @@ ffa_mem_desc_offset(struct ffa_mem_region *buf, int count, u32 ffa_version)
- 	if (!FFA_MEM_REGION_HAS_EP_MEM_OFFSET(ffa_version))
- 		offset += offsetof(struct ffa_mem_region, ep_mem_offset);
- 	else
--		offset += sizeof(struct ffa_mem_region);
-+		offset += buf->ep_mem_offset;
++	reg = (void *)buf + offset;
++	if (offset + CONSTITUENTS_OFFSET(reg->addr_range_cnt) > len) {
++		ret = FFA_RET_ABORTED;
++		ffa_rx_release(res);
++		goto out_unlock;
++	}
++
+ 	ffa_mem_reclaim(res, handle_lo, handle_hi, flags);
+ 	if (res->a0 != FFA_SUCCESS)
+ 		goto out_unlock;
  
- 	return offset;
- }
+-	reg = (void *)buf + offset;
+ 	/* If the SPMD was happy, then we should be too. */
+ 	WARN_ON(ffa_host_unshare_ranges(reg->constituents,
+ 					reg->addr_range_cnt));
 -- 
 2.54.0.1136.gdb2ca164c4-goog
 
