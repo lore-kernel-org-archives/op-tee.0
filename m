@@ -4,76 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FB50CD98F0
-	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:19:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51BBBCD4F26
+	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:19:41 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 4D49344EDE
-	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:19:10 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 97BAF44E67
+	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:19:40 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=DTbu9SS8;
+	dkim=pass (2048-bit key; unprotected) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=BLiPMdeU;
 	dkim-atps=neutral
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 99AE743743
-	for <op-tee@lists.trustedfirmware.org>; Tue, 23 Jun 2026 06:19:00 +0000 (UTC)
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-490cdae130cso25263395e9.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 22 Jun 2026 23:19:00 -0700 (PDT)
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2864043743
+	for <op-tee@lists.trustedfirmware.org>; Tue, 23 Jun 2026 06:19:02 +0000 (UTC)
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-490b9318997so35562865e9.2
+        for <op-tee@lists.trustedfirmware.org>; Mon, 22 Jun 2026 23:19:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1782195539; x=1782800339; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=X/gFkQ/sS58Os6ymRfzW1PflBLVEsdy6rsHQOddwAsM=;
-        b=DTbu9SS84K95hZKWCfjI8rwa2TfhLzC68fLBMTLtH0pRow+13VBlDoo4YC3IlRglkn
-         EaKYoQoxMMis+1pmOrr6helVRf3TxczdJxFQ1sVyeKDRex9rtVcs9nMsiRD3a7ggdsHV
-         n7wJpz7cpP5CUKxHlxIlhUl2hlfB/BrbTUohrSrttrVzLl/StVy5fLEL15qLyRdsBopQ
-         n2ytgoOisCY/D0dmQ3w8RIG+zoHko5RUAiEGAADeZKmClYU5mzI6JXPMfNRUIs838ZoV
-         4s+MYf0FhC90FGpJwF7s7nMfkVrAbiL5K7foJLDYNRjyS9WkMo5yxQOvAMy2Au+GvcqA
-         dfTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782195539; x=1782800339;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1782195541; x=1782800341; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=X/gFkQ/sS58Os6ymRfzW1PflBLVEsdy6rsHQOddwAsM=;
-        b=JDPwDelFDPuVBN9fSp42A/QQDUGOiS8lBojA803kfVpuKuI0lEGZoUMfvOCpLFbI5o
-         UfCIEMAKyd2T2JeLESG6tjHIuyKucPqwOlePPRdQIAx8FNuCA/syORC8uL7A4i/8JcVR
-         wR0j6F7O8gqBOadjOcnD8kEtBbyDKvdmLHMriCbrUHlWzSbe0vVjskaNtTpCr4ZCBpBW
-         r/8INBkH+v6gwvapg3Ywbir34yc6xHR7tHPpmFX4aNBBa2uGLh3XLMw845i7dK5c48SN
-         JM6LXGAY0XXLNeHkt5hjL5/9J3xD5m5igfEOQzaJ3hwH4BqM9JP6xLb0/xtJgiPdNqN7
-         788Q==
-X-Gm-Message-State: AOJu0YyofqfsD/wQoRu9DaKdaO+geaA31IyaU7cU2B/LGN2SYSJHyNYJ
-	jTxwTVMLyxdiIKTwOpKStm3Lyknq0f59vijlnL5stHm78bIVQS2FXGd6FogO1Kb/7xfXqQXuTgi
-	vsaoN2MY=
-X-Gm-Gg: AfdE7cnzJnXpY/Lx4tFiSYkFpo6xA1DtdmJBsYwIhlyxOoufjaUE58kyKQD4+TSDR85
-	9U4/KZfen0qboBg0KdgXMtCTZca7tJUEJy/Mvbr6bBImhlJLjmG9y5xrllAXnydBE2UU3CgvBWl
-	N/iooPl3slZnF5zGcY8kCcGB6UAyvowsKhV5Z/pELSk1kk6XjTDxsuoftzj/60USL/rvjoToxYz
-	NdA/zEHAEda+W0HhA5RdTdG5xL9XwStsot1ARTGG8qgsJ95TC+rg2jE6Y+icX5a7PdY90NyJlP6
-	gq8NwNilgH07CYIIwDjhH2HsCuFsCj/HJFZIdbjQBoDAaOdW9TT+Q7i75wyat6UW3ir1ZbehnEr
-	nCfslpypSWaZ+aNHXxA7FnfnfcqSyqZapp1gUhQuuYyVZmPu1dE+6G1ylYQ62EZ2piSqvATU8xx
-	B1JcKRuf+wOlenQ0sXfvMvfaUeTbxs8Jg8zLqYBusy3HD9oj7bHZ78MkZFnTtGxGleNJY=
-X-Received: by 2002:a05:600c:c177:b0:492:48dc:3d0d with SMTP id 5b1f17b1804b1-4925b38cdb5mr17586425e9.12.1782195539451;
-        Mon, 22 Jun 2026 23:18:59 -0700 (PDT)
+        bh=5BF/aQGorWF2+PS3TTIw50ztvIBzjfiaJCqXGTJT8zo=;
+        b=BLiPMdeUkjgoEuxMHM4qu4ldNhAqaQ+7X6+XPILpWLvSCeQQfRjHVH1BlRQdiDSLKI
+         5uEXIfiIiasP1USU8CLTjJXXwPRihYmTBUGEYOpShDgKVg85eC2bthm+YjxYZ1mS6s0a
+         2zFkOpjWfoOLKkmCZSLeYCG28ebYkyytytbUHfYVhQfznL+yX1esNb3bFE0/coMdknKv
+         sVF1bSAiIjAiY21Cw4tmRS3gW/CeL0KtJzBhLTglh0BT10XR//9cS6HbH+uLeVZ0hRhm
+         AlE2QjnCtl9qw+Pv1VVDYyWogKb+xnPVITTLtGU78xjRacI9KCooNYruCGIJqz1SUtWd
+         wF5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782195541; x=1782800341;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=5BF/aQGorWF2+PS3TTIw50ztvIBzjfiaJCqXGTJT8zo=;
+        b=q71yKAc74swtn8DVhq878d2cW5ZkdcFbzbUy7fohpRBie/64g5Qo2BRhz775rnHUB1
+         k/Cw5woEnxxan4b/4bcoZlLB5fvi2vH8gEsICLYCjQ9vnTOCAUUF00+PgDO+jKWjMZ3N
+         9n9hP56cbTuAkWBTxTZDFOLgHhAAxZ83ZSjp+xC+3po2n/IGJ7eEBMbEuWY59zTxNZAj
+         jt3J42hY3nKYUVRFI4U1WH5NSV1Ti7FXwdDrv2KEB8TwMGacsmhqOlFz1IXnFwzZ5Xql
+         W1bABE/iMkHSMyq+9Y82PNQUB/1fs1Df8jHar045XHwSaPOKIkOFkdePRGbMkeM84AII
+         wEzw==
+X-Gm-Message-State: AOJu0YzwxTV+O89v/GIlfcjPKXm01hnKsQ2O5mCQqBysJZKobPGL+MVq
+	X1PAFAR0KDLjcm3M/gQt6GyCVSRS9V1SFTvwghQzbFmF3EJ71MZ1EDlVQtaXjLZbLABr6dn4hSX
+	asRODc04=
+X-Gm-Gg: AfdE7cklEs+PuxjWG1zA3lfBx1tDnnj5OmGAT6PJQGCVK2zGW4HL97EX2Er+uJEwEOL
+	DogwhQAOyYcDorw7Jmx3JQH3vVCF5Mpm7sNUZ1Nda9+vWZewbrYKFpo4E0DfPLQcvUralAMG58M
+	Jvo0+i72CHcFkvuQ20dLoQL9DWUhgqrgHM2FlwaVKkv61vQTLgTKyj4bQR3/GSgzwXMJg0u8KcO
+	VtMno4ROeGAQtQtR0+RnwYWrwlIyXxSSGUPghYSyItv4w+Zx7a9/Zzt21zsKAUSZhT5mQOxIm8J
+	7T8Qx84FisKCD6QMtgsZ7y2P+U2N1MXAEI22gDl69Ot+lNFTp8u0ouxx3o75ZDrEwJcb12ltTq1
+	6zUIbP/VO/WJHc7HAwk3j5jKKbZEwiuwSwySw98CRb3wkC8WLlKDznDCG378r5LalR9QxBdvxw6
+	OwK8n44N/kmEcGa66XHdDoYt6Kz81mVoics0IBawyy8HhIhlUKx8TlC1Wa
+X-Received: by 2002:a05:600c:6288:b0:490:be14:bfda with SMTP id 5b1f17b1804b1-4925b389b78mr16856305e9.6.1782195540303;
+        Mon, 22 Jun 2026 23:19:00 -0700 (PDT)
 Received: from Dev-EliteBook.Home (97e782b0.skybroadband.com. [151.231.130.176])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46666788547sm34521147f8f.18.2026.06.22.23.18.58
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46666788547sm34521147f8f.18.2026.06.22.23.18.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jun 2026 23:18:58 -0700 (PDT)
+        Mon, 22 Jun 2026 23:18:59 -0700 (PDT)
 From: dave.patel@riscstar.com
 To: op-tee@lists.trustedfirmware.org,
 	Samuel Holland <samuel.holland@sifive.com>,
 	Peter Lin <peter.lin@sifive.com>
-Subject: [RFC 0/3] core: riscv: Implement Floating-Point and Vector extension context tracking
-Date: Tue, 23 Jun 2026 07:18:52 +0100
-Message-ID: <20260623061855.17863-1-dave.patel@riscstar.com>
+Subject: [RFC 1/3] Floating Point changes
+Date: Tue, 23 Jun 2026 07:18:53 +0100
+Message-ID: <20260623061855.17863-2-dave.patel@riscstar.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260623061855.17863-1-dave.patel@riscstar.com>
+References: <20260623061855.17863-1-dave.patel@riscstar.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-2.46 / 15.00];
-	BAYES_HAM(-2.96)[99.84%];
+X-Spamd-Result: default: False [-2.50 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	MID_CONTAINS_FROM(1.00)[];
 	DMARC_POLICY_ALLOW(-0.50)[riscstar.com,none];
 	R_MISSING_CHARSET(0.50)[];
 	R_DKIM_ALLOW(-0.20)[riscstar-com.20251104.gappssmtp.com:s=20251104];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
 	MIME_GOOD(-0.10)[text/plain];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MIME_TRACE(0.00)[0:+];
@@ -82,27 +85,27 @@ X-Spamd-Result: default: False [-2.46 / 15.00];
 	ARC_NA(0.00)[];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.53:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.42:from];
 	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.53:from];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.42:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	NEURAL_HAM(-0.00)[-1.000];
 	DKIM_TRACE(0.00)[riscstar-com.20251104.gappssmtp.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 99AE743743
+X-Rspamd-Queue-Id: 2864043743
 X-Spamd-Bar: --
-Message-ID-Hash: DQNOSG6F67QNPRHBEOVQ2OO3KERA7524
-X-Message-ID-Hash: DQNOSG6F67QNPRHBEOVQ2OO3KERA7524
+Message-ID-Hash: EODUN7RPKNHNDJXRST665RKUJIWDOSAX
+X-Message-ID-Hash: EODUN7RPKNHNDJXRST665RKUJIWDOSAX
 X-MailFrom: dave.patel@riscstar.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Robin Randhawa <robin.randhawa@sifive.com>, Scott Bambrough <scott@riscstar.com>, Dave Patel <dave.patel@riscstar.com>, Ray Mao <raymond.mao@riscstar.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/DQNOSG6F67QNPRHBEOVQ2OO3KERA7524/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/EODUN7RPKNHNDJXRST665RKUJIWDOSAX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -112,87 +115,215 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 From: Dave Patel <dave.patel@riscstar.com>
 
-Dear OP-TEE Developers,
-
-This proposal introduces architectural runtime context management structures and
-tracking mechanisms for standard scalar Floating-Point (F/D) and Vector (V) ISA
-extensions on RISC-V platforms.
-
-### 1. Architectural Alignment and Shift
-
-Currently, the thread scheduling layer in OP-TEE OS implements a tightly coupled
-VFP model specific to the ARM architecture (e.g., thread_kernel_enable_vfp). This
-model relies heavily on a software driven "lazy context trap" mechanism, where
-the kernel disables the FPU to catch subsequent execution faults.
-
-On RISC-V architectures, context tracking cannot rely on software initiated lazy
-traps via execution faults due to structural opcode overlap across custom extensions
-and the severe pipeline execution penalties of traps. Instead, RISC-V provides
-native hardware status state machines managed via the `sstatus.FS` (Floating-Point)
-and `sstatus.VS` (Vector) bitfields.
-
-To map seamlessly into OP-TEE's existing `thread_*_vfp` thread scheduling, we
-utilize these hardware flags to implement "eager-on-dirty" context saving. The
-kernel leaves extensions enabled during active execution and only write at context
-switch if the hardware reports a `Dirty` status.
-
-### 2. Implementation Subsystem Architecture
-
-To maintain modular design the implementation explicitly divides scalar processing
-from scalable vector configurations:
-
-1. Modularity & Headers:
-   - <kernel/riscv_fp.h> specifies bitmasks and structures (`struct riscv_fp_state`)
-     for scalar execution.
-   - <kernel/riscv_vector.h> encapsulates scalable vector parameter state layouts
-     (`struct riscv_vector_state`). This allows devices missing a vector unit to completely
-     omit vector footprints or dependency.
-
-2. Bitwidth and Layout Adaptability:
-   - Scalar Low-Level Assembly (`fp_asm.S`): Natively adapts to both 32-bit (`rv32`)
-     and 64-bit (`rv64`) width configurations via compiler `__riscv_xlen` preprocessing directives.
-   - Vector Extension Optimization (`riscv_vector.c`): Fully isolated from primary thread files.
-     Instead of storing vector registers sequentially, it adopts whole-register block
-     transfer instructions (`vs8r.v` and `vl8r.v`). Grouping elements into blocks of
-     eight compresses the save/restore pipeline into four core operational chunks
-     (`v0`, `v8`, `v16`, `v24`).
-
-3. Unified Scheduling Abstraction (`thread_vfp.c`):
-   Unified top-level implementation (`thread_kernel_save_vfp`, `thread_user_enable_vfp`,
-   etc.) are used for context routing.
-
-
-### 3. Feedback Requested
-
-We are seeking early design feedback from the community regarding:
-- Structural Convention: Should we keep the universal "vfp" naming scheme within the global
-  `thread.h` header interfaces for structural backward compatibility, or is an explicit upstream
-  refactoring toward a generic name (e.g., `thread_kernel_enable_coproc_regs`) preferred?
-- Vector Bounds Memory Allocation: What is the preferred approach for safely managing the dynamic
-  heap footprint for vector register states (`vregs`) which scale based on runtime CPU `VLENB` bounds?
-- Eager Context switching has been proposed, hence are there any reservations on
-this ?
-
-
-Looking forward to your suggestions and design critiques.
-
-Dave Patel (3):
-  Floating Point changes
-  RISCV Vector changes
-  Thread changes for RISCV floating point and vector changes
-
- core/arch/riscv/include/riscv_fp.h     |  30 +++++
- core/arch/riscv/include/riscv_vector.h |  32 +++++
- core/arch/riscv/kernel/riscv_fp.S      | 159 +++++++++++++++++++++++++
- core/arch/riscv/kernel/riscv_vector.c  |  77 ++++++++++++
- core/arch/riscv/kernel/thread_vfp.c    | 142 ++++++++++++++++++++++
- 5 files changed, 440 insertions(+)
+Signed-off-by: Dave Patel <dave.patel@riscstar.com>
+---
+ core/arch/riscv/include/riscv_fp.h |  30 ++++++
+ core/arch/riscv/kernel/riscv_fp.S  | 159 +++++++++++++++++++++++++++++
+ 2 files changed, 189 insertions(+)
  create mode 100644 core/arch/riscv/include/riscv_fp.h
- create mode 100644 core/arch/riscv/include/riscv_vector.h
  create mode 100644 core/arch/riscv/kernel/riscv_fp.S
- create mode 100644 core/arch/riscv/kernel/riscv_vector.c
- create mode 100644 core/arch/riscv/kernel/thread_vfp.c
 
---
+diff --git a/core/arch/riscv/include/riscv_fp.h b/core/arch/riscv/include/riscv_fp.h
+new file mode 100644
+index 000000000..19faf925f
+--- /dev/null
++++ b/core/arch/riscv/include/riscv_fp.h
+@@ -0,0 +1,30 @@
++/* SPDX-License-Identifier: BSD-2-Clause */
++/*
++ * Copyright (c) 2026, RISCStar Limited
++ */
++
++#ifndef __KERNEL_RISCV_FP_H
++#define __KERNEL_RISCV_FP_H
++
++#include <types_ext.h>
++#include <compiler.h>
++
++/* CSR Status Bit Masks for Floating-Point Extensions */
++#define SSTATUS_FS_MASK       SHIFT_U32(3, 13)  /* bits [14:13] */
++#define SSTATUS_FS_OFF        SHIFT_U32(0, 13)
++#define SSTATUS_FS_INITIAL    SHIFT_U32(1, 13)
++#define SSTATUS_FS_CLEAN      SHIFT_U32(2, 13)
++#define SSTATUS_FS_DIRTY      SHIFT_U32(3, 13)
++
++/* Floating-Point Context Struct */
++struct riscv_fp_state {
++#if __riscv_xlen == 64
++	uint64_t fpregs[32];
++#elif __riscv_xlen == 32
++	uint32_t fpregs[32];
++#endif
++	unsigned long fcsr;
++};
++
++#endif /* __KERNEL_RISCV_FP_H */
++
+diff --git a/core/arch/riscv/kernel/riscv_fp.S b/core/arch/riscv/kernel/riscv_fp.S
+new file mode 100644
+index 000000000..4fa53649e
+--- /dev/null
++++ b/core/arch/riscv/kernel/riscv_fp.S
+@@ -0,0 +1,159 @@
++/* SPDX-License-Identifier: BSD-2-Clause */
++/*
++ * Copyright (c) 2026, RISCStar Limited
++ */
++
++#include <asm.h>
++
++/* void __asm_save_fp_state */
++FUNC __asm_save_fp_state , :
++#if __riscv_xlen == 64
++	fsd f0,   0(a0)
++	fsd f1,   8(a0)
++	fsd f2,   16(a0)
++	fsd f3,   24(a0)
++	fsd f4,   32(a0)
++	fsd f5,   40(a0)
++	fsd f6,   48(a0)
++	fsd f7,   56(a0)
++	fsd f8,   64(a0)
++	fsd f9,   72(a0)
++	fsd f10,  80(a0)
++	fsd f11,  88(a0)
++	fsd f12,  96(a0)
++	fsd f13,  104(a0)
++	fsd f14,  112(a0)
++	fsd f15,  120(a0)
++	fsd f16,  128(a0)
++	fsd f17,  136(a0)
++	fsd f18,  144(a0)
++	fsd f19,  152(a0)
++	fsd f20,  160(a0)
++	fsd f21,  168(a0)
++	fsd f22,  176(a0)
++	fsd f23,  184(a0)
++	fsd f24,  192(a0)
++	fsd f25,  200(a0)
++	fsd f26,  208(a0)
++	fsd f27,  216(a0)
++	fsd f28,  224(a0)
++	fsd f29,  232(a0)
++	fsd f30,  240(a0)
++	fsd f31,  248(a0)
++	csrr t0, fcsr
++	sd t0, 256(a0)
++#elif __riscv_xlen == 32
++	fsw f0,   0(a0)
++	fsw f1,   4(a0)
++	fsw f2,   8(a0)
++	fsw f3,   12(a0)
++	fsw f4,   16(a0)
++	fsw f5,   20(a0)
++	fsw f6,   24(a0)
++	fsw f7,   28(a0)
++	fsw f8,   32(a0)
++	fsw f9,   36(a0)
++	fsw f10,  40(a0)
++	fsw f11,  44(a0)
++	fsw f12,  48(a0)
++	fsw f13,  52(a0)
++	fsw f14,  56(a0)
++	fsw f15,  60(a0)
++	fsw f16,  64(a0)
++	fsw f17,  68(a0)
++	fsw f18,  72(a0)
++	fsw f19,  76(a0)
++	fsw f20,  80(a0)
++	fsw f21,  84(a0)
++	fsw f22,  88(a0)
++	fsw f23,  92(a0)
++	fsw f24,  96(a0)
++	fsw f25,  100(a0)
++	fsw f26,  104(a0)
++	fsw f27,  108(a0)
++	fsw f28,  112(a0)
++	fsw f29,  116(a0)
++	fsw f30,  120(a0)
++	fsw f31,  124(a0)
++	csrr t0, fcsr
++	sw t0, 128(a0)
++#endif
++	ret
++END_FUNC __asm_save_fp_state
++
++/* void __asm_restore_fp_state */
++FUNC __asm_restore_fp_state , :
++#if __riscv_xlen == 64
++	ld t0, 256(a0)
++	csrw fcsr, t0
++	fld f0,   0(a0)
++	fld f1,   8(a0)
++	fld f2,   16(a0)
++	fld f3,   24(a0)
++	fld f4,   32(a0)
++	fld f5,   40(a0)
++	fld f6,   48(a0)
++	fld f7,   56(a0)
++	fld f8,   64(a0)
++	fld f9,   72(a0)
++	fld f10,  80(a0)
++	fld f11,  88(a0)
++	fld f12,  96(a0)
++	fld f13,  104(a0)
++	fld f14,  112(a0)
++	fld f15,  120(a0)
++	fld f16,  128(a0)
++	fld f17,  136(a0)
++	fld f18,  144(a0)
++	fld f19,  152(a0)
++	fld f20,  160(a0)
++	fld f21,  168(a0)
++	fld f22,  176(a0)
++	fld f23,  184(a0)
++	fld f24,  192(a0)
++	fld f25,  200(a0)
++	fld f26,  208(a0)
++	fld f27,  216(a0)
++	fld f28,  224(a0)
++	fld f29,  232(a0)
++	fld f30,  240(a0)
++	fld f31,  248(a0)
++#elif __riscv_xlen == 32
++	lw t0, 128(a0)
++	csrw fcsr, t0
++	flw f0,   0(a0)
++	flw f1,   4(a0)
++	flw f2,   8(a0)
++	flw f3,   12(a0)
++	flw f4,   16(a0)
++	flw f5,   20(a0)
++	flw f6,   24(a0)
++	flw f7,   28(a0)
++	flw f8,   32(a0)
++	flw f9,   36(a0)
++	flw f10,  40(a0)
++	flw f11,  44(a0)
++	flw f12,  48(a0)
++	flw f13,  52(a0)
++	flw f14,  56(a0)
++	flw f15,  60(a0)
++	flw f16,  64(a0)
++	flw f17,  68(a0)
++	flw f18,  72(a0)
++	flw f19,  76(a0)
++	flw f20,  80(a0)
++	flw f21,  84(a0)
++	flw f22,  88(a0)
++	flw f23,  92(a0)
++	flw f24,  96(a0)
++	flw f25,  100(a0)
++	f_lw f26,  104(a0)
++	flw f27,  108(a0)
++	flw f28,  112(a0)
++	flw f29,  116(a0)
++	flw f30,  120(a0)
++	flw f31,  124(a0)
++#endif
++	ret
++END_FUNC __asm_restore_fp_state
++
+-- 
 2.43.0
 
