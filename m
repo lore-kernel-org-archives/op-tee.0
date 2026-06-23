@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56374CD4F26
-	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:20:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A16CCD98F0
+	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:20:37 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 9129B43743
-	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:20:08 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 5A4F144E68
+	for <op-tee@archiver.kernel.org>; Tue, 23 Jun 2026 06:20:36 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=BRURgu20;
+	dkim=pass (2048-bit key; unprotected) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=GLntggOl;
 	dkim-atps=neutral
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CD62343743
-	for <op-tee@lists.trustedfirmware.org>; Tue, 23 Jun 2026 06:19:02 +0000 (UTC)
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-490b613a17bso42858175e9.3
-        for <op-tee@lists.trustedfirmware.org>; Mon, 22 Jun 2026 23:19:02 -0700 (PDT)
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0DF3F44E61
+	for <op-tee@lists.trustedfirmware.org>; Tue, 23 Jun 2026 06:19:03 +0000 (UTC)
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-45fd464d51fso3072033f8f.3
+        for <op-tee@lists.trustedfirmware.org>; Mon, 22 Jun 2026 23:19:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1782195542; x=1782800342; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ttb0vndayQPBHq5FeTFAtk0xMP7FeTgoJMwq5FxS4mk=;
-        b=BRURgu20VD7bEJ9+2jjw7ejfzg1XX2f/e/0NcwdvrxMS79ZQ8sFb/h5huo9A1DPRe8
-         8y41g9wZJQiFXTLnR1aBTt0GiG+aJKQ7BIOdSQzwti4qovUayYwqlILDlrg8fn9lzKqx
-         kR1OiC8uZcLUdGxbPj3o7078L+Nsc7Q26Vyd0JPb5JZvWRxlGoqci9PxgQ/Y6H+5pDK1
-         nkmt7ARGnZHMC+nx1uMCdAfEoehjCieqNJViN4fg4y8Mq/uFoDXwlAXO9sDwOpWRCIao
-         qnRlit72fRuq3txd9Q6LiR7zfLKs/qg5egp+AEWnajP1kFGeuk4XXaxTh2n5dnQHKQ7I
-         6D4w==
+        bh=1i8jO0J0WuKQyGXjHq2PRQYuspFqucX+zmWFkCgYeSo=;
+        b=GLntggOl0jgA8C+1kq2Mza4OVp9LOO0mj0Ul89MgDOq6y7lM5mRaZd0ED08YWHB1LY
+         H9BhQUhNV9qZLFN4KxVzdizHIRDmkNyGiSNQ1EjRVQwCgKquszrUsUsv3v+rs6wf2zd1
+         M12HDxrAQ05IcAAZF3MFJ3z3lqToPtmdwDj5qGPX9J3NXL7IreZ6BGvIt9W17JWXSUQ4
+         paIlXlc3mX6cWJ8AOmPIjWcnUYfP1x67Gi7v/puocFhgcjnVp806uV1zmjaUrrdPIqNW
+         4kusycfbAZmCYiX3HKU95DwIua7DnpKIsDdI52E03eHObBsACD5LqkXKXqQTMqo1ZeEJ
+         DFCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20251104; t=1782195542; x=1782800342;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=ttb0vndayQPBHq5FeTFAtk0xMP7FeTgoJMwq5FxS4mk=;
-        b=LyVptlMEtxRU7OSqCbVoW3/dOr4mj4miZxkgfB3TQYkefJEPq4t779OVlJbQ0xibal
-         w89Y6nOfp4yYHFgX91mEA+yMPeeAbgbdp6RuWl4yTcCg/MqfGJOxF0yCWuPQA7gsf0EX
-         6JTlllAsROZ1vJVsKYPgX2m3qUT8gJNWOOJHeqQxwgLfe5BV7c9zaL7zrWiC5ZkQzp7f
-         lHMzoUvCkefXgZLDtfzddCIvura/tdkk23OAJVeXNdtvHMjg/E+LT30DyGCfkV2wbXLb
-         QRpEo3ck/2PiVtlsGhrrjIUMcRFZEyLyVUxLvG0QkkkIVbIyenXjw1RxG/x9Ac1s+h8H
-         R5KQ==
-X-Gm-Message-State: AOJu0YxlhqG2qAQY7HkJjuPeFIXM2cnQLjoARnaoi/1et6JbfnAIVHK+
-	e0hWVp8crU2x+wFcm7kfYrTpnjiUdOLkkEsjpX0Z0/E4DwmTkY5YHN4FAcIqIvbDaI7a5ghgnGo
-	A43WmOw8=
-X-Gm-Gg: AfdE7cmbY8dIlBrV16c6dcH18BQVajmck8QbgagF+ARMYaHxKwJse6vMq/8vBQ1/C/f
-	sr11imJoawb3b+R0bp93oUZ4qEX/KIM6pmU7MTU0yAMP3HhkdduUcohVx6GmfK1TmHT2bhANuX3
-	4cQLMXQXPAYrujU/xc6CRnwLR/Pr6rKs3fUvAbNz2657W3XtL/d5fCGGdx4XFoQzCzJZNOIhBCX
-	TE2sypeYmVc/9OBWwC4QvRXZg89mSDCZAU/ek1WvlLJDjsO9VhLn8LcyXLjHIQDx4EdxUdjr72c
-	ej7k4FEZTT4B49FPZwhIxjvzE7l4sW6AwHEVIggvQQMwmGaBk7tSiTQkrfPU4s6M9yc0cT9eQPo
-	YSWbKxxDErKMWfC7iV1IOvHgiW4fwOW0vaT4VvLOGEvLJdLpymRjT3jCc4EzbiyjSik/SHL9vHZ
-	U2Df1YMnyutV9blEJFOU18q52cov5ztc+KQni4t1p/JBX+QXjviodfQv7kxO7ylXPpe/I=
-X-Received: by 2002:a05:600c:500d:b0:492:37b7:6080 with SMTP id 5b1f17b1804b1-49249083ccamr206221055e9.7.1782195541044;
+        bh=1i8jO0J0WuKQyGXjHq2PRQYuspFqucX+zmWFkCgYeSo=;
+        b=ZMlllpyPazzasK1M1XUTwE67JGLXgK9C2VwAWnH/pGf/lmuMj7Tq4bWi+tnrI7ntPo
+         xdJYVCvfarKO2aC8/6bd3LZsCrgrBDRjw2GSlvGsZDkUBZYSIhPw6T5mRKbXlm3B8f67
+         DbZSg3LZZAezSAFzzbGyR1LxvcnhwxaBnrHjqVKgq5xlwHFJ4sne3R/hx+Xeiad9ezCV
+         VWv326qFe72Zb7OJ3OftYIc7ORX9W7lMKkwflwtvw4fV2iNMql1ITc/CM6WJgDd5J6m7
+         CxFlpFuhQ9SEqsM5yaLXJD5FUtDJ8O18R43jF8b+YWFCi7DcjgPmjKwpcpNrpgr0DvxS
+         Rt/g==
+X-Gm-Message-State: AOJu0YzMZQEFeKh9wl8NOSbhwaXmBGZz3ti3cC236kutZDNa++IV4wv9
+	RmUlR+98hvWmFS+B7GLTuDT48Vt1zEhQ9N81MxJAwc9NcxtrrCQAxTG+HagaJJGRN36quGaPvCa
+	y/AeAgpQ=
+X-Gm-Gg: AfdE7cmaKpAY0likD0IJOE3eKUPeNF+bSavQqMZIRov8fpJd3/C0HLR7zFhmyfgoKsd
+	yoJxMF4mgfZsLzZmr4v3CMFOC+/X4GcrbI2TjLo45PHWdmFWWc73owgxvHYkalf+ILhTOEYY2lv
+	DmC7HTvkyNXOI3FOlgBkmluOv9zne+oPJ6SMH1K5bkUnrVDJs6JSIX424GFT6Re+7dfsDJZDz9r
+	EYXIvvHYY2+jGceP0++XIZL/sn/Po/9roCEpy+ANUyTrQrIasvrdcCEO1OjCZGRUk4K27ObpZ74
+	Dq+pxZBXeZlggmYIdmH3CeK5AWnIhAyOjOEKXqEo6T2mtBdZMR1KR618fxX8fRBlTXfdk9C2GCB
+	cpQsCX/u+hO1OPC6/UkweSMmxRv/N/RWfkR+1F5A1pIGZzjAgHR3zMFmyQNPfDTXyy7KM+n9SH9
+	6eTOtJquTe+PuQSItGDW+KkbtxqmVOHqjkXBtDX4WdjI37K+Q/AKhecmvh
+X-Received: by 2002:a5d:4604:0:b0:466:6ed8:1e1b with SMTP id ffacd0b85a97d-46add36e391mr1508165f8f.21.1782195541811;
         Mon, 22 Jun 2026 23:19:01 -0700 (PDT)
 Received: from Dev-EliteBook.Home (97e782b0.skybroadband.com. [151.231.130.176])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46666788547sm34521147f8f.18.2026.06.22.23.19.00
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46666788547sm34521147f8f.18.2026.06.22.23.19.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jun 2026 23:19:00 -0700 (PDT)
+        Mon, 22 Jun 2026 23:19:01 -0700 (PDT)
 From: dave.patel@riscstar.com
 To: op-tee@lists.trustedfirmware.org,
 	Samuel Holland <samuel.holland@sifive.com>,
 	Peter Lin <peter.lin@sifive.com>
-Subject: [RFC 2/3] RISCV Vector changes
-Date: Tue, 23 Jun 2026 07:18:54 +0100
-Message-ID: <20260623061855.17863-3-dave.patel@riscstar.com>
+Subject: [RFC 3/3] Thread changes for RISCV floating point and vector changes
+Date: Tue, 23 Jun 2026 07:18:55 +0100
+Message-ID: <20260623061855.17863-4-dave.patel@riscstar.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260623061855.17863-1-dave.patel@riscstar.com>
 References: <20260623061855.17863-1-dave.patel@riscstar.com>
@@ -85,27 +85,27 @@ X-Spamd-Result: default: False [-2.50 / 15.00];
 	ARC_NA(0.00)[];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.47:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.221.43:from];
 	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.47:from];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.43:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	NEURAL_HAM(-0.00)[-1.000];
 	DKIM_TRACE(0.00)[riscstar-com.20251104.gappssmtp.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CD62343743
+X-Rspamd-Queue-Id: 0DF3F44E61
 X-Spamd-Bar: --
-Message-ID-Hash: UDF3MKQVEV7QDHSZEKECYUNWCO6Q42JR
-X-Message-ID-Hash: UDF3MKQVEV7QDHSZEKECYUNWCO6Q42JR
+Message-ID-Hash: 5WZCRUDT27NXULYJWOA3BSJNHG2V4GA7
+X-Message-ID-Hash: 5WZCRUDT27NXULYJWOA3BSJNHG2V4GA7
 X-MailFrom: dave.patel@riscstar.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Robin Randhawa <robin.randhawa@sifive.com>, Scott Bambrough <scott@riscstar.com>, Dave Patel <dave.patel@riscstar.com>, Ray Mao <raymond.mao@riscstar.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UDF3MKQVEV7QDHSZEKECYUNWCO6Q42JR/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5WZCRUDT27NXULYJWOA3BSJNHG2V4GA7/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -117,131 +117,156 @@ From: Dave Patel <dave.patel@riscstar.com>
 
 Signed-off-by: Dave Patel <dave.patel@riscstar.com>
 ---
- core/arch/riscv/include/riscv_vector.h | 32 +++++++++++
- core/arch/riscv/kernel/riscv_vector.c  | 77 ++++++++++++++++++++++++++
- 2 files changed, 109 insertions(+)
- create mode 100644 core/arch/riscv/include/riscv_vector.h
- create mode 100644 core/arch/riscv/kernel/riscv_vector.c
+ core/arch/riscv/kernel/thread_vfp.c | 142 ++++++++++++++++++++++++++++
+ 1 file changed, 142 insertions(+)
+ create mode 100644 core/arch/riscv/kernel/thread_vfp.c
 
-diff --git a/core/arch/riscv/include/riscv_vector.h b/core/arch/riscv/include/riscv_vector.h
+diff --git a/core/arch/riscv/kernel/thread_vfp.c b/core/arch/riscv/kernel/thread_vfp.c
 new file mode 100644
-index 000000000..2aa3b26db
+index 000000000..9eaf20ad1
 --- /dev/null
-+++ b/core/arch/riscv/include/riscv_vector.h
-@@ -0,0 +1,32 @@
++++ b/core/arch/riscv/kernel/thread_vfp.c
+@@ -0,0 +1,142 @@
 +/* SPDX-License-Identifier: BSD-2-Clause */
 +/*
 + * Copyright (c) 2026, RISCStar Limited
 + */
 +
-+#ifndef __KERNEL_RISCV_VECTOR_H
-+#define __KERNEL_RISCV_VECTOR_H
++#include <kernel/thread.h>
++#include <kernel/riscv_fp.h>
++#include <kernel/riscv_vector.h>
++#include <assert.h>
 +
-+#include <types_ext.h>
-+#include <compiler.h>
++void __asm_save_fp_state(struct riscv_fp_state *ctx);
++void __asm_restore_fp_state(struct riscv_fp_state *ctx);
 +
-+/* CSR Status Bit Masks for Vector Extensions */
-+#define SSTATUS_VS_MASK       SHIFT_U32(3, 9)   /* bits [10:9] */
-+#define SSTATUS_VS_OFF        SHIFT_U32(0, 9)
-+#define SSTATUS_VS_INITIAL    SHIFT_U32(1, 9)
-+#define SSTATUS_VS_CLEAN      SHIFT_U32(2, 9)
-+#define SSTATUS_VS_DIRTY      SHIFT_U32(3, 9)
++#define STATE_TOKEN_FP     SHIFT_U32(1, 0)
++#define STATE_TOKEN_VEC    SHIFT_U32(1, 1)
 +
-+/* Vector Context Struct */
-+struct riscv_vector_state {
-+	uint8_t *vregs;
-+	unsigned long vtype;
-+	unsigned long vl;
-+	unsigned long vcsr;
-+	unsigned long vstart;
++struct thread_riscv_ext_state {
++	struct riscv_fp_state fp_ctx;
++	struct riscv_vector_state v_ctx;
++	bool fp_saved;
++	bool vec_saved;
 +};
 +
-+/* Internal context routers instantiated inside riscv_vector.c */
-+void riscv_vector_save_internal(struct riscv_vector_state *dst);
-+void riscv_vector_restore_internal(const struct riscv_vector_state *src);
++static struct thread_riscv_ext_state cpu_ctx_states[CFG_NUM_THREADS];
 +
-+#endif /* __KERNEL_RISCV_VECTOR_H */
-diff --git a/core/arch/riscv/kernel/riscv_vector.c b/core/arch/riscv/kernel/riscv_vector.c
-new file mode 100644
-index 000000000..b7f7431fe
---- /dev/null
-+++ b/core/arch/riscv/kernel/riscv_vector.c
-@@ -0,0 +1,77 @@
-+/* SPDX-License-Identifier: BSD-2-Clause */
-+/*
-+ * Copyright (c) 2026, RISCStar Limited
-+ */
-+
-+#include <kernel/riscv_vector.h>
-+#include <types_ext.h>
-+
-+void riscv_vector_save_internal(struct riscv_vector_state *dst)
++static inline unsigned long read_sstatus(void)
 +{
-+	unsigned long vlenb;
-+	uint8_t *base;
-+
-+	if (!dst)
-+		return;
-+
-+	asm volatile("csrr %0, vtype" : "=r"(dst->vtype));
-+	asm volatile("csrr %0, vl" : "=r"(dst->vl));
-+	asm volatile("csrr %0, vcsr" : "=r"(dst->vcsr));
-+	asm volatile("csrr %0, vstart" : "=r"(dst->vstart));
-+	asm volatile("csrr %0, 0xc22" : "=r"(vlenb)); /* CSR_VLENB = 0xc22 */
-+
-+	base = dst->vregs;
-+
-+#define SAVE_VREG_CHUNK(i)					\
-+	asm volatile(						\
-+		"       .option push\n\t"			\
-+		"       .option arch, +v\n\t"			\
-+		"       vs8r.v v" #i ", (%0)\n\t"		\
-+		"       .option pop\n\t"			\
-+		:: "r"(base + (i) * vlenb) : "memory")
-+
-+	SAVE_VREG_CHUNK(0);
-+	SAVE_VREG_CHUNK(8);
-+	SAVE_VREG_CHUNK(16);
-+	SAVE_VREG_CHUNK(24);
-+#undef SAVE_VREG_CHUNK
++	unsigned long val;
++	asm volatile("csrr %0, sstatus" : "=r"(val));
++	return val;
 +}
 +
-+void riscv_vector_restore_internal(const struct riscv_vector_state *src)
++static inline void write_sstatus(unsigned long val)
 +{
-+	unsigned long vlenb;
-+	const uint8_t *base;
++	asm volatile("csrw sstatus, %0" :: "r"(val));
++}
 +
-+	if (!src)
-+		return;
++uint32_t thread_kernel_enable_vfp(void)
++{
++	unsigned long sstatus = read_sstatus();
++	uint32_t active_token = 0;
 +
-+	asm volatile("csrw vcsr, %0" :: "r"(src->vcsr));
-+	asm volatile("csrw vstart, %0" :: "r"(src->vstart));
++	if ((sstatus & SSTATUS_FS_MASK) != SSTATUS_FS_CLEAN) {
++		sstatus &= ~SSTATUS_FS_MASK;
++		sstatus |= SSTATUS_FS_CLEAN;
++		active_token |= STATE_TOKEN_FP;
++	}
 +
-+	/* Re-establish execution parameters prior to block transfer */
-+	asm volatile(
-+		"       .option push\n\t"
-+		"       .option arch, +v\n\t"
-+		"       vsetvl zero, %0, %1\n\t"
-+		"       .option pop\n\t"
-+		:: "r"(src->vl), "r"(src->vtype));
++	if ((sstatus & SSTATUS_VS_MASK) != SSTATUS_VS_CLEAN) {
++		sstatus &= ~SSTATUS_VS_MASK;
++		sstatus |= SSTATUS_VS_CLEAN;
++		active_token |= STATE_TOKEN_VEC;
++	}
 +
-+	asm volatile("csrr %0, 0xc22" : "=r"(vlenb));
-+	base = src->vregs;
++	write_sstatus(sstatus);
++	return active_token;
++}
 +
-+#define RESTORE_VREG_CHUNK(i)					\
-+								\
-+	asm volatile(						\
-+		"       .option push\n\t"			\
-+		"       .option arch, +v\n\t"			\
-+		"       vl8r.v v" #i ", (%0)\n\t"		\
-+		"       .option pop\n\t"			\
-+		:: "r"(base + (i) * vlenb) : "memory")
++void thread_kernel_disable_vfp(uint32_t state_value)
++{
++	unsigned long sstatus = read_sstatus();
 +
-+	RESTORE_VREG_CHUNK(0);
-+	RESTORE_VREG_CHUNK(8);
-+	RESTORE_VREG_CHUNK(16);
-+	RESTORE_VREG_CHUNK(24);
-+#undef RESTORE_VREG_CHUNK
++	if (state_value & STATE_TOKEN_FP) {
++		sstatus &= ~SSTATUS_FS_MASK;
++		sstatus |= SSTATUS_FS_OFF;
++	}
++	if (state_value & STATE_TOKEN_VEC) {
++		sstatus &= ~SSTATUS_VS_MASK;
++		sstatus |= SSTATUS_VS_OFF;
++	}
++	write_sstatus(sstatus);
++}
++
++void thread_kernel_save_vfp(void)
++{
++	unsigned long sstatus = read_sstatus();
++	uint32_t tid = thread_get_id();
++	struct thread_riscv_ext_state *state = &cpu_ctx_states[tid];
++
++	if ((sstatus & SSTATUS_FS_MASK) == SSTATUS_FS_DIRTY) {
++		__asm_save_fp_state(&state->fp_ctx);
++		state->fp_saved = true;
++		sstatus = (sstatus & ~SSTATUS_FS_MASK) | SSTATUS_FS_CLEAN;
++	}
++
++	if ((sstatus & SSTATUS_VS_MASK) == SSTATUS_VS_DIRTY) {
++		assert(state->v_ctx.vregs != NULL);
++		riscv_vector_save_internal(&state->v_ctx);
++		state->vec_saved = true;
++		sstatus = (sstatus & ~SSTATUS_VS_MASK) | SSTATUS_VS_CLEAN;
++	}
++	write_sstatus(sstatus);
++}
++
++void thread_kernel_restore_vfp(void)
++{
++	unsigned long sstatus = read_sstatus();
++	uint32_t tid = thread_get_id();
++	struct thread_riscv_ext_state *state = &cpu_ctx_states[tid];
++
++	if (state->fp_saved) {
++		sstatus = (sstatus & ~SSTATUS_FS_MASK) | SSTATUS_FS_CLEAN;
++		write_sstatus(sstatus);
++		__asm_restore_fp_state(&state->fp_ctx);
++		state->fp_saved = false;
++	}
++
++	if (state->vec_saved) {
++		sstatus = (sstatus & ~SSTATUS_VS_MASK) | SSTATUS_VS_CLEAN;
++		write_sstatus(sstatus);
++		riscv_vector_restore_internal(&state->v_ctx);
++		state->vec_saved = false;
++	}
++}
++
++void thread_user_enable_vfp(struct thread_user_vfp_state *uvfp __unused)
++{
++	unsigned long sstatus = read_sstatus();
++	sstatus = (sstatus & ~SSTATUS_FS_MASK) | SSTATUS_FS_INITIAL;
++	sstatus = (sstatus & ~SSTATUS_VS_MASK) | SSTATUS_VS_INITIAL;
++	write_sstatus(sstatus);
++}
++
++void thread_user_save_vfp(struct thread_user_vfp_state *uvfp __unused)
++{
++	thread_kernel_save_vfp();
++}
++
++void thread_user_clear_vfp(struct thread_user_vfp_state *uvfp __unused)
++{
++	unsigned long sstatus = read_sstatus();
++	uint32_t tid = thread_get_id();
++	struct thread_riscv_ext_state *state = &cpu_ctx_states[tid];
++
++	state->fp_saved = false;
++	state->vec_saved = false;
++
++	sstatus &= ~(SSTATUS_FS_MASK | SSTATUS_VS_MASK);
++	sstatus |= (SSTATUS_FS_OFF | SSTATUS_VS_OFF);
++	write_sstatus(sstatus);
 +}
 +
 -- 
