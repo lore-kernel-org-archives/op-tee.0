@@ -4,203 +4,251 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC320CDB479
-	for <op-tee@archiver.kernel.org>; Wed, 24 Jun 2026 03:39:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13EC2CDB47F
+	for <op-tee@archiver.kernel.org>; Wed, 24 Jun 2026 08:03:24 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 19F5E4389A
-	for <op-tee@archiver.kernel.org>; Wed, 24 Jun 2026 03:39:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1782272381;
-	bh=EnFpa/bGsAeGQjw+N/P5gG1c83gXD0UVAz4WD24fZ1M=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=hAwqMeZGbSH5Cd1Kv5Yagi65NjYUL7Xv1KZ+Ku3OxBYPYL6W2uPgx0ybuVipp1120
-	 EaU1VsS5JB7KER5JEwV2J61xprYg4peQEI9uU94Hl+uG/2K5mfOIpIfDE95WjUBmNg
-	 l48CVxL+IMH+lvCCbnglLsWoDkanBdy2HuoIekrS05rP0ti9KBaduJBA++Qj7D8RC8
-	 g/Slj014yb9K8Y1PDVg3hEJQFwMaBGDyLibfacmq83gdKl168NLBLSrmpmby8fQjAc
-	 WPBaKp/VMNKIdNg4nf0v6HcRp2cHMBhl+bRvk9MPhp2N+qIJ5w1uu6ytmwlSaG8aJH
-	 GkurshuYnZk/w==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id D596243829
-	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Jun 2026 03:39:32 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 4CC0C44F84
+	for <op-tee@archiver.kernel.org>; Wed, 24 Jun 2026 08:03:23 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=JYe5kdPK;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GH3VHtwh;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=AaGp4htb;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65O1U27F1686410
-	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Jun 2026 03:39:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	s0+XSenEQTH5fxmy4dSQBjH5RjWqklrxJNjZYQ6591Q=; b=JYe5kdPK6G8mYgg3
-	8XP3zCeiGHkzuT0TcZJsrZCCjNMfbCw+ltwP+MS73WkQ8a7KmZl+jJqpfvTjVX//
-	9tg0qomyMap6oIyo4Y2IpIhKihgY5QlkbLnZduJiw0gNGRyEPh+ZeGs6HSSoxPZ7
-	yxRF9iBkK6gRgXH8zS9irH9UHh+gOswgMsKYUhVI88uAkeyFcM+4PYPbqm5H7X/j
-	G8Yo7RbMFk+ZcIKovcY0JtLSudxsiBbEH4obpKOOjoTqVt78+PryOcTkdLi8F8Jn
-	HD4+8i0edgzuaqlqrIrv6k/fpjF9pl+ldd/+iPT04E5yVYm1DPWQF7ZSg20smqEt
-	n2C7UA==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eyr9yumvc-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Jun 2026 03:39:27 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-37c6916c768so727659a91.3
-        for <op-tee@lists.trustedfirmware.org>; Tue, 23 Jun 2026 20:39:27 -0700 (PDT)
+Received: from mail-oo1-f54.google.com (mail-oo1-f54.google.com [209.85.161.54])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5D44A44F03
+	for <op-tee@lists.trustedfirmware.org>; Wed, 24 Jun 2026 08:03:16 +0000 (UTC)
+Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-6a0b1edbe32so559277eaf.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 24 Jun 2026 01:03:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1782288196; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Sw+ojQwZnxAwHr642/Yf+kQUKts6ksOY3t4BvQUKpfZ+hw86TdxkyQCwvnZtXIEX/n
+         hPMo8c50VSbkS9wJ+klK4J+ybvbygUOO2uJ5OEB7Rn+LLmpgeaB7lCuXk+xIdomtPOGA
+         0b82Wd0JRR5YixH4mfMQC9BOgsqdbWGiW/YRC/y8859pZpq/So+wsuyNEdYCJfZDO6ER
+         E94/jYpBbWtGYYSPw/uevBEWW9y0wDGvvUz0yVC2wgkAjAT7erfcUqyzpz6XHroiwlT4
+         s42pHgGkPpHa+aXBI0/JekCpOTk1lVdzxhqBGo66/z4w1giJqyxEEYb3k70QZ2ZaA8x/
+         baAQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=HgZgvKzIS0X1k0GaHdYC/ry9SjhDRdOIBPCZtjprOBU=;
+        fh=w2Xh67r03IOs7AT9izhb+i4KpxJMkvh4S0xdgLa5EcQ=;
+        b=P+5cgSHsScyDr8xg+YJb94brjDHFGj0JQALR3J/oa74zTLtT2MD0Roeerr8Dw0R9D4
+         4kYRKb0k73nsqX6WVERgY5fIUJ02TsLDQA/S+3O471UR9t7e9B6ouBz5F5B4e4O/mDN9
+         csD05TAHvNgCzQBkdTTZoBTcCLikifWXnfrn7GNUhYDo2JBA0slgWCsNWsi7d06g0GK9
+         5A7pdv5p7D4nUCaNXGtgpIshzg4lq736WvkJi2tiHlXAyi5mDYykQvf/eKPAGZiT8m4V
+         kGxMupqfGwnEDfFeGsC+KLCsVKopoI0x4sInBjil0YODoB9IHTZA6AdP2nbLfaO70loA
+         xDOQ==;
+        darn=lists.trustedfirmware.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1782272367; x=1782877167; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=s0+XSenEQTH5fxmy4dSQBjH5RjWqklrxJNjZYQ6591Q=;
-        b=GH3VHtwhkbt4Fk0nwcidOYdoplphmYcN1LOG04WYyc5O/9NCtT8z7K8upXs/li6vAR
-         uiVRyqofLwQtjVjNrbXyDg49N1UBIwKIUGWTB4Ui6OoApk6NT1v59fx+VbtXnbqxzpNt
-         N8wj4YRkO+2mTXWexpX2c2bHHhsFUx+Gu+uTV5tkyR4NoxcCF/4BMVe3Xx/ur8Dr1P7o
-         Jdz5C8+1KtPw1TlDMmZkSHrxRnFg0/Ed+na099QTSyLtajOeWR+c2avjSpC2XUWF5qQM
-         HPbfONiz1gUMuYmKpshN60ngea5BvcEGTnDn8EZi2Oymydd6N7Jcb+ORwVHaQ/ufEhMe
-         GVKA==
+        d=linaro.org; s=google; t=1782288196; x=1782892996; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=HgZgvKzIS0X1k0GaHdYC/ry9SjhDRdOIBPCZtjprOBU=;
+        b=AaGp4htbWraNEIdVvvlu2nnfPR8Cs5hqh7VaL7pRLdSNui5Zez9+izYhUWFZDDAasE
+         HdsVjjKKoe1wRonYfKUSEhzdIr60oP3ZaG19RF7RgU0MnXGFdqpQNnqUBb4EIDZACSsN
+         O9LRgUUDPI0K04/8D/ewiKi28nR4TsyWz0ijcnGeZfFId5No4/86XcDB98p32oi+P5xW
+         H+4ond9J4eIYRzTEMvL0nfjRsBYVTV3IBw68t0OAvQrNTZOHXtYN350vcogKzQtKPqhO
+         yKJYxJiXxtwYga9Z/HI1WuRoZuj0Sx9RodIWWPvz4PD8R4NoAFFE1rRm8UhFduhP/7nS
+         hSMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782272367; x=1782877167;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=s0+XSenEQTH5fxmy4dSQBjH5RjWqklrxJNjZYQ6591Q=;
-        b=sBPJRHBch7nwneGsivlerHlysTp4U//xXiw76BiHCzAPrd1GjqA8EVL+H9oaUV0qh1
-         oyc+k8hVebsBgrhuh63hdSP7HZ53RNUV+56OVuDqeZTJlMRRmXVIjUBWtX7Gghybhagt
-         mWrBpacXqkKjWaELaJ3+NCtj6mUaVFhWnxIQm34bs+01c8bdb+YarbT95vZNrRSvDzcF
-         EPwMwAm6Sz6Pdxkpqmz3Sk2dbv9BSRqzpJuF4N30L0OSEaA7mk6+buDWzuK8NXfJHwVW
-         eRtumAbH5h2wIOHD6RkQZwBTL3kBbN4Bd+gDKrtQg7abv0OnuFhRFUCgCaZWBU4PHHIW
-         YF9w==
-X-Forwarded-Encrypted: i=1; AHgh+RqaL0VGzJcK1fifCWGnaGzsNbH/Wsh5Ya0X2+MGnmRxIhv2o5QyKVAObZYNNBiUKSma1siDDoo=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxI481mwftQg1rBK1GwnB71RMGAPkulEaErJxj2OyFTiGe+m8C0
-	rDuEF54kZN50C04uEFkdzLuzdGRXrmEU6yNxB+DYEB1Z7/XktNQMXYec/OZ6UOQM+LycnMrxjb1
-	0KRNz2U442TjGLe0NvMWFKhH5FyUp4TKfofhnOMWjavkzCtMwRcmHdAPgpRrddrqYgA6xmaQ=
-X-Gm-Gg: AfdE7clUIxY64umNBkVx+T6hwOornuvBR0GPbF4jXS3dYMlKoJ2I4A8lKQekA2fngoi
-	9AIsM0bO6oTKim1MMFl1nTHmJOB45iveRkcHqFgDfj5jzCNbfH/mfRYaH83IPUn3N2IBcIWLUKE
-	AI0pNlelmEw375WhY5ByFTPKZYXmMJO952QjR0PIsbvZwgfOcsB8tRFcBpftDVCcmerejWd7CAO
-	KOSWYZ8+NhWuSFKQ3YVLUSYow6tXvkyjEQOUGd+4dksoeurF9wTRZLBZgPphrZox7P4KQ9mGQVX
-	cUb2eVY7Bl3RLtFWoIkLL7v/O1gD7mHIZANVhaDYlA1N3dfjWUmUSqmnYilzoaqxtKYxZMVjnXi
-	QMhMgoMKLeKf+UcHzBPYEsRr7Mvy0h1lUEmoxENgLbXc=
-X-Received: by 2002:a17:90b:57cc:b0:36d:635b:85a0 with SMTP id 98e67ed59e1d1-37de415329bmr1726672a91.3.1782272366903;
-        Tue, 23 Jun 2026 20:39:26 -0700 (PDT)
-X-Received: by 2002:a17:90b:57cc:b0:36d:635b:85a0 with SMTP id 98e67ed59e1d1-37de415329bmr1726647a91.3.1782272366408;
-        Tue, 23 Jun 2026 20:39:26 -0700 (PDT)
-Received: from [192.168.1.86] ([65.181.15.73])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37de3ca3eabsm862534a91.1.2026.06.23.20.39.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 23 Jun 2026 20:39:25 -0700 (PDT)
-Message-ID: <6971c4b5-d091-4fe2-b843-60da8b32d48b@oss.qualcomm.com>
-Date: Wed, 24 Jun 2026 13:39:20 +1000
+        d=1e100.net; s=20251104; t=1782288196; x=1782892996;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=HgZgvKzIS0X1k0GaHdYC/ry9SjhDRdOIBPCZtjprOBU=;
+        b=DbfMgYLTjE29O/6S2mBi+PgqcMLbzJO38GPFfczecxNA/6km5pjeeYgtBifT/kzEuf
+         6vLIv6+a8unecxB4NwzzHI6bYrD2pZUXVd0xq3alFY5xMupjhJd/aNiPpthI4gS/xB7i
+         Pv2KUWEofsBhHV75IiD/TTk08O+WvMBQRVLU23/HxM2VHfeN+DerinyNcez1t420Yqoz
+         1XkWRrIy4MK4Ueoc9oJPPFJtJ5K+6vPR6bKfEnlt7RgXELezNb2n2e1LmgGy344AhbnX
+         Tjq9weWhcdOnWmvZb+EjXmRlmkoGqY+ohKg9MeNmnQvR7PBkiM8A35Zx4xs60HXevlzq
+         xWuw==
+X-Gm-Message-State: AOJu0YyzFj+xz3EvpI8OvFpSG4s6KcNlmuyEUmzRSpUtcSo/z0zVMnUx
+	+ZXQdZn2Vy09Pdv8RyrBZFpbuddBkLfmnauR9y6ZHOsao7/2flcja1JmlIKLcpEc3KHOXjOJW9+
+	wA2OnCdm0ZF4Z0iy/koRYCyVTh1gEKyj/cMxLyhLIqyXU
+X-Gm-Gg: AfdE7ck1nA1bVca0ybl/slB4IVnIjYWwU+Ovb+qRrLMFjkonyyYvLKz19qo6Z6cVHFW
+	7JFniOgq6r8KlAomd2tF3FtEf7sKZEQ5AgYI+zkZCzrllIi2fhVwRVAwO7KXbcOvj2rKomonWaA
+	VBbx6mxOQCsmavZ4L16Egm3gpomvSSEwZuF9b3TByJDhF2FszCFIBPYJIWHAdK8mmdJChXvRkih
+	erALBMbgPBPwDczkLvCff5hBsx4CgMAAi0l+URgSHDFNmznUJX+77JdHIhJcvKWNLrs0+X67TDk
+	xay5PEL+uXmmXeknNG6NUbYaUyvOw6PW51AOlQ==
+X-Received: by 2002:a05:6820:f022:b0:68a:f494:e8fc with SMTP id
+ 006d021491bc7-6a114c291d3mr4477560eaf.33.1782288195611; Wed, 24 Jun 2026
+ 01:03:15 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] tee: qcomtee: Drop unused assignment of
- platform_device_id driver data
-To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
- <u.kleine-koenig@baylibre.com>,
-        Jens Wiklander <jens.wiklander@linaro.org>
-References: <c21803b3f2ea1522bb930dc1dcab79c2627f2234.1781620559.git.u.kleine-koenig@baylibre.com>
-Content-Language: en-US
-In-Reply-To: <c21803b3f2ea1522bb930dc1dcab79c2627f2234.1781620559.git.u.kleine-koenig@baylibre.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-X-Authority-Analysis: v=2.4 cv=JYSMa0KV c=1 sm=1 tr=0 ts=6a3b516f cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=+1+sR1ZYQ3C5TUrBrcwr6g==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=IpJZQVW2AAAA:8 a=EUspDBNiAAAA:8 a=zM1L8A4z-D6ZsxyLzxkA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=uKXjsCUrEbL0IQVhDsJ9:22 a=IawgGOuG5U0WyFbmm1f5:22
-X-Proofpoint-GUID: Dw9PutxbIrlIe8pJ4xxGYc9EQI4y_oR6
-X-Proofpoint-ORIG-GUID: Dw9PutxbIrlIe8pJ4xxGYc9EQI4y_oR6
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI0MDAyNiBTYWx0ZWRfX/eQ4/twDI2i7
- 8o3V+3U2M4mQIUPYAePTj2r36OQ/QhONyrXTOHWE5jXtFlJ8hHwwD3I+tpaYMjZQ6gOHuXZl18P
- 579O46wnglutCulNtIumNWodh0pH/7qZtjwpdNg/bGi0mnXWfy8VkW8kLEpE0RChNdYgnHoSi9L
- FEcwxeFBJTB8MdLC3UihhXNtbHQ1T76MNbgBE74973NJ1pEHOvDq7LduW/WrVbK/0/1FytStZ4Z
- GsdX2ESrasuM3XbUNGD6aA8wulKuwWjj6mgP2o7rle1ZBWn1oanH0umoCRu6TTFulqyoD2OM3Yq
- QzTwei8ZmizOAvSDXop2xAMfTLBBQR+06K38vga5VkIJxnLlJA+6t7fy8S/NzUaysVu/U/6liPf
- lu5GESKIyU+nxEztCBYB+fY2a/sheQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI0MDAyNiBTYWx0ZWRfX9E8hgjdGSfNz
- Rieo4gQEQdE3FA/c/lO/3II+FRa379lPBud9ocJCH9mXysBaxQOdOgDavWeDoFes15tW+6IFIFX
- j4/FACJhWhu3Il1TQ0qm/ekJpw9Iapg=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-24_01,2026-06-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 spamscore=0 adultscore=0 bulkscore=0
- malwarescore=0 phishscore=0 classifier=typeunknown authscore=0 authtc=
- authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.22.0-2606150000 definitions=main-2606240026
+References: <20260623061855.17863-1-dave.patel@riscstar.com>
+In-Reply-To: <20260623061855.17863-1-dave.patel@riscstar.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Wed, 24 Jun 2026 10:03:04 +0200
+X-Gm-Features: AVVi8CfyN8TKonJ0DmJxrXFJFTxfURbeyCDCDRMdsm1jld31frRL4ZHgWV7Y-iM
+Message-ID: <CAHUa44EJivE8XwoVO9Tnd6-Jp_F0hyDgwzwO6Gv-TOvgUfo36w@mail.gmail.com>
+Subject: Re: [RFC 0/3] core: riscv: Implement Floating-Point and Vector
+ extension context tracking
+To: dave.patel@riscstar.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.10 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_LOW(-1.00)[qualcomm.com:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+X-Spamd-Result: default: False [-5.09 / 15.00];
+	BAYES_HAM(-2.99)[99.95%];
+	ARC_ALLOW(-1.00)[google.com:s=arc-20240605:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.71:received];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	MIME_TRACE(0.00)[0:+];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCPT_COUNT_FIVE(0.00)[6];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.161.54:from];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RCVD_COUNT_THREE(0.00)[4];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.161.54:from];
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: D596243829
+X-Rspamd-Queue-Id: 5D44A44F03
 X-Spamd-Bar: -----
-Message-ID-Hash: ENIGZIXZCGJ5LXPOUUBXMGK2JFEVHVQ6
-X-Message-ID-Hash: ENIGZIXZCGJ5LXPOUUBXMGK2JFEVHVQ6
-X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
+Message-ID-Hash: 6LBW3H23LVPKPY3N2GQJSXZTQPE3LU4N
+X-Message-ID-Hash: 6LBW3H23LVPKPY3N2GQJSXZTQPE3LU4N
+X-MailFrom: jens.wiklander@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: op-tee@lists.trustedfirmware.org, Samuel Holland <samuel.holland@sifive.com>, Peter Lin <peter.lin@sifive.com>, Robin Randhawa <robin.randhawa@sifive.com>, Scott Bambrough <scott@riscstar.com>, Ray Mao <raymond.mao@riscstar.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ENIGZIXZCGJ5LXPOUUBXMGK2JFEVHVQ6/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/6LBW3H23LVPKPY3N2GQJSXZTQPE3LU4N/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-SGksIA0KDQpPbiA2LzE3LzIwMjYgMTI6MzggQU0sIFV3ZSBLbGVpbmUtS8O2bmlnIChUaGUgQ2Fw
-YWJsZSBIdWIpIHdyb3RlOg0KPiBUaGUgZHJpdmVyIGV4cGxpY2l0bHkgc2V0cyB0aGUgLmRyaXZl
-cl9kYXRhIG1lbWJlciBvZiBzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlX2lkIHRvIHplcm8gd2l0
-aG91dCByZWx5aW5nIG9uIHRoYXQgdmFsdWUuIERyb3AgdGhpcw0KPiB1bnVzZWQgYXNzaWdubWVu
-dC4NCj4gDQo+IFdoaWxlIHRvdWNoaW5nIHRoaXMgYXJyYXkgdW5pZnkgc3BhY2luZyBhbmQgdXNh
-Z2Ugb2YgY29tbWFzIGFuZCB1c2UNCj4gYSBuYW1lZCBpbml0aWFsaXplciBmb3IgLm5hbWUgZm9y
-IGltcHJvdmVkIHJlYWRhYmlsaXR5Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTogVXdlIEtsZWluZS1L
-w7ZuaWcgKFRoZSBDYXBhYmxlIEh1YikgPHUua2xlaW5lLWtvZW5pZ0BiYXlsaWJyZS5jb20+DQo+
-IC0tLQ0KPiBIZWxsbywNCj4gDQo+IHdoaWxlIHRoaXMgaXMgYSBjbGVhbnVwIHRoYXQgY2FuIHN0
-YW5kIG9uIGl0cyBvd24sIGl0IGlzIGFsc28gYQ0KPiBwcmVwYXJhdGlvbiBmb3IgYSBjaGFuZ2Ug
-dG8gc3RydWN0IHBsYXRmb3JtX2RldmljZV9pZCB0aGF0IHJlcXVpcmVzIHRoYXQNCj4gLmRyaXZl
-cl9kYXRhIGlzbid0IGFzc2lnbmVkIGJ5IGEgbGlzdCBpbml0aWFsaXplci4NCj4gDQo+IEJlc3Qg
-cmVnYXJkcw0KPiBVd2UNCj4gDQo+ICBkcml2ZXJzL3RlZS9xY29tdGVlL2NhbGwuYyB8IDcgKysr
-KysrLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0K
-PiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGVlL3Fjb210ZWUvY2FsbC5jIGIvZHJpdmVycy90
-ZWUvcWNvbXRlZS9jYWxsLmMNCj4gaW5kZXggMGVmYzU2NDYyNDJhLi40YTU5N2VlYWYxNzQgMTAw
-NjQ0DQo+IC0tLSBhL2RyaXZlcnMvdGVlL3Fjb210ZWUvY2FsbC5jDQo+ICsrKyBiL2RyaXZlcnMv
-dGVlL3Fjb210ZWUvY2FsbC5jDQo+IEBAIC03OTgsNyArNzk4LDEyIEBAIHN0YXRpYyB2b2lkIHFj
-b210ZWVfcmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJa2ZyZWUocWNv
-bXRlZSk7DQo+ICB9DQo+ICANCj4gLXN0YXRpYyBjb25zdCBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNl
-X2lkIHFjb210ZWVfaWRzW10gPSB7IHsgInFjb210ZWUiLCAwIH0sIHt9IH07DQo+ICtzdGF0aWMg
-Y29uc3Qgc3RydWN0IHBsYXRmb3JtX2RldmljZV9pZCBxY29tdGVlX2lkc1tdID0gew0KPiArCXsN
-Cj4gKwkJLm5hbWUgPSAicWNvbXRlZSIsDQo+ICsJfSwNCj4gKwl7IH0NCj4gK307DQo+ICBNT0RV
-TEVfREVWSUNFX1RBQkxFKHBsYXRmb3JtLCBxY29tdGVlX2lkcyk7DQo+ICANCg0KTG9va3MgZ29v
-ZCB0byBtZSwgdGhhbmtzLg0KDQpSZXZpZXdlZC1ieTogQW1pcnJlemEgWmFycmFiaSA8YW1pcnJl
-emEuemFycmFiaUBvc3MucXVhbGNvbW0uY29tPg0KDQo+ICBzdGF0aWMgc3RydWN0IHBsYXRmb3Jt
-X2RyaXZlciBxY29tdGVlX3BsYXRmb3JtX2RyaXZlciA9IHsNCj4gDQo+IGJhc2UtY29tbWl0OiA4
-ZDZkYmJiZTNiYTYyZGUwYTYzZTk2MmVlMDA0YWZiODQ4YzhlM2FjDQoNCg==
+Hi Dave,
+
+On Tue, Jun 23, 2026 at 8:19=E2=80=AFAM <dave.patel@riscstar.com> wrote:
+>
+> From: Dave Patel <dave.patel@riscstar.com>
+>
+> Dear OP-TEE Developers,
+>
+> This proposal introduces architectural runtime context management structu=
+res and
+> tracking mechanisms for standard scalar Floating-Point (F/D) and Vector (=
+V) ISA
+> extensions on RISC-V platforms.
+>
+> ### 1. Architectural Alignment and Shift
+>
+> Currently, the thread scheduling layer in OP-TEE OS implements a tightly =
+coupled
+> VFP model specific to the ARM architecture (e.g., thread_kernel_enable_vf=
+p). This
+> model relies heavily on a software driven "lazy context trap" mechanism, =
+where
+> the kernel disables the FPU to catch subsequent execution faults.
+>
+> On RISC-V architectures, context tracking cannot rely on software initiat=
+ed lazy
+> traps via execution faults due to structural opcode overlap across custom=
+ extensions
+> and the severe pipeline execution penalties of traps. Instead, RISC-V pro=
+vides
+> native hardware status state machines managed via the `sstatus.FS` (Float=
+ing-Point)
+> and `sstatus.VS` (Vector) bitfields.
+>
+> To map seamlessly into OP-TEE's existing `thread_*_vfp` thread scheduling=
+, we
+> utilize these hardware flags to implement "eager-on-dirty" context saving=
+. The
+> kernel leaves extensions enabled during active execution and only write a=
+t context
+> switch if the hardware reports a `Dirty` status.
+>
+> ### 2. Implementation Subsystem Architecture
+>
+> To maintain modular design the implementation explicitly divides scalar p=
+rocessing
+> from scalable vector configurations:
+>
+> 1. Modularity & Headers:
+>    - <kernel/riscv_fp.h> specifies bitmasks and structures (`struct riscv=
+_fp_state`)
+>      for scalar execution.
+>    - <kernel/riscv_vector.h> encapsulates scalable vector parameter state=
+ layouts
+>      (`struct riscv_vector_state`). This allows devices missing a vector =
+unit to completely
+>      omit vector footprints or dependency.
+>
+> 2. Bitwidth and Layout Adaptability:
+>    - Scalar Low-Level Assembly (`fp_asm.S`): Natively adapts to both 32-b=
+it (`rv32`)
+>      and 64-bit (`rv64`) width configurations via compiler `__riscv_xlen`=
+ preprocessing directives.
+>    - Vector Extension Optimization (`riscv_vector.c`): Fully isolated fro=
+m primary thread files.
+>      Instead of storing vector registers sequentially, it adopts whole-re=
+gister block
+>      transfer instructions (`vs8r.v` and `vl8r.v`). Grouping elements int=
+o blocks of
+>      eight compresses the save/restore pipeline into four core operationa=
+l chunks
+>      (`v0`, `v8`, `v16`, `v24`).
+>
+> 3. Unified Scheduling Abstraction (`thread_vfp.c`):
+>    Unified top-level implementation (`thread_kernel_save_vfp`, `thread_us=
+er_enable_vfp`,
+>    etc.) are used for context routing.
+>
+>
+> ### 3. Feedback Requested
+>
+> We are seeking early design feedback from the community regarding:
+> - Structural Convention: Should we keep the universal "vfp" naming scheme=
+ within the global
+>   `thread.h` header interfaces for structural backward compatibility, or =
+is an explicit upstream
+>   refactoring toward a generic name (e.g., `thread_kernel_enable_coproc_r=
+egs`) preferred?
+> - Vector Bounds Memory Allocation: What is the preferred approach for saf=
+ely managing the dynamic
+>   heap footprint for vector register states (`vregs`) which scale based o=
+n runtime CPU `VLENB` bounds?
+> - Eager Context switching has been proposed, hence are there any reservat=
+ions on
+> this ?
+>
+>
+> Looking forward to your suggestions and design critiques.
+>
+> Dave Patel (3):
+>   Floating Point changes
+>   RISCV Vector changes
+>   Thread changes for RISCV floating point and vector changes
+>
+>  core/arch/riscv/include/riscv_fp.h     |  30 +++++
+>  core/arch/riscv/include/riscv_vector.h |  32 +++++
+>  core/arch/riscv/kernel/riscv_fp.S      | 159 +++++++++++++++++++++++++
+>  core/arch/riscv/kernel/riscv_vector.c  |  77 ++++++++++++
+>  core/arch/riscv/kernel/thread_vfp.c    | 142 ++++++++++++++++++++++
+>  5 files changed, 440 insertions(+)
+>  create mode 100644 core/arch/riscv/include/riscv_fp.h
+>  create mode 100644 core/arch/riscv/include/riscv_vector.h
+>  create mode 100644 core/arch/riscv/kernel/riscv_fp.S
+>  create mode 100644 core/arch/riscv/kernel/riscv_vector.c
+>  create mode 100644 core/arch/riscv/kernel/thread_vfp.c
+>
+> --
+> 2.43.0
+>
+
+Please create a PR at GitHub with these patches instead. That's the
+preferred way of reviewing patches for the OP-TEE repositories.
+
+Cheers,
+Jens
