@@ -4,134 +4,164 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 915CCC44500
-	for <op-tee@archiver.kernel.org>; Fri, 26 Jun 2026 13:42:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44649C43458
+	for <op-tee@archiver.kernel.org>; Fri, 26 Jun 2026 15:24:18 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id C483B44FA7
-	for <op-tee@archiver.kernel.org>; Fri, 26 Jun 2026 13:42:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1782481352;
-	bh=Kass8ShLtCG2cBS4Ka4UPuU1HKrZoxA2WVsdRH1GDfo=;
-	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=58sswxk5raPmbx77Rz34CKJV8+hy66/3HbUvFhwDDH6Ad+hVswaL1jjx1o0olkgtv
-	 Xr9hWsy8K/zwU3Ms9CHmat7GNhxJYfEfGKq6j/hEqIlq0dXiJW7kOxhZaDmxVAkP5c
-	 z5JlwwVOZEbkQqHW7E1SAbi82XDeF73JWc1lIonbJgnTvkGwnTAD0LwgiESxmjf06k
-	 gIhKEcckSDi9ckjpX6Vdh0SmRFTUK6k+ZR+w8kLs+xvO5vXPMKh68iG+p7AkLfXZSy
-	 gvibd4lD/KU1ERboQXwhdNQ/G2+oISkagpui/cri42DUUTv0H2u4bugfVzC8p9Io8f
-	 UC6BGzElkir+Q==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 07F7144FBB
-	for <op-tee@lists.trustedfirmware.org>; Fri, 26 Jun 2026 13:42:22 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 80E7E44EB7
+	for <op-tee@archiver.kernel.org>; Fri, 26 Jun 2026 15:24:17 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mquDSpOP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zu/qY0rP;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 66F8A412C2;
-	Fri, 26 Jun 2026 13:42:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AE331F00A3D;
-	Fri, 26 Jun 2026 13:41:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782481341;
-	bh=XJUsMAYjmWAnU9O7bNhJ//OMZ13Hh1LDu2wdf2fpjto=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=mquDSpOP4TG3h9syVbjc0phTij1tuiiPAgBU80powv0FLrpBIgWzva7ZL7PN2UNEJ
-	 tqBTK2bKPvDzruG06ALOUKtHcYbKkqWUFj9DkadZ0Po4yYSoqWUtXDz08A7K04ef/+
-	 uOu5xB7u+SQnh6MLMZ6CkK5v+UGicaSXMWG0gKyp+TLta6mMABV5i/qJ/L8RfyT+sE
-	 w71NGn7eiTWg6N6cIMXiyvP52Fz8GdBgX+XDj2x7gS1eMow5w+M64F4anKs/QN4y8c
-	 B98ugQqjAgLQmRy3HipPfslJgqdVmnR3DQwxcCEuebUvpfAAos3JaH9L5kKDf7cQDf
-	 b/qAn43Qp5KWQ==
-To: andersson@kernel.org
-Subject: [PATCH v8 14/14] MAINTAINERS: Add maintainer entry for Qualcomm PAS TZ service
-Date: Fri, 26 Jun 2026 19:04:34 +0530
-Message-ID: <20260626133440.692849-15-sumit.garg@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260626133440.692849-1-sumit.garg@kernel.org>
-References: <20260626133440.692849-1-sumit.garg@kernel.org>
+Received: from mail-ot1-f45.google.com (mail-ot1-f45.google.com [209.85.210.45])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B347743854
+	for <op-tee@lists.trustedfirmware.org>; Fri, 26 Jun 2026 15:24:08 +0000 (UTC)
+Received: by mail-ot1-f45.google.com with SMTP id 46e09a7af769-7e93d1dd156so425959a34.0
+        for <op-tee@lists.trustedfirmware.org>; Fri, 26 Jun 2026 08:24:08 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1782487448; cv=none;
+        d=google.com; s=arc-20260327;
+        b=BkY8tASlEJpb7O52Hsk+P9mU0oIZW3JFObfgD+CmB1wQo4aEi4cEqP17JWx9GQ0vfI
+         i8YRzYS3oBFiEB7F2kP9cBlTqrqYoRViJdNk+4+QaGRjzb3pk3OnYWbCxgCoLj+yo6r9
+         IpMBfXajeL+JAlblMwYEf9mophBdQ1foDgvru+AvmLwdNeWNvS4Db6mBn+jh9C5K9pGM
+         KYsJman9wcj+qscEwIiXOLfnu/pPKwr4nxSexKV360+TAb8/Ic9B+f77l7aLjC0QgECr
+         9wqhgS3amZW0AbOnXIZwygD37N3JWyRLi2Vw6l0KZjcasDBQoE1rKJnHUUz3c1YTMxEc
+         MNgg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=ZbwZRWFkiov8tgMOf6blh5vfWBl4kLotkr2eKXhFzTM=;
+        fh=DBvxCipNH2RlJe8Lt8jDz73G7et6cRT4xOp4aNQo0jg=;
+        b=aWK5gtqPJzU164P08uOvmhEEQ9NYSNNHS9lRgRsw1FQk7PeADvkCr+pBLS5UtoWqHl
+         O3fZE0j6EjNHcXi+T3IEW5gfFIlmnJpDgMkGEW9qp12O8VkyhR0KbqIHsP1+bpT0i11M
+         pXFwb3uhkpW65vWZExizlo4HgtXDj5PjupYdL+/wZFuGhSo9lIBHpi65v1qLQJkWVR+l
+         vgKIXTv5VhFOYi1EBlhLFXtXiy5/tlH12AjvREoStU3sSvc0ZsMcr7CIUOsSoZGwCsom
+         lcCWyVapnr3AL5v5Lfdm1io0JOzj8VWEkMF6MvCkLKhAhRanBoHhUJZPGf+7p8cNp86l
+         ZmxQ==;
+        darn=lists.trustedfirmware.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782487448; x=1783092248; darn=lists.trustedfirmware.org;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=ZbwZRWFkiov8tgMOf6blh5vfWBl4kLotkr2eKXhFzTM=;
+        b=Zu/qY0rPOlF51Czmj0NWnDJR23Gpea5yJH5R0VEphXpEG64r9z/GKRShwTbFjkY0Ta
+         u0cKmBal2wL4dwlAl8TcrRATC/TDVpzrkzFnil6pE2FZcrWXEdXUDEXHO+eLIo6n0OfM
+         fvC2Ay+wwcHQcbcSiBL+HlCLQCl3Cwa2SqE/DzovXGBIT2gROpTn7C2I+DyQn6BESfIZ
+         y6ZavhjdKEjpDPhbZes+W4ZTmEw1JvkB6FopW3Uc2CAuaLQ5yEsYDqaVns9oEptSx4Vs
+         jywXrXB3+6CJkTBv9hawBgdnimFO5XuREuwFzj3yFaF3Ek0wrpvErfK45/AZxIVZa+bt
+         q3+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782487448; x=1783092248;
+        h=to:subject:message-id:date:from:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZbwZRWFkiov8tgMOf6blh5vfWBl4kLotkr2eKXhFzTM=;
+        b=sLvT/2XbIWTTQnGKzS5R71jvvhkHqJ8M6bxM9qOrh8vieV1uC9QSiMfGzI6Ch0x060
+         qhmFQ/cDvXVwkwFaAm/IaCfB1oEOV7ZyBD30s6VjhuLOSSMxEtLS7HtrUs1Wxo2AtsKW
+         thehfoqfpfJyhAcI+Jx47buRhtVgEG7J1FEcGkoEMJFbn5WC3RNYjSjB7Cvgc4sQ7I0H
+         pGD+n38CDerH/w8nVeaE5cgaHyylpiIe4edtufweEJqBTy3aifrgyo2lIvoHSDt0CsSh
+         wltMeJsLKhW7XQIjPrzS5P4ibUoK6hG5e4pXU/V7Dv/ug3eMvISY8fThTpt3Z7Gf6zNE
+         WHmg==
+X-Gm-Message-State: AOJu0Yy8MvqoVheZb1zg+ltPcpDjaETSeMjrriGoWtXYwaXyvz3CGpRZ
+	ksxLGeX0QMD0cIp+h/3Qn0LzmRDzaEw+JIv1kRJXy74IaFg6WFGCA/j1YaNMmBKC7Ne7y3890sl
+	9HgmtI2wTR1A3jIjArjSFoKw/x287mAuShA67JO4=
+X-Gm-Gg: AfdE7clF+sq6ov6zvVsrcRWOLm/ucCo79Cr2ClAfLvtjW9bvUca7RoaaGfKu17Yf28g
+	McSYkl0LhH5hOISIDm8dB7P1DRJGYJRT2xTNvoxYXKv0HkYf5B5t+PRbSskF/d002qNJYfn+p5h
+	C2VpSdtSl2zhMBSRzQ6T87utdWg2LLl5qoryO21QHGxbTNoiyAOqq4wHarKlXNK3HJntgUPsaPf
+	f6xpnz+JcoXtxBdk9TIDDeolJNdZQtGVTEy0q6HESgBUwGAjxQIn1tmq2T3WQ/tApSJ0N928xKZ
+	8VV0daloWPtiedS7tqAhBk//61P62VRstcrYQK4LZ9R4I1LHv03M/AVGvTA=
+X-Received: by 2002:a05:6820:2910:b0:6a1:50e7:5c0f with SMTP id
+ 006d021491bc7-6a150e75d86mr546463eaf.58.1782487447810; Fri, 26 Jun 2026
+ 08:24:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Joakim Bech <joakim.bech@gmail.com>
+Date: Fri, 26 Jun 2026 17:23:56 +0200
+X-Gm-Features: AVVi8CfDTExzfeXFm0lAr7pH6VbUVfIZrH4fTc_n1A4Rl8zItyvAxjVt3d-9XZI
+Message-ID: <CALh3NmE7pch+-OTHQQ1ZW1qwcjVkmwOr2NNHh7PJ_TL9m3y4vg@mail.gmail.com>
+Subject: OP-TEE going forward
+To: op-tee@lists.trustedfirmware.org
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.00 / 15.00];
-	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
-	SUSPICIOUS_RECIPS(1.50)[];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
-	MIME_GOOD(-0.10)[text/plain];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_TWO(0.00)[2];
+X-Spamd-Result: default: False [-3.41 / 15.00];
+	BAYES_HAM(-1.31)[90.13%];
+	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_DKIM_ALLOW(-0.20)[gmail.com:s=20251104];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.45:from];
+	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
 	RCVD_TLS_LAST(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCPT_COUNT_ONE(0.00)[1];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	MIME_TRACE(0.00)[0:+,1:+,2:~];
+	FREEMAIL_FROM(0.00)[gmail.com];
+	FROM_HAS_DN(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	FREEMAIL_ENVFROM(0.00)[gmail.com];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_DN_NONE(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[47];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[100.103.45.18:received];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,lists.infradead.org,kernel.org,oss.qualcomm.com,poorly.run,linux.dev,gmail.com,somainline.org,ffwll.ch,lunn.ch,davemloft.net,google.com,redhat.com,linaro.org,qti.qualcomm.com,lists.trustedfirmware.org];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[dt,netdev];
+	DKIM_TRACE(0.00)[gmail.com:+];
 	ALIAS_RESOLVED(0.00)[];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	TO_DN_SOME(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+];
-	FROM_HAS_DN(0.00)[]
+	MID_RHS_MATCH_FROMTLD(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.45:from]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 07F7144FBB
-X-Spamd-Bar: -----
-Message-ID-Hash: MHZKAPPKMA3HWCLHWUATGJFH7DK3655X
-X-Message-ID-Hash: MHZKAPPKMA3HWCLHWUATGJFH7DK3655X
-X-MailFrom: sumit.garg@kernel.org
+X-Rspamd-Queue-Id: B347743854
+X-Spamd-Bar: ---
+Message-ID-Hash: 7VH3DB77WCOLFL4GEO5Z5ZJGU67KXFUI
+X-Message-ID-Hash: 7VH3DB77WCOLFL4GEO5Z5ZJGU67KXFUI
+X-MailFrom: joakim.bech@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-media@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, ath12k@lists.infradead.org, linux-remoteproc@vger.kernel.org, konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, robin.clark@oss.qualcomm.com, sean@poorly.run, akhilpo@oss.qualcomm.com, lumag@kernel.org, abhinav.kumar@linux.dev, jesszhan0024@gmail.com, marijn.suijten@somainline.org, airlied@gmail.com, simona@ffwll.ch, vikash.garodia@oss.qualcomm.com, bod@kernel.org, mchehab@kernel.org, elder@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, jjohnson@kernel.org, mathieu.poirier@linaro.org, trilokkumar.soni@oss.qualcomm.com, mukesh.ojha@oss.qualcomm.com, pavan.kondeti@oss.qualcomm.com, jorge.ramirez@oss.qualcomm.com, tonyh@qti.qualcomm.com, vignesh.viswanathan@oss.qualcomm.com, srinivas.kandagatla@oss.qualcomm.
- com, amirreza.zarrabi@oss.qualcomm.com, op-tee@lists.trustedfirmware.org, apurupa@qti.qualcomm.com, skare@qti.qualcomm.com, linux-kernel@vger.kernel.org, Sumit Garg <sumit.garg@oss.qualcomm.com>
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+X-Content-Filtered-By: Mailman/MimeDel 3.3.5
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MHZKAPPKMA3HWCLHWUATGJFH7DK3655X/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7VH3DB77WCOLFL4GEO5Z5ZJGU67KXFUI/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
 
-From: Sumit Garg <sumit.garg@oss.qualcomm.com>
-
-Add Sumit Garg as the maintainer for the Qualcomm generic Peripheral
-Authentication Service (PAS) as well as the PAS TEE backend driver.
-
-Signed-off-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
----
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 15011f5752a9..7847b2a98f90 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22315,6 +22315,15 @@ F:	Documentation/devicetree/bindings/media/*qcom*
- F:	drivers/media/platform/qcom
- F:	include/dt-bindings/media/*qcom*
- 
-+QUALCOMM PAS TZ SERVICE
-+M:	Sumit Garg <sumit.garg@oss.qualcomm.com>
-+L:	linux-arm-msm@vger.kernel.org
-+S:	Maintained
-+F:	drivers/firmware/qcom/qcom_pas.c
-+F:	drivers/firmware/qcom/qcom_pas.h
-+F:	drivers/firmware/qcom/qcom_pas_tee.c
-+F:	include/linux/firmware/qcom/qcom_pas.h
-+
- QUALCOMM SMB CHARGER DRIVER
- M:	Casey Connolly <casey.connolly@linaro.org>
- L:	linux-arm-msm@vger.kernel.org
--- 
-2.53.0
-
+SGksDQoNCk9QLVRFRSBoYXMgYmVlbiBydW5uaW5nIHN1Y2Nlc3NmdWxseSBhcyBhbiBvcGVuIHNv
+dXJjZSBwcm9qZWN0IHNpbmNlIDIwMTQNCmFuZCBjYW4gYmUgY29uc2lkZXJlZCBhIG1hdHVyZSBw
+cm9qZWN0LiBJdCBpcyB3aWRlbHkgdXNlZCBpbiB2YXJpb3VzDQphcHBsaWNhdGlvbnMgYW5kIGRl
+dmljZXMsIHVzZWQgYnkgYm90aCBzbWFsbCBhbmQgbGFyZ2UgY29tcGFuaWVzIGFuZCBpdCBoYXMN
+CmFuIGFjdGl2ZSBjb21tdW5pdHkuDQoNCkFsdGhvdWdoIG93bmVyc2hpcCB0cmFuc2ZlcnJlZCBm
+cm9tIExpbmFybyB0byBUcnVzdGVkRmlybXdhcmUgYSBjb3VwbGUgb2YNCnllYXJzIGFnbywgdGhl
+IGNvcmUgYWN0aXZpdGllcyBhcm91bmQgT1AtVEVFIGhhcyBiZWVuIG1haW5seSBiZWVuIGRvbmUg
+YnkNCkxpbmFybyBlbXBsb3llZXMgYW5kIGFzc2lnbmVlcyAoZW5naW5lZXJzIGZyb20gb3RoZXIg
+Y29tcGFuaWVzIHdvcmtpbmcgd2l0aA0KTGluYXJvKS4gSG93ZXZlciwgd2l0aCB0aW1lIHRoaW5n
+cyBjaGFuZ2UuIFRoZSBjb3JlIG1haW50YWluZXJzIFsxXSBoYXZlDQptb3ZlZCBvbiB0byBvdGhl
+ciBjb21wYW5pZXMgYW5kIHdlJ3JlIG5vdyBpbiBhIHNpdHVhdGlvbiB0aGF0IG5vbmUgb2YgdGhl
+DQpjb3JlIG1haW50YWluZXJzIGFyZSB3b3JraW5nIGZvciBMaW5hcm8gYW55bW9yZS4gQWx0aG91
+Z2ggd2UgYXMgY29yZQ0KbWFpbnRhaW5lcnMgaGF2ZSBleHByZXNzZWQgd2lsbGluZ25lc3MgdG8g
+Y29udGludWUgY29udHJpYnV0aW5nIHRvIHRoZQ0KcHJvamVjdCwgT1AtVEVFIGlzIG5vIGxvbmdl
+ciB0aGUgb25seSBwcm9qZWN0IHdlIGFyZSB3b3JraW5nIG9uIGFuZA0KdGhlcmVmb3JlIHdlIGNh
+bm5vdCBjb21taXQgYXMgbXVjaCB0aW1lIHRvIHRoZSBwcm9qZWN0IGFzIHdlIHVzZWQgdG8uDQoN
+CldpdGggdGhhdCB0aGVyZSBhcmUgc29tZSBvcGVuIHF1ZXN0aW9ucyBsaWtlLCB3aG8gaXMgdWx0
+aW1hdGVseSByZXNwb25zaWJsZQ0KZm9yIHRoZSBwcm9qZWN0LCB3aG8gYWRtaW5pc3RlcnMgbWFp
+bGluZyBsaXN0cywgbWVyZ2UgcGF0Y2hlcywgcmVzcG9uZHMgdG8NCnNlY3VyaXR5IGluY2lkZW50
+IHJlcG9ydHMsIHJ1biBtb250aGx5IG1lZXRpbmdzIGFuIHdobyBpcyB0aGUgb25lIG1ha2luZw0K
+cmVsZWFzZXM/DQoNClNpbmNlIHRoaXMgdG91Y2hlcyBsZWdhbCBhc3BlY3RzIGFuZCBwbGFpbiBw
+ZXJtaXNzaW9ucywgd2Ugd2lsbCB3b3JrIHdpdGgNCkxpbmFybyB0byB0cnkgdG8gZmluZCBhIHNv
+bHV0aW9uIHRvIHRoaXMgc2l0dWF0aW9uLCBidXQgdGhpcyBhbHNvIG1lYW5zDQp0aGF0IHdlJ3Jl
+IGxvb2tpbmcgZm9yIG5ldy9hZGRpdGlvbmFsIG1haW50YWluZXJzIHRvIGhlbHAgd2l0aCB0aGUg
+cHJvamVjdC4NCk1haW50YWluZXJzIHRoYXQgY2FuIGNvbW1pdCB0aW1lIHRvIHRoZSBwcm9qZWN0
+IGFuZCBoZWxwIHdpdGggdGhlDQpkYXktdG8tZGF5IGFjdGl2aXRpZXMuDQoNCkEgZGlyZWN0IGNv
+bnNlcXVlbmNlIG9mIHRoaXMgc2l0dWF0aW9uIGlzIHRoYXQgd2Ugd2lsbCBub3QgYmUgYWJsZSB0
+byBtYWtlDQp0aGUgcmVsZWFzZSBtZWFudCB0byBiZSByZWxlYXNlZCBKdWx5IDE3dGggMjAyNiBb
+Ml0uIFRoYXQgcmVsZWFzZSBoYXMgYmVlbg0KZHJvcHBlZCBhbmQgd2UgaW5zdGVhZCBhaW0gdG8g
+bWFrZSB0aGUgbmV4dCByZWxlYXNlIGluIE9jdG9iZXIgMjAyNi4NCg0KSWYgeW91IGFyZSBpbnRl
+cmVzdGVkIGluIGhlbHBpbmcgb3V0IHdpdGggdGhlIHByb2plY3QsIHBsZWFzZSByZWFjaCBvdXQg
+dG8NCnVzIG9uIHRoZSBtYWlsaW5nIGxpc3Qgb3IgZGlyZWN0bHkgdG8gYW55IG9mIHRoZSBjb3Jl
+IG1haW50YWluZXJzLiBXZSBhcmUNCmhhcHB5IHRvIGRpc2N1c3Mgd2hhdCBpdCBtZWFucyB0byBi
+ZSBhIG1haW50YWluZXIgYW5kIHdoYXQga2luZCBvZiBoZWxwIHdlDQphcmUgbG9va2luZyBmb3Iu
+DQoNClsxXQ0KaHR0cHM6Ly9naXRodWIuY29tL09QLVRFRS9vcHRlZV9vcy9ibG9iLzdjMzhjYzM1
+OGUzNmE4Yjc0YTNmZWZlZGIwYzVjN2Y3OGJlMDU4ZGMvTUFJTlRBSU5FUlMjTDQwMC1MNDAzDQpb
+Ml0gaHR0cHM6Ly9vcHRlZS5yZWFkdGhlZG9jcy5pby9lbi9sYXRlc3QvZ2VuZXJhbC9yZWxlYXNl
+cy5odG1sDQoNCi8vIFJlZ2FyZHMsDQpKb2FraW0sIEplbnMsIEplcm9tZSBhbmQgRXRpZW5uZS4N
+Cg==
