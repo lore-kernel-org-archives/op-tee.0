@@ -4,121 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44649C43458
-	for <op-tee@archiver.kernel.org>; Fri, 26 Jun 2026 15:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8F5FC43458
+	for <op-tee@archiver.kernel.org>; Mon, 29 Jun 2026 08:52:21 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 80E7E44EB7
-	for <op-tee@archiver.kernel.org>; Fri, 26 Jun 2026 15:24:17 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1EBB643A64
+	for <op-tee@archiver.kernel.org>; Mon, 29 Jun 2026 08:52:21 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zu/qY0rP;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=rbvU+bxA;
 	dkim-atps=neutral
-Received: from mail-ot1-f45.google.com (mail-ot1-f45.google.com [209.85.210.45])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B347743854
-	for <op-tee@lists.trustedfirmware.org>; Fri, 26 Jun 2026 15:24:08 +0000 (UTC)
-Received: by mail-ot1-f45.google.com with SMTP id 46e09a7af769-7e93d1dd156so425959a34.0
-        for <op-tee@lists.trustedfirmware.org>; Fri, 26 Jun 2026 08:24:08 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782487448; cv=none;
+Received: from mail-oa1-f48.google.com (mail-oa1-f48.google.com [209.85.160.48])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5935343A64
+	for <op-tee@lists.trustedfirmware.org>; Mon, 29 Jun 2026 08:52:13 +0000 (UTC)
+Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-44856d185bcso1038733fac.3
+        for <op-tee@lists.trustedfirmware.org>; Mon, 29 Jun 2026 01:52:13 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1782723132; cv=none;
         d=google.com; s=arc-20260327;
-        b=BkY8tASlEJpb7O52Hsk+P9mU0oIZW3JFObfgD+CmB1wQo4aEi4cEqP17JWx9GQ0vfI
-         i8YRzYS3oBFiEB7F2kP9cBlTqrqYoRViJdNk+4+QaGRjzb3pk3OnYWbCxgCoLj+yo6r9
-         IpMBfXajeL+JAlblMwYEf9mophBdQ1foDgvru+AvmLwdNeWNvS4Db6mBn+jh9C5K9pGM
-         KYsJman9wcj+qscEwIiXOLfnu/pPKwr4nxSexKV360+TAb8/Ic9B+f77l7aLjC0QgECr
-         9wqhgS3amZW0AbOnXIZwygD37N3JWyRLi2Vw6l0KZjcasDBQoE1rKJnHUUz3c1YTMxEc
-         MNgg==
+        b=OTvVa4olASBjmdr/ebwmyh5CzhPC09DRIq+WFcWFUs0+yI1k2qnY95b4Je0R489F/Y
+         2qotzxWyteB7ZGbFnj1Lbladag4wJqLIWPl+dL6nhWVgjSRasfrctpsDj+6F6ctL5gJa
+         hW5jXQfgaSzgm7JRaZ16SBwgsDHDTBdzXLnS4KDvWNbSwSBtHfmb3ccgSg2fhJ0l3E04
+         6WdkEAKgUrEbDtlmELjmeb7u2Nsb9qnmlam6eEjO0YqiO0nQf35IZ5fsOBy8QfZwyI5I
+         pPOFUZLjRvgyYwaAnuI7IVZLRU0A9LNyEG2ouKNcUmVECu8v5Ij4WhM+a53N4HGh1s1b
+         HW7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=ZbwZRWFkiov8tgMOf6blh5vfWBl4kLotkr2eKXhFzTM=;
-        fh=DBvxCipNH2RlJe8Lt8jDz73G7et6cRT4xOp4aNQo0jg=;
-        b=aWK5gtqPJzU164P08uOvmhEEQ9NYSNNHS9lRgRsw1FQk7PeADvkCr+pBLS5UtoWqHl
-         O3fZE0j6EjNHcXi+T3IEW5gfFIlmnJpDgMkGEW9qp12O8VkyhR0KbqIHsP1+bpT0i11M
-         pXFwb3uhkpW65vWZExizlo4HgtXDj5PjupYdL+/wZFuGhSo9lIBHpi65v1qLQJkWVR+l
-         vgKIXTv5VhFOYi1EBlhLFXtXiy5/tlH12AjvREoStU3sSvc0ZsMcr7CIUOsSoZGwCsom
-         lcCWyVapnr3AL5v5Lfdm1io0JOzj8VWEkMF6MvCkLKhAhRanBoHhUJZPGf+7p8cNp86l
-         ZmxQ==;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=y9ZxLhU2U6aTSHaE5FzsqHEIaPLJ2cfQHxau9k3+eoc=;
+        fh=quBjgHnQCyOXr219ALs7C+iFypa8LoqyI6ITZjvqULo=;
+        b=LKIkVbuJ6qKLuqIn6+rhsnpH69hiviGVS2d9owcQsZ90W93HO3R6FpSkbzNF6h64du
+         46A+nwX2KxQmcXDEfyoqvX8EvSMuv6rdNgXYTQ8cCPU5m6twOE7/2BMk9lJvqYuodL35
+         OZnMo4ox2PHDxIKH+eNVbA9L6SRxMCO8i9POf4V151yw9ySgXkkwN4yaNjO6znkz6twW
+         YsebyZNG2duIXEopwJGxH4DIm3/cAYnGo8NMFeAprOa80rxqmhN8gxnF4SJwQpBwEN5L
+         LByUAD7SWQ9TmdR+62i9Xe4NyCijsH9fMyRTE4hl4wxJ5HRAXRGEOFCdFHNR1qnli3F/
+         Qihw==;
         darn=lists.trustedfirmware.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782487448; x=1783092248; darn=lists.trustedfirmware.org;
-        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=ZbwZRWFkiov8tgMOf6blh5vfWBl4kLotkr2eKXhFzTM=;
-        b=Zu/qY0rPOlF51Czmj0NWnDJR23Gpea5yJH5R0VEphXpEG64r9z/GKRShwTbFjkY0Ta
-         u0cKmBal2wL4dwlAl8TcrRATC/TDVpzrkzFnil6pE2FZcrWXEdXUDEXHO+eLIo6n0OfM
-         fvC2Ay+wwcHQcbcSiBL+HlCLQCl3Cwa2SqE/DzovXGBIT2gROpTn7C2I+DyQn6BESfIZ
-         y6ZavhjdKEjpDPhbZes+W4ZTmEw1JvkB6FopW3Uc2CAuaLQ5yEsYDqaVns9oEptSx4Vs
-         jywXrXB3+6CJkTBv9hawBgdnimFO5XuREuwFzj3yFaF3Ek0wrpvErfK45/AZxIVZa+bt
-         q3+A==
+        d=linaro.org; s=google; t=1782723132; x=1783327932; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=y9ZxLhU2U6aTSHaE5FzsqHEIaPLJ2cfQHxau9k3+eoc=;
+        b=rbvU+bxAJaXcW/vqnyB9KQsVqSS1l0Z1FwsTH/gCoXDXs6VsCXGxLxkx8hP9Snx8Sy
+         8yHvZdqjJrjy2sD22EHIwGZl+aB9vQjC3dG+IJ+6YVlihjQb0ijkhVLHlp65JIcJ8fZh
+         rlFARrWvSg/FmNYnvvAsomzIz+Kdo4K9KPCMRxJgMdxstMx1Msrg47gOsWUg08PbIgpN
+         4A+D3zwYTQVkH08rbebJ/lDkJvZMrKxJD8HiCm19dHu55d/sA/MaXBYy7fJ/DJEmWflo
+         /McIw8yIZvnyRTu+xIJKn1QarcjdcKSlngc73QZ8gyBrTjgP2hLJDeGMUaBnga2aF+kb
+         s+yg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782487448; x=1783092248;
-        h=to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZbwZRWFkiov8tgMOf6blh5vfWBl4kLotkr2eKXhFzTM=;
-        b=sLvT/2XbIWTTQnGKzS5R71jvvhkHqJ8M6bxM9qOrh8vieV1uC9QSiMfGzI6Ch0x060
-         qhmFQ/cDvXVwkwFaAm/IaCfB1oEOV7ZyBD30s6VjhuLOSSMxEtLS7HtrUs1Wxo2AtsKW
-         thehfoqfpfJyhAcI+Jx47buRhtVgEG7J1FEcGkoEMJFbn5WC3RNYjSjB7Cvgc4sQ7I0H
-         pGD+n38CDerH/w8nVeaE5cgaHyylpiIe4edtufweEJqBTy3aifrgyo2lIvoHSDt0CsSh
-         wltMeJsLKhW7XQIjPrzS5P4ibUoK6hG5e4pXU/V7Dv/ug3eMvISY8fThTpt3Z7Gf6zNE
-         WHmg==
-X-Gm-Message-State: AOJu0Yy8MvqoVheZb1zg+ltPcpDjaETSeMjrriGoWtXYwaXyvz3CGpRZ
-	ksxLGeX0QMD0cIp+h/3Qn0LzmRDzaEw+JIv1kRJXy74IaFg6WFGCA/j1YaNMmBKC7Ne7y3890sl
-	9HgmtI2wTR1A3jIjArjSFoKw/x287mAuShA67JO4=
-X-Gm-Gg: AfdE7clF+sq6ov6zvVsrcRWOLm/ucCo79Cr2ClAfLvtjW9bvUca7RoaaGfKu17Yf28g
-	McSYkl0LhH5hOISIDm8dB7P1DRJGYJRT2xTNvoxYXKv0HkYf5B5t+PRbSskF/d002qNJYfn+p5h
-	C2VpSdtSl2zhMBSRzQ6T87utdWg2LLl5qoryO21QHGxbTNoiyAOqq4wHarKlXNK3HJntgUPsaPf
-	f6xpnz+JcoXtxBdk9TIDDeolJNdZQtGVTEy0q6HESgBUwGAjxQIn1tmq2T3WQ/tApSJ0N928xKZ
-	8VV0daloWPtiedS7tqAhBk//61P62VRstcrYQK4LZ9R4I1LHv03M/AVGvTA=
-X-Received: by 2002:a05:6820:2910:b0:6a1:50e7:5c0f with SMTP id
- 006d021491bc7-6a150e75d86mr546463eaf.58.1782487447810; Fri, 26 Jun 2026
- 08:24:07 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1782723132; x=1783327932;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=y9ZxLhU2U6aTSHaE5FzsqHEIaPLJ2cfQHxau9k3+eoc=;
+        b=T/oQGldpmIz4FfCOdPvhszlxn7vHzQUFcyWxyzOW5ra5Y5/50fSof3vcFgVkNFnn9E
+         Xz+Q8lkFPwPjrSn9NNwnPgtfq3AHE/2bekn9SRtAdet5iHxkNKsa03E3vj7ONVwuNm0x
+         ZMOnahibI5c5pr4FUnd2soBdFik8bt5OgsJCWXaGbGDtZZACAJZ2c9cgd4LReXq2bWaV
+         unMMrQVcHOlV2b6eISwIYezuSagGWSBzC/3MB4ZedRKCC3ihzcrvo4lTPq78ZF1UeKot
+         lma2zCjat42UssFocw3bODZ5TyfRQWGtZVuiD51t3gRNvH4BGKCdmuCufWLOo/ZNubEE
+         5tmA==
+X-Forwarded-Encrypted: i=1; AHgh+RopNQb7Z5rGfSuCXnTRofE8071V6S7rHIoP9lnEdL4XPtQs8U672iznoSl+xI5iStlu3t4ltgY=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YxDmHeyj/jNltGnTJBU9WI3z0laJRXlXlvxW4gWRk6Q3CFixcOE
+	9i4Sv7iZW7PUsC1Q/DLAFDyytNTK1lyHPuI6ASqVqBS0X3s9EcVu7ldnMFifQtdsZRB3mEuOYkk
+	m8C2StqIPAh/3CTwGbXWnwasBGUSb5Ug6ISr9d2Gq3dls
+X-Gm-Gg: AfdE7ckZi05URkrq+XrtBChEGWcVPZoGCfmD84hAZlLWPp+Ky75PNJh0XXan2Qn/4vV
+	mPA4/tTxUwi2zu7rs2KgfaCBKMAOMrQU0eeTMUw3bK58kkhwAsablv0PT5zDBB5blDPak5wqYu8
+	FNFA1EZQ/JlDvaFjGfih/KtGlP2F7AJhaBuWzcsgsjxOzwxWI6vrmVob1765IfcrjzOf9F/7etH
+	W9/wYzFqubLlNiE3WfkwWOedYGwbv6+ImzK4BkDpwaRYHeJ9IzfffIjpvYxpXqeEsPnh/qRnwlX
+	j/5iaNbvSvFGn+j92T9qbiHs70Q=
+X-Received: by 2002:a05:6871:d69b:20b0:448:94d5:4613 with SMTP id
+ 586e51a60fabf-44894d57d7cmr2016145fac.21.1782723132556; Mon, 29 Jun 2026
+ 01:52:12 -0700 (PDT)
 MIME-Version: 1.0
-From: Joakim Bech <joakim.bech@gmail.com>
-Date: Fri, 26 Jun 2026 17:23:56 +0200
-X-Gm-Features: AVVi8CfDTExzfeXFm0lAr7pH6VbUVfIZrH4fTc_n1A4Rl8zItyvAxjVt3d-9XZI
-Message-ID: <CALh3NmE7pch+-OTHQQ1ZW1qwcjVkmwOr2NNHh7PJ_TL9m3y4vg@mail.gmail.com>
-Subject: OP-TEE going forward
-To: op-tee@lists.trustedfirmware.org
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.41 / 15.00];
-	BAYES_HAM(-1.31)[90.13%];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_DKIM_ALLOW(-0.20)[gmail.com:s=20251104];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
-	RWL_MAILSPIKE_GOOD(-0.10)[209.85.210.45:from];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	RCVD_TLS_LAST(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCPT_COUNT_ONE(0.00)[1];
-	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
-	FREEMAIL_FROM(0.00)[gmail.com];
-	FROM_HAS_DN(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	TO_DN_NONE(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_TRACE(0.00)[gmail.com:+];
-	ALIAS_RESOLVED(0.00)[];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.45:from]
-X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B347743854
-X-Spamd-Bar: ---
-Message-ID-Hash: 7VH3DB77WCOLFL4GEO5Z5ZJGU67KXFUI
-X-Message-ID-Hash: 7VH3DB77WCOLFL4GEO5Z5ZJGU67KXFUI
-X-MailFrom: joakim.bech@gmail.com
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-Content-Transfer-Encoding: base64
+References: <c21803b3f2ea1522bb930dc1dcab79c2627f2234.1781620559.git.u.kleine-koenig@baylibre.com>
+ <6971c4b5-d091-4fe2-b843-60da8b32d48b@oss.qualcomm.com>
+In-Reply-To: <6971c4b5-d091-4fe2-b843-60da8b32d48b@oss.qualcomm.com>
+From: Jens Wiklander <jens.wiklander@linaro.org>
+Date: Mon, 29 Jun 2026 10:52:00 +0200
+X-Gm-Features: AVVi8Cf9Dg1W2tIxLlKyndn6lwaOcvF8bdsQXMuosnhYqSdzUe5bJ3rxXPwAHhQ
+Message-ID: <CAHUa44H-Pu9MMxpFyNPBZHw4gcqczss0AzEXQoaHpLWbetAWJQ@mail.gmail.com>
+Subject: Re: [PATCH v1] tee: qcomtee: Drop unused assignment of
+ platform_device_id driver data
+To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
+Content-Transfer-Encoding: quoted-printable
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-5.00 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
+	MIME_GOOD(-0.10)[text/plain];
+	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+	RCVD_COUNT_ONE(0.00)[1];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.160.48:from];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_TLS_LAST(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.48:from];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	DKIM_TRACE(0.00)[linaro.org:+]
+X-Rspamd-Server: lists.trustedfirmware.org
+X-Rspamd-Queue-Id: 5935343A64
+X-Spamd-Bar: ----
+Message-ID-Hash: OFSL773BDCLP6FGPLMAKWEYUTGPKN72U
+X-Message-ID-Hash: OFSL773BDCLP6FGPLMAKWEYUTGPKN72U
+X-MailFrom: jens.wiklander@linaro.org
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>, Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7VH3DB77WCOLFL4GEO5Z5ZJGU67KXFUI/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OFSL773BDCLP6FGPLMAKWEYUTGPKN72U/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -126,42 +129,62 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-SGksDQoNCk9QLVRFRSBoYXMgYmVlbiBydW5uaW5nIHN1Y2Nlc3NmdWxseSBhcyBhbiBvcGVuIHNv
-dXJjZSBwcm9qZWN0IHNpbmNlIDIwMTQNCmFuZCBjYW4gYmUgY29uc2lkZXJlZCBhIG1hdHVyZSBw
-cm9qZWN0LiBJdCBpcyB3aWRlbHkgdXNlZCBpbiB2YXJpb3VzDQphcHBsaWNhdGlvbnMgYW5kIGRl
-dmljZXMsIHVzZWQgYnkgYm90aCBzbWFsbCBhbmQgbGFyZ2UgY29tcGFuaWVzIGFuZCBpdCBoYXMN
-CmFuIGFjdGl2ZSBjb21tdW5pdHkuDQoNCkFsdGhvdWdoIG93bmVyc2hpcCB0cmFuc2ZlcnJlZCBm
-cm9tIExpbmFybyB0byBUcnVzdGVkRmlybXdhcmUgYSBjb3VwbGUgb2YNCnllYXJzIGFnbywgdGhl
-IGNvcmUgYWN0aXZpdGllcyBhcm91bmQgT1AtVEVFIGhhcyBiZWVuIG1haW5seSBiZWVuIGRvbmUg
-YnkNCkxpbmFybyBlbXBsb3llZXMgYW5kIGFzc2lnbmVlcyAoZW5naW5lZXJzIGZyb20gb3RoZXIg
-Y29tcGFuaWVzIHdvcmtpbmcgd2l0aA0KTGluYXJvKS4gSG93ZXZlciwgd2l0aCB0aW1lIHRoaW5n
-cyBjaGFuZ2UuIFRoZSBjb3JlIG1haW50YWluZXJzIFsxXSBoYXZlDQptb3ZlZCBvbiB0byBvdGhl
-ciBjb21wYW5pZXMgYW5kIHdlJ3JlIG5vdyBpbiBhIHNpdHVhdGlvbiB0aGF0IG5vbmUgb2YgdGhl
-DQpjb3JlIG1haW50YWluZXJzIGFyZSB3b3JraW5nIGZvciBMaW5hcm8gYW55bW9yZS4gQWx0aG91
-Z2ggd2UgYXMgY29yZQ0KbWFpbnRhaW5lcnMgaGF2ZSBleHByZXNzZWQgd2lsbGluZ25lc3MgdG8g
-Y29udGludWUgY29udHJpYnV0aW5nIHRvIHRoZQ0KcHJvamVjdCwgT1AtVEVFIGlzIG5vIGxvbmdl
-ciB0aGUgb25seSBwcm9qZWN0IHdlIGFyZSB3b3JraW5nIG9uIGFuZA0KdGhlcmVmb3JlIHdlIGNh
-bm5vdCBjb21taXQgYXMgbXVjaCB0aW1lIHRvIHRoZSBwcm9qZWN0IGFzIHdlIHVzZWQgdG8uDQoN
-CldpdGggdGhhdCB0aGVyZSBhcmUgc29tZSBvcGVuIHF1ZXN0aW9ucyBsaWtlLCB3aG8gaXMgdWx0
-aW1hdGVseSByZXNwb25zaWJsZQ0KZm9yIHRoZSBwcm9qZWN0LCB3aG8gYWRtaW5pc3RlcnMgbWFp
-bGluZyBsaXN0cywgbWVyZ2UgcGF0Y2hlcywgcmVzcG9uZHMgdG8NCnNlY3VyaXR5IGluY2lkZW50
-IHJlcG9ydHMsIHJ1biBtb250aGx5IG1lZXRpbmdzIGFuIHdobyBpcyB0aGUgb25lIG1ha2luZw0K
-cmVsZWFzZXM/DQoNClNpbmNlIHRoaXMgdG91Y2hlcyBsZWdhbCBhc3BlY3RzIGFuZCBwbGFpbiBw
-ZXJtaXNzaW9ucywgd2Ugd2lsbCB3b3JrIHdpdGgNCkxpbmFybyB0byB0cnkgdG8gZmluZCBhIHNv
-bHV0aW9uIHRvIHRoaXMgc2l0dWF0aW9uLCBidXQgdGhpcyBhbHNvIG1lYW5zDQp0aGF0IHdlJ3Jl
-IGxvb2tpbmcgZm9yIG5ldy9hZGRpdGlvbmFsIG1haW50YWluZXJzIHRvIGhlbHAgd2l0aCB0aGUg
-cHJvamVjdC4NCk1haW50YWluZXJzIHRoYXQgY2FuIGNvbW1pdCB0aW1lIHRvIHRoZSBwcm9qZWN0
-IGFuZCBoZWxwIHdpdGggdGhlDQpkYXktdG8tZGF5IGFjdGl2aXRpZXMuDQoNCkEgZGlyZWN0IGNv
-bnNlcXVlbmNlIG9mIHRoaXMgc2l0dWF0aW9uIGlzIHRoYXQgd2Ugd2lsbCBub3QgYmUgYWJsZSB0
-byBtYWtlDQp0aGUgcmVsZWFzZSBtZWFudCB0byBiZSByZWxlYXNlZCBKdWx5IDE3dGggMjAyNiBb
-Ml0uIFRoYXQgcmVsZWFzZSBoYXMgYmVlbg0KZHJvcHBlZCBhbmQgd2UgaW5zdGVhZCBhaW0gdG8g
-bWFrZSB0aGUgbmV4dCByZWxlYXNlIGluIE9jdG9iZXIgMjAyNi4NCg0KSWYgeW91IGFyZSBpbnRl
-cmVzdGVkIGluIGhlbHBpbmcgb3V0IHdpdGggdGhlIHByb2plY3QsIHBsZWFzZSByZWFjaCBvdXQg
-dG8NCnVzIG9uIHRoZSBtYWlsaW5nIGxpc3Qgb3IgZGlyZWN0bHkgdG8gYW55IG9mIHRoZSBjb3Jl
-IG1haW50YWluZXJzLiBXZSBhcmUNCmhhcHB5IHRvIGRpc2N1c3Mgd2hhdCBpdCBtZWFucyB0byBi
-ZSBhIG1haW50YWluZXIgYW5kIHdoYXQga2luZCBvZiBoZWxwIHdlDQphcmUgbG9va2luZyBmb3Iu
-DQoNClsxXQ0KaHR0cHM6Ly9naXRodWIuY29tL09QLVRFRS9vcHRlZV9vcy9ibG9iLzdjMzhjYzM1
-OGUzNmE4Yjc0YTNmZWZlZGIwYzVjN2Y3OGJlMDU4ZGMvTUFJTlRBSU5FUlMjTDQwMC1MNDAzDQpb
-Ml0gaHR0cHM6Ly9vcHRlZS5yZWFkdGhlZG9jcy5pby9lbi9sYXRlc3QvZ2VuZXJhbC9yZWxlYXNl
-cy5odG1sDQoNCi8vIFJlZ2FyZHMsDQpKb2FraW0sIEplbnMsIEplcm9tZSBhbmQgRXRpZW5uZS4N
-Cg==
+Hi,
+
+On Wed, Jun 24, 2026 at 5:39=E2=80=AFAM Amirreza Zarrabi
+<amirreza.zarrabi@oss.qualcomm.com> wrote:
+>
+> Hi,
+>
+> On 6/17/2026 12:38 AM, Uwe Kleine-K=C3=B6nig (The Capable Hub) wrote:
+> > The driver explicitly sets the .driver_data member of struct
+> > platform_device_id to zero without relying on that value. Drop this
+> > unused assignment.
+> >
+> > While touching this array unify spacing and usage of commas and use
+> > a named initializer for .name for improved readability.
+> >
+> > Signed-off-by: Uwe Kleine-K=C3=B6nig (The Capable Hub) <u.kleine-koenig=
+@baylibre.com>
+> > ---
+> > Hello,
+> >
+> > while this is a cleanup that can stand on its own, it is also a
+> > preparation for a change to struct platform_device_id that requires tha=
+t
+> > .driver_data isn't assigned by a list initializer.
+> >
+> > Best regards
+> > Uwe
+> >
+> >  drivers/tee/qcomtee/call.c | 7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
+> > index 0efc5646242a..4a597eeaf174 100644
+> > --- a/drivers/tee/qcomtee/call.c
+> > +++ b/drivers/tee/qcomtee/call.c
+> > @@ -798,7 +798,12 @@ static void qcomtee_remove(struct platform_device =
+*pdev)
+> >       kfree(qcomtee);
+> >  }
+> >
+> > -static const struct platform_device_id qcomtee_ids[] =3D { { "qcomtee"=
+, 0 }, {} };
+> > +static const struct platform_device_id qcomtee_ids[] =3D {
+> > +     {
+> > +             .name =3D "qcomtee",
+> > +     },
+> > +     { }
+> > +};
+> >  MODULE_DEVICE_TABLE(platform, qcomtee_ids);
+> >
+>
+> Looks good to me, thanks.
+>
+> Reviewed-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+
+I'm picking up this.
+
+Cheers,
+Jens
