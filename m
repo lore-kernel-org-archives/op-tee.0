@@ -4,290 +4,259 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C565FC43458
-	for <op-tee@archiver.kernel.org>; Fri, 10 Jul 2026 06:52:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AE74C43458
+	for <op-tee@archiver.kernel.org>; Fri, 10 Jul 2026 07:54:00 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 0A8EE450C2
-	for <op-tee@archiver.kernel.org>; Fri, 10 Jul 2026 06:52:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1783666359;
-	bh=Mv9GgaDQNtRYGWTm1gQ1mOi3EDQMpCPvxhm+2f/VXS4=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=xq50oY/Kj6KodzmSJMw7ufRguRNsTXS/gJJ6G40XKhVg+NRtePINxCqzdtRqALz1g
-	 6+y7jhgJTQhZ/r3JJ6KqeIAk3NYtgFdQ/I/GePbmciHkWjCNpG94TXkEEsy4B+g5Jd
-	 CjH3cIiYImVkiIjDPueyjEfTPRNpNykNWIN/UjuRSTK7wjtWeTV6vtJBHX1uJevxOq
-	 CdNoDxPBtpDbsiIBP72U5v1ORpRDYfw1mi2PNSXJcI4SbN4R2Gc/PDhmzUlwLb1kI1
-	 LKGIlm9TpCNNx8JmzcSVxJir/0j9z4a+0+YPSHp4NDeuCNXH1zE+oJi9Qsq+ovbka1
-	 90JQFnfJjAB1g==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8584443259
-	for <op-tee@lists.trustedfirmware.org>; Fri, 10 Jul 2026 06:52:32 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 82C2744B0C
+	for <op-tee@archiver.kernel.org>; Fri, 10 Jul 2026 07:53:59 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=nQFGASQK;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=ZFEhx97N;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=jSZwGMUH;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66A3nSAX3803809
-	for <op-tee@lists.trustedfirmware.org>; Fri, 10 Jul 2026 06:52:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	XrgIQqUK3QvZGUscE0xgRqyYIXIAIug38pWr4S569hs=; b=nQFGASQKFBt5JKz2
-	a0cvyXcYY9LWmx1+NIh3qLQSYp21vAnfq+np9JYotZ4qZR8FbQ7ZbPZl2MTJy9kD
-	IQnDoUN4Rhgf8dap/5aakFzTBh6Yq3nLjtWA8FC/YQcWmgpHZwcPSQQSsHhfTNmp
-	LjfN6uGP6aKbkGncNX7fnMyH8wv34Gasti5E8Fj8JqKbGi8/w4F2OVg1eLwhDuMO
-	tISQMv4dEt4AQ/HdL2xzDItKViuRWz531CHz5HbTJzhaGLhMRpcoRRruiHwNFfaV
-	QAO1GRA38gy+LT/4xB0j8OtNZj1/5KgkDHeJ4v0HltiMuB5FMozc4FOXby0N2JRP
-	yC64gg==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4faf5mtxty-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Fri, 10 Jul 2026 06:52:31 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-381250979d5so832094a91.0
-        for <op-tee@lists.trustedfirmware.org>; Thu, 09 Jul 2026 23:52:31 -0700 (PDT)
+Received: from mail-yx1-f53.google.com (mail-yx1-f53.google.com [74.125.224.53])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 160AC44B0C
+	for <op-tee@lists.trustedfirmware.org>; Fri, 10 Jul 2026 07:53:53 +0000 (UTC)
+Received: by mail-yx1-f53.google.com with SMTP id 956f58d0204a3-664a09bc459so966807d50.1
+        for <op-tee@lists.trustedfirmware.org>; Fri, 10 Jul 2026 00:53:53 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783670032; cv=none;
+        d=google.com; s=arc-20260327;
+        b=U0Oa8xrzEhGXkOf39kV54L9tsHmwGpI3t40MKWdSLjC58lfYJG3xU0dMJS3H5qDuuJ
+         EP7hEEVORRF9ed094DUBss878zp2z9UM4VYILRNGMlDNbtWTJOzy/ZlWCDglp/6ppc7R
+         KNomrYlSdnWA9EFLuTQk1D1vOnC9dMrpBJY2mmiRbWfwiKwFHWnxUSC8gjS8WxPpeA28
+         Nki4zm45NJjUEwNNzJFR/2wBYwLPo4V/hIL7aVwlyvZuUNZ6aEEY7hMnxG81wTLi9XVQ
+         phZZ0oGr0uhfZDqkG1HoidciQGB8i7v/UQ7lHJ7uEB8gHAWyACLByflYeJmLcj45fdYj
+         jHgg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=VOWM6CrABsSE1ZgAmtTX+wv+twEBAQ/PjFUZeWerkIA=;
+        fh=8EpxRXrHK/ieEoYHE2JmqrrkxdM68lP8rDt5w4KCqEc=;
+        b=Xd/lNPh+enSz70qIOsDG6Wy56noARkV2S0hAef523PzWz4uCGssmF12hi3m30Tngz4
+         pAhf1gIw/qxwm7/M6KT8fcICWY4ZVmY6Uh4MfXzMkTnpCwIR0ygYCDLzEjoxO+IrUCRD
+         RxnuYrKMoIJzCshzyFbC70NR3HeXOw/GTXGi1bFfofAazft8uPfbugwodAFkANnNdE2w
+         MI/+Nk5wFPd8Lp/WRnBpO1/PrU8uK0Qjo+wbzVWt3l0Nd5QiFM2CJobkKFDRLcF167OF
+         uKh9GQPuNfqWOBsDgOTAuURhhgV6bNhI4aZfSvNVXMlFxef3FD7RfrRmFdIdWVE204pn
+         FBdA==;
+        darn=lists.trustedfirmware.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783666351; x=1784271151; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XrgIQqUK3QvZGUscE0xgRqyYIXIAIug38pWr4S569hs=;
-        b=ZFEhx97NT+ejwIh34DEcUk6q2f/t48a7cXs/WEsd8njgyWUM5bhJQ4L6esieQ4E871
-         lMt3wc43bmV5NusqbydFbxbQnCOsWP6bp5jRtRvuUi09R1RyVcmKcLfZNMaNrbbCFdsa
-         qwgYM3VYAqaFTNx5xeI/ye1s7bMsT/rKEDSRnWtiLSj6kbBza4llUSN/AR1E5O/+HsZu
-         +ZAsvF38sYm+CuYiZu97FODeOAs5vK237o7LYMIDI+AjexX1Fur2aYgaEbsup/hBf5aR
-         8yeLO7aOLdSkkrEN2hUYJcE/7ubKt0bQIO3/gcMxHVL/9rCh57yBuvj5kM6ODku9nC91
-         wcqA==
+        d=linaro.org; s=google; t=1783670032; x=1784274832; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=VOWM6CrABsSE1ZgAmtTX+wv+twEBAQ/PjFUZeWerkIA=;
+        b=jSZwGMUHDwWFeI0cPdiLs8RsdOZcs+YPdULMz4qX1WNtcm5+37WJtxai9E1k4blnZr
+         Qw2ydHSafiMSrt/qBwjGTD7SmA0o/XJ/HbnyO9kW5ug67BiyxsDtbIUz/i9N8vnc1Avj
+         xQXUathK2emsjTjV8WlZnCNteFFqjOkNoQpMdO+FezBCzpQUFq8xNf/tsZxZRohFcuvv
+         OwNRjGRIvMTK28/iW+McYsj1r3td0D7lzWHsJUuKAGhq4jw1QigTkEBA3FMCXKqGjFm8
+         Kty2cHnwrCLRfSdBZJMVOJTHvtq7eMsquTjQnbbxVf+Ey78M2WkgGewVvKA15EjzCzG9
+         q3iA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783666351; x=1784271151;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=XrgIQqUK3QvZGUscE0xgRqyYIXIAIug38pWr4S569hs=;
-        b=ru4KKoAr1RIdsBWxIuzB7HHfvkcp5NcinrnVt/ICk5NMah/DP27FIbnfXus2tiyq1p
-         u07pG+80QI1FnZug2vcq3sJ/gRnTG6baMksZdWAyoMJ/C4QI0FZHCRAFCJnGPwaFzumz
-         NCEm/BgT6JbVEP+nC7IbNFPRo/gOzBY8DbyXVJAbIKloz7UwltGgd0lQukwuhA2GN88g
-         A/dHsDkd3QoDmPm2de68RosDdkMVgfzA4BGWLbSGHFqbnxkKCzU4+3QwgZhmQ1rJM+8o
-         1VGJEWTnErdcn7axvhNcjwGSRVQvj1+CrMWT8ZadLF4Pbd+53nIISEw50veOpqQAHI9m
-         8ciQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rpt/2lQ+fbDVQ+GHaiQ/2rjPnSW/ju3iixPaZu66ravn64cKZTQHD6cYmiOOQFJiMcv1Q7aYE0=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0Yz9cwsCBpNK3Usz6m4UZNg/3nOY0xasM9eUhUzZCdS/irz47Mr5
-	pubw5rzwqrmHxPvYomywxgBVq9ZtMha16gVQdzviFnIZwr07UxyIV2tLLIh/RtzjW82T3ZJhUXP
-	Jrv2hNuKhS4XDwLMk/Pgw1WAazx6158mhSJeGDDYL9/gq2ZqGV4ZCYAwpqtQiDotmiPgjcEzK
-X-Gm-Gg: AfdE7clll4pN8As7JtUEOo/W2GNogP3eXUcIqey4Mv32L0pbtqOS7FPVCIwTwEkBrKL
-	kBgx/KyImkpzeNRTmcvtmmDm1WCLloxUvLYPSz34IeaL+c2LhTtwmNLoMz17ujiV15uknhAMfMu
-	7NIS4HX2kQHM6KR1WPgRtttBLB0u531bPnQo0ofNHOQ052w8EmLn18wRSj8nfXQnqXb0QPCbKuh
-	xUfRWNcaGNVitT4AJV0S5p3W1B044k8BqzcbEof7X7slcP7AbaqwsiUt9guOfaotqHULTlxM6M3
-	DaUwll7Sa486t527LWCZUjAEvPY6fo6neSArt5rxiwPZoMSeelauqYjNRVKJXrOo3Mb4y2NRl5r
-	RMr7mPjX6/nOocH4dkY74kwSgyMIcvo39kNNlplER
-X-Received: by 2002:a17:903:41c9:b0:2cc:dacc:fe27 with SMTP id d9443c01a7336-2ccea45ab1fmr102817175ad.30.1783666350594;
-        Thu, 09 Jul 2026 23:52:30 -0700 (PDT)
-X-Received: by 2002:a17:903:41c9:b0:2cc:dacc:fe27 with SMTP id d9443c01a7336-2ccea45ab1fmr102816995ad.30.1783666350060;
-        Thu, 09 Jul 2026 23:52:30 -0700 (PDT)
-Received: from [10.217.223.121] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9bdb56fsm55577545ad.15.2026.07.09.23.52.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Jul 2026 23:52:29 -0700 (PDT)
-Message-ID: <dad25802-2a26-490b-9488-650d5f78b018@oss.qualcomm.com>
-Date: Fri, 10 Jul 2026 12:22:25 +0530
+        d=1e100.net; s=20251104; t=1783670032; x=1784274832;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=VOWM6CrABsSE1ZgAmtTX+wv+twEBAQ/PjFUZeWerkIA=;
+        b=DLODiJowkH6rtka9zq6TjA7QzkDK5fJXbZgu/IMCjEH7SxaRElGN4O57SZNYbID4wc
+         C2Kl/AJFq6I5Jqab3Yv7S3+hISDXFv1fK3f2NZdWW+r2onpxZX7TMbuGYhEX4IhNns7u
+         C3eNc3jVdR4XE7kZotrozWXZaMA+D8VDpppdK/qYZ8Dm+U0ihmsWF8QLTFlIvNNw6uFg
+         px8w6xuVh02eOf8O5Ef/rmWQKFHk9GY4cnzW7sBmy+lQvATVR2ZoWHkJmcDRUad1bgt7
+         6n2fgWdKdxsJQKY5GaHfTFFmvX0EfWPWeRSM9PwUEPTKmWYu0Fg9iF/wzYQY+zjnWFDK
+         7HHQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoDS9ciu1b4mmhzJWNIfqqOe2uK4FK1sPZCYVDZICSuS3/6YTJe4BSAmhrRhmrLQXAIxuocXy0=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yzf36AuU18M5AV660JI475WaSPW+jZgkzCU4zUbfepTO/3GK1Cn
+	+iDs7mTvqe54/b8O0qe3yPfqjtpJbpEcYlThcoH18VzbKCXVxA2XmIglB3FY/0cqFQ1vsBp8Meq
+	LZBufBwxfd1XPJc6gn9nv8hZ11Gs7FPU4yR4TZROQS40B
+X-Gm-Gg: AfdE7clAlULv1ncDm0JjR/YLatNHH1IRd3OR1tQeniGHQXfnJ4MS7/w3hKXPSTHMr0F
+	YtpF5gyuoVFtUtQVELfSxDG9tDw4tvZ5qc+BZ4FiIYEIGphFJztJZ4w4w+WTNEEDqLbOfN6Zraa
+	Xlgpzw380ElPWsnMVU7Tvo70wIiRCIK7rVNOhQUW4SwvJatsCprzKUJ1qiCiGQDgATiACLZ/vcQ
+	azqwNsNV+c7dDuv1ct1HEBXAm6u6J5oY0trwWNzcugb5jiclVzdaDxZ8LP2A/BngcD3of1Nxm68
+	twdDdnZwlEtCd+FjbaL6mmGujHbYezfqYYpALI+Kbx0u2x0HM6TLGUGZeyAFQV794zdMvAi5PCt
+	DqOtlE3eO3GNkcwL++qup+n7bDCQH+sekZmcTwNtYBSvTvudzgeu4lYPaVm6cqeqokDvkEHW1kr
+	EayFkbheOmzcL4T5IFJOWL7UneMNclCGDun0kCv6P6GQcyKpVraF3yV5zV8+f947jLlyVe9daTS
+	/7kMOULZP0zsONWT1WoW0a77w9DYU4pqoc7Usroi/ryYhY9pB5cte1u9frmVNaEG+jKvGKe+ret
+	qSd6Xn/Yb5O/GPO1GLHX93isDguACgmzjW7uWzuZUEqNJA9gA7e0+9Yp3ZsvAk6UOZxbGovX1gr
+	TMKY8Tw==
+X-Received: by 2002:a05:690e:43d4:b0:664:99a3:34a7 with SMTP id
+ 956f58d0204a3-6679f1ac64amr4926164d50.60.1783670032531; Fri, 10 Jul 2026
+ 00:53:52 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/6] tee: Add kernel client object invoke helper
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-References: <20260707-qcom_uefisecapp_migrate_qcomtee-v1-0-f659cbd5d04c@oss.qualcomm.com>
- <20260707-qcom_uefisecapp_migrate_qcomtee-v1-2-f659cbd5d04c@oss.qualcomm.com>
- <651db8ad-ff57-4369-8401-f51bb7ea46f5@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <651db8ad-ff57-4369-8401-f51bb7ea46f5@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: t-9h1PmqcOIn8PVXMsDcqoi-BYhJdpPD
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEwMDA2MyBTYWx0ZWRfX9GyYo/qDeOzU
- 8AVr8kDuHZofmQMUkJ5ieoAhC9butmJbrwbwogWozhwNv3/ic9wQ0E7dF1FuZoLWAr61t17DnaM
- xgiz7suDDEYndG/obCU6vKi4NJ8+t0o=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEwMDA2MyBTYWx0ZWRfX1o726MY7cbwm
- PsvzvOQTaHGp+VX61KOPrDA9IxNVUGYfKrD+WSwOJdIy4h9FO6GU53biCdj19p9KzOz3CgWrEWG
- aOEUaSlz5hbyi4cSevD1DBoLCVDBOKFayHg7Z4VT/j1APUjqNTaBZ9fHMuECjjiaFxLvvfPAcgp
- S41LyvMUTEl/ksyffa0/4B7iNktOiFUA/QCUEaMMIYzGl5BLFR03gtvDzZaKfQTPTRy3kTfAzEG
- CeUoOwTsupwTkRghemOc/D0aNbALERsXmHtRuH1Yxrl1C4U2T+0W/LlDDtzh3ehao5/jAJlqdwT
- RV9e2uqUBGuwX0b8dlyOQvE7hJAnduJ5mX6NTX2TbiIfiD4KNXoO8dpGtRD2fWQ1dEUviVNjG7j
- W1LaFT93NQtdIpy6OUDRSY6UVS1G11+J5+o9WCFW+Mw1+YXqe9/IC8DjR42j11UgUg/c8m9f+ZA
- 4mWzMF2lOX+XzFdx4Kg==
-X-Proofpoint-GUID: t-9h1PmqcOIn8PVXMsDcqoi-BYhJdpPD
-X-Authority-Analysis: v=2.4 cv=N+QZ0W9B c=1 sm=1 tr=0 ts=6a5096af cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=P-IC7800AAAA:8 a=EUspDBNiAAAA:8 a=1nvLbgvQa2DmmGW0PDoA:9 a=QEXdDO2ut3YA:10
- a=iS9zxrgQBfv6-_F4QbHw:22 a=d3PnA9EDa4IxuAV0gXij:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-10_01,2026-07-09_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 priorityscore=1501 phishscore=0 adultscore=0
- suspectscore=0 impostorscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607100063
+References: <20260701091226.7SWW4TrT@linutronix.de> <CAC_iWj+xDErhPeKGtsLK=nvPB7P8cQE3g9XCkaWf-d_j85FxCQ@mail.gmail.com>
+ <20260710073147.XJAJbIwc@linutronix.de>
+In-Reply-To: <20260710073147.XJAJbIwc@linutronix.de>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Fri, 10 Jul 2026 10:53:16 +0300
+X-Gm-Features: AVVi8CfEoTWISJnCnc9-eLJA2a3H9SubdRhk1-OoqodnM6Xg_e0TDYWFCpSokGU
+Message-ID: <CAC_iWjLO3CAAFXE3s15Xcy3pWFK3ge5sWYmHHRBtcccKM2e1hw@mail.gmail.com>
+Subject: Re: [PATCH] Documentation: Extend the real-time hardware bits with
+ some firmware bits
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+X-Spamd-Result: default: False [-5.00 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
+	DMARC_POLICY_ALLOW(-0.50)[linaro.org,none];
+	R_SPF_ALLOW(-0.20)[+ip4:74.125.0.0/16];
+	R_DKIM_ALLOW(-0.20)[linaro.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
+	TO_DN_EQ_ADDR_SOME(0.00)[];
+	ASN(0.00)[asn:15169, ipnet:74.125.0.0/16, country:US];
+	RCVD_COUNT_ONE(0.00)[1];
+	RCPT_COUNT_TWELVE(0.00)[13];
 	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	TO_DN_SOME(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[74.125.224.53:from];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_THREE(0.00)[4];
-	RCVD_TLS_LAST(0.00)[];
+	MISSING_XM_UA(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[linaro.org:dkim];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[202.46.22.19:received,205.220.180.131:from,209.85.216.72:received];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	DKIM_TRACE(0.00)[linaro.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 8584443259
+X-Rspamd-Queue-Id: 160AC44B0C
 X-Spamd-Bar: ----
-Message-ID-Hash: YMO7A5YGGO5CZZB42IE5HKS2MGTYIZRC
-X-Message-ID-Hash: YMO7A5YGGO5CZZB42IE5HKS2MGTYIZRC
-X-MailFrom: harshal.dev@oss.qualcomm.com
+Message-ID-Hash: NVL54UJ5OVTLKTKL6LVEVKRM4DZIYQQZ
+X-Message-ID-Hash: NVL54UJ5OVTLKTKL6LVEVKRM4DZIYQQZ
+X-MailFrom: ilias.apalodimas@linaro.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, jenswi@kernel.org, Sumit Garg <sumit.garg@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>
+CC: "jenswi@kernel.org" <jenswi@kernel.org>, linux-rt-devel@lists.linux.dev, linux-doc@vger.kernel.org, linux-efi@vger.kernel.org, op-tee@lists.trustedfirmware.org, Ard Biesheuvel <ardb@kernel.org>, Clark Williams <clrkwllms@kernel.org>, Jan Kiszka <jan.kiszka@siemens.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Steven Rostedt <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YMO7A5YGGO5CZZB42IE5HKS2MGTYIZRC/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NVL54UJ5OVTLKTKL6LVEVKRM4DZIYQQZ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Harshal Dev via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
 
-Hi Amir,
+On Fri, 10 Jul 2026 at 10:31, Sebastian Andrzej Siewior
+<bigeasy@linutronix.de> wrote:
+>
+> On 2026-07-10 09:29:55 [+0300], Ilias Apalodimas wrote:
+> > Hi Sebastian!
+> Hi Ilias,
+>
+> > > +++ b/Documentation/core-api/real-time/hardware.rst
+> > > @@ -130,3 +130,95 @@ https://github.com/Linutronix/RTC-Testbench.
+> >
+> > [...]
+> >
+> > > +
+> > > +OP-TEE (ARM)
+> > > +~~~~~~~~~~~~
+> >
+> > That's RISC-V as well nowadays
+>
+> I did not find much here. Their architecture isn't the same as on ARM is
+> it? But the overall concept is the same, right?
 
-On 7/8/2026 11:59 AM, Amirreza Zarrabi wrote:
-> Hi Harshal,
-> 
-> On 7/7/2026 4:11 PM, Harshal Dev wrote:
->> From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
->>
->> Kernel clients can open a TEE context and invoke regular TA commands
->> through tee_client_invoke_func(). However, there is currently no
->> equivalent helper for invoking TEE objects.
->>
->> Add tee_client_object_invoke_func() as a kernel client API for issuing
->> object invocation requests. The helper checks that the backend provides
->> object_invoke_func() before setting the MSB of the object-id and forwarding
->> the request. The MSB of the object-id informs the TEE backend that the
->> object is invoked from a kernel context.
->>
->> This allows TEE backends that support privileged object-based calls from
->> the kernel-space.
->>
->> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
->> Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
->> ---
->>  drivers/tee/tee_core.c  | 13 +++++++++++++
->>  include/linux/tee_drv.h | 13 +++++++++++++
->>  2 files changed, 26 insertions(+)
->>
->> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
->> index 7f986d7fb47f..0783802fd010 100644
->> --- a/drivers/tee/tee_core.c
->> +++ b/drivers/tee/tee_core.c
->> @@ -1413,6 +1413,19 @@ int tee_client_invoke_func(struct tee_context *ctx,
->>  }
->>  EXPORT_SYMBOL_GPL(tee_client_invoke_func);
->>  
->> +int tee_client_object_invoke_func(struct tee_context *ctx,
->> +				  struct tee_ioctl_object_invoke_arg *arg,
->> +				  struct tee_param *param)
->> +{
->> +	if (!ctx->teedev->desc->ops->object_invoke_func)
->> +		return -EINVAL;
->> +
->> +	/* Indicate that this object is being invoked from a kernel context. */
->> +	arg->id = arg->id | BIT(63);
-> 
-> Setting this bit is a qcomtee backend requirement and should not be
-> exposed to the TEE subsystem.
-> 
-> Kernel users of qcomtee_object_invoke() should use the normal object ID
-> value. For example, access to the initial ROOT maybe represented as
-> TEE_OBJREF_NULL | BIT_ULL(63), but the upper bit must be managed by the
-> qcomtee backend for any return object, i.e. The backend should also set
-> BIT_ULL(63) automatically on each returned object ID.
-> Callers should treat the ID as opaque and must not manipulate the upper bit directly.
+I haven't checked the IRQ vectors on risc-v, but I assume they have a
+similar logic since that's an OP-TEE design decision not a per
+architecture one.
 
-I agree with this argument. Since we only invoke QTEE returned objects from
-tee_client_object_invoke_func(), the QCOMTEE back-end should set the MSB of the object-id
-when returning QTEE objects to TEE kernel client. It should also drop the MSB of the object-id
-for both invoked QTEE objects and QTEE objects passed as arguments by a kernel client.
+>
+> > > +
+> > > +OP=E2=80=91TEE uses a global serialization mechanism (the "big lock"=
+), ensuring that on
+> > > +each core only one OP=E2=80=91TEE thread executes secure=E2=80=91wor=
+ld code at a time.
+> > > +
+> > > +Execution flows from the normal world (Linux) into the secure world =
+(OP=E2=80=91TEE)
+> > > +through the secure monitor at EL3. Linux and OP=E2=80=91TEE cannot d=
+isable or mask each
+> > > +other=E2=80=99s interrupts because both run at EL1 in different secu=
+rity states.
+> >
+> > That's not always true. It depends on a combination of OP-TEE and TF-A
+> > configs iirc.
+> > The most common though is that IRQs and FIQs are directly delivered to
+> > S-EL1, in which case OP-TEE can mask IRQs.
+> > There's also a difference between GICv2 and GICv3 in the way
+> > interrupts are delivered.
+>
+> You are saying that OP-TEE can mask Linux' interrupts or if OP-TEE
+> instructs TF-A to do so (via config)?
 
-We are already taking care of dropping the MSB from the object-id for invoked QCOMTEE objects
-from kernel-space. I believe the correct place for setting and unsetting the MSB for QCOMTEE
-objects being passed as arguments are here:
-https://elixir.bootlin.com/linux/v7.1/source/drivers/tee/qcomtee/call.c#L181
-https://elixir.bootlin.com/linux/v7.1/source/drivers/tee/qcomtee/call.c#L125
+OP-TEE can mask Linux IRQs
 
-Once the object-id is allocated by the back-end, we can check if the kernel_ctx flag is set
-in oic. If so, we set the object-id's MSB before marshaling the object-id to a tee-param.
-Similarly, when an object-id is passed by the kernel client, and kernel_ctx flag is set,
-we unset the object-id's MSB before marshaling it from a tee-param.
+>
+> > > +
+> > > +Architecturally, the secure monitor can mask or reroute normal=E2=80=
+=91world interrupts
+> > > +before entering the secure world. In a correct OP=E2=80=91TEE/ TF=E2=
+=80=91A implementation, it
+> > > +does not do this for the duration of secure calls. Normal=E2=80=91wo=
+rld interrupts
+> > > +remain deliverable, and a normal=E2=80=91world IRQ will preempt OP=
+=E2=80=91TEE via EL3 and
+> > > +return control to Linux.
+> >
+> > The 'sane' case is indeed where IRQs are delivered to OP-TEE which
+> > exits back to Linux immediately.
+> >
+> > > +
+> > > +Secure=E2=80=91world interrupts (FIQs) are possible if the SoC route=
+s a device's
+> > > +interrupt as secure. Such a secure FIQ will preempt Linux immediatel=
+y, trap
+> > > +into EL3, and transfer control to OP=E2=80=91TEE's secure interrupt =
+handler. Linux
+> > > +cannot mask or preempt this. Secure FIQ handlers must therefore be e=
+xtremely
+> > > +short to avoid introducing noticeable latency.
+> >
+> > There are also 'fast SMCs', which run with IRQs disabled for their
+> > entire duration.
+>
+> can their be distinguished somehow from normal SMC invocations or is
+> just a consequence that the secure monitor does not enable interrupts
+> during transition for some of the "functions"?
 
-Do let me know if you're aligned with this approach for achieving kernel context
-awareness without TEE front-end or client involvement. In-effect we're offloading this
-context information to QTEE object ids.
+They can be identified. There's a function identifier defined in the
+SMC calling conventions doc [0].
+Bit 31 is always 1 for fast calls and 0 for yielding.
 
-Regards,
-Harshal
-> 
->> +	return ctx->teedev->desc->ops->object_invoke_func(ctx, arg, param);
->> +}
->> +EXPORT_SYMBOL_GPL(tee_client_object_invoke_func);
->> +
->>  int tee_client_cancel_req(struct tee_context *ctx,
->>  			  struct tee_ioctl_cancel_arg *arg)
->>  {
->> diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
->> index e561a26f537a..ca99c6b747a8 100644
->> --- a/include/linux/tee_drv.h
->> +++ b/include/linux/tee_drv.h
->> @@ -283,6 +283,19 @@ int tee_client_invoke_func(struct tee_context *ctx,
->>  			   struct tee_ioctl_invoke_arg *arg,
->>  			   struct tee_param *param);
->>  
->> +/**
->> + * tee_client_object_invoke_func() - Invoke a TEE object from kernel space
->> + * @ctx:    TEE Context
->> + * @arg:    Invoke arguments, see description of
->> + *          struct tee_ioctl_object_invoke_arg
->> + * @param:  Parameters for the object invocation
->> + *
->> + * Return: On success, returns 0; on failure, returns < 0.
->> + */
->> +int tee_client_object_invoke_func(struct tee_context *ctx,
->> +				  struct tee_ioctl_object_invoke_arg *arg,
->> +				  struct tee_param *param);
->> +
->>  /**
->>   * tee_client_cancel_req() - Request cancellation of the previous open-session
->>   * or invoke-command operations in a Trusted Application
->>
-> 
-> Regards,
-> Amir
-> 
+>
+> > > +
+> > > +The transition from normal world -> secure monitor -> OP=E2=80=91TEE=
+ and back introduces
+> > > +additional latency due to world switching and context save/ restore.=
+ This
+> > > +overhead is typically a few microseconds and usually remains in the =
+noise
+> > > +floor.
+> >
+> > That's correct.
+> >
+> > > +
+> > > +If the secure monitor masks normal=E2=80=91world interrupts during O=
+P=E2=80=91TEE invocations,
+> > > +or if OP=E2=80=91TEE uses long=E2=80=91running secure FIQ handlers, =
+then OP=E2=80=91TEE can introduce
+> > > +measurable latency spikes.
+> > > --
+> > > 2.53.0
+> > >
+> >
+> > Overall I think this is worth documenting, but infortunately there's a
+> > wider range of configs and corner cases we have to describe.
+>
+> Okay.
 
+[0] https://developer.arm.com/documentation/den0028/h/?lang=3Den
+
+Cheers
+/Ilias
+>
+> > Cheers
+> > /Ilias
+>
+> Sebastian
