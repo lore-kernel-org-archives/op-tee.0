@@ -4,174 +4,384 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C58BC43458
-	for <op-tee@archiver.kernel.org>; Mon, 13 Jul 2026 10:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95D9BC44507
+	for <op-tee@archiver.kernel.org>; Tue, 14 Jul 2026 23:48:16 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 8B8C245044
-	for <op-tee@archiver.kernel.org>; Mon, 13 Jul 2026 10:27:48 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A3F1144FB5
+	for <op-tee@archiver.kernel.org>; Tue, 14 Jul 2026 23:48:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1784072895;
+	bh=n9AjW65p0a7D6KQPmbrkol4qR1Xm8c7052xAtW+SOos=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=MIoHf8nThQnArxwW6qZQdwKUhpM8VG95vFWDCX56rvfiq7fUB63fF+3Oybk1L5hNo
+	 p8JEXBkjvFjawFQX6NHT0FljPIrUgcYrA55PUb+7C0ncvEARAUFp7Jxn50z2DYcuKt
+	 sVT4YGKPYMYa6Y9ten3neg7C1dbRm1Za/lpccUM17otTWPqDzv5n83DVWzVLDX5vEQ
+	 RpM4C5LwaLOPgl0Rk7VM2BwSKcN7SSuL1mmKg3vbYPLukoATiE/HW1tI0F8UlXnIb3
+	 a4vJU8YXWINLDW66ZNJUXp/cB+OOCsQMjCTPhJTU8sIku9a9tZibGhJpUGnyrBb6nB
+	 /u2sBYjNA3tew==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 261ED44DAF
+	for <op-tee@lists.trustedfirmware.org>; Tue, 14 Jul 2026 23:48:09 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=selector1 header.b=UoU5Yu9U;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lRLVL0wv;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=UWXLrS0q;
 	dkim-atps=neutral
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013036.outbound.protection.outlook.com [52.101.72.36])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 3D1F944D93
-	for <op-tee@lists.trustedfirmware.org>; Mon, 13 Jul 2026 10:27:41 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BkByWQ6PhORb6AevE0RH8MrTcIgQSAo8bzcgmp8AfYW0M4gGoiuWV1QfAxhJpGsq2pAwOBcSLBz56mfGlQCrgwxGCESSrXKiRSBGfrvkgP+LmWAO7ro6MTtOBXCLV3KtTLv4iTyvqh8RhXY5+p4HIt+GXTOueu2oCLxe98jadt3hicIDtxnKcvSuZYnjvAAw9uo0/iFUV+vvWQKP6O68dJlYosujQiOcxLEQ+qTo2cjG2txm1CoiKrTw/wPWUSn6pnhjUpmEe3yFG/N1k0Sr0+dTiEL2fS3aK4jNeaYhBYuFlD5QWIqQQDSz6Q2QYm1RrOIK/FjJIoe00kX4TzDWfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=de6lJyhJo/TUMuVRObhAZUsDFpOSU+cw9LU4WaHzKrY=;
- b=xaR2E9zSZdgE2OiBvQ2R2ceCVgMDBcXw868V3yTvTFCl7rnTKckNziFgSYURCpMzZnjMxtg5wTe954MMDDONvONVdL7J5eG6rtDpPq6w5uUjksGXFS4zGTNB7eo22EjX3JVZg7jfNmk4vd2Fau01WGbVB4wLPVsLNxLchvm9kVQYY0/zXiOu2Bj0zmqU0gDeg7/JfVNZxbU5YY5u90MuA1QkAs7zr5O1FjS+G6UIwrMOggy9p7DVDDM1RwGZzLrV73XbJHjjwdgx0cIsF6vv18TfRKMQiUiCfP6Aus2c2F3/12hipKDCqBqrSTv6MEXfufMO7bt/W9gThbfuPZbYVg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=de6lJyhJo/TUMuVRObhAZUsDFpOSU+cw9LU4WaHzKrY=;
- b=UoU5Yu9U/lZbxutZxLFB5zCLQVkGQkmxRx729KdXi1jW5N3P6vgk4ewTNhgO9FHKbxjkIkiDAc4r0f9ACG4hXsKzPil4upjB7DwXodh7Ip6sBYEfdGUU1a2UwoJ8hK2bFXvQt4Zy/JO+5PlHpfYCfYgcKVK13dKHD0TEX+2WvzM=
-Received: from GV1PR08MB11247.eurprd08.prod.outlook.com
- (2603:10a6:150:283::18) by DBBPR08MB10603.eurprd08.prod.outlook.com
- (2603:10a6:10:52b::20) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.18; Mon, 13 Jul
- 2026 10:27:38 +0000
-Received: from GV1PR08MB11247.eurprd08.prod.outlook.com
- ([fe80::6b0f:c757:71c3:e3eb]) by GV1PR08MB11247.eurprd08.prod.outlook.com
- ([fe80::6b0f:c757:71c3:e3eb%5]) with mapi id 15.21.0181.019; Mon, 13 Jul 2026
- 10:27:37 +0000
-From: Arm PSIRT <psirt@arm.com>
-To: "op-tee@lists.trustedfirmware.org" <op-tee@lists.trustedfirmware.org>
-Subject: Re: OP-TEE Bug Bounty
-Thread-Topic: OP-TEE Bug Bounty
-Thread-Index: AQHdEqRgYFVwMvwEeE6+YNLhWbfOI7ZrOq/a
-Date: Mon, 13 Jul 2026 10:27:37 +0000
-Message-ID: 
- <GV1PR08MB11247DD9A3602B9965BE5331FA7FA2@GV1PR08MB11247.eurprd08.prod.outlook.com>
-References: 
- <GV1PR08MB1124778452503DE280982F12EA7FE2@GV1PR08MB11247.eurprd08.prod.outlook.com>
- <GV1PR08MB1124771F2CEA6DC92717B7AC8A7FA2@GV1PR08MB11247.eurprd08.prod.outlook.com>
-In-Reply-To: 
- <GV1PR08MB1124771F2CEA6DC92717B7AC8A7FA2@GV1PR08MB11247.eurprd08.prod.outlook.com>
-Accept-Language: en-US
-Content-Language: en-GB
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-reactions: allow
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: GV1PR08MB11247:EE_|DBBPR08MB10603:EE_
-x-ms-office365-filtering-correlation-id: 32ab5ed2-a245-4972-efbf-08dee0c95c82
-nodisclaimer: true
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: 
- BCL:0;ARA:13230040|366016|1800799024|376014|23010399003|38070700021|22082099003|18002099003|8096899003|4143699003|56012099006|11063799006;
-x-microsoft-antispam-message-info: 
- zKN2av9KEni7UhLkrL5C4sNCCEYYqfUd0I90AF/uppoeATN7BLDBbdgj6aYWq5uYMINss049mNMUTQAPXGEs+ETCpLE1ULjUr/oR8Kwywju3NFjt5RpnTZUPazhSC5LWVWOFu1PK61AnvZyPCcsN4D6jNPHmu03RuL2ULJcwxLIHrb45DMiHDWhYKkr+fHJ7FoaWJpo/rro0uSniEBSaWAYR4q3atKpxlJk+R0UDFmAX/myLeaWLmiJGvF7p6UeLvgXZtDIqYw0JKsWuydrd+GkBejN4HvbLJdaFKFnAqXe1ZwqjTXlAFKs3iy/MvVPCVkvLIEaOf9sAy3bGvhN1o7sr1qI044Tb0ZrEKzsKUYDj3beFoCkyf7a02Iv7cjC3KNYjZ+xLpahyPaIg2UIqH8KU7Eybt8BQ621MlXqp735ZZKvPKhys5iTmo/ASlex9qSPZllzoRYLaK728HFUHXObp+38RtI49H6+bv2eX59/8ax3P1AJPUyUFcVynX5oDerTdRLHdLxJAc6QpGggep3ZI2enRNijg870g1f0dfxy4OKULWib3cYTJRsycXriq5H91iPwNCNRoUVihxMSTL7iM+8ogI3wMv1HVxEUxBr67zACbteW3Gaj7uX//O5Eet88pv5YGrd3t4xC1ubyB2v66DwJQ55Gk5vufsjF3RwM8RxVDiK1+4QhdXMoVKqbCapouVL18J7FQdtbWECdZ/315DQKX8SIFE3aZLqmlREo=
-x-forefront-antispam-report: 
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV1PR08MB11247.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(38070700021)(22082099003)(18002099003)(8096899003)(4143699003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: 
- =?Windows-1252?Q?51GeYG3mr9YtvCVfv3RUOuHRoIzGHGFKRifmCGET2GoX9TNnuWAcIWT6?=
- =?Windows-1252?Q?YcvJzBDMpmy+D7Ko+UQcStiLeTbTkOXxQT6RLQ8d4fKoNblxAIjUKY3D?=
- =?Windows-1252?Q?ynBo2Ket4ijq4N1aAoQcG7TlKhvUDrc+loxFjmAYVoNy2XBvZL2pDiHJ?=
- =?Windows-1252?Q?TljXK8Xz4UXzD5MSLLuTEmUfbkPWK/XxW7/f2CtLepIylpPYNVcVtj4e?=
- =?Windows-1252?Q?/94Vun8dMMjnnWNnvwPOr51LqxYiUbj9EYqdizzn6ts5ULKS5t6lsYUg?=
- =?Windows-1252?Q?4KyN+MC0CjXU94ToGt1DCoYqOwHMR6BVsdvGlLQFrJCQMzZzhM+jhkYJ?=
- =?Windows-1252?Q?03APVsL2LVidPk1YZPG2PEe/lJYKrFMXhbQz9b/UiGnP7mgYYvjRtCBW?=
- =?Windows-1252?Q?ZW9go+29s6txi45ezDjKn+tu1np6HNa6bPaN+8hWG0/XoclgqvRemw1G?=
- =?Windows-1252?Q?JC5rPGLbgJ9qd8aQBpuksZC+LKECws7HkiSc/zAua5xLMqgDI5UmxlAw?=
- =?Windows-1252?Q?GiR1XvKEFGVMV0rZnc/hW+2ltENXj4XY/eMW5wbpqTShUThrG4kNuqWn?=
- =?Windows-1252?Q?6y22CjlfkO2JgOmYSFnuy0+eiWWLkaQ6XpThk4sFKwlxpTTodsAoyWAS?=
- =?Windows-1252?Q?n0qMsuuwVNhYathzmblqXUeKtwKLVKxK1gZ6vrr8e1aJIMkWDEJ3FX8C?=
- =?Windows-1252?Q?4I36Jh8V899OK6TFwYXSqywfj3TC5py7nlIJ3NYI+5qjkmqAFaFBty/i?=
- =?Windows-1252?Q?6AXSq9zXx72a616rvyBi9+AprutaghchLNBhTkRtTYVP+j99UK6fv3iq?=
- =?Windows-1252?Q?g8cGSY+0131viv5ULppw+ia7SyE50MTVYI06gbwvKrfDUbs8sB6V1d13?=
- =?Windows-1252?Q?Bx2PFWUuLOhXV3f31lbHykwbJYKblv5ehB9+5oMOZxSfMwVZyFTE94cY?=
- =?Windows-1252?Q?NoB1GSoU/EOQU3HjH26MEjC+jKJbKmVfBxJUZKayIuOUvESAwhNQYeix?=
- =?Windows-1252?Q?U1/IqPX/dihjlWfO92mrrG8cQdS2bbDGMitG3khyAv4bYgipWavRQ4XI?=
- =?Windows-1252?Q?bTYYQu4k0/nuf9w05Df3CDcsYPOubePuXxEeXicOQ2yvsWMLwqtTHmv0?=
- =?Windows-1252?Q?glUueK1Q8fWF0q4qshC3a+YZJsHk5EyRlwJTYxIkg1kETlYddBsPbhhm?=
- =?Windows-1252?Q?BjX+2mWX4Fa3QkxBvJwB0nndNCdz+35Ba6R/dBE4PY8V40KONMRwHqRT?=
- =?Windows-1252?Q?U5cIXe0NWHVVrUhNF1mBsD2o3TlOh4zTdG23q3LJMHIY9RCHfL2aAERf?=
- =?Windows-1252?Q?IslnIZgCKo5NerhGQmIW3oKl2kCA/iVMakZvfXGeLWkca+tIMgLIsfEW?=
- =?Windows-1252?Q?KCOqpuUPnE2hY89NyBZf2JmSElV2Et1he7sIGM4Gseof6KwBflBagbs5?=
- =?Windows-1252?Q?HgGJW1IhEBIXVHta4dGdHdws34CfwYqZIfITqYqhnYYcgUhzy0I2uZLW?=
- =?Windows-1252?Q?prIIMlbjeKoy5LZvBYf4eHcPbOQ6wU9Y0XMMwU1m+j8gsN5SgHt1NPH5?=
- =?Windows-1252?Q?d9xFW9TjHmYMdYYGf5636VM1S2Za5qn9yR3n12D2LGadfLXnjM1AaHOV?=
- =?Windows-1252?Q?gW9AwMkFovqH90cqEcWrkNxQcIlgXlpPndjSGB5wOFSAcMNWHNkaRwe1?=
- =?Windows-1252?Q?036mfDfldWxN0a/LOPa349sCTrHc3zTrEWBxFswXCFcJAHdLhLFWAjPr?=
- =?Windows-1252?Q?mDphRPX+7Vms5/YBp7V1TtAOFnNufgrhA25Iuc0bI5RmFBbcfeNdY/jk?=
- =?Windows-1252?Q?v1x4dsfMIfRZw9gjUoresedxgSQjTaMWNpKyllr2cP9C/YvXV8MSEsCS?=
- =?Windows-1252?Q?HnqUgHv143Kkcg=3D=3D?=
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66EIwaKa1415374
+	for <op-tee@lists.trustedfirmware.org>; Tue, 14 Jul 2026 23:48:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	vn4MUzHPyhlagDYIvwca+AzfFmNytjBwvjVc71GBUkU=; b=lRLVL0wvMySyzkx2
+	bm/jqLTqSS3Uj5xno85m35cdJWvZQEdt6WFdfcD6vx01lyPfb5hYagFpz/Rc4ogC
+	NM7ivzc0wRoSWg6hgoc+veM8eSeFwsvGDQ1hFWNiB0oSTNaG7/WHUcGKhjytr0am
+	eaV5BHEOqHbem4dT0lg64sdIoXJw0/xZZ36taoWAUinC5u/ZlI3eyqNWwI6uVmai
+	X4KbXpITyZLnkWFr4AFpfeKtJcCkSsGPyctlwGs+SCCuhEXiEsh3tDBewEWA+Nws
+	BvhdoWOHymprYISolLXQK7NYqyLyEGYGQSPPcY/3si82nPpdmrzUbFA07RGzMlf+
+	0ydbSw==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fds9ks6e0-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 14 Jul 2026 23:48:08 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cab041eced3so5364934a12.1
+        for <op-tee@lists.trustedfirmware.org>; Tue, 14 Jul 2026 16:48:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1784072887; x=1784677687; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vn4MUzHPyhlagDYIvwca+AzfFmNytjBwvjVc71GBUkU=;
+        b=UWXLrS0qJmDBPC5WEdPngCH+Tb1pl4A42CeS3EM7C4psNc/Ym3211ZkFsuefgj7ZVs
+         ZFKj84OgTIQKA7dJ+tE1/omC4KtKh25W84RBBocg/NuwkpxTmMUzZEkjDVJJBJglzsgc
+         GZAEn85Dv5pe8yfOP+FVNBb44E7jVRzlaA74W+5+92yj/QF+jw+6Dla2OkeW+9LrUd6d
+         MmIHpiZs82xn1E1sPs+aIISo6XHIKDvakdlLhb6w5vTxJ9X/RlSX6hseFZhgSeEZuyow
+         jrcTH1gx1WpopereNlRhJINkpEF+EHnHKIFQvoA5VFuEhrovgoAQuwIp+Io6oYneYcCQ
+         i/Fg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784072887; x=1784677687;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=vn4MUzHPyhlagDYIvwca+AzfFmNytjBwvjVc71GBUkU=;
+        b=sacOOm3IR3hIk5hx2+2sNRcjWcsWv4kbZ8/+QFqOmOH8x+A5ymqAtnJR2xcvgwHbO8
+         XOFGMZZAO74AQo/ESjOZriC/q0rix0NIjGPlyYcDtqBLFQGiKVusygZo6iN1zruJW5gX
+         4vEK1FTjyK9W8iqaJdnCTYk0GECpvOo6w1cRI6chbo3EAzANXB5j1ri+jj57ZrikaDNI
+         NUXjlHqcZGH0zZmPR2fRLQfGp0Okik+fxsERhLqOdxVaqmW3cTQhHcsf+Y2ujjfa5wFq
+         VAYtl6bhsljGpCOAwFK3L7zNgJM4EVEJPmOMOPxyh4juYsdHUQGEo/n0ZHsDcRlyk0gy
+         WqGg==
+X-Forwarded-Encrypted: i=1; AHgh+Rr0E9AB9q1ngs7H4Y1wHB8LE6DgY/T8cl3mkK9COmWUMHl+1msX2O2onHPsoFigQ5I7O61CnSw=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yytx59BAVVV5Qam5GjtKga8P5OVK+4uRpEQ1IiVgs+kzF1Dg+Yp
+	MWneGQskWD6/l3eXxdPaba//HZpFPobm5NxPgSm5tlk/eG44sKhnRgQw+b0QW+/X7GFpkR7FHpK
+	Fs2oiYBYtImJS7gze79WNc9S8oz91uI2x6qgdGGPkaHDF6S+5lsMlpKttB70uglovRrcXjNw=
+X-Gm-Gg: AfdE7cmmTQkPiE9Pu37kdx/tZfkJvaMxGAtdlJlAWYTFnE5a2cU7jCfdXNTlbVLS/Wu
+	M3wUsb1YIrMe+EFmIlKT1BHSFQViwvnrYOk/hJy8/vAYTUsKm1JAKos9Z7BTDj/ne47MhUam5mx
+	GZnacmIW797Pnlfh5m0Eos1lMY2CbHMndgwYANTwYjTj5gVU9/W6K9DlsXpwtw3b1vbWZNvnntu
+	2iOsLGKl9+Mbngy54+XIALB0tihZLbE0SeKWXUxxJJYDsdC/bmBWyTZ3h3s3VcO5ntw8l36SvU9
+	ZjKb6QWCfGgQG7m4wveLfWmdKIRSUwuuBC1B/6AFcnnjLa/eAnutyfkN/Mt+kjGW7DMrb4BKUlS
+	hwkKxMClRx+YIK09mbJ7fAHUXekJ9+1tW0P1rCiq4ffc=
+X-Received: by 2002:a05:6a20:6f04:b0:3c0:9c19:6592 with SMTP id adf61e73a8af0-3c3576c5a50mr5232421637.76.1784072887390;
+        Tue, 14 Jul 2026 16:48:07 -0700 (PDT)
+X-Received: by 2002:a05:6a20:6f04:b0:3c0:9c19:6592 with SMTP id adf61e73a8af0-3c3576c5a50mr5232398637.76.1784072886848;
+        Tue, 14 Jul 2026 16:48:06 -0700 (PDT)
+Received: from [192.168.1.86] ([65.181.14.20])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31198cb2b99sm58087377eec.26.2026.07.14.16.48.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Jul 2026 16:48:06 -0700 (PDT)
+Message-ID: <f917eb0f-9c9d-4f30-9c4f-ac3aeddac967@oss.qualcomm.com>
+Date: Wed, 15 Jul 2026 09:47:59 +1000
 MIME-Version: 1.0
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: GV1PR08MB11247.eurprd08.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 32ab5ed2-a245-4972-efbf-08dee0c95c82
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jul 2026 10:27:37.7333
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: H15Ab1DtoPdZhJeAPYxIcn1jR3Ahbb8VqsBcnhLsYwqpnMlCRfEU8DBmBCwIevsI
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR08MB10603
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/6] tee: qcomtee: Track the object invocation context
+To: Harshal Dev <harshal.dev@oss.qualcomm.com>
+References: <20260707-qcom_uefisecapp_migrate_qcomtee-v1-0-f659cbd5d04c@oss.qualcomm.com>
+ <20260707-qcom_uefisecapp_migrate_qcomtee-v1-1-f659cbd5d04c@oss.qualcomm.com>
+ <b7c8b25b-374f-40a4-9c6d-bb20ee0cb5c9@oss.qualcomm.com>
+ <fb1d4954-7c0f-4609-be40-b032876169b8@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <fb1d4954-7c0f-4609-be40-b032876169b8@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=Q63iJY2a c=1 sm=1 tr=0 ts=6a56cab8 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=1ihhdXzpPjkKEZVMewh6kw==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=NEAV23lmAAAA:8 a=EUspDBNiAAAA:8 a=j_0Qh49M8Pi7-mX27roA:9 a=QEXdDO2ut3YA:10
+ a=x9snwWr2DeNwDh03kgHS:22
+X-Proofpoint-ORIG-GUID: BqV1xWvSdJkfKg1dAiZoY5Bfjviskn-h
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDI0NiBTYWx0ZWRfX65i5FIMhVJot
+ Jn+QmSbvhCPKLxX3kwYPhme/a6Qrhavldb95FaSMnK/NYLcqyhcXCMATki+c7OoYijgGe/c5Uff
+ q5UVrDBFDhBxoX+JAZM8sb1dL7WRDu0=
+X-Proofpoint-GUID: BqV1xWvSdJkfKg1dAiZoY5Bfjviskn-h
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDI0NiBTYWx0ZWRfXy7qTmNGQRZ7l
+ GLS0ZgvdiEyf+bfmjdrtS0T8OKiLReYxtc+8OLipel3Z42I5XA+RhpnNE2zLK6+Z5NbOPheVUvq
+ a3IiY+u1MuzGkPMd7PKCR8Y2Xpz/7wQYuatMORi8/+7eUurEgkzpWZ7qzhAO3BTVFmwhE6Ybahe
+ N9zvQVZUPQ28nvpm6oxRQOMt3qciOdmHnVGLh6TWhv1M/2TP3mHc+gZicEKELXlfyIio7BL/wCO
+ 3EbZSDvD3HZqx9Jrb8TbUkiFDC0TpS+BNe5Nv7hlCw/y38XBFUId9bBT+uhlYRCRv2b9JHyDuGr
+ ZRAMQqEyLKb32h4SEq8m6kF6WbKNiwm7L1r86ksmR6IzdC+jIcGxfdwqQJjtZ4/6EkyxIbz2Bj6
+ DZGd4C1QnHA+CiJsj4hkUi6i41h5iBqaz4GF53S2YwS8+mdk6kxa3s6B7jRGs0ByJ4eVhDxj0kU
+ 4taNd2/2xjWQ5i7k9BQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-14_05,2026-07-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0 bulkscore=0
+ phishscore=0 impostorscore=0 malwarescore=0 priorityscore=1501 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140246
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.50 / 15.00];
-	BAYES_HAM(-3.00)[99.98%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	DWL_DNSWL_LOW(-1.00)[arm.com:dkim];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[arm.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:52.100.0.0/15];
-	R_DKIM_ALLOW(-0.20)[arm.com:s=selector1];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	ASN(0.00)[asn:8075, ipnet:52.96.0.0/12, country:US];
-	MISSING_XM_UA(0.00)[];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
+X-Spamd-Result: default: False [-4.10 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
 	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.72.36:from];
-	RCPT_COUNT_SEVEN(0.00)[7];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[11];
+	MID_RHS_MATCH_FROM(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[gmail.com,arm.com,kernel.org,st.com];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.72.36:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.215.198:received];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	ALIAS_RESOLVED(0.00)[];
-	DKIM_TRACE(0.00)[arm.com:+]
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_COUNT_THREE(0.00)[4];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 3D1F944D93
+X-Rspamd-Queue-Id: 261ED44DAF
 X-Spamd-Bar: ----
-Message-ID-Hash: UT6WAH5MYDSF62HU5WSMB6OLVZSALG6W
-X-Message-ID-Hash: UT6WAH5MYDSF62HU5WSMB6OLVZSALG6W
-X-MailFrom: psirt@arm.com
+Message-ID-Hash: IKJ7U4HO3XIIVAHPWSBU3TMZUOXY5H44
+X-Message-ID-Hash: IKJ7U4HO3XIIVAHPWSBU3TMZUOXY5H44
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="Windows-1252"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: "joakim.bech@gmail.com" <joakim.bech@gmail.com>, Arm PSIRT <psirt@arm.com>, Evelyne Donnaes <Evelyne.Donnaes@arm.com>, Jerome Forissier <Jerome.Forissier@arm.com>, "jenswi@kernel.org" <jenswi@kernel.org>, "etienne.carriere@st.com" <etienne.carriere@st.com>
+CC: Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Konrad Dybcio <konradybcio@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, jenswi@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2APAA3VOTPARA66VVYLFFZRTF3MT3T7J/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IKJ7U4HO3XIIVAHPWSBU3TMZUOXY5H44/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Hi op-tee team,
+Hi Harshal,
 
-As part of the Arm bug bounty, we=92ve recently sent a few messages to op-t=
-ee-security. Unfortunately we haven=92t had any responses since Jens left L=
-inaro.
+On 7/10/2026 4:37 PM, Harshal Dev wrote:
+> Hi Amir,
+> 
+> On 7/8/2026 11:31 AM, Amirreza Zarrabi wrote:
+>> Hi Harshal,
+>>
+>> On 7/7/2026 4:11 PM, Harshal Dev wrote:
+>>> QCOMTEE needs to distinguish between object invocations arriving from
+>>> kernel clients and user-space clients in order to correctly marshal
+>>> UBUF parameters and decide whether certain operations should be permitted.
+>>>
+>>> Add a kernel_ctx flag to struct qcomtee_object_invoke_context to track
+>>> the context of object invocation. Objects invoked from the kernel-space
+>>> are expected to have the MSB of their 64-bit object-id set to indicate a
+>>> kernel context, whereas objects invoked from user-space should not set it.
+>>> To ensure this, we restrict the object-id space of user-space invoked
+>>> objects to 32-bits. This is in-line with QTEE expectation of 32-bit object
+>>> ids.
+>>>
+>>> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>>> Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
+>>> ---
+>>>  drivers/tee/qcomtee/call.c           | 24 ++++++++++++++++++++++--
+>>>  drivers/tee/qcomtee/qcomtee.h        |  6 ++++++
+>>>  drivers/tee/qcomtee/qcomtee_object.h |  8 ++++++--
+>>>  drivers/tee/tee_core.c               |  4 ++++
+>>>  4 files changed, 38 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
+>>> index 0efc5646242a..a74a54d67b06 100644
+>>> --- a/drivers/tee/qcomtee/call.c
+>>> +++ b/drivers/tee/qcomtee/call.c
+>>> @@ -397,11 +397,31 @@ static int qcomtee_object_invoke(struct tee_context *ctx,
+>>>  {
+>>>  	struct qcomtee_context_data *ctxdata = ctx->data;
+>>>  	struct qcomtee_object *object;
+>>> +	bool kernel_ctx = false;
+>>>  	int i, ret, result;
+>>>  
+>>>  	if (qcomtee_params_check(params, arg->num_params))
+>>>  		return -EINVAL;
+>>>  
+>>> +	/* Obtain the invocation context information from the MSB of the object
+>>> +	 * `id` field.
+>>> +	 */
+>>> +	kernel_ctx = QCOMTEE_GET_CLIENT_CTX(arg->id);
+>>> +	/* User-space identifies a NULL object via a 32-bit TEE_OBJREF_NULL id, whereas
+>>> +	 * the kernel uses as 64-bit object-id. Hence, we check for a NULL object by
+>>> +	 * sign-extending the object-id to 64 bits. If user-space is indeed invoking a
+>>> +	 * NULL object we must extend the object-id to 64-bits from here on so that
+>>> +	 * QCOMTEE can recognize it.
+>>> +	 */
+>>> +	if (!kernel_ctx && ((s64)(s32)arg->id) == TEE_OBJREF_NULL)
+>>> +		arg->id = TEE_OBJREF_NULL;
+>>
+>> Does it need to be MSB -- why bit 63? the object ID supported by QTEE is 32-bit anyway.
+>> Let's mask the upper 32-bit and do something like kernel_ctx = !!upper_32_bits(id).
+>> What do you think?
+> 
+> I agree. Instead of checking for kernel-ctx by right shifting, I can use this approach.
+> QTEE objects invoked from user-space (including NULL object) will always have their
+> object-id constrained to lower 32 bits anyway as per PR: https://github.com/quic/quic-teec/pull/27
+> 
+> And for kernel-space invoked QTEE objects, upper 32-bits would be set for NULL object,
+> and 63rd bit expected to be set as well.
+> 
 
-Please could we ask who remains on this list so that we can reach out to th=
-em directly?
+Re-thinking this, I'm a bit concerned about overloading id while keeping it as a u64,
+and then filtering its upper 32 bits in tee_ioctl_object_invoke(). It feels unintuitive,
+as it naturally raises the question: if only the lower 32 bits are meaningful,
+why is id a `u64` in the first place?
 
-Many thanks,
+What if we make the caller origin explicit instead, for example:
 
-Arm PSIRT
+enum tee_object_invoke_origin {
+	TEE_OBJECT_INVOKE_USERSPACE,
+	TEE_OBJECT_INVOKE_KERNEL,
+};
+
+and then pass it through the backend op:
+
+int (*object_invoke_func)(struct tee_context *ctx,
+			  struct tee_ioctl_object_invoke_arg *arg,
+			  struct tee_param *param,
+			  enum tee_object_invoke_origin origin);
+
+It seems more straightforward and avoids encoding caller-origin metadata into id.
+If you are OK, let's do this.
+
+- Amir
+
+>>
+>>> +
+>>> +	/* If the object being invoked is not NULL, drop the MSB from the `id` field to
+>>> +	 * obtain the actual object-id.
+>>> +	 */
+>>> +	if (arg->id != TEE_OBJREF_NULL)
+>>> +		arg->id = QCOMTEE_SANITIZE_OBJ_ID(arg->id);
+>>> +
+>>>  	/* First, handle reserved operations: */
+>>>  	if (arg->op == QCOMTEE_MSG_OBJECT_OP_RELEASE) {
+>>>  		del_qtee_object(arg->id, ctxdata);
+>>> @@ -411,7 +431,7 @@ static int qcomtee_object_invoke(struct tee_context *ctx,
+>>>  
+>>>  	/* Otherwise, invoke a QTEE object: */
+>>>  	struct qcomtee_object_invoke_ctx *oic __free(kfree) =
+>>> -		qcomtee_object_invoke_ctx_alloc(ctx);
+>>> +		qcomtee_object_invoke_ctx_alloc(ctx, kernel_ctx);
+>>>  	if (!oic)
+>>>  		return -ENOMEM;
+>>>  
+>>> @@ -648,7 +668,7 @@ static void qcomtee_get_qtee_feature_list(struct tee_context *ctx, u32 id,
+>>>  	int result;
+>>>  
+>>>  	struct qcomtee_object_invoke_ctx *oic __free(kfree) =
+>>> -		qcomtee_object_invoke_ctx_alloc(ctx);
+>>> +		qcomtee_object_invoke_ctx_alloc(ctx, true);
+>>>  	if (!oic)
+>>>  		return;
+>>>  
+>>> diff --git a/drivers/tee/qcomtee/qcomtee.h b/drivers/tee/qcomtee/qcomtee.h
+>>> index f39bf63fd1c2..5d292a2ff83d 100644
+>>> --- a/drivers/tee/qcomtee/qcomtee.h
+>>> +++ b/drivers/tee/qcomtee/qcomtee.h
+>>> @@ -17,6 +17,12 @@
+>>>  #define QCOMTEE_OBJREF_FLAG_USER	BIT(1)
+>>>  #define QCOMTEE_OBJREF_FLAG_MEM		BIT(2)
+>>>  
+>>> +/* The MSB of the object_id field indicates whether the client is invoking the
+>>> + * object from user context or kernel context.
+>>> + */
+>>> +#define QCOMTEE_GET_CLIENT_CTX(x) (((x) >> 63) & 1U)
+>>> +#define QCOMTEE_SANITIZE_OBJ_ID(x) ((x) & (BIT(63) - 1))
+>>> +
+>>>  /**
+>>>   * struct qcomtee - Main service struct.
+>>>   * @teedev: client device.
+>>> diff --git a/drivers/tee/qcomtee/qcomtee_object.h b/drivers/tee/qcomtee/qcomtee_object.h
+>>> index 8b4401ecad48..2528d07e4576 100644
+>>> --- a/drivers/tee/qcomtee/qcomtee_object.h
+>>> +++ b/drivers/tee/qcomtee/qcomtee_object.h
+>>> @@ -146,6 +146,7 @@ static inline int qcomtee_args_len(struct qcomtee_arg *args)
+>>>   * struct qcomtee_object_invoke_ctx - QTEE context for object invocation.
+>>>   * @ctx: TEE context for this invocation.
+>>>   * @flags: flags for the invocation context.
+>>> + * @kernel_ctx: flag that indicates this context is owned by a kernel client.
+>>>   * @errno: error code for the invocation.
+>>>   * @object: current object invoked in this callback context.
+>>>   * @u: array of arguments for the current invocation (+1 for ending arg).
+>>> @@ -158,6 +159,7 @@ static inline int qcomtee_args_len(struct qcomtee_arg *args)
+>>>  struct qcomtee_object_invoke_ctx {
+>>>  	struct tee_context *ctx;
+>>>  	unsigned long flags;
+>>> +	bool kernel_ctx;
+>>>  	int errno;
+>>>  
+>>>  	struct qcomtee_object *object;
+>>> @@ -172,13 +174,15 @@ struct qcomtee_object_invoke_ctx {
+>>>  };
+>>>  
+>>>  static inline struct qcomtee_object_invoke_ctx *
+>>> -qcomtee_object_invoke_ctx_alloc(struct tee_context *ctx)
+>>> +qcomtee_object_invoke_ctx_alloc(struct tee_context *ctx, bool kernel_ctx)
+>>>  {
+>>>  	struct qcomtee_object_invoke_ctx *oic;
+>>>  
+>>>  	oic = kzalloc_obj(*oic);
+>>> -	if (oic)
+>>> +	if (oic) {
+>>>  		oic->ctx = ctx;
+>>> +		oic->kernel_ctx = kernel_ctx;
+>>> +	}
+>>>  	return oic;
+>>>  }
+>>>  
+>>> diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+>>> index ef9642d72672..7f986d7fb47f 100644
+>>> --- a/drivers/tee/tee_core.c
+>>> +++ b/drivers/tee/tee_core.c
+>>> @@ -706,6 +706,10 @@ static int tee_ioctl_object_invoke(struct tee_context *ctx,
+>>>  			goto out;
+>>>  	}
+>>>  
+>>> +	/* Userspace object-ids are restricted to 32-bits. */
+>>> +	if (arg.id > U32_MAX)
+>>> +		return -EINVAL;
+>>> +
+>>
+>> This change belongs to tee SS, move it to a separate commit with appropriate message.
+> 
+> Ack.
+> 
+> Regards,
+> Harshal
+>>
+>>>  	rc = ctx->teedev->desc->ops->object_invoke_func(ctx, &arg, params);
+>>>  	if (rc)
+>>>  		goto out;
+>>>
+>>
+>> Regards,
+>> Amir
+>>
+> 
+
