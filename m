@@ -4,941 +4,315 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 449F6C4451C
-	for <op-tee@archiver.kernel.org>; Wed, 22 Jul 2026 07:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 983FAC44533
+	for <op-tee@archiver.kernel.org>; Wed, 22 Jul 2026 08:27:04 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7A936451A3
-	for <op-tee@archiver.kernel.org>; Wed, 22 Jul 2026 07:02:24 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 95F8344F1A
+	for <op-tee@archiver.kernel.org>; Wed, 22 Jul 2026 08:27:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1784703744;
-	bh=LosjvZDIaSYjB3Gq/q9l/AWJ3RurWA5UZWsVfICp0jM=;
-	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1784708823;
+	bh=NLQKFArajH94tZtPgTIE0gUJwL1+IPxwWTKo6HsqFwM=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=4qHUXrJm2CoZkhQkqTFi/aOad+fXyYHZxmwEtiHcXsI/rlYy8d27gh78/VybN+/BO
-	 YsSeAxOgqv831zbrEsSvphe4yMGnQU2y0rrNnl4fywO/gMpixOXjpRq+jKkddN2QSm
-	 GGgS5FDwnbhM1VkssFvXLOiFFh6LIScDnrhEUydAZkLAJd42Hi1tIuGoFPiOlyOUS1
-	 t8x5bBksrlUMpdMITyj+LjMoZouJb2V2iLdFKS0eiBOBwuHnA75r89aOoi/qaNfpW1
-	 1ooseIx4TTwPIW0wgRNhyOBeroZga9h/bj01diI58L1przl9aaS1RxfBGYbj1wIQfk
-	 vhOMSByWGA9qA==
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id A4774450DE
-	for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 07:00:08 +0000 (UTC)
+	b=4TZ2KS7wlqCItvlVA2p6so7GI9FZNLMFB9nawaGOJpoZawm948f/ScUw+z4YOwnoI
+	 ia3xNAJJ18Tt9QC5D25t8AQ6p+WfgYA5vdWJXWzxg6vgIdNRgn7FwsvROOTGJ47K5v
+	 voyFP2oenXanqEe1tAai8NprJHXUx3bvFm3yAiz29eEdIr9TbzAWYV+i2L157yQN2Y
+	 jSRchGZMqP4GF00cz8PSmUNYxuDubGXxEPjQbx2u/pa287g23uKRzNfkzh9l4R0HtE
+	 CKcsSlD3Y+BrqVA78BDLqsRFHMIMKasuReNMxRNWvT8RrINrnVKUQt1UYig6gAKyh2
+	 V5C63at1SZ+eA==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B76FE43818
+	for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 08:26:56 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=F7dEPz1m;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Y0NOP56A;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Z5A7sXnh;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=G8pMhKFT;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M53lcN4027336
-	for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 07:00:07 GMT
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M8GiKR302591
+	for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 08:26:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	9PuxTn6tqXxb1UzBUrLi98bIB+U0tB5y7IeqUgq/+Zo=; b=F7dEPz1m5gjDttwk
-	pJbhI7KpMPUUrvIHLIyrKr3fGKVUvkJHJC/Vcw7ZILPm85sk6OmU/6MZ1PYkyn7G
-	jX9NaW2P7KxqlfWnsFE3sYmjJWkbOyncPuSbQUY744zokQg7/jrr+bCdg5A1WvfC
-	SrqMphAcEthUsD+gdknhVUNnr5cMk5OEKAESxcgJemY1lz2dA9sQfMpOUXMlWePn
-	zGXd7HZnw6pHvM0jh+OQdH7twcEek1a2SnThgnNsmrr6Kq9dchF6KTuvMJRGXKMa
-	s6vXAvacWatqROEwGEDXEIhk3WjRHCmAWimY0fTl2UM12iAr6b0I5IG8gtx6XkcJ
-	R25Wqg==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fj9bsbyse-1
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=b8PrbCTjo875NEYFMM6d6TIP
+	iQeoWqfr7uJWThGFKkY=; b=Z5A7sXnh/uGzj80jumYnX3bUbMVUs4CnL9WnmM8f
+	Jwr9BYQi7FTCymzGV+yD08w4NsIBTF4pPwrFBWQrayM4NL0YrqTI4//WeQ6nz+3R
+	flBAkcMUMiMSuCleSI4Z3yUcTCki7XJ3g5tnY1ruEj53qFyM6SHlw7EYk8MXEtSD
+	jTDMjSkcLeg+KSFhGszblgmwAK5/tcxq1QNlhURpkP9J1mt2xhN4E/zbvtmoCu7A
+	G6TDCVRTHwKkmbtWK/WR2ErOT1/cH+RaK7J+qWZYGXa6iBzVRreZExhi/ep8Rd7X
+	1AEisWYnhAaOwzNdZ7CpD7VS80JcrVYLn6ou0QtL+hujKw==
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fjt79818d-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 07:00:07 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2ccd1958e8fso123698035ad.2
-        for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 00:00:07 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 08:26:56 +0000 (GMT)
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-51a87ef9713so85445521cf.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 22 Jul 2026 01:26:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784703607; x=1785308407; darn=lists.trustedfirmware.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=9PuxTn6tqXxb1UzBUrLi98bIB+U0tB5y7IeqUgq/+Zo=;
-        b=Y0NOP56AOKnrMZhFxNlzABCjHNfjocjajcGfTUGomTVa+qOehLXkFtvzWPaO3wbCXo
-         DpYtxECAqb9W4m0XckhmYKOGsbOXs+dvAaPCiNa3i+GyQFeC8zXlyVrvyc5omx2vMSnX
-         +hvaItkaAhxlL/bzI7HZ8CEYZD2QQKCC37XaB56ZgKFN9Gq4IoiOdjTp7rt8FuDCKNF3
-         +rQPnIDJv31T5W7F+C5KgUCBQCrfcxYXEJxj8EamMpaEjZmZk7+4qPe+5ZAaXRLToFkD
-         T9g6GkCidslJDc60ThW0bNm4W8a7LKj/VSrzWiQKEF01X1mHcJUQLIdsm5vz2DvovuST
-         9dAA==
+        d=oss.qualcomm.com; s=google; t=1784708815; x=1785313615; darn=lists.trustedfirmware.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=b8PrbCTjo875NEYFMM6d6TIPiQeoWqfr7uJWThGFKkY=;
+        b=G8pMhKFTtLAYmVh39sUPIt+fsGpdWTvQnsmOSmWBTXSUWgY3aulMrcAc8uLrqK0kEm
+         HEg8wl8KWaPZvmlE2rq1rrM6UH8L0fXGIS5wEWBDqB3g0piiDQ2/x/xy8YlQ4WzqRja3
+         Cpz7tfp/SR2H75dRSiLhOGXMuzyaqu+Y/VlYezgt+uxJdp1HhXgPvE8vhUsCawEHkCL9
+         YwYt8lHU04+daeC48cK+T7uxTzLu8vvMEZMqlLVTWNbkvgzbp/tZ+IOwhSxdSLRqQ12n
+         EPQrorYArc6DOLdO11z3/RsUR4laL+6TYWAM+WgurrER3SP4u9HiBBM6g0IiPE1k6BmK
+         Wufg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784703607; x=1785308407;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
+        d=1e100.net; s=20251104; t=1784708815; x=1785313615;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=9PuxTn6tqXxb1UzBUrLi98bIB+U0tB5y7IeqUgq/+Zo=;
-        b=OXeQ26lb/M9qWZMq78opKMbB2I6KopIGRrNKi9hUStAi2W6vYvCJANoh98Eor/d7CC
-         wRO2m9vmSGrMC0DaZI52bL2azWc9xe1uTFt6tcnlobwtHkNWqA0D6d3BgU0LbTgtfIC/
-         i61pEFXVDivolwH5h1uMtlprg9LyyBY6+7xmL9BRztyLG7Fb6XaSGe8Y2e8Z2HYcggTd
-         rIga95kNAaXL9u2c3GWiObWOTkn0in2i1OoPz9eTW+4n8oK/f0g3+EEpIdiQyBJzTz+J
-         ZQfITVtHssrsvX+0Zsl12qVFg0G0apQWDBDNjD9BqgNvJyc1JDd64MvEQYUF7PYw3yml
-         AnUA==
-X-Forwarded-Encrypted: i=1; AHgh+RrDguAdvlMiKmefze1wU5XLEyTuNHJ1KCi6DaeiYnUHvYHvamdxcewTf+eIqJ7oOt5ghjCfgso=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzhEEQFTXIdWkGf+CcHHz3Gw6rXfX01WNjHJN/eJHUuyqD7xR61
-	vJMCIb2tpA7kdWpCBY489mFV7x8EtQApqbYfk/mjKAfePW+UXuPkmMlhyTbLRPDPtvFIN+xVjI7
-	73t2qs2TVbeUgFicfx2yBbRi5w9huF1NKmZ0oAo9kEPYVRIFNvJ0/PbBtbBJ2X9hAVvufGTexIE
-	pLIdGj
-X-Gm-Gg: AR+sD10uQM1keKni+mZdmAgp20XnR/6eCsy4wqhHh+GpvxDOukDA654ujUbS+Sy9QLN
-	CtgsqaJoZaxnKv1OzGc3RcD9nS/iXLAPfGgNDsZRCiQ6SPxMk3ncxoi0myqLH3jMi6Q9BDMeqQd
-	xcfwkIvpl3w1/QQyIW1nwy0W8QF42ET9LWg/qu0qiIB9pewhe5Im50KTusZBEVilUJMUVOHU2UQ
-	gu0z7jbvvczN6DoZhuzQgsSahCa69CoTkgHz2Y2alPvKdTL1AXgXDhMso3i7zqikbGh6vLaLEqT
-	cU6dqQ6G1uceW1urmnsP6k8zrnRUx9pDCHIJq4682wJN1+4SfS/tmWQe1XPB8fJbZMBgt/iUaD+
-	KRrihppwuN4ccFXiass/QsahNFQ==
-X-Received: by 2002:a17:902:d2ce:b0:2c9:e2c1:4fb5 with SMTP id d9443c01a7336-2cf34997962mr232058415ad.22.1784703606338;
-        Wed, 22 Jul 2026 00:00:06 -0700 (PDT)
-X-Received: by 2002:a17:902:d2ce:b0:2c9:e2c1:4fb5 with SMTP id d9443c01a7336-2cf34997962mr232057865ad.22.1784703605648;
-        Wed, 22 Jul 2026 00:00:05 -0700 (PDT)
-Received: from hu-hdev-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf8efd88f7sm9428935ad.22.2026.07.22.00.00.00
+        bh=b8PrbCTjo875NEYFMM6d6TIPiQeoWqfr7uJWThGFKkY=;
+        b=VGkdTEr91fKBW4wWdd7+q9wH2sgNazOBaNNpR48c3o/Z0g/uMqAkuLJH8FPz/GIxpb
+         nMqtS5z8VJAm0NmbneOYoIdBkUf41VrXvEn9kFui3/7uGLgjCSi9EMHXwenA1Fo2n5iC
+         2Md4np8l+6QHNxLpDDf4/MUZyj2V4ue09YrONZ+/tlTQ8UpA5eczoalzFeSHK1JIN2FO
+         JgO7m+VFrRTq1y+cVZFH0liOo1LvRpdNMejLw5c6M0vhtY9+cFEFDLx1Xf1YZugitK6o
+         ogx0hGGz5ZkhnlSUQpHuxMQV2VNVuwtD9AQreqm32m1M60cbpNxsLOFH3x0EM+YxB3Za
+         oDgQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrvgGf/7nWom+pwQY7jJDW6CDLK2chCw3n4zyhpkfE2t6KN71qozOipaLnpTKIh+f4hLS2NOdI=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YzispbRXHx40HXVQsDJDuUGfOyHSLABjzRgzdnWwfRVRvk9dUpy
+	Dm43cemq71PJz68vjMJlVXzIyT8e3++qSm03O74fXR/yfLmJtfgrsqIGUsfqOlBIUkg42GjxtKR
+	65Gvld1GeKxo05cSJo/5LBmev3OKDIWA8GRP43ugBBlNBelVPVYgL6cj9i6YpXswhK0B3o64G
+X-Gm-Gg: AR+sD10FpkwA688mKtCoZnrIuaTpxr6HLwNcJY8dvqMK8UG250N7DpUuk4hm5wCbo9O
+	QYEy9cB3YgHtj8XAUuU/jY0uP9StcLV0yDwLqmNOhiht2Za4IB5ggTqLdGQWaYAFqtuc7KzqhoN
+	oUMWkpGO2qZjGaU2Mriw8+dT443vdwZzi8LkoE0nwsy13LImarrSNrV7GHu16xa02C5EYca3l6R
+	0pB+J8/QyavqahNb3vG1a6/5VpQCsJBoQAQlFLJrDXi6/l9Cblkx7wc8Ij/4sVKG20b81lCbPQR
+	pvxwdSeURDLKzGCYNoKzKGIcauF8GivCdDFb7Tp8WH160Ir7/twbIG8tYTvpyJ/keI+L60WnFyh
+	zczbkGDsK8iNiTrC1OORqKiAIcREayAovjOZizbYCnsJJK1Nv2RuxXu2EyRmPHx6e3xVAVjW8ad
+	Pd+Llt/GW0MS6wDA==
+X-Received: by 2002:a05:622a:1b8e:b0:527:7756:3ee9 with SMTP id d75a77b69052e-527a2cb3ca9mr31562851cf.0.1784708815396;
+        Wed, 22 Jul 2026 01:26:55 -0700 (PDT)
+X-Received: by 2002:a05:622a:1b8e:b0:527:7756:3ee9 with SMTP id d75a77b69052e-527a2cb3ca9mr31562661cf.0.1784708814900;
+        Wed, 22 Jul 2026 01:26:54 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b2a9e4534fsm335621e87.63.2026.07.22.01.26.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jul 2026 00:00:04 -0700 (PDT)
-Date: Wed, 22 Jul 2026 12:29:17 +0530
-Subject: [PATCH v2 6/6] firmware: qcom: Add support for TEE based EFI-var
- client driver
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260722-qcom_uefisecapp_migrate_qcomtee-v2-6-b8a8fcbe4211@oss.qualcomm.com>
+        Wed, 22 Jul 2026 01:26:53 -0700 (PDT)
+Date: Wed, 22 Jul 2026 11:26:51 +0300
+To: Harshal Dev <harshal.dev@oss.qualcomm.com>
+Subject: Re: [PATCH v2 0/6] Add TEE based client driver for UEFI Secure
+ Application
+Message-ID: <nfijwr2ptpxqvdw625yedep7tmakwvkeavyeobrmig5hbkw77w@rcqyp7h4y327>
 References: <20260722-qcom_uefisecapp_migrate_qcomtee-v2-0-b8a8fcbe4211@oss.qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20260722-qcom_uefisecapp_migrate_qcomtee-v2-0-b8a8fcbe4211@oss.qualcomm.com>
-To: Jens Wiklander <jens.wiklander@linaro.org>,
-        Jens Wiklander <jens.wiklander@oss.qualcomm.com>,
-        Sumit Garg <sumit.garg@kernel.org>,
-        Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784703569; l=26036;
- i=harshal.dev@oss.qualcomm.com; s=20251124; h=from:subject:message-id;
- bh=LosjvZDIaSYjB3Gq/q9l/AWJ3RurWA5UZWsVfICp0jM=;
- b=GL8Pd5NDBHbqi734JZA1eYHtk7R6u5+4cDNw052g8mCFumrKvTjv4P5BRtatR9Q3bq2pfmgrY
- /kVUyTjbnv7Ad7dvuoyuGMboF5fFMByZtbiiQmo45Qz8CIvDL/Mu5Y1
-X-Developer-Key: i=harshal.dev@oss.qualcomm.com; a=ed25519;
- pk=SHJ8K4SglF5t7KmfMKXl6Mby40WczSeLs4Qus7yFO7c=
-X-Proofpoint-ORIG-GUID: b_U3Ypr0JzKFW6UvjI5kxNVOHze2-q0V
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDA2MyBTYWx0ZWRfXysQcU241P0Mt
- +Gdd/KMFJJsgjhaXjcCQsfnIn0nzU16BQtLibOTqDHPJwBmV6yhLJzlTcWKhjAUK4C2hXrBMOAS
- 4adZldSLm7Zfx1HRQkNLUbcUBrNVpf6+kYGElp60XZJcGJjnQs/XlMFdO1i0rx9OsCbydS24AyG
- tryhNXW81D/3WORZCXclU9lkViHgIUAlnZtbFDyvwU7YZbVfX6PuMnfUmOPD6JakflMss347shV
- +69Pb8C3WV1tjHUH4KoAoLHorBgMwzoPndLil4tuBnQhRPOkZMFJBn10cMzrB412hMby7mtNXAE
- 7hutEeOejocjjYF5C7WGavgOXjpzlSQQw88CK2eUWlomQrvmGnZmEB1Ra+MMwhQjLGYZ2LHOiZ+
- UAOWGiGIIKgQwjtJ8v88G8l9wJuD7HKSyA9nCho7XcsqQbIIHVJ9eoCe+/8hr3FkubbaYCACaDB
- XDbg5Qq8uwhIwUG9pAg==
-X-Proofpoint-GUID: b_U3Ypr0JzKFW6UvjI5kxNVOHze2-q0V
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDA2MyBTYWx0ZWRfX7s1D9W/pshp7
- jezdqiv6iRy9KgTebolexUQoYr1qV5zld2ypfCYg/pjChzmJhwmTU+FE2NotubroqzE3ZGcQmLQ
- Rq8V23/IGTtmnAI5obj7GlGwPhCwTpU=
-X-Authority-Analysis: v=2.4 cv=QK1YgALL c=1 sm=1 tr=0 ts=6a606a77 cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=NEAV23lmAAAA:8 a=lX1A334Kam2MR8cuwK8A:9
- a=ZP9I4r549iL3ZUHD:21 a=QEXdDO2ut3YA:10 a=324X-CrmTo6CU4MGRt3R:22
+X-Authority-Analysis: v=2.4 cv=Sr6gLvO0 c=1 sm=1 tr=0 ts=6a607ed0 cx=c_pps
+ a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=NEAV23lmAAAA:8
+ a=EPKcpx9xAAAA:20 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=bb8mIWsUJEVNQjRnNgUA:9
+ a=CjuIK1q_8ugA:10 a=a_PwQJl-kcHnX1M80qC6:22 a=ZT_8zCgGubuJgGonBfBE:22
+X-Proofpoint-ORIG-GUID: U3MiZ8S5kQLCThKShlcz0A0voyxudHzG
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDA3OCBTYWx0ZWRfXzUThAGKe+UT/
+ NUlDIgJ01faiz+q52U04u6aXUhi4XeRI8bcwinmbUAPbzAgaNp1Blh9Boii/U/ouZhWftHYYTNO
+ phXLMs/GH4GxwGMmbBW5UkilkyC5V/GbWOF9yelZlJWlVpfttzoYX78ZY5pNDRe6Wy9ihjdHc+L
+ o9g2CKPTYqZK9s8wyxOksQ4dixCThsi0CCe/JM8weUN/x47bDS2tjppVeaVRM/41NjV5jOl52lu
+ D2EzUmLAHRyk0CeqxagICVSRCa3g/YNJnUunZtKhiD19bYHbjo5gadmEg9+jJ775a8irDXa5UQB
+ 1Ut70FEb2TOx8Hj05f0rkL/g13YmUU2BQOfTT5Q6tuMZ9oQ6jNKtXI1JeaZifELfhMPD/bTAr2n
+ jY62Hn2kENgD3hTvjsM5BOV9AdcWDk60zoQ1BTrfgV9K/DIHTphAV5WtANjbSnKGesMfgS3m7ae
+ RMXZuR+0lh+d+//Ci/w==
+X-Proofpoint-GUID: U3MiZ8S5kQLCThKShlcz0A0voyxudHzG
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDA3OCBTYWx0ZWRfX5BPUIo57IWzQ
+ oAD6oiOcAxlOUarWoQjCxoiCDcRpE4xmx8f/0unw9v9l5AaD4VbM9MB7lax3Pswnv2zmGeQ5PY0
+ QhUDMhQwjsFKai5p2YdqqINj12BKKjw=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-22_02,2026-07-21_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 phishscore=0 impostorscore=0 bulkscore=0
- suspectscore=0 clxscore=1015 adultscore=0 lowpriorityscore=0 malwarescore=0
+ malwarescore=0 suspectscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0
+ adultscore=0 clxscore=1015 impostorscore=0 phishscore=0 priorityscore=1501
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220063
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220078
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.10 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+X-Spamd-Result: default: False [-3.60 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[13];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TO_DN_SOME(0.00)[];
 	ARC_NA(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.199:received];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	MISSING_XM_UA(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.160.197:received];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
+	REDIRECTOR_URL(0.00)[shorturl.at];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	RCVD_COUNT_THREE(0.00)[4];
+	RCVD_TLS_LAST(0.00)[];
+	NEURAL_HAM(-0.00)[-0.998];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: A4774450DE
-X-Spamd-Bar: ------
-Message-ID-Hash: UXRA2MCFFWD43SJR5UAX7LFMSAF5E35D
-X-Message-ID-Hash: UXRA2MCFFWD43SJR5UAX7LFMSAF5E35D
-X-MailFrom: harshal.dev@oss.qualcomm.com
+X-Rspamd-Queue-Id: B76FE43818
+X-Spamd-Bar: ---
+Message-ID-Hash: OCTL64UO2CHZY5QQHRHLREKHOJXQOQTD
+X-Message-ID-Hash: OCTL64UO2CHZY5QQHRHLREKHOJXQOQTD
+X-MailFrom: dmitry.baryshkov@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Harshal Dev <harshal.dev@oss.qualcomm.com>
+CC: Jens Wiklander <jens.wiklander@oss.qualcomm.com>, Sumit Garg <sumit.garg@kernel.org>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UXRA2MCFFWD43SJR5UAX7LFMSAF5E35D/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OCTL64UO2CHZY5QQHRHLREKHOJXQOQTD/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Harshal Dev via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
+From: Dmitry Baryshkov via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
-On Qualcomm SoC based platforms, UEFI stores EFI variables within the
-Replay Protected Memory Block (RPMB) which is only accessible by the
-Qualcomm Trusted Execution Environment (QTEE).
+On Wed, Jul 22, 2026 at 12:29:11PM +0530, Harshal Dev wrote:
+> On Qualcomm SoC based platforms, UEFI stores EFI variables within the
+> Replay Protected Memory Block (RPMB) which is only accessible by the
+> Qualcomm Trusted Execution Environment (QTEE).
 
-For Qualcomm platforms without emulated RPMB support, specifically
-platforms where RPMB is not located within SPI-NOR storage and instead
-located on UFS/EMMC storage, non-volatile EFI variables can only be set via
-a callback request from the UEFI Trusted Application (TA) to the RPMB
-service running in user-space (within the QTEE supplicant).
+Is it so? I think RPMB is accessible to Linux...
 
-Unlike the QCOMTEE driver, the QSEECOM driver (used by the current
-uefisecapp client driver) does not support callback requests. And on
-certain Qualcomm platforms such as the RB3Gen2, attempts to access the
-QSEECOM interface fail due to lack of support within QTEE.
-On all such platforms, a TEE based uefisecapp client driver must be used to
-access cached/volatile EFI variables within the uefisecapp TA and ensure
-persistence of writes to non-volatile EFI variables through the RPMB
-service hosted in the QTEE supplicant.
+> For Qualcomm platforms without emulated RPMB support, specifically
 
-Add support for a TEE based uefisecapp client driver which installs efivar
-operations after obtaining an object reference to the uefisecapp service.
-This enables the kernel/user-space to access/modify both volatile EFI vars
-stored by the Secure Application (in-memory) and non-volatile ones stored
-within RPMB.
+What is emulated RPMB support? Why is it mentioned here? Which platforms
+use emulated RPMB?
 
-Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
----
- MAINTAINERS                                 |   7 +
- drivers/firmware/qcom/Kconfig               |  24 ++
- drivers/firmware/qcom/Makefile              |   1 +
- drivers/firmware/qcom/qcom_tee_uefisecapp.c | 525 ++++++++++++++++++++++++++++
- drivers/firmware/qcom/qcom_tee_uefisecapp.h | 120 +++++++
- 5 files changed, 677 insertions(+)
+> platforms where RPMB is not located within SPI-NOR storage and instead
+> located on UFS/EMMC storage, non-volatile EFI variables can only be set via
+> a callback request from the UEFI Secure Application to the RPMB service
+> running in user-space (within the QTEE supplicant [1]).
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 10d12b51b1f6..e8316007370f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22018,6 +22018,13 @@ L:	linux-arm-msm@vger.kernel.org
- S:	Maintained
- F:	drivers/firmware/qcom/qcom_qseecom_uefisecapp.c
- 
-+QUALCOMM TEE UEFISECAPP DRIVER
-+M:	Harshal Dev <harshal.dev@oss.qualcomm.com>
-+L:	linux-arm-msm@vger.kernel.org
-+S:	Maintained
-+F:	drivers/firmware/qcom/qcom_tee_uefisecapp.c
-+F:	drivers/firmware/qcom/qcom_tee_uefisecapp.h
-+
- QUALCOMM RMNET DRIVER
- M:	Subash Abhinov Kasiviswanathan <subash.a.kasiviswanathan@oss.qualcomm.com>
- M:	Sean Tranchetti <sean.tranchetti@oss.qualcomm.com>
-diff --git a/drivers/firmware/qcom/Kconfig b/drivers/firmware/qcom/Kconfig
-index b477d54b495a..20ce8b58e490 100644
---- a/drivers/firmware/qcom/Kconfig
-+++ b/drivers/firmware/qcom/Kconfig
-@@ -74,4 +74,28 @@ config QCOM_QSEECOM_UEFISECAPP
- 	  Select Y here to provide access to EFI variables on the aforementioned
- 	  platforms.
- 
-+config QCOM_TEE_UEFISECAPP
-+	tristate "Qualcomm TEE UEFI Secure App client driver"
-+	depends on QCOMTEE
-+	depends on EFI
-+	depends on !QCOM_QSEECOM_UEFISECAPP
-+	help
-+	  On Qualcomm SoC based platforms without emulated RPMB support,
-+	  specifically platforms where RPMB is not present within SPI-NOR storage
-+	  and instead located on UFS/EMMC storage, non-volatile EFI variables can
-+	  only be set via a callback request from the UEFI Secure Application to
-+	  the RPMB service running in user-space (within the QTEE supplicant:
-+	  github.com/qualcomm/minkipc). Unlike the QCOMTEE driver, the QSEECOM
-+	  driver used by the QSEECOM based uefisecapp does not support callback
-+	  requests. And so on these platforms, the TEE based uefisecapp client
-+	  driver must be used to ensure persistence of non-volatile EFI variables
-+	  via writes through the RPMB service hosted in the QTEE supplicant.
-+
-+	  This module provides a TEE client driver for uefisecapp, installing efivar
-+	  operations to allow the kernel and user-space access to EFI variables.
-+
-+	  Select m here to provide access to EFI variables on the aforementioned
-+	  platforms if your Linux distribution has QTEE supplicant installed and
-+	  running.
-+
- endmenu
-diff --git a/drivers/firmware/qcom/Makefile b/drivers/firmware/qcom/Makefile
-index 0be40a1abc13..d780490b2865 100644
---- a/drivers/firmware/qcom/Makefile
-+++ b/drivers/firmware/qcom/Makefile
-@@ -8,3 +8,4 @@ qcom-scm-objs += qcom_scm.o qcom_scm-smc.o qcom_scm-legacy.o
- obj-$(CONFIG_QCOM_TZMEM)	+= qcom_tzmem.o
- obj-$(CONFIG_QCOM_QSEECOM)	+= qcom_qseecom.o
- obj-$(CONFIG_QCOM_QSEECOM_UEFISECAPP) += qcom_qseecom_uefisecapp.o
-+obj-$(CONFIG_QCOM_TEE_UEFISECAPP) += qcom_tee_uefisecapp.o
-diff --git a/drivers/firmware/qcom/qcom_tee_uefisecapp.c b/drivers/firmware/qcom/qcom_tee_uefisecapp.c
-new file mode 100644
-index 000000000000..9a5a6f145a9f
---- /dev/null
-+++ b/drivers/firmware/qcom/qcom_tee_uefisecapp.c
-@@ -0,0 +1,525 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-+ */
-+
-+#include <linux/efi.h>
-+#include <linux/tee.h>
-+#include <linux/tee_drv.h>
-+#include <linux/ucs2_string.h>
-+#include "qcom_tee_uefisecapp.h"
-+
-+static struct qcomtee_uefisec_app uefisec_app;
-+
-+static int qcuefi_get_variable(struct tee_param_ubuf in_variable, efi_guid_t *guid,
-+			       struct tee_param_ubuf in_attributes,
-+			       struct tee_param_ubuf *data,
-+			       u32 *out_attributes, u32 *out_errno)
-+{
-+	int ret;
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+	u64 obj_id = uefisec_app.uefisec_svc_obj.id;
-+	u32 nparams = 5;
-+	struct tee_param param[nparams];
-+
-+	struct {
-+		efi_guid_t guid;
-+		u32 in_data_size;
-+	} in_cong = { 0 };
-+
-+	struct {
-+		u32 out_data_size;
-+		u32 attributes;
-+		u32 errno;
-+	} out_cong = { 0 };
-+
-+	in_cong.guid = *guid;
-+	in_cong.in_data_size = data->size;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	SET_INVOKE_ARG(inv_arg, obj_id, QCOMTEE_UEFI_SEC_OP_GET_VAR, nparams);
-+	SET_TEE_PARAM_UBUF(param[0], UBUF_INPUT, TEE_PARAM_UBUF(in_cong));
-+	SET_TEE_PARAM_UBUF(param[1], UBUF_INPUT, in_variable);
-+	SET_TEE_PARAM_UBUF(param[2], UBUF_INPUT, in_attributes);
-+	SET_TEE_PARAM_UBUF(param[3], UBUF_OUTPUT, TEE_PARAM_UBUF(out_cong));
-+	SET_TEE_PARAM_UBUF(param[4], UBUF_OUTPUT, *data);
-+
-+	ret = tee_client_object_invoke_func(uefisec_app.ctx, &inv_arg, param);
-+	if (ret < 0 || inv_arg.ret != 0) {
-+		dev_err(uefisec_app.dev, "QCOMTEE_UEFI_SEC_OP_GET_VAR invoke ret: %d, err: 0x%x\n",
-+			ret, inv_arg.ret);
-+		return ret ?: inv_arg.ret;
-+	}
-+
-+	data->size = out_cong.out_data_size;
-+	*out_attributes = out_cong.attributes;
-+	*out_errno = out_cong.errno;
-+
-+	return ret;
-+}
-+
-+static efi_status_t qcomtee_uefi_get_variable(efi_char16_t *name, efi_guid_t *guid,
-+					      u32 *attr, unsigned long *data_size,
-+					      void *data)
-+{
-+	int ret;
-+	u32 in_attr, out_attributes, out_errno;
-+	struct tee_param_ubuf in_data, in_var, in_attributes;
-+
-+	if (!name || !guid)
-+		return EFI_INVALID_PARAMETER;
-+
-+	/* 'attr' can be NULL, however an input attribute is always expected
-+	 * by UefiSecApp TA
-+	 */
-+	in_attr = 0;
-+	if (attr)
-+		in_attr = *attr;
-+
-+	in_data = (struct tee_param_ubuf){ .addr = data, *data_size };
-+	in_var = (struct tee_param_ubuf){ .addr = name,
-+					  (ucs2_strlen(name) + 1) * sizeof(*name) };
-+	in_attributes = (struct tee_param_ubuf){ .addr = &in_attr, sizeof(u32) };
-+
-+	/* On SUCCESS, 'data' member of 'in_data' has already been updated. */
-+	ret = qcuefi_get_variable(in_var, guid, in_attributes, &in_data,
-+				  &out_attributes, &out_errno);
-+
-+	if (ret)
-+		return EFI_DEVICE_ERROR;
-+
-+	if (!out_errno || out_errno == QCOMTEE_UEFI_SEC_ERROR_SIZE_OUT) {
-+		/* If 'attr' is NULL 'out_attributes' is not updated. */
-+		if (attr)
-+			*attr = out_attributes;
-+
-+		*data_size = in_data.size;
-+	}
-+
-+	return uefisecapp_err_to_efi_status(out_errno);
-+}
-+
-+static int qcuefi_set_variable(struct tee_param_ubuf in_variable, efi_guid_t *guid,
-+			       u32 attributes, struct tee_param_ubuf data,
-+			       u32 *out_errno)
-+{
-+	int ret;
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+	u64 obj_id = uefisec_app.uefisec_svc_obj.id;
-+	u32 nparams = 4;
-+	struct tee_param param[nparams];
-+
-+	struct {
-+		efi_guid_t guid;
-+		u32 attributes;
-+		u32 in_data_size;
-+	} in_cong = { 0 };
-+
-+	in_cong.guid = *guid;
-+	in_cong.attributes = attributes;
-+	in_cong.in_data_size = data.size;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	SET_INVOKE_ARG(inv_arg, obj_id, QCOMTEE_UEFI_SEC_OP_SET_VAR, nparams);
-+	SET_TEE_PARAM_UBUF(param[0], UBUF_INPUT, TEE_PARAM_UBUF(in_cong));
-+	SET_TEE_PARAM_UBUF(param[1], UBUF_INPUT, in_variable);
-+	SET_TEE_PARAM_UBUF(param[2], UBUF_INPUT, data);
-+	SET_TEE_PARAM_UBUF(param[3], UBUF_OUTPUT, TEE_PARAM_UBUF(*out_errno));
-+
-+	ret = tee_client_object_invoke_func(uefisec_app.ctx, &inv_arg, param);
-+	if (ret < 0 || inv_arg.ret != 0) {
-+		dev_err(uefisec_app.dev, "QCOMTEE_UEFI_SEC_OP_SET_VAR invoke ret: %d, err: 0x%x\n",
-+			ret, inv_arg.ret);
-+		return ret ?: inv_arg.ret;
-+	}
-+
-+	return ret;
-+}
-+
-+static efi_status_t qcomtee_uefi_set_variable(efi_char16_t *name, efi_guid_t *guid,
-+					      u32 attr, unsigned long data_size,
-+					      void *data)
-+{
-+	int ret;
-+	u32 out_errno;
-+	struct tee_param_ubuf in_data, in_var;
-+
-+	if (!name || !guid)
-+		return EFI_INVALID_PARAMETER;
-+
-+	in_data = (struct tee_param_ubuf){ .addr = data, data_size };
-+	in_var = (struct tee_param_ubuf){ .addr = name,
-+					  (ucs2_strlen(name) + 1) * sizeof(*name) };
-+
-+	ret = qcuefi_set_variable(in_var, guid, attr, in_data, &out_errno);
-+	if (ret)
-+		return EFI_DEVICE_ERROR;
-+
-+	return uefisecapp_err_to_efi_status(out_errno);
-+}
-+
-+static int qcuefi_get_next_variable(struct tee_param_ubuf in_variable, efi_guid_t *guid,
-+				    struct tee_param_ubuf *out_variable,
-+				    efi_guid_t *out_vendor_guid, u32 *out_errno)
-+{
-+	int ret;
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+	u64 obj_id = uefisec_app.uefisec_svc_obj.id;
-+	u32 nparams = 4;
-+	struct tee_param param[nparams];
-+
-+	struct {
-+		efi_guid_t guid;
-+		u32 in_data_size;
-+	} in_cong = { 0 };
-+
-+	struct {
-+		efi_guid_t guid;
-+		u32 out_data_size;
-+		u32 errno;
-+	} out_cong = { 0 };
-+
-+	/* Pass size of available buffer */
-+	in_cong.in_data_size = out_variable->size;
-+	in_cong.guid = *guid;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	SET_INVOKE_ARG(inv_arg, obj_id, QCOMTEE_UEFI_SEC_OP_GET_NEXT_VAR_NAME, nparams);
-+	SET_TEE_PARAM_UBUF(param[0], UBUF_INPUT, TEE_PARAM_UBUF(in_cong));
-+	SET_TEE_PARAM_UBUF(param[1], UBUF_INPUT, in_variable);
-+	SET_TEE_PARAM_UBUF(param[2], UBUF_OUTPUT, TEE_PARAM_UBUF(out_cong));
-+	SET_TEE_PARAM_UBUF(param[3], UBUF_OUTPUT, *out_variable);
-+
-+	ret = tee_client_object_invoke_func(uefisec_app.ctx, &inv_arg, param);
-+	if (ret < 0 || inv_arg.ret != 0) {
-+		dev_err(uefisec_app.dev, "QCOMTEE_UEFI_SEC_OP_GET_NEXT_VAR_NAME invoke ret: %d, err: 0x%x\n",
-+			ret, inv_arg.ret);
-+		return ret ?: inv_arg.ret;
-+	}
-+
-+	/* UefiSecApp TA does not touch 'out_variable.size'. Update it here.
-+	 * On SUCCESS (!out_errno), 'out_data_size' is length of name in 'out_variable.addr'.
-+	 * On failure (out_errno == QCOMTEE_UEFI_SEC_ERROR_SIZE_OUT), 'out_data_size' is
-+	 * actual name length.
-+	 * Otherwise, it's undefined.
-+	 */
-+	out_variable->size = out_cong.out_data_size;
-+	*out_vendor_guid = out_cong.guid;
-+	*out_errno = out_cong.errno;
-+
-+	return ret;
-+}
-+
-+static efi_status_t qcomtee_uefi_get_next_variable(unsigned long *name_size,
-+						   efi_char16_t *name,
-+						   efi_guid_t *guid)
-+{
-+	int ret;
-+	u32 out_errno;
-+	efi_guid_t out_guid;
-+	struct tee_param_ubuf in_var, out_var;
-+
-+	if (!name_size || !name || !guid)
-+		return EFI_INVALID_PARAMETER;
-+
-+	if (*name_size == 0)
-+		return EFI_INVALID_PARAMETER;
-+
-+	/* For 'in_var', 'name_size' is not necessarily size of 'name';
-+	 * could be size of buffer where 'name' has been stored. TA expects a
-+	 * NULL-terminated string in 'name' and ignores the size.
-+	 * For 'out_var', 'name_size' is size of buffer pointed by 'name'.
-+	 */
-+	in_var = (struct tee_param_ubuf){ .addr = name, *name_size };
-+	out_var = (struct tee_param_ubuf){ .addr = name, *name_size };
-+
-+	ret = qcuefi_get_next_variable(in_var, guid, &out_var, &out_guid,
-+				       &out_errno);
-+	if (ret)
-+		return EFI_DEVICE_ERROR;
-+
-+	if (!out_errno)
-+		*guid = out_guid;
-+
-+	if (!out_errno || out_errno == QCOMTEE_UEFI_SEC_ERROR_SIZE_OUT)
-+		*name_size = out_var.size;
-+
-+	/* On SUCCESS, 'name' stores the next variable name. */
-+	return uefisecapp_err_to_efi_status(out_errno);
-+}
-+
-+static int qcuefi_query_variable_info(u32 attributes,
-+				      u64 *maximum_variable_storage_size,
-+				      u64 *remaining_variable_storage_size,
-+				      u64 *maximum_variable_size, u32 *out_errno)
-+{
-+	int ret;
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+	u64 obj_id = uefisec_app.uefisec_svc_obj.id;
-+	u32 nparams = 2;
-+	struct tee_param param[nparams];
-+
-+	struct {
-+		u64 max_var_storage_size;
-+		u64 remaining_var_storage_size;
-+		u64 maximum_var_size;
-+		u32 errno;
-+	} out_cong = { 0 };
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	SET_INVOKE_ARG(inv_arg, obj_id, QCOMTEE_UEFI_SEC_OP_QUERY_VAR_INFO, nparams);
-+	SET_TEE_PARAM_UBUF(param[0], UBUF_INPUT, TEE_PARAM_UBUF(attributes));
-+	SET_TEE_PARAM_UBUF(param[1], UBUF_OUTPUT, TEE_PARAM_UBUF(out_cong));
-+
-+	ret = tee_client_object_invoke_func(uefisec_app.ctx, &inv_arg, param);
-+	if (ret < 0 || inv_arg.ret != 0) {
-+		dev_err(uefisec_app.dev, "QCOMTEE_UEFI_SEC_OP_QUERY_VAR_INFO invoke ret: %d, err: 0x%x\n",
-+			ret, inv_arg.ret);
-+		return ret ?: inv_arg.ret;
-+	}
-+
-+	*maximum_variable_storage_size = out_cong.max_var_storage_size;
-+	*remaining_variable_storage_size = out_cong.remaining_var_storage_size;
-+	*maximum_variable_size = out_cong.maximum_var_size;
-+	*out_errno = out_cong.errno;
-+
-+	return ret;
-+}
-+
-+static efi_status_t qcomtee_uefi_query_variable_info(u32 attr, u64 *storage_space,
-+						     u64 *remaining_space,
-+						     u64 *max_variable_size)
-+{
-+	int ret;
-+	u32 out_errno;
-+	u64 maximum_variable_storage_size;
-+	u64 remaining_variable_storage_size;
-+	u64 maximum_variable_size;
-+
-+	if (!storage_space || !remaining_space || !max_variable_size)
-+		return EFI_INVALID_PARAMETER;
-+
-+	ret = qcuefi_query_variable_info(attr,
-+					 &maximum_variable_storage_size,
-+					 &remaining_variable_storage_size,
-+					 &maximum_variable_size,
-+					 &out_errno);
-+
-+	if (ret)
-+		return EFI_DEVICE_ERROR;
-+
-+	if (!out_errno) {
-+		*storage_space = maximum_variable_storage_size;
-+		*remaining_space = remaining_variable_storage_size;
-+		*max_variable_size = maximum_variable_size;
-+	}
-+
-+	return uefisecapp_err_to_efi_status(out_errno);
-+}
-+
-+/**
-+ * qcomtee_release_object() - Release an object returned by QTEE.
-+ *
-+ * Each object returned by QTEE repesents a secure service exposed to the
-+ * client. Whenever an secure service is opened, QTEE may allocate resources
-+ * on the client's behalf. Therefore, once the client is done accessing the
-+ * secure service, the object representing it should be explicitly released
-+ * so that QTEE can release the associated resources as well.
-+ *
-+ * @ctx: TEE context.
-+ * @object: The object to release.
-+ */
-+static void qcomtee_release_object(struct tee_context *ctx,
-+				   struct tee_param_objref object)
-+{
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	SET_INVOKE_ARG(inv_arg, object.id, QCOMTEE_MSG_OBJECT_OP_RELEASE, 0);
-+	tee_client_object_invoke_func(ctx, &inv_arg, NULL);
-+}
-+
-+/**
-+ * qcomtee_get_uefisec_svc_obj() - Get a UEFI Secure App service object to
-+ * begin communication with the service.
-+ * @ctx: TEE context.
-+ * @client_env_obj: The client environment object returned earlier by QTEE.
-+ * @uefisec_svc_obj: The UEFI Secure App service object.
-+ *
-+ * Returns 0 on success.
-+ * Returns < 0 if client environment object invocation failed.
-+ * Returns > 0 if client environment invocation was success but UEFI Secure App
-+ * service object could not be returned for some other reason (represented by the
-+ * returned value)
-+ */
-+static int qcomtee_get_uefisec_svc_obj(struct tee_context *ctx,
-+				       struct tee_param_objref client_env_obj,
-+				       struct tee_param_objref *uefisec_svc_obj)
-+{
-+	int ret;
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+	u64 obj_id = client_env_obj.id;
-+	u32 nparams = 2;
-+	struct tee_param param[nparams];
-+	u32 uefisec_uid = QCOMTEE_UEFI_SEC_UID;
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	SET_INVOKE_ARG(inv_arg, obj_id, QCOMTEE_OP_CLIENT_ENV_OPEN, nparams);
-+	SET_TEE_PARAM_UBUF(param[0], UBUF_INPUT, TEE_PARAM_UBUF(uefisec_uid));
-+	SET_TEE_PARAM_OBJREF(param[1], OBJREF_OUTPUT, 0, 0);
-+
-+	ret = tee_client_object_invoke_func(ctx, &inv_arg, param);
-+	if (ret < 0 || inv_arg.ret != 0) {
-+		dev_err(uefisec_app.dev, "QCOMTEE_CLIENT_ENV_OPEN invoke ret: %d, err: 0x%x\n",
-+			ret, inv_arg.ret);
-+		return ret ?: inv_arg.ret;
-+	}
-+
-+	*uefisec_svc_obj = param[1].u.objref;
-+	return ret;
-+}
-+
-+/**
-+ * qcomtee_get_client_env_obj() - Get a client environment object to begin
-+ * object exchange with QTEE.
-+ * @ctx: TEE context.
-+ * @client_env_obj: The client environment object returned by QTEE.
-+ *
-+ * Returns 0 on success.
-+ * Returns < 0 if root object invocation failed.
-+ * Returns > 0 if root object invocation was success but client environment
-+ * object could not be returned for some other reason (represented by the
-+ * returned value)
-+ */
-+static int qcomtee_get_client_env_obj(struct tee_context *ctx,
-+				      struct tee_param_objref *client_env_obj)
-+{
-+	int ret;
-+	struct tee_ioctl_object_invoke_arg inv_arg;
-+	u32 nparams = 2;
-+	struct tee_param param[nparams];
-+
-+	memset(&inv_arg, 0, sizeof(inv_arg));
-+	memset(&param, 0, sizeof(param));
-+
-+	SET_INVOKE_ARG(inv_arg, TEE_OBJREF_NULL,
-+		       QCOMTEE_ROOT_OP_REG_WITH_CREDENTIALS, nparams);
-+	SET_TEE_PARAM_OBJREF(param[0], OBJREF_INPUT, TEE_OBJREF_NULL, 0);
-+	SET_TEE_PARAM_OBJREF(param[1], OBJREF_OUTPUT, 0, 0);
-+
-+	ret = tee_client_object_invoke_func(ctx, &inv_arg, param);
-+	if (ret < 0 || inv_arg.ret != 0) {
-+		dev_err(uefisec_app.dev, "QCOMTEE_ROOT_OP_REG_WITH_CREDENTIALS invoke ret: %d, err: 0x%x\n",
-+			ret, inv_arg.ret);
-+		return ret ?: inv_arg.ret;
-+	}
-+
-+	*client_env_obj = param[1].u.objref;
-+	return ret;
-+}
-+
-+static const struct efivar_operations qcom_efivar_ops = {
-+	.get_variable = qcomtee_uefi_get_variable,
-+	.set_variable = qcomtee_uefi_set_variable,
-+	.get_next_variable = qcomtee_uefi_get_next_variable,
-+	.query_variable_info = qcomtee_uefi_query_variable_info,
-+};
-+
-+static int qcomtee_ctx_match(struct tee_ioctl_version_data *ver,
-+			     const void *data)
-+{
-+	return (ver->impl_id == TEE_IMPL_ID_QTEE);
-+}
-+
-+static int qcomtee_uefisecapp_probe(struct tee_client_device *tee_dev)
-+{
-+	int ret, err;
-+	struct tee_param_objref client_env_obj;
-+	struct tee_param_objref uefisec_svc_obj;
-+
-+	uefisec_app.dev = &tee_dev->dev;
-+	/* Open context with QCOMTEE driver */
-+	uefisec_app.ctx = tee_client_open_context(NULL, qcomtee_ctx_match, NULL,
-+						  NULL);
-+	if (IS_ERR(uefisec_app.ctx))
-+		return -ENODEV;
-+
-+	/* Obtain a reference to client_env object to begin object exchange
-+	 * with QTEE
-+	 */
-+	ret = qcomtee_get_client_env_obj(uefisec_app.ctx, &client_env_obj);
-+	if (ret) {
-+		err = -EINVAL;
-+		goto err_get_client_env;
-+	}
-+
-+	/* Obtain a reference to the uefisec_svc object which provides access to
-+	 * the EFI var storage.
-+	 */
-+	ret = qcomtee_get_uefisec_svc_obj(uefisec_app.ctx, client_env_obj,
-+					  &uefisec_svc_obj);
-+	if (ret) {
-+		err = -EINVAL;
-+		goto err_get_uefisec_svc;
-+	}
-+	uefisec_app.uefisec_svc_obj = uefisec_svc_obj;
-+
-+	ret = efivars_register(&uefisec_app.efivars, &qcom_efivar_ops);
-+	if (ret) {
-+		err = ret;
-+		goto err_efi_vars_reg;
-+	}
-+
-+	/* We don't need to keep a reference to this object anymore, we only
-+	 * needed it to obtain the uefisec_svc object.
-+	 */
-+	qcomtee_release_object(uefisec_app.ctx, client_env_obj);
-+	return 0;
-+
-+err_efi_vars_reg:
-+	qcomtee_release_object(uefisec_app.ctx, uefisec_svc_obj);
-+err_get_uefisec_svc:
-+	qcomtee_release_object(uefisec_app.ctx, client_env_obj);
-+err_get_client_env:
-+	tee_client_close_context(uefisec_app.ctx);
-+
-+	return err;
-+}
-+
-+static void qcomtee_uefisecapp_remove(struct tee_client_device *tee_dev)
-+{
-+	efivars_unregister(&uefisec_app.efivars);
-+	qcomtee_release_object(uefisec_app.ctx, uefisec_app.uefisec_svc_obj);
-+	tee_client_close_context(uefisec_app.ctx);
-+}
-+
-+static const struct tee_client_device_id qcomtee_uefisecapp_id_table[] = {
-+	{UEFISECAPP_UUID},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(tee, qcomtee_uefisecapp_id_table);
-+
-+static struct tee_client_driver qcomtee_uefisecapp_driver = {
-+	.id_table	= qcomtee_uefisecapp_id_table,
-+	.probe		= qcomtee_uefisecapp_probe,
-+	.remove		= qcomtee_uefisecapp_remove,
-+	.driver		= {
-+		.name		= "qcom-tee-uefisecapp",
-+	},
-+};
-+
-+module_tee_client_driver(qcomtee_uefisecapp_driver);
-+
-+MODULE_AUTHOR("Qualcomm");
-+MODULE_DESCRIPTION("TEE client driver for Qualcomm TEE UEFI Secure App");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/firmware/qcom/qcom_tee_uefisecapp.h b/drivers/firmware/qcom/qcom_tee_uefisecapp.h
-new file mode 100644
-index 000000000000..a014c18cfed0
---- /dev/null
-+++ b/drivers/firmware/qcom/qcom_tee_uefisecapp.h
-@@ -0,0 +1,120 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-+ */
-+
-+#ifndef QCOM_TEE_UEFISECAPP_H
-+#define QCOM_TEE_UEFISECAPP_H
-+
-+#define QCOMTEE_OP_CLIENT_ENV_OPEN 0
-+#define QCOMTEE_ROOT_OP_REG_WITH_CREDENTIALS 5
-+
-+/* Each service exposed by QTEE is identified by a 32-bit UID */
-+#define QCOMTEE_UEFI_SEC_UID                 413
-+
-+/* Operations supported by the UEFI Sec App service */
-+#define QCOMTEE_UEFI_SEC_OP_GET_VAR 0
-+#define QCOMTEE_UEFI_SEC_OP_SET_VAR 1
-+#define QCOMTEE_UEFI_SEC_OP_QUERY_VAR_INFO 2
-+#define QCOMTEE_UEFI_SEC_OP_GET_NEXT_VAR_NAME 3
-+
-+/* Error codes returned by the UEFI Sec App service */
-+#define QCOMTEE_UEFI_SEC_SUCCESS 0
-+#define QCOMTEE_UEFI_SEC_ERROR_INVALID_PARAMETER 10
-+#define QCOMTEE_UEFI_SEC_ERROR_UNSUPPORTED 11
-+#define QCOMTEE_UEFI_SEC_ERROR_WRITE_PROTECTED 12
-+#define QCOMTEE_UEFI_SEC_ERROR_SECURITY_VIOLATION 13
-+#define QCOMTEE_UEFI_SEC_ERROR_DEVICE_ERROR 14
-+#define QCOMTEE_UEFI_SEC_ERROR_OUT_OF_RESOURCES 15
-+#define QCOMTEE_UEFI_SEC_ERROR_VOLUME_CORRUPTED 16
-+#define QCOMTEE_UEFI_SEC_ERROR_SIZE_OUT 17
-+#define QCOMTEE_UEFI_SEC_ERROR_NOT_FOUND 18
-+#define QCOMTEE_UEFI_SEC_ERROR_ALREADY_STARTED 19
-+
-+/* Operations for objects are 32-bit. QCOMTEE transport uses the upper 16 bits. */
-+#define QCOMTEE_MSG_OBJECT_OP_MASK GENMASK(15, 0)
-+#define QCOMTEE_MSG_OBJECT_OP_RELEASE (QCOMTEE_MSG_OBJECT_OP_MASK - 0)
-+
-+/**
-+ * struct qcomtee_uefisec_app - An instance of UEFI Secure Application.
-+ * @dev: TEE client device on the TEE bus which represents uefisecapp.
-+ * @ctx: The context opened with the TEE subsystem by the uefisecapp client.
-+ * @uefisec_svc_obj: A TEE object representing the uefisecapp service.
-+ * @efivars: EFI variables registered with the EFI subsystem.
-+ */
-+struct qcomtee_uefisec_app {
-+	struct device *dev;
-+	struct tee_context *ctx;
-+	struct tee_param_objref uefisec_svc_obj;
-+	struct efivars efivars;
-+};
-+
-+#define UEFISECAPP_UUID \
-+	UUID_INIT(0x01f95dcd, 0x2d7e, 0x58be, \
-+		  0xa1, 0x43, 0x81, 0x32, 0xa1, 0x72, 0xdb, 0x7d)
-+
-+/* Short-hands for these long attribute names */
-+#define UBUF_INPUT     TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT
-+#define UBUF_OUTPUT    TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT
-+#define OBJREF_INPUT   TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT
-+#define OBJREF_OUTPUT  TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT
-+
-+/* Init instance of 'struct tee_param_objref'. */
-+#define SET_TEE_PARAM_OBJREF(param, attri, obj_id, obj_flag) do { \
-+		(param).attr = (attri); \
-+		(param).u.objref.id = (obj_id); \
-+		(param).u.objref.flags = (obj_flag); \
-+	} while (0)
-+
-+/* Init instance of 'struct tee_param_ubuf'. */
-+#define SET_TEE_PARAM_UBUF(param, attri, ubuff) do { \
-+		(param).attr = (attri); \
-+		(param).u.ubuf = (ubuff);  \
-+	} while (0)
-+
-+#define TEE_PARAM_UBUF(x) ((struct tee_param_ubuf){ .addr = &(x), sizeof(x) })
-+
-+#define SET_INVOKE_ARG(arg, object_id, opp, nparam) do { \
-+		(arg).id = (object_id); \
-+		(arg).op = (opp); \
-+		(arg).num_params = (nparam); \
-+	} while (0)
-+
-+static inline efi_status_t uefisecapp_err_to_efi_status(u32 err)
-+{
-+	switch (err) {
-+	case QCOMTEE_UEFI_SEC_SUCCESS:
-+		return EFI_SUCCESS;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_INVALID_PARAMETER:
-+		return EFI_INVALID_PARAMETER;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_UNSUPPORTED:
-+		return EFI_UNSUPPORTED;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_WRITE_PROTECTED:
-+		return EFI_WRITE_PROTECTED;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_SECURITY_VIOLATION:
-+		return EFI_SECURITY_VIOLATION;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_DEVICE_ERROR:
-+		return EFI_DEVICE_ERROR;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_OUT_OF_RESOURCES:
-+		return EFI_OUT_OF_RESOURCES;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_SIZE_OUT:
-+		return EFI_BUFFER_TOO_SMALL;
-+
-+	case QCOMTEE_UEFI_SEC_ERROR_NOT_FOUND:
-+		return EFI_NOT_FOUND;
-+
-+	/* No matching on EFI_* list. */
-+	case QCOMTEE_UEFI_SEC_ERROR_ALREADY_STARTED: /* EFI_ALREADY_STARTED.  */
-+	case QCOMTEE_UEFI_SEC_ERROR_VOLUME_CORRUPTED: /* EFI_VOLUME_CORRUPTED. */
-+	default:
-+		return EFI_DEVICE_ERROR;
-+	}
-+}
-+#endif /* QCOM_TEE_UEFISECAPP_H */
+Can it be moved to the kernel?
+
+> 
+> Unlike the QCOM-TEE driver, the QSEECOM driver (used by the current
+> QSEECOM based uefisecapp) does not support callback requests.
+
+How did it work then? I think Windows has been perfectly using QSEECOM
+rather than QTEE.
+
+> And on
+> certain Qualcomm platforms such as the RB3Gen2, attempts to access the
+> QSEECOM interface fail due to lack of support within Qualcomm TEE.
+
+So, I assume, on RB3 Gen2 the QSEECOM doesn't report uefisecapp as
+supported. Does it?
+
+> On these platforms, a TEE based uefisecapp client driver is required to:
+> 1. Access cached & volatile EFI variables stored in uefisecapp's memory.
+> 2. Ensure persistence of non-volatile EFI variables via writes through
+> the RPMB service hosted in the QTEE supplicant.
+> 
+> This series introduces such a uefisecapp TEE client driver for the
+> aforementioned Qualcomm platforms which installs efi-var operations _if_
+> the QCOMTEE driver registers support for an object-IPC based uefisecapp
+> service on the TEE bus during its probe. Only new QTEE firmware versions
+> available at [2] provide this support.
+
+What about existing WoA devices?
+
+> 
+> Thus, QCOMTEE now maintains a static list of always-available object-IPC
+> based secure services exposed by QTEE. These services are implemented either
+> within the QTEE kernel or within a pre-loaded Trusted Application (TA)
+> usually loaded by the bootloader. The uefisecapp TA is an example of a
+> preloaded TA loaded by UEFI. A static list is required since QTEE does not
+> yet expose any way to dynamically query and enumerate the services exposed by
+> it.
+
+Can it be fixed instead of having static lists? In the end, we can't
+guarantee that users update the firmware.
+
+> 
+> To facilitate object-IPC interactions from the kernel-space, this
+> series also introduces a tee_client_object_invoke_func() to allow
+> invocation of TEE objects similar to the existing tee_client_invoke_func()
+> API exported by the TEE subsystem which allows invocation of TEE functions.
+> Some suporting changes are also introduced to track and handle operations
+> for TEE contexts opened from the kernel-space in the back-end QCOM-TEE
+> driver.
+> 
+> Finally and as previously mentioned, access to the object-IPC based uefisecapp
+> service is restricted on older QTEE firmware versions. A new QTEE firmware
+> release must be picked up from QArtifactory [2] for all upstream supported
+> Qualcomm SoCs to enable access to uefisecapp service via the TEE client
+> driver.
+
+What about fused devices?
+
+> 
+> This patch series has been validated on Kodiak RB3Gen2 platform with UFS
+> storage by attempting to read/write EFI variables via the efivar tool [3]
+> after mounting the efivarfs filesystem. See [4] for an example.
+> 
+> Merge Strategy:
+> 
+> This patch series could either be taken from the OP-TEE tree or the
+> QCOM soc tree. I would prefer it to be picked by the OP-TEE tree since
+> all except the uefisecapp TEE client driver patch in this series make
+> changes relevant to the TEE subsystem. It would be great if the QCOM soc
+> tree maintainers can Ack the uefisecapp driver patch.
+> 
+> [1] https://github.com/qualcomm/minkipc
+> [2] https://shorturl.at/zQU07
+> [3] https://github.com/rhboot/efivar
+> [4] https://docs.qualcomm.com/doc/80-70020-27/topic/manage_uefi_environment_variables_using_efivar_tool.html
+> 
+> Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
+> ---
+> Changes in v2:
+> - Drop using MSB of the object_id to distingush kernel and user object invoke contexts.
+> - Introduce enum tee_object_invoke_origin to check the context of object invocation.
+> - Link to v1: https://lore.kernel.org/r/20260707-qcom_uefisecapp_migrate_qcomtee-v1-0-f659cbd5d04c@oss.qualcomm.com
+> 
+> ---
+> Amirreza Zarrabi (2):
+>       tee: Add kernel client object invoke helper
+>       tee: qcomtee: Allow object invokes from kernel clients
+> 
+> Harshal Dev (4):
+>       tee: qcomtee: Track the object invocation context
+>       tee: Export uuidv5 generation for TEE backends
+>       tee: qcomtee: Add support for registering QTEE services on TEE bus
+>       firmware: qcom: Add support for TEE based EFI-var client driver
+> 
+>  MAINTAINERS                                 |   7 +
+>  drivers/firmware/qcom/Kconfig               |  24 ++
+>  drivers/firmware/qcom/Makefile              |   1 +
+>  drivers/firmware/qcom/qcom_tee_uefisecapp.c | 525 ++++++++++++++++++++++++++++
+>  drivers/firmware/qcom/qcom_tee_uefisecapp.h | 120 +++++++
+
+I don't see any changes to the QSEECOM drivers. Is it allowed to use
+QSEECOM and QTEE access to uefisecapp at the same time?
+
+>  drivers/tee/qcomtee/call.c                  | 205 ++++++++++-
+>  drivers/tee/qcomtee/core.c                  |   9 +-
+>  drivers/tee/qcomtee/qcomtee.h               |  12 +
+>  drivers/tee/qcomtee/qcomtee_msg.h           |   1 +
+>  drivers/tee/qcomtee/qcomtee_object.h        |  16 +-
+>  drivers/tee/tee_core.c                      |  24 +-
+>  include/linux/tee_core.h                    |  23 +-
+>  include/linux/tee_drv.h                     |  18 +-
+>  13 files changed, 952 insertions(+), 33 deletions(-)
+> ---
+> base-commit: f3e6330d7fe42b204af05a2dbc68b379e0ad179e
+> change-id: 20260408-qcom_uefisecapp_migrate_qcomtee-13869d45e014
+> 
+> Best regards,
+> -- 
+> Harshal Dev <harshal.dev@oss.qualcomm.com>
+> 
 
 -- 
-2.34.1
-
+With best wishes
+Dmitry
