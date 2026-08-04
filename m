@@ -4,170 +4,173 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C1E0C55184
-	for <op-tee@archiver.kernel.org>; Tue,  4 Aug 2026 03:49:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3468C55822
+	for <op-tee@archiver.kernel.org>; Tue,  4 Aug 2026 04:30:08 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 26F2445044
-	for <op-tee@archiver.kernel.org>; Tue,  4 Aug 2026 03:49:24 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1EC1E43ED1
+	for <op-tee@archiver.kernel.org>; Tue,  4 Aug 2026 04:30:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1785815364;
-	bh=uRldD9+3oyDXVJuPrrx5fy1JmUONml1QdQ/guV8X7qc=;
+	d=lists.trustedfirmware.org; s=2024; t=1785817808;
+	bh=qMoQOUd6RllASsHgB+CvzuymSNu1GngPZDEh2pZ29GM=;
 	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=LBgGMDF2y8vH52Hsi0cTiALML9SkCHBItnoGi5KgXT9m6pleauWDJ3yau72trjH6d
-	 hLL9GG8QrSwjFVy2V2pde0uIY8tbyDyiYLrKcRsdtqVRTc4vRNMl54fjI7FH7rBw+3
-	 FHSs2xk3IEh4OmXeMgLG7vOiLFerlAMtqzJs1fLEFk0iLfN4vUdma+B/RlU93Cl+PQ
-	 B4V5KfPo6xzM3MWwSEGnUdAw1NBaJCeS0Q/dIdNBf/deobLiuaIPhrckZmU/w2XOzZ
-	 T9wN66B0uwoxkfnAXLV77wMEA+EfdQvbNUDru4xA1RdJnb0rLvTkowo8ZU64/VBTiQ
-	 rGsJ3cD4N7gKQ==
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id BD25743EFE
-	for <op-tee@lists.trustedfirmware.org>; Tue,  4 Aug 2026 03:49:16 +0000 (UTC)
+	b=wR0BWyRDTEvAR1VUZrGo60M2x8PF6r7mU7x6YXquQOdN+DT/CkA21fIgH7ayaWDEG
+	 fL5EdSU4Oj9eZiZZtE/UTLETNEpVlwwpZFw0ffL0LuaqqjdYOG0D+ueKDngXn4GF2V
+	 +3/bXXHMpsOVm9Fne2t7OauQqvrUH/D+2eEOlrVO8Mo9npkmfOpJyYgvYhJbkIs+px
+	 i7fVtH+GlWOxHiLoiN651u5wU9uX0r4TNNXuaWJVjrjQAjHcTT/hENS25GdisEKWF7
+	 mlZTJ3+iSNfWi+taRd4a3OJ/LeWuPAX5aNAbdzuUPNvFKJkV4MtU5OFOMu6qsKg2bF
+	 7CXxCBaLB29hQ==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 949D143ED1
+	for <op-tee@lists.trustedfirmware.org>; Tue,  4 Aug 2026 04:30:02 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=VSazBtjs;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Q5UBVCL6;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=bq+BQwCQ;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=daOybwjk;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674177MN3457125
-	for <op-tee@lists.trustedfirmware.org>; Tue, 4 Aug 2026 03:49:15 GMT
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6741853g2353369
+	for <op-tee@lists.trustedfirmware.org>; Tue, 4 Aug 2026 04:30:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	XheG/6rV2f0cZ6qhmU4lso6FOAuMcYX8VwnAe6UhMAM=; b=VSazBtjs/4QVpwCD
-	ZNTPOi2fm0tlMTcXDdhZ5F+VdTLCnv52Ty3cbs+EmVYThOKDEukk4Jdl+JdMWSBO
-	/QWvgEUEvY/1l7/1hAV5mUN4/FihARS7JGd+JQ2XMB09oZUf/rDIbVxblvLB3oP7
-	syffj2GT9FMqJzBYDlyXS9YxR0N+/skJ8/w7xHKGQrljNGN71K79EmC5uic8dYk6
-	95LhwUfg4AXRIqxDjg0hW8PuVyJqL54uYAfTZJR5imxRJF9ujXs9fBP0XRshK62/
-	ieleElmM0OWmHtY8RGBGovqQ7U9O2eoY5XCC56GPqdomL4CIjVPDis8tvFw8447L
-	xFZDSQ==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ftwhdtsu5-1
+	VfrYsc6RU2I/c+tuyid9lRUJCjOygwXHS3YpnCC4TT0=; b=bq+BQwCQtb3wiLtn
+	eLEDQ7LnWkbMAswB/LGIszI2TBaxxKPCNsnc82yVRu6Bvjgget5SNIOIbTZKTo33
+	aA+rhSfLX5lEbjXs+31Cki33NjmODHkG7Uy45bE73KTxSMCG0RLchBor2kRla9Ap
+	Y0lIOHeBsAIk2Ql6LHjZ6xg6tG4Utf8/QuJpleSXFtvEe25awOKAzyJfpC8NjYWW
+	unKWKfzUSAKxPRrGjqpGkoZ8LW9JGgy6GIsM3GuEcHU4z3ei9oxKzS5ryuMJwYvq
+	5bDztdB0OFHcvdQNkaDNAG31VQs+mjlzKxUSYJm+uTQIY6tSjcRQqmH6w9OBphzd
+	lILolQ==
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fu1p89pbq-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Tue, 04 Aug 2026 03:49:15 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2cfa4e4684bso113108465ad.2
-        for <op-tee@lists.trustedfirmware.org>; Mon, 03 Aug 2026 20:49:15 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 04 Aug 2026 04:30:01 +0000 (GMT)
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-84a3514f912so7527159b3a.3
+        for <op-tee@lists.trustedfirmware.org>; Mon, 03 Aug 2026 21:30:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785815350; x=1786420150; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1785817801; x=1786422601; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=XheG/6rV2f0cZ6qhmU4lso6FOAuMcYX8VwnAe6UhMAM=;
-        b=Q5UBVCL6PhDez8ItqTtk71cwjjW3QN9OWMXb11nptC7KmjGYnWWcSsprMWXTz9rXdO
-         CTkExrVJCG7dEe+eTTz+C3J+smgITNlamPxlj/RgMILNBtRX6fz9aeOtHV5kaDLUzg33
-         P2G1txLCJ7VA8PaAo0OBQZVs0oTvHpuOYTP352ImSeeVso/codu6kLr3momH/i936n1z
-         vPpDj512jJp1i181p1DvZ6qfsOU7VmofxLyAxoHh7sNkubrpUzEVwyw9R8uFXTNohE/Y
-         6G0ptK1ebZJDW5+rK7WZYvj7uJEtTC9GBqudN/DiQt2zQhO/sBdaeaRq0vAjFZdEMhLT
-         kVhg==
+        bh=VfrYsc6RU2I/c+tuyid9lRUJCjOygwXHS3YpnCC4TT0=;
+        b=daOybwjk3hWSwM6fQMJzwG6q6rL1SFLQyOWhjacEnWVz3ZBl1lYuAuuiyd+3olqs6T
+         v6OODrYcEB0Cef1ZRyYTqqVfWDd3TzGnqbzxFC2B+qOK9PyXb1ALVptYDo9Ay4Bp0KCB
+         sZTEm5a6+BUZcBZBGYo8S37/ClT/yTwK/+7AO06rIg1HXDO89jCqnzRcoBSQaEdXDYqe
+         ll+lDwkhpTXN7aJWw4xwJ4Di4YZqYuU2+9BKbAxItiUUzFT46JGXW/4P0hOSbQXjKIa5
+         jh+GxmGucGirUZ4/HSbZdNaK3lkyskW8oK9Grrj6CTWvrsSKbLxhBiGqjE1nsFKutIVj
+         a5mA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785815350; x=1786420150;
+        d=1e100.net; s=20251104; t=1785817801; x=1786422601;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=XheG/6rV2f0cZ6qhmU4lso6FOAuMcYX8VwnAe6UhMAM=;
-        b=VivdsCuJc5fOwrPWv+P7qRuQAgF4ohdJzoiThqbykzdEgz0nRMAq8s9U9F1kf1G+JO
-         VmbZJAJjZRekKH2C/jWAx28guOQzfJ+KCLcpgTTWv4hWy6tZk8u+ZDRpFBfEsdF+SxzK
-         I3krngNEFtHCv3V2AxVhSYFxzSL8uqaZfwIetzm8JQjMiG3zveS1zeT1LG6uNxNdygU+
-         mXwpfL72QVl/UdvJIJxQk2sZOb466gQI2SAbycMzQgFVobJIca9BEsGo/q3NiEre3RFh
-         UWxkGKYZVWrkPZRl2n1orYzQGqTa8iqKZro+oCHK7R8Xl+Sk3ji2aGtN0o6Y/NSI+6Hf
-         mSQg==
-X-Forwarded-Encrypted: i=1; AHgh+Rr3voJLNdZ21a8W7HuWwFfMei9sFt/FgDaTtq4iY/O4MZf2dhB84RbX2hbT5LHZ40Ur+vMO3Y4=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YzR8stCsBeXhjslWUFOZY25X1KsNDINN2wwK4OKcg1JQg/3uCvl
-	CWarAuhzR0qLuvUn7p1pHhyHF1a64ve95HFYoXcLa8sTJrfdXfqFr3DWAd0/rxhlotOB/YJpEox
-	kjkAtEFHa10sdFKnGNb4QA8VoEwVmb4aVu3OUVUKccMDn1e4J2PtBVW6sS9On4P3QTqLTgGE=
-X-Gm-Gg: AR+sD12pNHYm5oohsNNDJHbDfPgSXFUSme4XOiBcGGehrY8mO5hbgOL/3v1F2urXKiv
-	yc5yawe7zKovukYNXYA1owpr2HPxOLu/XMHCD5zpK+as+uIQiSyMzcp1ExsejnwpDflkGdU0g0I
-	uqosB836DPWi/uMVvDrNiVEYZENk6DIr6+3ScnBbM7MIlgowLjN115PpQgftLluZatRNqVgmqNo
-	OqUgr9zCWpZ/JWCzGlmnyiMdobzbdohsVDyIWJeg83nGJ45fNx7ZZTUmLjWKv8asFzwYGS2lE88
-	/Hp/Oo1dE8MdyHouq/DN/pLufLdl0iZeew+vAzltLRCdZsrEstwxIhrwF4Dwcb3vu3VNAzgCJKe
-	+QHcKshja18SaQdxxAQCZAb2yqSj7U2RfqQ==
-X-Received: by 2002:a17:902:ebc2:b0:2ca:d91d:d3a7 with SMTP id d9443c01a7336-2d0521a56ecmr131899115ad.10.1785815349706;
-        Mon, 03 Aug 2026 20:49:09 -0700 (PDT)
-X-Received: by 2002:a17:902:ebc2:b0:2ca:d91d:d3a7 with SMTP id d9443c01a7336-2d0521a56ecmr131898905ad.10.1785815349304;
-        Mon, 03 Aug 2026 20:49:09 -0700 (PDT)
+        bh=VfrYsc6RU2I/c+tuyid9lRUJCjOygwXHS3YpnCC4TT0=;
+        b=cjamMKLe34u9Hep2/QRpqLf1KG/mqAvD8BKyeN/F/0XkmRF5sLikuuAgDGRxqvZbhG
+         +AxI8qGBNsLJf48ATRKcZhrN2Iyr856PAMFkByaPj9ghDhmCeZlGO675oIvHy9j4oa2o
+         NmI46Ws5VD5vmx5EWgJHSvQAWnCJC0zcg9l1oauoZht2g7n5zZCkwwfgg/hqo50OtgZ8
+         O6ig6MEvzqj9cZul9s0AzkEPtgzyaQCcN+OCJE7D1ab3oN0NZqYNY7qX7QSQkbJ8HkDE
+         13kyoOA/pRftrsx/L1eNUGGwNYKBWvd66EajZTtlERqHOgQLUW6c18fd4Q+Q06yzQqPx
+         O4ZQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoNKMY67tsDBLx4MvJ4Rv9woBBzcIeVcq/ITj0fOx/IUjAjEI9q8VyRkJWs7RrJSUImEYQJLJw=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0Yy4SAKC9pQgCw1a54b/a3LQ4F2pQjRSm6u5wAoI0vaSWTXlJWR2
+	3gBPGG9Gk5n3s5sbIEI6ofhbnYJ8nWeiJ9PY5K+AMi5kV0aHzrHj+21JQGJYEsolPJAwbUkuVkB
+	qDll48aThFVVammjkKlmmyBaKVCg0ap0tJmP//A7m3JN7h4hdYH8xxvWJVi/MfNV2FikVoAU=
+X-Gm-Gg: AR+sD12zn2nRvx+1/u6x1f7xlwzqGvNAXJBsTMamc3hyt4JqxpdZNESdvsbbHsMV/mK
+	rVfvPZZCEeOAeswujB7T6Beda1NVIXiKZ7ewLxI3Ie7vNz8z4D3/9mFliTLvWS7Ao/36+PdetCX
+	rGJxEHNOoR2t+6thFt7TEZFQZ4Kyi0FmGF0s5bmppAX015/kM1S6An7f94V54UEW7NRstj51AXI
+	rExnwzX8rwJhYiFZ48XxGhM0FCOmzvbtsaTN9Ze9tMhPCUcN8bzQ/f0ZI+gLZwoQYnTybEXIdUk
+	8oOASE1fOtFVSBQxvf4k9ZdHXqnVsaEQj/LeW7S89AXfMquf2TQzUnS3fjnOzxP8i+ktVDalVrq
+	O2yL73xYe1SOLC5vKB7OjaAu2zxHJioTxDQ==
+X-Received: by 2002:a05:6a00:1906:b0:84e:5e0:9db6 with SMTP id d2e1a72fcca58-84ee48a4cf7mr10990824b3a.40.1785817800891;
+        Mon, 03 Aug 2026 21:30:00 -0700 (PDT)
+X-Received: by 2002:a05:6a00:1906:b0:84e:5e0:9db6 with SMTP id d2e1a72fcca58-84ee48a4cf7mr10990797b3a.40.1785817800371;
+        Mon, 03 Aug 2026 21:30:00 -0700 (PDT)
 Received: from [192.168.1.86] ([206.83.118.41])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d04ae60139sm46681795ad.29.2026.08.03.20.49.06
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84edbd3159bsm4569664b3a.7.2026.08.03.21.29.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 03 Aug 2026 20:49:08 -0700 (PDT)
-Message-ID: <9f11db59-5245-4bd5-afbb-485500d37675@oss.qualcomm.com>
-Date: Tue, 4 Aug 2026 13:49:03 +1000
+        Mon, 03 Aug 2026 21:29:59 -0700 (PDT)
+Message-ID: <63cfff1e-359b-4db9-97a8-43d97abb0369@oss.qualcomm.com>
+Date: Tue, 4 Aug 2026 14:29:52 +1000
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] tee: qcomtee: fix kernel-doc warnings
-To: Babanpreet Singh <bbnpreetsingh@gmail.com>,
-        Jens Wiklander <jenswi@kernel.org>
-References: <20260802003956.7-1-bbnpreetsingh@gmail.com>
+Subject: Re: [PATCH v2] tee: remove TZMEM_MODE_GENERIC
+To: Julian Braha <julianbraha@gmail.com>, jenswi@kernel.org
+References: <20260729203845.387239-1-julianbraha@gmail.com>
 Content-Language: en-US
-In-Reply-To: <20260802003956.7-1-bbnpreetsingh@gmail.com>
+In-Reply-To: <20260729203845.387239-1-julianbraha@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=Zf4t8MVA c=1 sm=1 tr=0 ts=6a71613b cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=P7rZ2Udeej982rJtnmwBRA==:17
+X-Authority-Analysis: v=2.4 cv=A5xc+aWG c=1 sm=1 tr=0 ts=6a716ac9 cx=c_pps
+ a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=P7rZ2Udeej982rJtnmwBRA==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8 a=wsK6t3w6FQtueOB5nkoA:9 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-ORIG-GUID: Wrn4q47ppy2zSbzqQiFnyv-_U27JDSoU
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDAyNiBTYWx0ZWRfXxOErbG8E1TuP
- FSXUXLcez+0A2FlH7xtBfcDwhmjevL6wcYaoZ42/3ZwgJ2lFvEO9uawgRuEvacPuJkEWbXt0SKj
- FY3311EJnaC2hGh/ipC3kYVoc+qtkmRISOzzQH84KfsMT7tyVk2wsj42vTU/Eugz279jODvPR2z
- Wjp8AFZiIkbyjCDb8qzQ7NJ26q892xQaXsbKNkVUwXyhvmp8NvYx+2vXRM3yUReEYOxyGowfX2C
- T4DyYPYHnJ+lsDmBg9zshv18PVH6oJlDjToTi+a9fu5R/nYJHmMC0x83Kpn5yF8avSDvX1LCl+6
- yjVcZq829S5VKHAm80xuNvBWyesmAzUfTzVa+MLHvgUA62F2XQj+hnCJgTweJNC0SgYwvzEOnAi
- bPV5agMj1SVgXeqQ3yFGoT8DvYOOS3KBw6C37c64ZVdZSVI2hM/13RhwyTF+e7cYSIk9Q87eLjk
- 8G6j6kuaLZE/uGYWnpg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDAyNiBTYWx0ZWRfXwAFuylnf/Byp
- HMNtyAPufHLI2i9Jg8mX/EvHZrrz+d3IBTdDajX4ZnxgbBR9Z5xx56QwAO4ausvo6kukJA4mXq+
- 7QmTJXuLOvgEwTwAm2n1YLLi62tzytE=
-X-Proofpoint-GUID: Wrn4q47ppy2zSbzqQiFnyv-_U27JDSoU
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=EZfUo5YVX42GmVgghzkA:9 a=QEXdDO2ut3YA:10
+ a=zc0IvFSfCIW2DFIPzwfm:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDAzMiBTYWx0ZWRfXyZ6KLzPOIp2j
+ C4oqSKfRK61Sids3J399ILQ1dlhoN5Hz0yx4IVDmilQU/3dPSq2hXh7dSQ0Zc1GrU1tJeGsjYjM
+ ogWQnD1rYxC9Es4MWLvm1NwO+VzMvlI54SCW4bDUt7gYjBHEGnou5MDESNBsrLKrWgGfKcC/xu6
+ 5FBRi4n7udWtmLg6UimldD13J2zfElBjj9Or5e17Qd56SfeN4kG5v8PREwTRN2+H3xA5MaQBplm
+ EQNnS8RQ8445FS0hIn83KBsYu+VWr8XGj/8sjNDytys47aW18oTz+GXgb3D9LPBVQ6aSrab8Rsj
+ ptoDw1Mg42Y26onAp2oK+0RdXUJwuAeaccn4JBICjxcjcyY+tNnURKnVQDWI6Eys1M/jMN3f/PE
+ GOhvUm4t0AKcnBZBC3DueXKrV66/Srr4v+7xFfPC0643m6/fwCb9pM3j3Rklr0i62UVy02uYMRM
+ ZF1et3vCtv0u8t5zNjg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDAzMiBTYWx0ZWRfX65+dRGU6hbsG
+ R74mSTmTOMawwrGLj0PToKeZh3XMQmklKFkz/7NVHvuOi04PeD2dWE6i8wuYhyVUxa9I8qMtDYz
+ Fa+HvxaCnWD9iqb3EmIG+A5zsMVZ5+E=
+X-Proofpoint-ORIG-GUID: 5c2uZPYZxDWPJyBzlwugpkW8_opfjl3V
+X-Proofpoint-GUID: 5c2uZPYZxDWPJyBzlwugpkW8_opfjl3V
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-04_01,2026-08-03_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0 adultscore=0
- suspectscore=0 spamscore=0 clxscore=1015 impostorscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040026
+ lowpriorityscore=0 malwarescore=0 priorityscore=1501 clxscore=1015
+ suspectscore=0 adultscore=0 bulkscore=0 spamscore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608040032
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.00 / 15.00];
+X-Spamd-Result: default: False [-4.60 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
 	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
 	ARC_NA(0.00)[];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.200:received];
 	FREEMAIL_TO(0.00)[gmail.com,kernel.org];
-	NEURAL_HAM(-0.00)[-0.999];
-	RCPT_COUNT_FIVE(0.00)[6];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	MIME_TRACE(0.00)[0:+];
+	FROM_HAS_DN(0.00)[];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[205.220.168.131:from,206.83.118.41:received];
-	RCVD_TLS_LAST(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RCVD_COUNT_THREE(0.00)[4];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[renesas];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.200:received]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: BD25743EFE
-X-Spamd-Bar: -----
-Message-ID-Hash: FUMG5JXPC6JFJK44IVBZ7TUFU2EJPCKF
-X-Message-ID-Hash: FUMG5JXPC6JFJK44IVBZ7TUFU2EJPCKF
+X-Rspamd-Queue-Id: 949D143ED1
+X-Spamd-Bar: ----
+Message-ID-Hash: KYRX6V2LSBH7ISPONSR6E3J7VNLN6D56
+X-Message-ID-Hash: KYRX6V2LSBH7ISPONSR6E3J7VNLN6D56
 X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: sumit.garg@kernel.org, arnd@arndb.de, geert+renesas@glider.be, amirreza.zarrabi@oss.qualcomm.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, quic_eberman@quicinc.com, andersson@kernel.org, brgl@kernel.org, harshal.dev@oss.qualcomm.com
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FUMG5JXPC6JFJK44IVBZ7TUFU2EJPCKF/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/KYRX6V2LSBH7ISPONSR6E3J7VNLN6D56/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -177,79 +180,120 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Hi Babanpreet,
+Hi Julian,
 
-Thanks.
+With this change, is QCOM_TZMEM_MODE_SHMBRIDGE still needed?
 
-Reviewed-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+I think QCOM_TZMEM_MODE_SHMBRIDGE can therefore be removed entirely,
+along with the conditional declarations and stubs in qcom_tzmem.h and
+the corresponding select in the qcomtee Kconfig.
 
+Regards,
 Amir
 
-On 8/2/2026 10:39 AM, Babanpreet Singh wrote:
-> Fix kernel-doc issues present since the driver was added in commit
-> d6e290837e50 ("tee: add Qualcomm TEE driver"):
+On 7/30/2026 6:38 AM, Julian Braha wrote:
+> 'select' does not work on config options in a 'choice', so currently it is
+> possible to enable QCOMTEE without QCOM_TZMEM_MODE_SHMBRIDGE, even though
+> this is needed at runtime.
 > 
-> - async_release() documents its second parameter as @msg, but the
->   parameter is named async_msg (msg is a local variable);
-> - struct qcomtee_msg_object_invoke documents member @ctx, but the
->   member is named cxt;
-> - enum qcomtee_arg_type leaves QCOMTEE_ARG_TYPE_NR undescribed.
+> There are no users of the generic allocator option,
+> QCOM_TZMEM_MODE_GENERIC, so let's remove it. Then, we can remove the
+> containing choice..endchoice, which allows the 'select' to work as
+> intended.
 > 
-> The cxt spelling is part of the QTEE message format and is used
-> throughout the driver; struct qcomtee_msg_callback in the same header
-> already documents it as @cxt, so the comment is corrected rather than
-> the member.
-> 
-> No functional changes.
-> 
-> Assisted-by: Claude:claude-opus-5 [kernel-doc]
-> Signed-off-by: Babanpreet Singh <bbnpreetsingh@gmail.com>
+> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Julian Braha <julianbraha@gmail.com>
 > ---
->  drivers/tee/qcomtee/async.c          | 4 ++--
->  drivers/tee/qcomtee/qcomtee_msg.h    | 2 +-
->  drivers/tee/qcomtee/qcomtee_object.h | 1 +
->  3 files changed, 4 insertions(+), 3 deletions(-)
+> Changes since v1:
+> - remove TZMEM_MODE_GENERIC instead of removing the dead select
 > 
-> diff --git a/drivers/tee/qcomtee/async.c b/drivers/tee/qcomtee/async.c
-> index 31bff4309e672..5849e51612033 100644
-> --- a/drivers/tee/qcomtee/async.c
-> +++ b/drivers/tee/qcomtee/async.c
-> @@ -97,10 +97,10 @@ static void qcomtee_get_async_buffer(struct qcomtee_object_invoke_ctx *oic,
->  /**
->   * async_release() - Process QTEE async release requests.
->   * @oic: context used for the current invocation.
-> - * @msg: async message for object release.
-> + * @async_msg: async message for object release.
->   * @size: size of the async buffer available.
->   *
-> - * Return: Size of the outbound buffer used when processing @msg.
-> + * Return: Size of the outbound buffer used when processing @async_msg.
->   */
->  static size_t async_release(struct qcomtee_object_invoke_ctx *oic,
->  			    struct qcomtee_async_msg_hdr *async_msg,
-> diff --git a/drivers/tee/qcomtee/qcomtee_msg.h b/drivers/tee/qcomtee/qcomtee_msg.h
-> index 878f70178a5b6..5d7b21fdd3688 100644
-> --- a/drivers/tee/qcomtee/qcomtee_msg.h
-> +++ b/drivers/tee/qcomtee/qcomtee_msg.h
-> @@ -112,7 +112,7 @@ union qcomtee_msg_arg {
+> Link:
+> https://lore.kernel.org/all/20260715092539.18384-1-julianbraha@gmail.com/
+> ---
+>  drivers/firmware/qcom/Kconfig      | 26 +++++---------------------
+>  drivers/firmware/qcom/qcom_tzmem.c | 21 ---------------------
+>  2 files changed, 5 insertions(+), 42 deletions(-)
+> 
+> diff --git a/drivers/firmware/qcom/Kconfig b/drivers/firmware/qcom/Kconfig
+> index c7f8413ab996..d99e09c5fa18 100644
+> --- a/drivers/firmware/qcom/Kconfig
+> +++ b/drivers/firmware/qcom/Kconfig
+> @@ -34,33 +34,17 @@ config QCOM_TZMEM
+>  	tristate
+>  	select GENERIC_ALLOCATOR
 >  
->  /**
->   * struct qcomtee_msg_object_invoke - Direct object invocation message.
-> - * @ctx: object ID hosted in QTEE.
-> + * @cxt: object ID hosted in QTEE.
->   * @op: operation for the object.
->   * @counts: number of different types of arguments in @args.
->   * @args: array of arguments.
-> diff --git a/drivers/tee/qcomtee/qcomtee_object.h b/drivers/tee/qcomtee/qcomtee_object.h
-> index 8b4401ecad48c..d5de02dcef3b9 100644
-> --- a/drivers/tee/qcomtee/qcomtee_object.h
-> +++ b/drivers/tee/qcomtee/qcomtee_object.h
-> @@ -74,6 +74,7 @@ enum qcomtee_object_type {
->   * @QCOMTEE_ARG_TYPE_OO: output object (OO).
->   * @QCOMTEE_ARG_TYPE_IB: input buffer (IB).
->   * @QCOMTEE_ARG_TYPE_IO: input object (IO).
-> + * @QCOMTEE_ARG_TYPE_NR: number of argument types.
->   *
->   * Use the invalid type to specify the end of the argument array.
->   */
+> -choice
+> -	prompt "TrustZone interface memory allocator mode"
+> -	depends on QCOM_TZMEM
+> -	default QCOM_TZMEM_MODE_GENERIC
+> -	help
+> -	  Selects the mode of the memory allocator providing memory buffers of
+> -	  suitable format for sharing with the TrustZone. If in doubt, select
+> -	  'Generic'.
+> -
+> -config QCOM_TZMEM_MODE_GENERIC
+> -	bool "Generic"
+> -	help
+> -	  Use the generic allocator mode. The memory is page-aligned, non-cachable
+> -	  and physically contiguous.
+> -
+>  config QCOM_TZMEM_MODE_SHMBRIDGE
+> -	bool "SHM Bridge"
+> +	bool "TrustZone interface memory allocator: SHM Bridge"
+> +	depends on QCOM_TZMEM
+>  	help
+> -	  Use Qualcomm Shared Memory Bridge. The memory has the same alignment as
+> -	  in the 'Generic' allocator but is also explicitly marked as an SHM Bridge
+> -	  buffer.
+> +	  Use Qualcomm Shared Memory Bridge as memory allocator. The memory has the
+> +	  same alignment as in the 'Generic' allocator but is also explicitly marked
+> +	  as an SHM Bridge buffer.
+>  
+>  	  With this selected, all buffers passed to the TrustZone must be allocated
+>  	  using the TZMem allocator or else the TrustZone will refuse to use them.
+>  
+> -endchoice
+> -
+>  config QCOM_QSEECOM
+>  	bool "Qualcomm QSEECOM interface driver"
+>  	depends on QCOM_SCM=y
+> diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_tzmem.c
+> index 0635cbeacfc8..5b3e5a3ad1ae 100644
+> --- a/drivers/firmware/qcom/qcom_tzmem.c
+> +++ b/drivers/firmware/qcom/qcom_tzmem.c
+> @@ -49,25 +49,6 @@ static struct device *qcom_tzmem_dev;
+>  static RADIX_TREE(qcom_tzmem_chunks, GFP_ATOMIC);
+>  static DEFINE_SPINLOCK(qcom_tzmem_chunks_lock);
+>  
+> -#if IS_ENABLED(CONFIG_QCOM_TZMEM_MODE_GENERIC)
+> -
+> -static int qcom_tzmem_init(void)
+> -{
+> -	return 0;
+> -}
+> -
+> -static int qcom_tzmem_init_area(struct qcom_tzmem_area *area)
+> -{
+> -	return 0;
+> -}
+> -
+> -static void qcom_tzmem_cleanup_area(struct qcom_tzmem_area *area)
+> -{
+> -
+> -}
+> -
+> -#elif IS_ENABLED(CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE)
+> -
+>  #include <linux/firmware/qcom/qcom_scm.h>
+>  #include <linux/of.h>
+>  
+> @@ -189,8 +170,6 @@ static void qcom_tzmem_cleanup_area(struct qcom_tzmem_area *area)
+>  	kfree(handle);
+>  }
+>  
+> -#endif /* CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE */
+> -
+>  static int qcom_tzmem_pool_add_memory(struct qcom_tzmem_pool *pool,
+>  				      size_t size, gfp_t gfp)
+>  {
 
