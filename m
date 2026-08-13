@@ -4,91 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D63DAC5AC67
-	for <op-tee@archiver.kernel.org>; Thu, 13 Aug 2026 08:46:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 778AEC5B572
+	for <op-tee@archiver.kernel.org>; Thu, 13 Aug 2026 15:28:18 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 09598453A3
-	for <op-tee@archiver.kernel.org>; Thu, 13 Aug 2026 08:46:34 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 9E81844DCE
+	for <op-tee@archiver.kernel.org>; Thu, 13 Aug 2026 15:28:17 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HPBFkWdQ;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QqoGeluW;
+	dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=heQUmYoM;
 	dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7D8E344B06
-	for <op-tee@lists.trustedfirmware.org>; Thu, 13 Aug 2026 08:24:03 +0000 (UTC)
-Date: Thu, 13 Aug 2026 10:24:00 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1786609441;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WgGrLejC/Wl2+WhXMuuc0iT3zV3dVs7KdU/reo4Z37o=;
-	b=HPBFkWdQ2XeGEQL/UgiUcUbqKUCKwfNQMUpfU5SKlRxONkIg53Jz5yokbV/k2wmKnvUbZS
-	xD9xG7reIeqh2a7MQzJfdZXc8I0LQ5tiKK22mXbuhKpX1t3AcdS+aFjfRtQNOAl51jAqvg
-	mnv6QzpEFcXXYhFMXE+lvAbeuqu/ciBaLz5YaL8psJ4BZ4sPSatc2kqFt2TEWt3qecprDu
-	DPogx+PLFyBbDwGQBpyeo/yE4/7ZWoDBRkH8ZimyJTp9TbRVDsiIT1HhTNjJB9OJ+jCWA1
-	zUz2BUCQhqpK2PCdROCynHzVgSm2bNkJSfQR8ibUVT2LcM7aofx1RVCFdtG2Qg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1786609441;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WgGrLejC/Wl2+WhXMuuc0iT3zV3dVs7KdU/reo4Z37o=;
-	b=QqoGeluWujyf4fFkVD0/6xNXp2XJiOFBZhubgQuFJ+l1sGRMqYpi9L0yNbsZZqE2hJL7xo
-	NCofQLSwcnkz/4AQ==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: linux-rt-devel@lists.linux.dev, linux-doc@vger.kernel.org,
-	linux-efi@vger.kernel.org
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E626644DCE
+	for <op-tee@lists.trustedfirmware.org>; Thu, 13 Aug 2026 15:28:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net BC835408D9
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+	t=1786634889; bh=qVRpckEi8M3RGXpcyKaTknYqIEBsqHrZyu1cIn1LCaA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=heQUmYoMt4jWOg5Zq2KdxS19awWIgQUdZDMEj9GZfv2zFthlp2WDGhcW38kwXCuqm
+	 wVI5RP5mlRkxDkO3vpSf3ufjDfhaXPIN/0cdI8yEDZiS2OHDKn/J8fSM4IkxkSGUAi
+	 VlWssZj5Q9VYWSu5v+f5iy/Ybmh9FD1YD1uyxXCvByU0eMy/Iw6WyRaMPzC99PsKUY
+	 qBmSu/DnfmeCbBWuXAjXnEfG3ZekZxDTVK4+6AXlPws8S0WDlm8dot7zksAKXvatSn
+	 aKq0RmQmUPncuC6Ml0+hXHQvvoUsfZkaKZjNyv4SJhaiqN/vLBVXfcU/ypp+43jYdx
+	 IEuy3DKkH5fNw==
+Received: from localhost (unknown [IPv6:2601:280:4600:814::1fe])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by ms.lwn.net (Postfix) with ESMTPSA id BC835408D9;
+	Thu, 13 Aug 2026 15:28:09 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linux-rt-devel@lists.linux.dev, linux-doc@vger.kernel.org,
+ linux-efi@vger.kernel.org
 Subject: Re: [PATCH v2] Documentation: Extend the real-time hardware bits
  with some firmware bits
-Message-ID: <20260813082400.h3MRgRPg@linutronix.de>
+In-Reply-To: <20260813082400.h3MRgRPg@linutronix.de>
 References: <20260718175041.QXn9iOFK@linutronix.de>
+ <20260813082400.h3MRgRPg@linutronix.de>
+Date: Thu, 13 Aug 2026 09:28:08 -0600
+Message-ID: <87h5kyhwfr.fsf@trenco.lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260718175041.QXn9iOFK@linutronix.de>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.60 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_LOW(-1.00)[linutronix.de:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[linutronix.de,none];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	R_DKIM_ALLOW(-0.20)[linutronix.de:s=2020,linutronix.de:s=2020e];
-	R_SPF_ALLOW(-0.20)[+mx];
-	RCVD_IN_DNSWL_MED(-0.20)[193.142.43.55:from];
-	ONCE_RECEIVED(0.10)[];
+X-Spamd-Result: default: False [-3.13 / 15.00];
+	BAYES_HAM(-2.33)[96.89%];
+	DMARC_POLICY_ALLOW(-0.50)[lwn.net,none];
+	R_SPF_ALLOW(-0.20)[+a:ms.lwn.net];
+	R_DKIM_ALLOW(-0.20)[lwn.net:s=20201203];
+	ONCE_RECEIVED(0.20)[];
 	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	ARC_NA(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:45.79.64.0/19, country:SG];
+	TO_DN_EQ_ADDR_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
 	RCPT_COUNT_TWELVE(0.00)[13];
 	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
 	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:48314, ipnet:193.142.43.0/24, country:DE];
-	RCVD_COUNT_ZERO(0.00)[0];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	NEURAL_HAM(-0.00)[-0.996];
+	MID_RHS_MATCH_FROMTLD(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
+	FROM_HAS_DN(0.00)[];
+	ARC_NA(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DKIM_TRACE(0.00)[linutronix.de:+]
+	RECEIVED_HELO_LOCALHOST(0.00)[];
+	DNSWL_BLOCKED(0.00)[2601:280:4600:814::1fe:received,45.79.88.28:from];
+	DKIM_TRACE(0.00)[lwn.net:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 7D8E344B06
-X-Spamd-Bar: -----
-X-MailFrom: bigeasy@linutronix.de
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: HLUIORISBUSI7IP4QADHJBP4EPVPHKIZ
-X-Message-ID-Hash: HLUIORISBUSI7IP4QADHJBP4EPVPHKIZ
-X-Mailman-Approved-At: Thu, 13 Aug 2026 08:46:28 +0000
-CC: Ilias Apalodimas <ilias.apalodimas@linaro.org>, "jenswi@kernel.org" <jenswi@kernel.org>, op-tee@lists.trustedfirmware.org, Ard Biesheuvel <ardb@kernel.org>, Clark Williams <clrkwllms@kernel.org>, Jan Kiszka <jan.kiszka@siemens.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Steven Rostedt <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>
+X-Rspamd-Queue-Id: E626644DCE
+X-Spamd-Bar: ---
+Message-ID-Hash: 6ZZN5YEIABXOAOCWDWZBOMWNN5ZIDPXO
+X-Message-ID-Hash: 6ZZN5YEIABXOAOCWDWZBOMWNN5ZIDPXO
+X-MailFrom: corbet@lwn.net
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: Ilias Apalodimas <ilias.apalodimas@linaro.org>, "jenswi@kernel.org" <jenswi@kernel.org>, op-tee@lists.trustedfirmware.org, Ard Biesheuvel <ardb@kernel.org>, Clark Williams <clrkwllms@kernel.org>, Jan Kiszka <jan.kiszka@siemens.com>, Shuah Khan <skhan@linuxfoundation.org>, Steven Rostedt <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HLUIORISBUSI7IP4QADHJBP4EPVPHKIZ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/6ZZN5YEIABXOAOCWDWZBOMWNN5ZIDPXO/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -96,204 +90,22 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-A gentle ping.
+Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
 
-On 2026-07-18 19:50:41 [+0200], To linux-rt-devel@lists.linux.dev wrote:
-> I have been reviewing how OP=E2=80=91TEE is implemented and how secure=E2=
-=80=91world
-> invocations behave. The goal was to determine whether an OP=E2=80=91TEE c=
-all can
-> delay the Linux side and introduce latency depending on the time spent
-> in the secure world.
->=20
-> Similar latency effects are already known for EFI runtime services, but
-> this was not documented. To mitigate the impact, EFI runtime invocations
-> can be restricted to specific CPUs so that real=E2=80=91time workloads on=
- other
-> CPUs remain unaffected. This mechanism, however, is only described in
-> the commit that introduced it.
->=20
-> This change adds a firmware section that documents these behaviours
-> explicitly. It highlights cases where firmware can delay the kernel,
-> information that may be unfamiliar to some users and surprising-or
-> concerning-to others.
->=20
-> Assisted-by: Microsoft-Copilot
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
->=20
-> v1=E2=80=A6v2: https://lore.kernel.org/all/20260701091226.7SWW4TrT@linutr=
-onix.de
-> - Rewrote the OP-TEE bits after some feedback from Ilias and Jens.
->   Added a link to the TF-A/OP-TEE documentation. The main difference is
->   that in contrast to my initial belief, OP-TEE can disable
->   normal-world's interrupts and it is not guaranteed that normal world
->   can always preempt the secure world.
->=20
->  Documentation/core-api/real-time/hardware.rst | 104 ++++++++++++++++++
->  1 file changed, 104 insertions(+)
->=20
-> diff --git a/Documentation/core-api/real-time/hardware.rst b/Documentatio=
-n/core-api/real-time/hardware.rst
-> index 19f9bb3786e03..9f95e75e6aa18 100644
-> --- a/Documentation/core-api/real-time/hardware.rst
-> +++ b/Documentation/core-api/real-time/hardware.rst
-> @@ -130,3 +130,107 @@ https://github.com/Linutronix/RTC-Testbench.
->  The goal of this project is to validate real-time network communication.=
- It can
->  be thought of as a "cyclictest" for networking and also serves as a star=
-ting
->  point for application development.
-> +
-> +Firmware
-> +--------
-> +
-> +The firmware often plays a significant role in system operation because =
-it can
-> +perform tasks that the kernel cannot directly access, and in some cases =
-it can
-> +even preempt or intercept the kernel.
-> +
-> +A common example of firmware assisting the kernel is when it provides a =
-generic
-> +interface to a resource. Instead of accessing an RTC chip through an I2C=
- host
-> +controller, the kernel may query the firmware for the current time, and =
-the
-> +firmware then accesses the RTC behind the scenes.
-> +
-> +Firmware can also intercept kernel execution by providing services that
-> +temporarily take control of the system. One example is memory scrubbing,=
- where
-> +the firmware periodically pauses the kernel, reads back portions of syst=
-em
-> +memory, and then returns control. During this time, the kernel is effect=
-ively
-> +interrupted.
-> +In contrast, some systems provide hardware-based memory scrubbing, which
-> +operates independently of firmware or software. See
-> +Documentation/edac/scrub.rst for details.
-> +
-> +If the kernel is intercepted for longer periods then these periods can b=
-e made
-> +visible with the hardware latency detector. See
-> +Documentation/trace/hwlat_detector.rst.
-> +
-> +The kernel can also be intercepted in response to specific events, such =
-as
-> +overheating. In this case, the firmware may throttle the CPU or shut it =
-down
-> +immediately to prevent hardware damage.
-> +
-> +Unless the firmware is well documented, it should be thoroughly tested to
-> +uncover any unexpected behaviour.
-> +
-> +EFI
-> +~~~~
-> +
-> +EFI provides runtime services that act as a communication interface betw=
-een the
-> +firmware and the operating system. One such service is reading and writi=
-ng EFI
-> +variables, which are used, for example, to determine the boot source.
-> +
-> +Invoking a runtime service may require the architecture to disable kernel
-> +preemption or interrupts during the call. This means the duration of a s=
-ervice
-> +invocation directly affects the system=E2=80=99s observable latency. The=
-re is also
-> +nothing that prevents a service call from disabling interrupts internall=
-y while
-> +it runs.
-> +
-> +For these reasons, EFI runtime services are disabled by default on a PRE=
-EMPT_RT
-> +kernel. They can still be enabled at boot time or via a Kconfig option if
-> +required.
-> +The native EFI runtime service implementation (where both the EFI servic=
-e and
-> +the kernel are either 32-bit or 64-bit executables) uses a wrapper mecha=
-nism
-> +that invokes the service through a dedicated workqueue. This workqueue i=
-s named
-> +efi_runtime, and it can be restricted to a housekeeping CPU using the
-> +``/sys/devices/virtual/workqueue/efi_runtime/cpumask`` sysfs file. Assig=
-ning it
-> +to a housekeeping CPU ensures that potentially long service invocations =
-do not
-> +impact the real-time workload which is restricted to other CPUs.
-> +
-> +It must also be verified that the runtime services behave as expected. S=
-ome
-> +implementations on the x86 architecture pause all other CPUs while one C=
-PU
-> +performs the service call. In such cases, the interruption affects all C=
-PUs,
-> +and restricting the workqueue to a single CPU provides no benefit.
-> +
-> +OP-TEE (ARM)
-> +~~~~~~~~~~~~
-> +
-> +Execution flows from the normal world (Linux) into the secure world (OP-=
-TEE)
-> +through the secure monitor at EL3. The transition is initiated by the `s=
-mc`
-> +(Secure Monitor Call) opcode or the `hvc` (Hypervisor Call) opcode toget=
-her
-> +with a function identifier. The calling convention defines two types of =
-calls:
-> +**yielding calls** and **fast calls**:
-> +
-> +- A **yielding call** unmasks interrupts before handling the requested s=
-ervice,
-> +  allowing normal world interrupts to occur.
-> +- A **fast call** handles the requested service atomically, without allo=
-wing
-> +  interrupts from either the normal world or the secure world.
-> +
-> +In addition, the secure world (EL3 and OP-TEE) can receive interrupts ro=
-uted to
-> +the secure world. While a secure world interrupt is being serviced,
-> +normal world interrupts are masked and cannot preempt the operation.
-> +
-> +The transition from normal world to secure monitor to OP-TEE and back in=
-troduces
-> +additional latency due to world switching and context save/restore. This
-> +overhead is typically a few microseconds and usually remains within the =
-noise
-> +floor.
-> +
-> +It is worth noting that the normal world cannot mask secure interrupts, =
-while
-> +the secure world can mask normal-world interrupts during execution. How =
-OP-TEE
-> +affects real-time workloads depends on whether secure interrupts are ena=
-bled
-> +and which OP-TEE services are invoked.
-> +
-> +A practical concern is any fast call that runs longer than expected, for
-> +example a function that occasionally performs a long-running cryptograph=
-ic
-> +computation. Another example that may block in an unexpected way are OP-=
-TEE
-> +drivers that issue RPC requests. An OP-TEE service in the secure world (=
-RPMB
-> +for instance) may need to issue a request back to the normal world (the =
-Linux
-> +driver) in order to complete the operation. While Linux remains preempti=
-ble,
-> +the thread that issued the request stays blocked until the RPC completes=
- and
-> +the secure function call returns.
-> +
-> +The TF-A project provides documentation on interrupt management:
-> +https://trustedfirmware-a.readthedocs.io/en/latest/design/interrupt-fram=
-ework-design.html#interrupt-management-framework
-> +
-> +The OP-TEE project provides documentation on how interrupts are handled:
-> +https://optee.readthedocs.io/en/latest/architecture/core.html#interrupt-=
-handling
-> --=20
-> 2.53.0
->=20
->=20
+> A gentle ping.
+>
+> On 2026-07-18 19:50:41 [+0200], To linux-rt-devel@lists.linux.dev wrote:
+>> I have been reviewing how OP=E2=80=91TEE is implemented and how secure=
+=E2=80=91world
+>> invocations behave. The goal was to determine whether an OP=E2=80=91TEE =
+call can
+>> delay the Linux side and introduce latency depending on the time spent
+>> in the secure world.
+
+With RT stuff, I never know when something is deemed ready, or whether I
+should be the one to pick it up...  I have gone ahead and applied this
+one, hopefully that was the right thing to do :)
+
+Thanks,
+
+jon
