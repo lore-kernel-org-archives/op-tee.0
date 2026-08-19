@@ -4,134 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D658C5DF74
-	for <op-tee@archiver.kernel.org>; Tue, 18 Aug 2026 05:25:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0F68C5DF6D
+	for <op-tee@archiver.kernel.org>; Wed, 19 Aug 2026 08:38:39 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3ABBA44F5D
-	for <op-tee@archiver.kernel.org>; Tue, 18 Aug 2026 05:25:26 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1F88F4530A
+	for <op-tee@archiver.kernel.org>; Wed, 19 Aug 2026 08:38:39 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q423vN6o;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ks6pTczh;
 	dkim-atps=neutral
-Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com [209.85.217.52])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 73BCD44E03
-	for <op-tee@lists.trustedfirmware.org>; Tue, 18 Aug 2026 03:38:13 +0000 (UTC)
-Received: by mail-vs1-f52.google.com with SMTP id ada2fe7eead31-7377dde7bc6so374407137.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 17 Aug 2026 20:38:13 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1787024293; cv=none;
-        d=google.com; s=arc-20260327;
-        b=TamQWsdG113yubQqcSz47G91t7HYlBV+RbenScRKfs79pgBxIx/zcf6z51f25B6ipD
-         IAiShLFhc06ZyTHdnXO0IBtDrOnVoq7X0Jo3/MBIM0EeZSvckHcoy9Rdu2Ad15HSZq63
-         KHeIZ8pHOE7XjaQvizsF+ZzHRzoB79dmzDDmPAvZKIUeS//RwjhxL9ErtYi6bSBKcZ1Z
-         sGr7DfU75OKN7uM+fp0bjt86wlpHRKCqDCyK78Av3GriYDQIKqPmrBOL3g0Mwi+oteVt
-         4fVdSRkyo8rs5sGkDOSre3lIFPyyz2QlCxU83VxV4Xh55szJiSiYUHhimThLhHz1SuNI
-         miYQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
-         :from:dkim-signature;
-        bh=gIrEwK5CI1wCUC0awV1Bsr5u1ODZXD5P1uKctypD5+E=;
-        fh=7v/QesuSdWkBwu0IbhtwEFJ6FT/jSiil7hvGUN2anLE=;
-        b=PDjjoLC6vovMAOGsWj0budD7u+yAUM7johUNv61XeAruz+OcvPo5SzAtRjr4TXiVgx
-         8l1WFz4eh4UIhrhnS/bNfDzjiIC9FYIce87b33z8Oloiu3/D3J8gAJpAnMIVbylDSXjZ
-         qdxV+1AoNj2OjpVlV1QvUO/tKb4r9iUfdUNT0zWejx9V2iWVhUtmGF4Hxx2qvxE0Fmzw
-         +ePSjIRPlJvJeSqumDcG31+sPi1JxA47kM4X2FHzubTOGZ2jahCc5apN6t6UrON+JmNc
-         voHs5KZDHdDkQGqEsgT552lB5P+FbzXrhLcQCOHnS5SJs4RkJkFTrmkbWjTH/8LxSNMB
-         Z6Tw==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+Received: from mail-pz2-f0.google.com (mail-pz2-f0.google.com [74.125.228.0])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 31E6D44EA7
+	for <op-tee@lists.trustedfirmware.org>; Wed, 19 Aug 2026 08:36:23 +0000 (UTC)
+Received: by mail-pz2-f0.google.com with SMTP id 41be03b00d2f7-ca92f36c4acso183450a12.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 19 Aug 2026 01:36:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787024293; x=1787629093; darn=lists.trustedfirmware.org;
-        h=content-type:cc:to:subject:message-id:date:mime-version:references
-         :in-reply-to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gIrEwK5CI1wCUC0awV1Bsr5u1ODZXD5P1uKctypD5+E=;
-        b=Q423vN6o4eX7ohW+ysZSiAKO3Qc42FEN/m+v2F9vxL58OHLG5l1MxvCII92ECGVA0P
-         Mx1sIwkmokDzHKHGcSDa3OkoxsDtMR+SEul3ZEM3ZOkd4ZgfFneqsQbWBmGcK507DQRM
-         4obzOBEz5uFctrZbWKPWl/70OvyzeSFWvMbX08FJn/wFBMgviBQS6FLUgNlNtHF4gdac
-         xWt5s6WISGQ2nhlRGjySQHw0L86u9BsxHG+cMiRkfcM61pSp8KmTGxGOwcUw7Vu+1J/B
-         eTqfP+aHcn5eEUDe7LQYpWdchYfih2Cl7uMdWh+NK1lnUt3FgHVF8DXy5cUeF+bzpItj
-         X6fw==
+        d=gmail.com; s=20251104; t=1787128582; x=1787733382; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=OOhYCONyOlLqZ7Th3lMilNB9DV3vW0wUhGS0m5kXWkU=;
+        b=ks6pTczhRu/m4YP0cnY4XXqzFjTdqozDLQfTpDpuOQ9hy8VFCUxGmGm5oo6t13rydE
+         uBKCxdkBS7etZobGsM6068udNIp/HEswiq0svVgZinDSCpYQJ7Eyzq5ocu/IT5rXcqiJ
+         Fjrla+QKOtIGeh4fd/rlHo2DFDjWf272qcQNmDGultoWZkVRqcdKTsjAckk0UYL0ibjl
+         BpWJG3YXrMsUFFpE44etk45UrQDpPhVMt9XnJwXdl++E40uycl2LDxMsO5AfWxb8+ijp
+         zUTpWpELlfpEWfRZt97RZxKlapdFr65c6LINYlZnPWVlOkJ2DmHZp5Jfsz5jLianKPKw
+         s1Sw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787024293; x=1787629093;
-        h=content-type:cc:to:subject:message-id:date:mime-version:references
-         :in-reply-to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1787128582; x=1787733382;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=gIrEwK5CI1wCUC0awV1Bsr5u1ODZXD5P1uKctypD5+E=;
-        b=Md7qLzv8Kn2BCPcLLHC5zI3VFQaJkQwS/xZZoU1aZDufiN93V2bahKeouiuyn4uOZM
-         9itlX2gZVeVCWhQ0u0bEXji1E+T4YLkQc5yx0/7wWYdpcnE0Y5ov8d25vBVhBJuf5dzp
-         kb8T+U4Aa+N962U7kc5ov5oRbotQoTgKHKXmSeAid+EvclaLaBwSZX+dO6ymE/NsmJFw
-         jUe36ePDcaWVXB743669Rp6XanN6TwXnjbqzJyGeYOSNQNkkkG0LnlOAVcvAa1MLR+W6
-         iqgp7RJWCCZs/M25p/k9ctQ59vWQOxRMoyEzxGucyKf19r00KqhEsNOeX8Ac/LZfriO1
-         H7tw==
-X-Forwarded-Encrypted: i=1; AHgh+RrI1FuWNjfo2gPlY1mvJefB6r8mMcLHB5kkxD7kcTVdxgk9y5RL/oT6gzagfKOqbOb3H1+wtG8=@lists.trustedfirmware.org
-X-Gm-Message-State: AOJu0YxGKGSqO8FGxfVejQLaWhKuI7TpD7QNhxjr2JJiVYk15pPsUvQr
-	UBXpAt6ca0qWz9sxWKgoPZ2YPXD0VLqOUpD5foM7W6t1gMqQyeondMwUMR0MYLSu4WCI2+g6dfr
-	/gonMdIBb+kjO2lWoWOd3HXeh08zxTAc=
-X-Gm-Gg: AR+sD10PfMyVDfmGxSGY2vdpKEqI1ImrVPHe9q5xdMTeuDrNf92mczKtDxVlI9tZvw9
-	KVA7puk3tcdP758CIACHhR3q7xiItE/T4hAwhoMIM9VjTOYJSARVkL/j3LOnFk8Pgcvd/m1ySdK
-	rqPqY5irJ9qQm/sFw1US6O2k/WpTZqBxLSVmnfYuumG3R6WkQzkGCfCBISDqT7iCRnwVsng6RyR
-	LFBJZEaiCi2XePBlfkaHNWLV8hkasvg6qI+sNRobEZwX+RNHljin083Drv2cdWIGId21AiPAejY
-	Pe50SAlGy14WG39oIaJErQJ8CuqGWQA8PlvyYvoCrKgXoYlccVAINBW9MNMcxh7NrwTm1oO9iM8
-	mum7c/q8=
-X-Received: by 2002:a05:6102:8412:b0:745:36ea:415b with SMTP id
- ada2fe7eead31-774a0c393b7mr609976137.5.1787024292933; Mon, 17 Aug 2026
- 20:38:12 -0700 (PDT)
-Received: from 101988054943 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 17 Aug 2026 22:38:11 -0500
-Received: from 101988054943 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 18 Aug 2026 03:38:11 +0000
-From: Babanpreet Singh <bbnpreetsingh@gmail.com>
-In-Reply-To: <9f11db59-5245-4bd5-afbb-485500d37675@oss.qualcomm.com>
-References: <9f11db59-5245-4bd5-afbb-485500d37675@oss.qualcomm.com>
+        bh=OOhYCONyOlLqZ7Th3lMilNB9DV3vW0wUhGS0m5kXWkU=;
+        b=CYFCOMM/02KA/Zpjw1s/5kOzH+gEII6xJMSHzw0t7wylM/nTr9hU2uPzGonXMuMEHc
+         BknsgoluYHE/bXrEcR6WF5hcx//tgs4CxPRjLKmbrzzM7A+rTAkNt4JYK4mzgejGjjAE
+         /xkKeO5Cc3e45mZV6sS4xbPTSSRj560mB01Ilx5lfWwqjdwmAdRd+3ngXA3O2/szAL8u
+         PWnJiTHel8yjQBb4UZHcTKdx1TZx2uBGxGOczVBgDOFj99VjnN5cXCenaaxfeKAuyA8/
+         fMse1ODoohFn8YLau09owdG3cUx29FOnG8XrxlGOGF81SPdko7igGSaFEQ8+nOsKW732
+         X+1Q==
+X-Forwarded-Encrypted: i=1; AHgh+RqCEm4embzrXCc9lRNKxYda5aiX0uEvGPDJdzSALaI5IfTAVPBih80IUl/O7ANxU1mOdAIYVoc=@lists.trustedfirmware.org
+X-Gm-Message-State: AOJu0YwFu4ba9izGdWRPKAJf/tM42aOu49WyPhby7OgSa7Px4OKNL/3d
+	gghtbEGk1LzllnHBBkAbe+V0vNwI8xqeB/d82FzE8qGvHwGSr9HWEydq
+X-Gm-Gg: AR+sD10b1Wn554OunXwXmRTrD+HF2Eh0vIZraA36IL28YEwpuOfz7k+NC+RrhswVpiW
+	hirbjn4yFOFCBsNeo6E6ZufCKds9cIN7ChJs1Vx20KNsBH6sz10EJTEZotyLMBRQFCXq4NwWRtp
+	ADpykoVoGsPTP4RAoI0CFv87uMRiZLV/jGCFcVoQsW+UX0HDkt4iVdyoFPpRb6aGJVlFBLnvojs
+	BCe7CiWncHsYs9gI/LHYk0v7CIMmVuyeysjYrW8/hxqIcXaXufue70AwYKZ4mXYvrGh+nKe/tCK
+	lN7PWS+p71T9ejbBkhwlptFEryWJtMcQTwfS5NYSxj6wQ1b2WWYY/I3rXF4Y+oq1rKvoBlpNZ0y
+	unKrZtLZK2bq+cQsWcFmg4EHaSAfvOIaEZ4y6txVWBE9GZZKvdi0wbJbU5Lyn2tto+bgm64i8O7
+	tliRuLIQ9GooEcVtxsA2fK2Tq9Q74rlUsfnl8/GbV6mlEVevzzThoiqmYf/LtYm1c=
+X-Received: by 2002:a05:6a20:a126:b0:3bf:9b61:f7ae with SMTP id adf61e73a8af0-3cd011a0cfbmr5624816637.14.1787128581986;
+        Wed, 19 Aug 2026 01:36:21 -0700 (PDT)
+Received: from ubuntu24.. ([85.149.220.152])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc155464a0asm332268a12.14.2026.08.19.01.36.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Aug 2026 01:36:19 -0700 (PDT)
+From: Xing Loong <xing.xl.loong@gmail.com>
+To: Jens Wiklander <jenswi@kernel.org>
+Subject: [PATCH v4 0/3] tee: add MbedTEE driver
+Date: Wed, 19 Aug 2026 16:35:56 +0800
+Message-ID: <20260819083559.1303348-1-xing.xl.loong@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Date: Mon, 17 Aug 2026 22:38:11 -0500
-X-Gm-Features: AcwNN1U-AVOWmBeBV57CTV0WGb83EoYnz9v6x-yh3VQbi21K0NLNvm86S_SBKxA
-Message-ID: <CAO8wpHw-J_A8bDL1MPnhXtVKSR1O4HCXbox1-eq2of5GU2wYKg@mail.gmail.com>
-Subject: Re: Re: [PATCH] tee: qcomtee: fix kernel-doc warnings
-To: amirreza.zarrabi@oss.qualcomm.com
+Content-Transfer-Encoding: 8bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.00 / 15.00];
+X-Spamd-Result: default: False [-2.00 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	R_MISSING_CHARSET(0.50)[];
 	R_DKIM_ALLOW(-0.20)[gmail.com:s=20251104];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	MIME_GOOD(-0.10)[multipart/alternative,text/plain];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	MISSING_XM_UA(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:~];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.217.52:from];
+	R_SPF_ALLOW(-0.20)[+ip4:74.125.0.0/16];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_TLS_LAST(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,lists.trustedfirmware.org,vger.kernel.org,lists.infradead.org,gmail.com];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
 	DWL_DNSWL_NONE(0.00)[gmail.com:dkim];
+	MIME_TRACE(0.00)[0:+];
 	FREEMAIL_ENVFROM(0.00)[gmail.com];
 	FREEMAIL_FROM(0.00)[gmail.com];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.217.52:from];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	TO_DN_NONE(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
+	DKIM_TRACE(0.00)[gmail.com:+];
+	ASN(0.00)[asn:15169, ipnet:74.125.228.0/24, country:US];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RCVD_COUNT_THREE(0.00)[3];
-	DKIM_TRACE(0.00)[gmail.com:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[74.125.228.0:from];
+	ALIAS_RESOLVED(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[74.125.228.0:from];
+	NEURAL_HAM(-0.00)[-1.000];
+	TAGGED_RCPT(0.00)[dt];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 73BCD44E03
-X-Spamd-Bar: -----
-X-MailFrom: bbnpreetsingh@gmail.com
+X-Rspamd-Queue-Id: 31E6D44EA7
+X-Spamd-Bar: --
+X-MailFrom: xing.xl.loong@gmail.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: HG74HUHV7YR3XHVYWQJFPULNEHQYGVIM
-X-Message-ID-Hash: HG74HUHV7YR3XHVYWQJFPULNEHQYGVIM
-X-Mailman-Approved-At: Tue, 18 Aug 2026 05:25:20 +0000
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="UTF-8"
-X-Content-Filtered-By: Mailman/MimeDel 3.3.5
-CC: jenswi@kernel.org, sumit.garg@kernel.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+Message-ID-Hash: GEJFZCIEYV2F5P2K5NQYT7U4BVUGXZ7T
+X-Message-ID-Hash: GEJFZCIEYV2F5P2K5NQYT7U4BVUGXZ7T
+X-Mailman-Approved-At: Wed, 19 Aug 2026 08:38:33 +0000
+CC: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Rob Herring <robh@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, Xing Loong <xing.xl.loong@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HG74HUHV7YR3XHVYWQJFPULNEHQYGVIM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GEJFZCIEYV2F5P2K5NQYT7U4BVUGXZ7T/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -139,66 +117,135 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
-SGkgSmVucywNCg0KR2VudGxlIHBpbmcuIEFtaXJyZXphIHJldmlld2VkIHRoaXMgYSBjb3VwbGUg
-b2Ygd2Vla3MgYmFjayDigJQgaXMgdGhlcmUNCmFueXRoaW5nIHlvdSBuZWVkIGZyb20gbWUgYmVm
-b3JlIGl0IGNhbiBiZSBwaWNrZWQgdXA/DQoNClRoYW5rcywNCkJhYmFucHJlZXQNCg0KT24gTW9u
-LCBBdWcgMDMsIDIwMjYgMDg6NDkgUE0sIEFtaXJyZXphIFphcnJhYmkgPA0KYW1pcnJlemEuemFy
-cmFiaUBvc3MucXVhbGNvbW0uY29tPiB3cm90ZToNCg0KPiBIaSBCYWJhbnByZWV0LA0KPg0KPiBU
-aGFua3MuDQo+DQo+IFJldmlld2VkLWJ5OiBBbWlycmV6YSBaYXJyYWJpIDxhbWlycmV6YS56YXJy
-YWJpQG9zcy5xdWFsY29tbS5jb20+DQo+DQo+IEFtaXINCj4NCj4gT24gOC8yLzIwMjYgMTA6Mzkg
-QU0sIEJhYmFucHJlZXQgU2luZ2ggd3JvdGU6DQo+ID4gRml4IGtlcm5lbC1kb2MgaXNzdWVzIHBy
-ZXNlbnQgc2luY2UgdGhlIGRyaXZlciB3YXMgYWRkZWQgaW4gY29tbWl0DQo+ID4gZDZlMjkwODM3
-ZTUwICgidGVlOiBhZGQgUXVhbGNvbW0gVEVFIGRyaXZlciIpOg0KPiA+DQo+ID4gLSBhc3luY19y
-ZWxlYXNlKCkgZG9jdW1lbnRzIGl0cyBzZWNvbmQgcGFyYW1ldGVyIGFzIEBtc2csIGJ1dCB0aGUN
-Cj4gPiAgIHBhcmFtZXRlciBpcyBuYW1lZCBhc3luY19tc2cgKG1zZyBpcyBhIGxvY2FsIHZhcmlh
-YmxlKTsNCj4gPiAtIHN0cnVjdCBxY29tdGVlX21zZ19vYmplY3RfaW52b2tlIGRvY3VtZW50cyBt
-ZW1iZXIgQGN0eCwgYnV0IHRoZQ0KPiA+ICAgbWVtYmVyIGlzIG5hbWVkIGN4dDsNCj4gPiAtIGVu
-dW0gcWNvbXRlZV9hcmdfdHlwZSBsZWF2ZXMgUUNPTVRFRV9BUkdfVFlQRV9OUiB1bmRlc2NyaWJl
-ZC4NCj4gPg0KPiA+IFRoZSBjeHQgc3BlbGxpbmcgaXMgcGFydCBvZiB0aGUgUVRFRSBtZXNzYWdl
-IGZvcm1hdCBhbmQgaXMgdXNlZA0KPiA+IHRocm91Z2hvdXQgdGhlIGRyaXZlcjsgc3RydWN0IHFj
-b210ZWVfbXNnX2NhbGxiYWNrIGluIHRoZSBzYW1lIGhlYWRlcg0KPiA+IGFscmVhZHkgZG9jdW1l
-bnRzIGl0IGFzIEBjeHQsIHNvIHRoZSBjb21tZW50IGlzIGNvcnJlY3RlZCByYXRoZXIgdGhhbg0K
-PiA+IHRoZSBtZW1iZXIuDQo+ID4NCj4gPiBObyBmdW5jdGlvbmFsIGNoYW5nZXMuDQo+ID4NCj4g
-PiBBc3Npc3RlZC1ieTogQ2xhdWRlOmNsYXVkZS1vcHVzLTUgW2tlcm5lbC1kb2NdDQo+ID4gU2ln
-bmVkLW9mZi1ieTogQmFiYW5wcmVldCBTaW5naCA8YmJucHJlZXRzaW5naEBnbWFpbC5jb20+DQo+
-ID4gLS0tDQo+ID4gIGRyaXZlcnMvdGVlL3Fjb210ZWUvYXN5bmMuYyAgICAgICAgICB8IDQgKyst
-LQ0KPiA+ICBkcml2ZXJzL3RlZS9xY29tdGVlL3Fjb210ZWVfbXNnLmggICAgfCAyICstDQo+ID4g
-IGRyaXZlcnMvdGVlL3Fjb210ZWUvcWNvbXRlZV9vYmplY3QuaCB8IDEgKw0KPiA+ICAzIGZpbGVz
-IGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYg
-LS1naXQgYS9kcml2ZXJzL3RlZS9xY29tdGVlL2FzeW5jLmMgYi9kcml2ZXJzL3RlZS9xY29tdGVl
-L2FzeW5jLmMNCj4gPiBpbmRleCAzMWJmZjQzMDllNjcyLi41ODQ5ZTUxNjEyMDMzIDEwMDY0NA0K
-PiA+IC0tLSBhL2RyaXZlcnMvdGVlL3Fjb210ZWUvYXN5bmMuYw0KPiA+ICsrKyBiL2RyaXZlcnMv
-dGVlL3Fjb210ZWUvYXN5bmMuYw0KPiA+IEBAIC05NywxMCArOTcsMTAgQEAgc3RhdGljIHZvaWQg
-cWNvbXRlZV9nZXRfYXN5bmNfYnVmZmVyKHN0cnVjdA0KPiBxY29tdGVlX29iamVjdF9pbnZva2Vf
-Y3R4ICpvaWMsDQo+ID4gIC8qKg0KPiA+ICAgKiBhc3luY19yZWxlYXNlKCkgLSBQcm9jZXNzIFFU
-RUUgYXN5bmMgcmVsZWFzZSByZXF1ZXN0cy4NCj4gPiAgICogQG9pYzogY29udGV4dCB1c2VkIGZv
-ciB0aGUgY3VycmVudCBpbnZvY2F0aW9uLg0KPiA+IC0gKiBAbXNnOiBhc3luYyBtZXNzYWdlIGZv
-ciBvYmplY3QgcmVsZWFzZS4NCj4gPiArICogQGFzeW5jX21zZzogYXN5bmMgbWVzc2FnZSBmb3Ig
-b2JqZWN0IHJlbGVhc2UuDQo+ID4gICAqIEBzaXplOiBzaXplIG9mIHRoZSBhc3luYyBidWZmZXIg
-YXZhaWxhYmxlLg0KPiA+ICAgKg0KPiA+IC0gKiBSZXR1cm46IFNpemUgb2YgdGhlIG91dGJvdW5k
-IGJ1ZmZlciB1c2VkIHdoZW4gcHJvY2Vzc2luZyBAbXNnLg0KPiA+ICsgKiBSZXR1cm46IFNpemUg
-b2YgdGhlIG91dGJvdW5kIGJ1ZmZlciB1c2VkIHdoZW4gcHJvY2Vzc2luZyBAYXN5bmNfbXNnLg0K
-PiA+ICAgKi8NCj4gPiAgc3RhdGljIHNpemVfdCBhc3luY19yZWxlYXNlKHN0cnVjdCBxY29tdGVl
-X29iamVjdF9pbnZva2VfY3R4ICpvaWMsDQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICBz
-dHJ1Y3QgcWNvbXRlZV9hc3luY19tc2dfaGRyICphc3luY19tc2csDQo+ID4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdGVlL3Fjb210ZWUvcWNvbXRlZV9tc2cuaA0KPiBiL2RyaXZlcnMvdGVlL3Fjb210
-ZWUvcWNvbXRlZV9tc2cuaA0KPiA+IGluZGV4IDg3OGY3MDE3OGE1YjYuLjVkN2IyMWZkZDM2ODgg
-MTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy90ZWUvcWNvbXRlZS9xY29tdGVlX21zZy5oDQo+ID4g
-KysrIGIvZHJpdmVycy90ZWUvcWNvbXRlZS9xY29tdGVlX21zZy5oDQo+ID4gQEAgLTExMiw3ICsx
-MTIsNyBAQCB1bmlvbiBxY29tdGVlX21zZ19hcmcgew0KPiA+DQo+ID4gIC8qKg0KPiA+ICAgKiBz
-dHJ1Y3QgcWNvbXRlZV9tc2dfb2JqZWN0X2ludm9rZSAtIERpcmVjdCBvYmplY3QgaW52b2NhdGlv
-biBtZXNzYWdlLg0KPiA+IC0gKiBAY3R4OiBvYmplY3QgSUQgaG9zdGVkIGluIFFURUUuDQo+ID4g
-KyAqIEBjeHQ6IG9iamVjdCBJRCBob3N0ZWQgaW4gUVRFRS4NCj4gPiAgICogQG9wOiBvcGVyYXRp
-b24gZm9yIHRoZSBvYmplY3QuDQo+ID4gICAqIEBjb3VudHM6IG51bWJlciBvZiBkaWZmZXJlbnQg
-dHlwZXMgb2YgYXJndW1lbnRzIGluIEBhcmdzLg0KPiA+ICAgKiBAYXJnczogYXJyYXkgb2YgYXJn
-dW1lbnRzLg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RlZS9xY29tdGVlL3Fjb210ZWVfb2Jq
-ZWN0LmgNCj4gYi9kcml2ZXJzL3RlZS9xY29tdGVlL3Fjb210ZWVfb2JqZWN0LmgNCj4gPiBpbmRl
-eCA4YjQ0MDFlY2FkNDhjLi5kNWRlMDJkY2VmM2I5IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMv
-dGVlL3Fjb210ZWUvcWNvbXRlZV9vYmplY3QuaA0KPiA+ICsrKyBiL2RyaXZlcnMvdGVlL3Fjb210
-ZWUvcWNvbXRlZV9vYmplY3QuaA0KPiA+IEBAIC03NCw2ICs3NCw3IEBAIGVudW0gcWNvbXRlZV9v
-YmplY3RfdHlwZSB7DQo+ID4gICAqIEBRQ09NVEVFX0FSR19UWVBFX09POiBvdXRwdXQgb2JqZWN0
-IChPTykuDQo+ID4gICAqIEBRQ09NVEVFX0FSR19UWVBFX0lCOiBpbnB1dCBidWZmZXIgKElCKS4N
-Cj4gPiAgICogQFFDT01URUVfQVJHX1RZUEVfSU86IGlucHV0IG9iamVjdCAoSU8pLg0KPiA+ICsg
-KiBAUUNPTVRFRV9BUkdfVFlQRV9OUjogbnVtYmVyIG9mIGFyZ3VtZW50IHR5cGVzLg0KPiA+ICAg
-Kg0KPiA+ICAgKiBVc2UgdGhlIGludmFsaWQgdHlwZSB0byBzcGVjaWZ5IHRoZSBlbmQgb2YgdGhl
-IGFyZ3VtZW50IGFycmF5Lg0KPiA+ICAgKi8NCj4NCj4NCg==
+This series adds a Linux TEE driver for MbedTEE, a Trusted
+Execution Environment for embedded systems
+(https://github.com/mbedtee).
+
+Two RPC transports are provided for systems where platform
+firmware or board configuration has already established the
+REE/TEE separation before Linux boots:
+
+  - ARM/ARM64: SMC calls and GIC SPI notifications (TrustZone)
+  - RISC-V: shared-memory ring buffers and IMSIC MSI notifications
+
+The driver implements the TEE subsystem interface (tee_driver_ops)
+and provides GlobalPlatform TEE Client API support, dynamic shared
+memory registration, and tee-supplicant support for REE filesystem
+and RPMB operations.
+
+The series is structured as follows:
+  [1/3] dt-bindings: vendor-prefixes: add mbedtee
+  [2/3] dt-bindings: firmware: add mbedtee,tee binding
+  [3/3] tee: add MbedTEE driver
+
+---
+Changes in v4:
+- 0002: Move reserved-memory region descriptions into
+  memory-region-names property (Rob)
+- 0002: Define memory-region-names item order at top level; keep
+  per-branch name count constraints (maxItems: 2 / minItems: 3) (Rob)
+- 0003: Harden ring and RPC handling against malformed input:
+  - Validate both ring indices; bound async ring skip and resync
+    the reader on corrupt framing
+  - Enforce RPC handler modes (COMPLETE_REE async-only, supplicant
+    commands sync-only)
+  - Reference-count rpc_call objects; fix use-after-free on
+    interrupted calls; abort and free leftover calls at teardown
+  - Add XA_FLAGS_LOCK_IRQ to the rpc_calls xarray
+  - Fix supp_recv/supp_abort_all race; malformed supp_send unblocks
+    the worker instead of hanging it
+  - Reject TEE-changed parameter attributes
+  - Report the wire error on failed supplicant requests; fail
+    oversized requests instead of requeueing them forever
+  - Wait for R2T ring space with a bounded backoff; bound
+    COMPLETE_TEE retries and stop them at teardown
+  - Match the supplicant context when dispatching supp_send
+  - Access complete_work_pending under ring_lock
+  - Serialize RPC submission against shutdown and reject new
+    calls once teardown starts
+  - Quiesce all RPC activity before tee_device_unregister() so
+    parked waiters cannot deadlock teardown
+  - Bound non-interruptible RISC-V waits so a hung TEE cannot
+    block ioctls forever
+  - Track closing state on sessions; reject concurrent
+    close/invoke/cancel races
+  - Quarantine TEE-owned call objects at release instead of
+    risking a cross-world use-after-free
+- Link to v3: https://lore.kernel.org/r/20260720073558.799755-1-xing.xl.loong@gmail.com/
+
+Changes in v3:
+- 0002: Drop all phandle stub nodes from examples.
+- 0002: Remove redundant required: - interrupts from then branch.
+- 0002: Simplify title and description.
+- Link to v2: https://lore.kernel.org/r/20260702151115.544016-1-xing.xl.loong@gmail.com/
+- Link to v1: https://lore.kernel.org/r/20260701132514.186953-1-xing.xl.loong@gmail.com/
+
+Changes in v2:
+- 0002: Fix DT binding review comments from Krzysztof Kozlowski:
+  - Drop $nodename, "YAML devicetree binding" wording, property descriptions
+  - Rename compatible string to mbedtee,tee
+  - Rename memory regions: rpc-t2r-ring -> t2r-ring, rpc-t2r-shm -> t2r-shm,
+    rpc-r2t-ring -> r2t-ring
+  - Add memory-region / memory-region-names to required
+  - Simplify allOf constraints (drop redundant else-branch items)
+  - Rewrite description to describe hardware/firmware, not the binding or driver
+  - Drop all irrelevant platform nodes (gic, cpus, reserved-memory)
+  - Add maxItems: 1 constraint to interrupts property (Sashiko AI review)
+- 0003:
+  - Fix supp_release incorrectly aborting unclaimed requests on close
+  - Fix potential tee_shm double-free on supp_recv error path
+  - Fix async RPC ring skip leaving orphaned payload bytes
+  - Fix COMPLETE_TEE retry to also handle transient -ENOMEM on RISC-V
+  - Fix session leak on close_session allocation failure:
+    release kernel resources before sending RPC
+
+---
+Xing Loong (3):
+  dt-bindings: vendor-prefixes: add mbedtee
+  dt-bindings: firmware: add mbedtee,tee binding
+  tee: add MbedTEE driver
+
+ .../bindings/firmware/mbedtee,tee.yaml        | 102 +++
+ .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
+ Documentation/tee/index.rst                   |   1 +
+ Documentation/tee/mbedtee.rst                 | 155 ++++
+ MAINTAINERS                                   |   9 +
+ drivers/tee/Kconfig                           |   3 +-
+ drivers/tee/Makefile                          |   1 +
+ drivers/tee/mbedtee/Kconfig                   |  20 +
+ drivers/tee/mbedtee/Makefile                  |  11 +
+ drivers/tee/mbedtee/core.c                    | 260 +++++++
+ drivers/tee/mbedtee/mbedtee_drv.h             | 289 ++++++++
+ drivers/tee/mbedtee/mbedtee_msg.h             | 219 ++++++
+ drivers/tee/mbedtee/rpc_callee.c              | 697 ++++++++++++++++++
+ drivers/tee/mbedtee/rpc_callee_arm.c          |  91 +++
+ drivers/tee/mbedtee/rpc_callee_riscv.c        | 203 +++++
+ drivers/tee/mbedtee/rpc_caller.c              | 697 ++++++++++++++++++
+ drivers/tee/mbedtee/rpc_caller_arm.c          |  70 ++
+ drivers/tee/mbedtee/rpc_caller_riscv.c        | 238 ++++++
+ drivers/tee/mbedtee/shm_pool.c                | 105 +++
+ drivers/tee/mbedtee/shm_pool.h                |  15 +
+ drivers/tee/mbedtee/supp.c                    | 311 ++++++++
+ include/uapi/linux/tee.h                      |   1 +
+ 22 files changed, 3499 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/firmware/mbedtee,tee.yaml
+ create mode 100644 Documentation/tee/mbedtee.rst
+ create mode 100644 drivers/tee/mbedtee/Kconfig
+ create mode 100644 drivers/tee/mbedtee/Makefile
+ create mode 100644 drivers/tee/mbedtee/core.c
+ create mode 100644 drivers/tee/mbedtee/mbedtee_drv.h
+ create mode 100644 drivers/tee/mbedtee/mbedtee_msg.h
+ create mode 100644 drivers/tee/mbedtee/rpc_callee.c
+ create mode 100644 drivers/tee/mbedtee/rpc_callee_arm.c
+ create mode 100644 drivers/tee/mbedtee/rpc_callee_riscv.c
+ create mode 100644 drivers/tee/mbedtee/rpc_caller.c
+ create mode 100644 drivers/tee/mbedtee/rpc_caller_arm.c
+ create mode 100644 drivers/tee/mbedtee/rpc_caller_riscv.c
+ create mode 100644 drivers/tee/mbedtee/shm_pool.c
+ create mode 100644 drivers/tee/mbedtee/shm_pool.h
+ create mode 100644 drivers/tee/mbedtee/supp.c
+
+base-commit: 03e2778d1f11de9260543f969e9e888a1c2bf830
+-- 
+2.43.0
+
