@@ -4,4099 +4,482 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD3F4C5DF82
-	for <op-tee@archiver.kernel.org>; Thu, 20 Aug 2026 08:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 054B1C5DF87
+	for <op-tee@archiver.kernel.org>; Fri, 21 Aug 2026 08:34:58 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 151D545356
-	for <op-tee@archiver.kernel.org>; Thu, 20 Aug 2026 08:10:58 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1A5A74534F
+	for <op-tee@archiver.kernel.org>; Fri, 21 Aug 2026 08:34:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1787213458;
-	bh=VeQlsY6Ay2/Bu3I7VhenThAfBzG2sR6dkYR3g6EkZt4=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1787301298;
+	bh=qMKIStTY9uGBXIbbNGMaUVDuL+M376yE6CWA4T8XgXI=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=jL5f4fVy4NVqK0sjAOVFKbjIHQkHKwjiWHIf/Ay1AIRQYlKSR8r0URATnvQ2AvC6e
-	 /BiRbBSg5mPo53S9I6lslXDC2QWdzqUmO8zj9SiPvVfzzwRRZXGc+uAxDfsYD14GAs
-	 XOVqBN6hjRpRsR19Bwd3Hv9emZtQLioi1rZSnIVPLZFOBb44jWdGhVOE3DX0xZSglq
-	 Aqa1RNqQc3/Qz1hkG6hNZ9bBJkuqSIU7kUtW56wteJOddXHSNca5u00CtRSplhH6H+
-	 GCwdCd++lMMoSzzReDVJhoeFoe9CAWFvmxhGpQnm+iqy2WoCMR9xQbkyMYT6mpCc7h
-	 0P8SpOiwTHymQ==
+	b=Gu5NYUQtdiSmK4cF0dcDkjKQoO/3xLPgWskCsaY/Oqi0VQmIVQiOK81MMJ6FSLm7/
+	 q14BD/xUDLgQtpz0ZRT+5jpM/5iwsgnqS7N7BoGq5zpWG3tyBxGqchk3QyfSgSL6rF
+	 y6adDywyM0mqIcqrdaCFDe8QTiSAV0K7ZCx8UzcI9beWCODtHSRqdh4lppJl2PFjnJ
+	 RawoR9lWA68LWIj0fDAcBFqUqv9QcVjaT6aiWXJDLchL1BzGuJs63MAO/T2setWYFG
+	 wwH0/eUsg6n1Afmx+AI5mroTEK+alXtu7FmKXm+1ay7WgEyJbVCwbSlvNzimSvQioC
+	 L/Retg5JuAQAg==
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 865C544373
-	for <op-tee@lists.trustedfirmware.org>; Thu, 20 Aug 2026 08:10:49 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 306AA44F1E
+	for <op-tee@lists.trustedfirmware.org>; Fri, 21 Aug 2026 08:34:50 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=ntjN2H5h;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=jH21XiSF;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=EafDhI/K;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=jwl8lhOq;
 	dkim-atps=neutral
 Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67K6Kjve231828
-	for <op-tee@lists.trustedfirmware.org>; Thu, 20 Aug 2026 08:10:49 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67L8WWKq678246
+	for <op-tee@lists.trustedfirmware.org>; Fri, 21 Aug 2026 08:34:49 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	ALrmUlxKUSmyFCOzXtBhR14PHcN9DIPS2pBRp+oVC7w=; b=ntjN2H5hCOFPWf0n
-	Q/+5rNJ1+LJ4VMwysqaVBV4EYCj7Zzi8dtLuFdUKSanNwr/Il9IIynMwg5uoI5Gg
-	6hqdf1BGrg8yiM4+xvgi0xzh/OOVouP2Y/yqUQABw5Zk3BNF++Ob66BZQ46dzXxc
-	7hGQk8yHkuTZOEcroYH1qedSYFc0pnbIRJA0uXwblwU8O84jPGhG721vKlv6Wy7u
-	auasL6jfbU5HeOQJ+jtu4bHetEsLN/7X+J26lh08Xn/6pHU25JkiKm0SShRBFmCZ
-	xFxbQerj6RdHVR4d4vwtIxVtjeif2MIpbYG7qBoW/yghfWa+yFxIZDWT/QoP38+1
-	6NkjfQ==
-Received: from mail-yw1-f198.google.com (mail-yw1-f198.google.com [209.85.128.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g5esauuna-1
+	zkQWmi5XzBRwTW4ADEoT1+0nQs18k5RM5I5+50BNEOU=; b=EafDhI/K2LNjAJIt
+	KszIgwV2LMcLTDt0FksgQRBlHAnS1UNJQzvaRAZET70uJg1ws7/FDNyKitFy1/Vk
+	fTghGIfzVwbGyT1gibO+t5kVv42e/ueNNQEgaOi5wnqysfEa5aw/bq4DG65MqrQM
+	4yCjlqYBVx8eQXyYgfBQgHkwLZKmQzK5e4znenSOqU2SrYSkNce+zsmCB00X6S97
+	GCV7JYWQMZyP1RmN8ADOKBya3xPXWixqb/sM879v9MdkFaiYosZewR7EHbP4tsw3
+	pWO0t5Tecur7UHTnrhkYuDELaXru4G9p/Fru0AA0G9BBK8ZwZbT6jchlX5E5G9am
+	WQIKfg==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g6ebus30d-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 20 Aug 2026 08:10:48 +0000 (GMT)
-Received: by mail-yw1-f198.google.com with SMTP id 00721157ae682-8200c815489so59775097b3.2
-        for <op-tee@lists.trustedfirmware.org>; Thu, 20 Aug 2026 01:10:48 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1787213448; cv=none;
-        d=google.com; s=arc-20260327;
-        b=oYQGtlEwd1azMFgqCq37Dv9MLSMB+aE8SWr1PJ3tvg/CaVlJQ+YhVgbfjleSlOQ7W0
-         +MyLfTz+SnmGvrzRodptozGqt80HFE0bBhALHrDgD5JcxbVAE2SSirpTXKt3bhjXMtE9
-         IGA03zuYZ81lq9Tz5GqNqiSoc6KeOVXTOxCB1vk1hddOSQ2+KiOxX9+aJbebVPKI1pnu
-         P4CDCDO9ZXvDfBOPeI3iZDFOcwn4nIKLTRpnXt9mdrDv5CZadBjfducBEtSaKmungfRW
-         vgazBnFs7ZZl043na7YIhirbBLNluqrRV1CoatZ4s3fP+MYfhyl05I5YN79Ln2x8XGjT
-         ZHMA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=ALrmUlxKUSmyFCOzXtBhR14PHcN9DIPS2pBRp+oVC7w=;
-        fh=IgYC/dmy+EnsSDT4gTMDN2IOpcabP7W/c8KA+wjG7Cs=;
-        b=U91sdHQQca6+3x/dA3ERclqyg1p5JoMItOocA2RworlEn6KrokxS8ijoDVs1pfM9Ex
-         zNS05HPjqxmzEXRmgcbzVX5dGFxVVUkZ1RsJvdBfVxUE2Ov6hJr42TQGK83xLFeH6LTn
-         /x1069rfwCMXBSM68zED4DdCSKKYrhyB9t16uw709nLvl9ZAfZpjuPR5j72EMooPWYGo
-         kAUgUV1e7KPV1GRa2zeo59Gxn7FOTOzDyFel5f8biCJsimNx50X70bC/ZtKShLX5E0vA
-         KxqVcfklNscFOCs/x5nT65wQi/NTgRu1aMND6y3S/tpOgiCfkf5j8sBQMxzlFL0/+ojr
-         yDxw==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	for <op-tee@lists.trustedfirmware.org>; Fri, 21 Aug 2026 08:34:49 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-8488ac68185so1489131b3a.2
+        for <op-tee@lists.trustedfirmware.org>; Fri, 21 Aug 2026 01:34:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1787213448; x=1787818248; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ALrmUlxKUSmyFCOzXtBhR14PHcN9DIPS2pBRp+oVC7w=;
-        b=jH21XiSFVOqHPyc4J6nMEcojnvm0avFhfS+46VBpkjRiART84DoA2Bsbxj1qWqEOHa
-         0xkH3tMp2ET4HJQmIxRaLV7guOKB9n26xO0erdXKOWAJv8/2yRG+F9cMQ86z9HK/MbCt
-         pjQMPDgzGjKAveGr+vQRa+ShCu1ouQKbG57JigYKeELNB75dyXRKICW6SGvl2gEdljmQ
-         0tJM4akvKDF0O22wYFHSty/rGLvXYtQUKmS+mzQOuajoViNfIIOJCqweb0jHENaNU8OO
-         XpZ+q3eajjWZ4b/QqdlRbSmxeRFRKJhlNp2+e4g/9EGePHOftNI5P477PmDRpBPAK6Bz
-         i+jQ==
+        d=oss.qualcomm.com; s=google; t=1787301288; x=1787906088; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :content-language:references:cc:to:from:subject:user-agent
+         :mime-version:date:message-id:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=zkQWmi5XzBRwTW4ADEoT1+0nQs18k5RM5I5+50BNEOU=;
+        b=jwl8lhOqG2jhVVbnVGaVOQlN9QbakkTomAOCbgxMMBl37tlHORviJqjKYdbKTuzCDJ
+         NO6NtY86xBZXPL0otZ7f1/ai9TUGyTumIWSYXJqa3psaeAjvaZl9JNDJzTh4ouIC6Exc
+         HhofGf8nstwQtIpxtVzpnLEIJDUa5M/g6UDSVVKHAwFKeeWC5ANXcsHt0pqY7/VjX0Tn
+         hNsl3gSr2LtdfttKaHltkO/RqXHi2wLaX/7yBnuIKyjhtRflRfUZR3UH+OrSaCimkrdK
+         EnHZ7dl/N4uGrMPPUVHWigvXkuEg97H3Ft6aecvfizbO4eGok1CU+G5IrtkdS68hFAwE
+         K9EQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787213448; x=1787818248;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ALrmUlxKUSmyFCOzXtBhR14PHcN9DIPS2pBRp+oVC7w=;
-        b=K0hrbcpDPhNy4s+rhjmbv92QRpnhJwqX1dbWucfpedpjLPN9DzGhjc0T0/Zh9pJDwE
-         u5DIomnS0yxGkB5HbwP/FpQyipQIAvNFG4Pxw7+CgV8eebCxgcSAgXX3IrbEazGrTq2P
-         ryVwTqbTsBzH957e5ab8tUThyhPbcPGa5aWLGwMWwm7XPDr9enAap6IgMtVYNKtudyLl
-         eVXgeza5c6rzGV6FnIkFz1aiuvoQ1CnUF5SUZreTXrKm0ssjeMMvRBlacWTQKa2R5oaB
-         f/8FasiHUTHmy0bXRigccSlHZ4W9wq44hr3DI9pvy+yZYwS9trSTJv9Kxlssp0M1OPjK
-         lC+Q==
-X-Forwarded-Encrypted: i=1; AHgh+RqphGYz5+bzsqeeAhk/6N63ODK3GJ9TLjmkYzh1aI4lsqvp6EHeFE/pyp71Rm2Wd3ZxEQlTmk4=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++lJffS89DYUIhV5xdLlnhrtPFPnvbCCcFJXPAd4UF1EA+lPDeTo
-	9yNMwlVhareNAjHgqHem2y6S8aSrqhCSWqxwg2wkDInEjXYmLRnJ6eaORNDytH3xwPdNayeHQgA
-	TUUqZ9GqUIxd6AZRa8Llh2MmDu0q5kbQ1bKb9DiSI4buEH+HDewK/I7xTxBCdXtd9EKQiNOmGdZ
-	AmfhqWlUsRGCUFV4S5VFY7j5wmaMVcxGCv4BzNjHlnzgOLHJ8=
-X-Gm-Gg: AR+sD114JqFMfOJPZUVk/Lbm2w7MeM4Z/t0VjzoI0bsgsZCZjaZRNr/8FmswDtWYbJq
-	qC3hPqrbRV0qmpdKQI5v9R/eG+XV2jwWw28Hrmo9S5SwwtGaEuMxFIb6Dm3QgE3oBVm2x/1d2GV
-	mA1q5RcFLAXTxAkHV4Af9CQE/bnYNIfdvOohVKS8HuHaKbk5tPQNuajnw=
-X-Received: by 2002:a05:690c:319:b0:81f:2479:16da with SMTP id 00721157ae682-844df34e63emr48346077b3.16.1787213446121;
-        Thu, 20 Aug 2026 01:10:46 -0700 (PDT)
-X-Received: by 2002:a05:690c:319:b0:81f:2479:16da with SMTP id
- 00721157ae682-844df34e63emr48345507b3.16.1787213444736; Thu, 20 Aug 2026
- 01:10:44 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1787301288; x=1787906088;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :content-language:references:cc:to:from:subject:user-agent
+         :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=zkQWmi5XzBRwTW4ADEoT1+0nQs18k5RM5I5+50BNEOU=;
+        b=rld5oAD7+LPUtfHivff/lzjp9VL+1LzudW8GBHOddRuqNZ7ROlsdCWF/65JERO9sbb
+         ezFbc9Q5xrqMTTd4aHfXMBzwYyZpFaneq0FPaqRjTPfPcInbw84VOdY8c/i5WdwCHw+O
+         /m34Ipxd0V98oXiPjPUWFMNaKvUvno8Yvd5Tm1e1Yjc5RRDYujHYDgaSUdpyaYSMDJLp
+         Rml7Brmdo5p24xRKjWWXWkipUUzLZe/jRL3Sedj/Q1jHM8PR0BLTonnXf7Sds+9CQCT5
+         d+VAPfFt9pN+Q2yzShvVPiw8+Yie32Q5WmYwZxL6FnnfwNR+mzCerZzQmqRZ7NJbOVqF
+         nU9g==
+X-Forwarded-Encrypted: i=1; AHgh+RqgTuJB9bARy/m3M26FmJiGbHrlvGrYJuE1cNE3Oq3vaSXHLoV7D/dSTtij57vVL8aMnP3u0Q8=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++mt46FqdJzk0xhvIH/J6BukvejFipJIEd1+M4BUvsjt+XYYA7L5
+	g2zGNKmU8V59Fe9OFk9aoFoscnUZ6idtXbbKf1ouZ2NP1HWt/dOzT/9vYILFHKY0ZSb03L3Ajmq
+	a6TuDteklgiuI/+A/yDm4xc8Y8WAzXrp4Cna4w/i5BboZh5Mx4Z27pZEhviAlwxjCWtMNyFnN
+X-Gm-Gg: AR+sD11rkwy8JKCAlsQgPopUXT7RJ761LEmvB8w1pNy5xUtFYRe8qhFVAmmnP30HRUY
+	2IfUfa94qdmoB1M5hS24X+pGMsOErWsBlXeq9u7qKkAjXfOHFfZvJdSsui6lv5uURpJkF624Vrx
+	pILw+55q6n4hWT1b9TCWEe2SUkNPcru46f4ljhLlD+kM/i4L8EHWHhpcnOwDMFWV2+iI1NfggnW
+	fdaDyXhw+4iVVuLwXP9zKSRzQESpUM/J17+yTzxpp6BdF1cgnIjUNBW5zGMqDa4SI5DO29UNvXD
+	f3Q67hPMCTJ0fU3ewtCxbFVklHjUKeNGcVSRGSanVMimAVrzV7+j6ljtHbYwoHoLpCDX8YORPFG
+	bM5qgVy4uxzTcgxIPOIsldjiTF9lh
+X-Received: by 2002:a05:6a00:300f:b0:84f:a7bf:8fb9 with SMTP id d2e1a72fcca58-851f9a23599mr8615154b3a.3.1787301288357;
+        Fri, 21 Aug 2026 01:34:48 -0700 (PDT)
+X-Received: by 2002:a05:6a00:300f:b0:84f:a7bf:8fb9 with SMTP id d2e1a72fcca58-851f9a23599mr8615031b3a.3.1787301287684;
+        Fri, 21 Aug 2026 01:34:47 -0700 (PDT)
+Received: from [10.92.193.241] ([202.46.23.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-851d3640a31sm2550273b3a.40.2026.08.21.01.34.43
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 21 Aug 2026 01:34:47 -0700 (PDT)
+Message-ID: <57335851-3c04-4452-ac31-2020591ef816@oss.qualcomm.com>
+Date: Fri, 21 Aug 2026 14:04:35 +0530
 MIME-Version: 1.0
-References: <20260819083559.1303348-1-xing.xl.loong@gmail.com> <20260819083559.1303348-4-xing.xl.loong@gmail.com>
-In-Reply-To: <20260819083559.1303348-4-xing.xl.loong@gmail.com>
-Date: Thu, 20 Aug 2026 10:10:32 +0200
-X-Gm-Features: AcwNN1W2emIAtprAWUikOujGXIwM6la5aQXqTRQx3WZHmiQM39x2g6BrEJf8hrA
-Message-ID: <CAGgiveU2TjkA1YnPxBy2e9qtCorSumuno04aEir-u74yKvXBsw@mail.gmail.com>
-Subject: Re: [PATCH v4 3/3] tee: add MbedTEE driver
-To: Xing Loong <xing.xl.loong@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODIwMDA1OCBTYWx0ZWRfX3LiLr/wHtL2Y
- Ax1+7ngcguNbNh977Wcce5hphx/cq8tcTxtWw2xMp1LgKpCHIYFGLuvSJT71i2aSMD8M6YtkC39
- nMcsBcVgc03cgRpv0i+0KAHD6b2kAE8=
-X-Authority-Analysis: v=2.4 cv=fKcJG5ae c=1 sm=1 tr=0 ts=6a86b688 cx=c_pps
- a=g1v0Z557R90hA0UpD/5Yag==:117 a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_glEPmIy2e8OvE2BGh3C:22 a=NEAV23lmAAAA:8 a=7CQSdrXTAAAA:8 a=pGLkceISAAAA:8
- a=b45o4kL6AAAA:8 a=IpJZQVW2AAAA:8 a=VwQbUJbxAAAA:8 a=GL6uePsVmAvmmrWbcxgA:9
- a=QEXdDO2ut3YA:10 a=MFSWADHSvvjO3QEy5MdX:22 a=a-qgeE7W1pNrGK8U0ZQC:22
- a=dhdsR-PFWuPJUldTnwXm:22 a=IawgGOuG5U0WyFbmm1f5:22
-X-Proofpoint-ORIG-GUID: oZShi2LUCOpGV6yGPORAFVNYJSzzAX44
-X-Proofpoint-GUID: oZShi2LUCOpGV6yGPORAFVNYJSzzAX44
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIwMDA1OCBTYWx0ZWRfX/80tfYSrJ0Af
- qrWfNRrJFIwzd0TFqCD0pBe29d2SAWNhv5S9P6U13S87tDYQDi7od2Ui3xvHP65pd5HfLkDrldZ
- BPhWC6Y77UAC1KzperpfMcesg9AeEDivXRKVJPr4Imgppxq+BwD+OwE1YQv5LNFv3VR/tCfY7xb
- 08h9+ziiTAHTDuGnzH2cq+88JZvwdiqACFQgc5/nENarIW+OGPa/83uVHBu9ZLrDSk1JxkljuYI
- KyD3+nUQPSlx2jAvnLJq7Qn8xweYKGioYunTzZ+ChNslF/wyYM9hkenZ01mwpPl/qC5lkXKtWRK
- HhySYBdixX/SK/G5YNil30+o5swammUkVG0EWANz6DRM9n1z8GNzT8FNP0czTpd4foxD9L0z9so
- B9uoW+vtJqS6AAXShFY8FO9Xm0xjU8D0RTtUHRNWEbH1qQoCyJglWMvHMHtxX62Iq0tM9a5ZCYK
- ANjr/jeQ1mrzM6sYJAQ==
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/6] Add TEE based client driver for UEFI Secure
+ Application
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+References: <20260722-qcom_uefisecapp_migrate_qcomtee-v2-0-b8a8fcbe4211@oss.qualcomm.com>
+ <nfijwr2ptpxqvdw625yedep7tmakwvkeavyeobrmig5hbkw77w@rcqyp7h4y327>
+ <db27820a-2b43-45e4-bc4a-0e9e81aacd93@oss.qualcomm.com>
+ <oicbypv7rpxmweclopi5xxpcfq5chnypp5tlqd4uix2pm5e72f@kd3bibeximjq>
+ <10a091a4-89a5-4a0c-820d-c5b91dd52529@oss.qualcomm.com>
+ <ebcfafdf-6cd3-49cc-8096-d1289af75fd5@oss.qualcomm.com>
+Content-Language: en-US
+Organization: Qualcomm
+In-Reply-To: <ebcfafdf-6cd3-49cc-8096-d1289af75fd5@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: CkqMlXLL-ZvtmXja-EHvRAbo3IS2S1ok
+X-Proofpoint-ORIG-GUID: CkqMlXLL-ZvtmXja-EHvRAbo3IS2S1ok
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIxMDA2MSBTYWx0ZWRfXy8UrXlTH6SHZ
+ 1pCKNlNsexct9A5DZBWhXkTNfyuSAVFSpNmYrDQ3zoZLLcnl3QPHV4iRWckXQg/4X3hvE3XfKbR
+ KU840K2IE/Tgvd5NVn3f3pwYBux/UGs=
+X-Authority-Analysis: v=2.4 cv=QJlYgALL c=1 sm=1 tr=0 ts=6a880da9 cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=j4ogTh8yFefVWWEFDRgCtg==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=P-IC7800AAAA:8 a=NEAV23lmAAAA:8 a=9ateTxuJ7PeoZa8Ee7wA:9 a=QEXdDO2ut3YA:10
+ a=2VI0MkxyNR6bbpdq8BZq:22 a=d3PnA9EDa4IxuAV0gXij:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIxMDA2MSBTYWx0ZWRfX4U6Ghnju6eRB
+ l0ow6KgwtdXQPPpnc+qUNwdc93eNUBxydilB7U5l8aSGcb7EdFUGtiaBbg4mW+RSz5H0Jo7asF7
+ UYXcs5nOK8pSLurZE5dDYjH1/TLn3oJpUx1GAJcuEjKiCu1MJpGRZaTtzihZ4wXROPqf7VeYEeV
+ ox/Vxcz+cmVXSGIZKnQFEUC+dPFjAX5NCBU/3ajyAVK5d5VVD3ibCUuER8xiFIprSRi10uo71Jg
+ M8fvnWaVPo9WneUP1GpwORCPxifjY0B/skmaXnjHwE3LeuqsJ23PLmQZrwI/FAmKm/AGYI8T4WT
+ RS8W9tjxHV+gt+jMgadcDtKsviAx6TVlSmrbQszpe+w8YcwS6HU0CxyMus0goOI0CTK+Qhuopyh
+ TFUmDJU3XcFMzkLN/MzYqI88c+pRX3rgMi1YQyryZgxbXgboYxVJ13f48M6wsllMO5Qq/ia8XaH
+ FExp7IaHJ2S33CpaSew==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-19_06,2026-08-19_02,2025-10-01_01
+ definitions=2026-08-21_02,2026-08-21_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0 impostorscore=0
- bulkscore=0 adultscore=0 priorityscore=1501 malwarescore=0 phishscore=0
+ adultscore=0 bulkscore=0 suspectscore=0 impostorscore=0 clxscore=1015
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 phishscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608200058
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608210061
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.60 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Spamd-Result: default: False [-6.10 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
 	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com];
-	RCVD_COUNT_THREE(0.00)[3];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
 	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	MIME_TRACE(0.00)[0:+];
+	HAS_ORG_HEADER(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[205.220.180.131:from];
+	MID_RHS_MATCH_FROM(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	TO_DN_SOME(0.00)[];
-	ALIAS_RESOLVED(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[10];
+	FROM_HAS_DN(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.210.197:received];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_COUNT_THREE(0.00)[4];
+	RCVD_TLS_LAST(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	TAGGED_RCPT(0.00)[dt];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.198:received]
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 865C544373
-X-Spamd-Bar: -----
-Message-ID-Hash: N6DNL4M6VGU67IIQAK2ELLA362L5G25D
-X-Message-ID-Hash: N6DNL4M6VGU67IIQAK2ELLA362L5G25D
-X-MailFrom: jens.wiklander@oss.qualcomm.com
+X-Rspamd-Queue-Id: 306AA44F1E
+X-Spamd-Bar: ------
+Message-ID-Hash: 5R2W57RMNERTCZHUPR647OO3EQYLXHSU
+X-Message-ID-Hash: 5R2W57RMNERTCZHUPR647OO3EQYLXHSU
+X-MailFrom: harshal.dev@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Jens Wiklander <jenswi@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Rob Herring <robh@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+CC: Jens Wiklander <jens.wiklander@oss.qualcomm.com>, Sumit Garg <sumit.garg@kernel.org>, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/N6DNL4M6VGU67IIQAK2ELLA362L5G25D/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5R2W57RMNERTCZHUPR647OO3EQYLXHSU/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Jens Wiklander via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
+From: Harshal Dev via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
 
-Hi,
+Hello Dmitry,
 
-On Wed, Aug 19, 2026 at 10:37=E2=80=AFAM Xing Loong <xing.xl.loong@gmail.co=
-m> wrote:
->
-> This patch adds a Linux TEE driver that communicates with
-> MbedTEE OS, a Trusted Execution Environment for embedded
-> systems (https://github.com/mbedtee) via a fixed shared-memory
-> RPC protocol over architecture-specific transports:
->
->   - ARM/ARM64: SMCCC fast/yield calls for REE-to-TEE requests;
->     TEE-to-REE notifications via a GIC SPI edge interrupt.
->   - RISC-V: REE submits commands by writing to a shared-memory
->     r2t-ring that the TEE polls; the TEE notifies the REE by
->     writing to t2r-ring and raising a platform IMSIC MSI.
->     No REE-to-TEE interrupt is used.
->
-> The driver implements the TEE subsystem interface (tee_driver_ops)
-> and provides GlobalPlatform TEE Client API support, dynamic shared
-> memory registration, and tee-supplicant support.
->
-> Signed-off-by: Xing Loong <xing.xl.loong@gmail.com>
+A gentle reminder. Hopefully we can align on below points and move to
+a v3 of this series.
 
-I took a quick look at the mbedtee project, and it appears to be a
-one-person hobby project. Sounds like fun, but I wonder how meaningful
-it is to upstream a kernel driver if you're the only user.
+Regards,
+Harshal
 
-Cheers,
-Jens
+On 17-08-2026 11:54 am, Harshal Dev wrote:
+> Hi Dmitry,
+> 
+> Many thanks for your engagement and review on this series. I am looking forward
+> to your opinions on below comments so we can align on a a v3 of this series.
+> 
+> Best Regards,
+> Harshal
+> 
+> On 12-08-2026 05:00 pm, Harshal Dev wrote:
+>> Hi Dmitry,
+>>
+>> On 10-08-2026 12:37 pm, Dmitry Baryshkov wrote:
+>>> On Fri, Jul 24, 2026 at 02:43:42PM +0530, Harshal Dev wrote:
+>>>> Hi Dmitry,
+>>>>
+>>>> On 22-07-2026 01:56 pm, Dmitry Baryshkov wrote:
+>>>>> On Wed, Jul 22, 2026 at 12:29:11PM +0530, Harshal Dev wrote:
+>>>>>> On Qualcomm SoC based platforms, UEFI stores EFI variables within the
+>>>>>> Replay Protected Memory Block (RPMB) which is only accessible by the
+>>>>>> Qualcomm Trusted Execution Environment (QTEE).
+>>>>>
+>>>>> Is it so? I think RPMB is accessible to Linux...
+>>>>
+>>>> I should have been more descriptive here, RPMB is accessible by Linux but
+>>>> its frames can only be prepared by QTEE.
+>>>>
+>>>> The RPMB key which is one-time programmed into the storage controller to allow
+>>>> authentication of the RPMB frames is generated by and only available to a TEE.
+>>>> So on Qualcomm platforms (and many others platforms with a TEE) Linux can only
+>>>> route the RPMB frames generated by QTEE to the storage, it cannot create and
+>>>> write the RPMB frames itself (it doesn't have access to the key).
+>>>>
+>>>> While it is possible for Linux to generate/program/store this key, on Qualcomm
+>>>> platforms we do not want Linux to do so because we do not trust it. We trust
+>>>> QTEE.
+>>>>
+>>>> I will re-phrase this and make it a bit more clear everywhere.
+>>>
+>>> OK.
+>>>
+>>>>
+>>>>>
+>>>>>> For Qualcomm platforms without emulated RPMB support, specifically
+>>>>>
+>>>>> What is emulated RPMB support? Why is it mentioned here? Which platforms
+>>>>> use emulated RPMB?
+>>>>
+>>>> Emulated RPMB refers to RPMB on a storage which doesn't have its own firmware.
+>>>> Primarily, NAND/NOR storage. Unlike UFS/eMMC storage, NAND/NOR storage does not
+>>>> have a storage controller where we can program the RPMB key to be used by the
+>>>> firmware. So we must 'emulate' RPMB by moving the storage driver within QTEE
+>>>> and making the driver hold/use the key.
+>>>>
+>>>> Qualcomm compute SoCs (Glymur, Hamoa) have RPMB available on SPI-*NOR* storage,
+>>>> and a driver for communicating with it is also available in QTEE. And so, these
+>>>> have 'emulated' RPMB.
+>>>
+>>> This needs to be explained in the cover letter.
+>>>
+>>
+>> Ack. 
+>>>>
+>>>> I will add this detail in an updated cover letter.
+>>>>>
+>>>>>> platforms where RPMB is not located within SPI-NOR storage and instead
+>>>>>> located on UFS/EMMC storage, non-volatile EFI variables can only be set via
+>>>>>> a callback request from the UEFI Secure Application to the RPMB service
+>>>>>> running in user-space (within the QTEE supplicant [1]).
+>>>>>
+>>>>> Can it be moved to the kernel?
+>>>>
+>>>> We have a plan to move the RPMB service to the kernel similar to OPTEE:
+>>>> https://elixir.bootlin.com/linux/v7.2-rc3/source/drivers/tee/optee/rpc.c#L449
+>>>>
+>>>> It is a work in progress. Once this happens, we don't need QTEE supplicant available
+>>>> on the Linux distribution.
+>>>
+>>> Ok.
+>>>
+>>>>
+>>>>>
+>>>>>>
+>>>>>> Unlike the QCOM-TEE driver, the QSEECOM driver (used by the current
+>>>>>> QSEECOM based uefisecapp) does not support callback requests.
+>>>>>
+>>>>> How did it work then? I think Windows has been perfectly using QSEECOM
+>>>>> rather than QTEE.
+>>>>
+>>>> It works because Windows on Arm on Qualcomm has SPI-NOR storage. A driver for which
+>>>
+>>> I have WoA devices without SPI NOR. Windows still can store UEFI
+>>> variables.
+>>>
+>>
+>> Ahh, the key point here is 'Windows'. Windows has a separate way of providing
+>> RPMB access via a service in the TrEE driver within the OS:
+>> https://github.com/microsoft/Windows-driver-samples/tree/main/TrEE
+>>
+>> However, the Linux QSEECOM driver we have here in upstream does not have that support.
+>> And so without the QCOMTEE + QTEE supplicant combination, we cannot access EFI
+>> variables on these Qualcomm WoA platforms when they boot with upstream Linux.
+>>
+>>>> is available within QTEE, and so QTEE does not need to make a callback request
+>>>> to Linux to request RPMB frame routing. However, in case of UFS/eMMC storage the
+>>>> driver only exists in the Linux kernel and so QTEE must make a callback request.
+>>>>
+>>>> And so, if you try to use the QSEECOM driver to write EFI-variables to RPMB
+>>>> on a device with UFS/eMMC storage, it won't work.
+>>>
+>>> Yep. It seems to work under Windows though.
+>>>
+>>
+>> As explained above, the mechanism is different for Windows. A different driver
+>> and a different protocol. :)
+>>
+>>>>
+>>>>>
+>>>>>> And on
+>>>>>> certain Qualcomm platforms such as the RB3Gen2, attempts to access the
+>>>>>> QSEECOM interface fail due to lack of support within Qualcomm TEE.
+>>>>>
+>>>>> So, I assume, on RB3 Gen2 the QSEECOM doesn't report uefisecapp as
+>>>>> supported. Does it?
+>>>>
+>>>> It doesn't, this API returns -2 if I add RB3 Gen2 in the allow-list for QSEECOM:
+>>>> https://elixir.bootlin.com/linux/v7.2-rc3/source/drivers/firmware/qcom/qcom_qseecom.c#L46
+>>>
+>>> Does it support QTEE-based uefi variable storage?
+>>>
+>>
+>> It does, the QTEE-based uefi variable storage app, i.e. uefisecapp is loaded by
+>> UEFI on RB3Gen2, however, the QSEECOM interface on RB3Gen2 is broken so it misreports
+>> it as 'not supported'. But the app is loaded and available, which is why if you apply
+>> this patch series, you can communicate with it. Just make sure you take the QTEE
+>> release mentioned in this cover letter.
+>>
+>>>>>> On these platforms, a TEE based uefisecapp client driver is required to:
+>>>>>> 1. Access cached & volatile EFI variables stored in uefisecapp's memory.
+>>>>>> 2. Ensure persistence of non-volatile EFI variables via writes through
+>>>>>> the RPMB service hosted in the QTEE supplicant.
+>>>>>>
+>>>>>> This series introduces such a uefisecapp TEE client driver for the
+>>>>>> aforementioned Qualcomm platforms which installs efi-var operations _if_
+>>>>>> the QCOMTEE driver registers support for an object-IPC based uefisecapp
+>>>>>> service on the TEE bus during its probe. Only new QTEE firmware versions
+>>>>>> available at [2] provide this support.
+>>>>>
+>>>>> What about existing WoA devices?
+>>>>
+>>>> New Windows on Arm devices like Hamoa/Glymur work perfectly fine with existing
+>>>> QSEECOM based uefisecapp. But they will also work with this new QCOMTEE based
+>>>> uefisecapp once they upgrade their firmware.
+>>>
+>>> Do extisting commercial devices suppot it? For example, does Lenovo T14s
+>>> support it? Will it continue to work with this patchset in place?
+>>
+>> Existing devices like the Lenovo T14s do not have mature QCOMTEE/SMCInvoke support
+>> on QTEE side and new QTEE versions for it are not being rolled out. However, this
+>> QCOMTEE based uefisecapp driver and the QSEECOM based uefisecapp driver can co-exist.
+>> It will not cause any breakage of existing working functionality since the QSEECOM
+>> path can probe and continue as usual.
+>>
+>> As per your comments on patch 6 of this series, I plan to enable the QCOMTEE based
+>> uefisecapp as default 'm'. That way we don't need to enable one over the other and
+>> will continue supporting all existing functionality while extending it for devices
+>> with UFS/eMMC storage and running upstream Linux.
+>>
+>> Do let me know your opinion on it.
+>>
+>>>
+>>> What about other existing devices? We have WoA devices starting with
+>>> MSM8998. The QSEECOM driver works on them, but, as you mentioned, it
+>>> can't flash updates to the backing storage.
+>>>
+>>
+>> Unfortunately, unless we roll out new QTEE firmware versions for devices like MSM8998
+>> with QCOMTEE/SMCInvoke support + access to the Uefisecapp over SMCInvoke protocol,
+>> they cannot be helped with this series.
+>>
+>>>> I need to double-check but this firmware release for Glymur on Qualcomm Linux
+>>>> is probably carrying the support for QCOMTEE based uefisecapp access:
+>>>> https://github.com/qualcomm-linux/meta-qcom/commit/728251fcbe5113980805ea6c571e33235062ee71
+>>>> If not, the next release will definitely have it since I have merged support for
+>>>> this in QTEE and talked to the boot firmware release team about this.
+>>>
+>>> Does it work on the CRD?
+>>>
+>>
+>> Yes it does, I have validated on Glymur CRD by locally switching it from the current QSEECOM
+>> based uefisecapp to this new QCOMTEE based uefisecapp. This is the QTEE release which
+>> needs to be consumed for it:
+>> https://github.com/qualcomm-linux/meta-qcom/commit/5590c1dc631827624c110df282965b85ef2a2e60 
+>>
+>>>>
+>>>> The next planned firmware upgrade for Hamoa will also provide this support for
+>>>> Qualcomm Linux. And similarly, for all other targets being supported upstream.
+>>>
+>>> So, we are forcing users to upgrade to the new firmware? That doesn't
+>>> sound nice.
+>>>
+>>
+>> We have an open ecosystem for all devices supported by the Qualcomm Linux distribution,
+>> users can easily consume new releases (and new QTEE versions) to access new features.
+>> Until now, developers/users of RB3Gen2 or IQ-9075 could not access EFI variables to
+>> develop use-cases such as secure-boot key revocation, but by taking this patch series
+>> as part of a subsequent Qualcomm Linux release, they will be able to.
+>>
+>>>>>> Thus, QCOMTEE now maintains a static list of always-available object-IPC
+>>>>>> based secure services exposed by QTEE. These services are implemented either
+>>>>>> within the QTEE kernel or within a pre-loaded Trusted Application (TA)
+>>>>>> usually loaded by the bootloader. The uefisecapp TA is an example of a
+>>>>>> preloaded TA loaded by UEFI. A static list is required since QTEE does not
+>>>>>> yet expose any way to dynamically query and enumerate the services exposed by
+>>>>>> it.
+>>>>>
+>>>>> Can it be fixed instead of having static lists? In the end, we can't
+>>>>> guarantee that users update the firmware.
+>>>>>
+>>>>
+>>>> Unfortunately, no existing QTEE release out there currently has this support.
+>>>> But support for this is currently being added by QTEE team last I checked with them.
+>>>> Once it is available, and a new QTEE firmware release is out there, we will add
+>>>> support for dynamically querying QTEE services in the QCOMTEE driver. 
+>>>
+>>> It seems you are still rolling out QTEE-based support. In such a case,
+>>> please go back and implement dynamic detection of QTEE services.
+>>> Otherwise it would be a nightmare.
+>>>
+>>
+>> We are working on it, but until then there is no overhead involved in maintaining
+>> this static list of services because we don't have to extend/modify this list when
+>> adding support for a new Qualcomm platform upstream. If a particular service from
+>> the list is not implemented/accessible from QTEE we log the event and silently avoid
+>> probing the TEE driver for the service. We also don't add platform specific services
+>> here. So the list doesn't need to be extended on a per-platform basis.
+>>
+>> So unlike the QSEECOM driver, we don't have to keep maintaining this list forever
+>> for all new platforms.
+>>
+>>>>>> To facilitate object-IPC interactions from the kernel-space, this
+>>>>>> series also introduces a tee_client_object_invoke_func() to allow
+>>>>>> invocation of TEE objects similar to the existing tee_client_invoke_func()
+>>>>>> API exported by the TEE subsystem which allows invocation of TEE functions.
+>>>>>> Some suporting changes are also introduced to track and handle operations
+>>>>>> for TEE contexts opened from the kernel-space in the back-end QCOM-TEE
+>>>>>> driver.
+>>>>>>
+>>>>>> Finally and as previously mentioned, access to the object-IPC based uefisecapp
+>>>>>> service is restricted on older QTEE firmware versions. A new QTEE firmware
+>>>>>> release must be picked up from QArtifactory [2] for all upstream supported
+>>>>>> Qualcomm SoCs to enable access to uefisecapp service via the TEE client
+>>>>>> driver.
+>>>>>
+>>>>> What about fused devices?
+>>>>
+>>>> The procedure for updating the firmware on fused devices is slightly different.
+>>>> The firmware images need to be signed by the OEM using the security profile
+>>>> of the chipset before flashing/upgrading them. Security profiles are now public:
+>>>> https://github.com/qualcomm/security-profiles
+>>>
+>>> Will OEMs release new firmware images? What about the devices which are
+>>> already out of the support phase? This whole story rotates about the 'we
+>>> are releasing new firmware with new features' paradigm. However there
+>>> are existing devices in the field, which typically can't be upgraded,
+>>> From your cover letter it seems they can't support UEFI variables
+>>> properly. However they do so in Windows.
+>>>
+>>
+>> Yes Dmitry, this series is effectively forward looking. QSEECOM protocol/driver
+>> support is essentially deprecated on QTEE side, no new features added to QTEE support
+>> it, and it also doesn't work on many devices like the RB3Gen2.
+>>
+>> For existing devices, if they boot with upstream Linux and have RPMB located on
+>> UFS/eMMC this patch series cannot help them. But the focus of this series is not on the
+>> past, it is on currently supported and future hardware. Every new Qualcomm platform
+>> whose support is being up-streamed or is planned to be up-streamed will have access to
+>> EFI variables via this series.
+>>
+>> If someone wants to add support for older Qualcomm devices to access EFI variables
+>> via QSEECOM that patch series will not conflict with this one. Like I said, both
+>> QSEECOM and QCOMTEE based drivers can co-exist.
+>>
+>> Regards,
+>> Harshal
+>>
+>>
+>>  
+>>
+> 
 
-> ---
-> Changes in v4:
-> - Harden ring and RPC handling against malformed input:
->   - Validate both ring indices; bound async ring skip and resync
->     the reader on corrupt framing
->   - Enforce RPC handler modes (COMPLETE_REE async-only, supplicant
->     commands sync-only)
->   - Reference-count rpc_call objects; fix use-after-free on
->     interrupted calls; abort and free leftover calls at teardown
->   - Add XA_FLAGS_LOCK_IRQ to the rpc_calls xarray
->   - Fix supp_recv/supp_abort_all race; malformed supp_send unblocks
->     the worker instead of hanging it
->   - Reject TEE-changed parameter attributes
->   - Report the wire error on failed supplicant requests; fail
->     oversized requests instead of requeueing them forever
->   - Wait for R2T ring space with a bounded backoff; bound
->     COMPLETE_TEE retries and stop them at teardown
->   - Match the supplicant context when dispatching supp_send
->   - Access complete_work_pending under ring_lock
->   - Serialize RPC submission against shutdown and reject new
->     calls once teardown starts
->   - Quiesce all RPC activity before tee_device_unregister() so
->     parked waiters cannot deadlock teardown
->   - Bound non-interruptible RISC-V waits so a hung TEE cannot
->     block ioctls forever
->   - Track closing state on sessions; reject concurrent
->     close/invoke/cancel races
->   - Quarantine TEE-owned call objects at release instead of
->     risking a cross-world use-after-free
->
-> Changes in v3:
-> - No changes (driver unchanged since v2)
->
-> Changes in v2:
-> - Fix supp_release incorrectly aborting unclaimed requests on close
-> - Fix potential tee_shm double-free on supp_recv error path
-> - Fix async RPC ring skip leaving orphaned payload bytes
-> - Fix COMPLETE_TEE retry to also handle transient -ENOMEM on RISC-V
-> - Fix session leak on close_session allocation failure:
->   release kernel resources before sending RPC
->
-> ---
->  Documentation/tee/index.rst            |   1 +
->  Documentation/tee/mbedtee.rst          | 155 ++++++
->  MAINTAINERS                            |   9 +
->  drivers/tee/Kconfig                    |   3 +-
->  drivers/tee/Makefile                   |   1 +
->  drivers/tee/mbedtee/Kconfig            |  20 +
->  drivers/tee/mbedtee/Makefile           |  11 +
->  drivers/tee/mbedtee/core.c             | 260 +++++++++
->  drivers/tee/mbedtee/mbedtee_drv.h      | 289 ++++++++++
->  drivers/tee/mbedtee/mbedtee_msg.h      | 219 ++++++++
->  drivers/tee/mbedtee/rpc_callee.c       | 697 +++++++++++++++++++++++++
->  drivers/tee/mbedtee/rpc_callee_arm.c   |  91 ++++
->  drivers/tee/mbedtee/rpc_callee_riscv.c | 203 +++++++
->  drivers/tee/mbedtee/rpc_caller.c       | 697 +++++++++++++++++++++++++
->  drivers/tee/mbedtee/rpc_caller_arm.c   |  70 +++
->  drivers/tee/mbedtee/rpc_caller_riscv.c | 238 +++++++++
->  drivers/tee/mbedtee/shm_pool.c         | 105 ++++
->  drivers/tee/mbedtee/shm_pool.h         |  15 +
->  drivers/tee/mbedtee/supp.c             | 311 +++++++++++
->  include/uapi/linux/tee.h               |   1 +
->  20 files changed, 3395 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/tee/mbedtee.rst
->  create mode 100644 drivers/tee/mbedtee/Kconfig
->  create mode 100644 drivers/tee/mbedtee/Makefile
->  create mode 100644 drivers/tee/mbedtee/core.c
->  create mode 100644 drivers/tee/mbedtee/mbedtee_drv.h
->  create mode 100644 drivers/tee/mbedtee/mbedtee_msg.h
->  create mode 100644 drivers/tee/mbedtee/rpc_callee.c
->  create mode 100644 drivers/tee/mbedtee/rpc_callee_arm.c
->  create mode 100644 drivers/tee/mbedtee/rpc_callee_riscv.c
->  create mode 100644 drivers/tee/mbedtee/rpc_caller.c
->  create mode 100644 drivers/tee/mbedtee/rpc_caller_arm.c
->  create mode 100644 drivers/tee/mbedtee/rpc_caller_riscv.c
->  create mode 100644 drivers/tee/mbedtee/shm_pool.c
->  create mode 100644 drivers/tee/mbedtee/shm_pool.h
->  create mode 100644 drivers/tee/mbedtee/supp.c
->
-> diff --git a/Documentation/tee/index.rst b/Documentation/tee/index.rst
-> index 10c3cec..6415855 100644
-> --- a/Documentation/tee/index.rst
-> +++ b/Documentation/tee/index.rst
-> @@ -12,3 +12,4 @@ TEE Subsystem
->     amd-tee
->     ts-tee
->     qtee
-> +   mbedtee
-> diff --git a/Documentation/tee/mbedtee.rst b/Documentation/tee/mbedtee.rs=
-t
-> new file mode 100644
-> index 0000000..dfb57b8
-> --- /dev/null
-> +++ b/Documentation/tee/mbedtee.rst
-> @@ -0,0 +1,155 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +MbedTEE (Trusted Execution Environment)
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +The MbedTEE driver supports MbedTEE-based TEEs on ARM TrustZone (SMC cal=
-ls,
-> +GIC SPI notifications) and RISC-V IMSIC (shared-memory polling, MSI
-> +notifications) platforms.
-> +
-> +The driver requires the REE and TEE CPUs that share the RPC shared memor=
-y to
-> +be hardware coherent. In practice, the REE/TEE CPUs are expected to be i=
-n the
-> +same CPU cluster, with coherent caches and shared visibility for the rin=
-g and
-> +payload buffers.
-> +
-> +Communication overview
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +The driver communicates with the TEE using a fixed shared-memory RPC pro=
-tocol
-> +layered above the architecture-specific call mechanism.
-> +
-> +ARM platforms (SMC)
-> +-------------------
-> +
-> +On ARM and AArch64 platforms, the driver uses ARM SMC Calling Convention
-> +(SMCCC) to issue fast calls and yield calls to the TEE:
-> +
-> +- **Fast calls** (MBEDTEE_RPC_OS_VERSION, MBEDTEE_RPC_SUPPORT_YIELD,
-> +    MBEDTEE_RPC_COMPLETE_TEE) are self-contained SMC calls that do
-> +  not rely on shared-memory RPC structures.
-> +
-> +- **Yield calls** post the physical address of an ``rpc_cmd`` structure
-> +  in shared memory to the TEE. The TEE may issue RPC requests back to th=
-e
-> +  driver before the call completes; kernel-directed RPCs are handled
-> +  directly, while supplicant RPCs (filesystem and RPMB) are forwarded to
-> +  tee-supplicant.
-> +
-> +TEE-to-REE notifications on ARM are delivered via a GIC SPI edge interru=
-pt
-> +specified in the device tree (``interrupts`` property).
-> +
-> +RISC-V platforms
-> +----------------
-> +
-> +On RISC-V platforms, SMCCC is not available. Communication is split into=
- two
-> +directions:
-> +
-> +- **REE to TEE (R2T)**: The driver submits commands by writing the physi=
-cal
-> +  address of an ``rpc_cmd`` structure to a REE-to-TEE ring buffer
-> +  (``r2t-ring``). The TEE polls that ring for new commands. No interrupt
-> +  notification is sent; the protocol relies on TEE-side polling.
-> +
-> +- **TEE to REE (T2R)**: The TEE writes an ``rpc_cmd`` into the TEE-to-RE=
-E
-> +  ring and raises an IMSIC MSI to notify the REE driver. The MSI is
-> +  allocated at runtime via the ``msi-parent`` DT property and its identi=
-ty
-> +  is published in ``callee_imsic_id``; ``callee_hartid`` tracks the
-> +  target hart for migration during CPU hotplug. No SBI ecall is involved=
-.
-> +
-> +RISC-V REE-to-TEE polling rationale
-> +-----------------------------------
-> +
-> +The REE-to-TEE direction uses polling-only on RISC-V to avoid direct
-> +notification interrupt writes from Linux to TEE-owned interrupt files.
-> +This design is platform-independent and does not require ownership of
-> +TEE-only hart interrupt files. The TEE-to-REE direction remains fully
-> +functional via standard Linux MSI notifications and does not depend on
-> +REE-to-TEE notification latency.
-> +
-> +Shared memory regions
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +Two or three fixed shared memory regions are described in the device tre=
-e:
-> +
-> +``t2r-ring``
-> +    Ring buffer used by the TEE to post RPC request notifications to the=
- REE
-> +    driver. Present on all platforms.
-> +
-> +``t2r-shm``
-> +    Shared memory region carrying the actual ``rpc_cmd`` payloads for
-> +    TEE-to-REE RPCs. Present on all platforms.
-> +
-> +``r2t-ring``
-> +    Ring buffer used by the REE driver to submit commands to the TEE on
-> +    RISC-V IMSIC platforms.
-> +
-> +RPC protocol
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +The TEE and REE communicate through the ``rpc_cmd`` structure in shared =
-memory
-> +and ring buffers::
-> +
-> +    struct rpc_cmd {
-> +        u32 id;          /* RPC function ID */
-> +        u16 size;        /* payload size in bytes */
-> +        u8  interrupted; /* set if wait was interrupted */
-> +        u8  reserved;    /* explicit alignment padding */
-> +        s32 ret;         /* return value */
-> +        u32 pad;         /* explicit alignment padding */
-> +        u64 waiter_id;   /* sync RPC request ID echoed on completion */
-> +        u64 shm;         /* physical address of payload (sync RPC) */
-> +        u64 data[];      /* inline payload (async RPC) */
-> +    };
-> +
-> +    struct rpc_ringbuf {
-> +        u32 wr;              /* producer write pointer */
-> +        u32 rd;              /* consumer read pointer */
-> +        u32 callee_ready;    /* callee ready flag */
-> +        u32 callee_imsic_id; /* RISC-V only: IMSIC local interrupt id */
-> +        u32 callee_hartid;   /* RISC-V only: target hart-id for T2R noti=
-fication */
-> +        u32 reserved;        /* padding, must be zero */
-> +        u8  mem[];
-> +    };
-> +
-> +For RISC-V T2R MSI, one MSI message targets one hart IMSIC file at a tim=
-e.
-> +The wire-visible state is split between ``callee_imsic_id`` and
-> +``callee_hartid`` in the ring header; Linux may retarget the MSI across
-> +online CPUs via ``irq_set_affinity()``, and the driver updates those fie=
-lds
-> +to match the selected hart.
-> +
-> +
-> +
-> +Architecture diagram::
-> +
-> +    User space                 Kernel                    TEE side
-> +    ~~~~~~~~~~                 ~~~~~~                    ~~~~~~~~~~~~
-> +  +--------+                                           +--------------+
-> +  | Client |                                           | Trusted App  |
-> +  +--------+                                           +--------------+
-> +     /\                                                      /\
-> +     || +------------+                                       ||
-> +     || | MbedTEE-   |                                       \/
-> +     || | supplicant |                                 +--------------+
-> +     || +------------+                                 | TEE Internal |
-> +     \/      /\                                        |     API      |
-> +  +-------+  ||                                        +--------------+
-> +  | TEE   |  ||         +---------+---------------+    |   MbedTEE    |
-> +  | Client|  ||         |  TEE    | MbedTEE       |    |  Trusted OS  |
-> +  |  API  |  \/         | subsys  | client driver |    +--------------+
-> +  +-------+-------------+-----+--------+----------+----+              |
-> +  |    Generic TEE API        |        | RPC (cmd/ring)|              |
-> +  |    IOCTL (TEE_IOC_*)      |        | SMC / IMSIC   |              |
-> +  +---------------------------+        +---------------+--------------+
-> +
-> +Device tree binding
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +See Documentation/devicetree/bindings/firmware/mbedtee,tee.yaml for the
-> +complete device tree binding specification, including the RISC-V
-> +``msi-parent`` requirement.
-> +
-> +References
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +- [1] MbedTEE project: https://github.com/mbedtee
-> +- [2] ARM SMC Calling Convention: https://developer.arm.com/architecture=
-s/system-architectures/software-standards/smccc
-> +- [3] RISC-V IMSIC specification: https://github.com/riscv/riscv-aia
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c8d4b91..344b82b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -15920,6 +15920,15 @@ F:     Documentation/devicetree/bindings/net/dsa=
-/maxlinear,mxl862xx.yaml
->  F:     drivers/net/dsa/mxl862xx/
->  F:     net/dsa/tag_mxl862xx.c
->
-> +MBEDTEE TEE DRIVER
-> +M:     Xing Loong <xing.xl.loong@gmail.com>
-> +L:     op-tee@lists.trustedfirmware.org (moderated for non-subscribers)
-> +S:     Maintained
-> +W:     https://github.com/mbedtee
-> +F:     Documentation/devicetree/bindings/firmware/mbedtee,tee.yaml
-> +F:     Documentation/tee/mbedtee.rst
-> +F:     drivers/tee/mbedtee/
-> +
->  MCAN DEVICE DRIVER
->  M:     Markus Schneider-Pargmann <msp@baylibre.com>
->  L:     linux-can@vger.kernel.org
-> diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
-> index 98c3ad0..3dc3439 100644
-> --- a/drivers/tee/Kconfig
-> +++ b/drivers/tee/Kconfig
-> @@ -2,7 +2,7 @@
->  # Generic Trusted Execution Environment Configuration
->  menuconfig TEE
->         tristate "Trusted Execution Environment support"
-> -       depends on HAVE_ARM_SMCCC || COMPILE_TEST || CPU_SUP_AMD
-> +       depends on HAVE_ARM_SMCCC || RISCV || COMPILE_TEST || CPU_SUP_AMD
->         select CRYPTO_LIB_SHA1
->         select DMA_SHARED_BUFFER
->         select GENERIC_ALLOCATOR
-> @@ -21,5 +21,6 @@ source "drivers/tee/optee/Kconfig"
->  source "drivers/tee/amdtee/Kconfig"
->  source "drivers/tee/tstee/Kconfig"
->  source "drivers/tee/qcomtee/Kconfig"
-> +source "drivers/tee/mbedtee/Kconfig"
->
->  endif
-> diff --git a/drivers/tee/Makefile b/drivers/tee/Makefile
-> index 3239b91..33117ea 100644
-> --- a/drivers/tee/Makefile
-> +++ b/drivers/tee/Makefile
-> @@ -8,3 +8,4 @@ obj-$(CONFIG_OPTEE) +=3D optee/
->  obj-$(CONFIG_AMDTEE) +=3D amdtee/
->  obj-$(CONFIG_ARM_TSTEE) +=3D tstee/
->  obj-$(CONFIG_QCOMTEE) +=3D qcomtee/
-> +obj-$(CONFIG_MBEDTEE) +=3D mbedtee/
-> diff --git a/drivers/tee/mbedtee/Kconfig b/drivers/tee/mbedtee/Kconfig
-> new file mode 100644
-> index 0000000..b1fa38a
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/Kconfig
-> @@ -0,0 +1,20 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +# MbedTEE Trusted Execution Environment Configuration
-> +config MBEDTEE
-> +       tristate "MbedTEE"
-> +       depends on MMU && OF
-> +       depends on ((ARM || ARM64) && HAVE_ARM_SMCCC) || (RISCV && GENERI=
-C_MSI_IRQ)
-> +       help
-> +         This enables the MbedTEE Trusted Execution Environment (TEE)
-> +         driver.
-> +
-> +         The driver supports ARM TrustZone (SMC calls, GIC SPI notificat=
-ions)
-> +         and RISC-V IMSIC (shared-memory polling, MSI notifications), wi=
-th
-> +         GlobalPlatform client API via /dev/tee*.
-> +
-> +         The DT node should be under a firmware node and have compatible=
- =3D
-> +         "mbedtee,tee" with the RPC ring buffer addresses and,
-> +         for ARM/ARM64, an interrupt property for TEE-to-REE notificatio=
-ns.
-> +         See Documentation/tee/mbedtee.rst for protocol details.
-> +
-> +         If unsure, say N.
-> diff --git a/drivers/tee/mbedtee/Makefile b/drivers/tee/mbedtee/Makefile
-> new file mode 100644
-> index 0000000..309eb6d
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/Makefile
-> @@ -0,0 +1,11 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
-> +
-> +obj-$(CONFIG_MBEDTEE) +=3D mbedtee.o
-> +
-> +mbedtee-y +=3D core.o
-> +mbedtee-y +=3D supp.o
-> +mbedtee-y +=3D shm_pool.o
-> +mbedtee-y +=3D rpc_caller.o rpc_callee.o
-> +mbedtee-$(CONFIG_ARM) +=3D rpc_caller_arm.o rpc_callee_arm.o
-> +mbedtee-$(CONFIG_ARM64) +=3D rpc_caller_arm.o rpc_callee_arm.o
-> +mbedtee-$(CONFIG_RISCV) +=3D rpc_caller_riscv.o rpc_callee_riscv.o
-> diff --git a/drivers/tee/mbedtee/core.c b/drivers/tee/mbedtee/core.c
-> new file mode 100644
-> index 0000000..4a027a7
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/core.c
-> @@ -0,0 +1,260 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + */
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/errno.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +#include <linux/string.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/types.h>
-> +
-> +#include "mbedtee_drv.h"
-> +#include "shm_pool.h"
-> +
-> +int mbedtee_get_resource(struct device_node *node,
-> +                        const char *name, struct resource *res)
-> +{
-> +       struct device_node *rmem;
-> +       int idx;
-> +       int ret;
-> +
-> +       idx =3D of_property_match_string(node, "memory-region-names", nam=
-e);
-> +       if (idx < 0)
-> +               return idx;
-> +
-> +       rmem =3D of_parse_phandle(node, "memory-region", idx);
-> +       if (!rmem)
-> +               return -ENODEV;
-> +
-> +       ret =3D of_address_to_resource(rmem, 0, res);
-> +       of_node_put(rmem);
-> +
-> +       if (ret)
-> +               return ret;
-> +
-> +       res->name =3D name;
-> +       return 0;
-> +}
-> +
-> +static void mbedtee_get_version(struct tee_device *teedev,
-> +                               struct tee_ioctl_version_data *vers)
-> +{
-> +       struct tee_ioctl_version_data v =3D {
-> +               .impl_id =3D TEE_IMPL_ID_MBEDTEE,
-> +               .impl_caps =3D 0,
-> +               .gen_caps =3D TEE_GEN_CAP_GP | TEE_GEN_CAP_REG_MEM |
-> +                           TEE_GEN_CAP_MEMREF_NULL,
-> +       };
-> +
-> +       *vers =3D v;
-> +}
-> +
-> +static int mbedtee_open(struct tee_context *ctx)
-> +{
-> +       struct mbedtee_context_data *ctxdata;
-> +
-> +       ctxdata =3D kzalloc_obj(*ctxdata, GFP_KERNEL);
-> +       if (!ctxdata)
-> +               return -ENOMEM;
-> +
-> +       mutex_init(&ctxdata->mutex);
-> +       INIT_LIST_HEAD(&ctxdata->sess_list);
-> +
-> +       ctx->data =3D ctxdata;
-> +       ctx->cap_memref_null =3D true;
-> +
-> +       return 0;
-> +}
-> +
-> +static void mbedtee_release(struct tee_context *ctx)
-> +{
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_context_data *d =3D ctx->data;
-> +       struct mbedtee_session *s, *n;
-> +
-> +       if (!d)
-> +               return;
-> +
-> +       if (d->is_supp_ctx) {
-> +               mbedtee_supp_release(&mbedtee->supp, ctx);
-> +       } else {
-> +               list_for_each_entry_safe(s, n, &d->sess_list, list_node) =
-{
-> +                       u32 session_id =3D s->session_id;
-> +
-> +                       if (!mbedtee_close_session(ctx, session_id))
-> +                               continue;
-> +
-> +                       /*
-> +                        * A non-zero return can mean the session was alr=
-eady
-> +                        * dropped (e.g. -ESHUTDOWN during teardown) or k=
-ept on a
-> +                        * transient error. Re-look it up: kfree(NULL) is=
- a no-op
-> +                        * in the former case, a force-removal in the lat=
-ter.
-> +                        */
-> +                       mutex_lock(&d->mutex);
-> +                       s =3D mbedtee_find_session_locked(d, session_id);
-> +                       if (s)
-> +                               list_del(&s->list_node);
-> +                       mutex_unlock(&d->mutex);
-> +                       kfree(s);
-> +               }
-> +       }
-> +
-> +       kfree(d);
-> +       ctx->data =3D NULL;
-> +}
-> +
-> +static const struct tee_driver_ops mbedtee_ops =3D {
-> +       .get_version    =3D mbedtee_get_version,
-> +       .open           =3D mbedtee_open,
-> +       .release        =3D mbedtee_release,
-> +       .open_session   =3D mbedtee_open_session,
-> +       .close_session  =3D mbedtee_close_session,
-> +       .invoke_func    =3D mbedtee_invoke_func,
-> +       .cancel_req     =3D mbedtee_cancel_req,
-> +       .supp_recv      =3D mbedtee_supp_recv,
-> +       .supp_send      =3D mbedtee_supp_send,
-> +       .shm_register   =3D mbedtee_shm_register,
-> +       .shm_unregister =3D mbedtee_shm_unregister,
-> +};
-> +
-> +static const struct tee_desc mbedtee_desc =3D {
-> +       .name   =3D "mbedtee",
-> +       .ops    =3D &mbedtee_ops,
-> +       .owner  =3D THIS_MODULE,
-> +};
-> +
-> +static int mbedtee_probe(struct platform_device *pdev)
-> +{
-> +       int ret;
-> +       long version;
-> +       long yield;
-> +       struct tee_shm_pool *pool;
-> +       struct tee_device *teedev;
-> +       struct mbedtee_device *mbedtee;
-> +
-> +       mbedtee =3D devm_kzalloc(&pdev->dev, sizeof(*mbedtee), GFP_KERNEL=
-);
-> +       if (!mbedtee)
-> +               return -ENOMEM;
-> +
-> +       mbedtee->dev =3D &pdev->dev;
-> +       xa_init_flags(&mbedtee->rpc_calls, XA_FLAGS_ALLOC1 | XA_FLAGS_LOC=
-K_IRQ);
-> +       mutex_init(&mbedtee->rpc_calls_mutex);
-> +       mbedtee_supp_init(&mbedtee->supp);
-> +
-> +       /*
-> +        * R2T must be ready before T2R is advertised: synchronous T2R RP=
-C
-> +        * work replies with COMPLETE_TEE over the R2T path.
-> +        */
-> +       ret =3D mbedtee_r2t_init(mbedtee);
-> +       if (ret !=3D 0)
-> +               goto err_supp;
-> +
-> +       ret =3D mbedtee_rpc_init(mbedtee);
-> +       if (ret !=3D 0)
-> +               goto err_r2t;
-> +
-> +       version =3D mbedtee_rpc_fastcall(mbedtee, MBEDTEE_RPC_OS_VERSION,=
- 0, 0, 0);
-> +       if (version < 0) {
-> +               dev_err(&pdev->dev, "MBEDTEE_RPC_OS_VERSION failed: %ld\n=
-", version);
-> +               ret =3D version;
-> +               goto err_rpc;
-> +       }
-> +
-> +       if (!MBEDTEE_VALID_VERSION(version)) {
-> +               dev_err(&pdev->dev, "mbedtee not present (version=3D0x%lx=
-)\n",
-> +                       version);
-> +               ret =3D -ENODEV;
-> +               goto err_rpc;
-> +       }
-> +
-> +       yield =3D mbedtee_rpc_fastcall(mbedtee, MBEDTEE_RPC_SUPPORT_YIELD=
-, 0, 0, 0);
-> +       dev_info(&pdev->dev, "version: 0x%06lx  yield: %ld\n", version, y=
-ield);
-> +
-> +       pool =3D mbedtee_shm_pool_alloc_pages();
-> +       if (IS_ERR(pool)) {
-> +               ret =3D PTR_ERR(pool);
-> +               goto err_rpc;
-> +       }
-> +
-> +       teedev =3D tee_device_alloc(&mbedtee_desc, &pdev->dev, pool, mbed=
-tee);
-> +       if (IS_ERR(teedev)) {
-> +               ret =3D PTR_ERR(teedev);
-> +               goto err_pool;
-> +       }
-> +
-> +       ret =3D tee_device_register(teedev);
-> +       if (ret)
-> +               goto err_teedev;
-> +
-> +       mbedtee->teedev =3D teedev;
-> +       mbedtee->version =3D version;
-> +       mbedtee->yield =3D !!yield;
-> +       mbedtee->pool =3D pool;
-> +       platform_set_drvdata(pdev, mbedtee);
-> +
-> +       dev_dbg(&pdev->dev, "client initialized\n");
-> +       return 0;
-> +
-> +err_teedev:
-> +       tee_device_unregister(teedev);
-> +err_pool:
-> +       tee_shm_pool_free(pool);
-> +err_rpc:
-> +       mbedtee_rpc_uninit(mbedtee);
-> +err_r2t:
-> +       mbedtee_r2t_uninit(mbedtee);
-> +err_supp:
-> +       mbedtee_supp_uninit(&mbedtee->supp);
-> +       mbedtee_rpc_calls_release(mbedtee);
-> +       return ret;
-> +}
-> +
-> +static void mbedtee_remove(struct platform_device *pdev)
-> +{
-> +       struct mbedtee_device *mbedtee =3D platform_get_drvdata(pdev);
-> +
-> +       /*
-> +        * Quiesce and wake all RPC waiters before tee_device_unregister(=
-),
-> +        * which blocks until every context is released; a waiter still p=
-arked
-> +        * in a completion would otherwise deadlock teardown.
-> +        */
-> +       mbedtee_rpc_stop(mbedtee);
-> +       tee_device_unregister(mbedtee->teedev);
-> +       /*
-> +        * Drain T2R before tearing down R2T: queued RPC work may still n=
-eed
-> +        * to send COMPLETE_TEE over R2T. Destroy the supplicant mutex on=
-ly
-> +        * after RPC work can no longer enter mbedtee_supp_handler().
-> +        */
-> +       mbedtee_rpc_uninit(mbedtee);
-> +       mbedtee_r2t_uninit(mbedtee);
-> +       mbedtee_supp_uninit(&mbedtee->supp);
-> +       tee_shm_pool_free(mbedtee->pool);
-> +       mbedtee_rpc_calls_release(mbedtee);
-> +}
-> +
-> +static const struct of_device_id mbedtee_dt_match[] =3D {
-> +       { .compatible =3D "mbedtee,tee" },
-> +       { },
-> +};
-> +MODULE_DEVICE_TABLE(of, mbedtee_dt_match);
-> +
-> +static struct platform_driver mbedtee_driver =3D {
-> +       .probe  =3D mbedtee_probe,
-> +       .remove =3D mbedtee_remove,
-> +       .driver =3D {
-> +               .name           =3D "mbedtee",
-> +               .of_match_table =3D mbedtee_dt_match,
-> +       },
-> +};
-> +module_platform_driver(mbedtee_driver);
-> +
-> +MODULE_AUTHOR("Xing Loong <xing.xl.loong@gmail.com>");
-> +MODULE_DESCRIPTION("MbedTEE Trusted Execution Environment driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/tee/mbedtee/mbedtee_drv.h b/drivers/tee/mbedtee/mbed=
-tee_drv.h
-> new file mode 100644
-> index 0000000..fe2bcfa
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/mbedtee_drv.h
-> @@ -0,0 +1,289 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + */
-> +#ifndef MBEDTEE_DRV_H
-> +#define MBEDTEE_DRV_H
-> +
-> +#include <linux/types.h>
-> +#include <linux/errno.h>
-> +#include <linux/atomic.h>
-> +#include <linux/of.h>
-> +#include <linux/ioport.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/tee_core.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/msi.h>
-> +#include <linux/mutex.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/cpuhotplug.h>
-> +#include <linux/cpumask.h>
-> +#include <linux/refcount.h>
-> +#include <linux/xarray.h>
-> +#include "mbedtee_msg.h"
-> +#include "shm_pool.h"
-> +
-> +/*
-> + * GlobalPlatform TEE Client API return codes/origins
-> + * used by this driver. Only the codes actually
-> + * referenced in the driver are defined here.
-> + */
-> +#define TEEC_SUCCESS                           0x00000000
-> +#define TEEC_ERROR_OUT_OF_MEMORY       0xFFFF000C
-> +#define TEEC_ERROR_COMMUNICATION       0xFFFF000E
-> +
-> +#define TEEC_ORIGIN_COMMS                      0x00000002
-> +
-> +#define MBEDTEE_VERSION_MAJOR          1
-> +#define MBEDTEE_VALID_VERSION(x)       (((x) >> 16) =3D=3D MBEDTEE_VERSI=
-ON_MAJOR)
-> +
-> +/* Maximum payload size for inline (async) RPC data. */
-> +#define MBEDTEE_ASYNC_RPC_DATA_MAX     256
-> +
-> +struct rpc_transport_ops;
-> +struct mbedtee_rpc_call;
-> +struct mbedtee_supp_req;
-> +struct mbedtee_device;
-> +
-> +struct rpc_work {
-> +       struct work_struct work;
-> +       struct mbedtee_device *mbedtee;
-> +       u64 waiter_id;
-> +       size_t size;
-> +       bool complete_only;
-> +       /* Points to ctx->rpc_data (async) or into t2r_shm (sync) */
-> +       void *data;
-> +       void (*func)(struct mbedtee_device *mbedtee, void *data, size_t s=
-ize);
-> +};
-> +
-> +struct mbedtee_t2r_ctx {
-> +       spinlock_t ring_lock; /* protects T2R ring producer/consumer stat=
-e */
-> +       void *t2r_shm;
-> +       phys_addr_t t2r_shm_phys;
-> +       resource_size_t t2r_shm_sz;
-> +       struct rpc_ringbuf *t2r_ring;
-> +       u32 t2r_ring_sz;
-> +       u32 t2r_ring_rd;
-> +
-> +       void (*rpc_handlers[MBEDTEE_RPC_MAX])(struct mbedtee_device *mbed=
-tee,
-> +                                             void *data, size_t size);
-> +
-> +       /*
-> +        * Inline buffer for async RPC payloads (waiter_id =3D=3D 0).
-> +        * Sync RPC payloads (waiter_id !=3D 0) live in shared memory (t2=
-r_shm).
-> +        */
-> +       u8 rpc_data[MBEDTEE_ASYNC_RPC_DATA_MAX];
-> +
-> +       /*
-> +        * CPU-hotplug tracking for T2R interrupt delivery.
-> +        * callee_cpus: shadow of cpu_online_mask maintained by the core
-> +        *   callee layer (rpc_callee.c) for both ARM and RISC-V; used by
-> +        *   ARM to feed irq_set_affinity() and by RISC-V as the gate for
-> +        *   MSI migration decisions.
-> +        * callee_virq: single MSI virq currently pinned to one CPU
-> +        *   (RISC-V IMSIC only; 0 for ARM).
-> +        * hp_node: per-instance node for cpuhp_setup_state_multi().
-> +        */
-> +       struct cpumask callee_cpus;
-> +       int callee_virq;
-> +       struct hlist_node hp_node;
-> +       bool cpuhp_added;
-> +       bool complete_work_pending;
-> +       bool pending_async;
-> +       bool stopping; /* set at teardown to stop COMPLETE_TEE retries */
-> +       u32 pending_size;
-> +       struct workqueue_struct *rpc_wq;
-> +       struct rpc_work complete_work;
-> +       void (*pending_func)(struct mbedtee_device *mbedtee,
-> +                            void *data, size_t size);
-> +};
-> +
-> +struct mbedtee_r2t_ctx {
-> +       spinlock_t lock; /* protects R2T ring write-side state */
-> +       struct rpc_ringbuf *ring;
-> +       u32 ring_sz;
-> +       u32 ring_wr;
-> +       bool stopping; /* set at teardown to abort ring-full waits */
-> +};
-> +
-> +struct mbedtee_rpc_transport_ctx {
-> +       int rpc_notify_virq;
-> +       struct msi_msg rpc_msi_msg;
-> +};
-> +
-> +struct mbedtee_supp {
-> +       struct mutex mutex; /* serializes supp request queue and active r=
-equests */
-> +       struct tee_context *ctx;
-> +       bool shutting_down;
-> +       struct list_head reqs;
-> +       struct list_head active_reqs;
-> +       struct completion reqs_c;
-> +};
-> +
-> +struct mbedtee_device {
-> +       u32 version;
-> +       bool yield;
-> +       struct device *dev;
-> +       struct tee_device *teedev;
-> +       struct tee_shm_pool *pool;
-> +       struct mbedtee_supp supp;
-> +       struct xarray rpc_calls;
-> +       struct mutex rpc_calls_mutex; /* serializes submission and shutdo=
-wn */
-> +       bool stopping;
-> +       atomic_long_t rpc_call_seq;
-> +       const struct rpc_transport_ops *rpc_ops;
-> +       struct mbedtee_t2r_ctx t2r;
-> +       struct mbedtee_r2t_ctx r2t;
-> +       struct mbedtee_rpc_transport_ctx transport;
-> +};
-> +
-> +struct mbedtee_rpc_call {
-> +       struct completion c;
-> +       phys_addr_t rpc_phys;
-> +       u32 state;
-> +       /* One reference for the caller, one for the XArray entry. */
-> +       refcount_t refs;
-> +       /*
-> +        * Wire-format rpc_cmd with inline data[] payload.
-> +        * MUST be the last field: rpc.data[] is a flexible array.
-> +        */
-> +       struct rpc_cmd rpc;
-> +};
-> +
-> +struct mbedtee_session {
-> +       struct list_head list_node;
-> +       u32 session_id;
-> +       bool closing;
-> +};
-> +
-> +struct mbedtee_context_data {
-> +       bool is_supp_ctx;
-> +       struct mutex mutex; /* serializes session list updates */
-> +       struct list_head sess_list;
-> +};
-> +
-> +struct mbedtee_session *
-> +mbedtee_find_session_locked(struct mbedtee_context_data *ctxdata,
-> +                           u32 session_id);
-> +
-> +static inline phys_addr_t mbedtee_virt_to_phys(void *va)
-> +{
-> +       if (is_vmalloc_or_module_addr(va))
-> +               return page_to_phys(vmalloc_to_page(va)) +
-> +                      offset_in_page(va);
-> +
-> +       return virt_to_phys(va);
-> +}
-> +
-> +int mbedtee_get_resource(struct device_node *node,
-> +                        const char *name, struct resource *res);
-> +
-> +/*
-> + * RPC transport operations -- implemented per-architecture.
-> + *
-> + * Caller (rpc_caller_{arm,riscv}.c) platform differences:
-> + *   fastcall:       ARM/ARM64 - direct SMC (arm_smccc_smc), synchronous=
-,
-> + *                   never returns -ENOSPC.
-> + *                   RISC-V - writes rpc_cmd phys addr to the r2t ring
-> + *                   buffer, then waits for TEE completion via the t2r
-> + *                   ring.  Despite the "fastcall" name this is a
-> + *                   synchronous ring-buffer round-trip; it may return
-> + *                   -ENOSPC when the r2t ring is full, and the caller
-> + *                   must retry (see rpc_routine() for the
-> + *                   MBEDTEE_RPC_COMPLETE_TEE retry loop).
-> + *   yieldcall:      ARM/ARM64 - one SMC posting rpc_cmd phys addr, wait=
-s
-> + *                   for completion.
-> + *                   RISC-V - writes rpc_cmd phys addr to r2t ring, wait=
-s
-> + *                   for completion.
-> + * Callee (rpc_callee_{arm,riscv}.c) platform differences:
-> + *   notify:         ARM/ARM64 - GIC SPI; the TEE broadcasts via GIC
-> + *                   hardware (GICv2 ITARGETS=3D0xFF, GICv3 IROUTER.IRM=
-=3D1).
-> + *                   Ring metadata unchanged on CPU affinity events.
-> + *                   RISC-V - IMSIC MSI; the driver writes callee_hartid
-> + *                   and callee_imsic_id into the ring so the TEE knows
-> + *                   where to send the MSI. The affinity handler updates
-> + *                   both ring fields when the callee CPU goes offline.
-> + *
-> + * init:             Set up the interrupt delivery mechanism (MSI on RIS=
-C-V,
-> + *                   GIC/OF-IRQ on ARM/ARM64) and, on RISC-V, write
-> + *                   ring->callee_hartid and ring->callee_imsic_id. @han=
-dler
-> + *                   is the hard-IRQ handler that drains the ring buffer=
- and
-> + *                   dispatches RPC commands.
-> + * uninit:           Tear down and free all interrupt resources.
-> + * update_affinity:  Migrate T2R interrupt delivery to @new_cpu. Called =
-by the
-> + *                   common cpuhp handler when the current callee CPU go=
-es
-> + *                   offline. On RISC-V IMSIC, must update ring->callee_=
-hartid
-> + *                   and ring->callee_imsic_id. ARM uses GIC hardware ro=
-uting
-> + *                   and requires no ring update.
-> + *
-> + * The getter is implemented per-architecture in rpc_callee_{arm,riscv}.=
-c;
-> + * only one is linked per build.
-> + */
-> +struct rpc_transport_ops {
-> +       int (*init)(struct mbedtee_device *mbedtee, struct rpc_ringbuf *r=
-ing,
-> +                   irq_handler_t handler);
-> +       void (*uninit)(struct mbedtee_device *mbedtee);
-> +       int (*update_affinity)(struct mbedtee_device *mbedtee,
-> +                              unsigned int new_cpu);
-> +};
-> +
-> +const struct rpc_transport_ops *mbedtee_get_rpc_transport_ops(void);
-> +
-> +/* rpc-callee.c */
-> +int mbedtee_rpc_init(struct mbedtee_device *mbedtee);
-> +void mbedtee_rpc_stop(struct mbedtee_device *mbedtee);
-> +void mbedtee_rpc_uninit(struct mbedtee_device *mbedtee);
-> +irqreturn_t mbedtee_rpc_irq_handler(int irq, void *dev_id);
-> +
-> +/* rpc_caller.c */
-> +int mbedtee_rpc_call_alloc(struct mbedtee_device *mbedtee,
-> +                          size_t payload_size, struct mbedtee_rpc_call *=
-*call);
-> +void mbedtee_rpc_call_free(struct mbedtee_device *mbedtee,
-> +                          struct mbedtee_rpc_call *call);
-> +void mbedtee_rpc_complete_call(struct mbedtee_device *mbedtee,
-> +                              u64 waiter_id);
-> +void mbedtee_rpc_calls_abort(struct mbedtee_device *mbedtee);
-> +void mbedtee_rpc_calls_release(struct mbedtee_device *mbedtee);
-> +long mbedtee_rpc_wait_for_completion(struct mbedtee_device *mbedtee,
-> +                                    struct mbedtee_rpc_call *call, bool =
-killable);
-> +long mbedtee_rpc_wait_for_completion_timeout(struct mbedtee_device *mbed=
-tee,
-> +                                            struct mbedtee_rpc_call *cal=
-l,
-> +                                            unsigned long timeout);
-> +int mbedtee_open_session(struct tee_context *ctx,
-> +                        struct tee_ioctl_open_session_arg *arg,
-> +                        struct tee_param *param);
-> +int mbedtee_close_session(struct tee_context *ctx, u32 session);
-> +int mbedtee_invoke_func(struct tee_context *ctx,
-> +                       struct tee_ioctl_invoke_arg *arg,
-> +                       struct tee_param *param);
-> +int mbedtee_cancel_req(struct tee_context *ctx, u32 cancel_id,
-> +                      u32 session);
-> +int mbedtee_shm_register(struct tee_context *ctx, struct tee_shm *shm,
-> +                        struct page **pages, size_t num_pages, unsigned =
-long start);
-> +int mbedtee_shm_unregister(struct tee_context *ctx, struct tee_shm *shm)=
-;
-> +
-> +/* rpc-caller-{arm,riscv}.c */
-> +long mbedtee_rpc_yieldcall(struct mbedtee_device *mbedtee,
-> +                          unsigned long fn, struct mbedtee_rpc_call *cal=
-l,
-> +                          bool interruptible);
-> +long mbedtee_rpc_fastcall(struct mbedtee_device *mbedtee,
-> +                         unsigned long fn, unsigned long a0,
-> +                         unsigned long a1, unsigned long a2);
-> +int mbedtee_r2t_init(struct mbedtee_device *mbedtee);
-> +void mbedtee_r2t_stop(struct mbedtee_device *mbedtee);
-> +void mbedtee_r2t_uninit(struct mbedtee_device *mbedtee);
-> +
-> +/* supp.c */
-> +void mbedtee_supp_init(struct mbedtee_supp *supp);
-> +void mbedtee_supp_uninit(struct mbedtee_supp *supp);
-> +void mbedtee_supp_release(struct mbedtee_supp *supp, struct tee_context =
-*ctx);
-> +void mbedtee_supp_abort_all(struct mbedtee_supp *supp);
-> +void mbedtee_supp_handler(struct mbedtee_device *mbedtee,
-> +                         u32 func, void *data, size_t size);
-> +int mbedtee_supp_recv(struct tee_context *ctx, u32 *func,
-> +                     u32 *num_params, struct tee_param *param);
-> +int mbedtee_supp_send(struct tee_context *ctx, u32 ret,
-> +                     u32 num_params, struct tee_param *param);
-> +
-> +#endif /* MBEDTEE_DRV_H */
-> diff --git a/drivers/tee/mbedtee/mbedtee_msg.h b/drivers/tee/mbedtee/mbed=
-tee_msg.h
-> new file mode 100644
-> index 0000000..deb2d8c
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/mbedtee_msg.h
-> @@ -0,0 +1,219 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + *
-> + * MbedTEE RPC wire protocol between REE (Linux) and TEE (MbedTEE OS).
-> + *
-> + * This header is the Linux-kernel mirror of
-> + * mbedtee-os/drivers/rpc/include/rpc/rpc.h. Both copies MUST define
-> + * identical struct layouts. The static_assert() checks at the bottom
-> + * of this file (and the _Static_assert() checks in rpc.h) enforce this
-> + * contract at compile time on every architecture.
-> + *
-> + * Type mapping (wire -> Linux kernel alias):
-> + *   uint8_t   -> u8   -- boolean flag / padding byte
-> + *   uint16_t  -> u16  -- byte-count field (< 64 KiB payload limit)
-> + *   uint32_t  -> u32  -- 32-bit ID, counter, flag, or enum
-> + *   int32_t   -> s32  -- function-defined signed result code
-> + *   uint64_t  -> u64  -- physical address, kernel pointer token, or siz=
-e
-> + *
-> + * Using u64 for all pointer-sized fields eliminates ABI width mismatche=
-s
-> + * in mixed-width configurations (e.g. RV64 REE + RV32 TEE, or ARM32-LPA=
-E
-> + * REE + ARM32 TEE). It also prevents phys_addr_t/unsigned-long confusio=
-n
-> + * when CONFIG_PHYS_ADDR_T_64BIT=3Dy on a 32-bit REE kernel.
-> + */
-> +
-> +#ifndef MBEDTEE_MSG_H
-> +#define MBEDTEE_MSG_H
-> +
-> +#include <linux/bits.h>
-> +#include <linux/build_bug.h>
-> +#include <linux/types.h>
-> +
-> +/*
-> + * Fastcall / yield-call classification
-> + */
-> +#define MBEDTEE_RPC_FASTCALL            BIT(31)
-> +#define MBEDTEE_RPC_IS_FASTCALL(fn)     ((fn) & MBEDTEE_RPC_FASTCALL)
-> +
-> +/*
-> + * REE -> TEE fast calls
-> + */
-> +#define MBEDTEE_RPC_OS_VERSION          (0x0100 | MBEDTEE_RPC_FASTCALL)
-> +#define MBEDTEE_RPC_SUPPORT_YIELD       (0x0101 | MBEDTEE_RPC_FASTCALL)
-> +#define MBEDTEE_RPC_COMPLETE_TEE        (0x0102 | MBEDTEE_RPC_FASTCALL)
-> +
-> +/*
-> + * REE -> TEE yield calls
-> + */
-> +#define MBEDTEE_RPC_OPEN_SESSION        1
-> +#define MBEDTEE_RPC_INVOKE_SESSION      2
-> +#define MBEDTEE_RPC_CLOSE_SESSION       3
-> +#define MBEDTEE_RPC_REGISTER_SHM        5
-> +#define MBEDTEE_RPC_UNREGISTER_SHM      6
-> +#define MBEDTEE_RPC_CANCEL              7
-> +
-> +/*
-> + * TEE -> REE RPC calls
-> + */
-> +#define MBEDTEE_RPC_COMPLETE_REE        0
-> +#define MBEDTEE_RPC_REETIME             1
-> +#define MBEDTEE_RPC_REEFS               2
-> +#define MBEDTEE_RPC_RPMB                3
-> +#define MBEDTEE_RPC_MAX                 4
-> +
-> +/*
-> + * Supplicant types (TEE -> REE -> tee-supplicant)
-> + */
-> +#define MBEDTEE_SUPP_REEFS              1
-> +#define MBEDTEE_SUPP_RPMB               2
-> +
-> +/* MbedTEE RPC protocol uses 4 KiB page units regardless of host PAGE_SI=
-ZE. */
-> +#define MBEDTEE_PAGE_SIZE           4096UL
-> +
-> +/*
-> + * REE <-> TEE RPC call command (wire format, 32 bytes fixed header).
-> + *
-> + * Fixed layout:
-> + *   +0   id          u32 - RPC function identifier
-> + *   +4   size        u16 - inline payload byte count (0..65535)
-> + *   +6   interrupted u8  - set by REE when caller is interrupted
-> + *   +7   reserved    u8  - must be zero (explicit alignment pad)
-> + *   +8   ret         s32 - return value written by callee
-> + *   +12  pad         u32 - must be zero (explicit alignment pad)
-> + *   +16  waiter_id   u64 - sync RPC request ID echoed on completion
-> + *   +24  shm         u64 - physical address of sync-RPC shared memory
-> + *   +32  data[]      u64 - inline payload (waiter_id=3D=3D0) or empty
-> + *
-> + * Yield-call contract:
-> + *   - Session/control RPCs return GlobalPlatform result codes here.
-> + *   - Host-local errno values must be translated before being put on th=
-e wire.
-> + *   - Fast calls may use function-specific return values.
-> + */
-> +struct rpc_cmd {
-> +       u32 id;
-> +       u16 size;
-> +       u8  interrupted;
-> +       u8  reserved;
-> +       s32 ret;
-> +       u32 pad;
-> +       u64 waiter_id;
-> +       u64 shm;
-> +       u64 data[];
-> +};
-> +
-> +/*
-> + * REE -> TEE pages for GP shared memory.
-> + *
-> + * All fields are u64 so the layout is identical when REE is 64-bit
-> + * but TEE is 32-bit (physical addresses, sizes and counts use 64 bits).
-> + */
-> +struct rpc_memref {
-> +       u64 id;
-> +       u64 pages;
-> +       u64 offset;
-> +       u64 size;
-> +       u64 cnt;
-> +};
-> +
-> +/*
-> + * REE -> TEE parameter entry: value or shared memory reference.
-> + */
-> +union rpc_tee_param {
-> +       struct rpc_memref memref;
-> +
-> +       struct {
-> +               u32 a;
-> +               u32 b;
-> +       } value;
-> +};
-> +
-> +/*
-> + * REE -> TEE parameters for RPC session operations
-> + * (MBEDTEE_RPC_OPEN_SESSION / MBEDTEE_RPC_INVOKE_SESSION /
-> + *  MBEDTEE_RPC_CLOSE_SESSION).
-> + */
-> +struct rpc_param {
-> +       s32 session_id;
-> +       u32 cmd_id;
-> +       u32 ret_origin;
-> +       u32 params_type;
-> +       union rpc_tee_param params[4];
-> +       u8  uuid[16];
-> +       u8  clnt_uuid[16];
-> +};
-> +
-> +/*
-> + * REE -> TEE cancellation request (MBEDTEE_RPC_CANCEL).
-> + */
-> +struct rpc_cancel_req {
-> +       u32 session_id;
-> +       u32 cancel_id;
-> +};
-> +
-> +/*
-> + * TEE <-> REE supplicant payloads for REEFS and RPMB RPCs.
-> + * Only the fixed headers are interpreted in the Linux driver.
-> + */
-> +/*
-> + * Common supplicant command header. Both reefs_cmd and rpmb_cmd embed t=
-his
-> + * as their first member so the kernel can write a status code through a
-> + * single cast to (struct supp_cmd_hdr *) without caring about the full
-> + * payload type. The wire layout is identical on every architecture.
-> + */
-> +struct supp_cmd_hdr {
-> +       s32 ret;
-> +       s32 op;
-> +};
-> +
-> +struct reefs_cmd {
-> +       struct supp_cmd_hdr hdr;
-> +       s32 flags;
-> +       s32 fd;
-> +       u64 len;
-> +       u8 data[];
-> +};
-> +
-> +struct rpmb_cmd {
-> +       struct supp_cmd_hdr hdr;
-> +       u32 nframes;
-> +       u8 data[];
-> +};
-> +
-> +/*
-> + * TEE <-> REE RPC ring buffer header (24 bytes fixed).
-> + */
-> +struct rpc_ringbuf {
-> +       u32 wr;              /* producer write pointer */
-> +       u32 rd;              /* consumer read pointer */
-> +       u32 callee_ready;    /* callee ready flag */
-> +       u32 callee_imsic_id; /* RISC-V only: IMSIC local interrupt id */
-> +       u32 callee_hartid;   /* RISC-V only: target hart-id for T2R notif=
-ication */
-> +       u32 reserved;        /* padding, must be zero */
-> +       u8  mem[];
-> +};
-> +
-> +/*
-> + * Compile-time ABI layout assertions.
-> + * These must match the _Static_assert() checks in mbedtee-os rpc/rpc.h.
-> + */
-> +static_assert(sizeof(struct rpc_cmd) =3D=3D 32,
-> +             "rpc_cmd wire size mismatch");
-> +static_assert(offsetof(struct rpc_cmd, ret) =3D=3D 8,
-> +             "rpc_cmd.ret offset mismatch");
-> +static_assert(offsetof(struct rpc_cmd, waiter_id) =3D=3D 16,
-> +             "rpc_cmd.waiter_id offset mismatch");
-> +static_assert(offsetof(struct rpc_cmd, shm) =3D=3D 24,
-> +             "rpc_cmd.shm offset mismatch");
-> +static_assert(offsetof(struct rpc_cmd, data) =3D=3D 32,
-> +             "rpc_cmd.data offset mismatch");
-> +static_assert(sizeof(struct rpc_memref) =3D=3D 40,
-> +             "rpc_memref wire size mismatch");
-> +static_assert(sizeof(struct rpc_ringbuf) =3D=3D 24,
-> +             "rpc_ringbuf header size mismatch");
-> +static_assert(sizeof(struct rpc_param) =3D=3D 208,
-> +             "rpc_param wire size mismatch");
-> +static_assert(sizeof(struct rpc_cancel_req) =3D=3D 8,
-> +             "rpc_cancel_req wire size mismatch");
-> +
-> +#endif /* MBEDTEE_MSG_H */
-> diff --git a/drivers/tee/mbedtee/rpc_callee.c b/drivers/tee/mbedtee/rpc_c=
-allee.c
-> new file mode 100644
-> index 0000000..258f8d1
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/rpc_callee.c
-> @@ -0,0 +1,697 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + * TEE->REE callee-side: handles interrupts from TEE, processes RPC requ=
-ests.
-> + */
-> +#include <linux/cpu.h>
-> +#include <linux/cpuhotplug.h>
-> +#include <linux/cpumask.h>
-> +#include <linux/delay.h>
-> +#include <linux/errno.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/jiffies.h>
-> +#include <linux/ktime.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/tee_drv.h>
-> +#include <linux/workqueue.h>
-> +
-> +#include "mbedtee_drv.h"
-> +
-> +/* Give up completing a sync RPC if the TEE stops draining its ring. */
-> +#define MBEDTEE_RPC_COMPLETE_TIMEOUT (30 * HZ)
-> +
-> +/*
-> + * CPU hotplug state shared across all mbedtee instances (registered onc=
-e).
-> + */
-> +static int mbedtee_cpuhp_state =3D -EINVAL;
-> +static unsigned int mbedtee_cpuhp_instances;
-> +static DEFINE_MUTEX(mbedtee_cpuhp_mutex);
-> +/* rpc_routine() runs on workqueue, re-drains ring on completion */
-> +static void rpc_routine(struct work_struct *work);
-> +
-> +/*
-> + * Common CPU-online handler: add the new CPU into the eligible T2R
-> + * delivery set and let the transport re-apply affinity.
-> + */
-> +static int mbedtee_cpu_online(unsigned int cpu, struct hlist_node *node)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D
-> +               hlist_entry(node, struct mbedtee_t2r_ctx, hp_node);
-> +       struct mbedtee_device *mbedtee =3D
-> +               container_of(ctx, struct mbedtee_device, t2r);
-> +       unsigned int target_cpu;
-> +
-> +       if (!ctx->t2r_ring || cpumask_test_cpu(cpu, &ctx->callee_cpus))
-> +               return 0;
-> +
-> +       cpumask_set_cpu(cpu, &ctx->callee_cpus);
-> +       target_cpu =3D cpumask_first(&ctx->callee_cpus);
-> +
-> +       if (mbedtee->rpc_ops && mbedtee->rpc_ops->update_affinity)
-> +               mbedtee->rpc_ops->update_affinity(mbedtee, target_cpu);
-> +
-> +       return 0;
-> +}
-> +
-> +/*
-> + * Common CPU-offline handler: migrates T2R interrupt delivery to anothe=
-r
-> + * online CPU when the current callee CPU is being taken offline.
-> + *
-> + * The transport-specific update_affinity() callback handles the actual
-> + * interrupt migration (e.g. irq_set_affinity + callee_hartid update for
-> + * RISC-V IMSIC; irq_set_affinity only for ARM - no ring update needed).
-> + */
-> +static int mbedtee_cpu_offline(unsigned int cpu, struct hlist_node *node=
-)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D
-> +               hlist_entry(node, struct mbedtee_t2r_ctx, hp_node);
-> +       struct mbedtee_device *mbedtee =3D
-> +               container_of(ctx, struct mbedtee_device, t2r);
-> +       unsigned int new_cpu;
-> +
-> +       if (!ctx->t2r_ring || !cpumask_test_cpu(cpu, &ctx->callee_cpus))
-> +               return 0;
-> +
-> +       /*
-> +        * Remove the dying CPU from the eligible set.  If the set is now
-> +        * empty (all CPUs going away at once -- highly unlikely but safe=
-),
-> +        * fall back to CPU 0 which Linux guarantees to be the last offli=
-ne.
-> +        */
-> +       cpumask_clear_cpu(cpu, &ctx->callee_cpus);
-> +       if (cpumask_empty(&ctx->callee_cpus))
-> +               cpumask_set_cpu(0, &ctx->callee_cpus);
-> +
-> +       new_cpu =3D cpumask_first(&ctx->callee_cpus);
-> +
-> +       if (mbedtee->rpc_ops && mbedtee->rpc_ops->update_affinity)
-> +               mbedtee->rpc_ops->update_affinity(mbedtee, new_cpu);
-> +       return 0;
-> +}
-> +
-> +static inline size_t t2r_available_size(struct mbedtee_t2r_ctx *ctx)
-> +{
-> +       u32 wr;
-> +       u32 rd;
-> +       u32 shm_size =3D ctx->t2r_ring_sz;
-> +
-> +       /* Pair with producer release store after writing ring payload. *=
-/
-> +       wr =3D smp_load_acquire(&ctx->t2r_ring->wr);
-> +       rd =3D READ_ONCE(ctx->t2r_ring_rd);
-> +
-> +       /* Corrupt indices mean the stream cannot be trusted. */
-> +       if (wr > shm_size || rd > shm_size)
-> +               return 0;
-> +
-> +       if (wr >=3D rd)
-> +               return wr - rd;
-> +       return shm_size + wr - rd;
-> +}
-> +
-> +static void t2r_ring_copy(struct mbedtee_t2r_ctx *ctx,
-> +                         void *data, size_t size, u32 rd)
-> +{
-> +       u32 remain;
-> +       u32 shm_size =3D ctx->t2r_ring_sz;
-> +       struct rpc_ringbuf *shm =3D ctx->t2r_ring;
-> +
-> +       if (rd + size <=3D shm_size) {
-> +               memcpy(data, &shm->mem[rd], size);
-> +       } else {
-> +               remain =3D rd + size - shm_size;
-> +               memcpy(data, &shm->mem[rd], size - remain);
-> +               memcpy((u8 *)data + size - remain,
-> +                      &shm->mem[0], remain);
-> +       }
-> +}
-> +
-> +static void t2r_ring_advance(struct mbedtee_t2r_ctx *ctx, size_t size)
-> +{
-> +       u32 rd =3D READ_ONCE(ctx->t2r_ring_rd);
-> +       u32 shm_size =3D ctx->t2r_ring_sz;
-> +       struct rpc_ringbuf *shm =3D ctx->t2r_ring;
-> +
-> +       if (rd + size > shm_size)
-> +               rd =3D rd + size - shm_size;
-> +       else
-> +               rd +=3D size;
-> +
-> +       WRITE_ONCE(ctx->t2r_ring_rd, rd);
-> +       /* Publish updated consumer index after command parsing is comple=
-te. */
-> +       smp_store_release(&shm->rd, rd);
-> +}
-> +
-> +/*
-> + * Read and consume @size bytes from the TEE-to-REE ring buffer.
-> + * Must be called with ctx->ring_lock held.
-> + */
-> +static void t2r_ring_read(struct mbedtee_t2r_ctx *ctx,
-> +                         void *data, size_t size)
-> +{
-> +       t2r_ring_copy(ctx, data, size, READ_ONCE(ctx->t2r_ring_rd));
-> +       t2r_ring_advance(ctx, size);
-> +}
-> +
-> +static bool rpc_queue_complete_only(struct mbedtee_t2r_ctx *ctx,
-> +                                   u64 waiter_id)
-> +{
-> +       /* Called with ctx->ring_lock held. */
-> +       if (ctx->complete_work_pending)
-> +               return false;
-> +
-> +       ctx->complete_work_pending =3D true;
-> +       ctx->complete_work.waiter_id =3D waiter_id;
-> +       queue_work(ctx->rpc_wq, &ctx->complete_work.work);
-> +
-> +       return true;
-> +}
-> +
-> +/*
-> + * Try to pick the next RPC command from the ring buffer.
-> + *
-> + * For asynchronous RPCs the data payload follows the cmd header in the
-> + * ring.  If the payload has not fully arrived yet the cmd header is sti=
-ll
-> + * consumed (it was already read) but the entry is marked incomplete so
-> + * that the next IRQ resumes reading the payload instead of re-reading
-> + * a header.
-> + *
-> + * For synchronous RPCs (waiter_id !=3D 0) the work descriptor is alloca=
-ted
-> + * BEFORE the ring header is consumed.  This guarantees that if the
-> + * allocator returns NULL the ring entry is left intact so the IRQ
-> + * handler will retry on the next wake-up rather than leaving a TEE
-> + * thread blocked with no response.
-> + *
-> + * Returns a work descriptor on success, or NULL when no complete entry
-> + * is available.
-> + */
-> +static struct rpc_work *rpc_pick_next(struct mbedtee_device *mbedtee,
-> +                                     struct mbedtee_t2r_ctx *ctx, struct=
- rpc_work *c)
-> +{
-> +       struct rpc_cmd cmd;
-> +       void (*func)(struct mbedtee_device *mbedtee, void *data, size_t s=
-ize);
-> +       struct rpc_work *new_work =3D NULL;
-> +       resource_size_t off;
-> +       phys_addr_t shm_phys;
-> +       u64 shm_wire;
-> +
-> +       /* Resume reading payload of a previously incomplete async RPC */
-> +       if (ctx->pending_async) {
-> +               if (t2r_available_size(ctx) < ctx->pending_size)
-> +                       return NULL;
-> +               ctx->pending_async =3D false;
-> +               t2r_ring_read(ctx, c->data, ctx->pending_size);
-> +               c->func =3D ctx->pending_func;
-> +               c->size =3D ctx->pending_size;
-> +               c->waiter_id =3D 0;
-> +               return c;
-> +       }
-> +
-> +       if (t2r_available_size(ctx) < sizeof(cmd))
-> +               return NULL;
-> +
-> +       /*
-> +        * Peek at the header without advancing the ring pointer.
-> +        * For sync RPCs we must pre-allocate before consuming the entry.
-> +        */
-> +       memset(&cmd, 0, sizeof(cmd));
-> +       t2r_ring_copy(ctx, &cmd, sizeof(cmd), READ_ONCE(ctx->t2r_ring_rd)=
-);
-> +
-> +       if (cmd.id >=3D MBEDTEE_RPC_MAX)
-> +               goto skip;
-> +
-> +       func =3D ctx->rpc_handlers[cmd.id];
-> +       if (!func)
-> +               goto skip;
-> +
-> +       /*
-> +        * The TEE sends COMPLETE_REE asynchronously and the supplicant
-> +        * commands (REEFS/RPMB) synchronously. Reject inverted usage so
-> +        * that blocking supplicant handlers can never run inline in IRQ
-> +        * context while the ring lock is held.
-> +        */
-> +       switch (cmd.id) {
-> +       case MBEDTEE_RPC_COMPLETE_REE:
-> +               if (cmd.waiter_id !=3D 0)
-> +                       goto skip;
-> +               break;
-> +       case MBEDTEE_RPC_REETIME:
-> +       case MBEDTEE_RPC_REEFS:
-> +       case MBEDTEE_RPC_RPMB:
-> +               if (cmd.waiter_id =3D=3D 0)
-> +                       goto skip;
-> +               if ((cmd.id =3D=3D MBEDTEE_RPC_REEFS ||
-> +                    cmd.id =3D=3D MBEDTEE_RPC_RPMB) &&
-> +                   cmd.size < sizeof(struct supp_cmd_hdr))
-> +                       goto skip;
-> +               break;
-> +       default:
-> +               break;
-> +       }
-> +
-> +       if (cmd.waiter_id =3D=3D 0) {
-> +               /* Async RPC: payload follows header in the ring */
-> +               if (cmd.size > sizeof(ctx->rpc_data))
-> +                       goto skip;
-> +
-> +               /* Consume the header now that we know it is valid */
-> +               t2r_ring_advance(ctx, sizeof(cmd));
-> +
-> +               if (t2r_available_size(ctx) < cmd.size) {
-> +                       /* Mark as incomplete, resume on next iteration *=
-/
-> +                       ctx->pending_async =3D true;
-> +                       ctx->pending_size =3D cmd.size;
-> +                       ctx->pending_func =3D func;
-> +                       return NULL;
-> +               }
-> +
-> +               t2r_ring_read(ctx, c->data, cmd.size);
-> +       } else {
-> +               /* Sync RPC: data lives in the shared memory region */
-> +               shm_wire =3D cmd.shm;
-> +               shm_phys =3D (phys_addr_t)shm_wire;
-> +               if ((u64)shm_phys !=3D shm_wire)
-> +                       goto skip;
-> +
-> +               if (shm_phys < ctx->t2r_shm_phys)
-> +                       goto skip;
-> +
-> +               off =3D shm_phys - ctx->t2r_shm_phys;
-> +               if (cmd.size =3D=3D 0 || cmd.size > ctx->t2r_shm_sz)
-> +                       goto skip;
-> +
-> +               if (off > ctx->t2r_shm_sz - cmd.size)
-> +                       goto skip;
-> +
-> +               new_work =3D kzalloc_obj(*new_work, GFP_ATOMIC);
-> +               if (!new_work) {
-> +                       /*
-> +                        * Leave the header in place. The TEE re-notifies=
- when
-> +                        * its sync RPC retry timer fires, so this entry =
-is
-> +                        * retried on the next IRQ instead of being lost.
-> +                        */
-> +                       return NULL;
-> +               }
-> +
-> +               t2r_ring_advance(ctx, sizeof(cmd));
-> +
-> +               c =3D new_work;
-> +               c->mbedtee =3D mbedtee;
-> +               c->data =3D ctx->t2r_shm + off;
-> +       }
-> +
-> +       c->func =3D func;
-> +       c->waiter_id =3D cmd.waiter_id;
-> +       c->size =3D cmd.size;
-> +
-> +       return c;
-> +
-> +skip:
-> +       /*
-> +        * If this was a sync RPC (waiter_id !=3D 0) we must notify the T=
-EE
-> +        * thread so it does not wait forever.  Defer the completion fast=
-call
-> +        * to process context because transport implementations may sleep=
-.
-> +        * If the single deferred-completion slot is already in use, leav=
-e the
-> +        * header in place and retry after the pending completion has dra=
-ined.
-> +        */
-> +       if (cmd.waiter_id !=3D 0 && !rpc_queue_complete_only(ctx, cmd.wai=
-ter_id))
-> +               return NULL;
-> +
-> +       /*
-> +        * Bad or unhandled entry: consume header plus any inline payload
-> +        * (async RPC payloads follow the header in the ring) to keep the
-> +        * ring moving.  For sync RPCs payload is in t2r_shm, not the rin=
-g.
-> +        *
-> +        * An async payload must fit the ring and be fully published;
-> +        * otherwise the stream cannot be framed and no later entry can b=
-e
-> +        * trusted, so drop the whole pending snapshot instead of moving
-> +        * the reader past the producer.
-> +        */
-> +       if (cmd.waiter_id =3D=3D 0 &&
-> +           (cmd.size > ctx->t2r_ring_sz - sizeof(cmd) ||
-> +            t2r_available_size(ctx) < sizeof(cmd) + cmd.size)) {
-> +               t2r_ring_advance(ctx, t2r_available_size(ctx));
-> +               return NULL;
-> +       }
-> +
-> +       t2r_ring_advance(ctx, sizeof(cmd) + (cmd.waiter_id ? 0 : cmd.size=
-));
-> +
-> +       return NULL;
-> +}
-> +
-> +static void rpc_drain_ring(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +       struct rpc_work rw =3D {}, *c =3D NULL;
-> +       unsigned long flags;
-> +
-> +       if (!ctx->t2r_ring)
-> +               return;
-> +
-> +       spin_lock_irqsave(&ctx->ring_lock, flags);
-> +       while (READ_ONCE(ctx->t2r_ring_rd) !=3D
-> +           /* Pair with producer store-release after ring write. */
-> +           smp_load_acquire(&ctx->t2r_ring->wr)) {
-> +               rw.data =3D ctx->rpc_data;
-> +               c =3D rpc_pick_next(mbedtee, ctx, &rw);
-> +               if (!c)
-> +                       break;
-> +
-> +               if (c->waiter_id =3D=3D 0) {
-> +                       c->func(mbedtee, c->data, c->size);
-> +               } else {
-> +                       INIT_WORK(&c->work, rpc_routine);
-> +                       queue_work(ctx->rpc_wq, &c->work);
-> +               }
-> +       }
-> +       spin_unlock_irqrestore(&ctx->ring_lock, flags);
-> +}
-> +
-> +static void rpc_routine(struct work_struct *work)
-> +{
-> +       struct rpc_work *c =3D container_of(work, struct rpc_work, work);
-> +       struct mbedtee_t2r_ctx *ctx =3D &c->mbedtee->t2r;
-> +       unsigned long deadline =3D jiffies + MBEDTEE_RPC_COMPLETE_TIMEOUT=
-;
-> +       unsigned long flags;
-> +       long ret;
-> +
-> +       if (!c->complete_only)
-> +               c->func(c->mbedtee, c->data, c->size);
-> +
-> +       /*
-> +        * COMPLETE_TEE must reach the TEE thread that issued the sync RP=
-C.
-> +        * On RISC-V the notification uses a shared ring buffer that may =
-be
-> +        * transiently full when many RPCs are in flight concurrently.
-> +        * Keep retrying rather than silently dropping the completion, wh=
-ich
-> +        * would leave the TEE thread blocked in rpc_call_sync forever.
-> +        * On ARM the fastcall is a direct SMC so -ENOSPC never occurs.
-> +        * Stop retrying at teardown or when the deadline passes so a dea=
-d
-> +        * TEE cannot hang destroy_workqueue().
-> +        */
-> +       do {
-> +               if (READ_ONCE(ctx->stopping))
-> +                       break;
-> +               ret =3D mbedtee_rpc_fastcall(c->mbedtee, MBEDTEE_RPC_COMP=
-LETE_TEE,
-> +                                          (unsigned long)c->waiter_id, 0=
-, 0);
-> +               if (ret !=3D -ENOSPC && ret !=3D -ENOMEM)
-> +                       break;
-> +               if (time_after_eq(jiffies, deadline)) {
-> +                       dev_err(c->mbedtee->dev,
-> +                               "COMPLETE_TEE for waiter %llu timed out\n=
-",
-> +                               c->waiter_id);
-> +                       break;
-> +               }
-> +               cond_resched();
-> +       } while (1);
-> +
-> +       if (c !=3D &ctx->complete_work) {
-> +               kfree(c);
-> +               return;
-> +       }
-> +
-> +       /* complete_work_pending is always accessed under ring_lock. */
-> +       spin_lock_irqsave(&ctx->ring_lock, flags);
-> +       ctx->complete_work_pending =3D false;
-> +       spin_unlock_irqrestore(&ctx->ring_lock, flags);
-> +       if (!READ_ONCE(ctx->stopping))
-> +               rpc_drain_ring(c->mbedtee);
-> +}
-> +
-> +/*
-> + * Hard IRQ handler -- drains the TEE-to-REE ring buffer.
-> + *
-> + * Asynchronous RPCs (waiter_id =3D=3D 0) are handled inline since all a=
-sync
-> + * handlers (complete(), ktime_get_real_ts64()) are non-blocking.
-> + *
-> + * Synchronous RPCs (waiter_id !=3D 0) may block waiting for the
-> + * tee-supplicant, so they are dispatched to a workqueue.
-> + */
-> +irqreturn_t mbedtee_rpc_irq_handler(int irq, void *dev_id)
-> +{
-> +       struct mbedtee_device *mbedtee =3D dev_id;
-> +
-> +       if (!mbedtee)
-> +               return IRQ_NONE;
-> +
-> +       rpc_drain_ring(mbedtee);
-> +
-> +       return IRQ_HANDLED;
-> +}
-> +
-> +static void mbedtee_rpc_complete(struct mbedtee_device *mbedtee,
-> +                                void *data, size_t size)
-> +{
-> +       u64 waiter_id;
-> +
-> +       if (size < sizeof(waiter_id))
-> +               return;
-> +
-> +       memcpy(&waiter_id, data, sizeof(waiter_id));
-> +       if (!waiter_id)
-> +               return;
-> +
-> +       mbedtee_rpc_complete_call(mbedtee, waiter_id);
-> +}
-> +
-> +static void mbedtee_ree_time(struct mbedtee_device *mbedtee,
-> +                            void *data, size_t size)
-> +{
-> +       struct timespec64 *ts =3D data;
-> +
-> +       if (size < sizeof(*ts))
-> +               return;
-> +
-> +       ktime_get_real_ts64(ts);
-> +}
-> +
-> +static void mbedtee_reefs_supp(struct mbedtee_device *mbedtee,
-> +                              void *data, size_t size)
-> +{
-> +       mbedtee_supp_handler(mbedtee, MBEDTEE_SUPP_REEFS, data, size);
-> +}
-> +
-> +static void mbedtee_rpmb_supp(struct mbedtee_device *mbedtee,
-> +                             void *data, size_t size)
-> +{
-> +       mbedtee_supp_handler(mbedtee, MBEDTEE_SUPP_RPMB, data, size);
-> +}
-> +
-> +static void mbedtee_register_rpc(struct mbedtee_device *mbedtee,
-> +                                u32 id, void (*func)(struct mbedtee_devi=
-ce *mbedtee,
-> +                                       void *data, size_t size))
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +
-> +       if (WARN_ON(id >=3D MBEDTEE_RPC_MAX || !func))
-> +               return;
-> +
-> +       ctx->rpc_handlers[id] =3D func;
-> +}
-> +
-> +int mbedtee_rpc_init(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +       struct device_node *node =3D mbedtee->dev->of_node;
-> +       struct resource res;
-> +       bool cpuhp_state_created =3D false;
-> +       int ret;
-> +
-> +       memset(ctx, 0, sizeof(*ctx));
-> +       spin_lock_init(&ctx->ring_lock);
-> +       mbedtee->rpc_ops =3D mbedtee_get_rpc_transport_ops();
-> +       if (!mbedtee->rpc_ops)
-> +               return -EIO;
-> +
-> +       ret =3D mbedtee_get_resource(node, "t2r-ring", &res);
-> +       if (ret) {
-> +               dev_err(mbedtee->dev, "t2r-ring not found in DT\n");
-> +               return ret;
-> +       }
-> +
-> +       ctx->t2r_ring =3D memremap(res.start, resource_size(&res),
-> +                                MEMREMAP_WB);
-> +       if (!ctx->t2r_ring) {
-> +               dev_err(mbedtee->dev, "failed to map t2r ring\n");
-> +               return -ENOMEM;
-> +       }
-> +       if (resource_size(&res) <=3D sizeof(struct rpc_ringbuf)) {
-> +               dev_err(mbedtee->dev, "t2r-ring too small\n");
-> +               memunmap(ctx->t2r_ring);
-> +               ctx->t2r_ring =3D NULL;
-> +               return -EINVAL;
-> +       }
-> +       ctx->t2r_ring_sz =3D resource_size(&res) - sizeof(struct rpc_ring=
-buf);
-> +       /* Observe latest producer index only after ring metadata is visi=
-ble. */
-> +       WRITE_ONCE(ctx->t2r_ring_rd, smp_load_acquire(&ctx->t2r_ring->rd)=
-);
-> +
-> +       dev_dbg(mbedtee->dev, "t2r-ring %pa\n", &res.start);
-> +
-> +       ret =3D mbedtee_get_resource(node, "t2r-shm", &res);
-> +       if (ret) {
-> +               dev_err(mbedtee->dev, "t2r-shm not found in DT\n");
-> +               goto err_ring;
-> +       }
-> +
-> +       ctx->t2r_shm_phys =3D res.start;
-> +       ctx->t2r_shm_sz =3D resource_size(&res);
-> +       ctx->t2r_shm =3D memremap(res.start, ctx->t2r_shm_sz,
-> +                               MEMREMAP_WB);
-> +       if (!ctx->t2r_shm) {
-> +               dev_err(mbedtee->dev, "failed to map t2r shm\n");
-> +               ret =3D -ENOMEM;
-> +               goto err_ring;
-> +       }
-> +
-> +       dev_dbg(mbedtee->dev, "t2r-shm %pa\n", &res.start);
-> +
-> +       ctx->rpc_wq =3D alloc_workqueue("mbedtee-rpc", WQ_UNBOUND, 0);
-> +       if (!ctx->rpc_wq) {
-> +               dev_err(mbedtee->dev, "failed to create rpc workqueue\n")=
-;
-> +               ret =3D -ENOMEM;
-> +               goto err_shm;
-> +       }
-> +
-> +       ctx->complete_work.mbedtee =3D mbedtee;
-> +       ctx->complete_work.complete_only =3D true;
-> +       INIT_WORK(&ctx->complete_work.work, rpc_routine);
-> +
-> +       mbedtee_register_rpc(mbedtee, MBEDTEE_RPC_COMPLETE_REE, mbedtee_r=
-pc_complete);
-> +       mbedtee_register_rpc(mbedtee, MBEDTEE_RPC_REETIME, mbedtee_ree_ti=
-me);
-> +       mbedtee_register_rpc(mbedtee, MBEDTEE_RPC_REEFS, mbedtee_reefs_su=
-pp);
-> +       mbedtee_register_rpc(mbedtee, MBEDTEE_RPC_RPMB, mbedtee_rpmb_supp=
-);
-> +
-> +       /*
-> +        * Register cpuhp instance BEFORE enabling interrupts so that
-> +        * T2R delivery migration is in place before the first IRQ fires.
-> +        */
-> +       mutex_lock(&mbedtee_cpuhp_mutex);
-> +       if (mbedtee_cpuhp_state < 0) {
-> +               mbedtee_cpuhp_state =3D
-> +                       cpuhp_setup_state_multi(CPUHP_AP_ONLINE_DYN,
-> +                                               "tee/mbedtee:rpc-callee",
-> +                                               mbedtee_cpu_online,
-> +                                               mbedtee_cpu_offline);
-> +               if (mbedtee_cpuhp_state < 0) {
-> +                       ret =3D mbedtee_cpuhp_state;
-> +                       mutex_unlock(&mbedtee_cpuhp_mutex);
-> +                       goto err_wq;
-> +               }
-> +               cpuhp_state_created =3D true;
-> +       }
-> +
-> +       ret =3D cpuhp_state_add_instance(mbedtee_cpuhp_state, &ctx->hp_no=
-de);
-> +       if (!ret) {
-> +               mbedtee_cpuhp_instances++;
-> +               ctx->cpuhp_added =3D true;
-> +       } else if (cpuhp_state_created) {
-> +               cpuhp_remove_multi_state(mbedtee_cpuhp_state);
-> +               mbedtee_cpuhp_state =3D -EINVAL;
-> +       }
-> +       mutex_unlock(&mbedtee_cpuhp_mutex);
-> +       if (ret !=3D 0)
-> +               goto err_wq;
-> +
-> +       ret =3D mbedtee->rpc_ops->init(mbedtee, ctx->t2r_ring,
-> +                                       mbedtee_rpc_irq_handler);
-> +       if (ret !=3D 0)
-> +               goto err_cpuhp;
-> +
-> +       /* Signal the TEE that the REE callee is ready to receive. */
-> +       smp_store_release(&ctx->t2r_ring->callee_ready, true);
-> +
-> +       return 0;
-> +
-> +err_cpuhp:
-> +       mutex_lock(&mbedtee_cpuhp_mutex);
-> +       if (mbedtee_cpuhp_state >=3D 0 && ctx->cpuhp_added) {
-> +               cpuhp_state_remove_instance_nocalls(mbedtee_cpuhp_state,
-> +                                                   &ctx->hp_node);
-> +               ctx->cpuhp_added =3D false;
-> +               if (mbedtee_cpuhp_instances)
-> +                       mbedtee_cpuhp_instances--;
-> +               if (!mbedtee_cpuhp_instances) {
-> +                       cpuhp_remove_multi_state(mbedtee_cpuhp_state);
-> +                       mbedtee_cpuhp_state =3D -EINVAL;
-> +               }
-> +       }
-> +       mutex_unlock(&mbedtee_cpuhp_mutex);
-> +err_wq:
-> +       destroy_workqueue(ctx->rpc_wq);
-> +       ctx->rpc_wq =3D NULL;
-> +err_shm:
-> +       memunmap(ctx->t2r_shm);
-> +       ctx->t2r_shm =3D NULL;
-> +err_ring:
-> +       memunmap(ctx->t2r_ring);
-> +       ctx->t2r_ring =3D NULL;
-> +       return ret;
-> +}
-> +
-> +void mbedtee_rpc_uninit(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx;
-> +
-> +       if (!mbedtee)
-> +               return;
-> +
-> +       ctx =3D &mbedtee->t2r;
-> +       mbedtee_rpc_stop(mbedtee);
-> +
-> +       /* Transport and workqueue resources can now be torn down safely.=
- */
-> +
-> +       mutex_lock(&mbedtee_cpuhp_mutex);
-> +       if (mbedtee_cpuhp_state >=3D 0 && ctx->cpuhp_added) {
-> +               cpuhp_state_remove_instance_nocalls(mbedtee_cpuhp_state,
-> +                                                   &ctx->hp_node);
-> +               ctx->cpuhp_added =3D false;
-> +               if (mbedtee_cpuhp_instances)
-> +                       mbedtee_cpuhp_instances--;
-> +               if (!mbedtee_cpuhp_instances) {
-> +                       cpuhp_remove_multi_state(mbedtee_cpuhp_state);
-> +                       mbedtee_cpuhp_state =3D -EINVAL;
-> +               }
-> +       }
-> +       mutex_unlock(&mbedtee_cpuhp_mutex);
-> +
-> +       if (mbedtee->rpc_ops)
-> +               mbedtee->rpc_ops->uninit(mbedtee);
-> +
-> +       if (ctx->rpc_wq) {
-> +               destroy_workqueue(ctx->rpc_wq);
-> +               ctx->rpc_wq =3D NULL;
-> +       }
-> +
-> +       if (ctx->t2r_shm) {
-> +               memunmap(ctx->t2r_shm);
-> +               ctx->t2r_shm =3D NULL;
-> +       }
-> +
-> +       if (ctx->t2r_ring) {
-> +               memunmap(ctx->t2r_ring);
-> +               ctx->t2r_ring =3D NULL;
-> +       }
-> +}
-> +
-> +/*
-> + * Quiesce all RPC activity: reject new submissions and wake every waite=
-r.
-> + * Idempotent -- called directly from remove() and again from rpc_uninit=
-()
-> + * (which the probe error path reaches without a prior stop).
-> + */
-> +void mbedtee_rpc_stop(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx;
-> +
-> +       if (!mbedtee)
-> +               return;
-> +
-> +       ctx =3D &mbedtee->t2r;
-> +       /* Stop advertising the REE callee before interrupt teardown. */
-> +       if (ctx->t2r_ring)
-> +               WRITE_ONCE(ctx->t2r_ring->callee_ready, false);
-> +       WRITE_ONCE(ctx->stopping, true);
-> +       mbedtee_r2t_stop(mbedtee);
-> +       mbedtee_supp_abort_all(&mbedtee->supp);
-> +       mbedtee_rpc_calls_abort(mbedtee);
-> +}
-> diff --git a/drivers/tee/mbedtee/rpc_callee_arm.c b/drivers/tee/mbedtee/r=
-pc_callee_arm.c
-> new file mode 100644
-> index 0000000..871bba5
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/rpc_callee_arm.c
-> @@ -0,0 +1,91 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + * ARM/ARM64 GIC transport for the TEE->REE RPC callee.
-> + *
-> + * On ARM/ARM64 the TEE raises a rising-edge software-generated interrup=
-t
-> + * described by the "interrupts" property of the mbedtee DT node.  This =
-file
-> + * obtains that virq via of_irq_get() and registers the hard IRQ handler
-> + * supplied by the core callee layer.
-> + */
-> +#include <linux/interrupt.h>
-> +#include <linux/cpu.h>
-> +#include <linux/of.h>
-> +#include <linux/of_irq.h>
-> +
-> +#include "mbedtee_drv.h"
-> +
-> +static int arm_transport_init(struct mbedtee_device *mbedtee,
-> +                             struct rpc_ringbuf *ring, irq_handler_t han=
-dler)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +       struct mbedtee_rpc_transport_ctx *tctx =3D &mbedtee->transport;
-> +       int ret;
-> +
-> +       tctx->rpc_notify_virq =3D of_irq_get(mbedtee->dev->of_node, 0);
-> +       if (tctx->rpc_notify_virq <=3D 0)
-> +               return tctx->rpc_notify_virq ? tctx->rpc_notify_virq : -E=
-NODEV;
-> +
-> +       ret =3D request_irq(tctx->rpc_notify_virq, handler,
-> +                         0, "mbedtee-rpc", mbedtee);
-> +       if (ret) {
-> +               dev_warn(mbedtee->dev, "request_irq %d failed: %d\n",
-> +                        tctx->rpc_notify_virq, ret);
-> +               tctx->rpc_notify_virq =3D 0;
-> +               return ret;
-> +       }
-> +
-> +       /*
-> +        * Spread the T2R SPI across all online CPUs in Linux.
-> +        * The TEE needs no CPU information from Linux: it broadcasts
-> +        * via GIC hardware (GICv2 ITARGETS=3D0xFF / GICv3 IROUTER.IRM=3D=
-1).
-> +        */
-> +       cpumask_copy(&ctx->callee_cpus, cpu_online_mask);
-> +       if (irq_set_affinity(tctx->rpc_notify_virq, &ctx->callee_cpus))
-> +               dev_warn(mbedtee->dev, "irq_set_affinity failed\n");
-> +
-> +       dev_dbg(mbedtee->dev, "t2r-irq %d\n", tctx->rpc_notify_virq);
-> +       return 0;
-> +}
-> +
-> +static void arm_transport_uninit(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_rpc_transport_ctx *tctx =3D &mbedtee->transport;
-> +
-> +       if (tctx->rpc_notify_virq > 0) {
-> +               free_irq(tctx->rpc_notify_virq, mbedtee);
-> +               tctx->rpc_notify_virq =3D 0;
-> +       }
-> +}
-> +
-> +/*
-> + * ARM T2R uses a GIC SPI: the TEE broadcasts it via GIC hardware
-> + * (GICv2 ITARGETS=3D0xFF or GICv3 IROUTER.IRM=3D1) to any alive CPU.
-> + * TrustZone shares physical CPUs -- no ring update is ever needed.
-> + *
-> + * @new_cpu is ignored: the IRQ is re-affined to ctx->callee_cpus which
-> + * the core callee layer keeps in sync (dying CPU already removed before
-> + * this callback is invoked, so the mask is always accurate).
-> + */
-> +static int arm_update_affinity(struct mbedtee_device *mbedtee,
-> +                              unsigned int new_cpu)
-> +{
-> +       struct mbedtee_rpc_transport_ctx *tctx =3D &mbedtee->transport;
-> +
-> +       if (tctx->rpc_notify_virq > 0 &&
-> +           irq_set_affinity(tctx->rpc_notify_virq, &mbedtee->t2r.callee_=
-cpus))
-> +               dev_warn(mbedtee->dev, "irq_set_affinity failed\n");
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct rpc_transport_ops arm_transport_ops =3D {
-> +       .init            =3D arm_transport_init,
-> +       .uninit          =3D arm_transport_uninit,
-> +       .update_affinity =3D arm_update_affinity,
-> +};
-> +
-> +const struct rpc_transport_ops *mbedtee_get_rpc_transport_ops(void)
-> +{
-> +       return &arm_transport_ops;
-> +}
-> diff --git a/drivers/tee/mbedtee/rpc_callee_riscv.c b/drivers/tee/mbedtee=
-/rpc_callee_riscv.c
-> new file mode 100644
-> index 0000000..7ac0f8e
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/rpc_callee_riscv.c
-> @@ -0,0 +1,203 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2025 Xing Loong <xing.xl.loong@gmail.com>
-> + * RISC-V MSI transport for the TEE->REE RPC callee.
-> + *
-> + * On RISC-V the TEE wakes the REE by writing a Message Signalled Interr=
-upt
-> + * into the target hart's IMSIC (Incoming MSI Controller).  This file al=
-locates
-> + * one platform MSI from the DT-provided MSI parent and registers the ha=
-rd IRQ
-> + * handler supplied by the core callee layer.
-> + *
-> + * CPU hotplug: the common mbedtee_cpu_offline() callback in rpc_callee.=
-c
-> + * detects when the callee CPU goes offline and calls riscv_update_affin=
-ity()
-> + * to migrate the MSI to another online CPU.
-> + */
-> +#include <linux/interrupt.h>
-> +#include <linux/msi.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/smp.h>
-> +
-> +#include "mbedtee_drv.h"
-> +
-> +static int mbedtee_ring_set_hartid(struct mbedtee_device *mbedtee,
-> +                                  struct rpc_ringbuf *ring,
-> +                                  unsigned int cpu)
-> +{
-> +       long hartid =3D cpuid_to_hartid_map(cpu);
-> +
-> +       if (hartid < 0) {
-> +               dev_err(mbedtee->dev, "CPU%u has no valid hart-id\n", cpu=
-);
-> +               return -ERANGE;
-> +       }
-> +
-> +       WRITE_ONCE(ring->callee_hartid, (u32)hartid);
-> +       return 0;
-> +}
-> +
-> +static void mbedtee_rpc_write_msi_msg(struct msi_desc *desc_msi,
-> +                                     struct msi_msg *msg)
-> +{
-> +       struct mbedtee_device *mbedtee =3D dev_get_drvdata(desc_msi->dev)=
-;
-> +
-> +       if (mbedtee)
-> +               mbedtee->transport.rpc_msi_msg =3D *msg;
-> +}
-> +
-> +static int riscv_transport_init(struct mbedtee_device *mbedtee,
-> +                               struct rpc_ringbuf *ring, irq_handler_t h=
-andler)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +       const struct cpumask *eff;
-> +       struct mbedtee_rpc_transport_ctx *tctx =3D &mbedtee->transport;
-> +       unsigned int cpu;
-> +       struct device *dev =3D mbedtee->dev;
-> +       int virq;
-> +       int ret;
-> +
-> +       /*
-> +        * Set a bootstrap callee_hartid (hart 0) so the TEE can poll
-> +        * even if MSI setup fails below.
-> +        */
-> +       ret =3D mbedtee_ring_set_hartid(mbedtee, ring, 0);
-> +       if (ret)
-> +               return ret;
-> +
-> +       dev_set_drvdata(dev, mbedtee);
-> +
-> +       /*
-> +        * The MSI domain of an OF device is resolved only once, when the
-> +        * platform device is created (of_msi_configure() in of/platform.=
-c).
-> +        * mbedtee's MSI parent is the IMSIC, whose MSI domain is created
-> +        * later, when the IMSIC builtin_platform_driver probes -- typica=
-lly
-> +        * after this device has already been created with a NULL msi.dom=
-ain.
-> +        *
-> +        * Deferred probing alone cannot recover from this: the driver co=
-re
-> +        * re-runs probe() but never re-runs of_msi_configure(), so the s=
-tale
-> +        * NULL domain would persist across every retry.  Re-resolve it h=
-ere
-> +        * and defer until the IMSIC driver is up.  This mirrors the RISC=
--V
-> +        * APLIC/IOMMU platform-MSI drivers.
-> +        */
-> +       if (!dev_get_msi_domain(dev)) {
-> +               of_msi_configure(dev, dev->of_node);
-> +
-> +               if (!dev_get_msi_domain(dev))
-> +                       return -EPROBE_DEFER;
-> +       }
-> +
-> +       ret =3D platform_device_msi_init_and_alloc_irqs(dev, 1,
-> +                                                     mbedtee_rpc_write_m=
-si_msg);
-> +       if (ret) {
-> +               dev_err(mbedtee->dev, "MSI alloc failed: %d\n", ret);
-> +               return ret;
-> +       }
-> +
-> +       virq =3D msi_get_virq(dev, 0);
-> +       if (virq <=3D 0) {
-> +               dev_err(mbedtee->dev, "no MSI virq\n");
-> +               ret =3D -ENOENT;
-> +               goto err_msi;
-> +       }
-> +
-> +       ret =3D request_irq(virq, handler, 0, "mbedtee-rpc", mbedtee);
-> +       if (ret) {
-> +               dev_err(mbedtee->dev, "request_irq %d failed: %d\n", virq=
-, ret);
-> +               goto err_msi;
-> +       }
-> +
-> +       eff =3D irq_get_effective_affinity_mask(virq);
-> +       cpu =3D eff ? cpumask_first(eff) : 0;
-> +
-> +       dev_dbg(mbedtee->dev, "MSI addr 0x%x%08x data %d virq %d hart %ld=
-\n",
-> +               tctx->rpc_msi_msg.address_hi, tctx->rpc_msi_msg.address_l=
-o,
-> +               tctx->rpc_msi_msg.data, virq, cpuid_to_hartid_map(cpu));
-> +
-> +       /* Inform TEE of the IMSIC identity used for T2R notifications. *=
-/
-> +       ret =3D mbedtee_ring_set_hartid(mbedtee, ring, cpu);
-> +       if (ret)
-> +               goto err_irq;
-> +       /* Ensure callee_hartid is visible before advertising MSI interru=
-pt ID. */
-> +       smp_store_release(&ring->callee_imsic_id, tctx->rpc_msi_msg.data)=
-;
-> +
-> +       /* Track the active callee CPU for hotplug migration. */
-> +       ctx->callee_virq =3D virq;
-> +       cpumask_set_cpu(cpu, &ctx->callee_cpus);
-> +
-> +       return 0;
-> +
-> +err_irq:
-> +       free_irq(virq, mbedtee);
-> +
-> +err_msi:
-> +       platform_device_msi_free_irqs_all(dev);
-> +       return ret;
-> +}
-> +
-> +static void riscv_transport_uninit(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +       int virq;
-> +
-> +       virq =3D ctx->callee_virq;
-> +       ctx->callee_virq =3D 0;
-> +       if (virq > 0)
-> +               free_irq(virq, mbedtee);
-> +
-> +       platform_device_msi_free_irqs_all(mbedtee->dev);
-> +}
-> +
-> +/*
-> + * Migrate the IMSIC MSI delivery to @new_cpu.
-> + *
-> + * Ordering guarantee for the TEE reader:
-> + *   1. Clear callee_imsic_id to 0 -- TEE skips IMSIC path while we migr=
-ate.
-> + *   2. Call irq_set_affinity() -- triggers mbedtee_rpc_write_msi_msg() =
-which
-> + *      updates tctx->rpc_msi_msg with the new IMSIC identity.
-> + *   3. Update callee_hartid (WRITE_ONCE inside mbedtee_ring_set_hartid(=
-));
-> + *      no explicit barrier needed here since the release store on
-> + *      callee_imsic_id in step 4 provides the ordering.
-> + *   4. Publish new callee_imsic_id with smp_store_release -- TEE's
-> + *      smp_load_acquire on callee_imsic_id pairs with this store.
-> + */
-> +static int riscv_update_affinity(struct mbedtee_device *mbedtee,
-> +                                unsigned int new_cpu)
-> +{
-> +       struct mbedtee_t2r_ctx *ctx =3D &mbedtee->t2r;
-> +       struct mbedtee_rpc_transport_ctx *tctx =3D &mbedtee->transport;
-> +       struct rpc_ringbuf *ring =3D ctx->t2r_ring;
-> +       int virq =3D ctx->callee_virq;
-> +
-> +       if (!virq)
-> +               return -ENODEV;
-> +
-> +       /* Step 1: prevent TEE from using the stale IMSIC identity. */
-> +       smp_store_release(&ring->callee_imsic_id, 0);
-> +
-> +       /* Step 2: retarget the MSI; write_msi_msg callback updates rpc_m=
-si_msg. */
-> +       if (irq_set_affinity(virq, cpumask_of(new_cpu))) {
-> +               dev_warn(mbedtee->dev, "irq_set_affinity to CPU%u failed\=
-n",
-> +                        new_cpu);
-> +               return -EIO;
-> +       }
-> +
-> +       /* Step 3: update callee_hartid. */
-> +       if (mbedtee_ring_set_hartid(mbedtee, ring, new_cpu))
-> +               return -ERANGE;
-> +
-> +       /* Step 4: publish new IMSIC id with release barrier. */
-> +       smp_store_release(&ring->callee_imsic_id, tctx->rpc_msi_msg.data)=
-;
-> +
-> +       dev_dbg(mbedtee->dev, "T2R callee migrated to CPU%u (hart %ld)\n"=
-,
-> +               new_cpu, cpuid_to_hartid_map(new_cpu));
-> +       return 0;
-> +}
-> +
-> +static const struct rpc_transport_ops riscv_transport_ops =3D {
-> +       .init            =3D riscv_transport_init,
-> +       .uninit          =3D riscv_transport_uninit,
-> +       .update_affinity =3D riscv_update_affinity,
-> +};
-> +
-> +const struct rpc_transport_ops *mbedtee_get_rpc_transport_ops(void)
-> +{
-> +       return &riscv_transport_ops;
-> +}
-> diff --git a/drivers/tee/mbedtee/rpc_caller.c b/drivers/tee/mbedtee/rpc_c=
-aller.c
-> new file mode 100644
-> index 0000000..6aeb07c
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/rpc_caller.c
-> @@ -0,0 +1,697 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + * REE->TEE session management and yield-call interface.
-> + */
-> +#include <linux/mm.h>
-> +#include <linux/errno.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/refcount.h>
-> +#include "mbedtee_drv.h"
-> +
-> +#define MBEDTEE_RPC_CALL_ACTIVE                        0
-> +#define MBEDTEE_RPC_CALL_DONE                  1
-> +#define MBEDTEE_RPC_CALL_INTERRUPTED   2
-> +#define MBEDTEE_RPC_CALL_ABORTED               3
-> +
-> +static void mbedtee_rpc_call_put(struct mbedtee_rpc_call *call)
-> +{
-> +       if (refcount_dec_and_test(&call->refs))
-> +               kfree(call);
-> +}
-> +
-> +int mbedtee_rpc_call_alloc(struct mbedtee_device *mbedtee,
-> +                          size_t payload_size, struct mbedtee_rpc_call *=
-*call)
-> +{
-> +       struct mbedtee_rpc_call *rcall;
-> +       unsigned long rpc_index;
-> +       int ret;
-> +
-> +       if (sizeof(*rcall) + payload_size > PAGE_SIZE)
-> +               return -E2BIG;
-> +
-> +       rcall =3D kzalloc(sizeof(*rcall) + payload_size, GFP_KERNEL);
-> +       if (!rcall)
-> +               return -ENOMEM;
-> +
-> +       init_completion(&rcall->c);
-> +       rcall->state =3D MBEDTEE_RPC_CALL_ACTIVE;
-> +       /* One reference for the caller, one for the XArray entry. */
-> +       refcount_set(&rcall->refs, 2);
-> +       rcall->rpc.size =3D payload_size;
-> +       rcall->rpc.ret =3D -EOPNOTSUPP;
-> +       rcall->rpc_phys =3D mbedtee_virt_to_phys(&rcall->rpc);
-> +
-> +       do {
-> +               rpc_index =3D atomic_long_inc_return(&mbedtee->rpc_call_s=
-eq);
-> +       } while (rpc_index =3D=3D 0);
-> +
-> +       mutex_lock(&mbedtee->rpc_calls_mutex);
-> +       if (mbedtee->stopping) {
-> +               mutex_unlock(&mbedtee->rpc_calls_mutex);
-> +               kfree(rcall);
-> +               return -ESHUTDOWN;
-> +       }
-> +       ret =3D xa_insert_irq(&mbedtee->rpc_calls, rpc_index, rcall, GFP_=
-KERNEL);
-> +       mutex_unlock(&mbedtee->rpc_calls_mutex);
-> +       if (ret !=3D 0) {
-> +               kfree(rcall);
-> +               return ret;
-> +       }
-> +
-> +       rcall->rpc.waiter_id =3D rpc_index;
-> +       *call =3D rcall;
-> +
-> +       return 0;
-> +}
-> +
-> +void mbedtee_rpc_call_free(struct mbedtee_device *mbedtee,
-> +                          struct mbedtee_rpc_call *call)
-> +{
-> +       unsigned long flags;
-> +       unsigned long rpc_index;
-> +       bool drop_remote =3D false;
-> +
-> +       if (!call)
-> +               return;
-> +
-> +       rpc_index =3D (unsigned long)call->rpc.waiter_id;
-> +
-> +       /*
-> +        * Interrupted calls remain reachable by the TEE, while aborted c=
-alls
-> +        * retain a quarantined remote reference. In both cases only rele=
-ase the
-> +        * caller reference here.
-> +        */
-> +       xa_lock_irqsave(&mbedtee->rpc_calls, flags);
-> +       if (call->state !=3D MBEDTEE_RPC_CALL_INTERRUPTED &&
-> +           call->state !=3D MBEDTEE_RPC_CALL_ABORTED &&
-> +           xa_load(&mbedtee->rpc_calls, rpc_index) =3D=3D call) {
-> +               __xa_erase(&mbedtee->rpc_calls, rpc_index);
-> +               drop_remote =3D true;
-> +       }
-> +       xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +
-> +       if (drop_remote)
-> +               mbedtee_rpc_call_put(call);
-> +
-> +       /* Drop the caller reference. */
-> +       mbedtee_rpc_call_put(call);
-> +}
-> +
-> +/*
-> + * Abort all outstanding calls at teardown: erase each entry and wake it=
-s
-> + * waiter so that no workqueue item can remain blocked in a completion
-> + * wait when destroy_workqueue() runs.
-> + */
-> +void mbedtee_rpc_calls_abort(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_rpc_call *call;
-> +       unsigned long flags;
-> +       unsigned long idx;
-> +
-> +       mutex_lock(&mbedtee->rpc_calls_mutex);
-> +       WRITE_ONCE(mbedtee->stopping, true);
-> +       /*
-> +        * Hold xa_lock across the whole walk so a concurrent
-> +        * mbedtee_rpc_complete_call() cannot erase entries mid-iteration=
-.
-> +        * xa_for_each() only takes RCU internally, so it does not recurs=
-e
-> +        * on xa_lock.
-> +        */
-> +       xa_lock_irqsave(&mbedtee->rpc_calls, flags);
-> +       xa_for_each(&mbedtee->rpc_calls, idx, call) {
-> +               if (xchg(&call->state, MBEDTEE_RPC_CALL_ABORTED) =3D=3D
-> +                   MBEDTEE_RPC_CALL_ACTIVE)
-> +                       complete(&call->c);
-> +       }
-> +       xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +       mutex_unlock(&mbedtee->rpc_calls_mutex);
-> +}
-> +
-> +/*
-> + * Release the XArray at teardown. Any entries left here are calls the T=
-EE
-> + * never completed; it may still hold their rpc_phys, so we deliberately
-> + * leak (quarantine) them rather than risk a cross-world use-after-free.
-> + */
-> +void mbedtee_rpc_calls_release(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_rpc_call *call;
-> +       unsigned long idx;
-> +       unsigned int quarantined =3D 0;
-> +
-> +       xa_for_each(&mbedtee->rpc_calls, idx, call) {
-> +               xa_erase(&mbedtee->rpc_calls, idx);
-> +               /* No quiesce ACK exists, so retain the remote reference.=
- */
-> +               quarantined++;
-> +       }
-> +       xa_destroy(&mbedtee->rpc_calls);
-> +       mutex_destroy(&mbedtee->rpc_calls_mutex);
-> +
-> +       if (quarantined)
-> +               dev_warn(mbedtee->dev, "quarantined %u RPC calls at relea=
-se\n",
-> +                        quarantined);
-> +}
-> +
-> +void mbedtee_rpc_complete_call(struct mbedtee_device *mbedtee,
-> +                              u64 waiter_id)
-> +{
-> +       struct mbedtee_rpc_call *call;
-> +       unsigned long rpc_index;
-> +       unsigned long flags;
-> +       unsigned int state;
-> +
-> +       rpc_index =3D (unsigned long)waiter_id;
-> +       if ((u64)rpc_index !=3D waiter_id)
-> +               return;
-> +
-> +       xa_lock_irqsave(&mbedtee->rpc_calls, flags);
-> +       call =3D xa_load(&mbedtee->rpc_calls, rpc_index);
-> +       if (!call) {
-> +               xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +               return;
-> +       }
-> +
-> +       state =3D cmpxchg(&call->state, MBEDTEE_RPC_CALL_ACTIVE,
-> +                       MBEDTEE_RPC_CALL_DONE);
-> +       __xa_erase(&mbedtee->rpc_calls, rpc_index);
-> +       xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +
-> +       /*
-> +        * Wake the waiter before dropping the XArray reference: a killed
-> +        * waiter that found the entry erased may release its own referen=
-ce
-> +        * concurrently, so the put must be the last touch of the call.
-> +        */
-> +       if (state =3D=3D MBEDTEE_RPC_CALL_ACTIVE)
-> +               complete(&call->c);
-> +       mbedtee_rpc_call_put(call);
-> +}
-> +
-> +long mbedtee_rpc_wait_for_completion(struct mbedtee_device *mbedtee,
-> +                                    struct mbedtee_rpc_call *call, bool =
-killable)
-> +{
-> +       long ret;
-> +       unsigned int state;
-> +       unsigned long flags;
-> +       unsigned long rpc_index;
-> +
-> +       if (!killable) {
-> +               wait_for_completion(&call->c);
-> +               return READ_ONCE(call->state) =3D=3D MBEDTEE_RPC_CALL_ABO=
-RTED ?
-> +                       -ESHUTDOWN : 0;
-> +       }
-> +
-> +       rpc_index =3D (unsigned long)call->rpc.waiter_id;
-> +
-> +       ret =3D wait_for_completion_killable(&call->c);
-> +       if (ret =3D=3D 0)
-> +               return READ_ONCE(call->state) =3D=3D MBEDTEE_RPC_CALL_ABO=
-RTED ?
-> +                       -ESHUTDOWN : 0;
-> +
-> +       /*
-> +        * Synchronize with mbedtee_rpc_complete_call() via the
-> +        * xa_lock. If complete_call already consumed this entry
-> +        * before we acquired the lock, the entry is already gone
-> +        * from the xarray and the TEE already completed (or freed)
-> +        * the call -- treat as success since the RPC is finished.
-> +        * If the entry is still present, we hold the lock so
-> +        * complete_call cannot race with our state transition.
-> +        */
-> +       xa_lock_irqsave(&mbedtee->rpc_calls, flags);
-> +       if (xa_load(&mbedtee->rpc_calls, rpc_index) !=3D call) {
-> +               state =3D READ_ONCE(call->state);
-> +               xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +               return state =3D=3D MBEDTEE_RPC_CALL_ABORTED ? -ESHUTDOWN=
- : 0;
-> +       }
-> +
-> +       state =3D cmpxchg(&call->state, MBEDTEE_RPC_CALL_ACTIVE,
-> +                       MBEDTEE_RPC_CALL_INTERRUPTED);
-> +       if (state =3D=3D MBEDTEE_RPC_CALL_DONE) {
-> +               xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +               return 0;
-> +       }
-> +
-> +       if (state =3D=3D MBEDTEE_RPC_CALL_ACTIVE) {
-> +               /* Publish interruption state before the TEE waiter reads=
- it. */
-> +               smp_store_release(&call->rpc.interrupted, true);
-> +               xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +               return ret;
-> +       }
-> +
-> +       xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +       return state =3D=3D MBEDTEE_RPC_CALL_ABORTED ? -ESHUTDOWN : ret;
-> +}
-> +
-> +/*
-> + * Non-interruptible wait bounded by @timeout: on expiry the call is mar=
-ked
-> + * INTERRUPTED (remote ref retained) and -ETIMEDOUT is returned, so a hu=
-ng
-> + * TEE cannot block the caller forever.
-> + */
-> +long mbedtee_rpc_wait_for_completion_timeout(struct mbedtee_device *mbed=
-tee,
-> +                                            struct mbedtee_rpc_call *cal=
-l,
-> +                                            unsigned long timeout)
-> +{
-> +       unsigned long flags;
-> +       unsigned long rpc_index;
-> +       unsigned int state;
-> +
-> +       if (wait_for_completion_timeout(&call->c, timeout))
-> +               return READ_ONCE(call->state) =3D=3D MBEDTEE_RPC_CALL_ABO=
-RTED ?
-> +                       -ESHUTDOWN : 0;
-> +
-> +       rpc_index =3D (unsigned long)call->rpc.waiter_id;
-> +       xa_lock_irqsave(&mbedtee->rpc_calls, flags);
-> +       if (xa_load(&mbedtee->rpc_calls, rpc_index) !=3D call) {
-> +               state =3D READ_ONCE(call->state);
-> +               xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +               return state =3D=3D MBEDTEE_RPC_CALL_ABORTED ? -ESHUTDOWN=
- : 0;
-> +       }
-> +
-> +       state =3D cmpxchg(&call->state, MBEDTEE_RPC_CALL_ACTIVE,
-> +                       MBEDTEE_RPC_CALL_INTERRUPTED);
-> +       if (state =3D=3D MBEDTEE_RPC_CALL_ACTIVE)
-> +               /* Publish interruption before the TEE observes the reque=
-st. */
-> +               smp_store_release(&call->rpc.interrupted, true);
-> +       xa_unlock_irqrestore(&mbedtee->rpc_calls, flags);
-> +
-> +       if (state =3D=3D MBEDTEE_RPC_CALL_ACTIVE)
-> +               return -ETIMEDOUT;
-> +
-> +       return state =3D=3D MBEDTEE_RPC_CALL_ABORTED ? -ESHUTDOWN : 0;
-> +}
-> +
-> +/* Local helpers for encoding/decoding the 4-bit-per-parameter type fiel=
-d. */
-> +static inline u32 mbedtee_param_type_get(u32 types, unsigned int idx)
-> +{
-> +       return (types >> (idx * 4)) & 0xF;
-> +}
-> +
-> +static inline u32 mbedtee_param_type_set(u32 type, unsigned int idx)
-> +{
-> +       return (type & 0xF) << (idx * 4);
-> +}
-> +
-> +static int mbedtee_param_decode(struct tee_param *params,
-> +                               size_t num_params, const struct rpc_param=
- *rp)
-> +{
-> +       size_t n;
-> +
-> +       if (num_params > ARRAY_SIZE(rp->params))
-> +               return -EINVAL;
-> +
-> +       for (n =3D 0; n < num_params; n++) {
-> +               struct tee_param *p =3D params + n;
-> +               const union rpc_tee_param *rtp =3D rp->params + n;
-> +               u32 attr =3D mbedtee_param_type_get(rp->params_type, n);
-> +
-> +               /*
-> +                * The TEE must not change the parameter type: the generi=
-c
-> +                * TEE layer releases memrefs based on the attributes the
-> +                * client supplied, so a type change here would leak the
-> +                * shared memory reference.
-> +                */
-> +               if (attr !=3D p->attr)
-> +                       return -EINVAL;
-> +
-> +               switch (attr) {
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-> +                       memset(&p->u, 0, sizeof(p->u));
-> +                       break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
-> +                       p->u.value.a =3D rtp->value.a;
-> +                       p->u.value.b =3D rtp->value.b;
-> +                       break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> +                       p->u.memref.size =3D rtp->memref.size;
-> +                       break;
-> +               default:
-> +                       return -EINVAL;
-> +               }
-> +       }
-> +       return 0;
-> +}
-> +
-> +static int mbedtee_param_encode(struct rpc_param *rp,
-> +                               size_t num_params, const struct tee_param=
- *params)
-> +{
-> +       size_t n;
-> +
-> +       if (num_params > ARRAY_SIZE(rp->params))
-> +               return -EINVAL;
-> +
-> +       rp->params_type =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
-> +
-> +       for (n =3D 0; n < num_params; n++) {
-> +               const struct tee_param *p =3D params + n;
-> +               union rpc_tee_param *rtp =3D rp->params + n;
-> +
-> +               rp->params_type |=3D mbedtee_param_type_set(p->attr, n);
-> +
-> +               switch (p->attr) {
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-> +                       memset(rtp, 0, sizeof(*rtp));
-> +                       break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
-> +                       rtp->value.a =3D p->u.value.a;
-> +                       rtp->value.b =3D p->u.value.b;
-> +                       break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> +                       if (p->u.memref.shm)
-> +                               rtp->memref.id =3D p->u.memref.shm->sec_w=
-orld_id;
-> +                       else
-> +                               rtp->memref.id =3D 0; /* invalid-id @ mbe=
-dtee */
-> +                       rtp->memref.size =3D p->u.memref.size;
-> +                       rtp->memref.offset =3D p->u.memref.shm_offs;
-> +                       break;
-> +               default:
-> +                       return -EINVAL;
-> +               }
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +/*
-> + * cancel_req() and shm_{register,unregister} still return Linux errno t=
-o the
-> + * kernel TEE core. Preserve any local transport failure in @ret; otherw=
-ise
-> + * fold a non-success TEE-side GP status into the generic -EIO expected =
-by
-> + * these internal-only hooks.
-> + */
-> +static int mbedtee_rpc_gp_ret_to_errno(int ret, s32 gp_ret)
-> +{
-> +       if (ret)
-> +               return ret;
-> +
-> +       return gp_ret =3D=3D TEEC_SUCCESS ? 0 : -EIO;
-> +}
-> +
-> +struct mbedtee_session *
-> +mbedtee_find_session_locked(struct mbedtee_context_data *ctxdata,
-> +                           u32 session_id)
-> +{
-> +       struct mbedtee_session *sess;
-> +
-> +       list_for_each_entry(sess, &ctxdata->sess_list, list_node)
-> +               if (sess->session_id =3D=3D session_id)
-> +                       return sess;
-> +
-> +       return NULL;
-> +}
-> +
-> +int mbedtee_open_session(struct tee_context *ctx,
-> +                        struct tee_ioctl_open_session_arg *arg,
-> +                        struct tee_param *param)
-> +{
-> +       int ret;
-> +       u32 session_id =3D 0;
-> +       struct mbedtee_context_data *ctxdata =3D ctx->data;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_rpc_call *call;
-> +       struct rpc_param *rp;
-> +       struct mbedtee_session *sess;
-> +
-> +       sess =3D kzalloc_obj(*sess, GFP_KERNEL);
-> +       if (!sess)
-> +               return -ENOMEM;
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, sizeof(*rp), &call);
-> +       if (ret !=3D 0) {
-> +               kfree(sess);
-> +               return ret;
-> +       }
-> +
-> +       rp =3D (struct rpc_param *)call->rpc.data;
-> +
-> +       ret =3D mbedtee_param_encode(rp, arg->num_params, param);
-> +       if (ret) {
-> +               kfree(sess);
-> +               mbedtee_rpc_call_free(mbedtee, call);
-> +               return ret;
-> +       }
-> +
-> +       memcpy(rp->uuid, arg->uuid, sizeof(arg->uuid));
-> +       memcpy(rp->clnt_uuid, arg->clnt_uuid, sizeof(arg->clnt_uuid));
-> +       rp->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +
-> +       ret =3D mbedtee_rpc_yieldcall(mbedtee, MBEDTEE_RPC_OPEN_SESSION, =
-call, false);
-> +
-> +       dev_dbg(mbedtee->dev, "open session ret %d gp_ret %d\n", ret,
-> +               call->rpc.ret);
-> +
-> +       if (ret =3D=3D 0 && call->rpc.ret =3D=3D TEEC_SUCCESS) {
-> +               session_id =3D rp->session_id;
-> +               sess->session_id =3D session_id;
-> +               mutex_lock(&ctxdata->mutex);
-> +               list_add(&sess->list_node, &ctxdata->sess_list);
-> +               mutex_unlock(&ctxdata->mutex);
-> +       } else {
-> +               kfree(sess);
-> +       }
-> +
-> +       if (ret !=3D 0) {
-> +               arg->ret =3D TEEC_ERROR_COMMUNICATION;
-> +               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +       } else if (mbedtee_param_decode(param, arg->num_params, rp)) {
-> +               arg->ret =3D TEEC_ERROR_COMMUNICATION;
-> +               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +               if (call->rpc.ret =3D=3D TEEC_SUCCESS)
-> +                       mbedtee_close_session(ctx, session_id);
-> +       } else {
-> +               arg->session =3D rp->session_id;
-> +               arg->ret =3D (u32)call->rpc.ret;
-> +               arg->ret_origin =3D rp->ret_origin;
-> +       }
-> +
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +       return 0;
-> +}
-> +
-> +int mbedtee_invoke_func(struct tee_context *ctx,
-> +                       struct tee_ioctl_invoke_arg *arg,
-> +                       struct tee_param *param)
-> +{
-> +       int ret;
-> +       struct mbedtee_context_data *ctxdata =3D ctx->data;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_rpc_call *call;
-> +       struct rpc_param *rp;
-> +       struct mbedtee_session *sess;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D mbedtee_find_session_locked(ctxdata, arg->session);
-> +       if (!sess || sess->closing) {
-> +               mutex_unlock(&ctxdata->mutex);
-> +               return -EINVAL;
-> +       }
-> +       mutex_unlock(&ctxdata->mutex);
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, sizeof(*rp), &call);
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       rp =3D (struct rpc_param *)call->rpc.data;
-> +
-> +       rp->session_id =3D arg->session;
-> +       rp->cmd_id =3D arg->func;
-> +       rp->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +
-> +       ret =3D mbedtee_param_encode(rp, arg->num_params, param);
-> +       if (ret) {
-> +               mbedtee_rpc_call_free(mbedtee, call);
-> +               return ret;
-> +       }
-> +
-> +       ret =3D mbedtee_rpc_yieldcall(mbedtee, MBEDTEE_RPC_INVOKE_SESSION=
-, call, true);
-> +
-> +       if (ret !=3D 0) {
-> +               /*
-> +                * On -ERESTARTSYS/-ETIMEDOUT/-ESHUTDOWN the call is INTE=
-RRUPTED
-> +                * or ABORTED, so free() drops only the caller reference;=
- the
-> +                * XArray keeps the remote reference until the TEE comple=
-tes it.
-> +                */
-> +               arg->ret =3D TEEC_ERROR_COMMUNICATION;
-> +               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +               mbedtee_rpc_call_free(mbedtee, call);
-> +               return 0;
-> +       }
-> +
-> +       dev_dbg(mbedtee->dev, "invoke session ret %d gp_ret %d\n", ret,
-> +               call->rpc.ret);
-> +
-> +       if (mbedtee_param_decode(param, arg->num_params, rp)) {
-> +               arg->ret =3D TEEC_ERROR_COMMUNICATION;
-> +               arg->ret_origin =3D TEEC_ORIGIN_COMMS;
-> +       } else {
-> +               arg->ret =3D (u32)call->rpc.ret;
-> +               arg->ret_origin =3D rp->ret_origin;
-> +       }
-> +
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +       return 0;
-> +}
-> +
-> +int mbedtee_close_session(struct tee_context *ctx, u32 session)
-> +{
-> +       int ret;
-> +       struct mbedtee_context_data *ctxdata =3D ctx->data;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_rpc_call *call;
-> +       struct rpc_param *rp;
-> +       struct mbedtee_session *sess;
-> +       bool remove;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D mbedtee_find_session_locked(ctxdata, session);
-> +       if (!sess) {
-> +               mutex_unlock(&ctxdata->mutex);
-> +               return -EINVAL;
-> +       }
-> +       if (sess->closing) {
-> +               mutex_unlock(&ctxdata->mutex);
-> +               return -EBUSY;
-> +       }
-> +       sess->closing =3D true;
-> +       mutex_unlock(&ctxdata->mutex);
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, sizeof(*rp), &call);
-> +       if (ret !=3D 0)
-> +               goto out_session;
-> +
-> +       rp =3D (struct rpc_param *)call->rpc.data;
-> +       rp->session_id =3D session;
-> +
-> +       ret =3D mbedtee_rpc_yieldcall(mbedtee, MBEDTEE_RPC_CLOSE_SESSION,=
- call, false);
-> +
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +
-> +out_session:
-> +       remove =3D ret =3D=3D 0 || READ_ONCE(mbedtee->stopping);
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D mbedtee_find_session_locked(ctxdata, session);
-> +       if (sess) {
-> +               if (remove)
-> +                       list_del(&sess->list_node);
-> +               else
-> +                       sess->closing =3D false;
-> +       }
-> +       mutex_unlock(&ctxdata->mutex);
-> +       if (remove)
-> +               kfree(sess);
-> +
-> +       return ret;
-> +}
-> +
-> +int mbedtee_cancel_req(struct tee_context *ctx,
-> +                      u32 cancel_id, u32 session)
-> +{
-> +       int ret;
-> +       struct mbedtee_context_data *ctxdata =3D ctx->data;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_rpc_call *call;
-> +       struct rpc_cancel_req *cancel;
-> +       struct mbedtee_session *sess;
-> +
-> +       mutex_lock(&ctxdata->mutex);
-> +       sess =3D mbedtee_find_session_locked(ctxdata, session);
-> +       if (!sess || sess->closing) {
-> +               mutex_unlock(&ctxdata->mutex);
-> +               return -EINVAL;
-> +       }
-> +       mutex_unlock(&ctxdata->mutex);
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, sizeof(*cancel), &call);
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       cancel =3D (struct rpc_cancel_req *)call->rpc.data;
-> +       cancel->session_id =3D session;
-> +       cancel->cancel_id =3D cancel_id;
-> +
-> +       ret =3D mbedtee_rpc_yieldcall(mbedtee, MBEDTEE_RPC_CANCEL, call, =
-false);
-> +       ret =3D mbedtee_rpc_gp_ret_to_errno(ret, call->rpc.ret);
-> +
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +
-> +       return ret;
-> +}
-> +
-> +int mbedtee_shm_register(struct tee_context *ctx, struct tee_shm *shm,
-> +                        struct page **pages, size_t nr_pages, unsigned l=
-ong start)
-> +{
-> +       int ret;
-> +       size_t i, j;
-> +       u64 *pagearray;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_rpc_call *call;
-> +       struct rpc_memref *memref;
-> +       /* Multiple: number of MBEDTEE_PAGE_SIZE pages per Linux page. */
-> +       const size_t multiple =3D PAGE_SIZE / MBEDTEE_PAGE_SIZE;
-> +
-> +       BUILD_BUG_ON(PAGE_SIZE < MBEDTEE_PAGE_SIZE);
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, sizeof(*memref), &call);
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       memref =3D (struct rpc_memref *)call->rpc.data;
-> +
-> +       pagearray =3D kcalloc(nr_pages * multiple, sizeof(*pagearray), GF=
-P_KERNEL);
-> +       if (!pagearray) {
-> +               ret =3D -ENOMEM;
-> +               goto out;
-> +       }
-> +
-> +       for (i =3D 0; i < nr_pages; i++) {
-> +               for (j =3D 0; j < multiple; j++)
-> +                       pagearray[i * multiple + j] =3D MBEDTEE_PAGE_SIZE=
- * j +
-> +                               page_to_phys(pages[i]);
-> +       }
-> +
-> +       memref->size =3D tee_shm_get_size(shm);
-> +       memref->offset =3D tee_shm_get_page_offset(shm);
-> +       memref->pages =3D mbedtee_virt_to_phys(pagearray);
-> +       memref->cnt =3D nr_pages * multiple;
-> +       ret =3D mbedtee_rpc_yieldcall(mbedtee, MBEDTEE_RPC_REGISTER_SHM, =
-call, false);
-> +       ret =3D mbedtee_rpc_gp_ret_to_errno(ret, call->rpc.ret);
-> +
-> +       if (ret =3D=3D 0)
-> +               shm->sec_world_id =3D memref->id;
-> +
-> +       kfree(pagearray);
-> +
-> +out:
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +       return ret;
-> +}
-> +
-> +int mbedtee_shm_unregister(struct tee_context *ctx,
-> +                          struct tee_shm *shm)
-> +{
-> +       int ret;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(ctx->teedev);
-> +       struct mbedtee_rpc_call *call;
-> +       struct rpc_memref *memref;
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, sizeof(*memref), &call);
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       memref =3D (struct rpc_memref *)call->rpc.data;
-> +       memref->id =3D shm->sec_world_id;
-> +
-> +       ret =3D mbedtee_rpc_yieldcall(mbedtee, MBEDTEE_RPC_UNREGISTER_SHM=
-, call, false);
-> +       ret =3D mbedtee_rpc_gp_ret_to_errno(ret, call->rpc.ret);
-> +
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +
-> +       return ret;
-> +}
-> diff --git a/drivers/tee/mbedtee/rpc_caller_arm.c b/drivers/tee/mbedtee/r=
-pc_caller_arm.c
-> new file mode 100644
-> index 0000000..520b57d
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/rpc_caller_arm.c
-> @@ -0,0 +1,70 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + * ARM RPC calls to TEE - relies on SMC
-> + *
-> + * Uses arm_smccc_smc() with SMCCC-compatible calling convention:
-> + *   Fast call  : r0/x0 =3D fn (bit 31 set), r1-r3/x1-x3 =3D args.
-> + *   Yield call : r0/x0 =3D fn (bit 31 clear), r1/x1 =3D phys(rpc_cmd).
-> + *
-> + * ARM fast calls are synchronous SMC instructions.
-> + */
-> +#include <linux/mm.h>
-> +#include <linux/errno.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/arm-smccc.h>
-> +#include "mbedtee_drv.h"
-> +
-> +long mbedtee_rpc_yieldcall(struct mbedtee_device *mbedtee,
-> +                          unsigned long fn, struct mbedtee_rpc_call *cal=
-l,
-> +                          bool interruptible)
-> +{
-> +       long ret;
-> +       struct arm_smccc_res res;
-> +
-> +       if (MBEDTEE_RPC_IS_FASTCALL(fn))
-> +               return -EINVAL;
-> +
-> +       call->rpc.id =3D fn;
-> +
-> +       arm_smccc_smc(fn, call->rpc_phys,
-> +                     0, 0, 0, 0, 0, 0, &res);
-> +       ret =3D res.a0;
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       return mbedtee_rpc_wait_for_completion(mbedtee, call, interruptib=
-le);
-> +}
-> +
-> +long mbedtee_rpc_fastcall(struct mbedtee_device *mbedtee,
-> +                         unsigned long fn, unsigned long a0,
-> +                         unsigned long a1, unsigned long a2)
-> +{
-> +       struct arm_smccc_res res;
-> +
-> +       if (!MBEDTEE_RPC_IS_FASTCALL(fn))
-> +               return -EINVAL;
-> +
-> +       arm_smccc_smc(fn, a0, a1, a2, 0, 0, 0, 0, &res);
-> +
-> +       return (long)res.a0;
-> +}
-> +
-> +/*
-> + * ARM uses direct SMC; no caller-side ring buffer initialisation needed=
-.
-> + */
-> +int mbedtee_r2t_init(struct mbedtee_device *mbedtee)
-> +{
-> +       return 0;
-> +}
-> +
-> +void mbedtee_r2t_stop(struct mbedtee_device *mbedtee)
-> +{
-> +}
-> +
-> +void mbedtee_r2t_uninit(struct mbedtee_device *mbedtee)
-> +{
-> +}
-> diff --git a/drivers/tee/mbedtee/rpc_caller_riscv.c b/drivers/tee/mbedtee=
-/rpc_caller_riscv.c
-> new file mode 100644
-> index 0000000..98f8cd3
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/rpc_caller_riscv.c
-> @@ -0,0 +1,238 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2025 Xing Loong <xing.xl.loong@gmail.com>
-> + * REE->TEE RPC calls for RISC-V (IMSIC)
-> + */
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/mm.h>
-> +#include <linux/errno.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/jiffies.h>
-> +#include <linux/of_address.h>
-> +#include <linux/io.h>
-> +#include <linux/sizes.h>
-> +
-> +#include "mbedtee_drv.h"
-> +
-> +/*
-> + * Time the writer may wait for ring space before giving up. Transient
-> + * fullness is common under high concurrency; permanent fullness means
-> + * the TEE is no longer draining and must not hang ioctls forever.
-> + */
-> +#define MBEDTEE_R2T_FULL_TIMEOUT (10 * HZ)
-> +#define MBEDTEE_R2T_CALL_TIMEOUT (30 * HZ)
-> +
-> +static bool rpc_ring_enough(struct mbedtee_r2t_ctx *ctx, size_t size)
-> +{
-> +       u32 wr;
-> +       u32 rd;
-> +       u32 remain;
-> +
-> +       wr =3D READ_ONCE(ctx->ring_wr);
-> +       /* Pair with callee release store when publishing ring->rd */
-> +       rd =3D smp_load_acquire(&ctx->ring->rd);
-> +
-> +       if (rd > ctx->ring_sz || wr > ctx->ring_sz)
-> +               return false;
-> +
-> +       if (rd <=3D wr)
-> +               remain =3D ctx->ring_sz + rd - wr;
-> +       else
-> +               remain =3D rd - wr;
-> +
-> +       return remain > size;
-> +}
-> +
-> +static void rpc_ring_write(struct mbedtee_r2t_ctx *ctx,
-> +                          void *data, size_t size)
-> +{
-> +       struct rpc_ringbuf *shm =3D ctx->ring;
-> +       u32 remain;
-> +       u32 wr =3D READ_ONCE(ctx->ring_wr);
-> +
-> +       if (wr + size > ctx->ring_sz) {
-> +               remain =3D wr + size - ctx->ring_sz;
-> +               memcpy(&shm->mem[wr], data, size - remain);
-> +               memcpy(&shm->mem[0], (char *)data + size - remain, remain=
-);
-> +               wr =3D remain;
-> +       } else {
-> +               memcpy(&shm->mem[wr], data, size);
-> +               wr +=3D size;
-> +       }
-> +
-> +       WRITE_ONCE(ctx->ring_wr, wr);
-> +       /* Publish writer index after payload bytes become visible. */
-> +       smp_store_release(&shm->wr, wr);
-> +}
-> +
-> +/*
-> + * Wait for @size bytes of space in the R2T ring, then write @data
-> + * atomically under the ring lock. Returns 0 on success.
-> + */
-> +static int r2t_ring_write_wait(struct mbedtee_r2t_ctx *ctx,
-> +                              void *data, size_t size)
-> +{
-> +       unsigned long deadline =3D jiffies + MBEDTEE_R2T_FULL_TIMEOUT;
-> +       unsigned long flags;
-> +
-> +       for (;;) {
-> +               spin_lock_irqsave(&ctx->lock, flags);
-> +               if (READ_ONCE(ctx->stopping)) {
-> +                       spin_unlock_irqrestore(&ctx->lock, flags);
-> +                       return -ESHUTDOWN;
-> +               }
-> +               if (rpc_ring_enough(ctx, size)) {
-> +                       rpc_ring_write(ctx, data, size);
-> +                       spin_unlock_irqrestore(&ctx->lock, flags);
-> +                       return 0;
-> +               }
-> +               spin_unlock_irqrestore(&ctx->lock, flags);
-> +
-> +               if (time_after_eq(jiffies, deadline))
-> +                       return -ENOSPC;
-> +               usleep_range(1000, 2000);
-> +       }
-> +}
-> +
-> +long mbedtee_rpc_yieldcall(struct mbedtee_device *mbedtee,
-> +                          unsigned long fn, struct mbedtee_rpc_call *cal=
-l,
-> +                          bool interruptible)
-> +{
-> +       struct mbedtee_r2t_ctx *ctx =3D &mbedtee->r2t;
-> +       u64 phys;
-> +       int ret;
-> +
-> +       if (!ctx->ring)
-> +               return -ENXIO;
-> +
-> +       if (MBEDTEE_RPC_IS_FASTCALL(fn))
-> +               return -EINVAL;
-> +
-> +       call->rpc.id =3D fn;
-> +
-> +       phys =3D call->rpc_phys;
-> +       ret =3D r2t_ring_write_wait(ctx, &phys, sizeof(phys));
-> +       if (ret !=3D 0) {
-> +               dev_err_ratelimited(mbedtee->dev, "rpc ring full\n");
-> +               return ret;
-> +       }
-> +
-> +       if (interruptible)
-> +               return mbedtee_rpc_wait_for_completion(mbedtee, call, tru=
-e);
-> +
-> +       return mbedtee_rpc_wait_for_completion_timeout(mbedtee, call,
-> +                                                     MBEDTEE_R2T_CALL_TI=
-MEOUT);
-> +}
-> +
-> +long mbedtee_rpc_fastcall(struct mbedtee_device *mbedtee,
-> +                         unsigned long fn, unsigned long a0,
-> +                         unsigned long a1, unsigned long a2)
-> +{
-> +       struct mbedtee_r2t_ctx *ctx =3D &mbedtee->r2t;
-> +       struct mbedtee_rpc_call *call;
-> +       u64 phys;
-> +       int ret;
-> +
-> +       if (!ctx->ring)
-> +               return -ENXIO;
-> +
-> +       if (!MBEDTEE_RPC_IS_FASTCALL(fn))
-> +               return -EINVAL;
-> +
-> +       ret =3D mbedtee_rpc_call_alloc(mbedtee, 3 * sizeof(u64), &call);
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       call->rpc.id =3D fn;
-> +       call->rpc.size =3D 3 * sizeof(u64);
-> +       call->rpc.data[0] =3D a0;
-> +       call->rpc.data[1] =3D a1;
-> +       call->rpc.data[2] =3D a2;
-> +
-> +       phys =3D call->rpc_phys;
-> +       ret =3D r2t_ring_write_wait(ctx, &phys, sizeof(phys));
-> +       if (ret !=3D 0) {
-> +               dev_err_ratelimited(mbedtee->dev, "rpc ring full\n");
-> +               mbedtee_rpc_call_free(mbedtee, call);
-> +               return ret;
-> +       }
-> +
-> +       ret =3D mbedtee_rpc_wait_for_completion_timeout(mbedtee, call,
-> +                                                     MBEDTEE_R2T_CALL_TI=
-MEOUT);
-> +       if (ret !=3D 0) {
-> +               mbedtee_rpc_call_free(mbedtee, call);
-> +               return ret;
-> +       }
-> +
-> +       ret =3D call->rpc.ret;
-> +       mbedtee_rpc_call_free(mbedtee, call);
-> +
-> +       return ret;
-> +}
-> +
-> +int mbedtee_r2t_init(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_r2t_ctx *ctx =3D &mbedtee->r2t;
-> +       struct device_node *node =3D mbedtee->dev->of_node;
-> +       struct resource res;
-> +       int ret;
-> +
-> +       memset(ctx, 0, sizeof(*ctx));
-> +       spin_lock_init(&ctx->lock);
-> +
-> +       ret =3D mbedtee_get_resource(node, "r2t-ring", &res);
-> +       if (ret)
-> +               return ret;
-> +
-> +       if (resource_size(&res) <=3D sizeof(struct rpc_ringbuf)) {
-> +               dev_err(mbedtee->dev, "r2t-ring too small\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       ctx->ring =3D memremap(res.start, resource_size(&res),
-> +                            MEMREMAP_WB);
-> +       if (!ctx->ring) {
-> +               dev_err(mbedtee->dev, "failed to map r2t ring at %pa\n",
-> +                       &res.start);
-> +               return -ENOMEM;
-> +       }
-> +       ctx->ring_sz =3D resource_size(&res) - sizeof(struct rpc_ringbuf)=
-;
-> +       /* Read initial writer index with acquire for coherent ring boots=
-trap. */
-> +       WRITE_ONCE(ctx->ring_wr, smp_load_acquire(&ctx->ring->wr));
-> +
-> +       dev_dbg(mbedtee->dev, "r2t-ring %pa\n", &res.start);
-> +
-> +       return 0;
-> +}
-> +
-> +void mbedtee_r2t_stop(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_r2t_ctx *ctx =3D &mbedtee->r2t;
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&ctx->lock, flags);
-> +       WRITE_ONCE(ctx->stopping, true);
-> +       spin_unlock_irqrestore(&ctx->lock, flags);
-> +}
-> +
-> +void mbedtee_r2t_uninit(struct mbedtee_device *mbedtee)
-> +{
-> +       struct mbedtee_r2t_ctx *ctx;
-> +
-> +       if (!mbedtee)
-> +               return;
-> +
-> +       ctx =3D &mbedtee->r2t;
-> +       if (ctx->ring) {
-> +               /* r2t_init() failure lands here with no prior stop; flag=
- first. */
-> +               mbedtee_r2t_stop(mbedtee);
-> +               memunmap(ctx->ring);
-> +               ctx->ring =3D NULL;
-> +               ctx->ring_sz =3D 0;
-> +               ctx->ring_wr =3D 0;
-> +       }
-> +}
-> diff --git a/drivers/tee/mbedtee/shm_pool.c b/drivers/tee/mbedtee/shm_poo=
-l.c
-> new file mode 100644
-> index 0000000..708ab24
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/shm_pool.c
-> @@ -0,0 +1,105 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2015, Linaro Limited
-> + * Copyright (c) 2017, EPAM Systems
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + */
-> +#include <linux/device.h>
-> +#include <linux/genalloc.h>
-> +#include <linux/slab.h>
-> +
-> +#include "mbedtee_drv.h"
-> +
-> +static int pool_op_alloc(struct tee_shm_pool *pool,
-> +                        struct tee_shm *shm, size_t size, size_t align)
-> +{
-> +       unsigned int order =3D get_order(size);
-> +       struct page *page;
-> +       int rc =3D 0;
-> +
-> +       page =3D alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
-> +       if (!page)
-> +               return -ENOMEM;
-> +
-> +       shm->kaddr =3D page_address(page);
-> +       shm->paddr =3D page_to_phys(page);
-> +       shm->size =3D PAGE_SIZE << order;
-> +
-> +       if (!(shm->flags & TEE_SHM_PRIV)) {
-> +               struct mbedtee_device *mbedtee =3D tee_get_drvdata(shm->c=
-tx->teedev);
-> +
-> +               if (mbedtee->yield) {
-> +                       unsigned int nr_pages =3D 1 << order;
-> +                       unsigned int i;
-> +                       struct page **pages;
-> +
-> +                       pages =3D kmalloc_array(nr_pages, sizeof(*pages),=
- GFP_KERNEL);
-> +                       if (!pages) {
-> +                               rc =3D -ENOMEM;
-> +                               goto err_pages;
-> +                       }
-> +
-> +                       for (i =3D 0; i < nr_pages; i++)
-> +                               pages[i] =3D page + i;
-> +
-> +                       rc =3D mbedtee_shm_register(shm->ctx, shm, pages,
-> +                                                 nr_pages,
-> +                                                 (unsigned long)shm->kad=
-dr);
-> +                       kfree(pages);
-> +                       if (rc)
-> +                               goto err_pages;
-> +               }
-> +       }
-> +
-> +       return 0;
-> +
-> +err_pages:
-> +       free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> +       shm->kaddr =3D NULL;
-> +       return rc;
-> +}
-> +
-> +static void pool_op_free(struct tee_shm_pool *pool,
-> +                        struct tee_shm *shm)
-> +{
-> +       if (!(shm->flags & TEE_SHM_PRIV)) {
-> +               struct mbedtee_device *mbedtee =3D tee_get_drvdata(shm->c=
-tx->teedev);
-> +
-> +               if (mbedtee->yield && shm->sec_world_id)
-> +                       mbedtee_shm_unregister(shm->ctx, shm);
-> +       }
-> +
-> +       free_pages((unsigned long)shm->kaddr, get_order(shm->size));
-> +       shm->kaddr =3D NULL;
-> +}
-> +
-> +static void pool_op_destroy_pool(struct tee_shm_pool *pool)
-> +{
-> +       kfree(pool);
-> +}
-> +
-> +static const struct tee_shm_pool_ops pool_ops =3D {
-> +       .alloc =3D pool_op_alloc,
-> +       .free =3D pool_op_free,
-> +       .destroy_pool =3D pool_op_destroy_pool,
-> +};
-> +
-> +/**
-> + * mbedtee_shm_pool_alloc_pages() - create page-based allocator pool
-> + *
-> + * This pool is used when MbedTEE supports dynamic shared memory. Comman=
-d
-> + * buffers and similar structures are allocated from kernel's own memory=
-.
-> + *
-> + * Return: pointer to a tee_shm_pool or ERR_PTR on failure
-> + */
-> +struct tee_shm_pool *mbedtee_shm_pool_alloc_pages(void)
-> +{
-> +       struct tee_shm_pool *pool =3D kzalloc_obj(*pool, GFP_KERNEL);
-> +
-> +       if (!pool)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       pool->ops =3D &pool_ops;
-> +
-> +       return pool;
-> +}
-> diff --git a/drivers/tee/mbedtee/shm_pool.h b/drivers/tee/mbedtee/shm_poo=
-l.h
-> new file mode 100644
-> index 0000000..4510676
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/shm_pool.h
-> @@ -0,0 +1,15 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (c) 2015, Linaro Limited
-> + * Copyright (c) 2016, EPAM Systems
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + */
-> +
-> +#ifndef SHM_POOL_H
-> +#define SHM_POOL_H
-> +
-> +#include <linux/tee_drv.h>
-> +
-> +struct tee_shm_pool *mbedtee_shm_pool_alloc_pages(void);
-> +
-> +#endif
-> diff --git a/drivers/tee/mbedtee/supp.c b/drivers/tee/mbedtee/supp.c
-> new file mode 100644
-> index 0000000..1408403
-> --- /dev/null
-> +++ b/drivers/tee/mbedtee/supp.c
-> @@ -0,0 +1,311 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) 2015, Linaro Limited
-> + * Copyright (c) 2020 Xing Loong <xing.xl.loong@gmail.com>
-> + */
-> +#include <linux/device.h>
-> +#include <linux/sched.h>
-> +#include <linux/slab.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include "mbedtee_drv.h"
-> +
-> +struct mbedtee_supp_req {
-> +       u32 func;
-> +
-> +       struct list_head node;
-> +       struct task_struct *worker;
-> +       struct tee_context *ctx;        /* owning supplicant context */
-> +
-> +       struct tee_shm *shm;
-> +       void *data;
-> +       size_t size;
-> +
-> +       struct completion c;
-> +};
-> +
-> +static int mbedtee_supp_check_recv_params(size_t num_params,
-> +                                         struct tee_param *params)
-> +{
-> +       if (num_params !=3D 1)
-> +               return -EINVAL;
-> +
-> +       if (!tee_param_is_memref(params) || !params->u.memref.shm)
-> +               return -EINVAL;
-> +
-> +       return 0;
-> +}
-> +
-> +void mbedtee_supp_init(struct mbedtee_supp *supp)
-> +{
-> +       memset(supp, 0, sizeof(*supp));
-> +       mutex_init(&supp->mutex);
-> +       init_completion(&supp->reqs_c);
-> +       INIT_LIST_HEAD(&supp->reqs);
-> +       INIT_LIST_HEAD(&supp->active_reqs);
-> +}
-> +
-> +void mbedtee_supp_uninit(struct mbedtee_supp *supp)
-> +{
-> +       mutex_destroy(&supp->mutex);
-> +}
-> +
-> +static void mbedtee_supp_complete_req(struct mbedtee_supp_req *r)
-> +{
-> +       list_del_init(&r->node);
-> +       if (r->shm)
-> +               tee_shm_put(r->shm);
-> +       r->shm =3D NULL;
-> +       /* Tell the TEE that the request failed, not stale success data. =
-*/
-> +       if (r->data && r->size >=3D sizeof(struct supp_cmd_hdr))
-> +               ((struct supp_cmd_hdr *)r->data)->ret =3D TEEC_ERROR_COMM=
-UNICATION;
-> +       complete(&r->c);
-> +}
-> +
-> +void mbedtee_supp_release(struct mbedtee_supp *supp, struct tee_context =
-*ctx)
-> +{
-> +       struct mbedtee_supp_req *r, *n;
-> +
-> +       mutex_lock(&supp->mutex);
-> +
-> +       /*
-> +        * Cancel only requests owned by @ctx.  Unclaimed requests and
-> +        * requests owned by other supplicant contexts are left alone.
-> +        */
-> +       list_for_each_entry_safe(r, n, &supp->reqs, node) {
-> +               if (r->ctx !=3D ctx)
-> +                       continue;
-> +               mbedtee_supp_complete_req(r);
-> +       }
-> +
-> +       list_for_each_entry_safe(r, n, &supp->active_reqs, node) {
-> +               if (r->ctx !=3D ctx)
-> +                       continue;
-> +               mbedtee_supp_complete_req(r);
-> +       }
-> +
-> +       if (supp->ctx =3D=3D ctx)
-> +               supp->ctx =3D NULL;
-> +
-> +       mutex_unlock(&supp->mutex);
-> +}
-> +
-> +void mbedtee_supp_abort_all(struct mbedtee_supp *supp)
-> +{
-> +       struct mbedtee_supp_req *r, *n;
-> +
-> +       mutex_lock(&supp->mutex);
-> +       supp->shutting_down =3D true;
-> +
-> +       list_for_each_entry_safe(r, n, &supp->reqs, node)
-> +               mbedtee_supp_complete_req(r);
-> +
-> +       list_for_each_entry_safe(r, n, &supp->active_reqs, node)
-> +               mbedtee_supp_complete_req(r);
-> +
-> +       supp->ctx =3D NULL;
-> +
-> +       mutex_unlock(&supp->mutex);
-> +       complete_all(&supp->reqs_c);
-> +}
-> +
-> +static int supp_enqueue_req(struct mbedtee_supp *supp,
-> +                           struct mbedtee_supp_req *req)
-> +{
-> +       int ret =3D 0;
-> +
-> +       mutex_lock(&supp->mutex);
-> +       if (supp->shutting_down)
-> +               ret =3D -ESHUTDOWN;
-> +       else
-> +               list_add_tail(&req->node, &supp->reqs);
-> +       mutex_unlock(&supp->mutex);
-> +
-> +       return ret;
-> +}
-> +
-> +/*
-> + * Receive an RPC request from TEE and dispatch it to supplicant.
-> + * Blocks until the supplicant sends back the result.
-> + */
-> +void mbedtee_supp_handler(struct mbedtee_device *mbedtee,
-> +                         u32 func, void *data, size_t size)
-> +{
-> +       struct mbedtee_supp *supp =3D &mbedtee->supp;
-> +       struct mbedtee_supp_req *req =3D kzalloc_obj(*req, GFP_KERNEL);
-> +       struct supp_cmd_hdr *cmd =3D data;
-> +       int ret;
-> +
-> +       if (!req) {
-> +               if (cmd && size >=3D sizeof(*cmd))
-> +                       cmd->ret =3D TEEC_ERROR_OUT_OF_MEMORY;
-> +               return;
-> +       }
-> +
-> +       init_completion(&req->c);
-> +       req->func =3D func;
-> +       req->data =3D data;
-> +       req->size =3D size;
-> +
-> +       ret =3D supp_enqueue_req(supp, req);
-> +       if (ret !=3D 0) {
-> +               if (cmd && size >=3D sizeof(*cmd))
-> +                       cmd->ret =3D TEEC_ERROR_COMMUNICATION;
-> +               kfree(req);
-> +               return;
-> +       }
-> +
-> +       /* Wake up the supplicant daemon to handle this request. */
-> +       complete(&supp->reqs_c);
-> +
-> +       /*
-> +        * Wait for the supplicant to process and return the result, like
-> +        * OP-TEE does. If the supplicant dies, mbedtee_supp_release()
-> +        * completes the request, so this cannot block forever.
-> +        */
-> +       wait_for_completion(&req->c);
-> +
-> +       kfree(req);
-> +}
-> +
-> +/*
-> + * Called by supplicant to receive the next pending request.
-> + */
-> +int mbedtee_supp_recv(struct tee_context *ctx,
-> +                     u32 *func, u32 *num_params, struct tee_param *param=
-)
-> +{
-> +       struct tee_device *teedev =3D ctx->teedev;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(teedev);
-> +       struct mbedtee_supp *supp =3D &mbedtee->supp;
-> +       struct mbedtee_supp_req *req;
-> +       struct mbedtee_context_data *d =3D ctx->data;
-> +       struct tee_shm *shm;
-> +       int ret;
-> +
-> +       ret =3D mbedtee_supp_check_recv_params(*num_params, param);
-> +       if (ret !=3D 0)
-> +               return ret;
-> +
-> +       shm =3D param->u.memref.shm;
-> +       shm =3D tee_shm_get_from_id(ctx, shm->id);
-> +       tee_shm_put(param->u.memref.shm);
-> +       if (IS_ERR(shm)) {
-> +               param->u.memref.shm =3D NULL;
-> +               return PTR_ERR(shm);
-> +       }
-> +       param->u.memref.shm =3D shm;
-> +
-> +       d->is_supp_ctx =3D true;
-> +
-> +       /*
-> +        * Pop, own and validate the request in one critical section so t=
-hat
-> +        * a concurrent supp_abort_all() can never free the request while
-> +        * it is being prepared here.
-> +        */
-> +       while (true) {
-> +               mutex_lock(&supp->mutex);
-> +               if (supp->shutting_down) {
-> +                       mutex_unlock(&supp->mutex);
-> +                       ret =3D -ESHUTDOWN;
-> +                       goto err;
-> +               }
-> +
-> +               req =3D list_first_entry_or_null(&supp->reqs,
-> +                                              struct mbedtee_supp_req, n=
-ode);
-> +               if (!req) {
-> +                       mutex_unlock(&supp->mutex);
-> +                       if (wait_for_completion_interruptible(&supp->reqs=
-_c)) {
-> +                               ret =3D -ERESTARTSYS;
-> +                               goto err;
-> +                       }
-> +                       continue;
-> +               }
-> +
-> +               list_del_init(&req->node);
-> +               req->worker =3D current;
-> +               req->ctx =3D ctx;
-> +               list_add_tail(&req->node, &supp->active_reqs);
-> +
-> +               if (req->size > param->u.memref.size) {
-> +                       /*
-> +                        * The supplicant cannot grow its buffer dynamica=
-lly, so
-> +                        * requeueing would retry this request forever. C=
-omplete it
-> +                        * with a transport error and keep this ioctl wai=
-ting for the
-> +                        * next request instead of terminating a supplica=
-nt worker.
-> +                        */
-> +                       mbedtee_supp_complete_req(req);
-> +                       mutex_unlock(&supp->mutex);
-> +                       continue;
-> +               }
-> +
-> +               req->shm =3D shm;
-> +               *func =3D req->func;
-> +               memcpy(shm->kaddr, req->data, req->size);
-> +               param->u.memref.size =3D req->size;
-> +               mutex_unlock(&supp->mutex);
-> +
-> +               return 0;
-> +       }
-> +
-> +err:
-> +       tee_shm_put(shm);
-> +       param->u.memref.shm =3D NULL;
-> +       return ret;
-> +}
-> +
-> +/*
-> + * Called by supplicant to send back the result of a request.
-> + */
-> +int mbedtee_supp_send(struct tee_context *ctx, u32 ret, u32 num_params,
-> +                     struct tee_param *param)
-> +{
-> +       struct tee_device *teedev =3D ctx->teedev;
-> +       struct mbedtee_device *mbedtee =3D tee_get_drvdata(teedev);
-> +       struct mbedtee_supp *supp =3D &mbedtee->supp;
-> +       struct mbedtee_supp_req *req;
-> +       struct mbedtee_supp_req *_req;
-> +       bool invalid;
-> +
-> +       /*
-> +        * Find and detach the active request belonging to this worker th=
-read
-> +        * and to this supplicant context. Each worker is identified by i=
-ts
-> +        * task_struct pointer, which was recorded when supp_recv() dispa=
-tched
-> +        * the request.
-> +        */
-> +       mutex_lock(&supp->mutex);
-> +       req =3D NULL;
-> +       list_for_each_entry(_req, &supp->active_reqs, node) {
-> +               if (_req->worker =3D=3D current && _req->ctx =3D=3D ctx) =
-{
-> +                       req =3D _req;
-> +                       list_del_init(&req->node);
-> +                       break;
-> +               }
-> +       }
-> +       mutex_unlock(&supp->mutex);
-> +
-> +       if (!req)
-> +               return -ENOENT;
-> +
-> +       /*
-> +        * Complete the request even on malformed input: the worker waiti=
-ng
-> +        * in mbedtee_supp_handler() must not hang because a broken
-> +        * supplicant sent invalid parameters.
-> +        */
-> +       invalid =3D num_params !=3D 1 || !tee_param_is_memref(param) ||
-> +                 param->u.memref.size > req->size;
-> +       if (invalid) {
-> +               if (req->data && req->size >=3D sizeof(struct supp_cmd_hd=
-r))
-> +                       ((struct supp_cmd_hdr *)req->data)->ret =3D
-> +                               TEEC_ERROR_COMMUNICATION;
-> +       } else {
-> +               memcpy(req->data, req->shm->kaddr, param->u.memref.size);
-> +       }
-> +       if (req->shm)
-> +               tee_shm_put(req->shm);
-> +       req->shm =3D NULL;
-> +
-> +       /* Wake up mbedtee_supp_handler(). */
-> +       complete(&req->c);
-> +
-> +       return invalid ? -EINVAL : 0;
-> +}
-> diff --git a/include/uapi/linux/tee.h b/include/uapi/linux/tee.h
-> index 5203977..2d30296 100644
-> --- a/include/uapi/linux/tee.h
-> +++ b/include/uapi/linux/tee.h
-> @@ -60,6 +60,7 @@
->  #define TEE_IMPL_ID_AMDTEE     2
->  #define TEE_IMPL_ID_TSTEE      3
->  #define TEE_IMPL_ID_QTEE       4
-> +#define TEE_IMPL_ID_MBEDTEE    5
->
->  /*
->   * OP-TEE specific capabilities
-> --
-> 2.43.0
->
