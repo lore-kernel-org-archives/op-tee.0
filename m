@@ -4,167 +4,171 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E995AC624A4
-	for <op-tee@archiver.kernel.org>; Mon, 31 Aug 2026 15:48:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28A96C624A4
+	for <op-tee@archiver.kernel.org>; Mon, 31 Aug 2026 15:48:47 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 14CD145363
-	for <op-tee@archiver.kernel.org>; Mon, 31 Aug 2026 15:48:18 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 44E1B44DCE
+	for <op-tee@archiver.kernel.org>; Mon, 31 Aug 2026 15:48:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1788191298;
-	bh=YuKf4TfuLSdGcJuTuRIIpFh/EgM5srvGQvIHuE7PH7w=;
-	h=To:Subject:Date:CC:List-Id:List-Archive:List-Help:List-Owner:
-	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=KbTKlSzJVITf42dKD45/MLRCPz/Hlq6MnOMxJKgPlJS7J0jSog5FBrUYr1hr/qiH4
-	 6PY1pphyV4zMl63CkJVVNPPKojX0CyB7oxJ+owSYhUS/7SvsteQLAzK+uuLuHU2jiu
-	 UZQ9lbh0sz7MPVxthFBvg6/exFWQQd/5CsRPPZrt6q8SkSjaXESXl3abJrf/9eSu5m
-	 ITttWzSG4c97z3g2MA3bB6qNb+FVo8PTRd4/0bqCEUB/Sg18liszjtbTm2/7oOlSFn
-	 U2QbE5T9i7YbGk/UVsSpT5q/9VgW9ziy3nsRY+Msc6bA0bNd93W8dx0XDlXQEQT9PC
-	 a2dZMTTYTZL0g==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 267E844DCE
-	for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 15:48:11 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1788191326;
+	bh=55VPGsducrFBA+UqitLk9xJS9IoxNdI2kJrTVgqF7JY=;
+	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=X3JWP6jEbS3Bg8Togjql+jlvxCSKDHxd/baz4orMd23wPufY2FboJGfkeITHdQQJG
+	 38+L996sWNhmGS+4kWXlSnc5SLiuJV2A1gt92Sw4FXQGoxooqiGJysDEHa5irsxdL4
+	 htJ6j4xBIw/SPpa6Wf5kExiKJ2wdNoA9lCSlou/x7l+Gv+W8t289WK0SoTCjpPteop
+	 e/W9ukbEWEkYLB3JB2Txw694GwLDZlqYFbL7EvfIhuXDjUOkoEN18ascOXB7Ukh9wc
+	 JydXgs4rD5uLTMjOwhTtG7VoqCxRG6tmDUOfZU38W1dTxv3dUi7ghMoGM7i+9oSdk1
+	 X4zFE7oaqD9CA==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4072D45363
+	for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 15:48:14 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=mU3lnRsN;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=OQFAw+oU;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=flJICbHk;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=CgXgWFJL;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67VETQKr3296595
-	for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 15:48:10 GMT
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67VETcWT3895782
+	for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 15:48:13 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=QHh/nIGzCoRgzWrKEq4S+OEYLKw4ImM5Urz
-	S+/gfDoQ=; b=mU3lnRsNSYlMYCEIiPZ3eu+N7BYcecUPtZgG4kBAeXFPD30iZ96
-	9RfRKS9iOaqgtBkcYcnacwRFBO9kvL7+wR6/KA5l5IyQF0Dqb/oyV0yKt8S515Yb
-	Hj+uhvT2Y8N9it8VbFGFLFgJorRoq+jbvqquAb6MNUHnLzX3Xwn4zZ51HsfRHenK
-	5Hu/bsd7C9bPdnn62stacyujdVphdHpdzKdngy9Jp9G8K8fgbEMmxLQNI37nYljz
-	FXq1s6F1EaswEFr0PbQwnrQWaThoKPiXK0pdp29+8OFoKMlcx3g/npHAqlATRX9S
-	kxBrgbTV0eyG3vyU9zo7o9w6O4DqGCD82Jw==
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gd6ayhqgt-1
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=lRFPnoHcYDM
+	nlTrKBHKWdtQ6nLD/+ObQpWW6OKlIDQU=; b=flJICbHk7WkcQ6BGwyu7cD9ptYz
+	R2YruVwmtpnoyuv1muhvXN2aTa1zjJBxXofO/cldvl+Kp5yJ8jTnKKgeWLU9AXAq
+	hX4iTrVNqgKb0M/t/L+VYbU5u+8uRdJqc7I2ZUwhuDx7x6VpHrVYvn033l9WQEaT
+	nzhHcvE6O4pGHYe7fQFGEwHrazxZxGuGHfa3ism5SKyocR4sQ9GY5IBQ7TiuluDN
+	GJ9Dh7cucT3dZhoT+vukmHzUuMTS5sg9+d/WgwgaZQM+tv3y4ckCSuh33H+nZ4gh
+	TORJaLxeyef/Q+E+cAfw4JOZFlBINGTCwhCuXwlXePsSPigX4t256fC6xUQ==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gd6rb9jus-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 15:48:10 +0000 (GMT)
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-930edb4362dso490527285a.3
-        for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 08:48:10 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 15:48:12 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93494cce712so625766885a.3
+        for <op-tee@lists.trustedfirmware.org>; Mon, 31 Aug 2026 08:48:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788191290; x=1788796090; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=QHh/nIGzCoRgzWrKEq4S+OEYLKw4ImM5UrzS+/gfDoQ=;
-        b=OQFAw+oUt76IebGcBP73R20o/Grvg4erdpyxdYZXHUYjsK2sKjUlxT5Zzd/SKF5ZWW
-         MITfx6zSkx6Q+hR61uukLX/N1l1YxD0l0bXVKdiqUKDEgG3+kq8Unnk5tKbeIh3/j8gx
-         tHlJtb44mRVvW4pHew0i4TJoqz40mqd3WR8WMKPpk2Tunic/qYaDYfDAzU+YJ/2GxatS
-         cEoipgsxv+38eukRw/x9ub9DWm76Liw3MnkyBzMKh9sOTjC14d0lNppwzbN5BLDzEzHU
-         JjGVgZ5xkXn4x9GXiQO6rcat/IF86i5vhuTVqANUC/RmEEPg9Nx59KAG2rMOsdsiztyV
-         2jcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788191290; x=1788796090;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=oss.qualcomm.com; s=google; t=1788191292; x=1788796092; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=QHh/nIGzCoRgzWrKEq4S+OEYLKw4ImM5UrzS+/gfDoQ=;
-        b=MQ0GQeAXYAT8Boq/lEinddg17GwHnEJhJTOl485SUJ4xsvEcCD38/sUFuSpNFpd0dc
-         JrD2V/5GyzkpsNzDvUuRJbniFAIzWXRAEAjxj52Yfp94d0wtcR/hqguLX30zARQvrOVD
-         dwdj9cPYP5qQprmipyp+WUoOOCG+cg6wFFyXw/PJKF2oKQzFDfOFVxS4lGw8lbN0h8x8
-         pz4S/MGhIfGu3yhlrr6Mqx3iKda6OyZbm8/4f+VeUprqLDGi9ODMOzhDmezLsrPZ9Cct
-         NyvrqvAwx/mi3DtpngKQu7fNWpHp43Z0HaxLKwjc7WBactxwZShGM9CB/CY91cRahojn
-         FTUg==
-X-Forwarded-Encrypted: i=1; AHgh+RrrqstPomAgiMH1xY5ra63YYjtlfMEIFCx2lgOetbIO3MQqmNh5FSXLuXrENuEBIVPBRbTe90o=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++mGKgo9RfoNmuK9OWGTqgw/4sCZIaKEcbct3+Pgf/ESSAhbYx0m
-	OaPqVmFu+8wDkhwCsBA2rYOwrFT3EzwZ8q9yVtd77NMMVoyV3XcMZ7zP0/yUKpGUXK1B45onIb1
-	D0ZV2bgoOeQy0qxTow7aKYL0jxi+Nq5jt1NydWCK/XSqVItLJC5O+gTIKavbgWlp57L/knbPU
-X-Gm-Gg: AR+sD110P6R+pFep64t3N2qUwqLC9jOUPeAl4ThZibZfCtRfGgGXZ2qZA0wN3x4JOJl
-	fvW+XEkaXqkNEEBtaDjxut9hOZssGliqwz/pgna2FTQDP3PQVVPgAsmNzXENRwXqFmge6t9ynoT
-	6VpfioYjIfttT2gNc5+8az8D3vuztvT+/ok0vmGtjMU5z0QOtVtTwf3fovYJwZyOBvvneIZHJdo
-	mP6w8//5zLmQ3bUZS5drXCIzN3Var5TS4SGK689LF70Hg5Xwcczp32ZIY/vKbBqfZBICFnDMSwP
-	uNnU0lv58CHSXhMg/q5ORRiD7+D5D/JiPDIthyDalW+3qAfJGf0FMxgYcGks0AFKQT0lndm705E
-	d4sJ+VE0a4v8KjBzxoym3Fe8JcMooRM5v3WOuPP7/Zl9416A=
-X-Received: by 2002:a05:620a:40cb:b0:936:cda7:554d with SMTP id af79cd13be357-93913798773mr3050738385a.14.1788191289503;
-        Mon, 31 Aug 2026 08:48:09 -0700 (PDT)
-X-Received: by 2002:a05:620a:40cb:b0:936:cda7:554d with SMTP id af79cd13be357-93913798773mr3050728285a.14.1788191288866;
-        Mon, 31 Aug 2026 08:48:08 -0700 (PDT)
+        bh=lRFPnoHcYDMnlTrKBHKWdtQ6nLD/+ObQpWW6OKlIDQU=;
+        b=CgXgWFJLTfbIrFoYgStgafn4joTSAPp0YQuqfMwvly1UUyna3DDC1CsQSzH1jG/P5K
+         MOw/3Ir9JqBsEXxthem5kOtnePw4CYooIOJolbmPlPtBz2hZT9iBZjuycf9isrv5KJ7z
+         dP0CjRF+wDYYRXhN7IYqTnEWc3aycQs2ERV5VJzlfXFTJAlyYH8pP0/yRbbeDn+fh2FK
+         AUvuWiJ4D+1drs55cCL+EF9WD4ZqzPZRz7Ny7JgltgBZLEKcOFBA+/usekeCr/YMhobd
+         KLTBfsZdgNjz+RpI663aD+sfGbcxhieHI1m9VIAgc+SdA5hH8sMcI/eWp2p2M0bJUDh8
+         3FIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788191292; x=1788796092;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=lRFPnoHcYDMnlTrKBHKWdtQ6nLD/+ObQpWW6OKlIDQU=;
+        b=rp6jQfny5x2xLIP3dxPFTChqMHyhYa4Bwl4DcA9thA/ZClkwWnvVQ9Htgs0byUKRdK
+         NsWzq+WBFxZaLDlaJ5x4yj3RebN76kz1S9JUpUQ2FQm7LTnAbQuXLsAL5HobbK+NFyFs
+         lNs6G55Lbd4bpJtcm9L487qdhDLg5wiE0ewy9SGBx/yNtDGQaJbwv4K+TcB+wtZ7tFJJ
+         1LpOgCVwZHEVw81ExG5MPX9IgkWXClLMaPyNFWSQ2v0SmxoTFL9GRp8NWoGP+6yZmE/Z
+         4Q0p5OjRfDz2xd/dMDqvenLgxyaIxTA4cVL91xJR3b45KJJdkBu62d4EtDaNo0pp2L8+
+         Jc7Q==
+X-Forwarded-Encrypted: i=1; AHgh+Rp+VxhKpR0hAa+P4uXnmIgo+oVx9gP4FQi5nir6vLjN+Ax9Q4i0Ll1WB6rvwcoC5QqtJrglOcg=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++lMUN0UnGY8f4sDFs8E5eSS0E9Qgu4+ui9EasK7fwl/p5sTdlSo
+	dO0Xhy2GoAQi1hRaFG3ZZHDvzBS40Xt9bP5hMvDuDBa4ywvEtwwz4vdimSlPI4TeuX8fBz973+6
+	wsyuMzr5VvlrB6jiN4a7HlreBandd73a7M2JwuhQeUz1oMr9sKZrie7c1aTanMKxnpclJCbfQ
+X-Gm-Gg: AR+sD13cvWEYx8bZyb24zG3jSpUADTG5AjnbK7DiRCFqlSXzRiPXPx3ufgSylsiGc02
+	HWDkH+G3IV58fJL2E6hacy+EbZpoKR1NQujh45FWrLitv9atQvNSptQymGQ4C7Yo9e7FbCIgfb1
+	bZzNfaAcsh7GFlr7cFIiIbx6caVbnygFaVfiredxf1z3EsjDSlC2kdfTWep0ZIgSBOQ0QfCc3w5
+	rwocIPTlHz+hL3ElK3xawUGkYsN1Uk/1JrT8pGWWfzj7DVlCDYdanMe/ThEpqTkI/MZy5EdkndV
+	l9JrOudjS8LCCBZF3yepCAAjPZxq2h+6Llj+ad/9mRORQa5yvymluY2WJ05UVvKNbQZQkP/VdxD
+	G+Cbiymq+rUDt2PPC8fQAWUUjxJIDcxCyo40CHPAUfaoQ0gY=
+X-Received: by 2002:a05:620a:199d:b0:939:48ab:3632 with SMTP id af79cd13be357-93948ab36f2mr239122585a.10.1788191291682;
+        Mon, 31 Aug 2026 08:48:11 -0700 (PDT)
+X-Received: by 2002:a05:620a:199d:b0:939:48ab:3632 with SMTP id af79cd13be357-93948ab36f2mr239110885a.10.1788191290565;
+        Mon, 31 Aug 2026 08:48:10 -0700 (PDT)
 Received: from trex (250.red-81-38-139.dynamicip.rima-tde.net. [81.38.139.250])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49cdce0b456sm1558315e9.2.2026.08.31.08.48.07
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49cdce0b456sm1558315e9.2.2026.08.31.08.48.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Aug 2026 08:48:07 -0700 (PDT)
+        Mon, 31 Aug 2026 08:48:09 -0700 (PDT)
 To: jorge.ramirez@oss.qualcomm.com, stanleyjhu@google.com, beanhuo@micron.com,
         beanhuo@iokpp.de, James.Bottomley@hansenpartnership.com,
         martin.petersen@oracle.com, alim.akhtar@samsung.com,
         avri.altman@wdc.com, bvanassche@acm.org, can.guo@oss.qualcomm.com,
         sumit.garg@oss.qualcomm.com, jenswi@kernel.org
-Subject: [PATCH v5 0/2] ufs: rpmb: make RPMB usable with OP-TEE key derivation
-Date: Mon, 31 Aug 2026 17:47:59 +0200
-Message-ID: <20260831154804.719528-1-jorge.ramirez@oss.qualcomm.com>
+Subject: [PATCH v5 1/2] ufs: rpmb: retry power-on UNIT ATTENTION on the RPMB WLUN
+Date: Mon, 31 Aug 2026 17:48:00 +0200
+Message-ID: <20260831154804.719528-2-jorge.ramirez@oss.qualcomm.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260831154804.719528-1-jorge.ramirez@oss.qualcomm.com>
+References: <20260831154804.719528-1-jorge.ramirez@oss.qualcomm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDEzNSBTYWx0ZWRfX8c8XRzG4fzaa
- hw9alX2TpahidkIglPAtzpkYY67VaTyI/swAeVSoTZNtC7/tRN35/8yN7cCOHSU12NyT82jyrTy
- oLCRM7qzx2HLAI9LCzJrwL15d8PW5Cc=
-X-Proofpoint-GUID: c_vKSYoxnTEo6Q29GSTfWdRe9k3wgnBJ
-X-Authority-Analysis: v=2.4 cv=CYE4Irrl c=1 sm=1 tr=0 ts=6a95a23a cx=c_pps
- a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=N2KLPU99T7rsMuN2xAoQUA==:17
+X-Proofpoint-ORIG-GUID: rMg4xxRVp6vYo1XwS7sVkxsNFQ9alee1
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDEzNSBTYWx0ZWRfX0OtPjaQ5hf9O
+ sKgWsT3nrhsmrjO984e5xSIGvED7N6yRqXqPQTrZpb22j+zEWMCrw1hhN5LhOu55+FCX5eLRmhi
+ fSnTYX9rQIz54EVfa+1EIXYjoTBanZnRFghYrkNKNBAs09TIvDWQ+HQjRNkJqgDrCkwtRK5Nmyz
+ Sy1EMSS37KQjXisTelwhWQBERAF42DtQOb6sHzUUha1AJjQ6GcyXPmdTU8QChPUXoSQtAuyeVl4
+ 1y08Q137uqHetRitHe3AbANPrMMYJ9/htMUDi9Z6LPgsbD2ihw6PeGcdi7rY5Nx0n6DNMD3JfjN
+ qt9I9yJUyZ7Jyx5cIeJ+o2wwVQskecAIg8EqiV0SjfnGhL4RIrmOucFVh7B9vB2xh0FtGYgol6C
+ foE3jMTdvQghmwoOyb2PkcZHuwuxmoQca14t528/dHbOpTC69Kg2GLqEnVqUsv/DfR6HJrQjeix
+ ewj0CrnBTbvZsZ1QWvA==
+X-Proofpoint-GUID: rMg4xxRVp6vYo1XwS7sVkxsNFQ9alee1
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDEzNSBTYWx0ZWRfX1loZl44FofT6
+ 7XsmelgkNMbfsZig7/2xgYqc6mOX2frHmv+4dIiKZkmq5wY+AAu4Z3NhI2vu+GlSU2q8P26fidh
+ I8yWOePj56CsyReqtr5LR64wHA8sZyI=
+X-Authority-Analysis: v=2.4 cv=d/fFDxjE c=1 sm=1 tr=0 ts=6a95a23c cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=N2KLPU99T7rsMuN2xAoQUA==:17
  a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=_EMmJvYMAAAA:8
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=NEAV23lmAAAA:8 a=wgeUl87hhcvhY68aDoIA:9
- a=qcg49hLlgF0N60+LroqrWnV/Vu4=:19 a=PEH46H7Ffwr30OY-TuGO:22
- a=emCv1hD2LFd8cNRmW21v:22
-X-Proofpoint-ORIG-GUID: c_vKSYoxnTEo6Q29GSTfWdRe9k3wgnBJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDEzNSBTYWx0ZWRfX+y7HICN6x17P
- WNlaJx8BY7el8KIrDR4GJ4QOKQuIWKJpfSI72IaIyP3Pqq6x4Q6a2G2LpbWw1DkU5Wh2xlIZsnv
- A9GoJ3fK8bvUKSUNXD30mPxA4u5lhn4J0KpVqbpdYh771M/wZgGDKIM9uQYTwbXGRiRJerGUUTu
- FYNNPQBz1NhTC/32Luhg9gCuTtZe/Grawz+AsyGr5k8JWDqReywlz4LSR5s8DnhlcoQmMpgWfwk
- qgBAkF/b8XtWkCJxxPCAmDGavf9Y2KLJMycKbAi3UEwwI1xDy17sUZC6CesiHoeQe814bS789Wc
- yqow7bh0/K4ITiAEaq2uEeXYayIANmC/HplhTpQBRaxYi+ncegF8I/FfygnFYmXJkp5zia7u87g
- HaG8SZ0MJPPchO4wlAEiiKFqFZoWYXGim3TcKOMT4jaafsmsmTVRRpZMri/XEHQ4buoowIt5C53
- 2KFSPDeP2L1UhJbj/Tw==
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8
+ a=PY6Zn8H8AAAA:8 a=1XWaLZrsAAAA:8 a=w0io_FmA1e-6CLxyNa8A:9
+ a=NFOGd7dJGGMPyQGDc5-O:22 a=ySS05r0LPNlNiX1MMvNp:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-31_05,2026-08-27_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 adultscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 suspectscore=0 bulkscore=0 spamscore=0 phishscore=0
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0 spamscore=0
+ phishscore=0 priorityscore=1501 clxscore=1015 adultscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608310135
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-3.10 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	MID_CONTAINS_FROM(1.00)[];
 	R_MISSING_CHARSET(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	ALIAS_RESOLVED(0.00)[];
-	TO_DN_NONE(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
 	RCVD_COUNT_THREE(0.00)[4];
-	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
 	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
 	MIME_TRACE(0.00)[0:+];
-	NEURAL_HAM(-0.00)[-1.000];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TO_DN_NONE(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.222.198:received];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	ALIAS_RESOLVED(0.00)[];
 	DNSWL_BLOCKED(0.00)[81.38.139.250:received];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	RCPT_COUNT_TWELVE(0.00)[15];
+	NEURAL_HAM(-0.00)[-1.000];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 267E844DCE
+X-Rspamd-Queue-Id: 4072D45363
 X-Spamd-Bar: ---
-Message-ID-Hash: TU2CFJOLDHPTHLFSBGLEUDJGDPOHHOOL
-X-Message-ID-Hash: TU2CFJOLDHPTHLFSBGLEUDJGDPOHHOOL
+Message-ID-Hash: GSQPKAJGZKIGPKBHWUR6D3JMO66KDTE5
+X-Message-ID-Hash: GSQPKAJGZKIGPKBHWUR6D3JMO66KDTE5
 X-MailFrom: jorge.ramirez@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TU2CFJOLDHPTHLFSBGLEUDJGDPOHHOOL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GSQPKAJGZKIGPKBHWUR6D3JMO66KDTE5/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -174,88 +178,71 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Jorge Ramirez-Ortiz via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Jorge Ramirez-Ortiz <jorge.ramirez@oss.qualcomm.com>
 
-This series makes UFS RPMB work out of the box with an OP-TEE that
-implements the standard eMMC RPMB key-derivation flow, without requiring
-any fundamental changes on the OP-TEE side.
+After a power cycle, the first command sent to any UFS logical unit
+completes with CHECK CONDITION reporting a power-on UNIT ATTENTION.
+The SCSI core surfaces this condition to the caller rather than
+retrying it.
 
-RPMB provides an authenticated, replay-protected storage area whose
-security relies on a secret authentication key. In our setup that key is
-never exposed to the kernel: OP-TEE derives it in the secure world from
-its hardware-unique key and a device identifier (dev_id) that the RPMB
-core hands down. OP-TEE's implementation targets eMMC, where dev_id is
-the 16-byte eMMC CID, and both the fixed length and the raw-CID layout
-are baked into its key derivation.
+For the RPMB well-known LU the first command after boot is the first
+RPMB frame, and RPMB has no earlier, guaranteed access that could clear
+the condition beforehand. The power-on UNIT ATTENTION therefore reaches
+RPMB and fails that first frame, breaking RPMB on every cold boot.
 
-Two things stand in the way of reusing that same, unmodified OP-TEE flow
-for UFS RPMB:
+The RPMB WLUN needs the power-on UNIT ATTENTION to be retried so that
+RPMB works from the very first access after a power cycle.
 
-  1. On a cold boot the very first frame sent to the RPMB well-known LU
-     comes back with a power-on UNIT ATTENTION (ASC 0x29), which the SCSI
-     core reports rather than retries. RPMB has no earlier guaranteed
-     access that could clear the condition first, so RPMB fails on every
-     power cycle. Patch 1 asks the SCSI core to retry the power-on UNIT
-     ATTENTION on the RPMB WLUN.
+Signed-off-by: Jorge Ramirez-Ortiz <jorge.ramirez@oss.qualcomm.com>
+Reviewed-by: Bean Huo <beanhuo@micron.com>
+Reviewed-by: Stanley Jhu <stanleyjhu@google.com>
+---
+ drivers/ufs/core/ufs-rpmb.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-  2. The UFS RPMB id is "<device_id>-R<region>", which is variable length
-     and longer than 16 bytes. Passing it verbatim would tie the derived
-     key to a length OP-TEE does not expect and diverge from the fixed
-     eMMC CID ABI. Patch 2 hashes it into a fixed 16-byte dev_id with
-     blake2b, keeping the key stable and unique per region while matching
-     the eMMC CID layout OP-TEE relies on. The hash algorithm and input
-     string are thus part of the key-derivation ABI and must stay stable.
-
-With both patches, UFS RPMB is functional from the first access after a
-cold boot and derives keys through the existing eMMC-style OP-TEE flow,
-(requires minimal OP-TEE changes pending on the CID proposal done here).
-
-Tested on IQ-9075 with Open Firmware [1], pending OP-TEE changes
-[1]https://ldts.github.io/qcom-buildroot
-
-Dependencies:
-
-U-boot:
-https://lore.kernel.org/u-boot/20260720085202.537019-1-jorge.ramirez@oss.qualcomm.com/T/#mc423eb4dcf8a15849077029e4f7c1913bb7d8873
-
-OP-TEE:
-https://github.com/OP-TEE/optee_os/pull/7881
-
-v5:
-  * added Reviewed-by tags from Bean Huo and Stanley Jhu; no code change.
-
-v4:
-  * ufs: rpmb: retry power-on UNIT ATTENTION on the RPMB WLUN: open-code
-    the power-on ASC 0x29 (with a naming comment) as the rest of the SCSI
-    tree does, instead of a UFS_RPMB_ASC_POWER_ON define; add a
-    UFS_RPMB_UA_RETRIES define for the retry count; reworded the commit
-    message.
-  * ufs: rpmb: use a fixed-length RPMB dev_id: reworded the commit
-    message; no functional change.
-
-v3:
-  * ufs: rpmb: use a fixed-length RPMB dev_id: hash into a stack buffer
-    instead of a kzalloc'd one; rpmb_dev_register() copies dev_id, so the
-    heap allocation and its cleanup were unnecessary.
-
-v2:
-  * ufs: rpmb: replace blake2s with blake2b so that the same support
-    can be added to u-boot (CRYPTO_LIB_BLAKE2B)
-  * added links to U-boot and OP-TEE changes.
-
-v1:
-  * ufs: rpmb: retry power-on UNIT ATTENTION on the RPMB WLUN:
-     - fix using uses SCMD_FAILURE_ASC_ANY to retry any Unit Attention
-     - fix unused variable
-  * ufs: rpmb: use a fixed-length RPMB dev_id
-     - fix selecting a non-existent Kconfig symbol
-
-Jorge Ramirez-Ortiz (2):
-  ufs: rpmb: retry power-on UNIT ATTENTION on the RPMB WLUN
-  ufs: rpmb: use a fixed-length RPMB dev_id
-
- drivers/ufs/Kconfig         |  1 +
- drivers/ufs/core/ufs-rpmb.c | 29 ++++++++++++++++++++++++++---
- 2 files changed, 27 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/ufs/core/ufs-rpmb.c b/drivers/ufs/core/ufs-rpmb.c
+index ffad049872b9..79e6cd2b20a0 100644
+--- a/drivers/ufs/core/ufs-rpmb.c
++++ b/drivers/ufs/core/ufs-rpmb.c
+@@ -21,6 +21,7 @@
+ #include <linux/unaligned.h>
+ #include "ufshcd-priv.h"
+ 
++#define UFS_RPMB_UA_RETRIES		3	/* Retries for the power-on UNIT ATTENTION */
+ #define UFS_RPMB_SEC_PROTOCOL		0xEC	/* JEDEC UFS application */
+ #define UFS_RPMB_SEC_PROTOCOL_ID	0x01	/* JEDEC UFS RPMB protocol ID, CDB byte3 */
+ 
+@@ -40,6 +41,22 @@ struct ufs_rpmb_dev {
+ static int ufs_sec_submit(struct ufs_hba *hba, u16 spsp, void *buffer, size_t len, bool send)
+ {
+ 	struct scsi_device *sdev = hba->ufs_rpmb_wlun;
++	struct scsi_failure failure_defs[] = {
++		{
++			.sense = UNIT_ATTENTION,
++			.asc = 0x29,	/* power on, reset, or bus device reset occurred */
++			.ascq = SCMD_FAILURE_ASCQ_ANY,
++			.allowed = UFS_RPMB_UA_RETRIES,
++			.result = SAM_STAT_CHECK_CONDITION,
++		},
++		{}
++	};
++	struct scsi_failures failures = {
++		.failure_definitions = failure_defs,
++	};
++	const struct scsi_exec_args exec_args = {
++		.failures = &failures,
++	};
+ 	u8 cdb[12] = { };
+ 
+ 	cdb[0] = send ? SECURITY_PROTOCOL_OUT : SECURITY_PROTOCOL_IN;
+@@ -48,7 +65,8 @@ static int ufs_sec_submit(struct ufs_hba *hba, u16 spsp, void *buffer, size_t le
+ 	put_unaligned_be32(len, &cdb[6]);
+ 
+ 	return scsi_execute_cmd(sdev, cdb, send ? REQ_OP_DRV_OUT : REQ_OP_DRV_IN,
+-				buffer, len, /*timeout=*/30 * HZ, 0, NULL);
++				buffer, len, /*timeout=*/30 * HZ, /*retries=*/0,
++				&exec_args);
+ }
+ 
+ /* UFS RPMB route frames implementation */
 -- 
 2.54.0
 
