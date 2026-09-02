@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1699C61DD6
-	for <op-tee@archiver.kernel.org>; Wed,  2 Sep 2026 10:54:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF911C624DA
+	for <op-tee@archiver.kernel.org>; Wed,  2 Sep 2026 10:54:57 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 09265451E5
-	for <op-tee@archiver.kernel.org>; Wed,  2 Sep 2026 10:54:30 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 399B04506A
+	for <op-tee@archiver.kernel.org>; Wed,  2 Sep 2026 10:54:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1788346470;
-	bh=BkWHB+IxRJyp/mrL2MDxtxRI3LoQB6qxpIKEIBvf9+w=;
+	d=lists.trustedfirmware.org; s=2024; t=1788346497;
+	bh=fI4ct/3pSqJy24dcpl8O0GRnGyvmcETu0BAstHM0k+s=;
 	h=Date:In-Reply-To:References:Subject:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=3pmTWGktltRKOQ+aHa6BlV9J6jFfctGVDb2JasVF+OkD62qt1B79Ia9ZkokvLI4j8
-	 0LdjKqpSNX7mrJdkyqCC0OIxcUSZI3uHu/2cbTXtzU9lAK9Hjb1iFU958kcy6yXSqy
-	 k9VzVyZvkk6yAqC/zlgGT3XQHMYPQuCrsgMP3sp7vTjChUacVJHb+ytWXFTWOkcIMJ
-	 UC2zLax5spPEi+HXafZdyOxEpUMB6G9sCl+WdwJb+cNrGoseedYbe6YTC4i/coAEsA
-	 yKWxTpeY4NkyfC1P/6N3G7VHMRuiUtFR0oVxTZQVg0iJSW2YjCS6PRn3G54tWtk11Q
-	 oLGExqJ0lb4IA==
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com [209.85.128.71])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 77025453CE
-	for <op-tee@lists.trustedfirmware.org>; Wed,  2 Sep 2026 10:51:16 +0000 (UTC)
+	b=ZwTgy83xtUR6lVVSdYOwPXRGMVK4A8Eos++Bfa415XRxsSkgBw4lpcdU6lopGIECT
+	 Nvo3kFAeZ9PwYAXs/v/zCUhydQ9F3nTKlzoweGcbvIdCIyuHBSvF7ubRp4AB0M2tfL
+	 9r3YKdDf6roRziSwphfb1qiIPrYZzWDeXjWuwmXol4gBet0f+yGcTjW6Rgfs9oVPpM
+	 bNfioRaVcCvH777NcIaDgVo4cTBBrXqdkKt3IaS43e9AFHbkdYWRMpvpOnQzOxt3ur
+	 e9HPatmcRkn++1t/hsaPlA/wNK7kB9LbNyZGM1JVRkk7jo/VEOIkhRjyiEitVco2hp
+	 CO/9NN2RsL43w==
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com [209.85.221.72])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7D7A9453C8
+	for <op-tee@lists.trustedfirmware.org>; Wed,  2 Sep 2026 10:51:17 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=iNrdTuMh;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Wm81QcIB;
 	dkim-atps=neutral
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-49b8c651ac0so10256845e9.2
-        for <op-tee@lists.trustedfirmware.org>; Wed, 02 Sep 2026 03:51:16 -0700 (PDT)
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-47f4bff865cso612275f8f.0
+        for <op-tee@lists.trustedfirmware.org>; Wed, 02 Sep 2026 03:51:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1788346275; x=1788951075; darn=lists.trustedfirmware.org;
+        d=google.com; s=20251104; t=1788346276; x=1788951076; darn=lists.trustedfirmware.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=TNWZLpQFf8So7isbdfRHNiNRkktdYQTRcSFjKmsQSY0=;
-        b=iNrdTuMhys4vCED7/oz6Y8pcbiw9OcwG88LNFbwxbXQ3TR7H7gjSYxKLEq7XnXiYG3
-         G8e16KlsrLuqdnfIT5jgViswhw4KbH4KbVE0kuadaVzXntiKJsTcqKobeX5Fco3F8qB+
-         4r3NwcDbJqJCLMrWsiB6TEajks8chF5xidS05wdffz087vlHARTitsL4Ltjal2cJ3vhO
-         KDd0Ba3rZaPk5DH016o7/Y+7X+eD/BE0/+r99UkvkPqwuTeh5XVY/jgHjgb3vvR4wARG
-         kCgnNEA9JrG28+VqCU30IZP+pI0V/2T82ltPN4o0CVF2jXT96jhIkX8C+mtePNOR7kEE
-         3CBQ==
+        bh=IlzRHwAUXMpKspjrSSJuu5KTpj2eywEkwws+9IOUBiI=;
+        b=Wm81QcIBv6aaCG4IiqbDPA7TK6gsTkNOVDJj0uKOXCU9OFnJHhdJqUktzP95pDhTWR
+         W5Dd2wJEOnqBM2HHD0ie9IZD+E5WmEi1w+masEucluyrPNwpHdVUzPv0Qy+U39PfiVTC
+         pxyh14MT1d1rdqiS8rnZr6KMpIqVIMXkYen7iN+dA0NUEaeb5SD3kcRKzGgJng6q0lPN
+         Z/LA+hIfLEnmpRFR/nml+ESui9nv5GtV6qBpm6weFgRwfhBNRzWiN8+39X4HAJzvVHoZ
+         7X5bRyPDTfrj0yJe0yVp7twVnskh9V6WeTtHVILcGVu+MQGu54/xSPKVb3XfBJEJDww8
+         6rVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788346275; x=1788951075;
+        d=1e100.net; s=20251104; t=1788346276; x=1788951076;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=TNWZLpQFf8So7isbdfRHNiNRkktdYQTRcSFjKmsQSY0=;
-        b=UFz1IPTEr6ZvcokVv00XXXTZs0bmIeK2sMEB3DcqWrUJqoTtsUvjvppZ3kN0EXS/Ke
-         C7tXLokFereEjvjGXVUPQoeO17+0p7PCOGgp6IYjyMr6hrUO1PWLe/RtIFqsAm5SucxY
-         giUolKc5GDTxVFzmv33vuIJMpxxamZvNyzmvv/0ht/LQjnc7ox3O4SzMe6kQWmNjkVev
-         CGnKn2QXHe+HvMvwIUoTzBqDFo8fjKtAO9L36s8iQLbWTN7rIJPwGtDO8eAxlNyCQkhL
-         EKqjK9s263jPalTSF9dsJ8qYeHHo4nIC0nzVPIrvtxgHHow7C3rG53vs8lWVNJCOGLKw
-         6PpA==
-X-Forwarded-Encrypted: i=1; AHgh+Rr02Eu7u+szslnS4/mdXU6o8l9twAnp3+GEW2KaNnRPbG+4Sh0/LGZjSLD872qjFTkMmmW3nvo=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++k1lkTuywus77GQ5zfXCpmZhsGyVS8FDI2EndEASGXG8q2kd0ZI
-	2dvSXgPKIPNgpvPdJLODczORtLVwElfrcwSmYYb7REcXYCgIkGYF/qVhMBTORpNiLRY537t/Ojc
-	nM9tz35yyUUGVY58ZL20zDg==
-X-Received: from wrpe17.prod.google.com ([2002:adf:f351:0:b0:484:3204:23be])
+        bh=IlzRHwAUXMpKspjrSSJuu5KTpj2eywEkwws+9IOUBiI=;
+        b=J3dDoAvig6v4YwQ3Pmtxo6zuX3Onbidcbq7jtUDeMIyw2gTfDoq3fy2YmnzqXp8geO
+         uRN3RM16Fg3GbmDqhkEZ/bqxn9/An1niSByeoEkjnQGLf9IqJvYOCQeVdJyGGr/EWB4K
+         gtHv71oxdlUDgCVCOjz6OL6Pzn+psvH3XMW9H2AtmKbwMFP2uMcGXFBn1fIrVNVdzPiz
+         3ms6/txXCQq9TFP7/dA4D5nyBmKEymzfsGUKNmmv6I9tnwKzso2f4ZyCYexAgyXE+z6D
+         /UgeT9PyQDEmqXG0JDFtfk4P7HOTZ/zs3AJ/t0nyyLP94nypABzSqmTIFYzzeqhNXJrP
+         4bOA==
+X-Forwarded-Encrypted: i=1; AKwUvBy5Zsd9LWCUhAVJwg/9dC+M6trWoNjq1R0vlmjzRkrBrbv00oZ1JLRMEaLKcENcEUrYJjaqPvc=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++nDJHURP0yAhEGWuFervoRsMsfGv25N2ZJIe2Ix3hmvh+NWZOdZ
+	4EkZpHlFSQDwaSj+0gtBxVjMa819HUPrdvwDNRjaAfLywWrNK2lCNSKYS8ki9fgtqFHHAddhKUA
+	E74dMaU8eQTr+BaWzUrZaiA==
+X-Received: from wrqr17.prod.google.com ([2002:a5d:4991:0:b0:482:abe4:58a8])
  (user=vdonnefort job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:4e93:b0:499:cd34:100d with SMTP id 5b1f17b1804b1-49ce57f5235mr66954815e9.7.1788346275192;
- Wed, 02 Sep 2026 03:51:15 -0700 (PDT)
-Date: Wed,  2 Sep 2026 11:47:09 +0100
+ 2002:a5d:5f47:0:b0:482:fc30:a1b4 with SMTP id ffacd0b85a97d-48488e03952mr6019121f8f.5.1788346276079;
+ Wed, 02 Sep 2026 03:51:16 -0700 (PDT)
+Date: Wed,  2 Sep 2026 11:47:10 +0100
 In-Reply-To: <20260902104712.2399797-1-vdonnefort@google.com>
 Mime-Version: 1.0
 References: <20260902104712.2399797-1-vdonnefort@google.com>
 X-Mailer: git-send-email 2.55.0.970.g62bdec98f9-goog
-Message-ID: <20260902104712.2399797-8-vdonnefort@google.com>
-Subject: [PATCH v9 07/10] arm64: Implement __set_direct_map*()
+Message-ID: <20260902104712.2399797-9-vdonnefort@google.com>
+Subject: [PATCH v9 08/10] arm64: Add support for MEMBLOCK_LLMAP
 To: catalin.marinas@arm.com, will@kernel.org, rppt@kernel.org,
 	akpm@linux-foundation.org, sudeep.holla@kernel.org, jenswi@kernel.org,
 	robh@kernel.org
@@ -78,7 +78,7 @@ X-Spamd-Result: default: False [-2.20 / 15.00];
 	MID_CONTAINS_FROM(1.00)[];
 	MV_CASE(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[google.com,reject];
-	FORGED_SENDER(0.30)[vdonnefort@google.com,3o_-xagokbl4r9kjjabknpckkcha.8kikl-paaheopo.pnqopa9benis6na.knc@flex--vdonnefort.bounces.google.com];
+	FORGED_SENDER(0.30)[vdonnefort@google.com,3pp-xagokbl8salkkbcloqdlldib.9ljlm-qbbifpqp.qorpqbacfojt7ob.lod@flex--vdonnefort.bounces.google.com];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
 	R_DKIM_ALLOW(-0.20)[google.com:s=20251104];
 	MIME_GOOD(-0.10)[text/plain];
@@ -91,26 +91,26 @@ X-Spamd-Result: default: False [-2.20 / 15.00];
 	DWL_DNSWL_NONE(0.00)[google.com:dkim];
 	NEURAL_HAM(-0.00)[-1.000];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.71:from];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.72:from];
 	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	FROM_NEQ_ENVFROM(0.00)[vdonnefort@google.com,3o_-xagokbl4r9kjjabknpckkcha.8kikl-paaheopo.pnqopa9benis6na.knc@flex--vdonnefort.bounces.google.com];
+	FROM_NEQ_ENVFROM(0.00)[vdonnefort@google.com,3pp-xagokbl8salkkbcloqdlldib.9ljlm-qbbifpqp.qorpqbacfojt7ob.lod@flex--vdonnefort.bounces.google.com];
 	ALIAS_RESOLVED(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.71:from];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.221.72:from];
 	FROM_HAS_DN(0.00)[];
 	DKIM_TRACE(0.00)[google.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 77025453CE
+X-Rspamd-Queue-Id: 7D7A9453C8
 X-Spamd-Bar: --
-Message-ID-Hash: 2XVXLKP6F4SC46DSCDS5PZUKNQ66HMUW
-X-Message-ID-Hash: 2XVXLKP6F4SC46DSCDS5PZUKNQ66HMUW
-X-MailFrom: 3o_-XagoKBl4R9KJJABKNPCKKCHA.8KIKL-PAAHEOPO.PNQOPA9BENIS6NA.KNC@flex--vdonnefort.bounces.google.com
+Message-ID-Hash: NH53WSEJAFRHW7AGHVENLDOZL6JXONYW
+X-Message-ID-Hash: NH53WSEJAFRHW7AGHVENLDOZL6JXONYW
+X-MailFrom: 3pP-XagoKBl8SALKKBCLOQDLLDIB.9LJLM-QBBIFPQP.QORPQBACFOJT7OB.LOD@flex--vdonnefort.bounces.google.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: mark.rutland@arm.com, sumit.garg@kernel.org, ardb@kernel.org, thierry.reding@kernel.org, david@kernel.org, danielmentz@google.com, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Donnefort <vdonnefort@google.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2XVXLKP6F4SC46DSCDS5PZUKNQ66HMUW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NH53WSEJAFRHW7AGHVENLDOZL6JXONYW/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -120,76 +120,68 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Vincent Donnefort via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Vincent Donnefort <vdonnefort@google.com>
 
-Add implementation for the unsafe functions __set_direct_map*(). They do
-not verify for can_set_direct_map() and expect the caller to do so
-beforehand.
+With the MEMBLOCK_LLMAP flag, force a last-level mapping.
 
 Signed-off-by: Vincent Donnefort <vdonnefort@google.com>
 
-diff --git a/arch/arm64/include/asm/set_memory.h b/arch/arm64/include/asm/set_memory.h
-index 1a37f4ef130b..080a40846bbe 100644
---- a/arch/arm64/include/asm/set_memory.h
-+++ b/arch/arm64/include/asm/set_memory.h
-@@ -16,6 +16,10 @@ int set_memory_valid(unsigned long addr, int numpages, int enable);
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 79d90226fd5d..c0fcc76914d1 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -1184,9 +1184,8 @@ static void __init map_mem(void)
+ 	phys_addr_t init_begin = __pa_symbol(__init_begin);
+ 	phys_addr_t init_end = __pa_symbol(__init_end);
+ 	phys_addr_t kernel_end = __pa_symbol(__bss_stop);
+-	phys_addr_t start, end;
+ 	int flags = NO_EXEC_MAPPINGS;
+-	u64 i;
++	struct memblock_region *r;
  
- int set_direct_map_invalid_noflush(struct page *page);
- int set_direct_map_default_noflush(struct page *page);
-+int __set_direct_map_invalid_noflush(struct page *page);
-+#define __set_direct_map_invalid_noflush __set_direct_map_invalid_noflush
-+int __set_direct_map_default_noflush(struct page *page);
-+#define __set_direct_map_default_noflush __set_direct_map_default_noflush
- int set_direct_map_valid_noflush(struct page *page, unsigned nr, bool valid);
- bool kernel_page_present(struct page *page);
+ 	/*
+ 	 * Setting hierarchical PXNTable attributes on table entries covering
+@@ -1226,9 +1225,13 @@ static void __init map_mem(void)
+ 		       flags);
  
-diff --git a/arch/arm64/mm/pageattr.c b/arch/arm64/mm/pageattr.c
-index c59ef17eb0d0..28adab0edace 100644
---- a/arch/arm64/mm/pageattr.c
-+++ b/arch/arm64/mm/pageattr.c
-@@ -294,28 +294,38 @@ int set_memory_valid(unsigned long addr, int numpages, int enable)
- 					__pgprot(PTE_PRESENT_VALID_KERNEL));
+ 	/* map all the memory banks */
+-	for_each_mem_range(i, &start, &end) {
++	for_each_mem_region(r) {
++		phys_addr_t start, end;
++
++		if (memblock_is_nomap(r))
++			continue;
+ 		/*
+-		 * for_each_mem_range may return sub-page-aligned boundaries
++		 * for_each_mem_region may return sub-page-aligned boundaries
+ 		 * after memblock_mark_nomap() splits regions at byte precision.
+ 		 * __create_pgd_mapping_locked aligns phys down to PAGE_MASK,
+ 		 * which could accidentally map no-map memory on the boundary.
+@@ -1237,17 +1240,23 @@ static void __init map_mem(void)
+ 		 * regions. The cost is at most one page of unmapped gap at
+ 		 * each boundary.
+ 		 */
+-		start = PAGE_ALIGN(start);
+-		end = end & PAGE_MASK;
++		start = PAGE_ALIGN(r->base);
++		end = (r->base + r->size) & PAGE_MASK;
+ 		if (start >= end)
+ 			continue;
++
++		int rflags = flags;
++
++		if (memblock_is_llmap(r))
++			rflags |= NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS;
++
+ 		/*
+ 		 * The linear map must allow allocation tags reading/writing
+ 		 * if MTE is present. Otherwise, it has the same attributes as
+ 		 * PAGE_KERNEL.
+ 		 */
+ 		__map_memblock(start, end, pgprot_tagged(PAGE_KERNEL),
+-			       flags);
++			       rflags);
+ 	}
  }
  
--int set_direct_map_invalid_noflush(struct page *page)
-+int __set_direct_map_invalid_noflush(struct page *page)
- {
- 	pgprot_t clear_mask = __pgprot(PTE_PRESENT_VALID_KERNEL);
- 	pgprot_t set_mask = __pgprot(PTE_PRESENT_INVALID);
- 
-+	return update_range_prot((unsigned long)page_address(page),
-+				 PAGE_SIZE, set_mask, clear_mask);
-+}
-+
-+int set_direct_map_invalid_noflush(struct page *page)
-+{
- 	if (!can_set_direct_map())
- 		return 0;
- 
-+	return __set_direct_map_invalid_noflush(page);
-+}
-+
-+int __set_direct_map_default_noflush(struct page *page)
-+{
-+	pgprot_t set_mask = __pgprot(PTE_PRESENT_VALID_KERNEL | PTE_WRITE);
-+	pgprot_t clear_mask = __pgprot(PTE_PRESENT_INVALID | PTE_RDONLY);
-+
- 	return update_range_prot((unsigned long)page_address(page),
- 				 PAGE_SIZE, set_mask, clear_mask);
- }
- 
- int set_direct_map_default_noflush(struct page *page)
- {
--	pgprot_t set_mask = __pgprot(PTE_PRESENT_VALID_KERNEL | PTE_WRITE);
--	pgprot_t clear_mask = __pgprot(PTE_PRESENT_INVALID | PTE_RDONLY);
--
- 	if (!can_set_direct_map())
- 		return 0;
- 
--	return update_range_prot((unsigned long)page_address(page),
--				 PAGE_SIZE, set_mask, clear_mask);
-+	return __set_direct_map_default_noflush(page);
- }
- 
- static int __set_memory_enc_dec(unsigned long addr,
 -- 
 2.55.0.970.g62bdec98f9-goog
 
