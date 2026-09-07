@@ -4,198 +4,166 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E93AC79F9E
-	for <op-tee@archiver.kernel.org>; Mon,  7 Sep 2026 09:52:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4479CC79F89
+	for <op-tee@archiver.kernel.org>; Mon,  7 Sep 2026 14:00:30 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id AAA1F450B0
-	for <op-tee@archiver.kernel.org>; Mon,  7 Sep 2026 09:52:55 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 5F6AC45220
+	for <op-tee@archiver.kernel.org>; Mon,  7 Sep 2026 14:00:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1788774775;
-	bh=RAk4/+0VANubwExV/eikqowXjMZXGsN/RmDQCnJKXPk=;
+	d=lists.trustedfirmware.org; s=2024; t=1788789629;
+	bh=EgLK3o+julTVE6C/8v3utQVcxVTdU7XWXdzws8YaC20=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=Gj3K5LHRPi2TLx9NcWZGZwBqWAmHZ5LmOr2j//BXQDX76c6WD2a2vlFr3g6lFoncO
-	 XeHuGKexvSWFTx3qNBcQoLHaEPdXcbXEMnr2fUfe5o/G9TR6k+j+ptmjhtkR2bE1Z7
-	 CRyXhCU5fHBcpb4N43G9/FYvGgw9+n0Mjhbp6mVRGOq7n7QrWv+fO/PxMttD0Pv/cS
-	 4aqqqMYHllj4oh3R67FG+7e4np8Pdg72CizPVpQzRcizFcb+fkjtTS6189sg6/6mKZ
-	 RtaapWLrhxn1iwhAh7blQCh5JMiAs0EbPp85wxcMdKZ5sjUQBVHaNBcJPhn5nXRCsA
-	 14ppx0/mybTlQ==
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1DA454370D
-	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Sep 2026 09:52:49 +0000 (UTC)
+	b=BIRYE6YUx76UKIJABaZg1nqEoqnzIbmHLcWZFDtJ/LwUd3tdC1bbgak4ErWfG0ncr
+	 ZO1ec6mAZD3e4BYO0uXPQEDVP4nY1wqEjAlwapikBt5tF2AouP1Di8nBuLVYU3wCFF
+	 KzWmmaNh7ypflNs9e8c7Pv0CmYCyrLDdvDnxjh9JODP04bjdijgJhH7iV7G80iDu7t
+	 cAQu7iS344ATmWrDfYf9FzqIXnL5YO0/rmnovU1IV5XDnlzmTmkfLnX5r2mG8OG87u
+	 cq2Ae0DOJwxdI04zieCAYKfxmtwdy+f3DZ1fgbuaOtypQw2+CrIl5nbV777BGigZxj
+	 vNgQXGNlQbspQ==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 114AE44441
+	for <op-tee@lists.trustedfirmware.org>; Mon,  7 Sep 2026 14:00:23 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=EZGWdyIu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gtOe0lI4;
 	dkim-atps=neutral
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-47ddf7b09e5so3781927f8f.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 07 Sep 2026 02:52:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1788774768; x=1789379568; darn=lists.trustedfirmware.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=kqgfejYSVwSnwDj4+nn08kyPi4IgtneNSDWgXEMZ2iw=;
-        b=EZGWdyIuArUTfkfeyk4ZRVFRYqaAxK4Mmq3FYuYbDpydaFKnKKcpMyUoO9oFde3igR
-         sMUF29laHwuHDpiPRJ4qz5XgtYT5cyR50XQk9jmkU5fYH6ScFQRrHIiUZMYZM9QgJfCP
-         hJUxtewX3s9tewB1IX6CgQBGXaYmO3vSqdCKlYrE8/HCsazkor/hrYMY7jA+KBc/5meG
-         meboLKJz3MP9/89k0r6Gd9b2tedIPBHq86j2iQuidRlS5HQtniCtwHziGBtNfPqBm9TK
-         35kbAj7u8O+B2oYnB/Nh5CMbE5c/KT+xEsp9fq00ZilAYBmY/+i9IUUp50G2qVsH9vD4
-         iudA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788774768; x=1789379568;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kqgfejYSVwSnwDj4+nn08kyPi4IgtneNSDWgXEMZ2iw=;
-        b=HCzwnTg7CFAhxF5Cj7wapoKLKKExqyo0eT+gYXVd7kzMz5qYKVb/ihRy5cLGSOMTXF
-         gAXthbuE+aa8sd9HqZhXAgqH72qIPv880yDNRDy9UYCtoxb8/lOUq4EIletQxNvJ+Jxi
-         O4mm/6PXFejlqzQiF6bPNQ2p/mqmYBNGlE9afMBydCXHlHB4TXhbcKa4XyOV4ftAJm1L
-         UTnR3BNJWQVEcL2zza0350LA3oKAk70P5Blcs1JOqDiDhV7PjoHc8brH2Vx6BGi+ytsY
-         4rq+BeHM6pHU8kFJ1EtCNtULr35O8VsriIJD0T9NcpfHa8ILbghyX1ubVVM8woftPXWS
-         Fgqg==
-X-Forwarded-Encrypted: i=1; AKwUvBzPqstUoq/3/gxrL1uK0th1Iq+NdcoA8KR0vrQLhCgDt261qRUs0LtR/P2yEz9GSqNuGXOXzFU=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++kZzG7NckfPtrbONPGbL7/IklQPdflICKZPhyQlCwmV91AxCtsP
-	NETK1kqVUzs83OFKQbRdx66NEaY0QSye+Mt0O7Nc9su4qC0+4gOuEc7HPF0ewmbv/w==
-X-Gm-Gg: AYBFou3pbLYH84kcGBD7WLIpPWKTflTmAlbc6ENunZAMvll4e5YObWLLvHN1UjEDce6
-	pvnITIuUnyD4jLJsobm2NOcIYGY5lS6qno/f4hcpdWXCmbJOZYkLN1YOZJcL0yu7mYEcM7zVNjD
-	HX39AL5OO9tsTV987a4sYNsT+col/firTM+dp8rfG5F9EwZGiJDiZrlHzjXlS4i4OgrLCSPZ/kU
-	Vu8t7cLs4sy9VXzJaEOway9ZAHyS8kxH3rTyC4YRjHui9jUqXyNbUk06Jn6mILqu8ht2Yecj+ex
-	KnodR5HBYiLeT2ZrtVz/JEG3i4wJ8bCN2c7j9OylNWNyUVqGR8RZxQ9hHhU4t977ktZpYDAPJpb
-	8x8Mw6tNHQiwDfH/ovzjbZylflBJvTw4Gw70+i5+yh9A77zgX4km1WRjJm7LQjaSV0uOJAp/WQ5
-	w/SSFORSuZXj8ONKkIUceQaqQ1EEZ/iB9e+f0Z8a8GuZh2jq0mN9DKrRx7u/skrhT8+Wjw7VTbM
-	6FoMo/7lkw8+7LiOp+JH3WgoychFCo/
-X-Received: by 2002:a05:6000:4b1d:b0:485:8c16:a32a with SMTP id ffacd0b85a97d-4858c16a5a7mr19950748f8f.31.1788774767486;
-        Mon, 07 Sep 2026 02:52:47 -0700 (PDT)
-Received: from google.com (135.91.155.104.bc.googleusercontent.com. [104.155.91.135])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-485885bf3f0sm30012615f8f.33.2026.09.07.02.52.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Sep 2026 02:52:46 -0700 (PDT)
-Date: Mon, 7 Sep 2026 10:52:43 +0100
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v9 03/10] set_memory.h: Introduce
- can_set_direct_map_range()
-Message-ID: <ap6Ja02S5IDqWRHC@google.com>
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 476184086C;
+	Mon,  7 Sep 2026 14:00:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 985261F00A3D;
+	Mon,  7 Sep 2026 14:00:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788789622;
+	bh=EgLK3o+julTVE6C/8v3utQVcxVTdU7XWXdzws8YaC20=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=gtOe0lI4tICmFeXO0VXaSZWun1zD97NtGKzB00Fxz4Ka/Zpm56GHzGCFmpkzXvwya
+	 IjgdW5ASTJB+qKa5sg3xhHy+2z3Tif4EUzgG6v2G0AqXAMe/0BNO4ao6/A+PGKiEDt
+	 LiunuR042Q+3iJ1jf+LikMpBoAosls+iqBo1ld1uAEuNgD3FyixqBGd1NK8XwlELz8
+	 0aXr47TpsMtDRS4WsQVvIrdjIekWTZVzwY14LA7ppw9cLIVA/gJznyINUg586mqoJr
+	 i4bMWj2QqqCUzgdxYWZPl2+vXlMSa8ApBf/xkklnj7o+nTfBb5pP16MUu53RogA7JW
+	 PhrukphYxcyLg==
+Date: Mon, 7 Sep 2026 16:00:19 +0200
+To: Vincent Donnefort <vdonnefort@google.com>
+Subject: Re: [PATCH v9 02/10] of: reserved_mem: Introduce "ll-map" property
+Message-ID: <ap7CAowlFTFhSFP9@orome>
 References: <20260902104712.2399797-1-vdonnefort@google.com>
- <20260902104712.2399797-4-vdonnefort@google.com>
- <ap3BVr5hHwA499gu@kernel.org>
+ <20260902104712.2399797-3-vdonnefort@google.com>
+ <20260902172436.GB1440252-robh@kernel.org>
+ <aplF4NaoFk73d-c5@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="3ihzba4bzldpza5m"
 Content-Disposition: inline
-In-Reply-To: <ap3BVr5hHwA499gu@kernel.org>
+In-Reply-To: <aplF4NaoFk73d-c5@google.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.00 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[google.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17:c];
-	R_DKIM_ALLOW(-0.20)[google.com:s=20251104];
-	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
+X-Spamd-Result: default: False [-8.60 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
+	BAYES_HAM(-3.00)[99.98%];
+	SIGNED_PGP(-2.00)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	MIME_GOOD(-0.20)[multipart/signed,text/plain];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	DNSWL_BLOCKED(0.00)[172.234.252.31:from];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	ARC_NA(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MISSING_XM_UA(0.00)[];
 	RCPT_COUNT_TWELVE(0.00)[18];
-	MIME_TRACE(0.00)[0:+];
-	DWL_DNSWL_NONE(0.00)[google.com:dkim];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.47:from];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.221.47:from];
-	DNSWL_BLOCKED(0.00)[104.155.91.135:received];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_HAS_DN(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	NEURAL_HAM(-0.00)[-1.000];
+	MIME_TRACE(0.00)[0:+,1:+,2:~];
 	RCVD_TLS_LAST(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DKIM_TRACE(0.00)[google.com:+]
+	FROM_HAS_DN(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
+	TO_DN_SOME(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 1DA454370D
-X-Spamd-Bar: ---
-Message-ID-Hash: GVVGPYMSK3KKL5KINA3NGQ4ZZPVWHBOI
-X-Message-ID-Hash: GVVGPYMSK3KKL5KINA3NGQ4ZZPVWHBOI
-X-MailFrom: vdonnefort@google.com
+X-Rspamd-Queue-Id: 114AE44441
+X-Spamd-Bar: --------
+Message-ID-Hash: KJMPZDQYZAG6JNPV4BDCSTWJ7S2IV2HU
+X-Message-ID-Hash: KJMPZDQYZAG6JNPV4BDCSTWJ7S2IV2HU
+X-MailFrom: thierry.reding@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: catalin.marinas@arm.com, will@kernel.org, akpm@linux-foundation.org, sudeep.holla@kernel.org, jenswi@kernel.org, robh@kernel.org, mark.rutland@arm.com, sumit.garg@kernel.org, ardb@kernel.org, thierry.reding@kernel.org, david@kernel.org, danielmentz@google.com, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: Rob Herring <robh@kernel.org>, catalin.marinas@arm.com, will@kernel.org, rppt@kernel.org, akpm@linux-foundation.org, sudeep.holla@kernel.org, jenswi@kernel.org, mark.rutland@arm.com, sumit.garg@kernel.org, ardb@kernel.org, david@kernel.org, danielmentz@google.com, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/GVVGPYMSK3KKL5KINA3NGQ4ZZPVWHBOI/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/KJMPZDQYZAG6JNPV4BDCSTWJ7S2IV2HU/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Vincent Donnefort via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Vincent Donnefort <vdonnefort@google.com>
-
-On Sun, Sep 06, 2026 at 10:39:02PM +0300, Mike Rapoport wrote:
-> On Wed, Sep 02, 2026 at 11:47:05AM +0100, Vincent Donnefort wrote:
-> > While can_set_direct_map() tells whether the direct map can be modified
-> > globally, can_set_direct_map_range() checks if a specific range can be
-> > modified. e.g. if mapped at PTE-level.
-> 
-> set_direct_map are going to have number of pages parameter soon:
-> 
-> https://lore.kernel.org/all/20260903-execmem-set-vm-perms-v0-2-v3-1-949b64a9f755@kernel.org
-> 
-> so this check can be a part of arm64::set_direct_map
-
-ack.
-
-> 
-> I wouldn't expose can_set_direct_map_range() as a public API and rely on
-> the callers to "Do The Right Thing".
-
-ack.
-
-Thanks for having a look at the series.
-
--- 
-Vincent
+From: Thierry Reding via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Thierry Reding <thierry.reding@kernel.org>
 
 
->   
-> > Signed-off-by: Vincent Donnefort <vdonnefort@google.com>
-> > 
-> > diff --git a/include/linux/set_memory.h b/include/linux/set_memory.h
-> > index 3030d9245f5a..88175c3fa751 100644
-> > --- a/include/linux/set_memory.h
-> > +++ b/include/linux/set_memory.h
-> > @@ -44,6 +44,12 @@ static inline bool kernel_page_present(struct page *page)
-> >  {
-> >  	return true;
-> >  }
-> > +
-> > +static inline bool can_set_direct_map_range(struct page *page,
-> > +					    unsigned long nr_pages)
-> > +{
-> > +	return false;
-> > +}
-> >  #else /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-> >  /*
-> >   * Some architectures, e.g. ARM64 can disable direct map modifications at
-> > @@ -56,6 +62,14 @@ static inline bool can_set_direct_map(void)
-> >  }
-> >  #define can_set_direct_map can_set_direct_map
-> >  #endif
-> > +
-> > +#ifndef can_set_direct_map_range
-> > +static inline bool can_set_direct_map_range(struct page *page, unsigned long nr_pages)
-> > +{
-> > +	return can_set_direct_map();
-> > +}
-> > +#define can_set_direct_map_range can_set_direct_map_range
-> > +#endif
-> >  #endif /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-> >  
-> >  #ifdef CONFIG_X86_64
-> > -- 
-> > 2.55.0.970.g62bdec98f9-goog
-> > 
-> 
-> -- 
-> Sincerely yours,
-> Mike.
+--3ihzba4bzldpza5m
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v9 02/10] of: reserved_mem: Introduce "ll-map" property
+MIME-Version: 1.0
+
+On Thu, Sep 03, 2026 at 11:03:12AM +0100, Vincent Donnefort wrote:
+> On Wed, Sep 02, 2026 at 12:24:36PM -0500, Rob Herring wrote:
+> > On Wed, Sep 02, 2026 at 11:47:04AM +0100, Vincent Donnefort wrote:
+> > > Keeping last-level mappings is interesting on some architectures as it
+> > > allows mapping/unmapping pages from the kernel direct map without the
+> > > risk of splitting blocks which, under the break-before-make rule, may
+> > > trigger page-faults the kernel can't handle.
+> > >=20
+> > > Add an "ll-map" property for reserved-memory regions. When set, it
+> > > splits the underlying memblock and sets the MEMBLOCK_LLMAP flag.
+> >=20
+> > Where is this documented? Any DT property must have a schema.
+>=20
+> Ack.
+>=20
+> >=20
+> > Though I'm not thrilled about more flag properties. Handling all the=20
+> > combinations of properties has proven to be painful. Can this be implie=
+d=20
+> > from the compatible string instead?
+> >=20
+> > Rob
+>=20
+> We need this before the kernel direct map has been created (paging_init()=
+).
+>=20
+> I would have moved that directly into the driver lend_pool.c, but then it=
+ is
+> probed too late (unflatten_device_tree()).
+
+Any of the node_*() callbacks from struct reserved_mem_ops get called
+prior to paging_init(), so these could be used to manually set the
+memblock flags in the corresponding drivers.
+
+Thierry
+
+--3ihzba4bzldpza5m
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmqew3AACgkQ3SOs138+
+s6EXOg/9GV2dPaIR220HG9xlVLIy2HRX3X54lD7NjYUcMI5dH74ozC8XZ0/nWFsD
+64xYzCwkpDDlOUBftQPPgM44IfYfqHh4kLJjur9/fq03owom1beg4m9zIVIw4dBw
+ejIByjlSLI0Jy0xt5eQhc9VfpkfrO5/Oq44bkGKeBtuPRefpomIIcSV5C/aU8QDa
+cQv6aVjg6ZR2XncJrS3BA53s5Zc9Khwv7/O/Lb85rppj7aEHj7newBIEakVNB4pU
+lmOAY1Q3ckSBZ4xZkjGPGOc9eSMxdpXx7JLHPERWIXTz9qdumMHpXKT+WXUpRtgv
+cYT/O3KlrdSOC8K8t/2/lXVQ3J4HKSxP3T+cxvoWmkPHSeE4w17I9+62IhX0V0n2
+E3mxg820SetJTFz5VJAXV8QeheO/ZGqieBraWwvQcyDmQnqKddmQdFd8EuqKusC6
+M4vCBNFLt2/XEDoir9Q+3zqiDVJW32wMboSGe4P6VPhW8ojvOs43jE1owQRXCuOS
+Z3gqcw1c0fcxuvHYTEV77UI0la6H5DeWQJWJiolfJs74swqdx9Rp9sMNlqvGcHdS
+dRb5ltaA1WoYYMBhatF1gLHeFoZDvcOfmzF0dSNNEUXgR6g26s3Y5bbTVkB6+7cx
+hSybBcQOnVt7rYODTdksd+66a8PcOeXTzpy33pFoG9LaH9wWFbs=
+=iMEe
+-----END PGP SIGNATURE-----
+
+--3ihzba4bzldpza5m--
