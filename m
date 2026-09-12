@@ -4,277 +4,270 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AC6EC79FBF
-	for <op-tee@archiver.kernel.org>; Thu, 10 Sep 2026 16:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1502EC79FB6
+	for <op-tee@archiver.kernel.org>; Sat, 12 Sep 2026 10:15:38 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 65BC645218
-	for <op-tee@archiver.kernel.org>; Thu, 10 Sep 2026 16:11:41 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 301D245480
+	for <op-tee@archiver.kernel.org>; Sat, 12 Sep 2026 10:15:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1789056701;
-	bh=y1lcczOXV3cXHmL1eeY5P/lJ7hwsShNB3oVhGgqn6ts=;
-	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=B2YwqYLSyr8dTNfd2nlIrao8AZsWXmEYwmRIRLNPahLXgxSOBtwCXamPMVGjMQwiU
-	 0/rbNnFUzmPJR8QEvZQHPQXYxjWwReog0oGbMTH0oqfG5cLNHGUxoTM9ONcQIitN/L
-	 KvsuNwtWlVX0bTCewq1bw3rvZUQypVklK5A9blrfVDz5LGXTPexSIQBF+lgqp/AIu8
-	 mx7e1o8o257NZSJtc0pYIWUQzGO9Bl9bskR8iyfzOo4iOlvjsfpbcR4Bhb2/b7y+oh
-	 1A9MwadpvR5WqSGJ0W4EWUIQveauQwRuEH+Unq8hu0pskj8bIC2JEVqxhNbVJrK5oN
-	 MdTAntTRgwg9w==
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010042.outbound.protection.outlook.com [52.101.85.42])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1B1E1438BD
-	for <op-tee@lists.trustedfirmware.org>; Thu, 10 Sep 2026 16:11:33 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1789208137;
+	bh=3i/FrZXVmWI7Atm0YNsVJ226agJdLQqGFQnqYBQUV1U=;
+	h=Subject:Date:To:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=gqAdq+sAC5sMLKaE65JI/JkKApkzL82f0sHnn1q5v8hDIND7B8voYGR6GKC9wkxz2
+	 8mDAd/XBf+xlEEGLvxExvMUhGoQ3m1HS0d7mK/OAl9trPAXUOwq2ab/U4uE0Ru4ojS
+	 ikZNeSLUJ6SPC4NmpHmTSbYUmQk1P440hpa9tSGYIbWw7jbp++LWvqtH56XrDlNmg2
+	 JwW/DfBq+PO0MBBYV8Nup73aCdxAeIvxaiaa8tLI/fOHS1x4AzQisAuxMTD6jxMSQG
+	 mB1SA/57qIjJXKx65T/fIRLTCRAdwLJSwfK/H93okjLi40P1PjlPdfmZP1YWL/zRSw
+	 HrLuXJ6+Y/18g==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id AD1D5443EB
+	for <op-tee@lists.trustedfirmware.org>; Sat, 12 Sep 2026 10:15:29 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=dw4JeFh7;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hZNawyG1;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=bpUM6AKw;
 	dkim-atps=neutral
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DCzjprHG2kBqCXaHsrWjQZnMc+CdIP1K95GfE3L8o8z3+UKoznArWLfMi8cuM1g9RPLUhQJF9xpGUX5eRBDcb9csgswo6k7IR8yP9tDTH5jvZeDtbfBq4+EXGNRAn//jE2wsPXWT3V9dd7tSOI4HbEuPKEOoeQPDysnokWhBhn2CDPwywepuTWNCqAtIwA8Qyx5kaBcULoJIjx+4feOD+JsJfE4FLVylZHQQk3Ymb4pNONWJuHmkASkd3zc9Qi5Ji/3NXYdNzcy8oTaMEVzbxzP4BEJkfEyVvvY++7Ip92/vFNpHQ/HxG/vbihC33Ii9adMVvlQ26K+NttaaGEeCdA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=dhI3XxyjQJ9AeqbGTgUANmlzQ6x+2qQHXC0I+KLNRKg=;
- b=rz2DM3uPi+PjbKdyrB+wpJMD5WCRBIYSo776eAZZcl3Zp8b+l708XW0JBBrcH8yjfOpeyl3UYIQUYaR4Mu2rLJjEjh03UQ0SgAbz5AObbSJoc7Y2wlCftMEWEFPNccu1iozjzWGD1TgLj8RdxVRWWrUvIdstkppgoe+ovxPZ7VqruOO/tI0opq6A58KxZM4wirx/xoe+au9dBwaTUciaKeyQo9o27TKvzFsRFsEt0sZO+phAoyh/OrH3c4+EyN7k42mhREXV7nNDKGCcLA+guE8sSBuaIJdx57hTBJyu7o2y4PNFIOCFiawR2cs/pNTpd0OdUmqENBLTzXaMqCesaA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dhI3XxyjQJ9AeqbGTgUANmlzQ6x+2qQHXC0I+KLNRKg=;
- b=dw4JeFh78mPRX/fEZwLfvaT5AlaBjRmOhKWbDl7Rq8qsqjBG1o9QwFBLGf40uh48+vlMP2YEUzPNGNzZcfbM9lXE4PNFLMEAPBxrYvlfofYMFGVag7MLs6cJ3Vj48PA89Q+9UzD47d7AIheZJT1s4VNtptdfe8oMFLI8oFrKkCU2jNwcPqhEVicsaqvxy8GKndrRkiGh0N6bMcIOxgfWUkKQV8sKy98a5KRImp+y1rwnEoUDDgimdoDmXZalZKsUWsdZRfX9UwmvA6ZCb1YqifOe4J1gInk5WIrHuttUFHHvmBKYq45UEBTdEPBa74fPAC/x9CE7VlgCOkEQr9EK2w==
-Received: from SN7PR12MB6744.namprd12.prod.outlook.com (2603:10b6:806:26c::13)
- by IA1PR12MB6329.namprd12.prod.outlook.com (2603:10b6:208:3e5::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.7; Thu, 10 Sep
- 2026 16:11:26 +0000
-Received: from SN7PR12MB6744.namprd12.prod.outlook.com
- ([fe80::28d5:2119:63f5:9961]) by SN7PR12MB6744.namprd12.prod.outlook.com
- ([fe80::28d5:2119:63f5:9961%6]) with mapi id 15.21.0406.007; Thu, 10 Sep 2026
- 16:11:26 +0000
-To: Jens Wiklander <jenswi@kernel.org>
-Subject: [PATCH v2] tee: optee: ffa: support shared memory offsets on large-page kernels
-Date: Thu, 10 Sep 2026 16:11:24 +0000
-Message-ID: <20260910161124.1561170-1-mahantesh@nvidia.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260904134732.1072541-1-mahantesh@nvidia.com>
-References: <20260904134732.1072541-1-mahantesh@nvidia.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MW3PR06CA0021.namprd06.prod.outlook.com
- (2603:10b6:303:2a::26) To SN7PR12MB6744.namprd12.prod.outlook.com
- (2603:10b6:806:26c::13)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68C85I8P3019892
+	for <op-tee@lists.trustedfirmware.org>; Sat, 12 Sep 2026 10:15:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=R5jHNQqpCxih0uhIATPS5R
+	+CswhgM6mi1nkI0T2LCp8=; b=hZNawyG1cAWEXrtAytMyqklfS03eL509lBJneE
+	b2VbFNBOd5m5zXDHkmAUqxntKNhlOVwtcx1/mOjxlsRg7zpPNlaHlN8G4bioqCva
+	VWbNBG7R6+PnTjBdIj40swU6nbXPGIBGqNv+25uClJFoSFY+FDU6CLkqArHsUDKb
+	PDmAOuT86uAAQkJVlLiWSoBY4dxCHcKrVxCAPQMFnIsLVIXvf+LVm6SLJVgiUwpJ
+	6rtd9w3vJvA435vbapOsOzEz1p6FCcvCklRYok9IPml02JWekCwv/e+koo+3f8ns
+	XcyFWa0RdyEeJ+e1iykMy/GHhUHrkjHRHXBiJ6+sD7CWd2Ew==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gmy9dgp85-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Sat, 12 Sep 2026 10:15:28 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38e7ff7b375so2195226a91.1
+        for <op-tee@lists.trustedfirmware.org>; Sat, 12 Sep 2026 03:15:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1789208128; x=1789812928; darn=lists.trustedfirmware.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=R5jHNQqpCxih0uhIATPS5R+CswhgM6mi1nkI0T2LCp8=;
+        b=bpUM6AKwcyb0tTNmxJ1/QkJ61gKJHeScLx6QiKxiltdJqCWSCqVGW1RxGsr9usQdyp
+         zg853Z4ffnbkIW3+V+E1CAWDOQTfcyTSq1e2QGWffNDWPn/gkFsIiHojLsZ8zwoiOMsH
+         ofQ7u0a3EcUkUkXQwc9lm9tCINDf9PmaOaY/N8JHmUxGCPLMmErRxM1dsD0hVl7fyAcS
+         lfAnQ2RV1192DYTmgjf69KT01DRvP7ACz/iC6ANUSIlg8doo9OYPH58twj8Cuzsi4Om5
+         rqUQKcqEKSgoDyQyBi+eoZuh5WViS0ICS0bRpO6Ba8L2n0H4vN4bTw8l5LGMLQma7eic
+         3jPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789208128; x=1789812928;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=R5jHNQqpCxih0uhIATPS5R+CswhgM6mi1nkI0T2LCp8=;
+        b=iv31U8I/cfAMoYi7OYzzHiOGNeo/kBgHFNh+JUejmqbNviw3wHpnxWmBQz3h7qQr4w
+         ywaDrDA+kfBpiy6pmq1V3WtC4c6S7Kk0GEx/S4NC7vJCUQC2gBoy6++nL7eLP3nenBe6
+         rViNtiADQRwsVJTDW4QYoyyuLQXrgC9Qnvy3BsRhDa/uVcuT4arNPZxv3lNwRRB1OFfV
+         4EC1HzU6BNGleEM5nPr7mHPiHQgJ7uLjf2JTdrf42mdP6sSD+oxOxiwgeffjbM8AJPzF
+         TSuP2g+8nrdJwgTuwDlPTd/HJ40X+UkJEMY35iQvvokd5jzjHrtx3A9/4xfEPv/zvq9q
+         9iPg==
+X-Forwarded-Encrypted: i=1; AKwUvBx0wuy4/nwq9LcRoh5QmJOPGJKRqpMVMSkryOIAADj9mJ64zVf8a9JZv+xp1+u1lArxfadVrzA=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++mFEYlejrtLQRwkhLpDA7r63LLXmfu1V4ITSUDrEEt6jRmqDEPV
+	3zRrxyvmprbGhU9VIHZLoaTFb5hOaJ+etNWn698tO9Yr/S8HxWJ6s2heItExL2ZvlThdhtyfy+/
+	tdy83M1K90Pm7DuRHk5e6C3vbvEk4Dt3OdN9WKKJlCVUkuk3FLpub9KQyre8FbEpQ9oyAFkk=
+X-Gm-Gg: AYBFou2X9KyVe8Et5yVh065XYBRYd+eIKV7WpWvEoAnXNGkVh5XLWCnc8T3bwJL8hJp
+	AW8yqSlHdD4cHNjluSE6SA5I6RnMY10MFatON8b1FISl7Uzc69r8s/RCn05FbAI7t/7776xSzfQ
+	632Oz57Bx3THhhLaJ2z4Vc7r5bh/qdOGvNUmXTmh2lIg4kFjEMKU8eecyLoSZ37xEXb/fFrKOYo
+	y737Jd8UG5PICAPuMj/Rv/tJPHovfcrHjsRpNG1Sr4RUmLc39PxQqGs15FluTC8k69H2Yw3D/pY
+	XhSV56RpJIIZxq/Evl1LBZwdQOK8dIrrSvwgEKpYYhiAnKbE1WzU0RPtCKRNCUnsO7hYJzMvElG
+	DHpT220l3XDrT5ZJcUdX3PN8w8kh2OL64pSwn4MKXB1otxHuI33/99HsZN90=
+X-Received: by 2002:a17:90b:4b83:b0:396:b98b:a3c2 with SMTP id 98e67ed59e1d1-39d9bd67a22mr13716498a91.8.1789208127849;
+        Sat, 12 Sep 2026 03:15:27 -0700 (PDT)
+X-Received: by 2002:a17:90b:4b83:b0:396:b98b:a3c2 with SMTP id 98e67ed59e1d1-39d9bd67a22mr13716438a91.8.1789208127398;
+        Sat, 12 Sep 2026 03:15:27 -0700 (PDT)
+Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33baf0ea9a1sm10340085eec.8.2026.09.12.03.15.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 12 Sep 2026 03:15:26 -0700 (PDT)
+Subject: [PATCH RFC 0/5] tee: optee: add RISC-V RPMI TEE transport
+Date: Sat, 12 Sep 2026 03:15:11 -0700
+Message-Id: <20260912-rpmi-tee-service-grp-dev-v1-0-1d1d35c2a859@oss.qualcomm.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN7PR12MB6744:EE_|IA1PR12MB6329:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1e06d745-60b1-40f1-5413-08df0f562a68
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|366016|376014|1800799024|23010399003|22082099003|18002099003|56012099006|3023799007|11063799006|10067099003;
-X-Microsoft-Antispam-Message-Info: 
-	LxD3jpB/v1Ij4wwFe8wExv37OczL9hvJc7EezxZxmRUjD6qtbTPhob4zHKK3wVNj1uEFSbOGZTNFDTx7PxXZmX8EYFacDaIFpNXRs+ZBtGAmkM1qA5WIrvO4sfBy0ZgB1x3KDwwsOcuh0jRkacSmJV0Sb/Q9/Aol4zXUYqq1k2kP7/TSue7kGUMo73Zk0FOmHLJsRos57il2VbYts8/Ub9juNqDti5rkykP1gUufbAlh7Yw7I/I//+o6tKJ9iq5KEgWFn09qoDPrQLGQN5A8rzBqTKjP4iDAZ2JeMDAoewyeerlm24kPYyhVNf3Te1U/s3hmNG9ezHDdYu+UeuVgDuBQL4KJNdPm4Tm+YxOMIBv+BhYhPpXe+l9aNjH31N+Zt/7reghhbr+Z3cAg9UZY8vleLRxhFu09rsvZ9yn/1xtHVIF4xMA0pLddu/0SHUZfuPSJX0x4LtQTAO+MCOIsTYLRHj9Wpygm0SrqQahpOZqCTVYHLvdaP3h0RxPrt0rz3dXlj0NzjRv9glMR+zWUynhNjq6jMt5JNIYsT3HurDVA2dGxBuiKb5LrxKQfji5R5DT+mZaHbXFECxMcHiqOlpexyhUjHTMNVw9JPL00h3qPlbWIwk211pmi4pDdhgYw1pEArgjTqRMkIq03EVk4SkPBSxpL7X4UxMp3WW/hwEc=
-X-Forefront-Antispam-Report: 
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN7PR12MB6744.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(23010399003)(22082099003)(18002099003)(56012099006)(3023799007)(11063799006)(10067099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 
-	=?us-ascii?Q?bYiwK9XU8Ktp/Q55oYKoV7EyLe6MnMPXZiGTGpvxT4nyZbeAWOqX8ZugI9eI?=
- =?us-ascii?Q?qVj2fbXIsUoPxQxoyQBMXpeR6s30x9FaXx4ZbeBvX93kO6Pb5bvCTc6m/CW3?=
- =?us-ascii?Q?0oKkUjVIMxtUZ3GhAFS0AWkZVpXrMd1RE5t6ssfh2sZdKI16g9ZV+L4mbnZD?=
- =?us-ascii?Q?zPvjY66iWAysDy4JYqQ4gCbBU6uYzufV6SLQZNbdlCQYH/GnbjDnKehlKmcm?=
- =?us-ascii?Q?nE3qaPKOh/o0JTjPEhJKisLADjBsEVudmYhRk5G0ZA5+8TowY1bntqElJR56?=
- =?us-ascii?Q?pd2K9s1FhfRzsw6pl5Eyy8iO9GPZUAeAf/NgfMCWQZdcq4UF9zkW7E/ZCtdn?=
- =?us-ascii?Q?32TYyzIVQ1bHOTnbMZsjRrchA2dWiLtmRI5OJWm18Re+oa9bHmOtAx5j4uWF?=
- =?us-ascii?Q?8tKGcTaoTCb8oaCqI+gMT5WQqI167X+W/lvRpQ2W9/UTH/4BwAVohAi7j/Px?=
- =?us-ascii?Q?VURtD3hyIsvtwf2RHg+8TmUrZAIDugzHgROrIKn1SUVHiwt+w7vJdFxGu+sR?=
- =?us-ascii?Q?cPTEVKQnp8vR+5obg/30KHpZH28RE7vn7WIe1QZ4Kq7qopGHRk0GFApq0erh?=
- =?us-ascii?Q?Z5fvtijDgTXPdcHp8fzg5qA5RApArT7imfD1xfP1LhSZHhjdvDqhm0HkaQth?=
- =?us-ascii?Q?38p7pm7Fa3LRv7Xkw1zL2zmMxEy5Ji3X1VV1gOwHMlGasTiPn7NPpw8opIH9?=
- =?us-ascii?Q?4U/wa+2Qs5btMlaMsI+4GYEUMOB7L8ADFYZjXIZM27dFPSY9J+uX7cgNw9S4?=
- =?us-ascii?Q?21ozaKuQzBteBIHRwRi0rbADBWRZVKW+yrjitE7SrdanfJcBEhyCLD5kyhj8?=
- =?us-ascii?Q?24MSQ7rrXlHfPEf2VLpDKceB/Xd0jlpKg+FYwBWaZHi9UaKCyJG1fRCdghKw?=
- =?us-ascii?Q?2jCMM8/fxOXCf2lflSL8eCif5LnGDN6ZdMU2OPSsmgqeENoHUDqvRAFXnovU?=
- =?us-ascii?Q?jKW3pVkBeRGSUNaNpubhmT4bD8wRD3TxJXTLl0zPayojMncR62504EARKwJr?=
- =?us-ascii?Q?tkGw9WldV5dy8zUW57hcBzsd2aaBwHoEYo+iyteSt2MUqaqHB8BVmmSfZkV3?=
- =?us-ascii?Q?ZJBIEN26hJd8IYwqbHj33XKS5co+an6A4d9OOdYK/PZMYxj+lwd/MLXPaO7U?=
- =?us-ascii?Q?gEAhefaqeHSI+dK3LJxRC3aVFvQtDNafKgVesXjR3vU+HtjthfEMfMIZ23Al?=
- =?us-ascii?Q?zpj48NglHwNDc8paajehUDT8Pv69M7Gmx7muO7znd+gquz/qr5auaBYVvilk?=
- =?us-ascii?Q?F9R7WXsVDjDF5BsNHZv4kT56pY2xv34jIO3uOeMqg4/Vf++xjXe98y0Av+th?=
- =?us-ascii?Q?vf20swOPmWfX0JHdTuruS5LbU72Kp3CMXA3doqDTDE00Lva6aeqvnbbS3WgQ?=
- =?us-ascii?Q?r/LONUMnTlggI/ReUHKk3eEQ3l/iwUTh+r5pFpBwgh6MWYHEwzBMGPWNrUsd?=
- =?us-ascii?Q?O3kK/rx0f9NZcAq4q/TI5M4khNC8M2XMVk+qqL4KMtWZhs6w3pY7cqn+2hmX?=
- =?us-ascii?Q?ZlQmUqNj0q37gjSrn3o3fSHc7RgViMNcKfgR+c5lEUhJmHraY5fsMzuJyY4x?=
- =?us-ascii?Q?n5BoG3vkhjhDxNdKiq44bJQFiP05iR0AO8yPwXni1n3w5ClCagyiC4m2+Zdj?=
- =?us-ascii?Q?wuhfPtFUDDCyomgwm2nRua96q9a/aQGCg+GIV/GhBXT6mmQWulXlRmYVppkE?=
- =?us-ascii?Q?ky7vE4n7+NoJN1i3oa57y3lXoVCMr8msp9YM83Oo4lHjSqLrxc1lpl+1Qw4T?=
- =?us-ascii?Q?ly2eRT/uLw=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1e06d745-60b1-40f1-5413-08df0f562a68
-X-MS-Exchange-CrossTenant-AuthSource: SN7PR12MB6744.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Sep 2026 16:11:26.4654
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: YtV/M8xTa8SDAKOcPVBTSBg2Dum3J1A7a+M8djguC1ait+VtqCuGEkK7jWydQTRPNq8Y8Wacjx84JUU2V5abWg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6329
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAC8mpWoC/x3MMQrDMAxG4asEzRE4KgTatZADdA0ZWvt3qiGpk
+ YMpmNy9puMbvlcpwxSZbl0lQ9Gsn73F0Hfk3899BWtoTeJkdNdB2NKmfADcYFEPXi1xQOGXeEg
+ cL3AhUuPJEPX7X8/0mO60nOcPQEwISG8AAAA=
+To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Rahul Pathak <rahul@summations.net>, Anup Patel <anup@brainfault.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
+X-Mailer: b4 0.13.0
+X-Proofpoint-GUID: uHb8LovFj3r9wGv9ms2106J9qyQkbR7y
+X-Proofpoint-ORIG-GUID: uHb8LovFj3r9wGv9ms2106J9qyQkbR7y
+X-Authority-Analysis: v=2.4 cv=NelzRGD4 c=1 sm=1 tr=0 ts=6aa52640 cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=NEAV23lmAAAA:8 a=V1jnuoLLAAAA:20 a=EUspDBNiAAAA:8 a=MT4jQWGmPZThi4S9qkAA:9
+ a=QEXdDO2ut3YA:10 a=rl5im9kqc5Lf4LNbBjHf:22 a=bA3UWDv6hWIuX7UZL3qL:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTEyMDE0NiBTYWx0ZWRfX+mQi10K3Nq4T
+ AoaLkS+v2WLDRzpBQJIfL/U+4Fz+Ga0iP5Br4XmEqIxPLBF0lv1+6bWHucEmhBa01Mdjz0QV/wQ
+ Ya+rtaOgKxh7JUzg+CEYBArHminjbyA=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTEyMDE0NiBTYWx0ZWRfX1iJ15A+10ExA
+ G2ukM3Mj3O18luBQTn6vm0Dx3CXnIU6ND2xvMRbDyQcOU8jqZKQwTgtyqozISexspPawTTo1ESU
+ FHBxFWpIaOqi+atH9hQd6oFRarpBHh3wkiT7ZFHGZpkYFT/C9YOGPpNtTkPZslUkD5ZuX2IWcN0
+ hj/JQTN/T4jR2VPkQZ9g4eNLOlWgBtMd5B+mZku49+xutLIyjKokeBxgKUfMM/kW45yg3YXB44x
+ PcEPebACKX+o/ByGomL+eE5p55hqGqBsHSVhv7RnmJhahK64H4p4+mkL1v5JjnNsfHEP5pX8YQn
+ rCgKr7ylMtJCDp4CpE+iT7GYSLHVYetOMq5pjCVF/9FFTLPDqviyLeTmSB+pEsapuSSsFMexX5X
+ OgZcaLdaDFvYDNU5WVjPwhQ1hMFLk/HUAi6gX4gF3DohI1KICfnNEyxxDiOGlbbHFOjuFkZ39Bb
+ l/me84N5Cf2EDRQMHpQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-12_03,2026-09-11_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501 clxscore=1015
+ spamscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609120146
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-12.50 / 15.00];
-	WHITELIST_DMARC(-7.00)[nvidia.com:D:+];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[Nvidia.com:dkim];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[nvidia.com,reject];
-	R_DKIM_ALLOW(-0.20)[Nvidia.com:s=selector2];
-	R_SPF_ALLOW(-0.20)[+ip4:52.100.0.0/15];
+X-Spamd-Result: default: False [-5.30 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:8075, ipnet:52.96.0.0/12, country:US];
-	FROM_HAS_DN(0.00)[];
-	MIME_TRACE(0.00)[0:+];
+	RCVD_COUNT_THREE(0.00)[4];
+	ALIAS_RESOLVED(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
 	TO_DN_SOME(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.85.42:from];
-	DNSWL_BLOCKED(0.00)[2603:10b6:806:26c::13:received];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_TLS_LAST(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[17];
+	URIBL_BLOCKED(0.00)[oss.qualcomm.com:from_smtp,oss.qualcomm.com:mid,oss.qualcomm.com:from_mime,oss.qualcomm.com:dkim];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	URIBL_BLOCKED(0.00)[Nvidia.com:dkim,nvidia.com:email,nvidia.com:mid,nvidia.com:from_mime,nvidia.com:from_smtp];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TAGGED_RCPT(0.00)[dt];
+	MID_RHS_MATCH_FROM(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCPT_COUNT_THREE(0.00)[4];
-	DKIM_TRACE(0.00)[Nvidia.com:+]
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.69:received];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 1B1E1438BD
-X-Spamd-Bar: ------------
-Message-ID-Hash: RS3GD7IN7FLYMIBCT4A5LWIL7CBIFKAB
-X-Message-ID-Hash: RS3GD7IN7FLYMIBCT4A5LWIL7CBIFKAB
-X-MailFrom: mahantesh@nvidia.com
+X-Rspamd-Queue-Id: AD1D5443EB
+X-Spamd-Bar: -----
+Message-ID-Hash: BQRWUKVDMHIGKYLGHYP4E4H3CG5ZVAQJ
+X-Message-ID-Hash: BQRWUKVDMHIGKYLGHYP4E4H3CG5ZVAQJ
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RS3GD7IN7FLYMIBCT4A5LWIL7CBIFKAB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BQRWUKVDMHIGKYLGHYP4E4H3CG5ZVAQJ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Mahantesh Salimath via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Mahantesh Salimath <mahantesh@nvidia.com>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-OP-TEE FF-A memory objects use 4 KiB pages, while the kernel page
-size may be larger. Consequently, tee_shm->offset can be greater than
-or equal to FFA_PAGE_SIZE, but OP-TEE rejects such a value in
-internal_offs.
+This RFC adds initial support for communicating with OP-TEE on RISC-V
+using the RPMI TEE service group [1] over the SBI MPXY [2]
+mailbox framework.
 
-Do not encode the excess page offset in offs_low/offs_high. Those
-fields describe the logical memref offset and are copied back into
-tee_param->shm_offs on return. Folding the page offset into them breaks
-parameter round trips when a memref is reused. They are also ignored by
-the OPTEE_RPC_CMD_SHM_ALLOC response path, which uses only global_id and
-internal_offs to construct the shared-memory mobj.
+The intention is to provide a transport for RISC-V systems similar in
+purpose to the FF-A transport currently used by OP-TEE on Arm systems.
+Linux and OP-TEE act as endpoints of the RPMI TEE service group, while
+the RPMI framework in machine-mode firmware mediates communication
+between them.
 
-Instead, start the FF-A descriptor at the 4 KiB page containing the
-shared buffer, the same approach as optee_fill_pages_list() in the SMC
-ABI. Store the remaining in-page offset in internal_offs and preserve
-shm_offs in offs_low/offs_high. This keeps internal_offs within the
-FF-A page size, maps RPC allocations at the correct address, and
-preserves normal memref offsets across repeated invocations.
+The implementation closely follows the existing OP-TEE FF-A backend in
+drivers/tee/optee/ffa_abi.c. Where possible, the same overall design and
+lifetime rules are preserved, with FF-A operations mapped to equivalent
+RPMI TEE services.
 
-Tested on ARMv8-A with 64 KiB PAGE_SIZE. OP-TEE OS ran as a secure
-partition under Hafnium (SPMC) over FF-A. Verified registered shared
-memory with tee_shm->offset >= 4 KiB, memref reuse on the same
-TEEC_Operation, and RPC OPTEE_RPC_CMD_SHM_ALLOC (xtest regression
-6007-6009). optee_hello_world, optee_aes, and xtest regression 1005,
-1007, 1008, 4001-4003 and 6001-6003 also passed.
+For shared memory, FF-A memory handles are replaced by RPMI memory parcel
+identifiers. Linux creates an RPMI memory parcel for shared memory and
+makes OP-TEE a receiver of that parcel. The parcel identifier is then
+used in OP-TEE message parameters in a similar way to the FF-A global
+memory handle.
 
-Fixes: 4615e5a34b95 ("optee: add FF-A support")
-Acked-by: Liming Sun <limings@nvidia.com>
-Acked-by: James Hurley <jahurley@nvidia.com>
-Acked-by: Dave Thompson <davthompson@nvidia.com>
-Signed-off-by: Mahantesh Salimath <mahantesh@nvidia.com>
+RPMI TEE_CALL is used as the entry mechanism into OP-TEE, serving a role
+similar to the FF-A direct-message path. The request and response contain
+a small register-like payload carrying the OP-TEE call information and
+state required to resume yielding calls. The existing OP-TEE call queue,
+RPC handling and shared-memory infrastructure are reused as much as
+possible.
+
+The transport uses one SBI MPXY mailbox channel per hart. A TEE call is
+issued using the channel corresponding to the CPU on which the call is
+running. This preserves the execution model where entering OP-TEE on a
+hart results in secure-world execution associated with that hart.
+
+Shared memory is implemented using RPMI TEE memory parcels. The driver
+maintains a mapping between parcel identifiers and struct tee_shm objects
+and uses parcel create and reclaim operations to manage the lifetime of
+memory shared with OP-TEE.
+
+Asynchronous notifications are implemented using the RPMI TEE signal
+bus. The RPMI TEE service group does not provide framework notification
+events corresponding directly to the OP-TEE asynchronous notification
+mechanism, so the signal bus is used to carry notification values from
+OP-TEE to Linux.
+
+This is an early RFC and the implementation is not complete. There may
+still be functional bugs, incorrect assumptions, missing pieces, or
+interfaces that need to change.
+
+The series is being posted at this stage primarily to get feedback on the
+overall architecture and on how the OP-TEE ABI is mapped onto the RPMI
+TEE service group.
+
+The implementation deliberately follows the FF-A backend and ffa_abi.c
+closely. This allows the existing OP-TEE driver design to be reused and
+keeps the RISC-V and FF-A transports as consistent as possible. Some of
+these abstractions may need to be adjusted where the RPMI execution,
+notification, or memory model differs from FF-A, while others may
+eventually be shared between the transports.
+
+[1] https://github.com/riscv-non-isa/riscv-rpmi/commits/main/src/srvgrp-tee.adoc
+[2] https://github.com/riscv-non-isa/riscv-sbi-doc/releases
+
+Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
-v2:
-- Drop helper indirection; mask internal_offs inline (Sumit Garg)
-- Keep a single ffa_offs local in optee_ffa_shm_register()
+Amirreza Zarrabi (5):
+      optee: riscv: add RPMI TEE service group transport
+      optee: riscv: add shared memory and scheduled calls
+      optee: riscv: enable persistent shared argument cache
+      optee: riscv: add asynchronous notifications over the signal bus
+      dt-bindings: tee: add RISC-V RPMI TEE transport
 
-Link: https://lore.kernel.org/lkml/20260904134732.1072541-1-mahantesh@nvidia.com/
+ .../bindings/tee/riscv,rpmi-mpxy-tee.yaml          |   65 +
+ MAINTAINERS                                        |    1 +
+ drivers/tee/optee/Makefile                         |    1 +
+ drivers/tee/optee/core.c                           |    8 +-
+ drivers/tee/optee/optee_private.h                  |   47 +
+ drivers/tee/optee/optee_riscv.c                    | 1621 ++++++++++++++++++++
+ drivers/tee/optee/optee_riscv.h                    |  334 ++++
+ include/linux/mailbox/riscv-rpmi-message.h         |    1 +
+ 8 files changed, 2076 insertions(+), 2 deletions(-)
+---
+base-commit: 68142f986ff04b2b70b31db00f719bf690f64a9a
+change-id: 20260912-rpmi-tee-service-grp-dev-b2ce2f63e0df
 
- drivers/tee/optee/ffa_abi.c   | 22 ++++++++++++++++++----
- drivers/tee/optee/optee_msg.h |  4 ++--
- 2 files changed, 20 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index 633715b98625..fdedcab50f23 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -198,7 +198,8 @@ static int to_msg_param_ffa_mem(struct optee_msg_param *mp,
- 	if (shm) {
- 		u64 shm_offs = p->u.memref.shm_offs;
- 
--		mp->u.fmem.internal_offs = shm->offset;
-+		mp->u.fmem.internal_offs = tee_shm_get_page_offset(shm) &
-+					   (FFA_PAGE_SIZE - 1);
- 
- 		mp->u.fmem.offs_low = shm_offs;
- 		mp->u.fmem.offs_high = shm_offs >> 32;
-@@ -284,14 +285,26 @@ static int optee_ffa_shm_register(struct tee_context *ctx, struct tee_shm *shm,
- 		.nattrs = 1,
- 	};
- 	struct sg_table sgt;
-+	size_t ffa_offs;
- 	int rc;
- 
-+	if (!num_pages)
-+		return -EINVAL;
-+
- 	rc = optee_check_mem_type(start, num_pages);
- 	if (rc)
- 		return rc;
- 
--	rc = sg_alloc_table_from_pages(&sgt, pages, num_pages, 0,
--				       num_pages * PAGE_SIZE, GFP_KERNEL);
-+	/*
-+	 * Start the FF-A descriptor at the 4 KiB page containing the shared
-+	 * buffer, skipping unused leading 4 KiB pages when PAGE_SIZE is
-+	 * larger. Same approach as optee_fill_pages_list() in the SMC ABI.
-+	 * This leaves only the offset into that 4 KiB page for internal_offs.
-+	 */
-+	ffa_offs = round_down(tee_shm_get_page_offset(shm), FFA_PAGE_SIZE);
-+	rc = sg_alloc_table_from_pages(&sgt, pages, num_pages, ffa_offs,
-+				       num_pages * PAGE_SIZE - ffa_offs,
-+				       GFP_KERNEL);
- 	if (rc)
- 		return rc;
- 	args.sg = sgt.sgl;
-@@ -458,7 +471,8 @@ static void handle_ffa_rpc_func_cmd_shm_alloc(struct tee_context *ctx,
- 		.attr = OPTEE_MSG_ATTR_TYPE_FMEM_OUTPUT,
- 		.u.fmem.size = tee_shm_get_size(shm),
- 		.u.fmem.global_id = shm->sec_world_id,
--		.u.fmem.internal_offs = shm->offset,
-+		.u.fmem.internal_offs = tee_shm_get_page_offset(shm) &
-+					(FFA_PAGE_SIZE - 1),
- 	};
- 
- 	arg->ret = TEEC_SUCCESS;
-diff --git a/drivers/tee/optee/optee_msg.h b/drivers/tee/optee/optee_msg.h
-index 7d9b12e71c03..6c3043f8da33 100644
---- a/drivers/tee/optee/optee_msg.h
-+++ b/drivers/tee/optee/optee_msg.h
-@@ -136,8 +136,8 @@ struct optee_msg_param_rmem {
-  * struct optee_msg_param_fmem - FF-A memory reference parameter
-  * @offs_low:		lower bits of offset into shared memory reference
-  * @offs_high:		higher bits of offset into shared memory reference
-- * @internal_offs:	internal offset into the first page of shared memory
-- *			reference
-+ * @internal_offs:	offset into the first 4 KiB page of the FF-A shared
-+ *			memory region
-  * @size:		size of the buffer
-  * @global_id:		global identifier of the shared memory
-  */
+Best regards,
 -- 
-2.43.0
+Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
