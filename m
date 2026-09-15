@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1A01C88E72
-	for <op-tee@archiver.kernel.org>; Tue, 15 Sep 2026 01:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0F3AC88E75
+	for <op-tee@archiver.kernel.org>; Tue, 15 Sep 2026 01:50:20 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 294A5453A1
-	for <op-tee@archiver.kernel.org>; Tue, 15 Sep 2026 01:49:51 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 48BF5450DD
+	for <op-tee@archiver.kernel.org>; Tue, 15 Sep 2026 01:50:20 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=FaIP4WKA;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=oKsAruqa;
 	dkim-atps=neutral
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010016.outbound.protection.outlook.com [52.101.69.16])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 98F4F45336
-	for <op-tee@lists.trustedfirmware.org>; Tue, 15 Sep 2026 01:48:58 +0000 (UTC)
+Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010001.outbound.protection.outlook.com [52.101.69.1])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E5C2B45486
+	for <op-tee@lists.trustedfirmware.org>; Tue, 15 Sep 2026 01:49:05 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=XaqTjXUFaKb8dr5kIq7B2T7n3VTjg+z1smHWwTXiWeECRGiUDHBV7sd4MIIqL5yWCrrmsUHUfQFIokfxqhocU0Q110FeSE5d6Z6jGWZU99F8GHC8zuleyFnwTEtX2jQVqPm55jfWjD5u7559ER/pBEXMzMblwqLwLzTH7ZrWnzJjiJwnmnx76OwDT6RygxBow8LRlAguJ7mtrcP9IgGsLVjWvF91Oc4BXRx/wU8IxU2ZIGEgs5HmxfI+8V7/7CPLcgLnIVo0SPWcFV2AAQpx2qXt+wA6tNfVt7zfEP8nEIW8tE2fzGr0XUjuCHG6WwgeCpWKGTOPTGKbxDdyhaIEsg==
+ b=OPViwBjm1QJFsR3RY5d89rYnFs+vrjXrgcmoigNHkYKwmieg9CmLAqC2lEo1P9aklz5spelIPGYRsV+/JyXX1QAEF3/CTYI4tufjA37WgWabZwTwTyLujITxfIjRdoQ8WYR2zh//eNA35VipjA71PH/zUX9n5z0aH9xE3zv90ToX2Ncod55fFK9YU2PqIi3uZSNky0wgUNjv8fdehrJHCRqrtF2i/NxHQImf2M0eCvW+JitKgQyKHzVHAIfTA/eYb54A46S/V+0C+dYLVhBlNY4JDJxoD6iBQ0zHB7sjy9XKXTyrGQGTJnVmd4g+yo39kHY9B1fNS+H9wLN4lIGSKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DSzbiskntbLGGLYOp0RZwhgo6nLxeka709LpOu6VhYU=;
- b=GIkydOiPWXzdtel1TOUflXnskCW0fFWWZ1EZbqM6M43dWBF2SmEUSpTFdMDXPVuPQdMPiq/Oz/AwSCUpJOmK42cH0AbQxyHqOTkmigbDJ9IvHxl/vS0kHexi0vGH05o/OxhVcTb/tKGlKgMPFH/Ej2xRGXXt0YTWlF+SEMbiuENO9zMDtuYf5PuxdzA24nZak8oWSG3mj+7WkAcfetfknv3a6F4A2/1HcZFdlVCiMLBfobarCbTRl6O0f9pgrY2ommLytJF8ETOsKP51oKgSquZxOxogg6WUPUk3pQJ01gHu1PxqFMQaRJlpFu2v/d4/OP6nYKdwb2Voggwo5YXGtw==
+ bh=FPO4xC9qAIS7YTUlOl988/fO01LUxpA2uRljEFGJHN8=;
+ b=dpYAxJFMVQ0fACY/7gPHHJhnJkIMSTbHvgnTTma2IndZ6DXjTPdFiUaGWZBwSF0NZIEM+rfBXiJaD0TXcBStse0v76ZEOGtQmYauCT5Kn/Pby4ZRcykDQhadSM5b4AaPBeXncOa2NAiAI9cL0Pi60xi14SY+BvxcligLnEm8+whZ1Lq8sSLQc205QMYJ5tSG0AreRLNGcj4OwC2LIny2QMdzTP9kgX3F4ltgGsCwcsY60nTIQZAxAzJKUNz6y5K6GGB0YF95tPaVKLCc1prjaDPN712LqiLTVNTqk2H/xyqNKm0IwUzy4Rs6Mp1UaOqt8xg+stMhmOvsYyUB76EDpA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DSzbiskntbLGGLYOp0RZwhgo6nLxeka709LpOu6VhYU=;
- b=FaIP4WKA+t8xyaWsfEXWEkU4vI5e02E15CV7yOfqlJ2Qx+JTrXWd6poz6/l5VAGNsZAFeqIzvMdpULp8XY4O9Iias5o54ZpliPVALWOo/5XR0hPaxv5v4NzAQSZ/n458gqD//66cQCtM9gZZcaGszLuKi+qA/gjIVtx/FSRIPEzcsbTmzoGRMrlqgXXfBBbkh1ulwAqGe6aXEBKhaV42ne6mI8DLiQSDpv8VKWoe76DS/GYLII4fJPbs1dB9bUd1YmgAfMl8EWYtYXzlzVSj2iIiILNoYpJK0yZe5qfyk3J0BBtvonVWZne5yfP7ijf/zn3YP99H7AJ/ukidydlByA==
+ bh=FPO4xC9qAIS7YTUlOl988/fO01LUxpA2uRljEFGJHN8=;
+ b=oKsAruqaPXQlvABO3+XofymmCPCApmC3Axty7DUyXe4EH4I9y2EH7OgrUfBU72cY2AbiEPnoLJgQT1FM06n2mRPmKxM9k0WCB1zUz15OosRmScoddhrPSj9X4caj6wdLfFzw2C9m4KRdR5wfZOncNpAYaO/FXt6s5DUuw2LafHMGFlKPueoy3QBapY/XYQW4Kr+ge2jXteZmOF37pPYopTdhmvLb1vTRonnn30R+frfpMFuKM05pub5OWRMQqGCc5Ry8PUNAxNY4bKn0h5rJ3rSPhv4D0I6nNGxz0LgQc6geGmOaQ1pUt/dAB+giZ4OGlqy1eXsTzszFi38y1hlxaw==
 Received: from PA3PR04MB11203.eurprd04.prod.outlook.com
- (2603:10a6:102:4ab::13) by PAXPR04MB9328.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::15) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10a6:102:4ab::13) by GV2PR04MB11737.eurprd04.prod.outlook.com
+ (2603:10a6:150:2d5::15) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Tue, 15 Sep
- 2026 01:48:56 +0000
+ 2026 01:49:02 +0000
 Received: from PA3PR04MB11203.eurprd04.prod.outlook.com
  ([fe80::80e9:ab1c:dbc4:6930]) by PA3PR04MB11203.eurprd04.prod.outlook.com
  ([fe80::80e9:ab1c:dbc4:6930%3]) with mapi id 15.21.0406.007; Tue, 15 Sep 2026
- 01:48:56 +0000
+ 01:49:02 +0000
 From: marouene.boubakri@oss.nxp.com
 To: Jens Wiklander <jenswi@kernel.org>,
 	Sumit Garg <sumit.garg@kernel.org>,
@@ -49,73 +49,73 @@ To: Jens Wiklander <jenswi@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	op-tee@lists.trustedfirmware.org,
 	linux-riscv@lists.infradead.org
-Subject: [PATCH v2] tee: optee: add an RPMI ABI placeholder
-Date: Tue, 15 Sep 2026 04:02:34 +0200
-Message-Id: <20260915020235.507302-3-marouene.boubakri@oss.nxp.com>
+Subject: [PATCH v2] tee: optee: allow enabling the driver on RISC-V
+Date: Tue, 15 Sep 2026 04:02:35 +0200
+Message-Id: <20260915020235.507302-4-marouene.boubakri@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260914175435.118303-4-marouene.boubakri@oss.nxp.com>
 References: <20260914175435.118303-4-marouene.boubakri@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: CY5PR10CA0008.namprd10.prod.outlook.com
- (2603:10b6:930:1c::15) To PA3PR04MB11203.eurprd04.prod.outlook.com
+X-ClientProxiedBy: CY8P222CA0007.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:930:6b::22) To PA3PR04MB11203.eurprd04.prod.outlook.com
  (2603:10a6:102:4ab::13)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PA3PR04MB11203:EE_|PAXPR04MB9328:EE_
-X-MS-Office365-Filtering-Correlation-Id: c5baf2d4-ca83-4239-c64e-08df12cb80dd
+X-MS-TrafficTypeDiagnostic: PA3PR04MB11203:EE_|GV2PR04MB11737:EE_
+X-MS-Office365-Filtering-Correlation-Id: e0c3f510-25b8-4d20-073e-08df12cb84a0
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|23010399003|366016|376014|1800799024|19092799006|22082099003|18002099003|10067099003|56012099006|11063799006;
+	BCL:0;ARA:13230040|23010399003|366016|376014|1800799024|19092799006|6133799003|22082099003|18002099003|3023799007|10067099003|56012099006|11063799006|5023799004;
 X-Microsoft-Antispam-Message-Info: 
-	X9Aw2dk8vf+Fwl6P4dHazvIt+Gdh27rzekTL7L7nAqfnKjDcjfzxwlPIwaZuL5MpmY/vA0uxt/E29Mosndt/6aH4y2tEjc3h/+Y+isPi9aAuIZpA31csG/bFFIX+VSijH1TUF5i2J96YSe1aeOsbKeRFTIUuKMIp4tsIdyIuYxJmi7cVt5KTQbqt2yCBwEf3Eu/K8UV24ngRLswM5FhaSrkEZNEcE8zG+BrTv1CuxYSIxx65sSnFFSeFd2b6Gj5csDiREtCANFjz194TOJgJ7dYgijdoi44vkqAftBVt2/dITC8+35eEYhqh+QcAzTYYr2znGqeCd0e7ba4QZ+XIxK+z7YP0c8EflX/nC1yTIPmF7GGa0wYzS++LD0t0UTGzD1eGhgj1CGxpu9IMoBhgqYo0WdHGujT/DLKeM0iZelDpewzGeO22sc//cH2uufLPaieZqTx9TI27np6T9RKsdqD9KvwmJtzyfghIxyN/AazjiKOsXYjD+vBb2zlVb+ZT0wszXzuVDo3xfj/bNcLVSPBKOcKfMY5pVPG9Buiyy/UFatdr+WSZ4BisndZyfiWc3dve/AOwwQyg8pQsRDmDlXcqK94JUzGwrZlir8TWziiP3DTc1ImzitZVO0UkwH1Av4BLLtJX/nezThajOQkmXqbDDfqvcNK3BPM8PklRRHw=
+	umq0WQROGX/fYNRZRcZ1kMPAFai3YXYhlnHHuAUfmDOZz1M+kHDLIlZE5aVKmnx4i845er40TlnhtfXLpfhbHucUPKEJ+XUzTrlYvx30BQpsWLVUcCR9nLT4bjknfUtzXq2BDjJa4esqr9fHFnMNc99scAPRc2SdE5F6vMcIM7WBpAb73/wNVdl9mKnxhtx8iOO4pxg3+YbsywEBzuJsN9zUPA8w4g0GsfIGVQjfG+8whoL5SPq+A7pRaeUNKok3gP8BdRV8xpwxI97WRA+pU++xKuY1DTSs0leh4UPp3aEDqh82MZ0dbpxXKqt5EMzyd2nvbVWptb6FGSfQWskjdB2aDZBmZThBW3nyGPHt8Vm1Fnm0lh5bkmyqjuGqZ4MhxpMAMKekv5rRuMpKS/VHYRwq8XMYUYVtSITebsH+8KsFz9y5c2PVQ4iSvgpD/KdlO/oSfm12eumn50HRhKF/Ef/PphjFvCyQnlN5tdVfe2ZIKFGMdVVurRl/mMKhzdfqC5ZvSxFIZhQ42Rd8U3jdL/oKIQlcdfuz13l/OdgzH+YCe6pAWPtP/oNeJ/oqAL/wVKRBw7j7t09UdWZ+4wE5ppskjo0GLLs89c4yPQoYruMz8JT+azkUeL4fmJ8BJQvrt2xzGWDwQvslIySSJWNe1J1Buzg6STCHre85NQqhYTE=
 X-Forefront-Antispam-Report: 
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA3PR04MB11203.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(19092799006)(22082099003)(18002099003)(10067099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA3PR04MB11203.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(19092799006)(6133799003)(22082099003)(18002099003)(3023799007)(10067099003)(56012099006)(11063799006)(5023799004);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
 X-MS-Exchange-AntiSpam-MessageData-0: 
-	=?us-ascii?Q?YNYbMocbEEnxUE7eUxqggct52W6erVM3DZmlVB0bO7G6/YLO7oZq2un+IFXJ?=
- =?us-ascii?Q?2dP4YbSqXiXlDIx831D1heZ8V1x0e/QTruxkZzp68LReOOaoldOfcqVF+lse?=
- =?us-ascii?Q?fz6O5MKG3vN+nuXvnwINFEX+NcvuqPHsdR2Y+WqpNSfLSWXyGL5+mXpnx6hs?=
- =?us-ascii?Q?zJy0QtTPDRxAoNDyjRQSwE6a/i53sNFK8Pq+YqWckPaJunfvCpKuEdTZSFeG?=
- =?us-ascii?Q?gszXRcrEAXvBx8K1a+xIUECj4jLu9hvaPkK4IRZuTmmhprhFsH0KfpdvqHes?=
- =?us-ascii?Q?rxtqgVFx62baaTN4HqkCX+DpTUfrx8CCWSycZOA+1UOFd9yuNDU/NBJ7Ai5u?=
- =?us-ascii?Q?8rDa6u2YTTj5XQ1J2s98FJpAOKs+Sv0HE57XVEkFpGkluKeOXfUoQ0Le7smV?=
- =?us-ascii?Q?CLZ6Js+X7LDPfeMZxLEM/IdvuF8wsPWOTCa6UTlxEBkwnMbHOerUExkGB8jh?=
- =?us-ascii?Q?s5OA0GBkxRUb7SrvVEUFdZGiraeCSFVbtqGF+amc6EV8Rwl5TER50RGc+sPe?=
- =?us-ascii?Q?01Hmc9EL/dxoZU8qiJO7+Tzww/QNIe4mVP6sOqDO+NNKchZVLh7m/A0Q/NRx?=
- =?us-ascii?Q?bFsr2Qorjk2o9JT7BeGcmhMe9RnoN89bGXkPLF2wIM73gnovOUqN4jWwwM3o?=
- =?us-ascii?Q?WpA+atWcB2/6CerOs0Pb7+yo+294Mfzbybbrf8y9RIZCRv9Duv8my9rZ1lBi?=
- =?us-ascii?Q?s755IGHwtAtDxDdpEPL5k20bn6c/EI+Y2q8WbrgSGb9biUpbPhY29gV3YCtf?=
- =?us-ascii?Q?KLJ4K6ajgmWV/10stBrPCNQYQxILhVTBB5aQF7gmggyW7woA/+Dxn5w/YYc8?=
- =?us-ascii?Q?W/WjbFsPpJOUta1F/9Qehr4f4ihE4p9ZNL6nSe9hVB+XO/CNtlDoSo3IUJCg?=
- =?us-ascii?Q?PhAKpx16xkd1qaiZl/ywL3EMi0ShVFekn3qFlIL3J0zdm8irK+sAhP7qgZpe?=
- =?us-ascii?Q?4S+ato5TktmnhK5+EowFaaxFShNGLASVEXuybDJmEgeRBBW2opcPSlFhzwgL?=
- =?us-ascii?Q?42sQNUVgq3RdaJfmQGQ+ATSl3jM2XzsfHvagwjRvi8xieRpDMBOV8RXP0Ljb?=
- =?us-ascii?Q?QKNtM0/fyrtIq8Cb7VH4UgwHHu0H1CouTqGgEpb2ABmZU1rIsRedFI68dIZj?=
- =?us-ascii?Q?8XHTtJlAhnzgTpGn/QiC8JC6EoiFNk2My3bI7o8cn17XRW9GQZHJx5ibg2fN?=
- =?us-ascii?Q?DszyEweB36RPhBbRRvQBM8YuZSispUU6BUOwB9PDnrgAO0LalIYJ8hXmqvXk?=
- =?us-ascii?Q?hjXPnR/wWp0lsQo3FYE9Dl3/D/CwdZ17oWyVh45EolUGGofMkeTXmRB6F2q/?=
- =?us-ascii?Q?ElxyQz0FObVLBHUef0v8ecYGb1cT9OE5MLInqa5F2csQQQI4eoxxh00LYCkx?=
- =?us-ascii?Q?WLFm8BvCbu1p/VD6xdQkfoopCVqnbE1GoNLYnfXj/IDLCPqTJPZYIU1esNLL?=
- =?us-ascii?Q?BUs2OgLr8WbQxj2D9Bjm5sAK7lVN+NkNeSKtiCUcAVOU3V7ujJwmuuTOhd6c?=
- =?us-ascii?Q?mAD5ri1boxy2c4s2g8mp1KHIndDh9KUwkWgz6julkFquziVP4tuxiyHUcMPM?=
- =?us-ascii?Q?K4mCIdzWeY291+HTMqb3xj7ts8A1ueqDavR2QaxKSowSm4wOV8Fmr0qCG1Px?=
- =?us-ascii?Q?jaLnDANmxgH4IHVGS2TAOpn5QWxrJ4X/mQm1Y4v1yYy9XV8q3WuEEpoESXgZ?=
- =?us-ascii?Q?Lj8G2pQPSRCMAQCzM7RZJGIE98vX2PJOUAqp2LLHKikXnMF79djtzE+++vih?=
- =?us-ascii?Q?StXJ9khEf8eY5pSp4oUUKnAEtjw8gBFuuBO3PksOKOmZgeFV7WSmK9Xjo6P1?=
-X-MS-Exchange-AntiSpam-MessageData-1: QkpYo9Sfnlk2WA==
+	=?us-ascii?Q?DqKUN0G2eMgvsTPn9UK5VxxM1aIfhpqSmfhIMiBSjSTxNrRB+ShjQfQEWcfV?=
+ =?us-ascii?Q?SKYWcKceaWwk3G4cNGcsMzDP/4eS5/oiyYfnz4C/GpjndZ/MEAqBHr3zNsN6?=
+ =?us-ascii?Q?ME59QlYL30UQf+iTYuHcZ5e1qXOwyFmM5gDuIGDUMrayjtZe5QKs7/24G4TC?=
+ =?us-ascii?Q?DP2DbUcuui6ZAlO+Slk19annOIMIWG6eTw8xG7sVn4udSMn7pdpNfg8nHedb?=
+ =?us-ascii?Q?rxaZ4VxnmhD5LiVwVT7MEVZc4fsa1QneE80dZa3c0bqPkug5+spsoZsHESXc?=
+ =?us-ascii?Q?YiOIBk1xYRFx0G0e37j6Q+VSehpwsa/2ztSCvEjRyZ1DTOaQN7qUBrMprD5C?=
+ =?us-ascii?Q?Z3Eqh20x4pjNBYVg8MCDpe66zzldkdEz+EGx/64wf53Rx94sc9SnluwQJPzh?=
+ =?us-ascii?Q?TUoGGylf1oz51QDFWf0k6EVFekyqkrUcubh1C+a+aEVtYjUeUD3owsQjBYwz?=
+ =?us-ascii?Q?Y2ewfnZcLUZ6Xpbya9UW5dL4ax+l83mK6exG/hbbU8T5n4TLmhwEE5m8U5pS?=
+ =?us-ascii?Q?LQWLelEdtAnZuT7utl6s9oxlgu2h0C0yu2j9etFvnq8hm6Kw4HeOwL08VYmW?=
+ =?us-ascii?Q?hBOm+zCREjrELWCyrWAf8PmkBYXMX9p4hgVGpc1cEP4Wih5M+urHlboqIlyT?=
+ =?us-ascii?Q?8P8oN5H+2e/RdwRZYVLi7b+v5+O7RMNW1cOoSZhbeQXwjRmqLJy0in1yQONh?=
+ =?us-ascii?Q?c3Dk8cwezNePo0fP//LYlfIwUDrDU7cmx7IxMWPnX8pyksUjKJo6uy49JBm9?=
+ =?us-ascii?Q?wOFJgXoIRzP47jZwrhTXM7CWhO1VhFCHX5PG7Hhe/SWx97F6iPTchoDu0LME?=
+ =?us-ascii?Q?8F6p3JwwDZ2e1ewOcEpO5KE0nP2OAc5CHRG52eIKj5I3/GAKY5N0mLWhGwGf?=
+ =?us-ascii?Q?dh7bjQ3r7zscZSAPhfro6OSKlYDoHfzkbL7DYme3h1b3OIpe0BSaVosr+ggP?=
+ =?us-ascii?Q?3uynVmlfbKgOR17UADX+Nog5kRUN14T0hnbH5xDWRzeukTasOdi0CoXBdsKx?=
+ =?us-ascii?Q?sXl/DHVI6qPvqyQSQy07yI1JonWMWjZRb4/cDQKbuy624MFerd6+F2GYitcr?=
+ =?us-ascii?Q?EGO348Hf1FzWgnI4K34/AHu2ykiYLYv2Fshbriqp9BdRQh6hA/3FP1/NKrZh?=
+ =?us-ascii?Q?A28T8QmHAKK2MtpJMmoq4sHawovAKk+dNPEUx0/45jBDZ/P67/A2qn86OnOX?=
+ =?us-ascii?Q?24AlXipJMTIANVYWXYf/01rmOt4+EmfSKt+ggFsNBAgEV0VlOnQsWa8CaX5c?=
+ =?us-ascii?Q?eXWhZr3VD+cuduqshIu0xbETfR9q5VlPebZFLxYRtX/iOnn/Phb7T58oeFhh?=
+ =?us-ascii?Q?IgHYSt6sCT+I2YF84LZiHnAldR+VXYIUNQD0hjDrq4NE5GPU20iM5mikSbXZ?=
+ =?us-ascii?Q?f4wqmS0PV9XM/nOCpZ7yN6ycokWponhg2VNNz3Qijk3JpVDC6AT5D81HYKW+?=
+ =?us-ascii?Q?/VGt1v2deHqd/Q+vMu7+f2enkpVEmloE+4RX5J6Oyxykhk7ODRdie7La0FKC?=
+ =?us-ascii?Q?4a9bp2wdZDerfPKtfb1s37yuQzJqCB72KC58eNrAmE8LFtAJqwbCm3WCWoXZ?=
+ =?us-ascii?Q?gPdYeDORUmxXBYjE2Kw8Ek5cWItlrdmO/A7uoWHTCYp8HrSBAMUFm1t1oKXs?=
+ =?us-ascii?Q?NIhB1rkl7w+2p3WbiknfIbOtWa5klV7/BQHXJ4DvmPG6mU90RlMa0Y0ajY9z?=
+ =?us-ascii?Q?HhtvYxKsCT5Guky6SvOVKZWm0AaFpmqhqJA2esUackE89/s05fUtooVCJkz9?=
+ =?us-ascii?Q?gKYc0Mg1ogGBcZtetKpP8XUNvoT31sHuXpT3zxkN2MeiUwxhjTAm6OLlFUGW?=
+X-MS-Exchange-AntiSpam-MessageData-1: 68eKT9T4jLfAuw==
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c5baf2d4-ca83-4239-c64e-08df12cb80dd
+X-MS-Exchange-CrossTenant-Network-Message-Id: e0c3f510-25b8-4d20-073e-08df12cb84a0
 X-MS-Exchange-CrossTenant-AuthSource: PA3PR04MB11203.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 01:48:56.1887
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 01:49:02.3518
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: V+PR1poyOQRpuxTYBPwHpJgZssvlpX50bYovTl85vaWjLNrSeuPfsHIiKogoD4pmvD133olxBdx1WxWiFtMeb25F9/1KKb9PfLizppIlJda5+jv8NXMEIdK3LYV7Hla/n2HqjgNGS/FzTHd37Sv5BA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB9328
+X-MS-Exchange-CrossTenant-UserPrincipalName: CuUTbCjy7t3eCH9qCi0wazcjPVfWFg7QA7AuDJgoR8xdTKWNk3vQpxr+vL1gaJ5eGjseLOl2kszCCZeJHE+KT7YmBDJTjw0ebFZ4RXD3gXsSgHogKyUmJE25rHHr9d6t4E0Ipetm4juYYnF1p/5EbQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR04MB11737
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-3.50 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
@@ -130,9 +130,9 @@ X-Spamd-Result: default: False [-3.50 / 15.00];
 	MIME_TRACE(0.00)[0:+];
 	FROM_NO_DN(0.00)[];
 	TO_DN_SOME(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.69.16:from];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.69.1:from];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.69.16:from];
+	RCVD_IN_DNSWL_NONE(0.00)[52.101.69.1:from];
 	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
 	RCPT_COUNT_SEVEN(0.00)[10];
@@ -141,17 +141,17 @@ X-Spamd-Result: default: False [-3.50 / 15.00];
 	DNSWL_BLOCKED(0.00)[2603:10a6:102:4ab::13:received];
 	DKIM_TRACE(0.00)[NXP1.onmicrosoft.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 98F4F45336
+X-Rspamd-Queue-Id: E5C2B45486
 X-Spamd-Bar: ---
-Message-ID-Hash: RFX3TIG43M6C2FN35GJMR72V2RQEZ7EQ
-X-Message-ID-Hash: RFX3TIG43M6C2FN35GJMR72V2RQEZ7EQ
+Message-ID-Hash: 5GABV7WSVZQJ2DZCBVSMQI4RMWQYRKYL
+X-Message-ID-Hash: 5GABV7WSVZQJ2DZCBVSMQI4RMWQYRKYL
 X-MailFrom: marouene.boubakri@oss.nxp.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Marouene Boubakri <marouene.boubakri@oss.nxp.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RFX3TIG43M6C2FN35GJMR72V2RQEZ7EQ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5GABV7WSVZQJ2DZCBVSMQI4RMWQYRKYL/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -161,145 +161,78 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 
 From: Marouene Boubakri <marouene.boubakri@oss.nxp.com>
 
-On RISC-V there is no SMC Calling Convention: OP-TEE runs in a domain
-isolated by the M-mode firmware and is reached through the RISC-V
-Platform Management Interface (RPMI), carried on an SBI Message Proxy
-(MPXY) channel.
+The TEE subsystem and the OP-TEE driver depend on HAVE_ARM_SMCCC, so
+neither can be enabled on RISC-V, where OP-TEE is reached through the
+RISC-V Platform Management Interface (RPMI) over an SBI Message Proxy
+(MPXY) channel instead of the SMC Calling Convention.
 
-Add the skeleton of an RPMI ABI next to the SMC and FF-A ABIs so that
-the build plumbing is in place: an OPTEE_RPMI_ABI option, built when the
-MPXY mailbox driver is enabled, rpmi_abi.c and its registration from the
-driver core. The transport itself is not implemented yet, so
-optee_rpmi_abi_register() fails with -EOPNOTSUPP and the driver keeps
-probing through its other ABIs only.
+Now that the Arm-specific code of the driver is only built on Arm and
+the driver has an RPMI ABI, let TEE and OPTEE be enabled when the SBI
+MPXY mailbox driver is.
+
+optee_check_mem_type() only lets normal cacheable memory be registered
+with OP-TEE, since OP-TEE maps registered pages as such and must not
+observe mismatched memory attributes, and it only knows the Arm page
+attributes. On RISC-V the memory type of a mapping is encoded in the
+Svpbmt bits of the PTE (or their T-Head equivalent selected at runtime
+by the _PAGE_MTMASK alternative): normal cacheable memory (PMA) has them
+cleared, pgprot_writecombine() and pgprot_noncached() set them. Without
+Svpbmt the memory type is defined by the PMAs alone, _PAGE_MTMASK is
+empty and every mapping passes the check, as there is nothing else to
+inspect.
 
 Signed-off-by: Marouene Boubakri <marouene.boubakri@oss.nxp.com>
 ---
- drivers/tee/optee/Kconfig         |  8 ++++++++
- drivers/tee/optee/Makefile        |  1 +
- drivers/tee/optee/core.c          |  8 ++++++--
- drivers/tee/optee/optee_private.h | 13 +++++++++++++
- drivers/tee/optee/rpmi_abi.c      | 23 +++++++++++++++++++++++
- 5 files changed, 51 insertions(+), 2 deletions(-)
- create mode 100644 drivers/tee/optee/rpmi_abi.c
+ drivers/tee/Kconfig       | 2 +-
+ drivers/tee/optee/Kconfig | 2 +-
+ drivers/tee/optee/call.c  | 8 ++++++++
+ 3 files changed, 10 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
+index 98c3ad083940..6434204d899e 100644
+--- a/drivers/tee/Kconfig
++++ b/drivers/tee/Kconfig
+@@ -2,7 +2,7 @@
+ # Generic Trusted Execution Environment Configuration
+ menuconfig TEE
+ 	tristate "Trusted Execution Environment support"
+-	depends on HAVE_ARM_SMCCC || COMPILE_TEST || CPU_SUP_AMD
++	depends on HAVE_ARM_SMCCC || COMPILE_TEST || CPU_SUP_AMD || RISCV_SBI_MPXY_MBOX
+ 	select CRYPTO_LIB_SHA1
+ 	select DMA_SHARED_BUFFER
+ 	select GENERIC_ALLOCATOR
 diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
-index 50d2051f7f20..0eaedb34673d 100644
+index 0eaedb34673d..8998b64df5c7 100644
 --- a/drivers/tee/optee/Kconfig
 +++ b/drivers/tee/optee/Kconfig
-@@ -9,6 +9,14 @@ config OPTEE
- 	  This implements the OP-TEE Trusted Execution Environment (TEE)
- 	  driver.
- 
-+config OPTEE_RPMI_ABI
-+	bool
-+	depends on OPTEE && RISCV_SBI_MPXY_MBOX
-+	default y
-+	help
-+	  Reach OP-TEE through the RISC-V Platform Management Interface
-+	  (RPMI) carried on an SBI Message Proxy (MPXY) channel.
-+
- config OPTEE_INSECURE_LOAD_IMAGE
- 	bool "Load OP-TEE image as firmware"
- 	default n
-diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-index 183cdde1ac04..a588f6f4cb2f 100644
---- a/drivers/tee/optee/Makefile
-+++ b/drivers/tee/optee/Makefile
-@@ -9,6 +9,7 @@ optee-objs += supp.o
- optee-objs += device.o
- optee-$(CONFIG_HAVE_ARM_SMCCC) += smc_abi.o
- optee-$(CONFIG_ARM_FFA_TRANSPORT) += ffa_abi.o
-+optee-$(CONFIG_OPTEE_RPMI_ABI) += rpmi_abi.o
- 
- # for tracing framework to find optee_trace.h
- CFLAGS_smc_abi.o := -I$(src)
-diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-index a52c1f498b99..42a8bcab0cb8 100644
---- a/drivers/tee/optee/core.c
-+++ b/drivers/tee/optee/core.c
-@@ -220,6 +220,7 @@ void optee_remove_common(struct optee *optee)
- 
- static int smc_abi_rc;
- static int ffa_abi_rc;
-+static int rpmi_abi_rc;
- static bool intf_is_regged;
- 
- static int __init optee_core_init(void)
-@@ -245,9 +246,10 @@ static int __init optee_core_init(void)
- 
- 	smc_abi_rc = optee_smc_abi_register();
- 	ffa_abi_rc = optee_ffa_abi_register();
-+	rpmi_abi_rc = optee_rpmi_abi_register();
- 
--	/* If both failed there's no point with this module */
--	if (smc_abi_rc && ffa_abi_rc) {
-+	/* If all failed there's no point with this module */
-+	if (smc_abi_rc && ffa_abi_rc && rpmi_abi_rc) {
- 		if (IS_REACHABLE(CONFIG_RPMB)) {
- 			rpmb_interface_unregister(&rpmb_class_intf);
- 			intf_is_regged = false;
-@@ -268,6 +270,8 @@ static void __exit optee_core_exit(void)
- 
- 	if (!smc_abi_rc)
- 		optee_smc_abi_unregister();
-+	if (!rpmi_abi_rc)
-+		optee_rpmi_abi_unregister();
- 	if (!ffa_abi_rc)
- 		optee_ffa_abi_unregister();
- }
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
-index 94a4f251f5cf..5b57d69f1f34 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -463,5 +463,18 @@ static inline void optee_ffa_abi_unregister(void)
- {
- }
+@@ -2,7 +2,7 @@
+ # OP-TEE Trusted Execution Environment Configuration
+ config OPTEE
+ 	tristate "OP-TEE"
+-	depends on HAVE_ARM_SMCCC
++	depends on HAVE_ARM_SMCCC || RISCV_SBI_MPXY_MBOX
+ 	depends on MMU
+ 	depends on RPMB || !RPMB
+ 	help
+diff --git a/drivers/tee/optee/call.c b/drivers/tee/optee/call.c
+index e046aff61828..c29bff224848 100644
+--- a/drivers/tee/optee/call.c
++++ b/drivers/tee/optee/call.c
+@@ -604,6 +604,14 @@ static bool is_normal_memory(pgprot_t p)
+ #elif defined(CONFIG_ARM64)
+ 	return ((pgprot_val(p) & PTE_ATTRINDX_MASK) == PTE_ATTRINDX(MT_NORMAL)) ||
+ 	       ((pgprot_val(p) & PTE_ATTRINDX_MASK) == PTE_ATTRINDX(MT_NORMAL_TAGGED));
++#elif defined(CONFIG_RISCV)
++	/*
++	 * Svpbmt, or the T-Head equivalent, encodes non-cacheable and I/O
++	 * memory in the memory type bits of the PTE, normal cacheable memory
++	 * (PMA) has them cleared. Without Svpbmt the memory type only comes
++	 * from the PMAs, the mask is empty and all mappings pass the check.
++	 */
++	return !(pgprot_val(p) & _PAGE_MTMASK);
+ #else
+ #error "Unsupported architecture"
  #endif
-+#if IS_ENABLED(CONFIG_OPTEE_RPMI_ABI)
-+int optee_rpmi_abi_register(void);
-+void optee_rpmi_abi_unregister(void);
-+#else
-+static inline int optee_rpmi_abi_register(void)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline void optee_rpmi_abi_unregister(void)
-+{
-+}
-+#endif
- 
- #endif /*OPTEE_PRIVATE_H*/
-diff --git a/drivers/tee/optee/rpmi_abi.c b/drivers/tee/optee/rpmi_abi.c
-new file mode 100644
-index 000000000000..01d08892eb55
---- /dev/null
-+++ b/drivers/tee/optee/rpmi_abi.c
-@@ -0,0 +1,23 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright 2026 NXP
-+ *
-+ * OP-TEE ABI over the RISC-V Platform Management Interface (RPMI),
-+ * carried on an SBI Message Proxy (MPXY) channel.
-+ *
-+ * This is a placeholder: the transport is not implemented yet, so the
-+ * ABI never registers and the driver only probes through its other ABIs.
-+ */
-+
-+#include <linux/errno.h>
-+
-+#include "optee_private.h"
-+
-+int optee_rpmi_abi_register(void)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+void optee_rpmi_abi_unregister(void)
-+{
-+}
 -- 
 2.34.1
 
