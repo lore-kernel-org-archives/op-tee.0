@@ -4,153 +4,159 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBD0BC982C1
-	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 21:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1B63C982C9
+	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 21:23:59 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 0BEC3451E5
-	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 21:16:45 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id ED2D3451E5
+	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 21:23:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1789593405;
-	bh=Lx3rxuvPspC0004K1T3IskMvpe3JjwyF7MxwqKXjC/I=;
+	d=lists.trustedfirmware.org; s=2024; t=1789593839;
+	bh=gJJWBQeFSX1YsrOWygD+rC9pHJoBZw2+qKeEeFs6RRo=;
 	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=a4+w426n9RQsK5ITfjXPYxi/Aa1b/4WUezqXCFwbQlZqVwY3ecaLCDSeLb5SyYT3K
-	 FEOq/LVartmAVjiBOJ+2jfJyQOQXR6hKYwMSZ1ROQht5CX/L+dRVVrN2hQcOgz/4Y1
-	 22yvqyAugezZvia1jIjsBuzdkujpzvxPN2zu3NE8oWQcllONgpUIgW5Za3aYIhcvnO
-	 DRqpBEFDuhKaXnphimL4V2tlhFrJY5vGVunWJzbfzdaxXoj6s72RK/8kmBIlohJpeM
-	 2RelyI05lDtnnZdMgVspu11HSSgcYYu73EdOSBEm6eQhyy4zZe7dPBkqxgisZ2BzLP
-	 B4RXhP35XJMag==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id C12744397D
-	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 21:16:37 +0000 (UTC)
+	b=hrdKlplE0Z7sGRNax6atQbTjGV2gW7iwaqNTgEXfMwu5lhDsSmofJvW1bilKm5wbe
+	 au2kfWs1CCnoIDfae20HkxfCvNLwTw7Y0YjtVeWdI3tD6De7YVRIq0azF6x36g56v7
+	 MfMlV0OLQ4Xc73lDdnZ07VaWQdjEXEqDRdlQoQWriaPCF0xHfaLWdZMmLZ95PEx7hh
+	 qK1nwU2bh7F1pCSc5w8+YkEbRT4PCwDpmruiXl3Dy1tXyB/MbGbYr8n+8SitIkKMM6
+	 hst8VzhuXVjiLAF3GF70S+fEBY67eDKVTtc9CMQNAbrSXwxxb+KPimrRNJ7AHzFqnk
+	 cGF3DZ5K92/iQ==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0A6A744F00
+	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 21:23:51 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=GGyK/0zH;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Bcu9C1/X;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=B9zVUleq;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=BjBXyVbb;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68GFeQF93107625
-	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 21:16:37 GMT
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68GFeeRm2600748
+	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 21:23:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	bJ5ikrelPOxZxaf5C/PtGjFWO0wzJsRg+Use1Q/ipvM=; b=GGyK/0zHNxSER+y2
-	LaQiDgbRKmox1nWm6jaUokUYLQp7Wle7RA2P9+sEAt0iAnLMR/5HNtMUZVIXqAC9
-	gxpBU2pYo437aMdnbYROqvsqeFmXRBpcwYO9tKgCY4vwuYPDTEVLWvypG+CDihoz
-	OQnrWld7Q9ZTRb8uiXz5DsDm61iz+vtuoi6Hcu3KUTBCBkEp00qO90XSl4YnHIah
-	4cD0QOf86qmD3vibijpIY8nYM5wqP/9sEeCQ4UEtV+Ayqm7lvWv91/fCA9bSchKC
-	r5VSz8aurAUmSVofu7dpEpGm6C04jj6YrSJldOGTNpcdkU8Dwq26FGPJ4u42rzZU
-	zTd7tg==
-Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gquw2t36x-1
+	w/qTLVLi8JrEbZ5Wtjo59+5wUP++p74xd9zORAOvt3Q=; b=B9zVUleqVc0IwYvo
+	2kVS9RooIb9ERrcP5PS6AJMR0gaiIevixWLq5qN/3aBKETxjM+rhRBUTzcok5Whb
+	svM4ZTgwJPuPkCaNElgopGA52rcmgpqGQ7XVErtlmAIEq+GzVMbMCz6NH7EA7DIx
+	JFvOfToWEO0K8/39zGLSg9eniwoyvlbxaElKoqjDbAnPej0Q6e50+et7aoofhuox
+	XHRPcOIRMlbXXmowCW3mvxB+TDmnEzDZfJDrqhJKvE0PKJOxQYHIl9qkUCr6fnmg
+	4vxlh7AoQbWeNSsdY4heO8bk0K6uRVpYox3qdPrQXH1kiaweWsoA9yWTsJkLltAR
+	0ei0/Q==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gquwb261b-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 21:16:37 +0000 (GMT)
-Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-396901263b6so218198a91.2
-        for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 14:16:36 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 21:23:50 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cc4b524ce78so91540a12.2
+        for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 14:23:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789593396; x=1790198196; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1789593830; x=1790198630; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=bJ5ikrelPOxZxaf5C/PtGjFWO0wzJsRg+Use1Q/ipvM=;
-        b=Bcu9C1/XNvbhnbP3aru9mMl7i79R1oe3HHF1YQVr/WXasXy0J3swjvV5WB5ITGLJ0g
-         uuxX6yzwTdfoAe7tMbDS7ZI0uKfS0M37JvsW/qc8kgs+6Km4OSWf8RcPW8pouzKL2n7G
-         P60cGRBOL+JR4p3n7OFGXyc2BecGWwqraAoX8dwLeCNhK78b0NTDCGq4XSXhWC7tFm7g
-         R2ETiGBJ3XTyLHCRHnn9wy9I82SFET5OVhLg4arZVITb7k7rpyKk1BjGYdvGoP//eXa5
-         LRO26dLuC0PyX6t5uJ1tS9WVw18EoGg2URGP5TRLHjkpKGSQGPAUsPC60XiF5XweEbXu
-         VE+w==
+        bh=w/qTLVLi8JrEbZ5Wtjo59+5wUP++p74xd9zORAOvt3Q=;
+        b=BjBXyVbbYRXK4C6r2c0murKKThGdx2H8YlLRVhc8yS+3Nfe5GNStQ3ClExzXWv2gnt
+         hkyh79wI3ADe5F/nSmEDSHM+/G22uhdy5Iv0nEqeQU11Y6m8WTaI2v8iybyXu58VoleC
+         sg/rVHIeI8uMPCxmhCjsWpIJRi8bWjUBN6FX0BGYtLT4HwIntQBtjkZmlyCA7QKPgIfN
+         /yTepHI1aEzUdQspgrwrAPPAzanSlvjwnpFPnBiFIy/i36VjANY1MUoRKR8BfvngaHqn
+         WGtBzywQTyQ6Xloxh/XgXBvpB+xrFFu9aed9olacM2lFrJyoV4646bA8i1HoCxYay6Sb
+         FbmA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789593396; x=1790198196;
+        d=1e100.net; s=20260707; t=1789593830; x=1790198630;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=bJ5ikrelPOxZxaf5C/PtGjFWO0wzJsRg+Use1Q/ipvM=;
-        b=wPCqHVe4Rg0/UHC9L/DCR5Zv+TW54CBXIB+yVFpq8AiMEUVlLuDoedXud5FDU8D43B
-         Fc6LfbAKNyYtsoMFz7PZKTwvAmeMoFWmo8/z4SpM9MBZLgS/TIeVA+yd4pea7rC74kob
-         23UaNSg6Ula++06CrOdRCu8I5WMY9cpKcFZKFjGOTOQFBpeXWMGH7ONiC7t4Kd/xKNj7
-         1dYhy8XU70FmWoBii6LdavalOsiJsGCl7ZdtiuJ6B6GCj8St+rbTtYjDSQPFMx/LFern
-         3fFnXmQWxelgAhezTUYCihZPdtSRdGYFAW6I63b78K70W/yHysvQoIt/M51sRkcJo84i
-         i8bA==
-X-Forwarded-Encrypted: i=1; AKwUvBxC4kTzXKgO/wN932iMCHiz5E6F0lrXNr6CNoncA/3vzMvyTBbM6tzwJd8/e64pcdlBLLT3x3c=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++lX3tzhYf0KiULk1mP+afdz76H6F1O0viNOEGD7Hb2jFWSJrguc
-	Z8JV5orDBCn2+bfeEL47HLPSoMUEvr7bIhDWOv1DjXcLoXaA47u3V1e212gQ3Km/nYPNGqRfWaj
-	lgyiub76U8Krm0DIH/c9tidfYGeHJd+qifPSGqBK68d1UHvp3WEYTKs8s3zbe4qVWJLAOmK8=
-X-Gm-Gg: AYBFou0BMO7Jlm/NAMoNnjela7hB6b9gVk7ZmatWTlyDS1S7DUapbn/ZJkowGnMNy4A
-	vbqi/kYFfJ383XHHEc74nkTaWWO0/SBJgUTwnSPHpy4TNkYd8D94mhyGGdCioEyMEb74OPhYvj4
-	dYd05cxKYVw1grNSxDGO0qJ+CVnucNweCoavrQfRzJlml7ZvqlafhV/9Qo1PHWkUfCsEhODBLuP
-	wGl7WekuVm1Zdw/XFMhWPUGgmf8RIhMNky8AGtfRp6bDBgTloLAdnHHu+vcpzqim2dNZU/tL4UX
-	ZvDjMJdsCf8Hum+eXIaAMROa1Xug4FPqrc3Y0wOBU+bLOvQfUPwYY1UK73cGaOqnW/7R4cgSiU9
-	RohMDp8FQVgWGj9hY6pwBLXnj6+lFtWcB
-X-Received: by 2002:a17:90b:1811:b0:39d:e54c:8658 with SMTP id 98e67ed59e1d1-39e1e250230mr11033519a91.5.1789593396036;
-        Wed, 16 Sep 2026 14:16:36 -0700 (PDT)
-X-Received: by 2002:a17:90b:1811:b0:39d:e54c:8658 with SMTP id 98e67ed59e1d1-39e1e250230mr11033403a91.5.1789593395476;
-        Wed, 16 Sep 2026 14:16:35 -0700 (PDT)
+        bh=w/qTLVLi8JrEbZ5Wtjo59+5wUP++p74xd9zORAOvt3Q=;
+        b=TAKEIv6Uv46gaeS+WOLvN2BWRdqrCw26gJj9N4noq7ZpesLUGtkANh/X4aFwvk4G20
+         fJhK24yu5ExwyUwPYQBVhxfOCnnZsqey4pV3YB91CdNR77DVxvpe+mwzxVRYF+1T+uUv
+         7Qv42mK+b9QieT0IbY2iBqZURCwucaFGKkztb/EEh1joFRAtpwW8JfRGkow+lRXLsZxu
+         ZGj4Rsnx1uUVTtR1Ul+GV/dEboaQp0Zfk6RkTqsNPLQAPjH96KlBL5XAe9Vm39VCLeld
+         vRDrGw6iYmA4Zkl7McltvIae5ZMPNF7Pg+7JayiheI4Ze8sA97lUAtdJ1Kl37Bkk+zM9
+         asrQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwQPNXwU/+CcCCz+xZZgEZjY9oHYUr8mUGtyGajfZE4QULH8SkIVq4Kz+SL9Oq895ri3rIXgdI=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++kLVM6ZgB2eqMMpuS0Snu5ZfEOmQ44s/uxs3sDsa/NL/GBjzIaW
+	PNjFCyXIXcYxIckR5mIIFSN84IfoBT1uMM94Zf1O+6dD5YHokiwtUOG5cQi3/nDcFzZLbHBy5lh
+	rjYsVhkQ3m6putemk7LPwCb2BxkEdWevhD1U3s+NcBrkGg87HA1eSeBSDvDvOEmxiyayCZbI=
+X-Gm-Gg: AYBFou0xu4lgpI7lsTH6VkubQyPyqb8cy15pUJi/HZzKpI9OoCrE0Xa0AYMWufqCTCe
+	rT0JQybGKZdg5WjC1JPqqYvgJ1fnVq4MHwzLkwEmXlyx4MQOqaQyz56QndQJV3eLkSvM7TAFByQ
+	6qXPl1K4mLkpnbXv8VSHL9bto14L/u8PE3SXKxoREtDXwEJYTHS6MK7nHIQ8ULsq21TOOFHo8Ln
+	GcXJx0HYjqrX1wqTVWz5DQf3ZqqygKJTT4/yFST0xhwYlQdgA6jLugPqu7j3FKjMZym0X3UrxBC
+	pjENjLi2MckkZL9+KHdcbotHl/HAuOyxcoNFqlhzNUAlKhqkisYXqolBy3pS3b/CxRQqSPumi56
+	wjB7GHYc3l9wEXA1m7VmBgHmv8jyWRduY
+X-Received: by 2002:a05:6a21:6b10:b0:3da:3bdb:b22a with SMTP id adf61e73a8af0-3dd5f71a912mr10826728637.20.1789593829852;
+        Wed, 16 Sep 2026 14:23:49 -0700 (PDT)
+X-Received: by 2002:a05:6a21:6b10:b0:3da:3bdb:b22a with SMTP id adf61e73a8af0-3dd5f71a912mr10826675637.20.1789593829396;
+        Wed, 16 Sep 2026 14:23:49 -0700 (PDT)
 Received: from [192.168.1.86] ([65.181.15.100])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e35e532e4sm1147947a91.10.2026.09.16.14.16.29
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc50a7a3526sm2253425a12.0.2026.09.16.14.23.43
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Sep 2026 14:16:34 -0700 (PDT)
-Message-ID: <d7ba3e45-84fa-409d-bd43-23caa05587de@oss.qualcomm.com>
-Date: Thu, 17 Sep 2026 07:16:27 +1000
+        Wed, 16 Sep 2026 14:23:48 -0700 (PDT)
+Message-ID: <786a1460-c660-4de7-bb07-debdbd6a4661@oss.qualcomm.com>
+Date: Thu, 17 Sep 2026 07:23:40 +1000
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 5/5] dt-bindings: tee: add RISC-V RPMI TEE transport
-To: Anup Patel <anup@brainfault.org>
+Subject: Re: [PATCH RFC 1/5] optee: riscv: add RPMI TEE service group
+ transport
+To: Trilok Soni <trilokkumar.soni@oss.qualcomm.com>,
+        Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Rahul Pathak <rahul@summations.net>, Anup Patel <anup@brainfault.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
 References: <20260912-rpmi-tee-service-grp-dev-v1-0-1d1d35c2a859@oss.qualcomm.com>
- <20260912-rpmi-tee-service-grp-dev-v1-5-1d1d35c2a859@oss.qualcomm.com>
- <CAAhSdy3Or_uDWuQniUGguc9AwL8smF6XHhJ0kizFOJKJ0N+9OA@mail.gmail.com>
+ <20260912-rpmi-tee-service-grp-dev-v1-1-1d1d35c2a859@oss.qualcomm.com>
+ <a9d9aac7-cb2d-46fe-a220-40f61f615b89@oss.qualcomm.com>
 Content-Language: en-US
-In-Reply-To: <CAAhSdy3Or_uDWuQniUGguc9AwL8smF6XHhJ0kizFOJKJ0N+9OA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDI5NiBTYWx0ZWRfX4kvWQHJbLt7o
- /cnz6pjcDJ90/PASh4STR4FHi5thn3OaIaoAStYV8n4pi/j/DpDmFuSR/ylCZnn/tmKqAHwKXl7
- V9xbUS4TThtyUydoPeUJLmz2jB8ZWh0=
-X-Proofpoint-GUID: CUf2ioj0NXqFFxkZ09qLhYFJHd9aWKEJ
-X-Authority-Analysis: v=2.4 cv=N4m8hG9B c=1 sm=1 tr=0 ts=6aab0735 cx=c_pps
- a=0uOsjrqzRL749jD1oC5vDA==:117 a=RYJI0oIToGyOemi2SthaJQ==:17
+In-Reply-To: <a9d9aac7-cb2d-46fe-a220-40f61f615b89@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=H4JOUOYi c=1 sm=1 tr=0 ts=6aab08e6 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=RYJI0oIToGyOemi2SthaJQ==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=gEfo2CItAAAA:8 a=V1jnuoLLAAAA:20 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8
- a=b45o4kL6AAAA:8 a=oSFF6Vc5-LCmsOG0wpkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=mQ_c8vxmzFEMiUWkPHU9:22 a=sptkURWiP4Gy88Gu7hUp:22 a=dhdsR-PFWuPJUldTnwXm:22
- a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-ORIG-GUID: CUf2ioj0NXqFFxkZ09qLhYFJHd9aWKEJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDI5NiBTYWx0ZWRfX75ln9o2cZRn/
- nMMraZ9mpHag55HTOMDnLf0DMSswBIM0I37GmbMVvL4Chgdc+pQ4rk0lNR7EqNxvSV9HnRrpFKK
- kAOxZuohP5oisSirdXrUHjDW0b2qAKng7pNz3wSQBJh48v0EeJK1imlWytEHmqIPyk1C52SQtuL
- n90vLJItdtCh1V0LkE17pd9w9WyHhdqsH2FwY7J214WiDMn2aXU/1BspkMV6N70nnOl7/6AzQZ/
- mboefNmvP6rGijGWWrK/MKrD3ZY6+mkb3zaUul6gaTT2aHVblQVdqFQhlPYmwF/OTJl0gEHbKVr
- JgooN25eWxGtgtq+SPQpjKxHf+vR78GyrDZSBEWDxVpxYrBgHoEqPYgVjGHtfEX0+mLbZrvTgEC
- wyKuD8PnHgM1uU1LYOCmkhxMEL9BksIT01C0Jdzf+OUGmBIR9Qz+Jc0Enwj2k8HpS54QMxhT0PS
- KzBk8+GHFe4wtNZhm2A==
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=EUspDBNiAAAA:8 a=-u4usqK0Ikitso02ChQA:9 a=QEXdDO2ut3YA:10
+ a=x9snwWr2DeNwDh03kgHS:22
+X-Proofpoint-GUID: KrVaqdFM7vhEGW2CAcNQlK53r1dz9xDS
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDI5NyBTYWx0ZWRfXxsPqhCKManRF
+ cTHSgf0SP6nJBBEoBfIEAg3YyGyQRQ4gtuEa8eONihJg1tFW39WXyeQG6kUaOMCAYwRkUr3my64
+ xg/BKsabE9q4Jl9hZBMLYT/Cj+pqCDMN6Rgmd+cd1f8EaHQONhu1aww8Aa766cKb/EfmrA/BGc6
+ Vpm/asZOnBVHMbXSk4pz55j+QRRqOn4KoSoBU5Zzs138AcffULIRX37BQUpHOfBTkWvVJWaLEsF
+ f8lbhP6SD0PKMIYaGxrGK3YX5Bc3QBVIC/egG386B+dd0YLZ29zgRpLrf9F9g33Xfr2b1BQxlsJ
+ tCvkMBxL+O8jPIkQzJbGhCFT5JR8KdmvCEMoZv7jZC0k72T29/aOkjm2OBT4f98TRDlnd0USSvu
+ VocTUfDG4I2iw6evL0qZKpkpyvbZ6cG15gnjnWvHR2h/H/r/CKIcw5XCw/uH4BWxkmKpEVY1zNN
+ gSWvvVptpuZnQDaHQow==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDI5NyBTYWx0ZWRfXypHZeEb1vyDv
+ hqGJ9Q/8Sim1isynK08MKBoV0ZBEill2+aLPcvYMxZqkcdQNUYFtNPhpBrLBRmZLH+r8bMKtR4e
+ +fNYSOPjVn5TkGEBZQQshTEsvPmppTc=
+X-Proofpoint-ORIG-GUID: KrVaqdFM7vhEGW2CAcNQlK53r1dz9xDS
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-16_03,2026-09-16_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 impostorscore=0 suspectscore=0 malwarescore=0
- lowpriorityscore=0 clxscore=1015 phishscore=0 adultscore=0 spamscore=0
+ clxscore=1015 malwarescore=0 spamscore=0 priorityscore=1501 impostorscore=0
+ phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160296
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160297
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-4.60 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
 	RCVD_TLS_LAST(0.00)[];
 	RCVD_COUNT_THREE(0.00)[4];
 	MIME_TRACE(0.00)[0:+];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[16];
+	RCPT_COUNT_TWELVE(0.00)[17];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
 	FROM_HAS_DN(0.00)[];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
@@ -160,19 +166,19 @@ X-Spamd-Result: default: False [-4.60 / 15.00];
 	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TAGGED_RCPT(0.00)[dt];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.70:received]
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.215.198:received]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: C12744397D
+X-Rspamd-Queue-Id: 0A6A744F00
 X-Spamd-Bar: ----
-Message-ID-Hash: HTUF42IZ4KOUBZGGCHJZOSVH7CKH4DZF
-X-Message-ID-Hash: HTUF42IZ4KOUBZGGCHJZOSVH7CKH4DZF
+Message-ID-Hash: Y7NU7CGZXX27KQGCUYF73LJKY6G7IUVT
+X-Message-ID-Hash: Y7NU7CGZXX27KQGCUYF73LJKY6G7IUVT
 X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Rahul Pathak <rahul@summations.net>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org
+CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HTUF42IZ4KOUBZGGCHJZOSVH7CKH4DZF/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/Y7NU7CGZXX27KQGCUYF73LJKY6G7IUVT/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -182,100 +188,108 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-SGkgQW51cCwNCg0KT24gOS8xNi8yMDI2IDg6MTIgUE0sIEFudXAgUGF0ZWwgd3JvdGU6DQo+IE9u
-IFNhdCwgU2VwIDEyLCAyMDI2IGF0IDM6NDXigK9QTSBBbWlycmV6YSBaYXJyYWJpDQo+IDxhbWly
-cmV6YS56YXJyYWJpQG9zcy5xdWFsY29tbS5jb20+IHdyb3RlOg0KPj4NCj4+IEFkZCBhIGRldmlj
-ZS10cmVlIGJpbmRpbmcgZm9yIHRoZSBPUC1URUUgUklTQy1WIHRyYW5zcG9ydCB1c2luZyB0aGUg
-UlBNSQ0KPj4gVEVFIHNlcnZpY2UgZ3JvdXAgb3ZlciBTQkkgTVBYWS4NCj4+DQo+PiBEZXNjcmli
-ZSBvbmUgbWFpbGJveCBjaGFubmVsIHBlciBoYXJ0IGFuZCBhbiBvcHRpb25hbCBpbnRlcnJ1cHQg
-dXNlZCBhcw0KPj4gdGhlIGF2YWlsYWJpbGl0eSBkb29yYmVsbCBmb3IgYXN5bmNocm9ub3VzIG5v
-dGlmaWNhdGlvbnMuDQo+Pg0KPj4gQWRkIHRoZSBiaW5kaW5nIHRvIHRoZSBleGlzdGluZyBPUC1U
-RUUgTUFJTlRBSU5FUlMgZW50cnkuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogQW1pcnJlemEgWmFy
-cmFiaSA8YW1pcnJlemEuemFycmFiaUBvc3MucXVhbGNvbW0uY29tPg0KPj4gLS0tDQo+PiAgLi4u
-L2JpbmRpbmdzL3RlZS9yaXNjdixycG1pLW1weHktdGVlLnlhbWwgICAgICAgICAgfCA2NSArKysr
-KysrKysrKysrKysrKysrKysrDQo+PiAgTUFJTlRBSU5FUlMgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgfCAgMSArDQo+PiAgMiBmaWxlcyBjaGFuZ2VkLCA2NiBpbnNlcnRp
-b25zKCspDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
-aW5ncy90ZWUvcmlzY3YscnBtaS1tcHh5LXRlZS55YW1sIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0
-cmVlL2JpbmRpbmdzL3RlZS9yaXNjdixycG1pLW1weHktdGVlLnlhbWwNCj4+IG5ldyBmaWxlIG1v
-ZGUgMTAwNjQ0DQo+PiBpbmRleCAwMDAwMDAwMDAwMDAuLjhmNmZmMzEzZmQ0Mg0KPj4gLS0tIC9k
-ZXYvbnVsbA0KPj4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RlZS9y
-aXNjdixycG1pLW1weHktdGVlLnlhbWwNCj4+IEBAIC0wLDAgKzEsNjUgQEANCj4+ICsjIFNQRFgt
-TGljZW5zZS1JZGVudGlmaWVyOiAoR1BMLTIuMC1vbmx5IE9SIEJTRC0yLUNsYXVzZSkNCj4+ICsj
-IENvcHlyaWdodCAoYykgUXVhbGNvbW0gVGVjaG5vbG9naWVzLCBJbmMuIGFuZC9vciBpdHMgc3Vi
-c2lkaWFyaWVzLg0KPj4gKyVZQU1MIDEuMg0KPj4gKy0tLQ0KPj4gKyRpZDogaHR0cDovL2Rldmlj
-ZXRyZWUub3JnL3NjaGVtYXMvdGVlL3Jpc2N2LHJwbWktbXB4eS10ZWUueWFtbCMNCj4+ICskc2No
-ZW1hOiBodHRwOi8vZGV2aWNldHJlZS5vcmcvbWV0YS1zY2hlbWFzL2NvcmUueWFtbCMNCj4+ICsN
-Cj4+ICt0aXRsZTogUklTQy1WIFJQTUkgVEVFIHNlcnZpY2UgZ3JvdXAgYmFzZWQgbWVzc2FnZSBw
-cm94eQ0KPj4gKw0KPj4gK21haW50YWluZXJzOg0KPj4gKyAgLSBBbWlycmV6YSBaYXJyYWJpIDxh
-bWlycmV6YS56YXJyYWJpQG9zcy5xdWFsY29tbS5jb20+DQo+PiArDQo+PiArZGVzY3JpcHRpb246
-IHwNCj4+ICsgIFRoZSBSSVNDLVYgUGxhdGZvcm0gTWFuYWdlbWVudCBJbnRlcmZhY2UgKFJQTUkp
-IFsxXSBkZWZpbmVzIGEgbWVzc2FnaW5nDQo+PiArICBwcm90b2NvbCB3aGljaCBpcyBtb2R1bGFy
-IGFuZCBleHRlbnNpYmxlLiBUaGUgc3VwZXJ2aXNvciBzb2Z0d2FyZSBjYW4NCj4+ICsgIHNlbmQv
-cmVjZWl2ZSBSUE1JIG1lc3NhZ2VzIHZpYSB0aGUgU0JJIE1QWFkgZXh0ZW5zaW9uIFsyXSBvciBz
-b21lIGRlZGljYXRlZA0KPj4gKyAgc3VwZXJ2aXNvci1tb2RlIFJQTUkgdHJhbnNwb3J0Lg0KPj4g
-Kw0KPj4gKyAgVGhlIFJQTUkgc3BlY2lmaWNhdGlvbiBbMV0gZGVmaW5lcyBhIFRFRSBzZXJ2aWNl
-IGdyb3VwIHdoaWNoIGlzIHRoZSBSSVNDLVYNCj4+ICsgIGFuYWxvZyBvZiBBcm0gRkYtQTogT1At
-VEVFIGFuZCB0aGUgcmljaCBleGVjdXRpb24gZW52aXJvbm1lbnQgKFJFRSwgaS5lLg0KPj4gKyAg
-TGludXgpIGFyZSBwZWVyIGVuZHBvaW50cyBhbmQgdGhlIFJQTUkgZnJhbWV3b3JrIChtYWNoaW5l
-IG1vZGUgZmlybXdhcmUpDQo+PiArICBtZWRpYXRlcyBldmVyeSBtZXNzYWdlLiBFbnRlcmluZyBP
-UC1URUUgb24gYSBoYXJ0IHJ1bnMgaXQgb24gdGhhdCBoYXJ0IHVudGlsDQo+PiArICBpdCByZXNw
-b25kcywgc28gdGhlIFNCSSBpbXBsZW1lbnRhdGlvbiBwcm92aWRlcyBvbmUgU0JJIE1QWFkgY2hh
-bm5lbCBwZXINCj4+ICsgIGhhcnQ7IGFsbCBvZiB0aGVtIGFyZSBsaXN0ZWQsIGluIGhhcnQgb3Jk
-ZXIsIG9uIGEgc2luZ2xlIG5vZGUuDQo+PiArDQo+PiArICA9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09DQo+PiArICBSZWZlcmVuY2VzDQo+PiArICA9PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+PiArDQo+PiArICBbMV0gUklTQy1W
-IFBsYXRmb3JtIE1hbmFnZW1lbnQgSW50ZXJmYWNlIChSUE1JKSB2MS4wIChvciBoaWdoZXIpDQo+
-PiArICAgICAgaHR0cHM6Ly9naXRodWIuY29tL3Jpc2N2LW5vbi1pc2EvcmlzY3YtcnBtaS9yZWxl
-YXNlcw0KPj4gKw0KPj4gKyAgWzJdIFJJU0MtViBTdXBlcnZpc29yIEJpbmFyeSBJbnRlcmZhY2Ug
-KFNCSSkgdjMuMCAob3IgaGlnaGVyKQ0KPj4gKyAgICAgIGh0dHBzOi8vZ2l0aHViLmNvbS9yaXNj
-di1ub24taXNhL3Jpc2N2LXNiaS1kb2MvcmVsZWFzZXMNCj4+ICsNCj4+ICtwcm9wZXJ0aWVzOg0K
-Pj4gKyAgY29tcGF0aWJsZToNCj4+ICsgICAgY29uc3Q6IHJpc2N2LHJwbWktbXB4eS10ZWUNCj4+
-ICsNCj4+ICsgIG1ib3hlczoNCj4+ICsgICAgbWluSXRlbXM6IDENCj4+ICsgICAgZGVzY3JpcHRp
-b246DQo+PiArICAgICAgT25lIFNCSSBNUFhZIGNoYW5uZWwgaW1wbGVtZW50aW5nIHRoZSBSUE1J
-IFRFRSBzZXJ2aWNlIGdyb3VwIHBlciBoYXJ0LA0KPj4gKyAgICAgIGxpc3RlZCBpbiB0aGUgc2Ft
-ZSBvcmRlciBhcyB0aGUgQ1BVIG5vZGVzLg0KPiANCj4gSSBhbSBub3Qgc3VyZSB3aHkgeW91IG5l
-ZWQgc2VwYXJhdGUgTVBYWSBjaGFubmVsIHBlciBoYXJ0LiBUaGUgTVBYWSBzaGFyZWQNCj4gbWVt
-b3J5IGlzIGFscmVhZHkgcGVyLWhhcnQgd2hlcmVhcyB0aGUgTVBYWSBjaGFubmVsIHdpbGwgYmUg
-ZG9tYW4gc3BlY2lmaWMNCj4gZm9yIFRFRS4NCg0KVHJ1ZS4gTXkgcmVhc29uaW5nIHdhcyB0aGF0
-IFRFRV9DQUxMLCBhcyBJIHVuZGVyc3RhbmQgaXQsIGlzIGV4cGVjdGVkIHRvIGV4ZWN1dGUgb24N
-CnRoZSBzYW1lIGhhcnQgdGhhdCBpc3N1ZWQgaXQuIEdpdmVuIHRoYXQsIHRoZSBtYWlsYm94IGNv
-cmUgaG9sZHMgdGhlIHBlci1jaGFubmVsIHNwaW5sb2NrDQphY3Jvc3MgdGhlIGNhbGwgdG8gYHNl
-bmRfZGF0YSgpYCwgd2hpbGUgdGhlIHVuZGVybHlpbmcgYHNiaV9lY2FsbCgpYCBpcyBzeW5jaHJv
-bm91cw0KYW5kIGRvZXMgbm90IHJldHVybiB1bnRpbCB0aGUgVEVFIGNhbGwgY29tcGxldGVzLg0K
-DQpTbywgaWYgdHdvIGhhcnRzIHNoYXJlZCB0aGUgc2FtZSBjaGFubmVsLCBhIGhhcnQgZXhlY3V0
-aW5nIGEgbG9uZy1ydW5uaW5nIFRFRSBvcGVyYXRpb24NCndvdWxkIGhvbGQgdGhhdCBjaGFubmVs
-J3MgbG9jayBmb3IgdGhlIGR1cmF0aW9uIG9mIHRoZSBjYWxsLCBhbmQgYW5vdGhlciBoYXJ0DQp0
-cnlpbmcgdG8gZW5xdWV1ZSBvbiB0aGUgc2FtZSBjaGFubmVsIHdvdWxkIHNwaW4gd2FpdGluZyBm
-b3IgaXQuDQoNClVzaW5nIHBlci1oYXJ0IGNoYW5uZWxzIGF2b2lkcyB0aGF0IGNyb3NzLWhhcnQg
-Y29udGVudGlvbi4gSSBhZ3JlZSB0aGF0IHRoaXMgbWF5DQpub3QgYmUgdGhlIHJpZ2h0IGxheWVy
-IGluIHdoaWNoIHRvIGFkZHJlc3MgdGhlIGlzc3VlLiBJIGRpZCBub3QgcHVsbCBpdCB0byB0aGUg
-ZGlzY3Vzc2lvbiBpbiB0byB0aGlzIFJGQy4NCkknbSBoYXBweSB0byB1c2Ugc2luZ2xlIGNoYW5u
-ZWwgZm9yIG5vdyBhbmQgZm9sbG93IHVwIG9uIGl0IHNlcGFyYXRlbHkgaWYgdXNlZnVsLg0KDQo+
-IA0KPiBBbHNvLCBmb3IgdGhpcyBiaW5kaW5nIHJlZmVyZXJyaW5nIHRvIG9ubHkgbWFpbGJveCBj
-aGFubmVsIGlzDQo+IHN1ZmZpY2llbnQuIFRoZSB1bmRlcmx5aW5nDQo+IG1lY2hhbmlzbSB0byBz
-ZW5kIFJQTUkgbWVzc2FnZXMgaXMgYWJzdHJhY3RlZCBhd2F5IGJ5IHRoZSBtYWlsYm94IGNvbnRy
-b2xsZXINCj4gZHJpdmVyLg0KDQpBY2suDQoNCkJlc3QgcmVnYXJkcywNCkFtaXINCg0KPiANCj4+
-ICsNCj4+ICsgIGludGVycnVwdHM6DQo+PiArICAgIG1heEl0ZW1zOiAxDQo+PiArICAgIGRlc2Ny
-aXB0aW9uOg0KPj4gKyAgICAgIEF2YWlsYWJpbGl0eSBkb29yYmVsbCByYWlzZWQgYnkgT1AtVEVF
-IHRvIHNpZ25hbCBhc3luY2hyb25vdXMNCj4+ICsgICAgICBub3RpZmljYXRpb25zIG92ZXIgdGhl
-IFJQTUkgVEVFIHNpZ25hbCBidXMuIE9wdGlvbmFsOyB3aGVuIGFic2VudA0KPj4gKyAgICAgIGFz
-eW5jaHJvbm91cyBub3RpZmljYXRpb24gaXMgZGlzYWJsZWQuDQo+PiArDQo+PiArcmVxdWlyZWQ6
-DQo+PiArICAtIGNvbXBhdGlibGUNCj4+ICsgIC0gbWJveGVzDQo+PiArDQo+PiArYWRkaXRpb25h
-bFByb3BlcnRpZXM6IGZhbHNlDQo+PiArDQo+PiArZXhhbXBsZXM6DQo+PiArICAtIHwNCj4+ICsg
-ICAgdGVlIHsNCj4+ICsgICAgICAgIGNvbXBhdGlibGUgPSAicmlzY3YscnBtaS1tcHh5LXRlZSI7
-DQo+IA0KPiBUaGlzIG11c3QgYmUgInJpc2N2LHJwbWktdGVlIiBiYXNlZCBvbiBhYm92ZSBjb21t
-ZW50cy4NCj4gDQo+PiArICAgICAgICBtYm94ZXMgPSA8Jm1weHlfbWJveCAweDEwIDB4MD4sIDwm
-bXB4eV9tYm94IDB4MTEgMHgwPjsNCj4gDQo+IExpa2UgbWVudGlvbmVkIGFib3ZlLCBvbmx5IG9u
-ZSBtYWlsYm94IGNoYW5uZWwgaXMgc3VmZmljaWVudC4NCj4gDQo+PiArICAgIH07DQo+PiArLi4u
-DQo+PiBkaWZmIC0tZ2l0IGEvTUFJTlRBSU5FUlMgYi9NQUlOVEFJTkVSUw0KPj4gaW5kZXggMjA3
-YTZlMmRiNzBjLi43ZDBlNTUwMDg1YjIgMTAwNjQ0DQo+PiAtLS0gYS9NQUlOVEFJTkVSUw0KPj4g
-KysrIGIvTUFJTlRBSU5FUlMNCj4+IEBAIC0yMDU3Nyw2ICsyMDU3Nyw3IEBAIE06ICAgICAgSmVu
-cyBXaWtsYW5kZXIgPGplbnN3aUBrZXJuZWwub3JnPg0KPj4gIEw6ICAgICBvcC10ZWVAbGlzdHMu
-dHJ1c3RlZGZpcm13YXJlLm9yZyAobW9kZXJhdGVkIGZvciBub24tc3Vic2NyaWJlcnMpDQo+PiAg
-UzogICAgIE1haW50YWluZWQNCj4+ICBGOiAgICAgRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9z
-eXNmcy1idXMtb3B0ZWUtZGV2aWNlcw0KPj4gK0Y6ICAgICBEb2N1bWVudGF0aW9uL2RldmljZXRy
-ZWUvYmluZGluZ3MvdGVlL3Jpc2N2LHJwbWktbXB4eS10ZWUueWFtbA0KPj4gIEY6ICAgICBkcml2
-ZXJzL3RlZS9vcHRlZS8NCj4+DQo+PiAgT1AtVEVFIFJBTkRPTSBOVU1CRVIgR0VORVJBVE9SIChS
-TkcpIERSSVZFUg0KPj4NCj4+IC0tDQo+PiAyLjM0LjENCj4+DQo+IA0KPiBSZWdhcmRzLA0KPiBB
-bnVwDQoNCg==
+Hi Trilok,
+
+On 9/16/2026 3:30 PM, Trilok Soni wrote:
+> On 9/12/2026 3:15 AM, Amirreza Zarrabi wrote:
+>> Add an OP-TEE transport for RISC-V using the RPMI TEE service group over
+>> the SBI MPXY mailbox framework.
+>>
+>> Request one mailbox channel per hart and use the channel corresponding to
+>> the current CPU when issuing a TEE request. Probe the RPMI TEE service
+>> group and required memory-sharing capabilities before registering the
+>> transport.
+>>
+>> This provides the basic transport and discovery support needed by the
+>> following patches.
+>>
+>> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+>> ---
+>>  drivers/tee/optee/Makefile                 |   1 +
+>>  drivers/tee/optee/core.c                   |   8 +-
+>>  drivers/tee/optee/optee_private.h          |  34 ++++
+>>  drivers/tee/optee/optee_riscv.c            | 312 +++++++++++++++++++++++++++++
+>>  drivers/tee/optee/optee_riscv.h            | 141 +++++++++++++
+>>  include/linux/mailbox/riscv-rpmi-message.h |   1 +
+>>  6 files changed, 495 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
+>> index ad7049c1c107..925b8ec7ef68 100644
+>> --- a/drivers/tee/optee/Makefile
+>> +++ b/drivers/tee/optee/Makefile
+>> @@ -9,6 +9,7 @@ optee-objs += supp.o
+>>  optee-objs += device.o
+>>  optee-objs += smc_abi.o
+>>  optee-objs += ffa_abi.o
+>> +optee-$(CONFIG_RISCV_SBI_MPXY_MBOX) += optee_riscv.o
+>>  
+>>  # for tracing framework to find optee_trace.h
+>>  CFLAGS_smc_abi.o := -I$(src)
+>> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+>> index a52c1f498b99..63f1725e646e 100644
+>> --- a/drivers/tee/optee/core.c
+>> +++ b/drivers/tee/optee/core.c
+>> @@ -220,6 +220,7 @@ void optee_remove_common(struct optee *optee)
+>>  
+>>  static int smc_abi_rc;
+>>  static int ffa_abi_rc;
+>> +static int riscv_abi_rc;
+>>  static bool intf_is_regged;
+>>  
+>>  static int __init optee_core_init(void)
+>> @@ -245,9 +246,10 @@ static int __init optee_core_init(void)
+>>  
+>>  	smc_abi_rc = optee_smc_abi_register();
+>>  	ffa_abi_rc = optee_ffa_abi_register();
+>> +	riscv_abi_rc = optee_riscv_abi_register();
+> 
+> Isn't it growing rapidly now? We have two register calls for the ARM,
+> one for the RISC-V. One more region specific ISA I am aware of and it
+> may have op-tee support in future? It is time we fix this logic
+> in the better way. 
+>
+> 
+>>  
+>> -	/* If both failed there's no point with this module */
+>> -	if (smc_abi_rc && ffa_abi_rc) {
+>> +	/* If all failed there's no point with this module */
+>> +	if (smc_abi_rc && ffa_abi_rc && riscv_abi_rc) {
+> 
+> This is started looking ugly in my opinion. 
+> 
+>>  		if (IS_REACHABLE(CONFIG_RPMB)) {
+>>  			rpmb_interface_unregister(&rpmb_class_intf);
+>>  			intf_is_regged = false;
+>> @@ -270,6 +272,8 @@ static void __exit optee_core_exit(void)
+>>  		optee_smc_abi_unregister();
+>>  	if (!ffa_abi_rc)
+>>  		optee_ffa_abi_unregister();
+>> +	if (!riscv_abi_rc)
+>> +		optee_riscv_abi_unregister();
+>>  }
+>>  module_exit(optee_core_exit);
+>>  
+>> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
+>> index aefe1e6f5689..8d22d65e087b 100644
+>> --- a/drivers/tee/optee/optee_private.h
+>> +++ b/drivers/tee/optee/optee_private.h
+>> @@ -171,6 +171,31 @@ struct optee_ffa {
+>>  	struct work_struct notif_work;
+>>  };
+>>  
+>> +/**
+>> + * struct optee_riscv - RPMI TEE communication struct
+> 
+> do we need to name it optee_riscv? we don't use optee_arm anywhere in this
+> code I believe. 
+> 
+> More later...
+> 
+
+The naming convention, and even the file structure, will change in v2.
+This RFC currently mirrors the _internal_ FF-A implementation, which is neither
+required nor ideal. We are moving away from that structure.
+
+Best Regards,
+Amir
+
