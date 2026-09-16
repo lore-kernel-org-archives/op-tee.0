@@ -4,248 +4,271 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E3F7C88E77
-	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 09:15:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F789C88E77
+	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 11:16:31 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 55B514529D
-	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 09:15:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1789550143;
-	bh=eUKhNcWpU2ARzdkZDtwBSmH3wpzbtiCR0j9k5GGyr8o=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=EqkNVnFKwVNpta922Zj9pyRNzypDFaqr7LkySyWTl5krNyucliaPxDo2dpJD+x61z
-	 ZPVyxcw5ueDJUF623CPclfvrb8Nn1dDDDw99gs5Pp+3Rh1brFk6tiOv3urMFuED0y0
-	 9BKoHk+T+/sLjUrcuobmMPMhq6QxO8h2PfZTIP0wNZun/9UkqlBvWWEXcG++6RIWQt
-	 e4R2OHOqip9+Fpmv9EKQCafuvRREALyhnFSKMSOtkAjREJvGCsWeCaGz0KKlW84RAs
-	 xIoBpBOwcefOlsdYayIU5C//hw8DEW7H4ENukL5WGODHvwbzsvxj1sSpXZAM8qR1vX
-	 wiXfsK/NmBkDg==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 495C844403
-	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 09:15:36 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 2A7F34549F
+	for <op-tee@archiver.kernel.org>; Wed, 16 Sep 2026 11:16:31 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Zvc8Bs5i;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=aWhmSEOc;
+	dkim=pass (2048-bit key; unprotected) header.d=brainfault.org header.i=@brainfault.org header.a=rsa-sha256 header.s=google header.b=pBXpcnpr;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68G9335q2226489
-	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 09:15:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	USktFg+8SniSggZb7tvnYYwJ4/8bjyzpvcoyUOBNeTY=; b=Zvc8Bs5ipRjbNbxZ
-	GXqUEMb4SfYTUx56DvNHUA2kzqVDMtdmZ0CrBI0Rz1gYI4yKPPDv+77dYySl4Svb
-	LipDZpsaI4jTBVMdF/j+M4R/USG8O0yvN6/nIhUjJeabRdeMtPO5F0IKUc4Lv4lm
-	QJ2q2uGXOiY/e08ax/VH/cc4+b3Fwmqj7+f/dNuVYIQm2ewF2zS9UGN+S+ZsQTZP
-	7xPa7wuEyEXY6cRGnvfFY2bji9Ct3b/qv+S9kUIV/fkymi8sGjVaJ3VGocZ5UesJ
-	8KydK1JPZNM7FV8+8GnIJHh4jTUit1CWkqFRuG2UN/9hsqhqfoGAExitP44mIVj3
-	486qLQ==
-Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com [209.85.128.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gqah9uf6u-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 09:15:35 +0000 (GMT)
-Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-8823e022390so67771967b3.2
-        for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 02:15:35 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789550135; cv=none;
+Received: from mail-wm2-f12.google.com (mail-wm2-f12.google.com [74.125.225.140])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id D91C844438
+	for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 10:12:30 +0000 (UTC)
+Received: by mail-wm2-f12.google.com with SMTP id 5b1f17b1804b1-49b912d822dso5608695e9.2
+        for <op-tee@lists.trustedfirmware.org>; Wed, 16 Sep 2026 03:12:30 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789553550; cv=none;
         d=google.com; s=arc-20260327;
-        b=QDVHAxQC3v92/QT0neWEFNwQ/pgZu4MQr14OQEJGUVH8Qk/ocTXF11pGvFgZsITVuv
-         D7nyZyqBLXmf6g7ap26mw9ie438RSkW80r3YDivJ05PspgPQsswMltXAkaeZB0uwIbBJ
-         xBKq83cX4qhp10CLQ9TZazDgJtrnJwaF1Jkxy8AzDE3kcXdHS64U+bsDaQ6iHk4SnzAC
-         dARrrQvo5kqg9rhPeDcVvzHDZfAlflgoQWYoIRgJnlWUWNECPMBVkOZk7Slf6VouN8ks
-         yWeuN7FGzPLXVJivqNiVlOZg+oTV0/4NNVY/tFvg77oq3Y07LVH7vHm/Gs3nnY5iuHrh
-         j/pw==
+        b=Sa+OCWb5DWOTmhzKPtOcRRcvcm2nojuDve/2skjI5b+JulAq5AeLBgL0hlGpI3BXzl
+         XwtCP+Wj6qVEtE/mjOQGPyT+HKOj92DmyNTR6k14hwtTCmFkZnslpSSDpMbcrfaDL5Is
+         DwuzWDgBpd3fCaJgQerYzhgL0BuO3NcK+M0ASVsm6IIFmKzVKDQLqD8BIvwt3qXQVBwy
+         6MnrpV2uztErkfIeClFWijmvIE5xnmIzQvXmTp9aYB7d+1X4sc50bzf7CkBOAGK4uNON
+         Gwf/sp1A/h+1WX5XpKcr3ILpSdlHS9LQWXEeQ4VLriZqySo3BiVc0s7T8yDTFK4UqIhD
+         06HA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=USktFg+8SniSggZb7tvnYYwJ4/8bjyzpvcoyUOBNeTY=;
-        fh=0eFvRStJZANuFAM+BISiQDLoGCvlQ9exIyWypXx3rAg=;
-        b=T/sKn1Rq8fjCbojXe66aGjTM4dLaf+kVIzsfR63Og0JzOKtudOOLzOW6MF/s/mR4Dn
-         CyjYTAcnzB6drQCXq0vfOkaiV2/X9nsDx0PQknZrg8fFUR6lvo+sL4rA0YhjWKA4iynx
-         lNJA0IXcwEhh/fqOowmelg7Lgygfx/5jkKnXMxckpeqy7YHMB4mj8Hm6RPJYFvOzJLIU
-         1w5kqK4ktYkxRCijqSSTB140KgASQp/aSsHwdr9Y+lYbrSjGSYymxsu6KVvLmNRuPpqx
-         f3yxLmjSBQcJc87eqvxWJFBwaw4RzkSAjHfohgSfjzgdaQ+wvTCE75s1xZPoI2QI7YiP
-         ToFQ==;
+        bh=VMvnu6Q+bhTIDoi1lbqTiSXnAgA138OR2uRiPsRsuJs=;
+        fh=xBuBLLu0xRyb5uz0cBwnKEtv02Ar9H4rkUuZftjAeis=;
+        b=qsjrQy1lwcp6cbD54L9rubDXFTq5g8ZLtqcbkgcHDgpga/ZRyC7gSZGfUsxquT673F
+         9i+aKkkxVkqqLofYolKjxyEyESkh0QDhRFsuC13yRXrgsfqsuMVDd5c4QIQLiEM3G9EN
+         w9g2TO0hn5B6xiXGYMskf/AW+i3aKRL6xbEKn22X3T4yGeRHkDHZaDYMhhZ/5nlUC/o9
+         Gsd8nluyUugMSlVhaUvDOq+sXZvHL429d0ZboTzq9rw61pnNXNz2sgV9AxcWsNLylGsV
+         uoNqOqWpfQOF3b8Z113z0t90YKsPsx18F8HlQtvvFvrodRuIdMkbCLkMLnk1n/xRcuqn
+         +J6A==;
         darn=lists.trustedfirmware.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789550135; x=1790154935; darn=lists.trustedfirmware.org;
+        d=brainfault.org; s=google; t=1789553550; x=1790158350; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=USktFg+8SniSggZb7tvnYYwJ4/8bjyzpvcoyUOBNeTY=;
-        b=aWhmSEOcHc6AROWKq3HEAEukCDRNxHhbglwkSAV4R9wPVSW8HNu+abtrTYSpuvSH73
-         aUNWRR6ZyZKnCe0qaa4IgAnq+OuA83TT/UOcVgBNvJXTeLli/cfmYK+eH3YNtTsm7p1d
-         1aNIX6a03Hr0mWl3QNfujq+O7dH1aYqAMlVv/FVV21O3vu/j8GUcYxubkjCIAmE5oq01
-         dLhnCRhkaMyLC86he5xfnMdZbK4+PBEIF/txuey9Mf+VIa0WqGtTEKj9B2s6dQYYtkaa
-         /UPxdjaRxgsQbX7LKwqojq00TDQHhht4djQdXRskBSdHJLsLBLn1nwZ+egm5lwid2UwY
-         oN3w==
+        bh=VMvnu6Q+bhTIDoi1lbqTiSXnAgA138OR2uRiPsRsuJs=;
+        b=pBXpcnprE9Y5ABSP6eBd65wl3ChEOBCNbYzZp45wDdefUUdiI+rbjh3AkJBqWPsT+M
+         Bavq9aS/O3pff6uYsofuQ91zAOfdB8Yonq1nI68clGfQw+9S6/7NUsJox1Ed2XeTFgF0
+         XY8b+Fz0zBmbwo6MamwK4thmc+XXDWegxqUIWJruPU+J3JP965QEiY/JvdnWoXAW34qY
+         5UqofUcQJeW3YpnX8E397a5bfA62wYz7uJY8Z5P89j7ETlLRG2mJglyI8Ci8xJBKPFvI
+         I6Qx7VFoO+noCFZgiY1IV/RYI3wv/WXQvM4TbpBfvL8zurXtGNXj08RB5fqjG1CuD64p
+         cauw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789550135; x=1790154935;
+        d=1e100.net; s=20260707; t=1789553550; x=1790158350;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=USktFg+8SniSggZb7tvnYYwJ4/8bjyzpvcoyUOBNeTY=;
-        b=ngZ/0dhrdi0Rgjqzkkjx8sfrHcCvfKKbYTJR8vSVgcfRNUE756XHdUH1FELhqmwf/9
-         BMm7EGQRtrVRiODi4F5vhLVs0p3ndMGowK5DVa0qIfnjTuWrrsq6x6cIhL/w9vNw0nEz
-         wqmirR2zKO+bZWcVH4mT3a+z1xWRv00s2a2bT1ivqHgsQyqGMC695UF/yumzNtsBqwW1
-         37YfPs1yptZuFThUiRPKUzU5Mnpx/U0LNXUZv9VDtWFBkebJj59lvmDrki6Ms8Xpw4TH
-         c3RgPVU0ntRiY/IMBHMy+dKCs+VLCmLnLIX8XccJ0U4Sphi31tnW3xzJ6lsSLPqrLWXd
-         1rTA==
-X-Forwarded-Encrypted: i=1; AKwUvBzTlh01UKQbyOWmI46Bn6JWm4eig8jC9t6KLoP4S3eK1zP56tcZMBJq2IqBGCkibCo5HQawrGY=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++mrx2eocQv77InhCdPV8nq/WmcFzjZkZkE3fxCLkOLMUrcWpx4V
-	MzrJwuxnJsiwZf53JhjjThFnzmoyRSm90UUkcTw7iWRZSi0NXtaQk64T+VJXfiH5ck2sU4m9p7r
-	3TvBJb2EpLiZVDEJOPpYa+uL+Fd3jMheeyozAMDrf0dnVFixlmVawwLuHIO1Q7Ml+p3+rRJ3SW7
-	GMifzQ7x0KGjH6JqlnElbMBBSRsfFVfvSmNJwnEfXnPAzYCJ0=
-X-Gm-Gg: AYBFou217mxdFvqoTx6XsJMfWwMW5X1q4Baz3TkwF8ftZB/lxtr8zj6KclOVlMMso85
-	/bw3jHeawejjvf5nQlmh48nUibOCvelUSqy5xWCCjYBNDDIy4dPOkWFhMTBL84WDKPgfDZD43ym
-	5z5umRukCI/wqBk8HcpvBW95RV72FHtS/87cHojGBIQso0tHq/fxBEYWU=
-X-Received: by 2002:a05:690c:385:b0:873:5bb2:6c1a with SMTP id 00721157ae682-89226db1a37mr4902897b3.68.1789550135194;
-        Wed, 16 Sep 2026 02:15:35 -0700 (PDT)
-X-Received: by 2002:a05:690c:385:b0:873:5bb2:6c1a with SMTP id
- 00721157ae682-89226db1a37mr4902807b3.68.1789550134775; Wed, 16 Sep 2026
- 02:15:34 -0700 (PDT)
+        bh=VMvnu6Q+bhTIDoi1lbqTiSXnAgA138OR2uRiPsRsuJs=;
+        b=xtp2UrwQZB8XKbr4osAhlSamMRfIBqZq7icllm9PP9i+4lQxVCwocJ/F/xvv6gl/A0
+         4vBNM6JdYjyjBribox7n1K1ysXaf9YJO+hntisEDvyHL+d3kXLd11NMUEp4vYPSOwGlw
+         tvexZrUnCAyZBNZXE2htq4+d2V2J2NlJFbR9Tjg++5Vu/48HcibcKLGEIxQVzCZUDrBf
+         3aGO2qR/eVwCsdLfOxcreNFzPe5RqWCGkUCrnhLLBIgOoh+kYNf4bW+NnB8wIrJCmiAQ
+         /VnOIAnAdASh16xcgGb0keFf6QqizOmTSGHJmXFMFJK3zd2n62kHrSZ0ueKCT2P+V427
+         7vUw==
+X-Forwarded-Encrypted: i=1; AKwUvBxTM9IItGISoKNwJrhS5vcfJRdBiihB6lJqaiIxhVQFDcEI5zOvYoGyXSUAo7wiWr5FLPLE7Z4=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++kit9Xf4c+t2Cx6vMPmgGV0AW0ORtgAA56cyQjEsVGmeN6xfNGw
+	MnxbgF5xjosG27ksAHOYjciYzzRqdDbl+j7JGIScM3UzZu8sKn0oJpisgOG7x5yktKYBfkHZOb1
+	Zz0os4zGn9jwsWpMIRuywEDblKeUxHiWx/jRWY52O9g==
+X-Gm-Gg: AYBFou0RA6cpSyHZAugH2QpiBUrfWFmepHd6MKB67FVEYnJQJuepzg+ws2H9xmFPm18
+	+/I57yUiGKEHo0iyoZL8tZlTJ0T/cvjYvVXBO+v7huFoFTXFZRIfMJs6GDyb9AMBaIOeNmkmQU8
+	msajGjHwYkl+D20QBcQWXz6oEt6rI4G9CJLjyBoKGh0Mz68ppznSDblhOpGdRCVXPGKw1p3VVRH
+	5Yhgjw62oLHJp/IuZJRwm9uwoL3PEmpjgcjzI0MdvI0YNv6nTq9TJ9AOF0R0gxIjHFiG7KGeXRc
+	b1TTSqNMQDrkqPxF6JF9Nx1kNcMQOdBl1o1mwosWbdpEIarRbHY+HZhVdRlxzvCwPoXDXFfgKPn
+	awoAYHT2xATqDuRFd6AJe8iNyjhy+ZcvynWHfcCaCn91LbzIY6+COAsz78UUZJv0AL/05gsAhpb
+	8=
+X-Received: by 2002:a05:600c:1986:b0:49c:d019:70c5 with SMTP id
+ 5b1f17b1804b1-49ea528e2f5mr24120835e9.0.1789553548884; Wed, 16 Sep 2026
+ 03:12:28 -0700 (PDT)
 MIME-Version: 1.0
-References: <c21803b3f2ea1522bb930dc1dcab79c2627f2234.1781620559.git.u.kleine-koenig@baylibre.com>
- <6971c4b5-d091-4fe2-b843-60da8b32d48b@oss.qualcomm.com>
-In-Reply-To: <6971c4b5-d091-4fe2-b843-60da8b32d48b@oss.qualcomm.com>
-Date: Wed, 16 Sep 2026 11:15:24 +0200
-X-Gm-Features: AcwNN1V0NqIJsL73RdN3OTwvvhD8xwl5xJI8ynUXzUOj0tI1Mn5j1g_pzOzGjfw
-Message-ID: <CAGgiveVKnWZCGMy4WrHn3szmC5HuYzf6kSb5-0wvOdVntBPJGw@mail.gmail.com>
-Subject: Re: [PATCH v1] tee: qcomtee: Drop unused assignment of
- platform_device_id driver data
+References: <20260912-rpmi-tee-service-grp-dev-v1-0-1d1d35c2a859@oss.qualcomm.com>
+ <20260912-rpmi-tee-service-grp-dev-v1-5-1d1d35c2a859@oss.qualcomm.com>
+In-Reply-To: <20260912-rpmi-tee-service-grp-dev-v1-5-1d1d35c2a859@oss.qualcomm.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 16 Sep 2026 15:42:16 +0530
+X-Gm-Features: AcwNN1XhJcdypVFFKePBGQrRcccPnauqo1pQsJ8HQwZetdLhE4E6-eyGGrD9-yI
+Message-ID: <CAAhSdy3Or_uDWuQniUGguc9AwL8smF6XHhJ0kizFOJKJ0N+9OA@mail.gmail.com>
+Subject: Re: [PATCH RFC 5/5] dt-bindings: tee: add RISC-V RPMI TEE transport
 To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=BtkIUoX5 c=1 sm=1 tr=0 ts=6aaa5e37 cx=c_pps
- a=0mLRTIufkjop4KoA/9S1MA==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8 a=IpJZQVW2AAAA:8
- a=FvL8mTaZ2_32tAcSk_IA:9 a=QEXdDO2ut3YA:10 a=WgItmB6HBUc_1uVUp3mg:22
- a=IawgGOuG5U0WyFbmm1f5:22
-X-Proofpoint-ORIG-GUID: _e75_Ty-YDQxFSHL0FxDi39RPNQfC-5C
-X-Proofpoint-GUID: _e75_Ty-YDQxFSHL0FxDi39RPNQfC-5C
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDExOSBTYWx0ZWRfXy868VNOfhBir
- eCeNmjJaSL9Wy5x9UnXC8Un3IzNNR2+SWjLeINafdc72jZNTedEvG2dQNGXr1nQQ7hi8u/7gJs5
- r9GgFV7+u4gX6+IjUQbNRxe6iCTqLt2uaOw89lALTGRNW1aT0YEgnCcD9yrEd0wi+GFx+TPJ1e6
- OHE1O4oAOF2ZqiL6n4dJtqUrKsQkpj87SRI68Mr91oYV/pZqJhgfzGnM40/6qK8Ak3y/yhqnMc4
- 5QuVt63qjbyto34aZ4+uU0/miaH0ggZt97L2bE3bcTvenGTk5ZKk04FmBpc41VsvBTwGm23j8/i
- YRMaHUg/VMDX5WTUnEubb0to6DA2q1omryRyIHhhd2b+QWixWuvNAeT8NI3f8vzL/U9yMUOg/Br
- ll9npUTa+Pd9qBptzNTCRLPnS/NHXq0K5DFjKtPgm01BshyZ8r1x+7HDqHI/5JojhFZk62CL1Bz
- Mb3pmu9ndafmt0r6K0Q==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDExOSBTYWx0ZWRfX47bqjbWA3s+J
- t5dbNLWuhbkn6asSYkidux+AF53zEYWQdlBxh/9oXI1K5kGl4aDck9YmsWmsKy+Tc+eqTG54iG1
- KgnnkYrTS/x/ACP2UqYTi6xECN5ZQ5k=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-15_05,2026-09-15_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 spamscore=0 adultscore=0 malwarescore=0
- impostorscore=0 bulkscore=0 clxscore=1015 phishscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160119
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.10 / 15.00];
+X-Spamd-Result: default: False [-2.80 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
 	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	R_DKIM_ALLOW(-0.20)[brainfault.org:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	ASN(0.00)[asn:15169, ipnet:74.125.225.0/24, country:US];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_COUNT_ONE(0.00)[1];
+	RCPT_COUNT_TWELVE(0.00)[16];
 	MIME_TRACE(0.00)[0:+];
 	MISSING_XM_UA(0.00)[];
 	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_COUNT_THREE(0.00)[3];
-	RCVD_TLS_LAST(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[74.125.225.140:from];
+	R_SPF_NA(0.00)[no SPF record];
+	RCVD_IN_DNSWL_NONE(0.00)[74.125.225.140:from];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[209.85.128.197:received];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	ALIAS_RESOLVED(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	DMARC_NA(0.00)[brainfault.org];
+	DKIM_TRACE(0.00)[brainfault.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 495C844403
-X-Spamd-Bar: -------
-Message-ID-Hash: UQRLNLGYN4XPVQSO5PSA5NW6GKP2OY3X
-X-Message-ID-Hash: UQRLNLGYN4XPVQSO5PSA5NW6GKP2OY3X
-X-MailFrom: jens.wiklander@oss.qualcomm.com
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>, Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+X-Rspamd-Queue-Id: D91C844438
+X-Spamd-Bar: --
+X-MailFrom: anup@brainfault.org
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: JTMMJUOUB3UAFL4KAJ2QYTSQ2DJ6VU3Z
+X-Message-ID-Hash: JTMMJUOUB3UAFL4KAJ2QYTSQ2DJ6VU3Z
+X-Mailman-Approved-At: Wed, 16 Sep 2026 11:16:25 +0000
+CC: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Rahul Pathak <rahul@summations.net>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UQRLNLGYN4XPVQSO5PSA5NW6GKP2OY3X/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JTMMJUOUB3UAFL4KAJ2QYTSQ2DJ6VU3Z/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Jens Wiklander via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
 
-Hi,
-
-On Fri, Sep 11, 2026 at 9:36=E2=80=AFAM Amirreza Zarrabi
+On Sat, Sep 12, 2026 at 3:45=E2=80=AFPM Amirreza Zarrabi
 <amirreza.zarrabi@oss.qualcomm.com> wrote:
 >
-> Hi,
+> Add a device-tree binding for the OP-TEE RISC-V transport using the RPMI
+> TEE service group over SBI MPXY.
 >
-> On 6/17/2026 12:38 AM, Uwe Kleine-K=C3=B6nig (The Capable Hub) wrote:
-> > The driver explicitly sets the .driver_data member of struct
-> > platform_device_id to zero without relying on that value. Drop this
-> > unused assignment.
-> >
-> > While touching this array unify spacing and usage of commas and use
-> > a named initializer for .name for improved readability.
-> >
-> > Signed-off-by: Uwe Kleine-K=C3=B6nig (The Capable Hub) <u.kleine-koenig=
-@baylibre.com>
-> > ---
-> > Hello,
-> >
-> > while this is a cleanup that can stand on its own, it is also a
-> > preparation for a change to struct platform_device_id that requires tha=
-t
-> > .driver_data isn't assigned by a list initializer.
-> >
-> > Best regards
-> > Uwe
-> >
-> >  drivers/tee/qcomtee/call.c | 7 ++++++-
-> >  1 file changed, 6 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
-> > index 0efc5646242a..4a597eeaf174 100644
-> > --- a/drivers/tee/qcomtee/call.c
-> > +++ b/drivers/tee/qcomtee/call.c
-> > @@ -798,7 +798,12 @@ static void qcomtee_remove(struct platform_device =
-*pdev)
-> >       kfree(qcomtee);
-> >  }
-> >
-> > -static const struct platform_device_id qcomtee_ids[] =3D { { "qcomtee"=
-, 0 }, {} };
-> > +static const struct platform_device_id qcomtee_ids[] =3D {
-> > +     {
-> > +             .name =3D "qcomtee",
-> > +     },
-> > +     { }
-> > +};
-> >  MODULE_DEVICE_TABLE(platform, qcomtee_ids);
-> >
+> Describe one mailbox channel per hart and an optional interrupt used as
+> the availability doorbell for asynchronous notifications.
 >
-> Looks good to me, thanks.
+> Add the binding to the existing OP-TEE MAINTAINERS entry.
 >
-> Reviewed-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+> ---
+>  .../bindings/tee/riscv,rpmi-mpxy-tee.yaml          | 65 ++++++++++++++++=
+++++++
+>  MAINTAINERS                                        |  1 +
+>  2 files changed, 66 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/tee/riscv,rpmi-mpxy-tee.ya=
+ml b/Documentation/devicetree/bindings/tee/riscv,rpmi-mpxy-tee.yaml
+> new file mode 100644
+> index 000000000000..8f6ff313fd42
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/tee/riscv,rpmi-mpxy-tee.yaml
+> @@ -0,0 +1,65 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/tee/riscv,rpmi-mpxy-tee.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: RISC-V RPMI TEE service group based message proxy
+> +
+> +maintainers:
+> +  - Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+> +
+> +description: |
+> +  The RISC-V Platform Management Interface (RPMI) [1] defines a messagin=
+g
+> +  protocol which is modular and extensible. The supervisor software can
+> +  send/receive RPMI messages via the SBI MPXY extension [2] or some dedi=
+cated
+> +  supervisor-mode RPMI transport.
+> +
+> +  The RPMI specification [1] defines a TEE service group which is the RI=
+SC-V
+> +  analog of Arm FF-A: OP-TEE and the rich execution environment (REE, i.=
+e.
+> +  Linux) are peer endpoints and the RPMI framework (machine mode firmwar=
+e)
+> +  mediates every message. Entering OP-TEE on a hart runs it on that hart=
+ until
+> +  it responds, so the SBI implementation provides one SBI MPXY channel p=
+er
+> +  hart; all of them are listed, in hart order, on a single node.
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  References
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +  [1] RISC-V Platform Management Interface (RPMI) v1.0 (or higher)
+> +      https://github.com/riscv-non-isa/riscv-rpmi/releases
+> +
+> +  [2] RISC-V Supervisor Binary Interface (SBI) v3.0 (or higher)
+> +      https://github.com/riscv-non-isa/riscv-sbi-doc/releases
+> +
+> +properties:
+> +  compatible:
+> +    const: riscv,rpmi-mpxy-tee
+> +
+> +  mboxes:
+> +    minItems: 1
+> +    description:
+> +      One SBI MPXY channel implementing the RPMI TEE service group per h=
+art,
+> +      listed in the same order as the CPU nodes.
 
-I'm picking this up.
+I am not sure why you need separate MPXY channel per hart. The MPXY shared
+memory is already per-hart whereas the MPXY channel will be doman specific
+for TEE.
 
-Thanks,
-Jens
+Also, for this binding refererring to only mailbox channel is
+sufficient. The underlying
+mechanism to send RPMI messages is abstracted away by the mailbox controlle=
+r
+driver.
+
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +    description:
+> +      Availability doorbell raised by OP-TEE to signal asynchronous
+> +      notifications over the RPMI TEE signal bus. Optional; when absent
+> +      asynchronous notification is disabled.
+> +
+> +required:
+> +  - compatible
+> +  - mboxes
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    tee {
+> +        compatible =3D "riscv,rpmi-mpxy-tee";
+
+This must be "riscv,rpmi-tee" based on above comments.
+
+> +        mboxes =3D <&mpxy_mbox 0x10 0x0>, <&mpxy_mbox 0x11 0x0>;
+
+Like mentioned above, only one mailbox channel is sufficient.
+
+> +    };
+> +...
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 207a6e2db70c..7d0e550085b2 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -20577,6 +20577,7 @@ M:      Jens Wiklander <jenswi@kernel.org>
+>  L:     op-tee@lists.trustedfirmware.org (moderated for non-subscribers)
+>  S:     Maintained
+>  F:     Documentation/ABI/testing/sysfs-bus-optee-devices
+> +F:     Documentation/devicetree/bindings/tee/riscv,rpmi-mpxy-tee.yaml
+>  F:     drivers/tee/optee/
+>
+>  OP-TEE RANDOM NUMBER GENERATOR (RNG) DRIVER
+>
+> --
+> 2.34.1
+>
+
+Regards,
+Anup
