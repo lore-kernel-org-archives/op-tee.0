@@ -4,174 +4,224 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C0E0C982D2
-	for <op-tee@archiver.kernel.org>; Fri, 18 Sep 2026 01:54:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A0B4C982D9
+	for <op-tee@archiver.kernel.org>; Fri, 18 Sep 2026 10:12:23 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A9D9F4549E
-	for <op-tee@archiver.kernel.org>; Fri, 18 Sep 2026 01:54:07 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A112C45492
+	for <op-tee@archiver.kernel.org>; Fri, 18 Sep 2026 10:12:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1789696447;
-	bh=+GM0ZXBoL6s6IRT85tvqIGHYcZKvWd1OuJJsWsQfXCk=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=EbqOS0lao32B4udF4DQoXrCTnRHeKHD7n12Z8rP5mu5qKwr+6bmdyU/AspcM1KnW/
-	 AMk1WwXGk5pwgop9LZfFMS2ljcCUwe/DQouY2OvRFBpNy3jL5OcOcTFMDzj6B+uf+K
-	 82x/7hn9jZbJQ9Yy1gcxTpkinPxhNTJZVcbIMSJcKyo+sCjxJ+jeu6nSvO7F7/wbpw
-	 Pt32zpJCpANTy42hkc9fCYXd8iwN1OXg8+Pq99V57DC4Zn/BbwkVXfwOiprFDXhfzv
-	 7rxq3vT8c27mFnvT7x+Ck4/YRaNFp+opw21btCGWzU5YRXGlIJYQPP8IMPiWW/McOa
-	 eUl15ag9ItLyQ==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with UTF8SMTPS id BEE5D43E89
-	for <op-tee@lists.trustedfirmware.org>; Fri, 18 Sep 2026 01:54:00 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1789726342;
+	bh=cZ8F08Qo8I+S+7xQ2e8+nL/7StxjEGiahIa+rIq725A=;
+	h=To:Subject:Date:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=luLUEVaZe5CbVy6UZGoBlHV5WCxV9Yilrkcn2au+AFFjxMl+8mznXQfzt16smZf5D
+	 bZ2sNhrefLjOe+ZNnZIly4TfZHKfTGOOjs0cnKFBzYIuqE5nAJ4dxVvJcHCLtpW69Q
+	 TG43zxYpskRoTR+C7WqyuKlx1ZMwzmdevOdFzTx5ZywSloHmwIKyHhWJEwAys113TG
+	 woo8CexWq+IMqGk2A99CU205jq6ZEQqZwbAJfUfYl8mUUWj22pZlAr4oPOsdsiru27
+	 QcU5EdpQRSGcn9ZEesEyr0vXFruQ+zm1CeYMZ74WAXEoeMO2ZVwlUZWY8HrWxwbH/5
+	 8RhOkCDXHTXAw==
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2BBF344402
+	for <op-tee@lists.trustedfirmware.org>; Fri, 18 Sep 2026 10:12:13 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dIjAPzLw;
+	dkim=pass (1024-bit key; unprotected) header.d=mediatek.com header.i=@mediatek.com header.a=rsa-sha256 header.s=dk header.b=hhxln0CN;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with UTF8SMTP id 37CF8600AA;
-	Fri, 18 Sep 2026 01:54:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 55F4E1F000FF;
-	Fri, 18 Sep 2026 01:53:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789696439;
-	bh=obV/ac6ej+fVGQtRoYSjypa70vcPU57Q0Ik4AGQOcqc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=dIjAPzLwwEdoq3LpBwUIj8dKrNHe60hIpOlLugbcD1QtiP/dZdWyzgfun1xhVGEgt
-	 dkQtOV//iQjkFZhF2NJl9nl5E/gEoFFUqJmH6/Ck09/wHhGHKi8lO65nMYlsHPo4oU
-	 458D3fF2otwRwADTk/WYGMI5840gPCLyg5oNcAIPFsHz+3CQpvT+6FssuYq9Xj+7fT
-	 yvgZMqVoG5mCVvyRI2c3nkLYs3RPXR7+FxhWU7Dc8vLtSNkSsShKwC3xbsvzZeMRE0
-	 9NXcDFXyVfD+uwHaDXMWBZY5x81vsO1o2gU51WpfIytLPbJ4p7t0BgzC2EGiOew60I
-	 cRmUGyyDsW3Xg==
-Date: Fri, 18 Sep 2026 04:53:56 +0300
-To: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
-Subject: Re: [PATCH v2 0/3] Add TPM support via Qualcomm TEE TPM TA
-Message-ID: <aqyZtHynb2nuQT-P@kernel.org>
-References: <20260907-tpm_qcom_driver-v2-0-71a6b1752da8@oss.qualcomm.com>
+X-UUID: 65f98adab34911f1b1788b6acf885367-20260918
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=c+PHpPK78a10gB0bJb2+oG7YcNlo1a7Hh7HzEKPa02A=;
+	b=hhxln0CNF+9oPy4ruFPd44PpKVjG7qBBhRD4c6Bs7pJfuus9AdyHHVCPm5lIevTIDjd+J0BFyBPnolt+Y1bRBHbtnd/jVA5aVLQMuiZSF5SSSH9CkX2QdTA/AS6XqbgJnVTWYAdxONXvnFIC3Eq06zlstEMmD8DzgTFh1GkzqAA=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:2617ef2f-733e-4c04-b619-f96bc07e0b9f,IP:0,U
+	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:7db8b62,CLOUDID:d0a5816e-d3fc-4c43-a699-2fa6a2066297,B
+	ulkID:nil,BulkQuantity:0,SF:102|836|865|888|898,TC:-5,Content:0|15|50|99,E
+	DM:-3,IP:nil,URL:0,File:130,RT:0,Bulk:nil,QS:nil,BEC:-1,COL:0,OSI:0,OSA:0,
+	AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 65f98adab34911f1b1788b6acf885367-20260918
+Received: from mtkmbs13n2.mediatek.inc [(172.21.101.108)] by mailgw01.mediatek.com
+	(envelope-from <shf.chen@mediatek.com>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 376525553; Fri, 18 Sep 2026 18:12:05 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.29; Fri, 18 Sep 2026 18:12:03 +0800
+Received: from mtksitap99.mediatek.inc (10.233.130.16) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.2562.29 via Frontend Transport; Fri, 18 Sep 2026 18:12:03 +0800
+To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+	<angelogioacchino.delregno@collabora.com>
+Subject: [PATCH] optee: register TEE devices only once fully initialized
+Date: Fri, 18 Sep 2026 18:10:46 +0800
+Message-ID: <20260918101113.6699-1-shf.chen@mediatek.com>
+X-Mailer: git-send-email 2.45.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260907-tpm_qcom_driver-v2-0-71a6b1752da8@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-MTK: N
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.00 / 15.00];
-	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+X-Spamd-Result: default: False [-1.20 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	DMARC_POLICY_ALLOW(-0.50)[mediatek.com,quarantine];
+	R_MISSING_CHARSET(0.50)[];
+	RWL_MAILSPIKE_VERYGOOD(-0.20)[60.244.123.138:from];
+	R_DKIM_ALLOW(-0.20)[mediatek.com:s=dk];
+	R_SPF_ALLOW(-0.20)[+ip4:60.244.123.128/27];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	ASN(0.00)[asn:24154, ipnet:60.244.123.0/24, country:TW];
+	FREEMAIL_TO(0.00)[kernel.org,gmail.com,collabora.com];
 	MIME_TRACE(0.00)[0:+];
-	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
-	MISSING_XM_UA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[10];
+	ARC_NA(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
 	TO_DN_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[oss.qualcomm.com,kernel.org,gmx.de,ziepe.ca,vger.kernel.org,lists.trustedfirmware.org];
-	MID_RHS_MATCH_FROM(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_COUNT_THREE(0.00)[3];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	DNSWL_BLOCKED(0.00)[60.244.123.138:from];
+	ALIAS_RESOLVED(0.00)[];
+	DKIM_TRACE(0.00)[mediatek.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: BEE5D43E89
-X-Spamd-Bar: ------
-Message-ID-Hash: QTJI3GAGFD2GR6U276ITTEISEWXSVZQZ
-X-Message-ID-Hash: QTJI3GAGFD2GR6U276ITTEISEWXSVZQZ
-X-MailFrom: jarkko@kernel.org
+X-Rspamd-Queue-Id: 2BBF344402
+X-Spamd-Bar: -
+Message-ID-Hash: MR2KMV44ATOBBOQ6OO6NG66SBENNO4U3
+X-Message-ID-Hash: MR2KMV44ATOBBOQ6OO6NG66SBENNO4U3
+X-MailFrom: shf.chen@mediatek.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Peter Huewe <peterhuewe@gmx.de>, Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-integrity@vger.kernel.org
+CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Project_Global_Chrome_Upstream_Group@mediatek.com, tadd.kao@mediatek.com, jarried.lin@mediatek.com, vince-wl.liu@mediatek.com, justin.yeh@mediatek.com, Shao-Fu Chen <shf.chen@mediatek.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QTJI3GAGFD2GR6U276ITTEISEWXSVZQZ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MR2KMV44ATOBBOQ6OO6NG66SBENNO4U3/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Jarkko Sakkinen via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Jarkko Sakkinen <jarkko@kernel.org>
+From: Shao-Fu Chen via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Shao-Fu Chen <shf.chen@mediatek.com>
 
-On Mon, Sep 07, 2026 at 02:58:40PM +0530, Kuldeep Singh wrote:
-> Qualcomm platforms with a discrete TPM (dTPM) talked to it directly over
-> a non-secure SPI channel from the kernel. Arm's Base Boot Security
-> Requirements (BBSR) v1.4 require that access to go through TrustZone
-> instead, so on affected Qualcomm platforms the TPM 2.0 instance is now
-> fronted by a Trusted Application (TA) running inside Qualcomm's Trusted
-> Execution Environment (QTEE), which talks to the dTPM (or implements an
-> fTPM) on the kernel's behalf.
-> 
-> This series adds a kernel driver for that TA, built on the QCOMTEE
-> object-IPC transport (drivers/tee/qcomtee/) already used to reach other
-> QTEE services.
-> 
-> This patch series functionally depends on below(patch 5/6 specifically)
-> for qtee service discovery.
-> - https://lore.kernel.org/lkml/20260722-qcom_uefisecapp_migrate_qcomtee-v2-0-b8a8fcbe4211@oss.qualcomm.com/
-> 
-> Tested on Glymur-crd target with tpm2-tools utility.
-> 
-> Validations:
-> - Get capabilities
-> - Random number generator
-> - RSA key creation, encryption and decryption.
-> 
-> Signed-off-by: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - Use QCOMTEE_TPM_UID as 81 for service discovery in patch 1.
-> - Use FIELD_GET, zero initialised array and log improvement (Konrad)
-> - Improve commit title and other fixes (Jarkko)
-> - Split MAINTAINERS entry as separate patch.
-> - Link to v1: https://patch.msgid.link/20260831-tpm_qcom_driver-v1-0-6f16fa6924fa@oss.qualcomm.com
-> 
-> To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> To: Jens Wiklander <jenswi@kernel.org>
-> To: Sumit Garg <sumit.garg@kernel.org>
-> To: Peter Huewe <peterhuewe@gmx.de>
-> To: Jarkko Sakkinen <jarkko@kernel.org>
-> To: Jason Gunthorpe <jgg@ziepe.ca>
-> To: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
-> Cc: linux-arm-msm@vger.kernel.org
-> Cc: op-tee@lists.trustedfirmware.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-integrity@vger.kernel.org
-> 
-> ---
-> Kuldeep Singh (3):
->       tee: qcomtee: Register qcom.tz.tpm service for discovery
->       tpm: Introduce Qualcomm TPM driver
->       MAINTAINERS: Add Qualcomm TPM driver entry
-> 
->  MAINTAINERS                       |   7 +
->  drivers/char/tpm/Kconfig          |   9 +
->  drivers/char/tpm/Makefile         |   1 +
->  drivers/char/tpm/tpm_qcom.c       | 354 ++++++++++++++++++++++++++++++++++++++
->  drivers/char/tpm/tpm_qcom.h       |  83 +++++++++
->  drivers/tee/qcomtee/call.c        |   4 +-
->  drivers/tee/qcomtee/qcomtee_msg.h |   2 +
->  7 files changed, 459 insertions(+), 1 deletion(-)
-> ---
-> base-commit: f3e6330d7fe42b204af05a2dbc68b379e0ad179e
-> change-id: 20260831-tpm_qcom_driver-d21c720e73b2
-> prerequisite-change-id: 20260408-qcom_uefisecapp_migrate_qcomtee-13869d45e014:v2
-> prerequisite-patch-id: 4dc81445c9baf36f420da8c2e2bed96e71b31a5b
-> prerequisite-patch-id: b487dfe2fbc076f4815dc6c73b9e68b0b78c961f
-> prerequisite-patch-id: c5df2b3696520a96f95b2d3535ed84cdc21cc315
-> prerequisite-patch-id: bbdd5327c15aeaa99ce9b74bab324a98f084ed48
-> prerequisite-patch-id: 07d9c4e9fe9fd61f60e3f35b30b9d81716f0734c
-> prerequisite-patch-id: 10ff88d87586f21f3cff3f72dbd21c27adbfbbcc
-> 
-> Best regards,
-> --  
-> Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
-> 
+optee_probe() called tee_device_register() on both the client and the
+supplicant device before the rest of struct optee had been initialized.
 
-Causes merge conflicts with my tree when applied with git am (actually
-b4 shazam).
+tee_device_register() calls cdev_device_add(), which does two things at
+once: it creates /dev/tee0 and /dev/teepriv0, and it links the device
+into the tee class so that class_find_device() can find it. From that
+moment on the device is reachable both from user space via tee_open()
+and from kernel space via tee_client_open_context(). The only gate in
+teedev_open() is tee_device_get(), which merely checks that
+teedev->desc is non-NULL, which was already set by tee_device_alloc().
+Therefore, there is effectively no gate at all.
 
-BR, Jarkko
+A context opened in that window can run against a struct optee where
+
+  - optee->call_queue.mutex is not initialized by optee_cq_init()
+  - optee->supp mutex and completions is not initialized by
+    optee_supp_init()
+  - optee->rpmb_dev_mutex is not initialized yet,
+  - the message argument cache is not initialized by
+    optee_shm_arg_cache_init()
+  - optee->ctx is still NULL
+
+Any open session or invoke during this window takes uninitialized
+mutexes and dereferences a NULL pointer.
+
+Fix it by moving both tee_device_register() calls down to the point
+where all of struct optee is set up.
+
+Signed-off-by: Shao-Fu Chen <shf.chen@mediatek.com>
+---
+ drivers/tee/optee/ffa_abi.c | 16 ++++++++--------
+ drivers/tee/optee/smc_abi.c | 17 ++++++++---------
+ 2 files changed, 16 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
+index 633715b98625..d3cc7c5fc1e9 100644
+--- a/drivers/tee/optee/ffa_abi.c
++++ b/drivers/tee/optee/ffa_abi.c
+@@ -1123,14 +1123,6 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ 
+ 	optee_set_dev_group(optee);
+ 
+-	rc = tee_device_register(optee->teedev);
+-	if (rc)
+-		goto err_unreg_supp_teedev;
+-
+-	rc = tee_device_register(optee->supp_teedev);
+-	if (rc)
+-		goto err_unreg_supp_teedev;
+-
+ 	rc = rhashtable_init(&optee->ffa.global_ids, &shm_rhash_params);
+ 	if (rc)
+ 		goto err_unreg_supp_teedev;
+@@ -1159,6 +1151,14 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
+ 	if (optee_ffa_protmem_pool_init(optee, sec_caps))
+ 		pr_info("Protected memory service not available\n");
+ 
++	rc = tee_device_register(optee->teedev);
++	if (rc)
++		goto err_unregister_devices;
++
++	rc = tee_device_register(optee->supp_teedev);
++	if (rc)
++		goto err_unregister_devices;
++
+ 	rc = optee_enumerate_devices(PTA_CMD_GET_DEVICES);
+ 	if (rc)
+ 		goto err_unregister_devices;
+diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
+index b8a2bdac3208..51624443359b 100644
+--- a/drivers/tee/optee/smc_abi.c
++++ b/drivers/tee/optee/smc_abi.c
+@@ -1849,14 +1849,6 @@ static int optee_probe(struct platform_device *pdev)
+ 
+ 	optee_set_dev_group(optee);
+ 
+-	rc = tee_device_register(optee->teedev);
+-	if (rc)
+-		goto err_unreg_supp_teedev;
+-
+-	rc = tee_device_register(optee->supp_teedev);
+-	if (rc)
+-		goto err_unreg_supp_teedev;
+-
+ 	optee_cq_init(&optee->call_queue, thread_count);
+ 	optee_supp_init(&optee->supp);
+ 	optee->smc.memremaped_shm = memremaped_shm;
+@@ -1916,6 +1908,14 @@ static int optee_probe(struct platform_device *pdev)
+ 	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
+ 		pr_info("dynamic shared memory is enabled\n");
+ 
++	rc = tee_device_register(optee->teedev);
++	if (rc)
++		goto err_disable_shm_cache;
++
++	rc = tee_device_register(optee->supp_teedev);
++	if (rc)
++		goto err_disable_shm_cache;
++
+ 	rc = optee_enumerate_devices(PTA_CMD_GET_DEVICES);
+ 	if (rc)
+ 		goto err_disable_shm_cache;
+@@ -1942,7 +1942,6 @@ static int optee_probe(struct platform_device *pdev)
+ 	optee_shm_arg_cache_uninit(optee);
+ 	optee_supp_uninit(&optee->supp);
+ 	mutex_destroy(&optee->call_queue.mutex);
+-err_unreg_supp_teedev:
+ 	tee_device_unregister(optee->supp_teedev);
+ err_unreg_teedev:
+ 	tee_device_unregister(optee->teedev);
+-- 
+2.45.2
+
