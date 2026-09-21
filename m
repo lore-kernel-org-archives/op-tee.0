@@ -4,224 +4,195 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A0B4C982D9
-	for <op-tee@archiver.kernel.org>; Fri, 18 Sep 2026 10:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5141BC982DE
+	for <op-tee@archiver.kernel.org>; Mon, 21 Sep 2026 08:10:19 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A112C45492
-	for <op-tee@archiver.kernel.org>; Fri, 18 Sep 2026 10:12:22 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 5C83A45470
+	for <op-tee@archiver.kernel.org>; Mon, 21 Sep 2026 08:10:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1789726342;
-	bh=cZ8F08Qo8I+S+7xQ2e8+nL/7StxjEGiahIa+rIq725A=;
-	h=To:Subject:Date:CC:List-Id:List-Archive:List-Help:List-Owner:
-	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=luLUEVaZe5CbVy6UZGoBlHV5WCxV9Yilrkcn2au+AFFjxMl+8mznXQfzt16smZf5D
-	 bZ2sNhrefLjOe+ZNnZIly4TfZHKfTGOOjs0cnKFBzYIuqE5nAJ4dxVvJcHCLtpW69Q
-	 TG43zxYpskRoTR+C7WqyuKlx1ZMwzmdevOdFzTx5ZywSloHmwIKyHhWJEwAys113TG
-	 woo8CexWq+IMqGk2A99CU205jq6ZEQqZwbAJfUfYl8mUUWj22pZlAr4oPOsdsiru27
-	 QcU5EdpQRSGcn9ZEesEyr0vXFruQ+zm1CeYMZ74WAXEoeMO2ZVwlUZWY8HrWxwbH/5
-	 8RhOkCDXHTXAw==
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 2BBF344402
-	for <op-tee@lists.trustedfirmware.org>; Fri, 18 Sep 2026 10:12:13 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1789978218;
+	bh=rKlnqLXl8V6UXo3u9TSsBqyAGh4ks3QBlOSYRYGHoJY=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=oDunljbZvQQ4VImwhy/Cb8SGIdCfFqZm/or/CbNrAv4dzruoGqFbrryleAao8dGs9
+	 gf2Ea5G0BwxKEEUNXOmv3dFj0mi6Vuy2xEsF0L+ug3DWHpUF0GumEedfxm+apK+AvY
+	 yxwkCMjcqaWHdfxN4EPz6Oc4PuRmzbuM9SjckP96hDluYqLWe6xKPPaLhgDvqZ81SE
+	 ezFOAl7VQQwrgVVeVPha8J0lQoFANNeXkhC64Ixt+Fs7/jBxSGZX+y6PqfzpFJcqo0
+	 MfXv9YiP2jmA7xwRQRp9kIGNn9LQdNJlaFpr60npT5wXMsQaAKiFbwOJ+Yl4KX+yhw
+	 fIm7YFRoEo1YA==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1CA5043B56
+	for <op-tee@lists.trustedfirmware.org>; Mon, 21 Sep 2026 08:10:12 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=mediatek.com header.i=@mediatek.com header.a=rsa-sha256 header.s=dk header.b=hhxln0CN;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lMrqFDRe;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Qqdw1S6a;
 	dkim-atps=neutral
-X-UUID: 65f98adab34911f1b1788b6acf885367-20260918
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-	h=Content-Type:Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=c+PHpPK78a10gB0bJb2+oG7YcNlo1a7Hh7HzEKPa02A=;
-	b=hhxln0CNF+9oPy4ruFPd44PpKVjG7qBBhRD4c6Bs7pJfuus9AdyHHVCPm5lIevTIDjd+J0BFyBPnolt+Y1bRBHbtnd/jVA5aVLQMuiZSF5SSSH9CkX2QdTA/AS6XqbgJnVTWYAdxONXvnFIC3Eq06zlstEMmD8DzgTFh1GkzqAA=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:2617ef2f-733e-4c04-b619-f96bc07e0b9f,IP:0,U
-	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:-25
-X-CID-META: VersionHash:7db8b62,CLOUDID:d0a5816e-d3fc-4c43-a699-2fa6a2066297,B
-	ulkID:nil,BulkQuantity:0,SF:102|836|865|888|898,TC:-5,Content:0|15|50|99,E
-	DM:-3,IP:nil,URL:0,File:130,RT:0,Bulk:nil,QS:nil,BEC:-1,COL:0,OSI:0,OSA:0,
-	AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 65f98adab34911f1b1788b6acf885367-20260918
-Received: from mtkmbs13n2.mediatek.inc [(172.21.101.108)] by mailgw01.mediatek.com
-	(envelope-from <shf.chen@mediatek.com>)
-	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-	with ESMTP id 376525553; Fri, 18 Sep 2026 18:12:05 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.29; Fri, 18 Sep 2026 18:12:03 +0800
-Received: from mtksitap99.mediatek.inc (10.233.130.16) by
- mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.2562.29 via Frontend Transport; Fri, 18 Sep 2026 18:12:03 +0800
-To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
-	<angelogioacchino.delregno@collabora.com>
-Subject: [PATCH] optee: register TEE devices only once fully initialized
-Date: Fri, 18 Sep 2026 18:10:46 +0800
-Message-ID: <20260918101113.6699-1-shf.chen@mediatek.com>
-X-Mailer: git-send-email 2.45.2
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68L79j1B4143023
+	for <op-tee@lists.trustedfirmware.org>; Mon, 21 Sep 2026 08:10:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	FQXQavybAGc4BtAZ7JoSR+X9Eu5eNUZkOTjr9bp+nWU=; b=lMrqFDReR8779C9D
+	AQKv4bvaeZ4mPeMg8aKkm5C31aRWydJhwn8j4C+3oGdFGiLhxEoLIZ+tXqmRPO9e
+	eDfIx6jaEt+7vj0fGCamyd2qfTLX8v1XOYDvpomzp5LLpJEdxw/DKi4a70Pn4laI
+	dZu/JgalzJ1NqzVnYnImlIaOWX69bt2p/vJbDCZePk7VHgUakFUcNNyWJbMMUhpa
+	IngfVMM807+LT1t7mHntTR105mkzcP7ae+uGQEhX8ZiuXKF5OCGB/gWr+Lqo+fcV
+	f18dcMTN8K1Kk90U5qaOePRpQS+7hLwh4uZ2t6d9fou1WAUZpGpwDANOGI7ZUtO2
+	B+l/FQ==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gtyxq87xx-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Mon, 21 Sep 2026 08:10:10 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2cec4226c70so34419435ad.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 21 Sep 2026 01:10:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1789978210; x=1790583010; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=FQXQavybAGc4BtAZ7JoSR+X9Eu5eNUZkOTjr9bp+nWU=;
+        b=Qqdw1S6a3kY0aQhXDZVpxfvh4JlWn0TSlxBjxHpxgnGGvpzC8uvR6GR8iZlh3U534T
+         yZvgNv/bMsQK8qVKVNsa75hsCzcmbO7Cq4u9/d0KT1XA6vy57HxLPU03/kaSvmx7nlI1
+         WllcQ/ydObCDsf2Go4Go1Ae3oZqpd/6XH5Z95RCsZVCDZGd0zfYn/K73X0wD4Mz2eZII
+         JnEx8BeSSQTiiPRrifF4oiGy+y7F5czSof8vF0mHEVAYqwGYfPw7k+F7Z6D07t/l8ZXS
+         H29OPEQSlijDGbR3ZiGpahi4U7AwOXVjSnMyh/ZUkTWKXHKkpCXn7uBS4Q+SfjwZUCZt
+         uVIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789978210; x=1790583010;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FQXQavybAGc4BtAZ7JoSR+X9Eu5eNUZkOTjr9bp+nWU=;
+        b=mGXxsH4JB8+9eIIhtjfdqiLX4H75KhARd9xKRhx2tVQSTptKnrLP/D/BqF1lC4hPnK
+         7yot1PVWRbXkacm1UWJDLPxjUiZVhhNpGc/XITaHne+7yyeV1EyoQsafXuF7G9JopK1h
+         4N59cCA42RoRNdcJMLcGUZefpMZ/SmDQosSd7ywueH+kefhG2XJdtSFmp0OIDam8J+V1
+         SnfkBSP50pOrOCQWOgjbGBWmx4eydek2vsVv1YjyD/1Hn9nWFhgzdxTmLzDE7uzpSZic
+         LKxLf3OOkHDxTucTqJx+XU3LqX+MjZwxWzfddacI6TzqhdUJBNpYvVsBCAJd6Fk8uzeV
+         0ZZw==
+X-Forwarded-Encrypted: i=1; AKwUvBwaNJwzZLQpadkpW8aTUtxkK+K3FxKAjlGkowEHNVron6HYxnvTeWFF4Few6L995J096XhpfdQ=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++mofr2WlNYy0jXpPQj2Q8gfMudjswxk/pPy0DJd1GkPXJya16mi
+	wyfPgwjCCpv6maT628sLVn05Sn/4UXWX+DMh1coFzPY33/AxXzO6uMaVj1Al0ZOVZdeo3rb21oS
+	OpVX+rK9IXdXX7H6Yx9Q+R2CiHIpv1DdnOTqVR+mULpD17kyUJMpGUkvvCKxWSCAdKOKIDieH
+X-Gm-Gg: AYBFou1+a1jLQ2HZcplBE2unbXw3+4oY/z8bVrV+wJhTL6+L1teFvEOHt4akaZwR+mo
+	I+w85UjbFSPBkSFGmd/Pe2wh1CZ8DO63owAGSJ3meCfhc4Ul8BEwXNFskPewXerjlihMoGzsw3+
+	zoVx3KtSVUz75pW4rISmiUHtGWcmRa6U4aBYLiaopGgbZCcsi/b5Mpn7ORZoEG5Fd0M94ZsxKA+
+	toWI+nJRfHyLM0OBQDN0VXoT5248eAq6oD9KXRAI8h7t2uXH0+H1I6cg4A972eV61C5LfY7RvQC
+	rFF8Jm/5a2snbMAl14In7BeHKiXyAR8584jwiMkFyMzpxPo97dv2YqzJ/IZUUxUN61mvAb2XrVM
+	Du0woL+phzHo10NeKCfnGyJPjO11CPw==
+X-Received: by 2002:a17:903:26c8:b0:2dd:c0ff:e72e with SMTP id d9443c01a7336-2ddc0ffe9ffmr83871325ad.64.1789978210202;
+        Mon, 21 Sep 2026 01:10:10 -0700 (PDT)
+X-Received: by 2002:a17:903:26c8:b0:2dd:c0ff:e72e with SMTP id d9443c01a7336-2ddc0ffe9ffmr83871165ad.64.1789978209832;
+        Mon, 21 Sep 2026 01:10:09 -0700 (PDT)
+Received: from [10.218.31.125] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33c3313d96esm17124286eec.12.2026.09.21.01.10.05
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 21 Sep 2026 01:10:09 -0700 (PDT)
+Message-ID: <a8047ec0-742f-47f8-b5bf-cb1b32f06bd9@oss.qualcomm.com>
+Date: Mon, 21 Sep 2026 13:40:04 +0530
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-MTK: N
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] tee: qcomtee: Register qcom.tz.tpm service for
+ discovery
+To: Jarkko Sakkinen <jarkko@kernel.org>, Jens Wiklander <jenswi@kernel.org>,
+        Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+References: <20260907-tpm_qcom_driver-v2-0-71a6b1752da8@oss.qualcomm.com>
+ <20260907-tpm_qcom_driver-v2-1-71a6b1752da8@oss.qualcomm.com>
+ <aqyX3lJ1eNBmzbSP@kernel.org>
+Content-Language: en-US
+In-Reply-To: <aqyX3lJ1eNBmzbSP@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: Tk9E-5ZhdYDmbG-bJq4O-3XN9H1x4Y4p
+X-Proofpoint-ORIG-GUID: Tk9E-5ZhdYDmbG-bJq4O-3XN9H1x4Y4p
+X-Authority-Analysis: v=2.4 cv=OtraWC/t c=1 sm=1 tr=0 ts=6ab0e662 cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=kq3ZzjkpYTjXZhaqunoA:9 a=QEXdDO2ut3YA:10
+ a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDExNiBTYWx0ZWRfXyBgHas0QRkvu
+ wNjxP5CcGulBj2KwxmDCo6ta5kFv0ZV2ziDSnnrOrT5F/CsrdK7XXa3qYe1sADZ4xCpGkojSxJ+
+ CM5oXD9cMqxbMD5o8DVHOCxL7Zs3LrukGI2dOBeJ3p4xYtPIn1JakpDw/WnKLxVbYPwQYYQ0Evu
+ 8NNi75LmqKyVGEYbfdn7SQ/TTchPJyzf07R7+XNxdUMJY+hChyUWeoXlY9NeMSpbRV5BMGJPcmA
+ Qz5np0nwn3s6mrFyeKtsPK2v14ova1xeh3duWdkkNuQiy64eomBFBM8wMhE1LEwfgIMr/wyoO55
+ lCwofjqd6xo7I5+gjdkstlOD8FeyeYH3nnctDq8FiCRl+4uiKn5VN1Yt9SdGqk8AQxVzoypcigI
+ fYF9WwrN/0tuAyBVVMCom5xNNHpPGNjBwjefrA/PkqUxdwBtkgiCJbh7YpwfSRsp94XYpuyasDy
+ amWyhSPHw8NOtTvK2uQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDExNiBTYWx0ZWRfX35qTzf88vbMw
+ c966iK6m0PbpjLYR3DbBk09ohuJE+nag/FxqcVOFGnS7MBcbS8GfOea0Unucopcp2932Fimd2MD
+ 9/7wBNQr2s91uXF7y/BQ0GIwb7IBBhM=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-21_03,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 bulkscore=0 suspectscore=0
+ malwarescore=0 adultscore=0 phishscore=0 clxscore=1015 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609210116
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-1.20 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	MID_CONTAINS_FROM(1.00)[];
-	DMARC_POLICY_ALLOW(-0.50)[mediatek.com,quarantine];
-	R_MISSING_CHARSET(0.50)[];
-	RWL_MAILSPIKE_VERYGOOD(-0.20)[60.244.123.138:from];
-	R_DKIM_ALLOW(-0.20)[mediatek.com:s=dk];
-	R_SPF_ALLOW(-0.20)[+ip4:60.244.123.128/27];
+X-Spamd-Result: default: False [-5.37 / 15.00];
+	BAYES_HAM(-2.37)[97.11%];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RCPT_COUNT_TWELVE(0.00)[14];
-	ASN(0.00)[asn:24154, ipnet:60.244.123.0/24, country:TW];
-	FREEMAIL_TO(0.00)[kernel.org,gmail.com,collabora.com];
-	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	ARC_NA(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
 	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
 	RCVD_TLS_LAST(0.00)[];
-	DNSWL_BLOCKED(0.00)[60.244.123.138:from];
-	ALIAS_RESOLVED(0.00)[];
-	DKIM_TRACE(0.00)[mediatek.com:+]
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,gmx.de,ziepe.ca,vger.kernel.org,lists.trustedfirmware.org];
+	NEURAL_HAM(-0.00)[-1.000];
+	FROM_EQ_ENVFROM(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 2BBF344402
-X-Spamd-Bar: -
-Message-ID-Hash: MR2KMV44ATOBBOQ6OO6NG66SBENNO4U3
-X-Message-ID-Hash: MR2KMV44ATOBBOQ6OO6NG66SBENNO4U3
-X-MailFrom: shf.chen@mediatek.com
+X-Rspamd-Queue-Id: 1CA5043B56
+X-Spamd-Bar: -----
+Message-ID-Hash: 3DLIVXJNLYQHNJIKWVZXRYA2TEIQ4JQL
+X-Message-ID-Hash: 3DLIVXJNLYQHNJIKWVZXRYA2TEIQ4JQL
+X-MailFrom: kuldeep.singh@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Project_Global_Chrome_Upstream_Group@mediatek.com, tadd.kao@mediatek.com, jarried.lin@mediatek.com, vince-wl.liu@mediatek.com, justin.yeh@mediatek.com, Shao-Fu Chen <shf.chen@mediatek.com>
+CC: Sumit Garg <sumit.garg@kernel.org>, Peter Huewe <peterhuewe@gmx.de>, Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-integrity@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MR2KMV44ATOBBOQ6OO6NG66SBENNO4U3/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/3DLIVXJNLYQHNJIKWVZXRYA2TEIQ4JQL/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Shao-Fu Chen via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Shao-Fu Chen <shf.chen@mediatek.com>
+From: Kuldeep Singh via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
 
-optee_probe() called tee_device_register() on both the client and the
-supplicant device before the rest of struct optee had been initialized.
+On 18-09-2026 07:16, Jarkko Sakkinen wrote:
+> On Mon, Sep 07, 2026 at 02:58:41PM +0530, Kuldeep Singh wrote:
+>> Add "qcom.tz.tpm" (QCOMTEE_TPM_UID) to qtee_services[] so the TPM TA
+>> is enumerated as a TEE-bus device, allowing a client driver to bind to
+>> it via its generated UUID.
+>>
+>> Signed-off-by: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
+[...]
 
-tee_device_register() calls cdev_device_add(), which does two things at
-once: it creates /dev/tee0 and /dev/teepriv0, and it links the device
-into the tee class so that class_find_device() can find it. From that
-moment on the device is reachable both from user space via tee_open()
-and from kernel space via tee_client_open_context(). The only gate in
-teedev_open() is tee_device_get(), which merely checks that
-teedev->desc is non-NULL, which was already set by tee_device_alloc().
-Therefore, there is effectively no gate at all.
+> 
+> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+Thanks Jarkko for the review.
+Can TEE maintainers(Amirreza/Jens?) also review this change?
 
-A context opened in that window can run against a struct optee where
-
-  - optee->call_queue.mutex is not initialized by optee_cq_init()
-  - optee->supp mutex and completions is not initialized by
-    optee_supp_init()
-  - optee->rpmb_dev_mutex is not initialized yet,
-  - the message argument cache is not initialized by
-    optee_shm_arg_cache_init()
-  - optee->ctx is still NULL
-
-Any open session or invoke during this window takes uninitialized
-mutexes and dereferences a NULL pointer.
-
-Fix it by moving both tee_device_register() calls down to the point
-where all of struct optee is set up.
-
-Signed-off-by: Shao-Fu Chen <shf.chen@mediatek.com>
----
- drivers/tee/optee/ffa_abi.c | 16 ++++++++--------
- drivers/tee/optee/smc_abi.c | 17 ++++++++---------
- 2 files changed, 16 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
-index 633715b98625..d3cc7c5fc1e9 100644
---- a/drivers/tee/optee/ffa_abi.c
-+++ b/drivers/tee/optee/ffa_abi.c
-@@ -1123,14 +1123,6 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 
- 	optee_set_dev_group(optee);
- 
--	rc = tee_device_register(optee->teedev);
--	if (rc)
--		goto err_unreg_supp_teedev;
--
--	rc = tee_device_register(optee->supp_teedev);
--	if (rc)
--		goto err_unreg_supp_teedev;
--
- 	rc = rhashtable_init(&optee->ffa.global_ids, &shm_rhash_params);
- 	if (rc)
- 		goto err_unreg_supp_teedev;
-@@ -1159,6 +1151,14 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
- 	if (optee_ffa_protmem_pool_init(optee, sec_caps))
- 		pr_info("Protected memory service not available\n");
- 
-+	rc = tee_device_register(optee->teedev);
-+	if (rc)
-+		goto err_unregister_devices;
-+
-+	rc = tee_device_register(optee->supp_teedev);
-+	if (rc)
-+		goto err_unregister_devices;
-+
- 	rc = optee_enumerate_devices(PTA_CMD_GET_DEVICES);
- 	if (rc)
- 		goto err_unregister_devices;
-diff --git a/drivers/tee/optee/smc_abi.c b/drivers/tee/optee/smc_abi.c
-index b8a2bdac3208..51624443359b 100644
---- a/drivers/tee/optee/smc_abi.c
-+++ b/drivers/tee/optee/smc_abi.c
-@@ -1849,14 +1849,6 @@ static int optee_probe(struct platform_device *pdev)
- 
- 	optee_set_dev_group(optee);
- 
--	rc = tee_device_register(optee->teedev);
--	if (rc)
--		goto err_unreg_supp_teedev;
--
--	rc = tee_device_register(optee->supp_teedev);
--	if (rc)
--		goto err_unreg_supp_teedev;
--
- 	optee_cq_init(&optee->call_queue, thread_count);
- 	optee_supp_init(&optee->supp);
- 	optee->smc.memremaped_shm = memremaped_shm;
-@@ -1916,6 +1908,14 @@ static int optee_probe(struct platform_device *pdev)
- 	if (optee->smc.sec_caps & OPTEE_SMC_SEC_CAP_DYNAMIC_SHM)
- 		pr_info("dynamic shared memory is enabled\n");
- 
-+	rc = tee_device_register(optee->teedev);
-+	if (rc)
-+		goto err_disable_shm_cache;
-+
-+	rc = tee_device_register(optee->supp_teedev);
-+	if (rc)
-+		goto err_disable_shm_cache;
-+
- 	rc = optee_enumerate_devices(PTA_CMD_GET_DEVICES);
- 	if (rc)
- 		goto err_disable_shm_cache;
-@@ -1942,7 +1942,6 @@ static int optee_probe(struct platform_device *pdev)
- 	optee_shm_arg_cache_uninit(optee);
- 	optee_supp_uninit(&optee->supp);
- 	mutex_destroy(&optee->call_queue.mutex);
--err_unreg_supp_teedev:
- 	tee_device_unregister(optee->supp_teedev);
- err_unreg_teedev:
- 	tee_device_unregister(optee->teedev);
 -- 
-2.45.2
+Regards
+Kuldeep
 
