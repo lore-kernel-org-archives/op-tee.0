@@ -4,278 +4,214 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CB1BC982FA
-	for <op-tee@archiver.kernel.org>; Tue, 22 Sep 2026 07:53:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2401AC982FA
+	for <op-tee@archiver.kernel.org>; Tue, 22 Sep 2026 10:57:20 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id B3AED43AC9
-	for <op-tee@archiver.kernel.org>; Tue, 22 Sep 2026 07:53:20 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 51A1545216
+	for <op-tee@archiver.kernel.org>; Tue, 22 Sep 2026 10:57:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1790063600;
-	bh=11b+lqzscsdK8Ta3S3pSJSA/n1DvvcVP456Pe6Yhyds=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1790074639;
+	bh=hLAKKSqlZC0lD4LDYt9Vm1n6yow0jFao9TVHhrHqPz4=;
+	h=Date:To:Subject:References:In-Reply-To:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=XIS3JyNDqOni1xn08lsLITNJkWx8O14JGg4PnWuUcPH8bbWjYkYISPON98CosPBwo
-	 JAIe/0MeG2cRoiDggd7/eFcJCJyG7qaPImSAka5sVxWsQ/xluW1LVlpPKPR7yJndsK
-	 HH3R7io9MfgP8WLyNoQsT1XIAZPS5y8gZu7idFVQDceEaxV5N87Ax1ofbhHTJRYcq6
-	 LxEwlDKdBB3CVRJDuzHhWnXGYkr5cNIU5lYO2g7lKbJvzFhcWwjY8nRyWAOOaWtk/M
-	 qxwot1syxA+ofsLeV4RnJRYpBfyhIxY1GDoM8mR7HQHITenpv5SlBEL4oxmYF+Yac1
-	 kP9EECq4/jjDw==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B987343AC9
-	for <op-tee@lists.trustedfirmware.org>; Tue, 22 Sep 2026 07:53:13 +0000 (UTC)
+	b=eKiK8Qaeqq9+E/1XgYPMg40pXsD54dCyh/PFQSC5+YfmOAirNhIQrBEkoQamwJ2BL
+	 V/0KA7dOkWm7K/d0VbBRP7qnsd2G+sFX1jr9nCmU92NIt1k0o9jrmMRc724D33toX/
+	 1T4mCzIgGZhBGfROxWy+vD2ARly5YJ/M1a7Y1m5MAcLRtB5Y25DywjaRHF3GcQg/EB
+	 T/HLdEEgwhV0SZgxRrX6rstV5e+KRclUDGH+oAMnIINS9sDIfEGe3nAPL3/lve21ls
+	 kV/rO3O2nybNLKWOZELvmVFPWx/Pzv9D+WxHWWFQ21Hrwa4kFAH0iKeHkdRNY4biqU
+	 7tLXCiqBMvzwQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9BBC144D8A
+	for <op-tee@lists.trustedfirmware.org>; Tue, 22 Sep 2026 10:57:11 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=HJM1jRTJ;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=EvhiX2Kw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Rq2lHonw;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68M7Fqkv3044233
-	for <op-tee@lists.trustedfirmware.org>; Tue, 22 Sep 2026 07:53:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	eM4o3vQJG5YSqEOi7+3WJZVTDqM9mwXMz1W8oS+gJdw=; b=HJM1jRTJWzZcVx+p
-	mWV08rpifDcLwRU4dEETmvvT3bgJAlIPB4g3kaqx6I9Re+H5w3ftTAXJJSef9bff
-	oVhbHiK7C9XnMMZLHuTU45pO+uplMp/JFmBhXKk9/vifIvm0buSM0gc/U5ZpN2UH
-	7ENVnTgHl8wUHxxL/TJ0HKk/V4O9OWkyvkxLztXncllM6rlDdHEYEwdIR9Vh+Snj
-	530fUHFUzMEoKxvWYt9w84s1r8r0beYVGR/3/7xPE2e73ZCWVDrgG7+REhBMLsJl
-	n6KSRZju/Zhcuxn0Dwf00a0z8yL8ykyRJ7ueyn8/TGTEc6sUecKVZ3XrSq/c9PJ4
-	6rrMJA==
-Received: from mail-yw1-f200.google.com (mail-yw1-f200.google.com [209.85.128.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gufbasexv-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Tue, 22 Sep 2026 07:53:13 +0000 (GMT)
-Received: by mail-yw1-f200.google.com with SMTP id 00721157ae682-88e06764219so44844327b3.1
-        for <op-tee@lists.trustedfirmware.org>; Tue, 22 Sep 2026 00:53:13 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790063593; cv=none;
-        d=google.com; s=arc-20260327;
-        b=U4S6zxrj0sqLxFgwMrNYm3oXG0wH4DTqa/Zch2qIY85qJk99Ou2POiyYvOMt/2PQql
-         dLHch9q2Vqr6tkrO1aQWoi55G5hKMCYnN1H2+hQ2oKQfSQjwB5k8MelZN7uF0dKssykU
-         i6ILBFMi850T72O+55ionGzwR2/Di+hkFA5zLqsERUFSGV5HoYu5tLQx0a88AgewoOS8
-         mtOhmUIe4ybAAiKv8Tdy4eFLFK6wn9oHehhkHu3UEHyT9OhlSHlAcP5MYuims7SqJWCg
-         9/E22xmfohJZP0nwlWhspESOlXK5kRKE6D0kuN8acJqJWER1zdXPcHY4W1dpgyZAY04p
-         Zhbg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=eM4o3vQJG5YSqEOi7+3WJZVTDqM9mwXMz1W8oS+gJdw=;
-        fh=YwoLHg1WGWsfMwliVWaGQcH9X+aSN/e+poAIP25aVrY=;
-        b=NqsTZYVWQp/d+Kj2VXHobKex9z59eAf0QlY7QiJ1Fm21poJ2OvBFE/USxBmyi7NIMf
-         Y2w/0QbpvtvDs7IEt9my5Gx8O4QXyG6yAr0mmQYoL4X3RUlAkiAJSGjcaC3vEOy38vnA
-         iJnKcOVDuUDhiTERFKvl3jO7PL1zQ3F0T4oIkiDw2vbGnUEmhvDaHkQ1etjbHwAMVY+e
-         9KB52JURx3E0g+pWfhwOoVomqOe0ZNLQUNJfMWbmhRCO6/Etm3aECVpniIMUITGBfUih
-         ttJyQEJUTsqE4bFv5msEQ9j/R8H5zt35jktYvDnqXPSza4s9obm/5u+eOaxg2+oX+YIp
-         TMxQ==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790063593; x=1790668393; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=eM4o3vQJG5YSqEOi7+3WJZVTDqM9mwXMz1W8oS+gJdw=;
-        b=EvhiX2KwGhxVDPzPjIFFOD9SEDRdc5aD2gC4oWByMv1xUVcCvtMbW5g+T2au3zdOG4
-         s8yLL59Q3uj2y9+GAicmmUXcueQ6Q54NUl62Iop7NQSdT9J8it9dwtAFjnAFofOyScT3
-         aQL0CsVQcKAlkLGIp3flwt02/ALYCkTS8pDG8RZWVfOIBl4bTsEiiUxYqS8yUYod2JoS
-         vfeqq3n4j6wl/fbKhFSesuCG/UtDvYaUIjNMB1Z5b96cCAdXQHZQ9R4eGz/8hGCGN5Lp
-         xvcX/4Kgh2oqZWYutC0EJHuddKqESChgnk25hkEEXvL5EQPkc/gyxvDJR3ZKupGcM8mZ
-         6o1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790063593; x=1790668393;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=eM4o3vQJG5YSqEOi7+3WJZVTDqM9mwXMz1W8oS+gJdw=;
-        b=jSVIw1Gx59fMRznFaLy0dZCuyDuYkK1ec2oQ/FZzAZNyqtxO4wTNLOFbVginl7aoJL
-         waiQcWropVcTdhopc2Yf8cT2iNx87+oDPjpvocBgtRZqmnmCJ4RvU0iTbwRomZsmViU+
-         1DDOf04jy8cnpB74x/FvD07Yl0AiBDAOSEmTYUiHn/CbzP3iOHpKAGeouD4qAu2fCKK8
-         lV3vFCRynFRr5pXWzTtRf0Vpn2bktRPDxmOJg6L1P2WNocIfgeiPs3CUFyIwH4bZ3L9F
-         24zy1jLZS4yqhT2rh6rWjWKg/15YCDrIjewcRBTXKfi9PQqbj3foX/5MVrMEN+yiXkjg
-         b+oA==
-X-Forwarded-Encrypted: i=1; AKwUvBzhDDoMFOU5ZuPA0g6nSSA5Hv2JhWxgkCExmLGw2Kwf9RCeSEA1Up+r3p4Q/a9kCVCGec2p/ic=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++kdDX9iSUlrpbay7MpNKi5fh7vPhBZQTW7RYMKeJiY+mwso3arP
-	5bZ8CRbpbq6JDACZb1432DUUN629H62b+xCEZiucQT4j4zxq+jfkZN5wsv0VmJTqLJQMenr/mSq
-	qg/bLTVm7G53tp5/cMHyk6jY4iqQjoZCxif8HYZMN7ijZKHZj2mdV4Os771TnOjhyJviSjUKroR
-	QvVL2wBTFbzUeJJzmaHseGXNmwu6cde3aZssq87wUltgeSapk=
-X-Gm-Gg: AYBFou3WjaigSnYovwQphipAwiJ7MZzLh+1DcpCeSXi8LAam5cMWHexZs6g3jjloFDP
-	3Urp1Zt/dhfF66myFyQNwHJZKMPh3dh7ajW+M78nR5l0wQmg+5xFMZaQyJnNVvO4VXh5+C9wM6G
-	IIeeIxDi7aKPZpkRjCW/eems8bna/CMlFi+Ue3ZmoiCgkMgRPZ5B/MBpg=
-X-Received: by 2002:a05:690c:34c9:b0:8a2:2993:5237 with SMTP id 00721157ae682-8a22993528dmr6368427b3.26.1790063592659;
-        Tue, 22 Sep 2026 00:53:12 -0700 (PDT)
-X-Received: by 2002:a05:690c:34c9:b0:8a2:2993:5237 with SMTP id
- 00721157ae682-8a22993528dmr6368287b3.26.1790063592222; Tue, 22 Sep 2026
- 00:53:12 -0700 (PDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 2AC4B601F7;
+	Tue, 22 Sep 2026 10:57:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 502211F000FF;
+	Tue, 22 Sep 2026 10:57:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790074630;
+	bh=UB96pS2lXgKbRferXQ6MVjY4lTebWD1sRvTJ4mcNWqk=;
+	h=Date:From:To:Subject:References:In-Reply-To;
+	b=Rq2lHonwYPyCf0LLYZb2zrrKIpjLsvWXDigwiH5+Vfw1oOnTbWsoaDFGlnn8yAkKl
+	 YBtUcTcqQ6S8bDc3xrwMdxRk7g9MqnsSrnTti5Dv9matZxJl+3v37KxReqYELKuHDT
+	 A1MxyhZaHxRuSiSDIeTSL1yOggks0CmlBEhGuKS4phKSLfzIhy3hGLXx6xuX+3To7F
+	 T9x32aqA7aV1zpniyrAHl0cauBnGJ/2lkq80honi2zzl31bFmeIdOGlZPLa6tk45uH
+	 Jpok/CVRDPvfYy5nB+eP3YDsKHSCeV01tKRv2gnUbIm2pKCzR/BdcVSsa6x9ymPLQd
+	 cuJMpvaYGHv/g==
+Date: Tue, 22 Sep 2026 12:57:08 +0200
+To: Vincent Donnefort <vdonnefort@google.com>, catalin.marinas@arm.com,
+	will@kernel.org, rppt@kernel.org, akpm@linux-foundation.org,
+	sudeep.holla@kernel.org, jenswi@kernel.org, robh@kernel.org, mark.rutland@arm.com,
+	ardb@kernel.org, david@kernel.org, danielmentz@google.com,
+	linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, op-tee@lists.trustedfirmware.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/8] arm64: Unmap FF-A lent memory from direct map
+Message-ID: <arJcN60nagFKXj2Q@orome>
+References: <20260921110050.3977591-1-vdonnefort@google.com>
+ <arIYtjmSKCs14SqO@sumit-xelite>
 MIME-Version: 1.0
-References: <20260914175435.118303-4-marouene.boubakri@oss.nxp.com> <20260915020235.507302-1-marouene.boubakri@oss.nxp.com>
-In-Reply-To: <20260915020235.507302-1-marouene.boubakri@oss.nxp.com>
-Date: Tue, 22 Sep 2026 09:53:01 +0200
-X-Gm-Features: AcwNN1XNGpI1PX37tg0BbLtLSRsjIrFGw8p2FV8jkmKL1NiS6WMD2T0eaz1XIwE
-Message-ID: <CAGgiveUEFL+UWzydBGxVveadffpO3BWbKjQ1UbJ_dOPgLu2m4A@mail.gmail.com>
-Subject: Re: [PATCH v2] tee: optee: prepare the driver for RISC-V
-To: marouene.boubakri@oss.nxp.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIyMDExMSBTYWx0ZWRfX+jbf+CmQQR5f
- EZQz1ZIuTUyORIhIqW/E3pl04HabeI26ZJ4Jqc1vpOc0v/sGp9Y3DbOAigenxwEBLlcsSheXgfF
- 1BBYuk4tuaIxZo/q5u1F6CMq+82ktDqaoX68MoS77oMCXyA8YJ/MNAvsL/mDIMw2nAkTgm+pOwS
- N+m4nhDnWLaoeOzsnEaF4U0a6qb01/IlC3Vet/Ar1XWUrN96cdoupgf8wgbevGp9bd1PWQUcy0u
- tNQO9x9VLRXuGT7CNvluN30kijpu9laKSEb7aKf9MsSXfqrSc5SyC+/+QlFo34GD8Y8vMzjR8QM
- QSKV2NcrLxO9B4A2NpsB6UGZbuMyqnWiS9foCvqDpcWuoPzOapIVHlxVbXaWMQV1R59RlN8C3xd
- HTqFZELFEK+mDZJLo0G79KG1mNUKAzMJPQMnoGuy/Z0fh5CWnPqcgxOE8XCkp7riQcYTVglO2BO
- gSxBzAGY1bfV1TUu1uw==
-X-Authority-Analysis: v=2.4 cv=IYYSymqa c=1 sm=1 tr=0 ts=6ab233e9 cx=c_pps
- a=NMvoxGxYzVyQPkMeJjVPKg==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=gowsoOTTUOVcmtlkKump:22 a=VwQbUJbxAAAA:8 a=8AirrxEcAAAA:8
- a=zEqzrABc4qne4u8U3FwA:9 a=QEXdDO2ut3YA:10 a=kLokIza1BN8a-hAJ3hfR:22
- a=ST-jHhOKWsTCqRlWije3:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIyMDExMSBTYWx0ZWRfX998eMqVXjDuj
- Pf9+svXwP47+EAt8S5bAivB3PDC983bZK0HBB4oLyUmELCOsW+y6zq+1FanAzkuy3/Dk41PTHmV
- edvq4zs2BROnHnsRNRnJISk35nwRH+4=
-X-Proofpoint-ORIG-GUID: S-VerH3QNGW4vQv984xMRoQGzuYAFpSB
-X-Proofpoint-GUID: S-VerH3QNGW4vQv984xMRoQGzuYAFpSB
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-21_07,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0 suspectscore=0 priorityscore=1501 clxscore=1015
- bulkscore=0 spamscore=0 phishscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609220111
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="d2bniudpfuafwp74"
+Content-Disposition: inline
+In-Reply-To: <arIYtjmSKCs14SqO@sumit-xelite>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.10 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	MIME_TRACE(0.00)[0:+];
+X-Spamd-Result: default: False [-8.60 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
+	BAYES_HAM(-3.00)[99.99%];
+	SIGNED_PGP(-2.00)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	MIME_GOOD(-0.20)[multipart/signed,text/plain];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	DNSWL_BLOCKED(0.00)[172.105.4.254:from];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MISSING_XM_UA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	RCVD_COUNT_THREE(0.00)[3];
+	RCPT_COUNT_TWELVE(0.00)[17];
+	MIME_TRACE(0.00)[0:+,1:+,2:~];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_COUNT_TWO(0.00)[2];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[209.85.128.200:received];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	FROM_EQ_ENVFROM(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	DWL_DNSWL_BLOCKED(0.00)[kernel.org:dkim];
+	TO_DN_SOME(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B987343AC9
-X-Spamd-Bar: -------
-Message-ID-Hash: HIGNGLW6MVIRCAPMJKUABCWO4EQMA6CO
-X-Message-ID-Hash: HIGNGLW6MVIRCAPMJKUABCWO4EQMA6CO
-X-MailFrom: jens.wiklander@oss.qualcomm.com
+X-Rspamd-Queue-Id: 9BBC144D8A
+X-Spamd-Bar: --------
+Message-ID-Hash: BFSU26MBBR6MBCRWO5BAOTC7CHIGKWYK
+X-Message-ID-Hash: BFSU26MBBR6MBCRWO5BAOTC7CHIGKWYK
+X-MailFrom: thierry.reding@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HIGNGLW6MVIRCAPMJKUABCWO4EQMA6CO/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BFSU26MBBR6MBCRWO5BAOTC7CHIGKWYK/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Jens Wiklander via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
+From: Thierry Reding via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Thierry Reding <thierry.reding@kernel.org>
 
-Hi,
 
-On Tue, Sep 15, 2026 at 3:48=E2=80=AFAM <marouene.boubakri@oss.nxp.com> wro=
-te:
->
-> From: Marouene Boubakri <marouene.boubakri@oss.nxp.com>
->
-> The OP-TEE driver reaches OP-TEE through the SMC ABI or the FF-A ABI,
-> both specific to Arm, and the TEE subsystem and the OP-TEE driver
-> depend on HAVE_ARM_SMCCC. On RISC-V there is no SMC instruction: OP-TEE
-> runs in a domain isolated by the M-mode firmware and is reached through
-> the RISC-V Platform Management Interface (RPMI), carried on an SBI
-> Message Proxy (MPXY) channel, for which Linux already has a mailbox
-> driver.
->
-> This series only puts the build plumbing in place for a third ABI next
-> to the SMC and FF-A ones:
->
-> - patch 1 builds the Arm-specific code of the driver only on Arm:
->   smc_abi.c when HAVE_ARM_SMCCC is set and ffa_abi.c when
->   ARM_FFA_TRANSPORT is enabled, with stubs for their registration
->   otherwise. The SMCCC header, the SMC and FF-A specific types and the
->   SMC RPC register parameters in optee_private.h are kept under the
->   same conditions, so that nothing Arm-specific is left in the common
->   part of the driver;
+--d2bniudpfuafwp74
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v2 0/8] arm64: Unmap FF-A lent memory from direct map
+MIME-Version: 1.0
 
-This makes sense. Thanks for the cleanup. I'm reviewing the patch.
+On Tue, Sep 22, 2026 at 11:27:10AM +0530, Sumit Garg wrote:
+> Hi Vincent,
+>=20
+> On Mon, 21 Sep 2026 at 12:00:42 +0100, Vincent Donnefort wrote:
+> > This series is a follow-up to the discussion that has started here [1].
+> >=20
+> > When memory is lent to the Secure world via FF-A, CPU speculative
+> > accesses from NS to the lent pages can still occur as long as it retains
+> > a cacheable mapping to it.
+> >=20
+> > Ideally, lent memory would be "no-map" but that would mean giving up
+> > MiBs of useful memory, so let's try to do better with the help of a CMA
+> > pool.
+> >=20
+> > On arm64, modifying the direct map at runtime is generally restricted
+> > because the linear map defaults to block mapping and splitting blocks at
+> > runtime may trigger fatal page fault, unless the CPU implements BBML3
+> > or the entire direct map was mapped at page granularity from boot.
+> > Forcing last-level mappings system-wide incurs a severe penalty we want
+> > to avoid. Instead, this series introduces targeted last-level mappings
+> > for designated memory regions, along with the "arm,ffa-lend-pool" CMA
+> > driver to manage unmapping and remapping on lend/reclaim transitions:
+> >=20
+> > 1. memblock:
+> >   - Introduce MEMBLOCK_PTEMAP to force PTE mappings only for a specific=
+ region.
+> >=20
+> > 2. set_memory infrastructure:
+> >   - Introduce can_set_direct_map_range() to check if a specific address
+> >     range is mapped with last-level entries and can be modified safely.
+> >   - Introduce __set_direct_map_*() variants that bypass redundant checks
+> >     when the caller has already validated the range.
+> >=20
+> > 3. "arm,ffa-lend-pool" driver
+> >   - Introduce the "arm,ffa-lend-pool" CMA reserved-memory driver, which
+> >     unmaps pages prior to lending (ffa_prepare_lend()) and restores them
+> >     when reclaimed (ffa_lend_reclaimed()).
+> >=20
+> > 4. Optee support
+> >   - Hook OP-TEE dynamic protected memory pools to "arm,ffa-lend-pool" f=
+or
+> >     both SMC (via DT memory-region phandle) and FF-A (via
+> >     ffa_lend_pool_attach()) transports.
+>=20
+>=20
+> Thanks for your proposal in trying to solve this hard problem of
+> unmapping pages from kernel linear map. I remember discussing this
+> problem last year at LPC too.
+>=20
+> Have you had a chance to look at a more generic MM proposal around this
+> issue here [1]?
+>=20
+> One of the major concern for me with your proposal is tying the
+> protected memory allocation to fixed sized platform specific pool size
+> based on DT. Then the cost of granular mappings/unmapping if the
+> platforms choose to enlarge these pools.
+>=20
+> As you maybe aware one of the major use-cases here for protected DMAbufs
+> is the secure media pipeline use-case which is memory intensive
+> workload. IMO, the solution proposed at [1] seems to address it although
+> people have flagged rough edges there but should be addressable.
+>=20
+> Can you try a port of [1] for arm64 since the author did all the work
+> with x86 as reference?
+>=20
+> [1] https://lore.kernel.org/all/20260726-page_alloc-unmapped-v3-0-6f5729a=
+a9832@google.com/
 
->
-> - patch 2 adds an RPMI ABI placeholder: an OPTEE_RPMI_ABI option built
->   when the MPXY mailbox driver is enabled, rpmi_abi.c and its
->   registration from the driver core. The transport is not implemented,
->   so the registration fails with -EOPNOTSUPP;
->
-> - patch 3 lets the TEE subsystem and the OP-TEE driver be enabled on
->   RISC-V, and teaches the memory type check of the driver about the
->   RISC-V page attributes, without which the driver does not build
->   there. It is kept separate as it changes the dependencies of the
->   subsystem-wide TEE menu.
+There's a lot to unpack and I'm not sure I fully understand all of it,
+but from reading through that series it seems like the primary use-case
+is to allow things like alloc_pages() to unmap pages from the kernel's
+linear map. However what Vincent is trying to solve (and there's some
+overlap with the VPR work on Tegra) is how to remove pages from the
+linear map that are part of a fixed carveout region.
 
-I don't think we need any empty shells. I'd rather wait until we have somet=
-hing.
-So please drop patches 2 and 3.
+I suspect there's some overlap, and we might be able to reuse things
+like the folio_{zap,restore}_direct_map(), but given that we already
+have a set of struct page objects, the two approaches seem to be fairly
+orthogonal at a higher level.
 
->
-> There is no functional change. On Arm, OPTEE still depends on
-> HAVE_ARM_SMCCC and the SMC and FF-A ABIs are built whenever they can be
-> registered. On RISC-V the driver builds without any Arm-specific code
-> but no ABI registers, so it does not load. The RPMI transport will be
-> implemented on top of this in a separate series.
->
-> Testing: Tested with the configurations below, riscv64 and arm64,
-> built-in and as modules, and W=3D1 at every step of the series.
->
->   - riscv64, minimal config + CONFIG_TEE=3Dy CONFIG_OPTEE=3Dy
->   - riscv64, minimal config + CONFIG_TEE=3Dm CONFIG_OPTEE=3Dm
->   - arm64, minimal config + CONFIG_OPTEE=3Dy CONFIG_ARM_FFA_TRANSPORT=3Dy
->   - arm64, minimal config + CONFIG_OPTEE=3Dy CONFIG_ARM_FFA_TRANSPORT=3Dm
->   - arm64, minimal config + CONFIG_OPTEE=3Dy CONFIG_ARM_FFA_TRANSPORT=3Dn
+Thierry
 
-Since this is a V2, I'm missing what has changed from the V1. The
-patch subject prefix is also incorrect (the V1 was correct) and
-confuses the b4 tool. When you post a new version of a patch set,
-please don't add an explicit In-Reply-To header in the cover letter to
-the previous patch set
-https://www.kernel.org/doc/html/v4.19/process/submitting-patches.html#expli=
-cit-in-reply-to-headers
+--d2bniudpfuafwp74
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Cheers,
-Jens
+-----BEGIN PGP SIGNATURE-----
 
->
-> Marouene Boubakri (3):
->   tee: optee: build the Arm-specific code only on Arm
->   tee: optee: add an RPMI ABI placeholder
->   tee: optee: allow enabling the driver on RISC-V
->
->  drivers/tee/Kconfig               |  2 +-
->  drivers/tee/optee/Kconfig         | 10 +++++-
->  drivers/tee/optee/Makefile        |  5 +--
->  drivers/tee/optee/call.c          |  8 +++++
->  drivers/tee/optee/core.c          |  8 +++--
->  drivers/tee/optee/notif.c         |  1 -
->  drivers/tee/optee/optee_private.h | 52 ++++++++++++++++++++++++++++++-
->  drivers/tee/optee/rpmi_abi.c      | 23 ++++++++++++++
->  8 files changed, 101 insertions(+), 8 deletions(-)
->  create mode 100644 drivers/tee/optee/rpmi_abi.c
->
-> --
-> 2.34.1
->
+iQIzBAABCgAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmqyXwEACgkQ3SOs138+
+s6Fsgw//dlQUJrbDWiXuqxe3GRzKuh4gFS8vuMFfMkbYyeXhcsFi2RHH2NVZ4O/0
+7E51l7U9VQKmCvcjTzd4+9m47q3h2TskmNQsMA1vWWQDFKOWrbDw2yL11vSqZ90D
+hcquJSGds+Gu8eaJFKONeIxfUmuGawtaqTl1JtehYNaN6wur68zTbhS/dkDD4OrZ
+9MCyUlhaLPSfadqpBQSLucmYM5GhSQikGcqIJMIYkP7kd3HgWfr0XlqW1+tN3PjO
+MzP9sBX/LMW6HrsGa1CJNMRSaEhldJ9JFoNaIFyIBiN0+L7UBUyFlByNoFuatUqn
+NAQsB90d2EuSmo5zz5zmeuoNGhc4k0jO6i8YS3zVmeL/eIWg1ZbifIm7FTaNB8iX
+DMs9aq3ovYnbfGOpOOni1Z5BWz6LD4+2WG7bnOVXhKIWE6wOLG8cW/nTEt6hZ/xA
+6wY+TFrZMoIRCOREqxTbz+TImFkTuF8OS4ZIo812FNBgUcGQu9nfbTzrebUs9pGY
+bjieIqRLmuyXIXHDayd1NcnmuIxN1OgwzIJO5CQvG6yCJ1sk6DVrgODmKed2Nxoh
+vRm9IRG6yWGxpf3DeQmUvHd4ZRogSpRfQ3713PrxjnIj9WUO7fs8yGq6F5xHrmMb
+FlXPgJng4yDFZ0eb9bKte5N6yvKoTI8e4jsUD1NL7y/YNh6lWy4=
+=42dx
+-----END PGP SIGNATURE-----
+
+--d2bniudpfuafwp74--
