@@ -4,98 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51AAFCA5FAB
-	for <op-tee@archiver.kernel.org>; Tue, 29 Sep 2026 03:18:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA9F2CA5FA1
+	for <op-tee@archiver.kernel.org>; Tue, 29 Sep 2026 03:19:26 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 70B23451F3
-	for <op-tee@archiver.kernel.org>; Tue, 29 Sep 2026 03:18:56 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id F23D1454BB
+	for <op-tee@archiver.kernel.org>; Tue, 29 Sep 2026 03:19:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1790651936;
-	bh=N/GoXXPvoD19zUb9BSvoUOZ49eNN/9Uv+mNF62wn3GA=;
+	d=lists.trustedfirmware.org; s=2024; t=1790651966;
+	bh=ND+eFkDAA6lA1Hvzr2cEf42GsP5u1CTq/6obWXCSr2g=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=po2Rfu4WkaWlUbrWuM1rfw+qG9g38lm2j+T2eyw2YU6A8y3L9BbqjYY4pbrUd2ZGq
-	 02oZDWNi9+kKDaIBTSpzEYcg21cx++ql5EsuOPQSCnjWRS8xEDm56jvlsdLa2z1YTH
-	 Kv75yoQvyiRYndXyNye0JFSal12Ji56xwGkqzoNHe72aaVxFA0jmxR/4rT8SjcnjTA
-	 P2XtYBvlLZGRfBd6rolV0TsS+b66VUoLz4WMzaahp67HKgq4q/BRZAG3wmRnp4hzEb
-	 dHPBDFCspUiBxhWKtGPHJQUSIK3fRA34MQ2cv8aCOelyBRblOpdVe0X22Kbs2U034L
-	 TT1rH04y9L/UQ==
+	b=j83ZBXApzyt7dS+t+zCoRlfsN+vjFytTI/kU9yyv9oXqKb3mG2byyTbT7DHkeVvbk
+	 uMO2A0h5lQIxgRMFZ6uWtfSAaqgG1XiCS7aWgYA1UWMjhx1o3AlD5R05lFk81j4u//
+	 9Qx+1J3afJGrOoxMQTtCuFveBfR/l/SgCdC/TycYrQCofk3pucF4FrIBV6Ktj3khsU
+	 pi57Bf5bah/KixvfsrRr6rmMG04VnaOttCja5IGJ1vt2HCaWxygTQPtWMTw29H/Aji
+	 7uCNjmVcPM6E+ZvamGC2wt0NDd+x70yJWyYlrwjYkOkjJphL7W0reHgzdjvJCu/eVZ
+	 NvF2Vg8j47d/g==
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B43A5451BB
-	for <op-tee@lists.trustedfirmware.org>; Tue, 29 Sep 2026 03:17:49 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1212A454BE
+	for <op-tee@lists.trustedfirmware.org>; Tue, 29 Sep 2026 03:17:50 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=J2zUHReD;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=jjt397I+;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=aBaK3aEH;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fVt59FVv;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68T0iZ6G4179718
-	for <op-tee@lists.trustedfirmware.org>; Tue, 29 Sep 2026 03:17:48 GMT
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68T0jAnD3210848
+	for <op-tee@lists.trustedfirmware.org>; Tue, 29 Sep 2026 03:17:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4WXFbSFSr1/RQ2vXdoBOENE9gIt1QGKOfRFfzDrKe+A=; b=J2zUHReDk5sg9gVd
-	f7LIXb2G3xqE04HSQG6WjzxYb+O2OcWDxp+WbdXxvS4Y5/oxO7EVvtEJzK/ami+D
-	fzk/xdp1+OjmzDAB2AOx3/c0lgDlcBs70OoyhJjwVeAW6QC7vEqg/x5IZvmz+o13
-	P8EmMlPFJ5P7ay2PlpVxBlSNACF54mJNQ+ggV0G8YRjvCaRUascCDkPwXJ7xjnQc
-	LqW2irlPPa1gfHmlJDYR6AePsQxjusmFHjCi3v08w6ntFgpIiWx0Uv8/cAQTqGpR
-	TONhdK/TMB6WpyxZX2LJ9+0byySACPoasc5tZ8u4fmMBAEn5P82aBBXp7zok0iFs
-	vYGA5A==
+	MYZA6IzfrtVXBF8cqfLfidDynaxNcZHoZMTCP6wtXsw=; b=aBaK3aEHCjfBukWV
+	NM5mou+lpo+pfd+0PuWXPIDZ0vJ2DlvOXJhbHqmgnFxc5fb6D04tb53FpG2Q/YEL
+	50JnAIKzOemLiPr9ugGIlhhjqt/v/eR9U6YjqJRFRpLL7LACiaW2dgnj+2vXh0uj
+	A1cfjRlm03FcyrTeEtvsmm5AzZahadCCwWVGw9uqrybliON8MGKfGND9Do4I/XeH
+	RNPuzeT9vq4si1iTjXIJNd5N+C8do3ovbFxMVpf1wUwJmouxDTIK44U7RDHDx2f9
+	cJH/hENLiuX03M5b8NKaPlWjrv0pSnFlYEYuogk5XQwb/514iL4fiiZS1aE7kyks
+	VhoTxg==
 Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gyxmu9c4s-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h00s4rvty-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Tue, 29 Sep 2026 03:17:48 +0000 (GMT)
-Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-34344599f01so1604082eec.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 28 Sep 2026 20:17:48 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 29 Sep 2026 03:17:49 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-349ffa249bdso2374137eec.0
+        for <op-tee@lists.trustedfirmware.org>; Mon, 28 Sep 2026 20:17:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790651868; x=1791256668; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1790651869; x=1791256669; darn=lists.trustedfirmware.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=4WXFbSFSr1/RQ2vXdoBOENE9gIt1QGKOfRFfzDrKe+A=;
-        b=jjt397I+hvyKEnxaCECFFuZ1pZrFBBzYKnJec0vipgv7PXJvT0QJ+HSlLS9O4Yt7Ev
-         E2tBegC5LIBwR5LK/31qjq5BXD2NooTercqRhrlClwI/TtwC5MtDoCHGJKF1gmtG5rWy
-         KiH07DMC65O0NPMfHMd5ldvh1VgNZsdqyDN4jLz9EIHcBF1zX+ebTRhIInVoTbSIDbxv
-         VDSui0r78yC1fQuRItyZaWJYTtb+Ojp50aDrwwMpJRZDCKER0oqD1WsM/Fsf+23Zdp4e
-         u/ywCfxsPTC1+QWf3wGrQDcR86uR3p4pj7HnJVHynxzdBUN56QEMXy2KlLabOAyb7i4s
-         V/fg==
+        bh=MYZA6IzfrtVXBF8cqfLfidDynaxNcZHoZMTCP6wtXsw=;
+        b=fVt59FVvxNzwoGV37/WDFzcUyGnl4d2/I9AirjMhFBb8yTZjJCbAaXt7pfs4FpBmCQ
+         xBxcfM5s0lXDGZgWmdS26y+Cspw2+m0R/TZ8qp+Iy8HbV7uqNecFGSOX/g7kV0is4E8z
+         YoAFa22mQvTc5+S5LhU54plAA47HtFKbo5yUG54PX9xxJ7VtMQA5onTcS0nth11KNMLY
+         eoimHwN5UBt4eoCYUeeb6x9UmsDXnz8ZD8ykBBRr8f8K7jjbpd11goHSq6bZan0foG8F
+         CQVvlLFNRo/x6ykrf4qi0W5UNXrXqqF13nsfg+p9ftA4AvqRp5kcRXXPxmdNvuQ1cRkl
+         5jMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790651868; x=1791256668;
+        d=1e100.net; s=20260707; t=1790651869; x=1791256669;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=4WXFbSFSr1/RQ2vXdoBOENE9gIt1QGKOfRFfzDrKe+A=;
-        b=od6LuBZrQvLDbYciEsMpALGmJmDHmtHZDi4gRMMK9A21kLaxHM8p8NSdbE4fdu5UmJ
-         URiquTkHLX+CoIC3b/cIIvls2noUlo3YIZa/Rn4HPodRnptZwbyK0N/IPNKGDDngH2PE
-         LoZojWtQjAMEE4muf/pGPMLjlAHqzxFjSN6xcB84MqFOTuMlwEke5xIpDAL1+pC/Xs4i
-         MkOFsW3YgY5OIiPmRb9iCaPdFNkosUmE7oeGqUAbt2k49xE1J0pZxSRarWQp74FxR7rA
-         WCG2Macp+X7uRVGwnRkevLpgK7E+KkJX17c3POSAN33w+O/DsYP3SDzW2PHWiqdBSeNE
-         vGWQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwdMdUrnpZg2g3EhoWVLG3opNmDrkJOYlZyEPmQXaKMJBSEDUbaPYvADlRsvMFLoiGqPiWwP1w=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++myf7FOj0bfM7hNDTjSq4tvHYZl5xL+zI+x2zax9uEgl4ayxdpV
-	G/UN6u9XPdPIw0OJ/EeL6wM/lRNAp+GjClGG/7v0IOWFDxwRH3FCTLt/4B5eenIAbmi9FsEBHPT
-	Vjm6nboTwIOs24OANbroeyzoFhEUbESGvP47F4p4TiJckf/SBo3P9kgzywNyOGf0UWMt5n4E=
-X-Gm-Gg: AYBFou2A/bYclXT4cHzsqZH+24ZI8tuNSNJghouh3VZlxND9gU1//EN0IB1HPbTAHcq
-	rg+Kh/bX/2/Lepz4aLVXDTOrx7Y8POYtElqd1YXchM8t9UurQNfwOajQTVptasy/qLs6FEgZjfq
-	/5AsZqpgbKf/4Q1KNY9Oe3t3Q0ZsjVkM/w9nfkD1xz6wkAY+PSm6cE0EBPoprjyny5grhy75rYx
-	c+NO41R46N0Sewsp9TlltvIAFMJYQ6TLeT5YIXkZz2CE5lEAVP7uvzOOqjBO8AGmFMzaBJmBTOV
-	qIxdSRWzREqxvjL3GxJGcO68v+UUHhdZtI9yuZV77OkkfE3jXfcyPo3Esbspw+gyVw5cNztQHed
-	qpo/u5VfhrwM4Z18RKSql3AlGOrtdZbkRqUnJAdiIZuO0SjbXgE1taLNXgTQ=
-X-Received: by 2002:a05:701b:42ce:10b0:143:5c63:23bb with SMTP id a92af1059eb24-146ce4958fbmr12821658c88.11.1790651867439;
-        Mon, 28 Sep 2026 20:17:47 -0700 (PDT)
-X-Received: by 2002:a05:701b:42ce:10b0:143:5c63:23bb with SMTP id a92af1059eb24-146ce4958fbmr12821622c88.11.1790651866843;
-        Mon, 28 Sep 2026 20:17:46 -0700 (PDT)
+        bh=MYZA6IzfrtVXBF8cqfLfidDynaxNcZHoZMTCP6wtXsw=;
+        b=Zsmh7NPjbycHaRottH1OaKV8H0LEPKX2RYqZ88+AumbOrLuYUm8E5eFc5YhlgIUgcw
+         2bDQHLrINqlNY1tWBrC+VfpssMNCEcv71Rj1CCHP9IiNqmLiP5RFhhnfagp4e9LifucW
+         xX5qQYFrUh6dYlQ7kI03O1UY2uIQ7+qp5sdAG3/AM60GPygHFjv6rhRr5o4hrx/Dy14H
+         dmAxOuPmspl3UMGLdL0IHy6HT5aXZIDr7/RmwT9HF+ONk2kPY4NcZdy3AmFwQFDrG/9L
+         wq+2vXTXELommlXGalG4CxXSd/FPxCF2PTdRdXFpbVPWDfyG0PeRTMwJwkBhu+FCVBd2
+         +ZSw==
+X-Forwarded-Encrypted: i=1; AKwUvBxLUeaRXu0+ahH+4LkT796VsRhaGI/HnF/8RAnrDNvAhE4AYLh8MH7dXgSbxLJ+1JEPPdDA1gc=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++l5dM7C09FaD5YhTKC7GUp1mlj6IRLLi505zyJpUwq7ZODC5Njy
+	ljCkeMSJTdBnH0eMShbtvZeeU6f0I1CmKFJqCPwuNmaKsxaxtOGA0yOvjJ2dMfT/XU2qnpDAJgM
+	VNNYguorhDtXW5XFuOFBZ6EuIZ7x/UAvL4ZoGuszhA9hufhXKXHhegqEYunmMXKO506lOGQM=
+X-Gm-Gg: AYBFou0hK9SFO0BS7CQecKcGORC+Q8leGybYNfy/fy6pa7VslacWEL+u+5Qw0QXKlTk
+	8bxTnrHEvE938KP7iLppXpvtOuEMs761Z7Ls2yxZVRajVJ8ow/qDZumwcsZdEC1ire43uw8UHde
+	CpxOEp2WgtudgpYXt6rstW+tb7THaEY64qvhkpztzyOF7sw53JaDlmZLekkg7GqJfVmvWrhxFsA
+	73G9bcRiGtQlKyo1ndqD8H0qxNSzlWFSZf2jmCeUA3axRnPs3/ppt0t+JLUVoM7qPWlrP83rE/W
+	6Tg/yFSGMoWvmbKrVnmZH8NKe5RziZ++EsJq+pOeOwZYiPDwiZkMee5MZTc2KOPOWoHKKYexJ3M
+	HaRHJq5B+tYNDOg9K3uXSyaiMgaqp59jCHmM3XYrtujToju7q+Sk9lTWnhzY=
+X-Received: by 2002:a05:701b:4250:20b0:143:298f:33b7 with SMTP id a92af1059eb24-146d096d14amr11692146c88.47.1790651869002;
+        Mon, 28 Sep 2026 20:17:49 -0700 (PDT)
+X-Received: by 2002:a05:701b:4250:20b0:143:298f:33b7 with SMTP id a92af1059eb24-146d096d14amr11692120c88.47.1790651868128;
+        Mon, 28 Sep 2026 20:17:48 -0700 (PDT)
 Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-145ad4028a9sm24789368c88.11.2026.09.28.20.17.45
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-145ad4028a9sm24789368c88.11.2026.09.28.20.17.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2026 20:17:46 -0700 (PDT)
-Date: Mon, 28 Sep 2026 20:16:53 -0700
-Subject: [PATCH RFC 02/10] mailbox: mpxy: add direct synchronous send
+        Mon, 28 Sep 2026 20:17:47 -0700 (PDT)
+Date: Mon, 28 Sep 2026 20:16:54 -0700
+Subject: [PATCH RFC 03/10] firmware: add RPMI TEE bus support
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260928-riscv-rpmi-tee-abi-v1-2-04908b81d885@oss.qualcomm.com>
+Message-Id: <20260928-riscv-rpmi-tee-abi-v1-3-04908b81d885@oss.qualcomm.com>
 References: <20260928-riscv-rpmi-tee-abi-v1-0-04908b81d885@oss.qualcomm.com>
 In-Reply-To: <20260928-riscv-rpmi-tee-abi-v1-0-04908b81d885@oss.qualcomm.com>
 To: Jassi Brar <jassisinghbrar@gmail.com>, Paul Walmsley <pjw@kernel.org>,
@@ -107,31 +107,31 @@ To: Jassi Brar <jassisinghbrar@gmail.com>, Paul Walmsley <pjw@kernel.org>,
         Amirreza Zarrabi <amrzar@gmail.com>,
         Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>
 X-Mailer: b4 0.13.0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDAxMiBTYWx0ZWRfX4asacRXTykBG
- pIoXF/nM/g0DpXGTPcG8qS70TauGb89pTDxqfAjjfrbAv7VSUrDWewqea9rmyEWSB5Sxq6KStVA
- OLSkYF4n/CmeJMc70Y/LH0nfuOFuYCGsbOETTSHbBadNDzqlAGUAg5ccRZoLXcBor0JmRutKVnO
- 9xjb69c2OvYzMAPCQAfJn0vep5xqjiaQOFpjYsvQPTq9K1p09Wifj4pssCHwvdRry8CRV0RRMfe
- NLKgiPcQ4Ym9qXrcloIP8Xyi8Wj9UJQiB25Y59Cu4s5bsmHp8VG6hMEXztn/hbKvaAky0yh22uS
- jmEJLD9rePrq1NM7GikGGHijML0r4LUhZHtpQynCvl6agtIBkybvEb5lhgZrxHYOqrFSgAK1nhe
- bSB6OsLolpOe2X8qaEjf2og4lGL1VwSwM80tVmbiWqHi1vrkUnLwUeBHhOvx91rJxY/+2sfdJbG
- 9nxwB23QUZ1amQMa7Tw==
-X-Proofpoint-GUID: pyp9IfJTfYFDujRuY2y0Y1f3jAvUMnis
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDAxMiBTYWx0ZWRfX7w2nJhnTN5Qp
- H79jH0kkhZ3rQm4Hxu5fT7/PlvqhETwUAON4WTWBST6gs66iw7MB8Jw6Uo/jnudqQ1Mqkwc/mIJ
- UIVN2WPxPhmfdtrMKIFN8OEu6UZRN34=
-X-Proofpoint-ORIG-GUID: pyp9IfJTfYFDujRuY2y0Y1f3jAvUMnis
-X-Authority-Analysis: v=2.4 cv=c70+0h9l c=1 sm=1 tr=0 ts=6abb2ddc cx=c_pps
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDAxMiBTYWx0ZWRfX4LQmq4k7i/Ht
+ Uek46Y92SPADklO9pLpXOxQLPGOhOPUXDqf6TVGGdrmRQBJCLs5Yn3JIgpCXyY8/zC+8gsEXV4+
+ CXqsqCznRVgNCYGdB6yRSbD/vIw6Oqs=
+X-Authority-Analysis: v=2.4 cv=ALbfqNVA c=1 sm=1 tr=0 ts=6abb2ddd cx=c_pps
  a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=EUspDBNiAAAA:8 a=Tu2Rjsi-ZZ_FYV3k_IYA:9 a=QEXdDO2ut3YA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=EUspDBNiAAAA:8 a=8-py22VFfN3kZz82q70A:9 a=QEXdDO2ut3YA:10
  a=6Ab_bkdmUrQuMsNx7PHu:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDAxMiBTYWx0ZWRfX35fMfedHB4yE
+ j0XhftZ0Uimva3gRdjWSdMO2rQWaAQavRqdfe+UBLqd+ygzkztUSGJ+w8QA4K8jQ8Y4r+NKv9+X
+ FF5W3CeGIlRir1pN1NPqWdHJ+adyrlumJL1jqjTKl8f5mnxN0yUAZ7j/s0/Xmhe5sbsQBoHpBFY
+ P+GqWi9LZFVV+GMKnjObwEwInnh1mQF24aMhnHGOkP4RBPXekt/bTURkAugIHmYVnzSmyb/3rjp
+ s9xbsrKayCcX55mTt7CskYDZxckk6NlFRSIiR+/I0KXm5fGSmZaHvIf1GSmcdIvmNQ/joirX67C
+ w258EVhOa43PTYIt3K5cPD/k0AEYA6XLjtNK8LOGiS1okPKVEfCCotCIVkT1jzc21euewo3QfZB
+ Z840Zfw6k1H/VCf/nRFW/Mb9onad0fIuYX0HNY5Efp6NuB2ekjS6jcq5z7o93TOTDYhgp4tmkrm
+ BLGvAP7UjKEPLuwrqCQ==
+X-Proofpoint-GUID: fpFaWwZvS8NVc5nJn5pzVGwjTbII1Ts9
+X-Proofpoint-ORIG-GUID: fpFaWwZvS8NVc5nJn5pzVGwjTbII1Ts9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-29_01,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 bulkscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 malwarescore=0 suspectscore=0 adultscore=0 lowpriorityscore=0
+ adultscore=0 priorityscore=1501 spamscore=0 clxscore=1015 suspectscore=0
+ impostorscore=0 phishscore=0 lowpriorityscore=0 malwarescore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609290012
 X-Rspamd-Action: no action
@@ -165,17 +165,17 @@ X-Spamd-Result: default: False [-4.60 / 15.00];
 	TAGGED_RCPT(0.00)[dt];
 	RCVD_IN_DNSWL_NONE(0.00)[74.125.82.200:received]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B43A5451BB
+X-Rspamd-Queue-Id: 1212A454BE
 X-Spamd-Bar: ----
-Message-ID-Hash: 6UN3I6BEWAZASXJTYCZ3BENUXOLVCN2R
-X-Message-ID-Hash: 6UN3I6BEWAZASXJTYCZ3BENUXOLVCN2R
+Message-ID-Hash: RZUMDN7YQ7KU2YF42ZZ24XZCE76MDOMZ
+X-Message-ID-Hash: RZUMDN7YQ7KU2YF42ZZ24XZCE76MDOMZ
 X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/6UN3I6BEWAZASXJTYCZ3BENUXOLVCN2R/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RZUMDN7YQ7KU2YF42ZZ24XZCE76MDOMZ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -185,418 +185,368 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Implement send_data_sync() for RPMI MPXY channels, reusing the
-existing RPMI message dispatch and returning its status directly
-instead of going through mbox_chan_txdone().
-
-Factor per-hart shared-memory acquisition into mpxy_shmem_get()/
-mpxy_shmem_put() so both the queued and the new synchronous path pin
-the CPU around the same per-hart buffer, keeping a request and its
-response on one hart. Calls on separate harts remain independent,
-subject to firmware support.
-
-Add rpmi_mbox_send_message_sync() as the RPMI counterpart to
-rpmi_mbox_send_message(), for use by the upcoming TEE transport.
+Add a bus for RISC-V RPMI TEE services. Each service exposed by a
+TEE endpoint is registered as its own device on this bus, identified
+by a UUID, so that a single physical TEE can host multiple
+independently-bindable service drivers.
 
 Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/mailbox/riscv-sbi-mpxy-mbox.c      | 196 ++++++++++++++++++-----------
- include/linux/mailbox/riscv-rpmi-message.h |  13 ++
- 2 files changed, 139 insertions(+), 70 deletions(-)
+ drivers/firmware/Kconfig                 |   2 +
+ drivers/firmware/Makefile                |   1 +
+ drivers/firmware/riscv_rpmi_tee/Kconfig  |   8 ++
+ drivers/firmware/riscv_rpmi_tee/Makefile |   5 +
+ drivers/firmware/riscv_rpmi_tee/bus.c    | 202 +++++++++++++++++++++++++++++++
+ include/linux/rpmi_tee.h                 |  83 +++++++++++++
+ 6 files changed, 301 insertions(+)
 
-diff --git a/drivers/mailbox/riscv-sbi-mpxy-mbox.c b/drivers/mailbox/riscv-sbi-mpxy-mbox.c
-index ea69c6b6b4f9..5ca1b6d87f5c 100644
---- a/drivers/mailbox/riscv-sbi-mpxy-mbox.c
-+++ b/drivers/mailbox/riscv-sbi-mpxy-mbox.c
-@@ -125,54 +125,83 @@ static DEFINE_PER_CPU(struct mpxy_local, mpxy_local);
- static unsigned long mpxy_shmem_size;
- static bool mpxy_shmem_init_done;
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index c183d98c1e8f..46297332288f 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -6,6 +6,8 @@
  
-+static int mpxy_shmem_get(struct mpxy_local **out)
-+{
-+	struct mpxy_local *mpxy;
+ menu "Firmware Drivers"
+ 
++source "drivers/firmware/riscv_rpmi_tee/Kconfig"
 +
-+	get_cpu();
-+	mpxy = this_cpu_ptr(&mpxy_local);
-+	if (!mpxy->shmem_active) {
-+		put_cpu();
-+		return -ENODEV;
+ source "drivers/firmware/arm_scmi/Kconfig"
+ 
+ config ARM_SCPI_PROTOCOL
+diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
+index a855d3696173..772fe024baab 100644
+--- a/drivers/firmware/Makefile
++++ b/drivers/firmware/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_TURRIS_MOX_RWTM)	+= turris-mox-rwtm.o
+ 
+ obj-y				+= arm_ffa/
+ obj-y				+= arm_scmi/
++obj-y				+= riscv_rpmi_tee/
+ obj-y				+= broadcom/
+ obj-y				+= cirrus/
+ obj-y				+= meson/
+diff --git a/drivers/firmware/riscv_rpmi_tee/Kconfig b/drivers/firmware/riscv_rpmi_tee/Kconfig
+new file mode 100644
+index 000000000000..b0396183b87d
+--- /dev/null
++++ b/drivers/firmware/riscv_rpmi_tee/Kconfig
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++config RISCV_RPMI_TEE_TRANSPORT
++	tristate "RISC-V RPMI TEE service group transport"
++	depends on RISCV && OF && RISCV_SBI_MPXY_MBOX
++	help
++	  Say Y or M here to enable the transport for services provided by the
++	  RISC-V RPMI TEE service group.
+diff --git a/drivers/firmware/riscv_rpmi_tee/Makefile b/drivers/firmware/riscv_rpmi_tee/Makefile
+new file mode 100644
+index 000000000000..d80ab5bc9dc4
+--- /dev/null
++++ b/drivers/firmware/riscv_rpmi_tee/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0
++
++rpmi-tee-bus-y = bus.o
++rpmi-tee-core-objs := $(rpmi-tee-bus-y)
++obj-$(CONFIG_RISCV_RPMI_TEE_TRANSPORT) = rpmi-tee-core.o
+diff --git a/drivers/firmware/riscv_rpmi_tee/bus.c b/drivers/firmware/riscv_rpmi_tee/bus.c
+new file mode 100644
+index 000000000000..32f555c2f1f2
+--- /dev/null
++++ b/drivers/firmware/riscv_rpmi_tee/bus.c
+@@ -0,0 +1,202 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * RISC-V RPMI TEE bus
++ *
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/device.h>
++#include <linux/ida.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/rpmi_tee.h>
++#include <linux/slab.h>
++
++#define RPMI_TEE_UEVENT_MODALIAS_FMT	"rpmi_tee:%pUb"
++
++static DEFINE_IDA(rpmi_tee_bus_id);
++
++static int rpmi_tee_device_match(struct device *dev,
++				 const struct device_driver *drv)
++{
++	const struct rpmi_tee_device_id *id_table;
++	struct rpmi_tee_device *rdev = to_rpmi_tee_dev(dev);
++
++	id_table = to_rpmi_tee_drv(drv)->id_table;
++	if (!id_table)
++		return 0;
++
++	while (!uuid_is_null(&id_table->uuid)) {
++		if (uuid_equal(&rdev->uuid, &id_table->uuid))
++			return 1;
++		id_table++;
 +	}
 +
-+	*out = mpxy;
 +	return 0;
 +}
 +
-+static void mpxy_shmem_put(void)
++static int rpmi_tee_device_probe(struct device *dev)
 +{
-+	put_cpu();
++	struct rpmi_tee_driver *rdrv = to_rpmi_tee_drv(dev->driver);
++
++	return rdrv->probe(to_rpmi_tee_dev(dev));
 +}
 +
- static int mpxy_get_channel_count(u32 *channel_count)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
--	struct sbi_mpxy_channel_ids_data *sdata = mpxy->shmem;
-+	struct mpxy_local *mpxy;
-+	struct sbi_mpxy_channel_ids_data *sdata;
- 	u32 remaining, returned;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!channel_count)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
-+	sdata = mpxy->shmem;
- 
- 	/* Get the remaining and returned fields to calculate total */
- 	sret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_GET_CHANNEL_IDS,
- 			 0, 0, 0, 0, 0, 0);
--	if (sret.error)
--		goto err_put_cpu;
-+	if (sret.error) {
-+		rc = sbi_err_map_linux_errno(sret.error);
-+		goto out;
-+	}
- 
- 	remaining = le32_to_cpu(sdata->remaining);
- 	returned = le32_to_cpu(sdata->returned);
- 	*channel_count = remaining + returned;
-+	rc = 0;
- 
--err_put_cpu:
--	put_cpu();
--	return sbi_err_map_linux_errno(sret.error);
-+out:
-+	mpxy_shmem_put();
-+	return rc;
- }
- 
- static int mpxy_get_channel_ids(u32 channel_count, u32 *channel_ids)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
--	struct sbi_mpxy_channel_ids_data *sdata = mpxy->shmem;
-+	struct mpxy_local *mpxy;
-+	struct sbi_mpxy_channel_ids_data *sdata;
- 	u32 remaining, returned, count, start_index = 0;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!channel_count || !channel_ids)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
-+	sdata = mpxy->shmem;
- 
- 	do {
- 		sret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_GET_CHANNEL_IDS,
- 				 start_index, 0, 0, 0, 0, 0);
--		if (sret.error)
--			goto err_put_cpu;
-+		if (sret.error) {
-+			rc = sbi_err_map_linux_errno(sret.error);
-+			goto out;
-+		}
- 
- 		remaining = le32_to_cpu(sdata->remaining);
- 		returned = le32_to_cpu(sdata->returned);
-@@ -182,55 +211,61 @@ static int mpxy_get_channel_ids(u32 channel_count, u32 *channel_ids)
- 		memcpy_from_le32(&channel_ids[start_index], sdata->channel_array, count);
- 		start_index += count;
- 	} while (remaining && start_index < channel_count);
-+	rc = 0;
- 
--err_put_cpu:
--	put_cpu();
--	return sbi_err_map_linux_errno(sret.error);
-+out:
-+	mpxy_shmem_put();
-+	return rc;
- }
- 
- static int mpxy_read_attrs(u32 channel_id, u32 base_attrid, u32 attr_count,
- 			   u32 *attrs_buf)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
-+	struct mpxy_local *mpxy;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!attr_count || !attrs_buf)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
- 
- 	sret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_READ_ATTRS,
- 			 channel_id, base_attrid, attr_count, 0, 0, 0);
--	if (sret.error)
--		goto err_put_cpu;
-+	if (sret.error) {
-+		rc = sbi_err_map_linux_errno(sret.error);
-+		goto out;
-+	}
- 
- 	memcpy_from_le32(attrs_buf, (__le32 *)mpxy->shmem, attr_count);
-+	rc = 0;
- 
--err_put_cpu:
--	put_cpu();
--	return sbi_err_map_linux_errno(sret.error);
-+out:
-+	mpxy_shmem_put();
-+	return rc;
- }
- 
- static int mpxy_write_attrs(u32 channel_id, u32 base_attrid, u32 attr_count,
- 			    u32 *attrs_buf)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
-+	struct mpxy_local *mpxy;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!attr_count || !attrs_buf)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
- 
- 	memcpy_to_le32((__le32 *)mpxy->shmem, attrs_buf, attr_count);
- 	sret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_WRITE_ATTRS,
- 			 channel_id, base_attrid, attr_count, 0, 0, 0);
- 
--	put_cpu();
-+	mpxy_shmem_put();
- 	return sbi_err_map_linux_errno(sret.error);
- }
- 
-@@ -239,16 +274,17 @@ static int mpxy_send_message_with_resp(u32 channel_id, u32 msg_id,
- 				       void *rx, unsigned long max_rx_len,
- 				       unsigned long *rx_len)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
-+	struct mpxy_local *mpxy;
- 	unsigned long rx_bytes;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!tx && tx_len)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
- 
- 	/* Message protocols allowed to have no data in messages */
- 	if (tx_len)
-@@ -259,8 +295,8 @@ static int mpxy_send_message_with_resp(u32 channel_id, u32 msg_id,
- 	if (rx && !sret.error) {
- 		rx_bytes = sret.value;
- 		if (rx_bytes > max_rx_len) {
--			put_cpu();
--			return -ENOSPC;
-+			rc = -ENOSPC;
-+			goto out;
- 		}
- 
- 		memcpy(rx, mpxy->shmem, rx_bytes);
-@@ -268,22 +304,25 @@ static int mpxy_send_message_with_resp(u32 channel_id, u32 msg_id,
- 			*rx_len = rx_bytes;
- 	}
- 
--	put_cpu();
--	return sbi_err_map_linux_errno(sret.error);
-+	rc = sbi_err_map_linux_errno(sret.error);
-+out:
-+	mpxy_shmem_put();
-+	return rc;
- }
- 
- static int mpxy_send_message_without_resp(u32 channel_id, u32 msg_id,
- 					  void *tx, unsigned long tx_len)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
-+	struct mpxy_local *mpxy;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!tx && tx_len)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
- 
- 	/* Message protocols allowed to have no data in messages */
- 	if (tx_len)
-@@ -292,40 +331,45 @@ static int mpxy_send_message_without_resp(u32 channel_id, u32 msg_id,
- 	sret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_SEND_MSG_WITHOUT_RESP,
- 			 channel_id, msg_id, tx_len, 0, 0, 0);
- 
--	put_cpu();
--	return sbi_err_map_linux_errno(sret.error);
-+	rc = sbi_err_map_linux_errno(sret.error);
-+	mpxy_shmem_put();
-+	return rc;
- }
- 
- static int mpxy_get_notifications(u32 channel_id,
- 				  struct sbi_mpxy_notification_data *notif_data,
- 				  unsigned long *events_data_len)
- {
--	struct mpxy_local *mpxy = this_cpu_ptr(&mpxy_local);
-+	struct mpxy_local *mpxy;
- 	struct sbiret sret;
-+	int rc;
- 
--	if (!mpxy->shmem_active)
--		return -ENODEV;
- 	if (!notif_data || !events_data_len)
- 		return -EINVAL;
- 
--	get_cpu();
-+	rc = mpxy_shmem_get(&mpxy);
-+	if (rc)
-+		return rc;
- 
- 	sret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_GET_NOTIFICATION_EVENTS,
- 			 channel_id, 0, 0, 0, 0, 0);
--	if (sret.error)
--		goto err_put_cpu;
-+	if (sret.error) {
-+		rc = sbi_err_map_linux_errno(sret.error);
-+		goto out;
-+	}
- 	if (sret.value < 0 || mpxy_shmem_size < sizeof(*notif_data) ||
- 	    sret.value > mpxy_shmem_size - sizeof(*notif_data)) {
--		put_cpu();
--		return -EOVERFLOW;
-+		rc = -EOVERFLOW;
-+		goto out;
- 	}
- 
- 	memcpy(notif_data, mpxy->shmem, sret.value + sizeof(*notif_data));
- 	*events_data_len = sret.value;
- 
--err_put_cpu:
--	put_cpu();
--	return sbi_err_map_linux_errno(sret.error);
-+	rc = sbi_err_map_linux_errno(sret.error);
-+out:
-+	mpxy_shmem_put();
-+	return rc;
- }
- 
- static int mpxy_get_shmem_size(unsigned long *shmem_size)
-@@ -402,8 +446,8 @@ struct mpxy_mbox {
- 
- /* ====== MPXY RPMI processing ====== */
- 
--static void mpxy_mbox_send_rpmi_data(struct mpxy_mbox_channel *mchan,
--				     struct rpmi_mbox_message *msg)
-+static int mpxy_mbox_send_rpmi_data(struct mpxy_mbox_channel *mchan,
-+				    struct rpmi_mbox_message *msg)
- {
- 	msg->error = 0;
- 	switch (msg->type) {
-@@ -474,6 +518,8 @@ static void mpxy_mbox_send_rpmi_data(struct mpxy_mbox_channel *mchan,
- 		msg->error = -EOPNOTSUPP;
- 		break;
- 	}
++static void rpmi_tee_device_remove(struct device *dev)
++{
++	struct rpmi_tee_driver *rdrv = to_rpmi_tee_drv(dev->driver);
 +
-+	return msg->error;
- }
- 
- static void mpxy_mbox_peek_rpmi_data(struct mbox_chan *chan,
-@@ -516,12 +562,21 @@ static int mpxy_mbox_send_data(struct mbox_chan *chan, void *data)
- {
- 	struct mpxy_mbox_channel *mchan = chan->con_priv;
- 
--	if (mchan->attrs.msg_proto_id == SBI_MPXY_MSGPROTO_RPMI_ID) {
--		mpxy_mbox_send_rpmi_data(mchan, data);
--		return 0;
--	}
-+	if (mchan->attrs.msg_proto_id != SBI_MPXY_MSGPROTO_RPMI_ID)
-+		return -EOPNOTSUPP;
-+
-+	mpxy_mbox_send_rpmi_data(mchan, data);
-+	return 0;
++	if (rdrv->remove)
++		rdrv->remove(to_rpmi_tee_dev(dev));
 +}
 +
-+static int mpxy_mbox_send_data_sync(struct mbox_chan *chan, void *data)
++static int rpmi_tee_device_uevent(const struct device *dev,
++				  struct kobj_uevent_env *env)
 +{
-+	struct mpxy_mbox_channel *mchan = chan->con_priv;
++	const struct rpmi_tee_device *rdev = to_rpmi_tee_dev(dev);
 +
-+	if (mchan->attrs.msg_proto_id != SBI_MPXY_MSGPROTO_RPMI_ID)
-+		return -EOPNOTSUPP;
- 
--	return -EOPNOTSUPP;
-+	return mpxy_mbox_send_rpmi_data(mchan, data);
- }
- 
- static bool mpxy_mbox_peek_data(struct mbox_chan *chan)
-@@ -713,10 +768,11 @@ static void mpxy_mbox_shutdown(struct mbox_chan *chan)
- }
- 
- static const struct mbox_chan_ops mpxy_mbox_ops = {
--	.send_data = mpxy_mbox_send_data,
--	.peek_data = mpxy_mbox_peek_data,
--	.startup = mpxy_mbox_startup,
--	.shutdown = mpxy_mbox_shutdown,
-+	.send_data	= mpxy_mbox_send_data,
-+	.send_data_sync	= mpxy_mbox_send_data_sync,
-+	.peek_data	= mpxy_mbox_peek_data,
-+	.startup	= mpxy_mbox_startup,
-+	.shutdown	= mpxy_mbox_shutdown,
- };
- 
- /* ====== MPXY platform driver ===== */
-diff --git a/include/linux/mailbox/riscv-rpmi-message.h b/include/linux/mailbox/riscv-rpmi-message.h
-index d5362b5821f9..16fa85f65d80 100644
---- a/include/linux/mailbox/riscv-rpmi-message.h
-+++ b/include/linux/mailbox/riscv-rpmi-message.h
-@@ -251,4 +251,17 @@ static inline int rpmi_mbox_send_message(struct mbox_chan *chan,
- 	return ret;
- }
- 
-+static inline int rpmi_mbox_send_message_sync(struct mbox_chan *chan,
-+					      struct rpmi_mbox_message *msg)
++	return add_uevent_var(env, "MODALIAS=" RPMI_TEE_UEVENT_MODALIAS_FMT,
++			      &rdev->uuid);
++}
++
++static ssize_t endpoint_id_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
 +{
++	struct rpmi_tee_device *rdev = to_rpmi_tee_dev(dev);
++
++	return sysfs_emit(buf, "0x%x\n", rdev->endpoint_id);
++}
++static DEVICE_ATTR_RO(endpoint_id);
++
++static ssize_t uuid_show(struct device *dev, struct device_attribute *attr,
++			 char *buf)
++{
++	struct rpmi_tee_device *rdev = to_rpmi_tee_dev(dev);
++
++	return sysfs_emit(buf, "%pUb\n", &rdev->uuid);
++}
++static DEVICE_ATTR_RO(uuid);
++
++static ssize_t modalias_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct rpmi_tee_device *rdev = to_rpmi_tee_dev(dev);
++
++	return sysfs_emit(buf, RPMI_TEE_UEVENT_MODALIAS_FMT, &rdev->uuid);
++}
++static DEVICE_ATTR_RO(modalias);
++
++static struct attribute *rpmi_tee_device_attrs[] = {
++	&dev_attr_endpoint_id.attr,
++	&dev_attr_uuid.attr,
++	&dev_attr_modalias.attr,
++	NULL,
++};
++ATTRIBUTE_GROUPS(rpmi_tee_device);
++
++const struct bus_type rpmi_tee_bus_type = {
++	.name		= "rpmi_tee",
++	.match		= rpmi_tee_device_match,
++	.probe		= rpmi_tee_device_probe,
++	.remove		= rpmi_tee_device_remove,
++	.uevent		= rpmi_tee_device_uevent,
++	.dev_groups	= rpmi_tee_device_groups,
++};
++EXPORT_SYMBOL_GPL(rpmi_tee_bus_type);
++
++int rpmi_tee_driver_register(struct rpmi_tee_driver *driver,
++			     struct module *owner, const char *mod_name)
++{
++	if (!driver->probe || !driver->id_table)
++		return -EINVAL;
++
++	driver->driver.bus = &rpmi_tee_bus_type;
++	driver->driver.name = driver->name;
++	driver->driver.owner = owner;
++	driver->driver.mod_name = mod_name;
++
++	return driver_register(&driver->driver);
++}
++EXPORT_SYMBOL_GPL(rpmi_tee_driver_register);
++
++void rpmi_tee_driver_unregister(struct rpmi_tee_driver *driver)
++{
++	driver_unregister(&driver->driver);
++}
++EXPORT_SYMBOL_GPL(rpmi_tee_driver_unregister);
++
++static void rpmi_tee_device_release(struct device *dev)
++{
++	struct rpmi_tee_device *rdev = to_rpmi_tee_dev(dev);
++
++	ida_free(&rpmi_tee_bus_id, rdev->id);
++	kfree(rdev);
++}
++
++struct rpmi_tee_device *
++rpmi_tee_device_register(const uuid_t *uuid, u32 endpoint_id,
++			 const struct rpmi_tee_ops *ops, struct device *parent)
++{
++	struct rpmi_tee_device *rdev;
++	int id;
 +	int ret;
 +
-+	/* Send message for the underlying mailbox channel synchronously */
-+	ret = mbox_send_message_sync(chan, msg);
-+	if (ret)
-+		return ret;
++	if (!uuid || !ops)
++		return ERR_PTR(-EINVAL);
 +
-+	return msg->error;
++	id = ida_alloc_min(&rpmi_tee_bus_id, 1, GFP_KERNEL);
++	if (id < 0)
++		return ERR_PTR(id);
++
++	rdev = kzalloc_obj(*rdev, GFP_KERNEL);
++	if (!rdev) {
++		ida_free(&rpmi_tee_bus_id, id);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	rdev->dev.parent = parent;
++	rdev->dev.bus = &rpmi_tee_bus_type;
++	rdev->dev.release = rpmi_tee_device_release;
++	dev_set_name(&rdev->dev, "rpmi-tee-%d", id);
++
++	rdev->id = id;
++	rdev->endpoint_id = endpoint_id;
++	rdev->ops = ops;
++	uuid_copy(&rdev->uuid, uuid);
++
++	ret = device_register(&rdev->dev);
++	if (ret) {
++		put_device(&rdev->dev);
++		return ERR_PTR(ret);
++	}
++
++	return rdev;
++}
++EXPORT_SYMBOL_GPL(rpmi_tee_device_register);
++
++void rpmi_tee_device_unregister(struct rpmi_tee_device *rdev)
++{
++	if (rdev)
++		device_unregister(&rdev->dev);
++}
++EXPORT_SYMBOL_GPL(rpmi_tee_device_unregister);
++
++static int __init rpmi_tee_bus_init(void)
++{
++	return bus_register(&rpmi_tee_bus_type);
 +}
 +
- #endif /* _LINUX_RISCV_RPMI_MESSAGE_H_ */
++subsys_initcall(rpmi_tee_bus_init);
++
++static void __exit rpmi_tee_bus_exit(void)
++{
++	bus_unregister(&rpmi_tee_bus_type);
++	ida_destroy(&rpmi_tee_bus_id);
++}
++
++module_exit(rpmi_tee_bus_exit);
++
++MODULE_DESCRIPTION("RISC-V RPMI TEE bus");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/rpmi_tee.h b/include/linux/rpmi_tee.h
+new file mode 100644
+index 000000000000..c499f0427833
+--- /dev/null
++++ b/include/linux/rpmi_tee.h
+@@ -0,0 +1,83 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ *
++ * RISC-V RPMI TEE transport interface
++ */
++
++#ifndef _LINUX_RPMI_TEE_H
++#define _LINUX_RPMI_TEE_H
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/uuid.h>
++
++struct rpmi_tee_ops;
++
++struct rpmi_tee_device {
++	struct device dev;
++	u32 id;
++	u32 endpoint_id;	/* RPMI endpoint identifier of the TEE. */
++	uuid_t uuid;		/* UUID identifying the TEE service. */
++	const struct rpmi_tee_ops *ops;
++};
++
++#define to_rpmi_tee_dev(d) container_of(d, struct rpmi_tee_device, dev)
++
++struct rpmi_tee_device_id {
++	uuid_t uuid;
++};
++
++struct rpmi_tee_driver {
++	const char *name;
++	int (*probe)(struct rpmi_tee_device *rdev);
++	void (*remove)(struct rpmi_tee_device *rdev);
++	/* NULL-UUID-terminated list of supported service UUIDs. */
++	const struct rpmi_tee_device_id *id_table;
++	struct device_driver driver;
++};
++
++#define to_rpmi_tee_drv(d) \
++	container_of_const(d, struct rpmi_tee_driver, driver)
++
++extern const struct bus_type rpmi_tee_bus_type;
++
++#if IS_REACHABLE(CONFIG_RISCV_RPMI_TEE_TRANSPORT)
++struct rpmi_tee_device *
++rpmi_tee_device_register(const uuid_t *uuid, u32 endpoint_id,
++			 const struct rpmi_tee_ops *ops, struct device *parent);
++void rpmi_tee_device_unregister(struct rpmi_tee_device *rdev);
++int rpmi_tee_driver_register(struct rpmi_tee_driver *driver,
++			     struct module *owner, const char *mod_name);
++void rpmi_tee_driver_unregister(struct rpmi_tee_driver *driver);
++#else
++static inline struct rpmi_tee_device *
++rpmi_tee_device_register(const uuid_t *uuid, u32 endpoint_id,
++			 const struct rpmi_tee_ops *ops, struct device *parent)
++{
++	return NULL;
++}
++
++static inline void rpmi_tee_device_unregister(struct rpmi_tee_device *rdev)
++{
++}
++
++static inline int rpmi_tee_driver_register(struct rpmi_tee_driver *driver,
++					   struct module *owner,
++					   const char *mod_name)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline void rpmi_tee_driver_unregister(struct rpmi_tee_driver *driver)
++{
++}
++#endif
++
++#define rpmi_tee_register(driver) \
++	rpmi_tee_driver_register(driver, THIS_MODULE, KBUILD_MODNAME)
++#define rpmi_tee_unregister(driver) \
++	rpmi_tee_driver_unregister(driver)
++
++#endif /* _LINUX_RPMI_TEE_H */
 
 -- 
 2.34.1
