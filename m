@@ -4,444 +4,217 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 331BECA5FCE
-	for <op-tee@archiver.kernel.org>; Thu,  1 Oct 2026 23:31:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95DB3CA5FD4
+	for <op-tee@archiver.kernel.org>; Fri,  2 Oct 2026 05:47:04 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3AC02454EF
-	for <op-tee@archiver.kernel.org>; Thu,  1 Oct 2026 23:31:19 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B54C2454BA
+	for <op-tee@archiver.kernel.org>; Fri,  2 Oct 2026 05:47:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1790897479;
-	bh=ZQmEmz0suaaKeRGCCiIP5n7gEYp8GKcXm+5PpT01rhg=;
+	d=lists.trustedfirmware.org; s=2024; t=1790920023;
+	bh=vDVWd7bUUp0fp3rbv49nOQMjeep8XZe6WI6j3JYM4xA=;
 	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=g8mimE9XEvhN0WQ/N96KVSEBWiLa1FcdFgXPr9198sc7TYnwFKoexT5lSz8gJtOfZ
-	 +2vqdBE8MJMnRv2EZtBAdrVng9PYteQ8B0MfzMg71Sgkl40T0aXHyEQAnV+dZi5wR5
-	 S82VNdsUumiJff06t4AJ/zkh6KZZEvNY8E48PBO1qQLCBL/oV+bpg0uz8rFx9nTlMu
-	 WiHRRIr5a3zQZYqj8X9lolJh9McD9zNZJrA7ns6eQs0NhRjiuY7gHIM7KdX+52mYQJ
-	 YLXJakH0wpNLpDlG+QZYhtPPqGvLKluYld/w5bB5YD6JQdq+vy/sPrYlHuDVxkmM3V
-	 21HUqfaWN5zrA==
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 89BE343716
-	for <op-tee@lists.trustedfirmware.org>; Thu,  1 Oct 2026 23:31:10 +0000 (UTC)
+	b=H31CL9U1N6lthYZXGZ5H42ajhPkpGs7ZU5nf04k6oIGnGM19Lwe3HQPKScMuu2+Te
+	 DOOj6edKRqKYp9wlfxOTDDiMrELQ6CLj++kGFn8+T1VvJv4gASj5LE4vDE+9De7yMD
+	 04g6qaMNylMfAAm3LzASSVQyB0tk2u5gfr+P8FCaiA6ewdLBtEZoBOip58g2VOigLs
+	 bc+IOAUZNmPdpScxH/0j01B1c6CnlmqpG+J2b8jSwxZcylRnpsnyUgezdps0qI3hUg
+	 Y1l/V8FCOzP0DY6pWCDzz8MrlLcTHISY/jCXPP4ILxR1iMTBSuQTj8UQgu7w7hz6ky
+	 gAVUm2nrzzaqQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8F80943946
+	for <op-tee@lists.trustedfirmware.org>; Fri,  2 Oct 2026 05:46:56 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=bEw3KEpR;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=IReZ/oeM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cc6PWe0G;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 691NEiCf2601682
-	for <op-tee@lists.trustedfirmware.org>; Thu, 1 Oct 2026 23:31:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	RXmAiNVkT/5aUTPM3qYEmat2B87mxcwDRDaqVNDqBwo=; b=bEw3KEpRuUesEUjX
-	rTrx1i82lIr2CdzJo5Q0AKzg4/h9b6AxLEajY1KqyxBsCHmWRpTMX3vQ2R0BhP8X
-	XXnBTaSZcVbIT1CoYxkydFmnvXX9bFE4Dqr9/czA7HvKZTs7PxGj7N0X4tyERiGH
-	p6/GAmiaNcJqq4Xpcm/EcR3dKwjV11pXO010F/7+1Fxdn+HDMaf0TriCrelgZqSq
-	a1cvxTUITlAfcdfq6q/ozB5AqV5JdMp7rhfjw4i28DDdgKTwTmCF0cqFqObLZhnW
-	c3vnV8LnDZjrKuCOCKKpSFVd5WqJYNIe4tccoHSIZKqwJJ7xd8l2/Cu++8lGpN/P
-	Of+UyQ==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h1vxe8x34-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 01 Oct 2026 23:31:09 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2df8d1e91c9so103865595ad.0
-        for <op-tee@lists.trustedfirmware.org>; Thu, 01 Oct 2026 16:31:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790897468; x=1791502268; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=RXmAiNVkT/5aUTPM3qYEmat2B87mxcwDRDaqVNDqBwo=;
-        b=IReZ/oeM0+aYA4teY2v7Tc6GmDtx4lKLxiD3n96RzNCxpsc0+1gCSaCJeHsSu23CcY
-         RjoPiEGFyjIq/gQWcCicqsASTRpX8jvvcKba1cuzezdyGLNpyIYe0J7KQF0suL1B7/P2
-         VoKFeMOZNJO6MtkPcLrXus+n3HCSQa6Ib6nEWScJqIPqOBHmGAzpWnwyW9SaXfRCoSaa
-         3Il3S8HM8t9tcXsCTVWqXkeetbbKt87TyEIJE7ruBOP8V/w6DlILH64h6kAJ5g+k73jz
-         r4c6tzh7KmU764LTvOFkPGMfeJ/N5Ml1CdK5/KpWA1fewYybWrsb4MIvth8gaJJZpnFA
-         XbcQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790897468; x=1791502268;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=RXmAiNVkT/5aUTPM3qYEmat2B87mxcwDRDaqVNDqBwo=;
-        b=rT8YiRB4Kb7tdhPR7isR+vTq4scfIqtttHx95TnGiz/PNWL99SM1fwx/AjcoRmbcck
-         In2uuqOEcDtzkO3uWIdZ2u6LWliQlcnipsudqBo1wGfRt0A2LA3BC8APzv80qCAQ/sRz
-         weAXZMIjxjB4aEEMDSnrSPKe4eh3puKW/1+cshiN7glUogrkKw0mqsrvOpVl16eBkilf
-         TE2GhbqXDm22Ild/1TequPmxB5RwS4j2ILXz0FV9PKsFhV+6Y1TcREClWASRvmBzuXZd
-         73y5OF05Aof5g9n9o6AuVTkY1ArcSRRwKf+0RteJ0bEJvO+dDQTdxj+jYkAooFT7nkzR
-         DACQ==
-X-Forwarded-Encrypted: i=1; AKwUvBy7FGb3PQnk7wTz6L4J8N7a4wpb1/H0H5SalPpTiPpzzGW7ta7Z/XvneOvT1C/RtS/8MOMqZrU=@lists.trustedfirmware.org
-X-Gm-Message-State: AFq9FYIJNmOsbtgReUVgnzdNatwf8NGGtuIJ73qAD/MXuXyVULiDgdYp
-	6R4fV3Ad5OOtYGdTeLLnbIyaiCuGhwbK6zu4EVGjPk59Aku8Fx1KBiz82WZySWvK4VrWDKMdxNi
-	yGXsNV/w2uUKdKOpFlDVOjC7WuzqINeiWSDXbpzOAAXtUDTie9E7BsOdohEJ53dRc3RzQn1w=
-X-Gm-Gg: AYBFou0kUcngqGrm1cX4RhlgBZ05AanXsruP4rge7V8fklqQee6RxHnDSyyX7FQI+5m
-	Ygm5o+ArH+day46QhvYAoJ5OPGMpBHoIAeeu4LQHIVAyf6W7sdN/IANa6XbhRMghnVTgbPi2CkO
-	WTXs1MkimFtsBkUt89uKJTALbTiBjDzgySAaIwhUf5kSf+kwTU/hPeM0qfdOiv4Z3g4SQqbbqPH
-	VECT+hssouy+gTylww8/x1yqR1FVx9KcGaSh0gLgixnHT+W/t/GcEyiV9cBAlK1lIhnKlkdfZI8
-	Ll/xbkoUuwa1NEe7AXDd5cg9WHh/8MlFSgSO5VD/G1Hr6zEbLyRE7jnNFPIazky62YxxjZY9b6e
-	IeCFBwz4ryFcbSMHvHeYknubhR84rbKJU
-X-Received: by 2002:a17:903:1a67:b0:2dd:c100:a5de with SMTP id d9443c01a7336-2e49b67e1e9mr7921175ad.50.1790897468323;
-        Thu, 01 Oct 2026 16:31:08 -0700 (PDT)
-X-Received: by 2002:a17:903:1a67:b0:2dd:c100:a5de with SMTP id d9443c01a7336-2e49b67e1e9mr7920945ad.50.1790897467727;
-        Thu, 01 Oct 2026 16:31:07 -0700 (PDT)
-Received: from [192.168.1.86] ([206.83.119.45])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e49f6ab2b9sm1766635ad.36.2026.10.01.16.31.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 01 Oct 2026 16:31:07 -0700 (PDT)
-Message-ID: <be313b42-64ea-4c0d-b0cd-bbdba92d82f9@oss.qualcomm.com>
-Date: Fri, 2 Oct 2026 09:31:02 +1000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 12EB86021E;
+	Fri,  2 Oct 2026 05:46:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0D921F000FF;
+	Fri,  2 Oct 2026 05:46:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790920015;
+	bh=BUM0jmk5ROcF9aF+uPw3K8HUOCn6qfcZXTKXnwJVx+c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Cc6PWe0GsMhqxXDv03deTBfCGuixJ7J08WmAuz7zhgNEmtZHErGN3y93JgkQqe8X7
+	 FH/vUin/L/di1XjDhpjjLwuyLxIftyENGuBFymWwzXhYV+Bt8U5Tk1crqWT7fpEIkA
+	 1Mbm1YXeRf2ubC+XVB1OqjwQCtmrVqkN1i0ydcMGVRYjbHWxa1woKJXiw7SL9ZKkBI
+	 lpAbTnNyjnoyUHCxPY0RBeRXaVeGwTD35EYU0ie7ZUtRV15acqGWo3fkBIhtSXQ/qE
+	 e7F4oS6bac6EWCUzPhnUjw8GobNNKMzsI3lH89U6qFsktUZm5WwohQ56vbqFjCuEmW
+	 6kyRhTSEa2qDw==
+Message-ID: <6aa0c698-509e-49d5-a229-7f756355b748@kernel.org>
+Date: Fri, 2 Oct 2026 07:46:47 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] tee: optee: build the Arm-specific code only on Arm
-To: marouene.boubakri@oss.nxp.com, jenswi@kernel.org
-References: <20260924105145.532787-1-marouene.boubakri@oss.nxp.com>
- <27748440-8d0c-4163-bc73-842b77791017@oss.qualcomm.com>
+Subject: Re: [PATCH v3 6/6] firmware: qcom: Add support for TEE based EFI-var
+ client driver
+To: Harshal Dev <harshal.dev@oss.qualcomm.com>,
+ Jens Wiklander <jens.wiklander@oss.qualcomm.com>,
+ Sumit Garg <sumit.garg@kernel.org>,
+ Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+References: <20261001-qcom_uefisecapp_migrate_qcomtee-v3-0-13df5c20c2e3@oss.qualcomm.com>
+ <20261001-qcom_uefisecapp_migrate_qcomtee-v3-6-13df5c20c2e3@oss.qualcomm.com>
 Content-Language: en-US
-In-Reply-To: <27748440-8d0c-4163-bc73-842b77791017@oss.qualcomm.com>
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20261001-qcom_uefisecapp_migrate_qcomtee-v3-6-13df5c20c2e3@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=fdc4WEQF c=1 sm=1 tr=0 ts=6abeed3d cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=nLoy2YM07uCa/jC45NrMpw==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=VwQbUJbxAAAA:8 a=8AirrxEcAAAA:8 a=4o7CPISBijJ24BUE3mwA:9 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22 a=ST-jHhOKWsTCqRlWije3:22
-X-Proofpoint-GUID: ICnpFQ0G4Ld0iwe6wGlP_aFuJsSYXcc8
-X-Proofpoint-ORIG-GUID: ICnpFQ0G4Ld0iwe6wGlP_aFuJsSYXcc8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAxMDA5MyBTYWx0ZWRfX+JNk7+XTcnfm
- HEZJRb+1iqycgyqkoJpqUAD7JAEtEZPBONDEH3Cjog5kmVbKHHmkz+aEOCLc8hfqVuW5VtbOb8y
- 6+vImFHYW87okv0YCWFl9sjgYaJz5B5IIWMPZgcc1NVPh8yvQW2XBwMmqucmnn4LZrusf+rQGgZ
- HuUOtSR0J1wHiKg84TZpl1pn+/kJ4QBgVjO2LSfqH43rHuNS9SJwH9gDM174+UV8kmOqVHkUosM
- alFlkw61sMF8tiLbbKiWuSLayVGaUlh8Roa+wJFiOQ+YSbDUpiYhtEOixKg5b1MVQFH/4Lk69mx
- Fv1TSnrzBFNVN8QP/74D7F783QFrhlr/c/qs5TOxasuU3GhTwo2JT49TqKPjAW/+/PlECsnugN+
- PMs6GGAolS+GMYnYidh1g0BvrXqD76e5RhHHQpQJNGhfmX/ytEIoPJtObiEcYLSUWpT3BkEZLiI
- TfPUZ5coUih0w+B86zA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAxMDA5MyBTYWx0ZWRfXxwmtzosgh2bp
- kCcrbV3sZFIPFEa9FUoNgqjZizvgZFzO/P6gDhHU3Nb7P90r9KmMmYgTcuzCBXwnunsRrMtdgoN
- GPjEparVvuGmSwnXI6k5cK2V5bFwFlA=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-01_05,2026-10-01_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0 impostorscore=0 bulkscore=0 clxscore=1015
- priorityscore=1501 suspectscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610010093
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.10 / 15.00];
+X-Spamd-Result: default: False [-9.00 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
 	ARC_NA(0.00)[];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
-	RCPT_COUNT_SEVEN(0.00)[7];
 	MIME_TRACE(0.00)[0:+];
-	MID_RHS_MATCH_FROM(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_THREE(0.00)[4];
+	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.214.200:received];
-	TO_DN_NONE(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DNSWL_BLOCKED(0.00)[172.105.4.254:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 89BE343716
-X-Spamd-Bar: ------
-Message-ID-Hash: TTKUYD7JTBA4RRANKVJ2D7XTDTJWP5ZE
-X-Message-ID-Hash: TTKUYD7JTBA4RRANKVJ2D7XTDTJWP5ZE
-X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
+X-Rspamd-Queue-Id: 8F80943946
+X-Spamd-Bar: ---------
+Message-ID-Hash: TIOFM7KP5WU7473XYROULYVPQMM72G4G
+X-Message-ID-Hash: TIOFM7KP5WU7473XYROULYVPQMM72G4G
+X-MailFrom: krzk@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, peter.lin@sifive.com
+CC: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>, Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TTKUYD7JTBA4RRANKVJ2D7XTDTJWP5ZE/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TIOFM7KP5WU7473XYROULYVPQMM72G4G/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+From: Krzysztof Kozlowski via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Krzysztof Kozlowski <krzk@kernel.org>
 
-
-On 10/2/2026 6:27 AM, Amirreza Zarrabi wrote:
-> Hi Marouene,
+On 01/10/2026 13:02, Harshal Dev wrote:
+> On Qualcomm SoC based platforms, UEFI stores EFI variables within the
+> Replay Protected Memory Block (RPMB) located within either the UFS,
+> eMMC or SPI-NOR storage. The RPMB key which is one-time programmed into
+> the storage controller to allow authentication of the RPMB frames is
+> generated by and only available to the Qualcomm Trusted Execution
+> Environment (QTEE).
 > 
-> On 9/24/2026 8:51 PM, marouene.boubakri@oss.nxp.com wrote:
->> From: Marouene Boubakri <marouene.boubakri@oss.nxp.com>
->>
->> The OP-TEE driver reaches OP-TEE through the SMC ABI or the FF-A ABI,
->> both specific to Arm, yet builds both unconditionally together with the
->> SMC Calling Convention definitions they rely on: ffa_abi.c is always
->> compiled and only its registration is conditioned on
->> IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT), and optee_private.h includes
->> <linux/arm-smccc.h> and defines the SMC and FF-A specific types for
->> every file of the driver. This is fine as long as the driver depends on
->> HAVE_ARM_SMCCC, but it keeps the driver from being built for an
->> architecture without SMCCC, such as RISC-V.
->>
->> Build smc_abi.c only when HAVE_ARM_SMCCC is set and ffa_abi.c only when
->> the FF-A transport is enabled, and provide stubs for their registration
->> otherwise, so that it fails with -EOPNOTSUPP as the FF-A ABI already
->> does when the FF-A transport is not reachable. Keep the SMCCC header,
->> the SMC invoke function type, the SMC and FF-A specific structures and
->> the SMC RPC register parameters in optee_private.h under the same
->> conditions, and drop the unused <linux/arm-smccc.h> include from
->> notif.c.
->>
->> Make OPTEE depend on ARM_FFA_TRANSPORT || !ARM_FFA_TRANSPORT, as it
->> already does for RPMB, so that the driver is limited to a module when
->> the FF-A transport is one, rather than built in without FF-A support.
->> ffa_abi.c is thus built exactly when the FF-A transport is reachable
->> from the driver, and the IS_REACHABLE() checks in
->> optee_ffa_abi_register() and optee_ffa_abi_unregister() are always
->> true, so drop them.
->>
->> OPTEE still depends on HAVE_ARM_SMCCC, so smc_abi.c is still always
->> built. The only visible change is that OPTEE=y can no longer be
->> combined with ARM_FFA_TRANSPORT=m: such a configuration now resolves to
->> OPTEE=m, with the FF-A ABI available.
->>
->> Signed-off-by: Marouene Boubakri <marouene.boubakri@oss.nxp.com>
->> ---
->> Changes in v4:
->> - Make OPTEE depend on ARM_FFA_TRANSPORT || !ARM_FFA_TRANSPORT so that
->>   the driver is limited to =m when the FF-A transport is =m (Jens).
->> - Update the commit message accordingly.
->> v3: https://lore.kernel.org/all/20260922131735.524635-1-marouene.boubakri@oss.nxp.com/
->>
->> Changes in v3:
->> - Dropped the RPMI ABI placeholder and the RISC-V enablement patches,
->>   this is now a single patch (Jens).
->> - Key the FF-A parts of optee_private.h on IS_REACHABLE() instead of
->>   IS_ENABLED(): with OPTEE=y and ARM_FFA_TRANSPORT=m kbuild drops
->>   ffa_abi.o from the built-in optee.o while optee_ffa_abi_register()
->>   was still declared, which does not link.
->> - Drop the now always true IS_REACHABLE() checks in
->>   optee_ffa_abi_register() and optee_ffa_abi_unregister().
->> - Describe the current FF-A conditional compilation accurately in the
->>   commit message.
->> - Posted as a new thread with a proper subject prefix.
->> v2: https://lore.kernel.org/op-tee/20260915020235.507302-2-marouene.boubakri@oss.nxp.com/
->>
->> Changes in v2:
->> - No code change, the testing section of the cover letter was completed.
->> v1: https://lore.kernel.org/op-tee/20260914175435.118303-2-marouene.boubakri@oss.nxp.com/
->>  drivers/tee/optee/Kconfig         |  1 +
->>  drivers/tee/optee/Makefile        |  4 ++--
->>  drivers/tee/optee/ffa_abi.c       |  8 ++-----
->>  drivers/tee/optee/notif.c         |  1 -
->>  drivers/tee/optee/optee_private.h | 39 ++++++++++++++++++++++++++++++-
->>  5 files changed, 43 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/tee/optee/Kconfig b/drivers/tee/optee/Kconfig
->> index 50d2051..891dac6 100644
->> --- a/drivers/tee/optee/Kconfig
->> +++ b/drivers/tee/optee/Kconfig
->> @@ -5,6 +5,7 @@ config OPTEE
->>  	depends on HAVE_ARM_SMCCC
->>  	depends on MMU
->>  	depends on RPMB || !RPMB
->> +	depends on ARM_FFA_TRANSPORT || !ARM_FFA_TRANSPORT
->>  	help
->>  	  This implements the OP-TEE Trusted Execution Environment (TEE)
->>  	  driver.
->> diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
->> index ad7049c..183cdde 100644
->> --- a/drivers/tee/optee/Makefile
->> +++ b/drivers/tee/optee/Makefile
->> @@ -7,8 +7,8 @@ optee-objs += rpc.o
->>  optee-objs += protmem.o
->>  optee-objs += supp.o
->>  optee-objs += device.o
->> -optee-objs += smc_abi.o
->> -optee-objs += ffa_abi.o
->> +optee-$(CONFIG_HAVE_ARM_SMCCC) += smc_abi.o
->> +optee-$(CONFIG_ARM_FFA_TRANSPORT) += ffa_abi.o
->>  
->>  # for tracing framework to find optee_trace.h
->>  CFLAGS_smc_abi.o := -I$(src)
->> diff --git a/drivers/tee/optee/ffa_abi.c b/drivers/tee/optee/ffa_abi.c
->> index 633715b..08236d8 100644
->> --- a/drivers/tee/optee/ffa_abi.c
->> +++ b/drivers/tee/optee/ffa_abi.c
->> @@ -1212,14 +1212,10 @@ static struct ffa_driver optee_ffa_driver = {
->>  
->>  int optee_ffa_abi_register(void)
->>  {
->> -	if (IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT))
->> -		return ffa_register(&optee_ffa_driver);
->> -	else
->> -		return -EOPNOTSUPP;
->> +	return ffa_register(&optee_ffa_driver);
->>  }
->>  
->>  void optee_ffa_abi_unregister(void)
->>  {
->> -	if (IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT))
->> -		ffa_unregister(&optee_ffa_driver);
->> +	ffa_unregister(&optee_ffa_driver);
->>  }
->> diff --git a/drivers/tee/optee/notif.c b/drivers/tee/optee/notif.c
->> index 6e85f2f..6801422 100644
->> --- a/drivers/tee/optee/notif.c
->> +++ b/drivers/tee/optee/notif.c
->> @@ -5,7 +5,6 @@
->>  
->>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->>  
->> -#include <linux/arm-smccc.h>
->>  #include <linux/errno.h>
->>  #include <linux/slab.h>
->>  #include <linux/spinlock.h>
->> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
->> index aefe1e6..02d6f79 100644
->> --- a/drivers/tee/optee/optee_private.h
->> +++ b/drivers/tee/optee/optee_private.h
->> @@ -6,7 +6,6 @@
->>  #ifndef OPTEE_PRIVATE_H
->>  #define OPTEE_PRIVATE_H
->>  
->> -#include <linux/arm-smccc.h>
->>  #include <linux/notifier.h>
->>  #include <linux/rhashtable.h>
->>  #include <linux/rpmb.h>
->> @@ -15,6 +14,10 @@
->>  #include <linux/types.h>
->>  #include "optee_msg.h"
->>  
->> +#ifdef CONFIG_HAVE_ARM_SMCCC
->> +#include <linux/arm-smccc.h>
->> +#endif
->> +
->>  #define DRIVER_NAME "optee"
->>  
->>  #define OPTEE_MAX_ARG_SIZE	1024
->> @@ -42,10 +45,12 @@
->>   */
->>  #define OPTEE_DEFAULT_MAX_NOTIF_VALUE	255
->>  
->> +#ifdef CONFIG_HAVE_ARM_SMCCC
->>  typedef void (optee_invoke_fn)(unsigned long, unsigned long, unsigned long,
->>  				unsigned long, unsigned long, unsigned long,
->>  				unsigned long, unsigned long,
->>  				struct arm_smccc_res *);
->> +#endif
->>  
->>  /**
->>   * struct optee_call_waiter - TEE entry may need to wait for a free TEE thread
->> @@ -119,6 +124,7 @@ struct optee_supp {
->>  	struct completion reqs_c;
->>  };
->>  
->> +#ifdef CONFIG_HAVE_ARM_SMCCC
->>  /**
->>   * struct optee_pcpu - per cpu notif private struct passed to work functions
->>   * @optee:	optee device reference
->> @@ -149,7 +155,9 @@ struct optee_smc {
->>  	struct work_struct notif_pcpu_work;
->>  	unsigned int notif_cpuhp_state;
->>  };
->> +#endif
->>  
->> +#if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
->>  /**
->>   * struct optee_ffa -  FFA communication struct
->>   * @ffa_dev:		FFA device, contains the destination id, the id of
->> @@ -170,6 +178,7 @@ struct optee_ffa {
->>  	struct workqueue_struct *notif_wq;
->>  	struct work_struct notif_work;
->>  };
->> +#endif
->>  
->>  struct optee;
->>  
->> @@ -257,8 +266,12 @@ struct optee {
->>  	const struct optee_ops *ops;
->>  	struct tee_context *ctx;
->>  	union {
->> +#ifdef CONFIG_HAVE_ARM_SMCCC
->>  		struct optee_smc smc;
->> +#endif
->> +#if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
->>  		struct optee_ffa ffa;
->> +#endif
+> The legacy QSEECOM protocol used for communicating with the QTEE is
+> deprecated and replaced with the use-case agnostic SMCInvoke protocol
+> starting with the Qualcomm SM8x50 series. On platforms where the QSEECOM
+> still driver probes, it does not support a listener interface with QTEE
+> to enable writing of non-volatile EFI variables to the RPMB for UFS and
+> eMMC storage.
+> Therefore on such platforms, a TEE client driver which communicates with
+> QTEE via the SMCInvoke protocol implemented by the QCOMTEE driver (and
+> registered with the TEE subsystem) must be used to update such EFI
+> variables.
 > 
-> Does this need to be a union if we filter the members?
+> Add support for a TEE based uefisecapp client driver which installs efivar
+> operations after obtaining an object reference to the uefisecapp service.
+> This enables the kernel/user-space to access or modify both volatile EFI
+> variables stored by the Secure Application (in-memory) and non-volatile
+> ones stored within RPMB.
 > 
-> Best Regards,
-> Amir
+> Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
+> ---
+>  MAINTAINERS                                 |   6 +
+>  arch/arm64/configs/defconfig                |   1 +
+>  drivers/firmware/qcom/Kconfig               |  31 ++
+>  drivers/firmware/qcom/Makefile              |   1 +
+>  drivers/firmware/qcom/qcom_tee_uefisecapp.c | 636 ++++++++++++++++++++++++++++
+>  5 files changed, 675 insertions(+)
 > 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 30c1cdd0fb38..7ccedad8d388 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -22981,6 +22981,12 @@ L:	linux-arm-msm@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/firmware/qcom/qcom_qseecom_uefisecapp.c
+>  
+> +QUALCOMM TEE UEFISECAPP DRIVER
+> +M:	Harshal Dev <harshal.dev@oss.qualcomm.com>
+> +L:	linux-arm-msm@vger.kernel.org
+> +S:	Maintained
+> +F:	drivers/firmware/qcom/qcom_tee_uefisecapp.c
+> +
+>  QUALCOMM PINCTRL DRIVERS
+>  M:	Bartosz Golaszewski <brgl@kernel.org>
+>  L:	linux-arm-msm@vger.kernel.org
+> diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+> index fce418fe6ff6..a8525878c679 100644
+> --- a/arch/arm64/configs/defconfig
+> +++ b/arch/arm64/configs/defconfig
+> @@ -277,6 +277,7 @@ CONFIG_IMX_SCU=y
+>  CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE=y
+>  CONFIG_QCOM_QSEECOM=y
+>  CONFIG_QCOM_QSEECOM_UEFISECAPP=y
+> +CONFIG_QCOM_TEE_UEFISECAPP=m
 
-Ok, got my answer. We need both support in the binary, like before.
-Thanks,
+I do not see how this change is relevant here. Adding a driver has
+nothing to do with defconfig. Drop or split.
 
-- Amir
+Not mentioning that nowhere is explained why you actually need it.
 
->>  	};
->>  	struct optee_shm_arg_cache shm_arg_cache;
->>  	struct optee_call_queue call_queue;
->> @@ -290,6 +303,7 @@ struct optee_context_data {
->>  	struct list_head sess_list;
->>  };
->>  
->> +#ifdef CONFIG_HAVE_ARM_SMCCC
->>  struct optee_rpc_param {
->>  	u32	a0;
->>  	u32	a1;
->> @@ -300,6 +314,7 @@ struct optee_rpc_param {
->>  	u32	a6;
->>  	u32	a7;
->>  };
->> +#endif
->>  
->>  /* Holds context that is preserved during one STD call */
->>  struct optee_call_ctx {
->> @@ -422,9 +437,31 @@ static inline void reg_pair_from_64(u32 *reg0, u32 *reg1, u64 val)
->>  }
->>  
->>  /* Registration of the ABIs */
->> +#ifdef CONFIG_HAVE_ARM_SMCCC
->>  int optee_smc_abi_register(void);
->>  void optee_smc_abi_unregister(void);
->> +#else
->> +static inline int optee_smc_abi_register(void)
->> +{
->> +	return -EOPNOTSUPP;
->> +}
->> +
->> +static inline void optee_smc_abi_unregister(void)
->> +{
->> +}
->> +#endif
->> +#if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
->>  int optee_ffa_abi_register(void);
->>  void optee_ffa_abi_unregister(void);
->> +#else
->> +static inline int optee_ffa_abi_register(void)
->> +{
->> +	return -EOPNOTSUPP;
->> +}
->> +
->> +static inline void optee_ffa_abi_unregister(void)
->> +{
->> +}
->> +#endif
->>  
->>  #endif /*OPTEE_PRIVATE_H*/
->>
->> base-commit: 827751b699b79a6e569983359c02dce67f81b94c
-> 
 
+Best regards,
+Krzysztof
