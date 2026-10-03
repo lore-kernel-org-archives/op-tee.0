@@ -4,139 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1599FCA5FDD
-	for <op-tee@archiver.kernel.org>; Sat,  3 Oct 2026 14:18:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49C25CA5FEC
+	for <op-tee@archiver.kernel.org>; Sat,  3 Oct 2026 14:24:34 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 4003C454C8
-	for <op-tee@archiver.kernel.org>; Sat,  3 Oct 2026 14:18:35 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 68287454A4
+	for <op-tee@archiver.kernel.org>; Sat,  3 Oct 2026 14:24:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791037115;
-	bh=1eedhvqEoDar26cNo8xuHHgN8H0ummeN8BgfjAAH7RQ=;
+	d=lists.trustedfirmware.org; s=2024; t=1791037473;
+	bh=Q8e70/5onMVOdbRZODPcLfVxhB90C2nmP0cyvm+D88s=;
 	h=Date:To:Subject:CC:List-Id:List-Archive:List-Help:List-Owner:
 	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=Fqw0M8HO5bqJuW2AJIbqlr6Z6EhFVPIpjx9QIR/k0lElPZJKqrss5KyceME8pFBbw
-	 Tnpvov/s4dAbAtYk3CrP/Z0+QrGtgeo0wMBCNo5HiWin3WKpXJr2pU2qYu7noeErdZ
-	 9dLDrpQrPkWRRtYySk7oo6G5aSoe3rjWZrlRW6u/hdOqYnnI9PgqtKWMpdcY2Ft0M+
-	 vF+yZLi9OKzSP+tHp9t1ImRGGKGF6vvSCPmtIoqtqBkB39vEUcknOXqkJD5IOcKMtd
-	 ImA6YGwMalZX90TBdjJckmVnCLwlJprtLItCE0KUK4W+GcOsVfEvIhEdE9UuzcXTmm
-	 R7w87Cz9XmzzQ==
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id A9D2844F01
-	for <op-tee@lists.trustedfirmware.org>; Sat,  3 Oct 2026 14:18:28 +0000 (UTC)
+	b=Bm/dhkfB6XjCgPPyau8GH/Xd9kVpxRBPUZPHcKS2+VvQx/1vEt+wU9MrkAliWDeKr
+	 V1iKm8QlFlyV3Zo2fPHmV++RVQ8hCvhegRW5Uo6qhFjv2z2UUP5OAT77u04mO9gg4S
+	 dsJEsZkAPpXkPyH/2zREALHX2RnyGGhQz9RX7g8AKoRn6MvvmaOLxWx67oqO2OcRiy
+	 zNaLRtlb/TZ9YU6nIIdwcZ289D6KYuJ8pmd0Ky6k0VlVIwb2GeWdX6LDK6wN1stRD9
+	 ac44992W9obwYKAb8lG4S8jVjAu4BAQY/jLB2YsfbSGIg3MFyHmgJVyR+zrtQXgVsJ
+	 40IIH9Paa3k3g==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 6A08F445AC
+	for <op-tee@lists.trustedfirmware.org>; Sat,  3 Oct 2026 14:24:26 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=f1zuT6RP;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=X2I/0vub;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=MzBWH51a;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=S/2wX4fy;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 693E5oSU1373096
-	for <op-tee@lists.trustedfirmware.org>; Sat, 3 Oct 2026 14:18:27 GMT
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 693E69RV897634
+	for <op-tee@lists.trustedfirmware.org>; Sat, 3 Oct 2026 14:24:25 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:message-id:mime-version:subject:to; s=
-	qcppdkim1; bh=KpLq6T5CbATDXOe3S9he3OBDjINXVpPEk4u//5by3IA=; b=f1
-	zuT6RPpHDQJTsLLNaezZEgZAg6NNzu9DOXrxWSUeAGkNZ7rpAv5GxSKthakUhnSo
-	dmfVV2ldK/6PZoIfu2HczusHypT8zG+IpnWAMwHpXSsZwZkunZxtJquyOjiEgkWg
-	kQOD/wFmg05yBrnVIk388C5ZHEX64YEQnkmhf558XF458dX6CLuhbsEbiwd0exrr
-	Fekjxpc69dHlN31pHC+7bLve94NueU9idNkl88nO16o5dpVyoGSXVoDvsXMHrebK
-	Ltw9WpCCbkubsTZinyRGv+p4SOxSYQy8IPMlomkGaUxSojtKQOCCwPKJ5VMHKTud
-	rg1KSVjJO+GYpZWvM+NQ==
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h2sr695g5-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=0zbsE0omg0TYg8XlU4yqOB
+	v+Ij+j5rVhI0VbWrq7cDM=; b=MzBWH51aB1b4v71ZhF6iHdMvS8wyvf7D2bD2JJ
+	p66iDUdHR1Sq4J6cu7JUvwDsDHThNIhkIauTvBW8ha0IxchX8Qgqj9ab93sZZmbp
+	l8O2qaV87vD0UAmvMzH60AgM2z5x7LyLIIj+vrXZ1qRjHWkId62GfBAjid1c4XOZ
+	nZ7vYEO1+VGG4pBDIcvUqyXv5IVcyqjl2v2oxIBqhcGhEaun4IQ7vuUU6XU/LrC5
+	fnRzHgI3i+n89LNLZD6xvfMZmbJ2/5DyCv3BBSi8M68VFJBpemL9Ch6APsJi5iZL
+	3C/z/J/YTrd8ghmMT3a2Vpvc4tO0Jnyoz3C6eEAOu5SGw99g==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h2sq8s73y-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Sat, 03 Oct 2026 14:18:27 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93caf7856ffso17116385a.3
-        for <op-tee@lists.trustedfirmware.org>; Sat, 03 Oct 2026 07:18:27 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Sat, 03 Oct 2026 14:24:25 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93be1861d2dso75777385a.3
+        for <op-tee@lists.trustedfirmware.org>; Sat, 03 Oct 2026 07:24:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791037106; x=1791641906; darn=lists.trustedfirmware.org;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KpLq6T5CbATDXOe3S9he3OBDjINXVpPEk4u//5by3IA=;
-        b=X2I/0vubwkFETePRelkg2KktLNfWAjx682PB4fVOFTaqVthkCq6XXgrKKICi1c+x6G
-         /XRjMWPiZpUjPU9haGKxpzk58XehxVwWrWZDERwsKvn+fVvr9vz8mxZ/WOKOBXKyNwYT
-         YDxw4jDafTLSQZAKT7nM/Yu9LM0gknfYOLx3nBYpq7exmK4FYWDRoWZ4Kio4Ye6d2bh3
-         nvw01L1yINACx96Ijqedj4mtAplabrhufbHBA0cpUORq816GMQHUI38MHcLExZVtZfln
-         z7WsBnFfNyfkXHBNlKgvwsgQ/WWEkECHHCXwDRCWc6ZSteoPcvE6/hfiAhelu+SbFYPH
-         VcPQ==
+        d=oss.qualcomm.com; s=google; t=1791037465; x=1791642265; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-disposition:content-type
+         :mime-version:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=0zbsE0omg0TYg8XlU4yqOBv+Ij+j5rVhI0VbWrq7cDM=;
+        b=S/2wX4fyXxMHNHWHhIer9ckqatgbfFgXewXy7wVFu0VyMT47rhSLsD4VHCXQqyNGCL
+         K3HfeiXq/Gdzohx6XebZMkB100oAGfbwxK9+Ueh6aof3guS9oWsQJqy7zyI8/OZilUq8
+         uomAd0qLn5F1J+mgj+9hkWSUXKEPEQJ5Oel1/PB83SPw7W1P6tQvp655lcHpamVq2oGh
+         TS8RYV1Q5p/l6Ga57K486mCbrGlMi4uRE5NAEeq+OuCh5GOR+VK9ohq/d3GhPbJCg00B
+         Y5ZEgqj3IgFaCzSHOJYvmhX7+hoiPfwEyumStTjAGR4DWBTHY91gOt8BR1jytFOgzkLF
+         H9GA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791037106; x=1791641906;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=KpLq6T5CbATDXOe3S9he3OBDjINXVpPEk4u//5by3IA=;
-        b=CJzyV3i4Lip+dQtMosJeoEJNoPbOifn5mm7opF/xXqp9tjVUVo8lmQ1fOnz8ymwrRj
-         blKm3WAXFacFfG4MKcwIy9VlTQ3RENv1+wL7B+QpqX6dt4+5wMxR0q7aj+AFNKA7uFoN
-         7lS8L2q8vf6Q7++bxPtmILuVdJA8FlAGJT01S/P8DFB5iJM0Rms5c5Uwm/bn8wD1IYK7
-         WX67xn4tJ9f0nxbl66Zzpf92g6QDOgY/YamhQBbxf7CFaaYm+vkuVxctxDGkD9PUJQ22
-         MG6ORz6MuFSP4K7HH/xZkqMInOkOqjRgzIQzko/I8PlAGpDZi0uP6aSGz+83YHUTHYts
-         DNOQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxUHFgTgUcfv7JFVsrdlwhbYVSBr62WjLW3nDU88Q21jcoIkJc25lvfhMpvdZDOmi1QUPhKAxc=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++nvZIWs7QpQtcH3vxUTNBp0j9YWjvkxgm776OMx//lwY5r1mGz2
-	t9alPjBhomZI+9JgGUk5XW9OC7XGFEx7mFFrOHJOq48yMcQRRu7nhf4kzRPWIvUGpjmOOpV6Acp
-	z/Z77D00wZVJvMk8MxUUVpipcpZQ7oXgDh7cAmBUYZsWQxnq4A5N8loXStguFPZvJn6WdWpRO
-X-Gm-Gg: AYBFou2HjpOV25HbKgsmhmxJMyB0G9YSkE6o6Li77TW8iQeWg8lrL08YCSYYDCUqsYN
-	mGVDPHWZswi6HjxthMqlurhsD+v3+pfzeYG7ZhCwSOcxHuUvnQTGE0VcTejwgv7QC/QTWS9DNQs
-	lu+nEud2zQMwTnAwkavtIINZiMVo082PSPvpL9nBo0LlMC0vxL6KezTHKw1yrLq+n+IkLO5Rqpc
-	fwkuy8iRyTsrPUjKm5/7JKL7OwLZ6vuzwyjFE8jEhuKseA6VfPmGYEn1OJi94WSyDJwaTb2PXPJ
-	7YFjeLes9knAw1VLymMP9Wd8hOJehO3P9GyVw+SF4plt5TLg/Pk1qdJRBqNJVWIpRRO1mZqHF7c
-	RYefnhKcC0qjtOIgwN/1bpfm2I+FvfLcLfWUDrHxRx9O6tA==
-X-Received: by 2002:a05:620a:a415:10b0:92e:7d53:8e8d with SMTP id af79cd13be357-93cf16dae99mr844770785a.27.1791037106368;
-        Sat, 03 Oct 2026 07:18:26 -0700 (PDT)
-X-Received: by 2002:a05:620a:a415:10b0:92e:7d53:8e8d with SMTP id af79cd13be357-93cf16dae99mr844766585a.27.1791037105971;
-        Sat, 03 Oct 2026 07:18:25 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1791037465; x=1791642265;
+        h=content-transfer-encoding:content-disposition:content-type
+         :mime-version:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=0zbsE0omg0TYg8XlU4yqOBv+Ij+j5rVhI0VbWrq7cDM=;
+        b=lqyuXS+2rW+rUt7s/6QZMUD6KbIIcDT4Sw2sTUevrYT4n7SIx8mRxiaeXJBxahs7kh
+         JkCqGSYs/6Mp/L8BIRUccxHLNLFvhhXduSgyzNj1i0Qg9AoBsrAOrWnue4vbzjcPi7Vs
+         485Qch2eX87XpPg68MPqCJwR40Vu+1Y1R4yJ8iZS6nA06uzTPlxCsGAakXN5Snnn01lm
+         9CuAPmGszFMdWhWgKsFz+rD/X1MMnP6iFRMrXJ5BX53Ckm86QcURnN5yq2K5C99X4LH8
+         dus7Pa4EIs7keM9nRUqikN5r628pz3Kma5gG4LeHX297xB0HOgnxkeCnW1PUiX/F0nB5
+         h1Lw==
+X-Forwarded-Encrypted: i=1; AKwUvBw7Byd4TodaOHA8Jt3nGA02RB8ixfgjFBVLxuZatWT/n8HplojgmexFxKQsFBze3HJmGFTlZvc=@lists.trustedfirmware.org
+X-Gm-Message-State: AFuF++mh9FrQKZiAkLb1t/Xi5ZoiGzjzwZilJakfS9LF5LxOelUDgsn0
+	xUndtCOd1lxXCFXMlf56czGXEiuK/HPAHKKxwgH4hfyM+Xg7+vJ8ImLsNgNg1TDw89b7ooE8yxS
+	PuIsOJD9dDTR5UCzBievfTjS71ZbTevsTF8n/Ae5RezpijVUuA6bA+fAELoBMYGfhFLldW08O
+X-Gm-Gg: AYBFou0eqJ69H8o/Jimf6sfXbpVa9pYAosogmHMJpgRgHqwUnIMM/v9wekQpIaCounP
+	xxy2Und7aplqb/ENkxt6G4+hq2NAYAq4D8m+3oiEv8KTuM30K6rhoWjSVvtGH8C3g31cHylpjfI
+	MuGCnLjdEGB03IfGporht7sPx4Jts9aSNhtc+7KKwdpJe+DZ2IwRINkLXeJBzfyAq/QxYaajwnr
+	cG3wY+9fe7SkK7Hjiv/T4TIBFI/LSYgjYVF67jE0NnnJzRXqxATouskTgb6pVjbdJdj3ktbVW/v
+	GTKhKHlctmqpeMm+yc0drPypSn/pWZ/2Y9TYpsCwY0gcopr7AGbd5zvliDeDNVEa1hLhu8E/xoq
+	TifL6K9FmSX+vx7d73w88K8v86UbPDWVtp2GD1FDIrAu4sg==
+X-Received: by 2002:a05:620a:2b47:b0:93c:c1e8:6504 with SMTP id af79cd13be357-93e50fe9f3amr495619785a.23.1791037465066;
+        Sat, 03 Oct 2026 07:24:25 -0700 (PDT)
+X-Received: by 2002:a05:620a:2b47:b0:93c:c1e8:6504 with SMTP id af79cd13be357-93e50fe9f3amr495616185a.23.1791037464617;
+        Sat, 03 Oct 2026 07:24:24 -0700 (PDT)
 Received: from rayden (h-79-136-84-34.A175.priv.bahnhof.se. [79.136.84.34])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6afb01e59dfsm884481a12.8.2026.10.03.07.18.23
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2e614cc508sm154549966b.38.2026.10.03.07.24.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 03 Oct 2026 07:18:24 -0700 (PDT)
-Date: Sat, 3 Oct 2026 16:18:22 +0200
+        Sat, 03 Oct 2026 07:24:23 -0700 (PDT)
+Date: Sat, 3 Oct 2026 16:24:21 +0200
 To: arm@kernel.org, soc@kernel.org
-Subject: [GIT PULL] TEE updates for v7.4
-Message-ID: <20261003141822.GA927567@rayden>
+Subject: [GIT PULL] TEE QTEE update for v7.4
+Message-ID: <20261003142421.GA928135@rayden>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAzMDA1NiBTYWx0ZWRfXwoI18ljHgghM
- QtYS5d3JiEGQM9WbmHnxpzuqIYmhf76CU5593YRO13QczsoG49Twea3eRLKSUR/J0I9jXpEpo5g
- 3TLJf7LuJl50RvZL8KvNfPwvtt3XGwM=
-X-Authority-Analysis: v=2.4 cv=NaBzRGD4 c=1 sm=1 tr=0 ts=6ac10eb3 cx=c_pps
- a=qKBjSQ1v91RyAK45QCPf5w==:117 a=dMv3lA6PLLkT9/uWe4YCGw==:17
+Content-Transfer-Encoding: base64
+X-Proofpoint-GUID: xQi7TFAiCEFkUaZyI2VBoJNMWpZ_DIcQ
+X-Proofpoint-ORIG-GUID: xQi7TFAiCEFkUaZyI2VBoJNMWpZ_DIcQ
+X-Authority-Analysis: v=2.4 cv=TKzQ2Fla c=1 sm=1 tr=0 ts=6ac11019 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=dMv3lA6PLLkT9/uWe4YCGw==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=VwQbUJbxAAAA:8 a=DiaXWS5xduwjvWiepNMA:9 a=QEXdDO2ut3YA:10
- a=NFOGd7dJGGMPyQGDc5-O:22
-X-Proofpoint-GUID: GyfbjQKTpi8R_WMAZU457qCNElU6BSLk
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAzMDA1NiBTYWx0ZWRfX6qm0fYwoSx3a
- ySbqFxeCeJjQdkqeDzzs6z7IFAc2rsP7rAjK+aH6JcBntIa43ynNwqMg5jA2nVw6jZfeAz4mR/6
- fvPqtpNLn6iVf/6DB2Vd7+J+Pq9Gi3xxXUl5EU+hT6cuCx2fFFoFYp7dw5FI6QWDwtKgwpgELK9
- g5kme29l9/o3RTOwYY6atqhU22EclQE3DAX2oF5fQO9ZBOqx3WYYPKQX5u6mf9OsMm5JdLR1VKe
- cbPeWoj7LAEl5yPKFXyoQoq8Fo3WRT7xAQarJ+7hE87+rZX3RPiheQ28OPgMl+WJBUepsMxqh3y
- rCDspqQzzZJZUIBWYxTpAUY2XqMR6Q+8LopZHV1FfjcojwZdcjnEJ/baz8ra1s2++Z/CSJ/nkbO
- bGgX0G4epge+1pfgZtDT1WaklZo5Ddff7Xc4HBZhTo8pwcaPXHFE4znElcvTfM0oMmWhRniVntH
- XsX296kpqh7i3VIENEg==
-X-Proofpoint-ORIG-GUID: GyfbjQKTpi8R_WMAZU457qCNElU6BSLk
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=VwQbUJbxAAAA:8 a=DiaXWS5xduwjvWiepNMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAzMDA1NyBTYWx0ZWRfX6+6gCxVlaMvU
+ FFuJ3U7/I8Eg32qnI0JKcsV7am4r1R3eh+Yre4+xPtc2kCxXFdTmDH3vVQwqV0BJOkBYv/sc23A
+ gb21d96gv3yMG4BJjFsrcAfZwbg/yeXMm2FX4TJtODatw07pnTdh+MkFuyUROcZt51pz/0wWo6y
+ 2kq3VFzY3h82w1TNDeFKEl9zHnLgu1bZiavkNBzhMhzDVK4kYBOBvjdTYr0bNiMBGg7KGclGygo
+ uD7PX7a5K/ek20+9RlYberay9vuB5CrcU8HMYnK337UPl2hRre4gBLSH6lUOfsUzIWPxegSrKIH
+ CJ0Hkhv3bpH6xmCRZgVBQEzyM69H9vza0CxghoHXxy4+S2vmVG/fwJh68w97sBaMO7vDaYg+F/S
+ OlwMAHODLWqUcWJDMnLQI1rQcN5SXrIqQLerUqgCkQCO7SusZ0lGpCcZIRJG4jd7alYvycUsk9z
+ RHN8YvkXzhapJwGUeSQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAzMDA1NyBTYWx0ZWRfXxcSqwOUNF9wy
+ gCddsN/Qou97dmNXoUlffE/+nDd0nik27Gnv1CrkLx8xsJEizROEEEf4KEJVZUuLFkk3z1rvl0k
+ HOpyxXnPJxI8n+8mdnJjqg9MuDNeh2o=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-03_02,2026-10-02_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 phishscore=0 impostorscore=0 malwarescore=0 spamscore=0
- lowpriorityscore=0 bulkscore=0 priorityscore=1501 suspectscore=0
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2610030056
+ impostorscore=0 bulkscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015
+ suspectscore=0 phishscore=0 malwarescore=0 priorityscore=1501 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610030057
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.50 / 15.00];
+X-Spamd-Result: default: False [-3.60 / 15.00];
 	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	MID_RHS_NOT_FQDN(0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	MIME_GOOD(-0.10)[text/plain];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
 	MISSING_XM_UA(0.00)[];
 	ARC_NA(0.00)[];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
 	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_COUNT_THREE(0.00)[4];
 	FROM_EQ_ENVFROM(0.00)[];
@@ -144,21 +146,21 @@ X-Spamd-Result: default: False [-5.50 / 15.00];
 	RCPT_COUNT_THREE(0.00)[4];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[205.220.168.131:from,79.136.84.34:received,209.85.222.198:received];
+	DNSWL_BLOCKED(0.00)[79.136.84.34:received,209.85.222.197:received];
 	RCVD_TLS_LAST(0.00)[];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: A9D2844F01
-X-Spamd-Bar: -----
-Message-ID-Hash: J3PQI4UOYULGY5GWC3HK6MG3DWISQ5XU
-X-Message-ID-Hash: J3PQI4UOYULGY5GWC3HK6MG3DWISQ5XU
+X-Rspamd-Queue-Id: 6A08F445AC
+X-Spamd-Bar: ---
+Message-ID-Hash: SPW572XCTG235WD5BLZ4CAJWIHBLUXIK
+X-Message-ID-Hash: SPW572XCTG235WD5BLZ4CAJWIHBLUXIK
 X-MailFrom: jens.wiklander@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, op-tee@lists.trustedfirmware.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/J3PQI4UOYULGY5GWC3HK6MG3DWISQ5XU/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/SPW572XCTG235WD5BLZ4CAJWIHBLUXIK/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -168,31 +170,20 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Jens Wiklander via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
 
-Hello soc maintainers,
-
-Please pull this small patch for the TEE subsystem.
-
-Thanks,
-Jens
-
-The following changes since commit 8d3ae59288f1e7d58d76558a6ee96d533bc5019f:
-
-  Linux 7.2 (2026-08-16 14:32:26 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-tee.git tags/tee-for-v7.4
-
-for you to fetch changes up to 6229fda9a88656ea7c727c3e2401080c5d3efbc6:
-
-  tee: move tee_ioctl_shm_register_data to above IOCTL definition (2026-09-16 07:52:31 +0200)
-
-----------------------------------------------------------------
-Move tee_ioctl_shm_register_data to above IOCTL definition
-
-----------------------------------------------------------------
-Andrew Davis (1):
-      tee: move tee_ioctl_shm_register_data to above IOCTL definition
-
- include/uapi/linux/tee.h | 40 ++++++++++++++++++++--------------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+SGVsbG8gc29jIG1haW50YWluZXJzLA0KDQpQbGVhc2UgcHVsbCB0aGlzIHNtYWxsIHBhdGNoIGZv
+ciB0aGUgUVRFRSBkcml2ZXIgaW4gVEVFIHN1YnN5c3RlbS4NCg0KVGhhbmtzLA0KSmVucw0KDQpU
+aGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IDhkM2FlNTkyODhmMWU3ZDU4ZDc2NTU4
+YTZlZTk2ZDUzM2JjNTAxOWY6DQoNCiAgTGludXggNy4yICgyMDI2LTA4LTE2IDE0OjMyOjI2IC0w
+NzAwKQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBHaXQgcmVwb3NpdG9yeSBhdDoNCg0KICBnaXQ6
+Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvamVuc3dpL2xpbnV4LXRl
+ZS5naXQgdGFncy9xY29tdGVlLWZvci12Ny40DQoNCmZvciB5b3UgdG8gZmV0Y2ggY2hhbmdlcyB1
+cCB0byA2MTU5NzA0NzY0NDRiZGY4NTNjN2MzZWNkYmU4MDlkYmRjYTA2YzE2Og0KDQogIHRlZTog
+cWNvbXRlZTogRHJvcCB1bnVzZWQgYXNzaWdubWVudCBvZiBwbGF0Zm9ybV9kZXZpY2VfaWQgZHJp
+dmVyIGRhdGEgKDIwMjYtMDktMTYgMTA6Mzg6NDYgKzAyMDApDQoNCi0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCkRyb3AgdW51
+c2VkIGFzc2lnbm1lbnQgb2YgcGxhdGZvcm1fZGV2aWNlX2lkIGRyaXZlciBkYXRhDQoNCi0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0NClV3ZSBLbGVpbmUtS8O2bmlnIChUaGUgQ2FwYWJsZSBIdWIpICgxKToNCiAgICAgIHRlZTog
+cWNvbXRlZTogRHJvcCB1bnVzZWQgYXNzaWdubWVudCBvZiBwbGF0Zm9ybV9kZXZpY2VfaWQgZHJp
+dmVyIGRhdGENCg0KIGRyaXZlcnMvdGVlL3Fjb210ZWUvY2FsbC5jIHwgNyArKysrKystDQogMSBm
+aWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0K
