@@ -4,250 +4,209 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39962CA5FFD
-	for <op-tee@archiver.kernel.org>; Mon,  5 Oct 2026 11:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12706CA5FF0
+	for <op-tee@archiver.kernel.org>; Mon,  5 Oct 2026 12:00:53 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7099544F0F
-	for <op-tee@archiver.kernel.org>; Mon,  5 Oct 2026 11:03:10 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3D83745242
+	for <op-tee@archiver.kernel.org>; Mon,  5 Oct 2026 12:00:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791198190;
-	bh=XggvK/mbkYFgVJaPngBSf0EJ89oLS951tOm4dDdAJ9E=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1791201652;
+	bh=J4f3p9npyqHrcIAJJeagZsStVI/MJ0U6TEfe6bpSb0E=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=kyaVMpZQoLko1J4185pTG2nmwDwc47MDao+MNRC6ppxcN1t5gWPwUkSl/1meN8mGH
-	 5tP+PEWdr+sxjdigWx8c5S9R5iyOoKFEVUq7bLK22eRNbHp46RBPOWPlIKdGm3oO9M
-	 nNSyvrjm7FyurN8Ylk0oODPOaygGPLegorOXgak2ATABEuEtw0vOBpX6EixotHnMIr
-	 43DhDNeY90gMO4apQ1/xHGlzQhdS1lsn/oe5F3WnKHxs05t0lmHR8y+NZUVYWnt9I4
-	 uy+woLd7BIWFvhfNIctniUj0qEHy0qAsxqHnlXj452iJO9TfmBcw6dG3+wgJNG+Bdi
-	 CB+3LtxWdHgfg==
-Received: from mail-wr2-f35.google.com (mail-wr2-f35.google.com [74.125.225.99])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8658744A43
-	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Oct 2026 11:03:03 +0000 (UTC)
+	b=eC/33oGo0p5jbVdyORKuQQ6Irw0/FlhaganFI5wlLcFhvfflpdEJGuc9rdCiEXaYy
+	 BXKinjTB7BI1bYIqgoFiLF9N5D7lI1oZQPg/UtoTpOxdcBDpBX+mAK8FuMVMuW7+7A
+	 UbbPVobkiLTr0ug9E/EUmj7lCx/ttU+ELM8Cw1jA5D7HyDqnd4EkiOn/po2d5aAxI6
+	 WwO2PCWvh+jWBRHCYdBWHVMpB3FvDw3LmLdvNCGsOpMT8G/TY9G9NkoTqhXUf0kmj0
+	 Oxa0Q5IeJU5cAYCHlhGX/I2CQjYSLgxfHF9Mcv2BxarE1jJvRRs5m8vzYczrRnNrXI
+	 rKZjtz6fRK1ZA==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 84E693E882
+	for <op-tee@lists.trustedfirmware.org>; Mon,  5 Oct 2026 12:00:42 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=tvMPKws7;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=atC8/+GU;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=kYrUA4Fl;
 	dkim-atps=neutral
-Received: by mail-wr2-f35.google.com with SMTP id ffacd0b85a97d-4887840c529so530942f8f.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 05 Oct 2026 04:03:03 -0700 (PDT)
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 695BU3wJ2129308
+	for <op-tee@lists.trustedfirmware.org>; Mon, 5 Oct 2026 12:00:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	NjqrkeGFYtSDE4uh57Qyu5uwPPi7oB0ETinHFeakgL8=; b=atC8/+GUTPUwWVMT
+	STecLuCaR8X/jeIAcvaelX0sxrJ2tEHRqQEXCaPKa8TyDKd0/V+vFJ8hLSNWBsP+
+	LB1DqGTiYtnXMRMcGJ149UE6O8iQC/RsNxWuczKl8RUz8crNsbJgUun+XbXCTeJv
+	hXnFNMW9YJizYijb6FCVtjjZUPLT35iJeBGe5jXL5U46IOywT7MngsgrqWeJp5lf
+	B9STWTf/Q8NyXDTnju9F6sSRRarstjaLJ2gjGKZuz58BCH1OsXoFJ5XitnYIKbj1
+	ZMJLiPlDAd+LeCRWOvSpmMmfAdQC0QzYqJNToF3aQy1k7Tq+pFnY64l1h8HbiOWf
+	GV98xw==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h2spa5rp9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Mon, 05 Oct 2026 12:00:35 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-3a4f7eb79f2so1620016a91.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 05 Oct 2026 05:00:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791198182; x=1791802982; darn=lists.trustedfirmware.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=wpVjroXVisHfj83brLQUbqEhnPiyl/yiKfc5znuepio=;
-        b=tvMPKws7CFsjLd4HnWCFU2XgjicixoSsWN80RXGsB5XNWjKpema11JpMUaKLKMwjl6
-         kmv2pPhQZa447jLPFHQFRM7IFzzkcZ//5+goTxoQSU1Gvbrl2hZgEk08EiL9MYft4DIO
-         HJGw4Y2N1nagsmL7a3qM2A4W+MShCAOxCMUHSsq1QiqtKqg7BC34qQguFWGnD/MQeJSQ
-         AfSdXwjtttB4fHGOjIcsw5NKL35Wlr2Q9WQRimYkEYs/RzCsycsHDRJsJEElbm5pqIUS
-         NEp8pnw6SJQkWVnV/Z5Y0s+U81ShkUsjSXOxrTO9KNIqJGH5/tBzYDGFqBSnHRZcJuf0
-         /k7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791198182; x=1791802982;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1791201634; x=1791806434; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=wpVjroXVisHfj83brLQUbqEhnPiyl/yiKfc5znuepio=;
-        b=S1PQCkP1hL89C6Qb7gLAQFjOWjJi8HV3QFrga0UOOlHxGdECaMixa1Yg6hC+CAcFDc
-         AXaT359Y/aPvHy05bOv6kvyPTCdsuj1fF6dMUiikmPTCBLo4FuJusmxo7vOiLG2mLdgs
-         gjH5yTBV+YIc4l86T4r//BYN4q4M2Mn4thoKT0OlFpJH1mtivTMAsqPUxsI6mQAUvoq1
-         ZZPkYC0ic6uu9EADwJwGa6UHlNrd65hkjx1tAuPjQa75rVvYl4uY4zb6GOMT+J5/wiWw
-         EtLDfbna5FQfuab/wuH8jyWl/rQTyk3kMY/+gdmgNKUupfVB35pkKB+6JEiSJDrIVmi0
-         FSVw==
-X-Forwarded-Encrypted: i=1; AKwUvByDxtfWr/OdNhiQ4RTri4N7hI6fzEgBp7zr/vPHtjLgx20B1ApDiyiJs8pqB6chkNyszuRrsoU=@lists.trustedfirmware.org
-X-Gm-Message-State: AFq9FYL9dhnYAHKf9KyOqmSzikC1cRhyzwMUquVdHDPGX8uvuVc3o7N1
-	fevN2beIAJARCy1V81GcHmg1YL8Vfvv1EYiLhw1/V1XY8DVPCU3cJs+aqDkH+bVn3w==
-X-Gm-Gg: AYBFou3+N3rsDT3M3DnRmpUB764XIQwU9G6qQC31U8MET5S5ePjIRr5lFLiBgMr7aLe
-	ilpY+mZqXjlOIq8uV/DuFWj+0SZP7DuW9ADfib98UOe4rE9Q/w8BIqBeq3qz9JSdZKOf2uxDltX
-	q4twLOpDXYnqFjRuii8wr/VcqkQkUjkQNttTHgRnbHHTDMmRCMbpF1kFSYShSdtHpEE0xYkMA5U
-	GKcSp8aWkZKE8xve2xKM11m+ckv7WD0NVdsGuOfyLC2EZq7UyVHANpMrntyXpOwDkFoULTnsfHn
-	2V083z5FCiIAK5SHCEGySk7e2KZE4h1IcO3Ly/m4mz03ObJVT4VlKFvYCl+GsbV7bXLiXQZYyeO
-	nj5qKcVbkL/dnmTJbtReyGVBmifr9OD9H297JC+14QKumV3QY2SaOtoabFpkBqV3G8byB9ZY41H
-	0hsvCG5GIM8+R84SMpn9teICfZNRjWdBqcM+XlOFISD5U6yJ1szMvj9CrpwVG4sHCdGju6B7Z3g
-	rAyMDF4WYDdLBVNnsmUXK4KQlLMm0eSwK0RbbRz1WU=
-X-Received: by 2002:a05:6000:2906:b0:487:13a9:80d with SMTP id ffacd0b85a97d-48b12733c50mr18086704f8f.10.1791198180653;
-        Mon, 05 Oct 2026 04:03:00 -0700 (PDT)
-Received: from google.com (197.183.140.34.bc.googleusercontent.com. [34.140.183.197])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48c6227fa65sm2880630f8f.16.2026.10.05.04.02.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Oct 2026 04:02:58 -0700 (PDT)
-Date: Mon, 5 Oct 2026 12:02:55 +0100
-To: Will Deacon <will@kernel.org>, brendan.jackman@linux.dev,
-	catalin.marinas@arm.com, rppt@kernel.org, akpm@linux-foundation.org,
-	sudeep.holla@kernel.org, jenswi@kernel.org, robh@kernel.org,
-	mark.rutland@arm.com, ardb@kernel.org, thierry.reding@kernel.org,
-	david@kernel.org, danielmentz@google.com,
-	linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
-	op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 0/8] arm64: Unmap FF-A lent memory from direct map
-Message-ID: <asOD31rTX6dNfD1o@google.com>
-References: <20260921110050.3977591-1-vdonnefort@google.com>
- <arIYtjmSKCs14SqO@sumit-xelite>
- <arKW_91EeKA-w96m@willie-the-truck>
- <are21BjeS1O3RYE3@sumit-xelite>
- <aruh86rd5FMv2i9G@willie-the-truck>
- <ar5TPvANFUoosxGW@sumit-xelite>
- <asOAYODGZa-7EIV1@google.com>
+        bh=NjqrkeGFYtSDE4uh57Qyu5uwPPi7oB0ETinHFeakgL8=;
+        b=kYrUA4FlIKPDz4gNq7x95HxzeCZpa2fflUVEImxTnMTlg1k10KoE12HnKjgC9S9zMy
+         ZyJmvJk8Em9xiOl2nsVK1EwnrwWgbj1UXMxKk2QTWbgwhs9SeGL6+nSiNJs98oqB1EE0
+         Uxs43fDbU6UcQ03npfF3lYuKgg09PpUZd4ai2IVzM8zIYUlMarKvX6xhcf/eCMjaEOkJ
+         0eHz8ZaCNO6OS2uVYVUU9HrvS2BCyRdSCYGP1ffYi1o74ZuQqY0pTTtKvaE7B2BpJKk7
+         JK9kGqNMp+Mc+2mFzKY2A3RYHshX/Tw1cnq0NOSqcF7Zhhgj03dAhu+mHuxm+pibO1Hs
+         tU7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791201634; x=1791806434;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=NjqrkeGFYtSDE4uh57Qyu5uwPPi7oB0ETinHFeakgL8=;
+        b=ugZZwvOK5gZKlsHHN48dwT8U8HqTHXovFhuC9x3hBLoTWqD+10iBVoY4iqsciX74V8
+         jD6ESqeYFg+ikx66e3ruzuxZb3kdhFDfvmhoCjWMNDvsYKR/2uc1J5BHixVPXJ0g3acD
+         UD/EtHCLIVss/uJ0KYBfxsXJA6ZY1ad53kXsHbJmVHw1OpRuLJ7bD449ZLUPVGLa0ZmO
+         MKA4koa+bgOvo61Ab9wj+UKT1MyOnr0XBrR4YzvpqASUOXGY8dzyOCjAqu7KtYTYNU4w
+         u+SKZR82LENfE+u9ASFRoOwGOA0wBFnJpc5HCpo0K7hpUKiPQYOrsApq/G6P+yM7MVZ9
+         RpQQ==
+X-Forwarded-Encrypted: i=1; AKwUvBx+5xyamIiksp9VXn+80JZRUp1lpO4kvaZDxapu9nwb2ktm5/9Z+4Nvr2fpstzHxDYo/t3OAJs=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYLjbRoXTr8jqayBdsGKvnGu59pA2SHIHUv2NRZD9wISrk1GAD12
+	To9p79g+m46o8bz74a15gPuWFk+L6azl3QeSuGUcJw1qqmzhmlWxOSMmxIXMNzOEwNks8TUEZLp
+	kwOGjtVM0a5zjACNf7U8dE4d1yKiMmbSL8ODfR1XW3auI2rltXeo1wTWc+/nNvKlSS6cn5cWL
+X-Gm-Gg: AYBFou34KYpXpnE+cVZAmujEpJCM0KJrVZ8xCZRYE75Pn1RTGhYmek+0krmxUyNeyQE
+	q4E8uNztI0KCb5IupnDxnhtrdZ9BjxkpdODI16v79SgoTEoXNKNg2Cb/5LRwS6HC/U8fRw6cZCk
+	bEJd/FxCFB1vsnQ+A7rL5JL2apT/LMtPDo0JW/mKvttgGsqTBIl4OuFr61kQOu9ibKsgs3xb3CW
+	TIaGwuheMfkheMKEJYnfm9uU1EuZyV9cZBLM5AHGb8hyIj8QK8uiAxhAuP1osQvoRhH+t68vwux
+	oBAs2WyFYN7QLtJZ7cbKOxhBRfP1xzd0j+H7aUROknsEN5g2akG6ksnrxxzTDlXkWn066brH8DE
+	qhac8M/0ZYehSZSLAMy8uhD56rg7u8g==
+X-Received: by 2002:a17:90b:4c05:b0:3a4:ba6e:65c9 with SMTP id 98e67ed59e1d1-3a6ce963ad0mr4301166a91.59.1791201629661;
+        Mon, 05 Oct 2026 05:00:29 -0700 (PDT)
+X-Received: by 2002:a17:90b:4c05:b0:3a4:ba6e:65c9 with SMTP id 98e67ed59e1d1-3a6ce963ad0mr4301044a91.59.1791201626566;
+        Mon, 05 Oct 2026 05:00:26 -0700 (PDT)
+Received: from [10.218.31.125] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a78d6b3ceasm11047079a91.10.2026.10.05.05.00.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 05 Oct 2026 05:00:26 -0700 (PDT)
+Message-ID: <e1ae7f91-0787-434d-9553-3ced487fac6f@oss.qualcomm.com>
+Date: Mon, 5 Oct 2026 17:30:20 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <asOAYODGZa-7EIV1@google.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/3] Add TPM support via Qualcomm TEE TPM TA
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Xilin Wu <sophon@radxa.com>
+References: <20261001055029.1960743-1-zeroknots@protonmail.com>
+ <0c6d29ce-920a-4566-9a4f-a0687b0e5ddc@oss.qualcomm.com>
+ <b2xdth3hkuypnvxlrgssnj4toffbceohhnh7w2ju46fzinflfd@qaq6ai5plolq>
+Content-Language: en-US
+In-Reply-To: <b2xdth3hkuypnvxlrgssnj4toffbceohhnh7w2ju46fzinflfd@qaq6ai5plolq>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA1MDA0NiBTYWx0ZWRfXxdEuMLz546zE
+ pXQnkrVyFkBEuWgHtCzULdslYwC1uokLJqBAN7RZ0Z/+i8muHfL6P/IKc6RPY/9ShPWPDyv17nj
+ zKviySqGMb6usLnDyq4Yfe9gCcRnyy0HKmKuboGbOjUR4nsNAA2GAh6lbNb7XebalAr/Krx75DH
+ HDLIcTyxtF5osN6eVgfUe83SMDP5Zf4KEJ89KdCniOcxrLkrKSWcnDoEAMwH4xqtvt7FSTAUgs7
+ kMYYxqg+/Z6hAj5EgsdvkbpYA+GoOuFLxRgC7qeFsPHb0rO5B+jnAdB2czs5+wQ2q+12cGLs34W
+ nPDTWBDGlGD9kjrKWJGsE/VHozANLh9cUFr9BQdsl/7VaFmeSVp5t8ptGtN5FrrNPhLux4VX1lV
+ Fn7wrVAMyPwx8daGw9Blf4EGgQPJczfVNz77kJyMvpEsvaN2E/K1TrrNII6nl+Xni8OKG7JwOyt
+ Ytq2nQGyhd8qMsUBizA==
+X-Authority-Analysis: v=2.4 cv=b7MncdGx c=1 sm=1 tr=0 ts=6ac39163 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=WzojQP8EweJUJc-V32sA:9 a=QEXdDO2ut3YA:10 a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-ORIG-GUID: MWv_T7W4Pw-bEOUeCQEDlT9vSWSODqxh
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA1MDA0NiBTYWx0ZWRfX9M8RC5rlcfil
+ VGDJf0+d1xUknads79fxbKYqVbX+4zB9IEs5FIZj3IMYGlEJL31jvk1HSOa/tQgyyoxB4pxuCYh
+ JAO4lY4R2fVwfJ/NPwHV8vKXu3wFFck=
+X-Proofpoint-GUID: MWv_T7W4Pw-bEOUeCQEDlT9vSWSODqxh
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-05_03,2026-10-02_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 impostorscore=0 adultscore=0 clxscore=1015 phishscore=0
+ bulkscore=0 malwarescore=0 suspectscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2610050046
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.00 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
-	DMARC_POLICY_ALLOW(-0.50)[google.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:74.125.0.0/16];
-	R_DKIM_ALLOW(-0.20)[google.com:s=20251104];
+X-Spamd-Result: default: False [-5.44 / 15.00];
+	BAYES_HAM(-2.44)[97.43%];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[74.125.225.99:from];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ASN(0.00)[asn:15169, ipnet:74.125.225.0/24, country:US];
-	RCPT_COUNT_TWELVE(0.00)[19];
 	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[google.com:dkim];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[13];
 	MID_RHS_MATCH_FROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_COUNT_THREE(0.00)[4];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.70:received];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
+	FREEMAIL_CC(0.00)[protonmail.com,oss.qualcomm.com,kernel.org,ziepe.ca,vger.kernel.org,lists.trustedfirmware.org,gmx.de];
+	NEURAL_HAM(-0.00)[-1.000];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DNSWL_BLOCKED(0.00)[74.125.225.99:from];
+	DNSWL_BLOCKED(0.00)[205.220.180.131:from];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[google.com:+]
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 8658744A43
-X-Spamd-Bar: ----
-Message-ID-Hash: JPWVZQFYIODRTYFHMCOAD7SBPFOU7AYM
-X-Message-ID-Hash: JPWVZQFYIODRTYFHMCOAD7SBPFOU7AYM
-X-MailFrom: vdonnefort@google.com
+X-Rspamd-Queue-Id: 84E693E882
+X-Spamd-Bar: -----
+Message-ID-Hash: CRLLMKGPTBEZJK6CG4GD7H6UD5DGXE7S
+X-Message-ID-Hash: CRLLMKGPTBEZJK6CG4GD7H6UD5DGXE7S
+X-MailFrom: kuldeep.singh@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: sumit.garg@kernel.org
+CC: zeroknots <zeroknots@protonmail.com>, amirreza.zarrabi@oss.qualcomm.com, jarkko@kernel.org, jenswi@kernel.org, jgg@ziepe.ca, linux-arm-msm@vger.kernel.org, linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, peterhuewe@gmx.de, sumit.garg@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/JPWVZQFYIODRTYFHMCOAD7SBPFOU7AYM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/CRLLMKGPTBEZJK6CG4GD7H6UD5DGXE7S/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Vincent Donnefort via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Vincent Donnefort <vdonnefort@google.com>
+From: Kuldeep Singh via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
 
-Sorry, not sure why Sumit's email was dropped...
+>>> Two questions:
+>>>
+>>>  - Is service 81 expected to appear on retail firmware through an
+>>>    update, or is it specific to the CRD firmware?
+>>
+>> Yes, there's spinor update(bootfw2.mbn) needed which is in progress to
+>> publish as QTEE side changes were already merged long back.
+>> Roughly it takes ~1month(ideal scenario) to get firmware changes
+>> available but somehow it's taking more this time.
+>>
+>> I think i should have captured this dependency info in my series cover
+>> letter to avoid any confusion.
+>>
+>> With the changes, service uid 81 will be available and won't see qcomtee
+>> driver issue log there.
+> 
+> You are responding to the user who uses a COTS commercial device. Are
+> you suggesting that the user can somehow update the firmware on that
+> device?
 
-On Mon, Oct 05, 2026 at 11:48:00AM +0100, Vincent Donnefort wrote:
-> On Thu, Oct 01, 2026 at 06:04:06PM +0530, Sumit Garg wrote:
-> > On Tue, 29 Sep 2026 at 12:33:07 +0100, Will Deacon wrote:
-> > > On Sat, Sep 26, 2026 at 05:43:08PM +0530, Sumit Garg wrote:
-> > > > Looks like you dropped me from your reply.
-> > > 
-> > > Huh, that's weird. If I hit reply-all ('g') in mutt, it moves the entire
-> > > CC list to To: and drops you. I suspect the same thing happened to Thierry
-> > > when he replied here:
-> > > 
-> > > https://lore.kernel.org/all/arJcN60nagFKXj2Q@orome/
-> > > 
-> > > I can't figure out why that's happening :/
-> > > I manually tried to fix the To: and Cc: lines in this message.
-> > 
-> > Thanks.
-> > 
-> > > 
-> > > > On Tue, 22 Sep 2026 at 15:55:59 +0100, Will Deacon wrote:
-> > > > > I spoke to Brendan at LPC (?) last year but this doesn't really work
-> > > > > for arm64 because it relies on being able to unmap arbitrary parts of
-> > > > > the linear map, which isn't generally possible unless you force pte-level
-> > > > > mappings for everything, which is prohibitive for perf/power.
-> > > > 
-> > > > As per the cover letter it's about allocating pages that are not present
-> > > > in the direct map. This essentially fits the protected DMABufs use-case
-> > > > where we don't want any kernel mapping to exist at any time. Bufers
-> > > > allocated from protected DMABufs are only meant to be accessed by the
-> > > > TEE implementation or HW accelerators like in the secure media pipeline.
-> > > 
-> > > That sounds like it should probably build on top of this series, then.
-> > 
-> > The main problem I see with this series is it tries to move from the generic
-> > CMA allocator to a reserved FF-A CMA pool which again comes from the
-> > DT. We already support reserved pool allocations via "no-map" which are
-> > discovered dynamically from OP-TEE.
-> 
-> I can't think of a way around a DT declaration. We need to know what region is
-> PTE-level before the direct map is installed and of_reserved_mem is very handy
-> for that purpose. And as this PTE-level mapping is costly we certainly only want
-> to enable it for platforms that absolutely need it.
-> 
-> > 
-> > If we can rather support a generic CMA like allocator for arm64 which
-> > can support unmapped allocations then I am all for it. These platform
-> > specific reserved pools isn't a scalable solution.
-> 
-> What do you mean by generic CMA allocator here? An extension to
-> shared-dma-pool? Or having the CMA automatically doing the unmap/map on
-> cma_alloc() cma_release()?
-> 
-> Right now I have created an API for the unmapping/remapping part. It adds a
-> burden on the caller, but the alternative solution is introducing post-alloc
-> pre-dealloc callbacks in the CMA, which looked a bit overkilled to me when
-> the users of that "ffa-pool" are only optee and the nvidia video dma-buf heap.
-> 
-> -- 
-> Vincent
-> 
-> > 
-> > > You could allocate the DMABufs from a CMA region that has no linear alias.
-> > 
-> > Allocation from generic CMA pool is already the case here:
-> > 
-> > tee_shm_alloc_dma_mem() ->
-> >   dma_alloc_pages()
-> > 
-> > Do you mean it's just fine to unmap buffers allocated from generic CMA
-> > region since it doesn't have any linear alias?
-> > 
-> > > 
-> > > > > Vincent's series tackles that by using a pool so that only that part of
-> > > > > memory requires the pte-level mappings in the linear map. That's the
-> > > > > whole point of it, so I don't think it makes sense to drop it in favour
-> > > > > of Brendan's approach (which doesn't work).
-> > > > >
-> > > > 
-> > > > For protected DMABufs, we even don't require any pte-level mappings in
-> > > > linear map. The whole idea of mapping and unmapping is just a bottleneck
-> > > > for performance sensitive secure media pipeline use-cases. That's why if
-> > > > we can support __GFP_UNMAPPED with the memory allocator on arm64 would
-> > > > be the best fit for this use-case.
-> > > 
-> > > The point is that you will require pte-level mappings for the linear map
-> > > if you want to unmap from it at runtime on arm64. If you don't, then you
-> > > can end up needing to split a block mapping (e.g. pmd-level) when you
-> > > decide to unmap only part of it and there isn't a safe way to do that on
-> > > arm64 without transiently unmapping the entire block, which can lead to
-> > > fatal translation faults during that window.
-> > 
-> > I agree with you here, what I am rather trying to find if on arm64 there
-> > is any possibilty to have a generic allocator for unmapped pages. That's
-> > the use-case here as well as what Brendan't patch-set was trying to address.
-> > 
-> > > 
-> > > > Now the question is why arm64 can't support __GFP_UNMAPPED similar to
-> > > > how Brendan is doing it for x86?
-> > > 
-> > > Because arm64 != x86? Presumably x86 doesn't have the strict
-> > > break-before-make requirements we have on arm64.
-> > > 
-> > 
-> > Sure, sounds like you are eluding to that the generic MM flag
-> > __GFP_UNMAPPED being proposed can't be supported on arm64, right?
-> > 
-> > -Sumit
+Ahh, for COTS devices as one cannot replace firmware so it's better to
+use qseecom path in that case.
+For latest ones, one can switch to qcomtee based approach.
+
+If Xilin already has qseecom interface written then it's best to have it
+for the COTS devices.
 
 -- 
-Vincent
+Regards
+Kuldeep
+
