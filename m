@@ -4,346 +4,340 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5442CA5FF0
-	for <op-tee@archiver.kernel.org>; Tue,  6 Oct 2026 00:44:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5650ACA5FFC
+	for <op-tee@archiver.kernel.org>; Tue,  6 Oct 2026 11:34:09 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 2D822445AC
-	for <op-tee@archiver.kernel.org>; Tue,  6 Oct 2026 00:44:04 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 6B16C4547B
+	for <op-tee@archiver.kernel.org>; Tue,  6 Oct 2026 11:34:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791247444;
-	bh=Y9kjvXncYREFAgUwoBtFPotlKXtYHvixiI47ICifGeI=;
-	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=B0qOjdi9g2wq/aNS8fMNBvykQDSx7nuYCO69GBzZuJ6gKABeuBr1vAlt64P28zRN1
-	 fA554tVQxo/vZkCdiT2D/2p1SbmRQOOv53/qnXR10iWQWMdBwgE+U2C0XecwiDE0ub
-	 DPTLxW0uMQxckaKTQvZ/Z0WzybiUzYep91vp76n3oiliUMaHK++f+6EaDTJpQKPOuL
-	 QjCszwlQPDHOxutkp8vGW8yULnoZdUqM1j+y38Xf77Xj/ZDsEG5fqRLNyT1+6HYEjM
-	 1TC8V40JsTrWqcvZAv+ELz2UPgxJrfuNcNOcPkPH8xb1skvc23Pbf++OykKAdQwsoy
-	 FDOwvytcmElJA==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 43A2345507
-	for <op-tee@lists.trustedfirmware.org>; Tue,  6 Oct 2026 00:40:05 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1791286448;
+	bh=QAtghu7R22LAhNOHP8a2/ZQ44ccfDu5h/pKPEgDwi1s=;
+	h=Subject:Date:To:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=03CrJLL/IX7NJC4drq6xpeYA1h9vXN4Zgil1GLfscfm6cGdequ8+HE7k3QFL2rhpl
+	 qKMaBRZk+imH/8p1K1j7xY1PX2Dj3qu7afDAPYYkZAltvn9v8waAcESBpsCCTxzolV
+	 mHRf5q8Hn0tScBL3JdHPcFVQp8mwiUR1xM6CJlOUeJdgxuEhdLH4UwJ+7qGksCLzOs
+	 M6dxejShhrJ6avwL64+Uq5Cy7nWvdpaV74b8m7rNtlRQRArKe8r/iYgKEr+REGrgjy
+	 Vt9j1AnsiwG9vfzmGXBgG18O7jr33qp/PMDiCb1qcO5/zJz90Qm50RadPq+Iio68jK
+	 LOa/gP/qxHXeA==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 01F44445AC
+	for <op-tee@lists.trustedfirmware.org>; Tue,  6 Oct 2026 11:34:00 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=WJBHUgB0;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=FvZba9Kj;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=KYXfxdLl;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gSuSr6Ij;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 695KMbMF2796857
-	for <op-tee@lists.trustedfirmware.org>; Tue, 6 Oct 2026 00:40:04 GMT
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 696BPPsd1707768
+	for <op-tee@lists.trustedfirmware.org>; Tue, 6 Oct 2026 11:33:59 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IMtzZeKCMAa+ITg30dZJWQsG6U23gbt3P7bYwJipKpI=; b=WJBHUgB0X3/JGa2J
-	bTCFQ/W0ALtJnWq+kuZTmRbg41C6dw160r5JxyfoG5vtdAKFDMajG5UUKQUKSPJb
-	+dc5DjZZ/zSIzNRomCYaQs7UKP374pWPbSRJ0gJm4rRsKxY1a03qtQPwj8QUND6g
-	ot2lBIIIJF+f4TFnswk6DwZ3StMhrYWMBGo2zYPcg+P5B6JGo3TSwOIw8dAGmdy4
-	OXrKebuIr8yDnEtn9ZBpEY7LUwGwFQN+kv8Urk4z3bkETiDmz0go90XEnhlPsQXq
-	aPDNk9xElb+rY4y+G4aR0cDJEmwbyCVhceZDZ4QJoRgznVHXoLeWXzXi1jfzRFbT
-	rknFog==
-Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h4gr098cm-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=j9g6/VTZ4DBNCpef5DHals
+	L6MkC4zrpO+tCFXsR/OPc=; b=KYXfxdLl9qvm0N9gfljpSmaFTo/ei8xQkKqc5u
+	rPuGpXBHK2hry6HOBIXuNLI0MFTp2PV2qfkmIK8l2/Df6C2FTsYiTDiYqSRsnS88
+	DbdILgqeWd4oW4f6j2H7/xi85D4eACrNRTf80I3Pf2Wv9+FuussbSkDqZNtUCSKi
+	xJL1TUEOt2zIN2cjhPXURVDLyujZwNCg7GVng5arOjbZ/w56x+rFQVYMjN4IxM+x
+	8AqY2IQ64beMMMfshmUPC3sQ1+2CSQHvTkIMZ8RrsYcdskSU/MZAR7z4hhs1DYGz
+	cyq8843h/qwDRVBil5kFtcg0FsXun9/wA09PLhDny7L1gNHA==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h4xc50dam-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Tue, 06 Oct 2026 00:40:04 +0000 (GMT)
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-30f1b904861so2787314eec.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 05 Oct 2026 17:40:04 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 06 Oct 2026 11:33:59 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-3a85a33333cso674737a91.0
+        for <op-tee@lists.trustedfirmware.org>; Tue, 06 Oct 2026 04:33:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791247204; x=1791852004; darn=lists.trustedfirmware.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IMtzZeKCMAa+ITg30dZJWQsG6U23gbt3P7bYwJipKpI=;
-        b=FvZba9KjPFurkX906oik97W4UhyDJPKWphTVP/iHgz/TJsuQ0Zha1xQWITnbsn3qjX
-         4XXOCXiJdXK/Rwby7Kva66O7h8znz1mhahj/smK739kfvvwTCJjkhQ3e4Yvjk3yokUE8
-         nHbRkKyi8fHy6cY33PCmXMpFK4Cn/GHji3OEMx+iIaKnUr5oPuokC4wiFUFDj7rJ+1hl
-         JkFYkzqr81mkROQGl4nyf83vw5yQjI8hUOfaMlmzwtLmHzZerx6cR0anHWycWNIEtPZ9
-         txZJiqNPF7+67rnOvryKbwn0HdkBLjDDF6zDRml3N+SjhqzUjqEZfw7XwOiRH1KjlNvH
-         2aHw==
+        d=oss.qualcomm.com; s=google; t=1791286439; x=1791891239; darn=lists.trustedfirmware.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=j9g6/VTZ4DBNCpef5DHalsL6MkC4zrpO+tCFXsR/OPc=;
+        b=gSuSr6IjXXhGYgRgOcXmrYTve9ktoZYNUknQQavAIsPuGv4HMZKfI+qAyc8lF1fjDe
+         ua9ZLtpWZ1LO72m6IIE6fJiMPBWSxVdAFXCcUWxB778xauRRFLlEsxu7b7C2zCguEsEU
+         YW8a1it5CYkC5mrFuhtLivGulcgQZLmU2qP2GLkGIgg6Mt/F0WMWEEQoznQiHJb2JII2
+         aCCeOw5VksF0CpCaOWFE1oxkZ5pB10fgHnCTizhi9muTeFo5TFS1NLID77vY7TYx7wz2
+         Qokk1MXtAF3vh3IsTQm21HO0UleQA5nMOpsEIPpN0a0DVs6c5MnJDYMGNMUEaBPYiY/C
+         IuJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791247204; x=1791852004;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=IMtzZeKCMAa+ITg30dZJWQsG6U23gbt3P7bYwJipKpI=;
-        b=NvRxytEY65VY3DlQFlHEDnN8atqQLnl6c5cQJ02gulfB5B6/dRGH+5b+W+cGpk0bWk
-         I5jW0yF8u6jCAx9kJLJKDMNdeIz5gJPToQmnHgeIHoWmYbs4dxdYvgjIgldk9sfH/h8S
-         aKz9NaY45FrmD0TQ/9DH9H9pEXGy3kq2BanqxyldHrysDO6ZeXl8kXFiMSMNnjjSOQJH
-         le6QWLxXWlIYRdN1sHMOhLmbznkiYGJ4WXdJb+ipPCqTObmyAj5K2a0LYxsRuGbWkfsb
-         F2tIe6ZXTujISAZH6M91j4giZnQNAGZeYwVHC1/3D+7UL0RIS/VTbfxftusvuCFlkmNG
-         mJtg==
-X-Forwarded-Encrypted: i=1; AKwUvBzkNmv3Jjyi7Je2tBFyYbsX9dZuDktdrdNuW9iWyUCXq7PwlmnVHPDaqADDW7F6Ql4IOjy0OFM=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++no8rDxmk79Q59goMRZIm7//+e8ykppQ1Lc3syfXWUHG7jS5LeH
-	U2vmN+ssaXPw0ocZgifeXoBt25ecy+83gZH2YuaUXcrYQzKNYZD0fHy6NcZ5Dt9qccisO3qOr4/
-	AjlQMQ+kSsBSEe9qPPPbRgkbsWbpv2Fw5d2SlFdKMsSboZveeYnnrMAydefygP/rdKwTYDLQ=
-X-Gm-Gg: AYBFou1YE+l6bPt8/xTWy4HYT5+SVEB5dXwnGD6/+ZYv3otbdhjxrmxwywj0FEC3mdU
-	eX+LhbRu5aqjpqinP48OniH1cTodbMLjk79Uf7gZcJ3SQXICYJfZjtAPBNZ8ECgcIqc+7nr8bG2
-	Awme4l6B74IHrfidAZjfKJRoWLWGSy+8lmwoTsESil01tZs3JuNcd1Ik6F3DiqaD337F8MqdmBm
-	UBpN364tUms1hZ3n8tRa1SyFtw4rNVHB7JYgxH4emJpmiRRYkBnQYouHoNI8gDVoOmzfSMtGvAk
-	8Ffpr0y7HbfL9pyRHAoZK0Sfp3WFa/NBdH5z1jjZRizKB2DyM70IW+ko2SwftIuxxa+SBezdg1K
-	GLkPrZq9OCfkCQZ2LYkT3dQergGeWIvBa4u9iZ3cwyYamfTSpQoLh+suFiA==
-X-Received: by 2002:a05:7301:fc09:b0:34d:755b:d60b with SMTP id 5a478bee46e88-35111514891mr11504995eec.34.1791247203563;
-        Mon, 05 Oct 2026 17:40:03 -0700 (PDT)
-X-Received: by 2002:a05:7301:fc09:b0:34d:755b:d60b with SMTP id 5a478bee46e88-35111514891mr11504954eec.34.1791247202887;
-        Mon, 05 Oct 2026 17:40:02 -0700 (PDT)
-Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-35146ac078fsm2108874eec.22.2026.10.05.17.40.01
+        d=1e100.net; s=20260707; t=1791286439; x=1791891239;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=j9g6/VTZ4DBNCpef5DHalsL6MkC4zrpO+tCFXsR/OPc=;
+        b=2NhbrDsVDRSy5wSVmrmWj6ID68HkQpL8F/ptDDBQbChqWm8V3cgOaOpfwhOETskSBN
+         ZA+dHwVtjzs071fTu34A1a4vMWul108YZUdqUpL18EnNsXDjSnxPLQmbK+fL+5MtjCbY
+         JQ8SebyqDvWYWEMQZAIHrVmbp0+XWqHKlpdzzD2u/uVJLiS9zJK+n8W0PGJWXwN9TzfO
+         jRXopxTCfpC8R0IJD470ITmEHLI5o/afaSOfntAejG22GdBAZq9BeOy5g/IfSoTe5MSa
+         TDlPjTMNSFSVUPEEQVO0+UxImEEG0pxVPACpDeVvzMUcrwuvPjEVm443XfOyg8wayfL5
+         LhSA==
+X-Forwarded-Encrypted: i=1; AKwUvBwehUZvbWAIVXkNR/moYGite88Y/PAml55VO/XlKm4RyY1b0RnZKzfjgpCVi1fl2qakFPKSxe4=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYLArwFRQD9clY00m83LinEN2ki4TBHkToYeEgnGdHa375UmYeQy
+	VcxLPA80poh9yFffmDPymIrLypy8SYgJrlVJIS+L/6kSOmEwtHH2iQwLxKzHDm5ebo11vL0MPrG
+	0VNUommVSyeVdBZefkSS0HLnNUHe8aoa2Vw+LsogwzKFuIBSRBeArE8joS0TgCxf7PqVnLuaR
+X-Gm-Gg: AYBFou30rAZvK63BwU4Joee7ADq6dIPimzAQyGmgpEx+bBDFBCpPuLRQs4Cuiu+0LoF
+	J/mRyAGVpy0/nbzcIIzOiNur3m83VfgQY7HtgO69zN4c4JKFrv4Qr/Dkd5a6953Pn0ptvBhfyM3
+	+LQaYL6PnuIlOaXTrC99n8fHJ+TnVEjOZhX1yZtxi7LI8BPdjTPDuVdbY5RtoUpmdLe+AtW1vzC
+	Ibnsv56gbGIIDthigxmi37Xt0ocSfTTs70EBrFAlW/z5cdGw6uKKpdM9xqQeJ1WUAOmBdbu6/IO
+	VP6oGYIVVI0MZ4L5Vdy1BKzQO2DIvmsYmdEhN1Ro2aJh2/oCfKPVbOyhDt7rFJL35zNqAc1LPSI
+	b5oZnv8C0+2z/17HW4ScrXpVA
+X-Received: by 2002:a17:90b:1d02:b0:3a0:c85a:e602 with SMTP id 98e67ed59e1d1-3a8730ec4b5mr461298a91.9.1791286438125;
+        Tue, 06 Oct 2026 04:33:58 -0700 (PDT)
+X-Received: by 2002:a17:90b:1d02:b0:3a0:c85a:e602 with SMTP id 98e67ed59e1d1-3a8730ec4b5mr461279a91.9.1791286437570;
+        Tue, 06 Oct 2026 04:33:57 -0700 (PDT)
+Received: from hu-hdev-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a709a4e80bsm9330092a91.4.2026.10.06.04.33.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Oct 2026 17:40:01 -0700 (PDT)
-Date: Mon, 05 Oct 2026 17:39:52 -0700
-Subject: [PATCH RFC v2 8/8] tee: optee: support RPMI asynchronous
- notification doorbells
+        Tue, 06 Oct 2026 04:33:55 -0700 (PDT)
+Subject: [PATCH v4 0/7] Add TEE based client driver for UEFI Secure
+ Application
+Date: Tue, 06 Oct 2026 17:03:21 +0530
+Message-Id: <20261006-qcom_uefisecapp_migrate_qcomtee-v4-0-bf1c8e2a64ab@oss.qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261005-rpmi-tee-service-grp-dev-v2-8-72f222e23ec1@oss.qualcomm.com>
-References: <20261005-rpmi-tee-service-grp-dev-v2-0-72f222e23ec1@oss.qualcomm.com>
-In-Reply-To: <20261005-rpmi-tee-service-grp-dev-v2-0-72f222e23ec1@oss.qualcomm.com>
-To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
-        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-        Rahul Pathak <rahul@summations.net>, Anup Patel <anup@brainfault.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Marouene Boubakri <marouene.boubakri@oss.nxp.com>
-X-Mailer: b4 0.13.0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA2MDAwMSBTYWx0ZWRfX2G7Dxjr5u3Yq
- sMV4/YvLD2nym/1YzZeHn/1uF54RZApY+rlC2L6IRMJ/5j0V2GI9Qq6TY4nuBDXtmBy4ZADkxHh
- sSzOSMcDR09ClqvPXkiZtKTpqw2tSnQEj3L3yCyDJn8LPsqG/PiW6P7wf8gxXMh9CwBsoGjTgy8
- eO5XU+wGfLfXYv/LINK27kN+whyNbh110A7q5hRw2aTPVjDB0+mleeLTqhwZH+U2L3+O8YQcxSv
- GYUwrJEu2mvEcAhkPA7yj736/GdwWKJouzLLR9NMD1yJrwTuJ08VsvgPZOoAqP3SDqeCwJ2xew+
- 5OfWI/ilanLeS6ysY3DJBH7mB/t/87/QAkhAJZjBnv04IftSWQydkWHofBjPZSD6pUxDbER2x/p
- Yx3BJ/ENW6646SG45xM+wewq53nD3G6U0GuUnCosXoJRruAcAq3G9C6NowR8tXj4xyjW4cTJewU
- LnmJnPuFhjD4a9CQoZA==
-X-Proofpoint-GUID: RIAuDqF9WnOYuqZQ_j7BI79s0Xk_2603
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA2MDAwMSBTYWx0ZWRfXzuayw9+PtaOl
- 3i7jnjkERghz4laXJQLeqS0dY93SFMSai2SYsBzxsXUe6P3wqpa/MwisJua1uzM3t+YI+v9w8yZ
- dQM4i+jkqWg6HftwjWczVUvXk3qxuTk=
-X-Proofpoint-ORIG-GUID: RIAuDqF9WnOYuqZQ_j7BI79s0Xk_2603
-X-Authority-Analysis: v=2.4 cv=BrQIUoX5 c=1 sm=1 tr=0 ts=6ac44364 cx=c_pps
- a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+X-B4-Tracking: v=1; b=H4sIAILcxGoC/4XNQWrDMBAF0KsEraswM5Idp6veoxQjS+NEUMeO5
+ JiW4LtnnEDpIsGbgT983r+qzClyVu+bq0o8xRz7kwT7tlH+6E4H1jFIVgRUgoVKn33f1RduY2b
+ vhqHu4iG5kevlPzJrNFW5D7ZgQKtEGZJ0f+4Ln1+SjzGPffq9D064fB/2Dnar9oQadFsWe9+EI
+ oD1H33O2/PFfUuh28pRy8RE/1iidZaEbSpXtb5hS4gvWPPHIgCus0ZYNKEtPIEnNk/YeZ5vY1U
+ Ix4MBAAA=
+X-Change-ID: 20260408-qcom_uefisecapp_migrate_qcomtee-13869d45e014
+To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>,
+        Sumit Garg <sumit.garg@kernel.org>,
+        Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791286430; l=8127;
+ i=harshal.dev@oss.qualcomm.com; s=20251124; h=from:subject:message-id;
+ bh=QAtghu7R22LAhNOHP8a2/ZQ44ccfDu5h/pKPEgDwi1s=;
+ b=pa/q9Q1vi9QslZnW2QTdImuOlN6BD4aT23nk1Wu15uRVKpvvCxtrsoc0g/71+E0PX8k899bc1
+ +LzuTBJmnmECfGkypJwAomdppNy6Ah83v9guvj7VgUIcxxKGf0HeSyM
+X-Developer-Key: i=harshal.dev@oss.qualcomm.com; a=ed25519;
+ pk=SHJ8K4SglF5t7KmfMKXl6Mby40WczSeLs4Qus7yFO7c=
+X-Authority-Analysis: v=2.4 cv=X5THu2Te c=1 sm=1 tr=0 ts=6ac4dca7 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=EUspDBNiAAAA:8 a=nExbU_x0mLWtth5-Sj8A:9 a=QEXdDO2ut3YA:10
- a=bBxd6f-gb0O0v-kibOvt:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=NEAV23lmAAAA:8 a=EPKcpx9xAAAA:20 a=EUspDBNiAAAA:8 a=P-IC7800AAAA:8
+ a=VwQbUJbxAAAA:8 a=FEm0RaP5oR6l8Mw6-ywA:9 a=QEXdDO2ut3YA:10
+ a=mQ_c8vxmzFEMiUWkPHU9:22 a=d3PnA9EDa4IxuAV0gXij:22 a=ZT_8zCgGubuJgGonBfBE:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA2MDA0NSBTYWx0ZWRfX4ZbPQka3FvzA
+ a5VGY7lfLerdeguKbJxWC1QQ3lt05mkEuaH7+2EmtIQm0iSL8sxlCLHfx5NrXR/pWiVaZqzGh4h
+ rT5d0LLiSLXuL7i77WRBtcFgY6Rx4X8=
+X-Proofpoint-GUID: z--a9jGl4IvLJAvcuIwHnc2sPk5vkZ10
+X-Proofpoint-ORIG-GUID: z--a9jGl4IvLJAvcuIwHnc2sPk5vkZ10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA2MDA0NSBTYWx0ZWRfX/LZ4dAMpTJzR
+ g3WabfwFKVIvLFwkbTuP4G6OildmUNJIczG601k7UVep16s2QPa1g3rc83cibbF5tSkOfi3bRPZ
+ rL1OfCio45Ks5b7CSSwrbA1oxGyAAWHVygxtdsYD0X9N28OZw1gPEzjTqPm5blG57h/ZQkH5TBi
+ aArRtOTKWnIJGlPuUCtu0Qfv8GCCI2rp3pra6K2RT+NkhjmPNmbvuwC24tvICYmmJwXQtAOZrNS
+ 4//AXo60P8qaHVs7y1V6BsuyL50OfzCMjhglp7Wew2/DW6UJT7sWoj8OHnPv8b75RQ7DkGyuVPH
+ acpVqJOXrZkJR8j1Nrr13Rdd7aMoE794VuVY8PSM5v7SMgTvH2bCAX7ipHcPZgG/fXlfvfS8oVB
+ wwApeBOJlFJBHXrqqat1JqJUpb7stt7k3RdwGYNv2EXrmwGM4f1+F8kY+Zf9OiKwVhF8/QVVXUx
+ j9LQmgzlS7BD5xRPYdA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-05_05,2026-10-05_01,2025-10-01_01
+ definitions=2026-10-06_03,2026-10-06_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 suspectscore=0 bulkscore=0 spamscore=0 priorityscore=1501
- malwarescore=0 phishscore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610060001
+ bulkscore=0 adultscore=0 malwarescore=0 clxscore=1015 phishscore=0
+ priorityscore=1501 suspectscore=0 impostorscore=0 spamscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2610060045
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.30 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+X-Spamd-Result: default: False [-6.10 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_THREE(0.00)[4];
-	RCVD_TLS_LAST(0.00)[];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[18];
+	RCPT_COUNT_TWELVE(0.00)[16];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
+	REDIRECTOR_URL(0.00)[shorturl.at];
 	MIME_TRACE(0.00)[0:+];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	ARC_NA(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	TO_DN_SOME(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[74.125.82.198:received];
-	ALIAS_RESOLVED(0.00)[];
+	FROM_HAS_DN(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	FROM_HAS_DN(0.00)[]
+	DNSWL_BLOCKED(0.00)[209.85.216.70:received];
+	RCVD_TLS_LAST(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_COUNT_THREE(0.00)[4];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 43A2345507
-X-Spamd-Bar: -----
-Message-ID-Hash: 6NQBAOQTVRILXMZJFWWI7UCIQF3SCHIW
-X-Message-ID-Hash: 6NQBAOQTVRILXMZJFWWI7UCIQF3SCHIW
-X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
+X-Rspamd-Queue-Id: 01F44445AC
+X-Spamd-Bar: ------
+Message-ID-Hash: B72G4DYCICMV4ZWHDYB3GNDIHP7EH4LT
+X-Message-ID-Hash: B72G4DYCICMV4ZWHDYB3GNDIHP7EH4LT
+X-MailFrom: harshal.dev@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+CC: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>, Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Harshal Dev <harshal.dev@oss.qualcomm.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/6NQBAOQTVRILXMZJFWWI7UCIQF3SCHIW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/B72G4DYCICMV4ZWHDYB3GNDIHP7EH4LT/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+From: Harshal Dev via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Harshal Dev <harshal.dev@oss.qualcomm.com>
 
-OP-TEE uses asynchronous notifications to request bottom-half
-processing in normal world without waiting for a client call.
+On Qualcomm SoC based platforms, UEFI stores EFI variables within the
+Replay Protected Memory Block (RPMB) located within either the UFS,
+eMMC or SPI-NOR storage. The RPMB key which is one-time programmed into
+the storage controller to allow authentication of the RPMB frames is
+generated by and only available to the Qualcomm Trusted Execution
+Environment (QTEE). Thus, only QTEE can prepare the RPMB frames which
+will be accepted by the storage controller.
 
-Allocate a TEE-to-REE RPMI signal and pass its ID to OP-TEE when
-enabling asynchronous notifications. Queue bottom-half processing on
-a private workqueue.
+The legacy QSEECOM protocol used for communicating with the QTEE is
+deprecated and replaced with the use-case agnostic SMCInvoke protocol
+starting with the Qualcomm SM8x50 series. On platforms where the QSEECOM
+protocol still works (the QSEECOM driver probes) the driver does not
+support a listener interface with QTEE to enable writing of non-volatile
+EFI variables (via listener requests to Linux from QTEE) to the RPMB
+for UFS and eMMC storage. (Qualcomm Compute platforms with SPI-NOR storage
+are an exception to this and work with QSEECOM, see the NOTE below)
 
-Initialize notification delivery before publishing the TEE devices.
-Allow probe to continue if setup fails, keeping synchronous RPC
-notifications available.
+Therefore on such platforms, a TEE client driver (which communicates with
+QTEE via the SMCInvoke protocol implemented by the QCOMTEE driver
+registered with the TEE subsystem) must be used to update such EFI variables
+through the RPMB service hosted in the QTEE supplicant user-space daemon
+[1] which forwards RPMB packets to the RPMB device.
 
-On cleanup, request that OP-TEE stop asynchronous notifications,
-relinquish the signal and drain the bottom-half workqueue. Transport
-relinquishment does not synchronize an already-selected callback.
+This series introduces such a uefisecapp TEE client driver for the
+aforementioned Qualcomm platforms which installs efi-var operations _if_
+the QCOMTEE driver registers support for an object-IPC based uefisecapp
+service on the TEE bus during its probe. Only new QTEE firmware versions
+available at [2] provide access to the uefisecapp service via the SMCInvoke
+protocol.
 
-Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+Thus, QCOMTEE now maintains a static list of always-available object-IPC
+based secure services exposed by QTEE. These services are implemented either
+within the QTEE kernel or within a pre-loaded Trusted Application (TA)
+usually loaded by the bootloader. The uefisecapp TA is an example of a
+preloaded TA loaded by UEFI. A static list is required since QTEE does not
+yet expose any way to dynamically query and enumerate the services exposed
+by it.
+
+To facilitate object-IPC interactions from the kernel-space, this
+series also introduces a tee_client_object_invoke_func() to allow
+invocation of TEE objects similar to the existing tee_client_invoke_func()
+API exported by the TEE subsystem which allows invocation of TEE functions.
+Some suporting changes are also introduced to track and handle operations
+for TEE contexts opened from the kernel-space in the back-end QCOM-TEE
+driver.
+
+Finally and as previously mentioned, access to the object-IPC based uefisecapp
+service is restricted on older QTEE firmware versions. A new QTEE firmware
+release must be picked up from QArtifactory [2] for all upstream supported
+Qualcomm SoCs to enable access to uefisecapp service via the TEE client
+driver.
+
+This patch series has been validated on Kodiak RB3Gen2 platform with UFS
+storage by attempting to read/write EFI variables via the efivar tool [3]
+after mounting the efivarfs filesystem. See [4] for an example.
+
+NOTE: Since Compute platforms do not have a firmware running on their SPI-NOR
+storage controller which must be programmed with a RPMB key, QTEE has a
+SPI-NOR driver which holds the key, and so the QSEECOM driver can be used
+for updating EFI variables on these platforms because QTEE never makes a
+listener request to Linux (QTEE doesn't need the Linux SPI-NOR driver).
+Such platforms are outlined in the following static list [5].
+
+Merge Strategy:
+
+This patch series could either be taken from the OP-TEE tree or the
+QCOM soc tree. I would prefer it to be picked by the OP-TEE tree since
+all except the uefisecapp TEE client driver patch in this series make
+changes relevant to the TEE subsystem. It would be great if the QCOM soc
+tree maintainers can Ack the uefisecapp driver patch.
+
+[1] https://github.com/qualcomm/minkipc
+[2] https://shorturl.at/zQU07
+[3] https://github.com/rhboot/efivar
+[4] https://docs.qualcomm.com/doc/80-70020-27/topic/manage_uefi_environment_variables_using_efivar_tool.html
+[5] https://elixir.bootlin.com/linux/v7.3-rc5/source/drivers/firmware/qcom/qcom_scm.c#L2302
+
+Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
 ---
- drivers/tee/optee/optee_private.h |  6 +++
- drivers/tee/optee/rpmi_abi.c      | 87 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 93 insertions(+)
+Changes in v4:
+- Fixed kernel test robot warnings with gcc v16.1.0 [-Wvla-larger-than].
+- Update parameter docs for qcomtee_object_invoke() and param_to/from_args().
+- Split the defconfig change enabling the UefiSecApp TEE driver into a separate
+  commit.
+- Use pr_debug() instead of pr_err() when QTEE says it does not implement a
+  service being enumerated.
+- Re-name qtee_enumerate_service*() functions to qtee_register_service*().
+- Collected Reviewed/Acked-by tags from Sumit.
+- Link to v3: https://lore.kernel.org/r/20261001-qcom_uefisecapp_migrate_qcomtee-v3-0-13df5c20c2e3@oss.qualcomm.com
 
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
-index 07c27e322a71..e5c6381bb872 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -190,6 +190,9 @@ struct rpmi_tee_device;
-  * @shm_rht: lookup by the host-endian parcel ID and nonce pair
-  * @sec_caps: negotiated optional OPTEE_RPMI_CAP_* features
-  * @notification_count: negotiated nonzero number of logical notification keys
-+ * @signal: allocated TEE-to-REE doorbell, independent of logical keys
-+ * @notif_wq: private bottom-half workqueue, NULL when notifications are inactive
-+ * @notif_work: processes bottom halves requested by the RPMI signal
-  *
-  * Callers keep their tee_shm alive while using its registration. Lookup
-  * returns a raw pointer; the mutex does not protect its lifetime after
-@@ -203,6 +206,9 @@ struct optee_rpmi {
- 	struct rhashtable shm_rht;
- 	u32 sec_caps;
- 	u32 notification_count;
-+	u32 signal;
-+	struct workqueue_struct *notif_wq;
-+	struct work_struct notif_work;
- };
- #endif
- 
-diff --git a/drivers/tee/optee/rpmi_abi.c b/drivers/tee/optee/rpmi_abi.c
-index db541f3de425..ffe44d81e857 100644
---- a/drivers/tee/optee/rpmi_abi.c
-+++ b/drivers/tee/optee/rpmi_abi.c
-@@ -685,6 +685,88 @@ static int optee_rpmi_do_call_with_arg(struct tee_context *ctx,
- 	return optee_rpmi_yielding_call(ctx, &req, rpc_arg, system_thread);
- }
- 
-+/* Yielding bottom halves run here, not in the transport retrieval worker. */
-+static void optee_rpmi_notif_work(struct work_struct *work)
-+{
-+	struct optee_rpmi *rpmi = container_of(work, struct optee_rpmi, notif_work);
-+	struct optee *optee = container_of(rpmi, struct optee, rpmi);
-+
-+	optee_do_bottom_half(optee->ctx);
-+}
-+
-+static void optee_rpmi_notif_callback(struct rpmi_tee_device *rdev, u32 signal,
-+				      void *cb_data)
-+{
-+	struct optee *optee = cb_data;
-+
-+	queue_work(optee->rpmi.notif_wq, &optee->rpmi.notif_work);
-+}
-+
-+/* Relinquish is not a barrier for an already-selected transport callback. */
-+static void optee_rpmi_async_notif_uninit(struct optee *optee)
-+{
-+	struct optee_rpmi *rpmi = &optee->rpmi;
-+	struct rpmi_tee_device *rdev = rpmi->rdev;
-+	int ret;
-+
-+	if (!rpmi->notif_wq)
-+		return;
-+
-+	ret = optee_stop_async_notif(optee->ctx);
-+	if (ret)
-+		dev_warn(&rdev->dev, "stop notifications failed: %d\n", ret);
-+
-+	ret = rdev->ops->notifier_ops->notify_relinquish(rdev, rpmi->signal);
-+	if (ret && ret != -EOPNOTSUPP)
-+		dev_warn(&rdev->dev,
-+			 "relinquish notification failed: %d\n", ret);
-+
-+	destroy_workqueue(rpmi->notif_wq);
-+
-+	rpmi->notif_wq = NULL;
-+}
-+
-+/* Enable OP-TEE's bottom-half doorbell using the reserved RPMI signal. */
-+static int optee_rpmi_enable_async_notif(struct optee *optee)
-+{
-+	struct optee_rpmi_enable_notif_req req = {
-+		.op = cpu_to_le32(OPTEE_RPMI_ENABLE_ASYNC_NOTIF),
-+		.signal_id = cpu_to_le32(optee->rpmi.signal),
-+	};
-+	struct optee_rpmi_status_resp resp;
-+
-+	return optee_rpmi_call(optee, &req, sizeof(req), &resp, sizeof(resp));
-+}
-+
-+static int optee_rpmi_async_notif_init(struct optee *optee)
-+{
-+	struct optee_rpmi *rpmi = &optee->rpmi;
-+	struct rpmi_tee_device *rdev = rpmi->rdev;
-+	int ret;
-+
-+	INIT_WORK(&rpmi->notif_work, optee_rpmi_notif_work);
-+	rpmi->notif_wq = alloc_workqueue("optee_rpmi_notif", WQ_UNBOUND, 1);
-+	if (!rpmi->notif_wq)
-+		return -ENOMEM;
-+
-+	ret = rdev->ops->notifier_ops->notify_request(rdev,
-+						      optee_rpmi_notif_callback,
-+						      optee, &rpmi->signal);
-+	if (ret) {
-+		destroy_workqueue(rpmi->notif_wq);
-+		/* Checked in optee_rpmi_async_notif_uninit(). */
-+		rpmi->notif_wq = NULL;
-+
-+		return ret;
-+	}
-+
-+	ret = optee_rpmi_enable_async_notif(optee);
-+	if (ret)
-+		optee_rpmi_async_notif_uninit(optee);
-+
-+	return ret;
-+}
-+
- /* Query and store the trusted OS revision. */
- static int optee_rpmi_get_os_version(struct optee *optee)
- {
-@@ -823,6 +905,7 @@ static void optee_rpmi_remove(struct rpmi_tee_device *rdev)
- {
- 	struct optee *optee = dev_get_drvdata(&rdev->dev);
- 
-+	optee_rpmi_async_notif_uninit(optee);
- 	optee_remove_common(optee);
- 	optee_rpmi_shm_rht_uninit(optee);
- 	kfree(optee);
-@@ -901,6 +984,10 @@ static int optee_rpmi_probe(struct rpmi_tee_device *rdev)
- 
- 	optee->ctx = ctx;
- 	dev_set_drvdata(&rdev->dev, optee);
-+	ret = optee_rpmi_async_notif_init(optee);
-+	if (ret)
-+		dev_warn(&rdev->dev, "async notifications unavailable: %d\n", ret);
-+
- 	if (optee->in_kernel_rpmb_routing)
- 		blocking_notifier_chain_register(&optee_rpmb_intf_added,
- 						 &optee->rpmb_intf);
+Changes in v3:
+- Updated the cover letter and commit messages to highlight the following:
+  1. Only QTEE has the ability to prepare RPMB frames since it generates and
+     holds the RPMB key.
+  2. The QSEECOM protocol is deprecated on new platforms and so this series
+     migrates the uefisecapp to SMCInvoke which is a use-case agnostic, transport
+     focused and easier to maintain protocol.
+- Use single if statement to update both flags and addr/uaddr.
+- Remove redundant use of new error variable in qcomtee_get_qtee_feature_list().
+- Minor fixes such as concise error prints and use of better error codes.
+- Fix a double free in qtee_enumerate_service().
+- Re-org the qcomtee_enumerate_services() function to re-use the same oic and
+  client_env object.
+- Remove depends on !QCOM_QSEECOM_UEFISECAPP from Kconfig since both drivers
+  can co-exist even on platforms that support both QSEECOM and SMCInvoke protocols.
+- Update the Kconfig description to better help the user understand when to enable
+  the TEE based uefisecapp driver.
+- Removed qcom_tee_uefisecapp.h file and inline the header in qcom_tee_uefisecapp.c
+- Rebased patch series onto the latest linux next tag: next-20260930.
+- Link to v2: https://lore.kernel.org/r/20260722-qcom_uefisecapp_migrate_qcomtee-v2-0-b8a8fcbe4211@oss.qualcomm.com
 
+Changes in v2:
+- Drop using MSB of the object_id to distingush kernel and user object invoke contexts.
+- Introduce enum tee_object_invoke_origin to check the context of object invocation.
+- Link to v1: https://lore.kernel.org/r/20260707-qcom_uefisecapp_migrate_qcomtee-v1-0-f659cbd5d04c@oss.qualcomm.com
+
+---
+Amirreza Zarrabi (2):
+      tee: Add kernel client object invoke helper
+      tee: qcomtee: Allow object invokes from kernel clients
+
+Harshal Dev (5):
+      tee: qcomtee: Track the object invocation context
+      tee: Export uuidv5 generation for TEE backends
+      tee: qcomtee: Add support for registering QTEE services on TEE bus
+      firmware: qcom: Add support for TEE based EFI-var client driver
+      arm64: defconfig: Enable UefiSecApp TEE client driver for Qualcomm SoCs
+
+ MAINTAINERS                                 |   6 +
+ arch/arm64/configs/defconfig                |   1 +
+ drivers/firmware/qcom/Kconfig               |  31 ++
+ drivers/firmware/qcom/Makefile              |   1 +
+ drivers/firmware/qcom/qcom_tee_uefisecapp.c | 648 ++++++++++++++++++++++++++++
+ drivers/tee/qcomtee/call.c                  | 211 ++++++++-
+ drivers/tee/qcomtee/core.c                  |   9 +-
+ drivers/tee/qcomtee/qcomtee.h               |  12 +
+ drivers/tee/qcomtee/qcomtee_msg.h           |   1 +
+ drivers/tee/qcomtee/qcomtee_object.h        |  16 +-
+ drivers/tee/tee_core.c                      |  24 +-
+ include/linux/tee_core.h                    |  23 +-
+ include/linux/tee_drv.h                     |  18 +-
+ 13 files changed, 967 insertions(+), 34 deletions(-)
+---
+base-commit: 6c2cb8b8b843d216ab549b678a0d8831c43153e0
+change-id: 20260408-qcom_uefisecapp_migrate_qcomtee-13869d45e014
+
+Best regards,
 -- 
-2.34.1
+Harshal Dev <harshal.dev@oss.qualcomm.com>
 
