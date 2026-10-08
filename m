@@ -4,149 +4,149 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06378CA6007
-	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 07:11:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97E45CA6007
+	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 08:11:52 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 201D344FA7
-	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 07:11:05 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A03D244E81
+	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 08:11:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791443465;
-	bh=ewFQKA8EVN1iM/cG3I8//Pi93DNLwjT2Z/KHl8SWOvE=;
+	d=lists.trustedfirmware.org; s=2024; t=1791447111;
+	bh=D7UiphtT6EBwO/k/ikf2NWjb/RYMvUOnxloV2AvhWw0=;
 	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=FcwTQDwrHMw1Kh6D6ovKzxraGDFIvv187WS8mL6I4Kzg8AakCR+VVn3G0G/TIj76v
-	 32Voqu7Q/EXl0pLjj8Nc6PXrl7H1XKhB6LgaFn413LW62Zkc3SZgnYzM2PqWUSyao9
-	 fwrWGyJ9kqUbavz9dUq3KxddSyvfNVFa31E89T5q03BHYKeVZxrXPuyMnnkU9KwTL2
-	 nYpXBsEuCizr8N9sdI7YMCEe1Uqiv9NIfK22a6Zd9jnJfGImv/CsnCUX3yohJ1rCzn
-	 WssqkL7B40CA48uk2U60mZv8Q3VqDJ6dEzaWZPyX7thx4+d+okYZ8fLzCrjhM9erZT
-	 BO0la1irx8MPw==
+	b=06Wn0maS3ssSV42VPDD/d5hg9r96IifEKUUFfNCJbMa6+c6O8C0AVc+ASTdO7a0Tz
+	 TDHhxERqtkS7aVmxissgzShQU3ViJ5FImyo0GlWhMbMlijGVLQmz5ZtE/C0AysPS+c
+	 Hkh2GH06wshDSrYYhrenMemD+LL4M2lKZxMj+pY3qbeEHaWb5pap2XA2dWhX2j0vnv
+	 LcSFU3TtTpQh1QIgGX5bhm3tAyvO73W0cFe/o3sry7P6azn8BFGp/b6QaamMcx7L54
+	 DmwQFLsQz9999JCSfUoFh3wxwY2qX1XerwnWZ/IBT7A1DAIN3dmt357Jc8WpRSwN/+
+	 w5icE4SXBsMCA==
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id BBF4C44E78
-	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Oct 2026 07:10:57 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A313C44E81
+	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Oct 2026 08:11:43 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gfRcSYcA;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=PrJMpL6R;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lvENMn6W;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Y0d1TNQM;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6984BwEk1158702
-	for <op-tee@lists.trustedfirmware.org>; Thu, 8 Oct 2026 07:10:56 GMT
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6987KaXa730846
+	for <op-tee@lists.trustedfirmware.org>; Thu, 8 Oct 2026 08:11:42 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	7nasfACxPHNSVL6ZJxVxYj14HuH85yKrmiZQ9V3XxK8=; b=gfRcSYcArUxOyr4O
-	ALtimqIqtizFndC6a+JYtPg8e+czp6+SK6vLyOBYc8eNatJrmTkWWnP93kVNd6CB
-	ibdNk/f8WpTfbmZoDaMm/+bOlYkG4OS1qRfy9NvCltmBlZveRah7aMAD7pzw6Z+d
-	ACl9OXJ03mc4csooIVnnRoLUVKd8AC/umw082Uq17Sx3zMb7YAef+s/OencD9wiz
-	8DBIZNPMv+ciV3MtUQH+obIT6ioea1fdpcsE/QqIdE9wofAmm6tzI985rZv12qzY
-	KRgQf+6DQFHZiy0Q5x5n5nDAgys99NqOCJ8syetfNLqmpKRG2fTY/kF5RCYsOoOo
-	DjQsvg==
+	JItcqZCTTZ5Tr3DrlkTjE4P6dQhLoTOAQJPbjV6HDlQ=; b=lvENMn6WoMDZJeJH
+	01RdZR9gO8z+f/cXd2he/jnQUB2R8Xqeb3nw4iaPPwOttG3a26yJqZCpdD3uhOsG
+	9dv454H28YeDbtIDbJNw6vmfZe4Pp5/SWvOyXQv2DddRCN/p72q60CHRngiL0nm0
+	HB7i3KeAdrgd16ZFXWONK4Hegqyx/Y7hBTujduBGtoQ+dcdHkZDg1pfJ5EOtEV2W
+	4j/FDmq0kxszm3QUrral1g168QvpxlWcIOeqN0QaNOVDJnoEii9Q+ZI7XqOIN/XR
+	xK8GVS0+tg/72OYeqfInTymZIClV2yHOpJiJyt5ruO+0LNj3iymWfDmUjuakz/3j
+	Scwa8g==
 Received: from mail-yx1-f72.google.com (mail-yx1-f72.google.com [74.125.224.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5xe51mu4-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5xe31tku-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 07:10:56 +0000 (GMT)
-Received: by mail-yx1-f72.google.com with SMTP id 956f58d0204a3-67686ccd1b6so6668283d50.2
-        for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 00:10:56 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791443455; cv=none;
+	for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 08:11:42 +0000 (GMT)
+Received: by mail-yx1-f72.google.com with SMTP id 956f58d0204a3-676956fd276so6953709d50.1
+        for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 01:11:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791447101; cv=none;
         d=google.com; s=arc-20260327;
-        b=gWzh/kxyIb2YXtXQD9bxPCcz6Zl4GtgEQioNLV2ijOsP+8dAy7xKnfXLUKGbtsm+Nr
-         /dIU5gI0xdt3uXU+nm9qQ38pm67K/wSc70qi2eXMYfNCs89SwqikOurbgjiFjQ31+p0V
-         dhmEK+2ny1Xuym4O4aBE1YfAFbk0hPQ7WI9vksQUA57JZITYSkJwls4BXtmIQu6nx6G6
-         aEMY8gnyDTgVZVBiT+9veKAK/ARrfK+VSZGpsCGrjhr1sqVJtGGuwlylYJbfGK1BBY9I
-         ZCFnJQJbbxJ9YVHEueJeEwo4vLLLrQAb/9Y2MstzDos2meLkvK+UCC87khU5jH9Mki71
-         RKsw==
+        b=hPHIO6iIMco7j49dxc28a1QwA+Vs+z/XDnmzLDtQP+sqkD/3YVi5DQUd7AI3+QdgkV
+         5RaexNhkrw8n60Jw7iTBk53/lXO6GJ636aJ/qRnjtJ/DEmyARnk4GRd6JWK5RZCzMlQC
+         R+8pw8UmuZVwsyVShd5JVjEhL226jqglIdjKpCiri4Kzk9wWzv2AHxt8t318oSUPhXiD
+         n+9NEOlaY8hMRRe+uRSng2pFdre2aDNx5Tw2OOKsupB5QP11Ejym2O0REuTBorv1Jj3U
+         c5N0/U5/NDxcUVDY3l08Tt2WQSID5Nv9Vs7SZfS0yzRyt+/05DJh5pbWuVlY+Cy/+vwt
+         gE7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=7nasfACxPHNSVL6ZJxVxYj14HuH85yKrmiZQ9V3XxK8=;
-        fh=brqgCRM/gOBoPz+2TtaLnJzlSrPTmGuwOoWPPT7ym/Q=;
-        b=adegOCnEmlwQVciZWuLWsZsRkVrJOqgABYF3AvvSrRRUGJ4q9r+YuQKAjvx4I8a2Eb
-         +vjUp3PqHnJdPuIRm22BVrbTAJJFDnkAbLHlPJxfKRECT8Q628LSH15bbNdFFMMyo+dy
-         tgKydez48nCWDAUedCch0+LZiZDmKI7/E5ahuvUoQVQLbunsElAHopB8xsokf+Y3ctGT
-         AhHBhH5Wgqnr3SUQOTN2xANoVBJpE32GxoewvQKyePDs49epAyS2kqNc+mwPEjYzgzL5
-         bzjsZHXvwCcYiH2SbN4g5+6xnAFiE5gO4XJBbTFz7oLWSF7sjYVFx7VlY2xboG9fBdiz
-         d/HA==;
+        bh=JItcqZCTTZ5Tr3DrlkTjE4P6dQhLoTOAQJPbjV6HDlQ=;
+        fh=gKUS0l5fSCpD1LygHHLikXOp3PCXrQfJv/BaXUDX2J0=;
+        b=c+w+Lzyx9YSNazmzbHHo74/2gxaDyoxJ8CVPOPrwYwQST7JDoDWBrWLK6zRMZjL8yH
+         Jb7hdIcMgPGEdHz6SlhCWu2Duu2OvmRflrll/zlMn1ft7WxpH49o1iBIJ1dRL9KYQyLg
+         AUm5/vMGEyyisZcCztZYn1y/m79KEq2SxBCzmKWdB2nvJEmBjQqF+6sPm5LqwNGpS7nv
+         Ndbnhgncy/wdTz/vd0kvImlhjAhlwt9cpq+oxWE49jBGEQaAtkfbWZaTQ13bs6WeRXE+
+         gsQyfIOSp/pUi3//q9fCEhRxxN/CXgUUexotfxjICcGBLmiuvB4YjjHe1Pv79hXJe6ZS
+         7o+Q==;
         darn=lists.trustedfirmware.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791443455; x=1792048255; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1791447101; x=1792051901; darn=lists.trustedfirmware.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=7nasfACxPHNSVL6ZJxVxYj14HuH85yKrmiZQ9V3XxK8=;
-        b=PrJMpL6RgZqJu63UzeG3BsTVq3lRGhqgg+CHQIOgmJKiF0iAkXII1jszJWsvXrj+4z
-         HxDVdHkEPeGc+6qqS0WxArAHeXsLbPUUhck65hLcVBwIE8Z6P6/sG3LBSwPyYzTgEHAU
-         lcej2ymEQ0B2bXxMViYvF9rASqJ1t94jDkVbYYjlGzN2D5DrpxabgG4AlEzUqdt7rorW
-         c0p75U64QThF1wPO4hWod4d2aHCiF+Rqw0CRXhz4BWunMUkIr0HySjyl+JBMpAqCVO59
-         u8HxOUINkR1Bbzn5PDp6oq0jw7WJepvr52cZEWPOLS1qvrUTtShYtIqtRFkkJOw/QtO9
-         6OmQ==
+        bh=JItcqZCTTZ5Tr3DrlkTjE4P6dQhLoTOAQJPbjV6HDlQ=;
+        b=Y0d1TNQMfDHYBt8KbGIbAkJfryUBO9C5rwUutz8+7Uu2DmeBKdowgATV2jZgU3Q75G
+         yik4Bn3Bjo55BSKxPzmopWpbn5+kVQ9s9yfq8Qu0KEt0hUFmiverpkKAGKIuNv++7r1E
+         4RzLZylbTfK6HPOIcDm/+1rJBZCWOZhDXrokH9bwHvwbGEODcimuy6YPgpsZwutqRaGV
+         CYt5NrlEUVwSnpg90rcKmSs+Xgt4u0YxKKgDJVY0GUx/BHyewttVXfCawW2x8PIF5xhT
+         5FpfMKN6H+mQwCG/PZc6mAJV6t2gl6yf4+ugOjRtIWmkXaJ9aMcqAXdu4H5+J102J9an
+         14qA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791443455; x=1792048255;
+        d=1e100.net; s=20260707; t=1791447101; x=1792051901;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=7nasfACxPHNSVL6ZJxVxYj14HuH85yKrmiZQ9V3XxK8=;
-        b=BHjnl/mkpSHxn9Ss6+H/UH6UIoxeAJ7Gkj53FMjsa1qFjCQqA2//cVz2F5yLPdNHpr
-         At9itEoqVSl8p7V6g9lu1yAmajq5XhX1hZNoe/bc2S+YBJfHixU02GSIDZYNP7iza5CM
-         FOFOYfCTYr8R+MW7cVHZgjwKMvwN+M5oc5CXQrDEQO4bdLYMVsW2GaJmWAzpptI5LuuJ
-         Gw3ciDzSvUyqxByxkFh/Ek6JjjEd41LmVJ2ByIQN8gDA7Fr5NDHBY54nbiVlVb3LH9N+
-         bV7Cfco7JsK4zb92G80fqQ2HZwShiK8jYAChg22qGlCgO9shJikaEHZuoXnQkREdgbUX
-         k01A==
-X-Forwarded-Encrypted: i=1; AKwUvBz1vMHes4A65l7HytjJWkzCdj7YPLeiVP1i39rRNydPWbPZ4RolcLkCbVXKDLr/eSSfNdbCiG0=@lists.trustedfirmware.org
-X-Gm-Message-State: AFq9FYLULtRGu4EM8RqLzXDpwvK1Hk1Te9ii0pQdHCSpYdq63ZqOmn2T
-	xSavUNYey3i+JZOnmDTwi1CP69VDd6oAL0DRoTKOnDqDcTk+Q3GhNjMV50PqjXyo2q4VYqAM9fz
-	V9Mix+6/Zf/T0FWMSFqsnmXAIRAcsfz4r5QmVwTw9jlh6rAjjNUzq5vzGg8IWfSjqcVjI9VCd/p
-	dlC9DhdgciH6uviad/M3BfVoWFqWOlPokQm7Zw0eZe20Vymp8=
-X-Gm-Gg: AYBFou149kc0WxIdXrWTNdf+LyCyoL7b3c9sTXrWLP8CaMQlmIWnLRFdC/nsDtAVj9G
-	HH3frNb07ox0vbBW82fFEta3W7JmpvXCWFYvZLhhbKcxJHPUBZ5le18Mgtk3h/LGa1P/1/+5mUV
-	JhVhPpXMRTwk3J7ZfvPl1TiwYHm8WxSOdjizSqK3cM3nPKVcKoowKm/RA=
-X-Received: by 2002:a05:690e:813:20b0:674:1f9a:401e with SMTP id 956f58d0204a3-6790a096b1bmr1831100d50.60.1791443454984;
-        Thu, 08 Oct 2026 00:10:54 -0700 (PDT)
-X-Received: by 2002:a05:690e:813:20b0:674:1f9a:401e with SMTP id
- 956f58d0204a3-6790a096b1bmr1831083d50.60.1791443454271; Thu, 08 Oct 2026
- 00:10:54 -0700 (PDT)
+        bh=JItcqZCTTZ5Tr3DrlkTjE4P6dQhLoTOAQJPbjV6HDlQ=;
+        b=bpM7PosQ66TEITeO70AdBTvDTnnuKVBuxwRQoIa0EqECsNa+vFW5ahcxCot0a/A3+/
+         Eh1cvBjtbkr5v+TAMtK1RkqYq1Y43sh8eVSvbmAJQxGm9XrL0XUCGYHTL67Q9jL/leoR
+         7GMSTZNXpUC/6Ru69PoezVuCtaUCCUsYA4/Izf9tiSy2ddyYkaebzgiAgYZnJYO760ia
+         kY0Q6e+hTJQHLV5BEXM7nTc0gBJuE8/g8MTMcUMO1je3i7Rtm5dnecXpiSBkIDkvUrZP
+         TDrbi7+ywz7iviwS7O+4hRNN3E/HGnXITWVVtujGRc28VEEVyVMB/FVX8f5R3EdEAM1r
+         rLlQ==
+X-Forwarded-Encrypted: i=1; AKwUvBywAuRk5VhSQ5ILucljnmF351nXFdPy7g8aThSKuw7Yt7UkCwvk84wXqIaRnweb+rYHckmErAk=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYL5bObejdCykjoUT9xkqKYZztAYBXUCZ1/dRV+dLChOKqM+qu/S
+	yJhDyVNUqjG7jYvEgWU+XSqHCIdGUAi/8Ma22KsFJDRsYx26Q8u+LR0KEtO3rV3zkCDOiFxjEZ5
+	XGxTogxM8q1n4xAG43J+SU3Ci8TVMVJL2pJHNqzDw/6KTnYKVEUTqCjEDCNIqtLb5O1xZb67HTp
+	+NV+nnGs1ME8QxKQ8Smf+Kd6acD2qRDqtbyAgbpNGbuzqKuX0=
+X-Gm-Gg: AYBFou2xKyKA42HVTXVnn3NiXLchwzeZ6hraLBCwto55MTyS9etRQrumRoG9Z8wPWeq
+	qYaHWYTfWw7612+TcVGXh/rXfYMakWk40BKI8DHQXfv2O+A8NjsLHe8W6h7QUemAGd8JFsmpmwV
+	2gXMaQl/dMgn4mhpnXsxEsmMqd1gxz4gKxTncfwomzkgl8NG/PT4m+0FQ=
+X-Received: by 2002:a05:690e:43d1:b0:677:d251:ccb2 with SMTP id 956f58d0204a3-6790a3ba2b6mr1617784d50.15.1791447101133;
+        Thu, 08 Oct 2026 01:11:41 -0700 (PDT)
+X-Received: by 2002:a05:690e:43d1:b0:677:d251:ccb2 with SMTP id
+ 956f58d0204a3-6790a3ba2b6mr1617763d50.15.1791447100494; Thu, 08 Oct 2026
+ 01:11:40 -0700 (PDT)
 MIME-Version: 1.0
 References: <20261005-rpmi-tee-service-grp-dev-v2-0-72f222e23ec1@oss.qualcomm.com>
- <20261005-rpmi-tee-service-grp-dev-v2-3-72f222e23ec1@oss.qualcomm.com>
-In-Reply-To: <20261005-rpmi-tee-service-grp-dev-v2-3-72f222e23ec1@oss.qualcomm.com>
-Date: Thu, 8 Oct 2026 09:10:41 +0200
-X-Gm-Features: AclHuK_5_jxpklCZoDI4szBFsh7SnsGl5SOvGOXgGyD9h2gCE4mYnsS8HKGboow
-Message-ID: <CAGgiveVHTjDPfRuXwMyQ0kxT7s5V+EgkC_hYgBCOvvvkb2bGvg@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 3/8] tee: optee: add RPMI shared-memory and
- parameter support
+ <20261005-rpmi-tee-service-grp-dev-v2-6-72f222e23ec1@oss.qualcomm.com>
+In-Reply-To: <20261005-rpmi-tee-service-grp-dev-v2-6-72f222e23ec1@oss.qualcomm.com>
+Date: Thu, 8 Oct 2026 10:11:29 +0200
+X-Gm-Features: AclHuK_ulwLbOdiOwhVLyKYI0w-jUZto9bQrzFykzb9tv-znqnJpL93tMSNQoQQ
+Message-ID: <CAGgiveUzBk0Na13cqPRnQw8y2XdQ9LLktFK5eaJLTMiQZJPc_w@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 6/8] tee: optee: execute yielding RPMI calls
 To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-ORIG-GUID: 1M9Fsmi7Vxc8oIB7gKDx9ipwNWp3JTKX
-X-Authority-Analysis: v=2.4 cv=E4dYNqdl c=1 sm=1 tr=0 ts=6ac74200 cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDAzMiBTYWx0ZWRfXwJSyHK174K5U
+ fC5HOIq8lqmwV026u2TAtQH7dVEurcXOJYWLiTnFH/wnUEeBi1QPrbpvuQ+vQpZ1xHpcmbMKm2G
+ u9V+9DTTqHlFyg4gwo8x0pQrAq1GepL7RNZ0WPv7SBzeyu4XH7fvounC4H/e7VjzOmtrYS6Sph+
+ 3du+p4a2lJkDmDyHN764PqlEXPNiJNXKYYuysi58GyvIVNflGiBrWL4pdUANckeJZ+Gy4k7pngZ
+ GxoUWE7TxlhYfjMJSKxiQA4IuJxP/UdlTRcBynlcDRhStosHNLxUsTgQwZ6vyW8V2P/0ilrNK/e
+ oHB2CqdB5InH2m5VYRHzJFYFOoTvaTTffF55kO2P3pCj+vrRTQCsH8BC+y2jYfBBG1BX5cV1FVA
+ rfrPFFW32jkyaFqb3QCJ3gK4Ekl2Gb4b5w9rQOU0CxYqbadUxIIyyyJ5ie/ZR8MB2ijZNWpV30/
+ JWpIbKbFaQo0fJXxwkw==
+X-Proofpoint-ORIG-GUID: ClOQ8fMl0liPtJ5DJlsSxO8MxgWhKflD
+X-Proofpoint-GUID: ClOQ8fMl0liPtJ5DJlsSxO8MxgWhKflD
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDAzMiBTYWx0ZWRfX4KtAYT7uaQDY
+ raC6ZzPC1ukQsy7Z2LdRUdVAVLu37xTyZUDUlMSpK3yRhX6541KzWSfquvm/9PRtOhyk8ylL01r
+ fs6LGTnACcsV1Y+gq/drSu5y8nxdNXI=
+X-Authority-Analysis: v=2.4 cv=KcdHIgYD c=1 sm=1 tr=0 ts=6ac7503e cx=c_pps
  a=VEzVgl358Dq0xwHDEbsOzA==:117 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8 a=0xFQXAewANoCAR_c-UwA:9
+ a=DJpcGTmdVt4CTyJn9g5Z:22 a=EUspDBNiAAAA:8 a=ErwVIQJsGMf6Wn3gpasA:9
  a=QEXdDO2ut3YA:10 a=uujmmnXaIg8lM0-o0HFK:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDAyOCBTYWx0ZWRfX8zy0/zVsF3gN
- G5c3kOyUZpuHvlVwa7wVxdWiHdem1zHCdlNA2vafpjdurJyeUDfKNgKZGhjs9cO4nTrscylHKun
- 4CAadIuV6O2/FknjT1lrWefZ453jGes=
-X-Proofpoint-GUID: 1M9Fsmi7Vxc8oIB7gKDx9ipwNWp3JTKX
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDAyOCBTYWx0ZWRfX8tGZSFxA1wHi
- CMbMJqvinxpz7aK2xaFrYmChSGyC8/T6zDKLqMMQOYeZXm69OenR9iIzkkuZBrlLhZivTHFVBqe
- ZzUEIhJwp4rcYnVsvrN49mgYZLAuBsR2tNCFZerntugPplutUczN2YyMgRzzFHBsKWypIMJq7EA
- 77r542NwEXRlmuWCD3lhneqC/skIcTMLx36Yh92umNbG1OK5moF9rLxHKYlGs3GqK9Sks7M7fEU
- HFEjDONP5qex8YUZ0J4l56ZEFgJOsFU2iGoqK/ND0dfzYbdpBQOmUUA87rx1CVQM1BhA5GISVuF
- b3whVuctneS9JA+zfz8PjIncytZghVpeqkjL+8cKNCw5706o/f3uPU58iq/9qyKUUpcFmnIncPC
- AcJ2OItplaJwwy7DQEFpNfsDZCjzUBAVFU541eCEQCtym0/CAjo7uLqQZDLf8Euc/DzVrA2hSLA
- 0CWVOFk0PzoM3qMmLqw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-08_02,2026-10-06_03,2025-10-01_01
+ definitions=2026-10-08_03,2026-10-06_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 adultscore=0 phishscore=0 spamscore=0 impostorscore=0
- clxscore=1015 priorityscore=1501 bulkscore=0 suspectscore=0 malwarescore=0
+ bulkscore=0 adultscore=0 spamscore=0 lowpriorityscore=0 malwarescore=0
+ phishscore=0 priorityscore=1501 clxscore=1015 impostorscore=0 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610080028
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610080032
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.60 / 15.00];
+X-Spamd-Result: default: False [-5.60 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
@@ -155,34 +155,32 @@ X-Spamd-Result: default: False [-3.60 / 15.00];
 	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	MIME_GOOD(-0.10)[text/plain];
 	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
-	MISSING_XM_UA(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
-	RCPT_COUNT_TWELVE(0.00)[18];
 	MIME_TRACE(0.00)[0:+];
-	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
+	MISSING_XM_UA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[18];
+	TAGGED_RCPT(0.00)[dt];
 	RCVD_COUNT_THREE(0.00)[3];
 	NEURAL_HAM(-0.00)[-1.000];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[74.125.224.72:received];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	ALIAS_RESOLVED(0.00)[];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: BBF4C44E78
-X-Spamd-Bar: ---
-Message-ID-Hash: NUJ2EJXIPUYB64WVNROSHF3JMBPQ76MW
-X-Message-ID-Hash: NUJ2EJXIPUYB64WVNROSHF3JMBPQ76MW
+X-Rspamd-Queue-Id: A313C44E81
+X-Spamd-Bar: -----
+Message-ID-Hash: OKJYOJP44EROENK7AR3XK2HII335552Z
+X-Message-ID-Hash: OKJYOJP44EROENK7AR3XK2HII335552Z
 X-MailFrom: jens.wiklander@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Rahul Pathak <rahul@summations.net>, Anup Patel <anup@brainfault.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Marouene Boubakri <marouene.boubakri@oss.nxp.com>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NUJ2EJXIPUYB64WVNROSHF3JMBPQ76MW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OKJYOJP44EROENK7AR3XK2HII335552Z/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -192,593 +190,198 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Jens Wiklander via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
 
-Hi Amir,
-
 On Tue, Oct 6, 2026 at 2:40=E2=80=AFAM Amirreza Zarrabi
 <amirreza.zarrabi@oss.qualcomm.com> wrote:
 >
-> OP-TEE commands and RPCs need shared memory that secure world can
-> identify through RPMI parcels.
+> OP-TEE commands can span multiple exchanges with normal world. A call
+> may yield to request an RPC service or allow interrupt processing
+> before continuing execution in secure world.
 >
-> Register normal-world pages as read-write parcels shared with the
-> OP-TEE endpoint. Track each parcel ID and nonce in a hash table and
-> store the combined identity in tee_shm.sec_world_id. Use a fixed
-> nonzero nonce to distinguish registered memory from NULL references.
+> Add the RPMI yielding-call path used by the common OP-TEE session
+> operations. Submit the command and RPC argument buffers as ranges
+> within a shared memory parcel.
 >
-> Add conversions between TEE parameters and parcel memory references.
+> Handle RPC requests while the call is suspended and resume execution
+> using the token returned by OP-TEE until the command completes.
 >
-> On client memory unregistration, ask OP-TEE to release its mapping
-> before reclaiming the parcel. Supplicant memory has already been
-> released by OP-TEE through its SHM_FREE RPC and only needs reclaiming.
+> Use the common OP-TEE call queue to wait when an initial request is
+> rejected with RPMI_ERR_BUSY, allowing another active call to complete
+> before retrying.
 >
 > Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 > ---
->  drivers/tee/optee/Makefile        |   1 +
->  drivers/tee/optee/optee_private.h |  27 +++
->  drivers/tee/optee/rpmi_abi.c      | 417 ++++++++++++++++++++++++++++++++=
+>  drivers/tee/optee/rpmi_abi.c | 124 +++++++++++++++++++++++++++++++++++++=
 ++++++
->  3 files changed, 445 insertions(+)
+>  1 file changed, 124 insertions(+)
 >
-> diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-> index 183cdde1ac04..8576cc73a922 100644
-> --- a/drivers/tee/optee/Makefile
-> +++ b/drivers/tee/optee/Makefile
-> @@ -9,6 +9,7 @@ optee-objs +=3D supp.o
->  optee-objs +=3D device.o
->  optee-$(CONFIG_HAVE_ARM_SMCCC) +=3D smc_abi.o
->  optee-$(CONFIG_ARM_FFA_TRANSPORT) +=3D ffa_abi.o
-> +optee-$(CONFIG_RISCV_RPMI_TEE_TRANSPORT) +=3D rpmi_abi.o
->
->  # for tracing framework to find optee_trace.h
->  CFLAGS_smc_abi.o :=3D -I$(src)
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_=
-private.h
-> index 02d6f79df407..2422caf3c883 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -180,6 +180,28 @@ struct optee_ffa {
->  };
->  #endif
->
-> +#if IS_REACHABLE(CONFIG_RISCV_RPMI_TEE_TRANSPORT)
-> +struct rpmi_tee_device;
-> +
-> +/**
-> + * struct optee_rpmi - RPMI shared-memory identity state
-> + * @rdev: owning RPMI service device
-> + * @shm_rht_lock: protects parcel lookup, insertion, removal and publica=
-tion
-> + * @shm_rht: lookup by the host-endian parcel ID and nonce pair
-> + *
-> + * Callers keep their tee_shm alive while using its registration. Lookup
-> + * returns a raw pointer; the mutex does not protect its lifetime after
-> + * unlocking. Never hold @shm_rht_lock across a transport operation, RPC=
- or
-> + * thread-availability wait.
-> + */
-> +struct optee_rpmi {
-> +       struct rpmi_tee_device *rdev;
-> +       /* Protects parcel lookup, insertion, removal and publication. */
-> +       struct mutex shm_rht_lock;
-> +       struct rhashtable shm_rht;
-> +};
-> +#endif
-> +
->  struct optee;
->
->  /**
-> @@ -240,6 +262,7 @@ struct optee_ops {
->   * @ctx:                       driver internal TEE context
->   * @smc:                       specific to SMC ABI
->   * @ffa:                       specific to FF-A ABI
-> + * @rpmi:                      specific to RPMI ABI
->   * @shm_arg_cache:             shared memory cache argument
->   * @call_queue:                        queue of threads waiting to call =
-@invoke_fn
->   * @notif:                     notification synchronization struct
-> @@ -271,6 +294,9 @@ struct optee {
->  #endif
->  #if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
->                 struct optee_ffa ffa;
-> +#endif
-> +#if IS_REACHABLE(CONFIG_RISCV_RPMI_TEE_TRANSPORT)
-> +               struct optee_rpmi rpmi;
->  #endif
->         };
->         struct optee_shm_arg_cache shm_arg_cache;
-> @@ -464,4 +490,5 @@ static inline void optee_ffa_abi_unregister(void)
->  }
->  #endif
->
-> +
->  #endif /*OPTEE_PRIVATE_H*/
 > diff --git a/drivers/tee/optee/rpmi_abi.c b/drivers/tee/optee/rpmi_abi.c
-> new file mode 100644
-> index 000000000000..e7fc853cfb15
-> --- /dev/null
+> index 58d82678be98..6e76316794c1 100644
+> --- a/drivers/tee/optee/rpmi_abi.c
 > +++ b/drivers/tee/optee/rpmi_abi.c
-> @@ -0,0 +1,417 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-> + */
+> @@ -9,6 +9,7 @@
+>  #include <linux/mailbox/riscv-rpmi-message.h>
+>  #include <linux/overflow.h>
+>  #include <linux/rpmi_tee.h>
+> +#include <linux/sched.h>
+>  #include <linux/slab.h>
+>  #include <linux/unaligned.h>
+>  #include "optee_private.h"
+> @@ -560,3 +561,126 @@ static void optee_rpmi_handle_rpc_cmd(struct tee_co=
+ntext *ctx,
+>                 optee_rpc_cmd(ctx, optee, arg);
+>         }
+>  }
 > +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/cleanup.h>
-> +#include <linux/mailbox/riscv-rpmi-message.h>
-> +#include <linux/overflow.h>
-> +#include <linux/rpmi_tee.h>
-> +#include <linux/slab.h>
-> +#include <linux/unaligned.h>
-> +#include "optee_private.h"
-> +#include "optee_rpmi.h"
-> +
-> +/* Nonzero nonce keeps parcel ID zero distinct from a null reference. */
-> +#define OPTEE_RPMI_SHM_NONCE   1
-The spec describes this as:
-
-A token nonce which receivers will need to present to the framework,
-together with MEM_PARCEL_ID, to accept the memory.
-It is intended as a way to reduce the likelihood of accidental
-collisions on MEM_PARCEL_ID values, which can be reused by the
-framework after they have been destroyed.
-
-Why don't we change the nonce with each new parcel to live up to that?
-
-> +
-> +struct optee_rpmi_parcel_key {
-> +       u32 parcel_id;
-> +       u32 nonce;
-> +};
-> +
-> +struct optee_rpmi_shm_rht_entry {
-> +       struct rhash_head node;
-> +       struct optee_rpmi_parcel_key key;
-> +       struct tee_shm *shm;
-> +};
-> +
-> +static const struct rhashtable_params optee_rpmi_shm_rht_params =3D {
-> +       .head_offset =3D offsetof(struct optee_rpmi_shm_rht_entry, node),
-> +       .key_offset =3D offsetof(struct optee_rpmi_shm_rht_entry, key),
-> +       .key_len =3D sizeof(struct optee_rpmi_parcel_key),
-> +       .automatic_shrinking =3D true,
-> +};
-> +
-> +/* Keep transport errors separate from the control status in a response.=
- */
-> +static int optee_rpmi_call_with_status(struct optee *optee,
-> +                                      const void *req, size_t req_len,
-> +                                      void *resp, size_t resp_size,
-> +                                      s32 *status)
+> +/* Handle RPC command or interrupt returns from a yielding call. */
+> +static void optee_rpmi_handle_rpc(struct tee_context *ctx, struct optee =
+*optee,
+> +                                 u32 result, struct optee_msg_arg *arg)
 > +{
-> +       struct rpmi_tee_device *rdev =3D optee->rpmi.rdev;
-> +       size_t received =3D resp_size;
-> +       int ret;
-> +
-> +       ret =3D rdev->ops->msg_ops->call(rdev, req, req_len, resp, &recei=
-ved);
-> +       if (ret)
-> +               return ret;
-> +
-> +       if (received !=3D resp_size)
-> +               return -EPROTO;
-> +
-> +       *status =3D get_unaligned_le32(resp);
-> +
-> +       return 0;
+> +       switch (result) {
+> +       case OPTEE_RPMI_YIELDING_CALL_RETURN_RPC_CMD:
+> +               optee_rpmi_handle_rpc_cmd(ctx, optee, arg);
+> +               break;
+> +       case OPTEE_RPMI_YIELDING_CALL_RETURN_INTERRUPT:
+> +               break;
+> +       default:
+> +               pr_warn("Unknown RPC func 0x%x\n", result);
+> +               break;
+> +       }
 > +}
 > +
 > +/**
-> + * optee_rpmi_call - Send a control request and decode its RPMI status
-> + * @optee: OP-TEE instance.
-> + * @req: Control request, including the operation number.
-> + * @req_len: Request size in bytes.
-> + * @resp: Response buffer, beginning with a little-endian RPMI status.
-> + * @resp_size: Exact expected response size, including the status field.
+> + * optee_rpmi_yielding_call() - submit and resume a yielding RPMI comman=
+d
+> + * @ctx: calling context
+> + * @req: initial command request
+> + * @rpc_arg: shared RPC argument buffer
+> + * @system_thread: caller requests TEE system thread support
 > + *
-> + * Return: 0 on success, a transport error, -EPROTO for an unexpected re=
-sponse
-> + * size, or the control status converted to a Linux error code.
+> + * Only RPMI_ERR_BUSY rejection of the initial command permits retry.
+> + *
+> + * Return: zero on completion, or a negative error.
 > + */
-> +static int optee_rpmi_call(struct optee *optee, const void *req, size_t =
-req_len,
-> +                          void *resp, size_t resp_size)
+> +static int optee_rpmi_yielding_call(struct tee_context *ctx,
+> +                                   const struct optee_rpmi_call_req *req=
+,
+> +                                   struct optee_msg_arg *rpc_arg,
+> +                                   bool system_thread)
 > +{
+> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> +       struct optee_rpmi_resume_req resume =3D {
+> +               .op =3D cpu_to_le32(OPTEE_RPMI_YIELDING_CALL_RESUME),
+> +               /* resume_token is nonzero after OP-TEE suspends the call=
+. */
+> +               .resume_token =3D 0,
+
+I missed this when reviewing "tee: optee: define the RPMI control and
+parcel-reference ABI". I'd prefer if the resume_token was a truly
+opaque value, just as for the SMC and FF-A ABIs. Any reason why it's a
+64-bit value instead of 32-bit, as is used for the other ABI?
+
+> +       };
+> +       struct optee_rpmi_call_resp resp;
+> +       struct optee_call_waiter waiter;
+> +       u32 result;
 > +       s32 status;
 > +       int ret;
 > +
-> +       ret =3D optee_rpmi_call_with_status(optee, req, req_len, resp, re=
-sp_size,
-> +                                         &status);
-> +       if (ret)
-> +               return ret;
-> +
-> +       return rpmi_to_linux_error(status);
-> +}
-> +
-> +static int optee_rpmi_shm_rht_init(struct optee *optee)
-> +{
-> +       int ret;
-> +
-> +       mutex_init(&optee->rpmi.shm_rht_lock);
-> +       ret =3D rhashtable_init(&optee->rpmi.shm_rht, &optee_rpmi_shm_rht=
-_params);
-> +       if (ret)
-> +               mutex_destroy(&optee->rpmi.shm_rht_lock);
-> +
-> +       return ret;
-> +}
-> +
-> +static void optee_rpmi_shm_rht_free(void *ptr, void *arg)
-> +{
-> +       kfree(ptr);
-> +}
-> +
-> +static void optee_rpmi_shm_rht_uninit(struct optee *optee)
-> +{
-> +       rhashtable_free_and_destroy(&optee->rpmi.shm_rht,
-> +                                   optee_rpmi_shm_rht_free, NULL);
-> +       mutex_destroy(&optee->rpmi.shm_rht_lock);
-> +}
-> +
-> +/* Allocate and publish a parcel-to-SHM mapping. */
-> +static int optee_rpmi_shm_rht_add(struct optee *optee, struct tee_shm *s=
-hm,
-> +                                 u32 parcel_id, u32 nonce)
-> +{
-> +       struct optee_rpmi_shm_rht_entry *entry;
-> +       int ret;
-> +
-> +       entry =3D kzalloc_obj(*entry);
-> +       if (!entry)
-> +               return -ENOMEM;
-> +
-> +       entry->shm =3D shm;
-> +       entry->key.parcel_id =3D parcel_id;
-> +       entry->key.nonce =3D nonce;
-> +
-> +       scoped_guard(mutex, &optee->rpmi.shm_rht_lock)
-> +               ret =3D rhashtable_lookup_insert_fast(&optee->rpmi.shm_rh=
-t,
-> +                                                   &entry->node,
-> +                                                   optee_rpmi_shm_rht_pa=
-rams);
-> +       if (ret)
-> +               kfree(entry);
-> +
-> +       return ret;
-> +}
-> +
-> +/* Remove and free a parcel-to-SHM mapping. */
-> +static int optee_rpmi_shm_rht_rm(struct optee *optee, u32 parcel_id, u32=
- nonce)
-> +{
-> +       struct optee_rpmi_shm_rht_entry *entry;
-> +       struct optee_rpmi_parcel_key key =3D {
-> +               .parcel_id =3D parcel_id,
-> +               .nonce =3D nonce,
-> +       };
-> +       int ret =3D -ENOENT;
-> +
-> +       scoped_guard(mutex, &optee->rpmi.shm_rht_lock) {
-> +               entry =3D rhashtable_lookup_fast(&optee->rpmi.shm_rht, &k=
-ey,
-> +                                              optee_rpmi_shm_rht_params)=
-;
-> +               if (entry)
-> +                       ret =3D rhashtable_remove_fast(&optee->rpmi.shm_r=
-ht,
-> +                                                    &entry->node,
-> +                                                    optee_rpmi_shm_rht_p=
-arams);
-> +       }
-> +
-> +       if (!ret)
-> +               kfree(entry);
-> +
-> +       return ret;
-> +}
-> +
-> +/* Return a raw pointer; the surrounding call or RPC owns the SHM lifeti=
-me. */
-> +static struct tee_shm *
-> +optee_rpmi_get_shm_for_parcel(struct optee *optee, u32 parcel_id, u32 no=
-nce)
-> +{
-> +       struct optee_rpmi_shm_rht_entry *entry;
-> +       struct optee_rpmi_parcel_key key =3D {
-> +               .parcel_id =3D parcel_id,
-> +               .nonce =3D nonce,
-> +       };
-> +
-> +       guard(mutex)(&optee->rpmi.shm_rht_lock);
-> +       entry =3D rhashtable_lookup_fast(&optee->rpmi.shm_rht, &key,
-> +                                      optee_rpmi_shm_rht_params);
-> +
-> +       return entry ? entry->shm : NULL;
+> +       optee_cq_wait_init(&optee->call_queue, &waiter, system_thread);
+> +       while (true) {
+> +               if (resume.resume_token)
+> +                       ret =3D optee_rpmi_call_with_status(optee, &resum=
+e,
+> +                                                         sizeof(resume),=
+ &resp,
+> +                                                         sizeof(resp), &=
+status);
+> +               else
+> +                       ret =3D optee_rpmi_call_with_status(optee, req, s=
+izeof(*req),
+> +                                                         &resp, sizeof(r=
+esp),
+> +                                                         &status);
 
-Please use a full if statement instead of the ternary operator
+Please fix the too-long lines above.
 
-> +}
+> +               if (ret)
+> +                       goto done;
 > +
-> +/* Extract the parcel ID and nonce stored in the SHM identity. */
-> +static void optee_rpmi_shm_get_identity(const struct tee_shm *shm,
-> +                                       u32 *parcel_id, u32 *nonce)
-> +{
-> +       *parcel_id =3D lower_32_bits(shm->sec_world_id);
-> +       *nonce =3D upper_32_bits(shm->sec_world_id);
+> +               switch (status) {
+> +               case RPMI_SUCCESS:
 
-By keeping parcel_id and nonce in separate fields, we add quite a bit
-of code only to handle u64 -> u32 + u32 and vice versa. I wonder if it
-wouldn't be easier always to keep them in a u64 and say that the upper
-32 bits are a nonce, or something. With that, we could make the
-optee_shm_rem_ffa_handle() function and friends common helpers in the
-optee driver.
+Any particular reason why we aren't using TEE error codes here?
 
-> +}
+> +                       break;
+> +               case RPMI_ERR_BUSY:
+> +                       if (!resume.resume_token) {
+> +                               optee_cq_wait_for_completion(&optee->call=
+_queue,
+> +                                                            &waiter);
+> +                               continue;
+> +                       }
 > +
-> +static int optee_rpmi_shm_register(struct tee_context *ctx, struct tee_s=
-hm *shm,
-> +                                  struct page **pages, size_t num_pages,
-> +                                  unsigned long start)
-> +{
-> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> +       struct rpmi_tee_device *rdev =3D optee->rpmi.rdev;
-> +       struct rpmi_tee_mem_receiver receiver =3D {
-> +               .endpoint_id =3D rdev->endpoint_id,
-> +               .access =3D RPMI_TEE_MEM_ACCESS_READ | RPMI_TEE_MEM_ACCES=
-S_WRITE,
-> +       };
-> +       struct rpmi_tee_mem_args args =3D {
-> +               .nonce =3D OPTEE_RPMI_SHM_NONCE,
-> +               .receivers =3D &receiver,
-> +               .receiver_count =3D 1,
-> +               .creator_access =3D RPMI_TEE_MEM_ACCESS_READ |
-> +                                 RPMI_TEE_MEM_ACCESS_WRITE,
-> +       };
-> +       struct sg_table sgt;
-> +       int ret;
+> +                       fallthrough;
+> +               default:
+> +                       ret =3D rpmi_to_linux_error(status);
+> +                       goto done;
+> +               }
 > +
-> +       ret =3D optee_check_mem_type(start, num_pages);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret =3D sg_alloc_table_from_pages(&sgt, pages, num_pages, 0,
-> +                                       num_pages * PAGE_SIZE, GFP_KERNEL=
-);
-> +       if (ret)
-> +               return ret;
-> +
-> +       args.sg =3D sgt.sgl;
-> +       ret =3D rdev->ops->mem_ops->memory_share(rdev, &args);
-> +       sg_free_table(&sgt);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret =3D optee_rpmi_shm_rht_add(optee, shm, args.parcel_id, args.n=
-once);
-> +       if (ret) {
-> +               int reclaim_ret;
-> +
-> +               reclaim_ret =3D rdev->ops->mem_ops->memory_reclaim(rdev, =
-args.parcel_id);
-> +               if (reclaim_ret)
-> +                       dev_err(&rdev->dev, "reclaim parcel %#x failed: %=
-d\n",
-> +                               args.parcel_id, reclaim_ret);
-> +               return ret;
-> +       }
-> +
-> +       shm->sec_world_id =3D ((u64)args.nonce << 32) | args.parcel_id;
-> +
-> +       return 0;
-> +}
-> +
-> +static int optee_rpmi_shm_unregister(struct tee_context *ctx,
-> +                                    struct tee_shm *shm)
-> +{
-> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> +       struct rpmi_tee_device *rdev =3D optee->rpmi.rdev;
-> +       struct optee_rpmi_unregister_req req;
-> +       struct optee_rpmi_status_resp resp;
-> +       u32 parcel_id, nonce;
-> +       int ret;
-> +
-> +       optee_rpmi_shm_get_identity(shm, &parcel_id, &nonce);
-> +       optee_rpmi_shm_rht_rm(optee, parcel_id, nonce);
-> +       shm->sec_world_id =3D 0;
-> +
-> +       req.op =3D cpu_to_le32(OPTEE_RPMI_UNREGISTER_SHM);
-> +       req.parcel_id =3D cpu_to_le32(parcel_id);
-> +       req.nonce =3D cpu_to_le32(nonce);
-> +       ret =3D optee_rpmi_call(optee, &req, sizeof(req), &resp, sizeof(r=
-esp));
-> +       if (ret)
-> +               dev_err(&rdev->dev, "unregister parcel %#x failed: %d\n",
-> +                       parcel_id, ret);
-> +
-> +       ret =3D rdev->ops->mem_ops->memory_reclaim(rdev, parcel_id);
-> +       if (ret)
-> +               dev_err(&rdev->dev, "reclaim parcel %#x failed: %d\n",
-> +                       parcel_id, ret);
-> +
-> +       return ret;
-> +}
-> +
-> +static int optee_rpmi_shm_unregister_supp(struct tee_context *ctx,
-> +                                         struct tee_shm *shm)
-> +{
-> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
-> +       struct rpmi_tee_device *rdev =3D optee->rpmi.rdev;
-> +       u32 parcel_id, nonce;
-> +       int ret;
-> +
-> +       optee_rpmi_shm_get_identity(shm, &parcel_id, &nonce);
-> +       optee_rpmi_shm_rht_rm(optee, parcel_id, nonce);
-> +       shm->sec_world_id =3D 0;
-> +       /* OP-TEE has already retired the parcel through SHM_FREE RPC. */
-> +       ret =3D rdev->ops->mem_ops->memory_reclaim(rdev, parcel_id);
-> +       if (ret)
-> +               dev_err(&rdev->dev, "reclaim parcel %#x failed: %d\n",
-> +                       parcel_id, ret);
-> +
-> +       return ret;
-> +}
-> +
-> +/* Convert a memory reference to an OP-TEE RPMI parcel reference. */
-> +static int to_msg_param_rpmi_mem(struct optee_msg_param *mp,
-> +                                const struct tee_param *p)
-> +{
-> +       struct tee_shm *shm =3D p->u.memref.shm;
-> +
-> +       mp->attr =3D OPTEE_MSG_ATTR_TYPE_PMEM_INPUT + p->attr -
-> +                  TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
-> +       memset(&mp->u, 0, sizeof(mp->u));
-> +       /* For !shm, return parcel_id =3D 0 and nonce =3D 0 to represent =
-NULL. */
-> +       if (shm) {
-> +               if (check_add_overflow((u64)shm->offset,
-> +                                      (u64)p->u.memref.shm_offs,
-> +                                      &mp->u.pmem.offs))
-> +                       return -EINVAL;
+> +               result =3D get_unaligned_le32(&resp.result);
 
-By combining the shm->offset with p->u.memref.shm_offs, OP-TEE
-requires an explicit call to register the shared memory so it knows
-the initial page offset. Compared with the FF-A ABI, which can tell
-the initial page offset from mp->u.fmem.internal_offs. See also the
-mobj_ffa_get_by_cookie() call in set_fmem_param() in
-core/tee/entry_std.c in optee_os.git
-
-> +
-> +               optee_rpmi_shm_get_identity(shm, &mp->u.pmem.parcel_id,
-> +                                           &mp->u.pmem.nonce);
-> +       }
-> +
-> +       mp->u.pmem.size =3D p->u.memref.size;
-> +
-> +       return 0;
-> +}
-> +
-> +static int optee_rpmi_to_msg_param(struct optee *optee,
-> +                                  struct optee_msg_param *msg_params,
-> +                                  size_t num_params,
-> +                                  const struct tee_param *params)
-> +{
-> +       size_t n;
-> +
-> +       for (n =3D 0; n < num_params; n++) {
-> +               const struct tee_param *p =3D params + n;
-> +               struct optee_msg_param *mp =3D msg_params + n;
-
-Please add an empty line after the variables.
+Why not le32_to_cpu(resp.result)?
 
 Cheers,
 Jens
 
-> +               switch (p->attr) {
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-> +                       mp->attr =3D OPTEE_MSG_ATTR_TYPE_NONE;
-> +                       memset(&mp->u, 0, sizeof(mp->u));
-> +                       break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
-> +                       optee_to_msg_param_value(mp, p);
-> +                       break;
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-> +               case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-> +                       if (to_msg_param_rpmi_mem(mp, p))
-> +                               return -EINVAL;
-> +                       break;
-> +               default:
-> +                       return -EINVAL;
-> +               }
-> +       }
+> +               if (result =3D=3D OPTEE_RPMI_YIELDING_CALL_RETURN_DONE)
+> +                       goto done;
 > +
-> +       return 0;
+> +               cond_resched();
+> +               optee_rpmi_handle_rpc(ctx, optee, result, rpc_arg);
+> +
+> +               resume.resume_token =3D resp.resume_token;
+> +       }
+> +done:
+> +       optee_cq_wait_final(&optee->call_queue, &waiter);
+> +
+> +       return ret;
 > +}
 > +
-> +/* Convert an RPMI parcel reference to a memref; callers own SHM lifetim=
-e. */
-> +static int from_msg_param_rpmi_mem(struct optee *optee, struct tee_param=
- *p,
-> +                                  u32 attr, const struct optee_msg_param=
- *mp)
+> +/* The caller supplies SHM with room for command and RPC args. */
+> +static int optee_rpmi_do_call_with_arg(struct tee_context *ctx,
+> +                                      struct tee_shm *shm, u_int offs,
+> +                                      bool system_thread)
 > +{
-> +       struct tee_shm *shm;
-> +       u64 offset;
+> +       struct optee *optee =3D tee_get_drvdata(ctx->teedev);
+> +       struct optee_msg_arg *arg, *rpc_arg;
+> +       struct optee_rpmi_call_req req;
+> +       size_t arg_size, rpc_size, rpc_offset;
+> +       u32 parcel_id, nonce;
 > +
-> +       p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT + attr -
-> +                 OPTEE_MSG_ATTR_TYPE_PMEM_INPUT;
+> +       arg =3D tee_shm_get_va(shm, offs);
+> +       if (IS_ERR(arg))
+> +               return PTR_ERR(arg);
 > +
-> +       if (mp->u.pmem.size > SIZE_MAX)
-> +               return -EOVERFLOW;
-> +       p->u.memref.size =3D mp->u.pmem.size;
+> +       arg_size =3D OPTEE_MSG_GET_ARG_SIZE(arg->num_params);
+> +       rpc_size =3D OPTEE_MSG_GET_ARG_SIZE(optee->rpc_param_count);
+> +       rpc_offset =3D offs + arg_size;
+> +       rpc_arg =3D tee_shm_get_va(shm, rpc_offset);
+> +       if (IS_ERR(rpc_arg))
+> +               return PTR_ERR(rpc_arg);
 > +
-> +       if (!mp->u.pmem.nonce) {
-> +               /* Return NULL shm. */
-> +               if (mp->u.pmem.offs || mp->u.pmem.parcel_id)
-> +                       return -EINVAL;
-> +               p->u.memref.shm =3D NULL;
-> +               p->u.memref.shm_offs =3D 0;
-> +               return 0;
-> +       }
+> +       optee_rpmi_shm_get_identity(shm, &parcel_id, &nonce);
 > +
-> +       shm =3D optee_rpmi_get_shm_for_parcel(optee, mp->u.pmem.parcel_id=
-,
-> +                                           mp->u.pmem.nonce);
-> +       if (!shm || mp->u.pmem.offs < shm->offset)
-> +               return -EINVAL;
+> +       req.op =3D cpu_to_le32(OPTEE_RPMI_YIELDING_CALL_WITH_ARG);
+> +       req.parcel_id =3D cpu_to_le32(parcel_id);
+> +       req.nonce =3D cpu_to_le32(nonce);
+> +       req.arg_offset =3D cpu_to_le64((u64)shm->offset + offs);
+> +       req.rpc_offset =3D cpu_to_le64((u64)shm->offset + rpc_offset);
+> +       req.arg_size =3D cpu_to_le32(arg_size);
+> +       req.rpc_size =3D cpu_to_le32(rpc_size);
 > +
-> +       offset =3D mp->u.pmem.offs - shm->offset;
-> +       if (offset > SIZE_MAX)
-> +               return -EOVERFLOW;
-> +
-> +       p->u.memref.shm =3D shm;
-> +       p->u.memref.shm_offs =3D offset;
-> +
-> +       return 0;
-> +}
-> +
-> +static int optee_rpmi_from_msg_param(struct optee *optee,
-> +                                    struct tee_param *params,
-> +                                    size_t num_params,
-> +                                    const struct optee_msg_param *msg_pa=
-rams)
-> +{
-> +       size_t n;
-> +
-> +       for (n =3D 0; n < num_params; n++) {
-> +               const struct optee_msg_param *mp =3D msg_params + n;
-> +               struct tee_param *p =3D params + n;
-> +               u32 attr =3D mp->attr & OPTEE_MSG_ATTR_TYPE_MASK;
-> +               int ret;
-> +
-> +               switch (attr) {
-> +               case OPTEE_MSG_ATTR_TYPE_NONE:
-> +                       p->attr =3D TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
-> +                       memset(&p->u, 0, sizeof(p->u));
-> +                       break;
-> +               case OPTEE_MSG_ATTR_TYPE_VALUE_INPUT:
-> +               case OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT:
-> +               case OPTEE_MSG_ATTR_TYPE_VALUE_INOUT:
-> +                       optee_from_msg_param_value(p, attr, mp);
-> +                       break;
-> +               case OPTEE_MSG_ATTR_TYPE_PMEM_INPUT:
-> +               case OPTEE_MSG_ATTR_TYPE_PMEM_OUTPUT:
-> +               case OPTEE_MSG_ATTR_TYPE_PMEM_INOUT:
-> +                       ret =3D from_msg_param_rpmi_mem(optee, p, attr, m=
-p);
-> +                       if (ret)
-> +                               return ret;
-> +                       break;
-> +               default:
-> +                       return -EINVAL;
-> +               }
-> +       }
-> +       return 0;
+> +       return optee_rpmi_yielding_call(ctx, &req, rpc_arg, system_thread=
+);
 > +}
 >
 > --
