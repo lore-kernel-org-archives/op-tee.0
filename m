@@ -4,643 +4,452 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78BC7CA6007
-	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 08:21:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1ADECA6017
+	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 22:03:16 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A123A454FC
-	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 08:21:08 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id BF14E454C9
+	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 22:03:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791447668;
-	bh=f0QzkL7iQswY0wlcgPH9TLEqtFMDOW+G71b2GJY8Sj8=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1791496995;
+	bh=dBEvQKn/EMvmyxodh4Ujq1qJlcqNWmVd9SXbN3Ykxek=;
+	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=ydHcS4QOkcVJG8Wrohys3QeYJkVfb909eY0ZkZKBoxkkG7rjW3eaJHIACg83Nr4G4
-	 EMvZSXsIyQ8UV+M7wzVV5QV3fTqBn3ndKXIrRWU65zQyC7UllgJRDChjsCq1BwMaQo
-	 vOPY00wEm1axkiiFqw9F0Sl2zZj1ER19ADT0N1hmc9EIkvOdATpRfyHtDTvlP4Yi0d
-	 xPc9ca0XGEPIcuUGSWKYel+4SsRn9gb8niETMRAJMHgDsV8tIiu0EY3OUIH8ssd+oV
-	 QX7LAy18QDm5u99Nk46KmieQup3UG/HUlovLhcZ+gZRHgbS0gaZkiFgzKcd4XLSf4C
-	 /DdX7KAA+cOIQ==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5309A44E81
-	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Oct 2026 08:21:00 +0000 (UTC)
+	b=AIjFqGO/sdTvh0bZSyqURXruUACJ0d7X9iCQ/ClEAmO2155arbkwRbyzmb0KKpWca
+	 KXUYS0iuUz8soBrNJy3xqXOAzwx1jFRGwbdF2/nZ5wutGQCVuvCJkSgPCTLKJvE625
+	 tEbdo01q1rumJAQbv69Q6R+MJPRkkasfVbHKRArwhJyYUVXnJqOOUoaYfBUtMCaBKy
+	 bq2/UdtOp+hXBQIWRRJjgq7VHCnZ4ps4ygLnC1vA4Ucm0ZGDUVQBE1JoZViEOXfIbb
+	 J008xtkfo6zg2rdDfnC56Vl18d8RmBTAg9gvLNnCXOmUJiqC3i+TtYRnc+afa9pPyN
+	 OgfRT859BUltA==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id BAE4444F01
+	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Oct 2026 22:03:07 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Z3Xks1Tr;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=bMZVjSDo;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Z/ApXLEw;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=f7lkbwVV;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6987Kcjx2686686
-	for <op-tee@lists.trustedfirmware.org>; Thu, 8 Oct 2026 08:20:59 GMT
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 698L0Kwj3996512
+	for <op-tee@lists.trustedfirmware.org>; Thu, 8 Oct 2026 22:03:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	zIB4cQl0exFGRFC8UdOd4HdHw0g8TKxWx5FsF8wd+Pc=; b=Z3Xks1TrD2dT/8/N
-	RDEZSZpeaD/IwUNbfh4XNQ3ep+4y7TMI9VW8Lr7i20Rp5WLtt3T8mnz1/nq5T//F
-	t37QKS6VJP76Rn9h0VYVfBWXg0zCwbsNQbLYWiWTqwMP3f5J43Znt/KbbeXXttzV
-	D6X0kGqiVGukjbYFPqR8xtr4YMwNgF07/Szuf623dKnWrHzOfbix09uNGEv238TQ
-	1pb9Uz+uqj6OPHpR1lob0L524GaUuIsjO1NFr3O9BtYJY4oqHJMCnhf28of3YUUL
-	bjBPcfHhU8Md+V3gZyKFmQCAW3D8hjXmIF9HVCaNglLjMJRn3mvg9EocfijPj0yY
-	UEQSCg==
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5xe41wt2-1
+	tH1OwCS82bpX9kusapPnvRENv6Gr7AgMG4+Hp9O2t9Q=; b=Z/ApXLEwB21rFPtu
+	u/wN9PD6IEbnY+R+iao1MSIAclfJyeVNMQsztVHW+r/kqA1KvV+25YIsd7rRPO4W
+	IAtFPVWaBdhPOhqmOZldxacV0eKq9fxkKEkwdxPBdSam+nTWvkG7vTLD8vXnWhex
+	YKT2Q8SaU7LpdhP/TExBXKA8EfgmXgieAwMrCeK0h9XkZILv+1pZURZSJe4bPstu
+	2ChAMTxxakH0LtQPsz6oFMvUTCmdQK6x3F17E1LzgXeO8VOaCncnBmZlcLjSY9St
+	qfUBLL2QM/2g2QoXOUF6l6mbEYRJelVJIuH98653zbKQv+KHsdiSoXkXihJqkByE
+	fWd+xQ==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h6baj20q9-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 08:20:59 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93cc5f70c8dso566546785a.3
-        for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 01:20:59 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791447659; cv=none;
-        d=google.com; s=arc-20260327;
-        b=VXCo0ji3DrrEPpuqHJclfdVtaRVVWyWWrR2itSpsoqpZq9QFoE5pMMCJxX92y6j9H1
-         tMOI3alf4801tpNBRGKlW3yMypFNAv/oLCDQahhIk3bBN7ydo+Q5XbHqQ4FX2eA2DYce
-         wXLCHnxNoJFCtzbyebbIoCUKPM91gSVLRjg8BNIo8+QUJiDpy/eZxcU6Yh93iVd/AhR6
-         Iw2u9NQv2S4+M57B/Q7CINRKXb6EV1a0XuwyxoGdvVS1nM49c5g/YrTsxAf078L92i4y
-         Q8zMmIyiCf+GWQ8G7WIuf/scAHd6M5sdjXvmoIcKV7R2+EZJfsJLOfyo/WY0WgLh6jut
-         15LA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=zIB4cQl0exFGRFC8UdOd4HdHw0g8TKxWx5FsF8wd+Pc=;
-        fh=rIujuVmw3T6Dt418T/nscEXLOxX1o6hkWBTqhndBV/8=;
-        b=QDsCMOfXzwiS0/rGHcTBx1s/rXzoERbcPL3FFSVty8kdXQVzWhiYy5WnzLxFGrMN0D
-         0sMHxZkTTah6i1ppZVxYNLaRBFP3riK+TmnOwmHPJ9b1Vn367hIGYMn8hHIuIzIUnwHT
-         qYzONRbjtfc/+J06ZdApWUvtWA5daCvb2JHXcUV12YDf5VM00WvX/fbDh4lOIFFqANql
-         2roZJYsWqifg8o1rVEE/o7Yjnr4G7+NFP9A7YJA253WVuvmLk1PxQQo5/Wz19N3MhhR0
-         CNqSOVfCefObpNCgiAW3y9wx6RgLnDXIYPbJXA4x25Yp+jEXmFeiqJYqTdbVVqRunypP
-         XQ8A==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 22:03:06 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38dbf293831so9240926a91.3
+        for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 15:03:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791447659; x=1792052459; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=zIB4cQl0exFGRFC8UdOd4HdHw0g8TKxWx5FsF8wd+Pc=;
-        b=bMZVjSDog/O5gE4K8+JUEykONOZEeMEHmXsxyGO7GVw/+NIEBipu1U3RhCE4XlGAtF
-         wNt1fdHiqlQ9R1H5HBfYVtiX7VB5J+QwvNSKeNAcuzQSAGrE5nM9+SOoA4ne1QeVs0/U
-         1eLFhKLzm0OTpgZCY5VObwTOXUTkTU4h5ufMAKF45xWs0sizWyp650wWKHGcyPC0zK8w
-         ba1Su6w31+3EBHbSyQPc372CccKG8ONpNUcQVxPCLglFlUdUrnDa4yCPJ5k4M1q/C6ie
-         JmSelLdvVxvYsYsgfRoM+tnnlPU6KNXSehQlrDtabbw8ytLhJ2qn8hhQDXTmtmjsQLEu
-         mtOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791447659; x=1792052459;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1791496986; x=1792101786; darn=lists.trustedfirmware.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=zIB4cQl0exFGRFC8UdOd4HdHw0g8TKxWx5FsF8wd+Pc=;
-        b=SUTMRYrBg1t8ymWHkdn7oO5ybVrCz8waL/xyiedQKTzGud+Jfe7Ph+zrgKGmV2e5Cb
-         Mifr+vH6mbKz/N30XwBau8uT0971Orn6MWSeevy4mdAhhV1LGv3Ju4laMCqhBl/OEtSf
-         +qPF+6EsuHmjB+LCT/TBVD0YO9gLnLuCd7aWNSJSUMWDGhGuC1YvQoaJRu2D68+uCozv
-         F9ADR8iQh6TxMq0ljnGyJRRoYpoooJ671IQEzEayhg3UyVmSXXk9JwZ9XYZGAm7S9GYm
-         o+3dbhgrn6wEtrQyAaVvqWg2Up3mjcehpNURt+wKU5GN5ZWuE0En33bm4RomRrQNYLIT
-         B3Lg==
-X-Forwarded-Encrypted: i=1; AKwUvByGRUOdDxcDkDI+3s3cRYMVNDRwotGaCWCZpN0YG3JjtIc4F5tKe4AhcL8mbAjyLVY9jm86inM=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++mLHC8N/VNCi5oXCgKFY2YAGxdaMwT1Dfu/68+pd233Ggo/rTX7
-	NbOuOOvGKzf7c7mRjUEDs64GisLYeVHLhKOQqUREysJH/Ck4J2vahtIhT/zWaCwlQehC/ZSQksP
-	c0JIssppLTesj7djkrPFgKdGwSnuHLGThWNf58MF7XgK9OEpSfIBpoAi6YyVV8BtwqASaF1skuL
-	eVC7rbGyPAV6IUrc3Zoo18tfGWHpjoMFCNH4/itszcBpjhXxs=
-X-Gm-Gg: AYBFou2miZrIu4jN0Z5Vq3oAgjVIwPUL+L0hXIAK3KW7EuE47dG1AFoaq0E6h0pps8l
-	X1P0WMJstAqD/pPffOkrUVoxhhuZwjoWjJnKqHEHo8jYRS1xDMylREnilKpN9a7bpaGjip56QtY
-	tqC5oWB8uBSZlSBM8krj5O9LxxubVpG+uUrb0ztxt9tDsZt7XYy2B5xPg=
-X-Received: by 2002:a05:620a:2707:b0:93b:e9db:1bab with SMTP id af79cd13be357-93e9b7ec3damr815937685a.56.1791447658758;
-        Thu, 08 Oct 2026 01:20:58 -0700 (PDT)
-X-Received: by 2002:a05:620a:2707:b0:93b:e9db:1bab with SMTP id
- af79cd13be357-93e9b7ec3damr815933385a.56.1791447657991; Thu, 08 Oct 2026
- 01:20:57 -0700 (PDT)
+        bh=tH1OwCS82bpX9kusapPnvRENv6Gr7AgMG4+Hp9O2t9Q=;
+        b=f7lkbwVVLQN/fsocklGvrmZKX/bk6Ofm8GQv0DMDI3ts8IhVokUKWJdQf5DnSfn5ht
+         TwblnBCCho1FO6JwJdY6RU1ZcqHcmyP5KbOl0Txlgdzzf2x7G0Pt34l3EMtkY6SVDDLn
+         rl4qXqugq72yvPSNw69NdcmthSM7NLOg66FFzBLPVJFPUnwa9oMzDoIU6LQEFYQSBRWI
+         v/HsrDhUeRV/NRBNgQJBEAmVZ3DeTFu/GkSG3lMXeNqqUhEvnUPEE878YI77SJNtFAv/
+         fV45MHtiSMNYuk/Fco7VpyFwpXZeRBNf++2gz8yv/tnflMYUFRauS78YKtS6DqWbRlKE
+         jN0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791496986; x=1792101786;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=tH1OwCS82bpX9kusapPnvRENv6Gr7AgMG4+Hp9O2t9Q=;
+        b=yDELWYlueG6wwhZvu9TuizUiL/cWYkKqZRILjsLlVJo5xNZzI3eBn9obJE5/C/0657
+         eIrzcV3e7654q3jdMZfJw6J5AaBfzrcSILUlUHdANBcAXQsckLs63fzHhMpEEbZN43AG
+         Bfey4HB2mLFEr64gzJgr7qMahwfL9cm2Aq7CN3Wn29zzIV1j555LE4W2pEwJS9tuusdv
+         ydaDNqCq3wB2o9pJTqdJssMWYfnR2Xsgg3z6m4iuxjSnwWNme0qRmNcXHMvhzQ4Zd2jV
+         twuBjf+bOMxLg0Zk1cdqjkMjGbyoBFDp5dNcKa3I8q4GCKXGyi8q7gfqFyQjucHtrTRa
+         4S5w==
+X-Forwarded-Encrypted: i=1; AKwUvBxpQlLX6QTCgpRJeiSyxIymxi98+bMOLI2qCYOWLuxjXeiowj6pEeIZhYF0g2NbBmOk+Qo867Q=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYKqMTNQFMoIK5WbeZ/uebcIjaei0AxpxXuUXUk9WTZkHznmZbXk
+	4eQfQkjWrY0sPpPRhyB36x3g0/PS9RWUTYflyekN/6vGNEUqrMOVMEoUm2vbf4tbAwnPVEJS9ne
+	ZQq8VMVGo019YH8VuqaPe5qji3AM+szyKjJqyCYbayWJGu1bqStibn/gig+oL/pjKi+DJ910=
+X-Gm-Gg: AYBFou2QG+t50jGiyL2pJoE5ot7lppGdyL/mHjqi+9YDNVyMCfvQwZgfwkBQ0TRMqFd
+	jChDXWvSxrjwM2ZlwhVF5MM7eYrXfQ3C36OdBCjBCmzSpqKBo+bTckHcvOTPL5IAjWE3rFTT7rT
+	QtBSzvX7Jmaw4WUF67ODBvAUrYm85YW1WlUL91feyMUEgERK2bde4SjopwEe9bZTrpahMXJX5T2
+	sLIzfv259Ps/3qnWF1s22VXHxl7bWw1ve2Wgt/+9f+InoNSDFA5sRnekJ3pqqkbQ2aNJ63UYATK
+	ZdyaKoZ9EiXBi561EwWn+FZAyxz6C4Auz3f1twPZu2q0aj6vReniRTpfIpnBHK9VwYd+qTY/TpE
+	Thsaborzl2/I96SKwTATR156kbm//hZsR
+X-Received: by 2002:a17:90a:d008:b0:3a8:49f2:8ddb with SMTP id 98e67ed59e1d1-3ab3ae36cbcmr100496a91.60.1791496985485;
+        Thu, 08 Oct 2026 15:03:05 -0700 (PDT)
+X-Received: by 2002:a17:90a:d008:b0:3a8:49f2:8ddb with SMTP id 98e67ed59e1d1-3ab3ae36cbcmr100466a91.60.1791496984769;
+        Thu, 08 Oct 2026 15:03:04 -0700 (PDT)
+Received: from [192.168.1.86] ([65.181.12.250])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab371b2f2bsm507326a91.15.2026.10.08.15.02.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 08 Oct 2026 15:03:03 -0700 (PDT)
+Message-ID: <630aac65-bf8a-4334-8187-0e7eb0e25217@oss.qualcomm.com>
+Date: Fri, 9 Oct 2026 09:02:54 +1100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC v2 2/8] tee: optee: define the RPMI control and
+ parcel-reference ABI
+To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
 References: <20261005-rpmi-tee-service-grp-dev-v2-0-72f222e23ec1@oss.qualcomm.com>
- <20261005-rpmi-tee-service-grp-dev-v2-7-72f222e23ec1@oss.qualcomm.com>
-In-Reply-To: <20261005-rpmi-tee-service-grp-dev-v2-7-72f222e23ec1@oss.qualcomm.com>
-Date: Thu, 8 Oct 2026 10:20:45 +0200
-X-Gm-Features: AclHuK8VszX8MM8O8iN0SFhYNBrpC6tFcWm59t5pLqXff-TCJYx0we4frgkakhg
-Message-ID: <CAGgiveU+8d-MmPL4n_ADimkrthsE1sU4QHJoBeh==sxLZmdrFw@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 7/8] tee: optee: bind RPMI services and negotiate
- backend capabilities
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-GUID: XtnaIicSiQ43YQlLZhwqq2MfUIDHH75X
-X-Authority-Analysis: v=2.4 cv=AbwkjHXG c=1 sm=1 tr=0 ts=6ac7526b cx=c_pps
- a=qKBjSQ1v91RyAK45QCPf5w==:117 a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=3WHJM1ZQz_JShphwDgj5:22 a=EUspDBNiAAAA:8 a=G3rC2xmL4Tt6fuppFqwA:9
- a=QEXdDO2ut3YA:10 a=NFOGd7dJGGMPyQGDc5-O:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDAzMyBTYWx0ZWRfX54C0KHhIxawc
- Uc2HcFqHbZmv0JTU0GG6BqFtiwdETGTYjlE9KLZUJl16IVwZsgago7/ZA/SiVM9BAnzedkSKGpL
- /BiVm068ZQNzT1uZRj5koNO4pAooIFs=
-X-Proofpoint-ORIG-GUID: XtnaIicSiQ43YQlLZhwqq2MfUIDHH75X
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDAzMyBTYWx0ZWRfXzkE+yTjVUd/G
- +pmAcVM3VCyfbXU248iGO/e6a5CpbELOh8VYoIa6Cvo9vUX7I27HJlesnlFcCY1ezfIhFc3ZdV/
- mVDhAeZ8FalmJ2e7lb0iZhfxgsbshfodPCTBhUiVBqSpFj7QGWI1G5hR4tZq+enVRMZG774DotP
- 6HZc2qFBpsqlPDSi9fyTFFHU6xIQiQGXc5cvPMbjmQtagILr55E0+V/8z3hBmnx9sJQTkxMp0lq
- V4CEl511aP1X+jBdIqZlHnn2DtZ8653bSwUA4IIxYZmweP/GEsd6kC5WBiOwZmV5G+SeYTiLZeD
- uLKh8WaLbhT5ksZsG8EkchjpRogquUzlbXDV18OJurG9d1pQw/6mvIohj7jYGXNxU7eNIo0iWGk
- 0zKJUrv4zmvNDNBTqtckeDBKrGtct0hcChnGB0AIua/inH6Fb1I46IQw7DKJRltJYO7eM3XZKnl
- IytIw7pM63u2X5ZLQ4w==
+ <20261005-rpmi-tee-service-grp-dev-v2-2-72f222e23ec1@oss.qualcomm.com>
+ <CAGgiveUB4ETEbcfCvagfj6q__jsfPmJoeT_w0xA-9NOZpGNwfQ@mail.gmail.com>
+Content-Language: en-US
+In-Reply-To: <CAGgiveUB4ETEbcfCvagfj6q__jsfPmJoeT_w0xA-9NOZpGNwfQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDA4NyBTYWx0ZWRfX4ULAZdjVwmXC
+ PLUD+4ZGtBV0Eq+KphWDPiOuxFHlzdaX/AlTUAcJzeGjCV4RVK+9v7U3j1u/RIBhFrg4ri1qIv1
+ 8/eJo2M8Ur/LiCxQf44gUNG52RMjkE65zZHIbmyEKMgTyoBfblxy2vhYIM08l3TyDTQJjDoZ8C4
+ /dX642lOB55LAWtE0UEmJk6Iyp6d6khzwZYm2tJKfLNEaTplsOoaTYSUqj97PiWNMFSZiDHc4J/
+ h2gDu2/B+c6iWdyxfu2CkGilNnuUs9Ml0rpqkC3hrz6tFx68BNYMEncpgEiqisM+iiAp9RbTVfM
+ wUqhW8B2DELg12UPiWxohK+kbbD5MsTDvsbofsC9HKLxKaXhKmcZeVa/NmeLfnfLwO3dLzwIt0v
+ bG5F4D3hE5q6wOpGqGWQLzIege8ecdYwY2zJ9oZ2qWL9JAJbjSVMhm5jEOhAZhc0OfVsCCpFNKc
+ GaRk3wKM0LAv/1gMRbw==
+X-Proofpoint-GUID: jKi15twmqFCdJYU6wN2uviIFe81F0JG9
+X-Authority-Analysis: v=2.4 cv=H/dOUOYi c=1 sm=1 tr=0 ts=6ac8131a cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=9v5PfQ1E2GNzj2RibJmqVw==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=EUspDBNiAAAA:8 a=DlIsFlc6WOmABSFwOnwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=rl5im9kqc5Lf4LNbBjHf:22
+X-Proofpoint-ORIG-GUID: jKi15twmqFCdJYU6wN2uviIFe81F0JG9
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDA4NyBTYWx0ZWRfX6mJJBfVDtot5
+ MQDGPWbXfOavUMi1CsVf1Gwc/Qs9P1ckYQBrjlMXcnqr3dJqr9QfWPHzK+aNXIX+U8UCt56WbgX
+ XW6bh8g9sk5EKLhWF3Qd4AY75A9aUAM=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-08_03,2026-10-06_03,2025-10-01_01
+ definitions=2026-10-08_07,2026-10-08_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0 malwarescore=0
- clxscore=1015 suspectscore=0 priorityscore=1501 adultscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610080033
+ impostorscore=0 spamscore=0 phishscore=0 bulkscore=0 suspectscore=0
+ lowpriorityscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610020000
+ definitions=main-2610080087
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.60 / 15.00];
+X-Spamd-Result: default: False [-2.60 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
 	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TAGGED_RCPT(0.00)[dt];
-	RCPT_COUNT_TWELVE(0.00)[18];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	RCVD_COUNT_THREE(0.00)[3];
-	NEURAL_HAM(-0.00)[-1.000];
+	DNSWL_BLOCKED(0.00)[209.85.216.69:received];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[209.85.222.198:received];
-	RCVD_TLS_LAST(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[18];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	NEURAL_HAM(-0.00)[-1.000];
 	ALIAS_RESOLVED(0.00)[];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
+	MID_RHS_MATCH_FROM(0.00)[];
+	TO_DN_SOME(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 5309A44E81
-X-Spamd-Bar: -----
-Message-ID-Hash: WDL32WS47XSV3WTXLB6NZBV2NBMK6FCD
-X-Message-ID-Hash: WDL32WS47XSV3WTXLB6NZBV2NBMK6FCD
-X-MailFrom: jens.wiklander@oss.qualcomm.com
+X-Rspamd-Queue-Id: BAE4444F01
+X-Spamd-Bar: --
+Message-ID-Hash: VLCHOQUYO4V4VEHP4T22GFGCCAVZMF6J
+X-Message-ID-Hash: VLCHOQUYO4V4VEHP4T22GFGCCAVZMF6J
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Rahul Pathak <rahul@summations.net>, Anup Patel <anup@brainfault.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Marouene Boubakri <marouene.boubakri@oss.nxp.com>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/WDL32WS47XSV3WTXLB6NZBV2NBMK6FCD/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/VLCHOQUYO4V4VEHP4T22GFGCCAVZMF6J/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Jens Wiklander via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Hi Amir,
-
-On Tue, Oct 6, 2026 at 2:40=E2=80=AFAM Amirreza Zarrabi
-<amirreza.zarrabi@oss.qualcomm.com> wrote:
->
-> Register an RPMI service driver matching the OP-TEE service UUID and
-> integrate it with OP-TEE module initialization and removal.
->
-> Check the service API version, query the trusted OS revision, and
-> obtain the RPC parameter and logical notification counts. Initialize
-> shared-memory tracking, the call queue, supplicant state and internal
-> context before publishing the client and supplicant TEE devices.
->
-> Connect the RPMI backend to the common OP-TEE operations and enumerate
-> trusted application devices. Enable in-kernel RPMB routing when the
-> RPMB subsystem is reachable.
->
-> Add removal and probe failure cleanup for the backend resources.
->
-> Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> ---
->  drivers/tee/optee/core.c          |  10 +-
->  drivers/tee/optee/optee_private.h |  21 ++-
->  drivers/tee/optee/rpmi_abi.c      | 286 ++++++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 312 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
-> index a52c1f498b99..8a44a25ebc66 100644
-> --- a/drivers/tee/optee/core.c
-> +++ b/drivers/tee/optee/core.c
-> @@ -220,6 +220,7 @@ void optee_remove_common(struct optee *optee)
->
->  static int smc_abi_rc;
->  static int ffa_abi_rc;
-> +static int rpmi_abi_rc;
->  static bool intf_is_regged;
->
->  static int __init optee_core_init(void)
-> @@ -245,14 +246,15 @@ static int __init optee_core_init(void)
->
->         smc_abi_rc =3D optee_smc_abi_register();
->         ffa_abi_rc =3D optee_ffa_abi_register();
-> +       rpmi_abi_rc =3D optee_rpmi_abi_register();
->
-> -       /* If both failed there's no point with this module */
-> -       if (smc_abi_rc && ffa_abi_rc) {
-> +       /* Keep the module if any supported transport registered successf=
-ully. */
-> +       if (smc_abi_rc && ffa_abi_rc && rpmi_abi_rc) {
->                 if (IS_REACHABLE(CONFIG_RPMB)) {
->                         rpmb_interface_unregister(&rpmb_class_intf);
->                         intf_is_regged =3D false;
->                 }
-> -               return smc_abi_rc;
-> +               return -EOPNOTSUPP;
->         }
->
->         return 0;
-> @@ -270,6 +272,8 @@ static void __exit optee_core_exit(void)
->                 optee_smc_abi_unregister();
->         if (!ffa_abi_rc)
->                 optee_ffa_abi_unregister();
-> +       if (!rpmi_abi_rc)
-> +               optee_rpmi_abi_unregister();
->  }
->  module_exit(optee_core_exit);
->
-> diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_=
-private.h
-> index 2422caf3c883..07c27e322a71 100644
-> --- a/drivers/tee/optee/optee_private.h
-> +++ b/drivers/tee/optee/optee_private.h
-> @@ -188,6 +188,8 @@ struct rpmi_tee_device;
->   * @rdev: owning RPMI service device
->   * @shm_rht_lock: protects parcel lookup, insertion, removal and publica=
-tion
->   * @shm_rht: lookup by the host-endian parcel ID and nonce pair
-> + * @sec_caps: negotiated optional OPTEE_RPMI_CAP_* features
-> + * @notification_count: negotiated nonzero number of logical notificatio=
-n keys
->   *
->   * Callers keep their tee_shm alive while using its registration. Lookup
->   * returns a raw pointer; the mutex does not protect its lifetime after
-> @@ -199,6 +201,8 @@ struct optee_rpmi {
->         /* Protects parcel lookup, insertion, removal and publication. */
->         struct mutex shm_rht_lock;
->         struct rhashtable shm_rht;
-> +       u32 sec_caps;
-> +       u32 notification_count;
-
-Why are these two needed?
-
->  };
->  #endif
->
-> @@ -211,8 +215,8 @@ struct optee;
->   * @os_build_id:       OP-TEE OS build identifier (0 if unspecified)
->   *
->   * Values come from OPTEE_SMC_CALL_GET_OS_REVISION (SMC ABI) or
-> - * OPTEE_FFA_GET_OS_VERSION (FF-A ABI); this is the trusted OS revision,=
- not an
-> - * FF-A ABI version.
-> + * OPTEE_FFA_GET_OS_VERSION (FF-A ABI) or OPTEE_RPMI_GET_OS_VERSION (RPM=
-I ABI).
-> + * This is the trusted OS revision, not a transport ABI version.
->   */
->  struct optee_revision {
->         u32 os_major;
-> @@ -490,5 +494,18 @@ static inline void optee_ffa_abi_unregister(void)
->  }
->  #endif
->
-> +#if IS_REACHABLE(CONFIG_RISCV_RPMI_TEE_TRANSPORT)
-> +int optee_rpmi_abi_register(void);
-> +void optee_rpmi_abi_unregister(void);
-> +#else
-> +static inline int optee_rpmi_abi_register(void)
-> +{
-> +       return -EOPNOTSUPP;
-> +}
-> +
-> +static inline void optee_rpmi_abi_unregister(void)
-> +{
-> +}
-> +#endif
->
->  #endif /*OPTEE_PRIVATE_H*/
-> diff --git a/drivers/tee/optee/rpmi_abi.c b/drivers/tee/optee/rpmi_abi.c
-> index 6e76316794c1..db541f3de425 100644
-> --- a/drivers/tee/optee/rpmi_abi.c
-> +++ b/drivers/tee/optee/rpmi_abi.c
-> @@ -684,3 +684,289 @@ static int optee_rpmi_do_call_with_arg(struct tee_c=
-ontext *ctx,
->
->         return optee_rpmi_yielding_call(ctx, &req, rpc_arg, system_thread=
-);
->  }
-> +
-> +/* Query and store the trusted OS revision. */
-> +static int optee_rpmi_get_os_version(struct optee *optee)
-> +{
-> +       struct optee_rpmi_probe_req req =3D {
-> +               .op =3D cpu_to_le32(OPTEE_RPMI_GET_OS_VERSION),
-> +       };
-> +       struct optee_rpmi_os_resp os;
-> +       int ret;
-> +
-> +       ret =3D optee_rpmi_call(optee, &req, sizeof(req), &os, sizeof(os)=
-);
-> +       if (ret)
-> +               return ret;
-> +
-> +       optee->revision.os_major =3D get_unaligned_le32(&os.major);
-> +       optee->revision.os_minor =3D get_unaligned_le32(&os.minor);
-> +       optee->revision.os_build_id =3D get_unaligned_le64(&os.build_id);
-> +
-> +       if (optee->revision.os_build_id)
-> +               pr_info("revision %u.%u (%016llx)\n",
-> +                       optee->revision.os_major, optee->revision.os_mino=
-r,
-> +                       optee->revision.os_build_id);
-> +       else
-> +               pr_info("revision %u.%u\n", optee->revision.os_major,
-> +                       optee->revision.os_minor);
-> +
-> +       return 0;
-> +}
-> +
-> +/* Query and store secure-world capabilities and buffer limits. */
-> +static int optee_rpmi_exchange_caps(struct optee *optee)
-> +{
-> +       struct optee_rpmi_probe_req req =3D {
-> +               .op =3D cpu_to_le32(OPTEE_RPMI_EXCHANGE_CAPABILITIES),
-> +       };
-> +       struct optee_rpmi_caps_resp caps;
-> +       u32 rpc_count, sec_caps, notif_count;
-> +       int ret;
-> +
-> +       ret =3D optee_rpmi_call(optee, &req, sizeof(req), &caps, sizeof(c=
-aps));
-> +       if (ret)
-> +               return ret;
-> +
-> +       sec_caps =3D get_unaligned_le32(&caps.secure_caps);
-> +       rpc_count =3D get_unaligned_le32(&caps.rpc_param_count);
-> +       notif_count =3D get_unaligned_le32(&caps.notification_count);
-> +       if (!notif_count || !rpc_count)
-> +               return -EPROTO;
-> +
-> +       optee->rpc_param_count =3D rpc_count;
-> +       optee->rpmi.sec_caps =3D sec_caps;
-> +       optee->rpmi.notification_count =3D notif_count;
-> +       optee->in_kernel_rpmb_routing =3D IS_REACHABLE(CONFIG_RPMB);
-
-What if OP-TEE is built without RPMB support?
-
-> +
-> +       return 0;
-> +}
-> +
-> +static int optee_rpmi_api_is_compatible(struct optee *optee)
-> +{
-> +       struct optee_rpmi_probe_req req =3D {
-> +               .op =3D cpu_to_le32(OPTEE_RPMI_GET_API_VERSION),
-> +       };
-> +       struct optee_rpmi_api_resp api;
-> +       int ret;
-> +
-> +       ret =3D optee_rpmi_call(optee, &req, sizeof(req), &api, sizeof(ap=
-i));
-> +       if (ret)
-> +               return ret;
-> +
-> +       if (get_unaligned_le32(&api.major) !=3D OPTEE_RPMI_VERSION_MAJOR)
-> +               return -EPROTONOSUPPORT;
-> +
-> +       /* Version 1.0 has no minimum minor revision beyond zero. */
-> +       return 0;
-> +}
-> +
-> +static void optee_rpmi_get_version(struct tee_device *teedev,
-> +                                  struct tee_ioctl_version_data *vers)
-> +{
-> +       *vers =3D (struct tee_ioctl_version_data) {
-> +               .impl_id =3D TEE_IMPL_ID_OPTEE,
-> +               .gen_caps =3D TEE_GEN_CAP_GP | TEE_GEN_CAP_REG_MEM |
-> +                           TEE_GEN_CAP_MEMREF_NULL,
-> +       };
-> +}
-> +
-> +static int optee_rpmi_open(struct tee_context *ctx)
-> +{
-> +       return optee_open(ctx, true);
-> +}
-> +
-> +static const struct tee_driver_ops optee_rpmi_clnt_ops =3D {
-> +       .get_version =3D optee_rpmi_get_version,
-> +       .get_tee_revision =3D optee_get_revision,
-> +       .open =3D optee_rpmi_open,
-> +       .release =3D optee_release,
-> +       .open_session =3D optee_open_session,
-> +       .close_session =3D optee_close_session,
-> +       .invoke_func =3D optee_invoke_func,
-> +       .cancel_req =3D optee_cancel_req,
-> +       .shm_register =3D optee_rpmi_shm_register,
-> +       .shm_unregister =3D optee_rpmi_shm_unregister,
-> +};
-> +
-> +static const struct tee_driver_ops optee_rpmi_supp_ops =3D {
-> +       .get_version =3D optee_rpmi_get_version,
-> +       .get_tee_revision =3D optee_get_revision,
-> +       .open =3D optee_rpmi_open,
-> +       .release =3D optee_release_supp,
-> +       .supp_recv =3D optee_supp_recv,
-> +       .supp_send =3D optee_supp_send,
-> +       .shm_register =3D optee_rpmi_shm_register,
-> +       .shm_unregister =3D optee_rpmi_shm_unregister_supp,
-> +};
-> +
-> +static const struct tee_desc optee_rpmi_clnt_desc =3D {
-> +       .name =3D DRIVER_NAME "-rpmi-clnt",
-> +       .ops =3D &optee_rpmi_clnt_ops,
-> +       .owner =3D THIS_MODULE,
-> +};
-> +
-> +static const struct tee_desc optee_rpmi_supp_desc =3D {
-> +       .name =3D DRIVER_NAME "-rpmi-supp",
-> +       .ops =3D &optee_rpmi_supp_ops,
-> +       .owner =3D THIS_MODULE,
-> +       .flags =3D TEE_DESC_PRIVILEGED,
-> +};
-> +
-> +static const struct optee_ops optee_rpmi_ops =3D {
-> +       .do_call_with_arg =3D optee_rpmi_do_call_with_arg,
-> +       .to_msg_param =3D optee_rpmi_to_msg_param,
-> +       .from_msg_param =3D optee_rpmi_from_msg_param,
-> +};
-> +
-> +/* Keep callback state and memory tables alive until all TEE users relea=
-se. */
-> +static void optee_rpmi_remove(struct rpmi_tee_device *rdev)
-> +{
-> +       struct optee *optee =3D dev_get_drvdata(&rdev->dev);
-> +
-> +       optee_remove_common(optee);
-> +       optee_rpmi_shm_rht_uninit(optee);
-> +       kfree(optee);
-> +}
-> +
-> +static int optee_rpmi_probe(struct rpmi_tee_device *rdev)
-> +{
-> +       struct tee_device *teedev;
-> +       struct tee_context *ctx;
-> +       int ret;
-> +
-> +       struct optee *optee __free(kfree) =3D kzalloc_obj(*optee);
-
-The cleanup macros should, if I understand it correctly, not be used
-in functions using gotos for cleanup.
-
-> +       if (!optee)
-> +               return -ENOMEM;
-> +
-> +       optee->rpmi.rdev =3D rdev;
-> +       optee->ops =3D &optee_rpmi_ops;
-> +
-> +       ret =3D optee_rpmi_api_is_compatible(optee);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret =3D optee_rpmi_get_os_version(optee);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret =3D optee_rpmi_exchange_caps(optee);
-> +       if (ret)
-> +               return ret;
-> +
-> +       optee->pool =3D optee_rpmi_shm_pool_alloc();
-
-Perhaps it's just me, but it seems a bit odd to store an err pointer
-in a struct like this.
-
-> +       if (IS_ERR(optee->pool))
-> +               return PTR_ERR(optee->pool);
-> +
-> +       ret =3D optee_rpmi_shm_rht_init(optee);
-> +       if (ret)
-> +               goto err_pool;
-> +
-> +       optee_cq_init(&optee->call_queue, 0);
-> +       optee_supp_init(&optee->supp);
-> +       optee_shm_arg_cache_init(optee, OPTEE_SHM_ARG_SHARED);
-> +       mutex_init(&optee->rpmb_dev_mutex);
-> +       INIT_WORK(&optee->rpmb_scan_bus_work, optee_bus_scan_rpmb);
-> +       optee->rpmb_intf.notifier_call =3D optee_rpmb_intf_rdev;
-> +       ret =3D optee_notif_init(optee, optee->rpmi.notification_count);
-> +       if (ret)
-> +               goto err_common;
-> +
-> +       /* Allocate all keys, then restrict the inclusive bound to the la=
-st key. */
-> +       optee->notif.max_key =3D optee->rpmi.notification_count - 1;
-
-Why? Do you have any plans for that?
-
-Cheers,
-Jens
-
-> +
-> +       teedev =3D tee_device_alloc(&optee_rpmi_clnt_desc, &rdev->dev,
-> +                                 optee->pool, optee);
-> +       if (IS_ERR(teedev)) {
-> +               ret =3D PTR_ERR(teedev);
-> +               goto err_notif;
-> +       }
-> +       optee->teedev =3D teedev;
-> +
-> +       teedev =3D tee_device_alloc(&optee_rpmi_supp_desc, &rdev->dev,
-> +                                 optee->pool, optee);
-> +       if (IS_ERR(teedev)) {
-> +               ret =3D PTR_ERR(teedev);
-> +               goto err_devices;
-> +       }
-> +       optee->supp_teedev =3D teedev;
-> +
-> +       optee_set_dev_group(optee);
-> +
-> +       /* Internal RPC allocation must be ready before userspace can ent=
-er. */
-> +       ctx =3D teedev_open(optee->teedev);
-> +       if (IS_ERR(ctx)) {
-> +               ret =3D PTR_ERR(ctx);
-> +               goto err_devices;
-> +       }
-> +
-> +       optee->ctx =3D ctx;
-> +       dev_set_drvdata(&rdev->dev, optee);
-> +       if (optee->in_kernel_rpmb_routing)
-> +               blocking_notifier_chain_register(&optee_rpmb_intf_added,
-> +                                                &optee->rpmb_intf);
-> +
-> +       ret =3D tee_device_register(optee->teedev);
-> +       if (ret)
-> +               goto err_initialized;
-> +
-> +       ret =3D tee_device_register(optee->supp_teedev);
-> +       if (ret)
-> +               goto err_initialized;
-> +
-> +       ret =3D optee_enumerate_devices(PTA_CMD_GET_DEVICES);
-> +       if (ret)
-> +               goto err_initialized;
-> +
-> +       dev_info(&rdev->dev, "OP-TEE RPMI %u.%u initialized\n",
-> +                optee->revision.os_major, optee->revision.os_minor);
-> +       retain_and_null_ptr(optee);
-> +
-> +       return 0;
-> +
-> +err_initialized:
-> +       /* The remove path owns and frees the published backend state. */
-> +       retain_and_null_ptr(optee);
-> +       optee_rpmi_remove(rdev);
-> +
-> +       return ret;
-> +err_devices:
-> +       tee_device_unregister(optee->supp_teedev);
-> +       tee_device_unregister(optee->teedev);
-> +       optee_shm_arg_cache_uninit(optee);
-> +err_notif:
-> +       optee_notif_uninit(optee);
-> +err_common:
-> +       optee_supp_uninit(&optee->supp);
-> +       mutex_destroy(&optee->call_queue.mutex);
-> +       rpmb_dev_put(optee->rpmb_dev);
-> +       mutex_destroy(&optee->rpmb_dev_mutex);
-> +       optee_rpmi_shm_rht_uninit(optee);
-> +err_pool:
-> +       tee_shm_pool_free(optee->pool);
-> +
-> +       return ret;
-> +}
-> +
-> +static const struct rpmi_tee_device_id optee_rpmi_device_ids[] =3D {
-> +       { OPTEE_RPMI_SERVICE_UUID },
-> +       {}
-> +};
-> +
-> +static struct rpmi_tee_driver optee_rpmi_driver =3D {
-> +       .name =3D DRIVER_NAME "-rpmi",
-> +       .probe =3D optee_rpmi_probe,
-> +       .remove =3D optee_rpmi_remove,
-> +       .id_table =3D optee_rpmi_device_ids,
-> +};
-> +
-> +int optee_rpmi_abi_register(void)
-> +{
-> +       return rpmi_tee_register(&optee_rpmi_driver);
-> +}
-> +
-> +void optee_rpmi_abi_unregister(void)
-> +{
-> +       rpmi_tee_unregister(&optee_rpmi_driver);
-> +}
-> +
-> +MODULE_ALIAS("rpmi_tee:486178e0-e7f8-11e3-bc5e-0002a5d5c51b");
->
-> --
-> 2.34.1
->
+SGkgSmVucywNCg0KT24gMTAvOC8yMDI2IDU6NTEgUE0sIEplbnMgV2lrbGFuZGVyIHdyb3RlOg0K
+PiBIaSBBbWlyLA0KPiANCj4gT24gVHVlLCBPY3QgNiwgMjAyNiBhdCAyOjQw4oCvQU0gQW1pcnJl
+emEgWmFycmFiaQ0KPiA8YW1pcnJlemEuemFycmFiaUBvc3MucXVhbGNvbW0uY29tPiB3cm90ZToN
+Cj4+DQo+PiBEZWZpbmUgdGhlIE9QLVRFRSBzZXJ2aWNlIHByb3RvY29sIGNhcnJpZWQgYnkgUlBN
+SSBURUVfQ0FMTCBwYXlsb2Fkcy4NCj4+IEFkZCBvcGVyYXRpb25zIGZvciB2ZXJzaW9uIGFuZCBj
+YXBhYmlsaXR5IHF1ZXJpZXMsIHNoYXJlZC1tZW1vcnkNCj4+IHVucmVnaXN0cmF0aW9uLCBhc3lu
+Y2hyb25vdXMgbm90aWZpY2F0aW9uIGVuYWJsZW1lbnQsIGFuZCB5aWVsZGluZy1jYWxsDQo+PiBz
+dGFydCBhbmQgcmVzdW1lLiBVc2UgZml4ZWQtd2lkdGggbGl0dGxlLWVuZGlhbiBjb250cm9sIGZp
+ZWxkcyBhbmQgUlBNSQ0KPj4gZXJyb3IgY29kZXMgZm9yIGNvbnRyb2wgcmVzcG9uc2VzLg0KPj4N
+Cj4+IEFkZCBhIHBhcmNlbCBtZW1vcnktcmVmZXJlbmNlIGxheW91dCB0byB0aGUgY29tbW9uIG1l
+c3NhZ2UgcGFyYW1ldGVyDQo+PiB1bmlvbi4gSWRlbnRpZnkgc2hhcmVkIG1lbW9yeSBieSBpdHMg
+cGFyY2VsIElEIGFuZCBub25jZSwgd2l0aCBhIDY0LWJpdA0KPj4gYnl0ZSBvZmZzZXQgYW5kIHNp
+emUsIHdpdGhvdXQgY2hhbmdpbmcgdGhlIG1lc3NhZ2UgcGFyYW1ldGVyIHNpemUuDQo+PiBFbmNv
+ZGUgTlVMTCByZWZlcmVuY2VzIHdpdGggYSB6ZXJvIHBhcmNlbCBJRCBhbmQgbm9uY2UsIGxlYXZp
+bmcgcGFyY2VsDQo+PiBJRCB6ZXJvIHVzYWJsZSB3aXRoIGEgbm9uemVybyBub25jZS4NCj4+DQo+
+PiBEb2N1bWVudCB0aGUgd2lyZSBsYXlvdXRzIGFuZCBvd25lcnNoaXAgcnVsZXMgZm9yIG1hdGNo
+aW5nIExpbnV4IGFuZA0KPj4gT1AtVEVFIGltcGxlbWVudGF0aW9ucy4NCj4+DQo+PiBTaWduZWQt
+b2ZmLWJ5OiBBbWlycmV6YSBaYXJyYWJpIDxhbWlycmV6YS56YXJyYWJpQG9zcy5xdWFsY29tbS5j
+b20+DQo+PiAtLS0NCj4+ICBkcml2ZXJzL3RlZS9vcHRlZS9vcHRlZV9tc2cuaCAgfCAgMzggKysr
+KystLQ0KPj4gIGRyaXZlcnMvdGVlL29wdGVlL29wdGVlX3JwbWkuaCB8IDIzNCArKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPj4gIDIgZmlsZXMgY2hhbmdlZCwgMjY0
+IGluc2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvdGVlL29wdGVlL29wdGVlX21zZy5oIGIvZHJpdmVycy90ZWUvb3B0ZWUvb3B0ZWVfbXNnLmgN
+Cj4+IGluZGV4IDZjMzA0M2Y4ZGEzMy4uMDI4ZjhjZDk1ZmRkIDEwMDY0NA0KPj4gLS0tIGEvZHJp
+dmVycy90ZWUvb3B0ZWUvb3B0ZWVfbXNnLmgNCj4+ICsrKyBiL2RyaXZlcnMvdGVlL29wdGVlL29w
+dGVlX21zZy5oDQo+PiBAQCAtMzEsNiArMzEsOSBAQA0KPj4gICNkZWZpbmUgT1BURUVfTVNHX0FU
+VFJfVFlQRV9GTUVNX0lOUFVUICAgICAgICAgT1BURUVfTVNHX0FUVFJfVFlQRV9STUVNX0lOUFVU
+DQo+PiAgI2RlZmluZSBPUFRFRV9NU0dfQVRUUl9UWVBFX0ZNRU1fT1VUUFVUICAgICAgICAgICAg
+ICAgIE9QVEVFX01TR19BVFRSX1RZUEVfUk1FTV9PVVRQVVQNCj4+ICAjZGVmaW5lIE9QVEVFX01T
+R19BVFRSX1RZUEVfRk1FTV9JTk9VVCAgICAgICAgIE9QVEVFX01TR19BVFRSX1RZUEVfUk1FTV9J
+Tk9VVA0KPj4gKyNkZWZpbmUgT1BURUVfTVNHX0FUVFJfVFlQRV9QTUVNX0lOUFVUICAgICAgICAg
+T1BURUVfTVNHX0FUVFJfVFlQRV9STUVNX0lOUFVUDQo+PiArI2RlZmluZSBPUFRFRV9NU0dfQVRU
+Ul9UWVBFX1BNRU1fT1VUUFVUICAgICAgICAgICAgICAgIE9QVEVFX01TR19BVFRSX1RZUEVfUk1F
+TV9PVVRQVVQNCj4+ICsjZGVmaW5lIE9QVEVFX01TR19BVFRSX1RZUEVfUE1FTV9JTk9VVCAgICAg
+ICAgIE9QVEVFX01TR19BVFRSX1RZUEVfUk1FTV9JTk9VVA0KPj4gICNkZWZpbmUgT1BURUVfTVNH
+X0FUVFJfVFlQRV9UTUVNX0lOUFVUICAgICAgICAgMHg5DQo+PiAgI2RlZmluZSBPUFRFRV9NU0df
+QVRUUl9UWVBFX1RNRU1fT1VUUFVUICAgICAgICAgICAgICAgIDB4YQ0KPj4gICNkZWZpbmUgT1BU
+RUVfTVNHX0FUVFJfVFlQRV9UTUVNX0lOT1VUICAgICAgICAgMHhiDQo+PiBAQCAtMTQ5LDYgKzE1
+MiwyMyBAQCBzdHJ1Y3Qgb3B0ZWVfbXNnX3BhcmFtX2ZtZW0gew0KPj4gICAgICAgICB1NjQgZ2xv
+YmFsX2lkOw0KPj4gIH07DQo+Pg0KPj4gKy8qKg0KPj4gKyAqIHN0cnVjdCBvcHRlZV9tc2dfcGFy
+YW1fcG1lbSAtIFJQTUkgcGFyY2VsIG1lbW9yeSByZWZlcmVuY2UNCj4+ICsgKiBAb2ZmczogZnVs
+bC13aWR0aCBieXRlIG9mZnNldCBmcm9tIHRoZSBwYXJjZWwncyBmaXJzdCBieXRlDQo+PiArICog
+QHNpemU6IGxvZ2ljYWwgcmVmZXJlbmNlIHNpemUsIG9yIHJlcXVpcmVkIHNpemUgZm9yIGEgc2hv
+cnQtYnVmZmVyIHJlc3BvbnNlDQo+PiArICogQHBhcmNlbF9pZDogZmlybXdhcmUtYXNzaWduZWQg
+cGFyY2VsIGlkZW50aWZpZXINCj4+ICsgKiBAbm9uY2U6IG5vbnplcm8gUkVFIG5vbmNlIHN1cHBs
+aWVkIHdoZW4gc2hhcmluZyB0aGUgcGFyY2VsDQo+PiArICoNCj4+ICsgKiBBIHplcm8gcGFyY2Vs
+IElEIGFuZCBub25jZSBlbmNvZGUgYSBOVUxMIHJlZmVyZW5jZS4gSXRzIG9mZnNldCBtdXN0IGJl
+IHplcm87DQo+PiArICogaXRzIHNpemUgaXMgcHJlc2VydmVkLiBQYXJjZWwgSUQgemVybyByZW1h
+aW5zIHZhbGlkIHdpdGggYSBub256ZXJvIG5vbmNlLg0KPj4gKyAqLw0KPj4gK3N0cnVjdCBvcHRl
+ZV9tc2dfcGFyYW1fcG1lbSB7DQo+IA0KPiBXaXRob3V0IGFuIGludGVybmFsIG9mZnNldCBsaWtl
+IGluIHN0cnVjdCBvcHRlZV9tc2dfcGFyYW1fZm1lbSwgYW4NCj4gZXhwbGljaXQgcmVnaXN0ZXIg
+U0hNIGNhbGwgaW50byBPUC1URUUgaXMgbmVlZGVkIGJlZm9yZSBpdCBjYW4gYmUNCj4gdXNlZC4g
+WW91J2Qgc3RpbGwgbmVlZCB0aGUgVEVFX01FTU9SWV9QQVJDRUxfQ1JFQVRFLCBidXQgd2UgY2Fu
+IHNhdmUNCj4gb25lIHJvdW5kLXRyaXAgaW50byB0aGUgc2VjdXJlIHdvcmxkLg0KPiANCg0KVGhl
+IG9yaWdpbmFsIGludGVuYXRpb24gd2FzIHRvIHVzZSBwYXJjZWwtcmVsYXRpdmUgb2Zmc2V0cywg
+d2l0aCB0aGUNCnNlY3VyZS1zaWRlIG1lbW9yeSBvYmplY3QgY292ZXJzIHRoZSBlbnRpcmUgcGFy
+Y2VsLiBPUC1URUUgY2FuIHJldHJpZXZlIGl0DQpsYXppbHkgYW5kIGFwcGx5IHRoZSBzdXBwbGll
+ZCBvZmZzZXQgZGlyZWN0bHksIHNvIHRoaXMgZGVzaWduIGRvZXMgbm90IHJlcXVpcmUNCmFuIGV4
+cGxpY2l0IFNITSByZWdpc3RyYXRpb24gY2FsbCBvciBhbiBhZGRpdGlvbmFsIHJvdW5kIHRyaXAu
+DQoNClNpbmNlIHdlIGFyZSBpbXBsZW1lbnRpbmcgdGhlIFJQTUkgcGFyY2VsIG1lbW9yeS1vYmpl
+Y3QgY2FjaGUgaW5kZXBlbmRlbnRseSBvZg0KRkYtQSdzIGNhY2hlIGluIE9QLVRFRSwgdGhpcyBz
+ZWVtcyBzaW1wbGVyOiBpdCBhdm9pZHMgYSBzZXBhcmF0ZQ0KaW5pdGlhbC1vZmZzZXQgcHJvcGVy
+dHksIHByZXNlcnZlcyBhIGZ1bGwtd2lkdGggb2Zmc2V0IHJlZmVyZW5jZSwgd2hpbGUNCmtlZXBp
+bmcgT1AtVEVFIGlnbm9yYW50IGZyb20gdGhlIFNITSBjb25jZXB0IHdoaWNoIGlzIGEgTGludXgg
+c2lkZSBjb25jZXB0Lg0KDQpUaGF0IHNhaWQsIEkgY2FuIHNlcGFyYXRlIHRoZSBvZmZzZXRzIHRv
+IG1hdGNoaW5nIEZGLUEncyBtZW1vcnktb2JqZWN0DQptb2RlbC4gQnV0IEkgYW0gbm90IHN1cmUg
+d2hhdCB3ZSBhY2hpdmU/DQoNCj4+ICsgICAgICAgdTY0IG9mZnM7DQo+PiArICAgICAgIHU2NCBz
+aXplOw0KPj4gKyAgICAgICB1MzIgcGFyY2VsX2lkOw0KPj4gKyAgICAgICB1MzIgbm9uY2U7DQo+
+IA0KPiBJIHdvbmRlciBpZiBwYXJjZWxfaWQgYW5kIG5vbmNlIHdvdWxkbid0IGJlIGJldHRlciBj
+b21iaW5lZCBpbnRvIGENCj4gc2luZ2xlIGZpZWxkLiBUaGV5IG5lZWQgdG8gYmUgc2VwYXJhdGUg
+d2hlbiBwcmVwYXJpbmcgYXJndW1lbnRzIGZvcg0KPiB0aGUgVEVFX01FTU9SWV8qIGNhbGxzLiBF
+dmVyeXdoZXJlIGVsc2UsIGl0J3Mgb25seSBhbiBvcGFxdWUgbWVtb3J5DQo+IGhhbmRsZSwgYW5k
+IG9uZSBoYW5kbGUgaXMgZWFzaWVyIHRvIGtlZXAgdHJhY2sgb2YgdGhhbiB0d28uDQoNCkkgdGhv
+dWdodCBhYm91dCB0aGF0IGJlZm9yZS4gVGhpcyB3b3VsZCBwdXNoIHRoZSBjb252ZXJzaW9uIHRv
+IHRoZQ0KZmlybXdhcmUgYm91bmRhcnkuIEkgd2FzIG5vdCBzdXJlIGlmIGl0IGlzIGFjY2VwdGFi
+bGUuIEknbGwgZG8gdGhhdCA6KS4NCg0KPiANCj4+ICt9Ow0KPj4gKw0KPj4gIC8qKg0KPj4gICAq
+IHN0cnVjdCBvcHRlZV9tc2dfcGFyYW1fdmFsdWUgLSBvcGFxdWUgdmFsdWUgcGFyYW1ldGVyDQo+
+PiAgICogQGE6IGZpcnN0IG9wYXF1ZSB2YWx1ZQ0KPj4gQEAgLTE2NiwxOCArMTg2LDE5IEBAIHN0
+cnVjdCBvcHRlZV9tc2dfcGFyYW1fdmFsdWUgew0KPj4gIC8qKg0KPj4gICAqIHN0cnVjdCBvcHRl
+ZV9tc2dfcGFyYW0gLSBwYXJhbWV0ZXIgdXNlZCB0b2dldGhlciB3aXRoIHN0cnVjdCBvcHRlZV9t
+c2dfYXJnDQo+PiAgICogQGF0dHI6ICAgICAgYXR0cmlidXRlcw0KPj4gLSAqIEB0bWVtOiAgICAg
+IHBhcmFtZXRlciBieSB0ZW1wb3JhcnkgbWVtb3J5IHJlZmVyZW5jZQ0KPj4gLSAqIEBybWVtOiAg
+ICAgIHBhcmFtZXRlciBieSByZWdpc3RlcmVkIG1lbW9yeSByZWZlcmVuY2UNCj4+IC0gKiBAZm1l
+bTogICAgICBwYXJhbWV0ZXIgYnkgRkYtQSByZWdpc3RlcmVkIG1lbW9yeSByZWZlcmVuY2UNCj4+
+IC0gKiBAdmFsdWU6ICAgICBwYXJhbWV0ZXIgYnkgb3BhcXVlIHZhbHVlDQo+PiAtICogQG9jdGV0
+czogICAgcGFyYW1ldGVyIGJ5IG9jdGV0IHN0cmluZw0KPj4gKyAqIEB1LnRtZW06ICAgIHBhcmFt
+ZXRlciBieSB0ZW1wb3JhcnkgbWVtb3J5IHJlZmVyZW5jZQ0KPj4gKyAqIEB1LnJtZW06ICAgIHBh
+cmFtZXRlciBieSByZWdpc3RlcmVkIG1lbW9yeSByZWZlcmVuY2UNCj4+ICsgKiBAdS5mbWVtOiAg
+ICBwYXJhbWV0ZXIgYnkgRkYtQSByZWdpc3RlcmVkIG1lbW9yeSByZWZlcmVuY2UNCj4+ICsgKiBA
+dS5wbWVtOiAgICBwYXJhbWV0ZXIgYnkgUlBNSSBwYXJjZWwgbWVtb3J5IHJlZmVyZW5jZQ0KPj4g
+KyAqIEB1LnZhbHVlOiAgIHBhcmFtZXRlciBieSBvcGFxdWUgdmFsdWUNCj4+ICsgKiBAdS5vY3Rl
+dHM6ICBwYXJhbWV0ZXIgYnkgb2N0ZXQgc3RyaW5nDQo+PiAgICogQHU6ICAgICAgICAgdW5pb24g
+aG9sZGluZyBPUC1URUUgbXNnIHBhcmFtZXRlcg0KPj4gICAqDQo+PiAgICogQGF0dHIgJiBPUFRF
+RV9NU0dfQVRUUl9UWVBFX01BU0sgaW5kaWNhdGVzIGlmIHRtZW0sIHJtZW0gb3IgdmFsdWUgaXMg
+dXNlZCBpbg0KPj4gICAqIHRoZSB1bmlvbi4gT1BURUVfTVNHX0FUVFJfVFlQRV9WQUxVRV8qIGlu
+ZGljYXRlcyB2YWx1ZSBvciBvY3RldHMsDQo+PiAtICogT1BURUVfTVNHX0FUVFJfVFlQRV9UTUVN
+XyogaW5kaWNhdGVzIEB0bWVtIGFuZA0KPj4gLSAqIE9QVEVFX01TR19BVFRSX1RZUEVfUk1FTV8q
+IG9yIHRoZSBhbGlhcyBQVEVFX01TR19BVFRSX1RZUEVfRk1FTV8qIGluZGljYXRlcw0KPj4gLSAq
+IEBybWVtIG9yIEBmbWVtIGRlcGVuZGluZyBvbiB0aGUgY29uZHVpdC4NCj4+ICsgKiBPUFRFRV9N
+U0dfQVRUUl9UWVBFX1RNRU1fKiBpbmRpY2F0ZXMgQHUudG1lbS4gT1BURUVfTVNHX0FUVFJfVFlQ
+RV9STUVNXyoNCj4+ICsgKiBhbmQgaXRzIEZNRU0vUE1FTSBhbGlhc2VzIGluZGljYXRlIEB1LnJt
+ZW0sIEB1LmZtZW0gb3IgQHUucG1lbSBkZXBlbmRpbmcNCj4+ICsgKiBvbiB0aGUgY29uZHVpdC4N
+Cj4+ICAgKiBPUFRFRV9NU0dfQVRUUl9UWVBFX05PTkUgaW5kaWNhdGVzIHRoYXQgbm9uZSBvZiB0
+aGUgbWVtYmVycyBhcmUgdXNlZC4NCj4+ICAgKi8NCj4+ICBzdHJ1Y3Qgb3B0ZWVfbXNnX3BhcmFt
+IHsNCj4+IEBAIC0xODYsNiArMjA3LDcgQEAgc3RydWN0IG9wdGVlX21zZ19wYXJhbSB7DQo+PiAg
+ICAgICAgICAgICAgICAgc3RydWN0IG9wdGVlX21zZ19wYXJhbV90bWVtIHRtZW07DQo+PiAgICAg
+ICAgICAgICAgICAgc3RydWN0IG9wdGVlX21zZ19wYXJhbV9ybWVtIHJtZW07DQo+PiAgICAgICAg
+ICAgICAgICAgc3RydWN0IG9wdGVlX21zZ19wYXJhbV9mbWVtIGZtZW07DQo+PiArICAgICAgICAg
+ICAgICAgc3RydWN0IG9wdGVlX21zZ19wYXJhbV9wbWVtIHBtZW07DQo+PiAgICAgICAgICAgICAg
+ICAgc3RydWN0IG9wdGVlX21zZ19wYXJhbV92YWx1ZSB2YWx1ZTsNCj4+ICAgICAgICAgICAgICAg
+ICB1OCBvY3RldHNbMjRdOw0KPj4gICAgICAgICB9IHU7DQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy90ZWUvb3B0ZWUvb3B0ZWVfcnBtaS5oIGIvZHJpdmVycy90ZWUvb3B0ZWUvb3B0ZWVfcnBtaS5o
+DQo+PiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPj4gaW5kZXggMDAwMDAwMDAwMDAwLi4yNTIyMTZh
+YWQwOWINCj4+IC0tLSAvZGV2L251bGwNCj4+ICsrKyBiL2RyaXZlcnMvdGVlL29wdGVlL29wdGVl
+X3JwbWkuaA0KPj4gQEAgLTAsMCArMSwyMzQgQEANCj4+ICsvKiBTUERYLUxpY2Vuc2UtSWRlbnRp
+ZmllcjogKEdQTC0yLjAgT1IgQlNELTItQ2xhdXNlKSAqLw0KPj4gKy8qDQo+PiArICogQ29weXJp
+Z2h0IChjKSBRdWFsY29tbSBUZWNobm9sb2dpZXMsIEluYy4gYW5kL29yIGl0cyBzdWJzaWRpYXJp
+ZXMuDQo+PiArICovDQo+PiArI2lmbmRlZiBPUFRFRV9SUE1JX0gNCj4+ICsjZGVmaW5lIE9QVEVF
+X1JQTUlfSA0KPj4gKw0KPj4gKyNpbmNsdWRlIDxsaW51eC9iaXRvcHMuaD4NCj4+ICsjaW5jbHVk
+ZSA8bGludXgvdHlwZXMuaD4NCj4+ICsjaW5jbHVkZSA8bGludXgvdXVpZC5oPg0KPj4gKw0KPj4g
+Ky8qDQo+PiArICogT1AtVEVFIHNlcnZpY2UgQUJJIG92ZXIgUlBNSSBURUVfQ0FMTC4NCj4+ICsg
+Kg0KPj4gKyAqIFJlcXVlc3RzIGFuZCByZXNwb25zZXMgYXJlIGNhcnJpZWQgaW4gdGhlIFRFRV9D
+QUxMIHNlcnZpY2UgcGF5bG9hZC4NCj4+ICsgKiBDb250cm9sIGZpZWxkcyBhcmUgbGl0dGxlLWVu
+ZGlhbi4gUmVzcG9uc2Ugc3RhdHVzIGZpZWxkcyBjb250YWluIHNpZ25lZA0KPj4gKyAqIFJQTUkg
+ZXJyb3IgY29kZXMsIGRpc3RpbmN0IGZyb20gdGhlIG91dGVyIFRFRV9DQUxMIHN0YXR1cyBhbmQg
+dGhlIEdQDQo+PiArICogY29tbWFuZCByZXN1bHQgaW4gb3B0ZWVfbXNnX2FyZy5yZXQuDQo+PiAr
+ICovDQo+PiArI2RlZmluZSBPUFRFRV9SUE1JX1NFUlZJQ0VfVVVJRCBcDQo+PiArICAgICAgIFVV
+SURfSU5JVCgweDQ4NjE3OGUwLCAweGU3ZjgsIDB4MTFlMywgXA0KPj4gKyAgICAgICAgICAgICAg
+ICAgMHhiYywgMHg1ZSwgMHgwMCwgMHgwMiwgMHhhNSwgMHhkNSwgMHhjNSwgMHgxYikNCj4+ICsN
+Cj4+ICsjZGVmaW5lIE9QVEVFX1JQTUlfVkVSU0lPTl9NQUpPUiAgICAgICAgICAgICAgIDENCj4+
+ICsjZGVmaW5lIE9QVEVFX1JQTUlfVkVSU0lPTl9NSU5PUiAgICAgICAgICAgICAgIDANCj4+ICsN
+Cj4+ICsvKioNCj4+ICsgKiBzdHJ1Y3Qgb3B0ZWVfcnBtaV9wcm9iZV9yZXEgLSByZXF1ZXN0IHdp
+dGhvdXQgb3BlcmF0aW9uLXNwZWNpZmljIGFyZ3VtZW50cw0KPj4gKyAqIEBvcDogR0VUX0FQSV9W
+RVJTSU9OLCBHRVRfT1NfVkVSU0lPTiBvciBFWENIQU5HRV9DQVBBQklMSVRJRVMNCj4+ICsgKi8N
+Cj4+ICtzdHJ1Y3Qgb3B0ZWVfcnBtaV9wcm9iZV9yZXEgew0KPj4gKyAgICAgICBfX2xlMzIgb3A7
+DQo+PiArfSBfX3BhY2tlZDsNCj4+ICsNCj4+ICsvKioNCj4+ICsgKiBzdHJ1Y3Qgb3B0ZWVfcnBt
+aV9zdGF0dXNfcmVzcCAtIHJlc3BvbnNlIGNhcnJ5aW5nIG9ubHkgYW4gUlBNSSBzdGF0dXMNCj4+
+ICsgKiBAc3RhdHVzOiBzaWduZWQgUlBNSSBlcnJvciBjb2RlDQo+PiArICovDQo+PiArc3RydWN0
+IG9wdGVlX3JwbWlfc3RhdHVzX3Jlc3Agew0KPj4gKyAgICAgICBfX2xlMzIgc3RhdHVzOw0KPj4g
+K30gX19wYWNrZWQ7DQo+PiArDQo+PiArLyoNCj4+ICsgKiBSZXR1cm4gdGhlIHNlcnZpY2UgQVBJ
+IHZlcnNpb24uDQo+PiArICoNCj4+ICsgKiBSZXF1ZXN0OiAgc3RydWN0IG9wdGVlX3JwbWlfcHJv
+YmVfcmVxDQo+PiArICogUmVzcG9uc2U6IHN0cnVjdCBvcHRlZV9ycG1pX2FwaV9yZXNwDQo+PiAr
+ICovDQo+PiArI2RlZmluZSBPUFRFRV9SUE1JX0dFVF9BUElfVkVSU0lPTiAgICAgMA0KPj4gKw0K
+Pj4gKy8qKg0KPj4gKyAqIHN0cnVjdCBvcHRlZV9ycG1pX2FwaV9yZXNwIC0gR0VUX0FQSV9WRVJT
+SU9OIHJlc3BvbnNlDQo+PiArICogQHN0YXR1czogc2lnbmVkIFJQTUkgZXJyb3IgY29kZQ0KPj4g
+KyAqIEBtYWpvcjogaW5jb21wYXRpYmxlIHByb3RvY29sIHJldmlzaW9uDQo+PiArICogQG1pbm9y
+OiBjb21wYXRpYmxlIHByb3RvY29sIHJldmlzaW9uDQo+PiArICovDQo+PiArc3RydWN0IG9wdGVl
+X3JwbWlfYXBpX3Jlc3Agew0KPj4gKyAgICAgICBfX2xlMzIgc3RhdHVzOw0KPj4gKyAgICAgICBf
+X2xlMzIgbWFqb3I7DQo+PiArICAgICAgIF9fbGUzMiBtaW5vcjsNCj4+ICt9IF9fcGFja2VkOw0K
+PiANCj4gV2h5IGRvIHRoZXNlIGNvbW11bmljYXRpb24gc3RydWN0cyBoYXZlIHRvIGJlIHBhY2tl
+ZD8gV2l0aCBjYXJlZnVsDQo+IGRlc2lnbiBvZiB0aGUgbGF5b3V0LCBwYWRkaW5nLCBhbGlnbm1l
+bnQsIGV0YywgaXQgc2hvdWxkbid0IGJlIGFuDQo+IGlzc3VlLg0KDQpBZ3JlZWQuIFRoZSBzdHJ1
+Y3R1cmVzIGFscmVhZHkgaGF2ZSBuYXR1cmFsbHkgYWxpZ25lZCBmaWVsZHMgYW5kDQpleHBsaWNp
+dCByZXNlcnZlZCBmaWVsZHMgd2hlcmUgbmVlZGVkLCBzbyBgX19wYWNrZWRgIGlzIHVubmVjZXNz
+YXJ5IGZvcg0KdGhlaXIgY3VycmVudCBsYXlvdXRzLiBJJ2xsIHJlbW92ZSBpdCBhbmQga2VlcCB0
+aGUgd2lyZSBsYXlvdXQgZXhwbGljaXRseQ0KZGVmaW5lZCwgcmV0YWluaW5nIHVuYWxpZ25lZCBh
+Y2Nlc3MgaGVscGVycyB3aGVyZSB0cmFuc3BvcnQtYnVmZmVyIGFsaWdubWVudA0KaXMgbm90IGd1
+YXJhbnRlZWQuDQoNCj4gDQo+PiArDQo+PiArLyoNCj4+ICsgKiBSZXR1cm4gdGhlIHRydXN0ZWQg
+T1MgcmV2aXNpb24sIG5vdCB0aGUgc2VydmljZSBBUEkgcmV2aXNpb24uDQo+PiArICoNCj4+ICsg
+KiBSZXF1ZXN0OiAgc3RydWN0IG9wdGVlX3JwbWlfcHJvYmVfcmVxDQo+PiArICogUmVzcG9uc2U6
+IHN0cnVjdCBvcHRlZV9ycG1pX29zX3Jlc3ANCj4+ICsgKi8NCj4+ICsjZGVmaW5lIE9QVEVFX1JQ
+TUlfR0VUX09TX1ZFUlNJT04gICAgICAxDQo+PiArDQo+PiArLyoqDQo+PiArICogc3RydWN0IG9w
+dGVlX3JwbWlfb3NfcmVzcCAtIEdFVF9PU19WRVJTSU9OIHJlc3BvbnNlDQo+PiArICogQHN0YXR1
+czogc2lnbmVkIFJQTUkgZXJyb3IgY29kZQ0KPj4gKyAqIEBtYWpvcjogdHJ1c3RlZCBPUyBtYWpv
+ciByZXZpc2lvbg0KPj4gKyAqIEBtaW5vcjogdHJ1c3RlZCBPUyBtaW5vciByZXZpc2lvbg0KPj4g
+KyAqIEByZXNlcnZlZDogbXVzdCBiZSB6ZXJvDQo+PiArICogQGJ1aWxkX2lkOiB0cnVzdGVkIE9T
+IGJ1aWxkIGlkZW50aWZpZXIsIHplcm8gaWYgdW5zcGVjaWZpZWQNCj4+ICsgKi8NCj4+ICtzdHJ1
+Y3Qgb3B0ZWVfcnBtaV9vc19yZXNwIHsNCj4+ICsgICAgICAgX19sZTMyIHN0YXR1czsNCj4+ICsg
+ICAgICAgX19sZTMyIG1ham9yOw0KPj4gKyAgICAgICBfX2xlMzIgbWlub3I7DQo+PiArICAgICAg
+IF9fbGUzMiByZXNlcnZlZDsNCj4+ICsgICAgICAgX19sZTY0IGJ1aWxkX2lkOw0KPj4gK30gX19w
+YWNrZWQ7DQo+PiArDQo+PiArLyoNCj4+ICsgKiBRdWVyeSBzZWN1cmUtd29ybGQgY2FwYWJpbGl0
+aWVzIGFuZCBsaW1pdHMuDQo+PiArICoNCj4+ICsgKiBSZXF1ZXN0OiAgc3RydWN0IG9wdGVlX3Jw
+bWlfcHJvYmVfcmVxDQo+PiArICogUmVzcG9uc2U6IHN0cnVjdCBvcHRlZV9ycG1pX2NhcHNfcmVz
+cA0KPj4gKyAqLw0KPj4gKyNkZWZpbmUgT1BURUVfUlBNSV9FWENIQU5HRV9DQVBBQklMSVRJRVMg
+ICAgICAgMg0KPj4gKw0KPj4gKy8qKg0KPj4gKyAqIHN0cnVjdCBvcHRlZV9ycG1pX2NhcHNfcmVz
+cCAtIEVYQ0hBTkdFX0NBUEFCSUxJVElFUyByZXNwb25zZQ0KPj4gKyAqIEBzdGF0dXM6IHNpZ25l
+ZCBSUE1JIGVycm9yIGNvZGUNCj4+ICsgKiBAc2VjdXJlX2NhcHM6IHJlc2VydmVkIGZvciBmdXR1
+cmUgb3B0aW9uYWwgZmVhdHVyZXM7IHplcm8gaW4gdmVyc2lvbiAxDQo+PiArICogQHJwY19wYXJh
+bV9jb3VudDogbm9uemVybyBwYXJhbWV0ZXIgY2FwYWNpdHkgb2YgZWFjaCBSUEMgYXJndW1lbnQg
+YnVmZmVyDQo+PiArICogQG5vdGlmaWNhdGlvbl9jb3VudDogbm9uemVybyBsb2dpY2FsIGtleSBj
+b3VudCwgaW5jbHVkaW5nIHN5bmNocm9ub3VzIGtleXMNCj4+ICsgKiAgICAgICAgICAgICAgICAg
+ICAgIEtleXMgcmFuZ2UgZnJvbSB6ZXJvIHRocm91Z2ggbm90aWZpY2F0aW9uX2NvdW50IC0gMS4N
+Cj4+ICsgKg0KPj4gKyAqIFZlcnNpb24gMSBkZWZpbmVzIG5vIGNhcGFiaWxpdHkgYml0cy4gVW5r
+bm93biBiaXRzIGFyZSBpZ25vcmVkIGJ5IExpbnV4DQo+PiArICogZm9yIGNvbXBhdGliaWxpdHkg
+d2l0aCBmdXR1cmUgZXh0ZW5zaW9ucy4NCj4gDQo+IE5vdGUgdGhhdCB3ZSBleHBlY3QgdGhlIEFC
+SSB2ZXJzaW9uIHRvIHN0YXkgYXQgMS4wIGZvciBhIGZvcmVzZWVhYmxlDQo+IGZ1dHVyZS4gRXh0
+ZW5zaW9ucyB0byB0aGUgQUJJIGFyZSBwcmltYXJpbHkgbmVnb3RpYXRlZCB1c2luZw0KPiBjYXBh
+YmlsaXRpZXMuDQo+IA0KDQpBY2suDQoNClRoYW5rcyBKZW5zLA0KDQpCZXN0IHJlZ2FyZHMsDQpB
+bWlyDQoNCj4gQ2hlZXJzLA0KPiBKZW5zDQo+IA0KPj4gKyAqLw0KPj4gK3N0cnVjdCBvcHRlZV9y
+cG1pX2NhcHNfcmVzcCB7DQo+PiArICAgICAgIF9fbGUzMiBzdGF0dXM7DQo+PiArICAgICAgIF9f
+bGUzMiBzZWN1cmVfY2FwczsNCj4+ICsgICAgICAgX19sZTMyIHJwY19wYXJhbV9jb3VudDsNCj4+
+ICsgICAgICAgX19sZTMyIG5vdGlmaWNhdGlvbl9jb3VudDsNCj4+ICt9IF9fcGFja2VkOw0KPj4g
+Kw0KPj4gKy8qDQo+PiArICogVW5yZWdpc3RlciBhIHNoYXJlZCBwYXJjZWwgZnJvbSBPUC1URUUu
+DQo+PiArICoNCj4+ICsgKiBSZXF1ZXN0OiAgc3RydWN0IG9wdGVlX3JwbWlfdW5yZWdpc3Rlcl9y
+ZXENCj4+ICsgKiBSZXNwb25zZTogc3RydWN0IG9wdGVlX3JwbWlfc3RhdHVzX3Jlc3ANCj4+ICsg
+Ki8NCj4+ICsjZGVmaW5lIE9QVEVFX1JQTUlfVU5SRUdJU1RFUl9TSE0gICAgICAzDQo+PiArDQo+
+PiArLyoqDQo+PiArICogc3RydWN0IG9wdGVlX3JwbWlfdW5yZWdpc3Rlcl9yZXEgLSByZXRpcmUg
+YSBzaGFyZWQgcGFyY2VsIGluIE9QLVRFRQ0KPj4gKyAqIEBvcDogT1BURUVfUlBNSV9VTlJFR0lT
+VEVSX1NITQ0KPj4gKyAqIEBwYXJjZWxfaWQ6IHBhcmNlbCB0byByZXRpcmU7IHplcm8gaXMgdmFs
+aWQgd2l0aCBhIG5vbnplcm8gbm9uY2UNCj4+ICsgKiBAbm9uY2U6IG5vbnplcm8gbm9uY2UgYXNz
+b2NpYXRlZCB3aXRoIHRoZSBwYXJjZWwNCj4+ICsgKg0KPj4gKyAqIFN1Y2Nlc3MgbWVhbnMgT1At
+VEVFIHN0b3BwZWQgdXNpbmcgdGhlIG1hcHBpbmcgYW5kIHJlbGVhc2VkIGl0cyByZWNlaXZlcg0K
+Pj4gKyAqIGludGVyZXN0Lg0KPj4gKyAqLw0KPj4gK3N0cnVjdCBvcHRlZV9ycG1pX3VucmVnaXN0
+ZXJfcmVxIHsNCj4+ICsgICAgICAgX19sZTMyIG9wOw0KPj4gKyAgICAgICBfX2xlMzIgcGFyY2Vs
+X2lkOw0KPj4gKyAgICAgICBfX2xlMzIgbm9uY2U7DQo+PiArfSBfX3BhY2tlZDsNCj4+ICsNCj4+
+ICsvKg0KPj4gKyAqIEVuYWJsZSBhc3luY2hyb25vdXMgbm90aWZpY2F0aW9uIGRlbGl2ZXJ5Lg0K
+Pj4gKyAqDQo+PiArICogUmVxdWVzdDogIHN0cnVjdCBvcHRlZV9ycG1pX2VuYWJsZV9ub3RpZl9y
+ZXENCj4+ICsgKiBSZXNwb25zZTogc3RydWN0IG9wdGVlX3JwbWlfc3RhdHVzX3Jlc3ANCj4+ICsg
+Ki8NCj4+ICsjZGVmaW5lIE9QVEVFX1JQTUlfRU5BQkxFX0FTWU5DX05PVElGICA0DQo+PiArDQo+
+PiArLyoqDQo+PiArICogc3RydWN0IG9wdGVlX3JwbWlfZW5hYmxlX25vdGlmX3JlcSAtIGJpbmQg
+YW4gaW5jb21pbmcgUlBNSSBkb29yYmVsbA0KPj4gKyAqIEBvcDogT1BURUVfUlBNSV9FTkFCTEVf
+QVNZTkNfTk9USUYNCj4+ICsgKiBAc2lnbmFsX2lkOiBhbGxvY2F0ZWQgVEVFLXRvLVJFRSBzaWdu
+YWwsIG5vdCBhIGxvZ2ljYWwgbm90aWZpY2F0aW9uIGtleQ0KPj4gKyAqDQo+PiArICogU3VjY2Vz
+cyBhY3RpdmF0ZXMgZGVsaXZlcnkgYW5kIHJhaXNlcyB0aGUgZG9vcmJlbGwgZm9yIHBlbmRpbmcg
+d29yay4NCj4+ICsgKiBSYWlzaW5nIHRoZSBzaWduYWwgcmVxdWVzdHMgT1BURUVfTVNHX0NNRF9E
+T19CT1RUT01fSEFMRi4NCj4+ICsgKiBPUFRFRV9NU0dfQ01EX1NUT1BfQVNZTkNfTk9USUYgc3Rv
+cHMgZnV0dXJlIGRvb3JiZWxsIGdlbmVyYXRpb24sIGJ1dCBkb2VzDQo+PiArICogbm90IGRyYWlu
+IGFscmVhZHktcmFpc2VkIHNpZ25hbHMgb3IgcmVsZWFzZSB0aGUgc2lnbmFsIElELg0KPj4gKyAq
+Lw0KPj4gK3N0cnVjdCBvcHRlZV9ycG1pX2VuYWJsZV9ub3RpZl9yZXEgew0KPj4gKyAgICAgICBf
+X2xlMzIgb3A7DQo+PiArICAgICAgIF9fbGUzMiBzaWduYWxfaWQ7DQo+PiArfSBfX3BhY2tlZDsN
+Cj4+ICsNCj4+ICsvKg0KPj4gKyAqIFN0YXJ0IGEgeWllbGRpbmcgY29tbWFuZCB1c2luZyBzaGFy
+ZWQgY29tbWFuZCBhbmQgUlBDIGFyZ3VtZW50cy4NCj4+ICsgKg0KPj4gKyAqIFJlcXVlc3Q6ICBz
+dHJ1Y3Qgb3B0ZWVfcnBtaV9jYWxsX3JlcQ0KPj4gKyAqIFJlc3BvbnNlOiBzdHJ1Y3Qgb3B0ZWVf
+cnBtaV9jYWxsX3Jlc3ANCj4+ICsgKi8NCj4+ICsjZGVmaW5lIE9QVEVFX1JQTUlfWUlFTERJTkdf
+Q0FMTF9XSVRIX0FSRyAgICAgICAgICAgICAgNQ0KPj4gKw0KPj4gKyNkZWZpbmUgT1BURUVfUlBN
+SV9ZSUVMRElOR19DQUxMX1JFVFVSTl9ET05FICAgICAgICAgICAwDQo+PiArI2RlZmluZSBPUFRF
+RV9SUE1JX1lJRUxESU5HX0NBTExfUkVUVVJOX1JQQ19DTUQgICAgICAgICAgICAgICAgMQ0KPj4g
+KyNkZWZpbmUgT1BURUVfUlBNSV9ZSUVMRElOR19DQUxMX1JFVFVSTl9JTlRFUlJVUFQgICAgICAy
+DQo+PiArDQo+PiArLyoqDQo+PiArICogc3RydWN0IG9wdGVlX3JwbWlfY2FsbF9yZXEgLSBzdGFy
+dCBhIHlpZWxkaW5nIGNvbW1hbmQNCj4+ICsgKiBAb3A6IE9QVEVFX1JQTUlfWUlFTERJTkdfQ0FM
+TF9XSVRIX0FSRw0KPj4gKyAqIEBwYXJjZWxfaWQ6IGFyZ3VtZW50IHBhcmNlbCBpZGVudGl0eQ0K
+Pj4gKyAqIEBub25jZTogbm9uY2UgYXNzb2NpYXRlZCB3aXRoIHRoZSBwYXJjZWwNCj4+ICsgKiBA
+ZmxhZ3M6IHplcm8gaW4gdmVyc2lvbiAxDQo+PiArICogQGFyZ19vZmZzZXQ6IGNvbW1hbmQgYXJn
+dW1lbnQgYnl0ZSBvZmZzZXQgZnJvbSB0aGUgcGFyY2VsJ3MgZmlyc3QgYnl0ZQ0KPj4gKyAqIEBy
+cGNfb2Zmc2V0OiBSUEMgYXJndW1lbnQgYnl0ZSBvZmZzZXQgZnJvbSB0aGUgcGFyY2VsJ3MgZmly
+c3QgYnl0ZQ0KPj4gKyAqIEBhcmdfc2l6ZTogY29tbWFuZCBhcmd1bWVudCBleHRlbnQgaW4gYnl0
+ZXMNCj4+ICsgKiBAcnBjX3NpemU6IFJQQyBhcmd1bWVudCBjYXBhY2l0eSBpbiBieXRlcw0KPj4g
+KyAqDQo+PiArICogRmlybXdhcmUgdmFsaWRhdGVzIG93bmVyc2hpcCwgUlcgYWNjZXNzLCBhbGln
+bm1lbnQgYW5kIGRpc2pvaW50IHJhbmdlcy4NCj4+ICsgKiBSUE1JX0VSUl9CVVNZIHJlamVjdHMg
+YW4gaW5pdGlhbCByZXF1ZXN0IHdpdGhvdXQgYWNxdWlyaW5nIGNhbGwgb3duZXJzaGlwLg0KPj4g
+KyAqLw0KPj4gK3N0cnVjdCBvcHRlZV9ycG1pX2NhbGxfcmVxIHsNCj4+ICsgICAgICAgX19sZTMy
+IG9wOw0KPj4gKyAgICAgICBfX2xlMzIgcGFyY2VsX2lkOw0KPj4gKyAgICAgICBfX2xlMzIgbm9u
+Y2U7DQo+PiArICAgICAgIF9fbGUzMiBmbGFnczsNCj4+ICsgICAgICAgX19sZTY0IGFyZ19vZmZz
+ZXQ7DQo+PiArICAgICAgIF9fbGU2NCBycGNfb2Zmc2V0Ow0KPj4gKyAgICAgICBfX2xlMzIgYXJn
+X3NpemU7DQo+PiArICAgICAgIF9fbGUzMiBycGNfc2l6ZTsNCj4+ICt9IF9fcGFja2VkOw0KPj4g
+Kw0KPj4gKy8qKg0KPj4gKyAqIHN0cnVjdCBvcHRlZV9ycG1pX2NhbGxfcmVzcCAtIHlpZWxkaW5n
+IGNvbW1hbmQgcmVzcG9uc2UNCj4+ICsgKiBAc3RhdHVzOiBzaWduZWQgUlBNSSBlcnJvciBjb2Rl
+LCBkaXN0aW5jdCBmcm9tIHRoZSBjb21tYW5kJ3MgR1AgcmVzdWx0DQo+PiArICogQHJlc3VsdDog
+T1BURUVfUlBNSV9ZSUVMRElOR19DQUxMX1JFVFVSTl8qIHZhbHVlIHdoZW4gc3RhdHVzIGlzIHN1
+Y2Nlc3MNCj4+ICsgKiBAcmVzdW1lX3Rva2VuOiB6ZXJvIGZvciBET05FLCBub256ZXJvIG9wYXF1
+ZSB0b2tlbiBmb3IgYSBzdXNwZW5kZWQgY29tbWFuZA0KPj4gKyAqDQo+PiArICogRE9ORSByZWxl
+YXNlcyBhbGwgYWNjZXNzIHRvIHRoZSBjYWxsJ3MgYXJndW1lbnQgYW5kIFJQQyByYW5nZXMuIFJQ
+Q19DTUQNCj4+ICsgKiByZXF1ZXN0cyBSUEMgY29tbWFuZCBoYW5kbGluZzsgSU5URVJSVVBUIHJl
+cXVlc3RzIHJlc3VtcHRpb24gd2l0aG91dCBhbg0KPj4gKyAqIFJQQyBjb21tYW5kLiBUb2tlbnMg
+YmVsb25nIHRvIG9uZSBhY2NlcHRlZCBjYWxsLCBzZXJ2aWNlIGFuZCBjYWxsZXIuDQo+PiArICov
+DQo+PiArc3RydWN0IG9wdGVlX3JwbWlfY2FsbF9yZXNwIHsNCj4+ICsgICAgICAgX19sZTMyIHN0
+YXR1czsNCj4+ICsgICAgICAgX19sZTMyIHJlc3VsdDsNCj4+ICsgICAgICAgX19sZTY0IHJlc3Vt
+ZV90b2tlbjsNCj4+ICt9IF9fcGFja2VkOw0KPj4gKw0KPj4gKy8qDQo+PiArICogUmVzdW1lIGEg
+c3VzcGVuZGVkIHlpZWxkaW5nIGNvbW1hbmQuDQo+PiArICoNCj4+ICsgKiBSZXF1ZXN0OiAgc3Ry
+dWN0IG9wdGVlX3JwbWlfcmVzdW1lX3JlcQ0KPj4gKyAqIFJlc3BvbnNlOiBzdHJ1Y3Qgb3B0ZWVf
+cnBtaV9jYWxsX3Jlc3ANCj4+ICsgKi8NCj4+ICsjZGVmaW5lIE9QVEVFX1JQTUlfWUlFTERJTkdf
+Q0FMTF9SRVNVTUUgICAgICAgIDYNCj4+ICsNCj4+ICsvKioNCj4+ICsgKiBzdHJ1Y3Qgb3B0ZWVf
+cnBtaV9yZXN1bWVfcmVxIC0gcmVzdW1lIGEgc3VzcGVuZGVkIGNvbW1hbmQNCj4+ICsgKiBAb3A6
+IE9QVEVFX1JQTUlfWUlFTERJTkdfQ0FMTF9SRVNVTUUNCj4+ICsgKiBAcmVzZXJ2ZWQ6IG11c3Qg
+YmUgemVybw0KPj4gKyAqIEByZXN1bWVfdG9rZW46IHRva2VuIGZyb20gdGhlIHByZWNlZGluZyBy
+ZXNwb25zZSBmb3IgdGhpcyBjYWxsDQo+PiArICoNCj4+ICsgKiBSZXN1bWUgbXVzdCBub3QgcmV0
+dXJuIFJQTUlfRVJSX0JVU1kuDQo+PiArICovDQo+PiArc3RydWN0IG9wdGVlX3JwbWlfcmVzdW1l
+X3JlcSB7DQo+PiArICAgICAgIF9fbGUzMiBvcDsNCj4+ICsgICAgICAgX19sZTMyIHJlc2VydmVk
+Ow0KPj4gKyAgICAgICBfX2xlNjQgcmVzdW1lX3Rva2VuOw0KPj4gK30gX19wYWNrZWQ7DQo+PiAr
+DQo+PiArI2VuZGlmIC8qIE9QVEVFX1JQTUlfSCAqLw0KPj4NCj4+IC0tDQo+PiAyLjM0LjENCj4+
+DQoNCg==
