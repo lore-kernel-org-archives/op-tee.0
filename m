@@ -4,100 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E394CA6007
-	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 03:33:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DF21CA6007
+	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 03:33:59 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id CAFEA454BC
-	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 03:33:27 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id AF889454F8
+	for <op-tee@archiver.kernel.org>; Thu,  8 Oct 2026 03:33:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791430407;
-	bh=yK8tXZ4W2qFOIHjQKJc/I82o5d2kxSmh4bqvJiWnd0Q=;
+	d=lists.trustedfirmware.org; s=2024; t=1791430438;
+	bh=JnNvI0ROVbZ4/iBbuzrOguXx3ENoG4ZYua0GfS7sBNM=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=a9ua2m5bO18DXg5RT1Lbv+y1D4d8zKj050/ASAKZ7Y6gY5PqNARidJgeahpw0TdwJ
-	 dnVh31NV1h4wuaSDytfi/YoWwI7+6G+Wd7IuSOAUhba8PdGmmJtT+G8nFwM/CkPMFP
-	 HIG1/gcmSWn0ebWNOGlaxQFjqoI24EbfM8bqN/13kE8nZ58GMxD5vqJMw38EGz/2Md
-	 dZGW/OrU43O+AocUYc4g3xwrPsBGyVnjS6WvED02GneHFKh97+Ed4fwhX87Ux+7Lmf
-	 onVCB1rWtY5bcaZj1+rZuwGL0Ot7MZOqFm6Zhg0mrRwAVo2MMQmarcz2OxvDNsNm4o
-	 KXKlK0Enpfyeg==
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 301514552B
-	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Oct 2026 03:28:56 +0000 (UTC)
+	b=mNR3P9Zy7FxajnCJgXLvKIM2Pje7e0vxfES9Gqk90mY3jK51WEhoeQpygoAuUva26
+	 RjR1D4MaXQkH/v3nPDZBJnl7yKcveJVEaUb60H5SYUcjz98FLfJrIed7hFAFN07Nh9
+	 1cpWPq+KUNtzsEYVejtFPbI6vV/HrwU/5RnVRNMmHOwgbS78/1J4v16OoLsRCNswmZ
+	 RlWn5vfy6O9NTUebGlHtL1GJmZlSspGDwueeDQirWpE8joN3uhbekOF/UhqAuIC9vC
+	 pEYBG9UvMSvvS4Re8izq14H3HlaCwsIL80xd+EjP1QklNK9rjqzcRKfPmRTrJkPof8
+	 NpoDRtDigFlvA==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id C7A7D4553A
+	for <op-tee@lists.trustedfirmware.org>; Thu,  8 Oct 2026 03:28:57 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=e0uQRsbM;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=kc3zsNuW;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=UmN1Kj39;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fkL71TAP;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6981hSQI1431003
-	for <op-tee@lists.trustedfirmware.org>; Thu, 8 Oct 2026 03:28:55 GMT
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6981hbAL2452535
+	for <op-tee@lists.trustedfirmware.org>; Thu, 8 Oct 2026 03:28:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mApVFjc9rhNzsGXcLCP/umDupri6qQf4ON6W11wUO6o=; b=e0uQRsbMNM1GTMkf
-	mqDIqtYpWvndDndgkwyOQJb48yWJ5yfhAIKztKOzBu//TC5mk4Nf8YhbOr2XcB/Z
-	4Na0nbpmTzS9oqQElhyPIPqSgD96t8j4sp35cixqBIaBVDOkxLsPUAXcZ9wwKG2h
-	QwCMxr5pKbxDuo1QNJhx9hTlLvhvwopCLrufxvEtWROhKcOFkM9bZq2ElM/aQ0As
-	WgLE9t8dv6s7AKoljuV/3Uy/RAbrKbAbxH2Ek/XZL+c3E7VzxWIlbdsa77665shL
-	UekeiVvudhEmytOrsk9B+Gcyahmn448KhnEWDA3izRTgIbUY9tgKhRtNGqn49UkI
-	m2AKGQ==
-Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5xe2s1a3-1
+	duFdmTXcDjkm0mujzzm2BSo2d/76Xz98Eq27N7LBrpw=; b=UmN1Kj39mbehwriA
+	Ug0JKty17Yr/zLu0eh2x0dvnrR0VyhZsQbBMKI6AvDfWP8gus6kXeti5nGLvXJDl
+	KIO5qkWGbhH3NiJWXPHx4sltIVmIhBK4dBuJFv4S6WGoLKytM29YP9Ei1i4h455/
+	fBDvVGL/wCdMJYZPE0JOvPdSnvFC0E97LwYfCVzkmy0SlVqAjVwNkcOGall7ZNzc
+	6UVTBMilTTW+bvJPZy/OqQOghM1eNumFGZf5q8XWjTc0iWsMvOS3TAbKIPnqzCyr
+	fXDBSXd8PefYb5el0Z4NPPZOCJmOHyXTB1yuaffdIAEdDV9ruQ3E8u6WQEpHqvmf
+	NbDryg==
+Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h5xe68w8s-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 03:28:55 +0000 (GMT)
-Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-34ef0362d95so8988571eec.1
-        for <op-tee@lists.trustedfirmware.org>; Wed, 07 Oct 2026 20:28:55 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Thu, 08 Oct 2026 03:28:56 +0000 (GMT)
+Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-30c0d568830so10411647eec.1
+        for <op-tee@lists.trustedfirmware.org>; Wed, 07 Oct 2026 20:28:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791430134; x=1792034934; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1791430136; x=1792034936; darn=lists.trustedfirmware.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=mApVFjc9rhNzsGXcLCP/umDupri6qQf4ON6W11wUO6o=;
-        b=kc3zsNuW5sC4YcykZ3rLrw42lnK+kLbPETxzM70ZpFLKR55DmimlcZDTSOque3NLmR
-         0aXZ/nN8oJ+HOqghqJUgUINQtmV9TgKsJHSyvpnozcphkKUWudkL8HwIXL7/EcJDds8K
-         2pYSN77PMZrvd48XldS2dKZqpK55oQ5hMkec/edNMKox+k/CveVQVcw0ijRZAuHAe6xx
-         8myoyYZMJi7MjiYiVorfXfSZ/rQoWyr+GcLZPqe1/xkQCHkUvmIT/EsGykQZnqDOcGmA
-         sLPK4y3L6UpdW599/CsiHSGdtycZscZbPct1/VUzRxZxJ/XIP2jB9sRjx8SDy0S1ScOJ
-         f0LA==
+        bh=duFdmTXcDjkm0mujzzm2BSo2d/76Xz98Eq27N7LBrpw=;
+        b=fkL71TAPUs7GC1r2Gf7+0g0TtiQguJ+7etyXqjkNeEeBqqTdhEdnE778sZh46b/Lnb
+         cOhNjdG0s0i6tM4qQ6L+TymmMX5f+doXa3SXPmqSB7oakVLVK7koUn8iHuqBACFla+CE
+         64EbPXc4qzpx4RRgbXQJZUB4gP7XkOhAyAzzGwfpv/FdoLxthfpahXqxYi6XmWqnaB0I
+         RGNJGEoGG8O3M+QstaVpTde5ujLRpCc337VgX5dycTBZTWtuWEcom7chNqXvy2/l+Ag/
+         kp/KTcBdwhVNdSRgwotfRXY6kuF649KD+wdaDUvgJ7Ih22YJoS3IICDaFOAIikB7rIXM
+         5C/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791430134; x=1792034934;
+        d=1e100.net; s=20260707; t=1791430136; x=1792034936;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=mApVFjc9rhNzsGXcLCP/umDupri6qQf4ON6W11wUO6o=;
-        b=oZaqqBNjlysqn6wItKOa2uP3p/gPPwSkQEt7LVFa7yk9KmXOpQAu2FkyVVHgLV3jRr
-         hr13PyuAVk/HqrS5foT019i7VCENFEZFNQcoH/80w3CGywt4BG8WJXQEBXs1W2gntLre
-         WnL7nPLG99ffi1vIJV9e7Ex44osrUaN/rXMqARBZgVw+71xb+2clbet1bbFFYRqWQpRQ
-         dLdm+ZK5E/OmrqsrobY479bAGZXB/TiPtQ9Sa697XwRQCx0BSu2GrExZJCWG9Uqem1gJ
-         +iLLITcvgrI3mJE12/y8hjWKfQBzIbBizInPecsxeeooudotSUBaf5V1AuzH6NYD7vGD
-         ypLA==
-X-Forwarded-Encrypted: i=1; AKwUvBxrV7NR9N4CeERNJ/vTKmHOyOo3JEzFX+FNDNbO1WwrA8xJhPydTOrM4W79pz2ghEk15DkbdvU=@lists.trustedfirmware.org
-X-Gm-Message-State: AFuF++ldFvXN8P8h1Aak87DXj4ezwyGlWjexP/OJSWuoRuOXPbZZV3VP
-	f+T5YH8eDZZlk62tijkSKsegoLno+UtJteXgvzF5qkB3Q9pDWCjEyBuPFWty/g+m/1GbESIM1bv
-	UBrwipLv2b3aXlIObCk0i6UULfTj9YvAu9dAGIOZLS8CYougjB6YLEpc6qO7bChc+B5ma9inlnb
-	CG5OE=
-X-Gm-Gg: AYBFou2fYi9/VmLZjl3d/8pxuKWlqmuYjzfJNFxdxd/XnPowkHwMAffQWerrwVDuUL/
-	EDeKlbS9kYhpX3mcOlxAfSjVvUoZEZLNgjmzVCYwZYTdj2Z5DXtvmuc8PdqGQ3J3f9TfbAjgIUT
-	Iz/Rtvj5yF82SdQaaeL/y0+sD5jNk8FEg8Lr9x7Nsm+vs9UJ5joz91+A5MnopkNZ0q5uVxdVd3C
-	+5H8OjNmsmLQ7YBUAaGi+fK7EJFhx4wKst7BkX5+WvuoUMTTik2j35ymaqLJqDfLCINqY0nzxmh
-	qB8qXfrJdJwKcXhRQuCmx5hpg+mhCbZEgTU2V3w36HlXZuXsAis7PWnomMdGHJ9N6AfcU6K9gO9
-	5FA4aYTDCyOQ2nvtvild6lD/C3pKoXxZchFsYfe91TLC8DDikNhvjDZi0Kw==
-X-Received: by 2002:a05:693c:4143:20b0:343:8d77:1d97 with SMTP id 5a478bee46e88-3515de5db65mr5691051eec.39.1791430133821;
-        Wed, 07 Oct 2026 20:28:53 -0700 (PDT)
-X-Received: by 2002:a05:693c:4143:20b0:343:8d77:1d97 with SMTP id 5a478bee46e88-3515de5db65mr5691012eec.39.1791430133132;
-        Wed, 07 Oct 2026 20:28:53 -0700 (PDT)
+        bh=duFdmTXcDjkm0mujzzm2BSo2d/76Xz98Eq27N7LBrpw=;
+        b=gTF6JzMG6YrERxza96dAS0jun9xG9+4YERAnwNJ2N0OPffhbtG2wmhHwJJI2Y1HCQs
+         P19Als3n9ZS0V7x7k+yu13YAHzqxKj9QHn80bYRAOZWCvlLHY+U3cDkTa5JcguoedAlK
+         PmR1iCzov3XE4duAxUSVrlm31cDnrxzCUI0Pqr5GMwONJ0fPTjkg0OxblV9kUeyrUpiD
+         LgraE5wWfkIjLwi+XdNtQoQH/qHq1HyScfTPtkhAiqpjo2+1z2ELugWjYarwdLuKjJZO
+         0QcmOqO3+xzF3tHbLyPFPbYtVSm7Vq6tI77I6rgDBZb7BJMBEuQeRbgzkCEH3NZEawdO
+         iR2Q==
+X-Forwarded-Encrypted: i=1; AKwUvBx5j9VTdY9euqbGzAz+KMNMmoMBfhVS6mgQUT9sefbYRfGpLQ3FrL9NSCyLSHHmnA1SwDf18tE=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYLYPaFvnGFtMV1y1pndjxurMexvYwShPtnNJwMT6f3/2JavYOgP
+	nHimeMrxHiUaBypL+oUTJ6TJzIyAFoQYIYFWkrED5jM/yzkCG/aP85wWWkebBQYRDHPi8r6t/bG
+	gO4UlQMWlruxjd3esNLwP4Thok4pZafxsm0iOGNFB6a1awvB7h9KOX6KmO+R/AhkYzz2q02w=
+X-Gm-Gg: AYBFou0eAI1+8vKgfOpISWnvDd/psCTgHIQ12WslQvsLrVDyDdzDFxeo/Td1WIZqf/F
+	BUVGIydoKrgHPmvIJA8uqTlQw2mQQypjdfrKbQ0yMN5WnOYPVxtU1BRj6ZnpRgjgM8h4m8ekqif
+	RsxXyXJlXsbdlwk8jzWc15Wdy8AqKrCdbkamwVmxl/BnwYXkhr/b7pskJlwIiYF2SeIOGfIWtZX
+	sU0ao6Vs64wOpM98PBETrwG/ScaN7xG6PjAQTWM3aoqKKFnN4tLuK7N8nm6MZptkoZEa4/QvFT5
+	YGfrdaA72uKnNUb0kav9+uB+kNAPZ+gCQcc8HPSGyHT/QdA40uf1lMEkxiBzt9KfS8xar9D1Xw/
+	OQrhccRIH0HPrTjlkHqCWnlhizdiUOAqwVU18d+Gj1VaGYuehKNqDFrGitA==
+X-Received: by 2002:a05:7301:670a:b0:351:595:750b with SMTP id 5a478bee46e88-3515dec9a10mr8252565eec.36.1791430135209;
+        Wed, 07 Oct 2026 20:28:55 -0700 (PDT)
+X-Received: by 2002:a05:7301:670a:b0:351:595:750b with SMTP id 5a478bee46e88-3515dec9a10mr8252508eec.36.1791430134484;
+        Wed, 07 Oct 2026 20:28:54 -0700 (PDT)
 Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-35179d07566sm2168349eec.30.2026.10.07.20.28.52
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-35179d07566sm2168349eec.30.2026.10.07.20.28.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Oct 2026 20:28:52 -0700 (PDT)
-Date: Wed, 07 Oct 2026 20:27:15 -0700
-Subject: [PATCH RFC v2 09/10] firmware: riscv: rpmi-tee: add memory parcel
- operations
+        Wed, 07 Oct 2026 20:28:53 -0700 (PDT)
+Date: Wed, 07 Oct 2026 20:27:16 -0700
+Subject: [PATCH RFC v2 10/10] firmware: riscv: rpmi-tee: add signal bus
+ support
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261007-riscv-rpmi-tee-abi-v2-9-45939a13d223@oss.qualcomm.com>
+Message-Id: <20261007-riscv-rpmi-tee-abi-v2-10-45939a13d223@oss.qualcomm.com>
 References: <20261007-riscv-rpmi-tee-abi-v2-0-45939a13d223@oss.qualcomm.com>
 In-Reply-To: <20261007-riscv-rpmi-tee-abi-v2-0-45939a13d223@oss.qualcomm.com>
 To: Jassi Brar <jassisinghbrar@gmail.com>, Paul Walmsley <pjw@kernel.org>,
@@ -110,33 +109,34 @@ To: Jassi Brar <jassisinghbrar@gmail.com>, Paul Walmsley <pjw@kernel.org>,
         Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
         Marouene Boubakri <marouene.boubakri@oss.nxp.com>
 X-Mailer: b4 0.13.0
-X-Authority-Analysis: v=2.4 cv=AbMkjHXG c=1 sm=1 tr=0 ts=6ac70df7 cx=c_pps
- a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+X-Proofpoint-ORIG-GUID: qoJFQ8zJrzBwiGEGQfQjYhz8y3aPjIFN
+X-Authority-Analysis: v=2.4 cv=HcWB3SE8 c=1 sm=1 tr=0 ts=6ac70df8 cx=c_pps
+ a=cFYjgdjTJScbgFmBucgdfQ==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=ZqXtgL2Ob53jORvibrgA:9 a=QEXdDO2ut3YA:10
- a=6Ab_bkdmUrQuMsNx7PHu:22
-X-Proofpoint-GUID: HWn4YjZpttu0-I9OEd_m2N3ds4fRFAWp
-X-Proofpoint-ORIG-GUID: HWn4YjZpttu0-I9OEd_m2N3ds4fRFAWp
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDAxMyBTYWx0ZWRfXyzRM17YXSetW
- nz3/vbw6yU/SEivP4tUNFMIWDQ78mxG+82QMi4oPYiRg3sK39/B5lirp1oRlfXnRnWu5QhfSQlt
- afluIE00hykEHK6qzgE7iNEjYZfhjNE=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDAxMyBTYWx0ZWRfX8xZXQRaiw4c1
- As7JeQj74rlzMYhd0IKGocDhxvOfzkfxVbKH1CGoIcA8KdSz8eSGWhBiR4PBaJINI5tW+qclRqH
- WvtQ2TQMFUbFrd6arGiol8FnRih/nO1usUHxyGDLY2jW1oQPEXUndq2SVGrxZ38qr3Yu++NjSjR
- uMBVT6nXqzurknVZe4lhfUEYj25/RqNAJsv83jP4UxKAPPIZxuA4LWP+5n63PIuKJnxKapue0Xl
- uG3uxSVPBzdpkPwC9ehEsBAYBhnJInBPyMfTxHKikBvVUdlVvnglLtOTpNYfoJ1o1XgHt+9030T
- LSE1rOgUJk9+AHsvESR3EZDzQCYLLnBFuDYYCURgVrOrA6ChENbJJtk7jumDuw7P2KUVlm3xQr0
- C7jltKLLEi4Dwr5wwyYO2rBV3oy8PlgxhOESNJadwa40O4g+Gj2/7tf9GFdzL9rYCU4lnqhJ2KX
- 7rnK9qo7jKvF0We3jKw==
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=EUspDBNiAAAA:8 a=mv-pW7Q0PFkwfj-mGbgA:9 a=QEXdDO2ut3YA:10
+ a=scEy_gLbYbu1JhEsrz4S:22
+X-Proofpoint-GUID: qoJFQ8zJrzBwiGEGQfQjYhz8y3aPjIFN
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDAxMyBTYWx0ZWRfXzLU8cBZhf5DJ
+ Yr6RFOYREQHyWhMqZy6Sgj1sKY/OKvl8hdW08ywJyYT3Vb13Ts6wSlsYa/NR5FBdiBc011Dth95
+ nExN4a5tvjg6mQPiHuDbyZW3koFYG0MiJp+cAeqYfS7568VdnTDbKxDnWICub8iUdubxTTo2SIv
+ Wev2glE4htkkG5uSR6pPNQaNipWA0IQ2LHCGm94qOll6DEoZoTViB3mj6I3hxG9pBrqDfUh17+f
+ lo3hdv0/9/7ISBDXyAAQ8p3GPSjfC/FeYTdz4NleiKbViHEatG84k74T+jpLdfnRBsipsX3Dhf8
+ 3/+cwDsKxAsmCBqEeTfh0raot5rW7Y8ppj+w58wQa6OU0HBDy6RgO14UEvP4/f9TGA7ONSNqVt+
+ edEHewtNrqdWwh433mmVlPQ5pIAkQSTgwyr5P55vEL7dYANCMQUqemgeWue5dedAdAjzd1hsb+M
+ dcWvCQ2GaCpauXCwAzQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDAxMyBTYWx0ZWRfX3LZ0ZF2BacbT
+ lIyhZjKfXRLOBe0Sq9yxF4mjfgPUNCK4B8B4nr55dtYkA/3dpvVWxt0Fs73hYhAa/deVJerlgWq
+ 6ZvOllv85jc1NWAVqIvLmsxVhNYSIcI=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-08_01,2026-10-06_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0 spamscore=0
- impostorscore=0 malwarescore=0 adultscore=0 phishscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610080013
+ clxscore=1015 malwarescore=0 spamscore=0 bulkscore=0 adultscore=0
+ priorityscore=1501 impostorscore=0 suspectscore=0 phishscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610020000
+ definitions=main-2610080013
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-3.30 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
@@ -144,10 +144,10 @@ X-Spamd-Result: default: False [-3.30 / 15.00];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
 	TO_DN_SOME(0.00)[];
 	FREEMAIL_TO(0.00)[gmail.com,kernel.org,dabbelt.com,eecs.berkeley.edu,ghiti.fr,summations.net,brainfault.org,oss.nxp.com];
 	RCVD_TLS_LAST(0.00)[];
@@ -156,12 +156,12 @@ X-Spamd-Result: default: False [-3.30 / 15.00];
 	RCVD_COUNT_THREE(0.00)[4];
 	RCPT_COUNT_TWELVE(0.00)[20];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
 	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	ALIAS_RESOLVED(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[74.125.82.200:received];
+	RCVD_IN_DNSWL_NONE(0.00)[74.125.82.199:received];
 	NEURAL_HAM(-0.00)[-1.000];
 	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
 	MID_RHS_MATCH_FROM(0.00)[];
@@ -169,17 +169,17 @@ X-Spamd-Result: default: False [-3.30 / 15.00];
 	TAGGED_RCPT(0.00)[dt];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 301514552B
+X-Rspamd-Queue-Id: C7A7D4553A
 X-Spamd-Bar: ---
-Message-ID-Hash: RFDGFOMNDWSGTUOWPM7LVYHEHLHKBGEZ
-X-Message-ID-Hash: RFDGFOMNDWSGTUOWPM7LVYHEHLHKBGEZ
+Message-ID-Hash: 3KHFGVKG4SIL5UG6JQTNL7FA6N2TK6LR
+X-Message-ID-Hash: 3KHFGVKG4SIL5UG6JQTNL7FA6N2TK6LR
 X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RFDGFOMNDWSGTUOWPM7LVYHEHLHKBGEZ/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/3KHFGVKG4SIL5UG6JQTNL7FA6N2TK6LR/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -189,660 +189,814 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Add memory lending, sharing and reclamation through RPMI memory parcels
-so service drivers can exchange memory with TEE endpoints.
+Add signal buses for asynchronous notifications between Linux and TEE
+endpoints, using the firmware-reported System MSI for interrupt delivery.
 
-Support segmented parcels when memory descriptions exceed the mailbox
-payload limit, respecting the firmware's limit on concurrent segmented
-operations.
+Allow service drivers to reserve and relinquish incoming signals and
+raise outgoing signals. Dispatch incoming notifications through client
+callbacks.
+
+Drain notification callbacks before removing service devices, while
+keeping the mailbox and signal buses available until client removal
+completes.
 
 Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/firmware/riscv_rpmi_tee/driver.c           | 477 +++++++++++++++++++++
- drivers/firmware/riscv_rpmi_tee/rpmi_tee_private.h |   6 +
- include/linux/rpmi_tee.h                           |  58 +++
- 3 files changed, 541 insertions(+)
+ drivers/firmware/riscv_rpmi_tee/driver.c           | 599 ++++++++++++++++++++-
+ drivers/firmware/riscv_rpmi_tee/rpmi_tee_private.h |  26 +
+ include/linux/rpmi_tee.h                           |  24 +
+ 3 files changed, 647 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/firmware/riscv_rpmi_tee/driver.c b/drivers/firmware/riscv_rpmi_tee/driver.c
-index b43a09f5e853..690561ed949d 100644
+index 690561ed949d..36a5ad651351 100644
 --- a/drivers/firmware/riscv_rpmi_tee/driver.c
 +++ b/drivers/firmware/riscv_rpmi_tee/driver.c
-@@ -13,6 +13,7 @@
+@@ -8,14 +8,20 @@
+ #include <linux/mailbox_client.h>
+ #include <linux/mailbox/riscv-rpmi-message.h>
+ #include <linux/cleanup.h>
++#include <linux/bitfield.h>
++#include <linux/interrupt.h>
++#include <linux/irqdomain.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
  #include <linux/of.h>
++#include <linux/of_irq.h>
  #include <linux/platform_device.h>
  #include <linux/rpmi_tee.h>
-+#include <linux/scatterlist.h>
+ #include <linux/scatterlist.h>
  #include <linux/slab.h>
  #include <linux/unaligned.h>
++#include <linux/workqueue.h>
++#include <linux/xarray.h>
  
-@@ -27,6 +28,20 @@
- #define RPMI_TEE_MEMORY_FEATURE_TEE_ONLY		1
- #define RPMI_TEE_MEMORY_FEATURE_FULLY_SUPPORTED	2
+ #include "rpmi_tee_private.h"
  
-+/* TEE_CALL memory-access flags and block format. */
-+#define RPMI_TEE_ACCESS_READ			BIT(29)
-+#define RPMI_TEE_ACCESS_WRITE			BIT(30)
-+#define RPMI_TEE_ACCESS_EXEC			BIT(31)
+@@ -42,6 +48,15 @@
+ 
+ /* TEE_MEMORY_SEGMENT_SEND flags. */
+ #define RPMI_TEE_SEGMENT_LAST		BIT(31)
 +
-+#define RPMI_TEE_MEM_PAGE_SHIFT			12
-+#define RPMI_TEE_MEM_PAGE_SIZE			BIT(RPMI_TEE_MEM_PAGE_SHIFT)
-+#define RPMI_TEE_BLOCK_MAX_PAGES		4096
++/* TEE_SIGNAL_BUS_SETUP feature value and TEE_SIGNAL_RETRIEVE flags. */
++#define RPMI_TEE_SIGNAL_MODE_MASK	GENMASK(1, 0)
++#define RPMI_TEE_SIGNAL_WIDTH_MASK	GENMASK(11, 2)
++#define RPMI_TEE_SIGNAL_INDEX_MASK	GENMASK(31, 12)
 +
-+/* TEE_MEMORY_PARCEL_CREATE flags. */
-+#define RPMI_TEE_PARCEL_MULTI_SEGMENT	BIT(31)
++#define RPMI_TEE_SIGNAL_MODE_SYSTEM_MSI	1
++#define RPMI_TEE_SIGNAL_MORE_AVAILABLE	BIT(31)
 +
-+/* TEE_MEMORY_SEGMENT_SEND flags. */
-+#define RPMI_TEE_SEGMENT_LAST		BIT(31)
  /**
   * struct rpmi_tee_probe_features_req - TEE_PROBE_FEATURES request
   * @feature_id: TEE feature identifier to query.
-@@ -73,11 +88,116 @@ struct rpmi_tee_call_resp {
- 	u8 service_data[];
+@@ -180,6 +195,87 @@ struct rpmi_tee_parcel_reclaim_resp {
+ 	__le32 flags;
  } __packed;
  
 +/**
-+ * struct rpmi_tee_parcel_create_req - MEMORY_PARCEL_CREATE request prefix
-+ * @creator_id: Endpoint identifier creating the parcel.
-+ * @creator_access: Creator's residual access permissions.
-+ * @receiver_count: Number of receiver endpoint and access pairs in @data.
-+ * @flags: Parcel creation flags.
-+ * @nonce: Caller-provided parcel nonce.
-+ * @block_count: Number of memory blocks included in this request.
-+ * @label: Caller-provided parcel label.
-+ * @data: Receiver endpoint IDs, receiver access values, then memory blocks.
++ * struct rpmi_tee_signal_bus_setup_req - SIGNAL_BUS_SETUP request
++ * @target_id: TEE endpoint identifier that owns the signal bus.
++ * @bus_width: Total number of signal IDs in the bus.
++ * @sender_signals: Number of signal IDs reserved for the endpoint sender.
 + */
-+struct rpmi_tee_parcel_create_req {
-+	__le32 creator_id;
-+	__le32 creator_access;
-+	__le32 receiver_count;
-+	__le32 flags;
-+	__le32 nonce;
-+	__le32 block_count;
-+	u8 label[16];
-+	u8 data[];
++struct rpmi_tee_signal_bus_setup_req {
++	__le32 target_id;
++	__le32 bus_width;
++	__le32 sender_signals;
 +} __packed;
 +
-+#define RPMI_TEE_PARCEL_CREATE_SIZE \
-+	(sizeof(struct rpmi_tee_parcel_create_req))
-+/* Size of one RECEIVER_ID[] and ACCESS[] entry pair. */
-+#define RPMI_TEE_PARCEL_CREATE_RECEIVER_INFO_SIZE	(2 * sizeof(__le32))
-+/* Size of one BLOCK_HIGH[] and BLOCK_LOW[] entry pair. */
-+#define RPMI_TEE_PARCEL_CREATE_BLOCK_SIZE		(2 * sizeof(__le32))
-+
-+/* Store one receiver in adjacent RECEIVER_ID[] and ACCESS[] arrays at @data. */
-+static inline void rpmi_tee_put_receiver(u8 *data, u32 count, u32 index,
-+					 u32 id, u32 access)
-+{
-+	put_unaligned_le32(id, data + index * sizeof(__le32));
-+	put_unaligned_le32(access, data + (count + index) * sizeof(__le32));
-+}
-+
-+/* Store one block in adjacent BLOCK_HIGH[] and BLOCK_LOW[] arrays at @data. */
-+static inline void rpmi_tee_put_block(u8 *data, u32 count, u32 index,
-+				      u32 high, u32 low)
-+{
-+	put_unaligned_le32(high, data + index * sizeof(__le32));
-+	put_unaligned_le32(low, data + (count + index) * sizeof(__le32));
-+}
++/**
++ * struct rpmi_tee_signal_bus_teardown_req - SIGNAL_BUS_TEARDOWN request
++ * @target_id: TEE endpoint identifier that owns the signal bus.
++ */
++struct rpmi_tee_signal_bus_teardown_req {
++	__le32 target_id;
++} __packed;
 +
 +/**
-+ * struct rpmi_tee_parcel_create_resp - MEMORY_PARCEL_CREATE response
++ * struct rpmi_tee_signal_raise_req - SIGNAL_RAISE request prefix
++ * @target_id: TEE endpoint identifier that owns the signal bus.
++ * @signal_count: Number of signal IDs in @signals.
++ * @signals: Signal IDs to raise.
++ */
++struct rpmi_tee_signal_raise_req {
++	__le32 target_id;
++	__le32 signal_count;
++	__le32 signals[];
++} __packed;
++
++/**
++ * struct rpmi_tee_signal_raise_one_req - Single-signal SIGNAL_RAISE request
++ * @target_id: TEE endpoint identifier that owns the signal bus.
++ * @signal_count: Must be one.
++ * @signal: Signal ID to raise.
++ */
++struct rpmi_tee_signal_raise_one_req {
++	__le32 target_id;
++	__le32 signal_count;
++	__le32 signal;
++} __packed;
++
++/**
++ * struct rpmi_tee_signal_retrieve_resp - SIGNAL_RETRIEVE response prefix
 + * @status: RPMI completion status.
-+ * @parcel_id: Identifier assigned to the new parcel.
++ * @flags: Response flags.
++ * @target_id: TEE endpoint identifier that owns the signal bus.
++ * @signal_count: Number of signal IDs in @signals.
++ * @signals: Retrieved signal IDs.
 + */
-+struct rpmi_tee_parcel_create_resp {
-+	__le32 status;
-+	__le32 parcel_id;
-+} __packed;
-+
-+/**
-+ * struct rpmi_tee_segment_send_req - MEMORY_SEGMENT_SEND request prefix
-+ * @parcel_id: Identifier of the partially created parcel.
-+ * @flags: Segment flags.
-+ * @block_count: Number of memory blocks in @data.
-+ * @data: Memory block address and size pairs.
-+ */
-+struct rpmi_tee_segment_send_req {
-+	__le32 parcel_id;
-+	__le32 flags;
-+	__le32 block_count;
-+	u8 data[];
-+} __packed;
-+
-+#define RPMI_TEE_SEGMENT_SEND_SIZE \
-+	(sizeof(struct rpmi_tee_segment_send_req))
-+/* Size of one BLOCK_HIGH[] and BLOCK_LOW[] entry pair. */
-+#define RPMI_TEE_SEGMENT_SEND_BLOCK_SIZE	(2 * sizeof(__le32))
-+
-+/**
-+ * struct rpmi_tee_parcel_reclaim_req - MEMORY_PARCEL_RECLAIM request
-+ * @parcel_id: Identifier of the parcel to reclaim.
-+ */
-+struct rpmi_tee_parcel_reclaim_req {
-+	__le32 parcel_id;
-+} __packed;
-+
-+/**
-+ * struct rpmi_tee_parcel_reclaim_resp - MEMORY_PARCEL_RECLAIM response
-+ * @status: RPMI completion status.
-+ * @flags: Reclaim result flags.
-+ */
-+struct rpmi_tee_parcel_reclaim_resp {
++struct rpmi_tee_signal_retrieve_resp {
 +	__le32 status;
 +	__le32 flags;
++	__le32 target_id;
++	__le32 signal_count;
++	__le32 signals[];
 +} __packed;
++
++enum rpmi_tee_signal_state {
++	RPMI_TEE_SIGNAL_ACTIVE,
++	RPMI_TEE_SIGNAL_RELEASING,
++};
++
++struct rpmi_tee_signal_reservation {
++	struct rpmi_tee_device *rdev;
++	rpmi_tee_notifier_cb cb;
++	void *cb_data;
++	enum rpmi_tee_signal_state state;
++};
++
++struct rpmi_tee_signal_bus {
++	struct list_head node;	/* Link in the notification signal-bus list. */
++	struct mutex lock;	/* Serializes reservation state and lifetime. */
++	struct xarray reservations;
++	u32 endpoint_id;
++	u32 width;
++	u32 tee_to_ree_count;
++};
 +
  struct rpmi_tee_child {
  	struct list_head node;
  	struct rpmi_tee_device *rdev;
- };
- 
-+struct rpmi_tee_block_iter {
-+	struct scatterlist *sg;
-+	phys_addr_t address;
-+	size_t length;
-+};
-+
-+struct rpmi_tee_parcel_xfer {
-+	struct rpmi_tee_block_iter iter;
-+	u32 parcel_id;
-+	u32 block_count;
-+	u32 next_block;
-+};
-+
- /* rpmi_tee_send_with_status() - Send an RPMI TEE service request. */
- int rpmi_tee_send_with_status(struct rpmi_tee_transport *priv, u32 service_id,
- 			      const void *req, size_t req_len, void *resp,
-@@ -326,6 +446,355 @@ static int rpmi_tee_op_call(struct rpmi_tee_device *rdev, const void *req,
- 	return 0;
+@@ -795,6 +891,280 @@ static int rpmi_tee_op_memory_share(struct rpmi_tee_device *rdev,
+ 	return rpmi_tee_op_parcel_create(rdev, args, false);
  }
  
-+/* MEMORY_PARCEL_RECLAIM. */
-+static int rpmi_tee_memory_reclaim(struct rpmi_tee_transport *priv,
-+				   u32 parcel_id)
++static struct rpmi_tee_signal_bus *
++__rpmi_tee_find_signal_bus(struct rpmi_tee_transport *priv, u32 endpoint_id)
 +{
-+	struct rpmi_tee_parcel_reclaim_req req = {
-+		.parcel_id = cpu_to_le32(parcel_id),
-+	};
-+	struct rpmi_tee_parcel_reclaim_resp resp;
-+	size_t resp_len = sizeof(resp);
-+	int ret;
++	struct rpmi_tee_signal_bus *bus;
 +
-+	ret = rpmi_tee_send(priv, RPMI_TEE_SRV_MEMORY_PARCEL_RECLAIM, &req,
-+			    sizeof(req), &resp, &resp_len);
-+	if (ret)
-+		return ret;
++	list_for_each_entry(bus, &priv->notif.buses, node) {
++		if (bus->endpoint_id == endpoint_id)
++			return bus;
++	}
 +
-+	if (resp_len != sizeof(resp))
++	return NULL;
++}
++
++static struct rpmi_tee_signal_bus *
++rpmi_tee_find_signal_bus(struct rpmi_tee_transport *priv, u32 endpoint_id)
++{
++	lockdep_assert_held(&priv->notif.ops_lock);
++	/* Do not access signal buses after notification shutdown starts. */
++	if (priv->notif.shutting_down)
++		return NULL;
++
++	return __rpmi_tee_find_signal_bus(priv, endpoint_id);
++}
++
++/* Invoke an active signal callback without holding the bus lock. */
++static int rpmi_tee_dispatch_signal(struct rpmi_tee_signal_bus *bus,
++				    u32 signal)
++{
++	struct rpmi_tee_signal_reservation *resv;
++	rpmi_tee_notifier_cb cb = NULL;
++	struct rpmi_tee_device *rdev = NULL;
++	void *cb_data = NULL;
++
++	if (signal >= bus->tee_to_ree_count)
 +		return -EPROTO;
++
++	scoped_guard(mutex, &bus->lock) {
++		resv = xa_load(&bus->reservations, signal);
++		if (resv && resv->state == RPMI_TEE_SIGNAL_ACTIVE) {
++			cb = resv->cb;
++			cb_data = resv->cb_data;
++			rdev = resv->rdev;
++		}
++	}
++
++	if (cb)
++		cb(rdev, signal, cb_data);
 +
 +	return 0;
 +}
 +
-+static int rpmi_tee_op_memory_reclaim(struct rpmi_tee_device *rdev,
-+				       u32 parcel_id)
++/* Release signal IDs that have passed the empty-retrieval barrier. */
++static void rpmi_tee_signal_bus_drop_releasing(struct rpmi_tee_signal_bus *bus)
 +{
-+	return rpmi_tee_memory_reclaim(rpmi_tee_device_to_transport(rdev),
-+				       parcel_id);
++	struct rpmi_tee_signal_reservation *resv;
++	unsigned long index;
++
++	guard(mutex)(&bus->lock);
++	xa_for_each(&bus->reservations, index, resv) {
++		if (resv->state != RPMI_TEE_SIGNAL_RELEASING)
++			continue;
++
++		xa_erase(&bus->reservations, index);
++		kfree(resv);
++	}
 +}
 +
 +/**
-+ * rpmi_tee_count_blocks_sg - Count RPMI memory blocks in an SG list
-+ * @sg: First SG entry describing the memory to share or lend.
-+ * @count_out: Returns the number of RPMI memory blocks.
++ * rpmi_tee_retrieve_signals() - Drain pending TEE-to-REE signals
++ * @priv: RPMI TEE transport
 + *
-+ * Validates that every entry represents one or more whole 4 KiB pages. An
-+ * RPMI memory block represents at most @RPMI_TEE_BLOCK_MAX_PAGES pages.
++ * Retrieve and dispatch signals until the firmware reports no pending data.
++ * Return relinquished signal IDs to their buses only after that empty
++ * retrieval.
 + *
 + * Return: 0 on success, or a negative error code.
 + */
-+static int rpmi_tee_count_blocks_sg(struct scatterlist *sg, u32 *count_out)
++static int rpmi_tee_retrieve_signals(struct rpmi_tee_transport *priv)
 +{
-+	struct scatterlist *entry;
-+	u32 count = 0;
-+
-+	if (!sg)
-+		return -EINVAL;
-+
-+	for (entry = sg; entry; entry = sg_next(entry)) {
-+		phys_addr_t address = sg_phys(entry);
-+		size_t blocks;
-+
-+		if (!entry->length ||
-+		    !IS_ALIGNED(address, RPMI_TEE_MEM_PAGE_SIZE) ||
-+		    !IS_ALIGNED(entry->length, RPMI_TEE_MEM_PAGE_SIZE))
-+			return -EINVAL;
-+
-+		/* One RPMI block describes at most 4096 pages. */
-+		blocks = DIV_ROUND_UP(entry->length >> RPMI_TEE_MEM_PAGE_SHIFT,
-+				      RPMI_TEE_BLOCK_MAX_PAGES);
-+		if (blocks > U32_MAX - count)
-+			return -EOVERFLOW;
-+
-+		count += blocks;
-+	}
-+
-+	*count_out = count;
-+
-+	return 0;
-+}
-+
-+static void rpmi_tee_block_iter_init(struct rpmi_tee_block_iter *iter,
-+				     struct scatterlist *sg)
-+{
-+	iter->sg = sg;
-+	iter->address = 0;
-+	iter->length = 0;
-+}
-+
-+/* Encode the next RPMI memory block from an SG iterator. */
-+static bool rpmi_tee_block_iter_next(struct rpmi_tee_block_iter *iter,
-+				     u32 *high, u32 *low)
-+{
-+	u32 pages;
-+
-+	if (!iter->length) {
-+		if (!iter->sg)
-+			return false;
-+		/* Next SG. */
-+		iter->address = sg_phys(iter->sg);
-+		iter->length = iter->sg->length;
-+		iter->sg = sg_next(iter->sg);
-+	}
-+
-+	/* RPMI memory block represents at most @RPMI_TEE_BLOCK_MAX_PAGES pages. */
-+	pages = min_t(size_t, iter->length >> RPMI_TEE_MEM_PAGE_SHIFT,
-+		      RPMI_TEE_BLOCK_MAX_PAGES);
-+
-+	*high = upper_32_bits(iter->address);
-+	*low = lower_32_bits(iter->address) | (pages - 1);
-+
-+	iter->address += (phys_addr_t)pages << RPMI_TEE_MEM_PAGE_SHIFT;
-+	iter->length -= (size_t)pages << RPMI_TEE_MEM_PAGE_SHIFT;
-+
-+	return true;
-+}
-+
-+static int rpmi_tee_fill_blocks(struct rpmi_tee_block_iter *iter, u8 *data,
-+				u32 count)
-+{
-+	u32 high, low, i;
-+
-+	for (i = 0; i < count; i++) {
-+		if (!rpmi_tee_block_iter_next(iter, &high, &low))
-+			return -EINVAL;
-+
-+		rpmi_tee_put_block(data, count, i, high, low);
-+	}
-+
-+	return 0;
-+}
-+
-+/* Convert memory access flags RPMI_TEE_MEM_ACCESS_* to RPMI_TEE_ACCESS_*. */
-+static u32 rpmi_tee_access(u32 mem_access)
-+{
-+	u32 tee_access = 0;
-+
-+	if (mem_access & RPMI_TEE_MEM_ACCESS_READ)
-+		tee_access |= RPMI_TEE_ACCESS_READ;
-+	if (mem_access & RPMI_TEE_MEM_ACCESS_WRITE)
-+		tee_access |= RPMI_TEE_ACCESS_WRITE;
-+	if (mem_access & RPMI_TEE_MEM_ACCESS_EXEC)
-+		tee_access |= RPMI_TEE_ACCESS_EXEC;
-+
-+	return tee_access;
-+}
-+
-+static int rpmi_tee_reserve_segment_slot(struct rpmi_tee_transport *priv)
-+{
-+	int ret = 0;
-+
-+	guard(mutex)(&priv->mem.lock);
-+	if (priv->mem.multisegment_active == priv->mem.multisegment_max)
-+		ret = -EBUSY;
-+	else
-+		priv->mem.multisegment_active++;
-+
-+	return ret;
-+}
-+
-+static void rpmi_tee_release_segment_slot(struct rpmi_tee_transport *priv)
-+{
-+	guard(mutex)(&priv->mem.lock);
-+	priv->mem.multisegment_active--;
-+}
-+
-+/* Send the remaining blocks of a segmented memory parcel. */
-+static int rpmi_tee_parcel_send_segments(struct rpmi_tee_transport *priv,
-+					 struct rpmi_tee_parcel_xfer *xfer)
-+{
-+	while (xfer->next_block < xfer->block_count) {
-+		size_t req_len;
-+		u32 count;
-+		int ret;
-+
-+		count = min_t(u32, xfer->block_count - xfer->next_block,
-+			      (priv->mbox.max_msg_data_size -
-+				RPMI_TEE_SEGMENT_SEND_SIZE) /
-+				RPMI_TEE_SEGMENT_SEND_BLOCK_SIZE);
-+		if (!count)
-+			return -EMSGSIZE;
-+
-+		req_len = RPMI_TEE_SEGMENT_SEND_SIZE +
-+			RPMI_TEE_SEGMENT_SEND_BLOCK_SIZE * count;
-+
-+		struct rpmi_tee_segment_send_req *req __free(kfree) =
-+			kzalloc(req_len, GFP_KERNEL);
-+		if (!req)
-+			return -ENOMEM;
-+
-+		/* INIT request. */
-+		req->parcel_id = cpu_to_le32(xfer->parcel_id);
-+		req->flags = cpu_to_le32(xfer->next_block + count ==
-+					 xfer->block_count ?
-+					 RPMI_TEE_SEGMENT_LAST : 0);
-+		req->block_count = cpu_to_le32(count);
-+		ret = rpmi_tee_fill_blocks(&xfer->iter, req->data, count);
-+		if (ret)
-+			return ret;
-+
-+		ret = rpmi_tee_send(priv, RPMI_TEE_SRV_MEMORY_SEGMENT_SEND,
-+				    req, req_len, NULL, NULL);
-+		if (ret)
-+			return ret;
-+
-+		xfer->next_block += count;
-+	}
-+
-+	return 0;
-+}
-+
-+/* Create a memory parcel after the caller has validated its operation. */
-+static int rpmi_tee_parcel_create(struct rpmi_tee_transport *priv,
-+				  struct rpmi_tee_mem_args *args)
-+{
-+	struct rpmi_tee_parcel_create_resp resp;
-+	struct rpmi_tee_parcel_xfer xfer;
-+	size_t blk_off, req_len, resp_len;
-+	bool segmented;
++	size_t resp_len = priv->mbox.max_msg_data_size;
++	u32 flags, endpoint_id, signal_count, i;
++	struct rpmi_tee_signal_bus *bus;
++	s32 status;
 +	int ret;
-+	u32 i;
 +
-+	ret = rpmi_tee_count_blocks_sg(args->sg, &xfer.block_count);
-+	if (ret)
-+		return ret;
++	struct rpmi_tee_signal_retrieve_resp *resp __free(kfree) =
++		kzalloc(resp_len, GFP_KERNEL);
++	if (!resp)
++		return -ENOMEM;
 +
-+	/* BLOCK_HIGH[] follows the request header and receiver arrays. */
-+	blk_off = RPMI_TEE_PARCEL_CREATE_SIZE + args->receiver_count *
-+		RPMI_TEE_PARCEL_CREATE_RECEIVER_INFO_SIZE;
++	for (;;) {
++		scoped_guard(mutex, &priv->notif.ops_lock) {
++			/* Stop retrieving so shutdown can drain the worker. */
++			if (priv->notif.shutting_down)
++				return 0;
 +
-+	/* Limit the initial request to the parcel's actual block count. */
-+	xfer.next_block = min((priv->mbox.max_msg_data_size - blk_off) /
-+			      RPMI_TEE_PARCEL_CREATE_BLOCK_SIZE,
-+			      xfer.block_count);
++			resp_len = priv->mbox.max_msg_data_size;
++			ret = rpmi_tee_send_with_status(priv,
++					RPMI_TEE_SRV_SIGNAL_RETRIEVE,
++					NULL, 0, resp, &resp_len, &status);
++			/*
++			 * A signal may be raised after a clear MORE_AVAILABLE
++			 * response and before relinquish. Reusing the ID could
++			 * deliver it to the wrong client.
++			 * Reuse relinquished IDs only after an empty retrieve.
++			 */
++			if (!ret && status == RPMI_ERR_NO_DATA) {
++				struct rpmi_tee_signal_bus *bus;
 +
-+	segmented = xfer.next_block < xfer.block_count;
-+	if (segmented) {
-+		if (!priv->mem.multisegment_max)
-+			return -EOPNOTSUPP;
-+		/* Reserve a slot against the firmware's advertised limit. */
-+		ret = rpmi_tee_reserve_segment_slot(priv);
++				list_for_each_entry(bus, &priv->notif.buses, node)
++					rpmi_tee_signal_bus_drop_releasing(bus);
++			}
++		}
++
 +		if (ret)
 +			return ret;
-+	}
++		/* The firmware has no more pending signals. */
++		if (status == RPMI_ERR_NO_DATA)
++			return 0;
++		if (status)
++			return rpmi_to_linux_error(status);
++		if (resp_len < sizeof(*resp))
++			return -EPROTO;
 +
-+	req_len = blk_off + RPMI_TEE_PARCEL_CREATE_BLOCK_SIZE * xfer.next_block;
++		flags = get_unaligned_le32(&resp->flags);
++		endpoint_id = get_unaligned_le32(&resp->target_id);
++		signal_count = get_unaligned_le32(&resp->signal_count);
 +
-+	struct rpmi_tee_parcel_create_req *req __free(kfree) =
-+		kzalloc(req_len, GFP_KERNEL);
-+	if (!req) {
-+		ret = -ENOMEM;
-+		goto out_release_slot;
-+	}
++		/* Validate the response flags and its variable-length signal array. */
++		if ((flags & ~RPMI_TEE_SIGNAL_MORE_AVAILABLE) || !signal_count ||
++		    signal_count != (resp_len - sizeof(*resp)) / sizeof(__le32))
++			return -EPROTO;
 +
-+	rpmi_tee_block_iter_init(&xfer.iter, args->sg);
++		bus = __rpmi_tee_find_signal_bus(priv, endpoint_id);
++		if (!bus || signal_count > bus->tee_to_ree_count)
++			return -EPROTO;
 +
-+	/* INIT request. */
-+	req->creator_id = cpu_to_le32(priv->self_id);
-+	req->creator_access = cpu_to_le32(rpmi_tee_access(args->creator_access));
-+	req->receiver_count = cpu_to_le32(args->receiver_count);
-+	req->flags = cpu_to_le32(segmented ? RPMI_TEE_PARCEL_MULTI_SEGMENT : 0);
-+	req->nonce = cpu_to_le32(args->nonce);
-+	req->block_count = cpu_to_le32(xfer.next_block);
-+	memcpy(req->label, args->label, sizeof(req->label));
++		for (i = 0; i < signal_count; i++) {
++			u32 signal = get_unaligned_le32(&resp->signals[i]);
 +
-+	for (i = 0; i < args->receiver_count; i++) {
-+		u32 tee_access = rpmi_tee_access(args->receivers[i].access);
-+		/* Store RECEIVER_ID[i] and ACCESS[i]. */
-+		rpmi_tee_put_receiver(req->data, args->receiver_count, i,
-+				      args->receivers[i].endpoint_id,
-+				      tee_access);
-+	}
-+
-+	ret = rpmi_tee_fill_blocks(&xfer.iter,
-+				   req->data + 8 * args->receiver_count,
-+				   xfer.next_block);
-+	if (ret)
-+		goto out_release_slot;
-+
-+	resp_len = sizeof(resp);
-+	ret = rpmi_tee_send(priv, RPMI_TEE_SRV_MEMORY_PARCEL_CREATE,
-+			    req, req_len, &resp, &resp_len);
-+	if (ret)
-+		goto out_release_slot;
-+	if (resp_len != sizeof(resp))
-+		return -EPROTO;
-+
-+	xfer.parcel_id = get_unaligned_le32(&resp.parcel_id);
-+	/* Send remaining blocks as segments. */
-+	ret = rpmi_tee_parcel_send_segments(priv, &xfer);
-+	if (ret) {
-+		/* On error, retain the slot as firmware may still hold it. */
-+		if (rpmi_tee_memory_reclaim(priv, xfer.parcel_id)) {
-+			dev_warn(priv->dev, "failed to abort parcel %#x\n",
-+				 xfer.parcel_id);
-+
-+			return ret;
++			ret = rpmi_tee_dispatch_signal(bus, signal);
++			if (ret)
++				return ret;
 +		}
-+	} else {
-+		args->parcel_id = xfer.parcel_id;
 +	}
-+
-+out_release_slot:
-+	if (segmented)
-+		rpmi_tee_release_segment_slot(priv);
-+
-+	return ret;
 +}
 +
-+/* MEMORY_PARCEL_CREATE. */
-+static int rpmi_tee_op_parcel_create(struct rpmi_tee_device *rdev,
-+				     struct rpmi_tee_mem_args *args, bool lend)
++static void rpmi_tee_notif_work(struct work_struct *work)
++{
++	struct rpmi_tee_notif_state *notif =
++		container_of(work, struct rpmi_tee_notif_state, work);
++	struct rpmi_tee_transport *priv =
++		container_of(notif, struct rpmi_tee_transport, notif);
++	int ret;
++
++	ret = rpmi_tee_retrieve_signals(priv);
++	if (ret)
++		dev_warn(priv->dev, "failed to retrieve signals: %d\n", ret);
++}
++
++static irqreturn_t rpmi_tee_notif_irq_handler(int irq, void *data)
++{
++	struct rpmi_tee_transport *priv = data;
++
++	queue_work(priv->notif.wq, &priv->notif.work);
++	return IRQ_HANDLED;
++}
++
++/* Reserve a TEE-to-REE signal for a notification consumer. */
++static int rpmi_tee_op_notify_request(struct rpmi_tee_device *rdev,
++				      rpmi_tee_notifier_cb cb, void *cb_data,
++				      u32 *signal)
 +{
 +	struct rpmi_tee_transport *priv = rpmi_tee_device_to_transport(rdev);
-+	u32 i;
++	struct rpmi_tee_signal_bus *bus;
++	u32 id;
 +
-+	if (!args || !args->receivers || !args->receiver_count)
++	if (!cb || !signal)
 +		return -EINVAL;
 +
-+	/* LEND relinquishes creator access, whereas SHARE retains it. */
-+	if (lend ? args->creator_access : !args->creator_access)
-+		return -EINVAL;
-+
-+	if (args->creator_access & ~RPMI_TEE_MEM_ACCESS_MASK)
-+		return -EINVAL;
-+	for (i = 0; i < args->receiver_count; i++) {
-+		if (args->receivers[i].access & ~RPMI_TEE_MEM_ACCESS_MASK)
-+			return -EINVAL;
-+	}
-+
-+	if (lend ? !priv->mem.lend_ok : !priv->mem.share_ok)
++	guard(mutex)(&priv->notif.ops_lock);
++	bus = rpmi_tee_find_signal_bus(priv, rdev->endpoint_id);
++	if (!bus)
 +		return -EOPNOTSUPP;
 +
-+	/* A parcel must contain at least one BLOCK_HIGH/BLOCK_LOW pair. */
-+	if (priv->mbox.max_msg_data_size < RPMI_TEE_PARCEL_CREATE_SIZE +
-+	    RPMI_TEE_PARCEL_CREATE_BLOCK_SIZE)
-+		return -EMSGSIZE;
++	struct rpmi_tee_signal_reservation *resv __free(kfree) =
++		kzalloc_obj(*resv, GFP_KERNEL);
++	if (!resv)
++		return -ENOMEM;
 +
-+	/* Check if receiver's info fit after reserving room for one block. */
-+	if (args->receiver_count >
-+	    (priv->mbox.max_msg_data_size - RPMI_TEE_PARCEL_CREATE_SIZE -
-+	     RPMI_TEE_PARCEL_CREATE_BLOCK_SIZE) /
-+	    RPMI_TEE_PARCEL_CREATE_RECEIVER_INFO_SIZE)
-+		return -EMSGSIZE;
++	resv->rdev = rdev;
++	resv->cb = cb;
++	resv->cb_data = cb_data;
++	scoped_guard(mutex, &bus->lock) {
++		int ret;
 +
-+	return rpmi_tee_parcel_create(priv, args);
++		ret = xa_alloc(&bus->reservations, &id, resv,
++			       XA_LIMIT(0, bus->tee_to_ree_count - 1),
++			       GFP_KERNEL);
++		if (ret)
++			return ret == -EBUSY ? -ENOSPC : ret;
++	}
++
++	*signal = id;
++	/* xa_alloc owns resv. */
++	retain_and_null_ptr(resv);
++
++	return 0;
 +}
 +
-+static int rpmi_tee_op_memory_lend(struct rpmi_tee_device *rdev,
-+				   struct rpmi_tee_mem_args *args)
++/* Relinquish a previously reserved TEE-to-REE signal. */
++static int rpmi_tee_op_notify_relinquish(struct rpmi_tee_device *rdev,
++					 u32 signal)
 +{
-+	return rpmi_tee_op_parcel_create(rdev, args, true);
++	struct rpmi_tee_transport *priv = rpmi_tee_device_to_transport(rdev);
++	struct rpmi_tee_signal_bus *bus;
++
++	guard(mutex)(&priv->notif.ops_lock);
++	bus = rpmi_tee_find_signal_bus(priv, rdev->endpoint_id);
++	if (!bus)
++		return -EOPNOTSUPP;
++
++	if (signal >= bus->tee_to_ree_count)
++		return -EINVAL;
++
++	scoped_guard(mutex, &bus->lock) {
++		struct rpmi_tee_signal_reservation *resv;
++
++		resv = xa_load(&bus->reservations, signal);
++		if (!resv)
++			return -ENOENT;
++		/* Release only if @signal belongs to @rdev. */
++		if (resv->rdev != rdev)
++			return -EPERM;
++		if (resv->state == RPMI_TEE_SIGNAL_RELEASING)
++			return -EALREADY;
++
++		resv->state = RPMI_TEE_SIGNAL_RELEASING;
++	}
++
++	queue_work(priv->notif.wq, &priv->notif.work);
++
++	return 0;
 +}
 +
-+static int rpmi_tee_op_memory_share(struct rpmi_tee_device *rdev,
-+				    struct rpmi_tee_mem_args *args)
++/* Raise an REE-to-TEE signal. */
++static int rpmi_tee_op_signal_raise(struct rpmi_tee_device *rdev, u32 signal)
 +{
-+	return rpmi_tee_op_parcel_create(rdev, args, false);
++	struct rpmi_tee_transport *priv = rpmi_tee_device_to_transport(rdev);
++	struct rpmi_tee_signal_raise_one_req req = {
++		.target_id = cpu_to_le32(rdev->endpoint_id),
++		.signal_count = cpu_to_le32(1),
++		.signal = cpu_to_le32(signal),
++	};
++	struct rpmi_tee_signal_bus *bus;
++
++	guard(mutex)(&priv->notif.ops_lock);
++	bus = rpmi_tee_find_signal_bus(priv, rdev->endpoint_id);
++	if (!bus)
++		return -EOPNOTSUPP;
++
++	if (signal < bus->tee_to_ree_count || signal >= bus->width)
++		return -EINVAL;
++
++	return rpmi_tee_send(priv, RPMI_TEE_SRV_SIGNAL_RAISE, &req,
++			     sizeof(req), NULL, NULL);
 +}
++
++static const struct rpmi_tee_notifier_ops rpmi_tee_notifier_ops = {
++	.notify_request = rpmi_tee_op_notify_request,
++	.notify_relinquish = rpmi_tee_op_notify_relinquish,
++	.signal_raise = rpmi_tee_op_signal_raise,
++};
 +
  static const struct rpmi_tee_info_ops rpmi_tee_info_ops = {
  	.msg_limits_get = rpmi_tee_op_msg_limits_get,
  };
-@@ -334,9 +803,16 @@ static const struct rpmi_tee_msg_ops rpmi_tee_msg_ops = {
- 	.call = rpmi_tee_op_call,
- };
- 
-+static const struct rpmi_tee_mem_ops rpmi_tee_mem_ops = {
-+	.memory_lend = rpmi_tee_op_memory_lend,
-+	.memory_share = rpmi_tee_op_memory_share,
-+	.memory_reclaim = rpmi_tee_op_memory_reclaim,
-+};
-+
- static const struct rpmi_tee_ops rpmi_tee_ops = {
+@@ -813,6 +1183,7 @@ static const struct rpmi_tee_ops rpmi_tee_ops = {
  	.info_ops = &rpmi_tee_info_ops,
  	.msg_ops = &rpmi_tee_msg_ops,
-+	.mem_ops = &rpmi_tee_mem_ops,
+ 	.mem_ops = &rpmi_tee_mem_ops,
++	.notifier_ops = &rpmi_tee_notifier_ops,
  };
  
  static void rpmi_tee_unregister_devices(struct rpmi_tee_transport *priv)
-@@ -431,6 +907,7 @@ static int rpmi_tee_transport_probe(struct platform_device *pdev)
+@@ -826,6 +1197,212 @@ static void rpmi_tee_unregister_devices(struct rpmi_tee_transport *priv)
+ 	}
+ }
+ 
++static void rpmi_tee_signal_bus_destroy_resvs(struct rpmi_tee_signal_bus *bus)
++{
++	struct rpmi_tee_signal_reservation *resv;
++	unsigned long index;
++
++	xa_for_each(&bus->reservations, index, resv) {
++		xa_erase(&bus->reservations, index);
++		kfree(resv);
++	}
++
++	xa_destroy(&bus->reservations);
++}
++
++static void rpmi_tee_teardown_signal_buses(struct rpmi_tee_transport *priv)
++{
++	struct rpmi_tee_signal_bus *bus, *tmp;
++
++	list_for_each_entry_safe(bus, tmp, &priv->notif.buses, node) {
++		struct rpmi_tee_signal_bus_teardown_req req = {
++			.target_id = cpu_to_le32(bus->endpoint_id),
++		};
++		int ret;
++
++		/* Completion includes the target TEE's teardown acknowledgment. */
++		ret = rpmi_tee_send(priv, RPMI_TEE_SRV_SIGNAL_BUS_TEARDOWN, &req,
++				    sizeof(req), NULL, NULL);
++		if (ret)
++			dev_warn(priv->dev, "failed to tear down signal bus for %#x: %d\n",
++				 bus->endpoint_id, ret);
++
++		rpmi_tee_signal_bus_destroy_resvs(bus);
++		list_del(&bus->node);
++		kfree(bus);
++	}
++}
++
++/* Drain callbacks, remove clients, then tear down notification resources. */
++static void rpmi_tee_teardown_endpoints(struct rpmi_tee_transport *priv)
++{
++	/* Initiate a notification shutdown. */
++	scoped_guard(mutex, &priv->notif.ops_lock)
++		priv->notif.shutting_down = true;
++
++	if (priv->notif.irq_requested) {
++		free_irq(priv->notif.irq, priv);
++		priv->notif.irq_requested = false;
++	}
++
++	if (priv->notif.wq) {
++		destroy_workqueue(priv->notif.wq);
++		priv->notif.wq = NULL;
++	}
++
++	/* Clients can still send final TEE_CALLs while signal buses exist. */
++	rpmi_tee_unregister_devices(priv);
++
++	/* Public notification operations and callbacks have stopped. */
++	rpmi_tee_teardown_signal_buses(priv);
++
++	if (priv->notif.irq) {
++		irq_dispose_mapping(priv->notif.irq);
++		priv->notif.irq = 0;
++	}
++}
++
++/* Set up an RPMI signal bus for one @endpoint_id TEE endpoint. */
++static int rpmi_tee_setup_ep_signal_bus(struct rpmi_tee_transport *priv,
++					u32 endpoint_id)
++{
++	struct rpmi_tee_signal_bus_setup_req req;
++	u32 max_width, width, tee_to_ree_count;
++
++	/* Avoid duplicate signal bus for endpoint. */
++	if (__rpmi_tee_find_signal_bus(priv, endpoint_id))
++		return 0;
++
++	if (priv->mbox.max_msg_data_size <
++	    sizeof(struct rpmi_tee_signal_retrieve_resp))
++		return -EMSGSIZE;
++
++	max_width = FIELD_GET(RPMI_TEE_SIGNAL_WIDTH_MASK,
++			      priv->notif.feature);
++	width = min(max_width,
++		    2 * ((priv->mbox.max_msg_data_size -
++			  sizeof(struct rpmi_tee_signal_retrieve_resp)) /
++			 sizeof(__le32)) + 1);
++	if (width < 2)
++		return -EMSGSIZE;
++
++	/* Use half available signals for TEE-to-REE range. */
++	tee_to_ree_count = width / 2;
++
++	struct rpmi_tee_signal_bus *bus __free(kfree) =
++		kzalloc_obj(*bus, GFP_KERNEL);
++	if (!bus)
++		return -ENOMEM;
++
++	mutex_init(&bus->lock);
++	xa_init_flags(&bus->reservations, XA_FLAGS_ALLOC);
++	bus->endpoint_id = endpoint_id;
++	bus->width = width;
++	bus->tee_to_ree_count = tee_to_ree_count;
++
++	req.target_id = cpu_to_le32(endpoint_id);
++	req.bus_width = cpu_to_le32(width);
++	req.sender_signals = cpu_to_le32(tee_to_ree_count);
++	/* Publish the local bus only after the target TEE accepts setup. */
++	if (rpmi_tee_send(priv, RPMI_TEE_SRV_SIGNAL_BUS_SETUP, &req,
++			  sizeof(req), NULL, NULL))
++		return -EOPNOTSUPP;
++
++	list_add_tail(&no_free_ptr(bus)->node, &priv->notif.buses);
++
++	return 0;
++}
++
++static int rpmi_tee_map_signal_irq(struct rpmi_tee_transport *priv)
++{
++	struct device_node *np;
++	struct of_phandle_args oirq = {};
++	u32 mode, index;
++	int irq;
++
++	mode = FIELD_GET(RPMI_TEE_SIGNAL_MODE_MASK, priv->notif.feature);
++	if (mode != RPMI_TEE_SIGNAL_MODE_SYSTEM_MSI)
++		return 0;
++
++	for_each_compatible_node(np, NULL, "riscv,rpmi-system-msi") {
++		if (of_device_is_available(np))
++			break;
++	}
++
++	if (!np)
++		return 0;
++	if (!irq_find_host(np)) {
++		of_node_put(np);
++		return -EPROBE_DEFER;
++	}
++
++	index = FIELD_GET(RPMI_TEE_SIGNAL_INDEX_MASK, priv->notif.feature);
++	oirq.np = np;
++	oirq.args_count = 1;
++	oirq.args[0] = index;
++	irq = irq_create_of_mapping(&oirq);
++
++	of_node_put(np);
++
++	return irq;
++}
++
++/**
++ * rpmi_tee_setup_signal_bus() - Set up signal notification delivery
++ * @priv: RPMI TEE transport
++ * @system: Discovered TEE endpoints that may own signal buses
++ *
++ * Map the signal interrupt, then set up a bus for each endpoint. Endpoint
++ * setup failures are nonfatal, allowing notifications for the remaining
++ * endpoints. Register the interrupt handler only when at least one bus is
++ * available.
++ *
++ * Return: 0 on completion, or -EPROBE_DEFER when the System MSI IRQ domain
++ * is not ready.
++ */
++static int
++rpmi_tee_setup_signal_bus(struct rpmi_tee_transport *priv,
++			 const struct rpmi_tee_discovery *system)
++{
++	struct rpmi_tee_discovered_endpoint *ep;
++	int ret;
++
++	priv->notif.irq = rpmi_tee_map_signal_irq(priv);
++	if (priv->notif.irq < 0)
++		return priv->notif.irq;
++	if (!priv->notif.irq)
++		return 0;
++
++	list_for_each_entry(ep, &system->eps, node) {
++		ret = rpmi_tee_setup_ep_signal_bus(priv, ep->ep_id);
++		if (ret)
++			dev_warn(priv->dev, "failed to set up signal bus for %#x: %d\n",
++				 ep->ep_id, ret);
++	}
++
++	if (list_empty(&priv->notif.buses))
++		goto out_failed;
++
++	ret = request_irq(priv->notif.irq, rpmi_tee_notif_irq_handler, 0,
++			  dev_name(priv->dev), priv);
++	if (ret) {
++		dev_warn(priv->dev, "failed to request signal IRQ: %d\n", ret);
++		rpmi_tee_teardown_signal_buses(priv);
++		goto out_failed;
++	}
++
++	priv->notif.irq_requested = true;
++
++	return 0;
++
++out_failed:
++	/* Failures are nonfatal; only disable notification. */
++	irq_dispose_mapping(priv->notif.irq);
++	priv->notif.irq = 0;
++
++	return 0;
++}
++
+ static struct rpmi_tee_device *
+ rpmi_tee_find_device(struct rpmi_tee_transport *priv, const uuid_t *uuid,
+ 		     u32 endpoint_id)
+@@ -881,14 +1458,19 @@ static int rpmi_tee_setup_endpoints(struct rpmi_tee_transport *priv)
+ 	if (ret)
+ 		return ret;
+ 
++	ret = rpmi_tee_setup_signal_bus(priv, &system);
++	if (ret)
++		goto out_failed;
++
+ 	list_for_each_entry(ep, &system.eps, node) {
+ 		ret = rpmi_tee_register_devices(priv, ep);
+ 		if (ret) {
+-			rpmi_tee_unregister_devices(priv);
++			rpmi_tee_teardown_endpoints(priv);
+ 			break;
+ 		}
+ 	}
+ 
++out_failed:
+ 	rpmi_tee_free_discovery(&system);
+ 
+ 	return ret;
+@@ -907,7 +1489,11 @@ static int rpmi_tee_transport_probe(struct platform_device *pdev)
  	priv->dev = &pdev->dev;
  	platform_set_drvdata(pdev, priv);
  	INIT_LIST_HEAD(&priv->devices);
-+	mutex_init(&priv->mem.lock);
++	INIT_LIST_HEAD(&priv->notif.buses);
+ 	mutex_init(&priv->mem.lock);
++	mutex_init(&priv->notif.ops_lock);
++	INIT_WORK(&priv->notif.work, rpmi_tee_notif_work);
++
  	priv->mbox.client.dev = &pdev->dev;
  	priv->mbox.client.tx_sync = true;
  	priv->mbox.chan = mbox_request_channel(&priv->mbox.client, 0);
+@@ -915,6 +1501,7 @@ static int rpmi_tee_transport_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(priv->mbox.chan),
+ 				     "failed to request mailbox channel\n");
+ 
++	/* Validate the RPMI mailbox transport. */
+ 	ret = rpmi_tee_check_transport(priv);
+ 	if (ret) {
+ 		dev_err_probe(&pdev->dev, ret,
+@@ -944,6 +1531,12 @@ static int rpmi_tee_transport_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto out_failed;
+ 
++	priv->notif.wq = alloc_workqueue("rpmi_tee_notif", WQ_UNBOUND, 0);
++	if (!priv->notif.wq) {
++		ret = -ENOMEM;
++		goto out_failed;
++	}
++
+ 	ret = rpmi_tee_setup_endpoints(priv);
+ 	if (ret) {
+ 		dev_err_probe(&pdev->dev, ret,
+@@ -954,6 +1547,8 @@ static int rpmi_tee_transport_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ out_failed:
++	if (priv->notif.wq)
++		destroy_workqueue(priv->notif.wq);
+ 	mbox_free_channel(priv->mbox.chan);
+ 
+ 	return ret;
+@@ -963,7 +1558,7 @@ static void rpmi_tee_transport_remove(struct platform_device *pdev)
+ {
+ 	struct rpmi_tee_transport *priv = platform_get_drvdata(pdev);
+ 
+-	rpmi_tee_unregister_devices(priv);
++	rpmi_tee_teardown_endpoints(priv);
+ 	mbox_free_channel(priv->mbox.chan);
+ }
+ 
 diff --git a/drivers/firmware/riscv_rpmi_tee/rpmi_tee_private.h b/drivers/firmware/riscv_rpmi_tee/rpmi_tee_private.h
-index 0c3cfa0f14ec..4df47d52724a 100644
+index 4df47d52724a..4d302f8ca16a 100644
 --- a/drivers/firmware/riscv_rpmi_tee/rpmi_tee_private.h
 +++ b/drivers/firmware/riscv_rpmi_tee/rpmi_tee_private.h
-@@ -8,6 +8,7 @@
- 
- #include <linux/list.h>
- #include <linux/mailbox_client.h>
-+#include <linux/mutex.h>
+@@ -11,6 +11,7 @@
+ #include <linux/mutex.h>
  #include <linux/types.h>
  #include <linux/uuid.h>
++#include <linux/workqueue.h>
  
-@@ -19,6 +20,9 @@
+ /* TEE service group and the services used by this module. */
+ #define RPMI_SRVGRP_TEE		0x10
+@@ -20,12 +21,37 @@
  #define RPMI_TEE_SRV_PROBE_DOMAIN	0x04
  #define RPMI_TEE_SRV_PROBE_ENDPOINT	0x05
  #define RPMI_TEE_SRV_CALL		0x18
-+#define RPMI_TEE_SRV_MEMORY_PARCEL_CREATE	0x0e
-+#define RPMI_TEE_SRV_MEMORY_PARCEL_RECLAIM	0x11
-+#define RPMI_TEE_SRV_MEMORY_SEGMENT_SEND	0x12
++#define RPMI_TEE_SRV_SIGNAL_BUS_SETUP		0x0a
++#define RPMI_TEE_SRV_SIGNAL_BUS_TEARDOWN	0x0b
++#define RPMI_TEE_SRV_SIGNAL_RAISE		0x0c
++#define RPMI_TEE_SRV_SIGNAL_RETRIEVE		0x0d
+ #define RPMI_TEE_SRV_MEMORY_PARCEL_CREATE	0x0e
+ #define RPMI_TEE_SRV_MEMORY_PARCEL_RECLAIM	0x11
+ #define RPMI_TEE_SRV_MEMORY_SEGMENT_SEND	0x12
  
++/**
++ * struct rpmi_tee_notif_state - Signal notification state
++ * @buses: List of signal buses established for TEE endpoints.
++ * @work: Retrieves and dispatches pending TEE-to-REE signals.
++ * @wq: Workqueue used for @work.
++ * @ops_lock: Serializes public notification operations with signal-bus
++ *	    teardown. It prevents new operations after @shutting_down is set and
++ *	    serializes rpmi_tee_op_notify_relinquish() with the empty
++ *	    SIGNAL_RETRIEVE release barrier.
++ * @feature: SIGNAL feature value reported by the transport.
++ * @irq: Linux IRQ assigned to the signal notification interrupt.
++ * @irq_requested: Whether @irq has been requested.
++ * @shutting_down: Prevents public notification operations during teardown.
++ */
  struct rpmi_tee_notif_state {
++	struct list_head buses;
++	struct work_struct work;
++	struct workqueue_struct *wq;
++	struct mutex ops_lock;
  	u32 feature;
-@@ -31,7 +35,9 @@ struct rpmi_tee_mbox {
++	int irq;
++	bool irq_requested;
++	bool shutting_down;
  };
  
- struct rpmi_tee_mem_state {
-+	struct mutex lock;
- 	u32 multisegment_max;
-+	u32 multisegment_active;
- 	bool lend_ok;
- 	bool share_ok;
- };
+ struct rpmi_tee_mbox {
 diff --git a/include/linux/rpmi_tee.h b/include/linux/rpmi_tee.h
-index a76055149996..10f6cae4a3a7 100644
+index 10f6cae4a3a7..f392b75ecaef 100644
 --- a/include/linux/rpmi_tee.h
 +++ b/include/linux/rpmi_tee.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/device.h>
- #include <linux/module.h>
-+#include <linux/scatterlist.h>
- #include <linux/types.h>
- #include <linux/uuid.h>
- 
-@@ -70,10 +71,67 @@ struct rpmi_tee_msg_ops {
- 		    size_t req_len, void *resp, size_t *resp_len);
+@@ -127,11 +127,35 @@ struct rpmi_tee_mem_ops {
+ 	int (*memory_reclaim)(struct rpmi_tee_device *rdev, u32 parcel_id);
  };
  
-+/* Access permissions used by memory parcel operations. */
-+#define RPMI_TEE_MEM_ACCESS_READ	BIT(0)
-+#define RPMI_TEE_MEM_ACCESS_WRITE	BIT(1)
-+#define RPMI_TEE_MEM_ACCESS_EXEC	BIT(2)
-+#define RPMI_TEE_MEM_ACCESS_MASK	(RPMI_TEE_MEM_ACCESS_READ | \
-+					 RPMI_TEE_MEM_ACCESS_WRITE | \
-+					 RPMI_TEE_MEM_ACCESS_EXEC)
++typedef void (*rpmi_tee_notifier_cb)(struct rpmi_tee_device *rdev,
++				     u32 signal, void *cb_data);
 +
-+/* One receiver's access rights for a memory parcel. */
-+struct rpmi_tee_mem_receiver {
-+	/* RPMI endpoint identifier of the receiver. */
-+	u32 endpoint_id;
-+	/* Bitwise OR of RPMI_TEE_MEM_ACCESS_* permissions. */
-+	u32 access;
-+};
-+
-+/* Arguments used to create a memory parcel. */
-+struct rpmi_tee_mem_args {
-+	/* Scatterlist describing whole, 4 KiB-aligned memory pages. */
-+	struct scatterlist *sg;
-+	/* Array of @receiver_count parcel receivers. */
-+	const struct rpmi_tee_mem_receiver *receivers;
-+	/* Number of entries in @receivers. */
-+	u32 receiver_count;
-+	/* Creator permissions retained by a SHARE operation. */
-+	u32 creator_access;
-+	/* Implementation-defined value carried in the parcel descriptor. */
-+	u32 nonce;
-+	/* Implementation-defined 16-byte parcel label. */
-+	u8 label[16];
-+	/* Returned firmware-assigned parcel identifier on success. */
-+	u32 parcel_id;
-+};
-+
-+/* RPMI TEE memory-parcel operations. */
-+struct rpmi_tee_mem_ops {
++/* RPMI TEE signal notification operations. */
++struct rpmi_tee_notifier_ops {
 +	/**
-+	 * @memory_lend: Lend the pages described by @args to its receivers. The
-+	 *	creator must not retain access, so @args->creator_access must be zero.
++	 * @notify_request: Allocate a TEE-to-REE signal and associate it with
++	 *	@cb and @cb_data. The allocated signal is returned through @signal.
 +	 */
-+	int (*memory_lend)(struct rpmi_tee_device *rdev,
-+			   struct rpmi_tee_mem_args *args);
++	int (*notify_request)(struct rpmi_tee_device *rdev,
++			      rpmi_tee_notifier_cb cb, void *cb_data, u32 *signal);
 +	/**
-+	 * @memory_share: Share the pages described by @args with its receivers.
-+	 *	The creator retains the nonzero permissions in
-+	 *	@args->creator_access.
++	 * @notify_relinquish: Stop dispatching a TEE-to-REE @signal previously
++	 *	allocated for @rdev. The release is asynchronous and a callback may
++	 *	relinquish its own signal.
 +	 */
-+	int (*memory_share)(struct rpmi_tee_device *rdev,
-+			    struct rpmi_tee_mem_args *args);
++	int (*notify_relinquish)(struct rpmi_tee_device *rdev, u32 signal);
 +	/**
-+	 * @memory_reclaim: Reclaim the parcel identified by @parcel_id after all
-+	 *	receivers have relinquished it.
++	 * @signal_raise: Raise an REE-to-TEE @signal selected by the TEE service.
 +	 */
-+	int (*memory_reclaim)(struct rpmi_tee_device *rdev, u32 parcel_id);
++	int (*signal_raise)(struct rpmi_tee_device *rdev, u32 signal);
 +};
 +
  /* RPMI TEE transport operation groups. */
  struct rpmi_tee_ops {
  	const struct rpmi_tee_info_ops *info_ops;
  	const struct rpmi_tee_msg_ops *msg_ops;
-+	const struct rpmi_tee_mem_ops *mem_ops;
+ 	const struct rpmi_tee_mem_ops *mem_ops;
++	const struct rpmi_tee_notifier_ops *notifier_ops;
  };
  
  extern const struct bus_type rpmi_tee_bus_type;
