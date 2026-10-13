@@ -4,99 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA2BACC6B03
-	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9E57CA9ED0
+	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:44:34 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 0ED1045225
-	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:44:06 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0BA0F45225
+	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:44:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791870246;
-	bh=FHcu4WoFZaE8/uyERBTYvjMUmeofac2MOuBgF2LD2zE=;
+	d=lists.trustedfirmware.org; s=2024; t=1791870274;
+	bh=7Q5nRa43hWpowrs3WTtfQQ8c7SPGddet586Xp5YmbBI=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=jK8+zhkvzgbSHq77mkI3J6QiY17aO5yH3mOpdWiB4QSywCkBtZzOt/5dSDT1FYspH
-	 +xaqnKCa4J3h99cce4hXh/2mpO7Ilc+YxzMVu4xR98ugaXJuaFiSEe7UwXZPeI5gib
-	 5z7ZEpz1Z+TFD0/uuKTPBTm1C15aA0BX/pwRZXhsM7UZEKCLsv6mv20cCcfaOmaBXF
-	 QPCiXZ4CMLaj1ymAevPA9yWQUFGZiCV4RGAoAoj6/OiTPKc26lMjSYnL5GiUJIowbS
-	 9ycmV9m47h2baA6ZpGx1Z8CG9QVnUKV66i3TDyJyWcxkcZIHGuRN6Z2rRLlGhr4plp
-	 k/AVZDoRAXUzw==
+	b=h5yOKJPDXzi8YMQ8U4tWhp+JaKE0ROMA5TBnVUZwyI65tHOSDA4unXiOKqTkFTeyI
+	 X6PrQ8XkEgtrDdLS1EzFMIoAnb7Uc6Hxmy4STADmD/GZNC8elSKuI/FaZ8c0EelbbT
+	 +9CaWD+b4D6U3X24cdyuw1QR5x7ulTNkRS1SYo39gD+lCnCdn+0jzSgi1dFStnYmEe
+	 cd3r6L51WS/zvAwZtv++/EiTDCfIQWljiyoPW0SOmGGbSMZ1sbkSlWmNyf/nzJL0iI
+	 Lf/beeLKJcg+8noG6P0j+5aedDjN9UuP6jkOLdHpWiyJsdBc3jWMGG7ssJ6L1Id+Mk
+	 d8nJqCAXu+mYg==
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 14C0945225
-	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:57 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 989F845232
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:58 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=DVWwE8b8;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VmBap1sE;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=N64wzUaJ;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=AAtWFww7;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D469Fm173800
-	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:56 GMT
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D20fHL922859
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	h7YZRIa+NRNY0y0wXCVE1k0DjUJFm0HRtljake6wepM=; b=DVWwE8b8Rx8t2r6m
-	11Lj1DzUuo6jymUVXc6PIdpnQdj9fueuGkZIYwnFRZ6xNKzSdu23aGqkasjmAO9k
-	FMzoR1LZ2gMN1WRbYhNNJAEIf4wqzAqt2yUlRmrZHhaHaudgz6dxkSMjU3lc968d
-	kl0qPY0sKlmq3EiISNXv9i8nw6UOx1uSSa8uExfCtsDc9L1/z7wq7S19+TDEqDT5
-	8A6+/tN5Jd75GBI94OF2EblFYQvUKYlcDKuV9LWFHRUYkNQXss1u8uapdlLVBd3D
-	nJSgShcXcyjnn8ptc9glyDOnx0PznPmlnhvvIL952zwqJAI8GXqK4AKgZM8NPkZK
-	f3pI4Q==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h9daqr9un-1
+	P9/Es066BKyO9sRu6bY124oGmsHpSkt+MyzxTSuoHdw=; b=N64wzUaJQPWl7GrO
+	o2Y+P28Hfkq5qTYerT+VjMf7hTj/co8gaqJdwraY6hVP4uhIpmeZ0FvGjum454FL
+	6KlFVbTIIJxsDXtPHoeqjV9idCktviSbAY+2E2CCWzcpS9xcwZ+4CKjs0DoUVwy3
+	Y0k2wYRtTK6Euzg+zwosQ2VBUJDGLtFra15XIOYxh3MQr+KtwY0P/XW01vfK7ofV
+	/km00MnWOkcftyL70IeeC9zSsCrl1aWKHeGU72j+vPpGJzL8UkJeqwAGN5cz5NJR
+	u7a7h9KPul7kOSqyMm9JoJI5czruSxvt66Qh5W1ukGuLRAxNQM4YFcplME6y2gfI
+	rfK2og==
+Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h98h1s8w0-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:55 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-3a7fa5e0442so3849960a91.0
-        for <op-tee@lists.trustedfirmware.org>; Mon, 12 Oct 2026 22:41:55 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:57 +0000 (GMT)
+Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-cc42a07d04aso1744243a12.1
+        for <op-tee@lists.trustedfirmware.org>; Mon, 12 Oct 2026 22:41:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791870115; x=1792474915; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1791870117; x=1792474917; darn=lists.trustedfirmware.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=h7YZRIa+NRNY0y0wXCVE1k0DjUJFm0HRtljake6wepM=;
-        b=VmBap1sEln6fEz6HZm7wWoaCAe1CU0FqungImN1BXER8bBwSjKIYA/sq4iwVTSvdqs
-         rC6xcR6aGCIe/GRtr2aEWxaqcPilI3fNCUJ8xUSij3ZaSKcMXnw7Fuf5oQ+qNM6j0aLK
-         Y0MrJqeSVzQ1iPPZHQPyx+fcwY/JjfotpDvXLeegFlHN8bPf2MCHYv+byVbtBGG6+Q7t
-         Q3t/0Mt3GWFlJlBoAHrkWl/JJsV1Z2nrmPFe8aQHIXFQ6G5ZHg//YdEt03JtOtljQB1r
-         VAF4SFxRCHjN/eNKa3bZ7CCjCmQA7qIepL/3+fXMAO9/ZDxE4QDc7SI52gmY4SyaUP/2
-         PNcA==
+        bh=P9/Es066BKyO9sRu6bY124oGmsHpSkt+MyzxTSuoHdw=;
+        b=AAtWFww7dmAV5re5tTGD918umhddd95EGBrHOqZ8mHNndOY1rvU7cBT0wbbH+lDOU0
+         5JFW/Mc3eh5+2k9cDrCTcuG8VW7+mv0CE9+YoC5+l4+GCTH8ToRQXlzrPoKNyf3nmrHu
+         bOfgjqpzR7mc5fgwmCAtliu0y8QpKBuUqelnAf3lY1L8YBpq/RWsH7QZvhx2rTE9hfx3
+         DBJ1jp5fZLoMdc2QyMlpAA0ZRKtvDpEYdqLv0Y15dtTBIVmaKu8AOSMXqm/D1YBnw1CR
+         eZp3Td6CgTj/fqh406bfHXdKNAxIdBHGlIgJFrtbNxvxqaVAxBDAHIfeV7kWNQp85pc4
+         wHuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791870115; x=1792474915;
+        d=1e100.net; s=20260707; t=1791870117; x=1792474917;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=h7YZRIa+NRNY0y0wXCVE1k0DjUJFm0HRtljake6wepM=;
-        b=lyWrRa1pyPP6GECHX2baZZ4zY9EsRw/Hhk7BBAeHGRnbLovui9Tw7A+mfeJ5zXxHso
-         6P5EOgA+43VYJ3q7DeUol0C1jPUI9Cnlg0OrnwoZ9oaCIeUOfHqk5gQaWksPslZYg6X9
-         j6eJpK5diTL1DzIt79mcfUt6FRqmZCXwHidFUMRMrak93g0acAeD3PVdmxS5Kp4IWNs9
-         dXmJatmUbmERe3Oylaod6emsUIK9dDH49P29lE8V+36FSwm5H+U7ilD8yX3xTarSNWvu
-         t0c/zdRdrzLb/US65EtNn3uovbISLw4gCmNDMQozgETAjRIywG3CCxQo5ggZX++PMuur
-         DynQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwH2c8utQA0OCP/KfAZ2guVqs3oazrAfE0zpLFyhJoweCn74THkzYu7uDBDztxWeJyZYyDpcCg=@lists.trustedfirmware.org
-X-Gm-Message-State: AFq9FYJ92A7VOSpiiEBSEz2CNK9g+Tx1+RnpFAs3at4e/Ta27egz3LGQ
-	uMkSQ3+iYVR2N8Q8uJOD8XIqcBcWu8MwFHRAPEAwUi7+2uYCltyoF7gVd0w/0gjhOxvVTgpJFYc
-	PBoeEgHROQ4SIpN5s8XxMi1UM1zMOTiCZQCZgND/PraOrL441feKpHtJ3RvexDsLmiiHBr4Y=
-X-Gm-Gg: AYBFou3+EhX9rT2mBfFNlFGbgjNd6lqR8nm4vaAepXt1I4jvbsDvRaTa8IeFmLgiiZx
-	34/+pZ6btRCZeHP6LUq/eRvml3r2cn9WWPbfZBE8CySDXVG6u0bSzQRw21kJIJP0LeYvSCKiZho
-	Asaw0GSVVhKxY1DfDfc/X0C5Zuv6+cmz1ew31vuoMQVVZQY2lcJeVJUYoeyvCJSgc39kULjpK0o
-	Q5I3hsc8G7TYDEzj4sckNRR6J0DGO8vMuXYmvk4FlKHajKo3XgJp8v0nIFvU7gHkliHkrfy4AWj
-	I6qRPVYha97A8qstT/DmPqPtyY9dbKBi3e2o3FKrZcmKB5rSGUkN1hNLSsoqbxlQ5XvNmGCoxI+
-	SMSZC5NKDeyCa9CfxxtTjQe1g55xRfuZ790ohWO2jxcvcYEalmZfIKq/oyQ==
-X-Received: by 2002:a17:90a:d006:b0:39e:53a:c8d4 with SMTP id 98e67ed59e1d1-3ab3a90e57amr8356618a91.12.1791870114640;
-        Mon, 12 Oct 2026 22:41:54 -0700 (PDT)
-X-Received: by 2002:a17:90a:d006:b0:39e:53a:c8d4 with SMTP id 98e67ed59e1d1-3ab3a90e57amr8356597a91.12.1791870114075;
-        Mon, 12 Oct 2026 22:41:54 -0700 (PDT)
+        bh=P9/Es066BKyO9sRu6bY124oGmsHpSkt+MyzxTSuoHdw=;
+        b=O8RTjTe2NwFz9BP+cmAQyC6mIFJbYlAdQkSH2oo+WIxDWVdguFYFM5y0dHTvBtJcnf
+         kcqW+8KTVhUzovW3BMzW0m0sqTTtnUuE29Q3UCByn3mtFlEN0Gtm5px4aMclMt/vZ0Rk
+         /HpQvxUoD5Wv0MocNknsMC7zKr5m0lTwoAYDzfjK5j1xSh5k06my92Qdw3qAeaunEu17
+         fdDtxFL03E6Ka2NqhXbIiruN9fwmpHGHsUWP1L/rmhf8KvoSQSTIcHlBz4EGfh7Mfzr3
+         3d67AYbAbYY//bPVwHSirj7qb+L+2WTxD0OskqrdiSqkm2YcQyNG1NfYcgNjPa/+p3CM
+         yYPg==
+X-Forwarded-Encrypted: i=1; AKwUvByPxbXPbB+WFpW+9QvNDSsLIngh3BZID2ORjhOHTa+cQn3GXVqKQKKQ5LSU+npHnI6QBKJ3+hM=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYLNgOkLun4yUS2szvMa2aWTfAiv+/19kzwAEYPsmLt/06HkIbpB
+	RyH0pcIAcpjyFS8EHAJ1ahJwP9GIpp9QRoPSE1UEJabMsuTf48LL49Tt/pRvYrnIaKSaIlyniNr
+	50IbzDBhotZnCJ+dzMzpLqInwL7+oIsVsI+vmCxFFoeU8R6JVGHXenQNgTVDmk72lFXOlXgc=
+X-Gm-Gg: AYBFou1b2q9AcxqBnt3te/vEsbXvFqmnBjRMz0yXpGUXOCjEXkZWxSTgbTF8iMWb8aI
+	e8rKNL+UgToTyp1ElUNVMCuh6s7seOTbtUNg5etXeSuGV2IcR1I4Qq+H7SFFPDvGh36TYLqFlJk
+	pcENwBw7yscsWIGH9WmyZVNxgspHpqe63f9MhK9uMRV+m/4MSvgq65KateK92gb7g7NsyTvxy8i
+	oL7qs+vlgd432hAH2xFHM+F9Fuu6EZ9hpqj2MxWfPsM9MnI9cFhmjwcswQximlYuxg7J3tHavH+
+	KjAzzIe+DdITit64pHgUA6EPEob83oYYIw2vQtBCcmoFD5dD8TcPhzc5VBAS4AAypqqenGK8naI
+	J2CtbVRX2HJE5sxfXXrrBHsZrPchGhgBFO7RMlm9Ow+AiJ1WhvTUOZx1gQQ==
+X-Received: by 2002:a17:90b:3143:b0:3aa:548f:eb77 with SMTP id 98e67ed59e1d1-3ab3ac95141mr10687428a91.56.1791870116726;
+        Mon, 12 Oct 2026 22:41:56 -0700 (PDT)
+X-Received: by 2002:a17:90b:3143:b0:3aa:548f:eb77 with SMTP id 98e67ed59e1d1-3ab3ac95141mr10687396a91.56.1791870116192;
+        Mon, 12 Oct 2026 22:41:56 -0700 (PDT)
 Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38f4863esm22926361a91.11.2026.10.12.22.41.52
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38f4863esm22926361a91.11.2026.10.12.22.41.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Oct 2026 22:41:53 -0700 (PDT)
-Date: Mon, 12 Oct 2026 22:41:31 -0700
-Subject: [PATCH RFC v3 4/9] tee: optee: add RPMI shared-memory and
- parameter support
+        Mon, 12 Oct 2026 22:41:54 -0700 (PDT)
+Date: Mon, 12 Oct 2026 22:41:32 -0700
+Subject: [PATCH RFC v3 5/9] tee: optee: add RPMI dynamic shared-memory pool
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261012-rpmi-tee-service-grp-dev-v3-4-975b574667e2@oss.qualcomm.com>
+Message-Id: <20261012-rpmi-tee-service-grp-dev-v3-5-975b574667e2@oss.qualcomm.com>
 References: <20261012-rpmi-tee-service-grp-dev-v3-0-975b574667e2@oss.qualcomm.com>
 In-Reply-To: <20261012-rpmi-tee-service-grp-dev-v3-0-975b574667e2@oss.qualcomm.com>
 To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
@@ -108,34 +107,33 @@ To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
         Marouene Boubakri <marouene.boubakri@oss.nxp.com>
 X-Mailer: b4 0.13.0
-X-Proofpoint-GUID: 9ZG10Aj6EYHWxfM6B6ndP3za_PZJsWNo
-X-Authority-Analysis: v=2.4 cv=FZuiV5+6 c=1 sm=1 tr=0 ts=6acdc4a3 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+X-Authority-Analysis: v=2.4 cv=VqC2kO2n c=1 sm=1 tr=0 ts=6acdc4a5 cx=c_pps
+ a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=EUspDBNiAAAA:8 a=bl3zVpOXNXRnPWSUSmgA:9 a=QEXdDO2ut3YA:10
- a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX0CtLGX10s+JU
- noBqRYs6nJPdHtSorrP+dMpugqnMgKYVMq6/HpEMlJYcTtz1n+jwe7hDD5g4x1pC9XY1TIt8jRk
- 8CTz52bXnhwYRhmFGR2Hn/9p19kLT6E=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX5hvXZuwIyPL/
- qE93QohoSaeFNTGHti1I7S4SILDO1a/UrEfqVtrezjUyfPlXOttFSxnmvpzCWSQOtpZOTj9AhqS
- Gf9JE4aXsta3wmEYAYJ9k76fXzNZJBHbF18BV72bfXVIFqw57ufsFhGla02x+C6QdkQxQmDUAXX
- 3EZIGNNbJGourX0pLw/R9GA0XdRkiY3Z0Sb8wWyerka4dG9VWGzkaVguGuYqDXIqFHMZFxgDR5r
- Kzs61ce7ll5TgP+XVMFPwmTRiREXL0pWWWq4xVkChFDQnXC1cSIT+PP+msvmtJ2+7pozSV8LkyL
- QPdps/qcjy7yX8RUjQ2Q1DHA4P1Ki4DOkLrdQ27LM7Bdyi8ViZLJ+BXJTPuNecQ6Y3WyfeGOMO7
- IMKdcjUmPH7Fvk8I+XHeufiGD/r2/ytQKVI+eU5GFUkb4uXpqv+a4bYUq4ksMhvMoozXPB3pS3h
- lLmF/1Pq6y/eR1xFpOQ==
-X-Proofpoint-ORIG-GUID: 9ZG10Aj6EYHWxfM6B6ndP3za_PZJsWNo
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=EUspDBNiAAAA:8 a=hYfsqUzT0y0sb8bvQO0A:9 a=QEXdDO2ut3YA:10
+ a=3WC7DwWrALyhR5TkjVHa:22
+X-Proofpoint-GUID: K_0SfocRXJ-qqpvVXdjgwJbFxCzQ8i2C
+X-Proofpoint-ORIG-GUID: K_0SfocRXJ-qqpvVXdjgwJbFxCzQ8i2C
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX5offqdVFYpoX
+ nm7oXpRPAdJOr8v3AzVwJ5mJfSDYUZJm9Hknrbp7C9rU2yo+5cgarBxEebuifMTHo3cmWANhMVK
+ jgKu4BW2Z0pyc0KvAHOICw/m/QHRoiE=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX7QsPu9s4nDZ0
+ V4m/ygjondusk4d30LDFWn7glnSw5QPDLkSiia8X7lLUVyGgrXkE/ZGmR6nXnCSFCaDsgP9jjf/
+ 4gZAZwEQ+lk3CkGw95blCJtPLuK/xq1hDmTHZP0t7BVKrPgi/xMtDvjmGNtOwctmRx/1zQjWntQ
+ /Ta0GN/l1l4AB9UmVZiBxK07Vrg0HgqO4XZSA7/XTQpV6B/ciuDyF38ivVgcp8GcZkkpIMkmHGS
+ +OGrEJNPke39QX6zN5ODI5yK1wtQhwvpJ8eGUNGZNJh39fJGKv5xoU7Jkaop9nyINd4FBrlBVu0
+ R4y2IZN3lkZ8UmF8WynzWZUGa6fb6M49j6p936pf5x2w3+toO/a2Yslw3xgBKG5TQt9iSvoWxio
+ Vw0Df1LuxPs6nup2QKIPQFkEMUkbfjNfyBqCPmrBrIk4uZuul24TF1AabvAukBn4VwPLaDzlXzb
+ v7YBdvGzsoqMW3PwXaw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 impostorscore=0
- adultscore=0 bulkscore=0 spamscore=0 malwarescore=0 phishscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610130022
+ clxscore=1015 suspectscore=0 bulkscore=0 lowpriorityscore=0 spamscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610130022
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-5.20 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
@@ -143,39 +141,40 @@ X-Spamd-Result: default: False [-5.20 / 15.00];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
-	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
 	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
 	MIME_GOOD(-0.10)[text/plain];
-	RCPT_COUNT_TWELVE(0.00)[18];
 	RCVD_COUNT_THREE(0.00)[4];
-	RCVD_TLS_LAST(0.00)[];
 	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
-	DNSWL_BLOCKED(0.00)[205.220.168.131:from,209.85.216.69:received];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[18];
+	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_TLS_LAST(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[205.220.168.131:from];
+	TAGGED_RCPT(0.00)[dt];
 	MID_RHS_MATCH_FROM(0.00)[];
 	ALIAS_RESOLVED(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.215.200:received];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 14C0945225
+X-Rspamd-Queue-Id: 989F845232
 X-Spamd-Bar: -----
-Message-ID-Hash: O6YDNNSQIIIV42ARVQSNQVXTPC7NJT3W
-X-Message-ID-Hash: O6YDNNSQIIIV42ARVQSNQVXTPC7NJT3W
+Message-ID-Hash: 2WIERUVF6V55JH5RJ2IBT4KDCQYJ2KLB
+X-Message-ID-Hash: 2WIERUVF6V55JH5RJ2IBT4KDCQYJ2KLB
 X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/O6YDNNSQIIIV42ARVQSNQVXTPC7NJT3W/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2WIERUVF6V55JH5RJ2IBT4KDCQYJ2KLB/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -185,416 +184,64 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-OP-TEE commands and RPCs need shared memory that secure world can
-identify through RPMI parcels.
+Add a page-based dynamic shared-memory pool for the RPMI backend using
+the common TEE allocation and free helpers.
 
-Register normal-world pages as read-write parcels shared with the
-OP-TEE endpoint. Track each parcel ID and nonce with the common
-shared-memory map. Store the combined identity in tee_shm.sec_world_id
-and allocate nonzero nonces to distinguish registered memory from NULL
-references. Reuse nonces after successful parcel reclamation.
-
-Add conversions between TEE parameters and parcel memory references.
-
-On client memory unregistration, ask OP-TEE to release its mapping
-before reclaiming the parcel. Supplicant memory has already been
-released by OP-TEE through its SHM_FREE RPC and only needs reclaiming.
+Register allocated pages as RPMI parcels so OP-TEE can access them.
+Unregister the parcels before freeing their backing pages.
 
 Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/tee/optee/Makefile        |   1 +
- drivers/tee/optee/optee_private.h |  19 +++
- drivers/tee/optee/rpmi_abi.c      | 319 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 339 insertions(+)
+ drivers/tee/optee/rpmi_abi.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/drivers/tee/optee/Makefile b/drivers/tee/optee/Makefile
-index ec2efc27ef05..4794c7c0ef91 100644
---- a/drivers/tee/optee/Makefile
-+++ b/drivers/tee/optee/Makefile
-@@ -10,6 +10,7 @@ optee-objs += device.o
- optee-objs += shm_handle_map.o
- optee-$(CONFIG_HAVE_ARM_SMCCC) += smc_abi.o
- optee-$(CONFIG_ARM_FFA_TRANSPORT) += ffa_abi.o
-+optee-$(CONFIG_RISCV_RPMI_TEE_TRANSPORT) += rpmi_abi.o
- 
- # for tracing framework to find optee_trace.h
- CFLAGS_smc_abi.o := -I$(src)
-diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
-index 92428945ee33..efc1e37fe1bf 100644
---- a/drivers/tee/optee/optee_private.h
-+++ b/drivers/tee/optee/optee_private.h
-@@ -6,6 +6,7 @@
- #ifndef OPTEE_PRIVATE_H
- #define OPTEE_PRIVATE_H
- 
-+#include <linux/idr.h>
- #include <linux/notifier.h>
- #include <linux/rhashtable.h>
- #include <linux/rpmb.h>
-@@ -200,6 +201,20 @@ struct optee_ffa {
- };
- #endif
- 
-+#if IS_REACHABLE(CONFIG_RISCV_RPMI_TEE_TRANSPORT)
-+/**
-+ * struct optee_rpmi - RPMI transport-specific OP-TEE state
-+ * @rdev: owning RPMI service device
-+ * @shm_map: lookup by the host-endian parcel ID and nonce pair
-+ * @nonce_ida: nonzero SHM nonces, reusable after successful parcel reclamation
-+ */
-+struct optee_rpmi {
-+	struct rpmi_tee_device *rdev;
-+	struct optee_shm_handle_map shm_map;
-+	struct ida nonce_ida;
-+};
-+#endif
-+
- struct optee;
- 
- /**
-@@ -260,6 +275,7 @@ struct optee_ops {
-  * @ctx:			driver internal TEE context
-  * @smc:			specific to SMC ABI
-  * @ffa:			specific to FF-A ABI
-+ * @rpmi:			specific to RPMI ABI
-  * @shm_arg_cache:		shared memory cache argument
-  * @call_queue:			queue of threads waiting to call @invoke_fn
-  * @notif:			notification synchronization struct
-@@ -291,6 +307,9 @@ struct optee {
- #endif
- #if IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT)
- 		struct optee_ffa ffa;
-+#endif
-+#if IS_REACHABLE(CONFIG_RISCV_RPMI_TEE_TRANSPORT)
-+		struct optee_rpmi rpmi;
- #endif
- 	};
- 	struct optee_shm_arg_cache shm_arg_cache;
 diff --git a/drivers/tee/optee/rpmi_abi.c b/drivers/tee/optee/rpmi_abi.c
-new file mode 100644
-index 000000000000..940676794280
---- /dev/null
+index 940676794280..bbb219ddab38 100644
+--- a/drivers/tee/optee/rpmi_abi.c
 +++ b/drivers/tee/optee/rpmi_abi.c
-@@ -0,0 +1,319 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/mailbox/riscv-rpmi-message.h>
-+#include <linux/overflow.h>
-+#include <linux/rpmi_tee.h>
-+#include <linux/slab.h>
-+#include <linux/unaligned.h>
-+#include "optee_private.h"
-+#include "optee_rpmi.h"
-+
-+/* Keep transport errors separate from the control status in a response. */
-+static int optee_rpmi_call_with_status(struct optee *optee,
-+				       const void *req, size_t req_len,
-+				       void *resp, size_t resp_size,
-+				       u32 *status)
+@@ -183,6 +183,42 @@ static int optee_rpmi_shm_unregister_supp(struct tee_context *ctx,
+ 	return rc;
+ }
+ 
++static int optee_rpmi_pool_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
++				 size_t size, size_t align)
 +{
-+	struct rpmi_tee_device *rdev = optee->rpmi.rdev;
-+	size_t received = resp_size;
-+	int rc;
-+
-+	rc = rdev->ops->msg_ops->call(rdev, req, req_len, resp, &received);
-+	if (rc)
-+		return rc;
-+
-+	if (received != resp_size)
-+		return -EPROTO;
-+
-+	*status = get_unaligned_le32(resp);
-+
-+	return 0;
++	return tee_dyn_shm_alloc_helper(shm, size, align,
++					optee_rpmi_shm_register);
 +}
 +
-+/**
-+ * optee_rpmi_call - Send a control request and check its TEE result
-+ * @optee: OP-TEE instance.
-+ * @req: Control request, including the operation number.
-+ * @req_len: Request size in bytes.
-+ * @resp: Response buffer, beginning with a little-endian TEE result.
-+ * @resp_size: Exact expected response size, including the status field.
-+ *
-+ * Return: 0 on success, a transport error, -EPROTO for an unexpected response
-+ * size, or -EIO for an unsuccessful control response.
-+ */
-+static int optee_rpmi_call(struct optee *optee, const void *req, size_t req_len,
-+			   void *resp, size_t resp_size)
++static void optee_rpmi_pool_free(struct tee_shm_pool *pool, struct tee_shm *shm)
 +{
-+	u32 status;
-+	int rc;
-+
-+	rc = optee_rpmi_call_with_status(optee, req, req_len, resp, resp_size,
-+					 &status);
-+	if (rc)
-+		return rc;
-+	else if (status != TEEC_SUCCESS)
-+		return -EIO;
-+
-+	return 0;
++	tee_dyn_shm_free_helper(shm, optee_rpmi_shm_unregister);
 +}
 +
-+static int optee_rpmi_shm_register(struct tee_context *ctx, struct tee_shm *shm,
-+				   struct page **pages, size_t num_pages,
-+				   unsigned long start)
++static void optee_rpmi_pool_destroy(struct tee_shm_pool *pool)
 +{
-+	struct optee *optee = tee_get_drvdata(ctx->teedev);
-+	struct rpmi_tee_device *rdev = optee->rpmi.rdev;
-+	struct rpmi_tee_mem_receiver receiver = {
-+		.endpoint_id = rdev->endpoint_id,
-+		.access = RPMI_TEE_MEM_ACCESS_READ | RPMI_TEE_MEM_ACCESS_WRITE,
-+	};
-+	struct rpmi_tee_mem_args args = {
-+		.receivers = &receiver,
-+		.receiver_count = 1,
-+		.creator_access = RPMI_TEE_MEM_ACCESS_READ |
-+				  RPMI_TEE_MEM_ACCESS_WRITE,
-+	};
-+	struct sg_table sgt;
-+	u64 global_id;
-+	int rc;
-+
-+	rc = optee_check_mem_type(start, num_pages);
-+	if (rc)
-+		return rc;
-+
-+	rc = sg_alloc_table_from_pages(&sgt, pages, num_pages, 0,
-+				       num_pages * PAGE_SIZE, GFP_KERNEL);
-+	if (rc)
-+		return rc;
-+
-+	rc = ida_alloc_min(&optee->rpmi.nonce_ida, 1, GFP_KERNEL);
-+	if (rc < 0) {
-+		sg_free_table(&sgt);
-+		return rc;
-+	}
-+
-+	args.nonce = rc;
-+	args.sg = sgt.sgl;
-+	rc = rdev->ops->mem_ops->memory_share(rdev, &args);
-+	sg_free_table(&sgt);
-+	/* A failed exchange may leave a parcel using this nonce. */
-+	if (rc)
-+		return rc;
-+
-+	global_id = optee_rpmi_global_id(args.parcel_id, args.nonce);
-+
-+	rc = optee_shm_handle_map_add(&optee->rpmi.shm_map, shm, global_id);
-+	if (rc) {
-+		int rrc;
-+
-+		rrc = rdev->ops->mem_ops->memory_reclaim(rdev, args.parcel_id);
-+		/* Keep the nonce if firmware may still hold the parcel. */
-+		if (rrc)
-+			dev_err(&rdev->dev, "reclaim parcel %#x failed: %d\n",
-+				args.parcel_id, rrc);
-+		else
-+			ida_free(&optee->rpmi.nonce_ida, args.nonce);
-+
-+		return rc;
-+	}
-+
-+	shm->sec_world_id = global_id;
-+
-+	return 0;
++	kfree(pool);
 +}
 +
-+static int optee_rpmi_shm_unregister(struct tee_context *ctx,
-+				     struct tee_shm *shm)
++static const struct tee_shm_pool_ops optee_rpmi_pool_ops = {
++	.alloc = optee_rpmi_pool_alloc,
++	.free = optee_rpmi_pool_free,
++	.destroy_pool = optee_rpmi_pool_destroy,
++};
++
++static struct tee_shm_pool *optee_rpmi_shm_pool_alloc(void)
 +{
-+	struct optee *optee = tee_get_drvdata(ctx->teedev);
-+	struct rpmi_tee_device *rdev = optee->rpmi.rdev;
-+	struct optee_rpmi_unregister_req req = {
-+		.op = cpu_to_le32(OPTEE_RPMI_UNREGISTER_SHM),
-+		.global_id = cpu_to_le64(shm->sec_world_id),
-+	};
-+	struct optee_rpmi_status_resp resp;
-+	u32 parcel_id = optee_rpmi_parcel_id(shm->sec_world_id);
-+	u32 nonce = optee_rpmi_nonce(shm->sec_world_id);
-+	int rc;
++	struct tee_shm_pool *pool;
 +
-+	optee_shm_handle_map_remove(&optee->rpmi.shm_map, shm->sec_world_id);
-+	shm->sec_world_id = 0;
++	pool = kzalloc_obj(*pool);
++	if (!pool)
++		return ERR_PTR(-ENOMEM);
 +
-+	rc = optee_rpmi_call(optee, &req, sizeof(req), &resp, sizeof(resp));
-+	if (rc)
-+		dev_err(&rdev->dev, "unregister parcel %#x failed: %d\n",
-+			parcel_id, rc);
++	pool->ops = &optee_rpmi_pool_ops;
 +
-+	rc = rdev->ops->mem_ops->memory_reclaim(rdev, parcel_id);
-+	/* Keep the nonce if firmware may still hold the parcel. */
-+	if (rc)
-+		dev_err(&rdev->dev, "reclaim parcel %#x failed: %d\n",
-+			parcel_id, rc);
-+	else
-+		ida_free(&optee->rpmi.nonce_ida, nonce);
-+
-+	return rc;
++	return pool;
 +}
 +
-+static int optee_rpmi_shm_unregister_supp(struct tee_context *ctx,
-+					  struct tee_shm *shm)
-+{
-+	struct optee *optee = tee_get_drvdata(ctx->teedev);
-+	struct rpmi_tee_device *rdev = optee->rpmi.rdev;
-+	u32 parcel_id = optee_rpmi_parcel_id(shm->sec_world_id);
-+	u32 nonce = optee_rpmi_nonce(shm->sec_world_id);
-+	int rc;
-+
-+	optee_shm_handle_map_remove(&optee->rpmi.shm_map, shm->sec_world_id);
-+	shm->sec_world_id = 0;
-+	/* OP-TEE has already retired the parcel through SHM_FREE RPC. */
-+	rc = rdev->ops->mem_ops->memory_reclaim(rdev, parcel_id);
-+	/* Keep the nonce if firmware may still hold the parcel. */
-+	if (rc)
-+		dev_err(&rdev->dev, "reclaim parcel %#x failed: %d\n",
-+			parcel_id, rc);
-+	else
-+		ida_free(&optee->rpmi.nonce_ida, nonce);
-+
-+	return rc;
-+}
-+
-+/* Convert a memory reference to an OP-TEE RPMI parcel reference. */
-+static int to_msg_param_rpmi_mem(struct optee_msg_param *mp,
-+				 const struct tee_param *p)
-+{
-+	struct tee_shm *shm = p->u.memref.shm;
-+
-+	mp->attr = OPTEE_MSG_ATTR_TYPE_PMEM_INPUT + p->attr -
-+		   TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT;
-+	memset(&mp->u, 0, sizeof(mp->u));
-+	/* For !shm, a zero global_id encodes a NULL reference. */
-+	if (shm) {
-+		if (check_add_overflow((u64)shm->offset,
-+				       (u64)p->u.memref.shm_offs,
-+				       &mp->u.pmem.offs))
-+			return -EINVAL;
-+
-+		mp->u.pmem.global_id = shm->sec_world_id;
-+	}
-+
-+	mp->u.pmem.size = p->u.memref.size;
-+
-+	return 0;
-+}
-+
-+static int optee_rpmi_to_msg_param(struct optee *optee,
-+				   struct optee_msg_param *msg_params,
-+				   size_t num_params,
-+				   const struct tee_param *params)
-+{
-+	size_t n;
-+
-+	for (n = 0; n < num_params; n++) {
-+		const struct tee_param *p = params + n;
-+		struct optee_msg_param *mp = msg_params + n;
-+
-+		switch (p->attr) {
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
-+			mp->attr = OPTEE_MSG_ATTR_TYPE_NONE;
-+			memset(&mp->u, 0, sizeof(mp->u));
-+			break;
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
-+			optee_to_msg_param_value(mp, p);
-+			break;
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
-+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
-+			if (to_msg_param_rpmi_mem(mp, p))
-+				return -EINVAL;
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/* Convert an RPMI parcel reference to a memref; callers own SHM lifetime. */
-+static int from_msg_param_rpmi_mem(struct optee *optee, struct tee_param *p,
-+				   u32 attr, const struct optee_msg_param *mp)
-+{
-+	struct tee_shm *shm;
-+	u64 offset;
-+
-+	p->attr = TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT + attr -
-+		  OPTEE_MSG_ATTR_TYPE_PMEM_INPUT;
-+
-+	if (mp->u.pmem.size > SIZE_MAX)
-+		return -EOVERFLOW;
-+	p->u.memref.size = mp->u.pmem.size;
-+
-+	if (!optee_rpmi_nonce(mp->u.pmem.global_id)) {
-+		/* Return NULL shm. */
-+		if (mp->u.pmem.offs)
-+			return -EINVAL;
-+		p->u.memref.shm = NULL;
-+		p->u.memref.shm_offs = 0;
-+		return 0;
-+	}
-+
-+	shm = optee_shm_handle_map_lookup(&optee->rpmi.shm_map,
-+					  mp->u.pmem.global_id);
-+	if (!shm || mp->u.pmem.offs < shm->offset)
-+		return -EINVAL;
-+
-+	offset = mp->u.pmem.offs - shm->offset;
-+	if (offset > SIZE_MAX)
-+		return -EOVERFLOW;
-+
-+	p->u.memref.shm = shm;
-+	p->u.memref.shm_offs = offset;
-+
-+	return 0;
-+}
-+
-+static int optee_rpmi_from_msg_param(struct optee *optee,
-+				     struct tee_param *params,
-+				     size_t num_params,
-+				     const struct optee_msg_param *msg_params)
-+{
-+	size_t n;
-+
-+	for (n = 0; n < num_params; n++) {
-+		const struct optee_msg_param *mp = msg_params + n;
-+		struct tee_param *p = params + n;
-+		u32 attr = mp->attr & OPTEE_MSG_ATTR_TYPE_MASK;
-+		int rc;
-+
-+		switch (attr) {
-+		case OPTEE_MSG_ATTR_TYPE_NONE:
-+			p->attr = TEE_IOCTL_PARAM_ATTR_TYPE_NONE;
-+			memset(&p->u, 0, sizeof(p->u));
-+			break;
-+		case OPTEE_MSG_ATTR_TYPE_VALUE_INPUT:
-+		case OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT:
-+		case OPTEE_MSG_ATTR_TYPE_VALUE_INOUT:
-+			optee_from_msg_param_value(p, attr, mp);
-+			break;
-+		case OPTEE_MSG_ATTR_TYPE_PMEM_INPUT:
-+		case OPTEE_MSG_ATTR_TYPE_PMEM_OUTPUT:
-+		case OPTEE_MSG_ATTR_TYPE_PMEM_INOUT:
-+			rc = from_msg_param_rpmi_mem(optee, p, attr, mp);
-+			if (rc)
-+				return rc;
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
+ /* Convert a memory reference to an OP-TEE RPMI parcel reference. */
+ static int to_msg_param_rpmi_mem(struct optee_msg_param *mp,
+ 				 const struct tee_param *p)
 
 -- 
 2.34.1
