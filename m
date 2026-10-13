@@ -4,234 +4,292 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B6AFCA9EC5
-	for <op-tee@archiver.kernel.org>; Mon, 12 Oct 2026 13:16:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF3EBCC6B09
+	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:42:10 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3D4014519E
-	for <op-tee@archiver.kernel.org>; Mon, 12 Oct 2026 13:16:41 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id E843C4529D
+	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:42:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791811001;
-	bh=Rt2h9Pfvt+k64VJTqa0oXpHWnknVDVHiRvMlHodVn5Y=;
-	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=5dkuWH81+7XAkVNaPNQ4B3jifcu4gu9xLvFuNqQmUmyKO6Anj5VB0B5B2IKkwba1R
-	 D+3dB5f2+UaWAultMLt29YIlWyJzH6bOjWoUA2EKRAChJVk3Ok+6wY/RWiSSXut2wg
-	 CMvh01XqUJGmh2nTstmI1ZfIwuEnrm2M1tUghiVOb7mGbooPEyr9AzIRPM2JwchajH
-	 rwG9nIhQpdDEVD4M9rDtiXA1L31DX55R59TTHKQxiaE4EJedg6ejbgZB6eHru/VmKs
-	 r32wNaGYEzsmnnVlnHIkRcFWAWWEN1p/MhYow1x7nUCOtLvRXPkMygXL46fs+Bz5uZ
-	 iRYskirAks5sg==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id F399141BEB
-	for <op-tee@lists.trustedfirmware.org>; Mon, 12 Oct 2026 13:16:21 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1791870130;
+	bh=GmyzzdSR34wcKZ7wk84YNudIPZ2Gqjk5ieu6wm2qqMw=;
+	h=Subject:Date:To:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=cQXg3Phv6aDp5bjGrlHRlrZXssOq6sFAYIw6kMV5j1/cfL8H2myH18izez9Sg3Sbj
+	 SosQ+feLQBD7ZSvO5t+iBj5z2B7EdKontkN38H2PgBomecLmPdLrbPgGRJoMhDH4uR
+	 Og3qKJEzP4CnQ7I15mM9XbpDcXxyiE0YsC02pxXwsvY4HSw5HcaGzu05E252XsC/2a
+	 YNEm0KIUblbsawNxMZqPvKJvM+0UFyh8DsP/BoWq/mFUoERMFpXtJx9d6qE/TG+DdT
+	 ppW/ASLLPULP2cywSuwARZZ4HVaIE50++N2nhKi0eoaotk6yCacXtyQ4CtyKeX5D6f
+	 KqVW96YANak6A==
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E390144FBD
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:48 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QmH38l1e;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gqdYoTgZ;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=BEFBAjij;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8770C60AB0;
-	Mon, 12 Oct 2026 13:16:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02B841F0089B;
-	Mon, 12 Oct 2026 13:16:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791810981;
-	bh=C6MtMH1ZS7/LqdONAPmFEgAIkbcber8e91yV+8NWqx4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=QmH38l1eV9DBt1+KQ53uym1LwwTyqmzwyRg5m0pDoIA+Xrz+rbRz0g8YFzsm4MF9N
-	 XbwOJQCf3U6kkC/HsagR/7Att8ry12jX99u5FxJnmKyyg2De3Tkck93okliih2fgwn
-	 dKfqhPMmplROMRTaYG1e0dC3PJcsdvVN9k9lNzvX9ISOhZhmTY+v8muLWGx+uiKw3v
-	 8Fu6FPeoeWRFW3U0dU1ioLThmk/JDD84XAngLZKerCOHjEkki9HAtJ8MKRz7tbIHYL
-	 dB33D1+wT1lCYN3KK/vZLGZ+PXSESGjx3A6aSNlzctXGWmYxWqvkA7E7FhHnJVDzel
-	 vdHcVqx3qBODQ==
-Date: Mon, 12 Oct 2026 18:46:12 +0530
-To: Vincent Donnefort <vdonnefort@google.com>
-Subject: Re: [PATCH v2 0/8] arm64: Unmap FF-A lent memory from direct map
-Message-ID: <aszdnInyJxLhSQRp@sumit-xelite>
-References: <20260921110050.3977591-1-vdonnefort@google.com>
- <arIYtjmSKCs14SqO@sumit-xelite>
- <arKW_91EeKA-w96m@willie-the-truck>
- <are21BjeS1O3RYE3@sumit-xelite>
- <aruh86rd5FMv2i9G@willie-the-truck>
- <ar5TPvANFUoosxGW@sumit-xelite>
- <asOAYODGZa-7EIV1@google.com>
- <asOD31rTX6dNfD1o@google.com>
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D20e4X922856
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=fywdYSI+QwC3MxSFOMdWKg
+	lnBFD0ZX+8NEQ03S4/7tA=; b=gqdYoTgZGf5IjK5iUfVOUexRw3UKrGN6us/1gm
+	IUlMQFYerLX4BtF5n2YMb0M+BsEwQClp+WuY4ZdGO7R0Y5IP3RVhp40sLp9TaZhz
+	LAjwZFPF6d3iXQQo+5QJhXP3EjSm0hfTOeqkB3Ehj4ShFIg9l90tastmJb2XH5rv
+	6IUfqXw2aMg3i1BdCF6pVYT5M0hLNFU1QAizwO5B9ZSTx5muoM9yBDXnQEn4+dN3
+	Sa8+oQQLZatkaJ8cj6SWUBSIImg4JPKhb7z7wLIbuXBNlF8s5rVuJD2De/rNrvJl
+	RXvh+t7XP+1cZXsmbOvDaK0AV+StZe6FcD2CrAM8dJQzmO7A==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h98h1s8v2-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:47 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-3a8af172664so2042122a91.0
+        for <op-tee@lists.trustedfirmware.org>; Mon, 12 Oct 2026 22:41:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1791870107; x=1792474907; darn=lists.trustedfirmware.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=fywdYSI+QwC3MxSFOMdWKglnBFD0ZX+8NEQ03S4/7tA=;
+        b=BEFBAjijWww0FVXpEo5ip37OxCz7T1VqkJ5jOuSOVAA/6Iwm2rQtnVttlquApH6ki7
+         aFU+zf/oc/gkiWJir6zawS3PWaY+e2C6rmiK2KTTRZZyYUovrCkNqQnEx6gvojVQUb1z
+         s5zuHgjTRIQIjh2JXbqIfz6tNodL5+EiHM+XBDKfZqM3O75JylBJT8GJpFtMuNbBzNxr
+         WJhmryVnltXSGuvdBc0XxfScnMGrJoSes3R8chc3ABZO1O0mm21katGcEAcGMnGJ5kdC
+         UStspQb6X0HlEBn78+gQQb69U3sbNzbGx7luUGJ/4WH1I7+O2dnubXjLvGjEhkUgErb3
+         6lYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791870107; x=1792474907;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=fywdYSI+QwC3MxSFOMdWKglnBFD0ZX+8NEQ03S4/7tA=;
+        b=WVy2iXUk7Z1pwihErFU7BSTcJFhw1CuTqGeWECwL0dU4jGRrLWdvfXXuQ88k1WOT2P
+         eTNE6tJgZxb/skiBBijqBIyoylDBmvazEZnxNi6YR1GHSf5miNlmLuuAlL86VY83Liex
+         777VM76HOeQn/wGKxFT1WEwt/D34Ho8JliaLe0JiCvKzCLkAit7wSCAeJPKaKU+TV+rd
+         Oj5qdkvQd1HFXc+C9gBb+SzTpFnE70H5ZKxBGk7ZztkQlCtxbbwezblIXcie4QjQl/JX
+         shsVKrKW10hvmyud1Mh8SqiqQkRJlUqVIuKCVnI55bdF/rbpxY8hX9+2qVf95SuhwbXh
+         iQJQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzNQymnfhnroViZhUBbEAr9u4LiRUMAin/SYDKV5XZAD/OHarIZZqeQfrGzJ6KyytkwCphBko0=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYJFhaMNrrWWDPvHhMGmMF/TNxYvwuHPsN07ncddmioOjgU8DWaW
+	M2nSdbKh3/JaUWsFpPjwiodZuvDF0gVwEZNQpuZdvIiNjY2vCY+GMAwKB6dMGJoPnQDw2Og2S8C
+	LJui1KA5crwONuPfQYtgb0BsM3fQmNU7d7jnL29xRaIs0oZGlky13bjrsQ7UY5+JCXDl/OSM=
+X-Gm-Gg: AYBFou2JvLjBeozWth12NW9g5zZFelGJfKnS5Vm+Y+utTBI1hqmaFYIXWEJhHlittVm
+	/69o6rmnRsmnH/nCuba5WXsnnABtvtghlUpDc8HsxQlycBwncY9Z9MG5P59HtvUccIo/4LhLKVF
+	FmSW3pRL7jhIRXV7HsdytHSWqy8N+wgFd46SkzXJU7gZThEwG+kKPHaxuxFNf3YMgOgYVQN4nRc
+	Bs6MnpGdxm4SWDcQiNntotsWWwYx6ENHpcxlPlBzy2W9MYYUYN2kpBANXV9Wa5rMkmh3npDWfRH
+	bOj+1sqg/jFnswOB7nZxeM7XioSJNHeiHmxlWEtB8tEKny98HhPHOMPaJauxqNA1dIz0EoCgd2q
+	rqXHs1q0t6n0C76+uN8s4OgHirqsnU/6lqvGn8BMZ7EpVVBDGTqt5ZPbp+A==
+X-Received: by 2002:a17:90b:28ce:b0:3a4:85c4:68fc with SMTP id 98e67ed59e1d1-3ab3a79df67mr9708193a91.29.1791870106689;
+        Mon, 12 Oct 2026 22:41:46 -0700 (PDT)
+X-Received: by 2002:a17:90b:28ce:b0:3a4:85c4:68fc with SMTP id 98e67ed59e1d1-3ab3a79df67mr9708173a91.29.1791870106161;
+        Mon, 12 Oct 2026 22:41:46 -0700 (PDT)
+Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38f4863esm22926361a91.11.2026.10.12.22.41.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Oct 2026 22:41:44 -0700 (PDT)
+Subject: [PATCH RFC v3 0/9] tee: optee: add RPMI backend support on RISC-V
+Date: Mon, 12 Oct 2026 22:41:27 -0700
+Message-Id: <20261012-rpmi-tee-service-grp-dev-v3-0-975b574667e2@oss.qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <asOD31rTX6dNfD1o@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAIfEzWoC/4XNwQrCMAwG4FeRns1oUzadJ0HwAbyKh9mmW8Gts
+ 51FGXt3Sw+eRC+BP+H/MrNA3lJgu9XMPEUbrBtSkOsVU10ztARWp8yQY8VrgeDH3sJEBKkYrSJ
+ o/QiaIlxREZpKEteGpfroydhnps/sdDywS1p2NkzOv/K7KPLpvxwFcBBaaFkqbLZlvXchFPdHc
+ 1Ou74s0sh3x4wnOyx8eJm+DBhEJJSnxxVuW5Q12Ove/HAEAAA==
+To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Rahul Pathak <rahul@summations.net>, Anup Patel <anup@brainfault.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Marouene Boubakri <marouene.boubakri@oss.nxp.com>
+X-Mailer: b4 0.13.0
+X-Authority-Analysis: v=2.4 cv=VqC2kO2n c=1 sm=1 tr=0 ts=6acdc49b cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=CKDX5oWuAds2uq8u-J8A:9 a=QEXdDO2ut3YA:10
+ a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-GUID: wc7oUlVcoYprbkBbebHoQXy56q9iOE24
+X-Proofpoint-ORIG-GUID: wc7oUlVcoYprbkBbebHoQXy56q9iOE24
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX7n5SQc6E9UGR
+ pp1uuKIj2jKtNKu90HoQJGH0c+rOdzG/Zn2TGcpo9PotAVh+7aqbCQXVg1THPk7t1Q7koWUxk2J
+ SGQLuYFZlfOB75yDBkGy1qCo/8J/Q1s=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX7svs1hUdNUpF
+ JV9vqRmg0/Ih2BA7NX6+PjFUB3xBhO8QBlORST2ybTTL0xowgymkwatatgzx2KJSTqpc4xpX+6q
+ fZu5PVVTk+wtQEOZ+qrT+Sl7Nzwbao5ApS4N8Cy4LujwM3L+RMQ/UMwWEvvjqEQ0Rrs7pr9mYoZ
+ 0ma2Lbqm62OJNwrwlgeDgru4ZthAYtn43TZewSBoGTtyf9Qmfd4YScel5zim9FCSrQRuSKwVlYy
+ XYVJOfGozfKh702YNbDGr++wCXgy+BVwxqqfSmDUJv/6yR0zJzasoYR0Vo2v/bm2xHx/CzORtUy
+ qyKpHRBPZZuUR5OkOt+D4HhWGPIL6IlRvDQR8l0wYrPcxi70C/3FHsF9tgau/WtX5QNT2WnofcE
+ Ui4ApGjl9yfoEFk30O0RMigFSLU6idvvTGELofOgf0k1KP5B6tFBzwTq8hnSjWTiM9gHexlWxtW
+ 6hr/monP8mVI+NhPMww==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 suspectscore=0 bulkscore=0 lowpriorityscore=0 spamscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610130022
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-8.50 / 15.00];
-	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
-	MID_RHS_NOT_FQDN(0.50)[];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+X-Spamd-Result: default: False [-5.20 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
+	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
+	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
 	MIME_GOOD(-0.10)[text/plain];
-	RCPT_COUNT_TWELVE(0.00)[20];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_THREE(0.00)[4];
+	FROM_EQ_ENVFROM(0.00)[];
 	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DNSWL_BLOCKED(0.00)[100.103.45.18:received,172.105.4.254:from];
-	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[18];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+]
+	DNSWL_BLOCKED(0.00)[205.220.168.131:from];
+	TAGGED_RCPT(0.00)[dt];
+	MID_RHS_MATCH_FROM(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
+	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.70:received];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: F399141BEB
-X-Spamd-Bar: --------
-Message-ID-Hash: RPQSB3ZYHJLGJLGDCUQNETNQ2O7ZL47K
-X-Message-ID-Hash: RPQSB3ZYHJLGJLGDCUQNETNQ2O7ZL47K
-X-MailFrom: sumit.garg@kernel.org
+X-Rspamd-Queue-Id: E390144FBD
+X-Spamd-Bar: -----
+Message-ID-Hash: YQIPFG65UB6ZHZAGZPUHYXST4GO44JIQ
+X-Message-ID-Hash: YQIPFG65UB6ZHZAGZPUHYXST4GO44JIQ
+X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Will Deacon <will@kernel.org>, brendan.jackman@linux.dev, catalin.marinas@arm.com, rppt@kernel.org, akpm@linux-foundation.org, sudeep.holla@kernel.org, jenswi@kernel.org, robh@kernel.org, mark.rutland@arm.com, ardb@kernel.org, thierry.reding@kernel.org, david@kernel.org, danielmentz@google.com, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, sumit.garg@kernel.org
+CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/RPQSB3ZYHJLGJLGDCUQNETNQ2O7ZL47K/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YQIPFG65UB6ZHZAGZPUHYXST4GO44JIQ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
+From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-On Mon, 05 Oct 2026 at 12:02:55 +0100, Vincent Donnefort wrote:
->Sorry, not sure why Sumit's email was dropped...
+This series adds an RPMI backend to the OP-TEE driver for RISC-V.
+It builds on the separately posted RPMI TEE transport series [1],
+which provides service discovery, synchronous calls, memory parcels
+and asynchronous signals.
 
-The problem was with my mutt config, it should be fixed now.
+This revision is effectively a full rewrite of the original RFC.
+The generic RPMI transport has been separated from the OP-TEE backend,
+and the backend has been reworked around the service bus and a new
+OP-TEE control ABI.
 
->
->On Mon, Oct 05, 2026 at 11:48:00AM +0100, Vincent Donnefort wrote:
->> On Thu, Oct 01, 2026 at 06:04:06PM +0530, Sumit Garg wrote:
->> > On Tue, 29 Sep 2026 at 12:33:07 +0100, Will Deacon wrote:
->> > > On Sat, Sep 26, 2026 at 05:43:08PM +0530, Sumit Garg wrote:
->> > > > Looks like you dropped me from your reply.
->> > >
->> > > Huh, that's weird. If I hit reply-all ('g') in mutt, it moves the entire
->> > > CC list to To: and drops you. I suspect the same thing happened to Thierry
->> > > when he replied here:
->> > >
->> > > https://lore.kernel.org/all/arJcN60nagFKXj2Q@orome/
->> > >
->> > > I can't figure out why that's happening :/
->> > > I manually tried to fix the To: and Cc: lines in this message.
->> >
->> > Thanks.
->> >
->> > >
->> > > > On Tue, 22 Sep 2026 at 15:55:59 +0100, Will Deacon wrote:
->> > > > > I spoke to Brendan at LPC (?) last year but this doesn't really work
->> > > > > for arm64 because it relies on being able to unmap arbitrary parts of
->> > > > > the linear map, which isn't generally possible unless you force pte-level
->> > > > > mappings for everything, which is prohibitive for perf/power.
->> > > >
->> > > > As per the cover letter it's about allocating pages that are not present
->> > > > in the direct map. This essentially fits the protected DMABufs use-case
->> > > > where we don't want any kernel mapping to exist at any time. Bufers
->> > > > allocated from protected DMABufs are only meant to be accessed by the
->> > > > TEE implementation or HW accelerators like in the secure media pipeline.
->> > >
->> > > That sounds like it should probably build on top of this series, then.
->> >
->> > The main problem I see with this series is it tries to move from the generic
->> > CMA allocator to a reserved FF-A CMA pool which again comes from the
->> > DT. We already support reserved pool allocations via "no-map" which are
->> > discovered dynamically from OP-TEE.
->>
->> I can't think of a way around a DT declaration. We need to know what region is
->> PTE-level before the direct map is installed and of_reserved_mem is very handy
->> for that purpose. And as this PTE-level mapping is costly we certainly only want
->> to enable it for platforms that absolutely need it.
->>
+Unlike v1, the OP-TEE backend no longer manages SBI MPXY mailbox
+channels or implements RPMI TEE service-group operations directly.
+It binds to the OP-TEE service UUID on the RPMI TEE bus and uses the
+transport's public operations. No additional OP-TEE device-tree node
+is required.
 
-I am rather thinking of a way to turn the default CMA allocator to be
-PTE-level mapped. Since the overall idea for this dynamic protected
-buffers was to reuse memory efficiently, otherwise the reserved buffer
-approach is already there to use as "no-map" via DT.
+The backend reuses the common OP-TEE session, shared-memory, argument
+cache, call queue and RPC infrastructure. Shared memory is represented
+by RPMI parcel IDs and nonces. Yielding calls pass command and RPC
+buffer ranges within a parcel and resume suspended execution using
+an opaque token returned by OP-TEE.
 
-If we can have "cma_unmap" cmdline option alongside "cma" then it can
-turn the existing default CMA allocator to support unmapping buffers.
-Not requiring a DT change at all, although we can have the DT property
-for the default pool too if platforms want to opt for.
+The OP-TEE control ABI uses fixed-width little-endian messages carried
+in TEE_CALL payloads rather than reproducing FF-A's register-based
+message layout. Asynchronous notifications use an allocated TEE-to-REE
+signal as a bottom-half doorbell, while ordinary logical notifications
+continue through the common RPC path.
 
->> >
->> > If we can rather support a generic CMA like allocator for arm64 which
->> > can support unmapped allocations then I am all for it. These platform
->> > specific reserved pools isn't a scalable solution.
->>
->> What do you mean by generic CMA allocator here? An extension to
->> shared-dma-pool? Or having the CMA automatically doing the unmap/map on
->> cma_alloc() cma_release()?
->>
->> Right now I have created an API for the unmapping/remapping part. It adds a
->> burden on the caller, but the alternative solution is introducing post-alloc
->> pre-dealloc callbacks in the CMA, which looked a bit overkilled to me when
->> the users of that "ffa-pool" are only optee and the nvidia video dma-buf heap.
->>
+Matching OP-TEE OS support has been implemented locally. OpenSBI
+integration and end-to-end validation remain pending. This remains an
+RFC for review of the backend integration and Linux-to-OP-TEE protocol.
 
-I am not too worried about where the actual implementation lives but
-looks like CMA driver to be the better place. I think use-cases like
-guest_memfd proposed as a user for __GFP_UNMAPPED on arm64 will also be
-looking for this feature.
+This series depends on:
 
--Sumit
+- The RPMI TEE transport series [1].
+- The OP-TEE notification bitmap fix, which allocates space for the
+  inclusive maximum notification key [2].
 
->>
->> >
->> > > You could allocate the DMABufs from a CMA region that has no linear alias.
->> >
->> > Allocation from generic CMA pool is already the case here:
->> >
->> > tee_shm_alloc_dma_mem() ->
->> >   dma_alloc_pages()
->> >
->> > Do you mean it's just fine to unmap buffers allocated from generic CMA
->> > region since it doesn't have any linear alias?
->> >
->> > >
->> > > > > Vincent's series tackles that by using a pool so that only that part of
->> > > > > memory requires the pte-level mappings in the linear map. That's the
->> > > > > whole point of it, so I don't think it makes sense to drop it in favour
->> > > > > of Brendan's approach (which doesn't work).
->> > > > >
->> > > >
->> > > > For protected DMABufs, we even don't require any pte-level mappings in
->> > > > linear map. The whole idea of mapping and unmapping is just a bottleneck
->> > > > for performance sensitive secure media pipeline use-cases. That's why if
->> > > > we can support __GFP_UNMAPPED with the memory allocator on arm64 would
->> > > > be the best fit for this use-case.
->> > >
->> > > The point is that you will require pte-level mappings for the linear map
->> > > if you want to unmap from it at runtime on arm64. If you don't, then you
->> > > can end up needing to split a block mapping (e.g. pmd-level) when you
->> > > decide to unmap only part of it and there isn't a safe way to do that on
->> > > arm64 without transiently unmapping the entire block, which can lead to
->> > > fatal translation faults during that window.
->> >
->> > I agree with you here, what I am rather trying to find if on arm64 there
->> > is any possibilty to have a generic allocator for unmapped pages. That's
->> > the use-case here as well as what Brendan't patch-set was trying to address.
->> >
->> > >
->> > > > Now the question is why arm64 can't support __GFP_UNMAPPED similar to
->> > > > how Brendan is doing it for x86?
->> > >
->> > > Because arm64 != x86? Presumably x86 doesn't have the strict
->> > > break-before-make requirements we have on arm64.
->> > >
->> >
->> > Sure, sounds like you are eluding to that the generic MM flag
->> > __GFP_UNMAPPED being proposed can't be supported on arm64, right?
->> >
->> > -Sumit
->
->-- 
->Vincent
+[1] https://lore.kernel.org/op-tee/20261007-riscv-rpmi-tee-abi-v2-0-45939a13d223@oss.qualcomm.com/
+[2] https://lore.kernel.org/op-tee/20261009-fix-tee-max-keys-v1-1-1462d96bf438@oss.qualcomm.com/
+
+Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+---
+Changes in v3:
+- Use GlobalPlatform TEE result codes for OP-TEE control responses,
+  keeping them separate from RPMI transport errors.
+- Combine the parcel ID and nonce into a single 64-bit global_id.
+- Make resume tokens opaque 32-bit values and track initial versus
+  resumed calls separately.
+- Remove unnecessary __packed annotations from the OP-TEE ABI structures.
+- Share the global-ID-to-SHM mapping implementation between the FF-A
+  and RPMI backends.
+- Replace the fixed SHM nonce with a per-instance IDA allocator; reuse
+  nonces after successful reclamation.
+- Report the maximum notification key instead of a notification count,
+  and use the negotiated maximum during initialization.
+- Consume capability-exchange results during probe.
+- Remove cleanup macros and use explicit resource-management paths.
+- Use rc consistently for Linux error returns.
+- Replace unnecessary unaligned accesses with endian conversions for
+  naturally aligned ABI fields.
+- Link to v2: https://lore.kernel.org/r/20261005-rpmi-tee-service-grp-dev-v2-0-72f222e23ec1@oss.qualcomm.com
+
+Changes in v2:
+- Effectively rewrite the backend around the separately posted RPMI
+  TEE transport and a new OP-TEE control ABI.
+- Remove backend-owned per-hart mailbox channels and the OP-TEE-specific
+  device-tree binding.
+- Replace the register-like control payload with fixed-width messages,
+  explicit command/RPC buffer ranges and opaque resume tokens.
+- Add a parcel-reference parameter layout carrying the parcel ID,
+  nonce, and 64-bit offset and size without changing parameter size.
+- Make argument-offset support part of the baseline ABI and retain
+  the common shared argument cache.
+- Use a transport-allocated signal for asynchronous bottom-half
+  notifications.
+- Link to v1: https://lore.kernel.org/r/20260912-rpmi-tee-service-grp-dev-v1-0-1d1d35c2a859@oss.qualcomm.com
+
+---
+Amirreza Zarrabi (9):
+      tee: optee: share the global shared-memory ID mapping
+      tee: optee: allow RPMI transport builds on RISC-V
+      tee: optee: define the RPMI control and parcel-reference ABI
+      tee: optee: add RPMI shared-memory and parameter support
+      tee: optee: add RPMI dynamic shared-memory pool
+      tee: optee: add RPMI RPC handling
+      tee: optee: execute yielding RPMI calls
+      tee: optee: bind RPMI services and negotiate backend capabilities
+      tee: optee: support RPMI asynchronous notification doorbells
+
+ drivers/tee/Kconfig                |   3 +-
+ drivers/tee/optee/Kconfig          |   3 +-
+ drivers/tee/optee/Makefile         |   2 +
+ drivers/tee/optee/call.c           |   2 +
+ drivers/tee/optee/core.c           |  10 +-
+ drivers/tee/optee/ffa_abi.c        | 133 +----
+ drivers/tee/optee/optee_msg.h      |  23 +-
+ drivers/tee/optee/optee_private.h  |  73 ++-
+ drivers/tee/optee/optee_rpmi.h     | 263 ++++++++++
+ drivers/tee/optee/rpmi_abi.c       | 972 +++++++++++++++++++++++++++++++++++++
+ drivers/tee/optee/shm_handle_map.c | 138 ++++++
+ 11 files changed, 1498 insertions(+), 124 deletions(-)
+---
+base-commit: bf1ee2bd5c2da8992f33c8950ef194aaff74ed6c
+change-id: 20260912-rpmi-tee-service-grp-dev-b2ce2f63e0df
+
+Best regards,
+-- 
+Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+
