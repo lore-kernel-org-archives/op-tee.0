@@ -4,98 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9E57CA9ED0
-	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F43FCC6B03
+	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:45:04 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 0BA0F45225
-	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:44:34 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 4A9BD45225
+	for <op-tee@archiver.kernel.org>; Tue, 13 Oct 2026 05:45:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1791870274;
-	bh=7Q5nRa43hWpowrs3WTtfQQ8c7SPGddet586Xp5YmbBI=;
+	d=lists.trustedfirmware.org; s=2024; t=1791870303;
+	bh=UZD4R6R/FQWDGv8pkyECBSdQs7WwyexiNCcXxk6sEBs=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=h5yOKJPDXzi8YMQ8U4tWhp+JaKE0ROMA5TBnVUZwyI65tHOSDA4unXiOKqTkFTeyI
-	 X6PrQ8XkEgtrDdLS1EzFMIoAnb7Uc6Hxmy4STADmD/GZNC8elSKuI/FaZ8c0EelbbT
-	 +9CaWD+b4D6U3X24cdyuw1QR5x7ulTNkRS1SYo39gD+lCnCdn+0jzSgi1dFStnYmEe
-	 cd3r6L51WS/zvAwZtv++/EiTDCfIQWljiyoPW0SOmGGbSMZ1sbkSlWmNyf/nzJL0iI
-	 Lf/beeLKJcg+8noG6P0j+5aedDjN9UuP6jkOLdHpWiyJsdBc3jWMGG7ssJ6L1Id+Mk
-	 d8nJqCAXu+mYg==
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 989F845232
-	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:58 +0000 (UTC)
+	b=uYhoApGp5bVQWPlXzhiAGmET49kA8b8YoDhrgR61zRllLZSolyPVCrNYO3nBWOPGF
+	 TwffQUZBJ/ol0cgN5SgOs/Rqy1c6G5g5jzmHtOJOh15FKw2GYjXLZHmmGFnEtRMxpK
+	 2HXnlKF3FcgoJEr1rxSE85o7ASadk2WoJfgeKr4t9NZtQfZjYMHzm234IEslLGVmni
+	 VervN/AINJkzvVhTobkTZSYOiE6i1NTDZSYQc8ykrAHQUPXg1j99momja0216WEvmQ
+	 6mKGq501aRSRW0ZnfrGZo5letZl6iRuqX/yyEcB1nzaFIFvygE83OnGN2mg+BQGWqS
+	 eBAW9LVj9IP+A==
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 73B2745232
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:42:01 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=N64wzUaJ;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=AAtWFww7;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=BjGhVx1F;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=cnEzUp28;
 	dkim-atps=neutral
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D20fHL922859
-	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:57 GMT
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D213ki3908182
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:42:01 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	P9/Es066BKyO9sRu6bY124oGmsHpSkt+MyzxTSuoHdw=; b=N64wzUaJQPWl7GrO
-	o2Y+P28Hfkq5qTYerT+VjMf7hTj/co8gaqJdwraY6hVP4uhIpmeZ0FvGjum454FL
-	6KlFVbTIIJxsDXtPHoeqjV9idCktviSbAY+2E2CCWzcpS9xcwZ+4CKjs0DoUVwy3
-	Y0k2wYRtTK6Euzg+zwosQ2VBUJDGLtFra15XIOYxh3MQr+KtwY0P/XW01vfK7ofV
-	/km00MnWOkcftyL70IeeC9zSsCrl1aWKHeGU72j+vPpGJzL8UkJeqwAGN5cz5NJR
-	u7a7h9KPul7kOSqyMm9JoJI5czruSxvt66Qh5W1ukGuLRAxNQM4YFcplME6y2gfI
-	rfK2og==
-Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h98h1s8w0-1
+	rd65ljd9yXesQac/jFW5/g1sKZN3hISajAVdGuSexr0=; b=BjGhVx1FntWvYtaD
+	TyU2KTvHMMl22qHKhKBFeh3bJBxlmq8Xh3CyzU1IOuMa4goYuiMSSO1SDdtxw5sW
+	Mqnd74KyCy4JtWXqA7p6NZ/IFMn9AiDKNAc4M+sf+dzde6BfQwk4RO2NzWz9+gZn
+	jVhTD+jvBRNqAo/eMo5FWxOdziAUMoISYxj2oj5S7FmAF1HC1qtPH7Zru44OIHW5
+	vesN55n9wEYRgsAnXwNMBYTRgPhGB7heOsnYAfGBKB9SEVheemStYtBYY9Pcq1d1
+	9PIMQdxs2q1DR12LgRVg2h3falQ4K52r2sBVWVZfJAuOf488WrZPw7O6SDi0cSMW
+	SIu+Fg==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4h95xqsudv-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:41:57 +0000 (GMT)
-Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-cc42a07d04aso1744243a12.1
-        for <op-tee@lists.trustedfirmware.org>; Mon, 12 Oct 2026 22:41:57 -0700 (PDT)
+	for <op-tee@lists.trustedfirmware.org>; Tue, 13 Oct 2026 05:42:00 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-3a8af172664so2042361a91.0
+        for <op-tee@lists.trustedfirmware.org>; Mon, 12 Oct 2026 22:42:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1791870117; x=1792474917; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1791870120; x=1792474920; darn=lists.trustedfirmware.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=P9/Es066BKyO9sRu6bY124oGmsHpSkt+MyzxTSuoHdw=;
-        b=AAtWFww7dmAV5re5tTGD918umhddd95EGBrHOqZ8mHNndOY1rvU7cBT0wbbH+lDOU0
-         5JFW/Mc3eh5+2k9cDrCTcuG8VW7+mv0CE9+YoC5+l4+GCTH8ToRQXlzrPoKNyf3nmrHu
-         bOfgjqpzR7mc5fgwmCAtliu0y8QpKBuUqelnAf3lY1L8YBpq/RWsH7QZvhx2rTE9hfx3
-         DBJ1jp5fZLoMdc2QyMlpAA0ZRKtvDpEYdqLv0Y15dtTBIVmaKu8AOSMXqm/D1YBnw1CR
-         eZp3Td6CgTj/fqh406bfHXdKNAxIdBHGlIgJFrtbNxvxqaVAxBDAHIfeV7kWNQp85pc4
-         wHuw==
+        bh=rd65ljd9yXesQac/jFW5/g1sKZN3hISajAVdGuSexr0=;
+        b=cnEzUp28hwA4rVeur2dy44ZzIvWUvf/t4BkDG7j4tOHY2XqRJRTWXb28bot+lYLZdN
+         emfr9NGAHpf4ZUh6BaaUHL3+ckJghHfkfg5md8flHLPRYJ2MSu+lSR963YAN6V+Oifrv
+         mVL9W8zj7IsEjZlQ0X7T3G9rqlwilQJYY6zmITrzohtnS8FqicKmlgh6LDmGMBLU4Pn0
+         E/ejDJf9VcNB0Lv/FFoH4/vjcbcet7jatONYxoITX3g6xu6lxis95gzQz1l//PWYoWaB
+         16hT9loMH4dzLvO0pPao+YKzIZHVzZ4JzjyqZxvOX+GdJRIQwGZmOqH4/93WlBWVbH5k
+         fW0Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791870117; x=1792474917;
+        d=1e100.net; s=20260707; t=1791870120; x=1792474920;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=P9/Es066BKyO9sRu6bY124oGmsHpSkt+MyzxTSuoHdw=;
-        b=O8RTjTe2NwFz9BP+cmAQyC6mIFJbYlAdQkSH2oo+WIxDWVdguFYFM5y0dHTvBtJcnf
-         kcqW+8KTVhUzovW3BMzW0m0sqTTtnUuE29Q3UCByn3mtFlEN0Gtm5px4aMclMt/vZ0Rk
-         /HpQvxUoD5Wv0MocNknsMC7zKr5m0lTwoAYDzfjK5j1xSh5k06my92Qdw3qAeaunEu17
-         fdDtxFL03E6Ka2NqhXbIiruN9fwmpHGHsUWP1L/rmhf8KvoSQSTIcHlBz4EGfh7Mfzr3
-         3d67AYbAbYY//bPVwHSirj7qb+L+2WTxD0OskqrdiSqkm2YcQyNG1NfYcgNjPa/+p3CM
-         yYPg==
-X-Forwarded-Encrypted: i=1; AKwUvByPxbXPbB+WFpW+9QvNDSsLIngh3BZID2ORjhOHTa+cQn3GXVqKQKKQ5LSU+npHnI6QBKJ3+hM=@lists.trustedfirmware.org
-X-Gm-Message-State: AFq9FYLNgOkLun4yUS2szvMa2aWTfAiv+/19kzwAEYPsmLt/06HkIbpB
-	RyH0pcIAcpjyFS8EHAJ1ahJwP9GIpp9QRoPSE1UEJabMsuTf48LL49Tt/pRvYrnIaKSaIlyniNr
-	50IbzDBhotZnCJ+dzMzpLqInwL7+oIsVsI+vmCxFFoeU8R6JVGHXenQNgTVDmk72lFXOlXgc=
-X-Gm-Gg: AYBFou1b2q9AcxqBnt3te/vEsbXvFqmnBjRMz0yXpGUXOCjEXkZWxSTgbTF8iMWb8aI
-	e8rKNL+UgToTyp1ElUNVMCuh6s7seOTbtUNg5etXeSuGV2IcR1I4Qq+H7SFFPDvGh36TYLqFlJk
-	pcENwBw7yscsWIGH9WmyZVNxgspHpqe63f9MhK9uMRV+m/4MSvgq65KateK92gb7g7NsyTvxy8i
-	oL7qs+vlgd432hAH2xFHM+F9Fuu6EZ9hpqj2MxWfPsM9MnI9cFhmjwcswQximlYuxg7J3tHavH+
-	KjAzzIe+DdITit64pHgUA6EPEob83oYYIw2vQtBCcmoFD5dD8TcPhzc5VBAS4AAypqqenGK8naI
-	J2CtbVRX2HJE5sxfXXrrBHsZrPchGhgBFO7RMlm9Ow+AiJ1WhvTUOZx1gQQ==
-X-Received: by 2002:a17:90b:3143:b0:3aa:548f:eb77 with SMTP id 98e67ed59e1d1-3ab3ac95141mr10687428a91.56.1791870116726;
-        Mon, 12 Oct 2026 22:41:56 -0700 (PDT)
-X-Received: by 2002:a17:90b:3143:b0:3aa:548f:eb77 with SMTP id 98e67ed59e1d1-3ab3ac95141mr10687396a91.56.1791870116192;
-        Mon, 12 Oct 2026 22:41:56 -0700 (PDT)
+        bh=rd65ljd9yXesQac/jFW5/g1sKZN3hISajAVdGuSexr0=;
+        b=psD3vtYgaDNu6pPLOUakZa31z/eaQLwR0EmKoD06II67OOTpCGppv6UZe0PQQZNo56
+         r1twWxCCQO/spEhoIO2w3GrjN4gTC7P7NWa0t+fClhLQjZju/ncigJIgih6kANiMFeKo
+         7O8UNkAp8z+KtGd1PgOMDFquCnfxdeLVFmSSs/Y0FE0lX/qGNgoJPjskZbJcNshPHszl
+         WQ8zjWU4+BLjaon+eaneVVRcm118HXEUXF77RFOwMGTKXbzXue1c2btBBzv71PB43M/0
+         R4dQENjtoIH29A1n8K1HpzlCxYBiaCsGHhdOs1hK5J4nPwDZ3PwwigEbJv4rlMBqVbBo
+         eVrA==
+X-Forwarded-Encrypted: i=1; AKwUvByyDvN/z+//j/JslPmNxeIHpyvrPltq8rrZxQboxx3o2hq7bxRPaAe4WYdpnsVyjB3qYHJuiH0=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYKSfy2tiJkNc78b6YpMDxEx8o1ahu6acci8nkDnHjUP5dI81EkS
+	5J58f2d8mWxddlQHk3Pn0rxjGi3qn+IIABshjPz0TpBt7ox2d+VdRa/EmohpMbXzpigWVz5fkT9
+	d2E8i5JGJQlkleKZnHeABunA2E3xRLt/BK1mOk6fGIUTn1gzNgBpHcNVPUrkyPtutfoaO9cs=
+X-Gm-Gg: AYBFou2LRkbd6txmhESpMzvH+MC2WWFTVbufUzZrmOgZScwyk/Dk23BiUrW3smf+iD2
+	Ge2F1YrFsZH94sT/n8ATEsFXKj+xWjZxNg4eKXXQXxLAgB/btB+R0OQIRaTDAnIlDKkkhBJebE7
+	hKJjZTqgLfCl6GXcdemd5+F10/eT4ATx64ndmsdmqRDPbrMqJVg9w/DtUSKoGL5jcpkeNqDCsPl
+	3Do5lJNI2t7HlF5V7/vjUSAtnQzpXSILSqE1gakUmcULxB8IHxrhb8jkBAF0/OzsmyAE5DNhbbZ
+	iiVO8XWf9GCZQAPrPDL5K4iRzDBR8oHMERvhzg62oGvd+6fYyUuNrqqFNlnygCcbVClAtD0OFt0
+	iv7cVj3FwshWOMtiJfR13DzfMwp05iL9n5y/AvUX50l/Gz/HfwtacWdTElA==
+X-Received: by 2002:a17:90a:109:b0:3a8:2046:7e5f with SMTP id 98e67ed59e1d1-3ab3a747e69mr6959397a91.12.1791870119627;
+        Mon, 12 Oct 2026 22:41:59 -0700 (PDT)
+X-Received: by 2002:a17:90a:109:b0:3a8:2046:7e5f with SMTP id 98e67ed59e1d1-3ab3a747e69mr6959373a91.12.1791870119113;
+        Mon, 12 Oct 2026 22:41:59 -0700 (PDT)
 Received: from hu-azarrabi-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38f4863esm22926361a91.11.2026.10.12.22.41.54
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38f4863esm22926361a91.11.2026.10.12.22.41.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Oct 2026 22:41:54 -0700 (PDT)
-Date: Mon, 12 Oct 2026 22:41:32 -0700
-Subject: [PATCH RFC v3 5/9] tee: optee: add RPMI dynamic shared-memory pool
+        Mon, 12 Oct 2026 22:41:58 -0700 (PDT)
+Date: Mon, 12 Oct 2026 22:41:33 -0700
+Subject: [PATCH RFC v3 6/9] tee: optee: add RPMI RPC handling
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261012-rpmi-tee-service-grp-dev-v3-5-975b574667e2@oss.qualcomm.com>
+Message-Id: <20261012-rpmi-tee-service-grp-dev-v3-6-975b574667e2@oss.qualcomm.com>
 References: <20261012-rpmi-tee-service-grp-dev-v3-0-975b574667e2@oss.qualcomm.com>
 In-Reply-To: <20261012-rpmi-tee-service-grp-dev-v3-0-975b574667e2@oss.qualcomm.com>
 To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
@@ -107,74 +107,74 @@ To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
         Marouene Boubakri <marouene.boubakri@oss.nxp.com>
 X-Mailer: b4 0.13.0
-X-Authority-Analysis: v=2.4 cv=VqC2kO2n c=1 sm=1 tr=0 ts=6acdc4a5 cx=c_pps
- a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX5iPT6x1pEtkB
+ vJFOl0R2Jk+Je5YG5lit2MgohJg/+YI1oqBA+m227PQSqOeDDaz30QWPL7G7HKohKTz+bAiQOoX
+ 3C9vF59qOaYuPsuAkQ2UvJKnLMsZAy+APupBUGEgs3yf2FNCCAB3LcUkNuWcvcg41kcjE83W5Wn
+ cgpXLiIT/BQNEYFAF8BfLWC8S0JVpRImYAba1ATSKg+YsjGBclxpsnsTTbfOAwG8D870L3ryuDR
+ OO/XcAjPkmw48SJd0jFTjlJmvVeMb5t0H47cJ2JcRKN8ubDHYjHe0rcdwJ+jLXyUnSELBdmXKNm
+ OirueLvIit+e15nf1V2d/ra+H3U4k/ninWtGhwZb6P4+6jO+ieAzqz2h/6dKXalV6IguQB2sz3F
+ YtsXtom+n6F83ygPQNog+hbGdvazt44NR4HGF7U5OBa3uex8KZ3iUXtl+ReoIDXCWus2zUZKqJ6
+ 5gkIuE+IUix24Eywjsw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX8RsMBGIUyEph
+ Syl4Ui1n3/OWp1CSf8RjFQyp3k+LZcDZEy3sZB+/MxRjk+EQSx+TuCsKjshmm6Mk0g+7Ke2Hga8
+ 7/3s1G8tpZvI5N43/G97bMcIf/nrSCQ=
+X-Proofpoint-ORIG-GUID: 8QBVfgXxnbfGOiY4INo5f8FQMD3A8Wx6
+X-Authority-Analysis: v=2.4 cv=EP+TQFZC c=1 sm=1 tr=0 ts=6acdc4a8 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=hYfsqUzT0y0sb8bvQO0A:9 a=QEXdDO2ut3YA:10
- a=3WC7DwWrALyhR5TkjVHa:22
-X-Proofpoint-GUID: K_0SfocRXJ-qqpvVXdjgwJbFxCzQ8i2C
-X-Proofpoint-ORIG-GUID: K_0SfocRXJ-qqpvVXdjgwJbFxCzQ8i2C
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX5offqdVFYpoX
- nm7oXpRPAdJOr8v3AzVwJ5mJfSDYUZJm9Hknrbp7C9rU2yo+5cgarBxEebuifMTHo3cmWANhMVK
- jgKu4BW2Z0pyc0KvAHOICw/m/QHRoiE=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDAyMiBTYWx0ZWRfX7QsPu9s4nDZ0
- V4m/ygjondusk4d30LDFWn7glnSw5QPDLkSiia8X7lLUVyGgrXkE/ZGmR6nXnCSFCaDsgP9jjf/
- 4gZAZwEQ+lk3CkGw95blCJtPLuK/xq1hDmTHZP0t7BVKrPgi/xMtDvjmGNtOwctmRx/1zQjWntQ
- /Ta0GN/l1l4AB9UmVZiBxK07Vrg0HgqO4XZSA7/XTQpV6B/ciuDyF38ivVgcp8GcZkkpIMkmHGS
- +OGrEJNPke39QX6zN5ODI5yK1wtQhwvpJ8eGUNGZNJh39fJGKv5xoU7Jkaop9nyINd4FBrlBVu0
- R4y2IZN3lkZ8UmF8WynzWZUGa6fb6M49j6p936pf5x2w3+toO/a2Yslw3xgBKG5TQt9iSvoWxio
- Vw0Df1LuxPs6nup2QKIPQFkEMUkbfjNfyBqCPmrBrIk4uZuul24TF1AabvAukBn4VwPLaDzlXzb
- v7YBdvGzsoqMW3PwXaw==
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=EUspDBNiAAAA:8 a=6VhrBSHLQm3oGo9yYzUA:9 a=QEXdDO2ut3YA:10
+ a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-GUID: 8QBVfgXxnbfGOiY4INo5f8FQMD3A8Wx6
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 suspectscore=0 bulkscore=0 lowpriorityscore=0 spamscore=0
- adultscore=0 phishscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
+ impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015 spamscore=0
+ malwarescore=0 priorityscore=1501 bulkscore=0 adultscore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610130022
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-5.20 / 15.00];
+X-Spamd-Result: default: False [-5.30 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[qualcomm.com,reject];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
 	RCVD_IN_DNSWL_MED(-0.20)[129.46.96.20:received];
+	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	MIME_GOOD(-0.10)[text/plain];
+	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
 	RCVD_COUNT_THREE(0.00)[4];
 	ARC_NA(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	RCPT_COUNT_TWELVE(0.00)[18];
 	MIME_TRACE(0.00)[0:+];
 	TO_DN_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[205.220.168.131:from];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	TAGGED_RCPT(0.00)[dt];
 	MID_RHS_MATCH_FROM(0.00)[];
-	ALIAS_RESOLVED(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_TLS_LAST(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.215.200:received];
+	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.216.70:received];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 989F845232
+X-Rspamd-Queue-Id: 73B2745232
 X-Spamd-Bar: -----
-Message-ID-Hash: 2WIERUVF6V55JH5RJ2IBT4KDCQYJ2KLB
-X-Message-ID-Hash: 2WIERUVF6V55JH5RJ2IBT4KDCQYJ2KLB
+Message-ID-Hash: YWARWDGZ4Z7SMZBEZVIPHY6G2YWHTPXB
+X-Message-ID-Hash: YWARWDGZ4Z7SMZBEZVIPHY6G2YWHTPXB
 X-MailFrom: amirreza.zarrabi@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2WIERUVF6V55JH5RJ2IBT4KDCQYJ2KLB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YWARWDGZ4Z7SMZBEZVIPHY6G2YWHTPXB/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -184,64 +184,142 @@ List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
 From: Amirreza Zarrabi via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 
-Add a page-based dynamic shared-memory pool for the RPMI backend using
-the common TEE allocation and free helpers.
+OP-TEE can suspend a yielding call to request services from normal
+world through RPC.
 
-Register allocated pages as RPMI parcels so OP-TEE can access them.
-Unregister the parcels before freeing their backing pages.
+Add handlers for shared-memory allocation and free requests. Use the
+existing kernel and supplicant allocation helpers, return RPMI parcel
+references for allocated memory, and resolve those references when
+freeing it.
+
+Route other commands through the common OP-TEE RPC dispatcher. Store
+RPC results in the shared arguments for OP-TEE to consume when the
+yielding call resumes.
 
 Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/tee/optee/rpmi_abi.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ drivers/tee/optee/rpmi_abi.c | 104 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 
 diff --git a/drivers/tee/optee/rpmi_abi.c b/drivers/tee/optee/rpmi_abi.c
-index 940676794280..bbb219ddab38 100644
+index bbb219ddab38..8b90c3653e80 100644
 --- a/drivers/tee/optee/rpmi_abi.c
 +++ b/drivers/tee/optee/rpmi_abi.c
-@@ -183,6 +183,42 @@ static int optee_rpmi_shm_unregister_supp(struct tee_context *ctx,
- 	return rc;
- }
+@@ -12,6 +12,7 @@
+ #include <linux/unaligned.h>
+ #include "optee_private.h"
+ #include "optee_rpmi.h"
++#include "optee_rpc_cmd.h"
  
-+static int optee_rpmi_pool_alloc(struct tee_shm_pool *pool, struct tee_shm *shm,
-+				 size_t size, size_t align)
+ /* Keep transport errors separate from the control status in a response. */
+ static int optee_rpmi_call_with_status(struct optee *optee,
+@@ -353,3 +354,106 @@ static int optee_rpmi_from_msg_param(struct optee *optee,
+ 
+ 	return 0;
+ }
++
++static void optee_rpmi_handle_rpc_shm_alloc(struct tee_context *ctx,
++					    struct optee *optee,
++					    struct optee_msg_arg *arg)
 +{
-+	return tee_dyn_shm_alloc_helper(shm, size, align,
-+					optee_rpmi_shm_register);
++	struct tee_shm *shm;
++	u64 type, size;
++
++	if (arg->num_params != 1 ||
++	    arg->params[0].attr != OPTEE_MSG_ATTR_TYPE_VALUE_INPUT)
++		goto err_bad_param;
++
++	type = arg->params[0].u.value.a;
++	size = arg->params[0].u.value.b;
++	if (!size || size > SIZE_MAX - PAGE_SIZE + 1)
++		goto err_bad_param;
++
++	switch (type) {
++	case OPTEE_RPC_SHM_TYPE_APPL:
++		shm = optee_rpc_cmd_alloc_suppl(ctx, size);
++		break;
++	case OPTEE_RPC_SHM_TYPE_KERNEL:
++		shm = tee_shm_alloc_priv_buf(optee->ctx, size);
++		break;
++	default:
++		goto err_bad_param;
++	}
++
++	if (IS_ERR(shm)) {
++		arg->ret = TEEC_ERROR_OUT_OF_MEMORY;
++		return;
++	}
++
++	arg->params[0] = (struct optee_msg_param) {
++		.attr = OPTEE_MSG_ATTR_TYPE_PMEM_OUTPUT,
++		.u.pmem.size = tee_shm_get_size(shm),
++		.u.pmem.global_id = shm->sec_world_id,
++		.u.pmem.offs = shm->offset,
++	};
++
++	arg->ret = TEEC_SUCCESS;
++	return;
++
++err_bad_param:
++	arg->ret = TEEC_ERROR_BAD_PARAMETERS;
 +}
 +
-+static void optee_rpmi_pool_free(struct tee_shm_pool *pool, struct tee_shm *shm)
++static void optee_rpmi_handle_rpc_shm_free(struct tee_context *ctx,
++					   struct optee *optee,
++					   struct optee_msg_arg *arg)
 +{
-+	tee_dyn_shm_free_helper(shm, optee_rpmi_shm_unregister);
++	struct tee_shm *shm;
++	u64 type, global_id;
++
++	if (arg->num_params != 1 ||
++	    arg->params[0].attr != OPTEE_MSG_ATTR_TYPE_VALUE_INPUT)
++		goto err_bad_param;
++
++	type = arg->params[0].u.value.a;
++	global_id = arg->params[0].u.value.b;
++	/* SHM_FREE requires a non-NULL identity. */
++	if (!optee_rpmi_nonce(global_id) || arg->params[0].u.value.c)
++		goto err_bad_param;
++
++	shm = optee_shm_handle_map_lookup(&optee->rpmi.shm_map, global_id);
++	if (!shm)
++		goto err_bad_param;
++
++	switch (type) {
++	case OPTEE_RPC_SHM_TYPE_APPL:
++		optee_rpc_cmd_free_suppl(ctx, shm);
++		break;
++	case OPTEE_RPC_SHM_TYPE_KERNEL:
++		tee_shm_free(shm);
++		break;
++	default:
++		goto err_bad_param;
++	}
++
++	arg->ret = TEEC_SUCCESS;
++	return;
++
++err_bad_param:
++	arg->ret = TEEC_ERROR_BAD_PARAMETERS;
 +}
 +
-+static void optee_rpmi_pool_destroy(struct tee_shm_pool *pool)
++/* OP-TEE leaves the shared arguments unchanged while Linux handles the RPC. */
++static void optee_rpmi_handle_rpc_cmd(struct tee_context *ctx,
++				      struct optee *optee,
++				      struct optee_msg_arg *arg)
 +{
-+	kfree(pool);
++	arg->ret_origin = TEEC_ORIGIN_COMMS;
++	switch (arg->cmd) {
++	case OPTEE_RPC_CMD_SHM_ALLOC:
++		optee_rpmi_handle_rpc_shm_alloc(ctx, optee, arg);
++		break;
++	case OPTEE_RPC_CMD_SHM_FREE:
++		optee_rpmi_handle_rpc_shm_free(ctx, optee, arg);
++		break;
++	default:
++		optee_rpc_cmd(ctx, optee, arg);
++	}
 +}
-+
-+static const struct tee_shm_pool_ops optee_rpmi_pool_ops = {
-+	.alloc = optee_rpmi_pool_alloc,
-+	.free = optee_rpmi_pool_free,
-+	.destroy_pool = optee_rpmi_pool_destroy,
-+};
-+
-+static struct tee_shm_pool *optee_rpmi_shm_pool_alloc(void)
-+{
-+	struct tee_shm_pool *pool;
-+
-+	pool = kzalloc_obj(*pool);
-+	if (!pool)
-+		return ERR_PTR(-ENOMEM);
-+
-+	pool->ops = &optee_rpmi_pool_ops;
-+
-+	return pool;
-+}
-+
- /* Convert a memory reference to an OP-TEE RPMI parcel reference. */
- static int to_msg_param_rpmi_mem(struct optee_msg_param *mp,
- 				 const struct tee_param *p)
 
 -- 
 2.34.1
