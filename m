@@ -4,139 +4,574 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DED00CCF2E3
-	for <op-tee@archiver.kernel.org>; Mon, 19 Oct 2026 11:49:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B71F6CCF2DE
+	for <op-tee@archiver.kernel.org>; Mon, 19 Oct 2026 13:01:09 +0000 (UTC)
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 1D8E6452F5
-	for <op-tee@archiver.kernel.org>; Mon, 19 Oct 2026 11:49:12 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id BA4F145336
+	for <op-tee@archiver.kernel.org>; Mon, 19 Oct 2026 13:01:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1792410552;
-	bh=pKSArXpk/5IJh+/fKSThGW+GIdbiteG9/vEycrk2pds=;
+	d=lists.trustedfirmware.org; s=2024; t=1792414868;
+	bh=ov+9JUCAqR0HqGDn7Jnmpa7nIYC+IiOUIOQpf19KUUA=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=OBOsMSENS7FoVUUZ6ALtyN3UaXDMyCVOKMWVdItmS4iKGvjwt9Ozr+u0o5WmdGFiu
-	 LzyuA8HxtllNRxDwBXjXHkDL29beV6YbD9wWJmCFUYcsvid3eg5BbR79v+96k34Nqj
-	 R66fPKw9lrXbBcus0yFxeq81utRXSCQs8+EY6D9HT7Kq8EJotdHuDB6otbyGgmKKvV
-	 Tr7j4mWLHhsjCvjcCuY6jjff4nMac3J/Lv8q84skZJIqF7LmOQhDVnNgt61weowrHP
-	 DERmx/s94TIzR+rvAl67MLUEPIUkMeuzacLP04LhRRQzvNiRRXYNO6iszJ/GE4lmj1
-	 qelm2EqR8Ltww==
+	b=UOwOhJmRxiL69Rx4JqEMYi2pPJO+seTY4Am/dg2IKya7OAyztUkVwvhXypdWIienK
+	 RooIkbLdPKJvI4Bbi6/po4Q/oRTZcgA5YIbRlTDbhUO0Gw6UgAeyJ/QzBYRKYK69PB
+	 Be2RcGNxHMbR2sOiHDJe7DtSm/voWz4wODfrX4tFauHIdGjfvzy87MziSak3KXwARW
+	 srm91nV2j7FJRP6xSHw1bxeSsnA5Cu1afrYtxU3Y+WcP+Q1cPpPmux2HOPL7R2+3im
+	 M/c0/FN29T/O6Kg2smw5SiIKkP4NHspk0MnbVOJqdo0+uFhNhzkK+EV/h/YZZ24ReX
+	 0b0d0N8LgmAEQ==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id BC10044DB9
-	for <op-tee@lists.trustedfirmware.org>; Mon, 19 Oct 2026 11:48:54 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with UTF8SMTPS id 1EEF144A8C
+	for <op-tee@lists.trustedfirmware.org>; Mon, 19 Oct 2026 13:00:48 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IXrfQasl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RFidDKT1;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 07B9D40887;
-	Mon, 19 Oct 2026 11:48:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A37841F000C5;
-	Mon, 19 Oct 2026 11:48:51 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with UTF8SMTP id 76242423D2;
+	Mon, 19 Oct 2026 13:00:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id CE3791F000C4;
+	Mon, 19 Oct 2026 13:00:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792410533;
-	bh=5bVoZnEarRBs9Xk5wqya8DrG3A1bPmlIgxOyF2pbG3g=;
+	s=k20260515; t=1792414847;
+	bh=JgW3f19xZf1cjDH7lmGAelb3QRZ/yFz4ENBbRiXFDKE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=IXrfQaslscILGXoY7dMfLmeJ3rKloCn5sPs9jso2bKegmGYtIIOe7BgHYEPtIdYWL
-	 5g3jaVRY1Fdsmot/Xix5bb8Ly1rXPcn+7RX0W+DwPDRGFJ+BPIRLS+3ArjRa5dEfgD
-	 WdoImdUbHvqe+7wOoYLqTdEUixfOFJleozd+591RWzmRkpuMZOkgWSvKeIXh/jchC1
-	 175kH3lfxu08NTv3x178CilXX1fo7wScY04iY+pPyxYrG60KuMSaXeSkC6Czwkb0I8
-	 tfD5BY8dEIq58KmmPN/VWjY7S3REBjKxHMxcl0vvM8lz8yLm5kF1tay7R9l8JJgdOj
-	 c88/1pZSqSsew==
-Date: Mon, 19 Oct 2026 17:18:49 +0530
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Subject: Re: [PATCH] tee: optee: allocate a bitmap for all valid notification
- keys
-Message-ID: <atYDodGDc3z6Qv4f@sumit-xelite>
-References: <20261009-fix-tee-max-keys-v1-1-1462d96bf438@oss.qualcomm.com>
+	b=RFidDKT1gPkHTMQayiw/uJod1KlXWNYibcrJYZdzxZeszV+Y5F21mae/Y6a3iVbkQ
+	 Kl+DFR2qOO1MtHr6tNygPqna7yc6dm+TIySGQr8OQCAxMmNanIIIh5Ps+xduotV7OA
+	 9nlvl5iH3LEvLzS5nuvXSi8JqFkN9RVxrGjTT+rTlqX9zGuT40g3Hrh7THAb+w4Aax
+	 7VvHJNIs7DDSR4mIrAkvHx0kB146h5Lv6eey7lHLxk+CYtfBTR5U1uxcWIhHgWAYd/
+	 +Czmo6glJMyp3rSCE4QC6HRLptq+2E0T2osApB+qG+C4QdL5eeBerue4wpGvWyJS9T
+	 hdG1P0hDM1fFQ==
+Date: Mon, 19 Oct 2026 16:00:43 +0300
+To: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
+Subject: Re: [PATCH v4 2/3] tpm: Introduce Qualcomm TPM driver
+Message-ID: <atYUe69HDF47DNVg@kernel.org>
+References: <20261019-tpm_qcom_driver-v4-0-6889b9804ba7@oss.qualcomm.com>
+ <20261019-tpm_qcom_driver-v4-2-6889b9804ba7@oss.qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261009-fix-tee-max-keys-v1-1-1462d96bf438@oss.qualcomm.com>
+In-Reply-To: <20261019-tpm_qcom_driver-v4-2-6889b9804ba7@oss.qualcomm.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-9.20 / 15.00];
-	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
+X-Spamd-Result: default: False [-9.70 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
 	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
-	MID_RHS_NOT_FQDN(0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
 	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	MIME_GOOD(-0.10)[text/plain];
 	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	MIME_TRACE(0.00)[0:+];
-	FROM_EQ_ENVFROM(0.00)[];
 	MISSING_XM_UA(0.00)[];
 	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
 	RCVD_TLS_LAST(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[oss.qualcomm.com,kernel.org,gmx.de,ziepe.ca,vger.kernel.org,lists.trustedfirmware.org];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	RCPT_COUNT_FIVE(0.00)[6];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: BC10044DB9
+X-Rspamd-Queue-Id: 1EEF144A8C
 X-Spamd-Bar: ---------
-Message-ID-Hash: VBX67RFF7NMMOPTFFY7EF2DNCTA45GZW
-X-Message-ID-Hash: VBX67RFF7NMMOPTFFY7EF2DNCTA45GZW
-X-MailFrom: sumit.garg@kernel.org
+Message-ID-Hash: O57PLGXBGL5CGJAJISNEH76VBRG3GZWO
+X-Message-ID-Hash: O57PLGXBGL5CGJAJISNEH76VBRG3GZWO
+X-MailFrom: jarkko@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Peter Huewe <peterhuewe@gmx.de>, Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-integrity@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/VBX67RFF7NMMOPTFFY7EF2DNCTA45GZW/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/O57PLGXBGL5CGJAJISNEH76VBRG3GZWO/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 List-Unsubscribe: <mailto:op-tee-leave@lists.trustedfirmware.org>
-From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Sumit Garg <sumit.garg@kernel.org>
+From: Jarkko Sakkinen via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Jarkko Sakkinen <jarkko@kernel.org>
 
-On Fri, 09 Oct 2026 at 20:19:48 -0700, Amirreza Zarrabi wrote:
->Notification keys are checked against an inclusive maximum, but
->optee_notif_init() passes that maximum to bitmap_zalloc() as the number of
->bits. The bitmap is therefore one bit short. When the maximum key is a
->multiple of BITS_PER_LONG, accessing that key reads or writes beyond the
->allocated bitmap. Word rounding masks the problem.
->
->Allocate max_key + 1 bits so that the highest valid key has storage.
->
->Fixes: 787c80cc7b22 ("optee: separate notification functions")
->Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
->---
-> drivers/tee/optee/notif.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Oct 19, 2026 at 02:51:47PM +0530, Kuldeep Singh wrote:
+> Add a TPM chip driver for platforms where a TPM 2.0 instance is
+> implemented by a Trusted Application (TA) running in Qualcomm's Trusted
+> Execution Environment (QTEE), reachable over the QCOMTEE object-IPC
+> transport.
+> 
+> The driver discovers the qcom.tz.tpm TEE-bus device, opens a session
+> with the TPM TA, and register with tpm interface. This exposes the TA
+> through the standard /dev/tpm interface and the existing tpm2 command
+> layer. OS need not be aware underlying TPM instance is dTPM or fTPM.
+> 
+> Signed-off-by: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>
+> ---
+>  drivers/char/tpm/Kconfig    |   9 +
+>  drivers/char/tpm/Makefile   |   1 +
+>  drivers/char/tpm/tpm_qcom.c | 414 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 424 insertions(+)
+> 
+> diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
+> index 5f672f2c01b0..05d704ed3632 100644
+> --- a/drivers/char/tpm/Kconfig
+> +++ b/drivers/char/tpm/Kconfig
+> @@ -243,6 +243,15 @@ config TCG_FTPM_TEE
+>  	help
+>  	  This driver proxies for firmware TPM running in TEE.
+>  
+> +config TCG_QCOM
+> +	tristate "Qualcomm TEE based TPM Interface"
+> +	depends on QCOMTEE
+> +	help
+> +	  This driver provides interface to run TPM instances with Trustzone
+> +	  having Qualcomm TPM TA running in Qualcomm TEE.
+> +	  The mechanism uses the object-IPC based transport provided by
+> +	  QCOMTEE.
+> +
+>  config TCG_SVSM
+>  	tristate "SNP SVSM vTPM interface"
+>  	depends on AMD_MEM_ENCRYPT
+> diff --git a/drivers/char/tpm/Makefile b/drivers/char/tpm/Makefile
+> index 5b5cdc0d32e4..471cbf49afd2 100644
+> --- a/drivers/char/tpm/Makefile
+> +++ b/drivers/char/tpm/Makefile
+> @@ -45,5 +45,6 @@ obj-$(CONFIG_TCG_CRB) += tpm_crb.o
+>  obj-$(CONFIG_TCG_ARM_CRB_FFA) += tpm_crb_ffa.o
+>  obj-$(CONFIG_TCG_VTPM_PROXY) += tpm_vtpm_proxy.o
+>  obj-$(CONFIG_TCG_FTPM_TEE) += tpm_ftpm_tee.o
+> +obj-$(CONFIG_TCG_QCOM) += tpm_qcom.o
+>  obj-$(CONFIG_TCG_SVSM) += tpm_svsm.o
+>  obj-$(CONFIG_TCG_LOONGSON) += tpm_loongson.o
+> diff --git a/drivers/char/tpm/tpm_qcom.c b/drivers/char/tpm/tpm_qcom.c
+> new file mode 100644
+> index 000000000000..e9e4746f0004
+> --- /dev/null
+> +++ b/drivers/char/tpm/tpm_qcom.c
+> @@ -0,0 +1,414 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> + *
+> + */
+> +
+> +#include <linux/bitfield.h>
+> +#include <linux/mm.h>
+> +#include <linux/slab.h>
+> +#include <linux/tee.h>
+> +#include <linux/tee_drv.h>
+> +#include <linux/tpm.h>
+> +#include <linux/uuid.h>
+> +
+> +#include "tpm.h"
+> +
+> +#define QCOMTEE_ROOT_OP_REG_WITH_CREDENTIALS	5
+> +#define QCOMTEE_OP_CLIENT_ENV_OPEN		0
+> +#define QCOMTEE_MSG_OBJECT_OP_MASK		GENMASK(15, 0)
+> +#define QCOMTEE_MSG_OBJECT_OP_RELEASE		(QCOMTEE_MSG_OBJECT_OP_MASK - 0)
+> +
+> +#define QCOMTEE_TPM_OP_SEND_COMMAND	0
+> +
+> +/* UID of the "qcom.tz.tpm" service */
+> +#define QCOMTEE_TPM_UID			81
+> +
+> +/* Max buffer size supported by TPM TA */
+> +#define TPM_QCOM_MAX_COMMAND_SIZE	SZ_4K
+> +#define TPM_QCOM_MAX_RESPONSE_SIZE	SZ_4K
+> +
+> +#define QCOMTEE_TPM_GET_TA_VERSION_ID	0x0001000
+> +#define QCOMTEE_TPM_TA_VERSION_MAJOR	GENMASK(31, 16)
+> +#define QCOMTEE_TPM_TA_VERSION_MINOR	GENMASK(15, 0)
+> +
+> +struct tpm_qcom_ta_version_req {
+> +	u32 command_id;
+> +} __packed;
+> +
+> +struct tpm_qcom_ta_version_resp {
+> +	u32 status;
+> +	u32 command_id;
+> +	u32 version_num;
+> +} __packed;
+> +
+> +#define QCOMTEE_TPM_TYPE_ID		0x0080000
+> +#define QCOMTEE_TPM_TYPE_DTPM		0x6454504dU
+> +#define QCOMTEE_TPM_TYPE_FTPM		0x6654504dU
+> +#define QCOMTEE_TPM_TYPE_NONE		0x4e6f6e65U
+> +
+> +struct tpm_qcom_type_req {
+> +	u32 command_id;
+> +} __packed;
+> +
+> +struct tpm_qcom_type_resp {
+> +	u32 command_id;
+> +	u32 status;
+> +	u32 tpm_type;
+> +} __packed;
+> +
+> +/*
+> + * dTPM SPI transfer optimization:
+> + * TRANSFER_START before a burst of commands, TRANSFER_END once done.
+> + */
+> +#define QCOMTEE_TPM_TRANSFER_ID		0x0000002
+> +#define QCOMTEE_TPM_TRANSFER_END	0
+> +#define QCOMTEE_TPM_TRANSFER_START	1
+> +
+> +struct tpm_qcom_transfer_req {
+> +	u32 command_id;
+> +	u32 transfer_state;
+> +} __packed;
+> +
+> +struct tpm_qcom_transfer_resp {
+> +	u32 command_id;
+> +	u32 status;
+> +} __packed;
+> +
+> +struct tpm_qcom_private {
+> +	struct tpm_chip *chip;
+> +	struct device *dev;
+> +	struct tee_context *ctx;
+> +	struct tee_param_objref tpm_svc_obj;
+> +	bool is_dtpm;
+> +};
+> +
+> +/* UUID of the QTEE-bus device representing the TPM TA. */
+> +static const uuid_t tpm_qcom_uuid =
+> +	UUID_INIT(0xaabcb593, 0x7083, 0x5536,
+> +		  0xac, 0x27, 0x3d, 0x2d, 0x89, 0x41, 0x9d, 0xdb);
+> +
+> +static void tpm_qcom_release_object(struct tee_context *ctx,
+> +				    struct tee_param_objref object)
+> +{
+> +	struct tee_ioctl_object_invoke_arg inv_arg = {};
+> +
+> +	inv_arg.id = object.id;
+> +	inv_arg.op = QCOMTEE_MSG_OBJECT_OP_RELEASE;
+> +	inv_arg.num_params = 0;
+> +
+> +	tee_client_object_invoke_func(ctx, &inv_arg, NULL);
+> +}
+> +
+> +static int tpm_qcom_get_client_env_obj(struct device *dev,
+> +				       struct tee_context *ctx,
+> +				       struct tee_param_objref *client_env_obj)
+> +{
+> +	struct tee_ioctl_object_invoke_arg inv_arg = {};
+> +	struct tee_param param[2] = {};
+> +	int ret;
+> +
+> +	inv_arg.id = TEE_OBJREF_NULL;
+> +	inv_arg.op = QCOMTEE_ROOT_OP_REG_WITH_CREDENTIALS;
+> +	inv_arg.num_params = 2;
+> +
+> +	param[0].attr = TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT;
+> +	param[0].u.objref.id = TEE_OBJREF_NULL;
+> +	param[1].attr = TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT;
+> +
+> +	ret = tee_client_object_invoke_func(ctx, &inv_arg, param);
+> +	if (ret < 0 || inv_arg.ret != 0) {
+> +		dev_err(dev, "get client env obj failed: ret=%d, invoke_ret=0x%x\n",
+> +			ret, inv_arg.ret);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*client_env_obj = param[1].u.objref;
+> +	return 0;
+> +}
+> +
+> +static int tpm_qcom_get_svc_obj(struct device *dev,
+> +				struct tee_context *ctx,
+> +				struct tee_param_objref client_env_obj,
+> +				struct tee_param_objref *tpm_svc_obj)
+> +{
+> +	struct tee_ioctl_object_invoke_arg inv_arg = {};
+> +	struct tee_param param[2] = {};
+> +	u32 tpm_uid = QCOMTEE_TPM_UID;
+> +	int ret;
+> +
+> +	inv_arg.id = client_env_obj.id;
+> +	inv_arg.op = QCOMTEE_OP_CLIENT_ENV_OPEN;
+> +	inv_arg.num_params = 2;
+> +
+> +	param[0].attr = TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT;
+> +	param[0].u.ubuf = (struct tee_param_ubuf){ .addr = &tpm_uid,
+> +						    .size = sizeof(tpm_uid) };
+> +	param[1].attr = TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT;
+> +
+> +	ret = tee_client_object_invoke_func(ctx, &inv_arg, param);
+> +	if (ret < 0 || inv_arg.ret != 0) {
+> +		dev_err(dev, "get TPM service obj failed: ret=%d, invoke_ret=0x%x\n",
+> +			ret, inv_arg.ret);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*tpm_svc_obj = param[1].u.objref;
+> +	return 0;
+> +}
+> +
+> +static int tpm_qcom_send_command(struct tpm_qcom_private *pvt_data,
+> +				 void *req, size_t req_len, void *resp,
+> +				 size_t *resp_len)
+> +{
+> +	struct tee_ioctl_object_invoke_arg inv_arg = {};
+> +	struct tee_param param[3] = {};
+> +	u8 locality_arg = 0;
+> +	int ret;
+> +
+> +	inv_arg.id = pvt_data->tpm_svc_obj.id;
+> +	inv_arg.op = QCOMTEE_TPM_OP_SEND_COMMAND;
+> +	inv_arg.num_params = 3;
+> +
+> +	param[0].attr = TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT;
+> +	param[0].u.ubuf = (struct tee_param_ubuf){ .addr = &locality_arg,
+> +						   .size = sizeof(locality_arg) };
+> +	param[1].attr = TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT;
+> +	param[1].u.ubuf = (struct tee_param_ubuf){ .addr = req, .size = req_len };
+> +	param[2].attr = TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT;
+> +	param[2].u.ubuf = (struct tee_param_ubuf){ .addr = resp, .size = *resp_len };
+> +
+> +	ret = tee_client_object_invoke_func(pvt_data->ctx, &inv_arg, param);
+> +	if (ret < 0 || inv_arg.ret != 0) {
+> +		dev_err(pvt_data->dev,
+> +			"send_command invoke ret: %d, err: 0x%x\n",
+> +			ret, inv_arg.ret);
+> +		return ret ?: -EINVAL;
+> +	}
+> +
+> +	*resp_len = param[2].u.ubuf.size;
+> +
+> +	return 0;
+> +}
+> +
+> +static int tpm_qcom_get_ta_details(struct tpm_qcom_private *pvt_data)
+> +{
+> +	struct tpm_qcom_ta_version_req ver_req = {
+> +		.command_id = QCOMTEE_TPM_GET_TA_VERSION_ID,
+> +	};
+> +	struct tpm_qcom_ta_version_resp ver_resp;
+> +	size_t resp_len = sizeof(ver_resp);
+> +	struct tpm_qcom_type_req type_req = {
+> +		.command_id = QCOMTEE_TPM_TYPE_ID,
+> +	};
+> +	struct tpm_qcom_type_resp type_resp;
+> +	int ret;
+> +
+> +	ret = tpm_qcom_send_command(pvt_data, &ver_req, sizeof(ver_req),
+> +				    &ver_resp, &resp_len);
+> +	if (ret < 0 || resp_len < sizeof(ver_resp) || ver_resp.status != 0)
+> +		return ret ?: -EIO;
+> +
+> +	dev_info(pvt_data->dev, "TPM TA version %u.%u\n",
+> +		 FIELD_GET(QCOMTEE_TPM_TA_VERSION_MAJOR, ver_resp.version_num),
+> +		 FIELD_GET(QCOMTEE_TPM_TA_VERSION_MINOR, ver_resp.version_num));
+> +
+> +	resp_len = sizeof(type_resp);
+> +	ret = tpm_qcom_send_command(pvt_data, &type_req, sizeof(type_req),
+> +				    &type_resp, &resp_len);
+> +	if (ret < 0 || resp_len < sizeof(type_resp) || type_resp.status != 0)
+> +		return ret ?: -EIO;
+> +
+> +	switch (type_resp.tpm_type) {
+> +	case QCOMTEE_TPM_TYPE_FTPM:
+> +		dev_info(pvt_data->dev, "TPM type: fTPM\n");
+> +		pvt_data->is_dtpm = false;
+> +		break;
+> +	case QCOMTEE_TPM_TYPE_DTPM:
+> +		dev_info(pvt_data->dev, "TPM type: dTPM\n");
+> +		pvt_data->is_dtpm = true;
+> +		break;
+> +	default:
+> +		dev_err(pvt_data->dev, "unsupported TPM type: 0x%08x\n",
+> +			type_resp.tpm_type);
+> +		return -EIO;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* fTPM does not implement this command and to be invoked via dtpm only. */
+> +static void tpm_qcom_transfer(struct tpm_qcom_private *pvt_data,
+> +			      u32 transfer_state)
+> +{
+> +	struct tpm_qcom_transfer_req req = {
+> +		.command_id = QCOMTEE_TPM_TRANSFER_ID,
+> +		.transfer_state = transfer_state,
+> +	};
+> +	struct tpm_qcom_transfer_resp resp;
+> +	size_t resp_len = sizeof(resp);
+> +
+> +	tpm_qcom_send_command(pvt_data, &req, sizeof(req), &resp, &resp_len);
+> +}
+> +
+> +static int tpm_qcom_cmd_ready(struct tpm_chip *chip)
+> +{
+> +	struct tpm_qcom_private *pvt_data = dev_get_drvdata(chip->dev.parent);
+> +
+> +	if (pvt_data->is_dtpm)
+> +		tpm_qcom_transfer(pvt_data, QCOMTEE_TPM_TRANSFER_START);
+> +
+> +	return 0;
+> +}
+> +
+> +static int tpm_qcom_go_idle(struct tpm_chip *chip)
+> +{
+> +	struct tpm_qcom_private *pvt_data = dev_get_drvdata(chip->dev.parent);
+> +
+> +	if (pvt_data->is_dtpm)
+> +		tpm_qcom_transfer(pvt_data, QCOMTEE_TPM_TRANSFER_END);
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * The raw TPM2 command in @buf is sent directly as send_command's UBUF-in
+> + * param and the raw TPM2 response is read back from its UBUF-out param.
+> + */
+> +static int tpm_qcom_send(struct tpm_chip *chip, u8 *buf, size_t bufsiz,
+> +			 size_t cmd_len)
+> +{
+> +	struct tpm_qcom_private *pvt_data = dev_get_drvdata(chip->dev.parent);
+> +	struct tpm_header *header = (struct tpm_header *)buf;
+> +	size_t resp_len = PAGE_ALIGN(TPM_QCOM_MAX_RESPONSE_SIZE);
+> +	size_t copy_len;
+> +	int ret;
+> +
+> +	if (cmd_len > TPM_QCOM_MAX_COMMAND_SIZE) {
+> +		dev_err(&chip->dev, "len=%zd exceeds TPM_QCOM_MAX_COMMAND_SIZE\n",
+> +			cmd_len);
+> +		return -EIO;
+> +	}
+> +
+> +	u8 *response __free(kfree) = kzalloc(resp_len, GFP_KERNEL);
+> +	if (!response)
+> +		return -ENOMEM;
+> +
+> +	ret = tpm_qcom_send_command(pvt_data, buf, cmd_len, response, &resp_len);
+> +	if (ret < 0) {
+> +		dev_err(&chip->dev, "TPM command failed: cmd_len=%zu, tpm_cc=0x%08x, ret:%d\n",
+> +			cmd_len, be32_to_cpu(header->ordinal), ret);
+> +		return ret;
+> +	}
+> +
+> +	copy_len = min_t(size_t, bufsiz, resp_len);
+> +	memcpy(buf, response, copy_len);
+> +
+> +	return copy_len;
+> +}
+> +
+> +static const struct tpm_class_ops tpm_qcom_ops = {
+> +	.flags = TPM_OPS_AUTO_STARTUP,
+> +	.send = tpm_qcom_send,
+> +	.cmd_ready = tpm_qcom_cmd_ready,
+> +	.go_idle = tpm_qcom_go_idle,
+> +};
+> +
+> +static int tpm_qcom_ctx_match(struct tee_ioctl_version_data *ver,
+> +			      const void *data)
+> +{
+> +	return (ver->impl_id == TEE_IMPL_ID_QTEE);
+> +}
+> +
+> +static int tpm_qcom_probe(struct tee_client_device *tee_dev)
+> +{
+> +	struct device *dev = &tee_dev->dev;
+> +	struct tpm_qcom_private *pvt_data;
+> +	struct tee_param_objref client_env_obj;
+> +	struct tee_param_objref tpm_svc_obj;
+> +	struct tpm_chip *chip;
+> +	int err;
+> +
+> +	pvt_data = devm_kzalloc(dev, sizeof(*pvt_data), GFP_KERNEL);
+> +	if (!pvt_data)
+> +		return -ENOMEM;
+> +
+> +	dev_set_drvdata(dev, pvt_data);
+> +
+> +	pvt_data->ctx = tee_client_open_context(NULL, tpm_qcom_ctx_match, NULL, NULL);
+> +	if (IS_ERR(pvt_data->ctx))
+> +		return -ENODEV;
+> +
+> +	err = tpm_qcom_get_client_env_obj(dev, pvt_data->ctx, &client_env_obj);
+> +	if (err)
+> +		goto out_ctx;
+> +
+> +	err = tpm_qcom_get_svc_obj(dev, pvt_data->ctx, client_env_obj, &tpm_svc_obj);
+> +	/* Release client_env object irrespective of service obj return status */
+> +	tpm_qcom_release_object(pvt_data->ctx, client_env_obj);
+> +	if (err)
+> +		goto out_ctx;
+> +
+> +	pvt_data->tpm_svc_obj = tpm_svc_obj;
+> +	pvt_data->dev = dev;
+> +
+> +	err = tpm_qcom_get_ta_details(pvt_data);
+> +	if (err)
+> +		goto out_svc_obj;
+> +
+> +	chip = tpmm_chip_alloc(dev, &tpm_qcom_ops);
+> +	if (IS_ERR(chip)) {
+> +		dev_err(dev, "tpmm_chip_alloc failed\n");
+> +		err = PTR_ERR(chip);
+> +		goto out_svc_obj;
+> +	}
+> +
+> +	pvt_data->chip = chip;
+> +	dev_set_drvdata(dev, pvt_data);
+> +	pvt_data->chip->flags |= TPM_CHIP_FLAG_TPM2 | TPM_CHIP_FLAG_SYNC;
+> +
+> +	err = tpm_chip_register(pvt_data->chip);
+> +	if (err) {
+> +		dev_err(dev, "tpm_chip_register failed with rc=%d\n", err);
+> +		goto out_svc_obj;
+> +	}
+> +
+> +	return 0;
+> +
+> +out_svc_obj:
+> +	tpm_qcom_release_object(pvt_data->ctx, tpm_svc_obj);
+> +
+> +out_ctx:
+> +	tee_client_close_context(pvt_data->ctx);
+> +	return err;
+> +}
+> +
+> +static void tpm_qcom_remove(struct tee_client_device *tee_dev)
+> +{
+> +	struct tpm_qcom_private *pvt_data = dev_get_drvdata(&tee_dev->dev);
+> +
+> +	tpm_chip_unregister(pvt_data->chip);
+> +	tpm_qcom_release_object(pvt_data->ctx, pvt_data->tpm_svc_obj);
+> +	tee_client_close_context(pvt_data->ctx);
+> +}
+> +
+> +static const struct tee_client_device_id tpm_qcom_id_table[] = {
+> +	{ tpm_qcom_uuid },
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(tee, tpm_qcom_id_table);
+> +
+> +static struct tee_client_driver tpm_qcom_driver = {
+> +	.id_table	= tpm_qcom_id_table,
+> +	.probe		= tpm_qcom_probe,
+> +	.remove		= tpm_qcom_remove,
+> +	.driver		= {
+> +		.name	= "tpm_qcom",
+> +	},
+> +};
+> +
+> +module_tee_client_driver(tpm_qcom_driver);
+> +
+> +MODULE_DESCRIPTION("TPM driver for Qualcomm TPM TA");
+> +MODULE_AUTHOR("Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>");
+> +MODULE_LICENSE("GPL");
+> 
+> -- 
+> 2.34.1
+> 
 
-Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
 
--Sumit
-
->
->diff --git a/drivers/tee/optee/notif.c b/drivers/tee/optee/notif.c
->index 68014222d7be..2bf5ce397233 100644
->--- a/drivers/tee/optee/notif.c
->+++ b/drivers/tee/optee/notif.c
->@@ -114,7 +114,7 @@ int optee_notif_init(struct optee *optee, u_int max_key)
-> {
-> 	spin_lock_init(&optee->notif.lock);
-> 	INIT_LIST_HEAD(&optee->notif.db);
->-	optee->notif.bitmap = bitmap_zalloc(max_key, GFP_KERNEL);
->+	optee->notif.bitmap = bitmap_zalloc(max_key + 1, GFP_KERNEL);
-> 	if (!optee->notif.bitmap)
-> 		return -ENOMEM;
->
->
->---
->base-commit: becb95e45ef0dda9ffb35156d909d3da7a2789c3
->change-id: 20261009-fix-tee-max-keys-50f2db87b4e5
->
->Best regards,
->-- 
->Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
->
+Br, Jarkko
