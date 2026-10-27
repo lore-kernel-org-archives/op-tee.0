@@ -1,68 +1,66 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4ED0F606A33C
-	for <op-tee@archiver.kernel.org>; Tue, 27 Oct 2026 15:03:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B37EE60A3839
+	for <op-tee@archiver.kernel.org>; Tue, 27 Oct 2026 15:04:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=cS6I2ax8;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YHC0zh1B
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=JEYbBm7O;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MQ82OMPF
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 981BB45375
-	for <op-tee@archiver.kernel.org>; Tue, 27 Oct 2026 15:03:48 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 15FFA45395
+	for <op-tee@archiver.kernel.org>; Tue, 27 Oct 2026 15:04:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793113428;
-	bh=2INKrBcOfk3oNBFp49V9DjJR7xc1P6UmTYJV6U5wa6c=;
-	h=Subject:Date:To:CC:List-Id:List-Archive:List-Help:List-Owner:
-	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=cS6I2ax8Pv0s+oT6tpCnothFMcDvs1g1tjqDGpB/sCLpXuGTWGhIZ7B8r/UqjDVwi
-	 6eRE5ihnTFc06Gxo1pNUCh2NhoTfyWIHrQ1qVuVlUAMphH5PCuQVbmaUumWG1sH3a0
-	 w3RwBJzoY3SgyGmm5Khj0yAWmKqdFcCxKMirQSp7Bqw9o3ltUU+X149svWS/j/jUOV
-	 VYxC/fTYq1+Mv1Ast6J5L35YbtVIhFcdBkNEGvkYh+eSifXUVW47/tSjlkpwr/vxQT
-	 TbUKGKTzAP+iofHFt2vThqf/eYNLXZw7hYWsuNcNDY2Hc1e3m9rcG6TBI+rv6GCmt2
-	 SC+RcC4kWVXFw==
+	d=lists.trustedfirmware.org; s=2024; t=1793113459;
+	bh=xdpPocic425yyD5onUie1hITSfccfsccqHonL58Xej8=;
+	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=JEYbBm7OLasY8GmjghWGDd4FpvP/YdE++2EGoDzRqJe44qXQUYdeOuRG4wiOZuAyP
+	 UJUuhU+3UqsZBNPsWganb6Zyb8KzP9oz1zKG6E+aZ9oWz+e1XGQKzUGV1baGx+Oi1t
+	 eLlPti5OkWDM/uoNfxveznfgnnR+8/gjGR9auyNVLdgZ2Vy4n8/d6t264fqY4feATa
+	 ssOMfFIwcMpwiWWfiRkjV+2VAZvWR9o+au0Nmmby4npTMKdBIrgYxPOfoLZ/tujj6s
+	 wG38UUJAe27fiXRIu4pZ83uKtv1LFYSp4LtYSkif3DmH44SVmci+OK1KqlNx1ewtC9
+	 0Y4XJ/LYXsgsQ==
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 23C6B44E49
-	for <op-tee@lists.trustedfirmware.org>; Tue, 27 Oct 2026 15:03:22 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 946124529D
+	for <op-tee@lists.trustedfirmware.org>; Tue, 27 Oct 2026 15:03:31 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YHC0zh1B;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MQ82OMPF;
 	dkim-atps=neutral
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793113401;
+	s=mimecast20190719; t=1793113411;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=aOf0mUhnEWGXt/wT5adZbPR4knhMHoXNhBntHVrI1Yw=;
-	b=YHC0zh1Ba2BDbsKlalJ+/SDkR3Bwn64L21GWwRRqZzWUhVCUac5EbNeOfAfmeGzzDrg6CP
-	Lm+kHQhVXBw14fqvrGF93ah8TBGZSr4n1HhXRX/1gcQXhV2aQ1oYcn0YhwclcN5jyFim+S
-	q06X7yQJyx8AkyBEeS9tMlEuLDREw+0=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LzZU8CvKLVs3hXaJd1ehhwM/trH5Flh5accKi3WkqcE=;
+	b=MQ82OMPFI/+S0wKDSGon+WcBupYqRGJxDysACVUzlPN4e38OmKGOuHINYvBtxWgeqZYatU
+	8QiyXO/i8BYqBdcArCqVQjz98Up8w5Pd1YlaUMv/htTqKqKEoDQZETiM/mDXhlT249dnUC
+	YZGzAz98rKBiHbXQqwBp9QfZ+UF2QxY=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-630-UjIdhJ72O6-uXk9AZAUySw-1; Tue,
- 27 Oct 2026 11:03:16 -0400
-X-MC-Unique: UjIdhJ72O6-uXk9AZAUySw-1
-X-Mimecast-MFC-AGG-ID: UjIdhJ72O6-uXk9AZAUySw_1793113392
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-682-_rcJR3VEMbmLxcGjpTDg0w-1; Tue,
+ 27 Oct 2026 11:03:26 -0400
+X-MC-Unique: _rcJR3VEMbmLxcGjpTDg0w-1
+X-Mimecast-MFC-AGG-ID: _rcJR3VEMbmLxcGjpTDg0w_1793113400
 Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id DFCFA18009F0;
-	Tue, 27 Oct 2026 15:03:09 +0000 (UTC)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 2E9B319541A3;
+	Tue, 27 Oct 2026 15:03:19 +0000 (UTC)
 Received: from aesteve-thinkpadp1gen8.rmtes.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D01D018002B1;
-	Tue, 27 Oct 2026 15:02:59 +0000 (UTC)
-Subject: [PATCH v3 0/8] memcg: dma-buf cgroup accounting and charge
- transfer
-Date: Tue, 27 Oct 2026 16:02:43 +0100
-Message-Id: <20261027-v2_20230123_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com>
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 3F1AE18005AD;
+	Tue, 27 Oct 2026 15:03:10 +0000 (UTC)
+Date: Tue, 27 Oct 2026 16:02:44 +0100
+Subject: [PATCH v3 1/8] memcg: Add MEMCG_DMABUF accounting infrastructure
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/43NQQrCMBAF0KuUrI1kJm2srryHSKnppI3YRpISl
- NK7mxYRXOlu/nx4f2KBvKXADtnEPEUbrBtSkJuM6a4eWuK2SZmhQCUKUfKIVbqlAJTVeO3Ja0u
- +ap1rb1Rp13OT50abC6hCCpaYuydjH+vE6ZxyZ8Po/HNdjLB83zjgbzwCF1xJVDsBWqo9HD01X
- T1uU8kWPeJHBIHwh4hJJKOIsGlKXegvcZ7nF8pnAWwjAQAA
-X-Change-ID: 20260508-v2_20230123_tjmercier_google_com-f44fcfb16530
+Message-Id: <20261027-v2_20230123_tjmercier_google_com-v3-1-78d2c4cb8647@redhat.com>
+References: <20261027-v2_20230123_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com>
+In-Reply-To: <20261027-v2_20230123_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com>
 To: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
  =?utf-8?q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>,
  Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
@@ -81,21 +79,21 @@ To: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
  =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>,
  Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
  =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793113379; l=6757;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793113379; l=8935;
  i=aesteve@redhat.com; s=20260827; h=from:subject:message-id;
- bh=SbSaiBkIq+YUC6r+fSuC8xTCAnJdm8Vr2zNeXnNL3ao=;
- b=rMh42d3K7ZdvbxPJmt30LjOl76ZkQ62Z6Ul1YgWdi/7V4axPrJSy681qwSjEcG3Y17eHAsv1y
- +LmSEK2BvnsDaNYSlWiHuv0bXrBqtI3n02cWTu6Y6kXEFNbK6b8jRpu
+ bh=ZjePjINWAv4iLnoa0pS5TThxJ3J4KdpkQLxTA5nSQ28=;
+ b=+VytfxLVLkKBKFzNNAswqwqy8wegZdhZ8RjFSJSmTMbBLEm1glJ9wIaHjikrtr4AWwWNSbxeL
+ bDtPleGM/CaB4HtUmkq+M2DarPtvuP0oyYBi6jRji3zF2mr0j/jNH0G
 X-Developer-Key: i=aesteve@redhat.com; a=ed25519;
  pk=zI2RBeZgocwYm3AkJW4CtjoJnKoDZrfBl1xe5Ed6h+U=
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: tu2lbOIzH8wjo6DgM53Bay_jZHBLzCjhWlUdsh2Z0Zg_1793113392
+X-Mimecast-MFC-PROC-ID: RhgeRdSp6T2EeONz1XLiZRMoZ6UbjEz_7EUUb0lWopU_1793113400
 X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.69 / 15.00];
-	BAYES_HAM(-2.99)[99.97%];
+X-Spamd-Result: default: False [-4.70 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[redhat.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[redhat.com,quarantine];
@@ -121,17 +119,17 @@ X-Spamd-Result: default: False [-4.69 / 15.00];
 	RCVD_COUNT_THREE(0.00)[3];
 	DKIM_TRACE(0.00)[redhat.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 23C6B44E49
+X-Rspamd-Queue-Id: 946124529D
 X-Spamd-Bar: ----
-Message-ID-Hash: 4XXFD5PK5AEDCSVCKSA2DFKMUEQZEYEB
-X-Message-ID-Hash: 4XXFD5PK5AEDCSVCKSA2DFKMUEQZEYEB
+Message-ID-Hash: CLHWPWODXDA4NM4FR33IMOMNQUQNUVHM
+X-Message-ID-Hash: CLHWPWODXDA4NM4FR33IMOMNQUQNUVHM
 X-MailFrom: aesteve@redhat.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: cgroups@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, linux-kselftest@vger.kernel.org, op-tee@lists.trustedfirmware.org, Albert Esteve <aesteve@redhat.com>, echanude@redhat.com, mripard@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/4XXFD5PK5AEDCSVCKSA2DFKMUEQZEYEB/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/CLHWPWODXDA4NM4FR33IMOMNQUQNUVHM/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -146,122 +144,292 @@ X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-U2hhcmVkLW1lbW9yeSBhbGxvY2F0b3Igc2VydmljZXMgKGUuZy4sIEFuZHJvaWQncyBncmFsbG9j
-KQ0KYWxsb2NhdGUgZG1hLWJ1ZnMgb24gYmVoYWxmIG9mIGNsaWVudCBwcm9jZXNzZXMgaW4gZGlm
-ZmVyZW50DQpjZ3JvdXBzLiBUb2RheSB0aG9zZSBhbGxvY2F0aW9ucyBhcmUgY2hhcmdlZCB0byB0
-aGUgYWxsb2NhdG9yJ3MNCm93biBjZ3JvdXAsIGxlYXZpbmcgY2xpZW50IGNncm91cHMgd2l0aCBu
-byB2aXNpYmlsaXR5IGludG8gdGhlaXINCmFjdHVhbCBtZW1vcnkgY29uc3VtcHRpb24gYW5kIGRl
-ZmVhdGluZyByZXNvdXJjZSBsaW1pdHMuDQoNClRoaXMgc2VyaWVzIGFkZHMgbWVtb3J5IGNncm91
-cCBhY2NvdW50aW5nIGZvciBkbWEtYnVmIGFsbG9jYXRpb25zLA0KYnVpbGRpbmcgb24gVC5KLiBN
-ZXJjaWVyJ3MgZWFybGllciBzZXJpZXMgWzFdIGFuZCBpbmNvcnBvcmF0aW5nDQpmZWVkYmFjayBm
-cm9tIHByZXZpb3VzIHZlcnNpb25zIGFuZCBMUEMgZGlzY3Vzc2lvbnMgWzJdLg0KDQpQYXRjaCAx
-IGludHJvZHVjZXMgdGhlIE1FTUNHX0RNQUJVRiBzdGF0IGFuZCByZXNlcnZlL2NvbW1pdC9jYW5j
-ZWwNCmFuZCB1bmNoYXJnZSBoZWxwZXJzLiBSYXRoZXIgdGhhbiBjaGFyZ2luZyBhdCB0aGUgcGFn
-ZSBsZXZlbCB2aWENCl9fR0ZQX0FDQ09VTlQgKHdoaWNoIHdvdWxkIHJlcXVpcmUgZXZlcnkgZG1h
-LWJ1ZiBleHBvcnRlciB0byBpbXBsZW1lbnQNCmNoYXJnaW5nLCBhbmQgbWFrZXMgY3Jvc3MtY2dy
-b3VwIHRyYW5zZmVyIGltcHJhY3RpY2FsIHdpdGhvdXQgYWNjZXNzDQp0byBiYWNraW5nIHBhZ2Vz
-KSwgd2UgdHJhY2sgY2hhcmdlcyBleHRlcm5hbGx5IG9uIHN0cnVjdCBkbWFfYnVmIHZpYQ0KYSBN
-RU1DR19ETUFCVUYgc3RhdCBjb3VudGVyIGFuZCByb3V0ZSBhbGwgYWNjb3VudGluZyB0aHJvdWdo
-IGEgc2luZ2xlDQpwYXRoLCByZW1vdmluZyB0aGUgX19HRlBfQUNDT1VOVCBmbGFnIGZyb20gc3lz
-dGVtLWhlYXAgYWxsb2NhdGlvbnMNCnRvIGF2b2lkIGRvdWJsZSBjb3VudGluZy4NCg0KUGF0Y2gg
-MiBhZGRzIGEgY2hhcmdlX2ZkIGZpZWxkIHRvIERNQV9IRUFQX0lPQ1RMX0FMTE9DLCBhY2NlcHRp
-bmcNCmVpdGhlciBhIHBpZGZkIG9yIGEgY2dyb3VwZmQgdG8gaWRlbnRpZnkgdGhlIHRhcmdldCBj
-Z3JvdXAgYXQNCmFsbG9jYXRpb24gdGltZS4gSWYgdGhlIHRhcmdldCBjZ3JvdXAgY2Fubm90IGFj
-Y29tbW9kYXRlIHRoZSBjaGFyZ2UsDQp0aGUgYWxsb2NhdGlvbiByZXR1cm5zIC1FTk9NRU0uDQoN
-ClBhdGNoZXMgMy02IGFkZCBhY2Nlc3MgY29udHJvbCBmb3IgY3Jvc3MtY2dyb3VwIGNoYXJnaW5n
-LiBMZXR0aW5nDQp1c2Vyc3BhY2UgZGVjaWRlIHdobyB0byBjaGFyZ2UgbmVlZHMgdG8gYmUgYSBw
-cml2aWxlZ2VkIG9wZXJhdGlvbg0KYmVjYXVzZSBpdCBoYXMgbWF0ZXJpYWwgaW1wYWN0IG9uIE9P
-TSBkZWNpc3Npb24gYW5kIHJlc291cmNlIGxpbWl0cy4NCldlIGdhdGUgaXQgdmlhIExTTSBob29r
-cyBmb3IgdGhlIHR3byBjaGFyZ2VfZmQgZmxhdm91cnM6DQpzZWN1cml0eV9kbWFfYnVmX2NoYXJn
-ZV90YXNrKCkgZ2F0ZXMgdGhlIHBpZGZkIHBhdGggKHRhcmdldA0KaWRlbnRpZmllZCBieSB0YXNr
-IGNyZWRlbnRpYWxzKSBhbmQgc2VjdXJpdHlfZG1hX2J1Zl9jaGFyZ2VfY2dyb3VwKCkNCmdhdGVz
-IHRoZSBjZ3JvdXBmZCBwYXRoICh0YXJnZXQgaWRlbnRpZmllZCBieSBjZ3JvdXAgZGlyZWN0b3J5
-IGxhYmVsKSwNCndpdGggU0VMaW51eCBpbXBsZW1lbnRhdGlvbnMgdW5kZXIgYSBkbWFfYnVmIG9i
-amVjdCBjbGFzcy4NCg0KUGF0Y2ggNyBhZGRzIERNQV9CVUZfSU9DVExfWEZFUl9DSEFSR0UsIGEg
-Z2VuZXJhbCBpb2N0bCBvbiBhbnkNCmRtYS1idWYgZmQgdG8gdHJhbnNmZXIgY2hhcmdlcyBwb3N0
-LWFsbG9jYXRpb24uIFRoaXMgY292ZXJzIHRoZQ0KZG91YmxlLWhvcCBhbGxvY2F0b3IgY2FzZSAo
-U3VyZmFjZUZsaW5nZXIgLT4gZ3JhbGxvYyAtPiBrZXJuZWwpDQphbmQgd29ya3MgZm9yIGJ1ZmZl
-cnMgZnJvbSBhbnkgZXhwb3J0ZXIgKERSTSwgVjRMMiwgZXRjLikuIEEgbmV3DQptZW1jZ19hY2Nv
-dW50IGZsYWcgaXMgYWRkZWQgZm9yIGRtYV9idWZfZXhwb3J0KCkgdG8gZW5zdXJlIHRoYXQNCnRy
-YW5zZmVyL2NoYXJnZSBpcyBvbmx5IGFwcGxpZWQgZm9yIGJ1ZmZlcnMgYmFja2VkIGJ5IHJlY2xh
-aW1hYmxlDQpzeXN0ZW0gbWVtb3J5LiBJZiB0aGUgcmVjZWl2aW5nIGNncm91cCBsYWNrcyBjYXBh
-Y2l0eSBmb3IgdGhlIGNoYXJnZSwNCnRoZSBpb2N0bCByZXR1cm5zIC1FTk9NRU0gYW5kIHRoZSBv
-cmlnaW5hbCBjaGFyZ2UgaXMgcHJlc2VydmVkLg0KDQpQYXRjaCA4IGFkZHMgc2VsZnRlc3RzLg0K
-DQpLbm93biBsaW1pdGF0aW9uczoNCg0KLSBTaW5nbGUtb3duZXIgbW9kZWw6IGEgZG1hLWJ1ZiBj
-YXJyaWVzIG9uZSBtZW1jZyBjaGFyZ2UgcmVnYXJkbGVzcw0KICBvZiBob3cgbWFueSBwcm9jZXNz
-ZXMgc2hhcmUgaXQuDQotIE9ubHkgbWVtY2cgYWNjb3VudGluZy4gQ01BIGhlYXBzIHdvdWxkIGFk
-ZGl0aW9uYWxseSBuZWVkIGRtZW0NCiAgY29udHJvbGxlciBpbnRlZ3JhdGlvbi4NCi0gSWYgYSB0
-cmFuc2ZlciBvZiBhbiB1bmNoYXJnZWQgYnVmZmVyIGZhaWxzLCBpdCByZW1haW5zIHVuY2hhcmdl
-ZC4NCiAgVGhlIGFsbG9jYXRvciAodXNlcnNwYWNlKSBpcyBleHBlY3RlZCB0byBoYW5kbGUgdGhp
-cyAocmV0cnksIGZyZWUsIC4uLikuDQotIFRoZSBMU00gaG9va3MgYXJlIGludGVudGlvbmFsbHkg
-bmFycm93LiBCcm9hZGVyIGNncm91cCBhY2Nlc3MgY29udHJvbHMNCiAgKGUuZy4gZm9yIHRoZSBt
-ZW1mZC9rZXhlYyBoYW5kb3ZlciBjYXNlIFsyXSkgY291bGQgYmUgYSBzZXBhcmF0ZSBlZmZvcnQN
-CiAgcmV1c2luZyB0aGUgc2FtZSBwYXR0ZXJuLg0KLSBPbmx5IHN5c3RlbSBoZWFwIHNldHMgbWVt
-Y2dfYWNjb3VudCB0b2RheS4gT3RoZXIgZXhwb3J0ZXJzDQogIChEUk0sIFY0TDIsIGV0Yy4pIGNh
-biBvcHQgaW4gYnkgc2V0dGluZyB0aGUgZmxhZywgYnV0IGFyZSBub3QNCiAgY292ZXJlZCBieSB0
-aGlzIHNlcmllcy4NCg0KWzFdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2Nncm91cHMvMjAyMzAx
-MDkyMTM4MDkuNDE4MTM1LTEtdGptZXJjaWVyQGdvb2dsZS5jb20vDQpbMl0gaHR0cHM6Ly9scGMu
-ZXZlbnRzL2V2ZW50LzIwL2NvbnRyaWJ1dGlvbnMvMjQxNi8NCg0KU2lnbmVkLW9mZi1ieTogQWxi
-ZXJ0IEVzdGV2ZSA8YWVzdGV2ZUByZWRoYXQuY29tPg0KLS0tDQpDaGFuZ2VzIGluIHYzOg0KLSBT
-cGxpdCBtZW1fY2dyb3VwX2NoYXJnZV9kbWFidWYoKSBpbnRvIHJlc2VydmUvY29tbWl0L2NhbmNl
-bCB0aHJlZS1waGFzZSBBUEkNCi0gRXh0cmFjdCBtZW1fY2dyb3VwX2dldF9mcm9tX2ZkKCkgaGVs
-cGVyIHNoYXJlZCBieSBhbGxvY2F0ZSBhbmQgeGZlciBwYXRocw0KLSBSZW5hbWUgX19wYWRkaW5n
-IHRvIGZsYWdzIGluIHN0cnVjdCBkbWFfYnVmX3RyYW5zZmVyX2NoYXJnZQ0KLSBGaXggVUFGIHJh
-Y2U6IG1vdmUgbW9kX21lbWNnX3N0YXRlKCkgYmVmb3JlIGNtcHhjaGcgaW4gdHJhbnNmZXINCi0g
-QWRkIG1lbWNnX2FjY291bnQgb3B0LWluIGZsYWc7IHhmZXIgcmV0dXJucyAtRU9QTk9UU1VQUCBp
-ZiB1bnNldA0KLSBXcmFwIGRtYV9idWZfY2hhcmdlX2Nncm91cCBob29rIGluICNpZmRlZiBDT05G
-SUdfQ0dST1VQUw0KLSBGaXggVE9DVE9VIGluIFNFTGludXggY2hhcmdlX2Nncm91cCB4YXR0ciBs
-ZW5ndGggaGFuZGxpbmcNCi0gTGluayB0byB2MjogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvci8y
-MDI2MTAyMS12Ml8yMDIzMDEyM190am1lcmNpZXJfZ29vZ2xlX2NvbS12Mi0wLWVmNmVlMmRkOGM1
-Y0ByZWRoYXQuY29tDQoNCkNoYW5nZXMgaW4gdjI6DQotIE1vdmUgY2hhcmdlX3BpZF9mZCB0byBj
-aGFyZ2VfZmQsIGFjY2VwdGluZyBjZ3JvdXBmZCBpbiBhZGRpdGlvbg0KICB0byBwaWRmZCBwZXIg
-Q2hyaXN0aWFuIEvDtm5pZy4NCi0gTmV3IERNQV9CVUZfSU9DVExfWEZFUl9DSEFSR0UgaW9jdGwg
-Zm9yIHBvc3QtYWxsb2NhdGlvbiBjaGFyZ2UNCiAgdHJhbnNmZXIgb24gYW55IGRtYS1idWYsIG5v
-dCBqdXN0IGRtYS1oZWFwIGJ1ZmZlcnMgcGVyIENocmlzdGlhbiBLw7ZuaWcNCiAgYW5kIFQuSi4g
-TWVyY2llci4NCi0gTW92ZWQgX19HRlBfQUNDT1VOVCByZW1vdmFsIHRvIHBhdGNoIDEgcGVyIEJh
-cnJ5IFNvbmcuDQotIGRtYS1idWYgY2hhcmdlL3VuY2hhcmdlIGhlbHBlcnMgdGFrZSBzdHJ1Y3Qg
-ZG1hX2J1ZiAqIGRpcmVjdGx5DQogIHRvIGF2b2lkIHRoZSBuZWVkIGZvciBjYWxsZXIgdG8gbWFu
-YWdlIHNpemUgY2FsY3VsYXRpb25zLg0KLSBBZGRlZCB0ZXN0X3hmZXJfY2hhcmdlX2Nncm91cGZk
-X3NlbGYgdG8gZG1hYnVmLWhlYXAgc2VsZnRlc3RzLg0KLSBBZGRlZCBMU00gYW5kIFNFTGludXgg
-aG9va3MgZm9yIGNncm91cGZkLWJhc2VkIGNoYXJnaW5nLg0KLSBSZWJhc2VkIHRvIHY3LjMtcmM3
-Lg0KLSBMaW5rIHRvIHYxOiBodHRwczovL2xvcmUua2VybmVsLm9yZy9yLzIwMjYwNTEyLXYyXzIw
-MjMwMTIzX3RqbWVyY2llcl9nb29nbGVfY29tLXYxLTAtNjMyNjcwMWMzNjkxQHJlZGhhdC5jb20N
-Cg0KLS0tDQpBbGJlcnQgRXN0ZXZlICg3KToNCiAgICAgIGRtYS1oZWFwOiBjaGFyZ2UgZG1hLWJ1
-ZiBtZW1vcnkgdmlhIGV4cGxpY2l0IG1lbWNnDQogICAgICBzZWN1cml0eTogZG1hLWJ1ZjogQWRk
-IGRtYV9idWZfY2hhcmdlX3Rhc2sgTFNNIGhvb2sNCiAgICAgIHNlY3VyaXR5OiBkbWEtYnVmOiBB
-ZGQgZG1hX2J1Zl9jaGFyZ2VfY2dyb3VwIExTTSBob29rDQogICAgICBzZWxpbnV4OiBSZXN0cmlj
-dCBjcm9zcy1jZ3JvdXAgZG1hLWJ1ZiBjaGFyZ2luZw0KICAgICAgc2VsaW51eDogUmVzdHJpY3Qg
-ZG1hLWJ1ZiBkaXJlY3QgY2dyb3VwIGNoYXJnaW5nDQogICAgICBkbWEtYnVmOiB0cmFuc2ZlciBt
-ZW1jZyBjaGFyZ2VzIHZpYSBETUFfQlVGX0lPQ1RMX1hGRVJfQ0hBUkdFDQogICAgICBzZWxmdGVz
-dHMvZG1hYnVmLWhlYXBzOiBBZGQgZG1hLWJ1ZiBtZW1jZyBhY2NvdW50aW5nIHRlc3RzDQoNClQu
-Si4gTWVyY2llciAoMSk6DQogICAgICBtZW1jZzogQWRkIE1FTUNHX0RNQUJVRiBhY2NvdW50aW5n
-IGluZnJhc3RydWN0dXJlDQoNCiBEb2N1bWVudGF0aW9uL2FkbWluLWd1aWRlL2Nncm91cC12Mi5y
-c3QgICAgICAgICAgICB8ICAgNSArDQogZHJpdmVycy9kbWEtYnVmL2RtYS1idWYuYyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgfCAgNDYgKysrKw0KIGRyaXZlcnMvZG1hLWJ1Zi9kbWEtaGVhcC5j
-ICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDI4ICstDQogZHJpdmVycy9kbWEtYnVmL2hlYXBz
-L2NtYV9oZWFwLmMgICAgICAgICAgICAgICAgICAgfCAgIDMgKy0NCiBkcml2ZXJzL2RtYS1idWYv
-aGVhcHMvc3lzdGVtX2hlYXAuYyAgICAgICAgICAgICAgICB8ICAyMiArLQ0KIGRyaXZlcnMvdGVl
-L3RlZV9oZWFwLmMgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAzICstDQogaW5jbHVk
-ZS9saW51eC9kbWEtYnVmLmggICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDkgKw0KIGlu
-Y2x1ZGUvbGludXgvZG1hLWhlYXAuaCAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAzICst
-DQogaW5jbHVkZS9saW51eC9sc21faG9va19kZWZzLmggICAgICAgICAgICAgICAgICAgICAgfCAg
-IDQgKw0KIGluY2x1ZGUvbGludXgvbWVtY29udHJvbC5oICAgICAgICAgICAgICAgICAgICAgICAg
-IHwgIDUyICsrKysNCiBpbmNsdWRlL2xpbnV4L3NlY3VyaXR5LmggICAgICAgICAgICAgICAgICAg
-ICAgICAgICB8ICAxOCArKw0KIGluY2x1ZGUvdWFwaS9saW51eC9kbWEtYnVmLmggICAgICAgICAg
-ICAgICAgICAgICAgIHwgIDI2ICsrDQogaW5jbHVkZS91YXBpL2xpbnV4L2RtYS1oZWFwLmggICAg
-ICAgICAgICAgICAgICAgICAgfCAgIDcgKw0KIG1tL21lbWNvbnRyb2wuYyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIHwgMTkyICsrKysrKysrKysrKysrDQogc2VjdXJpdHkvc2Vj
-dXJpdHkuYyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgMzQgKysrDQogc2VjdXJp
-dHkvc2VsaW51eC9ob29rcy5jICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgNDQgKysrKw0K
-IHNlY3VyaXR5L3NlbGludXgvaW5jbHVkZS9jbGFzc21hcC5oICAgICAgICAgICAgICAgIHwgICAx
-ICsNCiB0b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9jZ3JvdXAvTWFrZWZpbGUgICAgICAgICAgICB8
-ICAgMiArLQ0KIHRvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2Nncm91cC90ZXN0X21lbWNvbnRyb2wu
-YyAgIHwgMjkwICsrKysrKysrKysrKysrKysrKysrLQ0KIHRvb2xzL3Rlc3Rpbmcvc2VsZnRlc3Rz
-L2RtYWJ1Zi1oZWFwcy9jb25maWcgICAgICAgIHwgICAxICsNCiB0b29scy90ZXN0aW5nL3NlbGZ0
-ZXN0cy9kbWFidWYtaGVhcHMvZG1hYnVmLWhlYXAuYyB8IDIyNyArKysrKysrKysrKysrKystDQog
-dG9vbHMvdGVzdGluZy9zZWxmdGVzdHMvZG1hYnVmLWhlYXBzL3ZtdGVzdC5zaCAgICAgfCAyMjYg
-KysrKysrKysrKysrKysrKw0KIDIyIGZpbGVzIGNoYW5nZWQsIDEyMjggaW5zZXJ0aW9ucygrKSwg
-MTUgZGVsZXRpb25zKC0pDQotLS0NCmJhc2UtY29tbWl0OiAyNGExOWI5NTNlMmEzZDBlYTVhOGM0
-OTUxYTBhYjhmMzI3MjBjOTA3DQpjaGFuZ2UtaWQ6IDIwMjYwNTA4LXYyXzIwMjMwMTIzX3RqbWVy
-Y2llcl9nb29nbGVfY29tLWY0NGZjZmIxNjUzMA0KDQpCZXN0IHJlZ2FyZHMsDQotLSANCkFsYmVy
-dCBFc3RldmUgPGFlc3RldmVAcmVkaGF0LmNvbT4NCg0K
+From: "T.J. Mercier" <tjmercier@google.com>
+
+Introduce a MEMCG_DMABUF stat counter and helpers for
+reserve/commit/cancel and uncharging dma-buf memory against a
+memory cgroup:
+
+The charge is tracked on struct dma_buf via a new memcg pointer. The
+page count is derived internally from PAGE_ALIGN(dmabuf->size), and
+the memcg reference is stored into (or cleared from) dmabuf->memcg by
+the helpers themselves, removing the need for callers to manage those
+details. The release path in dma_buf_release() is reduced to a single
+mem_cgroup_uncharge_dmabuf() call.
+
+This decouples accounting from the backing page allocator, avoiding the
+need for every exporter to pass __GFP_ACCOUNT and enabling cross-cgroup
+charge transfer, which is impractical with page-level accounting.
+
+The next patch wires up the charging policy in the dma-heap ioctl.
+
+Signed-off-by: T.J. Mercier <tjmercier@google.com>
+Signed-off-by: Albert Esteve <aesteve@redhat.com>
+---
+ Documentation/admin-guide/cgroup-v2.rst |  4 ++
+ drivers/dma-buf/dma-buf.c               |  3 ++
+ include/linux/dma-buf.h                 |  4 ++
+ include/linux/memcontrol.h              | 36 ++++++++++++++
+ mm/memcontrol.c                         | 87 +++++++++++++++++++++++++++++++++
+ 5 files changed, 134 insertions(+)
+
+diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
+index 86a2a0099178..a3265a4a953e 100644
+--- a/Documentation/admin-guide/cgroup-v2.rst
++++ b/Documentation/admin-guide/cgroup-v2.rst
+@@ -1662,6 +1662,10 @@ The following nested keys are defined.
+ 		Amount of memory used for storing in-kernel data
+ 		structures.
+ 
++	  dmabuf (npn)
++		Amount of memory used for exported DMA buffers allocated by the cgroup.
++		Stays with the allocating cgroup regardless of how the buffer is shared.
++
+ 	  workingset_refault_anon
+ 		Number of refaults of previously evicted anonymous pages.
+ 
+diff --git a/drivers/dma-buf/dma-buf.c b/drivers/dma-buf/dma-buf.c
+index 4c9add51f9ef..f31f49ebd0af 100644
+--- a/drivers/dma-buf/dma-buf.c
++++ b/drivers/dma-buf/dma-buf.c
+@@ -14,6 +14,7 @@
+ #include <linux/fs.h>
+ #include <linux/slab.h>
+ #include <linux/dma-buf.h>
++#include <linux/memcontrol.h>
+ #include <linux/dma-fence.h>
+ #include <linux/dma-fence-unwrap.h>
+ #include <linux/anon_inodes.h>
+@@ -180,6 +181,8 @@ static void dma_buf_release(struct dentry *dentry)
+ 	 */
+ 	BUG_ON(dmabuf->cb_in.active || dmabuf->cb_out.active);
+ 
++	mem_cgroup_uncharge_dmabuf(dmabuf);
++
+ 	dmabuf->ops->release(dmabuf);
+ 
+ 	if (dmabuf->resv == (struct dma_resv *)&dmabuf[1])
+diff --git a/include/linux/dma-buf.h b/include/linux/dma-buf.h
+index d15b2b31d3c9..23ec0ff23fba 100644
+--- a/include/linux/dma-buf.h
++++ b/include/linux/dma-buf.h
+@@ -27,6 +27,7 @@
+ struct device;
+ struct dma_buf;
+ struct dma_buf_attachment;
++struct mem_cgroup;
+ 
+ /**
+  * struct dma_buf_ops - operations possible on struct dma_buf
+@@ -429,6 +430,9 @@ struct dma_buf {
+ 
+ 		__poll_t active;
+ 	} cb_in, cb_out;
++
++	/** @memcg: the cgroup to which this buffer is currently attributed */
++	struct mem_cgroup *memcg;
+ };
+ 
+ /**
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 7d1c0ce189a8..4c8711fcf4fd 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -10,6 +10,9 @@
+ 
+ #ifndef _LINUX_MEMCONTROL_H
+ #define _LINUX_MEMCONTROL_H
++
++struct dma_buf;
++
+ #include <linux/cgroup.h>
+ #include <linux/vm_event_item.h>
+ #include <linux/hardirq.h>
+@@ -40,6 +43,7 @@ enum memcg_stat_item {
+ 	MEMCG_ZSWAP_B,
+ 	MEMCG_ZSWAPPED,
+ 	MEMCG_ZSWAP_INCOMP,
++	MEMCG_DMABUF,
+ 	MEMCG_NR_STAT,
+ };
+ 
+@@ -667,6 +671,12 @@ int mem_cgroup_charge_hugetlb(struct folio* folio, gfp_t gfp);
+ int mem_cgroup_swapin_charge_folio(struct folio *folio, unsigned short id,
+ 				   struct mm_struct *mm, gfp_t gfp);
+ 
++bool mem_cgroup_reserve_dmabuf(struct mem_cgroup *memcg, gfp_t gfp,
++			       unsigned int nr_pages);
++
++void mem_cgroup_commit_dmabuf(struct dma_buf *dmabuf, struct mem_cgroup *memcg,
++			      unsigned int nr_pages);
++
+ void __mem_cgroup_uncharge(struct folio *folio);
+ 
+ /**
+@@ -682,6 +692,10 @@ static inline void mem_cgroup_uncharge(struct folio *folio)
+ 	__mem_cgroup_uncharge(folio);
+ }
+ 
++void mem_cgroup_cancel_dmabuf(struct mem_cgroup *memcg, unsigned int nr_pages);
++
++void mem_cgroup_uncharge_dmabuf(struct dma_buf *dmabuf);
++
+ void __mem_cgroup_uncharge_folios(struct folio_batch *folios);
+ static inline void mem_cgroup_uncharge_folios(struct folio_batch *folios)
+ {
+@@ -1167,10 +1181,32 @@ static inline int mem_cgroup_swapin_charge_folio(struct folio *folio,
+ 	return 0;
+ }
+ 
++static inline bool mem_cgroup_reserve_dmabuf(struct mem_cgroup *memcg,
++					     gfp_t gfp,
++					     unsigned int nr_pages)
++{
++	return true;
++}
++
++static inline void mem_cgroup_commit_dmabuf(struct dma_buf *dmabuf,
++					    struct mem_cgroup *memcg,
++					    unsigned int nr_pages)
++{
++}
++
++static inline void mem_cgroup_cancel_dmabuf(struct mem_cgroup *memcg,
++					    unsigned int nr_pages)
++{
++}
++
+ static inline void mem_cgroup_uncharge(struct folio *folio)
+ {
+ }
+ 
++static inline void mem_cgroup_uncharge_dmabuf(struct dma_buf *dmabuf)
++{
++}
++
+ static inline void mem_cgroup_uncharge_folios(struct folio_batch *folios)
+ {
+ }
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 856a7d07586c..bbd46ba40350 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -69,6 +69,7 @@
+ #include <net/ip.h>
+ #include "slab.h"
+ #include "memcontrol-v1.h"
++#include <linux/dma-buf.h>
+ 
+ #include <linux/uaccess.h>
+ 
+@@ -442,6 +443,7 @@ static const unsigned int memcg_stat_items[] = {
+ 	MEMCG_ZSWAP_B,
+ 	MEMCG_ZSWAPPED,
+ 	MEMCG_ZSWAP_INCOMP,
++	MEMCG_DMABUF,
+ };
+ 
+ #define NR_MEMCG_NODE_STAT_ITEMS ARRAY_SIZE(memcg_node_stat_items)
+@@ -1625,6 +1627,7 @@ static const struct memory_stat memory_stats[] = {
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	{ "hugetlb",			NR_HUGETLB			},
+ #endif
++	{ "dmabuf",			MEMCG_DMABUF			},
+ 
+ 	/* The memory events */
+ 	{ "workingset_refault_anon",	WORKINGSET_REFAULT_ANON		},
+@@ -5658,6 +5661,90 @@ void mem_cgroup_flush_workqueue(void)
+ 	flush_workqueue(memcg_wq);
+ }
+ 
++/**
++ * mem_cgroup_reserve_dmabuf - charge a memcg for a dma-buf allocation
++ * @memcg: memcg to charge (may be %NULL)
++ * @gfp_mask: reclaim mode
++ * @nr_pages: number of pages to charge
++ *
++ * Charges @nr_pages against @memcg. Call this before allocating pages so
++ * the cgroup limit is enforced up front. On success the caller must either
++ * call mem_cgroup_commit_dmabuf() to finalize the charge, or
++ * mem_cgroup_cancel_dmabuf() to undo it.
++ *
++ * Returns %true on success, %false if the charge would exceed the limit.
++ */
++bool mem_cgroup_reserve_dmabuf(struct mem_cgroup *memcg, gfp_t gfp_mask,
++			       unsigned int nr_pages)
++{
++	if (!memcg || mem_cgroup_disabled())
++		return true;
++
++	if (try_charge(memcg, gfp_mask, nr_pages))
++		return false;
++
++	return true;
++}
++
++/**
++ * mem_cgroup_commit_dmabuf - finalize a dma-buf charge after export
++ * @dmabuf: the exported dma-buf
++ * @memcg: memcg previously charged via mem_cgroup_reserve_dmabuf()
++ * @nr_pages: same value passed to mem_cgroup_reserve_dmabuf()
++ *
++ * Updates the MEMCG_DMABUF counter and stores @memcg in @dmabuf->memcg,
++ * transferring the caller's reference.
++ */
++void mem_cgroup_commit_dmabuf(struct dma_buf *dmabuf, struct mem_cgroup *memcg,
++			      unsigned int nr_pages)
++{
++	if (!memcg || mem_cgroup_disabled())
++		return;
++
++	mod_memcg_state(memcg, MEMCG_DMABUF, nr_pages);
++	dmabuf->memcg = memcg;
++}
++
++/**
++ * mem_cgroup_cancel_dmabuf - undo a dma-buf charge
++ * @memcg: memcg to uncharge (may be %NULL)
++ * @nr_pages: same value passed to mem_cgroup_reserve_dmabuf()
++ *
++ * Returns @nr_pages of charge to @memcg. Use when the allocation fails
++ * after mem_cgroup_reserve_dmabuf() but before mem_cgroup_commit_dmabuf().
++ */
++void mem_cgroup_cancel_dmabuf(struct mem_cgroup *memcg, unsigned int nr_pages)
++{
++	if (!memcg)
++		return;
++
++	if (!mem_cgroup_is_root(memcg))
++		refill_stock(memcg, nr_pages);
++}
++
++/**
++ * mem_cgroup_uncharge_dmabuf - uncharge a dma-buf from its memcg
++ * @dmabuf: buffer to uncharge
++ *
++ * Reverses a successful mem_cgroup_commit_dmabuf(). Drops the memcg
++ * reference stored in @dmabuf->memcg and clears the pointer.
++ * Safe to call when @dmabuf->memcg is %NULL.
++ */
++void mem_cgroup_uncharge_dmabuf(struct dma_buf *dmabuf)
++{
++	unsigned int nr_pages;
++	struct mem_cgroup *memcg = dmabuf->memcg;
++
++	if (!memcg)
++		return;
++
++	nr_pages = PAGE_ALIGN(dmabuf->size) >> PAGE_SHIFT;
++	mod_memcg_state(memcg, MEMCG_DMABUF, -nr_pages);
++	mem_cgroup_cancel_dmabuf(memcg, nr_pages);
++	mem_cgroup_put(memcg);
++	dmabuf->memcg = NULL;
++}
++
+ static int __init cgroup_memory(char *s)
+ {
+ 	char *token;
+
+-- 
+2.55.0
+
