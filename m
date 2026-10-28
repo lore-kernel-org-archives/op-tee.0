@@ -2,50 +2,50 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA7EF606A320
-	for <op-tee@archiver.kernel.org>; Wed, 28 Oct 2026 15:06:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2435F606A320
+	for <op-tee@archiver.kernel.org>; Wed, 28 Oct 2026 15:06:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=1G2xEv3+;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ii2Cv1I1
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=o1AFDuvZ;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TZk6euDx
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 450DB45375
-	for <op-tee@archiver.kernel.org>; Wed, 28 Oct 2026 15:06:24 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7FBE3453B1
+	for <op-tee@archiver.kernel.org>; Wed, 28 Oct 2026 15:06:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793199984;
-	bh=vMgMxSxia/ZD7FGtCrecbPFzujfyS+FbDSSa1Vgf6hk=;
+	d=lists.trustedfirmware.org; s=2024; t=1793200013;
+	bh=r3urOsAQtBmGKWCqrSrkQXtTxXGquYvF95HOKsl6myQ=;
 	h=Subject:To:In-Reply-To:References:Date:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=1G2xEv3+IWVlVXp1HQ6XekBCuJUQIRlLIYpcfyc+VbsNjwBNAyb6arGysdmWngSuT
-	 GRo4ANBM7oZ4wAKrgLuxI5mBNrqR4M94x7M7htv9i9skEMojiGoFditmW1V0If+FUq
-	 mVn1q+Iq3LLxic/3R/tUPWvbAopIF3EkC6TeINW6XHOCU+yHt9jkAPPaodl1PgHKNX
-	 cpBJYybVE8Z9/FKZ8CfCW4/rGbKwa65AE09S+8q67TighLx1vzccpdVuw5gVfsg8ha
-	 q7/0SiWrvn2f/fszyFTtTM5mIQsLtwCnLV7jd6jJKWF2kYSUCDoZ+0gKo81YsaXfIm
-	 paHiP+QynjQjg==
+	b=o1AFDuvZoilygQue2VFL2OZ1ZtJyv+Y4lvPO/lix+bwRernKWaMKXVl7LwhQ2ZH4J
+	 OBQSz04KTLDV2uOqjNwisnBaVLvJdlvFx9cKbBjeNSYpwF3KY23rBW7H634bUONEPt
+	 k2uKUMSYFw2k1QkrG0LBB5zbby581VSBOCKk+J9b8UMlg1YxKxBVZnY+NROus5RkUi
+	 5zz/9fnpbXjUHXLcI/ksewjaqk3yKHRHiIzUSrAbA2G2KobtvfrQf/J/N4x/7MglZM
+	 UmF5HWa70ghBkFqaIqtYkPbJ1DQni/fS/p4c8CHAv6/gwHQtiUrre6Djj2ir8JLCnM
+	 NXwMKA/wHLRaQ==
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DCFC3453C8
-	for <op-tee@lists.trustedfirmware.org>; Wed, 28 Oct 2026 15:04:41 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id E2E0D453AA
+	for <op-tee@lists.trustedfirmware.org>; Wed, 28 Oct 2026 15:04:43 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ii2Cv1I1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TZk6euDx;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 833BF60252;
+	by tor.source.kernel.org (Postfix) with ESMTP id 7C9536025F;
+	Wed, 28 Oct 2026 15:04:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA5521F01825;
 	Wed, 28 Oct 2026 15:04:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC7631F01829;
-	Wed, 28 Oct 2026 15:04:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793199881;
-	bh=mSdqxz6Q37ONxr+q5PLgX5Mx5sgsbL1ZlDMhRwJ4tls=;
+	s=k20260515; t=1793199883;
+	bh=XYaYaDrK6jMizn1+Xu6y1/7dgY3Gd1He8P8gPiz0F7E=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=ii2Cv1I1mFw6z0jUk6ND3vI1KQsc+cPLiCIZMvKnAo54Gp0s/gplwdGsTCOINjF3m
-	 Vyp8TPUP1c89LMrtNfl1SSCyLKR8iCzMdClXf8Ag22Q466Srn6wp0pPBEPe1niet9S
-	 ltmp6epcmx5o/iHtRObx0gat20oSI3vbNsnbdjdF1arYD08Zmh3aUxS6DVRKuWcEhE
-	 +D3p7ka5Cqbc2R7/WvOlKFR5jK2qoxxu/WaG77pXfVBFw+gw6l11JjB/aHP5om3QIg
-	 XPjWzyvY1HOBKSJdOvSWDFjmd3ugT+ApaWExa7poGt1jjmuxkJPlMjdXVPIc7LG6HW
-	 WCOxu4Wy9nCCA==
-Message-ID: <sashiko-outbox-188032@kernel.org>
-Subject: Re: [PATCH v3 7/8] dma-buf: transfer memcg charges via
- DMA_BUF_IOCTL_XFER_CHARGE
+	b=TZk6euDxLh9gazUrboTiSt4GUJlfKEae/MouSn9Wc1Arp91zupsB1k1jDRlMwYJvl
+	 XGSXn+tVICjEwteXiLL5GEpIMJK1gez7aVMIXJdOnatS3FkOITUPgOM5SFZt5efn+o
+	 X/nuKzvjpM8daROqjYI+GonVYeIWie4t/dbaJrA7z52OSXW2p9fNc2Fn/rH7z7RnNQ
+	 MttyTvDiHHm+Z8ddJ1JlOjbvCVRbsfXqQ2bq+teRA2WSr0H7S8MhnUDOusbq+Qsjmt
+	 EMj9sAah6zD3VVv7yFt/wyA41z35mtdy2CVcKLgr5ZWVQdBFxZEhLjchUbjo3JTjO6
+	 24VSn+uFwxIOw==
+Message-ID: <sashiko-outbox-188033@kernel.org>
+Subject: Re: [PATCH v3 8/8] selftests/dmabuf-heaps: Add dma-buf memcg
+ accounting tests
 To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
  Weiner" <hannes@cmpxchg.org>, =?utf-8?b?TWljaGFsIEtvdXRuw70=?= <mkoutny@suse.com>, "Jonathan
  Corbet" <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Sumit
@@ -60,16 +60,16 @@ To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
  Khan" <shuah@kernel.org>, "Randy Dunlap" <rdunlap@infradead.org>,
  =?utf-8?b?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>, "Jens Wiklander" <jenswi@kernel.org>, "Sumit
  Garg" <sumit.garg@kernel.org>
-In-Reply-To: <20261027-v2_20230123_tjmercier_google_com-v3-7-78d2c4cb8647@redhat.com>
+In-Reply-To: <20261027-v2_20230123_tjmercier_google_com-v3-8-78d2c4cb8647@redhat.com>
 References: <20261027-v2_20230123_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com>
- <20261027-v2_20230123_tjmercier_google_com-v3-7-78d2c4cb8647@redhat.com>
+ <20261027-v2_20230123_tjmercier_google_com-v3-8-78d2c4cb8647@redhat.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Wed, 28 Oct 2026 15:04:39 +0000
+Date: Wed, 28 Oct 2026 15:04:41 +0000
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-4.20 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
 	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
+	BAYES_HAM(-3.00)[99.99%];
 	MISSING_MIME_VERSION(2.00)[];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
@@ -102,17 +102,17 @@ X-Spamd-Result: default: False [-4.20 / 15.00];
 	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	HAS_REPLYTO(0.00)[sashiko-reviews@lists.linux.dev]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: DCFC3453C8
+X-Rspamd-Queue-Id: E2E0D453AA
 X-Spamd-Bar: ----
-Message-ID-Hash: FNZQR6XCNQFVVQYRNVLE6N5XCS25RDWT
-X-Message-ID-Hash: FNZQR6XCNQFVVQYRNVLE6N5XCS25RDWT
+Message-ID-Hash: 3DYSDRSY634LWRUWLAZSJSQMU653J25T
+X-Message-ID-Hash: 3DYSDRSY634LWRUWLAZSJSQMU653J25T
 X-MailFrom: sashiko-bot@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: dri-devel@lists.freedesktop.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, op-tee@lists.trustedfirmware.org, echanude@redhat.com, mripard@kernel.org, media-ci@linuxtv.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FNZQR6XCNQFVVQYRNVLE6N5XCS25RDWT/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/3DYSDRSY634LWRUWLAZSJSQMU653J25T/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -128,234 +128,357 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 3 potential issue(=
+Thank you for your contribution! Sashiko AI review found 5 potential issue(=
 s) to consider:
-- [High] dma-buf: unprivileged cgroup escape and OOM via dma_buf_xfer_charg=
-e()
-- [High] dma-buf: race in mem_cgroup_transfer_dmabuf_charge() double-charge=
-s memcg
-- [Medium] dma-buf: broken disabled-memcg handling in dma_buf_xfer_charge()
+- [Medium] selftests/dmabuf-heaps: check_deps() runs before handle_build() =
+in vmtest.sh
+- [Medium] selftests/dmabuf-heaps: fail instead of skip on EOPNOTSUPP in XF=
+ER_CHARGE test
+- [Medium] selftests/dmabuf-heaps: pidfd_alloc_supported() treats EOPNOTSUP=
+P as supported
+- [Medium] selftests: dmabuf-heaps: no memory controller check in open_self=
+_cgroupfd()
+- [Medium] selftests: cgroup: MEMCG_DMABUF_WAIT_RETRIES is shorter than 2s =
+rstat FLUSH_TIME
 --
 
-commit 1660729e62b15fd915c69f26225530bd5ae30ce0
+commit 764a620a8574ac6b7e6c57e6f71e4c743c373656
 Author: Albert Esteve <aesteve@redhat.com>
 
-dma-buf: transfer memcg charges via DMA_BUF_IOCTL_XFER_CHARGE
+selftests/dmabuf-heaps: Add dma-buf memcg accounting tests
 
-This commit adds DMA_BUF_IOCTL_XFER_CHARGE to allow transferring a dma-buf's
-memory cgroup charge to a cgroup identified by a cgroupfd or pidfd after
-allocation. It also introduces a memcg_account flag in dma_buf_export_info =
-for
-exporters to opt in to memcg accounting, enabling it for the system heap.
+This commit adds selftests for dma-buf memcg accounting via charge_fd in
+DMA_HEAP_IOCTL_ALLOC and DMA_BUF_IOCTL_XFER_CHARGE across the dmabuf-heaps
+and cgroup test suites, along with a vmtest.sh runner script.
 
-> diff --git a/drivers/dma-buf/dma-buf.c b/drivers/dma-buf/dma-buf.c
-> index f31f49ebd0af3..07513ecedc105 100644
-> --- a/drivers/dma-buf/dma-buf.c
-> +++ b/drivers/dma-buf/dma-buf.c
-> @@ -540,6 +540,45 @@ static long dma_buf_import_sync_file(struct dma_buf =
-*dmabuf,
->  }
->  #endif
+> diff --git a/tools/testing/selftests/cgroup/test_memcontrol.c b/tools/tes=
+ting/selftests/cgroup/test_memcontrol.c
+> index 0ed82347044ed..0b41c3c6f62c1 100644
+> --- a/tools/testing/selftests/cgroup/test_memcontrol.c
+> +++ b/tools/testing/selftests/cgroup/test_memcontrol.c
+> @@ -19,10 +19,20 @@
+>  #include <errno.h>
+>  #include <sys/mman.h>
 > =20
-> +/* Transfer a dma-buf's memcg charge; see struct dma_buf_transfer_charge=
- */
-> +static long dma_buf_xfer_charge(struct dma_buf *dmabuf,
-> +				const void __user *user_data)
-> +{
-> +	struct dma_buf_transfer_charge arg;
-> +	struct mem_cgroup *memcg;
-> +	int ret =3D 0;
+> +#include <linux/dma-buf.h>
+> +#include <linux/dma-heap.h>
+> +#include <signal.h>
+> +#include <sys/ioctl.h>
 > +
-> +	if (copy_from_user(&arg, user_data, sizeof(arg)))
-> +		return -EFAULT;
+> +#include "../pidfd/pidfd.h"
+>  #include "kselftest.h"
+>  #include "cgroup_util.h"
+> =20
+> +#define DMA_HEAP_SYSTEM		"/dev/dma_heap/system"
+> +#define ONE_MEG			(1024 * 1024)
 > +
-> +	if (!IS_ENABLED(CONFIG_MEMCG))
-> +		return 0;
-> +
-> +	if (arg.flags !=3D 0)
-> +		return -EINVAL;
-> +
-> +	if (!dmabuf->memcg_account)
-> +		return -EOPNOTSUPP;
+>  #define MEMCG_SOCKSTAT_WAIT_RETRIES        30
+> +#define MEMCG_DMABUF_WAIT_RETRIES          15
 
 [Severity: Medium]
-When CONFIG_MEMCG is disabled, should dma_buf_xfer_charge() still validate
-arg.flags and dmabuf->memcg_account, or return -EOPNOTSUPP?
+Is MEMCG_DMABUF_WAIT_RETRIES (15 retries at 100ms intervals, or 1.4 seconds
+before the final read) long enough to avoid races with the periodic rstat
+flush in test_memcg_dmabuf() and test_memcg_dmabuf_xfer_at_limit()?
 
-Returning 0 before checking arg.flags !=3D 0 and !dmabuf->memcg_account cau=
-ses
-calls with invalid flags, non-accounting exporters, or invalid file
-descriptors to silently succeed under CONFIG_MEMCG=3Dn, while also leaving =
-the
-!CONFIG_MEMCG stubs for mem_cgroup_get_from_fd() (which returns
-ERR_PTR(-EOPNOTSUPP)) and mem_cgroup_transfer_dmabuf_charge() in
-include/linux/memcontrol.h unreachable.
+In mm/memcontrol.c, reading memory.stat calls mem_cgroup_flush_stats(), whi=
+ch
+only flushes rstat synchronously when stats_updates exceeds
+MEMCG_CHARGE_BATCH * num_online_cpus() (64 * num_online_cpus()):
 
-Also, when CONFIG_MEMCG=3Dy and cgroup_disable=3Dmemory is passed on the ke=
-rnel
-command line (so mem_cgroup_disabled() is true at runtime),
-mem_cgroup_get_from_fd() behaves inconsistently across its two branches:
+mm/memcontrol.c:mem_cgroup_flush_stats()
+    if (atomic_long_read(&vmstats->stats_updates) >
+        MEMCG_CHARGE_BATCH * num_online_cpus())
+        ...
 
-mm/memcontrol.c:mem_cgroup_get_from_fd() {
-	cgrp =3D cgroup_get_from_fd(fd);
-	if (!IS_ERR(cgrp)) {
-		rcu_read_lock();
-		css =3D cgroup_css(cgrp, &memory_cgrp_subsys);
-		if (!css || !css_tryget_online(css)) {
-			rcu_read_unlock();
-			cgroup_put(cgrp);
-			return ERR_PTR(-ENOENT);
-		}
-...
-	memcg =3D get_mem_cgroup_from_mm(mm);
-	mmput(mm);
-	return memcg;
-}
+Charging or uncharging a ONE_MEG (1 MB) dma-buf in a fresh child cgroup
+updates MEMCG_DMABUF by 256 pages on 4KB-page kernels (or 16 pages on
+64KB-page kernels). When num_online_cpus() >=3D 4 (where 256 > 64 * 4 is fa=
+lse)
+or on >4KB-page kernels, reading memory.stat skips synchronous flushing and
+relies on the periodic deferred work stats_flush_dwork, which runs every
+FLUSH_TIME (2UL * HZ, or 2.0 seconds).
 
-For a cgroupfd, cgroup_css() is NULL and it returns ERR_PTR(-ENOENT), where=
-as
-for a pidfd, get_mem_cgroup_from_mm() returns NULL rather than an ERR_PTR, =
-so
-dma_buf_xfer_charge() returns 0 for pidfds and -ENOENT for cgroupfds.
+In test_memcg_dmabuf(), even if the first poll for ONE_MEG catches a period=
+ic
+flush, that flush resets stats_updates to 0 and schedules the next
+stats_flush_dwork 2.0 seconds later. Immediately closing dmabuf_fd adds only
+256 to stats_updates, so the subsequent 1.4-second poll for dmabuf =3D=3D 0=
+ can
+time out before the next 2.0-second periodic flush runs. Should
+MEMCG_DMABUF_WAIT_RETRIES be at least 30, matching
+MEMCG_SOCKSTAT_WAIT_RETRIES?
 
-> +
-> +	memcg =3D mem_cgroup_get_from_fd(arg.charge_fd);
-> +	if (IS_ERR(memcg))
-> +		return PTR_ERR(memcg);
-> +
-> +	if (dmabuf->memcg =3D=3D memcg)
-> +		goto skip_transfer;
-> +
-> +	if (!mem_cgroup_transfer_dmabuf_charge(dmabuf, memcg)) {
-> +		ret =3D -ENOMEM;
-> +		goto skip_transfer;
-> +	}
+> diff --git a/tools/testing/selftests/dmabuf-heaps/dmabuf-heap.c b/tools/t=
+esting/selftests/dmabuf-heaps/dmabuf-heap.c
+> index 1d49df6719198..90ef14d2ecba0 100644
+> --- a/tools/testing/selftests/dmabuf-heaps/dmabuf-heap.c
+> +++ b/tools/testing/selftests/dmabuf-heaps/dmabuf-heap.c
 
-[Severity: High]
-Can an unprivileged holder of a dma-buf file descriptor use
-dma_buf_xfer_charge() to escape its own memory cgroup limit or trigger OOM
-kills in another cgroup?
+[ ... ]
 
-In the call chain:
+> @@ -496,6 +505,218 @@ static void test_alloc_no_fd_leak_on_efault(char *h=
+eap_name)
 
-  dma_buf_ioctl()
-    -> dma_buf_xfer_charge()
-      -> mem_cgroup_get_from_fd()
-      -> mem_cgroup_transfer_dmabuf_charge()
-        -> mem_cgroup_reserve_dmabuf(new_memcg, GFP_KERNEL, nr_pages)
-          -> try_charge()
+[ ... ]
 
-neither dma_buf_xfer_charge() nor mem_cgroup_get_from_fd() checks DAC or
-cgroup delegation/write permissions (such as inode_permission() with MAY_WR=
-ITE
-or cgroup_procs_write_permission()), capabilities, or ptrace_may_access() on
-either the source cgroup (dmabuf->memcg) being uncharged or the target
-cgroup/task (new_memcg) being charged.
-
-Because /sys/fs/cgroup directories are normally world-readable (mode 0755, =
-so
-any user can open them with O_RDONLY | O_DIRECTORY) and pidfd_open() can op=
-en
-a pidfd for PID 1 or any visible process without privilege, an unprivileged
-process can resolve a handle to the root cgroup or to another cgroup on the
-system.
-
-When SELinux is not active, security_dma_buf_charge_cgroup() and
-security_dma_buf_charge_task() return 0. Even with SELinux enabled,
-selinux_dma_buf_charge_cgroup() returns 0 when the cgroup kernfs node has no
-explicit security.selinux xattr set:
-
-security/selinux/hooks.c:selinux_dma_buf_charge_cgroup() {
-	rc =3D kernfs_xattr_get(cgrp->kn, XATTR_NAME_SELINUX, NULL, 0);
-	if (rc =3D=3D -ENODATA)
-		return 0;
-}
-
-and neither hook checks permission to uncharge the existing dmabuf->memcg. =
-As
-a result, a confined client receiving a pre-charged dma-buf fd can move the
-charge to the root cgroup to bypass its own memory.max limit, or move the
-charge into a victim cgroup where mem_cgroup_reserve_dmabuf() with GFP_KERN=
-EL
-triggers direct reclaim and the memcg OOM killer.
-
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 7b841b9057594..3adc84fe6668d 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -5786,6 +5786,47 @@ void mem_cgroup_cancel_dmabuf(struct mem_cgroup *m=
-emcg, unsigned int nr_pages)
->  		refill_stock(memcg, nr_pages);
->  }
-> =20
-> +/**
-> + * mem_cgroup_transfer_dmabuf_charge - move a dma-buf charge
-> + * @dmabuf: buffer to transfer charge
-> + * @new_memcg: target memcg; caller must hold a reference
-> + *
-> + * Transfers the charge for @dmabuf to @new_memcg and, on
-> + * success, stores @new_memcg in @dmabuf->memcg.
-> + * Returns %true on success, %false if the charge against @new_memcg
-> + * failed or a concurrent transfer raced on @dmabuf->memcg.
-> + * On failure the caller retains its reference to @new_memcg.
+> +/*
+> + * Probe whether the kernel honours charge_fd in DMA_HEAP_IOCTL_ALLOC.
 > + */
-> +bool mem_cgroup_transfer_dmabuf_charge(struct dma_buf *dmabuf,
-> +				       struct mem_cgroup *new_memcg)
+> +static bool pidfd_alloc_supported(int heap_fd)
 > +{
-> +	struct mem_cgroup *old_memcg =3D READ_ONCE(dmabuf->memcg);
-> +	unsigned int nr_pages =3D PAGE_ALIGN(dmabuf->size) >> PAGE_SHIFT;
+> +	int devnull_fd, dmabuf_fd =3D -1, ret;
 > +
-> +	if (mem_cgroup_disabled())
-> +		return true;
-> +
-> +	if (!mem_cgroup_reserve_dmabuf(new_memcg, GFP_KERNEL, nr_pages))
+> +	devnull_fd =3D open("/dev/null", O_RDONLY);
+> +	if (devnull_fd < 0)
 > +		return false;
 > +
-> +	mod_memcg_state(new_memcg, MEMCG_DMABUF, nr_pages);
-> +
-> +	if (cmpxchg(&dmabuf->memcg, old_memcg, new_memcg) !=3D old_memcg) {
-> +		mod_memcg_state(new_memcg, MEMCG_DMABUF, -nr_pages);
-> +		mem_cgroup_cancel_dmabuf(new_memcg, nr_pages);
-> +		return false;
+> +	ret =3D dmabuf_heap_alloc_pidfd(heap_fd, ONE_MEG, 0, devnull_fd, &dmabu=
+f_fd);
+> +	if (dmabuf_fd >=3D 0) {
+> +		close(dmabuf_fd);
+> +		dmabuf_fd =3D -1;
 > +	}
+> +	close(devnull_fd);
+> +	return ret < 0;
+> +}
 
-[Severity: High]
-What happens if two threads concurrently call DMA_BUF_IOCTL_XFER_CHARGE on =
-the
-same dma-buf?
+[Severity: Medium]
+What happens in pidfd_alloc_supported() when the kernel is built with
+CONFIG_MEMCG=3Dn?
 
-In dma_buf_xfer_charge(), dmabuf->memcg =3D=3D memcg is checked without
-synchronization before calling mem_cgroup_transfer_dmabuf_charge(), which t=
-hen
-re-reads old_memcg =3D READ_ONCE(dmabuf->memcg) without checking whether
-old_memcg =3D=3D new_memcg.
+In drivers/dma-buf/dma-heap.c, dma_heap_ioctl_allocate() passes a non-zero
+charge_fd to mem_cgroup_get_from_fd():
 
-If thread 1 transfers the buffer to new_memcg after thread 2 passes the
-dmabuf->memcg =3D=3D memcg check in dma_buf_xfer_charge() (or if both threa=
-ds
-concurrently transfer the buffer to the same new_memcg), thread 2 sees
-old_memcg =3D=3D new_memcg and still calls mem_cgroup_reserve_dmabuf(new_me=
-mcg,
-GFP_KERNEL, nr_pages) before uncharging old_memcg. That transiently charges
-2 * nr_pages against new_memcg for the same buffer, which can trigger recla=
-im,
-memcg OOM kills, or -ENOMEM in new_memcg even though the buffer is already
-charged to it.
+drivers/dma-buf/dma-heap.c:dma_heap_ioctl_allocate()
+    if (heap_allocation->charge_fd) {
+        memcg =3D mem_cgroup_get_from_fd(heap_allocation->charge_fd);
+        if (IS_ERR(memcg))
+            return ERR_CAST(memcg);
+    }
 
-In addition, old_memcg is read before mem_cgroup_reserve_dmabuf(new_memcg,
-GFP_KERNEL, nr_pages), which can sleep in direct reclaim. If another thread
-updates dmabuf->memcg while mem_cgroup_reserve_dmabuf() is sleeping, the
-cmpxchg(&dmabuf->memcg, old_memcg, new_memcg) fails without retrying against
-the updated old_memcg and returns false, which dma_buf_xfer_charge() reports
-to userspace as -ENOMEM even though charging new_memcg succeeded.
+When CONFIG_MEMCG is disabled, the stub in include/linux/memcontrol.h retur=
+ns
+ERR_PTR(-EOPNOTSUPP):
 
-Finally, if mem_cgroup_transfer_dmabuf_charge() is called when
-mem_cgroup_disabled() is true, returning true at the top without storing
-new_memcg in dmabuf->memcg or dropping new_memcg's reference would leak the
- caller's reference to new_memcg, since callers only call mem_cgroup_put() =
-when
-this function returns false.
+include/linux/memcontrol.h:mem_cgroup_get_from_fd()
+    static inline struct mem_cgroup *mem_cgroup_get_from_fd(int fd)
+    {
+        return ERR_PTR(-EOPNOTSUPP);
+    }
+
+Because dmabuf_heap_alloc_pidfd() returns -1 with errno =3D=3D EOPNOTSUPP,
+returning ret < 0 causes pidfd_alloc_supported() to return true when
+CONFIG_MEMCG=3Dn, and test_alloc_pidfd_self(), test_alloc_pidfd_child(),
+test_alloc_cgroupfd_self(), and test_xfer_charge_cgroupfd_self() then proce=
+ed
+and report test failures instead of skipping. Should pidfd_alloc_supported()
+also verify that errno !=3D EOPNOTSUPP (or errno =3D=3D EINVAL)?
+
+[ ... ]
+
+> +static int open_self_cgroupfd(void)
+> +{
+> +	char cgroup_path[PATH_MAX];
+> +	char buf[PATH_MAX];
+> +	FILE *f;
+> +
+> +	f =3D fopen("/proc/self/cgroup", "r");
+> +	if (!f)
+> +		return -1;
+> +
+> +	cgroup_path[0] =3D '\0';
+> +	while (fgets(buf, sizeof(buf), f)) {
+> +		char *p =3D buf;
+> +
+> +		if (strncmp(p, "0::", 3) =3D=3D 0) {
+> +			p +=3D 3;
+> +			p[strcspn(p, "\n")] =3D '\0';
+> +			snprintf(cgroup_path, sizeof(cgroup_path),
+> +				 "/sys/fs/cgroup%s", p);
+> +			break;
+> +		}
+> +	}
+> +	fclose(f);
+> +
+> +	if (!cgroup_path[0])
+> +		return -1;
+> +
+> +	return open(cgroup_path, O_RDONLY | O_DIRECTORY);
+> +}
+> +
+> +/*
+> + * Test: allocate charging the calling process's own cgroup via a cgroup=
+fd.
+> + */
+> +static void test_alloc_cgroupfd_self(char *heap_name)
+> +{
+> +	int heap_fd =3D -1, cgroup_fd =3D -1, dmabuf_fd =3D -1, ret;
+> +
+> +	heap_fd =3D dmabuf_heap_open(heap_name);
+> +
+> +	if (!pidfd_alloc_supported(heap_fd)) {
+> +		ksft_test_result_skip("charge_fd not supported by this kernel\n");
+> +		goto out;
+> +	}
+> +
+> +	cgroup_fd =3D open_self_cgroupfd();
+> +	if (cgroup_fd < 0) {
+> +		ksft_test_result_skip("cannot open self cgroupfd\n");
+> +		goto out;
+> +	}
+> +
+> +	ret =3D dmabuf_heap_alloc_pidfd(heap_fd, ONE_MEG, 0, cgroup_fd, &dmabuf=
+_fd);
+> +	ksft_test_result(!ret, "Allocation with cgroupfd %d\n", ret);
+> +	if (dmabuf_fd >=3D 0)
+> +		close(dmabuf_fd);
+> +	close(cgroup_fd);
+> +out:
+> +	close(heap_fd);
+> +}
+
+[Severity: Medium]
+Can test_alloc_cgroupfd_self() and test_xfer_charge_cgroupfd_self() fail wi=
+th
+ENOENT instead of skipping when the test binary is run outside vmtest.sh (f=
+or
+example via make run_tests or vmtest.sh -s) in a cgroup where the memory
+controller is not enabled?
+
+Unlike the pidfd path in mem_cgroup_get_from_fd(), which uses
+get_mem_cgroup_from_mm() and walks up to an online ancestor, the cgroupfd
+path requires the memory controller CSS to be directly enabled on the target
+cgroup itself:
+
+mm/memcontrol.c:mem_cgroup_get_from_fd()
+    cgrp =3D cgroup_get_from_fd(fd);
+    if (!IS_ERR(cgrp)) {
+        rcu_read_lock();
+        css =3D cgroup_css(cgrp, &memory_cgrp_subsys);
+        if (!css || !css_tryget_online(css)) {
+            rcu_read_unlock();
+            cgroup_put(cgrp);
+            return ERR_PTR(-ENOENT);
+        }
+
+When dmabuf-heap runs in a leaf cgroup (such as a standard systemd user or
+service scope) whose parent has not enabled +memory in
+cgroup.subtree_control, or when booted with cgroup_disable=3Dmemory,
+open_self_cgroupfd() still succeeds in opening the directory, and the ioctl
+fails with ENOENT. Should open_self_cgroupfd() check that memory is active =
+in
+that cgroup (or should these two tests skip when the ioctl fails with
+errno =3D=3D ENOENT)?
+
+> +/*
+> + * Test: transfer a dma-buf's charge to self cgroup via DMA_BUF_IOCTL_XF=
+ER_CHARGE.
+> + */
+> +static void test_xfer_charge_cgroupfd_self(char *heap_name)
+> +{
+> +	int heap_fd =3D -1, cgroup_fd =3D -1, dmabuf_fd =3D -1, ret;
+> +	struct dma_buf_transfer_charge xfer =3D { 0 };
+> +
+> +	heap_fd =3D dmabuf_heap_open(heap_name);
+> +
+> +	if (!pidfd_alloc_supported(heap_fd)) {
+> +		ksft_test_result_skip("charge_fd not supported by this kernel\n");
+> +		goto out;
+> +	}
+> +
+> +	ret =3D dmabuf_heap_alloc(heap_fd, ONE_MEG, 0, &dmabuf_fd);
+> +	if (ret) {
+> +		ksft_test_result_fail("Allocation failed %d\n", ret);
+> +		goto out;
+> +	}
+> +
+> +	cgroup_fd =3D open_self_cgroupfd();
+> +	if (cgroup_fd < 0) {
+> +		ksft_test_result_skip("cannot open self cgroupfd\n");
+> +		close(dmabuf_fd);
+> +		goto out;
+> +	}
+> +
+> +	xfer.charge_fd =3D cgroup_fd;
+> +	ret =3D ioctl(dmabuf_fd, DMA_BUF_IOCTL_XFER_CHARGE, &xfer);
+> +	ksft_test_result(!ret, "XFER_CHARGE to self cgroupfd %d\n", ret);
+
+[Severity: Medium]
+Does test_xfer_charge_cgroupfd_self() report a failure instead of skipping
+when main() iterates over non-system heaps in /dev/dma_heap (such as CMA
+heaps when CONFIG_DMABUF_HEAPS_CMA=3Dy)?
+
+In drivers/dma-buf/dma-heap.c, dma_heap_ioctl_allocate() validates charge_fd
+before calling heap->ops->allocate(), so pidfd_alloc_supported() returns tr=
+ue
+for all heaps. However, in drivers/dma-buf/dma-buf.c, dma_buf_xfer_charge()
+checks whether the exporter enabled memcg accounting on the buffer:
+
+drivers/dma-buf/dma-buf.c:dma_buf_xfer_charge()
+    if (!dmabuf->memcg_account)
+        return -EOPNOTSUPP;
+
+Because only system_heap sets exp_info.memcg_account =3D true (while export=
+ers
+such as cma_heap leave it false), ioctl(dmabuf_fd, DMA_BUF_IOCTL_XFER_CHARG=
+E,
+&xfer) returns -1 with errno =3D=3D EOPNOTSUPP on those heaps. Should
+test_xfer_charge_cgroupfd_self() call ksft_test_result_skip() when ret < 0
+and errno =3D=3D EOPNOTSUPP?
+
+> diff --git a/tools/testing/selftests/dmabuf-heaps/vmtest.sh b/tools/testi=
+ng/selftests/dmabuf-heaps/vmtest.sh
+> new file mode 100755
+> index 0000000000000..3574b71ca83e8
+> --- /dev/null
+> +++ b/tools/testing/selftests/dmabuf-heaps/vmtest.sh
+
+[ ... ]
+
+> +check_deps() {
+> +	for dep in vng make; do
+> +		if [[ ! -x $(command -v "${dep}") ]]; then
+> +			echo -e "skip:    dependency ${dep} not found!\n"
+> +			exit "${KSFT_SKIP}"
+> +		fi
+> +	done
+> +
+> +	if ${SHELL_MODE}; then
+> +		return
+> +	fi
+> +
+> +	if [[ ! -x "${DMABUF_HEAP_TEST}" ]]; then
+> +		printf "skip:    %s not found!" "${DMABUF_HEAP_TEST}"
+> +		printf " Please build the kselftest dmabuf-heaps target (or use -b).\n"
+> +		exit "${KSFT_SKIP}"
+> +	fi
+> +
+> +	if [[ ! -x "${MEMCONTROL_TEST}" ]]; then
+> +		printf "skip:    %s not found!" "${MEMCONTROL_TEST}"
+> +		printf " Please build the kselftest cgroup target (or use -b).\n"
+> +		exit "${KSFT_SKIP}"
+> +	fi
+> +}
+
+[ ... ]
+
+> +trap cleanup EXIT
+> +
+> +check_deps
+> +check_vng
+> +handle_build
+> +make_runner
+
+[Severity: Medium]
+If vmtest.sh is invoked with -b on a clean tree where the selftest binaries
+have not been built yet, won't check_deps() exit with KSFT_SKIP before
+handle_build() has a chance to build them?
+
+In the main flow, check_deps() runs before handle_build(), and inside
+check_deps() only SHELL_MODE returns early before checking for
+DMABUF_HEAP_TEST and MEMCONTROL_TEST. Should check_deps() also skip the
+binary existence checks when BUILD is true (or run after handle_build())?
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261027-v2_2023012=
-3_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com?part=3D7
+3_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com?part=3D8
