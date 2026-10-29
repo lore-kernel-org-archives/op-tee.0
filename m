@@ -2,412 +2,528 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1737606A32A
-	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 14:16:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A776D606A31A
+	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 16:24:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=h84SO5EX;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=z54b1nmR
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=A4zBGQyM;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=a9Zl5k7P
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 33BC8453EA
-	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 14:16:43 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0E0D14527D
+	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 16:24:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793283403;
-	bh=8uTr3ZOZovAEklBC9INEzu+I6ZeWOXA/hLnwxTemzrc=;
-	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
+	d=lists.trustedfirmware.org; s=2024; t=1793291062;
+	bh=cDyRBIaMFDGOBVIp3lh4OoAGkniQBlNhrvWo0T3nA78=;
+	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=h84SO5EXBxiuX2uTdeTZ2Gy8YgSoZEsd8sJOMJkWmDglqBU/foDEFJcarbVOH9ahB
-	 eoGxvp8ZoMD4r248KTGt1TcdfwYHkRajSrr8WdKcfY7AvE656vrWw40diVvCuZDhsN
-	 sYCZqqiKBqfthK3v7iAj5Zt8HY8CdfNO1ZW6wKDxScMyOvQqvhTtG3zZYQcafsRU/J
-	 UxKHL3VoQQY/a+iF3C3z7RZsPHXPVpvvgZ0kDg+LGrEA0rXXedZEY1rVCBOM1vT+Po
-	 aRkNn5O0O3jcDiAxCbMrKjqlYwbxXsnHXeSzZ5RcVZl393TyzroDh+mA9h+lu9S5yc
-	 QVqSNziBlpLbA==
-Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010058.outbound.protection.outlook.com [52.101.56.58])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 43D2144E0F
-	for <op-tee@lists.trustedfirmware.org>; Thu, 29 Oct 2026 14:16:25 +0000 (UTC)
+	b=A4zBGQyMjqjzUQyIcSL0P0Y8uEpsXNuAQO3qK3Rd9KECio2X4lb+PwoFrZoUXrSnX
+	 mqkm1PkIPlVYDR/+rIWvShdPP0177IV8EGIlLPXv0wiTL+PPjKH+dJtUekfiD6lmMS
+	 rqPFVu4zMuEJlVkam44qrprbE/SYUmldJCe0pWRTOpT+fOIGEpz/93xp+zInVC+X+G
+	 3psb6twpqorh2lPQl005lD337tMrNBr7lVGqSv2i3osz819lKE9ADtYLdDSdSfMboV
+	 GX0fyTB2fDdXY3kx+8fIa3mYo5dyKdvb7880Qq2BWpyzqZZjT2pKtby7uzDIB+5PjZ
+	 WnRQm79qqUWLQ==
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 5911E44E0F
+	for <op-tee@lists.trustedfirmware.org>; Thu, 29 Oct 2026 16:24:04 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=z54b1nmR;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=a9Zl5k7P;
 	dkim-atps=neutral
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=A7Y6PnvlkMX8yEI1GNNGZMQD9InS28dIOp6X7fc+KXrnn+bg/xa84k0hFY6f0j4Z7qfwS0/gbtdQEBzqXgGhoUuzF528Su0+iF2MZDndgnVY7Wdnn5LrCBT3PAy2q/S1/IbyCJ94izqPgrzIbqz87QDNdkU2Cp94bqFpVr6ar3O0of9dxZjJTP4+XXDKSsd11pPFzoJRzmpdXynO3aCGmdHauz0q795lkY0v0dAVpiTkwqpYt47ZAQ2BFaVUhjVDHpdfHYJI6EfnYrpVKjxeKssyVxV3vx9hM30MLMfcYm+BpT5KQLystHOD6vfsmE4J80yYEc0ncb+RQbHzqzG0mA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8UYhPe0kmRbwlyhj7BUSe/Tr8+GrHIXXO+aLH7QV2qA=;
- b=poRU1IrY6CM2RgINNWq+hbBLAMj+lfmc5p76hCP6wglxL0G+rpktVJNDOgrnydax2wSVkPF/7ZOcAjZQRj3Uh2MIDoTvknTfRX7SaKPyaS6ke619bsLIjjpEbdtrCTbIr8yRZuQc902dZpZ1h4ogyGk5PtbBsUaZi4xcXpJTP2pt5lerZwKK0TDYlKkZoSBPbmzXQYP7CRyrGH+KRvlv1W9Rs8LnGcS1SdENmqqXYqbpvGfIn7V1F7W006ytihcqNg5qoe9hI7L3eK7ADGGDigE/WK5E0HNteYMi8fSCzj5G93hoitLXdkf+uEb4+1GRiSK114KoVDnikHMJy+cR/g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8UYhPe0kmRbwlyhj7BUSe/Tr8+GrHIXXO+aLH7QV2qA=;
- b=z54b1nmRTBak7Armg0zFEikj97NwozyyTNjhTF4PFHoP+d9JNgaI4YMkQit10MpLV9mWltzeJQdYGWp29dm6+ozoO8YulWD2j+M8MFijbyjp0mjMjEnTBWXQ9X239kTm07g48LZi9SWz7YaKO6z0jy4rM3R90pSsM2TEjxFngak=
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by PH9PR12MB174847.namprd12.prod.outlook.com (2603:10b6:510:415::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.9; Thu, 29 Oct
- 2026 14:16:22 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::ce69:cfae:774d:a65c]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::ce69:cfae:774d:a65c%3]) with mapi id 15.21.0546.021; Thu, 29 Oct 2026
- 14:16:21 +0000
-Message-ID: <9ebce3f2-f7a0-46a9-bad7-39059b99423f@amd.com>
-Date: Thu, 29 Oct 2026 15:16:12 +0100
-User-Agent: Mozilla Thunderbird
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1793291044;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ghsxH7KtDt6p02loMMjMSbIAhef8R3L73+2Haf8kghk=;
+	b=a9Zl5k7PZrUT4jdHpYV8TC/MVpjEYn//in3rA/D1rpKMODz5mhwjRXgT4DBDt1ON0SoF5A
+	ZHfBLcBLQmRfbZLVFYHSM88XoJ2J5O6t3+bW1GtYTYpHudxfhAQeBwursPjBAO9pHqYjnx
+	Eyn7l0EVnHyromI7KnkhM2hXRbJkVJ0=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-645-AMU5ed4DP_2OcfsC291VRg-1; Thu, 29 Oct 2026 12:24:02 -0400
+X-MC-Unique: AMU5ed4DP_2OcfsC291VRg-1
+X-Mimecast-MFC-AGG-ID: AMU5ed4DP_2OcfsC291VRg_1793291041
+Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-4a2063be13dso20395765e9.3
+        for <op-tee@lists.trustedfirmware.org>; Thu, 29 Oct 2026 09:24:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793291041; x=1793895841;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=ghsxH7KtDt6p02loMMjMSbIAhef8R3L73+2Haf8kghk=;
+        b=rt/ya4HyJsqf4rHaoRCerfonCDxhH+dKkF/iVejFgVJz0swNesoA8IcFL3uTTCe1z1
+         cGwsE1u0T0DHM5cUcVgRt4mbyYAVUH6fY1k7d0DQBa/Ppk1FBpE5JfTH3mQzy8JL52ST
+         6vmdg2Wxq72Gd80NCrlGujwm/HynyFwzRwd3XSH9foUd09yl3xC9EYvuiJZx/eSPG9gH
+         k6b00PpQu+ii7qg0k/CZwZayeW9C0y40ziKOeoe1LzlbozTEGCHJ05ESWqFQtYAUmIg+
+         rllusZG65rb/8h8P2+wSt/YeZyGLxbvQjGx9Mp2CncQB0qRAw6Um7PF11xLQpw6pJNVs
+         r4EA==
+X-Forwarded-Encrypted: i=1; AKwUvBxs9apl9EoG3OfaHVe+vFAO9PTBxIGiGid5DV0hVwjarV8LGcaH1VekM7Q5WBUl8Pcbwj/Rz8w=@lists.trustedfirmware.org
+X-Gm-Message-State: AFq9FYJdN4DOLC4AhplP3RhEujG63PKXLA/8IAyAKxu5i6mPkr3yOHAl
+	dtLK9Ezy60+SAc6q5Kx5V6xAp5l/Hx+nR/8yXvsVwtxelEFmWzhVeVyHYD1tHAsf+2SXGAcuf5q
+	S+Zq70sZ94wt1Wxk+HJIlev6aS0RGSSry3OEnaEsWlqzK4kkMIXKFwJp0AWqRYwjtNHMHJtg=
+X-Gm-Gg: AYBFou2QNseDtKVOiJ64ON8dYrFKyTVQN0d02ohiuvmAFBoyJlVYNl/yOldS4o1nZ/e
+	wIbYpiFCVnWLO/MU/ukB/ZKw1zH9RCzL8DHIyi/TchYFI/LFx6oNEX40xVjQL3sm+aSrJXCej8Q
+	rsV21n8V1fGWvT1luVbau0gtIidxnW2ovHAIQtT84kQNw54guaUpGa6LoO1Dp3OR6pboHwIifgt
+	hDcyJsaJ0h1UX0nStaHKR0JJhfeAq+huOpKXWt9eUhKC4cvyezzb/9bvOb+23J6bnuOHW/2ErGX
+	/Z6PHLDQ2NqEPD3TXsxgKRZrqaChhMV0xpX479tF7pkXJLUGWXXZ0NfridNddqfpW7IUFbM+qWQ
+	jX6ku89nNNf3ltuQ9yR9XtmaAIAYX0QlIQkqdp4WZKrI=
+X-Received: by 2002:a05:600c:4455:b0:4a3:59c7:f226 with SMTP id 5b1f17b1804b1-4a965ec950amr131385465e9.6.1793291040737;
+        Thu, 29 Oct 2026 09:24:00 -0700 (PDT)
+X-Received: by 2002:a05:600c:4455:b0:4a3:59c7:f226 with SMTP id 5b1f17b1804b1-4a965ec950amr131384485e9.6.1793291040202;
+        Thu, 29 Oct 2026 09:24:00 -0700 (PDT)
+Received: from localhost ([139.47.30.142])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a94f05e4e4sm90190855e9.3.2026.10.29.09.23.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 29 Oct 2026 09:23:59 -0700 (PDT)
+Date: Thu, 29 Oct 2026 17:23:58 +0100
+To: Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>
 Subject: Re: [PATCH v3 7/8] dma-buf: transfer memcg charges via
  DMA_BUF_IOCTL_XFER_CHARGE
-To: Albert Esteve <aesteve@redhat.com>
+Message-ID: <auNzHjhT5xezyZ4I@aesteve-thinkpadp1gen8.rmtes.csb>
 References: <20261027-v2_20230123_tjmercier_google_com-v3-0-78d2c4cb8647@redhat.com>
  <20261027-v2_20230123_tjmercier_google_com-v3-7-78d2c4cb8647@redhat.com>
  <d76d8bfe-e955-4e90-9f5f-e3e914c0869c@amd.com>
  <auIeQU0nAnOLdKUB@aesteve-thinkpadp1gen8.rmtes.csb>
-Content-Language: en-US
-In-Reply-To: <auIeQU0nAnOLdKUB@aesteve-thinkpadp1gen8.rmtes.csb>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-X-ClientProxiedBy: BN9PR03CA0449.namprd03.prod.outlook.com
- (2603:10b6:408:113::34) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+ <9ebce3f2-f7a0-46a9-bad7-39059b99423f@amd.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|PH9PR12MB174847:EE_
-X-MS-Office365-Filtering-Correlation-Id: 251e27fb-2967-48a1-50b6-08df35c7351f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: 
-	BCL:0;ARA:13230040|23010399003|376014|7416014|1800799024|366016|11063799006|4143699003|56012099006|261009221227099003|261009223027099003|261026140227099003|261026121527099003|261028144727099003|10067099003|261022105027099003|261021121427099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info: 
-	6eokDo3Dim7WLZlzIdmzyUcuNjtN6TS5zPaByC0itX9cmXhUt4nWo2VBw8ncEsI/4lUokQZXVzx/Z9S0S8y5Sh1aUEMYOCgKV0akmRB/cBP2JRn9n/TgcLW20I1u5fexkrdKE9CKLdHFTzsR9FCo0chDZbX5jyZD4/+80CEpT/PPzwC47iZqln6whrfcvzQpnHUYPYpOHxolQ+sZJp9HcEaTMfyW02E/1cVQuu9vc70bre1XzKI9awvXnFhi9qJcGJPrGXFXEfm5X0xm30BYWpCDt9rN8lMMggq8hUbtJ8uODq2sv6UAtyx7WlTBl7FS2RgI1Lu+cuFNwGhLxXyCNUINtIB/jj7qLXQRWfwY+7ztVfdPEJBpv2UHu6tFudbKz0He7lmNjWdQV/rEgIox/okUgvucj4EzZgdh0S6mp+kBBol7aa8TiNfBj658M6dcvbogsdNkVuP3SwqMBCEUSJCzhh5XN4UIgDIUdqnZyPCcw/QAJz+rbZT7ZxHvgyRyENMUSFdsiUnSKiCwmuPEukeNWAuiKggcXJsuyDscvBDbYLlJ3zaCwFoLRtQTpMuKOtOf9AAdaQ0DtNcTSAxnJoeIBL0SOvcVn+sAO4dqc53wneLEs+GJOioLEaOY9n4b5ZYEOWwsopcjffCOivprwWK8jA97tLi8QvldOFm1uVw=
-X-Forefront-Antispam-Report: 
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(7416014)(1800799024)(366016)(11063799006)(4143699003)(56012099006)(261009221227099003)(261009223027099003)(261026140227099003)(261026121527099003)(261028144727099003)(10067099003)(261022105027099003)(261021121427099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 
-	=?utf-8?B?RFdDR2RLdElxbTJyN2FjWjJvUGlGTFpqTjR1eW5jQndMaldqVU9rSmJtQnZ6?=
- =?utf-8?B?VTlrUnBCYlpJK0R3bktKY0pDT1VKQ1Q0bEFJbjBiTkVHdzN3R3FsZFNTb3FP?=
- =?utf-8?B?VlU0QVJPMkEyK1FYR1FIL2FkL0hMK1NTSXdHNlAwOWFYdm1aaVZwN2NjKzg0?=
- =?utf-8?B?MGlGc2FQOGxmWk5EeXBKOXlTTmpoNmhpcDZRN2w3WWllS3JNWUZ6OEYyR0Rm?=
- =?utf-8?B?RHBYdzVHc2tQbUJnNFpPK0xUTGxzeWhtN2lZcm9hU3E1bzhwU0ZOSEVYeUZR?=
- =?utf-8?B?Q0VGcDllUDZJZjM3VVF1WmI4N0NtSzJzQmx5d2NHWEtBOEV4NWRLMFA3eGlO?=
- =?utf-8?B?Wk00cDZDNmJLSEo3WGZPdFdNMlpCSDlJR1FiYkNzNDhVd2ErVC9KQUVNb1BS?=
- =?utf-8?B?c0xWU3NNQ04zZncwdDlVbWlNUlFrb1l4QlRDek5CeVhaSEJSU1B1b2dFRnZu?=
- =?utf-8?B?UTNSQWNXMi9LZ21RbURiUnVvYTlYZGlJRDVBUG9OM2w4TUY2U0VBL1hqKzVL?=
- =?utf-8?B?YlpRaUlodEVjRTRER3VWZEJkTFptVjZLLzN1OWRYL0kyVlpjWDB1RFVaQldG?=
- =?utf-8?B?TldGTlRkUEJHQ2NQV3NqTDYvdmJaK1FCRGY5aGtlK2FjZStNN0VVaU0rWStL?=
- =?utf-8?B?UG4xLzlhb0JiVnQ0SitWMFljdnl1NGhJMmg3SGNPY1RkanNoZlNydFhESDFJ?=
- =?utf-8?B?UndJYVNpRXhwV2hZeThWcU1wTkE4akhqUElNQnNtRkdwTktrYTFYcWhtTFR3?=
- =?utf-8?B?Q1pNeDNVR3lvN1NVQVhNMS9pejJxWlVNejhtZkxBTDRjNW9hUmRYdC9OOXB2?=
- =?utf-8?B?RnNhUzNrcHFraUx6Y1NQTmJqUnh6bmhUY2MzZzhTb0hwVXVHVE5qZytPMFda?=
- =?utf-8?B?czlNTzI3S25tZGk4V2toemIvaUx0aTFHVHZ6WDZPTGJZQ1lyVFB4a1hUNDVH?=
- =?utf-8?B?cGlPV0RWWTZBdG5vV0FPdU1acmUxbzk3MWFHTWxhOUt0akVBM2ErWW5KQ3Mw?=
- =?utf-8?B?bTBERi9kTXBFUGxNcUd2YUx3OEYxdmZhY1ozMlJmRlV2dFNFV00wd1RXSDlC?=
- =?utf-8?B?eHRneXJpWUNFVlVtWDVaVmo4dllmaTd3U3RIVDNFQWY1ejF5TXgwMFdwNXJK?=
- =?utf-8?B?U1FhY0JQaVlBM05naCtUSzdkZE5DMW5BZHg2aUFFSklGTUFKQUJpNEZvVEdB?=
- =?utf-8?B?ZXZQR0NsY0FRdGJjSEtJUmwralVrVHlwcFBrY04xSGhkSDh5em9vWkUxei9J?=
- =?utf-8?B?QkZ3TWYyS3RmcVZLTVlJbDk1cWQ1NlpTNHplcVVSeVlSYXN3dU50WjFSSk9t?=
- =?utf-8?B?aExFczNlTjhlbmtISzd2ZEgvRUhZZkNxWmtvaEw5MWYxZm9DakVweElBaHFW?=
- =?utf-8?B?VjZoM082VEUzN0toR2dGVDZtRlp3L0dSd24rQ2dkTE50Rk5sM2c3b08zRUR5?=
- =?utf-8?B?ejFwUmw1ZHBmNVdYaTlJaXZnK0VTVFU1dTBLY0ZwcFJCME5BakIySTZ4aGFH?=
- =?utf-8?B?RjV1d1VWdWcyNktFakpVYjM1c1dibW9XcHk3Y1JwS1FIbngyMkFzRTlxQ3NO?=
- =?utf-8?B?SUp1aS8vM0p4SFhVUUpBcWdldkJTaW92S3dGd2xGejhwaEJPMnY4Y2taTko5?=
- =?utf-8?B?VGZQamYwZGlyNzZ4MFBvK0lybHdLaXU5eSt4dGVBZTNGMnNnYmlENnF5aE8z?=
- =?utf-8?B?Q3hwUjF1R1A5MERvdnRISk5UK1daWTA2OU9vZngxQStBcy9WUVcvWlY0K1Vq?=
- =?utf-8?B?UjFFb3ZvZUhOT1plSmpJVGhpTEI4Mm45amduVk9penNpbjNSOG9XVE5HNVJZ?=
- =?utf-8?B?OWd1YVpUUlN0TXlYSlZiN0hZcVVkZnF2bVArK0JiYmRaRDhveGFOR2hPTTlN?=
- =?utf-8?B?MzlmU0I2a1BQQTBiSTBNWEFtUEtKeUU1S05SbW9CLy9BKytUV1ZFK2ZKRUhE?=
- =?utf-8?B?TlN1c2F1YlROd2IxTGtJVUJ0VlZ1dVk4TWdaSHk0WWgxdkJmd2lBbmlydWpa?=
- =?utf-8?B?NWcxRlVFanhDVmpQcE9YbXpsVytwNWp2QkE3cXVjV0l1VEMzNWkrZ1pyOEdz?=
- =?utf-8?B?MkVQeW9wMkJFK2lqTlJnblBrNWZPZGozSTNyYTFQemZ5YTNnSDNydE92ZUxE?=
- =?utf-8?B?azF5K1dDZmN3dmVaZXl6NHFYemxkbi9iL3Bxd0lKSzhJajl0LzJZOWRqQU9B?=
- =?utf-8?B?dHlia0pwUnZ1ZVNOS1pSMDNxYURZL2loMy9YYzhBNE5na1FHOE9UeGdsMmZP?=
- =?utf-8?B?c0hDaU1LckpGWW5LU0R1ZWpkRndrZHBRTVBST0JrdEZ4RjMzRzBHaHpkOERH?=
- =?utf-8?Q?pinVAkpZbLp5Bw3bUh?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 251e27fb-2967-48a1-50b6-08df35c7351f
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Oct 2026 14:16:21.8145
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Uuq72KcRChC4YW9c8uqLnSY+0jivqx+jIuNJkxYdGc5jcxVhEPXXlJqdyChC0Y5+
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH9PR12MB174847
+In-Reply-To: <9ebce3f2-f7a0-46a9-bad7-39059b99423f@amd.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: Tg0wBAAZYI6XWM2qTLl6VdYhV_n75rw31U2X1Tm0Jiw_1793291041
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
+X-Spamd-Result: default: False [-3.00 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[microsoft.com:s=arcselector10001:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[amd.com,quarantine];
-	R_DKIM_ALLOW(-0.20)[amd.com:s=selector1];
-	R_SPF_ALLOW(-0.20)[+ip4:52.100.0.0/15];
+	DMARC_POLICY_ALLOW(-0.50)[redhat.com,quarantine];
+	RWL_MAILSPIKE_EXCELLENT(-0.40)[170.10.129.124:from];
+	R_DKIM_ALLOW(-0.20)[redhat.com:s=mimecast20190719];
+	R_SPF_ALLOW(-0.20)[+ip4:170.10.129.0/24];
+	RCVD_IN_DNSWL_LOW(-0.10)[170.10.129.124:from];
 	MIME_GOOD(-0.10)[text/plain];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[52.101.56.58:from];
-	RCPT_COUNT_TWELVE(0.00)[39];
-	TO_DN_SOME(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[amd.com:dkim];
-	MIME_TRACE(0.00)[0:+];
-	ASN(0.00)[asn:8075, ipnet:52.96.0.0/12, country:US];
-	MID_RHS_MATCH_FROM(0.00)[];
-	NEURAL_HAM(-0.00)[-1.000];
-	ALIAS_RESOLVED(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
+	RECEIVED_HELO_LOCALHOST(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,cmpxchg.org,suse.com,lwn.net,linuxfoundation.org,linaro.org,linux.dev,linux-foundation.org,collabora.com,arm.com,google.com,paul-moore.com,namei.org,hallyn.com,gmail.com,infradead.org,vger.kernel.org,lists.freedesktop.org,lists.linaro.org,kvack.org,lists.trustedfirmware.org,redhat.com];
-	RCVD_IN_DNSWL_NONE(0.00)[52.101.56.58:from];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DNSWL_BLOCKED(0.00)[2603:10b6:510:13c::22:received];
+	NEURAL_HAM(-0.00)[-1.000];
 	RCVD_TLS_LAST(0.00)[];
-	DKIM_TRACE(0.00)[amd.com:+]
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_THREE(0.00)[3];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[39];
+	ALIAS_RESOLVED(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[redhat.com:dkim];
+	FREEMAIL_CC(0.00)[kernel.org,cmpxchg.org,suse.com,lwn.net,linuxfoundation.org,linaro.org,linux.dev,linux-foundation.org,collabora.com,arm.com,google.com,paul-moore.com,namei.org,hallyn.com,gmail.com,infradead.org,vger.kernel.org,lists.freedesktop.org,lists.linaro.org,kvack.org,lists.trustedfirmware.org,redhat.com];
+	ASN(0.00)[asn:30031, ipnet:170.10.128.0/23, country:US];
+	TO_DN_SOME(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	DKIM_TRACE(0.00)[redhat.com:+];
+	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.70:received]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 43D2144E0F
+X-Rspamd-Queue-Id: 5911E44E0F
 X-Spamd-Bar: ---
-Message-ID-Hash: 2ACH7HDF4A3QFSCMSEKQDEPQWD47MFKF
-X-Message-ID-Hash: 2ACH7HDF4A3QFSCMSEKQDEPQWD47MFKF
-X-MailFrom: Christian.Koenig@amd.com
+Message-ID-Hash: Y547N7HPDNCZNJRDEQBPZW4UJCOVJDDH
+X-Message-ID-Hash: Y547N7HPDNCZNJRDEQBPZW4UJCOVJDDH
+X-MailFrom: aesteve@redhat.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Sumit Semwal <sumit.semwal@linaro.org>, Michal Hocko <mhocko@kernel.org>, Roman Gushchin <roman.gushchin@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Muchun Song <muchun.song@linux.dev>, Andrew Morton <akpm@linux-foundation.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T.J. Mercier" <tjmercier@google.com>, Christian Brauner <brauner@kernel.org>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Shuah Khan <shuah@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, cgroup
- s@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, linux-kselftest@vger.kernel.org, op-tee@lists.trustedfirmware.org, echanude@redhat.com, mripard@kernel.org
+CC: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, Michal =?iso-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Sumit Semwal <sumit.semwal@linaro.org>, Michal Hocko <mhocko@kernel.org>, Roman Gushchin <roman.gushchin@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Muchun Song <muchun.song@linux.dev>, Andrew Morton <akpm@linux-foundation.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T.J. Mercier" <tjmercier@google.com>, Christian Brauner <brauner@kernel.org>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Shuah Khan <shuah@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, cgrou
+ ps@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, linux-kselftest@vger.kernel.org, op-tee@lists.trustedfirmware.org, echanude@redhat.com, mripard@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2ACH7HDF4A3QFSCMSEKQDEPQWD47MFKF/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/Y547N7HPDNCZNJRDEQBPZW4UJCOVJDDH/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-From: =?utf-8?q?Christian_K=C3=B6nig_via_OP-TEE?= <op-tee@lists.trustedfirmware.org>
-Reply-To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+From: Albert Esteve via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Albert Esteve <aesteve@redhat.com>
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=4.0.1
+	SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-T24gMTAvMjgvMjYgMTc6MDksIEFsYmVydCBFc3RldmUgd3JvdGU6DQo+IE9uIFdlZCwgT2N0IDI4
-LCAyMDI2IGF0IDEwOjA4OjE5QU0gKzAxMDAsIENocmlzdGlhbiBLw7ZuaWcgd3JvdGU6DQo+PiBP
-biAxMC8yNy8yNiAxNjowMiwgQWxiZXJ0IEVzdGV2ZSB3cm90ZToNCj4+PiBkbWEtaGVhcCBhbHJl
-YWR5IHN1cHBvcnRzIGNoYXJnaW5nIGEgc3BlY2lmaWMgY2dyb3VwIGF0IGFsbG9jYXRpb24NCj4+
-PiB0aW1lIHZpYSBjaGFyZ2VfZmQgaW4gRE1BX0hFQVBfSU9DVExfQUxMT0MuIEhvd2V2ZXIsIGRt
-YS1idWZzIGNhbg0KPj4+IG9yaWdpbmF0ZSBmcm9tIGFueSBleHBvcnRlciAoRFJNLCBWNEwyLCBl
-dGMuKSwgYW5kIHRoZSBhbGxvY2F0b3IgbWF5DQo+Pj4gbm90IGtub3cgdGhlIGZpbmFsIG93bmVy
-IGF0IGFsbG9jYXRpb24gdGltZS4NCj4+Pg0KPj4+IEFkZCBETUFfQlVGX0lPQ1RMX1hGRVJfQ0hB
-UkdFIHRvIHRyYW5zZmVyIGEgZG1hLWJ1ZidzIG1lbWNnIGNoYXJnZQ0KPj4+IHRvIGEgZGlmZmVy
-ZW50IGNncm91cCBhZnRlciBhbGxvY2F0aW9uLiBUaGUgdGFyZ2V0IGlzIGlkZW50aWZpZWQgYnkN
-Cj4+PiBjaGFyZ2VfZmQsIHdoaWNoIG1heSBiZSBhIGNncm91cGZkIG9yIGEgcGlkZmQuDQo+Pj4N
-Cj4+PiBUaGUgdHJhbnNmZXIgY2hhcmdlcyB0aGUgbmV3IGNncm91cCBiZWZvcmUgdW5jaGFyZ2lu
-ZyB0aGUgb2xkIG9uZSwNCj4+PiBwcmVzZXJ2aW5nIHRoZSBvcmlnaW5hbCBjaGFyZ2Ugb24gZmFp
-bHVyZS4gQW4gYXRvbWljIGNtcHhjaGcgb24NCj4+PiBkbWFidWYtPm1lbWNnIHByZXZlbnRzIHJh
-Y2VzIHdpdGggY29uY3VycmVudCB0cmFuc2ZlcnMuDQo+Pj4NCj4+PiBOb3QgYWxsIGRtYS1idWYg
-ZXhwb3J0ZXJzIGJhY2sgdGhlaXIgYnVmZmVycyB3aXRoIHJlY2xhaW1hYmxlIHN5c3RlbQ0KPj4+
-IG1lbW9yeS4gU29tZSByZXByZXNlbnQgZGV2aWNlIHJlZ2lzdGVycywgVlJBTSwgb3IgY2FydmVk
-LW91dCBwb29scw0KPj4+IHdoZXJlIHNpemUgaXMgbm90IGEgbWVhbmluZ2Z1bCBtZW1vcnkgY29z
-dC4gQWRkIGEgbWVtY2dfYWNjb3VudCBmbGFnDQo+Pj4gdG8gZG1hX2J1Zl9leHBvcnRfaW5mbyB0
-aGF0IGV4cG9ydGVycyBzZXQgd2hlbiB0aGVpciBidWZmZXJzIHNob3VsZA0KPj4+IHBhcnRpY2lw
-YXRlIGluIG1lbWNnIGFjY291bnRpbmcuIFRoZSB4ZmVyIGlvY3RsIHJldHVybnMgLUVPUE5PVFNV
-UFANCj4+PiBmb3IgYnVmZmVycyB0aGF0IGRvIG5vdCBzZXQgdGhlIGZsYWcuIEN1cnJlbnRseSBv
-bmx5IHRoZSBzeXN0ZW0gaGVhcA0KPj4+IHNldHMgaXQsIG90aGVyIGV4cG9ydGVycyBjYW4gb3B0
-IGluIGFzIG5lZWRlZC4NCj4+Pg0KPj4+IFVzYWdlIGV4YW1wbGU6DQo+Pj4gICBpbnQgY2dfZmQg
-PSBvcGVuKCIvc3lzL2ZzL2Nncm91cC9jbGllbnRzL2FwcDEiLCBPX1JET05MWSB8IE9fRElSRUNU
-T1JZKTsNCj4+Pg0KPj4+ICAgc3RydWN0IGRtYV9idWZfdHJhbnNmZXJfY2hhcmdlIHhmZXIgPSB7
-DQo+Pj4gICAgICAgLmNoYXJnZV9mZCA9IGNnX2ZkLA0KPj4+ICAgfTsNCj4+PiAgIGlvY3RsKGRt
-YWJ1Zl9mZCwgRE1BX0JVRl9JT0NUTF9YRkVSX0NIQVJHRSwgJnhmZXIpOw0KPj4+ICAgLyogY2hh
-cmdlIG5vdyBvbiBhcHAxJ3MgY2dyb3VwICovDQo+Pj4gICBjbG9zZShjZ19mZCk7DQo+Pj4NCj4+
-PiBTaWduZWQtb2ZmLWJ5OiBBbGJlcnQgRXN0ZXZlIDxhZXN0ZXZlQHJlZGhhdC5jb20+DQo+Pj4g
-LS0tDQo+Pj4gIGRyaXZlcnMvZG1hLWJ1Zi9kbWEtYnVmLmMgICAgICAgICAgIHwgNDMgKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPj4+ICBkcml2ZXJzL2RtYS1idWYvaGVh
-cHMvc3lzdGVtX2hlYXAuYyB8ICAxICsNCj4+PiAgaW5jbHVkZS9saW51eC9kbWEtYnVmLmggICAg
-ICAgICAgICAgfCAgNSArKysrKw0KPj4+ICBpbmNsdWRlL2xpbnV4L21lbWNvbnRyb2wuaCAgICAg
-ICAgICB8ICA5ICsrKysrKysrDQo+Pj4gIGluY2x1ZGUvdWFwaS9saW51eC9kbWEtYnVmLmggICAg
-ICAgIHwgMjYgKysrKysrKysrKysrKysrKysrKysrKw0KPj4+ICBtbS9tZW1jb250cm9sLmMgICAg
-ICAgICAgICAgICAgICAgICB8IDQxICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-DQo+Pj4gIDYgZmlsZXMgY2hhbmdlZCwgMTI1IGluc2VydGlvbnMoKykNCj4+Pg0KPj4+IGRpZmYg
-LS1naXQgYS9kcml2ZXJzL2RtYS1idWYvZG1hLWJ1Zi5jIGIvZHJpdmVycy9kbWEtYnVmL2RtYS1i
-dWYuYw0KPj4+IGluZGV4IGYzMWY0OWViZDBhZi4uMDc1MTNlY2VkYzEwIDEwMDY0NA0KPj4+IC0t
-LSBhL2RyaXZlcnMvZG1hLWJ1Zi9kbWEtYnVmLmMNCj4+PiArKysgYi9kcml2ZXJzL2RtYS1idWYv
-ZG1hLWJ1Zi5jDQo+Pj4gQEAgLTU0MCw2ICs1NDAsNDUgQEAgc3RhdGljIGxvbmcgZG1hX2J1Zl9p
-bXBvcnRfc3luY19maWxlKHN0cnVjdCBkbWFfYnVmICpkbWFidWYsDQo+Pj4gIH0NCj4+PiAgI2Vu
-ZGlmDQo+Pj4gIA0KPj4+ICsvKiBUcmFuc2ZlciBhIGRtYS1idWYncyBtZW1jZyBjaGFyZ2U7IHNl
-ZSBzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFyZ2UgKi8NCj4+PiArc3RhdGljIGxvbmcgZG1h
-X2J1Zl94ZmVyX2NoYXJnZShzdHJ1Y3QgZG1hX2J1ZiAqZG1hYnVmLA0KPj4+ICsJCQkJY29uc3Qg
-dm9pZCBfX3VzZXIgKnVzZXJfZGF0YSkNCj4+PiArew0KPj4+ICsJc3RydWN0IGRtYV9idWZfdHJh
-bnNmZXJfY2hhcmdlIGFyZzsNCj4+PiArCXN0cnVjdCBtZW1fY2dyb3VwICptZW1jZzsNCj4+PiAr
-CWludCByZXQgPSAwOw0KPj4+ICsNCj4+PiArCWlmIChjb3B5X2Zyb21fdXNlcigmYXJnLCB1c2Vy
-X2RhdGEsIHNpemVvZihhcmcpKSkNCj4+PiArCQlyZXR1cm4gLUVGQVVMVDsNCj4+PiArDQo+Pj4g
-KwlpZiAoIUlTX0VOQUJMRUQoQ09ORklHX01FTUNHKSkNCj4+PiArCQlyZXR1cm4gMDsNCj4+PiAr
-DQo+Pj4gKwlpZiAoYXJnLmZsYWdzICE9IDApDQo+Pj4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+Pj4g
-Kw0KPj4+ICsJaWYgKCFkbWFidWYtPm1lbWNnX2FjY291bnQpDQo+Pj4gKwkJcmV0dXJuIC1FT1BO
-T1RTVVBQOw0KPj4+ICsNCj4+PiArCW1lbWNnID0gbWVtX2Nncm91cF9nZXRfZnJvbV9mZChhcmcu
-Y2hhcmdlX2ZkKTsNCj4+PiArCWlmIChJU19FUlIobWVtY2cpKQ0KPj4+ICsJCXJldHVybiBQVFJf
-RVJSKG1lbWNnKTsNCj4+PiArDQo+Pj4gKwlpZiAoZG1hYnVmLT5tZW1jZyA9PSBtZW1jZykNCj4+
-PiArCQlnb3RvIHNraXBfdHJhbnNmZXI7DQo+Pj4gKw0KPj4+ICsJaWYgKCFtZW1fY2dyb3VwX3Ry
-YW5zZmVyX2RtYWJ1Zl9jaGFyZ2UoZG1hYnVmLCBtZW1jZykpIHsNCj4+PiArCQlyZXQgPSAtRU5P
-TUVNOw0KPj4+ICsJCWdvdG8gc2tpcF90cmFuc2ZlcjsNCj4+PiArCX0NCj4+PiArDQo+Pj4gKwly
-ZXR1cm4gMDsNCj4+PiArDQo+Pj4gK3NraXBfdHJhbnNmZXI6DQo+Pj4gKwltZW1fY2dyb3VwX3B1
-dChtZW1jZyk7DQo+Pj4gKwlyZXR1cm4gcmV0Ow0KPj4+ICt9DQo+Pj4gKw0KPj4+ICBzdGF0aWMg
-bG9uZyBkbWFfYnVmX2lvY3RsKHN0cnVjdCBmaWxlICpmaWxlLA0KPj4+ICAJCQkgIHVuc2lnbmVk
-IGludCBjbWQsIHVuc2lnbmVkIGxvbmcgYXJnKQ0KPj4+ICB7DQo+Pj4gQEAgLTU5MCw2ICs2Mjks
-OSBAQCBzdGF0aWMgbG9uZyBkbWFfYnVmX2lvY3RsKHN0cnVjdCBmaWxlICpmaWxlLA0KPj4+ICAJ
-CXJldHVybiBkbWFfYnVmX2ltcG9ydF9zeW5jX2ZpbGUoZG1hYnVmLCAoY29uc3Qgdm9pZCBfX3Vz
-ZXIgKilhcmcpOw0KPj4+ICAjZW5kaWYNCj4+PiAgDQo+Pj4gKwljYXNlIERNQV9CVUZfSU9DVExf
-WEZFUl9DSEFSR0U6DQo+Pj4gKwkJcmV0dXJuIGRtYV9idWZfeGZlcl9jaGFyZ2UoZG1hYnVmLCAo
-Y29uc3Qgdm9pZCBfX3VzZXIgKilhcmcpOw0KPj4+ICsNCj4+PiAgCWRlZmF1bHQ6DQo+Pj4gIAkJ
-cmV0dXJuIC1FTk9UVFk7DQo+Pj4gIAl9DQo+Pj4gQEAgLTc1MCw2ICs3OTIsNyBAQCBzdHJ1Y3Qg
-ZG1hX2J1ZiAqZG1hX2J1Zl9leHBvcnQoY29uc3Qgc3RydWN0IGRtYV9idWZfZXhwb3J0X2luZm8g
-KmV4cF9pbmZvKQ0KPj4+ICAJZG1hYnVmLT5zaXplID0gZXhwX2luZm8tPnNpemU7DQo+Pj4gIAlk
-bWFidWYtPmV4cF9uYW1lID0gZXhwX2luZm8tPmV4cF9uYW1lOw0KPj4+ICAJZG1hYnVmLT5vd25l
-ciA9IGV4cF9pbmZvLT5vd25lcjsNCj4+PiArCWRtYWJ1Zi0+bWVtY2dfYWNjb3VudCA9IGV4cF9p
-bmZvLT5tZW1jZ19hY2NvdW50Ow0KPj4NCj4+IFRoZSBpbml0aWFsIGNoYXJnaW5nIHNob3VsZCBw
-cm9iYWJseSBiZSBkb25lIGhlcmUgYXMgd2VsbC4NCj4+DQo+PiBUaGlzIHdheSBETUEtYnVmIGhl
-YXBzIG9ubHkgbmVlZHMgdG8gcGFzcyBpbiB0aGUgY2hhcmdlX2ZkIGFuZCB3ZSBjYW4gcmUtdXNl
-IHRoZSBmdW5jdGlvbmFsaXR5IGZvciBvdGhlciBETUEtYnVmIGV4cG9ydGVycyBhcyB3ZWxsLg0K
-PiANCj4gVGhlIHByb2JsZW0gd2l0aCBkb2luZyB0aGUgY2hhcmdlIGhlcmUgaXMgdGhhdCBpdCBo
-YXBwZW5zIHRvbyBsYXRlLg0KPiBUaGF0IGlzIHRoZSByZWFzb25pbmcgZm9yIHRoaXMgcHJvcG9z
-YWwgdG8gbW92ZSBhbGwgdGhlIGNoYXJnaW5nIGxvZ2ljDQo+IGludG8gaGVhcCBhbGxvY2F0b3Jz
-IGJlZm9yZSBwYWdlcyBhcmUgYWxsb2NhdGVkLg0KDQpPaCwgdGhhdCBpcyBhIHJlYWxseSBnb29k
-IHBvaW50IHdlIG5lZWQgdG8gdGFsayBhYm91dC4NCg0KRE1BLWJ1ZiBoZWFwcyBpcyBhY3R1YWxs
-eSBhIHJhdGhlciBzaW1wbGUgdXNlIGNhc2UsIGJ1dCB3ZSBoYXZlIHdheSBtb3JlIGNvbXBsZXgg
-dGhpbmdzLg0KDQpGb3IgZXhhbXBsZSBpbiBzb21lIHVzZSBjYXNlcyB0aGUgYmFja2luZyBzdG9y
-ZSBvZiBhIERNQS1idWYgaXMgb25seSBhbGxvY2F0ZWQgb24gZmlyc3QgdXNlIGFuZCBvbmx5IHRo
-ZW4gaXQgbmVlZHMgdG8gYmUgY29taXR0ZWQgdG8gaXQncyBtZW1jZyBvciBkbWVtLg0KDQpJIGRv
-bid0IG1pbmQgaW1wbGVtZW50aW5nIGl0IGZvciBETUEtYnVmIGhlYXBzIGZpcnN0LCBidXQgd2Ug
-c2hvdWxkIGhhdmUgdGhlIHVBUEkgYW5kIGl0J3MgaGFuZGxpbmcgc28gc29saWQgdGhhdCBpdCBh
-bHNvIHdvcmtzIGZvciBmdXR1cmUgdXNlIGNhc2VzLg0KPiBXaGF0IHdlIGNvdWxkIGRvIGlzIGZp
-bGwgdGhlIGRtYWJ1Zi0+bWVtY2cgZmllbGQgd2hlbiB0aGUgZmxhZyBpcyBzZXQNCj4gKGkuZS4s
-IGNvbW1pdHRpbmcgaW50byB0aGUgZG1hYnVmIGluIHRoZSBwYXRjaCBzZW1hbnRpY3MpLiBCdXQg
-Zm9yIHRoYXQNCj4gd2UnZCBuZWVkIGFkZGluZyB0aGUgbWVtY2cgd2Ugd2FudCB0byBjaGFyZ2Ug
-aXQgdG8gaW50byBleHBfaW5mbyBpbg0KPiBvcmRlciB0byBzdXBwb3J0IGNoYXJnaW5nIHRvIGNn
-cm91cHMgb3RoZXIgdGhhbiB0aGUgYWxsb2NhdG9yJ3MgKGZvcg0KPiB0aGUgY29tbW9uIGNhc2Ug
-d291bGQgYmUgc2ltcGxlciBhcyB3ZSBjYW4ganVzdCBsb29rIGF0IGN1cnJlbnQpLg0KPiBNYXli
-ZSB0aGF0J3Mgd2hhdCB5b3UgbWVhbnQ/DQoNCkF0IGxlYXN0IGZvciB0aGUgRE1BLWJ1ZiBoZWFw
-cyB1c2UgY2FzZSB0aGF0IHNvdW5kcyByZWFzb25hYmxlIGZvciBub3cuDQoNClJlZ2FyZHMsDQpD
-aHJpc3RpYW4uDQoNCj4gDQo+Pg0KPj4+ICAJc3Bpbl9sb2NrX2luaXQoJmRtYWJ1Zi0+bmFtZV9s
-b2NrKTsNCj4+PiAgCWluaXRfd2FpdHF1ZXVlX2hlYWQoJmRtYWJ1Zi0+cG9sbCk7DQo+Pj4gIAlk
-bWFidWYtPmNiX2luLnBvbGwgPSBkbWFidWYtPmNiX291dC5wb2xsID0gJmRtYWJ1Zi0+cG9sbDsN
-Cj4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kbWEtYnVmL2hlYXBzL3N5c3RlbV9oZWFwLmMgYi9k
-cml2ZXJzL2RtYS1idWYvaGVhcHMvc3lzdGVtX2hlYXAuYw0KPj4+IGluZGV4IGFkZWVhOGNkMzI4
-Yi4uYTc2NDE2NzE2N2JhIDEwMDY0NA0KPj4+IC0tLSBhL2RyaXZlcnMvZG1hLWJ1Zi9oZWFwcy9z
-eXN0ZW1faGVhcC5jDQo+Pj4gKysrIGIvZHJpdmVycy9kbWEtYnVmL2hlYXBzL3N5c3RlbV9oZWFw
-LmMNCj4+PiBAQCAtNDc5LDYgKzQ3OSw3IEBAIHN0YXRpYyBzdHJ1Y3QgZG1hX2J1ZiAqc3lzdGVt
-X2hlYXBfYWxsb2NhdGUoc3RydWN0IGRtYV9oZWFwICpoZWFwLA0KPj4+ICAJZXhwX2luZm8uc2l6
-ZSA9IGJ1ZmZlci0+bGVuOw0KPj4+ICAJZXhwX2luZm8uZmxhZ3MgPSBmZF9mbGFnczsNCj4+PiAg
-CWV4cF9pbmZvLnByaXYgPSBidWZmZXI7DQo+Pj4gKwlleHBfaW5mby5tZW1jZ19hY2NvdW50ID0g
-dHJ1ZTsNCj4+PiAgCWRtYWJ1ZiA9IGRtYV9idWZfZXhwb3J0KCZleHBfaW5mbyk7DQo+Pj4gIAlp
-ZiAoSVNfRVJSKGRtYWJ1ZikpIHsNCj4+PiAgCQlyZXQgPSBQVFJfRVJSKGRtYWJ1Zik7DQo+Pj4g
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvZG1hLWJ1Zi5oIGIvaW5jbHVkZS9saW51eC9kbWEt
-YnVmLmgNCj4+PiBpbmRleCAyM2VjMGZmMjNmYmEuLmFjMGVjODhjYWI5MyAxMDA2NDQNCj4+PiAt
-LS0gYS9pbmNsdWRlL2xpbnV4L2RtYS1idWYuaA0KPj4+ICsrKyBiL2luY2x1ZGUvbGludXgvZG1h
-LWJ1Zi5oDQo+Pj4gQEAgLTQzMyw2ICs0MzMsOSBAQCBzdHJ1Y3QgZG1hX2J1ZiB7DQo+Pj4gIA0K
-Pj4+ICAJLyoqIEBtZW1jZzogdGhlIGNncm91cCB0byB3aGljaCB0aGlzIGJ1ZmZlciBpcyBjdXJy
-ZW50bHkgYXR0cmlidXRlZCAqLw0KPj4+ICAJc3RydWN0IG1lbV9jZ3JvdXAgKm1lbWNnOw0KPj4+
-ICsNCj4+PiArCS8qKiBAbWVtY2dfYWNjb3VudDogYWNjb3VudCBidWZmZXIgbWVtb3J5IHRvIGNn
-cm91cCAqLw0KPj4+ICsJYm9vbCBtZW1jZ19hY2NvdW50Ow0KPj4+ICB9Ow0KPj4+ICANCj4+PiAg
-LyoqDQo+Pj4gQEAgLTUwNSw2ICs1MDgsNyBAQCBzdHJ1Y3QgZG1hX2J1Zl9hdHRhY2htZW50IHsN
-Cj4+PiAgICogQGZsYWdzOgltb2RlIGZsYWdzIGZvciB0aGUgZmlsZQ0KPj4+ICAgKiBAcmVzdjoJ
-cmVzZXJ2YXRpb24tb2JqZWN0LCBOVUxMIHRvIGFsbG9jYXRlIGRlZmF1bHQgb25lDQo+Pj4gICAq
-IEBwcml2OglBdHRhY2ggcHJpdmF0ZSBkYXRhIG9mIGFsbG9jYXRvciB0byB0aGlzIGJ1ZmZlcg0K
-Pj4+ICsgKiBAbWVtY2dfYWNjb3VudDoJYWNjb3VudCBidWZmZXIgbWVtb3J5IHRvIGNncm91cA0K
-Pj4+ICAgKg0KPj4+ICAgKiBUaGlzIHN0cnVjdHVyZSBob2xkcyB0aGUgaW5mb3JtYXRpb24gcmVx
-dWlyZWQgdG8gZXhwb3J0IHRoZSBidWZmZXIuIFVzZWQNCj4+PiAgICogd2l0aCBkbWFfYnVmX2V4
-cG9ydCgpIG9ubHkuDQo+Pj4gQEAgLTUxNyw2ICs1MjEsNyBAQCBzdHJ1Y3QgZG1hX2J1Zl9leHBv
-cnRfaW5mbyB7DQo+Pj4gIAlpbnQgZmxhZ3M7DQo+Pj4gIAlzdHJ1Y3QgZG1hX3Jlc3YgKnJlc3Y7
-DQo+Pj4gIAl2b2lkICpwcml2Ow0KPj4+ICsJYm9vbCBtZW1jZ19hY2NvdW50Ow0KPj4+ICB9Ow0K
-Pj4+ICANCj4+PiAgLyoqDQo+Pj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbWVtY29udHJv
-bC5oIGIvaW5jbHVkZS9saW51eC9tZW1jb250cm9sLmgNCj4+PiBpbmRleCA2YjMwYmFhNzlmYTku
-LjM2ZmRkYWZiZWY0ZSAxMDA2NDQNCj4+PiAtLS0gYS9pbmNsdWRlL2xpbnV4L21lbWNvbnRyb2wu
-aA0KPj4+ICsrKyBiL2luY2x1ZGUvbGludXgvbWVtY29udHJvbC5oDQo+Pj4gQEAgLTY3OSw2ICs2
-NzksOSBAQCBib29sIG1lbV9jZ3JvdXBfcmVzZXJ2ZV9kbWFidWYoc3RydWN0IG1lbV9jZ3JvdXAg
-Km1lbWNnLCBnZnBfdCBnZnAsDQo+Pj4gIHZvaWQgbWVtX2Nncm91cF9jb21taXRfZG1hYnVmKHN0
-cnVjdCBkbWFfYnVmICpkbWFidWYsIHN0cnVjdCBtZW1fY2dyb3VwICptZW1jZywNCj4+PiAgCQkJ
-ICAgICAgdW5zaWduZWQgaW50IG5yX3BhZ2VzKTsNCj4+PiAgDQo+Pj4gK2Jvb2wgbWVtX2Nncm91
-cF90cmFuc2Zlcl9kbWFidWZfY2hhcmdlKHN0cnVjdCBkbWFfYnVmICpkbWFidWYsDQo+Pj4gKwkJ
-CQkgICAgICAgc3RydWN0IG1lbV9jZ3JvdXAgKm5ld19tZW1jZyk7DQo+Pj4gKw0KPj4+ICB2b2lk
-IF9fbWVtX2Nncm91cF91bmNoYXJnZShzdHJ1Y3QgZm9saW8gKmZvbGlvKTsNCj4+PiAgDQo+Pj4g
-IC8qKg0KPj4+IEBAIC0xMjA2LDYgKzEyMDksMTIgQEAgc3RhdGljIGlubGluZSB2b2lkIG1lbV9j
-Z3JvdXBfY2FuY2VsX2RtYWJ1ZihzdHJ1Y3QgbWVtX2Nncm91cCAqbWVtY2csDQo+Pj4gIHsNCj4+
-PiAgfQ0KPj4+ICANCj4+PiArc3RhdGljIGlubGluZSBib29sIG1lbV9jZ3JvdXBfdHJhbnNmZXJf
-ZG1hYnVmX2NoYXJnZShzdHJ1Y3QgZG1hX2J1ZiAqZG1hYnVmLA0KPj4+ICsJCQkJCQkgICAgIHN0
-cnVjdCBtZW1fY2dyb3VwICpuZXdfbWVtY2cpDQo+Pj4gK3sNCj4+PiArCXJldHVybiB0cnVlOw0K
-Pj4+ICt9DQo+Pj4gKw0KPj4+ICBzdGF0aWMgaW5saW5lIHZvaWQgbWVtX2Nncm91cF91bmNoYXJn
-ZShzdHJ1Y3QgZm9saW8gKmZvbGlvKQ0KPj4+ICB7DQo+Pj4gIH0NCj4+PiBkaWZmIC0tZ2l0IGEv
-aW5jbHVkZS91YXBpL2xpbnV4L2RtYS1idWYuaCBiL2luY2x1ZGUvdWFwaS9saW51eC9kbWEtYnVm
-LmgNCj4+PiBpbmRleCBlODI3YzlkMjBjNWQuLmVhOTU3ZjRiMWQzOCAxMDA2NDQNCj4+PiAtLS0g
-YS9pbmNsdWRlL3VhcGkvbGludXgvZG1hLWJ1Zi5oDQo+Pj4gKysrIGIvaW5jbHVkZS91YXBpL2xp
-bnV4L2RtYS1idWYuaA0KPj4+IEBAIC0xNjgsNiArMTY4LDMxIEBAIHN0cnVjdCBkbWFfYnVmX2lt
-cG9ydF9zeW5jX2ZpbGUgew0KPj4+ICAJX19zMzIgZmQ7DQo+Pj4gIH07DQo+Pj4gIA0KPj4+ICsv
-KioNCj4+PiArICogc3RydWN0IGRtYV9idWZfdHJhbnNmZXJfY2hhcmdlIC0gVHJhbnNmZXIgYSBk
-bWEtYnVmJ3MgbWVtY2cgY2hhcmdlDQo+Pj4gKyAqDQo+Pj4gKyAqIEFueSBob2xkZXIgb2YgYSBk
-bWEtYnVmIGZpbGUgZGVzY3JpcHRvciBjYW4gcGVyZm9ybSBhDQo+Pj4gKyAqIERNQV9CVUZfSU9D
-VExfWEZFUl9DSEFSR0UgdG8gYXR0cmlidXRlIHRoZSBidWZmZXIncyBtZW1vcnkNCj4+PiArICog
-Y29zdCB0byBhIHNwZWNpZmljIGNncm91cCwgb3IgbW92ZSBpdCBmcm9tIG9uZSBjZ3JvdXAgdG8N
-Cj4+PiArICogYW5vdGhlci4gIFRoZSBpb2N0bCBjaGFyZ2VzIHRoZSBuZXcgY2dyb3VwIGJlZm9y
-ZSB1bmNoYXJnaW5nDQo+Pj4gKyAqIHRoZSBvbGQgb25lIGF0b21pY2FsbHkuICBPbiBmYWlsdXJl
-IHRoZSBvcmlnaW5hbCBjaGFyZ2UgaXMNCj4+PiArICogcHJlc2VydmVkLiAgSWYgdGhlIGJ1ZmZl
-ciBoYXMgbm8gZXhpc3RpbmcgY2hhcmdlLCBhIG5ldw0KPj4+ICsgKiBjaGFyZ2UgaXMgZXN0YWJs
-aXNoZWQuDQo+Pj4gKyAqLw0KPj4+ICtzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFyZ2Ugew0K
-Pj4+ICsJLyoqIEBmbGFnczogUmVzZXJ2ZWQsIG11c3QgYmUgemVybyAqLw0KPj4+ICsJX191MzIg
-ZmxhZ3M7IC8qIHVudXNlZCBmb3Igbm93ICovDQo+Pj4gKwkvKioNCj4+PiArCSAqIEBjaGFyZ2Vf
-ZmQ6IEZpbGUgZGVzY3JpcHRvciBpZGVudGlmeWluZyB0aGUgdGFyZ2V0IGNncm91cC4NCj4+PiAr
-CSAqDQo+Pj4gKwkgKiBNYXkgYmUgZWl0aGVyIGEgcGlkZmQsIGluIHdoaWNoIGNhc2UgdGhlIGNo
-YXJnZSBtb3ZlcyB0byB0aGUNCj4+PiArCSAqIG1lbW9yeSBjZ3JvdXAgb2YgdGhlIHJlZmVyZW5j
-ZWQgcHJvY2Vzcywgb3IgYSBjZ3JvdXBmZCBvYnRhaW5lZA0KPj4+ICsJICogYnkgb3BlbmluZyBh
-IGNncm91cCB2MiBkaXJlY3RvcnksIGluIHdoaWNoIGNhc2UgdGhlIGNoYXJnZSBtb3Zlcw0KPj4+
-ICsJICogZGlyZWN0bHkgdG8gdGhhdCBjZ3JvdXAncyBtZW1vcnkgY29udHJvbGxlci4NCj4+PiAr
-CSAqLw0KPj4+ICsJX191MzIgY2hhcmdlX2ZkOw0KPj4+ICt9Ow0KPj4+ICsNCj4+PiAgI2RlZmlu
-ZSBETUFfQlVGX0JBU0UJCSdiJw0KPj4+ICAjZGVmaW5lIERNQV9CVUZfSU9DVExfU1lOQwlfSU9X
-KERNQV9CVUZfQkFTRSwgMCwgc3RydWN0IGRtYV9idWZfc3luYykNCj4+PiAgDQo+Pj4gQEAgLTE3
-OSw1ICsyMDQsNiBAQCBzdHJ1Y3QgZG1hX2J1Zl9pbXBvcnRfc3luY19maWxlIHsNCj4+PiAgI2Rl
-ZmluZSBETUFfQlVGX1NFVF9OQU1FX0IJX0lPVyhETUFfQlVGX0JBU0UsIDEsIF9fdTY0KQ0KPj4+
-ICAjZGVmaW5lIERNQV9CVUZfSU9DVExfRVhQT1JUX1NZTkNfRklMRQlfSU9XUihETUFfQlVGX0JB
-U0UsIDIsIHN0cnVjdCBkbWFfYnVmX2V4cG9ydF9zeW5jX2ZpbGUpDQo+Pj4gICNkZWZpbmUgRE1B
-X0JVRl9JT0NUTF9JTVBPUlRfU1lOQ19GSUxFCV9JT1coRE1BX0JVRl9CQVNFLCAzLCBzdHJ1Y3Qg
-ZG1hX2J1Zl9pbXBvcnRfc3luY19maWxlKQ0KPj4+ICsjZGVmaW5lIERNQV9CVUZfSU9DVExfWEZF
-Ul9DSEFSR0UJX0lPVyhETUFfQlVGX0JBU0UsIDQsIHN0cnVjdCBkbWFfYnVmX3RyYW5zZmVyX2No
-YXJnZSkNCj4+PiAgDQo+Pj4gICNlbmRpZg0KPj4+IGRpZmYgLS1naXQgYS9tbS9tZW1jb250cm9s
-LmMgYi9tbS9tZW1jb250cm9sLmMNCj4+PiBpbmRleCA3Yjg0MWI5MDU3NTkuLjNhZGM4NGZlNjY2
-OCAxMDA2NDQNCj4+PiAtLS0gYS9tbS9tZW1jb250cm9sLmMNCj4+PiArKysgYi9tbS9tZW1jb250
-cm9sLmMNCj4+PiBAQCAtNTc4Niw2ICs1Nzg2LDQ3IEBAIHZvaWQgbWVtX2Nncm91cF9jYW5jZWxf
-ZG1hYnVmKHN0cnVjdCBtZW1fY2dyb3VwICptZW1jZywgdW5zaWduZWQgaW50IG5yX3BhZ2VzKQ0K
-Pj4+ICAJCXJlZmlsbF9zdG9jayhtZW1jZywgbnJfcGFnZXMpOw0KPj4+ICB9DQo+Pj4gIA0KPj4+
-ICsvKioNCj4+PiArICogbWVtX2Nncm91cF90cmFuc2Zlcl9kbWFidWZfY2hhcmdlIC0gbW92ZSBh
-IGRtYS1idWYgY2hhcmdlDQo+Pj4gKyAqIEBkbWFidWY6IGJ1ZmZlciB0byB0cmFuc2ZlciBjaGFy
-Z2UNCj4+PiArICogQG5ld19tZW1jZzogdGFyZ2V0IG1lbWNnOyBjYWxsZXIgbXVzdCBob2xkIGEg
-cmVmZXJlbmNlDQo+Pj4gKyAqDQo+Pj4gKyAqIFRyYW5zZmVycyB0aGUgY2hhcmdlIGZvciBAZG1h
-YnVmIHRvIEBuZXdfbWVtY2cgYW5kLCBvbg0KPj4+ICsgKiBzdWNjZXNzLCBzdG9yZXMgQG5ld19t
-ZW1jZyBpbiBAZG1hYnVmLT5tZW1jZy4NCj4+PiArICogUmV0dXJucyAldHJ1ZSBvbiBzdWNjZXNz
-LCAlZmFsc2UgaWYgdGhlIGNoYXJnZSBhZ2FpbnN0IEBuZXdfbWVtY2cNCj4+PiArICogZmFpbGVk
-IG9yIGEgY29uY3VycmVudCB0cmFuc2ZlciByYWNlZCBvbiBAZG1hYnVmLT5tZW1jZy4NCj4+PiAr
-ICogT24gZmFpbHVyZSB0aGUgY2FsbGVyIHJldGFpbnMgaXRzIHJlZmVyZW5jZSB0byBAbmV3X21l
-bWNnLg0KPj4+ICsgKi8NCj4+PiArYm9vbCBtZW1fY2dyb3VwX3RyYW5zZmVyX2RtYWJ1Zl9jaGFy
-Z2Uoc3RydWN0IGRtYV9idWYgKmRtYWJ1ZiwNCj4+PiArCQkJCSAgICAgICBzdHJ1Y3QgbWVtX2Nn
-cm91cCAqbmV3X21lbWNnKQ0KPj4NCj4+IEkgd291bGQgbWFrZSB0aGF0IG1vcmUgZ2VuZXJpYyBp
-bnN0ZWFkIG9mIGRtYWJ1ZiBzcGVjaWZpYy4gRS5nLiBzb21ldGhpbmcgbGlrZSB0aGlzOg0KPj4N
-Cj4+IGJvb2wgbWVtX2Nncm91cF90cmFuc2Zlcl9jaGFyZ2Uoc3RydWN0IHN0cnVjdCBtZW1fY2dy
-b3VwICoqcHRyX21lbWNnLCBzdHJ1Y3QgbWVtX2Nncm91cCAqbmV3X21lbWNnLCBlbnVtIG1lbWNn
-X3N0YXRfaXRlbSBpdGVtLCB1bnNpZ25lZCBpbnQgbnJfcGFnZXMpDQo+IA0KPiBBaCB5ZXMsIEkg
-bGlrZSB0aGlzIGdlbmVyYWxpemF0aW9uLiBBbmQgdGhlIGltcGxlbWVudGF0aW9uIHJlbWFpbnMN
-Cj4gbW9zdGx5IHRoZSBzYW1lLiBUaGFua3MhDQo+IA0KPj4NCj4+PiArew0KPj4+ICsJc3RydWN0
-IG1lbV9jZ3JvdXAgKm9sZF9tZW1jZyA9IFJFQURfT05DRShkbWFidWYtPm1lbWNnKTsNCj4+DQo+
-Pj4gKwl1bnNpZ25lZCBpbnQgbnJfcGFnZXMgPSBQQUdFX0FMSUdOKGRtYWJ1Zi0+c2l6ZSkgPj4g
-UEFHRV9TSElGVDsNCj4+DQo+PiBUaGlzIHdheSB3ZSBjYW4gYWxzbyBkb2N1bWVudCBpbiB0aGUg
-RE1BLWJ1ZiBjYWxsZXIgdGhhdCB0aGlzIGNvbnZlcnNhdGlvbiBtdXN0IGJlIG9rIHdoZW4gbWVt
-Y2dfYWNjb3VudCBpcyB0cnVlLg0KPj4NCj4+IFJlZ2FyZHMsDQo+PiBDaHJpc3RpYW4uDQo+Pg0K
-Pj4+ICsNCj4+PiArCWlmIChtZW1fY2dyb3VwX2Rpc2FibGVkKCkpDQo+Pj4gKwkJcmV0dXJuIHRy
-dWU7DQo+Pj4gKw0KPj4+ICsJaWYgKCFtZW1fY2dyb3VwX3Jlc2VydmVfZG1hYnVmKG5ld19tZW1j
-ZywgR0ZQX0tFUk5FTCwgbnJfcGFnZXMpKQ0KPj4+ICsJCXJldHVybiBmYWxzZTsNCj4+PiArDQo+
-Pj4gKwltb2RfbWVtY2dfc3RhdGUobmV3X21lbWNnLCBNRU1DR19ETUFCVUYsIG5yX3BhZ2VzKTsN
-Cj4+PiArDQo+Pj4gKwlpZiAoY21weGNoZygmZG1hYnVmLT5tZW1jZywgb2xkX21lbWNnLCBuZXdf
-bWVtY2cpICE9IG9sZF9tZW1jZykgew0KPj4+ICsJCW1vZF9tZW1jZ19zdGF0ZShuZXdfbWVtY2cs
-IE1FTUNHX0RNQUJVRiwgLW5yX3BhZ2VzKTsNCj4+PiArCQltZW1fY2dyb3VwX2NhbmNlbF9kbWFi
-dWYobmV3X21lbWNnLCBucl9wYWdlcyk7DQo+Pj4gKwkJcmV0dXJuIGZhbHNlOw0KPj4+ICsJfQ0K
-Pj4+ICsNCj4+PiArCWlmIChvbGRfbWVtY2cpIHsNCj4+PiArCQkvKiBVbmNoYXJnZSBvbGQgY2dy
-b3VwICovDQo+Pj4gKwkJbW9kX21lbWNnX3N0YXRlKG9sZF9tZW1jZywgTUVNQ0dfRE1BQlVGLCAt
-bnJfcGFnZXMpOw0KPj4+ICsJCW1lbV9jZ3JvdXBfY2FuY2VsX2RtYWJ1ZihvbGRfbWVtY2csIG5y
-X3BhZ2VzKTsNCj4+PiArCQltZW1fY2dyb3VwX3B1dChvbGRfbWVtY2cpOw0KPj4+ICsJfQ0KPj4+
-ICsNCj4+PiArCXJldHVybiB0cnVlOw0KPj4+ICt9DQo+Pj4gKw0KPj4+ICAvKioNCj4+PiAgICog
-bWVtX2Nncm91cF91bmNoYXJnZV9kbWFidWYgLSB1bmNoYXJnZSBhIGRtYS1idWYgZnJvbSBpdHMg
-bWVtY2cNCj4+PiAgICogQGRtYWJ1ZjogYnVmZmVyIHRvIHVuY2hhcmdlDQo+Pj4NCj4+DQo+IA0K
-DQo=
+On Thu, Oct 29, 2026 at 03:16:12PM +0100, Christian K=F6nig wrote:
+> On 10/28/26 17:09, Albert Esteve wrote:
+> > On Wed, Oct 28, 2026 at 10:08:19AM +0100, Christian K=F6nig wrote:
+> >> On 10/27/26 16:02, Albert Esteve wrote:
+> >>> dma-heap already supports charging a specific cgroup at allocation
+> >>> time via charge_fd in DMA_HEAP_IOCTL_ALLOC. However, dma-bufs can
+> >>> originate from any exporter (DRM, V4L2, etc.), and the allocator may
+> >>> not know the final owner at allocation time.
+> >>>
+> >>> Add DMA_BUF_IOCTL_XFER_CHARGE to transfer a dma-buf's memcg charge
+> >>> to a different cgroup after allocation. The target is identified by
+> >>> charge_fd, which may be a cgroupfd or a pidfd.
+> >>>
+> >>> The transfer charges the new cgroup before uncharging the old one,
+> >>> preserving the original charge on failure. An atomic cmpxchg on
+> >>> dmabuf->memcg prevents races with concurrent transfers.
+> >>>
+> >>> Not all dma-buf exporters back their buffers with reclaimable system
+> >>> memory. Some represent device registers, VRAM, or carved-out pools
+> >>> where size is not a meaningful memory cost. Add a memcg_account flag
+> >>> to dma_buf_export_info that exporters set when their buffers should
+> >>> participate in memcg accounting. The xfer ioctl returns -EOPNOTSUPP
+> >>> for buffers that do not set the flag. Currently only the system heap
+> >>> sets it, other exporters can opt in as needed.
+> >>>
+> >>> Usage example:
+> >>>   int cg_fd =3D open("/sys/fs/cgroup/clients/app1", O_RDONLY | O_DIRE=
+CTORY);
+> >>>
+> >>>   struct dma_buf_transfer_charge xfer =3D {
+> >>>       .charge_fd =3D cg_fd,
+> >>>   };
+> >>>   ioctl(dmabuf_fd, DMA_BUF_IOCTL_XFER_CHARGE, &xfer);
+> >>>   /* charge now on app1's cgroup */
+> >>>   close(cg_fd);
+> >>>
+> >>> Signed-off-by: Albert Esteve <aesteve@redhat.com>
+> >>> ---
+> >>>  drivers/dma-buf/dma-buf.c           | 43 +++++++++++++++++++++++++++=
+++++++++++
+> >>>  drivers/dma-buf/heaps/system_heap.c |  1 +
+> >>>  include/linux/dma-buf.h             |  5 +++++
+> >>>  include/linux/memcontrol.h          |  9 ++++++++
+> >>>  include/uapi/linux/dma-buf.h        | 26 ++++++++++++++++++++++
+> >>>  mm/memcontrol.c                     | 41 +++++++++++++++++++++++++++=
+++++++++
+> >>>  6 files changed, 125 insertions(+)
+> >>>
+> >>> diff --git a/drivers/dma-buf/dma-buf.c b/drivers/dma-buf/dma-buf.c
+> >>> index f31f49ebd0af..07513ecedc10 100644
+> >>> --- a/drivers/dma-buf/dma-buf.c
+> >>> +++ b/drivers/dma-buf/dma-buf.c
+> >>> @@ -540,6 +540,45 @@ static long dma_buf_import_sync_file(struct dma_=
+buf *dmabuf,
+> >>>  }
+> >>>  #endif
+> >>> =20
+> >>> +/* Transfer a dma-buf's memcg charge; see struct dma_buf_transfer_ch=
+arge */
+> >>> +static long dma_buf_xfer_charge(struct dma_buf *dmabuf,
+> >>> +				const void __user *user_data)
+> >>> +{
+> >>> +	struct dma_buf_transfer_charge arg;
+> >>> +	struct mem_cgroup *memcg;
+> >>> +	int ret =3D 0;
+> >>> +
+> >>> +	if (copy_from_user(&arg, user_data, sizeof(arg)))
+> >>> +		return -EFAULT;
+> >>> +
+> >>> +	if (!IS_ENABLED(CONFIG_MEMCG))
+> >>> +		return 0;
+> >>> +
+> >>> +	if (arg.flags !=3D 0)
+> >>> +		return -EINVAL;
+> >>> +
+> >>> +	if (!dmabuf->memcg_account)
+> >>> +		return -EOPNOTSUPP;
+> >>> +
+> >>> +	memcg =3D mem_cgroup_get_from_fd(arg.charge_fd);
+> >>> +	if (IS_ERR(memcg))
+> >>> +		return PTR_ERR(memcg);
+> >>> +
+> >>> +	if (dmabuf->memcg =3D=3D memcg)
+> >>> +		goto skip_transfer;
+> >>> +
+> >>> +	if (!mem_cgroup_transfer_dmabuf_charge(dmabuf, memcg)) {
+> >>> +		ret =3D -ENOMEM;
+> >>> +		goto skip_transfer;
+> >>> +	}
+> >>> +
+> >>> +	return 0;
+> >>> +
+> >>> +skip_transfer:
+> >>> +	mem_cgroup_put(memcg);
+> >>> +	return ret;
+> >>> +}
+> >>> +
+> >>>  static long dma_buf_ioctl(struct file *file,
+> >>>  			  unsigned int cmd, unsigned long arg)
+> >>>  {
+> >>> @@ -590,6 +629,9 @@ static long dma_buf_ioctl(struct file *file,
+> >>>  		return dma_buf_import_sync_file(dmabuf, (const void __user *)arg);
+> >>>  #endif
+> >>> =20
+> >>> +	case DMA_BUF_IOCTL_XFER_CHARGE:
+> >>> +		return dma_buf_xfer_charge(dmabuf, (const void __user *)arg);
+> >>> +
+> >>>  	default:
+> >>>  		return -ENOTTY;
+> >>>  	}
+> >>> @@ -750,6 +792,7 @@ struct dma_buf *dma_buf_export(const struct dma_b=
+uf_export_info *exp_info)
+> >>>  	dmabuf->size =3D exp_info->size;
+> >>>  	dmabuf->exp_name =3D exp_info->exp_name;
+> >>>  	dmabuf->owner =3D exp_info->owner;
+> >>> +	dmabuf->memcg_account =3D exp_info->memcg_account;
+> >>
+> >> The initial charging should probably be done here as well.
+> >>
+> >> This way DMA-buf heaps only needs to pass in the charge_fd and we can =
+re-use the functionality for other DMA-buf exporters as well.
+> >=20
+> > The problem with doing the charge here is that it happens too late.
+> > That is the reasoning for this proposal to move all the charging logic
+> > into heap allocators before pages are allocated.
+>=20
+> Oh, that is a really good point we need to talk about.
+>=20
+> DMA-buf heaps is actually a rather simple use case, but we have way more =
+complex things.
+>=20
+> For example in some use cases the backing store of a DMA-buf is only allo=
+cated on first use and only then it needs to be comitted to it's memcg or d=
+mem.
+
+Yes. The idea is focus on heaps for now. But the uAPI is actually
+agnostic of the time when the charge happens. When we deal with
+lazy-allocation in the future we can just call the reserve/cancel
+helpers wherever is more appropiate. As long as the pages are not
+allocated, exporters do not set dmabuf->memcg, and XFER does not
+work (returns -EOPNOTSUPP).
+
+>=20
+> I don't mind implementing it for DMA-buf heaps first, but we should have =
+the uAPI and it's handling so solid that it also works for future use cases.
+
+Agreed. I think we should cover all usecases with the current status.
+Your feedback helped a lot in getting there!
+
+> > What we could do is fill the dmabuf->memcg field when the flag is set
+> > (i.e., committing into the dmabuf in the patch semantics). But for that
+> > we'd need adding the memcg we want to charge it to into exp_info in
+> > order to support charging to cgroups other than the allocator's (for
+> > the common case would be simpler as we can just look at current).
+> > Maybe that's what you meant?
+>=20
+> At least for the DMA-buf heaps use case that sounds reasonable for now.
+
+Thanks! Next version will have the flag removed and just use
+dmabuf->memcg as indicator, set within dma_buf_export().
+Also, `nr_pages` will be computed within dma_buf_export(), the
+contract being that exporters setting exp_info.memcg assert that
+size reflects actual system memory bytes.
+
+>=20
+> Regards,
+> Christian.
+>=20
+> >=20
+> >>
+> >>>  	spin_lock_init(&dmabuf->name_lock);
+> >>>  	init_waitqueue_head(&dmabuf->poll);
+> >>>  	dmabuf->cb_in.poll =3D dmabuf->cb_out.poll =3D &dmabuf->poll;
+> >>> diff --git a/drivers/dma-buf/heaps/system_heap.c b/drivers/dma-buf/he=
+aps/system_heap.c
+> >>> index adeea8cd328b..a764167167ba 100644
+> >>> --- a/drivers/dma-buf/heaps/system_heap.c
+> >>> +++ b/drivers/dma-buf/heaps/system_heap.c
+> >>> @@ -479,6 +479,7 @@ static struct dma_buf *system_heap_allocate(struc=
+t dma_heap *heap,
+> >>>  	exp_info.size =3D buffer->len;
+> >>>  	exp_info.flags =3D fd_flags;
+> >>>  	exp_info.priv =3D buffer;
+> >>> +	exp_info.memcg_account =3D true;
+> >>>  	dmabuf =3D dma_buf_export(&exp_info);
+> >>>  	if (IS_ERR(dmabuf)) {
+> >>>  		ret =3D PTR_ERR(dmabuf);
+> >>> diff --git a/include/linux/dma-buf.h b/include/linux/dma-buf.h
+> >>> index 23ec0ff23fba..ac0ec88cab93 100644
+> >>> --- a/include/linux/dma-buf.h
+> >>> +++ b/include/linux/dma-buf.h
+> >>> @@ -433,6 +433,9 @@ struct dma_buf {
+> >>> =20
+> >>>  	/** @memcg: the cgroup to which this buffer is currently attributed=
+ */
+> >>>  	struct mem_cgroup *memcg;
+> >>> +
+> >>> +	/** @memcg_account: account buffer memory to cgroup */
+> >>> +	bool memcg_account;
+> >>>  };
+> >>> =20
+> >>>  /**
+> >>> @@ -505,6 +508,7 @@ struct dma_buf_attachment {
+> >>>   * @flags:	mode flags for the file
+> >>>   * @resv:	reservation-object, NULL to allocate default one
+> >>>   * @priv:	Attach private data of allocator to this buffer
+> >>> + * @memcg_account:	account buffer memory to cgroup
+> >>>   *
+> >>>   * This structure holds the information required to export the buffe=
+r. Used
+> >>>   * with dma_buf_export() only.
+> >>> @@ -517,6 +521,7 @@ struct dma_buf_export_info {
+> >>>  	int flags;
+> >>>  	struct dma_resv *resv;
+> >>>  	void *priv;
+> >>> +	bool memcg_account;
+> >>>  };
+> >>> =20
+> >>>  /**
+> >>> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+> >>> index 6b30baa79fa9..36fddafbef4e 100644
+> >>> --- a/include/linux/memcontrol.h
+> >>> +++ b/include/linux/memcontrol.h
+> >>> @@ -679,6 +679,9 @@ bool mem_cgroup_reserve_dmabuf(struct mem_cgroup =
+*memcg, gfp_t gfp,
+> >>>  void mem_cgroup_commit_dmabuf(struct dma_buf *dmabuf, struct mem_cgr=
+oup *memcg,
+> >>>  			      unsigned int nr_pages);
+> >>> =20
+> >>> +bool mem_cgroup_transfer_dmabuf_charge(struct dma_buf *dmabuf,
+> >>> +				       struct mem_cgroup *new_memcg);
+> >>> +
+> >>>  void __mem_cgroup_uncharge(struct folio *folio);
+> >>> =20
+> >>>  /**
+> >>> @@ -1206,6 +1209,12 @@ static inline void mem_cgroup_cancel_dmabuf(st=
+ruct mem_cgroup *memcg,
+> >>>  {
+> >>>  }
+> >>> =20
+> >>> +static inline bool mem_cgroup_transfer_dmabuf_charge(struct dma_buf =
+*dmabuf,
+> >>> +						     struct mem_cgroup *new_memcg)
+> >>> +{
+> >>> +	return true;
+> >>> +}
+> >>> +
+> >>>  static inline void mem_cgroup_uncharge(struct folio *folio)
+> >>>  {
+> >>>  }
+> >>> diff --git a/include/uapi/linux/dma-buf.h b/include/uapi/linux/dma-bu=
+f.h
+> >>> index e827c9d20c5d..ea957f4b1d38 100644
+> >>> --- a/include/uapi/linux/dma-buf.h
+> >>> +++ b/include/uapi/linux/dma-buf.h
+> >>> @@ -168,6 +168,31 @@ struct dma_buf_import_sync_file {
+> >>>  	__s32 fd;
+> >>>  };
+> >>> =20
+> >>> +/**
+> >>> + * struct dma_buf_transfer_charge - Transfer a dma-buf's memcg charge
+> >>> + *
+> >>> + * Any holder of a dma-buf file descriptor can perform a
+> >>> + * DMA_BUF_IOCTL_XFER_CHARGE to attribute the buffer's memory
+> >>> + * cost to a specific cgroup, or move it from one cgroup to
+> >>> + * another.  The ioctl charges the new cgroup before uncharging
+> >>> + * the old one atomically.  On failure the original charge is
+> >>> + * preserved.  If the buffer has no existing charge, a new
+> >>> + * charge is established.
+> >>> + */
+> >>> +struct dma_buf_transfer_charge {
+> >>> +	/** @flags: Reserved, must be zero */
+> >>> +	__u32 flags; /* unused for now */
+> >>> +	/**
+> >>> +	 * @charge_fd: File descriptor identifying the target cgroup.
+> >>> +	 *
+> >>> +	 * May be either a pidfd, in which case the charge moves to the
+> >>> +	 * memory cgroup of the referenced process, or a cgroupfd obtained
+> >>> +	 * by opening a cgroup v2 directory, in which case the charge moves
+> >>> +	 * directly to that cgroup's memory controller.
+> >>> +	 */
+> >>> +	__u32 charge_fd;
+> >>> +};
+> >>> +
+> >>>  #define DMA_BUF_BASE		'b'
+> >>>  #define DMA_BUF_IOCTL_SYNC	_IOW(DMA_BUF_BASE, 0, struct dma_buf_sync)
+> >>> =20
+> >>> @@ -179,5 +204,6 @@ struct dma_buf_import_sync_file {
+> >>>  #define DMA_BUF_SET_NAME_B	_IOW(DMA_BUF_BASE, 1, __u64)
+> >>>  #define DMA_BUF_IOCTL_EXPORT_SYNC_FILE	_IOWR(DMA_BUF_BASE, 2, struct=
+ dma_buf_export_sync_file)
+> >>>  #define DMA_BUF_IOCTL_IMPORT_SYNC_FILE	_IOW(DMA_BUF_BASE, 3, struct =
+dma_buf_import_sync_file)
+> >>> +#define DMA_BUF_IOCTL_XFER_CHARGE	_IOW(DMA_BUF_BASE, 4, struct dma_b=
+uf_transfer_charge)
+> >>> =20
+> >>>  #endif
+> >>> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> >>> index 7b841b905759..3adc84fe6668 100644
+> >>> --- a/mm/memcontrol.c
+> >>> +++ b/mm/memcontrol.c
+> >>> @@ -5786,6 +5786,47 @@ void mem_cgroup_cancel_dmabuf(struct mem_cgrou=
+p *memcg, unsigned int nr_pages)
+> >>>  		refill_stock(memcg, nr_pages);
+> >>>  }
+> >>> =20
+> >>> +/**
+> >>> + * mem_cgroup_transfer_dmabuf_charge - move a dma-buf charge
+> >>> + * @dmabuf: buffer to transfer charge
+> >>> + * @new_memcg: target memcg; caller must hold a reference
+> >>> + *
+> >>> + * Transfers the charge for @dmabuf to @new_memcg and, on
+> >>> + * success, stores @new_memcg in @dmabuf->memcg.
+> >>> + * Returns %true on success, %false if the charge against @new_memcg
+> >>> + * failed or a concurrent transfer raced on @dmabuf->memcg.
+> >>> + * On failure the caller retains its reference to @new_memcg.
+> >>> + */
+> >>> +bool mem_cgroup_transfer_dmabuf_charge(struct dma_buf *dmabuf,
+> >>> +				       struct mem_cgroup *new_memcg)
+> >>
+> >> I would make that more generic instead of dmabuf specific. E.g. someth=
+ing like this:
+> >>
+> >> bool mem_cgroup_transfer_charge(struct struct mem_cgroup **ptr_memcg, =
+struct mem_cgroup *new_memcg, enum memcg_stat_item item, unsigned int nr_pa=
+ges)
+> >=20
+> > Ah yes, I like this generalization. And the implementation remains
+> > mostly the same. Thanks!
+> >=20
+> >>
+> >>> +{
+> >>> +	struct mem_cgroup *old_memcg =3D READ_ONCE(dmabuf->memcg);
+> >>
+> >>> +	unsigned int nr_pages =3D PAGE_ALIGN(dmabuf->size) >> PAGE_SHIFT;
+> >>
+> >> This way we can also document in the DMA-buf caller that this conversa=
+tion must be ok when memcg_account is true.
+> >>
+> >> Regards,
+> >> Christian.
+> >>
+> >>> +
+> >>> +	if (mem_cgroup_disabled())
+> >>> +		return true;
+> >>> +
+> >>> +	if (!mem_cgroup_reserve_dmabuf(new_memcg, GFP_KERNEL, nr_pages))
+> >>> +		return false;
+> >>> +
+> >>> +	mod_memcg_state(new_memcg, MEMCG_DMABUF, nr_pages);
+> >>> +
+> >>> +	if (cmpxchg(&dmabuf->memcg, old_memcg, new_memcg) !=3D old_memcg) {
+> >>> +		mod_memcg_state(new_memcg, MEMCG_DMABUF, -nr_pages);
+> >>> +		mem_cgroup_cancel_dmabuf(new_memcg, nr_pages);
+> >>> +		return false;
+> >>> +	}
+> >>> +
+> >>> +	if (old_memcg) {
+> >>> +		/* Uncharge old cgroup */
+> >>> +		mod_memcg_state(old_memcg, MEMCG_DMABUF, -nr_pages);
+> >>> +		mem_cgroup_cancel_dmabuf(old_memcg, nr_pages);
+> >>> +		mem_cgroup_put(old_memcg);
+> >>> +	}
+> >>> +
+> >>> +	return true;
+> >>> +}
+> >>> +
+> >>>  /**
+> >>>   * mem_cgroup_uncharge_dmabuf - uncharge a dma-buf from its memcg
+> >>>   * @dmabuf: buffer to uncharge
+> >>>
+> >>
+> >=20
+>=20
+
