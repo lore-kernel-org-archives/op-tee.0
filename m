@@ -2,97 +2,97 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D7A0606A31A
-	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 13:27:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B744A606A31A
+	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 13:28:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=J1XEcX9h;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=zohomail.eu header.i=@zohomail.eu header.a=rsa-sha256 header.s=zoho header.b=NHWjp1jG
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=mCJAsbuK;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=zohomail.eu header.i=@zohomail.eu header.a=rsa-sha256 header.s=zoho header.b=UkJWq72C
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id CD781453FD
-	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 13:27:54 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1DDE3453F0
+	for <op-tee@archiver.kernel.org>; Thu, 29 Oct 2026 13:28:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793280474;
-	bh=gLtNGf+xnQZyZH8wL3QyPiPpErWnrVZ3n+qoNWqhy+w=;
+	d=lists.trustedfirmware.org; s=2024; t=1793280503;
+	bh=3I03pK/vXpyx5wVUsuAEEb2r+IdQ8RANiQYX19kTDmo=;
 	h=To:Subject:Date:In-Reply-To:References:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=J1XEcX9hgbAfNswjbHClzG1Z2KnxMmQeKE51DkS9RroKpRsC1zBDkl6TuNMx7+Zvp
-	 FKM7AqT6xNXUGlyZeoRzolkWoRd+c6wr1G+h0RCfiY3NF+3H8uO/ro3PgOpoMLn2ou
-	 33QsQPZXm7Gkyl8ccq2AQMh3Wcy1FKyYN9OwVvvpxRnZqWhZ0sms6PDjU962wJxoLH
-	 nzHSimceGiBUlcsYbuNhn6zcVdedYbgNhEQHpRRBIKc3GejY3gIJZvRorh33RIf0mY
-	 19hCX92jKZVS41XKvQNQ6EfdsHPEw2MrP/YTm2fdEaidT4lRD1t2learj6oN1gCPz8
-	 Vf7rM6KUhEidg==
+	b=mCJAsbuKGJSA619p1GSfjmPAHnUgpMkCdySVRjOdMlS2YA7uXQQW38kvjxfzvEMdq
+	 T4moWNmgAfgHLLZst/8ex3Wu0smZ5Kk58/YBzbDTm+ZoKhKKylzpo9ZGEQ8ZfvD5ru
+	 fAMLe49OQQfvnoa4S5N2RHwYJxSx1WNXo7OsmZUPcYJj51rPuobSRJQx+fcB+JFeAt
+	 vs62mdIW+/X+GSNSQmOBuXAfT1tL9zZj9GFTTDt7ME5YgILiygPnTzty8hh9HcHH0A
+	 doIFoS75+aPfRbzwvP9QrbdExuc2wsM+KpawfgNSVKk5qM9G091vsVI1pE14J66QXT
+	 R7q8QqADO1BzA==
 Received: from sender-pp-o97.zoho.eu (sender-pp-o97.zoho.eu [136.143.169.97])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B7F3E444C0
-	for <op-tee@lists.trustedfirmware.org>; Thu, 29 Oct 2026 12:41:56 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 308B6453C2
+	for <op-tee@lists.trustedfirmware.org>; Thu, 29 Oct 2026 12:41:59 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zohomail.eu header.i=@zohomail.eu header.a=rsa-sha256 header.s=zoho header.b=NHWjp1jG;
+	dkim=pass (1024-bit key; unprotected) header.d=zohomail.eu header.i=@zohomail.eu header.a=rsa-sha256 header.s=zoho header.b=UkJWq72C;
 	dkim-atps=neutral
 ARC-Seal: i=1; a=rsa-sha256; t=1793277700; cv=none;
 	d=zohomail.eu; s=zohoarc;
-	b=NN+BpUhje+RSB6yukgnrLYY9dCC8ggRPVuaWsr1EEEGUu68TdlLcEAtK2xEtZo+ohZ5ewi4Hum8sxSvSakyUlWfw/WLG/Aws0li/OhlMPxixzXHTxDqsQvBA80RbtaLYgO6G7Dq3GnFPRbyHeuPDjrmx7+gsxwcGHREuZPeGcIs=
+	b=YLNJ8lhS6wd7Gieoqd52aUFXnqy0IKDXz49NYI+oKC0b5LqAyN3Zbd4WAftUmYrsAQkctwYoDlJcDJ8A+mMRj0ZhEsWDwCykBefg/ys/EkJ/mTG0rz6ffXUMaSPAO6O6IrYcKjRuLKQ74omZcu6xAQ7dtzSPqm7DR9oHAXY7PBQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc;
-	t=1793277700; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To;
-	bh=yL5B9w2fd33NoSP+kcRsaKmbMe4jGgNs82wbIhiis7g=;
-	b=kf6trDP4RF87vm+oqf7S2LmwGDv1F90r95pdxh32h4dlXaIqKadO6eVsqeXyfu4SCWRH0kW3WtrLKzs1zn5hihss28UU0biqrJ2Ac/Y6kBRp1B5JySL4RkhGPXZvc3ZYtnPx72W9zSyKJ1JNv7ggh2EperVOkYBmlKSnyMVT/sU=
+	t=1793277700; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To;
+	bh=To8qHy7Eiood9xZqkdXXiK9qKbKeWzXP3ABpjaPBsJU=;
+	b=klQkw/rh42+lpKwpm1wRhMYy41omaoAaP422E08KlwBxc7Gp7ee4T9rglGtkcbjrHFq2/tKsLQmpdezt7aUu667cc0+ZH5m3lFjkh9egzEgFUp2r2cwxOrwBYlCmX34vyBApJU0N5I3qCm5awr29sIh0z3J68jYAaFKnhkbapP8=
 ARC-Authentication-Results: i=1; mx.zohomail.eu;
 	dkim=pass  header.i=zohomail.eu;
 	spf=pass  smtp.mailfrom=harukak@zohomail.eu;
 	dmarc=pass header.from=<harukak@zohomail.eu>
-DKIM-Signature: a=rsa-sha256; b=NHWjp1jGfK/Ur+0Ss4G99PuFNuTWQE8EjZ1fsgetR9Ee/pYS4xsuKGK0dwYz2gf1s7rjLMhyxkUyZ/5Ewa8x8/zasJ+cc5GuNIrY50wft+51LVcyrizGNthPtpvinWBU2A2rz2nkykgeoCc3LuzUu2xYudkogcPp2YqnfnKHyyI=; c=relaxed/relaxed; s=zoho; d=zohomail.eu; v=1; bh=yL5B9w2fd33NoSP+kcRsaKmbMe4jGgNs82wbIhiis7g=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zoho.eu with SMTPS id 1793277698427206.32998434140995;
-	Thu, 29 Oct 2026 13:41:38 +0100 (CET)
+DKIM-Signature: a=rsa-sha256; b=UkJWq72CYGS6fTJCZSRJp8DhPJlfNXJtbuVYzF96s3MdngdNpYTj028ZonlFd7p9RI8hEcna2W8iIQZE6vIakAog1asxEzQuQVKvn4WaDY9LJqhHmX9hudioAE3BamkCw0hXg3MAkunygHnDjYyfy4TgqgkM0I0egALpo4jrwTM=; c=relaxed/relaxed; s=zoho; d=zohomail.eu; v=1; bh=To8qHy7Eiood9xZqkdXXiK9qKbKeWzXP3ABpjaPBsJU=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zoho.eu with SMTPS id 1793277699620481.55238389207295;
+	Thu, 29 Oct 2026 13:41:39 +0100 (CET)
 To: Jens Wiklander <jenswi@kernel.org>,
 	"Michael S . Tsirkin" <mst@redhat.com>
-Subject: [PATCH v2 1/2] rpmb: stop the routing after unregister
-Date: Thu, 29 Oct 2026 21:41:31 +0900
-Message-ID: <20261029124132.2354314-2-harukak@zohomail.eu>
+Subject: [PATCH v2 2/2] rpmb: add a virtio RPMB device driver
+Date: Thu, 29 Oct 2026 21:41:32 +0900
+Message-ID: <20261029124132.2354314-3-harukak@zohomail.eu>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261029124132.2354314-1-harukak@zohomail.eu>
 References: <20261029124132.2354314-1-harukak@zohomail.eu>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-ZohoMailClient: External
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.30 / 15.00];
+X-Spamd-Result: default: False [-3.80 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
 	ARC_ALLOW(-1.00)[zohomail.eu:s=zohoarc:i=1];
-	R_MISSING_CHARSET(0.50)[];
+	MID_CONTAINS_FROM(1.00)[];
 	DMARC_POLICY_ALLOW(-0.50)[zohomail.eu,reject];
-	R_DKIM_ALLOW(-0.20)[zohomail.eu:s=zoho];
-	ONCE_RECEIVED(0.20)[];
 	R_SPF_ALLOW(-0.20)[+ip4:136.143.169.0/24:c];
+	ONCE_RECEIVED(0.20)[];
+	R_DKIM_ALLOW(-0.20)[zohomail.eu:s=zoho];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:205111, ipnet:136.143.169.0/24, country:NL];
 	MIME_TRACE(0.00)[0:+];
 	RCPT_COUNT_TWELVE(0.00)[15];
 	RCVD_COUNT_ONE(0.00)[1];
-	DWL_DNSWL_BLOCKED(0.00)[zohomail.eu:dkim];
-	NEURAL_HAM(-0.00)[-0.999];
+	ASN(0.00)[asn:205111, ipnet:136.143.169.0/24, country:NL];
+	NEURAL_HAM(-0.00)[-1.000];
+	TO_DN_SOME(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	FREEMAIL_CC(0.00)[arndb.de,linuxfoundation.org,gmail.com,redhat.com,linux.alibaba.com,kernel.org,linaro.org,sandisk.com,oss.qualcomm.com,lists.linux.dev,lists.trustedfirmware.org,vger.kernel.org];
-	TO_DN_SOME(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[zohomail.eu:dkim];
 	FROM_EQ_ENVFROM(0.00)[];
 	DNSWL_BLOCKED(0.00)[136.143.169.97:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	DKIM_TRACE(0.00)[zohomail.eu:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B7F3E444C0
+X-Rspamd-Queue-Id: 308B6453C2
 X-Spamd-Bar: ---
 X-MailFrom: harukak@zohomail.eu
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: 7L3NTT7FFUFZJFBQOJ2YDWSUQGRFU474
-X-Message-ID-Hash: 7L3NTT7FFUFZJFBQOJ2YDWSUQGRFU474
+Message-ID-Hash: MBVK3EUQI2JB446DQK2ATBDR635IALM5
+X-Message-ID-Hash: MBVK3EUQI2JB446DQK2ATBDR635IALM5
 X-Mailman-Approved-At: Thu, 29 Oct 2026 13:27:09 +0000
 CC: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jason Wang <jasowangio@gmail.com>, =?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Sumit Garg <sumit.garg@kernel.org>, =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>, Tomas Winkler <tomas.winkler@sandisk.com>, Ulf Hansson <ulfh@kernel.org>, Harald Mommer <harald.mommer@oss.qualcomm.com>, virtualization@lists.linux.dev, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7L3NTT7FFUFZJFBQOJ2YDWSUQGRFU474/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/MBVK3EUQI2JB446DQK2ATBDR635IALM5/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -100,114 +100,232 @@ List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
 From: Haruka Kuze via OP-TEE <op-tee@lists.trustedfirmware.org>
 Reply-To: Haruka Kuze <harukak@zohomail.eu>
-X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-24.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Haruka Kuze <harukak@zohomail.eu>
-
-OP-TEE has a reference of RPMB device it used. So, it can route
-frames through the device after rpmb_dev_unregister() is called.
-Therefore, the parent device passed to route_frames() can be
-already freed, for example, mmc_blk_remove_rpmb_part() drops the
-last reference after rpmb unregister.
-
-This patch clears the route_frames when the device is going to
-be removed by getting new rwsem and makes rpmb_route_frames()
-return -ENODEV if the device is gone.
-
-Fixes: 1e9046e3a154 ("rpmb: add Replay Protected Memory Block (RPMB) subsystem")
-Assisted-by: LLM
-Signed-off-by: Haruka Kuze <harukak@zohomail.eu>
----
- drivers/misc/rpmb-core.c | 14 +++++++++++++-
- include/linux/rpmb.h     |  4 ++++
- 2 files changed, 17 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/misc/rpmb-core.c b/drivers/misc/rpmb-core.c
-index ecf14acf230a..0ae018d1a276 100644
---- a/drivers/misc/rpmb-core.c
-+++ b/drivers/misc/rpmb-core.c
-@@ -45,7 +45,7 @@ EXPORT_SYMBOL_GPL(rpmb_dev_put);
-  * @rsp:	rpmb response frames
-  * @rsp_len:	length of rpmb response frames in bytes
-  *
-- * Returns: < 0 on failure
-+ * Returns: < 0 on failure, -ENODEV if the device has been unregistered
-  */
- int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
- 		      unsigned int req_len, u8 *rsp, unsigned int rsp_len)
-@@ -53,6 +53,10 @@ int rpmb_route_frames(struct rpmb_dev *rdev, u8 *req,
- 	if (!req || !req_len || !rsp || !rsp_len)
- 		return -EINVAL;
- 
-+	guard(rwsem_read)(&rdev->lock);
-+	if (!rdev->descr.route_frames)
-+		return -ENODEV;
-+
- 	return rdev->descr.route_frames(rdev->dev.parent, req, req_len,
- 					rsp, rsp_len);
- }
-@@ -126,6 +130,10 @@ EXPORT_SYMBOL_GPL(rpmb_interface_unregister);
-  * This function should be called from the release function of the
-  * underlying device used when the RPMB device was registered.
-  *
-+ * Once this returns, rpmb_route_frames() no longer calls into
-+ * the driver, even though the users might still hold a reference
-+ * to the RPMB dev.
-+ *
-  * Returns: < 0 on failure
-  */
- int rpmb_dev_unregister(struct rpmb_dev *rdev)
-@@ -133,6 +141,9 @@ int rpmb_dev_unregister(struct rpmb_dev *rdev)
- 	if (!rdev)
- 		return -EINVAL;
- 
-+	scoped_guard(rwsem_write, &rdev->lock)
-+		rdev->descr.route_frames = NULL;
-+
- 	device_del(&rdev->dev);
- 
- 	rpmb_dev_put(rdev);
-@@ -165,6 +176,7 @@ struct rpmb_dev *rpmb_dev_register(struct device *dev,
- 	if (!rdev)
- 		return ERR_PTR(-ENOMEM);
- 	rdev->descr = *descr;
-+	init_rwsem(&rdev->lock);
- 	rdev->descr.dev_id = kmemdup(descr->dev_id, descr->dev_id_len,
- 				     GFP_KERNEL);
- 	if (!rdev->descr.dev_id) {
-diff --git a/include/linux/rpmb.h b/include/linux/rpmb.h
-index ed3f8e431eff..0a976572d1cd 100644
---- a/include/linux/rpmb.h
-+++ b/include/linux/rpmb.h
-@@ -7,6 +7,7 @@
- #define __RPMB_H__
- 
- #include <linux/device.h>
-+#include <linux/rwsem.h>
- #include <linux/types.h>
- 
- /**
-@@ -51,12 +52,15 @@ struct rpmb_descr {
-  * @id               : device_id
-  * @list_node        : linked list node
-  * @descr            : RPMB description
-+ * @lock             : protect @descr.route_frames which is cleared when this
-+ *                     device is unregistered
-  */
- struct rpmb_dev {
- 	struct device dev;
- 	int id;
- 	struct list_head list_node;
- 	struct rpmb_descr descr;
-+	struct rw_semaphore lock;
- };
- 
- #define to_rpmb_dev(x)		container_of((x), struct rpmb_dev, dev)
--- 
-2.55.0
-
+RnJvbTogSGFydWthIEt1emUgPGhhcnVrYWtAem9ob21haWwuZXU+DQoNCk5vIGRyaXZlciBleGlz
+dHMgZm9yIHZpcnRpby1ycG1iIGRldmljZXMgKHZpcnRpbyBJRCAyOCksIHNvIE9QLVRFRQ0KcnVu
+bmluZyBpbiBhIGd1ZXN0IGNhbiBub3QgdXNlIHRoZW0uDQoNClRoaXMgcmVnaXN0ZXJzIHRoZSB2
+aXJ0aW8tcnBtYiBkZXZpY2VzIGZvdW5kIHdpdGggdGhlIFJQTUIgc3ViLXN5c3RlbS4NCkVhY2gg
+cmVxdWVzdCBpcyBkb25lIGluIG9uZSB0cmFuc2ZlciBvbiByZXF1ZXN0IHF1ZXVlLCBhbmQgZm9y
+IGtleQ0KcHJvZ3JhbW1pbmcgYW5kIGRhdGEgd3JpdGluZyBhIHJlc3VsdCByZWFkIGZyYW1lIGlz
+IGFwcGVuZGVkIHNvIHRoYXQNCnRoZSBkZXZpY2UgY2FuIHJldHVybiB0aGUgcmVzdWx0Lg0KDQpU
+aGVzZSBmcmFtZXMgYXJlIGNvcGllZCBzaW5jZSB0aGUgY2FsbGVyJ3MgYnVmZmVycyBhcmUgbm90
+IGFsd2F5cw0KdXNhYmxlIGZvciBETUEuDQoNClRoZXNlIGZyYW1lcyBmb2xsb3cgdGhlIGVtbWMg
+ZGVmaW5pdGlvbiwgc28gdGhhdCB0aGUgZGV2aWNlIGlzDQpyZWdpc3RlcmVkIGFzIFJQTUJfVFlQ
+RV9FTU1DLiBUaGUgZGV2aWNlIGhhcyBubyBpZGVudGlmaWVyIG9mIG93biwgc28NCnRoYXQgYSBm
+aXhlZCBkZXZfaWQgaXMgdXNlZCBmb3IgdGhlIGtleSBkZXJpdmF0aW9uIGZvciB0aGUgZGV2aWNl
+Lg0KDQpCYXNlZCBvbiB0aGUgdmlydGlvLXJwbWIgZHJpdmVyIGluIEFsZXggQmVubsOpZSdzIFJQ
+TUIgc2VyaWVzLg0KDQpMaW5rOiBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyMjA0MDUw
+OTM3NTkuMTEyNjgzNS00LWFsZXguYmVubmVlQGxpbmFyby5vcmcvDQpTaWduZWQtb2ZmLWJ5OiBI
+YXJ1a2EgS3V6ZSA8aGFydWtha0B6b2hvbWFpbC5ldT4NCi0tLQ0KIE1BSU5UQUlORVJTICAgICAg
+ICAgICAgICAgICAgICAgIHwgICA3ICsNCiBkcml2ZXJzL21pc2MvS2NvbmZpZyAgICAgICAgICAg
+ICB8ICAxMCArKw0KIGRyaXZlcnMvbWlzYy9NYWtlZmlsZSAgICAgICAgICAgIHwgICAxICsNCiBk
+cml2ZXJzL21pc2MvdmlydGlvX3JwbWIuYyAgICAgICB8IDI4NiArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrDQogaW5jbHVkZS91YXBpL2xpbnV4L3ZpcnRpb19ycG1iLmggfCAgNTYgKysr
+KysrDQogNSBmaWxlcyBjaGFuZ2VkLCAzNjAgaW5zZXJ0aW9ucygrKQ0KIGNyZWF0ZSBtb2RlIDEw
+MDY0NCBkcml2ZXJzL21pc2MvdmlydGlvX3JwbWIuYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNs
+dWRlL3VhcGkvbGludXgvdmlydGlvX3JwbWIuaA0KDQpkaWZmIC0tZ2l0IGEvTUFJTlRBSU5FUlMg
+Yi9NQUlOVEFJTkVSUw0KaW5kZXggNzQ4Y2U0ZDFjNmEyLi40ODgwMDNhMjg1MzQgMTAwNjQ0DQot
+LS0gYS9NQUlOVEFJTkVSUw0KKysrIGIvTUFJTlRBSU5FUlMNCkBAIC0yOTcwNyw2ICsyOTcwNywx
+MyBAQCBTOglNYWludGFpbmVkDQogRjoJZHJpdmVycy9jaGFyL2h3X3JhbmRvbS92aXJ0aW8tcm5n
+LmMNCiBGOglpbmNsdWRlL3VhcGkvbGludXgvdmlydGlvX3JuZy5oDQogDQorVklSVElPIFJQTUIg
+RFJJVkVSDQorTToJSGFydWthIEt1emUgPGhhcnVrYWtAem9ob21haWwuZXU+DQorTDoJdmlydHVh
+bGl6YXRpb25AbGlzdHMubGludXguZGV2DQorUzoJTWFpbnRhaW5lZA0KK0Y6CWRyaXZlcnMvbWlz
+Yy92aXJ0aW9fcnBtYi5jDQorRjoJaW5jbHVkZS91YXBpL2xpbnV4L3ZpcnRpb19ycG1iLmgNCisN
+CiBWSVJUSU8gUlRDIERSSVZFUg0KIE06CVBldGVyIEhpbGJlciA8cGV0ZXIuaGlsYmVyQG9zcy5x
+dWFsY29tbS5jb20+DQogTDoJdmlydHVhbGl6YXRpb25AbGlzdHMubGludXguZGV2DQpkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9taXNjL0tjb25maWcgYi9kcml2ZXJzL21pc2MvS2NvbmZpZw0KaW5kZXgg
+YzQwZTg5Y2M1NzI0Li5lYjM1MThlY2M4ZmUgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL21pc2MvS2Nv
+bmZpZw0KKysrIGIvZHJpdmVycy9taXNjL0tjb25maWcNCkBAIC05MSw2ICs5MSwxNiBAQCBjb25m
+aWcgUlBNQg0KIA0KIAkgIElmIHVuc3VyZSwgc2VsZWN0IE4uDQogDQorY29uZmlnIFZJUlRJT19S
+UE1CDQorCXRyaXN0YXRlICJWaXJ0aW8gUlBNQiBkcml2ZXIiDQorCWRlcGVuZHMgb24gVklSVElP
+ICYmIFJQTUINCisJaGVscA0KKwkgIERyaXZlciBmb3IgdmlydGlvIFJQTUIgZGV2aWNlcy4gVGhl
+IGRldmljZSBpcyByZWdpc3RlcmVkIHdpdGggdGhlDQorCSAgUlBNQiBzdWJzeXN0ZW0sIHdoZXJl
+IGluLWtlcm5lbCB1c2VycyBzdWNoIGFzIE9QLVRFRSBjYW4gdXNlIGl0Lg0KKw0KKwkgIFRvIGNv
+bXBpbGUgdGhpcyBkcml2ZXIgYXMgYSBtb2R1bGUsIGNob29zZSBNIGhlcmU6IHRoZSBtb2R1bGUg
+d2lsbA0KKwkgIGJlIGNhbGxlZCB2aXJ0aW9fcnBtYi4NCisNCiBjb25maWcgVElfRlBDMjAyDQog
+CXRyaXN0YXRlICJUSSBGUEMyMDIgRHVhbCBQb3J0IENvbnRyb2xsZXIiDQogCWRlcGVuZHMgb24g
+STJDDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9taXNjL01ha2VmaWxlIGIvZHJpdmVycy9taXNjL01h
+a2VmaWxlDQppbmRleCA3Y2MzZDYxNWQzN2EuLmU0MzkwYmI4YmRjMCAxMDA2NDQNCi0tLSBhL2Ry
+aXZlcnMvbWlzYy9NYWtlZmlsZQ0KKysrIGIvZHJpdmVycy9taXNjL01ha2VmaWxlDQpAQCAtMTYs
+NiArMTYsNyBAQCBvYmotJChDT05GSUdfVElGTV9DT1JFKSAgICAgICAJKz0gdGlmbV9jb3JlLm8N
+CiBvYmotJChDT05GSUdfVElGTV83WFgxKSAgICAgICAJKz0gdGlmbV83eHgxLm8NCiBvYmotJChD
+T05GSUdfUEhBTlRPTSkJCSs9IHBoYW50b20ubw0KIG9iai0kKENPTkZJR19SUE1CKQkJKz0gcnBt
+Yi1jb3JlLm8NCitvYmotJChDT05GSUdfVklSVElPX1JQTUIpCSs9IHZpcnRpb19ycG1iLm8NCiBv
+YmotJChDT05GSUdfUUNPTV9DT0lOQ0VMTCkJKz0gcWNvbS1jb2luY2VsbC5vDQogb2JqLSQoQ09O
+RklHX1FDT01fRkFTVFJQQykJKz0gZmFzdHJwYy5vDQogb2JqLSQoQ09ORklHX1NFTlNPUlNfQkgx
+NzcwKQkrPSBiaDE3NzBnbGMubw0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWlzYy92aXJ0aW9fcnBt
+Yi5jIGIvZHJpdmVycy9taXNjL3ZpcnRpb19ycG1iLmMNCm5ldyBmaWxlIG1vZGUgMTAwNjQ0DQpp
+bmRleCAwMDAwMDAwMDAwMDAuLjRjYWNhMzc4ZmVjYw0KLS0tIC9kZXYvbnVsbA0KKysrIGIvZHJp
+dmVycy9taXNjL3ZpcnRpb19ycG1iLmMNCkBAIC0wLDAgKzEsMjg2IEBADQorLy8gU1BEWC1MaWNl
+bnNlLUlkZW50aWZpZXI6IEdQTC0yLjANCisvKg0KKyAqIFZpcnRpbyBSUE1CIGRyaXZlcg0KKyAq
+DQorICogQ29weXJpZ2h0IChjKSAyMDE4LTIwMTkgSW50ZWwgQ29ycG9yYXRpb24uDQorICogQ29w
+eXJpZ2h0IChjKSAyMDIxLTIwMjIgTGluYXJvIEx0ZC4NCisgKg0KKyAqIEJhc2VkIG9uIHRoZSB2
+aXJ0aW8tcnBtYiBkcml2ZXIgaW4gQWxleCBCZW5uw6llJ3MgUlBNQiBzZXJpZXMuDQorICovDQor
+DQorI2luY2x1ZGUgPGxpbnV4L2NvbXBsZXRpb24uaD4NCisjaW5jbHVkZSA8bGludXgvZGV2aWNl
+Lmg+DQorI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KKyNpbmNsdWRlIDxsaW51eC9tdXRleC5o
+Pg0KKyNpbmNsdWRlIDxsaW51eC9ycG1iLmg+DQorI2luY2x1ZGUgPGxpbnV4L3NjYXR0ZXJsaXN0
+Lmg+DQorI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4NCisjaW5jbHVkZSA8bGludXgvdmlydGlvLmg+
+DQorI2luY2x1ZGUgPGxpbnV4L3ZpcnRpb19jb25maWcuaD4NCisjaW5jbHVkZSA8bGludXgvdmly
+dGlvX2lkcy5oPg0KKyNpbmNsdWRlIDxsaW51eC92aXJ0aW9fcnBtYi5oPg0KKw0KKyNkZWZpbmUg
+VklSVElPX1JQTUJfRlJBTUVfU0laRQlzaXplb2Yoc3RydWN0IHZpcnRpb19ycG1iX2ZyYW1lKQ0K
+K3N0YXRpY19hc3NlcnQoVklSVElPX1JQTUJfRlJBTUVfU0laRSA9PSA1MTIpOw0KKw0KKy8qDQor
+ICogVGhpcyBkZXZpY2UgaGFzIG5vIGlkZW50aWZpZXIgb24gaXRzIG93bi4NCisgKiBUaGlzIHZh
+bHVlIGlzIHVzZWQgYXMgaW5wdXQgd2hlbiBPUC1URUUgaXMgZGVyaXZpbmcgdGhlIFJQTUINCisg
+KiBrZXksIHNvIGl0IHNoYWxsIHN0YXkgc3RhYmxlLg0KKyAqLw0KK3N0YXRpYyBjb25zdCB1OCB2
+aXJ0aW9fcnBtYl9kZXZfaWRbMTZdID0gInZpcnRpby1ycG1iIjsNCisNCisvKioNCisgKiBzdHJ1
+Y3QgdmlydGlvX3JwbWIgLSB2aXJ0aW8gUlBNQiBkZXZpY2Ugc3RhdGUNCisgKiBAdmRldjogdmly
+dGlvIGRldmljZQ0KKyAqIEB2cTogcmVxdWVzdCBxdWV1ZSwgTlVMTCB3aGlsZSB0aGUgZGV2aWNl
+IGlzIGdvbmUgb3IgZnJvemVuDQorICogQGxvY2s6IHNlcmlhbGl6ZXMgcmVxdWVzdHMgYW5kIHBy
+b3RlY3RzIEB2cQ0KKyAqIEByZGV2OiBSUE1CIGRldmljZQ0KKyAqIEBtYXhfd3I6IG1heGltdW0g
+bnVtYmVyIG9mIGJsb2NrcyBpbiBvbmUgd3JpdGUgcmVxdWVzdCwgMCBpZiB1bmxpbWl0ZWQNCisg
+KiBAbWF4X3JkOiBtYXhpbXVtIG51bWJlciBvZiBibG9ja3MgaW4gb25lIHJlYWQgcmVxdWVzdCwg
+MCBpZiB1bmxpbWl0ZWQNCisgKi8NCitzdHJ1Y3QgdmlydGlvX3JwbWIgew0KKwlzdHJ1Y3Qgdmly
+dGlvX2RldmljZSAqdmRldjsNCisJc3RydWN0IHZpcnRxdWV1ZSAqdnE7DQorCXN0cnVjdCBtdXRl
+eCBsb2NrOw0KKwlzdHJ1Y3QgcnBtYl9kZXYgKnJkZXY7DQorCXU4IG1heF93cjsNCisJdTggbWF4
+X3JkOw0KK307DQorDQorc3RydWN0IHZpcnRpb19ycG1iX3JlcSB7DQorCXN0cnVjdCBjb21wbGV0
+aW9uIGRvbmU7DQorCXVuc2lnbmVkIGludCBsZW47DQorfTsNCisNCitzdGF0aWMgdm9pZCB2aXJ0
+aW9fcnBtYl9kb25lKHN0cnVjdCB2aXJ0cXVldWUgKnZxKQ0KK3sNCisJc3RydWN0IHZpcnRpb19y
+cG1iX3JlcSAqcmVxOw0KKwl1bnNpZ25lZCBpbnQgbGVuOw0KKw0KKwl3aGlsZSAoKHJlcSA9IHZp
+cnRxdWV1ZV9nZXRfYnVmKHZxLCAmbGVuKSkpIHsNCisJCXJlcS0+bGVuID0gbGVuOw0KKwkJY29t
+cGxldGUoJnJlcS0+ZG9uZSk7DQorCX0NCit9DQorDQorc3RhdGljIGludCB2aXJ0aW9fcnBtYl94
+ZmVyKHN0cnVjdCB2aXJ0aW9fcnBtYiAqdnIsIHZvaWQgKm91dCwNCisJCQkgICAgdW5zaWduZWQg
+aW50IG91dF9sZW4sIHZvaWQgKmluLCB1bnNpZ25lZCBpbnQgaW5fbGVuKQ0KK3sNCisJc3RydWN0
+IHNjYXR0ZXJsaXN0IG91dF9zZywgaW5fc2csICpzZ3NbMl0gPSB7ICZvdXRfc2csICZpbl9zZyB9
+Ow0KKwlzdHJ1Y3QgdmlydGlvX3JwbWJfcmVxIHJlcTsNCisJaW50IHJldDsNCisNCisJc2dfaW5p
+dF9vbmUoJm91dF9zZywgb3V0LCBvdXRfbGVuKTsNCisJc2dfaW5pdF9vbmUoJmluX3NnLCBpbiwg
+aW5fbGVuKTsNCisJaW5pdF9jb21wbGV0aW9uKCZyZXEuZG9uZSk7DQorDQorCWd1YXJkKG11dGV4
+KSgmdnItPmxvY2spOw0KKwlpZiAoIXZyLT52cSkNCisJCXJldHVybiAtRU5PREVWOw0KKw0KKwly
+ZXQgPSB2aXJ0cXVldWVfYWRkX3Nncyh2ci0+dnEsIHNncywgMSwgMSwgJnJlcSwgR0ZQX0tFUk5F
+TCk7DQorCWlmIChyZXQpDQorCQlyZXR1cm4gcmV0Ow0KKw0KKwl2aXJ0cXVldWVfa2ljayh2ci0+
+dnEpOw0KKwl3YWl0X2Zvcl9jb21wbGV0aW9uKCZyZXEuZG9uZSk7DQorDQorCXJldHVybiByZXEu
+bGVuID09IGluX2xlbiA/IDAgOiAtRUlPOw0KK30NCisNCitzdGF0aWMgaW50IHZpcnRpb19ycG1i
+X3JvdXRlX2ZyYW1lcyhzdHJ1Y3QgZGV2aWNlICpkZXYsIHU4ICpyZXEsDQorCQkJCSAgICB1bnNp
+Z25lZCBpbnQgcmVxX2xlbiwgdTggKnJlc3AsDQorCQkJCSAgICB1bnNpZ25lZCBpbnQgcmVzcF9s
+ZW4pDQorew0KKwlzdHJ1Y3QgdmlydGlvX3JwbWIgKnZyID0gZGV2X3RvX3ZpcnRpbyhkZXYpLT5w
+cml2Ow0KKwlzdHJ1Y3QgdmlydGlvX3JwbWJfZnJhbWUgKmZybSA9IChzdHJ1Y3QgdmlydGlvX3Jw
+bWJfZnJhbWUgKilyZXE7DQorCXN0cnVjdCB2aXJ0aW9fcnBtYl9mcmFtZSAqcmVzdWx0Ow0KKwl1
+bnNpZ25lZCBpbnQgb3V0X2xlbiA9IHJlcV9sZW47DQorCWJvb2wgcmVzdWx0X3JlYWQgPSBmYWxz
+ZTsNCisJdm9pZCAqb3V0LCAqaW47DQorCWludCByZXQ7DQorDQorCWlmIChyZXFfbGVuIDwgVklS
+VElPX1JQTUJfRlJBTUVfU0laRSkNCisJCXJldHVybiAtRUlOVkFMOw0KKw0KKwlzd2l0Y2ggKGJl
+MTZfdG9fY3B1KGZybS0+cmVxX3Jlc3ApKSB7DQorCWNhc2UgVklSVElPX1JQTUJfUkVRX1BST0dS
+QU1fS0VZOg0KKwkJaWYgKHJlcV9sZW4gIT0gVklSVElPX1JQTUJfRlJBTUVfU0laRSB8fA0KKwkJ
+ICAgIHJlc3BfbGVuICE9IFZJUlRJT19SUE1CX0ZSQU1FX1NJWkUpDQorCQkJcmV0dXJuIC1FSU5W
+QUw7DQorCQlyZXN1bHRfcmVhZCA9IHRydWU7DQorCQlicmVhazsNCisJY2FzZSBWSVJUSU9fUlBN
+Ql9SRVFfR0VUX1dSSVRFX0NPVU5URVI6DQorCQlpZiAocmVxX2xlbiAhPSBWSVJUSU9fUlBNQl9G
+UkFNRV9TSVpFIHx8DQorCQkgICAgcmVzcF9sZW4gIT0gVklSVElPX1JQTUJfRlJBTUVfU0laRSkN
+CisJCQlyZXR1cm4gLUVJTlZBTDsNCisJCWJyZWFrOw0KKwljYXNlIFZJUlRJT19SUE1CX1JFUV9E
+QVRBX1dSSVRFOg0KKwkJaWYgKHJlcV9sZW4gJSBWSVJUSU9fUlBNQl9GUkFNRV9TSVpFIHx8DQor
+CQkgICAgcmVzcF9sZW4gIT0gVklSVElPX1JQTUJfRlJBTUVfU0laRSkNCisJCQlyZXR1cm4gLUVJ
+TlZBTDsNCisJCWlmICh2ci0+bWF4X3dyICYmIHJlcV9sZW4gLyBWSVJUSU9fUlBNQl9GUkFNRV9T
+SVpFID4gdnItPm1heF93cikNCisJCQlyZXR1cm4gLUVJTlZBTDsNCisJCXJlc3VsdF9yZWFkID0g
+dHJ1ZTsNCisJCWJyZWFrOw0KKwljYXNlIFZJUlRJT19SUE1CX1JFUV9EQVRBX1JFQUQ6DQorCQlp
+ZiAocmVxX2xlbiAhPSBWSVJUSU9fUlBNQl9GUkFNRV9TSVpFIHx8DQorCQkgICAgIXJlc3BfbGVu
+IHx8IHJlc3BfbGVuICUgVklSVElPX1JQTUJfRlJBTUVfU0laRSkNCisJCQlyZXR1cm4gLUVJTlZB
+TDsNCisJCWlmICh2ci0+bWF4X3JkICYmIHJlc3BfbGVuIC8gVklSVElPX1JQTUJfRlJBTUVfU0la
+RSA+IHZyLT5tYXhfcmQpDQorCQkJcmV0dXJuIC1FSU5WQUw7DQorCQlicmVhazsNCisJZGVmYXVs
+dDoNCisJCXJldHVybiAtRUlOVkFMOw0KKwl9DQorDQorCS8qDQorCSAqIFRoZSBjYWxsZXIncyBi
+dWZmZXJzIG1heSBiZSB1bnN1aXRhYmxlIGZvciBETUEsIHNvDQorCSAqIGNvcHkgdGhlIGZyYW1l
+cy4gIFdyaXRlcyBhcmUgZm9sbG93ZWQgYnkgcmVzdWx0IHJlYWQNCisJICogcmVxdWVzdCBpbiB0
+aGUgc2FtZSBycG1iIHhmZXIsIHdoaWNoIG1ha2VzIHRoZQ0KKwkgKiBkZXZpY2UgcmV0dXJuIHRo
+ZSByZXN1bHQuDQorCSAqLw0KKwlpZiAocmVzdWx0X3JlYWQpDQorCQlvdXRfbGVuICs9IFZJUlRJ
+T19SUE1CX0ZSQU1FX1NJWkU7DQorDQorCW91dCA9IGttYWxsb2Mob3V0X2xlbiwgR0ZQX0tFUk5F
+TCk7DQorCWlmICghb3V0KQ0KKwkJcmV0dXJuIC1FTk9NRU07DQorCWluID0ga3phbGxvYyhyZXNw
+X2xlbiwgR0ZQX0tFUk5FTCk7DQorCWlmICghaW4pIHsNCisJCWtmcmVlKG91dCk7DQorCQlyZXR1
+cm4gLUVOT01FTTsNCisJfQ0KKw0KKwltZW1jcHkob3V0LCByZXEsIHJlcV9sZW4pOw0KKwlpZiAo
+cmVzdWx0X3JlYWQpIHsNCisJCXJlc3VsdCA9IG91dCArIHJlcV9sZW47DQorCQltZW1zZXQocmVz
+dWx0LCAwLCBzaXplb2YoKnJlc3VsdCkpOw0KKwkJcmVzdWx0LT5ibG9ja19jb3VudCA9IGNwdV90
+b19iZTE2KDEpOw0KKwkJcmVzdWx0LT5yZXFfcmVzcCA9IGNwdV90b19iZTE2KFZJUlRJT19SUE1C
+X1JFUV9SRVNVTFRfUkVBRCk7DQorCX0NCisNCisJcmV0ID0gdmlydGlvX3JwbWJfeGZlcih2ciwg
+b3V0LCBvdXRfbGVuLCBpbiwgcmVzcF9sZW4pOw0KKwlpZiAoIXJldCkNCisJCW1lbWNweShyZXNw
+LCBpbiwgcmVzcF9sZW4pOw0KKw0KKwlrZnJlZShpbik7DQorCWtmcmVlKG91dCk7DQorCXJldHVy
+biByZXQ7DQorfQ0KKw0KK3N0YXRpYyBpbnQgdmlydGlvX3JwbWJfaW5pdF92cShzdHJ1Y3Qgdmly
+dGlvX3JwbWIgKnZyKQ0KK3sNCisJc3RydWN0IHZpcnRxdWV1ZSAqdnE7DQorDQorCXZxID0gdmly
+dGlvX2ZpbmRfc2luZ2xlX3ZxKHZyLT52ZGV2LCB2aXJ0aW9fcnBtYl9kb25lLCAicmVxdWVzdCIp
+Ow0KKwlpZiAoSVNfRVJSKHZxKSkNCisJCXJldHVybiBQVFJfRVJSKHZxKTsNCisNCisJdmlydGlv
+X2RldmljZV9yZWFkeSh2ci0+dmRldik7DQorDQorCXNjb3BlZF9ndWFyZChtdXRleCwgJnZyLT5s
+b2NrKQ0KKwkJdnItPnZxID0gdnE7DQorCXJldHVybiAwOw0KK30NCisNCitzdGF0aWMgdm9pZCB2
+aXJ0aW9fcnBtYl9kZWxfdnEoc3RydWN0IHZpcnRpb19ycG1iICp2cikNCit7DQorCXN0cnVjdCB2
+aXJ0aW9fZGV2aWNlICp2ZGV2ID0gdnItPnZkZXY7DQorDQorCXNjb3BlZF9ndWFyZChtdXRleCwg
+JnZyLT5sb2NrKQ0KKwkJdnItPnZxID0gTlVMTDsNCisNCisJdmlydGlvX3Jlc2V0X2RldmljZSh2
+ZGV2KTsNCisJdmRldi0+Y29uZmlnLT5kZWxfdnFzKHZkZXYpOw0KK30NCisNCitzdGF0aWMgaW50
+IHZpcnRpb19ycG1iX3Byb2JlKHN0cnVjdCB2aXJ0aW9fZGV2aWNlICp2ZGV2KQ0KK3sNCisJc3Ry
+dWN0IHJwbWJfZGVzY3IgZGVzY3IgPSB7DQorCQkvKiBGcmFtZXMgYW5kIHRoZWlyIHNlbWFudGlj
+cyBhcmUgdGhhdCBvZiBlTU1DICovDQorCQkudHlwZSA9IFJQTUJfVFlQRV9FTU1DLA0KKwkJLnJv
+dXRlX2ZyYW1lcyA9IHZpcnRpb19ycG1iX3JvdXRlX2ZyYW1lcywNCisJCS5kZXZfaWQgPSAodTgg
+Kil2aXJ0aW9fcnBtYl9kZXZfaWQsDQorCQkuZGV2X2lkX2xlbiA9IHNpemVvZih2aXJ0aW9fcnBt
+Yl9kZXZfaWQpLA0KKwl9Ow0KKwlzdHJ1Y3QgdmlydGlvX3JwbWIgKnZyOw0KKwl1OCBjYXBhY2l0
+eTsNCisJaW50IHJldDsNCisNCisJY2FwYWNpdHkgPSB2aXJ0aW9fY3JlYWQ4KHZkZXYsIG9mZnNl
+dG9mKHN0cnVjdCB2aXJ0aW9fcnBtYl9jb25maWcsDQorCQkJCQkJY2FwYWNpdHkpKTsNCisJaWYg
+KCFjYXBhY2l0eSB8fCBjYXBhY2l0eSA+IDB4ODApDQorCQlyZXR1cm4gZGV2X2Vycl9wcm9iZSgm
+dmRldi0+ZGV2LCAtRUlOVkFMLA0KKwkJCQkgICAgICJpbnZhbGlkIGNhcGFjaXR5ICV1XG4iLCBj
+YXBhY2l0eSk7DQorDQorCXZyID0gZGV2bV9remFsbG9jKCZ2ZGV2LT5kZXYsIHNpemVvZigqdnIp
+LCBHRlBfS0VSTkVMKTsNCisJaWYgKCF2cikNCisJCXJldHVybiAtRU5PTUVNOw0KKw0KKwl2ZGV2
+LT5wcml2ID0gdnI7DQorCXZyLT52ZGV2ID0gdmRldjsNCisJbXV0ZXhfaW5pdCgmdnItPmxvY2sp
+Ow0KKwl2ci0+bWF4X3dyID0gdmlydGlvX2NyZWFkOCh2ZGV2LCBvZmZzZXRvZihzdHJ1Y3Qgdmly
+dGlvX3JwbWJfY29uZmlnLA0KKwkJCQkJCSAgbWF4X3dyX2NudCkpOw0KKwl2ci0+bWF4X3JkID0g
+dmlydGlvX2NyZWFkOCh2ZGV2LCBvZmZzZXRvZihzdHJ1Y3QgdmlydGlvX3JwbWJfY29uZmlnLA0K
+KwkJCQkJCSAgbWF4X3JkX2NudCkpOw0KKw0KKwlyZXQgPSB2aXJ0aW9fcnBtYl9pbml0X3ZxKHZy
+KTsNCisJaWYgKHJldCkNCisJCXJldHVybiByZXQ7DQorDQorCS8qDQorCSAqIGVNTUMgcmVwb3J0
+cyB0aGUgcmVsaWFibGUgd3IgY291bnQgaW4gNTEyIGJ5dGUgc2VjdG9ycywgYnV0IHRoZSBkZXZp
+Y2UNCisJICogbGltaXQgaXMgaW4gMjU2IGJ5dGUgYmxvY2tzLg0KKwkgKi8NCisJZGVzY3IuY2Fw
+YWNpdHkgPSBjYXBhY2l0eTsNCisJZGVzY3IucmVsaWFibGVfd3JfY291bnQgPSAodnItPm1heF93
+ciA/OiBVOF9NQVgpIC8gMjsNCisNCisJdnItPnJkZXYgPSBycG1iX2Rldl9yZWdpc3RlcigmdmRl
+di0+ZGV2LCAmZGVzY3IpOw0KKwlpZiAoSVNfRVJSKHZyLT5yZGV2KSkgew0KKwkJdmlydGlvX3Jw
+bWJfZGVsX3ZxKHZyKTsNCisJCXJldHVybiBQVFJfRVJSKHZyLT5yZGV2KTsNCisJfQ0KKw0KKwly
+ZXR1cm4gMDsNCit9DQorDQorc3RhdGljIHZvaWQgdmlydGlvX3JwbWJfcmVtb3ZlKHN0cnVjdCB2
+aXJ0aW9fZGV2aWNlICp2ZGV2KQ0KK3sNCisJc3RydWN0IHZpcnRpb19ycG1iICp2ciA9IHZkZXYt
+PnByaXY7DQorDQorCXJwbWJfZGV2X3VucmVnaXN0ZXIodnItPnJkZXYpOw0KKwl2aXJ0aW9fcnBt
+Yl9kZWxfdnEodnIpOw0KK30NCisNCitzdGF0aWMgaW50IHZpcnRpb19ycG1iX2ZyZWV6ZShzdHJ1
+Y3QgdmlydGlvX2RldmljZSAqdmRldikNCit7DQorCXZpcnRpb19ycG1iX2RlbF92cSh2ZGV2LT5w
+cml2KTsNCisJcmV0dXJuIDA7DQorfQ0KKw0KK3N0YXRpYyBpbnQgdmlydGlvX3JwbWJfcmVzdG9y
+ZShzdHJ1Y3QgdmlydGlvX2RldmljZSAqdmRldikNCit7DQorCXJldHVybiB2aXJ0aW9fcnBtYl9p
+bml0X3ZxKHZkZXYtPnByaXYpOw0KK30NCisNCitzdGF0aWMgY29uc3Qgc3RydWN0IHZpcnRpb19k
+ZXZpY2VfaWQgaWRfdGFibGVbXSA9IHsNCisJeyBWSVJUSU9fSURfUlBNQiwgVklSVElPX0RFVl9B
+TllfSUQgfSwNCisJe30NCit9Ow0KK01PRFVMRV9ERVZJQ0VfVEFCTEUodmlydGlvLCBpZF90YWJs
+ZSk7DQorDQorc3RhdGljIHN0cnVjdCB2aXJ0aW9fZHJpdmVyIHZpcnRpb19ycG1iX2RyaXZlciA9
+IHsNCisJLmRyaXZlci5uYW1lCT0gS0JVSUxEX01PRE5BTUUsDQorCS5pZF90YWJsZQk9IGlkX3Rh
+YmxlLA0KKwkucHJvYmUJCT0gdmlydGlvX3JwbWJfcHJvYmUsDQorCS5yZW1vdmUJCT0gdmlydGlv
+X3JwbWJfcmVtb3ZlLA0KKwkuZnJlZXplCQk9IHBtX3NsZWVwX3B0cih2aXJ0aW9fcnBtYl9mcmVl
+emUpLA0KKwkucmVzdG9yZQk9IHBtX3NsZWVwX3B0cih2aXJ0aW9fcnBtYl9yZXN0b3JlKSwNCit9
+Ow0KK21vZHVsZV92aXJ0aW9fZHJpdmVyKHZpcnRpb19ycG1iX2RyaXZlcik7DQorDQorTU9EVUxF
+X0RFU0NSSVBUSU9OKCJWaXJ0aW8gUlBNQiBkcml2ZXIiKTsNCitNT0RVTEVfTElDRU5TRSgiR1BM
+Iik7DQpkaWZmIC0tZ2l0IGEvaW5jbHVkZS91YXBpL2xpbnV4L3ZpcnRpb19ycG1iLmggYi9pbmNs
+dWRlL3VhcGkvbGludXgvdmlydGlvX3JwbWIuaA0KbmV3IGZpbGUgbW9kZSAxMDA2NDQNCmluZGV4
+IDAwMDAwMDAwMDAwMC4uNjZmNDUyMDI4NTdhDQotLS0gL2Rldi9udWxsDQorKysgYi9pbmNsdWRl
+L3VhcGkvbGludXgvdmlydGlvX3JwbWIuaA0KQEAgLTAsMCArMSw1NiBAQA0KKy8qIFNQRFgtTGlj
+ZW5zZS1JZGVudGlmaWVyOiAoKEdQTC0yLjAgV0lUSCBMaW51eC1zeXNjYWxsLW5vdGUpIE9SIEJT
+RC0zLUNsYXVzZSkgKi8NCisvKg0KKyAqIFZpcnRpbyBSUE1CIERldmljZQ0KKyAqDQorICogVGhl
+IFZpcnRpbyBSUE1CIFNwZWNpZmljYXRpb246DQorICogaHR0cHM6Ly9naXRodWIuY29tL29hc2lz
+LXRjcy92aXJ0aW8tc3BlYy90cmVlL21hc3Rlci9kZXZpY2UtdHlwZXMvcnBtYg0KKyAqLw0KKw0K
+KyNpZm5kZWYgX1VBUElfTElOVVhfVklSVElPX1JQTUJfSA0KKyNkZWZpbmUgX1VBUElfTElOVVhf
+VklSVElPX1JQTUJfSA0KKw0KKyNpbmNsdWRlIDxsaW51eC90eXBlcy5oPg0KKw0KK3N0cnVjdCB2
+aXJ0aW9fcnBtYl9jb25maWcgew0KKwlfX3U4IGNhcGFjaXR5Ow0KKwlfX3U4IG1heF93cl9jbnQ7
+DQorCV9fdTggbWF4X3JkX2NudDsNCit9Ow0KKw0KKy8qIFJlcXVlc3QgdHlwZXMgKHJlcV9yZXNw
+KSAqLw0KKyNkZWZpbmUgVklSVElPX1JQTUJfUkVRX1BST0dSQU1fS0VZCQkweDAwMDENCisjZGVm
+aW5lIFZJUlRJT19SUE1CX1JFUV9HRVRfV1JJVEVfQ09VTlRFUgkweDAwMDINCisjZGVmaW5lIFZJ
+UlRJT19SUE1CX1JFUV9EQVRBX1dSSVRFCQkweDAwMDMNCisjZGVmaW5lIFZJUlRJT19SUE1CX1JF
+UV9EQVRBX1JFQUQJCTB4MDAwNA0KKyNkZWZpbmUgVklSVElPX1JQTUJfUkVRX1JFU1VMVF9SRUFE
+CQkweDAwMDUNCisNCisvKiBSZXNwb25zZSB0eXBlcyAocmVxX3Jlc3ApICovDQorI2RlZmluZSBW
+SVJUSU9fUlBNQl9SRVNQX1BST0dSQU1fS0VZCQkweDAxMDANCisjZGVmaW5lIFZJUlRJT19SUE1C
+X1JFU1BfR0VUX0NPVU5URVIJCTB4MDIwMA0KKyNkZWZpbmUgVklSVElPX1JQTUJfUkVTUF9EQVRB
+X1dSSVRFCQkweDAzMDANCisjZGVmaW5lIFZJUlRJT19SUE1CX1JFU1BfREFUQV9SRUFECQkweDA0
+MDANCisNCisvKiBPcGVyYXRpb24gcmVzdWx0cyAocmVzdWx0KSAqLw0KKyNkZWZpbmUgVklSVElP
+X1JQTUJfUkVTX09LCQkJMHgwMDAwDQorI2RlZmluZSBWSVJUSU9fUlBNQl9SRVNfR0VORVJBTF9G
+QUlMVVJFCQkweDAwMDENCisjZGVmaW5lIFZJUlRJT19SUE1CX1JFU19BVVRIX0ZBSUxVUkUJCTB4
+MDAwMg0KKyNkZWZpbmUgVklSVElPX1JQTUJfUkVTX0NPVU5UX0ZBSUxVUkUJCTB4MDAwMw0KKyNk
+ZWZpbmUgVklSVElPX1JQTUJfUkVTX0FERFJfRkFJTFVSRQkJMHgwMDA0DQorI2RlZmluZSBWSVJU
+SU9fUlBNQl9SRVNfV1JJVEVfRkFJTFVSRQkJMHgwMDA1DQorI2RlZmluZSBWSVJUSU9fUlBNQl9S
+RVNfUkVBRF9GQUlMVVJFCQkweDAwMDYNCisjZGVmaW5lIFZJUlRJT19SUE1CX1JFU19OT19BVVRI
+X0tFWQkJMHgwMDA3DQorI2RlZmluZSBWSVJUSU9fUlBNQl9SRVNfV1JJVEVfQ09VTlRFUl9FWFBJ
+UkVECTB4MDA4MA0KKw0KK3N0cnVjdCB2aXJ0aW9fcnBtYl9mcmFtZSB7DQorCV9fdTggc3R1ZmZb
+MTk2XTsNCisJX191OCBrZXlfbWFjWzMyXTsNCisJX191OCBkYXRhWzI1Nl07DQorCV9fdTggbm9u
+Y2VbMTZdOw0KKwlfX2JlMzIgd3JpdGVfY291bnRlcjsNCisJX19iZTE2IGFkZHJlc3M7DQorCV9f
+YmUxNiBibG9ja19jb3VudDsNCisJX19iZTE2IHJlc3VsdDsNCisJX19iZTE2IHJlcV9yZXNwOw0K
+K307DQorDQorI2VuZGlmIC8qIF9VQVBJX0xJTlVYX1ZJUlRJT19SUE1CX0ggKi8NCi0tIA0KMi41
+NS4wDQoNCg==
