@@ -2,54 +2,54 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E583F606A31B
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:12:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24A14606A326
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:12:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=davTglvy;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BnKXPWf+
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=cLjkssye;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QWUcIhBC
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 3FEB1454C9
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:12:04 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7DE6A454C6
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:12:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793913124;
-	bh=C9XXK37M9AVAJFlt2rYv5qsDw6jIGdRaJJndLfcUS1A=;
+	d=lists.trustedfirmware.org; s=2024; t=1793913152;
+	bh=BtWkGlsdqRPyaFO3thb1+okxq61by8V/MZsK3ybf8bQ=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=davTglvyMbThqshF6yPZKYnCkZMff6VSlH640LL8nm8Yn3YnQFcA/ML2TnwXXHFD7
-	 7gfJd4SSbiZk+pY6smx804ptDR1+Fty6ZsezDrobnWEjVquZIdyNv93siQr9cxQX5a
-	 yqUFSv16uP4gmFoFpQyYsu5VqaiDqvl/8iJmbeJ5fwrQoHuisdO/sRBI1gkd/lxcyc
-	 HlLuphVJhCV4XU/QwuAIOnkhyuTGhf5ijhDOy6e6SGqOQFKpRnB4pnAj6+4jWwJB0L
-	 P0PxPvKAV/+xXQXiE88OQj1+9l2Q1wHpTgCqKzIh/YbtP1D3vCJ3YKhbSfGoXBUdrb
-	 S1Gkuk+J5MxuQ==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 508DC454D7
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:08:29 +0000 (UTC)
+	b=cLjkssyeLhanuZkkuLiIgHLtDF4MRAsBVwY85Hk+rSsad25VQpAV0kjSWG2tM1z+Y
+	 Oh0dPOex9HHzJgoskL3h9P7hvo8x68AxW8fcA3Q1M2ElMMuxCB6W7qVofJM5O30LdZ
+	 ASOSgYo4ZwNTczQN6Tb5+Lx/N9r8y+jN5Ww8eJywt5Sv1Mjng25UbgzFT3XR+y55CN
+	 R8sbdTM/dQTYtcXtyip2+whfVxM+SqABwdBG0lFlkUH2dYIL+ixJIeBCse8ImG90vQ
+	 iDGn7co5EBnkveuUL6b7kY7tLZFNwK5YFv+J+xm6YfG/ICMABX4T/2WrIVxrAK6cbb
+	 tIQo+PIlOc2nA==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 67DC4454BD
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:08:41 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BnKXPWf+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QWUcIhBC;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BB25243240;
+	by tor.source.kernel.org (Postfix) with ESMTP id 28EDF60213;
+	Thu,  5 Nov 2026 21:08:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D4791F0089F;
 	Thu,  5 Nov 2026 21:08:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA46A1F008A1;
-	Thu,  5 Nov 2026 21:08:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912908;
-	bh=rauYFQoBFzCwBAsYPPclHbOZbmTSVBvyT46d2JXEHhc=;
+	s=k20260515; t=1793912920;
+	bh=jwg42VGqWUt+sFFBng+mWbW24dAsrwHOUVsOhHWbSTw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=BnKXPWf+/O22qEiMkaEIK5AaJQQEDaT1ckt5kAk8Dba1GJx7DDQ9aYC3m4YDrEIGm
-	 8uQZ6D4EtJ2grfz88MHTsiaTo3NH9vnWalgCLLaXFGMjRWVUklmAAI0MsFx9/+gLLo
-	 YFH61ZNKhRR6Fv43NWZZ1RvUEaoATHAHShBGcK7igkT1+d7qa2pXh6tyRcoHCmo4B4
-	 GJHLI9LJ1NTDk+gl3j6tt6cw3M3gCPPENxC7J3eiVJghxP1xsN5EbxYHrwvTHymWYS
-	 OtjcGqy/Dgj8eYqTO8FncXaIF7WWQN9TMi/urM76XoYWGd0YaiyeJhBjNAMqrCPprm
-	 FCGpoxaMo3JlQ==
-Date: Thu, 05 Nov 2026 21:05:43 +0000
-Subject: [PATCH 12/14] misc: bcm-vk: convert mmap hook to mmap_prepare
+	b=QWUcIhBCGRma05CYBvlYAlcfi/meLWyeZtyVRMCsgC3eidcnSypogMH20WwSI92Vo
+	 nUGOi0jOdOYQqRYbLuOn/e0wcApgbleVdCLsQVo3EKEbJwqtnb3wGYHGhtB20rZjFf
+	 9cjWxmaAFDIk2PBAlcaRnTwCrwWQltxESQCDifUxijmFVrqzmV2MXoVZMTDDrJXm3G
+	 3PjQF3mPdpLpyAUsd37oELANXqbeLiCVaA1MHfyYV/F300h88r1ZwlODccLQGzTUET
+	 2T2/8rqNR+g7IR+53ri5dnAH76IBDmer8fSCNE/o5xkxllHyUDCt6gi9PZAsjUiLhR
+	 fpGgLWaXY4uuQ==
+Date: Thu, 05 Nov 2026 21:05:44 +0000
+Subject: [PATCH 13/14] ptp: vmclock: convert mmap hook to mmap_prepare
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-12-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-13-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>,
@@ -87,12 +87,12 @@ To: Juergen Gross <jgross@suse.com>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2129; i=ljs@kernel.org;
- h=from:subject:message-id; bh=C9XXK37M9AVAJFlt2rYv5qsDw6jIGdRaJJndLfcUS1A=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF8b/+vwX/2MC9qxmsYzmV4FXzC/pc4bfKJ2Q5OY3
- b2PnntCOkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCRqGaGX8wOptkGu76v+j63
- 7fv2GxkrZ3sH69X6n2O5o3H/4/Wjn/UYGTYvDU3rC9p+YLPxLfX24mdT8h4yCywXNmdZ/XhpFuN
- dc3YA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2068; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=BtWkGlsdqRPyaFO3thb1+okxq61by8V/MZsK3ybf8bQ=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF8b8Ux/Tdcunl1xE7s19f5O+zJ7caTksSU+544kX
+ NlyL3Eyb0cpC4MYF4OsmCLL8y/i+4NEwuZ1XvB3g5nDygQyhIGLUwAmkviF4X/5tD9fZqudmJGc
+ eDXc+YjW+oBjJk1fYudKmvfOKpRJm3mE4a+0h0vYimsND/h+/73g4/Cy0C26a9UBpbxFppN2bn7
+ cZ80GAA==
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
@@ -104,15 +104,15 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
-	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
+	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
 	MIME_GOOD(-0.10)[text/plain];
 	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
 	RCVD_TLS_LAST(0.00)[];
 	FREEMAIL_TO(0.00)[suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
 	DKIM_TRACE(0.00)[kernel.org:+];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCPT_COUNT_GT_50(0.00)[61];
 	RCVD_COUNT_TWO(0.00)[2];
@@ -125,17 +125,17 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	TAGGED_RCPT(0.00)[netdev];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 508DC454D7
+X-Rspamd-Queue-Id: 67DC4454BD
 X-Spamd-Bar: --------
-Message-ID-Hash: 3JE6AKZXIUTCT27U5ME2RUXNMMHEC3JL
-X-Message-ID-Hash: 3JE6AKZXIUTCT27U5ME2RUXNMMHEC3JL
+Message-ID-Hash: LFJRL6YV46XQYYI3B2CMBSWEY3SNMWLX
+X-Message-ID-Hash: LFJRL6YV46XQYYI3B2CMBSWEY3SNMWLX
 X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/3JE6AKZXIUTCT27U5ME2RUXNMMHEC3JL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/LFJRL6YV46XQYYI3B2CMBSWEY3SNMWLX/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -151,62 +151,63 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Move from the deprecated mmap hook to the new mmap_prepare hook, using the
-I/O PFN remap mmap action to map the BAR.
+I/O PFN remap mmap action to map the clock page and retaining the -EAGAIN
+error on failure via the action error override.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/misc/bcm-vk/bcm_vk_dev.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/ptp/ptp_vmclock.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/misc/bcm-vk/bcm_vk_dev.c b/drivers/misc/bcm-vk/bcm_vk_dev.c
-index 88ee3a417616..25a2b46ebad9 100644
---- a/drivers/misc/bcm-vk/bcm_vk_dev.c
-+++ b/drivers/misc/bcm-vk/bcm_vk_dev.c
-@@ -1201,9 +1201,9 @@ static long bcm_vk_reset(struct bcm_vk *vk, struct vk_reset __user *arg)
- 	return ret;
- }
- 
--static int bcm_vk_mmap(struct file *file, struct vm_area_struct *vma)
-+static int bcm_vk_mmap_prepare(struct vm_area_desc *desc)
- {
--	struct bcm_vk_ctx *ctx = file->private_data;
-+	struct bcm_vk_ctx *ctx = desc->file->private_data;
- 	struct bcm_vk *vk = container_of(ctx->miscdev, struct bcm_vk, miscdev);
- 	unsigned long pg_size;
- 
-@@ -1212,16 +1212,16 @@ static int bcm_vk_mmap(struct file *file, struct vm_area_struct *vma)
- 
- 	pg_size = ((pci_resource_len(vk->pdev, VK_MMAPABLE_BAR) - 1)
- 		    >> PAGE_SHIFT) + 1;
--	if (vma->vm_pgoff + vma_pages(vma) > pg_size)
-+	if (desc->pgoff + vma_desc_pages(desc) > pg_size)
- 		return -EINVAL;
- 
--	vma->vm_pgoff += (pci_resource_start(vk->pdev, VK_MMAPABLE_BAR)
--			  >> PAGE_SHIFT);
--	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+	desc->pgoff += (pci_resource_start(vk->pdev, VK_MMAPABLE_BAR)
-+			>> PAGE_SHIFT);
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
-+
-+	mmap_action_ioremap_full(desc, desc->pgoff);
- 
--	return io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
--				  vma->vm_end - vma->vm_start,
--				  vma->vm_page_prot);
-+	return 0;
- }
- 
- static long bcm_vk_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-@@ -1262,7 +1262,7 @@ static const struct file_operations bcm_vk_fops = {
- 	.write = bcm_vk_write,
- 	.poll = bcm_vk_poll,
- 	.release = bcm_vk_release,
--	.mmap = bcm_vk_mmap,
-+	.mmap_prepare = bcm_vk_mmap_prepare,
- 	.unlocked_ioctl = bcm_vk_ioctl,
+diff --git a/drivers/ptp/ptp_vmclock.c b/drivers/ptp/ptp_vmclock.c
+index bb0e14bac9f2..e44433430044 100644
+--- a/drivers/ptp/ptp_vmclock.c
++++ b/drivers/ptp/ptp_vmclock.c
+@@ -364,27 +364,26 @@ struct vmclock_file_state {
+ 	atomic_t seq;
  };
  
+-static int vmclock_miscdev_mmap(struct file *fp, struct vm_area_struct *vma)
++static int vmclock_miscdev_mmap_prepare(struct vm_area_desc *desc)
+ {
+-	struct vmclock_file_state *fst = fp->private_data;
++	struct vmclock_file_state *fst = desc->file->private_data;
+ 	struct vmclock_state *st = fst->st;
+ 
+-	if ((vma->vm_flags & (VM_READ|VM_WRITE)) != VM_READ)
++	if (!vma_desc_test(desc, VMA_READ_BIT) ||
++	    vma_desc_test(desc, VMA_WRITE_BIT))
+ 		return -EROFS;
+ 
+ 	/*
+ 	 * Restrict the read-only mapping so it cannot be upgraded to
+ 	 * writable later with mprotect().
+ 	 */
+-	vm_flags_clear(vma, VM_MAYWRITE);
++	vma_desc_clear_flags(desc, VMA_MAYWRITE_BIT);
+ 
+-	if (vma->vm_end - vma->vm_start != PAGE_SIZE || vma->vm_pgoff)
++	if (vma_desc_size(desc) != PAGE_SIZE || desc->pgoff)
+ 		return -EINVAL;
+ 
+-	if (io_remap_pfn_range(vma, vma->vm_start,
+-			       st->res.start >> PAGE_SHIFT, PAGE_SIZE,
+-			       vma->vm_page_prot))
+-		return -EAGAIN;
++	mmap_action_ioremap_full(desc, st->res.start >> PAGE_SHIFT);
++	desc->action.error_override = -EAGAIN;
+ 
+ 	return 0;
+ }
+@@ -484,7 +483,7 @@ static const struct file_operations vmclock_miscdev_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = vmclock_miscdev_open,
+ 	.release = vmclock_miscdev_release,
+-	.mmap = vmclock_miscdev_mmap,
++	.mmap_prepare = vmclock_miscdev_mmap_prepare,
+ 	.read = vmclock_miscdev_read,
+ 	.poll = vmclock_miscdev_poll,
+ };
 
 -- 
 2.56.0
