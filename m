@@ -2,49 +2,50 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96E61606A31B
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:14:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 863F9606A31B
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:15:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=DmMXSh8S;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WAbXpW5G
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=ExjkmuzU;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ha46cxYz
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id DFDF745477
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:14:39 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id E476A453C9
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:15:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793877280;
-	bh=XskcVFVajMJ3lCtnLA33HB++4MDmGwkBHRS6+TTKIX8=;
+	d=lists.trustedfirmware.org; s=2024; t=1793877311;
+	bh=ejXa4bXFZIeRwcnca5O83Ge4yrWKFSQyxTe8NEOcvVE=;
 	h=Subject:To:In-Reply-To:References:Date:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=DmMXSh8SDc5vS7X+OU6DSwm6DDsbcHgQgPVDMjwAOAWMh8MktcwhzAw55BGfS93Xo
-	 z7ZEstHh0wZadi+sp9Ri5oBpVIH08d8abOs/Ox8h+U3yaA6WyvcZ2dN0Ucp/SYgBuX
-	 1u7GkkcARB5E3i8A3oMhYQBhBKsHeVcq/wHBjrdqKL+bLUDtr3/eXkKorNvR8ACkyj
-	 O1QOU+YodP3V66UdWi1/bYkXyzxU+vcVTvE0xV0caRkKs/gYMbtjuZkaYTaWGpWDtG
-	 U0qUR7PRTrr4W1wjPCIDlJFNfQzMfgyBB/1UVbHrTlCw7sguly0MHcKHp4HwVCrgsU
-	 vju1NSkvN0JQA==
+	b=ExjkmuzUrmhmJ2Y1ZdjszW2DK5waaBmHyXTKK2W1bWAxT/icnyfuqYAgVpl+u0yN9
+	 okaeZcCzjVzKcjg7C5MMs44/wU16dc6jKIJY2Pu3lANSZT63RnFpk8VRwagFTS+h7C
+	 /RHqWYW3lwNtUxcoDDXT4Gz4VeXQtqjqqLGEJXuP3BxR/15kn8FLWvMJMU44pvpuex
+	 IWsL6rCpm7rlgG/br753xt908MD5tM4kFrT8tVFKE3QaJ/tDHep/uSEJrTxLNzmHaR
+	 N7WG8Zyo7XP0zClGwvrZeCY49ADNud/DOfF3vPCBA/DPEIeryS8JiEaaCUvi+eO5Cq
+	 DL/bxtHRWCGfQ==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CB3E84549F
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:12:05 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A9F4D45486
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:12:07 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WAbXpW5G;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ha46cxYz;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4F51D41FFD;
+	by sea.source.kernel.org (Postfix) with ESMTP id 2989140431;
+	Thu,  5 Nov 2026 11:12:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A66FC1F00A02;
 	Thu,  5 Nov 2026 11:12:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3B671F000C1;
-	Thu,  5 Nov 2026 11:12:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793877125;
-	bh=A6Btm3+v+dnXqWTR2GX+hsLiVMvVrLHj5mxZiRv+uQA=;
+	s=k20260515; t=1793877127;
+	bh=hcZ6WPxWQqwmRStYl6C8MSMaB4AuiG3AzHw/8ODrNB0=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=WAbXpW5G+J81zpga2YkofDFAJr37p7VW0gGXFRU1+QCgzM/A2pZgHgznNZ2nCalqE
-	 Ia3JyUZPh6L8Rg/y+uDgpDdpHVkNXyzDJVU61C50bKdJpxk3QmFsmifPi+WacjV/XA
-	 QcdaQ2JwYWDZM/S9fBxO98d3uu84tMP2L3LX4JZ6BhPLw+JPH/18HgMzAJJzcMfDF3
-	 tw4HNNjQMzFdjFhehxPRAgVYMCdqVn+EzZzkd0u3g2A/L89+VMUZrPX21d6cbm+Hxu
-	 OFZ2xzICDiinoYKDYRJ6cNwQKSRtQb9bUblJfArFReo7oJfCXLWSKUy3cXW4MihmdO
-	 KKFQUwanA6LGA==
-Message-ID: <sashiko-outbox-198922@kernel.org>
-Subject: Re: [PATCH v4 7/8] selinux: Restrict dma-buf direct cgroup charging
+	b=Ha46cxYz+f5O3PZ62l1EzAf2DcXdcDWFFCYFdsNiJ/EfMHBI9iN8WJBpEa2t/fhbp
+	 YiDJyRyaTJOCXDn5V7ZQEodwI+80StGeRoeKjIa5fpnYD3nvFBIn4/eEas/jUSlsOe
+	 TGo3JnveEd3aciHp+qSkSR+9noMtG6nKmUKsXo41W20ukXVNrlusIeeY/te8Q75sxc
+	 FUjFnZc/8QSWNaBl1g9bnUKYJQTSIIw4Vob18CUplfhJ8L9qaCXRrSjsNLqz+gZkuy
+	 yzsRj22YTXapgoeB58Kugn/8IjRan4j3psVvV6t7Q+Fop0YLlligZr6+nDT9FD1O4E
+	 Q1YdgnuE01paA==
+Message-ID: <sashiko-outbox-198923@kernel.org>
+Subject: Re: [PATCH v4 8/8] selftests/dmabuf-heaps: Add dma-buf memcg
+ accounting tests
 To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
  Weiner" <hannes@cmpxchg.org>, =?utf-8?b?TWljaGFsIEtvdXRuw70=?= <mkoutny@suse.com>, "Jonathan
  Corbet" <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Sumit
@@ -59,12 +60,12 @@ To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
  Khan" <shuah@kernel.org>, "Randy Dunlap" <rdunlap@infradead.org>,
  =?utf-8?b?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>, "Jens Wiklander" <jenswi@kernel.org>, "Sumit
  Garg" <sumit.garg@kernel.org>
-In-Reply-To: <20261104-v2_20230123_tjmercier_google_com-v4-7-1819a017000b@redhat.com>
+In-Reply-To: <20261104-v2_20230123_tjmercier_google_com-v4-8-1819a017000b@redhat.com>
 References: <20261104-v2_20230123_tjmercier_google_com-v4-0-1819a017000b@redhat.com>
- <20261104-v2_20230123_tjmercier_google_com-v4-7-1819a017000b@redhat.com>
+ <20261104-v2_20230123_tjmercier_google_com-v4-8-1819a017000b@redhat.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Thu, 05 Nov 2026 11:12:03 +0000
+Date: Thu, 05 Nov 2026 11:12:05 +0000
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-5.50 / 15.00];
 	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
@@ -99,17 +100,17 @@ X-Spamd-Result: default: False [-5.50 / 15.00];
 	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	HAS_REPLYTO(0.00)[sashiko-reviews@lists.linux.dev]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CB3E84549F
+X-Rspamd-Queue-Id: A9F4D45486
 X-Spamd-Bar: -----
-Message-ID-Hash: QPYET2LPA5VQCXU6T5XPVNYKLOK2ICIG
-X-Message-ID-Hash: QPYET2LPA5VQCXU6T5XPVNYKLOK2ICIG
+Message-ID-Hash: 2FUU7SUKPWQPLF4APGI5JQELRWNF2435
+X-Message-ID-Hash: 2FUU7SUKPWQPLF4APGI5JQELRWNF2435
 X-MailFrom: sashiko-bot@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: dri-devel@lists.freedesktop.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, op-tee@lists.trustedfirmware.org, media-ci@linuxtv.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/QPYET2LPA5VQCXU6T5XPVNYKLOK2ICIG/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/2FUU7SUKPWQPLF4APGI5JQELRWNF2435/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -125,143 +126,304 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 2 potential issue(=
+Thank you for your contribution! Sashiko AI review found 5 potential issue(=
 s) to consider:
-- [High] selinux: selinux_dma_buf_charge_cgroup() bypasses check on genfsco=
-n cgroups
-- [Medium] selinux: one-off dma_buf charge_cgroup lacks broader cgroup cont=
-rol design
+- [Medium] selftests/dmabuf-heaps: charge_fd=3D0 and unskipped EOPNOTSUPP i=
+n XFER_CHARGE test
+- [Medium] selftests/dmabuf-heaps: pidfd_alloc_supported() treats EOPNOTSUP=
+P as supported
+- [Medium] selftests/dmabuf-heaps: missing memory controller check in open_=
+self_cgroupfd()
+- [Medium] selftests/dmabuf-heaps: check_deps() runs before handle_build() =
+in vmtest.sh
+- [Low] selftests: cgroup: leak of child_cg on cg_create() failure in test_=
+memcg_dmabuf()
 --
 
-commit d0dd0ed1dd84ec5c8f4de9a298a749d83668b53e
+commit b3c8a8b74499074e19a368c4979733bfe47e9d56
 Author: Albert Esteve <aesteve@redhat.com>
 
-selinux: Restrict dma-buf direct cgroup charging
+selftests/dmabuf-heaps: Add dma-buf memcg accounting tests
 
-This commit implements the selinux_dma_buf_charge_cgroup() hook and adds the
-charge_cgroup permission to the dma_buf security class to restrict which
-processes can charge dma-buf memory to a target cgroup.
+This commit adds selftests for dma-buf memcg accounting via charge_fd and
+DMA_BUF_IOCTL_XFER_CHARGE in dmabuf-heaps and cgroup/test_memcontrol, along
+with a virtme-ng runner script and Kconfig fragment.
 
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 8f39d91eabc97..2f99eaa910af4 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -2210,6 +2210,40 @@ static int selinux_dma_buf_charge_task(const struc=
-t cred *from, const struct cre
->  			    SECCLASS_DMA_BUF, DMA_BUF__CHARGE_TASK, NULL);
->  }
-> =20
-> +#ifdef CONFIG_CGROUPS
-> +static int selinux_dma_buf_charge_cgroup(const struct cred *cred, struct=
- cgroup *cgrp)
-> +{
-> +	u32 cgrp_sid, clen;
-> +	int rc;
-> +	char *context;
-> +
-> +	rc =3D kernfs_xattr_get(cgrp->kn, XATTR_NAME_SELINUX, NULL, 0);
-> +	if (rc =3D=3D -ENODATA)
-> +		return 0;
-
-[Severity: High]
-As reported by Sashiko on v3 [1], in security/selinux/hooks.c, does returni=
-ng
-0 in selinux_dma_buf_charge_cgroup() when kernfs_xattr_get() returns -ENODA=
-TA
-bypass the permission check for all default-labeled cgroups?
-
-When a process calls ioctl(DMA_HEAP_IOCTL_ALLOC) or
-ioctl(DMA_BUF_IOCTL_XFER_CHARGE) with a charge_fd referencing a cgroup
-directory, mem_cgroup_get_from_fd() invokes security_dma_buf_charge_cgroup()
--> selinux_dma_buf_charge_cgroup().
-
-In SELinux, cgroup and cgroup2 filesystems are configured with
-SE_SBGENFS | SE_SBGENFS_XATTR in selinux_set_mnt_opts() and obtain their
-default label (such as cgroup_t) from policy genfscon rules. When a cgroupfs
-VFS inode is initialized in inode_doinit_with_dentry(), SELinux computes the
-default SID via selinux_genfs_get_sid() and only uses kernfs xattrs as an
-optional override:
-
-security/selinux/hooks.c:inode_doinit_with_dentry() {
-    ...
-			rc =3D selinux_genfs_get_sid(dentry, sclass,
-						   sbsec->flags, &sid);
-			if (rc) {
-				dput(dentry);
-				goto out;
-			}
-
-			if ((sbsec->flags & SE_SBGENFS_XATTR) &&
-			    (inode->i_opflags & IOP_XATTR)) {
-				rc =3D inode_doinit_use_xattr(inode, dentry,
-							    sid, &sid);
-    ...
-}
-
-When no explicit setxattr() has been performed on the cgroup directory,
-inode_doinit_use_xattr() gets -ENODATA and falls back to def_sid in memory
-without writing any security.selinux xattr to cgrp->kn:
-
-security/selinux/hooks.c:inode_doinit_use_xattr() {
-    ...
-	if (rc < 0) {
-		kfree(context);
-		if (rc !=3D -ENODATA) {
-			pr_warn("SELinux: %s:  getxattr returned %d for dev=3D%s ino=3D%llu\n",
-				__func__, -rc, inode->i_sb->s_id, inode->i_ino);
-			return rc;
-		}
-		*sid =3D def_sid;
-		return 0;
-	}
-    ...
-}
-
-Similarly, selinux_kernfs_init_security() sees -ENODATA on the parent node
-and returns 0 without setting an xattr on child cgroup nodes, and if the
-cgroup_seclabel policy capability is not enabled, security.selinux xattrs
-cannot be set on cgroup directories at all.
-
-Because kernfs_xattr_get(cgrp->kn, XATTR_NAME_SELINUX, NULL, 0) returns
--ENODATA for every cgroup that has not been manually relabeled via
-setxattr(), won't selinux_dma_buf_charge_cgroup() skip avc_has_perm() for a=
-ll
-default-labeled cgroup_t cgroups and render policy rules like
-"allow allocator_app_t cgroup_t:dma_buf charge_cgroup;" ineffective?
-
+> diff --git a/tools/testing/selftests/cgroup/test_memcontrol.c b/tools/tes=
+ting/selftests/cgroup/test_memcontrol.c
+> index 0ed82347044ed..3c95bcabee2bd 100644
+> --- a/tools/testing/selftests/cgroup/test_memcontrol.c
+> +++ b/tools/testing/selftests/cgroup/test_memcontrol.c
 [ ... ]
+> +static int test_memcg_dmabuf(const char *root)
+> +{
+[ ... ]
+> +	parent =3D cg_name(root, "dmabuf_memcg_test");
+> +	if (!parent)
+> +		goto cleanup;
+> +
+> +	if (cg_create(parent))
+> +		goto cleanup_parent;
+> +
+> +	if (cg_write(parent, "cgroup.subtree_control", "+memory"))
+> +		goto cleanup_parent;
+> +
+> +	child_cg =3D cg_name(parent, "child");
+> +	if (!child_cg)
+> +		goto cleanup_parent;
+> +
+> +	if (cg_create(child_cg))
+> +		goto cleanup_parent;
+[ ... ]
+> +cleanup_child:
+> +	cg_destroy(child_cg);
+> +	free(child_cg);
+> +cleanup_parent:
+> +	cg_destroy(parent);
+> +	free(parent);
+> +cleanup:
+> +	return ret;
+> +}
 
-> diff --git a/security/selinux/include/classmap.h b/security/selinux/inclu=
-de/classmap.h
-> index b4ebedc6e4240..90d1e04c3d27c 100644
-> --- a/security/selinux/include/classmap.h
-> +++ b/security/selinux/include/classmap.h
-> @@ -181,7 +181,7 @@ const struct security_class_mapping secclass_map[] =
-=3D {
->  	{ "user_namespace", { "create", NULL } },
->  	{ "memfd_file",
->  	  { COMMON_FILE_PERMS, "execute_no_trans", "entrypoint", NULL } },
-> -	{ "dma_buf", { "charge_task", NULL } },
-> +	{ "dma_buf", { "charge_task", "charge_cgroup", NULL } },
+[Severity: Low]
+Does test_memcg_dmabuf() leak the child_cg string buffer if
+cg_create(child_cg) fails?
+
+Jumping to cleanup_parent bypasses free(child_cg) under cleanup_child. Shou=
+ld
+that error path free child_cg (or jump to cleanup_child) before cleaning up
+parent?
+
+> diff --git a/tools/testing/selftests/dmabuf-heaps/dmabuf-heap.c b/tools/t=
+esting/selftests/dmabuf-heaps/dmabuf-heap.c
+> index 1d49df6719198..90ef14d2ecba0 100644
+> --- a/tools/testing/selftests/dmabuf-heaps/dmabuf-heap.c
+> +++ b/tools/testing/selftests/dmabuf-heaps/dmabuf-heap.c
+[ ... ]
+> +/*
+> + * Probe whether the kernel honours charge_fd in DMA_HEAP_IOCTL_ALLOC.
+> + */
+> +static bool pidfd_alloc_supported(int heap_fd)
+> +{
+> +	int devnull_fd, dmabuf_fd =3D -1, ret;
+> +
+> +	devnull_fd =3D open("/dev/null", O_RDONLY);
+> +	if (devnull_fd < 0)
+> +		return false;
+> +
+> +	ret =3D dmabuf_heap_alloc_pidfd(heap_fd, ONE_MEG, 0, devnull_fd, &dmabu=
+f_fd);
+> +	if (dmabuf_fd >=3D 0) {
+> +		close(dmabuf_fd);
+> +		dmabuf_fd =3D -1;
+> +	}
+> +	close(devnull_fd);
+> +	return ret < 0;
+> +}
 
 [Severity: Medium]
-As reported by Paul Moore on RFC [2], in security/selinux/include/classmap.h
-(secclass_map) and security/selinux/hooks.c (selinux_dma_buf_charge_cgroup(=
-)),
-this adds a narrow dma_buf class permission for cgroup charging invoked from
-DMA_HEAP_IOCTL_ALLOC and DMA_BUF_IOCTL_XFER_CHARGE via
-mem_cgroup_get_from_fd() -> security_dma_buf_charge_cgroup().
+As reported by Sashiko on v3 [1], won't pidfd_alloc_supported() return true
+when CONFIG_MEMCG is disabled?
 
-Rather than introducing a one-off dma_buf cgroup charging permission, should
-this be part of a broader SELinux access control design covering existing
-cgroup control points so that the object class and permission model is
-consistent across cgroup operations?
+When CONFIG_MEMCG=3Dn, the inline stub in include/linux/memcontrol.h returns
+-EOPNOTSUPP for any file descriptor:
+
+static inline struct mem_cgroup *mem_cgroup_get_from_fd(int fd)
+{
+	return ERR_PTR(-EOPNOTSUPP);
+}
+
+In dma_heap_ioctl_allocate(), that causes DMA_HEAP_IOCTL_ALLOC to fail with
+ret < 0 and errno =3D=3D EOPNOTSUPP when passed devnull_fd, so
+pidfd_alloc_supported() treats the feature as supported and the subsequent
+tests fail with EOPNOTSUPP instead of skipping.
+
+Should pidfd_alloc_supported() check ret < 0 && errno !=3D EOPNOTSUPP?
+
+[ ... ]
+> +static int open_self_cgroupfd(void)
+> +{
+> +	char cgroup_path[PATH_MAX];
+> +	char buf[PATH_MAX];
+> +	FILE *f;
+> +
+> +	f =3D fopen("/proc/self/cgroup", "r");
+> +	if (!f)
+> +		return -1;
+> +
+> +	cgroup_path[0] =3D '\0';
+> +	while (fgets(buf, sizeof(buf), f)) {
+> +		char *p =3D buf;
+> +
+> +		if (strncmp(p, "0::", 3) =3D=3D 0) {
+> +			p +=3D 3;
+> +			p[strcspn(p, "\n")] =3D '\0';
+> +			snprintf(cgroup_path, sizeof(cgroup_path),
+> +				 "/sys/fs/cgroup%s", p);
+> +			break;
+> +		}
+> +	}
+> +	fclose(f);
+> +
+> +	if (!cgroup_path[0])
+> +		return -1;
+> +
+> +	return open(cgroup_path, O_RDONLY | O_DIRECTORY);
+> +}
+
+[Severity: Medium]
+As reported by Sashiko on v3 [2], what happens in test_alloc_cgroupfd_self()
+and test_xfer_charge_cgroupfd_self() when the test process runs in a cgroup
+where the memory controller is not enabled in its parent's
+cgroup.subtree_control?
+
+In mm/memcontrol.c:mem_cgroup_get_from_fd(), resolving a cgroup directory fd
+requires an active memory controller CSS on that cgroup and returns -ENOENT
+otherwise:
+
+	cgrp =3D cgroup_get_from_fd(fd);
+	if (!IS_ERR(cgrp)) {
+		rcu_read_lock();
+		css =3D cgroup_css(cgrp, &memory_cgrp_subsys);
+		if (!css || !css_tryget_online(css)) {
+			rcu_read_unlock();
+			cgroup_put(cgrp);
+			return ERR_PTR(-ENOENT);
+		}
+
+Should open_self_cgroupfd() verify that the memory controller is enabled on
+cgroup_path (or should the callers skip on ENOENT) so the tests skip rather
+than fail when run outside vmtest.sh in a non-root cgroup without +memory?
+
+[ ... ]
+> +/*
+> + * Test: transfer a dma-buf's charge to self cgroup via DMA_BUF_IOCTL_XF=
+ER_CHARGE.
+> + */
+> +static void test_xfer_charge_cgroupfd_self(char *heap_name)
+> +{
+> +	int heap_fd =3D -1, cgroup_fd =3D -1, dmabuf_fd =3D -1, ret;
+> +	struct dma_buf_transfer_charge xfer =3D { 0 };
+> +
+> +	heap_fd =3D dmabuf_heap_open(heap_name);
+> +
+> +	if (!pidfd_alloc_supported(heap_fd)) {
+> +		ksft_test_result_skip("charge_fd not supported by this kernel\n");
+> +		goto out;
+> +	}
+> +
+> +	ret =3D dmabuf_heap_alloc(heap_fd, ONE_MEG, 0, &dmabuf_fd);
+> +	if (ret) {
+> +		ksft_test_result_fail("Allocation failed %d\n", ret);
+> +		goto out;
+> +	}
+> +
+> +	cgroup_fd =3D open_self_cgroupfd();
+> +	if (cgroup_fd < 0) {
+> +		ksft_test_result_skip("cannot open self cgroupfd\n");
+> +		close(dmabuf_fd);
+> +		goto out;
+> +	}
+> +
+> +	xfer.charge_fd =3D cgroup_fd;
+> +	ret =3D ioctl(dmabuf_fd, DMA_BUF_IOCTL_XFER_CHARGE, &xfer);
+> +	ksft_test_result(!ret, "XFER_CHARGE to self cgroupfd %d\n", ret);
+
+[Severity: Medium]
+As reported by Sashiko on v3 [3], won't test_xfer_charge_cgroupfd_self() fa=
+il
+with EOPNOTSUPP under default kernel parameters (dma_heap.mem_accounting=3D=
+0) or
+on heaps that do not set exp_info.memcg (such as CMA heaps)?
+
+Here the buffer is allocated with dmabuf_heap_alloc(), which passes
+charge_fd =3D 0. In drivers/dma-buf/dma-heap.c:dma_heap_ioctl_allocate():
+
+	if (heap_allocation->charge_fd) {
+		memcg =3D mem_cgroup_get_from_fd(heap_allocation->charge_fd);
+		if (IS_ERR(memcg))
+			return ERR_CAST(memcg);
+	}
+
+	if (!memcg && mem_accounting)
+		memcg =3D get_mem_cgroup_from_mm(current->mm);
+
+When charge_fd is 0 and mem_accounting is false (the default), memcg is NUL=
+L,
+and drivers/dma-buf/dma-buf.c:dma_buf_xfer_charge() returns -EOPNOTSUPP when
+dmabuf->memcg is NULL:
+
+	if (!dmabuf->memcg) {
+		ret =3D -EOPNOTSUPP;
+		goto out;
+	}
+
+Similarly, pidfd_alloc_supported() passes for all heaps because charge_fd is
+validated in dma_heap_ioctl_allocate() before heap->ops->allocate(), so
+non-system heaps reach DMA_BUF_IOCTL_XFER_CHARGE with dmabuf->memcg =3D=3D =
+NULL
+and also return -EOPNOTSUPP.
+
+Should test_xfer_charge_cgroupfd_self() allocate the buffer with a charge_fd
+(e.g. via dmabuf_heap_alloc_pidfd()) and skip when DMA_BUF_IOCTL_XFER_CHARGE
+fails with errno =3D=3D EOPNOTSUPP?
+
+> diff --git a/tools/testing/selftests/dmabuf-heaps/vmtest.sh b/tools/testi=
+ng/selftests/dmabuf-heaps/vmtest.sh
+> new file mode 100755
+> index 0000000000000..3574b71ca83e8
+> --- /dev/null
+> +++ b/tools/testing/selftests/dmabuf-heaps/vmtest.sh
+[ ... ]
+> +check_deps() {
+> +	for dep in vng make; do
+> +		if [[ ! -x $(command -v "${dep}") ]]; then
+> +			echo -e "skip:    dependency ${dep} not found!\n"
+> +			exit "${KSFT_SKIP}"
+> +		fi
+> +	done
+> +
+> +	if ${SHELL_MODE}; then
+> +		return
+> +	fi
+> +
+> +	if [[ ! -x "${DMABUF_HEAP_TEST}" ]]; then
+> +		printf "skip:    %s not found!" "${DMABUF_HEAP_TEST}"
+> +		printf " Please build the kselftest dmabuf-heaps target (or use -b).\n"
+> +		exit "${KSFT_SKIP}"
+> +	fi
+> +
+> +	if [[ ! -x "${MEMCONTROL_TEST}" ]]; then
+> +		printf "skip:    %s not found!" "${MEMCONTROL_TEST}"
+> +		printf " Please build the kselftest cgroup target (or use -b).\n"
+> +		exit "${KSFT_SKIP}"
+> +	fi
+> +}
+[ ... ]
+> +trap cleanup EXIT
+> +
+> +check_deps
+> +check_vng
+> +handle_build
+> +make_runner
+
+[Severity: Medium]
+As reported by Sashiko on v3 [4], if vmtest.sh is invoked with -b on a clean
+tree where the selftest binaries have not been built yet, won't check_deps()
+exit with KSFT_SKIP before handle_build() has a chance to compile them?
+
+Should handle_build() run before check_deps() (or should check_deps() skip
+the binary existence checks when BUILD is true)?
 
 [1] https://lore.kernel.org/r/20261027-v2_20230123_tjmercier_google_com-v3-=
-6-78d2c4cb8647@redhat.com
-[2] https://lore.kernel.org/r/16093a0278a6d7d1a0a8bc055c228bed@paul-moore.c=
-om
+8-78d2c4cb8647@redhat.com
+[2] https://lore.kernel.org/r/20261027-v2_20230123_tjmercier_google_com-v3-=
+8-78d2c4cb8647@redhat.com
+[3] https://lore.kernel.org/r/20261027-v2_20230123_tjmercier_google_com-v3-=
+8-78d2c4cb8647@redhat.com
+[4] https://lore.kernel.org/r/20261027-v2_20230123_tjmercier_google_com-v3-=
+8-78d2c4cb8647@redhat.com
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261104-v2_2023012=
-3_tjmercier_google_com-v4-0-1819a017000b@redhat.com?part=3D7
+3_tjmercier_google_com-v4-0-1819a017000b@redhat.com?part=3D8
