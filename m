@@ -2,55 +2,55 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 703EE606A31B
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:10:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 642D2606A31B
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:11:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=aBXAP0Az;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jatg/Hxe
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=LdloxhKo;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id D122A454AF
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:10:39 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id AFFD5454CF
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:11:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793913039;
-	bh=b74s25V2apv18H+lPm+BPboDuVAgLBZbFTCGyriTgSw=;
+	d=lists.trustedfirmware.org; s=2024; t=1793913068;
+	bh=VZRnIpM2wCvIjSh9P+PGr0d/uBMnYJCKqKQo3RqP51A=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=aBXAP0Azt3yiFM+Dy6OwGTKq+3in3U9goKEtANhAl0YSWmYWl7iXQUGl2BoJCMwju
-	 0uJxYtg6yF/bv+5bRPy2qrzTFbtEqa43D0rWuomUacqVNBgnk4w3M5Azlgoxq7qDDN
-	 40A6SISG+otAN8YM7yVg47ds2+V2Hl7jQsNxlXOBgwllqWNvFIrn5ojJLEOL0AYE1/
-	 n3n0gPxhzRrL3L6+a7AodIhr379gstHRczPNiaUSawSIAYTh4d+REsIBfedUUSpTHa
-	 ckgpLt100jAlpaKWCHG/NCOs+7Pe9KxrI9lMo0iZqgZiw5CXZQ0vp4yAPOjC0UCI5l
-	 DbN+T7Lc8ft2w==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CE4BE454D1
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:07:52 +0000 (UTC)
+	b=LdloxhKoe99NQJXT5+c6AYgFbBmoLJk9BKq/h4PsRGB4qN3+6KgOx1RJVnjiV4qvb
+	 v5dDom1I2ZB4xOWxu8/PYKd9RJNcuHCzKLhHhgJXDfOma8Qp3GSEvrVmKiVaJqeHOw
+	 +jMGcTi16OlJ14Vn3kL8xpohnEetZaZpbTsxHzovtmmi2mXbOShhC6WkGwMqhZOxtm
+	 fhtXIIuNP5iHqeP49/8DmrTdPt7h7E7ujOK1LfPQ4uj8bnoHrr7SZ01toCengXwlcU
+	 tB2zxqqHNvtEsbEzSk6OMgidit8+fP4MqQg9AwZ8VZwzlkJfpQx+s+vY5aW1ouGhTF
+	 lmoJn6nnL/IkQ==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id C63D14549E
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:08:04 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jatg/Hxe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 156C66062C;
+	by sea.source.kernel.org (Postfix) with ESMTP id 45D9843FE4;
+	Thu,  5 Nov 2026 21:08:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40DBB1F008AB;
 	Thu,  5 Nov 2026 21:07:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02C4A1F00903;
-	Thu,  5 Nov 2026 21:07:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912871;
-	bh=BSFlkiRcJ1vaWlX3XB1LPFKx8VblPahiv0oUIc71Mco=;
+	s=k20260515; t=1793912884;
+	bh=AH46OuGdtEt1nsUri8AEqTjCIJ9jhn5rP+r92fYTTuo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=jatg/Hxe4mTOnYc6cjv7XH6Qe+5v947GBo55sPEEMiM/wHMGub8rie+CrUhiiVCwx
-	 aVKuP6kJrOh4gmHX6cKlQwCOltZMaa6SIFACvSdK4QqBQG/CN/Uh2ouIoA163WeJWA
-	 aCFh4tV2gzd2PoHInFGnIOla9ytpFnr82eYrYNqA9GdHylI1ygQRjcwLTJNoIYvabk
-	 wBbG24axaby51HBE4+2pC16l0d4oiS4Wb9V73xW0CHWW9aTUBuPz4elz4OZdbVKD8e
-	 8OfrYLyC+4HvSiFHcBMWmBHPhMMi1Us1KhyMyvljrbaJ2Z12u3wgEMNNN5uAPkFQHQ
-	 m/wM/7T6OrtAQ==
-Date: Thu, 05 Nov 2026 21:05:40 +0000
-Subject: [PATCH 09/14] soc: aspeed: convert LPC and P2A control mmap hooks
- to mmap_prepare
+	b=gQXtnC+uGV3ca+q7ByIhTFttKWFz/mEPWtGFIHyr1U7eyA5UiL3F5di8hwOyKNKIF
+	 owKNBe70mg3Zo5esALsOGrB3Gu4dftp1gp/kDfIf8QLSYdragHGzq3le/t0ApgBOdt
+	 W9up1YKjS36n6toNIJ3j5acZKXZ8wWo1sMDx7UIrb0pziMl9w8OPwDPPoOYAZT36u2
+	 vi8ESoYJVVURVm/u4/xMe23aJwZSVnqx7/HIEZFlTMpz35L2uOhW7gv4mJl1kf17SO
+	 iv7fymeQuygUorjvcrauyoeA1G+MidvGijWcp/sEyevbIArziwLEOE45fNvfWtSV44
+	 zrRXpq/nRe5Qg==
+Date: Thu, 05 Nov 2026 21:05:41 +0000
+Subject: [PATCH 10/14] soc: qcom: rmtfs_mem: convert mmap hook to
+ mmap_prepare
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-9-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-10-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>,
@@ -88,32 +88,32 @@ To: Juergen Gross <jgross@suse.com>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4041; i=ljs@kernel.org;
- h=from:subject:message-id; bh=b74s25V2apv18H+lPm+BPboDuVAgLBZbFTCGyriTgSw=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF8j/+Dg1ofBp3oCTIwOdz09F2xxdcKv2a/ld13+P
- 93dcX7ctY5SFgYxLgZZMUWW51/E9weJhM3rvODvBjOHlQlkCAMXpwBMZNlFhv/RUsXqv5pnL30j
- aSPYuu/cnqXuLvERO4qv57Zv4rpSwbKH4X/KRYbzO3Ys7TO94nRJeu7Oa9PY2m3rtTUMC/es4TE
- q72AEAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2040; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=VZRnIpM2wCvIjSh9P+PGr0d/uBMnYJCKqKQo3RqP51A=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF/DcEy9Yf31Kzsm7ZGRmTflc4KO8ympbO+gxpqId
+ 5e4dnYId5SyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTGBDuDgFYCJ83owMN3b7GPFPClBsUdpb
+ 91BjyqODrGFXl9VPszke3LF79vZDiYwMd/fO2SCzWsEy+nRExp61KyZ+Xqt1rPVFwbrq23tKLII
+ esgIA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-8.20 / 15.00];
 	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-3.00)[100.00%];
+	BAYES_HAM(-3.00)[99.99%];
 	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
-	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
+	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
 	MIME_GOOD(-0.10)[text/plain];
 	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
 	RCVD_TLS_LAST(0.00)[];
 	FREEMAIL_TO(0.00)[suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
 	DKIM_TRACE(0.00)[kernel.org:+];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCPT_COUNT_GT_50(0.00)[61];
 	RCVD_COUNT_TWO(0.00)[2];
@@ -126,17 +126,17 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	TAGGED_RCPT(0.00)[netdev];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CE4BE454D1
+X-Rspamd-Queue-Id: C63D14549E
 X-Spamd-Bar: --------
-Message-ID-Hash: F3VOUN4ZHNRQ3AITERCO26JJAY4SOK6V
-X-Message-ID-Hash: F3VOUN4ZHNRQ3AITERCO26JJAY4SOK6V
+Message-ID-Hash: 47A4QQ67HU6X74S6LHFZX5WEHLYCUF2P
+X-Message-ID-Hash: 47A4QQ67HU6X74S6LHFZX5WEHLYCUF2P
 X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/F3VOUN4ZHNRQ3AITERCO26JJAY4SOK6V/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/47A4QQ67HU6X74S6LHFZX5WEHLYCUF2P/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -151,113 +151,61 @@ X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook for both
-the LPC control and P2A control drivers.
-
-Both remap a range of their reserved memory region, so use the PFN remap
-mmap action to do so, retaining the -EAGAIN error on failure via the action
-error override.
+Move from the deprecated mmap hook to the new mmap_prepare hook, using the
+PFN remap mmap action to map the region.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/soc/aspeed/aspeed-lpc-ctrl.c | 20 +++++++++-----------
- drivers/soc/aspeed/aspeed-p2a-ctrl.c | 22 ++++++++--------------
- 2 files changed, 17 insertions(+), 25 deletions(-)
+ drivers/soc/qcom/rmtfs_mem.c | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-index 4d8574cac703..9258762354cc 100644
---- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-@@ -47,22 +47,20 @@ static struct aspeed_lpc_ctrl *file_aspeed_lpc_ctrl(struct file *file)
- 			miscdev);
- }
- 
--static int aspeed_lpc_ctrl_mmap(struct file *file, struct vm_area_struct *vma)
-+static int aspeed_lpc_ctrl_mmap_prepare(struct vm_area_desc *desc)
- {
--	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
--	unsigned long vsize = vma->vm_end - vma->vm_start;
--	pgprot_t prot = vma->vm_page_prot;
-+	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(desc->file);
- 
--	if (vma->vm_pgoff + vma_pages(vma) > lpc_ctrl->mem_size >> PAGE_SHIFT)
-+	if (desc->pgoff + vma_desc_pages(desc) >
-+	    lpc_ctrl->mem_size >> PAGE_SHIFT)
- 		return -EINVAL;
- 
- 	/* ast2400/2500 AHB accesses are not cache coherent */
--	prot = pgprot_noncached(prot);
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
- 
--	if (remap_pfn_range(vma, vma->vm_start,
--		(lpc_ctrl->mem_base >> PAGE_SHIFT) + vma->vm_pgoff,
--		vsize, prot))
--		return -EAGAIN;
-+	mmap_action_remap_full(desc,
-+		(lpc_ctrl->mem_base >> PAGE_SHIFT) + desc->pgoff);
-+	desc->action.error_override = -EAGAIN;
- 
- 	return 0;
- }
-@@ -216,7 +214,7 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
- 
- static const struct file_operations aspeed_lpc_ctrl_fops = {
- 	.owner		= THIS_MODULE,
--	.mmap		= aspeed_lpc_ctrl_mmap,
-+	.mmap_prepare	= aspeed_lpc_ctrl_mmap_prepare,
- 	.unlocked_ioctl	= aspeed_lpc_ctrl_ioctl,
+diff --git a/drivers/soc/qcom/rmtfs_mem.c b/drivers/soc/qcom/rmtfs_mem.c
+index 342c0845134e..5e2ac75f41d5 100644
+--- a/drivers/soc/qcom/rmtfs_mem.c
++++ b/drivers/soc/qcom/rmtfs_mem.c
+@@ -129,24 +129,22 @@ static const struct class rmtfs_class = {
+ 	.name           = "rmtfs",
  };
  
-diff --git a/drivers/soc/aspeed/aspeed-p2a-ctrl.c b/drivers/soc/aspeed/aspeed-p2a-ctrl.c
-index b6b7b80f842a..ad59ff28c013 100644
---- a/drivers/soc/aspeed/aspeed-p2a-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-p2a-ctrl.c
-@@ -97,29 +97,23 @@ static void aspeed_p2a_disable_bridge(struct aspeed_p2a_ctrl *p2a_ctrl)
- 	regmap_update_bits(p2a_ctrl->regmap, SCU180, SCU180_ENP2A, 0);
- }
- 
--static int aspeed_p2a_mmap(struct file *file, struct vm_area_struct *vma)
-+static int aspeed_p2a_mmap_prepare(struct vm_area_desc *desc)
+-static int qcom_rmtfs_mem_mmap(struct file *filep, struct vm_area_struct *vma)
++static int qcom_rmtfs_mem_mmap_prepare(struct vm_area_desc *desc)
  {
--	unsigned long vsize;
--	pgprot_t prot;
--	struct aspeed_p2a_user *priv = file->private_data;
-+	struct aspeed_p2a_user *priv = desc->file->private_data;
- 	struct aspeed_p2a_ctrl *ctrl = priv->parent;
+-	struct qcom_rmtfs_mem *rmtfs_mem = filep->private_data;
++	struct qcom_rmtfs_mem *rmtfs_mem = desc->file->private_data;
  
- 	if (ctrl->mem_base == 0 && ctrl->mem_size == 0)
+-	if (vma->vm_end - vma->vm_start > rmtfs_mem->size) {
++	if (vma_desc_size(desc) > rmtfs_mem->size) {
+ 		dev_dbg(&rmtfs_mem->dev,
+ 			"vm_end[%lu] - vm_start[%lu] [%lu] > mem->size[%pa]\n",
+-			vma->vm_end, vma->vm_start,
+-			(vma->vm_end - vma->vm_start), &rmtfs_mem->size);
++			desc->end, desc->start, vma_desc_size(desc),
++			&rmtfs_mem->size);
  		return -EINVAL;
+ 	}
  
--	vsize = vma->vm_end - vma->vm_start;
--	prot = vma->vm_page_prot;
--
--	if (vma->vm_pgoff + vma_pages(vma) > ctrl->mem_size >> PAGE_SHIFT)
-+	if (desc->pgoff + vma_desc_pages(desc) > ctrl->mem_size >> PAGE_SHIFT)
- 		return -EINVAL;
- 
- 	/* ast2400/2500 AHB accesses are not cache coherent */
--	prot = pgprot_noncached(prot);
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
- 
--	if (remap_pfn_range(vma, vma->vm_start,
--		(ctrl->mem_base >> PAGE_SHIFT) + vma->vm_pgoff,
--		vsize, prot))
--		return -EAGAIN;
-+	mmap_action_remap_full(desc,
-+		(ctrl->mem_base >> PAGE_SHIFT) + desc->pgoff);
-+	desc->action.error_override = -EAGAIN;
- 
- 	return 0;
+-	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+-	return remap_pfn_range(vma,
+-			       vma->vm_start,
+-			       rmtfs_mem->addr >> PAGE_SHIFT,
+-			       vma->vm_end - vma->vm_start,
+-			       vma->vm_page_prot);
++	desc->page_prot = pgprot_writecombine(desc->page_prot);
++	mmap_action_remap_full(desc, rmtfs_mem->addr >> PAGE_SHIFT);
++
++	return 0;
  }
-@@ -308,7 +302,7 @@ static int aspeed_p2a_release(struct inode *inode, struct file *file)
  
- static const struct file_operations aspeed_p2a_ctrl_fops = {
- 	.owner = THIS_MODULE,
--	.mmap = aspeed_p2a_mmap,
-+	.mmap_prepare = aspeed_p2a_mmap_prepare,
- 	.unlocked_ioctl = aspeed_p2a_ioctl,
- 	.open = aspeed_p2a_open,
- 	.release = aspeed_p2a_release,
+ static const struct file_operations qcom_rmtfs_mem_fops = {
+@@ -156,7 +154,7 @@ static const struct file_operations qcom_rmtfs_mem_fops = {
+ 	.write = qcom_rmtfs_mem_write,
+ 	.release = qcom_rmtfs_mem_release,
+ 	.llseek = default_llseek,
+-	.mmap = qcom_rmtfs_mem_mmap,
++	.mmap_prepare = qcom_rmtfs_mem_mmap_prepare,
+ };
+ 
+ static void qcom_rmtfs_mem_release_device(struct device *dev)
 
 -- 
 2.56.0
