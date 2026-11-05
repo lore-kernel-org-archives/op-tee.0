@@ -2,93 +2,92 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30F4B606A326
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:17:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7FAC606A31B
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:17:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OsqdMDG9;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=NCi8QE3L
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FnpEQ9Vv;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=bxN6rziV
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 8308E43A89
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:17:20 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0E81643A89
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:17:50 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=OsqdMDG9;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=NCi8QE3L;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FnpEQ9Vv;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=bxN6rziV;
 	dkim-atps=neutral
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0AAA74549A
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:15:48 +0000 (UTC)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A59thbN3531984
-	for <op-tee@lists.trustedfirmware.org>; Thu, 5 Nov 2026 11:15:47 GMT
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7779C454A4
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:15:52 +0000 (UTC)
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A59tcRf1028283
+	for <op-tee@lists.trustedfirmware.org>; Thu, 5 Nov 2026 11:15:52 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IYW802/Qaa9XiXUiT0voD+k5ybmaYLNb7JNC06e0GJM=; b=OsqdMDG9Ncb/MD28
-	kruC4Km4xpxvkvBaiXxyPVsKmFcD8XWMYmpUGRX2GVDG7Y+BJnoyUuabh0xlINi3
-	Wj2t+8pwNLDfZEugZMTGLFslQlwbHPP5F25bjyem/a9+X/2wp6M+NWsoYkx3B7/Y
-	DR+25+BO3+T5L/rZt0WN5v3112O8GlG9MT7ZYe4E2VntVsCtKjj6P9BkuZCDbqbU
-	Zr0BXBOwjy03vwOXgDJtdT8kq/badq97PdMQRtveSBttivD8PqGEygSBskgdNPok
-	g/8u7T9HhNu4GrhfJuTA98wAzfby+b4FIhLoM/ViPo11rSrSVgz1TlgdizNrWEhG
-	8iJVCQ==
+	OSyGglNviyFpT8Uu9xEAndODqt4knqWiiFpaao097o8=; b=FnpEQ9Vv5tE+BsDM
+	PD+fLZrLVW6lU+6/bxawyMYuHXIrlSTNeGObYmYQbDYrSBIJjODovM1KnaV/97rj
+	Se9ZDDNvvoOHyAmpq/YWT2zE0EezYfq8Wj6n+jFTUMXWInBFsK5yKgXfZzh88KgT
+	kB4dd48oAFfQE/0zJCd3ttPbK4LXvIGySh7CiKzDHyHfPt1rqJ+h01Q5RlomVqNW
+	6AJrfmwvoMxWyPYOqkxdYZA5K2RBA5UsfQ3V/7vDqvRLaxcXiQP7qUemEF7iu4GT
+	nfYuApiVwJmeyXUJywY9GqafagoQC8sOLt+/DrTzPDd1YbLDaATP4LzI0aLHNkgO
+	1YhNIA==
 Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hrksq9ag5-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hrkaq9eq2-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 11:15:47 +0000 (GMT)
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-36a3451ea93so2505703eec.1
-        for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 03:15:47 -0800 (PST)
+	for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 11:15:51 +0000 (GMT)
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-36d69ab3c2bso1770847eec.0
+        for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 03:15:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793877346; x=1794482146; darn=lists.trustedfirmware.org;
+        d=oss.qualcomm.com; s=google; t=1793877351; x=1794482151; darn=lists.trustedfirmware.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=IYW802/Qaa9XiXUiT0voD+k5ybmaYLNb7JNC06e0GJM=;
-        b=NCi8QE3LqFUEtKp0dTgl/MqqvG8cAotFU32vAMcBcIUjRciYW0ilVlS9HdsvvqW2ds
-         umuJo6QdmOeyKyBp8iPrueJhj+lWCFlHaintXdXkZ0A4jAqOLKFQQT/WKk2DOTC0T5sm
-         KO4Z8o9dyfg0xtUDEuUvZQSxH7wFgygVIs+BrDCl3RLDHWwUppx6aH7X4v8ZTv8qwgNU
-         I3yWENwQYMIrBAvCLN9sTLSCvb36Ey9xrFjvDdPjwiotdCN8H+JBKZ7p84GFmEEdllB+
-         imGA+mNgPUpNC8kuMGEQOdW1WBHfoJbHkTghxZig5qov8g14TLetnpWtQKvTMkePFqp6
-         n88A==
+        bh=OSyGglNviyFpT8Uu9xEAndODqt4knqWiiFpaao097o8=;
+        b=bxN6rziVNWm1nRmClKGS4x6VHhsOHk2o+tAksjIJyq0jiTmvi7aCsBU34tE379DGTm
+         00sv2AUzxsr1TfwbtMXmj0jJFdoseVbLbx177U2V4CYqqg0TjIwA/M46JzODlysj/76v
+         tx2380XcTgaJTqyDjwZrgTbX0/TM+FWT+53ZNpB9HHOnXTgYgzSbnppTzTQutnY+XPFo
+         CAwGRiHwYrEY1G2y/XPic8FT/O4Y8FnfAxKAyncAasPqPy+uxya8v6Z6QG0cKQsz9gFP
+         hiZvj+7Gj+9S/9gjPzmRQlK1lmecv52NcpD5KCH4kPOjkvbiK1iCWB0HQFME+GqNsTQE
+         JAxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793877346; x=1794482146;
+        d=1e100.net; s=20260707; t=1793877351; x=1794482151;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=IYW802/Qaa9XiXUiT0voD+k5ybmaYLNb7JNC06e0GJM=;
-        b=T+Ik36aYA4XqjV4YDsHErfDOEzeqQEcurToYP5K8wfFK2vyadmzZH3fe/VtoLsCJ0B
-         +imJo0ZliTR34s0OjJ8X05mfT4Dxu5zAHRw/HWLKuZd4UXRbCwr5kZMGqnmq7odToIo+
-         qhuR636fHRfy3wYmDvnkGmNwriUkkplTCSKkKm/qcmyKRfdUMTEYs+Q41yTXpOB+Ydsa
-         x2w+VJJsnsYRFWtAj6cRkxYCGiIybedMXqqcBQzs1/h+n55Wnvc/XQVifn2hr9trAEFL
-         hWbFGwoGkjfutL686kDnG9A6xZ0Dr73PmS3Hgzn3VPa/D7WQ0/pr94cQqwAqDsyFFQdw
-         292Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxrgups8Pe8a1Kp/A27/c50jX05u/NRuuD8yXA0+wD9ijMtOiMsRRdmtyCQyQrFxYLhh5kY4zo=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z8Wzi7xH9dVCeYKhDnErbucLQ9jvfSHOSdP5W+HydrFonlrY7jS
-	ebWUxcfduowr12HFlsaJllzElBOjcdaSg1girvvRc0YTk2dZAF16ETOvVkeq1NkBI/payG1CkeK
-	uVH0LelzFovWaieFdib2v9gxJiw3xzn5A+4JaCiVA0wAGSo22WfjDitfopR3dwZx7OqYUDGMp
-X-Gm-Gg: AYBFou0N56abFrof08DXgeY84sQ7hg1W68icZafpRQSi6m/ESZQw8WsLaobISKGbtg9
-	O5T04mG8NRwgq5EvbG44nsAN9CIM2Rbk6GWX/fr4t7Vx5SbzdDmLsv0L0vbPwHonCdoPqUtPbVo
-	QfTF/ByIIQuwA5CKm36zt2M+GzXyVuwuUJJBwC4CKPrIm9h70SnFEwpzhriEzJ8AV5HSsXSzrxj
-	JmBd/UpD03xgrDDhSu3+MWRlY3cjCZhbrm+NVr4ER74MAnc+KJ20XpPNfa+dhlA+0EqI9CN4INX
-	XrlNZr3cfRUXd60wgAfCklMlt+1ps1uTE6cY8ATpRD2lytvBuTrIBlzyDDyLHdqr9vm87mj4kFq
-	E+yFk7lSlIrRKsPQzxO9FBp4L0loZLv5Jwa3umGm1APAZ8KaHoHTd3RI/0scKT1LSgDsaCYgeKw
+        bh=OSyGglNviyFpT8Uu9xEAndODqt4knqWiiFpaao097o8=;
+        b=T7F+IaDRkQaXCSPNF0kYycdKmEfS5+mn9sCmO7YMqdhICdN5aJqVm1rPua6l6AToDu
+         hELsU0p+P/NQsEr20XHVHSYlvkDgVmd9pTDcNzf65a+mVAIw/OJz58WD9y3zvWwqg3H5
+         sh6aBtUuc8IVi4/zB+HA60F7V/KcHGinHprneg76vTHlcqjAoyjF/h+tlae5vFyhawpB
+         th9mE78zH+wZK+SddM2ETGtFBLmF2hzsLSLRpn0RGtcvhy8k+E1y7dEi4NEU2lBN0odI
+         QZz6KPIceH9PookzHIESVebrJoiYFUBLkCUZN1hjWYvNk4RjZZLnXUTzQ4JhcaQzuqLJ
+         Sf9g==
+X-Forwarded-Encrypted: i=1; AKwUvBwXrIUTJPli2fNoSvKjbGmSKZ8lgnpJS4LMm7x1xCW/RoMo/aiG3kM4etl1D3O8q22w/+mKIXs=@lists.trustedfirmware.org
+X-Gm-Message-State: APuU4Z/0uHt9uezO/TyP/NRTTLomdtXZgYfpc1Fj4MVrwIRniBZE1iqe
+	kJPDivhvWmiw0bLkcmheefUMWP8mYRAF0qvfJxFn0BVfSYbHZV3W+zaOrRAHnJ7bHzLYDY58CLZ
+	11Dim2Q1g4Vm41vXQ6nw1Up00bP+KT1qMg0fZtgVXOMQq2TR+lhhVyUTiEA8EH6gHzyj9AHXd
+X-Gm-Gg: AYBFou1iq2nDHzUZXjvxUgrHeX0AMU5bWpcEt6SIWgb9a0wYzYLklzP7PRnqyqNyZKp
+	Cu7K34gnqE1FO5kSQ1bL6peMrll2ZxH5MufZd9RniJTElOQx+VFg/I0oM8+2KV2w06m1Uqft9bJ
+	64inULjEFRnAv3W3RwvDSBYY2mnS+BEY+8b+Iq6e0/BfpZWinGRN7LcrN04uvA2hFSTIRfK+pwi
+	yC9YhaW8ChIDcxhIQQTdmN2fYdKLRA1lal44MsHXXuK1nhm+62WRXlprLFyx1AyLKUKjVTABhjH
+	LDy09A8sgsMiue9gFQyPrdkhBagc5Gpt79V4nBqoydGuPWf4u5eaZvCUFw9q5yLwZAsbzhsxCFm
+	P2nbmtU0unbcrfoDm4oqs7xvP+bUa9kREt6dObsH/ZDgoW/VNFjasIyX79jRmARS3Kg5chzxNbA
 	==
-X-Received: by 2002:a05:7301:f82:b0:36d:c3db:9802 with SMTP id 5a478bee46e88-36dc3dbadffmr3983089eec.18.1793877344896;
-        Thu, 05 Nov 2026 03:15:44 -0800 (PST)
-X-Received: by 2002:a05:7301:f82:b0:36d:c3db:9802 with SMTP id 5a478bee46e88-36dc3dbadffmr3983043eec.18.1793877344250;
-        Thu, 05 Nov 2026 03:15:44 -0800 (PST)
+X-Received: by 2002:a05:7301:fc86:b0:36e:c07a:426f with SMTP id 5a478bee46e88-36ec07a4913mr702724eec.39.1793877350489;
+        Thu, 05 Nov 2026 03:15:50 -0800 (PST)
+X-Received: by 2002:a05:7301:fc86:b0:36e:c07a:426f with SMTP id 5a478bee46e88-36ec07a4913mr702685eec.39.1793877349891;
+        Thu, 05 Nov 2026 03:15:49 -0800 (PST)
 Received: from hu-hdev-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36dd7ec8881sm14002125eec.18.2026.11.05.03.15.39
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36dd7ec8881sm14002125eec.18.2026.11.05.03.15.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 03:15:43 -0800 (PST)
+        Thu, 05 Nov 2026 03:15:49 -0800 (PST)
 From: Harshal Dev <harshal.dev@oss.qualcomm.com>
-Date: Thu, 05 Nov 2026 16:44:51 +0530
-Subject: [PATCH v6 3/7] tee: qcomtee: Allow object invokes from kernel
- clients
+Date: Thu, 05 Nov 2026 16:44:52 +0530
+Subject: [PATCH v6 4/7] tee: Export uuidv5 generation for TEE backends
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-qcom_uefisecapp_migrate_qcomtee-v6-3-c7d68ce05c51@oss.qualcomm.com>
+Message-Id: <20261105-qcom_uefisecapp_migrate_qcomtee-v6-4-c7d68ce05c51@oss.qualcomm.com>
 References: <20261105-qcom_uefisecapp_migrate_qcomtee-v6-0-c7d68ce05c51@oss.qualcomm.com>
 In-Reply-To: <20261105-qcom_uefisecapp_migrate_qcomtee-v6-0-c7d68ce05c51@oss.qualcomm.com>
 To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>,
@@ -99,43 +98,44 @@ To: Jens Wiklander <jens.wiklander@oss.qualcomm.com>,
         Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
         Krzysztof Kozlowski <krzk@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793877323; l=7572;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793877323; l=3003;
  i=harshal.dev@oss.qualcomm.com; s=20251124; h=from:subject:message-id;
- bh=F5q5zcQHeA+fmIYDPCCU1wcOsANKXJgvP8zn4B9u0xE=;
- b=td45KK0r80vX9AClxuJcqMaXTRybkP2FbdDt0bQZ7lyuLUzJIyYwbbv+LzgpELEnM8Pi/gWP/
- ZboDbLEspSECMtEnMIPbKQ8DbmCaVOX8XnCUMGULYWvk9h9VzPKHtRH
+ bh=Twey1zuZcAHPNfsDJ1UYaEgRECNx0M9KEAwGTgro9JY=;
+ b=db++sqPUH/XyyGS7Ka53YiKQJPHZdjl8bosVBr48pSSEJgP7GfLEvetShpJRqRDT2g7wcFNqx
+ /XdkqSkPuO2DvN3kMs4uHNGZ+n3fjQcQ208zNAV7WA6wJkuKtqsAyKV
 X-Developer-Key: i=harshal.dev@oss.qualcomm.com; a=ed25519;
  pk=SHJ8K4SglF5t7KmfMKXl6Mby40WczSeLs4Qus7yFO7c=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA0NCBTYWx0ZWRfX7SadEEEjxHKN
- QnXCRsSpCK5O5t69wMoSsSGZjTR+elxPnvvj953nulSdcZKyF8Kx+THCQjklCBORYQHecAq9CxB
- HjA3Njk7Ru1XVhNSahRPDHAeU14WaVn62NaEJ/MobUWsdyZeE1xY0M2fiax8NzR5WD9DJUE+8k9
- lV6S0aK+8lDT2iCj0Rp+pOM57jpY0ZWhFniBHwdIuNAmgLEetQsuH7jpJT5GsKzUjAi5t2HdcVB
- +Z0pnRMKyblt+hfkTdjyFlOEvzJ9zU1nJ8GjulBkfR716ZbPNblwKGaSq3Jz812G7LzQPJ+TnMr
- G39tHzfJKXKbLFXbprNGcpxtmlxfPANgPWSO6QDO/XuLaB0pLCzTc84BuCPhtO1rERC6LufOFDL
- VYLWRwLRtpFx4x/4hwhCBFj34+svS1zJLCC7IF7xB7oRDj4dmcVru17ugFWAp4LWxn9TtK8pZOR
- OC1JkwCvDU8LGcMGuWg==
-X-Proofpoint-ORIG-GUID: vIzA-toDUY26hoOEfojXLoEFqnNYe411
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA0NCBTYWx0ZWRfX/rFR2Vu+h080
- ZpQ62kzpX7dwrXlKc2Ik+zIggKfpIY41kBcBtuqP6U6/4JY39VL8fY7HQZSKEJe99XiWeFCNgrD
- 8MvKX3rDcF0poQGSrCmxP0F8oQgt7oU=
-X-Authority-Analysis: v=2.4 cv=CIe/zhrD c=1 sm=1 tr=0 ts=6aec6563 cx=c_pps
+X-Proofpoint-GUID: aZqd8aSvJRuzCxNjjB9Z08aiJYku6fs0
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA0NCBTYWx0ZWRfX6I67Sl25NWU/
+ m1I47zFArPM6TzWZqT/J9WJEs9YPKkDrwPA3swj77bdFJeObwBpTpBd5+/u6t3CxtDVi9OLLclm
+ +BKpHA10gsIiVU1PPFAsB9qoHfQfZ7k=
+X-Proofpoint-ORIG-GUID: aZqd8aSvJRuzCxNjjB9Z08aiJYku6fs0
+X-Authority-Analysis: v=2.4 cv=OZoNnRTY c=1 sm=1 tr=0 ts=6aec6567 cx=c_pps
  a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=EUspDBNiAAAA:8 a=2fm1Try5a8I-Yd-RT8kA:9 a=QEXdDO2ut3YA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=EUspDBNiAAAA:8 a=pmd68VmXx7mOn8wi7GwA:9 a=QEXdDO2ut3YA:10
  a=bBxd6f-gb0O0v-kibOvt:22
-X-Proofpoint-GUID: vIzA-toDUY26hoOEfojXLoEFqnNYe411
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA0NCBTYWx0ZWRfXxl66staVYz43
+ TiY5WCmkPcbATvwNiJ56Z11AuTqQnZR2ZMytnHZl3VYq8r8GwYL47bJHIDG3ICDbZw7blZ+huYH
+ vTBkibycCMHHReFJ9SI9P71aBn0KkQxBqF04EDW/kjCvJg9XcWfSU6ElKjvzGkuZgMfCn978qvD
+ 6rEeKuZZvQFwnARubkz8Jk837zK/T6gwUbNdFXFw3VHCcBOmFY5LMZJhSmlbAoaNS78rAXw9gC6
+ cvSyby3rt3wudcLrXWYLpUeTE7PZisGibYmKJ7E35RnVBzCzfuc7PCQ2Iy9M02B45258okmogqN
+ /7lssLgJwoP13CFwWyGqPZ6D7r9Zj3tBsV+BA27AXEKVKX8tkPYnsNuC1HD46SZmrbWy8zNesQt
+ 1qEHk8bxK02IRgIu96HI9+37q9SJk8nL3lNnCjzFtweuVXHMxJuJaH6cY9hy9JhfsMcWS/UQ74W
+ aNydL/KGQrCk5O/e3Xg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-05_03,2026-11-04_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 bulkscore=0 suspectscore=0 adultscore=0
- lowpriorityscore=0 phishscore=0 impostorscore=0 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611050044
+ spamscore=0 phishscore=0 bulkscore=0 clxscore=1015 malwarescore=0
+ suspectscore=0 lowpriorityscore=0 impostorscore=0 priorityscore=1501
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
+ definitions=main-2611050044
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-4.10 / 15.00];
-	BAYES_HAM(-3.00)[100.00%];
+	BAYES_HAM(-3.00)[99.99%];
 	DMARC_POLICY_ALLOW(-0.50)[oss.qualcomm.com,none];
 	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
 	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
@@ -159,17 +159,17 @@ X-Spamd-Result: default: False [-4.10 / 15.00];
 	RCVD_TLS_LAST(0.00)[];
 	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 0AAA74549A
+X-Rspamd-Queue-Id: 7779C454A4
 X-Spamd-Bar: ----
-Message-ID-Hash: UOLUFZPBEI6LQQYVMXH6PLUGCD4NFZPK
-X-Message-ID-Hash: UOLUFZPBEI6LQQYVMXH6PLUGCD4NFZPK
+Message-ID-Hash: ZOTQ6UTZ4E45JMR7VOUTVCLD2RZJNE4E
+X-Message-ID-Hash: ZOTQ6UTZ4E45JMR7VOUTVCLD2RZJNE4E
 X-MailFrom: harshal.dev@oss.qualcomm.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com>, Basant Kumar <basantk@qti.qualcomm.com>, Apurupa Pattapu <apurupa@qti.qualcomm.com>, Arun Kumar Neelakantam <aneelaka@qti.qualcomm.com>, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Harshal Dev <harshal.dev@oss.qualcomm.com>, Sumit Garg <sumit.garg@oss.qualcomm.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/UOLUFZPBEI6LQQYVMXH6PLUGCD4NFZPK/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZOTQ6UTZ4E45JMR7VOUTVCLD2RZJNE4E/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -183,196 +183,89 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-
-QCOMTEE currently treats UBUF parameters as userspace addresses and
-applies userspace restrictions when invoking the root object. This is
-not suitable for object invocation requests issued by kernel clients.
-
-Use the kernel_ctx flag to distinguish kernel client requests from
-userspace requests. For kernel contexts, do not mark UBUF parameters as
-user addresses, and allow permitted root-object operations to proceed
-without applying the userspace-only checks.
-
-This allows in-kernel users of tee_client_object_invoke_func() to issue
-object invocation requests through the qcomtee backend.
+Export the uuidv5() function defined in the TEE core to all TEE backends.
+This enables the TEE backend drivers to generate a UUID for identifying
+and registering their secure services on the TEE bus.
 
 Tested-by: Kuldeep Singh <kuldeep.singh@oss.qualcomm.com> #on Glymur-crd
-Acked-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
-Co-developed-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
+Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+Reviewed-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 Signed-off-by: Harshal Dev <harshal.dev@oss.qualcomm.com>
-Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
 ---
- drivers/tee/qcomtee/call.c           | 38 ++++++++++++++++++++++++------------
- drivers/tee/qcomtee/qcomtee_object.h |  5 +++--
- include/linux/tee_drv.h              |  5 ++++-
- 3 files changed, 32 insertions(+), 16 deletions(-)
+ drivers/tee/tee_core.c   | 19 ++++---------------
+ include/linux/tee_core.h | 15 +++++++++++++++
+ 2 files changed, 19 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/tee/qcomtee/call.c b/drivers/tee/qcomtee/call.c
-index 3de54af45719..c97afaa1b4aa 100644
---- a/drivers/tee/qcomtee/call.c
-+++ b/drivers/tee/qcomtee/call.c
-@@ -193,7 +193,7 @@ int qcomtee_objref_from_arg(struct tee_param *param, struct qcomtee_arg *arg,
-  * @u: QTEE arguments.
-  * @params: TEE parameters.
-  * @num_params: number of elements in the parameter array.
-- * @ctx: context in which the conversion should happen.
-+ * @oic: context to use for the current invocation.
-  *
-  * It assumes @u has at least @num_params + 1 entries and has been initialized
-  * with %QCOMTEE_ARG_TYPE_INV as &struct qcomtee_arg.type.
-@@ -202,7 +202,7 @@ int qcomtee_objref_from_arg(struct tee_param *param, struct qcomtee_arg *arg,
-  */
- static int qcomtee_params_to_args(struct qcomtee_arg *u,
- 				  struct tee_param *params, int num_params,
--				  struct tee_context *ctx)
-+				  struct qcomtee_object_invoke_ctx *oic)
- {
- 	int i;
- 
-@@ -210,8 +210,14 @@ static int qcomtee_params_to_args(struct qcomtee_arg *u,
- 		switch (params[i].attr) {
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_INPUT:
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_UBUF_OUTPUT:
--			u[i].flags = QCOMTEE_ARG_FLAGS_UADDR;
--			u[i].b.uaddr = params[i].u.ubuf.uaddr;
-+			if (oic->kernel_ctx) {
-+				u[i].flags = 0;
-+				u[i].b.addr = params[i].u.ubuf.addr;
-+			} else {
-+				u[i].flags = QCOMTEE_ARG_FLAGS_UADDR;
-+				u[i].b.uaddr = params[i].u.ubuf.uaddr;
-+			}
-+
- 			u[i].b.size = params[i].u.ubuf.size;
- 
- 			if (params[i].attr ==
-@@ -223,7 +229,7 @@ static int qcomtee_params_to_args(struct qcomtee_arg *u,
- 			break;
- 		case TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_INPUT:
- 			u[i].type = QCOMTEE_ARG_TYPE_IO;
--			if (qcomtee_objref_to_arg(&u[i], &params[i], ctx))
-+			if (qcomtee_objref_to_arg(&u[i], &params[i], oic->ctx))
- 				goto out_failed;
- 
- 			break;
-@@ -260,7 +266,7 @@ static int qcomtee_params_to_args(struct qcomtee_arg *u,
-  * @params: TEE parameters.
-  * @u: QTEE arguments.
-  * @num_params: number of elements in the parameter array.
-- * @ctx: context in which the conversion should happen.
-+ * @oic: context to use for the current invocation.
-  *
-  * @u should have already been initialized by qcomtee_params_to_args().
-  * This also represents the end of a QTEE invocation that started with
-@@ -270,7 +276,7 @@ static int qcomtee_params_to_args(struct qcomtee_arg *u,
-  */
- static int qcomtee_params_from_args(struct tee_param *params,
- 				    struct qcomtee_arg *u, int num_params,
--				    struct tee_context *ctx)
-+				    struct qcomtee_object_invoke_ctx *oic)
- {
- 	int i, np;
- 
-@@ -288,7 +294,8 @@ static int qcomtee_params_from_args(struct tee_param *params,
- 			break;
- 		case QCOMTEE_ARG_TYPE_OO:
- 			/* TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT */
--			if (qcomtee_objref_from_arg(&params[np], &u[np], ctx))
-+			if (qcomtee_objref_from_arg(&params[np], &u[np],
-+						    oic->ctx))
- 				goto out_failed;
- 
- 			break;
-@@ -304,7 +311,7 @@ static int qcomtee_params_from_args(struct tee_param *params,
- 	/* Undo qcomtee_objref_from_arg(). */
- 	for (i = 0; i < np; i++) {
- 		if (params[i].attr == TEE_IOCTL_PARAM_ATTR_TYPE_OBJREF_OUTPUT)
--			qcomtee_context_del_qtee_object(&params[i], ctx);
-+			qcomtee_context_del_qtee_object(&params[i], oic->ctx);
- 	}
- 
- 	/* Release any IO and OO objects not processed. */
-@@ -357,7 +364,8 @@ static int qcomtee_params_check(struct tee_param *params, int num_params)
+diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
+index a03a3d645dd1..2d678d414edb 100644
+--- a/drivers/tee/tee_core.c
++++ b/drivers/tee/tee_core.c
+@@ -134,20 +134,8 @@ static int tee_release(struct inode *inode, struct file *filp)
+ 	return 0;
  }
  
- /* Check if an operation on ROOT_QCOMTEE_OBJECT from userspace is permitted. */
--static int qcomtee_root_object_check(u32 op, struct tee_param *params,
-+static int qcomtee_root_object_check(struct qcomtee_object_invoke_ctx *oic,
-+				     u32 op, struct tee_param *params,
- 				     int num_params)
+-/**
+- * uuid_v5() - Calculate UUIDv5
+- * @uuid: Resulting UUID
+- * @ns: Name space ID for UUIDv5 function
+- * @name: Name for UUIDv5 function
+- * @size: Size of name
+- *
+- * UUIDv5 is specific in RFC 4122.
+- *
+- * This implements section (for SHA-1):
+- * 4.3.  Algorithm for Creating a Name-Based UUID
+- */
+-static void uuid_v5(uuid_t *uuid, const uuid_t *ns, const void *name,
+-		    size_t size)
++void tee_generate_uuid_v5(uuid_t *uuid, const uuid_t *ns, const void *name,
++			  size_t size)
  {
- 	/* Some privileged operations recognized by QTEE. */
-@@ -366,6 +374,9 @@ static int qcomtee_root_object_check(u32 op, struct tee_param *params,
- 	    op == QCOMTEE_ROOT_OP_ADCI_SHUTDOWN)
- 		return -EINVAL;
+ 	unsigned char hash[SHA1_DIGEST_SIZE];
+ 	struct sha1_ctx ctx;
+@@ -163,6 +151,7 @@ static void uuid_v5(uuid_t *uuid, const uuid_t *ns, const void *name,
+ 	uuid->b[6] = (hash[6] & 0x0F) | 0x50;
+ 	uuid->b[8] = (hash[8] & 0x3F) | 0x80;
+ }
++EXPORT_SYMBOL_GPL(tee_generate_uuid_v5);
  
-+	if (oic->kernel_ctx)
-+		return 0;
-+
- 	/*
- 	 * QCOMTEE_ROOT_OP_REG_WITH_CREDENTIALS is to register with QTEE
- 	 * by passing a credential object as input OBJREF. TEE_OBJREF_NULL as a
-@@ -430,7 +441,8 @@ static int qcomtee_object_invoke(struct tee_context *ctx,
- 	/* Get an object to invoke. */
- 	if (arg->id == TEE_OBJREF_NULL) {
- 		/* Use ROOT if TEE_OBJREF_NULL is invoked. */
--		if (qcomtee_root_object_check(arg->op, params, arg->num_params))
-+		if (qcomtee_root_object_check(oic, arg->op, params,
-+					      arg->num_params))
- 			return -EINVAL;
- 
- 		object = ROOT_QCOMTEE_OBJECT;
-@@ -438,7 +450,7 @@ static int qcomtee_object_invoke(struct tee_context *ctx,
- 		return -EINVAL;
+ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
+ 				 const u8 connection_data[TEE_IOCTL_UUID_LEN])
+@@ -228,7 +217,7 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
+ 		goto out_free_name;
  	}
  
--	ret = qcomtee_params_to_args(u, params, arg->num_params, ctx);
-+	ret = qcomtee_params_to_args(u, params, arg->num_params, oic);
- 	if (ret)
- 		goto out;
+-	uuid_v5(uuid, &tee_client_uuid_ns, name, name_len);
++	tee_generate_uuid_v5(uuid, &tee_client_uuid_ns, name, name_len);
+ out_free_name:
+ 	kfree(name);
  
-@@ -456,7 +468,7 @@ static int qcomtee_object_invoke(struct tee_context *ctx,
+diff --git a/include/linux/tee_core.h b/include/linux/tee_core.h
+index bcb5418d6fdc..a3f4f88b8423 100644
+--- a/include/linux/tee_core.h
++++ b/include/linux/tee_core.h
+@@ -272,6 +272,21 @@ void tee_device_set_dev_groups(struct tee_device *teedev,
+ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
+ 				 const u8 connection_data[TEE_IOCTL_UUID_LEN]);
  
- 	if (!result) {
- 		/* Assume service is UNAVAIL if unable to process the result. */
--		if (qcomtee_params_from_args(params, u, arg->num_params, ctx))
-+		if (qcomtee_params_from_args(params, u, arg->num_params, oic))
- 			result = QCOMTEE_MSG_ERROR_UNAVAIL;
- 	} else {
- 		/*
-diff --git a/drivers/tee/qcomtee/qcomtee_object.h b/drivers/tee/qcomtee/qcomtee_object.h
-index 5f40617361fc..a241ab657318 100644
---- a/drivers/tee/qcomtee/qcomtee_object.h
-+++ b/drivers/tee/qcomtee/qcomtee_object.h
-@@ -113,8 +113,9 @@ struct qcomtee_buffer {
-  * @b: address and size if the type of argument is a buffer.
-  * @o: object instance if the type of argument is an object.
-  *
-- * &qcomtee_arg.flags only accepts %QCOMTEE_ARG_FLAGS_UADDR for now, which
-- * states that &qcomtee_arg.b contains a userspace address in uaddr.
-+ * If %QCOMTEE_ARG_FLAGS_UADDR is set in &qcomtee_arg.flags then it implies
-+ * that &qcomtee_arg.b contains a userspace address in uaddr.
-+ * Otherwise, &qcomtee_arg.b contains a kernel address in addr.
-  */
- struct qcomtee_arg {
- 	enum qcomtee_arg_type type;
-diff --git a/include/linux/tee_drv.h b/include/linux/tee_drv.h
-index 369c87ad0205..367208210a32 100644
---- a/include/linux/tee_drv.h
-+++ b/include/linux/tee_drv.h
-@@ -83,7 +83,10 @@ struct tee_param_memref {
- };
- 
- struct tee_param_ubuf {
--	void __user *uaddr;
-+	union {
-+		void *addr;
-+		void __user *uaddr;
-+	};
- 	size_t size;
- };
- 
++/**
++ * tee_generate_uuid_v5() - Calculate UUIDv5
++ * @uuid: Resulting UUID
++ * @ns: Name space ID for UUIDv5 function
++ * @name: Name for UUIDv5 function
++ * @size: Size of name
++ *
++ * UUIDv5 is specific in RFC 4122.
++ *
++ * This implements section (for SHA-1):
++ * 4.3.  Algorithm for Creating a Name-Based UUID
++ */
++void tee_generate_uuid_v5(uuid_t *uuid, const uuid_t *ns, const void *name,
++			  size_t size);
++
+ /**
+  * struct tee_shm_pool - shared memory pool
+  * @ops:		operations
 
 -- 
 2.34.1
