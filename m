@@ -1,249 +1,214 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22061606A331
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 15:31:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43BFC606A32C
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:06:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=YpCZaSlC;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MAdaJlRN
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=J81xKFeh;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n5OND3Bx
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 6F40A45493
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 15:31:36 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 982D245482
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:06:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1793912782;
+	bh=bTkwJYolGBPtNOiPTfj3hFZfQ60rxzsNf5rIq+CvvT4=;
+	h=Subject:Date:To:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=J81xKFehOJjImxNYz8TkeUjfMHE/6brEa9N8MXbHB/Asj+IFw7xF+YGk1EJDPYTmk
+	 fHrlWA4vDLTbl/RrSj73eqdXyYHxcaT5nYQh7SeYJtRxCKBV5yXSHaw8Qcsj9CTINa
+	 rRxAhGJgh9AlbneDrp6pkggcXjURDS2ii9bZnYdavqeo+kKrMPCX54Ly5Jw2+7Dt00
+	 T51S2NjU4mCdb2iZpD+2Qc9aEF/xYazDTa8+9kE2NC1Z03K6oDnEEJDPewnf9UHtEu
+	 6Y8VS3xCwMqD0LmImP7W5s4aq0UuU4jOWmdFL1O3+1dztOJlmB7EgAE8+Wgu7AuIG9
+	 fhs3JZufEL4Hw==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 890BB45482
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:06:02 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=YpCZaSlC;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MAdaJlRN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n5OND3Bx;
 	dkim-atps=neutral
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id C257C43A89
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 15:31:17 +0000 (UTC)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5EQ7N84134032
-	for <op-tee@lists.trustedfirmware.org>; Thu, 5 Nov 2026 15:31:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	UFkEAJQmmDemZrU/BtfBaBHBeF42rbbxl6o22oiQ2UU=; b=YpCZaSlC/SvbpXoj
-	vaboNeLLY7SdEf4bOTRfvamRZuigFq3U+/Nxx1QeAIcAJThM2ZYkET5hrzc8pD1X
-	oBfhAh28sQUJJ2LQOD6VpslRnfNbeGX6OojCu+RNYCyhd1EaFq40FG6NEfiVVgZ2
-	I5C8epDQ31Mc4vFcAT2tPqpaiJIZoI8UO5mIR85e0Ww7BVILrWrQv4Kg/RXNrnTa
-	iB+K7OEROkw9wzkZ+f2p2vhp/YObYBbP/5IQwpe8xqBIxbZjE/guDyGA3NfERPKc
-	w72qhZ52W1j5muVx5ng9UqI6+qDwCOItEude4va0nyKepZ42K2Kht70wQUSWhpC5
-	9YOWuA==
-Received: from mail-yx1-f70.google.com (mail-yx1-f70.google.com [74.125.224.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hrksqad71-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 15:31:17 +0000 (GMT)
-Received: by mail-yx1-f70.google.com with SMTP id 956f58d0204a3-677c4ca22c5so2891194d50.3
-        for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 07:31:16 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793892676; cv=none;
-        d=google.com; s=arc-20260327;
-        b=PtKwXR4GG75nVFw2guIIfWAiCqLaN+KixqjROFZWjEw73LFNA2VYu/jaYIpgCbEyH2
-         uV+8zg/q6m2UCZGyWJkZcznm0gFTV5nGKswm9expmEL7BdEqGwC9jAVy26S5cdN12nkx
-         UgnGtqShBSGf5TgkfgL4varjcoqcaqe/8U+Aq5hb4laguY8CyZz9V5hqcxXGSwMk+Rdf
-         KpWVe9sy7FDUDvbVLEYlsf4FY1xhuZQDckPKh1hgaCAo9JvgZYYn3Xm8ZYSNTNiMW1Fe
-         39MPN9sZhdEV9x8bKgk9ajl7dGLndS7+oaMXw+v/RPzPApijLX87BQKBLDe1WLPLIs8G
-         sULQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=UFkEAJQmmDemZrU/BtfBaBHBeF42rbbxl6o22oiQ2UU=;
-        fh=1jZJlpsPK/pfjL7mN/DDuVl2ISLAGEdW4atTk1QUcSo=;
-        b=InOfn6ueboERRUHh6FH6JBh92bJHkYhHmgOj8ZVTqW3hp/iOctiF+kgzsa/Y4NUpvk
-         quhDtno+zHRijp4X1Aq5Rn/1p/1dL0n9H1D9DgPrM6En1g1SU0GqJZ+J/T3BWnrcgPj3
-         RMexBY7Do5bTV7db2V1+wy4EVfFlvM3s0dkBCIh5dW5fonMzGwY4dLr0pWgjPaReVNU2
-         8hes+cAD8FdacfncB6Vm23/Bkis288eDF9uEM2v754/Q1Smcrj+Nrb7mHdnhIKix1Hee
-         fYtNduag7ToSrTpWl2XEIjZgxPcm4hvX8gonqDO1J41exwhymrOeaLgeUuBWWWfWi0ae
-         fQgw==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793892676; x=1794497476; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=UFkEAJQmmDemZrU/BtfBaBHBeF42rbbxl6o22oiQ2UU=;
-        b=MAdaJlRNoM7uhar1a1JDpBTBY6ypQkVwNBGt4LYZyq+1socvkmYUfF2XR+RMgcr1sG
-         8LI+Q24cEjtLttQUfpIw92Dm9U4OHHA3DfQb1laJpL+rWdQbcpaXTeCeKor8yjPDadWf
-         U+OW9Yb1+tYb8m21nJ+qzI5/uKtZSWT83qfgGQVari4E4t5gwjRBhnR6xm5jGY50Fe/0
-         sQBlbU6eqLFCzRrFAGmEgoJ+oHESRyjXoPY9udWf3+HW2C4bnhcPGGUVa6j9iUZ351gj
-         BS1zglzzDdWWTqqwOwX0h2+XAB51Jf4e8cf4x8dMR79LCW5bchmkw62xb+sqHmM1CinT
-         KH0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793892676; x=1794497476;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=UFkEAJQmmDemZrU/BtfBaBHBeF42rbbxl6o22oiQ2UU=;
-        b=o0jQ5CYyIC0c//thCU6FKa+wiAZYUMYMdli+7W596dwowl0VR6sdPr2P9cGklCqocy
-         +i64AXLm1i2S2iwcO2BsouKcUHKIpFf+nTfSpaAVdxXrPXpMuUTquTbhiE8wlfdfhGtS
-         zKAwdCxeYaG++wZJRGchm5SjFWyy21dfymnI9eX+qJkg37mI0vGdJuF/k3d/c85YtrbI
-         RXG41xSlm1HvGktrqw1ZE+fjhf3Fy8FQQICZ/sG6SPl9ILWH1TSULV9A75FCtKy8BLhM
-         i97Oufaoq2vZUKGaV4+q05UrS6BHkdsQvqWrhT9JA1fjFf28516P3oqvzfHxZjQq31mu
-         8CTg==
-X-Forwarded-Encrypted: i=1; AKwUvBwsKR/+lxo0oz7ipLyzzBkmwBtODOEEpKNisaqgJDWRSzX2nQlLUHNCaBZAlz2e1QGWXrtnDBY=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z/iocZ5Oeiea0sSM7nDIG2NFfjutXoFswPOuF1YuJhR2mCWmZox
-	8uTnNyH6yiR5RF4cEDpgY9KdDgApATt3U4xbDewSTD3GVjFcxrOE5d3WtJK724HK1homeQRYRoJ
-	iOVO0sqogRyv6u7ywF+Rzie0biTLU9TUSgYkX+fUxhtotBWKdfq+rInT5l/bRLorr5PDoTbq4RG
-	t/qTJxPNnilPV0jLHPfz51B1OsORyDnAWSeCv7/Z2m88HLHeI=
-X-Gm-Gg: AYBFou0CXlKOoyzg4EzSF82cw81a53Zw6z9OVA9I8d0jlqoPFEZMAJ9mCwnORUyuG16
-	5URs2089KUzw4xNE3wIwAGnoliIwbr2/ZjoedGUJt6ZpyUDEvzdiVM7jRkMXVZJdTZs251I9K5G
-	ppMwe0xv3JuWRe3jhovJvKNrQDbRPkTmWjT9v8UZxY51HG4ybjPWrAf3/YLWHU9sVwueL+682qQ
-	axxUAjHRDmLELlK8ijdLLJ1FoSQPnsHxy5TEbP7
-X-Received: by 2002:a05:690e:1207:b0:66d:112b:769 with SMTP id 956f58d0204a3-67ba4c87f73mr12304313d50.1.1793892671473;
-        Thu, 05 Nov 2026 07:31:11 -0800 (PST)
-X-Received: by 2002:a05:690e:1207:b0:66d:112b:769 with SMTP id
- 956f58d0204a3-67ba4c87f73mr12304223d50.1.1793892667556; Thu, 05 Nov 2026
- 07:31:07 -0800 (PST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E0A56601E3;
+	Thu,  5 Nov 2026 21:06:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB99D1F0089F;
+	Thu,  5 Nov 2026 21:05:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793912761;
+	bh=r1JpUn64UzzrZcFRUjQyI0S3ynWk5u6y/MaberysBgo=;
+	h=From:Subject:Date:To:Cc;
+	b=n5OND3BxSSsOe8W9Zhi3cBnfi6d7KzMyxkuyo5/trkHHVydx/yyOeQwXqKCdDUFcT
+	 m0c7eQ5D+U2buHxE7rSfcgJl5cMehkqtS+hpW9IxvuXOMi55EMjADBA8fn4bKVqGbY
+	 QpdNhrT0rU9HdBZA+CuDfrevb5VT/Sx+nUsDraIAPhBmT6/yt6g6bda0HLCJEF8Rbm
+	 u4rk8HUwvqrwddVG/k8amH7FQhV89FGy1AgFqoqMKw9DPQswpB9EwKW20G2YExJRhk
+	 9nSCRJkbQMXNq6KKP+CtmuUzVVPRlageLXK7RVKP4WcD+F7KQux77Q7qE1lDODIcT6
+	 zYdrWy6DfJfSw==
+Subject: [PATCH 00/14] mm: convert further simple mmap hooks to
+ mmap_prepare
+Date: Thu, 05 Nov 2026 21:05:31 +0000
+Message-Id: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20260730062219.2836938-1-sammiee5311@gmail.com>
- <CAGgiveUc+TkGyGDxuuCLpHO=i22-4fn1CqjqnnmWLdWWYOZfPA@mail.gmail.com> <6f2f8357-59ef-491b-95f2-d58feb362ba7@oss.qualcomm.com>
-In-Reply-To: <6f2f8357-59ef-491b-95f2-d58feb362ba7@oss.qualcomm.com>
-From: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
-Date: Thu, 5 Nov 2026 16:30:55 +0100
-X-Gm-Features: AclHuK9ffumAB6FDO6iM-oNWXrLUTKEfi4aPTOqEms-G-2LHrNHJadYMbOC2DNQ
-Message-ID: <CAGgiveXBc55WKnKiZwPvxZqFe1uHh6dFwSPwMRbFhG9yEFHwbg@mail.gmail.com>
-Subject: Re: [PATCH] tee: qcomtee: user: check the parameter count from the supplicant
-To: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA2MSBTYWx0ZWRfXxWUYM1vbzdOy
- IKODQaaUHeJ1tmpdHqJfkjKTozYnIlahNtgfc2tnfFPDtk1YlvKJq3YMLkZp/j5i4waZtay9+a3
- 94UZuHD6BOL1iTuM0T6GuAgOQbBqcaNfKCLKwpp43idHWUaCRTu7jb3RoGbr8mf5FbkpzisklCW
- YEW6Vaz8jYSljrKPmnLMAyuD+36OlLm+0wwoHI67YW/J+CHLaZnQgqVb9u2JsMJ4IeTcCgvzUUZ
- CshpV/tq0EcSmulkYAqlap9Vfz7V1yK0b+4BIMQhjO4P/cViVV0MhKSrpySgfEBdnLmcO1UddbM
- 1ak4UToixVtlIJpmKHDLjuyrwI6jH3K728/swaxB8swBEJReosjwqoA7vV8Ihm8SzM8P091uGi0
- sIfH+R/pmuoFc7cXwBCI8s7ZCnQ+FTT1G2q1Lsncok4JtzGMXhU5N7TuI/XFoink9GmMcuUDDxv
- Hk/RNxnISzwJAJ0bHKw==
-X-Proofpoint-ORIG-GUID: 2r6lZJyKSfKwBmGFYgTurXNkWUNsEBr-
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA2MSBTYWx0ZWRfXyFCobrBA0U5K
- aeUyHxoa9aiOeJeKUGAVD0qMU3mAcctUlfk0FloPK8jo5zbpm2J+oML6DvjZNL7QEuSHSeYWJhR
- IPKrGHTaCLb+HmR4FYl/BEVVh1FBQlY=
-X-Authority-Analysis: v=2.4 cv=CIe/zhrD c=1 sm=1 tr=0 ts=6aeca145 cx=c_pps
- a=S/uc88zpIJVNbziUnJ6G4Q==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8
- a=RNNYRmto68J4RoQH_uQA:9 a=QEXdDO2ut3YA:10 a=nd2WpGr1bMy9NW-iytEl:22
-X-Proofpoint-GUID: 2r6lZJyKSfKwBmGFYgTurXNkWUNsEBr-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-05_04,2026-11-04_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 bulkscore=0 suspectscore=0 adultscore=0
- lowpriorityscore=0 phishscore=0 impostorscore=0 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611050061
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MXQqAIBAE4KvIPregBhVdJSJEt1roRzQiiO7e1
+ uM3zMwNmRJThlbdkOjkzPsmMIUCP7ttIuQgBqttZYw2uLiD8BOuq4tDTBRdItTWN3WwpVQIZCz
+ 5yNd/3PXP8wJmgP8laAAAAA==
+X-Change-ID: 20261101-late-2026-mmap_prepare-02c87d23101e
+To: Juergen Gross <jgross@suse.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ Jason Wang <jasowangio@gmail.com>,
+ =?utf-8?q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Jarkko Sakkinen <jarkko@kernel.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
+ Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Ryan Chen <ryan_chen@aspeedtech.com>,
+ Billy Tsai <billy_tsai@aspeedtech.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+ Scott Branden <scott.branden@broadcom.com>,
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Richard Cochran <richardcochran@gmail.com>,
+ David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2622; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=bTkwJYolGBPtNOiPTfj3hFZfQ60rxzsNf5rIq+CvvT4=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF/tK9xtdq7Cd9m+05LfHinP2t1rLvjzsfyV5AfsU
+ /zCH+pydZSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiX68x/GI6KjBdv8dWvKl/
+ o4fajxstEyfeVrhs6VhWqdT9b1lOzElGhhMsTpzms2K+v4ia9+OlpuvFLR9T93vz6S/zZZ6pzvr
+ 6EAsA
+X-Developer-Key: i=ljs@kernel.org; a=openpgp;
+ fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.00 / 15.00];
+X-Spamd-Result: default: False [-8.20 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
 	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[oss.qualcomm.com,none];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	MISSING_XM_UA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	TO_DN_SOME(0.00)[];
+	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_THREE(0.00)[3];
 	RCVD_TLS_LAST(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[gmail.com,linaro.org,kernel.org,vger.kernel.org,lists.trustedfirmware.org];
-	RCVD_IN_DNSWL_NONE(0.00)[74.125.224.70:received];
-	FROM_EQ_ENVFROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[205.220.180.131:from];
+	FREEMAIL_TO(0.00)[suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
+	DKIM_TRACE(0.00)[kernel.org:+];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	RCPT_COUNT_GT_50(0.00)[61];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[netdev];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: C257C43A89
-X-Spamd-Bar: ------
-Message-ID-Hash: 6Q7AIBXSGAP2C3T4R5KMIPCV36KCCUQF
-X-Message-ID-Hash: 6Q7AIBXSGAP2C3T4R5KMIPCV36KCCUQF
-X-MailFrom: jens.wiklander@oss.qualcomm.com
+X-Rspamd-Queue-Id: 890BB45482
+X-Spamd-Bar: --------
+Message-ID-Hash: FN7MQGPVHZSLXARXMOBBRZSH76R3EKL7
+X-Message-ID-Hash: FN7MQGPVHZSLXARXMOBBRZSH76R3EKL7
+X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: HyeongJun An <sammiee5311@gmail.com>, Sumit Garg <sumit.garg@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/6Q7AIBXSGAP2C3T4R5KMIPCV36KCCUQF/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/FN7MQGPVHZSLXARXMOBBRZSH76R3EKL7/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+From: "Lorenzo Stoakes (ARM) via OP-TEE" <op-tee@lists.trustedfirmware.org>
+Reply-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 4, 2026 at 8:37=E2=80=AFPM Amirreza Zarrabi
-<amirreza.zarrabi@oss.qualcomm.com> wrote:
->
-> Hi Jens,
->
-> On 11/4/2026 4:58 AM, Jens Wiklander wrote:
-> > Hi,
-> >
-> > On Wed, Aug 5, 2026 at 11:23=E2=80=AFAM HyeongJun An <sammiee5311@gmail=
-.com> wrote:
-> >>
-> >> The qcomtee_cb_params_to_args() walks the argument array QTEE asked fo=
-r and
-> >> indexes the parameter array the supplicant supplied, but it never look=
-s at
-> >> num_params. A supplicant that answers TEE_IOC_SUPPL_SEND with fewer
-> >> parameters than the request needs makes that walk read past the end of=
- the
-> >> allocation.
-> >>
-> >> To fix this, reject a response that is too short, the way ureq_select(=
-)
-> >> already does for the receive direction.
-> >>
-> >> Fixes: d6e290837e50 ("tee: add Qualcomm TEE driver")
-> >> Assisted-by: Claude:claude-opus-5
-> >> Signed-off-by: HyeongJun An <sammiee5311@gmail.com>
-> >> ---
-> >>  drivers/tee/qcomtee/user_obj.c | 4 ++++
-> >>  1 file changed, 4 insertions(+)
-> >>
-> >> diff --git a/drivers/tee/qcomtee/user_obj.c b/drivers/tee/qcomtee/user=
-_obj.c
-> >> index 10452fcc7ccb..2a594ae299da 100644
-> >> --- a/drivers/tee/qcomtee/user_obj.c
-> >> +++ b/drivers/tee/qcomtee/user_obj.c
-> >> @@ -507,6 +507,10 @@ static int qcomtee_cb_params_to_args(struct qcomt=
-ee_arg *u,
-> >>  {
-> >>         int i;
-> >>
-> >> +       /* Supplicant can not send fewer parameters than requested. */
-> >> +       if (num_params < qcomtee_args_len(u))
-> >> +               return -EINVAL;
-> >> +
-> >>         qcomtee_arg_for_each(i, u) {
-> >>                 switch (u[i].type) {
-> >>                 case QCOMTEE_ARG_TYPE_IB:
-> >> --
-> >> 2.43.0
-> >>
-> >
-> > Looks good. Amir, do you agree?
->
-> Yes. It's correct. The check is missing.
->
-> Reviewed-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
+Continue the conversion of users of the deprecated f_op->mmap callback to
+f_op->mmap_prepare. Keep things gentle this cycle by targeting simple
+cases.
 
-I'm picking this up and dropping the Assisted-by tag since we don't
-use that anymore.
+No functional change intended.
+
+Build tested on x86-64 (allmodconfig, each patch individually), i386,
+arm64 and ppc64le.
+
+<<>>
+
+David, Andrew - I wonder whether one of you guys could take this series
+through your tree? Since it's kernel-wide it seems sensible to take it
+through an mm tree.
+
+Thanks!
+
+Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+---
+Lorenzo Stoakes (ARM) (14):
+      xen/privcmd: convert mmap hook to mmap_prepare
+      KVM: PPC: Book3S: convert spapr TCE mmap hook to mmap_prepare
+      mshv_vtl: convert mmap hooks to mmap_prepare
+      vduse: convert IOVA domain mmap hook to mmap_prepare
+      x86/sgx: convert vepc mmap hook to mmap_prepare
+      udf: convert mmap hook to mmap_prepare
+      selinuxfs: convert mmap hooks to mmap_prepare
+      xen: convert xenstore interface mmap hooks to mmap_prepare
+      soc: aspeed: convert LPC and P2A control mmap hooks to mmap_prepare
+      soc: qcom: rmtfs_mem: convert mmap hook to mmap_prepare
+      tee: convert shm mmap hook to mmap_prepare
+      misc: bcm-vk: convert mmap hook to mmap_prepare
+      ptp: vmclock: convert mmap hook to mmap_prepare
+      vhost-vdpa: convert mmap hook to mmap_prepare
+
+ arch/powerpc/kvm/book3s_64_vio.c        |  6 +++---
+ arch/x86/kernel/cpu/sgx/virt.c          | 15 ++++++++-------
+ drivers/hv/mshv_vtl_main.c              | 14 +++++++-------
+ drivers/misc/bcm-vk/bcm_vk_dev.c        | 20 ++++++++++----------
+ drivers/ptp/ptp_vmclock.c               | 19 +++++++++----------
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c    | 20 +++++++++-----------
+ drivers/soc/aspeed/aspeed-p2a-ctrl.c    | 22 ++++++++--------------
+ drivers/soc/qcom/rmtfs_mem.c            | 22 ++++++++++------------
+ drivers/tee/tee_shm.c                   | 14 +++++++-------
+ drivers/vdpa/vdpa_user/iova_domain.c    | 12 ++++++------
+ drivers/vhost/vdpa.c                    | 23 ++++++++++++-----------
+ drivers/xen/privcmd.c                   | 11 +++++------
+ drivers/xen/xenbus/xenbus_dev_backend.c | 14 ++++++--------
+ drivers/xen/xenfs/xenstored.c           | 14 ++++++--------
+ fs/udf/file.c                           |  8 ++++----
+ security/selinux/selinuxfs.c            | 24 +++++++++++-------------
+ 16 files changed, 121 insertions(+), 137 deletions(-)
+---
+base-commit: b61fa14ce6bcbba2cb9a96feea31b760226d6b43
+change-id: 20261101-late-2026-mmap_prepare-02c87d23101e
 
 Cheers,
-Jens
+-- 
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
+
