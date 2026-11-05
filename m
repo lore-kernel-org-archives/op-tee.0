@@ -2,50 +2,49 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DA0B606A32E
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:13:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4F45606A326
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:14:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=RQX8U+Ek;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iJWzhgAC
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=zeAyuW5M;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=c2uN/Ng5
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 8972F45479
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:13:42 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 3DC3245484
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:14:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793877222;
-	bh=wmdqBY1Gfa1Mw6+QiBFfZqwGVpEY8UanncV+Jfoz3mk=;
+	d=lists.trustedfirmware.org; s=2024; t=1793877251;
+	bh=tLfGNjtAGI6tjtVrMiWHKyNw7WXJ0KQG0dGF2XnHCNQ=;
 	h=Subject:To:In-Reply-To:References:Date:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=RQX8U+EkMrrtQSz2tk71TMcjxfiHQW4Eusc2qKKyfogj4os0aDHYmFAquy2c22m4Y
-	 cdZXI8DeztqR48p/JXRvadJuXh/w+636G4fVCHM4Rchz8cL0ZwtvFkN47s5YIPgvP8
-	 IxSLzb1cD4aNW+93JKsh3yFEmREgqR5trh/WrENIezpDpYOa3CTSxIoSA5r3PJtTkv
-	 gRLnVpg6ajFhdoufuTfs7bPmrySD9zcGwjXb+HL8UsbPbMWD31A+nZXF/xOdwN5ye8
-	 s0oXjAZZrSm8n9OiEHeYKLTNKt/x/YrfgRN/n+Z18+lCnIs5n4jpK7b25RyaIQFCPK
-	 DkzSCTV2QzlEw==
+	b=zeAyuW5MzB03WHdcXIyhhWK3raGL2Ws2dzDRlZT7MBqalTVXu3LiDZWjU4kVYXpfP
+	 lY0fp75D1U1LMkB33DwHd30+E0lEcX63qjxPhSJZ7FdBplSOH1+zVp5g0O6fCLOg+G
+	 gZCLlrILnXV77cmmUtyqxPNnjTq7dST4wYtdCPyKZsHJh5bCD7dzSR4aIvSOYZAlDq
+	 3J5wDiFKiErhi9yMYFswJS+dzEfUPK9cmM6jDTo25FT96g11oAS/IlRhukpqa7QMav
+	 AJ6ss3hVTnQafxbchECYTZY/ewI5TcLvwTZqQUXQ1TdnbGJVDmNVSYCif0TlWxM1L0
+	 B1TOilxnsmS1Q==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4C6F945497
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:12:01 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 28ACB4548F
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:12:04 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iJWzhgAC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=c2uN/Ng5;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id AEC4840431;
-	Thu,  5 Nov 2026 11:12:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E12A91F00919;
-	Thu,  5 Nov 2026 11:11:58 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7CE3B42E3F;
+	Thu,  5 Nov 2026 11:12:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4FBF1F00A18;
+	Thu,  5 Nov 2026 11:12:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793877120;
-	bh=XYfDIMn9RzkoOerCRsuzNDWKhLeLvHeL9jAZyhrpQ1o=;
+	s=k20260515; t=1793877123;
+	bh=u4OwYANC6wqKDyPgO6eDc7wNQ6edH7rpigotQa7/OCk=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=iJWzhgACqO8Oh3sg03HVyCjyDRqS/0Kt880riTR9yqMxOzYkEHCrqPSIFOkv9f/hh
-	 msR1KBHibiTLGBB9lFfczXDQTQIg7siuiS/H9s7ZO4h1RCevWVb/AkbQLYdz339fZ+
-	 5TOS+Z2LCW+KisR0sqsGOL8BDOM3Y3KdTqb2nOSAznmJYsxiGkPcnbh2Bw5HBAWtYy
-	 XP5SqcwLl3zSMCE7Y1FY9GWV9QwsTuYBPfhFQhYSuwSQSIgYrdqLB5w5SgLmMyxeK/
-	 Mmjt52tv1l3Fg3yrRpcmpOMg9/ijrNbxtM7os5PorcJoiY10Lhz9Md+kpBwrSpxkYH
-	 aZg86Vo2dk+nA==
-Message-ID: <sashiko-outbox-198919@kernel.org>
-Subject: Re: [PATCH v4 4/8] security: dma-buf: Add dma_buf_charge_task LSM
- hook
+	b=c2uN/Ng5l1zRBU1f6aKBEfZtQoOnizQ0rrFd9kCVSSHUE4EkaG4YPu0DVrXFd/sYf
+	 WQRytoL/bcOM1tMwGTUhoxMGZjd7nrw9Op3dgk7LlqQMSjRvDJDTBSXagtU5aDYa4F
+	 iloIC0z1XqsAvA+wuzjNVVxTNcK1vJS2YM72nD09YWg7Y+1F+DhJmXRU8T8Gy/xhN6
+	 KiQgtSFJ6rsFJt5ladVLcE0huTLON36jq97Rw9RRIPx/9cUI0YxCWADXC+FyRY98yA
+	 EIszDEoo4+ImNGcD/JzSRE7yMABOCWcp+srnamdEnAnuamz3kghzyKLk86XsIYtlff
+	 pshldAJJUYr3g==
+Message-ID: <sashiko-outbox-198921@kernel.org>
+Subject: Re: [PATCH v4 6/8] selinux: Restrict cross-cgroup dma-buf charging
 To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
  Weiner" <hannes@cmpxchg.org>, =?utf-8?b?TWljaGFsIEtvdXRuw70=?= <mkoutny@suse.com>, "Jonathan
  Corbet" <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Sumit
@@ -60,12 +59,12 @@ To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
  Khan" <shuah@kernel.org>, "Randy Dunlap" <rdunlap@infradead.org>,
  =?utf-8?b?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>, "Jens Wiklander" <jenswi@kernel.org>, "Sumit
  Garg" <sumit.garg@kernel.org>
-In-Reply-To: <20261104-v2_20230123_tjmercier_google_com-v4-4-1819a017000b@redhat.com>
+In-Reply-To: <20261104-v2_20230123_tjmercier_google_com-v4-6-1819a017000b@redhat.com>
 References: <20261104-v2_20230123_tjmercier_google_com-v4-0-1819a017000b@redhat.com>
- <20261104-v2_20230123_tjmercier_google_com-v4-4-1819a017000b@redhat.com>
+ <20261104-v2_20230123_tjmercier_google_com-v4-6-1819a017000b@redhat.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Thu, 05 Nov 2026 11:11:58 +0000
+Date: Thu, 05 Nov 2026 11:12:01 +0000
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-5.50 / 15.00];
 	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
@@ -100,17 +99,17 @@ X-Spamd-Result: default: False [-5.50 / 15.00];
 	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	HAS_REPLYTO(0.00)[sashiko-reviews@lists.linux.dev]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4C6F945497
+X-Rspamd-Queue-Id: 28ACB4548F
 X-Spamd-Bar: -----
-Message-ID-Hash: 7ENXGGSPNJMES3AHYAYSZ6W3NUUIB3XY
-X-Message-ID-Hash: 7ENXGGSPNJMES3AHYAYSZ6W3NUUIB3XY
+Message-ID-Hash: 6F2TSDA4H4BSIOMTRFMEHA2P7ULTCPNP
+X-Message-ID-Hash: 6F2TSDA4H4BSIOMTRFMEHA2P7ULTCPNP
 X-MailFrom: sashiko-bot@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: dri-devel@lists.freedesktop.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, op-tee@lists.trustedfirmware.org, media-ci@linuxtv.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7ENXGGSPNJMES3AHYAYSZ6W3NUUIB3XY/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/6F2TSDA4H4BSIOMTRFMEHA2P7ULTCPNP/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -128,84 +127,74 @@ X-Archived-By: <archiver.kernel.org>
 
 Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [High] mm: memcontrol: task cred and mm->owner mismatch in mem_cgroup_get=
-_from_fd()
+- [Medium] selinux: one-off dma_buf class instead of general cgroup access =
+control model
 --
 
-commit 8654d1fa67f56b32794f6b84163f6fcd4bd83d11
+commit 675e985fff50ea6716b8c00023a75c07ff345a6f
 Author: Albert Esteve <aesteve@redhat.com>
 
-security: dma-buf: Add dma_buf_charge_task LSM hook
+selinux: Restrict cross-cgroup dma-buf charging
 
-This commit introduces the security_dma_buf_charge_task() LSM hook and calls
-it in mem_cgroup_get_from_fd() when resolving a target cgroup from a pidfd.
+This commit implements the selinux_dma_buf_charge_task() hook and adds a
+new dma_buf object class with a charge_task permission in SELinux to
+restrict cross-cgroup dma-buf memory charging.
 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 3e717b5663c82..dd276e1230cc4 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index 30776b0107f29..8f39d91eabc97 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -2204,6 +2204,12 @@ static int selinux_capable(const struct cred *cred=
+, struct user_namespace *ns,
+>  	return cred_has_capability(cred, cap, opts, ns =3D=3D &init_user_ns);
+>  }
+> =20
+> +static int selinux_dma_buf_charge_task(const struct cred *from, const st=
+ruct cred *to)
+> +{
+> +	return avc_has_perm(cred_sid(from), cred_sid(to),
+> +			    SECCLASS_DMA_BUF, DMA_BUF__CHARGE_TASK, NULL);
+> +}
+> +
+>  static int selinux_quotactl(int cmds, int type, int id, const struct sup=
+er_block *sb)
+>  {
+>  	const struct cred *cred =3D current_cred();
 
 [ ... ]
 
-> @@ -5698,6 +5701,14 @@ struct mem_cgroup *mem_cgroup_get_from_fd(int fd)
->  	if (IS_ERR(task))
->  		return ERR_CAST(task);
-> =20
-> +	tcred =3D get_task_cred(task);
-> +	ret =3D security_dma_buf_charge_task(current_cred(), tcred);
-> +	put_cred(tcred);
-> +	if (ret) {
-> +		put_task_struct(task);
-> +		return ERR_PTR(ret);
-> +	}
-> +
->  	mm =3D get_task_mm(task);
->  	put_task_struct(task);
->  	if (!mm)
+> diff --git a/security/selinux/include/classmap.h b/security/selinux/inclu=
+de/classmap.h
+> index 90cb61b164256..b4ebedc6e4240 100644
+> --- a/security/selinux/include/classmap.h
+> +++ b/security/selinux/include/classmap.h
+> @@ -181,6 +181,7 @@ const struct security_class_mapping secclass_map[] =
+=3D {
+>  	{ "user_namespace", { "create", NULL } },
+>  	{ "memfd_file",
+>  	  { COMMON_FILE_PERMS, "execute_no_trans", "entrypoint", NULL } },
+> +	{ "dma_buf", { "charge_task", NULL } },
 
-[Severity: High]
-As reported by Sashiko on v3 [1], in mem_cgroup_get_from_fd(),
-security_dma_buf_charge_task(current_cred(), tcred) checks the credentials =
-of
-task obtained via get_task_cred(task), while the charged mem_cgroup is then
-resolved indirectly via get_task_mm(task) and get_mem_cgroup_from_mm(mm):
+[Severity: Medium]
+As reported by Paul Moore on RFC [1], adding a one-off SELinux object class
+and permission for a specific subsystem's cgroup charging (previously
+dma_heap with charge_to, now dma_buf with charge_task in secclass_map[]
+and selinux_dma_buf_charge_task(), along with charge_cgroup in a later
+patch in this series) introduces a narrow, subsystem-specific policy class
+rather than a general cgroup and resource access control model for SELinux.
 
-mm/memcontrol.c:get_mem_cgroup_from_mm() {
-	rcu_read_lock();
-	do {
-		memcg =3D mem_cgroup_from_task(rcu_dereference(mm->owner));
-		if (unlikely(!memcg))
-			memcg =3D root_mem_cgroup;
-	} while (!css_tryget(&memcg->css));
-	rcu_read_unlock();
-	return memcg;
-}
+Although resolving the target memcg from charge_fd moved into generic
+memcontrol code in mem_cgroup_get_from_fd(), the SELinux hook in
+selinux_dma_buf_charge_task() and class definition in secclass_map[] still
+define a dma-buf-specific class instead of a broader cgroup access control
+abstraction.
 
-If task exits between get_task_mm(task) and get_mem_cgroup_from_mm(mm),
-exit_mm() clears task->mm and calls mm_update_next_owner(mm), which sees
-mm_users > 1 with no live task using mm and sets mm->owner to NULL:
+Should this permission check be designed around a general cgroup or resource
+SELinux object class rather than a one-off dma_buf class?
 
-kernel/exit.c:mm_update_next_owner() {
-	...
-	WRITE_ONCE(mm->owner, NULL);
-	...
-}
-
-In that case, get_mem_cgroup_from_mm(mm) falls back to returning
-root_mem_cgroup, where try_charge() skips accounting because
-mem_cgroup_is_root(memcg) is true. Could a confined process fork a
-short-lived helper child with matching credentials to pass
-security_dma_buf_charge_task() and race its exit to charge or transfer
-dma-buf allocations to root_mem_cgroup, escaping its cgroup memory limit?
-
-Similarly, if task shares an mm_struct with another task via clone(CLONE_VM)
-that has different credentials or cgroup membership, mm->owner may not be
-task. Could security_dma_buf_charge_task() validate task's credentials while
-get_mem_cgroup_from_mm(mm) charges the cgroup of a different mm->owner task?
-
-[1] https://lore.kernel.org/r/20261027-v2_20230123_tjmercier_google_com-v3-=
-3-78d2c4cb8647@redhat.com
+[1] https://lore.kernel.org/r/16093a0278a6d7d1a0a8bc055c228bed@paul-moore.c=
+om
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261104-v2_2023012=
-3_tjmercier_google_com-v4-0-1819a017000b@redhat.com?part=3D4
+3_tjmercier_google_com-v4-0-1819a017000b@redhat.com?part=3D6
