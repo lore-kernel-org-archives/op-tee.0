@@ -1,212 +1,252 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23C95606A31B
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 10:44:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99578606A31B
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:12:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=iPGeVb7B;
-	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GntvJDf8
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=tiSLmFaY;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LqwrdTgO
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 74BDE45477
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 10:44:32 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id D60C945477
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 11:12:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1793877134;
+	bh=jCPnpy+VsUy3kPQe/6sFfQ0sJCuX9tJ34aYltTZUzLw=;
+	h=Subject:To:In-Reply-To:References:Date:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=tiSLmFaYjxUkaOnLiUJsyubICjI/qyj+JJ6kUgK/0KH3qtQqzauJhrL3pSgFvzoCd
+	 5klQcynfACwcEWuEKYQqdur9KW4c/YAOfd0HTfk7lAWFIya/possks8ihfGyEUpPNB
+	 +QUyuDOy07mqKx/9Y9yuFafrM05cQeljDHZ4X8Pp6Zni7KxJjUVYn0Io/sk+dI2PWu
+	 k1FmkyCziqGHHeJhPlmeZlUE9Oct7crCJhu6WgFzHGOj1eng8t1+FBUROxrg+wlYgA
+	 gfQc5xr1blaa1mzhWK83glhZkk+9xhxX/g8QGkpdnZkuSbByb2z++mvC12rtaCZsHe
+	 jDp3lcOoDuOUQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 31BEF45462
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 11:11:55 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=iPGeVb7B;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=GntvJDf8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LqwrdTgO;
 	dkim-atps=neutral
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id F3E0A44D8C
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 10:44:13 +0000 (UTC)
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A59tMCe4084489
-	for <op-tee@lists.trustedfirmware.org>; Thu, 5 Nov 2026 10:44:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Xf5/vbep3X8hdJmcdG1lebyy2JgNR/ibl1SZ4lYtaMg=; b=iPGeVb7BdAkbKkml
-	kucWy2KtJOwJtWPRILOKbGgMeGzqd7HZsNS7MqkLvb2XsSsEh5l6QFeHhUO1H2qo
-	DCqD41pSkVqlIdMB/ugOpvmTaC73582Qlc+J8uDncjYQrFnlibWZ8vYtZAixYRGJ
-	ckEr+dBbOO+R8H30dJr7socVsuVNfG/+C33m/+OapZ+5P9NWsFO1SXrb6zyWliQw
-	iXPyFoJxtpL7TKgpSV5Cq1dG454acXFP/Or7Un3hgN169Gaez6j4gZmKmskQo2uC
-	ZahDH46LOf7UtvzGMFfG8pwTr2Ib3qzv10GHAdm4dpocvfUSFoKyVE4bYGnVr5Bb
-	WOAygA==
-Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com [209.85.128.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hrqhkr6p4-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 10:44:12 +0000 (GMT)
-Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-8b155f4eb8eso26632627b3.1
-        for <op-tee@lists.trustedfirmware.org>; Thu, 05 Nov 2026 02:44:12 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793875452; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Kgy/n8jhv4LuzGEthvz70rRWymOuxVGvPw2OoblZ9fY/oO8/hVulsCE5/W+GQmXiWd
-         99M5hdg0Wgj295ZplDjh9WJml0u4qW6TKCrmzfUUfIo4j8gtnTvu5/kazSq3VNoSABag
-         Bb5dc6xTBaR7RlQUL7Qx4m3y6T3dAs5dmXtiUgOuELx7t3Ub5gFBcvgnXkgP1iReSX4w
-         vyQQHfSH/72S5bHs+xxd1VbxpIPc7ZJuDD3UFXwwq9/DZT7jPg6VJXT57bqeuBM7wOF6
-         i2ISa8owYM2xzacQK3Sub65GmPMu3C3JARSZNJTmo/r0fsdHR4+Wyrp+wUF+2Y/qLQKW
-         DnYA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=Xf5/vbep3X8hdJmcdG1lebyy2JgNR/ibl1SZ4lYtaMg=;
-        fh=zTS9K1PnkBMqo/Q9XoAlwIISZeJutVtc2poAaYPjHHo=;
-        b=eQz/LbYlzEbYeCgolzJdYVwEi6oXrcCbRicWT0RHmgYwHwxbNQxucolwiydjtUzU10
-         resgotN+9TM61nuW8heMkLRDFU56wBhZCdpPFfUAJJ3ZeMDnPhgw4ZCRcYjZ92dUzwJC
-         SK0PLdlIsrh7c0HahXkqWsGDvLhnk6Cw9tU6TXeu00U1hSg9jHlygP/SaC/yoRdsFypt
-         QMjcpV5aw4LvbVeNJEhP+QmlfI2rLhMXV6rD5Vns4CRW2pVOK2/yWe0RfYeyDKk5BJ7E
-         sXtO1ANwjzYD81OoF6TuSBrQkizmPlFScDYHYPziyhNRkjR/7BTsu/WiuDAc8lHyMyj/
-         fSbg==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1793875452; x=1794480252; darn=lists.trustedfirmware.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Xf5/vbep3X8hdJmcdG1lebyy2JgNR/ibl1SZ4lYtaMg=;
-        b=GntvJDf8Lyuvw4BjOtH3TIqFV04v70uIR4rfR99h4mCMVJtqQGTe8xPhBdBEVHpdfl
-         NlctvkAVeSyQPN+oTHiKqfhfXSEgK04cqLFjBf6MNHMPAsHJKGvQpMgihnNi6qvg2mPt
-         eCIuSbr/ypgx6pd4rRBsOKnKTlWEajYJM11zc9z4o/MDDkZPEz8ZXqoVw8UuzE+Naaoq
-         2MYc1fhf5inVSSPJuMwdtO5WJSrK+vr+qv5s8TXxqpJHtBGpwGN5NmiN8yLl7lin3lrd
-         K/cyoYSD/teMmPPS2v4wFcIZKBVvgYpGu5rVe/wK10dDKSKe1IPK7tc2MiEQk96+LrYz
-         hzfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793875452; x=1794480252;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Xf5/vbep3X8hdJmcdG1lebyy2JgNR/ibl1SZ4lYtaMg=;
-        b=ya1EDgYC4xP0c6+s5Uj+KwXWJUbQxwvN+7Qbvs3vPJMJNTGIzDlZ2mckr9/RMCbpSH
-         kSUTlm9I1QjrykVHLFLKe2Wqz8qZhXLdDrfidWubs4IE9mDGNFB+LaH5VKSNx5ifNWYj
-         GnG7e34u7tcwsGVxhhwmi7Q8E5JhDX8BINZaJjUgXqCPk7RAD9z0sNP33BYgQShiJZJ6
-         Mt16oX9pI1ouqE8Bp8W5iDjdZErjNs5xcfVCJH2i1ZDQZJBE9EhxMIeSoGAAHOfIWFiv
-         Ydx3Y2kotb8Ex8SoycSgwHN4vuzWDLThDdI7fTLFi3zyXKeR58VPUnLM7Ixf7M+bML6S
-         1tMg==
-X-Forwarded-Encrypted: i=1; AKwUvBwpMM5BlOpiw5nNcFWFJdwRWy1aZPBpbnG7jOkXa/JEAvqrnOsScpNYoafvkfL9O9pn4SMbcJU=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z/sSKNgSPIE8PFw/gExnXUeLw1DzOv0Qc9RhLZpP2a4Pofpy7o+
-	v5gk8oT8xXFNT54SMzwIO5C7RasC+KJCU80gFXhTENXIoVK5lXGZlrRFu17WUoY64O1J27uM0XD
-	eOrnrwLtzMAWExhMFVrgT3Bp5Whndhn4dottKjvqrVSg47713A20P51o5FvPkIb3U9rkBaLNK0R
-	MVwR28X2hufsIhDi3bHGw3qDptM8YmVm2ZXpX3lLn7EeFNhHY=
-X-Gm-Gg: AYBFou1TmnbqiWruhglEGWzEVPPo4/czesPOaYo/B0qi5ZHT5OFEUlSqEkPwk9xoL5A
-	ZBEZ6pj+5j4qvvPIfx3T/I9BuzOWZvE5PESlWkJVIlf50K8iVK6qqy6tUvLRL8NdZnBfPKF98yI
-	DIcfuTA8AigKFmCCHbooihbIs6Plqi2DT7YU/UQStBqUWUnKU9Zx30GJaL2PnLtpNyu+QKUghJ8
-	JzIyy63VpVZBhNnTRmbIxgJgDWDX/b9KBbeFdzw
-X-Received: by 2002:a05:690e:4145:b0:67c:a2c:8240 with SMTP id 956f58d0204a3-67c0a2c8545mr466487d50.78.1793875451492;
-        Thu, 05 Nov 2026 02:44:11 -0800 (PST)
-X-Received: by 2002:a05:690e:4145:b0:67c:a2c:8240 with SMTP id
- 956f58d0204a3-67c0a2c8545mr466481d50.78.1793875451076; Thu, 05 Nov 2026
- 02:44:11 -0800 (PST)
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-References: <20261009-fix-tee-max-keys-v1-1-1462d96bf438@oss.qualcomm.com> <atYDodGDc3z6Qv4f@sumit-xelite>
-In-Reply-To: <atYDodGDc3z6Qv4f@sumit-xelite>
-From: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
-Date: Thu, 5 Nov 2026 11:43:59 +0100
-X-Gm-Features: AclHuK82I7GOQ461EBrvJUf4LJ_kffL5_IxDC54rT4pmONT0rZ70Os06qoD-B9o
-Message-ID: <CAGgiveW5pqputgg6EcOCEGEVcBhyjrPUZ_8WKD656tWnw9sMcg@mail.gmail.com>
-Subject: Re: [PATCH] tee: optee: allocate a bitmap for all valid notification keys
-To: Sumit Garg <sumit.garg@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 99C5460D91;
+	Thu,  5 Nov 2026 11:11:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C99511F00919;
+	Thu,  5 Nov 2026 11:11:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793877114;
+	bh=enixJkjvt/NjGzx2vZdqFTkXKPfd4qcXQu8lRjKJNZg=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=LqwrdTgOAHYSfUZcCn0vb7egFoGlnn/N25DberiwXI2r9Nuan10LzGhj9TOTvc4hq
+	 aRLKo586J9Jj71jjdo2VlOkAT/orK4gAlgaFE4P6O7VKEi6hdnj25pKLDWL9myPx+U
+	 jWZWyOtctKFaf8lmRnasULc7fMQVuW1Wzcl2/EaENoVrDU9TS2O8CPwNdxqIvJFcAy
+	 ZQ+MfX6a6r4jgl4wL0Xq+/umegY7ix5rxuuPx9Fhqe0plwgj6xjoQLP1S+mbkJuNoG
+	 YcnBsyy9XWslw0oR9Jozyi+3QwJVuOhSFTMdXCQoHhIi3Gn/3uBKejCot25qhdoOJn
+	 bqwniPkRTAQfg==
+Message-ID: <sashiko-outbox-198916@kernel.org>
+Subject: Re: [PATCH v4 1/8] memcg: Add MEMCG_DMABUF accounting
+ infrastructure
+To: "Albert Esteve" <aesteve@redhat.com>, "Tejun Heo" <tj@kernel.org>, "Johannes
+ Weiner" <hannes@cmpxchg.org>, =?utf-8?b?TWljaGFsIEtvdXRuw70=?= <mkoutny@suse.com>, "Jonathan
+ Corbet" <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Sumit
+ Semwal" <sumit.semwal@linaro.org>, =?utf-8?b?Q2hyaXN0aWFuIEvDtm5pZw==?= <christian.koenig@amd.com>, "Michal
+ Hocko" <mhocko@kernel.org>, "Roman Gushchin" <roman.gushchin@linux.dev>, "Shakeel
+ Butt" <shakeel.butt@linux.dev>, "Muchun Song" <muchun.song@linux.dev>, "Andrew
+ Morton" <akpm@linux-foundation.org>, "Benjamin Gaignard" <benjamin.gaignard@collabora.com>, "Brian
+ Starkey" <Brian.Starkey@arm.com>, "John Stultz" <jstultz@google.com>, "T.J.
+ Mercier" <tjmercier@google.com>, "Christian Brauner" <brauner@kernel.org>, "Paul
+ Moore" <paul@paul-moore.com>, "James Morris" <jmorris@namei.org>, "Serge E.
+ Hallyn" <serge@hallyn.com>, "Stephen Smalley" <stephen.smalley.work@gmail.com>, "Shuah
+ Khan" <shuah@kernel.org>, "Randy Dunlap" <rdunlap@infradead.org>,
+ =?utf-8?b?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>, "Jens Wiklander" <jenswi@kernel.org>, "Sumit
+ Garg" <sumit.garg@kernel.org>
+In-Reply-To: <20261104-v2_20230123_tjmercier_google_com-v4-1-1819a017000b@redhat.com>
+References: <20261104-v2_20230123_tjmercier_google_com-v4-0-1819a017000b@redhat.com>
+ <20261104-v2_20230123_tjmercier_google_com-v4-1-1819a017000b@redhat.com>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA0MiBTYWx0ZWRfX8T2Ijt0uCn0U
- VCFF5P9sX2l6BqVa/sk4MD7gtd/88XRzLGvDu/aH2/yR+nwB7W3dC5RxY6V4kyxiNLLPZKiy3fi
- xQOa5PFaOiFok2zMiJjUq9kcn5kX2aQ61Jm9Asp0qL5LDw5mYTORd44PRSZ37WXprEuNW5T1rZP
- caVgcONWrIKkiIegVO+Kdq+50yyrD+GtAsVAYRaFcM7290zUITf+NuJT/2AX1/25GoYyw40Hqef
- 8xk9Awnj42I0tfb680meXTYJP/sCXITL+rrLQFkL5uOGJ5arbURXsoBN1TCsTT5E95OKZtNd0TW
- my+dpWLQeaNFMq3DHIfgCMJB+XNx+ymGO5lmvvMVbVVqVOzd3Fcuqu9VTdUez+lXQ1iqqRglV6o
- 4DDrc+m0r4aH74wWH2yPxxxHmSqmnJMcPJazuPT+Mgl3W+0CazQ4I5FRBBeBi1+DiDi9mcb1XJ8
- uba7/S6fHstb/HR6AUQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA0MiBTYWx0ZWRfX+EEHAQXauSJC
- wD2RCZ7C+cjoy0mFWP/hRm8Qe1eOuIjFq2hc5YQkDlB+ZM2JvDRw8nO/oLLVU+lBY1RQc/mJBqd
- O/anzfS+P+Ywe656SzLvb7rKFi3A4vQ=
-X-Proofpoint-ORIG-GUID: bEpvveQWuR3ybuOx2x4eZ5w_aptRr-pc
-X-Authority-Analysis: v=2.4 cv=a4+lZkSF c=1 sm=1 tr=0 ts=6aec5dfc cx=c_pps
- a=0mLRTIufkjop4KoA/9S1MA==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_K5XuSEh1TEqbUxoQ0s3:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
- a=VaSOubSYdYwWsDXPSwkA:9 a=QEXdDO2ut3YA:10 a=WgItmB6HBUc_1uVUp3mg:22
-X-Proofpoint-GUID: bEpvveQWuR3ybuOx2x4eZ5w_aptRr-pc
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-05_03,2026-11-04_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 bulkscore=0 lowpriorityscore=0 impostorscore=0
- phishscore=0 spamscore=0 suspectscore=0 adultscore=0 clxscore=1015
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611050042
+Date: Thu, 05 Nov 2026 11:11:52 +0000
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.10 / 15.00];
+X-Spamd-Result: default: False [-6.20 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
 	BAYES_HAM(-3.00)[99.99%];
-	DWL_DNSWL_MED(-2.00)[qualcomm.com:dkim];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[oss.qualcomm.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.168.131];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.168.131:from];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	MISSING_MIME_VERSION(2.00)[];
+	SUSPICIOUS_RECIPS(1.50)[];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.197:received];
-	TO_DN_SOME(0.00)[];
-	ASN(0.00)[asn:26211, ipnet:205.220.168.0/24, country:US];
-	MISSING_XM_UA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	NEURAL_HAM(-0.00)[-1.000];
-	RCVD_COUNT_THREE(0.00)[3];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	RCVD_COUNT_TWO(0.00)[2];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FREEMAIL_TO(0.00)[redhat.com,kernel.org,cmpxchg.org,suse.com,lwn.net,linuxfoundation.org,linaro.org,amd.com,linux.dev,linux-foundation.org,collabora.com,arm.com,google.com,paul-moore.com,namei.org,hallyn.com,gmail.com,infradead.org];
+	RCPT_COUNT_TWELVE(0.00)[33];
+	MIME_TRACE(0.00)[0:+];
+	REPLYTO_DN_EQ_FROM_DN(0.00)[];
+	REPLYTO_DOM_NEQ_FROM_DOM(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+];
+	ALIAS_RESOLVED(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	REPLYTO_DOM_NEQ_TO_DOM(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	FROM_NO_DN(0.00)[];
+	HAS_REPLYTO(0.00)[sashiko-reviews@lists.linux.dev]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: F3E0A44D8C
-X-Spamd-Bar: -------
-Message-ID-Hash: SJB6KUZNPARH67Q4DJQWOQ6NYWT6TZGR
-X-Message-ID-Hash: SJB6KUZNPARH67Q4DJQWOQ6NYWT6TZGR
-X-MailFrom: jens.wiklander@oss.qualcomm.com
+X-Rspamd-Queue-Id: 31BEF45462
+X-Spamd-Bar: ------
+Message-ID-Hash: 66HZ2MFSMH332UW6HRNMYTWVOEFZIJGZ
+X-Message-ID-Hash: 66HZ2MFSMH332UW6HRNMYTWVOEFZIJGZ
+X-MailFrom: sashiko-bot@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>, Jens Wiklander <jenswi@kernel.org>, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org
+CC: dri-devel@lists.freedesktop.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, op-tee@lists.trustedfirmware.org, media-ci@linuxtv.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/SJB6KUZNPARH67Q4DJQWOQ6NYWT6TZGR/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/66HZ2MFSMH332UW6HRNMYTWVOEFZIJGZ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+From: sashiko-bot--- via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: sashiko-reviews@lists.linux.dev, sashiko-bot@kernel.org
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
+X-Archived-By: <archiver.kernel.org>
 
-Hi,
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [Medium] mm: memcontrol: 32-bit nr_pages truncation in dmabuf charge help=
+ers
+--
 
-On Mon, Oct 19, 2026 at 1:48=E2=80=AFPM Sumit Garg <sumit.garg@kernel.org> =
-wrote:
->
-> On Fri, 09 Oct 2026 at 20:19:48 -0700, Amirreza Zarrabi wrote:
-> >Notification keys are checked against an inclusive maximum, but
-> >optee_notif_init() passes that maximum to bitmap_zalloc() as the number =
-of
-> >bits. The bitmap is therefore one bit short. When the maximum key is a
-> >multiple of BITS_PER_LONG, accessing that key reads or writes beyond the
-> >allocated bitmap. Word rounding masks the problem.
-> >
-> >Allocate max_key + 1 bits so that the highest valid key has storage.
-> >
-> >Fixes: 787c80cc7b22 ("optee: separate notification functions")
-> >Signed-off-by: Amirreza Zarrabi <amirreza.zarrabi@oss.qualcomm.com>
-> >---
-> > drivers/tee/optee/notif.c | 2 +-
-> > 1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Reviewed-by: Sumit Garg <sumit.garg@oss.qualcomm.com>
+commit a5e6165b3e0444a33f57a14736c2174d7c009944
+Author: T.J. Mercier <tjmercier@google.com>
 
-I'm picking this up.
+memcg: Add MEMCG_DMABUF accounting infrastructure
 
-Cheers,
-Jens
+This commit introduces the MEMCG_DMABUF stat counter and helper functions
+to reserve, cancel, and uncharge dma-buf memory against a memory cgroup,
+tracking the active charge via a memcg pointer on struct dma_buf.
+
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 856a7d07586cc..e53dd7eebc3b5 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+
+[ ... ]
+
+> @@ -5658,6 +5661,73 @@ void mem_cgroup_flush_workqueue(void)
+>  	flush_workqueue(memcg_wq);
+>  }
+> =20
+> +/**
+> + * mem_cgroup_reserve_dmabuf - charge a memcg for a dma-buf allocation
+> + * @memcg: memcg to charge (may be %NULL)
+> + * @gfp_mask: reclaim mode
+> + * @nr_pages: number of pages to charge
+> + *
+> + * Charges @nr_pages against @memcg. Call this before allocating pages so
+> + * the cgroup limit is enforced up front. On success the caller must
+> + * finalize the charge with the MEMCG_DMABUF stat update, or call
+> + * mem_cgroup_cancel_dmabuf() to undo it.
+> + *
+> + * Returns %true on success, %false if the charge would exceed the limit.
+> + */
+> +bool mem_cgroup_reserve_dmabuf(struct mem_cgroup *memcg, gfp_t gfp_mask,
+> +			       unsigned int nr_pages)
+> +{
+> +	if (!memcg || mem_cgroup_disabled())
+> +		return true;
+> +
+> +	if (try_charge(memcg, gfp_mask, nr_pages))
+> +		return false;
+> +
+> +	return true;
+> +}
+> +EXPORT_SYMBOL_GPL(mem_cgroup_reserve_dmabuf);
+> +
+> +/**
+> + * mem_cgroup_cancel_dmabuf - undo a dma-buf charge
+> + * @memcg: memcg to uncharge (may be %NULL)
+> + * @nr_pages: same value passed to mem_cgroup_reserve_dmabuf()
+> + *
+> + * Returns @nr_pages of charge to @memcg. Use when the allocation fails
+> + * after mem_cgroup_reserve_dmabuf().
+> + */
+> +void mem_cgroup_cancel_dmabuf(struct mem_cgroup *memcg, unsigned int nr_=
+pages)
+> +{
+> +	if (!memcg)
+> +		return;
+> +
+> +	if (!mem_cgroup_is_root(memcg))
+> +		refill_stock(memcg, nr_pages);
+> +}
+> +EXPORT_SYMBOL_GPL(mem_cgroup_cancel_dmabuf);
+> +
+> +/**
+> + * mem_cgroup_uncharge_dmabuf - uncharge a dma-buf from its memcg
+> + * @dmabuf: buffer to uncharge
+> + *
+> + * Reverses a finalized dma-buf charge. Drops the memcg
+> + * reference stored in @dmabuf->memcg and clears the pointer.
+> + * Safe to call when @dmabuf->memcg is %NULL.
+> + */
+> +void mem_cgroup_uncharge_dmabuf(struct dma_buf *dmabuf)
+> +{
+> +	unsigned int nr_pages;
+> +	struct mem_cgroup *memcg =3D dmabuf->memcg;
+> +
+> +	if (!memcg)
+> +		return;
+> +
+> +	nr_pages =3D PAGE_ALIGN(dmabuf->size) >> PAGE_SHIFT;
+> +	mod_memcg_state(memcg, MEMCG_DMABUF, -nr_pages);
+> +	mem_cgroup_cancel_dmabuf(memcg, nr_pages);
+> +	mem_cgroup_put(memcg);
+> +	dmabuf->memcg =3D NULL;
+> +}
+
+[Severity: Medium]
+Can passing a 32-bit unsigned int for nr_pages in
+mem_cgroup_reserve_dmabuf(), mem_cgroup_cancel_dmabuf(), and
+mem_cgroup_uncharge_dmabuf() in mm/memcontrol.c (and include/linux/memcontr=
+ol.h)
+truncate 64-bit dma-buf sizes?
+
+struct dma_buf stores size as a 64-bit size_t, and in the following commit
+("dma-heap: charge dma-buf memory via explicit memcg"),
+dma_heap_ioctl_allocate() -> system_heap_allocate() passes a 64-bit
+PAGE_ALIGN(len) >> PAGE_SHIFT to mem_cgroup_reserve_dmabuf() before
+entering its while (size_remaining > 0) page allocation loop without
+__GFP_ACCOUNT.
+
+If a userspace caller requests an allocation where len >=3D (1ULL << (32 +
+PAGE_SHIFT)) (for example, (1ULL << 44) + PAGE_SIZE on a 4 KiB page
+system), PAGE_ALIGN(len) >> PAGE_SHIFT wraps to 1 page when converted to
+unsigned int nr_pages. try_charge() will then succeed against a small
+memory.max limit while system_heap_allocate() proceeds to allocate
+unaccounted pages using the full 64-bit size_remaining.
+
+Additionally, in mem_cgroup_uncharge_dmabuf(), passing -nr_pages to
+mod_memcg_state(memcg, MEMCG_DMABUF, -nr_pages) (which takes a signed int
+val) will overflow when nr_pages exceeds INT_MAX. Should nr_pages use
+unsigned long (or size_t) across these helpers?
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261104-v2_2023012=
+3_tjmercier_google_com-v4-0-1819a017000b@redhat.com?part=3D1
