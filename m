@@ -2,54 +2,54 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CAE0606A33D
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:08:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A84FE606EEB2
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:09:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=cPHOcLwW;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GWekXUJt
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=g2tFc0Ue;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnuBqofl
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 5DFEA454D6
-	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:08:44 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 07C6345494
+	for <op-tee@archiver.kernel.org>; Thu,  5 Nov 2026 21:09:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1793912924;
-	bh=8M6KXM/gidl407BgZsE6l9e639j02CBQooR3iZ5mU4M=;
+	d=lists.trustedfirmware.org; s=2024; t=1793912953;
+	bh=DLdQ29COL0zGmxo/RqnqfZh7M8nmGGQT+1l47aYTRPY=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=cPHOcLwWbF1fdG7sgKk1RHapP/sDir4xLjrOP2nKQAzHUvm4io3Xjmlp10pc4GBT7
-	 nTkAUbaURGUI3KK1Kr7JjX+2UPMni6vp+oyQh7hNHBrmXwUGFa53IrYlK0jU4T5d3q
-	 RSI4uNZvkm4VgHk3pmRsC9GNSBg9fSL8oqwjonyxmLBqqAL9RQ8lUDuif30HBBarLJ
-	 r8EANv9UGEVWE+u63qmGMubbRg1WZabw/skKm5fEuZAkTmpkrWfFhsXqcNlift99uw
-	 O4QjEH9BGP+XI4HVePW1cW/O1lQiZhjFPixZi47hAJdUAI2UhRxFwuqE6qR+3Z53Wa
-	 BdJ9NNIw1fqjA==
+	b=g2tFc0Ue8IPsChnIjVOKYz5QWlm2JfdLKgcOrqNtKIV64wICVg5nxWtP/BkPHkIhI
+	 /odtLNGHmbkak+9hFKeUP6vSvB6eyVgz779G2S4JjU+CF9+af5MvGh8aC2dKT65lFA
+	 WPGsssqATPzfguDxjhvQFJ2737FTUW54SWC3Hg35zvLgg6iqHvEK4sTDrjIPkc4eq1
+	 LrGRIggwcb0GPr282OJtIXFjExyMC2oRBq6fFF5CMkrP4CGsMHoV3qPzK68JDKElSI
+	 XDzNrXwKpKCLkDm6syvj/no2hQIkTvh/K/R5EZNDk7RhCkgQSXx2nDAX40uhh0NQOD
+	 VjwM3Nes5Lp+g==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 958F8454C8
-	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:07:03 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B8F32454CB
+	for <op-tee@lists.trustedfirmware.org>; Thu,  5 Nov 2026 21:07:15 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GWekXUJt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnuBqofl;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EA5EB43E17;
-	Thu,  5 Nov 2026 21:07:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 073691F008A6;
-	Thu,  5 Nov 2026 21:06:50 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3053B434E5;
+	Thu,  5 Nov 2026 21:07:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C0881F008BE;
+	Thu,  5 Nov 2026 21:07:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912822;
-	bh=bqfQWE9INck3Aoq42ZNpSathvk4p8fmQAVJsjbZAm0g=;
+	s=k20260515; t=1793912835;
+	bh=QKT0z8QtIRwzKrfDYLgpmoyX9J+/idevkgO1HnXZit4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=GWekXUJtTW/bmKiTy4QB6lwJ7qbgw7vFuwUU+DOaOfg/TRAzLeM32R3kLak4qQeQ3
-	 Qv4vJ9ieuL7oXsySpCaty+GruAFXFHyboa49jWYOSQ5CvYOGpKEnZ4EVlYgXyECMBV
-	 SAYyovNMBS/4DJV9jvSExBs04MC2Ny8P8JjIrR64zZOycDnouZr851hmFFOt4+wNVA
-	 fPiv0XZG2hDHC8h3Gwkazyekp82IqzHvmXnmVgCZg0iO26M0dmBWKapLrfZusp9wwT
-	 zzsZcWlKHFiQMAFkueAeuPV0PQFvmCrLb3vSKAp9PJu0JxbVW/FD9XwOTh2SLxX8iP
-	 /o3UyJrfNU3sg==
-Date: Thu, 05 Nov 2026 21:05:36 +0000
-Subject: [PATCH 05/14] x86/sgx: convert vepc mmap hook to mmap_prepare
+	b=RnuBqoflWBl9+my+oc0dxGf7vwqGAIPn/FsGegfNU3dHcec/WKV86s6Ur1Z7CgphR
+	 XKnhR+RNjTNO8xHOfu/7SF8YH25vN+805KwkJu0FanhjtyA5pyhvbbpwpubqNIFDqI
+	 0TVcpTKSq0Hbsoi1IvuBwqBkbcg2LUnI8ztcdNM7aUjh5w7hvqpQ6VfM7GqHQzO7sB
+	 P65idNuN5d5q0GV/XG9x/f4N6e/Z8fjyllKisCJ9sQgGmYELUKRoe5PiuZNsJh9pU5
+	 chtN+L8dJARPPHvocVhTuHejP5A11y7PUl2FEC/P7We+rpc+2vc3NxNzEGRFg75tiJ
+	 ON7wUjneXfb7Q==
+Date: Thu, 05 Nov 2026 21:05:37 +0000
+Subject: [PATCH 06/14] udf: convert mmap hook to mmap_prepare
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-5-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-6-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>,
@@ -87,12 +87,12 @@ To: Juergen Gross <jgross@suse.com>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1666; i=ljs@kernel.org;
- h=from:subject:message-id; bh=8M6KXM/gidl407BgZsE6l9e639j02CBQooR3iZ5mU4M=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF/NfkpnyQUdw7u/LIOuqb1l2agTvF3TyPxd3+spl
- 1Y3rn9v1lHKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJyAcx/NONOFpeGCnRO6e7
- +3T/k1zGsxF7YoO6TcO7Xjvq/jC+sIuRocFi0+uncd+Ew6Qit/5Nqt5kFnHQtvGp8hbW+Lk53Av
- lmAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1166; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=DLdQ29COL0zGmxo/RqnqfZh7M8nmGGQT+1l47aYTRPY=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF+TVmThWvlNcPmraFeJkEjHwxYvPkgIt/wtrxeoz
+ +A9ez2ho5SFQYyLQVZMkeX5F/H9QSJh8zov+LvBzGFlAhnCwMUpABO5fZvhn+2396kibN6ZSya4
+ 8c9Md3ietX1BVNqe62l2F/Zvfvurg4nhf5JVc2LZzaRWi98fwrc7JT79lmb6P+mw/7Z3Hc9+hFT
+ 68QIA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
@@ -125,17 +125,17 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	TAGGED_RCPT(0.00)[netdev];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 958F8454C8
+X-Rspamd-Queue-Id: B8F32454CB
 X-Spamd-Bar: --------
-Message-ID-Hash: YN4JWOI6KLBPXSBNAAVO7IUDNFABUKIV
-X-Message-ID-Hash: YN4JWOI6KLBPXSBNAAVO7IUDNFABUKIV
+Message-ID-Hash: G24IV5J7Z5CBXLRF3JVK4OGBL3BDMCB6
+X-Message-ID-Hash: G24IV5J7Z5CBXLRF3JVK4OGBL3BDMCB6
 X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YN4JWOI6KLBPXSBNAAVO7IUDNFABUKIV/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/G24IV5J7Z5CBXLRF3JVK4OGBL3BDMCB6/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -151,52 +151,40 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
-only checks that the mapping is shared and sets VMA flags, operations and
-private data.
+only updates the access time and sets the VMA operations.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/x86/kernel/cpu/sgx/virt.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ fs/udf/file.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/sgx/virt.c b/arch/x86/kernel/cpu/sgx/virt.c
-index 6a1933ddc6fc..850990519ca5 100644
---- a/arch/x86/kernel/cpu/sgx/virt.c
-+++ b/arch/x86/kernel/cpu/sgx/virt.c
-@@ -98,17 +98,18 @@ static const struct vm_operations_struct sgx_vepc_vm_ops = {
- 	.fault = sgx_vepc_fault,
- };
+diff --git a/fs/udf/file.c b/fs/udf/file.c
+index 02e9314818dc..d5e80c6cae96 100644
+--- a/fs/udf/file.c
++++ b/fs/udf/file.c
+@@ -190,10 +190,10 @@ static int udf_release_file(struct inode *inode, struct file *filp)
+ 	return 0;
+ }
  
--static int sgx_vepc_mmap(struct file *file, struct vm_area_struct *vma)
-+static int sgx_vepc_mmap_prepare(struct vm_area_desc *desc)
+-static int udf_file_mmap(struct file *file, struct vm_area_struct *vma)
++static int udf_file_mmap_prepare(struct vm_area_desc *desc)
  {
--	struct sgx_vepc *vepc = file->private_data;
-+	struct sgx_vepc *vepc = desc->file->private_data;
- 
--	if (!(vma->vm_flags & VM_SHARED))
-+	if (!vma_desc_test(desc, VMA_SHARED_BIT))
- 		return -EINVAL;
- 
--	vma->vm_ops = &sgx_vepc_vm_ops;
-+	desc->vm_ops = &sgx_vepc_vm_ops;
- 	/* Don't copy VMA in fork() */
--	vm_flags_set(vma, VM_PFNMAP | VM_IO | VM_DONTDUMP | VM_DONTCOPY);
--	vma->vm_private_data = vepc;
-+	vma_desc_set_flags(desc, VMA_PFNMAP_BIT, VMA_IO_BIT, VMA_DONTDUMP_BIT,
-+			   VMA_DONTCOPY_BIT);
-+	desc->private_data = vepc;
+-	file_accessed(file);
+-	vma->vm_ops = &udf_file_vm_ops;
++	file_accessed(desc->file);
++	desc->vm_ops = &udf_file_vm_ops;
  
  	return 0;
  }
-@@ -315,7 +316,7 @@ static const struct file_operations sgx_vepc_fops = {
- 	.unlocked_ioctl	= sgx_vepc_ioctl,
- 	.compat_ioctl	= sgx_vepc_ioctl,
- 	.release	= sgx_vepc_release,
--	.mmap		= sgx_vepc_mmap,
-+	.mmap_prepare	= sgx_vepc_mmap_prepare,
- };
- 
- static struct miscdevice sgx_vepc_dev = {
+@@ -202,7 +202,7 @@ const struct file_operations udf_file_operations = {
+ 	.read_iter		= generic_file_read_iter,
+ 	.unlocked_ioctl		= udf_ioctl,
+ 	.open			= generic_file_open,
+-	.mmap			= udf_file_mmap,
++	.mmap_prepare		= udf_file_mmap_prepare,
+ 	.write_iter		= udf_file_write_iter,
+ 	.release		= udf_release_file,
+ 	.fsync			= simple_fsync,
 
 -- 
 2.56.0
