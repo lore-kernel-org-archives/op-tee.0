@@ -1,68 +1,68 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 273D5606A32A
-	for <op-tee@archiver.kernel.org>; Thu, 12 Nov 2026 11:09:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51898606A321
+	for <op-tee@archiver.kernel.org>; Thu, 12 Nov 2026 11:09:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=U9Og3G7G;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gybSGp1G
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=PhC9dhrX;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NzMZ1Oh9
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7C44945513
-	for <op-tee@archiver.kernel.org>; Thu, 12 Nov 2026 11:09:10 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id A9007454DB
+	for <op-tee@archiver.kernel.org>; Thu, 12 Nov 2026 11:09:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1794481750;
-	bh=wyvkEdPCyp9OPNHJW5mZykyY0wURrxL1p3P/UHLFzYo=;
+	d=lists.trustedfirmware.org; s=2024; t=1794481777;
+	bh=oohyDMEtdwXIaw+ORCSP/nWMT+2AZNtGQ7u1pISBfWI=;
 	h=Subject:To:In-Reply-To:References:Date:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=U9Og3G7GnVvRxFGdh967QsQIC/TmIjpW6qBq1WHzQDCuRpDbVziebAw8AKjY5kdY6
-	 /rwKgp/hxcaKdokRS4FsUyHBEMLkHbHQaltGXjTJU0eyHiF+CGvbulRl+JrSjiKErL
-	 IJ6Th3KwysnR/29Zwt2VMHhqROtZNIAQWPGO47Cbxu+TlLbWYGZdxaxmDy0DFOPqzj
-	 Q915egG2XS7Cn3a3nkeAJqbCd5sucTSu3KHiA1EYwKsG/sDuqOiUYwRBcPjIxpayiz
-	 FQHPiraxpM7reAtV+ImRICpzZc2/iXBVMcXbH8LgUcsV3mFjpmlaB9fYRRHEfzepj0
-	 e2RNag+E+BucA==
+	b=PhC9dhrXBhVBhkOWporwT4VkUe+WFrV6vCHeM52fFfoDKhILPxUOP6TcSuoSOPKrE
+	 lobqPR0ekdrLLMLma6R5U8f4ziq+7rceyF0rCYct9OxpUbM5vFpnBYQURiEU3OKvFt
+	 Yrzx6ZAIUAJ1HlG5h+WQRvoWreEHx5VVI4AsM9bERautrOfKF1JbmH9KMGhCmcEwVP
+	 zHQ6vVsPjpD3igXTVGp/ZuTKc/4wLqHqR+n8rBSoo1NdxmfhqjU+b2/kBGtfx9iVUs
+	 Y3Vn7w4BTvhRg120IeVxrnMh7NcjSDV9RGilqaLktkisthdgJql2w1CAwZqr8S+2lU
+	 Xhvopzg6pX+Qw==
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7E07844DC8
-	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Nov 2026 11:08:51 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id B39F144DC8
+	for <op-tee@lists.trustedfirmware.org>; Thu, 12 Nov 2026 11:08:52 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gybSGp1G;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NzMZ1Oh9;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CFDC463629;
-	Thu, 12 Nov 2026 11:08:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C0D01F00A08;
-	Thu, 12 Nov 2026 11:08:49 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7443B639FD;
+	Thu, 12 Nov 2026 11:08:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0CFAE1F00A05;
+	Thu, 12 Nov 2026 11:08:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794481730;
-	bh=x7/yo1OPdWR339CVYUNb7xk1ugkvuCHgmsFdu8cHfQw=;
+	s=k20260515; t=1794481732;
+	bh=r8LeQJ3H9vwXd92l8n5mDTq6/jwXyFVP+xBw8qc6N4w=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=gybSGp1GQVcSoAD0/nMnlL4xCkjDD/owJ0OT/ZXq36W4QzTVudl98Da2U5XkVpaUT
-	 Dyg80nmewRXnWJoDApapHFnH50KAz8uOy5BOkYFXBtTWbnfKYPYoT0zt2WexL/+lIH
-	 xpTO3A24lM5QcqLnEwRVCJ86dX08yZ5YbheZEIh9XWCZGJrBwYatUAwzToGu48W5dO
-	 YVtTUAlimwKFl4+chCr4l/2q8XKa8hh77lbZuQTee2G6z0FnvXyJj2/4tkh2t9UMxS
-	 2yxUE1KPGQ7a3gI7zbRsa7Xa0nrkoz8q1deganigCT36hZjs1TpGWDoBN+KHJOoP1f
-	 7O8zkh6l6gM+w==
-Message-ID: <sashiko-outbox-210994@kernel.org>
-Subject: Re: [PATCH v3 5/8] dma-mapping: Introduce lendable-dma-pool
+	b=NzMZ1Oh9HxHZ6qAk5EfPB8RIuILKq+u/heoaTo1HB53tH9+5pAKywe7KbvOxoq+zA
+	 XATFxvjljrWRPI7iflpDvHXoKr30fBFmSTI/XNfdHoHHBI70Yl5971B6lXqcOjBPPG
+	 iavS4XP4C9ZWMdrlksAJ6tvnCezzRTD0/4Ty3BOZM5/lQekHC75pQrP4Km93UEIyK0
+	 IoPO2Yp4kzZkeJIjSK9qStqxhk+wW7s9m2pgkDzXwaaTkQ9WkbEpsd+YkIXUXCgBW0
+	 3PsdCBnlJJ8x3WMAd1B2QG43Rlw/jWyA0Y9rY3LigHytx6iUKLSjfoOBvfehna4gln
+	 VIwlv6tgvLALw==
+Message-ID: <sashiko-outbox-210997@kernel.org>
+Subject: Re: [PATCH v3 8/8] optee: Add support for lendable-dma-pool
 To: "Vincent Donnefort" <vdonnefort@google.com>, catalin.marinas@arm.com, will@kernel.org, rppt@kernel.org, akpm@linux-foundation.org, m.szyprowski@samsung.com, jenswi@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org
-In-Reply-To: <20261111110738.872947-6-vdonnefort@google.com>
+In-Reply-To: <20261111110738.872947-9-vdonnefort@google.com>
 References: <20261111110738.872947-1-vdonnefort@google.com>
- <20261111110738.872947-6-vdonnefort@google.com>
+ <20261111110738.872947-9-vdonnefort@google.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Thu, 12 Nov 2026 11:08:48 +0000
+Date: Thu, 12 Nov 2026 11:08:50 +0000
 X-Rspamd-Action: no action
 X-Spamd-Result: default: False [-6.20 / 15.00];
 	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-3.00)[99.99%];
+	BAYES_HAM(-3.00)[100.00%];
 	MISSING_MIME_VERSION(2.00)[];
 	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
 	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
 	MIME_GOOD(-0.10)[text/plain];
 	REPLYTO_DN_EQ_FROM_DN(0.00)[];
@@ -72,8 +72,8 @@ X-Spamd-Result: default: False [-6.20 / 15.00];
 	RCPT_COUNT_TWELVE(0.00)[23];
 	MIME_TRACE(0.00)[0:+];
 	RCVD_COUNT_TWO(0.00)[2];
-	REPLYTO_DOM_NEQ_TO_DOM(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+];
+	REPLYTO_DOM_NEQ_TO_DOM(0.00)[];
 	ALIAS_RESOLVED(0.00)[];
 	NEURAL_HAM(-0.00)[-1.000];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
@@ -87,17 +87,17 @@ X-Spamd-Result: default: False [-6.20 / 15.00];
 	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	HAS_REPLYTO(0.00)[sashiko-reviews@lists.linux.dev]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 7E07844DC8
+X-Rspamd-Queue-Id: B39F144DC8
 X-Spamd-Bar: ------
-Message-ID-Hash: IK4FJQVZULBXXK72Z3422GWKKDBYZG3K
-X-Message-ID-Hash: IK4FJQVZULBXXK72Z3422GWKKDBYZG3K
+Message-ID-Hash: OD3V3DIEZZNZHQQPAI7QPSJQIAR3FM2T
+X-Message-ID-Hash: OD3V3DIEZZNZHQQPAI7QPSJQIAR3FM2T
 X-MailFrom: sashiko-bot@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: mark.rutland@arm.com, robin.murphy@arm.com, hch@lst.de, ryan.roberts@arm.com, sumit.garg@kernel.org, sudeep.holla@kernel.org, ardb@kernel.org, thierry.reding@kernel.org, david@kernel.org, danielmentz@google.com, linux-mm@kvack.org, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/IK4FJQVZULBXXK72Z3422GWKKDBYZG3K/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/OD3V3DIEZZNZHQQPAI7QPSJQIAR3FM2T/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -115,76 +115,63 @@ X-Archived-By: <archiver.kernel.org>
 
 Thank you for your contribution! Sashiko AI review found 1 potential
 issue to consider:
-- [Medium] dma-mapping: linux,cma-default lendable pool bypassed in
-  dma_alloc_contiguous()
+- [High] optee: restore_direct_map_dyn_protmem() called when
+  reclaim_protmem() fails
 --
 
-commit b8e3981ec38ba68b29bb5ed6b932c6f83a300db4
+commit 1a801ca7487b0859c4bfdf62e4f1116b16a1b7fe
 Author: Vincent Donnefort <vdonnefort@google.com>
 
-dma-mapping: Introduce lendable-dma-pool
+optee: Add support for lendable-dma-pool
 
-This commit introduces the "lendable-dma-pool" reserved-memory CMA driver
-along with dma_zap_direct_map() and dma_restore_direct_map() to unmap DMA
-pages from the kernel direct map before lending them to a secure world and
-restore them upon reclaim.
+This commit uses dma_zap_direct_map() and dma_restore_direct_map() to
+unmap dynamically allocated protected memory from the kernel linear map
+before lending it to the secure world and restore it upon reclaim.
 
-> diff --git a/kernel/dma/lendable.c b/kernel/dma/lendable.c
-> new file mode 100644
-> index 0000000000000..85ac3ad10df03
-> --- /dev/null
-> +++ b/kernel/dma/lendable.c
-> @@ -0,0 +1,243 @@
+> diff --git a/drivers/tee/optee/protmem.c b/drivers/tee/optee/protmem.c
+> index be3abf6e8aa6d..10e8f1540e5e8 100644
+> --- a/drivers/tee/optee/protmem.c
+> +++ b/drivers/tee/optee/protmem.c
 
 [ ... ]
 
-> +int dma_zap_direct_map(struct device *dev, struct page *page, size_t siz=
-e)
-> +{
-> +	unsigned int nr_pages =3D size >> PAGE_SHIFT;
-> +	bool from_lendable, has_lendable;
-> +	struct cma *cma;
-> +	int ret;
-> +
-> +	if (!size || !PAGE_ALIGNED(size))
-> +		return -EINVAL;
-> +
-> +	cma =3D dev_get_cma_area(dev);
-> +	has_lendable =3D cma_is_lendable(cma);
-> +	from_lendable =3D has_lendable && cma_has_range(cma, page, nr_pages);
-> +
-> +	if (!from_lendable && !can_set_direct_map())
-> +		return has_lendable ? -EFAULT : -ENODEV;
+> @@ -76,6 +103,8 @@ static int init_dyn_protmem(struct optee_protmem_dyn_p=
+ool *rp)
+>  	rp->gen_pool =3D NULL;
+>  err_reclaim:
+>  	rp->optee->ops->reclaim_protmem(rp->optee, rp->protmem);
+> +err_restore_direct_map:
+> +	restore_direct_map_dyn_protmem(rp);
+>  err_put_shm:
+>  	tee_shm_put(rp->protmem);
+>  err_null_protmem:
+> @@ -112,6 +141,7 @@ static void release_dyn_protmem(struct optee_protmem_=
+dyn_pool *rp)
+>  	rp->gen_pool =3D NULL;
+> =20
+>  	rp->optee->ops->reclaim_protmem(rp->optee, rp->protmem);
+> +	restore_direct_map_dyn_protmem(rp);
+>  	rp->protmem->flags &=3D ~TEE_SHM_DYNAMIC;
+> =20
+>  	WARN(refcount_read(&rp->protmem->refcount) !=3D 1, "Unexpected refcount=
+");
 
-[Severity: Medium]
-Can dma_zap_direct_map() fail with -EFAULT for pages allocated via
-dma_alloc_pages() or dma_alloc_coherent() when a lendable pool is
-configured as "linux,cma-default" without a per-device memory-region?
+[Severity: High]
+Can restore_direct_map_dyn_protmem() run while rp->protmem is still lent
+to the secure world if reclaim_protmem() fails?
 
-When dev->cma_area is NULL, dev_get_cma_area(dev) returns
-dma_contiguous_default_area, so has_lendable is true.  However,
-dma_alloc_contiguous() skips dma_contiguous_default_area for single-page
-allocations (returning NULL so the caller falls back to the buddy
-allocator) and prefers dma_contiguous_numa_area[nid] when
-CONFIG_DMA_NUMA_CMA is enabled:
+reclaim_protmem() can fail, for example if optee_get_msg_arg() returns
+-ENOMEM in optee_smc_reclaim_protmem() or if the secure world has not
+relinquished the memory handle in optee_ffa_reclaim_protmem().  Both
+init_dyn_protmem() and release_dyn_protmem() ignore that return value and
+unconditionally call restore_direct_map_dyn_protmem(rp).
 
-kernel/dma/contiguous.c:dma_alloc_contiguous() {
-    ...
-	if (dev->cma_area)
-		return cma_alloc_aligned(dev->cma_area, size, gfp);
-	if (size <=3D PAGE_SIZE)
-		return NULL;
-
-#ifdef CONFIG_DMA_NUMA_CMA
-	if (nid !=3D NUMA_NO_NODE && !(gfp & (GFP_DMA | GFP_DMA32))) {
-		struct cma *cma =3D dma_contiguous_numa_area[nid];
-    ...
-}
-
-As a result, those pages do not come from dma_contiguous_default_area,
-cma_has_range() returns false, and dma_zap_direct_map() returns -EFAULT
-whenever can_set_direct_map() is false.
+On arm64, arch_dma_restore_direct_map() remaps the pages as cacheable in
+the linear map and runs dcache_inval_poc() across the range, which
+re-exposes the still-lent pages to CPU speculative reads and triggers a
+synchronous external abort or SError on the cache maintenance before
+tee_shm_put() returns the pages to the allocator.
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261111110738.8729=
-47-1-vdonnefort@google.com?part=3D5
+47-1-vdonnefort@google.com?part=3D8
