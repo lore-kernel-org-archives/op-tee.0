@@ -2,63 +2,65 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B980E606A89E
-	for <op-tee@archiver.kernel.org>; Tue, 17 Nov 2026 08:40:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BCBB606A886
+	for <op-tee@archiver.kernel.org>; Tue, 17 Nov 2026 08:41:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=sxudXE/n;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CGXjMRJ5
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=CH0aoL3y;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q4VDgpGJ
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 162C7454FC
-	for <op-tee@archiver.kernel.org>; Tue, 17 Nov 2026 08:40:49 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 0546A4548F
+	for <op-tee@archiver.kernel.org>; Tue, 17 Nov 2026 08:41:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1794904849;
-	bh=/FTBu3VeGFZ/GL8VA4Y+q7eGQysJ2fGG5ZHZQLuY62k=;
+	d=lists.trustedfirmware.org; s=2024; t=1794904879;
+	bh=1zR6XiraQWdGd9HDTK8/w4QqUd29ckVFQUK7AhmcZSk=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=sxudXE/nhWA5DiL/5CxmRauNFeVUqEH1j+GrRMAAVqBoc8PAnH4dzkxMFA1pzsDXE
-	 B340wgfIqTDVHL2v306S2pfuGnxNbMc2/aLSYFUml6RT7u1veJZMC6yqaFb2MAjkZz
-	 NIj86dgPxCKZNRUvoJytt9ABbjPi6t211SLBo863gmty5fpiVWknvnBWQXsNvufvCX
-	 xIfcnSZ2Kert+zRHwK35mYirxB3RSNMYjoqG6AfrAbfmwt6efr7erEcdo7lTEeB9ic
-	 KTMSuoX8jGHBNzUKQvU2rNQbTQ+1Em79S3M0zA/nFwaw4SEmqyFOVblwywNPGL+5Nk
-	 UEfIHFEG7IFTw==
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DE9D6454C9
-	for <op-tee@lists.trustedfirmware.org>; Tue, 17 Nov 2026 08:39:59 +0000 (UTC)
+	b=CH0aoL3y89eZyyBOeOQ9Y/H+nAZgLllalW0QzY6kcq5JQ9vINAMlUFs3fKpbnBWII
+	 Z3uNAJlkcaVElsENqHyy4j4xtn1rgSlTfmb9flFJSX44ElzdOuCDDlnAGdK5VzWNio
+	 8yBJJAac4XQjsOhRHjiCCW6oMtr/olGYR4ZyP+V+6MsiQvy/q/mFV22XR4/drHhY/r
+	 MnpYH1HhnaMA4vxlMpzZNlgBxZQuL/75NVRM0B/SkmLHU54Oo0PD9LIFu23uZB336Q
+	 JWv3dfshxfDCopAe8n78o2/d3o82vCG91RXCKzpkALG99DUv7bt6mE+p5cSiEEnrhN
+	 /yZWBCxXXnvJA==
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A39B945502
+	for <op-tee@lists.trustedfirmware.org>; Tue, 17 Nov 2026 08:40:11 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CGXjMRJ5;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q4VDgpGJ;
 	dkim-atps=neutral
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794904799;
+	s=mimecast20190719; t=1794904811;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Sh1ahDjYuAFYnx7fwIWsePESngyiAQOY9R5kRpnXVBk=;
-	b=CGXjMRJ5Kywdhv9SU3Z27jldo9QXhWscKC5spB3QqvzZ6Z5ERYrK7qzlmVzOxv6bLo9taN
-	nFCzs+7z1Ql5CB/l6HDrnGWYZ6JX17viYPmrZNQlkI4cEa7atPD3xlMlbiUy4HlkCtwRhk
-	83tUs4aDiBIL1tWPFb1bQYkKQ/m+200=
+	bh=H54NJImT9TlWN8O112UdcqrtZ3qlOEey7IxNjig/DIw=;
+	b=Q4VDgpGJecJVlp75ufcGGXppxkUNg0LgPMywQo9U66Le9P/yx3rylihE94Yi+6rvwo9S4/
+	QY5QRkz0KsJ83HfRGX/VDD3SrQNz62zy0Pzl6FcON8W2ESw01EkbCWwTXYW8Y4cLJ8mXO8
+	7lENevI6jAkxzWfYgIAwviu7J5vOnMs=
+X-MC-Rep: binary re single
 Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-264-2WgYNuWtN7aXzt1Wb7jnOg-1; Tue,
- 17 Nov 2026 03:39:55 -0500
-X-MC-Unique: 2WgYNuWtN7aXzt1Wb7jnOg-1
-X-Mimecast-MFC-AGG-ID: 2WgYNuWtN7aXzt1Wb7jnOg_1794904791
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-21-84agdXxLMTGedNeaCyzaLg-1; Tue,
+ 17 Nov 2026 03:40:04 -0500
+X-MC-Unique: 84agdXxLMTGedNeaCyzaLg-1
+X-Mimecast-MFC-AGG-ID: 84agdXxLMTGedNeaCyzaLg_1794904800
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 81CC319560B1;
-	Tue, 17 Nov 2026 08:39:50 +0000 (UTC)
+	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 280621956051;
+	Tue, 17 Nov 2026 08:39:59 +0000 (UTC)
 Received: from aesteve-thinkpadp1gen8.rmtes.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D0B7C1956047;
-	Tue, 17 Nov 2026 08:39:41 +0000 (UTC)
-Date: Tue, 17 Nov 2026 09:39:17 +0100
-Subject: [PATCH v5 2/8] dma-heap: charge dma-buf memory via explicit memcg
+	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D422B1956049;
+	Tue, 17 Nov 2026 08:39:50 +0000 (UTC)
+Date: Tue, 17 Nov 2026 09:39:18 +0100
+Subject: [PATCH v5 3/8] dma-buf: transfer objcg charges via
+ DMA_BUF_IOCTL_XFER_CHARGE
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Message-Id: <20261117-v2_20230123_tjmercier_google_com-v5-2-1ce975f2a9ad@redhat.com>
+Message-Id: <20261117-v2_20230123_tjmercier_google_com-v5-3-1ce975f2a9ad@redhat.com>
 References: <20261117-v2_20230123_tjmercier_google_com-v5-0-1ce975f2a9ad@redhat.com>
 In-Reply-To: <20261117-v2_20230123_tjmercier_google_com-v5-0-1ce975f2a9ad@redhat.com>
 To: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
@@ -80,57 +82,57 @@ To: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
  Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
  Philipp Stanner <phasta@kernel.org>,
  =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794904759; l=16461;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794904759; l=9901;
  i=aesteve@redhat.com; s=20260827; h=from:subject:message-id;
- bh=/FTBu3VeGFZ/GL8VA4Y+q7eGQysJ2fGG5ZHZQLuY62k=;
- b=LJSLzDMhKtfWvvHCtoRUvRrx6LwRKwus9jeTaCwY6sWxEQ/8hptiMWPiaB9eUeD9hz9j7N6Kc
- q7uuVoXTu83AJiiAWauQ9G8iUVSoqvGg6aa9gghDx9RkI4a9QLEhLgE
+ bh=FdxUV/2gdJrGbEwQk3L2/HjwhfU02edgwK0RV+mcEAo=;
+ b=fy0kKG65oDwyCQURFXe0FnJ2an9oBZWTiKFnkWjwL6+lzWaJ4aX9phAhjJGJVhdhE52JQViSN
+ 8kar6otOcHoC7Hr5a23VC+PZ8kGtXZekv3r/na2/OGjX8y9CrhRK+yp
 X-Developer-Key: i=aesteve@redhat.com; a=ed25519;
  pk=zI2RBeZgocwYm3AkJW4CtjoJnKoDZrfBl1xe5Ed6h+U=
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: 4QURdjFS1Y5Y7C6NoADA7hGDse2g2cdWKwLuPEFqXW0_1794904791
+X-Mimecast-MFC-PROC-ID: nayzSzeePiDli1vCMcDM7ypaoezR4R7Wbixw1d9qeYo_1794904800
 X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.60 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+X-Spamd-Result: default: False [-5.00 / 15.00];
+	BAYES_HAM(-3.00)[100.00%];
 	DWL_DNSWL_MED(-2.00)[redhat.com:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[redhat.com,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:170.10.133.0/24];
+	RWL_MAILSPIKE_EXCELLENT(-0.40)[170.10.129.124:from];
 	R_DKIM_ALLOW(-0.20)[redhat.com:s=mimecast20190719];
-	RWL_MAILSPIKE_GOOD(-0.10)[170.10.133.124:from];
+	R_SPF_ALLOW(-0.20)[+ip4:170.10.129.0/24];
+	RCVD_IN_DNSWL_LOW(-0.10)[170.10.129.124:from];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	ASN(0.00)[asn:30031, ipnet:170.10.132.0/23, country:US];
 	RCPT_COUNT_TWELVE(0.00)[43];
+	ASN(0.00)[asn:30031, ipnet:170.10.128.0/23, country:US];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[kernel.org,cmpxchg.org,suse.com,lwn.net,linuxfoundation.org,linaro.org,amd.com,linux.dev,linux-foundation.org,collabora.com,arm.com,google.com,paul-moore.com,namei.org,hallyn.com,gmail.com,infradead.org];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
+	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	FREEMAIL_CC(0.00)[gmail.com,vger.kernel.org,lists.freedesktop.org,lists.linaro.org,kvack.org,lists.trustedfirmware.org,redhat.com,kernel.org];
-	TO_DN_SOME(0.00)[];
+	FREEMAIL_TO(0.00)[kernel.org,cmpxchg.org,suse.com,lwn.net,linuxfoundation.org,linaro.org,amd.com,linux.dev,linux-foundation.org,collabora.com,arm.com,google.com,paul-moore.com,namei.org,hallyn.com,gmail.com,infradead.org];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	DNSWL_BLOCKED(0.00)[170.10.133.124:from];
 	ALIAS_RESOLVED(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	RCVD_COUNT_THREE(0.00)[3];
 	DKIM_TRACE(0.00)[redhat.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: DE9D6454C9
-X-Spamd-Bar: ----
-Message-ID-Hash: AMDIT7JP2MAXTOCVEY4HB7HJXMDNPUDR
-X-Message-ID-Hash: AMDIT7JP2MAXTOCVEY4HB7HJXMDNPUDR
+X-Rspamd-Queue-Id: A39B945502
+X-Spamd-Bar: -----
+Message-ID-Hash: ZRGOHXSQQL3TNH5XDCUZ3ISF7JOMJZUH
+X-Message-ID-Hash: ZRGOHXSQQL3TNH5XDCUZ3ISF7JOMJZUH
 X-MailFrom: aesteve@redhat.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: airlied@gmail.com, cgroups@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, linux-kselftest@vger.kernel.org, op-tee@lists.trustedfirmware.org, Albert Esteve <aesteve@redhat.com>, echanude@redhat.com, mripard@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/AMDIT7JP2MAXTOCVEY4HB7HJXMDNPUDR/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/ZRGOHXSQQL3TNH5XDCUZ3ISF7JOMJZUH/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -145,481 +147,177 @@ X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On embedded platforms a central process often allocates dma-buf
-memory on behalf of client applications. Without a way to
-attribute the charge to the requesting client's cgroup, the
-cost lands on the allocator, making per-cgroup memory limits
-ineffective for the actual consumers.
-
-Add charge_fd to struct dma_heap_allocation_data. When set to
-a valid pidfd or cgroupfd, DMA_HEAP_IOCTL_ALLOC resolves the target
-task's or cgroup's memcg and charges the buffer there via
-obj_cgroup_reserve_dmabuf() inside heap's allocate() callback.
-In the system heap, the object cgroup is passed through
-dma_buf_export_info so that dma_buf_export() stores it and updates
-the MEMCG_DMABUF stat. Without charge_fd, and with the mem_accounting
-module parameter enabled, the buffer is charged to the allocator's own
-cgroup. The __GFP_ACCOUNT flag is removed from system heap allocations
-to avoid double counting. CMA and TEE heaps accept the objcg in the
-callback but ignore it.
-
-Resolving a charge target outside the caller's own memcg subtree
-requires CAP_SYS_RESOURCE. Without it, any process could charge the
-root cgroup to escape its own limits, or push reclaim and OOM onto
-unrelated cgroups. Charging within the caller's subtree cannot escape
-limits, since descendant usage counts toward the ancestor, and needs
-no privilege.
-
-Usage examples:
-
-  1. Central allocator charging to a client at allocation time.
-     The allocator knows the client's PID (e.g., from binder's
-     sender_pid) and uses pidfd to attribute the charge:
-
-       pid_t client_pid = txn->sender_pid;
-       int pidfd = pidfd_open(client_pid, 0);
-
-       struct dma_heap_allocation_data alloc = {
-           .len         = buffer_size,
-           .fd_flags    = O_RDWR | O_CLOEXEC,
-           .charge_fd   = pidfd,
-       };
-       ioctl(heap_fd, DMA_HEAP_IOCTL_ALLOC, &alloc);
-       close(pidfd);
-       /* alloc.fd is now charged to client's cgroup */
-
-  2. Default allocation (no pidfd, mem_accounting=1).
-     When charge_fd is not set and the mem_accounting module
-     parameter is enabled, the buffer is charged to the allocator's
-     own cgroup:
-
-       struct dma_heap_allocation_data alloc = {
-           .len      = buffer_size,
-           .fd_flags = O_RDWR | O_CLOEXEC,
-       };
-       ioctl(heap_fd, DMA_HEAP_IOCTL_ALLOC, &alloc);
-       /* charged to current process's cgroup */
-
-Current limitations:
-
- - Single-owner model: a dma-buf carries one memcg charge regardless of
-   how many processes share it. Means only the first owner (and exporter)
-   of the shared buffer bears the charge.
- - Only memcg accounting supported. While this makes sense for system
-   heap buffers, other heaps (e.g., CMA heaps) will require selectively
-   charging also for the dmem controller.
-
-Signed-off-by: Albert Esteve <aesteve@redhat.com>
----
- Documentation/admin-guide/cgroup-v2.rst |  6 ++-
- drivers/dma-buf/dma-buf.c               |  3 ++
- drivers/dma-buf/dma-heap.c              | 27 +++++++++--
- drivers/dma-buf/heaps/cma_heap.c        |  3 +-
- drivers/dma-buf/heaps/system_heap.c     | 19 ++++++--
- drivers/tee/tee_heap.c                  |  3 +-
- include/linux/dma-buf.h                 |  5 ++
- include/linux/dma-heap.h                |  4 +-
- include/linux/memcontrol.h              | 11 +++++
- include/uapi/linux/dma-heap.h           |  7 +++
- mm/memcontrol.c                         | 83 +++++++++++++++++++++++++++++++++
- 11 files changed, 158 insertions(+), 13 deletions(-)
-
-diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-index f1f6808c5600..c6bf2e435d74 100644
---- a/Documentation/admin-guide/cgroup-v2.rst
-+++ b/Documentation/admin-guide/cgroup-v2.rst
-@@ -1667,8 +1667,10 @@ The following nested keys are defined.
- 		structures.
- 
- 	  dmabuf (npn)
--		Amount of memory used for exported DMA buffers allocated by the cgroup.
--		Stays with the allocating cgroup regardless of how the buffer is shared.
-+		Amount of memory used for exported DMA buffers allocated by or on
-+		behalf of the cgroup, this currently includes system heap
-+		allocations. Stays with the cgroup regardless of how the buffer
-+		is shared.
- 
- 	  workingset_refault_anon
- 		Number of refaults of previously evicted anonymous pages.
-diff --git a/drivers/dma-buf/dma-buf.c b/drivers/dma-buf/dma-buf.c
-index 06462faf762e..88e0802fa05f 100644
---- a/drivers/dma-buf/dma-buf.c
-+++ b/drivers/dma-buf/dma-buf.c
-@@ -750,6 +750,7 @@ struct dma_buf *dma_buf_export(const struct dma_buf_export_info *exp_info)
- 	dmabuf->size = exp_info->size;
- 	dmabuf->exp_name = exp_info->exp_name;
- 	dmabuf->owner = exp_info->owner;
-+	dmabuf->objcg = exp_info->objcg;
- 	spin_lock_init(&dmabuf->name_lock);
- 	init_waitqueue_head(&dmabuf->poll);
- 	dmabuf->cb_in.poll = dmabuf->cb_out.poll = &dmabuf->poll;
-@@ -771,6 +772,8 @@ struct dma_buf *dma_buf_export(const struct dma_buf_export_info *exp_info)
- 
- 	DMA_BUF_TRACE(trace_dma_buf_export, dmabuf);
- 
-+	mem_cgroup_commit_dmabuf(dmabuf);
-+
- 	return dmabuf;
- 
- err_file:
-diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
-index 8a6c2b6e0cc6..2f53bc95a45a 100644
---- a/drivers/dma-buf/dma-heap.c
-+++ b/drivers/dma-buf/dma-heap.c
-@@ -10,6 +10,7 @@
- #include <linux/device.h>
- #include <linux/dma-buf.h>
- #include <linux/dma-heap.h>
-+#include <linux/memcontrol.h>
- #include <linux/err.h>
- #include <linux/export.h>
- #include <linux/list.h>
-@@ -78,6 +79,7 @@ static struct dma_buf *dma_heap_ioctl_allocate(struct file *file, void *data)
- 	struct dma_heap_allocation_data *heap_allocation = data;
- 	struct dma_heap *heap = file->private_data;
- 	struct dma_buf *dmabuf;
-+	struct obj_cgroup *objcg = NULL;
- 	int fd;
- 	size_t len;
- 
-@@ -90,15 +92,34 @@ static struct dma_buf *dma_heap_ioctl_allocate(struct file *file, void *data)
- 	if (heap_allocation->heap_flags & ~DMA_HEAP_VALID_HEAP_FLAGS)
- 		return ERR_PTR(-EINVAL);
- 
-+	if (heap_allocation->__padding != 0)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (heap_allocation->charge_fd) {
-+		objcg = get_obj_cgroup_from_fd(heap_allocation->charge_fd);
-+		if (IS_ERR(objcg))
-+			return ERR_CAST(objcg);
-+	}
-+
-+	if (!objcg && mem_accounting && !mem_cgroup_disabled())
-+		objcg = get_obj_cgroup_from_current();
-+
- 	len = PAGE_ALIGN(heap_allocation->len);
--	if (!len)
-+	if (!len) {
-+		obj_cgroup_put(objcg);
- 		return ERR_PTR(-EINVAL);
-+	}
- 
- 	dmabuf = heap->ops->allocate(heap, len, heap_allocation->fd_flags,
--				     heap_allocation->heap_flags);
-+				     heap_allocation->heap_flags, objcg);
- 
--	if (IS_ERR(dmabuf))
-+	if (IS_ERR(dmabuf)) {
-+		obj_cgroup_put(objcg);
- 		return dmabuf;
-+	}
-+
-+	if (!dmabuf->objcg)
-+		obj_cgroup_put(objcg);
- 
- 	fd = get_unused_fd_flags(heap_allocation->fd_flags);
- 	if (fd < 0) {
-diff --git a/drivers/dma-buf/heaps/cma_heap.c b/drivers/dma-buf/heaps/cma_heap.c
-index 3fb4b946c91a..6c08dc25b177 100644
---- a/drivers/dma-buf/heaps/cma_heap.c
-+++ b/drivers/dma-buf/heaps/cma_heap.c
-@@ -281,7 +281,8 @@ static const struct dma_buf_ops cma_heap_buf_ops = {
- static struct dma_buf *cma_heap_allocate(struct dma_heap *heap,
- 					 unsigned long len,
- 					 u32 fd_flags,
--					 u64 heap_flags)
-+					 u64 heap_flags,
-+					 struct obj_cgroup *objcg)
- {
- 	struct cma_heap *cma_heap = dma_heap_get_drvdata(heap);
- 	struct cma_heap_buffer *buffer;
-diff --git a/drivers/dma-buf/heaps/system_heap.c b/drivers/dma-buf/heaps/system_heap.c
-index c8959eadc71d..ad94bb5be736 100644
---- a/drivers/dma-buf/heaps/system_heap.c
-+++ b/drivers/dma-buf/heaps/system_heap.c
-@@ -17,6 +17,7 @@
- #include <linux/err.h>
- #include <linux/highmem.h>
- #include <linux/mem_encrypt.h>
-+#include <linux/memcontrol.h>
- #include <linux/mm.h>
- #include <linux/set_memory.h>
- #include <linux/module.h>
-@@ -388,8 +389,6 @@ static struct page *alloc_largest_available(unsigned long size,
- 		if (max_order < orders[i])
- 			continue;
- 		flags = order_flags[i];
--		if (mem_accounting)
--			flags |= __GFP_ACCOUNT;
- 		page = alloc_pages(flags, orders[i]);
- 		if (!page)
- 			continue;
-@@ -401,11 +400,13 @@ static struct page *alloc_largest_available(unsigned long size,
- static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
- 					    unsigned long len,
- 					    u32 fd_flags,
--					    u64 heap_flags)
-+					    u64 heap_flags,
-+					    struct obj_cgroup *objcg)
- {
- 	struct system_heap_buffer *buffer;
- 	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
- 	unsigned long size_remaining = len;
-+	unsigned long nr_pages = PAGE_ALIGN(len) >> PAGE_SHIFT;
- 	unsigned int max_order = orders[0];
- 	struct system_heap_priv *priv = dma_heap_get_drvdata(heap);
- 	bool cc_shared = priv->cc_shared;
-@@ -416,10 +417,15 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
- 	struct page *page, *tmp_page;
- 	int i, ret = -ENOMEM;
- 
--	buffer = kzalloc_obj(*buffer);
--	if (!buffer)
-+	if (!obj_cgroup_reserve_dmabuf(objcg, GFP_KERNEL, nr_pages))
- 		return ERR_PTR(-ENOMEM);
- 
-+	buffer = kzalloc_obj(*buffer);
-+	if (!buffer) {
-+		ret = -ENOMEM;
-+		goto cancel_charge;
-+	}
-+
- 	INIT_LIST_HEAD(&buffer->attachments);
- 	mutex_init(&buffer->lock);
- 	buffer->heap = heap;
-@@ -473,6 +479,7 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
- 	exp_info.size = buffer->len;
- 	exp_info.flags = fd_flags;
- 	exp_info.priv = buffer;
-+	exp_info.objcg = objcg;
- 	dmabuf = dma_buf_export(&exp_info);
- 	if (IS_ERR(dmabuf)) {
- 		ret = PTR_ERR(dmabuf);
-@@ -498,6 +505,8 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
- 	list_for_each_entry_safe(page, tmp_page, &pages, lru)
- 		__free_pages(page, compound_order(page));
- 	kfree(buffer);
-+cancel_charge:
-+	obj_cgroup_cancel_dmabuf(objcg, nr_pages);
- 
- 	return ERR_PTR(ret);
- }
-diff --git a/drivers/tee/tee_heap.c b/drivers/tee/tee_heap.c
-index 007c00156520..83fd14a0aaec 100644
---- a/drivers/tee/tee_heap.c
-+++ b/drivers/tee/tee_heap.c
-@@ -167,7 +167,8 @@ static const struct dma_buf_ops tee_heap_buf_ops = {
- 
- static struct dma_buf *tee_dma_heap_alloc(struct dma_heap *heap,
- 					  unsigned long len, u32 fd_flags,
--					  u64 heap_flags)
-+					  u64 heap_flags,
-+					  struct obj_cgroup *objcg)
- {
- 	struct tee_dma_heap *h = dma_heap_get_drvdata(heap);
- 	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
-diff --git a/include/linux/dma-buf.h b/include/linux/dma-buf.h
-index 2f56afd1f830..ff4678d00d8c 100644
---- a/include/linux/dma-buf.h
-+++ b/include/linux/dma-buf.h
-@@ -505,6 +505,10 @@ struct dma_buf_attachment {
-  * @flags:	mode flags for the file
-  * @resv:	reservation-object, NULL to allocate default one
-  * @priv:	Attach private data of allocator to this buffer
-+ * @objcg:	object cgroup to charge for this buffer's memory. Set only for
-+ *		buffers backed by system memory, not accounted elsewhere, where
-+ *		@size reflects the actual allocation in bytes. The buffer takes
-+ *		over the caller's reference.
-  *
-  * This structure holds the information required to export the buffer. Used
-  * with dma_buf_export() only.
-@@ -517,6 +521,7 @@ struct dma_buf_export_info {
- 	int flags;
- 	struct dma_resv *resv;
- 	void *priv;
-+	struct obj_cgroup *objcg;
- };
- 
- /**
-diff --git a/include/linux/dma-heap.h b/include/linux/dma-heap.h
-index 648328a64b27..b5a42b49c68d 100644
---- a/include/linux/dma-heap.h
-+++ b/include/linux/dma-heap.h
-@@ -12,6 +12,7 @@
- #include <linux/types.h>
- 
- struct dma_heap;
-+struct obj_cgroup;
- 
- /**
-  * struct dma_heap_ops - ops to operate on a given heap
-@@ -23,7 +24,8 @@ struct dma_heap_ops {
- 	struct dma_buf *(*allocate)(struct dma_heap *heap,
- 				    unsigned long len,
- 				    u32 fd_flags,
--				    u64 heap_flags);
-+				    u64 heap_flags,
-+				    struct obj_cgroup *objcg);
- };
- 
- /**
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 46fbb418bf39..8e016d9b91bc 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -1812,6 +1812,7 @@ void __memcg_kmem_uncharge_page(struct page *page, int order);
-  */
- struct obj_cgroup *current_obj_cgroup(void);
- struct obj_cgroup *get_obj_cgroup_from_folio(const struct folio *folio);
-+struct obj_cgroup *get_obj_cgroup_from_fd(int fd);
- 
- static inline struct obj_cgroup *get_obj_cgroup_from_current(void)
- {
-@@ -1919,6 +1920,16 @@ static inline struct obj_cgroup *get_obj_cgroup_from_folio(const struct folio *f
- 	return NULL;
- }
- 
-+static inline struct obj_cgroup *get_obj_cgroup_from_fd(int fd)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline struct obj_cgroup *get_obj_cgroup_from_current(void)
-+{
-+	return NULL;
-+}
-+
- static inline bool memcg_bpf_enabled(void)
- {
- 	return false;
-diff --git a/include/uapi/linux/dma-heap.h b/include/uapi/linux/dma-heap.h
-index a4cf716a49fa..bfcd1c25bc7e 100644
---- a/include/uapi/linux/dma-heap.h
-+++ b/include/uapi/linux/dma-heap.h
-@@ -29,6 +29,11 @@
-  *			handle to the allocated dma-buf
-  * @fd_flags:		file descriptor flags used when allocating
-  * @heap_flags:		flags passed to heap
-+ * @charge_fd:		optional pidfd or cgroupfd whose cgroup should be
-+ *			charged for this allocation; 0 means charge the calling
-+ *			process's cgroup when the mem_accounting module parameter
-+ *			is enabled, or skip charging otherwise
-+ * @__padding:		reserved, must be zero
-  *
-  * Provided by userspace as an argument to the ioctl
-  */
-@@ -37,6 +42,8 @@ struct dma_heap_allocation_data {
- 	__u32 fd;
- 	__u32 fd_flags;
- 	__u64 heap_flags;
-+	__u32 charge_fd;
-+	__u32 __padding;
- };
- 
- #define DMA_HEAP_IOC_MAGIC		'H'
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 45e82cda7c44..adc0abcf80fa 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -49,6 +49,7 @@
- #include <linux/slab.h>
- #include <linux/swapops.h>
- #include <linux/spinlock.h>
-+#include <linux/file.h>
- #include <linux/fs.h>
- #include <linux/seq_file.h>
- #include <linux/vmpressure.h>
-@@ -3168,6 +3169,88 @@ struct obj_cgroup *get_obj_cgroup_from_folio(const struct folio *folio)
- 	return objcg;
- }
- 
-+/*
-+ * Charging outside the caller's own memcg subtree can escape its limits
-+ * or push reclaim and OOM onto other cgroups.
-+ */
-+static bool mem_cgroup_may_charge(struct mem_cgroup *memcg)
-+{
-+	struct mem_cgroup *self = get_mem_cgroup_from_current();
-+	bool ret = mem_cgroup_is_descendant(memcg, self);
-+
-+	mem_cgroup_put(self);
-+	return ret || capable(CAP_SYS_RESOURCE);
-+}
-+
-+/**
-+ * get_obj_cgroup_from_fd - resolve an object cgroup from a cgroupfd or pidfd
-+ * @fd: file descriptor (cgroupfd or pidfd)
-+ *
-+ * Tries @fd as a cgroupfd first; if that fails, tries it as a pidfd. Only
-+ * cgroup2 directories are accepted as cgroupfds, any other fd is tried as a
-+ * pidfd.
-+ *
-+ * Resolving a memcg outside the caller's own subtree requires CAP_SYS_RESOURCE.
-+ *
-+ * On success returns a referenced objcg pointer. On failure returns
-+ * an ERR_PTR.
-+ */
-+struct obj_cgroup *get_obj_cgroup_from_fd(int fd)
-+{
-+	struct cgroup_subsys_state *css;
-+	struct obj_cgroup *objcg;
-+	struct mem_cgroup *memcg;
-+	struct task_struct *task;
-+	unsigned int pidfd_flags;
-+
-+	if (mem_cgroup_disabled())
-+		return ERR_PTR(-EOPNOTSUPP);
-+
-+	CLASS(fd_raw, f)(fd);
-+	if (fd_empty(f))
-+		return ERR_PTR(-EBADF);
-+
-+	css = css_tryget_online_from_dir(fd_file(f)->f_path.dentry,
-+					 &memory_cgrp_subsys);
-+	if (!IS_ERR(css) && !cgroup_on_dfl(css->cgroup)) {
-+		css_put(css);
-+		css = ERR_PTR(-EBADF);
-+	}
-+
-+	if (IS_ERR(css)) {
-+		if (PTR_ERR(css) != -EBADF)
-+			return ERR_CAST(css);
-+
-+		/* fd is a pidfd */
-+		task = pidfd_get_task(fd, &pidfd_flags);
-+		if (IS_ERR(task))
-+			return ERR_CAST(task);
-+
-+		rcu_read_lock();
-+		css = task_css(task, memory_cgrp_id);
-+		put_task_struct(task);
-+		if (!css || !css_tryget_online(css)) {
-+			rcu_read_unlock();
-+			return ERR_PTR(-ENOENT);
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	memcg = mem_cgroup_from_css(css);
-+	if (!mem_cgroup_may_charge(memcg)) {
-+		mem_cgroup_put(memcg);
-+		return ERR_PTR(-EPERM);
-+	}
-+
-+	objcg = get_obj_cgroup_from_memcg(memcg, numa_node_id());
-+	mem_cgroup_put(memcg);
-+
-+	if (!objcg)
-+		return ERR_PTR(-ENOENT);
-+
-+	return objcg;
-+}
-+
- #ifdef CONFIG_MEMCG_NMI_SAFETY_REQUIRES_ATOMIC
- static inline void account_kmem_nmi_safe(struct mem_cgroup *memcg, int val)
- {
-
--- 
-2.55.0
-
+ZG1hLWhlYXAgYWxyZWFkeSBzdXBwb3J0cyBjaGFyZ2luZyBhIHNwZWNpZmljIGNncm91cCBhdCBh
+bGxvY2F0aW9uDQp0aW1lIHZpYSBjaGFyZ2VfZmQgaW4gRE1BX0hFQVBfSU9DVExfQUxMT0MuIEhv
+d2V2ZXIsIGRtYS1idWZzIGNhbg0Kb3JpZ2luYXRlIGZyb20gYW55IGV4cG9ydGVyIChEUk0sIFY0
+TDIsIGV0Yy4pLCBhbmQgdGhlIGFsbG9jYXRvciBtYXkNCm5vdCBrbm93IHRoZSBmaW5hbCBvd25l
+ciBhdCBhbGxvY2F0aW9uIHRpbWUuDQoNCkFkZCBETUFfQlVGX0lPQ1RMX1hGRVJfQ0hBUkdFIHRv
+IHRyYW5zZmVyIGEgZG1hLWJ1ZidzIG9iamNnIGNoYXJnZQ0KdG8gYSBkaWZmZXJlbnQgY2dyb3Vw
+IGFmdGVyIGFsbG9jYXRpb24uIFRoZSB0YXJnZXQgaXMgaWRlbnRpZmllZCBieQ0KY2hhcmdlX2Zk
+LCB3aGljaCBtYXkgYmUgYSBjZ3JvdXBmZCBvciBhIHBpZGZkLg0KDQpUaGUgdHJhbnNmZXIgY2hh
+cmdlcyB0aGUgbmV3IGNncm91cCBiZWZvcmUgdW5jaGFyZ2luZyB0aGUgb2xkIG9uZSwNCnByZXNl
+cnZpbmcgdGhlIG9yaWdpbmFsIGNoYXJnZSBvbiBmYWlsdXJlLiBDb25jdXJyZW50IHRyYW5zZmVy
+cyBhcmUNCnNlcmlhbGl6ZWQgYnkgdGhlIGRtYS1idWYgcmVzZXJ2YXRpb24gbG9jaywgc28gbG9j
+a2RlcCBjb3ZlcnMgdGhlDQpsb2NraW5nIG9yZGVyIG9mIHRoZSBjaGFyZ2UgcGF0aCBlYXJseS4g
+VGhlIHRyYW5zZmVyIGltcGxlbWVudGF0aW9uDQppcyBnZW5lcmljIChvYmpfY2dyb3VwX3RyYW5z
+ZmVyX2NoYXJnZSkgYW5kIG5vdCBkbWEtYnVmIHNwZWNpZmljLCBzbw0KaXQgY2FuIGJlIHJldXNl
+ZCBieSBvdGhlciBzdWJzeXN0ZW1zLg0KDQpOb3QgYWxsIGRtYS1idWYgZXhwb3J0ZXJzIGJhY2sg
+dGhlaXIgYnVmZmVycyB3aXRoIHJlY2xhaW1hYmxlIHN5c3RlbQ0KbWVtb3J5LiBTb21lIHJlcHJl
+c2VudCBkZXZpY2UgcmVnaXN0ZXJzLCBWUkFNLCBvciBjYXJ2ZWQtb3V0IHBvb2xzDQp3aGVyZSBz
+aXplIGlzIG5vdCBhIG1lYW5pbmdmdWwgbWVtb3J5IGNvc3QuIFRoZSB4ZmVyIGlvY3RsIHJldHVy
+bnMNCi1FT1BOT1RTVVBQIGZvciBidWZmZXJzIHdob3NlIG9iamNnIGlzIG5vdCBzZXQuIEV4cG9y
+dGVycyBvcHQgaW4gYnkNCnBhc3NpbmcgYSBvYmpjZyB0aHJvdWdoIGRtYV9idWZfZXhwb3J0X2lu
+Zm8gYXQgZXhwb3J0IHRpbWUuIEN1cnJlbnRseQ0Kb25seSB0aGUgc3lzdGVtIGhlYXAgc2V0cyBp
+dCwgb3RoZXIgZXhwb3J0ZXJzIGNhbiBvcHQgaW4gYXMgbmVlZGVkLg0KDQpVc2FnZSBleGFtcGxl
+Og0KICBpbnQgY2dfZmQgPSBvcGVuKCIvc3lzL2ZzL2Nncm91cC9jbGllbnRzL2FwcDEiLCBPX1JE
+T05MWSB8IE9fRElSRUNUT1JZKTsNCg0KICBzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFyZ2Ug
+eGZlciA9IHsNCiAgICAgIC5jaGFyZ2VfZmQgPSBjZ19mZCwNCiAgfTsNCiAgaW9jdGwoZG1hYnVm
+X2ZkLCBETUFfQlVGX0lPQ1RMX1hGRVJfQ0hBUkdFLCAmeGZlcik7DQogIC8qIGNoYXJnZSBub3cg
+b24gYXBwMSdzIGNncm91cCAqLw0KICBjbG9zZShjZ19mZCk7DQoNClJldmlld2VkLWJ5OiBDaHJp
+c3RpYW4gS8O2bmlnIDxjaHJpc3RpYW4ua29lbmlnQGFtZC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBB
+bGJlcnQgRXN0ZXZlIDxhZXN0ZXZlQHJlZGhhdC5jb20+DQotLS0NCiBEb2N1bWVudGF0aW9uL2Fk
+bWluLWd1aWRlL2Nncm91cC12Mi5yc3QgfCAgMiArLQ0KIGRyaXZlcnMvZG1hLWJ1Zi9kbWEtYnVm
+LmMgICAgICAgICAgICAgICB8IDM5ICsrKysrKysrKysrKysrKysrKysrKysNCiBpbmNsdWRlL2xp
+bnV4L2RtYS1idWYuaCAgICAgICAgICAgICAgICAgfCAgMyArLQ0KIGluY2x1ZGUvbGludXgvbWVt
+Y29udHJvbC5oICAgICAgICAgICAgICB8IDEzICsrKysrKysrDQogaW5jbHVkZS91YXBpL2xpbnV4
+L2RtYS1idWYuaCAgICAgICAgICAgIHwgMjYgKysrKysrKysrKysrKysrDQogbW0vbWVtY29udHJv
+bC5jICAgICAgICAgICAgICAgICAgICAgICAgIHwgNTggKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrDQogNiBmaWxlcyBjaGFuZ2VkLCAxMzkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlv
+bnMoLSkNCg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUvY2dyb3VwLXYy
+LnJzdCBiL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUvY2dyb3VwLXYyLnJzdA0KaW5kZXggYzZi
+ZjJlNDM1ZDc0Li44ZDEwZmY3YWM3NDUgMTAwNjQ0DQotLS0gYS9Eb2N1bWVudGF0aW9uL2FkbWlu
+LWd1aWRlL2Nncm91cC12Mi5yc3QNCisrKyBiL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUvY2dy
+b3VwLXYyLnJzdA0KQEAgLTE2NzAsNyArMTY3MCw3IEBAIFRoZSBmb2xsb3dpbmcgbmVzdGVkIGtl
+eXMgYXJlIGRlZmluZWQuDQogCQlBbW91bnQgb2YgbWVtb3J5IHVzZWQgZm9yIGV4cG9ydGVkIERN
+QSBidWZmZXJzIGFsbG9jYXRlZCBieSBvciBvbg0KIAkJYmVoYWxmIG9mIHRoZSBjZ3JvdXAsIHRo
+aXMgY3VycmVudGx5IGluY2x1ZGVzIHN5c3RlbSBoZWFwDQogCQlhbGxvY2F0aW9ucy4gU3RheXMg
+d2l0aCB0aGUgY2dyb3VwIHJlZ2FyZGxlc3Mgb2YgaG93IHRoZSBidWZmZXINCi0JCWlzIHNoYXJl
+ZC4NCisJCWlzIHNoYXJlZCwgdW5sZXNzIG1vdmVkIHdpdGggRE1BX0JVRl9JT0NUTF9YRkVSX0NI
+QVJHRS4NCiANCiAJICB3b3JraW5nc2V0X3JlZmF1bHRfYW5vbg0KIAkJTnVtYmVyIG9mIHJlZmF1
+bHRzIG9mIHByZXZpb3VzbHkgZXZpY3RlZCBhbm9ueW1vdXMgcGFnZXMuDQpkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9kbWEtYnVmL2RtYS1idWYuYyBiL2RyaXZlcnMvZG1hLWJ1Zi9kbWEtYnVmLmMNCmlu
+ZGV4IDg4ZTA4MDJmYTA1Zi4uNWQ0YjU1YjY3ZTk5IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9kbWEt
+YnVmL2RtYS1idWYuYw0KKysrIGIvZHJpdmVycy9kbWEtYnVmL2RtYS1idWYuYw0KQEAgLTU0MCw2
+ICs1NDAsNDIgQEAgc3RhdGljIGxvbmcgZG1hX2J1Zl9pbXBvcnRfc3luY19maWxlKHN0cnVjdCBk
+bWFfYnVmICpkbWFidWYsDQogfQ0KICNlbmRpZg0KIA0KKy8qIFRyYW5zZmVyIGEgZG1hLWJ1Zidz
+IG1lbWNnIGNoYXJnZTsgc2VlIHN0cnVjdCBkbWFfYnVmX3RyYW5zZmVyX2NoYXJnZSAqLw0KK3N0
+YXRpYyBsb25nIGRtYV9idWZfeGZlcl9jaGFyZ2Uoc3RydWN0IGRtYV9idWYgKmRtYWJ1ZiwNCisJ
+CQkJY29uc3Qgdm9pZCBfX3VzZXIgKnVzZXJfZGF0YSkNCit7DQorCXN0cnVjdCBkbWFfYnVmX3Ry
+YW5zZmVyX2NoYXJnZSBhcmc7DQorCXN0cnVjdCBvYmpfY2dyb3VwICpvYmpjZzsNCisJdW5zaWdu
+ZWQgaW50IG5yX3BhZ2VzOw0KKwlpbnQgcmV0ID0gMDsNCisNCisJaWYgKGNvcHlfZnJvbV91c2Vy
+KCZhcmcsIHVzZXJfZGF0YSwgc2l6ZW9mKGFyZykpKQ0KKwkJcmV0dXJuIC1FRkFVTFQ7DQorDQor
+CWlmIChhcmcuZmxhZ3MgIT0gMCkNCisJCXJldHVybiAtRUlOVkFMOw0KKw0KKwlvYmpjZyA9IGdl
+dF9vYmpfY2dyb3VwX2Zyb21fZmQoYXJnLmNoYXJnZV9mZCk7DQorCWlmIChJU19FUlIob2JqY2cp
+KQ0KKwkJcmV0dXJuIFBUUl9FUlIob2JqY2cpOw0KKw0KKwlkbWFfcmVzdl9sb2NrKGRtYWJ1Zi0+
+cmVzdiwgTlVMTCk7DQorDQorCWlmICghZG1hYnVmLT5vYmpjZykgew0KKwkJcmV0ID0gLUVPUE5P
+VFNVUFA7DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwlucl9wYWdlcyA9IFBBR0VfQUxJR04oZG1h
+YnVmLT5zaXplKSA+PiBQQUdFX1NISUZUOw0KKwlpZiAoIW9ial9jZ3JvdXBfdHJhbnNmZXJfY2hh
+cmdlKCZkbWFidWYtPm9iamNnLCBvYmpjZywgTUVNQ0dfRE1BQlVGLCBucl9wYWdlcykpDQorCQly
+ZXQgPSAtRU5PTUVNOw0KKw0KK291dDoNCisJZG1hX3Jlc3ZfdW5sb2NrKGRtYWJ1Zi0+cmVzdik7
+DQorCW9ial9jZ3JvdXBfcHV0KG9iamNnKTsNCisJcmV0dXJuIHJldDsNCit9DQorDQogc3RhdGlj
+IGxvbmcgZG1hX2J1Zl9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlsZSwNCiAJCQkgIHVuc2lnbmVkIGlu
+dCBjbWQsIHVuc2lnbmVkIGxvbmcgYXJnKQ0KIHsNCkBAIC01OTAsNiArNjI2LDkgQEAgc3RhdGlj
+IGxvbmcgZG1hX2J1Zl9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlsZSwNCiAJCXJldHVybiBkbWFfYnVm
+X2ltcG9ydF9zeW5jX2ZpbGUoZG1hYnVmLCAoY29uc3Qgdm9pZCBfX3VzZXIgKilhcmcpOw0KICNl
+bmRpZg0KIA0KKwljYXNlIERNQV9CVUZfSU9DVExfWEZFUl9DSEFSR0U6DQorCQlyZXR1cm4gZG1h
+X2J1Zl94ZmVyX2NoYXJnZShkbWFidWYsIChjb25zdCB2b2lkIF9fdXNlciAqKWFyZyk7DQorDQog
+CWRlZmF1bHQ6DQogCQlyZXR1cm4gLUVOT1RUWTsNCiAJfQ0KZGlmZiAtLWdpdCBhL2luY2x1ZGUv
+bGludXgvZG1hLWJ1Zi5oIGIvaW5jbHVkZS9saW51eC9kbWEtYnVmLmgNCmluZGV4IGZmNDY3OGQw
+MGQ4Yy4uOTE2ZDczYWU2YTUxIDEwMDY0NA0KLS0tIGEvaW5jbHVkZS9saW51eC9kbWEtYnVmLmgN
+CisrKyBiL2luY2x1ZGUvbGludXgvZG1hLWJ1Zi5oDQpAQCAtNTA4LDcgKzUwOCw4IEBAIHN0cnVj
+dCBkbWFfYnVmX2F0dGFjaG1lbnQgew0KICAqIEBvYmpjZzoJb2JqZWN0IGNncm91cCB0byBjaGFy
+Z2UgZm9yIHRoaXMgYnVmZmVyJ3MgbWVtb3J5LiBTZXQgb25seSBmb3INCiAgKgkJYnVmZmVycyBi
+YWNrZWQgYnkgc3lzdGVtIG1lbW9yeSwgbm90IGFjY291bnRlZCBlbHNld2hlcmUsIHdoZXJlDQog
+ICoJCUBzaXplIHJlZmxlY3RzIHRoZSBhY3R1YWwgYWxsb2NhdGlvbiBpbiBieXRlcy4gVGhlIGJ1
+ZmZlciB0YWtlcw0KLSAqCQlvdmVyIHRoZSBjYWxsZXIncyByZWZlcmVuY2UuDQorICoJCW92ZXIg
+dGhlIGNhbGxlcidzIHJlZmVyZW5jZS4gRW5hYmxlcyBjaGFyZ2UgdHJhbnNmZXIgdmlhDQorICoJ
+CURNQV9CVUZfSU9DVExfWEZFUl9DSEFSR0UuDQogICoNCiAgKiBUaGlzIHN0cnVjdHVyZSBob2xk
+cyB0aGUgaW5mb3JtYXRpb24gcmVxdWlyZWQgdG8gZXhwb3J0IHRoZSBidWZmZXIuIFVzZWQNCiAg
+KiB3aXRoIGRtYV9idWZfZXhwb3J0KCkgb25seS4NCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4
+L21lbWNvbnRyb2wuaCBiL2luY2x1ZGUvbGludXgvbWVtY29udHJvbC5oDQppbmRleCA4ZTAxNmQ5
+YjkxYmMuLjM3YzgxYmUzNDliOCAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGludXgvbWVtY29udHJv
+bC5oDQorKysgYi9pbmNsdWRlL2xpbnV4L21lbWNvbnRyb2wuaA0KQEAgLTE4MjcsNiArMTgyNywx
+MSBAQCBzdGF0aWMgaW5saW5lIHN0cnVjdCBvYmpfY2dyb3VwICpnZXRfb2JqX2Nncm91cF9mcm9t
+X2N1cnJlbnQodm9pZCkNCiBpbnQgb2JqX2Nncm91cF9jaGFyZ2Uoc3RydWN0IG9ial9jZ3JvdXAg
+Km9iamNnLCBnZnBfdCBnZnAsIHNpemVfdCBzaXplKTsNCiB2b2lkIG9ial9jZ3JvdXBfdW5jaGFy
+Z2Uoc3RydWN0IG9ial9jZ3JvdXAgKm9iamNnLCBzaXplX3Qgc2l6ZSk7DQogDQorYm9vbCBvYmpf
+Y2dyb3VwX3RyYW5zZmVyX2NoYXJnZShzdHJ1Y3Qgb2JqX2Nncm91cCAqKnB0cl9vYmpjZywNCisJ
+CQkJc3RydWN0IG9ial9jZ3JvdXAgKm5ld19vYmpjZywNCisJCQkJZW51bSBtZW1jZ19zdGF0X2l0
+ZW0gaXRlbSwNCisJCQkJdW5zaWduZWQgaW50IG5yX3BhZ2VzKTsNCisNCiBleHRlcm4gc3RydWN0
+IHN0YXRpY19rZXlfZmFsc2UgbWVtY2dfYnBmX2VuYWJsZWRfa2V5Ow0KIHN0YXRpYyBpbmxpbmUg
+Ym9vbCBtZW1jZ19icGZfZW5hYmxlZCh2b2lkKQ0KIHsNCkBAIC0xOTMwLDYgKzE5MzUsMTQgQEAg
+c3RhdGljIGlubGluZSBzdHJ1Y3Qgb2JqX2Nncm91cCAqZ2V0X29ial9jZ3JvdXBfZnJvbV9jdXJy
+ZW50KHZvaWQpDQogCXJldHVybiBOVUxMOw0KIH0NCiANCitzdGF0aWMgaW5saW5lIGJvb2wgb2Jq
+X2Nncm91cF90cmFuc2Zlcl9jaGFyZ2Uoc3RydWN0IG9ial9jZ3JvdXAgKipwdHJfb2JqY2csDQor
+CQkJCQkgICAgICBzdHJ1Y3Qgb2JqX2Nncm91cCAqbmV3X29iamNnLA0KKwkJCQkJICAgICAgZW51
+bSBtZW1jZ19zdGF0X2l0ZW0gaXRlbSwNCisJCQkJCSAgICAgIHVuc2lnbmVkIGludCBucl9wYWdl
+cykNCit7DQorCXJldHVybiB0cnVlOw0KK30NCisNCiBzdGF0aWMgaW5saW5lIGJvb2wgbWVtY2df
+YnBmX2VuYWJsZWQodm9pZCkNCiB7DQogCXJldHVybiBmYWxzZTsNCmRpZmYgLS1naXQgYS9pbmNs
+dWRlL3VhcGkvbGludXgvZG1hLWJ1Zi5oIGIvaW5jbHVkZS91YXBpL2xpbnV4L2RtYS1idWYuaA0K
+aW5kZXggZTgyN2M5ZDIwYzVkLi4wYWFmMmU3ZDU5M2IgMTAwNjQ0DQotLS0gYS9pbmNsdWRlL3Vh
+cGkvbGludXgvZG1hLWJ1Zi5oDQorKysgYi9pbmNsdWRlL3VhcGkvbGludXgvZG1hLWJ1Zi5oDQpA
+QCAtMTY4LDYgKzE2OCwzMSBAQCBzdHJ1Y3QgZG1hX2J1Zl9pbXBvcnRfc3luY19maWxlIHsNCiAJ
+X19zMzIgZmQ7DQogfTsNCiANCisvKioNCisgKiBzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFy
+Z2UgLSBUcmFuc2ZlciBhIGRtYS1idWYncyBtZW1jZyBjaGFyZ2UNCisgKg0KKyAqIEFueSBob2xk
+ZXIgb2YgYSBkbWEtYnVmIGZpbGUgZGVzY3JpcHRvciBjYW4gcGVyZm9ybSBhDQorICogRE1BX0JV
+Rl9JT0NUTF9YRkVSX0NIQVJHRSB0byBhdHRyaWJ1dGUgdGhlIGJ1ZmZlcidzIG1lbW9yeQ0KKyAq
+IGNvc3QgdG8gYSBzcGVjaWZpYyBjZ3JvdXAsIG9yIG1vdmUgaXQgZnJvbSBvbmUgY2dyb3VwIHRv
+DQorICogYW5vdGhlci4gIFRoZSBpb2N0bCBjaGFyZ2VzIHRoZSBuZXcgY2dyb3VwIGJlZm9yZSB1
+bmNoYXJnaW5nDQorICogdGhlIG9sZCBvbmUgYXRvbWljYWxseS4gIE9uIGZhaWx1cmUgdGhlIG9y
+aWdpbmFsIGNoYXJnZSBpcw0KKyAqIHByZXNlcnZlZC4gIElmIHRoZSBidWZmZXIgaGFzIG5vIGV4
+aXN0aW5nIG1lbWNnIGNoYXJnZSwgdGhlDQorICogaW9jdGwgcmV0dXJucyAtRU9QTk9UU1VQUC4N
+CisgKi8NCitzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFyZ2Ugew0KKwkvKiogQGZsYWdzOiBS
+ZXNlcnZlZCwgbXVzdCBiZSB6ZXJvICovDQorCV9fdTMyIGZsYWdzOyAvKiB1bnVzZWQgZm9yIG5v
+dyAqLw0KKwkvKioNCisJICogQGNoYXJnZV9mZDogRmlsZSBkZXNjcmlwdG9yIGlkZW50aWZ5aW5n
+IHRoZSB0YXJnZXQgY2dyb3VwLg0KKwkgKg0KKwkgKiBNYXkgYmUgZWl0aGVyIGEgcGlkZmQsIGlu
+IHdoaWNoIGNhc2UgdGhlIGNoYXJnZSBtb3ZlcyB0byB0aGUNCisJICogbWVtb3J5IGNncm91cCBv
+ZiB0aGUgcmVmZXJlbmNlZCBwcm9jZXNzLCBvciBhIGNncm91cGZkIG9idGFpbmVkDQorCSAqIGJ5
+IG9wZW5pbmcgYSBjZ3JvdXAgdjIgZGlyZWN0b3J5LCBpbiB3aGljaCBjYXNlIHRoZSBjaGFyZ2Ug
+bW92ZXMNCisJICogZGlyZWN0bHkgdG8gdGhhdCBjZ3JvdXAncyBtZW1vcnkgY29udHJvbGxlci4N
+CisJICovDQorCV9fdTMyIGNoYXJnZV9mZDsNCit9Ow0KKw0KICNkZWZpbmUgRE1BX0JVRl9CQVNF
+CQknYicNCiAjZGVmaW5lIERNQV9CVUZfSU9DVExfU1lOQwlfSU9XKERNQV9CVUZfQkFTRSwgMCwg
+c3RydWN0IGRtYV9idWZfc3luYykNCiANCkBAIC0xNzksNSArMjA0LDYgQEAgc3RydWN0IGRtYV9i
+dWZfaW1wb3J0X3N5bmNfZmlsZSB7DQogI2RlZmluZSBETUFfQlVGX1NFVF9OQU1FX0IJX0lPVyhE
+TUFfQlVGX0JBU0UsIDEsIF9fdTY0KQ0KICNkZWZpbmUgRE1BX0JVRl9JT0NUTF9FWFBPUlRfU1lO
+Q19GSUxFCV9JT1dSKERNQV9CVUZfQkFTRSwgMiwgc3RydWN0IGRtYV9idWZfZXhwb3J0X3N5bmNf
+ZmlsZSkNCiAjZGVmaW5lIERNQV9CVUZfSU9DVExfSU1QT1JUX1NZTkNfRklMRQlfSU9XKERNQV9C
+VUZfQkFTRSwgMywgc3RydWN0IGRtYV9idWZfaW1wb3J0X3N5bmNfZmlsZSkNCisjZGVmaW5lIERN
+QV9CVUZfSU9DVExfWEZFUl9DSEFSR0UJX0lPVyhETUFfQlVGX0JBU0UsIDQsIHN0cnVjdCBkbWFf
+YnVmX3RyYW5zZmVyX2NoYXJnZSkNCiANCiAjZW5kaWYNCmRpZmYgLS1naXQgYS9tbS9tZW1jb250
+cm9sLmMgYi9tbS9tZW1jb250cm9sLmMNCmluZGV4IGFkYzBhYmNmODBmYS4uMDNjZDkwZDVlNjIz
+IDEwMDY0NA0KLS0tIGEvbW0vbWVtY29udHJvbC5jDQorKysgYi9tbS9tZW1jb250cm9sLmMNCkBA
+IC0zMjUxLDYgKzMyNTEsNjQgQEAgc3RydWN0IG9ial9jZ3JvdXAgKmdldF9vYmpfY2dyb3VwX2Zy
+b21fZmQoaW50IGZkKQ0KIAlyZXR1cm4gb2JqY2c7DQogfQ0KIA0KKy8qKg0KKyAqIG9ial9jZ3Jv
+dXBfdHJhbnNmZXJfY2hhcmdlIC0gbW92ZSBhIGNoYXJnZSBiZXR3ZWVuIG9iamVjdCBjZ3JvdXBz
+DQorICogQHB0cl9vYmpjZzogcG9pbnRlciB0byB0aGUgb2JqZWN0IGNncm91cCB0byB0cmFuc2Zl
+ciBmcm9tDQorICogQG5ld19vYmpjZzogdGFyZ2V0IG9iamVjdCBjZ3JvdXA7IGNhbGxlciBtdXN0
+IGhvbGQgYSByZWZlcmVuY2UNCisgKiBAaXRlbTogbWVtY2cgc3RhdCBjb3VudGVyIHRvIGFkanVz
+dDsgbXVzdCBub3QgYmUgYSBub2RlIHN0YXQNCisgKiBAbnJfcGFnZXM6IG51bWJlciBvZiBwYWdl
+cyB0byB0cmFuc2Zlcg0KKyAqDQorICogVHJhbnNmZXJzIEBucl9wYWdlcyBvZiBjaGFyZ2UgZnJv
+bSAqQHB0cl9vYmpjZyB0byBAbmV3X29iamNnIGFuZCwgb24NCisgKiBzdWNjZXNzLCBzdG9yZXMg
+QG5ld19vYmpjZyBpbiAqQHB0cl9vYmpjZy4gRG9lcyBub3RoaW5nIGlmIGJvdGggcmVzb2x2ZQ0K
+KyAqIHRvIHRoZSBzYW1lIG1lbWNnOyAqQHB0cl9vYmpjZyBpcyBsZWZ0IHVudG91Y2hlZCBpbiB0
+aGF0IGNhc2UuDQorICoNCisgKiBVcGRhdGVzIHRvICpAcHRyX29iamNnIG11c3QgYmUgc2VyaWFs
+aXplZCBieSB0aGUgY2FsbGVyLg0KKyAqIFJldHVybnMgJXRydWUgb24gc3VjY2VzcywgJWZhbHNl
+IGlmIHRoZSBjaGFyZ2UgYWdhaW5zdCBAbmV3X29iamNnDQorICogZmFpbGVkLg0KKyAqLw0KK2Jv
+b2wgb2JqX2Nncm91cF90cmFuc2Zlcl9jaGFyZ2Uoc3RydWN0IG9ial9jZ3JvdXAgKipwdHJfb2Jq
+Y2csDQorCQkJCXN0cnVjdCBvYmpfY2dyb3VwICpuZXdfb2JqY2csDQorCQkJCWVudW0gbWVtY2df
+c3RhdF9pdGVtIGl0ZW0sDQorCQkJCXVuc2lnbmVkIGludCBucl9wYWdlcykNCit7DQorCXN0cnVj
+dCBvYmpfY2dyb3VwICpvbGRfb2JqY2cgPSAqcHRyX29iamNnOw0KKwlzdHJ1Y3QgbWVtX2Nncm91
+cCAqb2xkX21lbWNnID0gTlVMTCwgKm5ld19tZW1jZzsNCisJYm9vbCByZXQgPSB0cnVlOw0KKw0K
+KwlpZiAoIW5ld19vYmpjZyB8fCBtZW1fY2dyb3VwX2Rpc2FibGVkKCkpDQorCQlyZXR1cm4gdHJ1
+ZTsNCisNCisJbmV3X21lbWNnID0gZ2V0X21lbV9jZ3JvdXBfZnJvbV9vYmpjZyhuZXdfb2JqY2cp
+Ow0KKwlpZiAob2xkX29iamNnKQ0KKwkJb2xkX21lbWNnID0gZ2V0X21lbV9jZ3JvdXBfZnJvbV9v
+YmpjZyhvbGRfb2JqY2cpOw0KKw0KKwlpZiAob2xkX21lbWNnID09IG5ld19tZW1jZykNCisJCWdv
+dG8gb3V0Ow0KKw0KKwlpZiAodHJ5X2NoYXJnZShuZXdfbWVtY2csIEdGUF9LRVJORUwsIG5yX3Bh
+Z2VzKSkgew0KKwkJcmV0ID0gZmFsc2U7DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwltb2RfbWVt
+Y2dfc3RhdGUobmV3X21lbWNnLCBpdGVtLCBucl9wYWdlcyk7DQorDQorCWlmIChvbGRfb2JqY2cp
+IHsNCisJCS8qIFVuY2hhcmdlIG9sZCBjZ3JvdXAgKi8NCisJCW1vZF9tZW1jZ19zdGF0ZShvbGRf
+bWVtY2csIGl0ZW0sIC1ucl9wYWdlcyk7DQorCQlpZiAoIW1lbV9jZ3JvdXBfaXNfcm9vdChvbGRf
+bWVtY2cpKQ0KKwkJCXJlZmlsbF9zdG9jayhvbGRfbWVtY2csIG5yX3BhZ2VzKTsNCisJfQ0KKw0K
+KwlvYmpfY2dyb3VwX2dldChuZXdfb2JqY2cpOw0KKwkqcHRyX29iamNnID0gbmV3X29iamNnOw0K
+KwlvYmpfY2dyb3VwX3B1dChvbGRfb2JqY2cpOw0KKw0KK291dDoNCisJbWVtX2Nncm91cF9wdXQo
+bmV3X21lbWNnKTsNCisJbWVtX2Nncm91cF9wdXQob2xkX21lbWNnKTsNCisJcmV0dXJuIHJldDsN
+Cit9DQorDQogI2lmZGVmIENPTkZJR19NRU1DR19OTUlfU0FGRVRZX1JFUVVJUkVTX0FUT01JQw0K
+IHN0YXRpYyBpbmxpbmUgdm9pZCBhY2NvdW50X2ttZW1fbm1pX3NhZmUoc3RydWN0IG1lbV9jZ3Jv
+dXAgKm1lbWNnLCBpbnQgdmFsKQ0KIHsNCg0KLS0gDQoyLjU1LjANCg0K
