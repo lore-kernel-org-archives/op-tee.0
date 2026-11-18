@@ -1,128 +1,125 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56323606A32C
-	for <op-tee@archiver.kernel.org>; Wed, 18 Nov 2026 15:07:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A740606A32A
+	for <op-tee@archiver.kernel.org>; Wed, 18 Nov 2026 20:24:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=v1XHUkjw;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ik0wB+4P
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=o2dy2e5O;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y44GakXv
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id A95E945523
-	for <op-tee@archiver.kernel.org>; Wed, 18 Nov 2026 15:07:56 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 8BA1945528
+	for <op-tee@archiver.kernel.org>; Wed, 18 Nov 2026 20:24:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795014476;
-	bh=7Puxe22RqnE0w2T2L8dnLekQPzMSu8xVNdyOfGWZZ74=;
+	d=lists.trustedfirmware.org; s=2024; t=1795033478;
+	bh=PvkegSM9pdmN3qDdgBNlTRoStwyUjiU3iIMt+V/URT4=;
 	h=Date:To:Subject:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=v1XHUkjwsAX9g9rV2pX0DCzIhlEYDATEyutl7HuXUfIsmU/OqBSHqOwYqk3+Q4eAl
-	 v4RWUxC1LAOIj97yQ0y7OMOpTeh+KgFfTsjwpf+oQ9sAUbu3rns+SRSnT5n1AK0zQ7
-	 PeRRDr+EOL94oiLefdoP+uFiffeRua5591TdXbj5WcCNdgWURGriJIbBaM8Adcxk5x
-	 Aa5EgDevb5/hjw7JgOSldTmtaLVSN/fufPu6Z0QVS0jmBaaufx1juGWcbmF/dX3Bdy
-	 hjEHJLsJlD2jTg5H1VoQc+/V4Nokn/ZXxPe/MOIrPDDmxQwjlIJJQvwyW/FjMQXqXN
-	 nU50nfL98J5Mw==
+	b=o2dy2e5OMvYbjPvSZd7wNzAfn2ycwQiznmX1ev91niiZr/Rg8Kb3nHXRm5ku4uVCI
+	 6dZEcnN9CJU9WMmFnkSIpxBjGDx/DzR0F0x0CKLoJ34G6O9o8aimapra2XiWpJqM42
+	 /bpqTVpf6U8XKNOs6jYMPr9mqy8Q9NUkdiFbTpngybsHeetKIfS987d5B07zIlYNfa
+	 6T/lCTNs4r2ek7t+m+8PFGwIZxVh360woisQhBmafcZbV9F07pTVuDtFTZukqazAIs
+	 TnLGQUTPzJnr6m4teQSoHvB59xj7tm7ynH0N/oHQyf/diQdDCCGutJROctplgRxJsI
+	 1a+7P8sa9oysg==
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with UTF8SMTPS id 53A2343AD0
-	for <op-tee@lists.trustedfirmware.org>; Wed, 18 Nov 2026 15:07:52 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id CFD6945230
+	for <op-tee@lists.trustedfirmware.org>; Wed, 18 Nov 2026 20:24:32 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ik0wB+4P;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y44GakXv;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with UTF8SMTP id 8E70743DC3;
-	Wed, 18 Nov 2026 15:07:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id C01C41F000C4;
-	Wed, 18 Nov 2026 15:07:50 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 2300C432D7;
+	Wed, 18 Nov 2026 20:24:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9B7B1F000C5;
+	Wed, 18 Nov 2026 20:24:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795014471;
-	bh=WpNvKlvQgWs4nlBDzrAzqY0K1wpz+T9bN3CMOunjYys=;
+	s=k20260515; t=1795033472;
+	bh=FxLntHqNI1+h3sJPoaAEyO+/hQb8YRhU4FckPwMqXOY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ik0wB+4PWOYL2hmQiNwFTeBBvupZ2nUcJiZ54iyfaa2tU77mnLlpFifyj8n1RAoxc
-	 JiFr1whbKGn9jctVHgQHsWlXlRxqGaOAejYgryvppYJ1hYUJPmJajsbl1RZNJZ2urH
-	 fAR3taWBeKxDwuMnnlsPRwbWW5GR06M9hA5dv1M1pEA51yEPNLWXKWfBsoGOA85JWU
-	 RdSwiNfRnISgDS/zRQ8IFyTjSctGJRDAEhTnp4ENDN8HwGtDmIypnNR9Lro8os8drC
-	 gH5m26+2mcTSgygYysYIO2BPjm0gAz6kctoO3OxBWgeB2Wg89nS8C+lhRUQ+5galCW
-	 RrUE6ZrvqIprA==
-Date: Wed, 18 Nov 2026 17:07:46 +0200
-To: Marco Felsch <m.felsch@pengutronix.de>
-Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
- never read
-Message-ID: <av2_QoJHp1gMTFMp@kernel.org>
-References: <20261118140421.584086-1-giometti@enneenne.com>
- <mvyqqjhvfka3kkumztixzozrthutkq6mfakkonxqbpm5gvzb62@eitzzleeyioe>
+	b=Y44GakXvG5GHKA31JnnJ8TOHTL4DJuDPzANJjJWG60MjNDOfyRHhJIm8vJ9IDSIev
+	 kJKebboMkeglmR/Z3kWmpAzBb/AQDqIH9Izq2L/2oEbS6SEXi6ZsaYaQUkJZjqCiEE
+	 /cEFzHQ3SGAkusbdtG1G+mq2iETbisKSIMwmFp2X1YKr62QeB8t2Omdt7o8wYE65tf
+	 74JyKMlIkz2XlLsmuBGfkZAol4hWxO6LXScQh90VN9uTyIGALwX/totrf6ZkzLWXcR
+	 OAC91HP6t82IYLn0SO6X1Zc4Z9eHlbMjrylVDrjpOpZr9CRq/RJ7Wgclipi8eTEcKP
+	 JLUuYHqvl39TQ==
+Date: Wed, 18 Nov 2026 14:24:26 -0600
+To: Vincent Donnefort <vdonnefort@google.com>
+Subject: Re: [PATCH v3 4/8] dt-bindings: reserved-memory: Add
+ lendable-dma-pool
+Message-ID: <179503346493.801350.7313588345506554121.robh@kernel.org>
+References: <20261111110738.872947-1-vdonnefort@google.com>
+ <20261111110738.872947-5-vdonnefort@google.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <mvyqqjhvfka3kkumztixzozrthutkq6mfakkonxqbpm5gvzb62@eitzzleeyioe>
+In-Reply-To: <20261111110738.872947-5-vdonnefort@google.com>
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.78 / 15.00];
+X-Spamd-Result: default: False [-4.59 / 15.00];
 	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-2.68)[98.58%];
+	BAYES_HAM(-2.09)[95.58%];
+	SUSPICIOUS_RECIPS(1.50)[];
 	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
+	MID_CONTAINS_FROM(1.00)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
 	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[172.234.252.31:from];
 	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	RCPT_COUNT_TWELVE(0.00)[34];
 	MISSING_XM_UA(0.00)[];
-	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_CC(0.00)[enneenne.com,redhat.com,vger.kernel.org,gondor.apana.org.au,davemloft.net,kernel.org,lists.trustedfirmware.org,nxp.com,pengutronix.de,nod.at,gmail.com,arndb.de,paul-moore.com,namei.org,hallyn.com,lwn.net,linuxfoundation.org,infradead.org,lists.infradead.org,lists.ozlabs.org];
+	RCPT_COUNT_TWELVE(0.00)[25];
+	TO_DN_SOME(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
 	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
+	ALIAS_RESOLVED(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
+	DNSWL_BLOCKED(0.00)[172.234.252.31:from];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	FROM_EQ_ENVFROM(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 53A2343AD0
-X-Spamd-Bar: -------
-Message-ID-Hash: NXCWKSWXECC3J7XDV4TT774ARD5BBJBH
-X-Message-ID-Hash: NXCWKSWXECC3J7XDV4TT774ARD5BBJBH
-X-MailFrom: jarkko@kernel.org
+X-Rspamd-Queue-Id: CFD6945230
+X-Spamd-Bar: ----
+Message-ID-Hash: 7YJBZKAQ5EC6IBMLWXGCQCFJVBKWJK73
+X-Message-ID-Hash: 7YJBZKAQ5EC6IBMLWXGCQCFJVBKWJK73
+X-MailFrom: robh@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Rodolfo Giometti <giometti@enneenne.com>, David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Richard Weinberger <richard@nod.at>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Eric Biggers <ebiggers@kernel.org>, Demi Marie Obenour <demiobenour@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-doc@vger.k
- ernel.org, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
+CC: krzk+dt@kernel.org, rppt@kernel.org, jenswi@kernel.org, danielmentz@google.com, akpm@linux-foundation.org, sudeep.holla@kernel.org, linux-mm@kvack.org, ryan.roberts@arm.com, ardb@kernel.org, catalin.marinas@arm.com, sumit.garg@kernel.org, op-tee@lists.trustedfirmware.org, will@kernel.org, robin.murphy@arm.com, mark.rutland@arm.com, conor+dt@kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux.dev, david@kernel.org, devicetree@vger.kernel.org, hch@lst.de, thierry.reding@kernel.org, linux-arm-kernel@lists.infradead.org, m.szyprowski@samsung.com
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NXCWKSWXECC3J7XDV4TT774ARD5BBJBH/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7YJBZKAQ5EC6IBMLWXGCQCFJVBKWJK73/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-From: Jarkko Sakkinen via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: Jarkko Sakkinen <jarkko@kernel.org>
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+From: "Rob Herring (Arm) via OP-TEE" <op-tee@lists.trustedfirmware.org>
+Reply-To: "Rob Herring (Arm)" <robh@kernel.org>
+X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 18, 2026 at 03:57:27PM +0100, Marco Felsch wrote:
-> These are basically the trusted-key purpose.
 
-This is it.
+On Wed, 11 Nov 2026 11:07:34 +0000, Vincent Donnefort wrote:
+> Add bindings for the "lendable-dma-pool" reserved-memory CMA pool, used
+> to dynamically unmap pages from the kernel direct map before lending
+> them to a secure world.
+> 
+> Signed-off-by: Vincent Donnefort <vdonnefort@google.com>
+> ---
+>  .../reserved-memory/lendable-dma-pool.yaml    | 58 +++++++++++++++++++
+>  1 file changed, 58 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/reserved-memory/lendable-dma-pool.yaml
+> 
 
-If I was adding something like this, I would at least:
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
-1. Discuss the solution that would extend trusted keys to the level
-   that makes it crystal clear that this is won't work out too
-   well.
-2. Then show how the new thing addresses all of this.
-
-If there is any gist this should not require whole a lot of text
-dump.
-
-AI assistance should not be really even mentioned the cover letters in
-my opinion. It's equal to text editor; or smoke signals. It does not
-level down anything i.e., I'm equally dissatified however this was
-produced :-) 
-
-Br, Jarkko
