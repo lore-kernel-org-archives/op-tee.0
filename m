@@ -2,222 +2,137 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C454606A32A
-	for <op-tee@archiver.kernel.org>; Fri, 20 Nov 2026 01:13:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A721606A32A
+	for <op-tee@archiver.kernel.org>; Fri, 20 Nov 2026 08:35:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=ZNYwqj7W;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PCGACtfj
+	dkim=pass (2048-bit key, unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=iMCz4c4v
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id E280A4553D
-	for <op-tee@archiver.kernel.org>; Fri, 20 Nov 2026 01:13:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795137204;
-	bh=HPMyAG+qNaJVDKdur4aqEAcgKR/IJArFbpyzF9kyIkc=;
-	h=Date:Subject:To:CC:List-Id:List-Archive:List-Help:List-Owner:
-	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
-	b=ZNYwqj7W/DsnMRH4gjzil9x4Lh/UngrJPGI1bL+4rF8XrQQlU4wZkbpTtN6fZxJV0
-	 nwMx5ajkeHNo7uayTPBlbEE1311eDpbbiAQWmzqPAZbmqhxItTLwEWOxTGctJGHb+s
-	 uR+mWTGaSjA/d/pGTb1ZYUWS8r2BrSCQr2MRlChae4xG3lAgMKwxuKlxc6i4oaZHrB
-	 Q6o71ApCTFHVD2UXvPpv9BPpF9yTY8cq6qDoJggASjNwSz8Qsngz0YziQqUAr8ex/W
-	 tCXQ0lI4RevfSlyUmprV9Inchx1z5whlJxazkCWdDtU2rLkczcTs7YwXLW1a2UZREz
-	 yfFcYGOya1wZw==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 15E3C44F11
-	for <op-tee@lists.trustedfirmware.org>; Fri, 20 Nov 2026 01:13:18 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 83BF845B7E
+	for <op-tee@archiver.kernel.org>; Fri, 20 Nov 2026 08:35:30 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PCGACtfj;
+	dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=iMCz4c4v;
 	dkim-atps=neutral
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4984F40284;
-	Fri, 20 Nov 2026 01:13:17 +0000 (UTC)
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795137197;
-	b=fmi+w6w1aSQzn1OBN+5yVKl1uPURvWhd3A5KxPUpdKNxh+ToOnJAglhNGIIQCWfh+5nV
-	 zb6NN8Qox838nCcAd+GXp0+rcpya6jJb83vl9tdVWugMGVx5N4gIW3J3+lwdg0iFFBSLH
-	 fuZY3C4giJxPErjwKZNWRfHV+ASsDW6xweE3jW0DUbm9E1yz7h+kVmT+r1WzMB0MO0ogT
-	 cMe33vEEZN8Xm9HwOSdS+9fzPz13rhnhpSHrxLMUMkeXMXvIsgAqbEqWrxmPnjw9XejzN
-	 ucRLmk4zIM+kXGaQ5dVbRoj4GSm1VbAnoXujeGssGsuntNrNQCpmmZ0AlumpGHelHkQ==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795137197;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=0Sd6i+zrFVYtSL2eAJrD9qXfzhUKkx6ndMdVVrjruSY=;
-	b=O8X6A2ivBp6IV3R4UTJB7BpelsF2RmvFUb5RfXmcA5VEU5xBxw/3OaCibdP+OqKkpLUR
-	 7gXypJJu6emXUfhVvJpZiYYkHH9TyvYpil5y7XnKIWV6vFbcrcWYTFCaY4uq3p+RLWuZR
-	 j1fDMDc76pYndIBz18YHuEVilzZ8OhrX2TmG8RDeEHrCIdsh5V3YrTi0A/EGRtmow0AFM
-	 XQATnpwwoAy73Pwb9mXcwwGcfXTExtLtHIHbO1tZVKWkDy1fZGJw86SENrfgIQFoJ4xIM
-	 GGt82m/6MMimdI+MrvjcaJ9IF4w6bO8rzxWNBZ3vC1+qBveljUjfbi201L2Eh/rskJw==
-ARC-Authentication-Results: i=1; smtp.kernel.org;
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id A6E191F000CA;
-	Fri, 20 Nov 2026 01:13:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795137197;
-	bh=0Sd6i+zrFVYtSL2eAJrD9qXfzhUKkx6ndMdVVrjruSY=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=PCGACtfjOqN3uwAUMZzTjIZWG4ks71DtrR2Eg/nclQynWhFw13N2w07rADvWsOLtg
-	 fJjEUGhcANDq1z87sNaFQIovYe9vZteQ9ZTNIjZJe/+OqbwzCurZfEXsZ5mUOcbDKh
-	 QCRHEnCguLFh6nTmDgZotI7cES8S/u949PFXt/v3rlXcoKGGZuZidK7IxIgLBas2JZ
-	 iMA0Jg/JC68SFlNzswhzBKmBuSgLj47144YGSMn2ed2tgrCOALDECdrCrVUr1O0a0r
-	 E3IN1tIekCYCOwbtBlYJliQ8jAcyPjPVsuwe79raiFdf27fvoK17NHkoJdewpcPE15
-	 eNOldK/quj9AA==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 3A217425FF;
-	Fri, 20 Nov 2026 01:13:16 +0000 (UTC)
-Date: Fri, 20 Nov 2026 01:13:16 +0000
-Subject: [PATCH] tee: optee: check for the supplicant under supp->mutex
+Received: from smtpcmd15176.aruba.it (smtpcmd15176.aruba.it [62.149.156.176])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7DD624440B
+	for <op-tee@lists.trustedfirmware.org>; Thu, 19 Nov 2026 18:33:25 +0000 (UTC)
+Received: from [192.168.0.186] ([101.57.122.26])
+	by Aruba SMTP with ESMTPSA
+	id U6wix2IW175O9U6wix0Oma; Thu, 19 Nov 2026 19:33:23 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aruba.it; s=a1;
+	t=1795113203; bh=2t8AtcRowxFNGYE8HteZpHIn9jAWUm8DVCWA8vMMYBE=;
+	h=Date:MIME-Version:Subject:To:From:Content-Type;
+	b=iMCz4c4vXgNfjaVsNwvBuMF7tZY4Yy54lPGmuAGKY6P71MLCV/srwMTceBQ/GAt34
+	 IwJr1uqnf/dmNjlMZQB9cLgUTxbIw6iVRuT9buaKQVDbz3kaNVFEIoEpXvAkCgmyEI
+	 PSFVCiHj3v8SvBzh912x32zMoFnRUAiLuKuPzH9wjTX7qSHSKg+cusdAEfdyhakn6U
+	 MDZ+sXbJbEnEXvAx8A/4DselQVxkwI8uuu0bk6VUSPoq8UUhqONY29s9ATTEIL13dy
+	 Cw/3hrysPCKNiLyF9KsJstL/jDdfxcyJ3j39BP5mlGiBGtXHINn2jlUD38UGg+FRMw
+	 xxp9/W63RlIFw==
+Message-ID: <4ad95ed5-26b6-4871-bcb6-cfebfe73917a@enneenne.com>
+Date: Thu, 19 Nov 2026 19:33:20 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-optee-supp-toctou-v1-1-d9a2bdea1c90@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQ6CMBBG4auQWTsJU6MGrmJcYPnRYUGbTmtMC
- Hen6PJbvLeSISmM+malhI+ahqVCTg3597C8wDpWk2vdVUQ6DjEDbCVGzsHnUHgcnL9MbXfDWah
- 2MWHS7+95f/xt5TnD52NE27YDbTJKYnUAAAA=
-X-Change-ID: 20261119-optee-supp-toctou-da2c5f097e31
-To: Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795137196; l=2397;
- i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
- bh=r+DQHxCOjcjVvvLW4z3rrN6VNbrbMcD//gJUMsCvQXA=;
- b=irKeG1tS1xjH2e5wZixMtRgpxVJnRQ42nvZOXhZQvcCjRW+s/qZsKt4qjlzxguZIhsC7zCLaY
- M6C+ScbZGmkAimKTGANjsQOXkqKi7IURLIKJZ756ptsYLTjbLFW2Hkr
-X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
- pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
-X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
- auth_id=1480
-X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
+ never read
+Content-Language: en-US
+To: Jarkko Sakkinen <jarkko@kernel.org>
+References: <20261118140421.584086-1-giometti@enneenne.com>
+ <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+ <av5EyVHnNzT27dyK@kernel.org> <av8In0Xyd5iI9N7K@kernel.org>
+From: Rodolfo Giometti <giometti@enneenne.com>
+In-Reply-To: <av8In0Xyd5iI9N7K@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-CMAE-Envelope: MS4xfDXtWOlFTYpyTg35cFi8NKxn6M8tXvqRpaK6Te9d9LP538qpRWPqyhYCRUO7FN90zeUALjH4Pv0kc5qTXvx9JqFIICyIFmy8AMREg/ZL7rPvrVR8BOUd
+ cLloYWy2etZ8Iz2Dj35VuyDIDq5OJcXlqCU0GxFuELT2Ll0+SMmq0xT0b1NQ/mGJ1DRr6EgGHmwb1jcrz7jDiFyXggFkpjEOVUfCxm33Z+AP0WZg8zgrFJ0n
+ ffHu26kwKFVQdawAYFWmaAXnHN1p0WPTc2eQub+iUcKYdh/LB+1TMtCynW4g+PFuL/Ox/uZYSQ3twHUYmoc0NljKoPOQdr9z82B634PV+Tl5rFaczqEJswvL
+ RMT75ziH1aZFGiT3YGWODPXE3kKUfWeYw2ky9PgD86fbcUKc9YG7O6O4C555MM8R18YgP7zwMiMpC0MPLWUV4TYOFHuGzRI3nAMUWf2OAvcXsYsO9EJVC1dZ
+ /CJBXkFCk64KKzxL3y8DwpvUb58jZOH5wiXqHdVhVBx7moWR2O7fcnAGvb0ROFigOOWFyNifYgQAUKvRx0Gjo0aKANKYhIDOo9FoNc3nTrLMB+wllSvU908i
+ ZvkuwtX35joO+/L82trX60+HcodZHev58cbR0wIdppW64faoXjrD2ty6e3+iNo1wzj4r1WV6hSakPGcj+ITxJAyi+jIfJwOIVZnMMjwKHWWd276ZqiyPHgzR
+ tHcGBXPnD0+Y4FdwbDCkcDNcPihbMtNcarY0ckxuc2T0QuwtA6V5JI+qd+13NzNwBNaSBd9q0vR4Houfn0O1tVDSLHjYJhYnCW1hfd8zibQ4R4JUQeDCsiso
+ hDRhfUPbEdA73rTyHioYeBE2HST4BYaYzwzPHgFSowkALmKiOo3P6Y+sT2OdjUa1mi5YmmKKNIRc5pqRvd/Poq1X6e5PtLi+bMEeLu/tD0VuL3zYOGxE+sHW
+ BTqxG0WyQtxpY++s7NY1cpcH0qqhtrXP08lJaeDotFcKwlEQgSTkroRSzbXG9NMpu/BmvKQiIhI/dqa4MxRp7JEEFN/QNVR7WEj2UU0vqJswExy2aYWzzdw+
+ FkBYKTSapeFo97Im9jOUDeTGL1gcFhA/aHSIiD07c4PP/74NLMye+4RTaOnZlsrMaXjbB2/jn6s9k9AKtJfRSJPMFnBj3YyvI3YYi+xduehbptXY4hxkqo3D
+ c5x2hRhHNjhs0zg+GpmJGknXwvGaK4l4a6zTOKWmfv7xMtgIZ/Vn9d4GsOJdkemp7e3WX6RGITrcgwSghHENodqP2MvCkuvhyBHE4/kY7pUMNCMYz3xNrYgX
+ 6PdBjdKe
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-7.10 / 15.00];
-	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
-	BAYES_HAM(-3.00)[100.00%];
-	FREEMAIL_REPLYTO_NEQ_FROM(2.00)[];
-	ARC_ALLOW(-1.00)[kernel.org:s=arc20260519:i=1];
-	DWL_DNSWL_LOW(-1.00)[kernel.org:dkim];
-	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
-	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+X-Spamd-Result: default: False [-3.78 / 15.00];
+	BAYES_HAM(-2.98)[99.91%];
+	DMARC_POLICY_ALLOW(-0.50)[enneenne.com,none];
+	R_SPF_ALLOW(-0.20)[+ip4:62.149.156.0/24];
+	R_DKIM_ALLOW(-0.20)[aruba.it:s=a1];
+	ONCE_RECEIVED(0.20)[];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_IN_DNSWL_LOW(-0.10)[172.234.252.31:from];
-	RCVD_TLS_LAST(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[32];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_REPLYTO(0.00)[gmail.com];
-	TAGGED_FROM(0.00)[aiyengar1990.gmail.com];
-	REPLYTO_DOM_NEQ_FROM_DOM(0.00)[];
-	FREEMAIL_CC(0.00)[lists.trustedfirmware.org,vger.kernel.org,gmail.com];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TO_DN_SOME(0.00)[];
+	ASN(0.00)[asn:31034, ipnet:62.149.128.0/19, country:IT];
+	ARC_NA(0.00)[];
+	RCVD_COUNT_ONE(0.00)[1];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_IN_DNSWL_NONE(0.00)[62.149.156.176:from];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[redhat.com,vger.kernel.org,gondor.apana.org.au,davemloft.net,kernel.org,lists.trustedfirmware.org,nxp.com,pengutronix.de,nod.at,arndb.de,paul-moore.com,namei.org,hallyn.com,lwn.net,linuxfoundation.org,infradead.org,lists.infradead.org,lists.ozlabs.org,gmail.com];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[62.149.156.176:from];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	ALIAS_RESOLVED(0.00)[];
-	DKIM_TRACE(0.00)[kernel.org:+];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
-	REPLYTO_DOM_NEQ_TO_DOM(0.00)[];
-	HAS_REPLYTO(0.00)[aiyengar1990@gmail.com]
+	DWL_DNSWL_NONE(0.00)[aruba.it:dkim];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	DKIM_TRACE(0.00)[aruba.it:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 15E3C44F11
-X-Spamd-Bar: -------
-Message-ID-Hash: VUSDXCW65QR6UQI2GDNN6YEGU3APNNCI
-X-Message-ID-Hash: VUSDXCW65QR6UQI2GDNN6YEGU3APNNCI
-X-MailFrom: devnull+aiyengar1990.gmail.com@kernel.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: op-tee@lists.trustedfirmware.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Arun Iyengar <aiyengar1990@gmail.com>
+X-Rspamd-Queue-Id: 7DD624440B
+X-Spamd-Bar: ---
+X-MailFrom: giometti@enneenne.com
+X-Mailman-Rule-Hits: nonmember-moderation
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
+Message-ID-Hash: N2KUVK5JMNAHHBR2SR7W7TUNTLCZTMTN
+X-Message-ID-Hash: N2KUVK5JMNAHHBR2SR7W7TUNTLCZTMTN
+X-Mailman-Approved-At: Fri, 20 Nov 2026 08:35:26 +0000
+CC: David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Richard Weinberger <richard@nod.at>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-d
+ ev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Demi Marie Obenour <demiobenour@gmail.com>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/VUSDXCW65QR6UQI2GDNN6YEGU3APNNCI/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/N2KUVK5JMNAHHBR2SR7W7TUNTLCZTMTN/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-From: Arun Iyengar via B4 Relay via OP-TEE <op-tee@lists.trustedfirmware.org>
-Reply-To: aiyengar1990@gmail.com, Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
-X-Spam-Status: No, score=-17.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_REPLYTO_END_DIGIT,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Arun Iyengar <aiyengar1990@gmail.com>
+On 19/11/2026 15:33, Jarkko Sakkinen wrote:
 
-optee_supp_thrd_req() checks supp->ctx without supp->mutex. If the
-supplicant is released between the check and queueing, a supp_nowait
-request is queued after optee_supp_release() aborted the queue and
-waits until a new supplicant opens. For in-kernel clients that can
-be forever.
+[snip]
 
-Do the check under supp->mutex, together with queueing the request.
+> And yeah, we don't have projected problems. I.e. "no users" is always
+> NAK. You have to step on the nail at first.
 
-Fixes: 42bf4152d8a7 ("tee: add supp_nowait flag in tee_context struct")
-Cc: stable@vger.kernel.org
-Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
----
-Found by Sashiko in its review of [1]; the race is older than that patch.
-Tested on an Orange Pi 5 (7.3-based, KASAN and lockdep) with a test-only
-2 ms delay between the check and queueing; 1242 of 2000 supp_nowait
-requests stranded without this patch, none with it. A real
-tee-supplicant was not tested.
+A customer of mine stepped on it. Their product, on i.MX6, encrypts its
+rootfs with dm-crypt and a CAAM black key, never in clear. Its backups,
+though, are encrypted in user space with a key kept as a CAAM blob; to
+use it, the blob is opened and the key handed to user space in clear.
 
-Developed with Claude (Anthropic), which wrote the code and the commit
-message. I reviewed it.
+The next generation is on i.MX93, and the customer now wants the
+backups and other encrypted archives protected like the rootfs: the key
+must never be in clear outside a secure world. The i.MX93 has no CAAM.
+OP-TEE can hold the key, but every way the mainline keyring offers to
+use it (a trusted key, through dm-crypt or AF_ALG) unseals its bytes
+into kernel memory, and AF_ALG no longer reaches hardware drivers.
+keycrypt's OP-TEE backend does not unseal it: a key it generates leaves
+the TA only sealed.
 
-[1] https://lore.kernel.org/r/20261115-optee-supp-close-v1-1-4e0b14f3a97c@gmail.com
----
- drivers/tee/optee/supp.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+Ciao,
 
-diff --git a/drivers/tee/optee/supp.c b/drivers/tee/optee/supp.c
-index 06747e90c230..fd8d1f363f2f 100644
---- a/drivers/tee/optee/supp.c
-+++ b/drivers/tee/optee/supp.c
-@@ -91,13 +91,6 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
- 	struct optee_supp_req *req;
- 	u32 ret;
- 
--	/*
--	 * Return in case there is no supplicant available and
--	 * non-blocking request.
--	 */
--	if (!supp->ctx && ctx->supp_nowait)
--		return TEEC_ERROR_COMMUNICATION;
--
- 	req = kzalloc_obj(*req);
- 	if (!req)
- 		return TEEC_ERROR_OUT_OF_MEMORY;
-@@ -109,6 +102,16 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
- 
- 	/* Insert the request in the request list */
- 	mutex_lock(&supp->mutex);
-+	/*
-+	 * Return in case there is no supplicant available and
-+	 * non-blocking request.
-+	 */
-+	if (!supp->ctx && ctx->supp_nowait) {
-+		mutex_unlock(&supp->mutex);
-+		kfree(req);
-+		return TEEC_ERROR_COMMUNICATION;
-+	}
-+
- 	req->id = idr_alloc(&supp->idr, req, 1, 0, GFP_KERNEL);
- 	if (req->id < 0) {
- 		mutex_unlock(&supp->mutex);
+Rodolfo
 
----
-base-commit: e21989d08e0d6abacfff71387d0cb36dd96a4079
-change-id: 20261119-optee-supp-toctou-da2c5f097e31
-
-Best regards,
---  
-Arun Iyengar <aiyengar1990@gmail.com>
-
-
+-- 
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming
