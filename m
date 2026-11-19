@@ -1,98 +1,100 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4142606A320
-	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 14:18:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91E55606A320
+	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 14:19:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=JRdDZEM1
+	dkim=pass (2048-bit key) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=YbUT/4nB
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 4A1AC45B7E
-	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 14:18:40 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id F35C65032C
+	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 14:19:08 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=JRdDZEM1;
+	dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=YbUT/4nB;
 	dkim-atps=neutral
 Received: from smtpcmd11116.aruba.it (smtpcmd11116.aruba.it [62.149.156.116])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id C2E314440B
-	for <op-tee@lists.trustedfirmware.org>; Thu, 19 Nov 2026 10:18:39 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 8B09A4440B
+	for <op-tee@lists.trustedfirmware.org>; Thu, 19 Nov 2026 10:19:31 +0000 (UTC)
 Received: from [192.168.0.186] ([101.57.122.26])
 	by Aruba SMTP with ESMTPSA
-	id TzDwxCivc6VShTzDwxQnb6; Thu, 19 Nov 2026 11:18:38 +0100
+	id TzEoxCjbX6VShTzEoxQo8b; Thu, 19 Nov 2026 11:19:31 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aruba.it; s=a1;
-	t=1795083518; bh=aRc2mUQAMNF1zYaxkS0G15m7lGbkHwkBf36QtSll1JI=;
+	t=1795083571; bh=xVDB/U48+KhBs5UAsVUdiYW+qscID3emDO8ims3vEAk=;
 	h=Date:MIME-Version:Subject:To:From:Content-Type;
-	b=JRdDZEM1FxuLixVNZ93BzrJfxnVP/26ipIlHN+dp61SIDQlEQQop3o7sRPTCaTyPS
-	 rEay+jZzRTrnxEK0zIPwaMeKVAy3ZAJ4VSQUpUXySdP/ZTuPPa0VTySV40cWcpYl/i
-	 S2JPpoWNlrAeMVzaV315uHz1J6YigtiMU5Wtqsp450GlhhhX/GyktfzXt5dwFWoZUm
-	 HWLJnzLs5kW2Uj3Rt4AaM+Iv7+JwtiWWYhNFbx91v7byIKfcN7B9iIz9lu6wIVI2uZ
-	 aN8cHrCXdLEOj1XTbIELAWsvQb4tvcfjY3NvHr7VuatOojMKu2K095m2lBR3n4bmLD
-	 GFVq9L0+t/Kow==
-Message-ID: <3929b9f6-6c75-4118-8565-0fa815daad73@enneenne.com>
-Date: Thu, 19 Nov 2026 11:18:35 +0100
+	b=YbUT/4nBgfoaIXJwrMhQeMlvt9sIO8ewa18oowgWvXyRXmLc2FHqa2uE+1ff4WSTf
+	 +SlwXjDXm5+E/qUhmEoIB20CoCnXl3yFBCAfguB9RFKweMi7UXcT5bvO6X6JzcKsVY
+	 YdpDu59seHkq9sF+x9RNqBAoaQVUMas1goxW3myB1EgiT3nhghCefk4/uA0S5tFFps
+	 TKVA8foIHclyKVCWFHy5lEMDBTPNoWtxVHid8dwSdINvi25UgNeSV0dcPqLyfphhGR
+	 kGKvJwZviyVJAXY+tsejDtlxxsZooEEM2WPMcXCcmF3vDQZeiDtSbhOPjEWtT1DFPA
+	 jFwJQ9Lcm3lfg==
+Message-ID: <6fc1eaee-3a60-49d9-a5a0-74b662f2232f@enneenne.com>
+Date: Thu, 19 Nov 2026 11:19:30 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
  never read
 Content-Language: en-US
-To: Marco Felsch <m.felsch@pengutronix.de>
+To: Jarkko Sakkinen <jarkko@kernel.org>,
+ Demi Marie Obenour <demiobenour@gmail.com>
 References: <20261118140421.584086-1-giometti@enneenne.com>
- <mvyqqjhvfka3kkumztixzozrthutkq6mfakkonxqbpm5gvzb62@eitzzleeyioe>
+ <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+ <av5EyVHnNzT27dyK@kernel.org>
 From: Rodolfo Giometti <giometti@enneenne.com>
-In-Reply-To: <mvyqqjhvfka3kkumztixzozrthutkq6mfakkonxqbpm5gvzb62@eitzzleeyioe>
+In-Reply-To: <av5EyVHnNzT27dyK@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-CMAE-Envelope: MS4xfPjnEm0KRtHAk7Xu1+wSM4ggxCt0j1Q9+oPLJi/gROcWWTrg+bgdMN95hJiGJBFhXNd6tGxHzy6xI0wdizsmJC4J007C4HZ7TjGFtLcp5Xb8cbyhKvCM
- Uzi07n/ZVC55gl/w9PVaRMiTc3bcpg7tO05693rsuDxzyWOix/VwRUOBhu1IueXjgkym+5pWn1ALjtRadwrLMRdaeSsJDiVh2ZQca0aoz4u7G/gCZQ5faMsr
- ZbtImVL6pGG0os0vzUhZoUoOYpQPmsGag1CbEOAQmLosnRs3OlfqWoAerckw6+IMg/RhJ2Eqo25H29DY9g+9jqF0sRCX2cGsed1zipjVQIv107xJ4oWajlMV
- khd+68I3cGge4Vn8ffNyLMkKKo/iJL/DNFFERF5Xakxk9jeQ1HM6duQORfrCdoY1+r8sEyvhQ/pV+NHocBjmHdx8pOOJz1IB6ViJUjggNpQ4pShQJ/Q0UioG
- IhxEvjeG/QWEA24O0wocRyCijL5a2PS+26ayplel3SFPR3QFQ78J/d5ndiwPhgD97VXhsJ21Oh6X7XhAuPBfd3vRgWNmsIXv0v3kcvvMkgBG6p+6iL3Pxl/x
- zavj84ZHUgLKZe6f1tIP5SJ1YyiTyHA1gZEUCVUrz+Cx1+ovBDp41C0+Tgh/TGV4+VzONZHmBN0PxjOcZMxCSHjE1ah9po0YrQdl7HncKrIofFRZWo3TaiN1
- AnpZYBtmoIVWG5AplanALkXXkv9Zs/27M2XlGOUHeaKmTURpTQQr4hsshpVDhQNrneeSlqfvQqqPnrI4xqEIHpYAYYvdZeMANJjibaJ9mC4v6nqc1Bs+KRG2
- jPkbn8KFBW7GbgfStZw917JtIBvEl6o76lQaHbEgtff8DHMJeGoZE71fqFn0JiGSt6EInCz15aMu6GfXfOqmM+19YtIuslmqlsHAL293EHy97V6+H4tud7on
- +EE6whsmEew7X2WFgAmj9MCDrlU7j/BWptczETpDpe1q+Ii4p49RTfBYxWATznipdt0Be9TcrlrSDmhipimKEIXDdPxn8Xopaf3Aci3FLX8b8rhQB6Y74bYO
- juodC91CjWzTz/WjX25ga1p4q+NdG2JyM0Nl/WTr+MzBTDhumuqGKwWXiAEw1hR0ErwXJ9rSCyoOWdXXIZkLYBTXUFfVLXLMnd7NefRGBM9W6EP6GYPqVsIU
- n+BzVDWKBf0t3eOT+SK7VteJdFVad5smIFK5PmcTex31jZ6ojvJLxT++uqvnxnj0DNZ8ZH0wHYXggM4S9WepwdbJ93fO0vAIYYdgVBZEnbHghoP6l3JZCQ8u
- +VYxcC/6t+H9Iwr0dfEQelnD5aSSELDw+McFe47W2bPEVApk2DO7csk6K6D+fTQa41wkTVX1
+X-CMAE-Envelope: MS4xfNmI1DIntSdZQogEw4CF+ExsMW52Dv4KVdQXYoEI2SlV11eEe+IxA80+xUydMG7wJYG2UEM6OiD9fNlRWY7iZyyfEynPQDNyEEdFhZWKfwj8abUd2CVm
+ Lq49bpZ8Z2hgx71DU6sYhhPLl43jb2ht+KlVBI2Wws/GNH5B314G6kSkVXdUI0zRZd2gi9GuTGtx9GWmWncQRI4c/1+DT6GPQBX8WtlSvd+6+m3S0U28wDVb
+ 9Hs0soZ49fsX6dkU30YublBd1jh16ccPykwFzi0QXARm/rgb+5uK/CGYB48nylkVg/Iou536TAACMpiIFEXZHeWUt50k8OfWaF0zaM+UpvSSdAus9yIAxvfo
+ TN94jAoBEVnYhfDi4/82Wy353ZJ1o5Gj7OLddeLFkBJpl5Wzw5rMleizI45QkQxnhWD9ETOrQetS561qT7M5CxMYKxPdP2CZdtSrbjcXhI6YyhaQFk/VhuOD
+ xGbNMNlUIo4efMC8Jcl4US1dtNwkfWg/BpgPT1zm36hQYfAnbrypJsoCkLgDERPLHDlxy3WHcdLrwjTHDhF152PUwUN3+0cXJP+rpQt4cnKrbJOd8mbnMBA5
+ EMXx6ob9CMe6mj+soYJG99NcZl4tQ0l+s5hpHAPsuc526bT/lm5wQJkL1AqL3CRNSBp8R47j5nwfQayZ+tYMift/3GXo8dIjA1+x5Yvr6vMNcofIH7i/59ur
+ Cr0sge9wRuaNCXPdPiwh8reCg0jcdmIDUSmDeezWJ/vVEu0ZRJk6A0sox8LZ4P6BOT1DZRkpwpiVSc8FzhApAGo7gQFx9BodEBr1xaKmgy0lQPUfofalbEII
+ C6SljIGeSVkINsuuIJIc4xdBFC7WWD/A2Sc+c78UHrVkV0MV4yXYbaTvr9wNBVTgrAwp3+Y2tyceUQ++SVMYBYF0Ep10RMiXXsCHHx8Ag3zq5QoaPh3C5Ewb
+ Xi3Ngl0pycbj6Q70Q43aVHp4xi3eUQlhWi1FOWVON921NfgQcZmZwXdeGWDCESlVLmbWInKcpIgUO2tNtllaYf9/CQP+sPgnyHv17dhDWbS3pxvLllfyiCb3
+ ok3jS7JCxO6vaFDZQLPPhhR/83ZbJ2KLWnwLSR3vhTJoHsFu1MSbYvLxA49eoVbSM//x+PpbPS6efabzTOuqyXJypu2VSbiPywrJvlCcYgz8HkYiOp/KN/7w
+ 5+vVhbHV+6327zrFt84ZC5MvsP6W7QnSoCxLdbTLlHwV7lXCyMgyzPaAh/4+68Unc1/0NALeZ2REnwOiT7xXoxkV85CK2tGeb5X9z7vGZH0Jh1i15QTOZRXm
+ iZpFWF2L
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.80 / 15.00];
-	BAYES_HAM(-3.00)[99.99%];
+X-Spamd-Result: default: False [-3.69 / 15.00];
+	BAYES_HAM(-2.89)[99.54%];
 	DMARC_POLICY_ALLOW(-0.50)[enneenne.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:62.149.156.0/24];
+	R_SPF_ALLOW(-0.20)[+ip4:62.149.156.0/24:c];
 	R_DKIM_ALLOW(-0.20)[aruba.it:s=a1];
 	ONCE_RECEIVED(0.20)[];
 	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[32];
 	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[34];
 	ASN(0.00)[asn:31034, ipnet:62.149.128.0/19, country:IT];
 	TO_DN_SOME(0.00)[];
 	RCVD_COUNT_ONE(0.00)[1];
-	DWL_DNSWL_BLOCKED(0.00)[aruba.it:dkim];
+	FREEMAIL_TO(0.00)[kernel.org,gmail.com];
 	RCVD_IN_DNSWL_NONE(0.00)[62.149.156.116:from];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[redhat.com,kernel.org,vger.kernel.org,gondor.apana.org.au,davemloft.net,lists.trustedfirmware.org,nxp.com,pengutronix.de,nod.at,gmail.com,arndb.de,paul-moore.com,namei.org,hallyn.com,lwn.net,linuxfoundation.org,infradead.org,lists.infradead.org,lists.ozlabs.org];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[62.149.156.116:from];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RWL_MAILSPIKE_POSSIBLE(0.00)[62.149.156.116:from];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[aruba.it:dkim];
 	DKIM_TRACE(0.00)[aruba.it:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: C2E314440B
+X-Rspamd-Queue-Id: 8B09A4440B
 X-Spamd-Bar: ---
 X-MailFrom: giometti@enneenne.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: BJ3CVJK3ACBCKVGTMAZ57ISYUUKEAHHM
-X-Message-ID-Hash: BJ3CVJK3ACBCKVGTMAZ57ISYUUKEAHHM
+Message-ID-Hash: KQ4QWYHJHWUOYV3ATKSQ4GJGJOSP6TRL
+X-Message-ID-Hash: KQ4QWYHJHWUOYV3ATKSQ4GJGJOSP6TRL
 X-Mailman-Approved-At: Thu, 19 Nov 2026 14:18:35 +0000
-CC: David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>, keyrings@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Richard Weinberger <richard@nod.at>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Eric Biggers <ebiggers@kernel.org>, Demi Marie Obenour <demiobenour@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-doc@vger.kernel
- .org, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
+CC: David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Richard Weinberger <richard@nod.at>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-d
+ ev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/BJ3CVJK3ACBCKVGTMAZ57ISYUUKEAHHM/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/KQ4QWYHJHWUOYV3ATKSQ4GJGJOSP6TRL/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -105,181 +107,48 @@ X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 18/11/2026 15:57, Marco Felsch wrote:
-> Hi Rodolfo,
-
-Hi.
-
-> thanks for the RFC and bringing this up. Please see my comments below.
-
-Thanks to you for reading it!
-
-> On 26-11-18 15:04, Rodolfo Giometti wrote:
->> This RFC proposes a key type, "keycrypt", whose material user space can
-> 
-> Albeit I'm not against a new key-type we already have plenty types.
-> 
-> Furthermore the keyctl API is very open, lacks a common API. E.g. for the
-> 'trusted-key' keytype userspace needs to know the actual used backend
-> because each backend handles it differently.
-> 
-> Therefore I wouldn't add further keytypes till we have a common API
-> which the userspace can rely on.
-
-I agree that a common API is missing. keycrypt is meant to be one, for
-keys that user space uses but never reads: the same ioctls on the fd
-for every backend, and the same add_key() strings but for the sw
-backend's master=, so user space does not need to know which backend
-holds the key (unless it asks for one with backend=). What is missing
-is a way to ask which backends and algorithms exist (see below).
+On 19/11/2026 01:37, Jarkko Sakkinen wrote:
 
 [snip]
 
-> So it's not a new keytype but a new mechanism to handle trusted-keys
-> from userspace?
+> The exitential problem here is that KEYCTL_CRYPT_OPEN creates a circular
+> relationship between the keyrings API and a specific key type.
 
-No, a keycrypt key is not a trusted key. Only the sw backend uses a
-trusted key, as the master that seals its blobs; the OP-TEE and CAAM
-backends use none. Also, an ELE backend, not written yet, would use
-none, and it could be the first hsm backend!
+Agreed: it should be a key_type operation, dispatched the way
+KEYCTL_PKEY_* dispatches to asym_eds_op, so that keyctl knows no key
+type.
 
-[snip]
+> At hardware level I did not see any support for TPM, which narrows down
+> the potential user base.
 
->> An embedded product that encrypts its own data (a root filesystem
->> archive, configuration backups, logs) needs a key that does not sit in
->> the root filesystem and that a compromised user space cannot copy. Today
-> 								^
-> 					What exactly do you mean by copy?
+On a TPM system the sw backend can take its master from a TPM-sealed
+trusted key, but there keycrypt adds little over a trusted key. The
+users are SoCs with a TEE and often no TPM, OP-TEE on i.MX for one.
+
+> The remaining potential user base is further reduced by those that use
+> trusted keys; leaving out those who need to solve the assumed problem
+> that only this patch set can presumebly sort out.
 > 
-> If you're using the standard LUKS2 scheme, the (volume)key never sits
-> inside encrypted device. The key is part of the LUKS2 header. Maybe I
-> didn't got your use-case, can you please elaborate a bit more?
-
-By copy I mean getting the key's bytes to use them elsewhere. A user
-key can be read back; a logon key cannot, but its bytes come from user
-space at every boot, so they sit in a file. A trusted or encrypted key
-fixes that, and the cover letter was wrong there: AF_ALG can use one
-from user space. But, as you note below, once unsealed its bytes are
-in kernel memory, so it falls with the kernel, and nothing binds it to
-an algorithm or a purpose.
-
-My use case is not a block device: it is files that an application
-encrypts itself (an archive of the root filesystem, configuration
-backups, logs), with a key that must not be readable on the device and
-that ideally may only encrypt, or only decrypt.
-
-You can see keycrypt keys as the symmetric counterpart of the
-asymmetric keys that KEYCTL_PKEY_* already lets user space use without
-reading them. The difference is that a symmetric mode keeps state
-across calls (the CBC chain, a stream's segments), hence an fd instead
-of one keyctl call per operation. And, as for KEYCTL_PKEY_*, the open
-could become a key_type operation, so that keyctl knows no key type.
-
-[snip]
-
-> Above you mentioned trusted-keys, but trusted-keys don't let the key
-> stay inside the TEE. Albeit the key is only reachable kernel (EL1) it is
-> always reachable from normal world. So a kernel CVE could leak the key
-> as well. This is different compared to protected keys like
-> p(rotected)aes. Here the keys always stay within firmware/secure-world.
-
-Yes. With the OP-TEE backend a generated key never leaves the TA,
-which runs the operation, and the kernel only holds a blob it cannot
-open, so even a compromised kernel can only use the key, and only for
-what it was sealed for. An hsm backend, as ELE could become, would do
-the same in dedicated hardware.
-
-> I didn't get your problem from your above description, sorry and
-> therefore I'm asking.
-> Do you want to use trusted-keys for partition (rootfs, data, ...)
-> encryption? In such case I've developed another idea which I'm about to
-> post as RFC.
-
-No, file encryption from user space, as above. In one sentence:
-keycrypt gives the keyring keys that user space can use but never
-read, bound to one algorithm and purpose; with a TEE backend they are
-never in clear in the kernel either, and they work from a minimal
-initramfs, before any user-space crypto stack exists.
-
-That last part matters a lot on embedded systems. The initramfs
-usually sits in the FIT image that the secure-boot chain must
-authenticate, and often decrypt, before running it, so it must be as
-small as possible (on our i.MX93 boards this runs at about 2.4MiB/s
-through ELE). In such an initramfs, OP-TEE's PKCS#11 TA would also need
-secure storage set up before the root filesystem (tee-supplicant with
-a writable filesystem, or a provisioned RPMB); keycrypt's OP-TEE
-backend needs no storage and no daemon, just the keyctl syscall and a
-small tool driving the fd.
-
-[snip]
-
->> 1. A key type, "keycrypt", created with add_key() from "new <alg>
->>    <purposes> [tier=|min-tier=] [backend=]", "load <blob>
->>    [accepted-min-tier=] [purpose=]" or, when allowed, "import <alg>
->>    <purposes> [tier=|min-tier=] [backend=] <hex>". User space states the
+> And we don't really know at this point that cut. This is pretty much
+> the break down of what is wrong here.
 > 
-> This is exactly what I meant at the begining. I'm not a maintainer, but
-> this string parsing "API" is very error-prone. Furthermore, how can a
-> userspace enum available backends? Instead of try and error I would like
-> to see a query/enum phase and later on userspace can decide which
-> backend and tier to use.
+> If there is/was a problem to sort out, it should be so constrained that
+> it should be as quick to describe as stepping over a nail really.
 
-The strings follow what trusted and encrypted keys already take in
-add_key(), but I'm open to another form, such as a versioned binary
-struct like the one KEYCTL_CRYPT_OPEN already takes with
-copy_struct_from_user().
+The nail: a device must encrypt and decrypt its own files, also from
+a minimal initramfs, with a key that root or a kernel exploit can use
+on the device but never copy off it. Trusted keys hand their users the
+key's bytes (dm-crypt, encrypted keys and AF_ALG read them). CAAM's
+"pk" option is the one exception, but even there a new key is drawn
+in kernel memory before the CAAM wraps it, and user space reaches it
+only through AF_ALG, which the kernel calls insecure and deprecated
+(Documentation/crypto/userspace-if.rst, and "Userspace interface
+(deprecated)" in crypto/Kconfig), privileged by default, with no
+purpose bound to the key. The i.MX93 has no CAAM at all: there the key
+can live in OP-TEE, and keycrypt lets the keyring use it without it
+ever leaving the TA.
 
-On the enumeration you're right, there is none: a key's line in
-/proc/keys and KEYCRYPT_IOC_INFO on an open fd tell its backend and
-tier only after the fact. A list of the backends, with their tier and
-algorithms, would be easy to add, and it is needed since algorithms
-differ per backend (the CAAM one does aes256-cbc only): would a keyctl
-or a file under /proc be what you have in mind?
-
-[snip]
-
->>   tier     key in clear    purpose enforced by   who may use the key
->>            in the kernel
->>   kernel   yes             the kernel            the kernel
-> 
-> These are basically the trusted-key purpose.
-
-Yes, the kernel tier gives the protection of a trusted key, and it does
-not meet the goal above. It is there only so that the same interface
-works on systems with nothing better; its only backend, sw, is
-optional and off by default, and it can go if it is considered wrong.
-
->>   engine   no              the kernel            the kernel
->>   tee      no              the TA                the kernel
->>   hsm      no              the HSM               the kernel
-> 
-> These are protected keys which we have already (see S390, CAAM, DCP,
-> Zynqmp, ...).
-> 
-> I don't see what you want to solve with your approach. Do you want to
-> have a common interface for generating/loading protected keys?
-
-Yes, and for using them from user space, with a purpose bound to each
-key (encrypt-only, decrypt-only, verify-only) that the TA, or an HSM,
-enforces. keycrypt does not replace the protected keys you name: a
-backend is where such a key lives.
-
-> That beeing said, loading protected keys can already be done by just
-> specifying the correct key-cipher. Generating the key is platform
-> specific and would need a common API.
-
-For user space that means AF_ALG with cbc(paes) only (the CAAM,
-CryptoCell and s390 register one AF_ALG can reach; DCP's is internal),
-each driver with its own key format, and since v7.3 privileged by
-default (d9506e82ced5). Generating is what "new" does in keycrypt:
-with OP-TEE the TA generates the key itself. The CAAM patches are only
-a prototype there: they still generate the key in kernel memory, and
-the aim is to have the CAAM generate it and keep it black (one of the
-questions to the CAAM maintainers in the cover letter).
-
-> Thanks for sharing your ideas :)
-
-:)
+The stream of patch 9 has no user yet and can go.
 
 Ciao,
 
