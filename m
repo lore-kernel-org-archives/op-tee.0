@@ -1,76 +1,77 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91439606A320
-	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 07:39:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 255E9606A320
+	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 07:39:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ELmzxNyE
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xvBZST7Z
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id E1EE245526
-	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 07:39:07 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7852D50351
+	for <op-tee@archiver.kernel.org>; Thu, 19 Nov 2026 07:39:36 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ELmzxNyE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xvBZST7Z;
 	dkim-atps=neutral
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com [209.85.128.180])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 12DAE43264
-	for <op-tee@lists.trustedfirmware.org>; Wed, 18 Nov 2026 23:42:41 +0000 (UTC)
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-8b4e04eda5aso14282827b3.1
-        for <op-tee@lists.trustedfirmware.org>; Wed, 18 Nov 2026 15:42:41 -0800 (PST)
+Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 13BEB43264
+	for <op-tee@lists.trustedfirmware.org>; Thu, 19 Nov 2026 00:25:19 +0000 (UTC)
+Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-8b4cc793704so13665057b3.2
+        for <op-tee@lists.trustedfirmware.org>; Wed, 18 Nov 2026 16:25:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795045360; x=1795650160; darn=lists.trustedfirmware.org;
+        d=gmail.com; s=20260707; t=1795047918; x=1795652718; darn=lists.trustedfirmware.org;
         h=content-type:in-reply-to:autocrypt:from:content-language:references
          :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=5gmN6H+RSfew5cKRkkzfR78AcJ/HC4QuJ1A3RJGQZBo=;
-        b=ELmzxNyEt/Bt7HzzUqOoMMorugeNej+jKkgYfWk3gmNkdCHfN8ATJB2tBAN4TUp9rL
-         cxuwTO3l+vTe2RU2xSTn32K9aa2wyZvPBV8zkSIRl65cgwFWstTYkpDY2uR5M9dv061f
-         1FkwQf6eSrIgr8JAZB5ATp7Xp7lKVe+PwFIv73Q6uFal5FGRGC1TubxP0VNCEgCn7B1K
-         OAXBna3NRfiqUJyfi40nSd2TT48k55qW1GK/A29s7xytRiumfcPMYM+flDKnwEGNkdS+
-         CEa+dxCTLY7BucuWi9cw86Sc+LUwk5FQFWNhQ5hYZwQ9Ldikcy6tkLAPqwg+myXo7ffs
-         knJQ==
+        bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
+        b=xvBZST7ZAcp1mgwQmN5TTJvkrG9BOno+WhsFa+vkrVV4UpRxIWmPrVCl0nlTKALRjO
+         YaCH0wEWaINqgvyP+zMIxLKji8gwSkLoR7EiSLG81llgjlZXItnZPA7FdUdZqYgZimwx
+         IrB9+SEU01ktbj13QgNze09FGNOpxhp/S1MHvbhisrqtUEZG0EKeN4kBHK4QU5s0zuD+
+         Po5pRNdGE8EIG5IvA6zS8DhrEbolwjUvGBYvBvJk1MAj3p/35ej7lm0DGRFWr7H1K1op
+         V5nsJSaMKaYTyl/c+j+bIckc0ap94ou1H0gzCn2mz5H5X24GnQ8IL4G2pzDt8nzsuu/V
+         dCAg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795045360; x=1795650160;
+        d=1e100.net; s=20260707; t=1795047918; x=1795652718;
         h=content-type:in-reply-to:autocrypt:from:content-language:references
          :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=5gmN6H+RSfew5cKRkkzfR78AcJ/HC4QuJ1A3RJGQZBo=;
-        b=byDH2gWKr8g8w8TQFQSuczGRi0iy6D4vcV02PJusvVTB0zhTuLXZgdZK+d6yoKq3UH
-         8pX6Ewt172cUWqQ70QYLU3gzogC0ktHSF4Jq2QMZsIfQh08aTEbeqxS3mNI/ilmjtu/I
-         1NEOuRHbumyleSpCpz8gU+M1nHxvQzCrjcPcMvYg73jTIN8R1Pz1FxHmvglpDN7bW+Ao
-         V/AAgqngv29uhy24hrur1GBWKoDUdaS9Kdm7fxq8OpWzx8R5G+ICHbqQgIR88BMy9wu8
-         at8g5bnN8qNRqipCi0SBPBT8YC7G5EIuXaDFtmbVCf6kQiJkScDXqQPKYZACTaYKNlLO
-         qzYw==
-X-Forwarded-Encrypted: i=1; AL+hErF+srUasH9uOh7EGyyymE0iutlbikNWux0WVix7VMQqYkcxx4ynSj0yWqkA77zCXFbcfTTp5+c=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z9AUItiKxlOz0HSQAWQKVNyNh+kkjyi7OkYsfzmmwyhh8muV4b9
-	eLyfRM3qzGJ9yxUmueNmirIVyuNpztcH764HHkVrrqhnm3ER5Lj372AL
-X-Gm-Gg: AZFdTZcPoXuAhIxnJQybQnIJ4mzlAzZBk3M0nDYwtxJkFMEwOZfsGAr3uo5//T0xEME
-	WRQpbeFKMbgE0Zi3kdFC0nJUAhpkKy5S/vekiTkI2hBDFXe0rbC9J3gBVGy38p9dOI/n8gW6EnN
-	8yml24TTvQIhWFy/pvIJNXYiA4QfNUBMh4sbvSKKqdFSjFEfwyesFR0MYjQOg6sK0wGQ2Q9F6ym
-	8rljgYogM9wo+68JuwBjZ2PrYJS7goMpq+6YpmGQxgzdZfSnZQmi15SAsEGRTLKjhPzLiber9PR
-	mSNqWAVlMYkuWkmmoP0q4YvQYB817d1qHgnSmB9J4ZunBZiYU1z7ARy5mR5V6UmG3TO64mzZJtU
-	WVUe8Si5vMcKT8rOhP8srjAzhbH6GR8pqUO20FEkMipf97ONw2ERylFwd7KE1jpUUzZfLahED7V
-	gxfKHycnnqO/WcDFOE6yfr8nPqf6pR9OqZtD/iHjiy216wN3qA8dVzTmRf7Ne/kAMxMk2wSGny6
-	6/r2sEgmii7JPSRebifro924iaH1hnl8jYxhDJBghQMEJbcRRfl2XML4+xSTAcmCDTmNh8SUJjd
-	98rDQsRcMT5fqXyAStnnDz3nfgMky8rFJg==
-X-Received: by 2002:a05:690c:306:b0:8b0:e479:6872 with SMTP id 00721157ae682-8b4fed09583mr22589027b3.17.1795045360439;
-        Wed, 18 Nov 2026 15:42:40 -0800 (PST)
+        bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
+        b=G5PKTFzQWWvr4RjicWwIMmEx34e3VLfWHWbLoiiTzTrFrQs1RU3YxGkqL7Ts23FcSp
+         iZYfRdipF1q3LDE6LxUPLbFFYEgcTcRIJCVJroQ/984foTWPdEYhCrCExamspkGi0adI
+         YmEzH/rbjUzogYwEY3qPDbBpUqNry3LgNkXOo8D62vwhn45o8xKY/3um3Gc6a7uoXeou
+         EaWCyUjnpcRyILYoFyLRIHDgREObP1jCeOYWjZC3DzQBoWdOnS6usgxQG33fEaUznvRm
+         7UW2Klb8PP57qBvTQtUC+6F2p9vVvJFO7H/m6WCLn/xn0+k41aPXRPOVPZS5YvoPr9ZO
+         NAOQ==
+X-Forwarded-Encrypted: i=1; AL+hErE1FTJ8oLdWq4Hs3J9jRbop+4ov8V/R9l+lZgIwwgrJ7+MtDEwa/6y4wWXBl750WUnaeDIT0S4=@lists.trustedfirmware.org
+X-Gm-Message-State: APuU4Z9Qu5My/QYOq92/5BAEvhqa3ooLKH+G+BxsK7/+i2RenqeBLbLN
+	E/n0ndW1aRkAhL0G7BQ0fHPmkxwhuVM51MjodPmInMWPs8e6O2gcC9+8cQWidR3ujng=
+X-Gm-Gg: AZFdTZczslfOri0B0lI/XryvHfdjaT4mLWADXQrqegyspDXgjuQq3rqevJMkiAQpeyY
+	V1yejwQT5skszYfPrpZJ13dctd62XPUWbDwtDfQ6ASUwGAb750F3qF1M2gG54xaGVa3uYEKswVp
+	4jPqF8IY7Ju0hkm1n68Qzvs5J4+T92qSiB2LLVRBu9XXSf5Barpwj+ANSW9vKv06bSh/3M4/fu4
+	N4CO6IVltjksBFlCS1lpdzicj9OGfrHRgL+mF2IukW6DKvAp3IIeYP4tNMFA+NZxdOSh5rVk62N
+	XhYuCAFXC/jX49lC8dWm+AHgo/4dZnx4GfmL2e6gTDJeWyIuUV7ES6i0wMUAVeVMO2rnscQFJot
+	ERcmtFdwgkE76jALPrpmoLEgRq9wEbMPZO2EjILFR7qx4enkAcrn3HE5oDBpOKzLcAEb30Li9s7
+	gEQXI/Tqe6A/HYiJL8o0uxUaDEgt0pW+QKQHw+02Wj3EQc0jFiX9uCbmb2PHb6Vg2MfiM2/cXfa
+	T5Tgvw++n61VBJjy6xH90a11gF6rUtZpVXADyA8W1AKPemD7+ymGTO/6cM+XCGE1Tc1+nxnONqS
+	YM4W2g8PJKdEeOCIXmTae7H6n3rEb9hDDgY=
+X-Received: by 2002:a05:690c:79a:b0:8b4:f2bc:7c39 with SMTP id 00721157ae682-8b4fecfc697mr13290147b3.15.1795047918306;
+        Wed, 18 Nov 2026 16:25:18 -0800 (PST)
 Received: from [10.138.10.6] ([149.102.242.31])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdf1d0desm25041597b3.1.2026.11.18.15.42.35
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdf1d0desm25414957b3.1.2026.11.18.16.25.15
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 18 Nov 2026 15:42:39 -0800 (PST)
-Message-ID: <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
-Date: Wed, 18 Nov 2026 18:42:15 -0500
+        Wed, 18 Nov 2026 16:25:17 -0800 (PST)
+Message-ID: <75946579-8335-4491-86da-fcda25ae9fd8@gmail.com>
+Date: Wed, 18 Nov 2026 19:25:09 -0500
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
- never read
+Subject: Re: [RFC PATCH 9/9] KEYS: keycrypt: Add the aes256-gcm-stream
+ algorithm
 To: Rodolfo Giometti <giometti@enneenne.com>,
  David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
  keyrings@vger.kernel.org
 References: <20261118140421.584086-1-giometti@enneenne.com>
+ <20261118141257.627441-1-giometti@enneenne.com>
 Content-Language: en-US
 From: Demi Marie Obenour <demiobenour@gmail.com>
 Autocrypt: addr=demiobenour@gmail.com; keydata=
@@ -116,25 +117,25 @@ Autocrypt: addr=demiobenour@gmail.com; keydata=
  vUSQHSrmfOzX3cV4yfmjM5lewgSstoxGyTx2M8enslgdXhPthZlDnTnOT+C+OTsh8+m5tos8
  HQjaPM01MKBiAqdPgksm1wu2DrrwUi6ChRVTUBcj6+/9IJ81H2P2gJk3Ls3AVIxIffLoY34E
  +MYSfkEjBz0E8CLOcAw7JIwAaeBT
-In-Reply-To: <20261118140421.584086-1-giometti@enneenne.com>
+In-Reply-To: <20261118141257.627441-1-giometti@enneenne.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="------------jzPPC6cqPSJxGVQJoosVKqnL"
+ boundary="------------FHGxV8cRNdUiD6U0H5BD0N5M"
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-6.09 / 15.00];
-	BAYES_HAM(-2.99)[99.96%];
+X-Spamd-Result: default: False [-4.99 / 15.00];
 	SIGNED_PGP(-2.00)[];
+	BAYES_HAM(-1.89)[94.40%];
 	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
+	MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[gmail.com:s=20260707];
-	MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
 	RCVD_TLS_LAST(0.00)[];
-	ARC_NA(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
 	TO_DN_SOME(0.00)[];
 	FREEMAIL_FROM(0.00)[gmail.com];
+	ARC_NA(0.00)[];
 	RCPT_COUNT_TWELVE(0.00)[32];
+	MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
 	HAS_ATTACHMENT(0.00)[];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	FREEMAIL_ENVFROM(0.00)[gmail.com];
@@ -142,26 +143,26 @@ X-Spamd-Result: default: False [-6.09 / 15.00];
 	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
 	DKIM_TRACE(0.00)[gmail.com:+];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	DWL_DNSWL_BLOCKED(0.00)[gmail.com:dkim];
+	DNSWL_BLOCKED(0.00)[209.85.128.178:from];
 	MID_RHS_MATCH_FROM(0.00)[];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.180:from];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.128.180:from]
+	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.128.178:from];
+	DWL_DNSWL_NONE(0.00)[gmail.com:dkim]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 12DAE43264
-X-Spamd-Bar: ------
+X-Rspamd-Queue-Id: 13BEB43264
+X-Spamd-Bar: ----
 X-MailFrom: demiobenour@gmail.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: 5K5OEHPAQSV7EQDA7JFQZDG43DZOKKTH
-X-Message-ID-Hash: 5K5OEHPAQSV7EQDA7JFQZDG43DZOKKTH
+Message-ID-Hash: T2VP42XOM3KT5BJYU3GTA6Z5DQZQFUX2
+X-Message-ID-Hash: T2VP42XOM3KT5BJYU3GTA6Z5DQZQFUX2
 X-Mailman-Approved-At: Thu, 19 Nov 2026 07:39:02 +0000
 CC: Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org, =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Richard Weinberger <richard@nod.at>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/5K5OEHPAQSV7EQDA7JFQZDG43DZOKKTH/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/T2VP42XOM3KT5BJYU3GTA6Z5DQZQFUX2/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -176,15 +177,15 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------jzPPC6cqPSJxGVQJoosVKqnL
-Content-Type: multipart/mixed; boundary="------------TfokhGkQ0eBXMCucH70BiVLN";
+--------------FHGxV8cRNdUiD6U0H5BD0N5M
+Content-Type: multipart/mixed; boundary="------------5YUoLTrRSVm1eElT0Sq1GVMR";
  protected-headers="v1"; hp="clear"
-Message-ID: <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
-Date: Wed, 18 Nov 2026 18:42:15 -0500
+Message-ID: <75946579-8335-4491-86da-fcda25ae9fd8@gmail.com>
+Date: Wed, 18 Nov 2026 19:25:09 -0500
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
- never read
+Subject: Re: [RFC PATCH 9/9] KEYS: keycrypt: Add the aes256-gcm-stream
+ algorithm
 To: Rodolfo Giometti <giometti@enneenne.com>,
  David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
  keyrings@vger.kernel.org
@@ -206,6 +207,7 @@ Cc: Herbert Xu <herbert@gondor.apana.org.au>,
  linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20261118140421.584086-1-giometti@enneenne.com>
+ <20261118141257.627441-1-giometti@enneenne.com>
 Content-Language: en-US
 From: Demi Marie Obenour <demiobenour@gmail.com>
 Autocrypt: addr=demiobenour@gmail.com; keydata=
@@ -251,73 +253,68 @@ Autocrypt: addr=demiobenour@gmail.com; keydata=
  vUSQHSrmfOzX3cV4yfmjM5lewgSstoxGyTx2M8enslgdXhPthZlDnTnOT+C+OTsh8+m5tos8
  HQjaPM01MKBiAqdPgksm1wu2DrrwUi6ChRVTUBcj6+/9IJ81H2P2gJk3Ls3AVIxIffLoY34E
  +MYSfkEjBz0E8CLOcAw7JIwAaeBT
-In-Reply-To: <20261118140421.584086-1-giometti@enneenne.com>
+In-Reply-To: <20261118141257.627441-1-giometti@enneenne.com>
 
---------------TfokhGkQ0eBXMCucH70BiVLN
+--------------5YUoLTrRSVm1eElT0Sq1GVMR
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 11/18/26 9:04 AM, Rodolfo Giometti wrote:
-> This RFC proposes a key type, "keycrypt", whose material user space can=
+On 11/18/26 9:12 AM, Rodolfo Giometti wrote:
+> This patch is a proposal on its own: nothing before it needs it, so it
+> can be discussed, or left out, apart from the rest.
+>=20
+> aes256-cbc does not authenticate what it decrypts, and a file or a
+> transfer longer than one call cannot be sealed with a single AES-GCM
+> invocation without buffering all of it, nor decrypted without
+> releasing plaintext before its tag is checked.
+>=20
+> Add aes256-gcm-stream: the STREAM construction (Hoang, Reyhanitabar,
+> Rogaway, Vizar) over AES-256-GCM. A message is split into segments
+> of up to 64 KiB, each sealed with its own tag under a subkey derived
+> with HKDF-SHA256 from the key and a 16-byte salt drawn at
+> KEYCTL_CRYPT_OPEN; the nonce carries the segment's position and a
+> last-segment flag, and the counter lives in the kernel, so segments
+> can be neither reordered nor dropped from the end unnoticed. The
+> segments go through a new ioctl, KEYCRYPT_IOC_SEGMENT, and
+> KEYCRYPT_IOC_FINAL reports a stream whose last segment never came.
+> A tee or hsm backend draws the salt and keeps the counter in its
+> secure side; the sw and optee backends implement it.
 
-> use for symmetric operations but never read: AES-256-CBC, HMAC-SHA256
-> and an authenticated AES-256-GCM stream, through a file descriptor that=
+Please use Cobblestone-128 or Cobblestone-256 instead.
+https://c2sp.org/chunked-encryption has the spec, and you can check
+against the implementation in pyca/cryptography or (for Cobblestone-128)
+the Go package filippo.io/cobblestone.  This assumes your CPU has AES
+and GCM instructions; if not, you should see about using one that does
+or work with a cryptographer to standardize an alternative that doesn't
+need them.
 
-> KEYCTL_CRYPT_OPEN returns for one key and one operation.
-
-I haven't looked at the API, but from a cryptographic perspective,
-this encourages very poor practices.  AES-GCM even allows userspace
-to extract the secret authentication key.
-
-AES-256-CBC isn't a suitable mode on its own, unless it's combined
-with a MAC in encrypt-then-MAC.  Even then, it has a 2^64 birthday
-bound, so it should only be used 2^48 times with a single key unless
-the key is ephemeral.
-
-AES-GCM is not a suitable algorithm either.  If you allow encrypting
-with a key loaded from persistent storage, there is no way for the API
-to ensure it is only used with a unique nonce.  Nonce reuse leaks the
-authentication key and allows forgeries.  Using random nonces isn't
-good enough either: NIST only allows 2^32 encryptions in this case,
-and the API can't enforce that limit.
-
-For long-term keys, all of the following are much safer choices.
-They have 192-bit nonces, which means that one can generate them
-at random for each encryption without any problems.
-
-- XAES-256-GCM
-- XChaCha20-Poly1305
-- AEGIS-256
-
-AES-GCM-SIV is also okay, provided that you are fine with occasionally
-leaking if two plaintexts are equal.  This happens whenever there is
-a nonce collision, so with probability 2^-32 after 2^32 encryptions.
+Nonstandard constructions like this one are to be avoided.
 --=20
 Sincerely,
 Demi Marie Obenour (she/her/hers)
 
---------------TfokhGkQ0eBXMCucH70BiVLN--
+--------------5YUoLTrRSVm1eElT0Sq1GVMR--
 
---------------jzPPC6cqPSJxGVQJoosVKqnL
+--------------FHGxV8cRNdUiD6U0H5BD0N5M
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEopQtqVJW1aeuo9/sszaHOrMp8lMFAmr+N+MACgkQszaHOrMp
-8lNdbA/+LXcNkxhaSmkBIlfaAw6S95byA9OavCx3gDwybKkdpBRsqEMuUDmi6Krv
-sUsDLaeMdH3ar/BHBgzdRhYzWSYylQxAXK5kyk9Dl+eyd7ytersCCZOWNqQEXZm8
-J2LKr4uL8732Pdf9nju8nULZYGbZMMOruowXjBaVMXexkB1+6mlo5Nlg2GWQi+tq
-Hq9ZznN68KGW4g+4Tf1yUAVTrCV1il7GWH5B2NmiYoE+X7gXBAm/SN6AZFOBdC8R
-9RqyWBD49MqMMo2bJUtpO4GYBp5Nq/mj51QZMQft/SuzJIukGVOgBZjs4tYc6Rzw
-aYoqSJs44bHE4zdSItWMBMDMrFE4QwSZT9B79wJDYMc1XYC8GTEcV+A63nqID8Pm
-cGeJ75QYBrQPSOGE8Y6JeniPKwFOHc+ZapobcMEZIo/e84/XsTLt3/WLlm92W+AK
-b1B+kFVPbKu7aAp59KPE/6woXt1nWraeSJ2yT6kJv7nVlDTgmVjROCYIWx1z7Zxb
-w3CLI05Dru/vR3Kfrb1qIwcExSnqHikSICBFrlCtcJ2QIXAe7q97XMUOtrG/r/tV
-PhAcmfxf24npXFn3RhkkaT+XxqY891rJUHLUDfu1p8Rs8+QA+wf9ti+I/Ow0zC1c
-TQibXKQlhu/Pb1CwVlGfg5OG29hOQEplCyaVjnQK5oPaw9O5NEs=
-=AtsF
+iQIzBAEBCgAdFiEEopQtqVJW1aeuo9/sszaHOrMp8lMFAmr+QeYACgkQszaHOrMp
+8lMKphAApmT7NKojxfNUv+4YED5wbkVa7lnarDk0nyp9M3Bt5hNIRlezPRWwnuNQ
+c3Fse2TSfDpwTAaL/pZ9bVoUW3FkLcIwnAAIe35/78qpOemxEF5XRd4CQ9OGoQkm
+MW429KUVHFxKjlSPCVrMIzW5PwLLvQVO/84lxA3BYJ503yK13kkEC2ja/5bOr2pq
+cNzlB0rvirBXLKv2LH9gyIWC3rvLI29QGgGdFocZwnV/EbsWXC+1cNqLGePQ4JW/
+X2W4CMomO+RvLWY+tfh/W+5hnUzxfaxn1oyCQbdEa+5KzWc+6oaPK9MU6x94SEhC
+qkvoS60vMTP46Q4AQT+zB918F09KoN5Gwb6kWkjYVdfoJhsq1JIToOMT4uWhxwJa
+zK5vgEPBWgvLDy5nRHf3l36sS0D8KibzPXtsQfxLrmH88Q8i8VHbMbHeuqQ3hfmi
+/7v8eSCrt2NDafwt1mKKM1s3ZhegKN+R8bDXcK9Ys9fQnVMptIcR/tlkBBf6NWes
+mdSBLNJSBR6q4Hm+kSz3+j8ah7qhuPVI9FIyKt9Lb60hrI8sHdotye0p5+Ne0iH6
+rUKkFHWYEv10C/ku2PdPBgLIc5qfhf/MPSbqH5vAcyc19JIg9xneQVTxoaFK8QD8
+aN6GKY3u02GADQHUdEuu26cEaKIBdN1yhWrjlPTIclUizw7Wppg=
+=ionq
 -----END PGP SIGNATURE-----
 
---------------jzPPC6cqPSJxGVQJoosVKqnL--
+--------------FHGxV8cRNdUiD6U0H5BD0N5M--
