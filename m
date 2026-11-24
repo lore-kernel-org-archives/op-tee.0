@@ -2,64 +2,63 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0F50606A321
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 13:05:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B89E4606A31E
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 13:06:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=Hmk4wmkc;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=V6lqKO5F
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=2MEwCwuF;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WBcDAKIO
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 1935D4550D
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 13:05:56 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 1C13F4550D
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 13:06:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795525556;
-	bh=Gc09z3Wg5DEjcjL871AomkW7i3wRZYDeM7pqqPwDY0A=;
+	d=lists.trustedfirmware.org; s=2024; t=1795525585;
+	bh=NnGuBHtPlbFcDr9mVBlxh1SUG8fpAWo88wvwki8PATU=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=Hmk4wmkcQ/SKk+aj8Im1BGssYgmmN4XCQUTYVZP7JIwutx3Xl9pQqrszFfUK5WYoS
-	 unBiaiaCn0AThAjJrlPHEVYtGWhZuK55mk44OBVvyJ6TlUzgo7Bg9cxNsHhz2ScisZ
-	 rHHC2xgvmRRzFH+tajfMonwNXkGIN9FL0urIl+nT5t8WT8SmjSVMc3C19xb4R7spq2
-	 8dce90tePNRQlUeN21GE8Ey0yensbOGzda2XlsHpCh+OD4BGwrTC+OIrgMH8p0tfsi
-	 lyMqDQJ3YnBeRIE3Ob769yfhFihpYKkbcdz2gdSmLpW0NBXCrqQDCSS9JfWy3bwrUu
-	 RfoFdaxz4m0fQ==
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id B6E6A454F1
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 13:04:36 +0000 (UTC)
+	b=2MEwCwuFtpYirEv75D5XDCOho4dVHhgcFDtpZNRZfyK9GZ0YWC8clNgu8H9BJmD65
+	 XSz/d3FCx+MmCEWS3VTHvLGKBu/9KjIiEjOAdFcBFzOspGZ88pQ9TCnFbttLz25zPf
+	 p6hXI185cn6GUx3TJHFgHQdyLPBIQSHRox58Q2urDK3/kSM4PC3krW1A+HMEvGXyyK
+	 dlCUq/sd/yd18qCfLC7tnP7OraGDuO0aAW2ONQvH+hu23+IYYTXDgyeBQIAyBu9fV0
+	 OUuvzfTitT1J0QwYSeWk584+9Eozqi+FNn7qNG2n45+YggPbkrg45cKnOggSC7OyJO
+	 M1NANB/Nw8xSg==
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 7C2034550D
+	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 13:04:46 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=V6lqKO5F;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WBcDAKIO;
 	dkim-atps=neutral
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1795525476;
+	s=mimecast20190719; t=1795525486;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=nizJcVA7Wa81h6Gn6h+RSYkTffjHDTHqLXMBz9MWQMg=;
-	b=V6lqKO5FvjFn017oI90KSVghMyY/fe3jjX/Ssiro64oil3oqL5w2+Lf68jbC8HzAEpii+S
-	UTfAik+p+/g27qnxe6piF3yXxsI7mti/DuJobRgYOj63WYHRetNz4r14LrSvxxI4othbo8
-	MyIinUurtE+ZS1yUp58IdV7P04KdZL4=
+	bh=HswTGjdf/JQiD1C8e4APyGnuL3ZWYy2QAUirnegyBwU=;
+	b=WBcDAKIOngRiCDVIENYix2tzsSZoKjodwl+7ogeEHlKfIlfoAcpHxzuvk0NbFiMm3pyAoW
+	lIUk8tMyA0mJ0yTEpPwefeJAr8IhY8/TyaNRRXI3O0/1C2qUQ53sTiUkgDmaNvf+SQaWR0
+	MSjYY3MsdDTbBDdKbYa3RqfAApvZ0tI=
 Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-347-PM1dzi6PMNW-6zAeF51P7g-1; Tue,
- 24 Nov 2026 13:04:31 +0000
-X-MC-Unique: PM1dzi6PMNW-6zAeF51P7g-1
-X-Mimecast-MFC-AGG-ID: PM1dzi6PMNW-6zAeF51P7g_1795525466
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-408-pUVekPc1OTykjAYQ_c2NtQ-1; Tue,
+ 24 Nov 2026 13:04:40 +0000
+X-MC-Unique: pUVekPc1OTykjAYQ_c2NtQ-1
+X-Mimecast-MFC-AGG-ID: pUVekPc1OTykjAYQ_c2NtQ_1795525474
 Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id B2EE71801316;
-	Tue, 24 Nov 2026 13:04:25 +0000 (UTC)
+	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 2E836180288D;
+	Tue, 24 Nov 2026 13:04:34 +0000 (UTC)
 Received: from aesteve-thinkpadp1gen8.rmtes.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 5BB5F195B3C0;
-	Tue, 24 Nov 2026 13:04:17 +0000 (UTC)
-Date: Tue, 24 Nov 2026 14:03:37 +0100
-Subject: [PATCH v6 3/7] dma-buf: transfer objcg charges via
- DMA_BUF_IOCTL_XFER_CHARGE
+	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 11DA41956087;
+	Tue, 24 Nov 2026 13:04:25 +0000 (UTC)
+Date: Tue, 24 Nov 2026 14:03:38 +0100
+Subject: [PATCH v6 4/7] lsm: Add memcg_charge_task LSM hook
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Message-Id: <20261124-v2_20230123_tjmercier_google_com-v6-3-dce12fa03ad6@redhat.com>
+Message-Id: <20261124-v2_20230123_tjmercier_google_com-v6-4-dce12fa03ad6@redhat.com>
 References: <20261124-v2_20230123_tjmercier_google_com-v6-0-dce12fa03ad6@redhat.com>
 In-Reply-To: <20261124-v2_20230123_tjmercier_google_com-v6-0-dce12fa03ad6@redhat.com>
 To: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
@@ -81,33 +80,33 @@ To: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
  Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
  Philipp Stanner <phasta@kernel.org>,
  =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795525424; l=9901;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795525424; l=4956;
  i=aesteve@redhat.com; s=20260827; h=from:subject:message-id;
- bh=p0gUDnyZxEE/RD7TRA22Oh714OsUUJihNEZjS3+jQCw=;
- b=tFt2efyJ1342UemkrkkLe8IblmieANe0xYR/akIIYTpAJAjyL4Hq9eNUmZE4oBXW5i5LtZN6E
- HUJG1QBdo/5DxMHNib12rzCBon3iRU9VGfYp2+Y9A1MMAApHS27V3dt
+ bh=NnGuBHtPlbFcDr9mVBlxh1SUG8fpAWo88wvwki8PATU=;
+ b=uS0w++t5HxLnwIZuPB+hzxo5pcORnM4BMlT44nBmaZYqedh+HpbmI/khYr4CwtOWXpMG6kB0V
+ WKX2OV7kC1tD6weCCbhXkocdlJBhGHok7kAfR3nu4wlC+uTRW11wJHt
 X-Developer-Key: i=aesteve@redhat.com; a=ed25519;
  pk=zI2RBeZgocwYm3AkJW4CtjoJnKoDZrfBl1xe5Ed6h+U=
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
-X-Mimecast-MFC-PROC-ID: OMm4JosvxE-7zQ9D1xd9Mw1C-gq_Q_Sp4l0ND4nZkaA_1795525466
+X-Mimecast-MFC-PROC-ID: d7tTi-6UnSkzC4oi8exjQxhs_Mawn_7kwN3U3vOdXW8_1795525474
 X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.00 / 15.00];
+X-Spamd-Result: default: False [-2.70 / 15.00];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[redhat.com,quarantine];
-	RWL_MAILSPIKE_EXCELLENT(-0.40)[170.10.129.124:from];
 	R_DKIM_ALLOW(-0.20)[redhat.com:s=mimecast20190719];
-	R_SPF_ALLOW(-0.20)[+ip4:170.10.129.0/24];
-	RCVD_IN_DNSWL_LOW(-0.10)[170.10.129.124:from];
+	R_SPF_ALLOW(-0.20)[+ip4:170.10.133.0/24];
+	RWL_MAILSPIKE_GOOD(-0.10)[170.10.133.124:from];
 	MIME_GOOD(-0.10)[text/plain];
+	RCVD_IN_DNSWL_LOW(-0.10)[170.10.133.124:from];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[43];
-	ASN(0.00)[asn:30031, ipnet:170.10.128.0/23, country:US];
+	ASN(0.00)[asn:30031, ipnet:170.10.132.0/23, country:US];
 	MIME_TRACE(0.00)[0:+];
 	MISSING_XM_UA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[43];
 	DWL_DNSWL_BLOCKED(0.00)[redhat.com:dkim];
 	MID_RHS_MATCH_FROM(0.00)[];
 	TO_DN_SOME(0.00)[];
@@ -121,17 +120,17 @@ X-Spamd-Result: default: False [-3.00 / 15.00];
 	RCVD_COUNT_THREE(0.00)[3];
 	DKIM_TRACE(0.00)[redhat.com:+]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: B6E6A454F1
-X-Spamd-Bar: ---
-Message-ID-Hash: H2VQUV6RQTE4PVI5JQYXXXKSPNU3D5C3
-X-Message-ID-Hash: H2VQUV6RQTE4PVI5JQYXXXKSPNU3D5C3
+X-Rspamd-Queue-Id: 7C2034550D
+X-Spamd-Bar: --
+Message-ID-Hash: VZRGDNIPN6X5LC5CZDCEZVW6LEJHLPBJ
+X-Message-ID-Hash: VZRGDNIPN6X5LC5CZDCEZVW6LEJHLPBJ
 X-MailFrom: aesteve@redhat.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: airlied@gmail.com, cgroups@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, linux-kselftest@vger.kernel.org, op-tee@lists.trustedfirmware.org, Albert Esteve <aesteve@redhat.com>, echanude@redhat.com, mripard@kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/H2VQUV6RQTE4PVI5JQYXXXKSPNU3D5C3/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/VZRGDNIPN6X5LC5CZDCEZVW6LEJHLPBJ/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -146,177 +145,137 @@ X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-ZG1hLWhlYXAgYWxyZWFkeSBzdXBwb3J0cyBjaGFyZ2luZyBhIHNwZWNpZmljIGNncm91cCBhdCBh
-bGxvY2F0aW9uDQp0aW1lIHZpYSBjaGFyZ2VfZmQgaW4gRE1BX0hFQVBfSU9DVExfQUxMT0MuIEhv
-d2V2ZXIsIGRtYS1idWZzIGNhbg0Kb3JpZ2luYXRlIGZyb20gYW55IGV4cG9ydGVyIChEUk0sIFY0
-TDIsIGV0Yy4pLCBhbmQgdGhlIGFsbG9jYXRvciBtYXkNCm5vdCBrbm93IHRoZSBmaW5hbCBvd25l
-ciBhdCBhbGxvY2F0aW9uIHRpbWUuDQoNCkFkZCBETUFfQlVGX0lPQ1RMX1hGRVJfQ0hBUkdFIHRv
-IHRyYW5zZmVyIGEgZG1hLWJ1ZidzIG9iamNnIGNoYXJnZQ0KdG8gYSBkaWZmZXJlbnQgY2dyb3Vw
-IGFmdGVyIGFsbG9jYXRpb24uIFRoZSB0YXJnZXQgaXMgaWRlbnRpZmllZCBieQ0KY2hhcmdlX2Zk
-LCB3aGljaCBtYXkgYmUgYSBjZ3JvdXBmZCBvciBhIHBpZGZkLg0KDQpUaGUgdHJhbnNmZXIgY2hh
-cmdlcyB0aGUgbmV3IGNncm91cCBiZWZvcmUgdW5jaGFyZ2luZyB0aGUgb2xkIG9uZSwNCnByZXNl
-cnZpbmcgdGhlIG9yaWdpbmFsIGNoYXJnZSBvbiBmYWlsdXJlLiBDb25jdXJyZW50IHRyYW5zZmVy
-cyBhcmUNCnNlcmlhbGl6ZWQgYnkgdGhlIGRtYS1idWYgcmVzZXJ2YXRpb24gbG9jaywgc28gbG9j
-a2RlcCBjb3ZlcnMgdGhlDQpsb2NraW5nIG9yZGVyIG9mIHRoZSBjaGFyZ2UgcGF0aCBlYXJseS4g
-VGhlIHRyYW5zZmVyIGltcGxlbWVudGF0aW9uDQppcyBnZW5lcmljIChvYmpfY2dyb3VwX3RyYW5z
-ZmVyX2NoYXJnZSkgYW5kIG5vdCBkbWEtYnVmIHNwZWNpZmljLCBzbw0KaXQgY2FuIGJlIHJldXNl
-ZCBieSBvdGhlciBzdWJzeXN0ZW1zLg0KDQpOb3QgYWxsIGRtYS1idWYgZXhwb3J0ZXJzIGJhY2sg
-dGhlaXIgYnVmZmVycyB3aXRoIHJlY2xhaW1hYmxlIHN5c3RlbQ0KbWVtb3J5LiBTb21lIHJlcHJl
-c2VudCBkZXZpY2UgcmVnaXN0ZXJzLCBWUkFNLCBvciBjYXJ2ZWQtb3V0IHBvb2xzDQp3aGVyZSBz
-aXplIGlzIG5vdCBhIG1lYW5pbmdmdWwgbWVtb3J5IGNvc3QuIFRoZSB4ZmVyIGlvY3RsIHJldHVy
-bnMNCi1FT1BOT1RTVVBQIGZvciBidWZmZXJzIHdob3NlIG9iamNnIGlzIG5vdCBzZXQuIEV4cG9y
-dGVycyBvcHQgaW4gYnkNCnBhc3NpbmcgYSBvYmpjZyB0aHJvdWdoIGRtYV9idWZfZXhwb3J0X2lu
-Zm8gYXQgZXhwb3J0IHRpbWUuIEN1cnJlbnRseQ0Kb25seSB0aGUgc3lzdGVtIGhlYXAgc2V0cyBp
-dCwgb3RoZXIgZXhwb3J0ZXJzIGNhbiBvcHQgaW4gYXMgbmVlZGVkLg0KDQpVc2FnZSBleGFtcGxl
-Og0KICBpbnQgY2dfZmQgPSBvcGVuKCIvc3lzL2ZzL2Nncm91cC9jbGllbnRzL2FwcDEiLCBPX1JE
-T05MWSB8IE9fRElSRUNUT1JZKTsNCg0KICBzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFyZ2Ug
-eGZlciA9IHsNCiAgICAgIC5jaGFyZ2VfZmQgPSBjZ19mZCwNCiAgfTsNCiAgaW9jdGwoZG1hYnVm
-X2ZkLCBETUFfQlVGX0lPQ1RMX1hGRVJfQ0hBUkdFLCAmeGZlcik7DQogIC8qIGNoYXJnZSBub3cg
-b24gYXBwMSdzIGNncm91cCAqLw0KICBjbG9zZShjZ19mZCk7DQoNClJldmlld2VkLWJ5OiBDaHJp
-c3RpYW4gS8O2bmlnIDxjaHJpc3RpYW4ua29lbmlnQGFtZC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBB
-bGJlcnQgRXN0ZXZlIDxhZXN0ZXZlQHJlZGhhdC5jb20+DQotLS0NCiBEb2N1bWVudGF0aW9uL2Fk
-bWluLWd1aWRlL2Nncm91cC12Mi5yc3QgfCAgMiArLQ0KIGRyaXZlcnMvZG1hLWJ1Zi9kbWEtYnVm
-LmMgICAgICAgICAgICAgICB8IDM5ICsrKysrKysrKysrKysrKysrKysrKysNCiBpbmNsdWRlL2xp
-bnV4L2RtYS1idWYuaCAgICAgICAgICAgICAgICAgfCAgMyArLQ0KIGluY2x1ZGUvbGludXgvbWVt
-Y29udHJvbC5oICAgICAgICAgICAgICB8IDEzICsrKysrKysrDQogaW5jbHVkZS91YXBpL2xpbnV4
-L2RtYS1idWYuaCAgICAgICAgICAgIHwgMjYgKysrKysrKysrKysrKysrDQogbW0vbWVtY29udHJv
-bC5jICAgICAgICAgICAgICAgICAgICAgICAgIHwgNTggKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrDQogNiBmaWxlcyBjaGFuZ2VkLCAxMzkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlv
-bnMoLSkNCg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUvY2dyb3VwLXYy
-LnJzdCBiL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUvY2dyb3VwLXYyLnJzdA0KaW5kZXggYzZi
-ZjJlNDM1ZDc0Li44ZDEwZmY3YWM3NDUgMTAwNjQ0DQotLS0gYS9Eb2N1bWVudGF0aW9uL2FkbWlu
-LWd1aWRlL2Nncm91cC12Mi5yc3QNCisrKyBiL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUvY2dy
-b3VwLXYyLnJzdA0KQEAgLTE2NzAsNyArMTY3MCw3IEBAIFRoZSBmb2xsb3dpbmcgbmVzdGVkIGtl
-eXMgYXJlIGRlZmluZWQuDQogCQlBbW91bnQgb2YgbWVtb3J5IHVzZWQgZm9yIGV4cG9ydGVkIERN
-QSBidWZmZXJzIGFsbG9jYXRlZCBieSBvciBvbg0KIAkJYmVoYWxmIG9mIHRoZSBjZ3JvdXAsIHRo
-aXMgY3VycmVudGx5IGluY2x1ZGVzIHN5c3RlbSBoZWFwDQogCQlhbGxvY2F0aW9ucy4gU3RheXMg
-d2l0aCB0aGUgY2dyb3VwIHJlZ2FyZGxlc3Mgb2YgaG93IHRoZSBidWZmZXINCi0JCWlzIHNoYXJl
-ZC4NCisJCWlzIHNoYXJlZCwgdW5sZXNzIG1vdmVkIHdpdGggRE1BX0JVRl9JT0NUTF9YRkVSX0NI
-QVJHRS4NCiANCiAJICB3b3JraW5nc2V0X3JlZmF1bHRfYW5vbg0KIAkJTnVtYmVyIG9mIHJlZmF1
-bHRzIG9mIHByZXZpb3VzbHkgZXZpY3RlZCBhbm9ueW1vdXMgcGFnZXMuDQpkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9kbWEtYnVmL2RtYS1idWYuYyBiL2RyaXZlcnMvZG1hLWJ1Zi9kbWEtYnVmLmMNCmlu
-ZGV4IDMxODRlMzFkOWU0Yy4uZGE3NmY3NThlOWZkIDEwMDY0NA0KLS0tIGEvZHJpdmVycy9kbWEt
-YnVmL2RtYS1idWYuYw0KKysrIGIvZHJpdmVycy9kbWEtYnVmL2RtYS1idWYuYw0KQEAgLTU0MCw2
-ICs1NDAsNDIgQEAgc3RhdGljIGxvbmcgZG1hX2J1Zl9pbXBvcnRfc3luY19maWxlKHN0cnVjdCBk
-bWFfYnVmICpkbWFidWYsDQogfQ0KICNlbmRpZg0KIA0KKy8qIFRyYW5zZmVyIGEgZG1hLWJ1Zidz
-IG1lbWNnIGNoYXJnZTsgc2VlIHN0cnVjdCBkbWFfYnVmX3RyYW5zZmVyX2NoYXJnZSAqLw0KK3N0
-YXRpYyBsb25nIGRtYV9idWZfeGZlcl9jaGFyZ2Uoc3RydWN0IGRtYV9idWYgKmRtYWJ1ZiwNCisJ
-CQkJY29uc3Qgdm9pZCBfX3VzZXIgKnVzZXJfZGF0YSkNCit7DQorCXN0cnVjdCBkbWFfYnVmX3Ry
-YW5zZmVyX2NoYXJnZSBhcmc7DQorCXN0cnVjdCBvYmpfY2dyb3VwICpvYmpjZzsNCisJdW5zaWdu
-ZWQgaW50IG5yX3BhZ2VzOw0KKwlpbnQgcmV0ID0gMDsNCisNCisJaWYgKGNvcHlfZnJvbV91c2Vy
-KCZhcmcsIHVzZXJfZGF0YSwgc2l6ZW9mKGFyZykpKQ0KKwkJcmV0dXJuIC1FRkFVTFQ7DQorDQor
-CWlmIChhcmcuZmxhZ3MgIT0gMCkNCisJCXJldHVybiAtRUlOVkFMOw0KKw0KKwlvYmpjZyA9IGdl
-dF9vYmpfY2dyb3VwX2Zyb21fZmQoYXJnLmNoYXJnZV9mZCk7DQorCWlmIChJU19FUlIob2JqY2cp
-KQ0KKwkJcmV0dXJuIFBUUl9FUlIob2JqY2cpOw0KKw0KKwlkbWFfcmVzdl9sb2NrKGRtYWJ1Zi0+
-cmVzdiwgTlVMTCk7DQorDQorCWlmICghZG1hYnVmLT5vYmpjZykgew0KKwkJcmV0ID0gLUVPUE5P
-VFNVUFA7DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwlucl9wYWdlcyA9IFBBR0VfQUxJR04oZG1h
-YnVmLT5zaXplKSA+PiBQQUdFX1NISUZUOw0KKwlpZiAoIW9ial9jZ3JvdXBfdHJhbnNmZXJfY2hh
-cmdlKCZkbWFidWYtPm9iamNnLCBvYmpjZywgTUVNQ0dfRE1BQlVGLCBucl9wYWdlcykpDQorCQly
-ZXQgPSAtRU5PTUVNOw0KKw0KK291dDoNCisJZG1hX3Jlc3ZfdW5sb2NrKGRtYWJ1Zi0+cmVzdik7
-DQorCW9ial9jZ3JvdXBfcHV0KG9iamNnKTsNCisJcmV0dXJuIHJldDsNCit9DQorDQogc3RhdGlj
-IGxvbmcgZG1hX2J1Zl9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlsZSwNCiAJCQkgIHVuc2lnbmVkIGlu
-dCBjbWQsIHVuc2lnbmVkIGxvbmcgYXJnKQ0KIHsNCkBAIC01OTAsNiArNjI2LDkgQEAgc3RhdGlj
-IGxvbmcgZG1hX2J1Zl9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlsZSwNCiAJCXJldHVybiBkbWFfYnVm
-X2ltcG9ydF9zeW5jX2ZpbGUoZG1hYnVmLCAoY29uc3Qgdm9pZCBfX3VzZXIgKilhcmcpOw0KICNl
-bmRpZg0KIA0KKwljYXNlIERNQV9CVUZfSU9DVExfWEZFUl9DSEFSR0U6DQorCQlyZXR1cm4gZG1h
-X2J1Zl94ZmVyX2NoYXJnZShkbWFidWYsIChjb25zdCB2b2lkIF9fdXNlciAqKWFyZyk7DQorDQog
-CWRlZmF1bHQ6DQogCQlyZXR1cm4gLUVOT1RUWTsNCiAJfQ0KZGlmZiAtLWdpdCBhL2luY2x1ZGUv
-bGludXgvZG1hLWJ1Zi5oIGIvaW5jbHVkZS9saW51eC9kbWEtYnVmLmgNCmluZGV4IGZmNDY3OGQw
-MGQ4Yy4uOTE2ZDczYWU2YTUxIDEwMDY0NA0KLS0tIGEvaW5jbHVkZS9saW51eC9kbWEtYnVmLmgN
-CisrKyBiL2luY2x1ZGUvbGludXgvZG1hLWJ1Zi5oDQpAQCAtNTA4LDcgKzUwOCw4IEBAIHN0cnVj
-dCBkbWFfYnVmX2F0dGFjaG1lbnQgew0KICAqIEBvYmpjZzoJb2JqZWN0IGNncm91cCB0byBjaGFy
-Z2UgZm9yIHRoaXMgYnVmZmVyJ3MgbWVtb3J5LiBTZXQgb25seSBmb3INCiAgKgkJYnVmZmVycyBi
-YWNrZWQgYnkgc3lzdGVtIG1lbW9yeSwgbm90IGFjY291bnRlZCBlbHNld2hlcmUsIHdoZXJlDQog
-ICoJCUBzaXplIHJlZmxlY3RzIHRoZSBhY3R1YWwgYWxsb2NhdGlvbiBpbiBieXRlcy4gVGhlIGJ1
-ZmZlciB0YWtlcw0KLSAqCQlvdmVyIHRoZSBjYWxsZXIncyByZWZlcmVuY2UuDQorICoJCW92ZXIg
-dGhlIGNhbGxlcidzIHJlZmVyZW5jZS4gRW5hYmxlcyBjaGFyZ2UgdHJhbnNmZXIgdmlhDQorICoJ
-CURNQV9CVUZfSU9DVExfWEZFUl9DSEFSR0UuDQogICoNCiAgKiBUaGlzIHN0cnVjdHVyZSBob2xk
-cyB0aGUgaW5mb3JtYXRpb24gcmVxdWlyZWQgdG8gZXhwb3J0IHRoZSBidWZmZXIuIFVzZWQNCiAg
-KiB3aXRoIGRtYV9idWZfZXhwb3J0KCkgb25seS4NCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4
-L21lbWNvbnRyb2wuaCBiL2luY2x1ZGUvbGludXgvbWVtY29udHJvbC5oDQppbmRleCA4ZTAxNmQ5
-YjkxYmMuLjM3YzgxYmUzNDliOCAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGludXgvbWVtY29udHJv
-bC5oDQorKysgYi9pbmNsdWRlL2xpbnV4L21lbWNvbnRyb2wuaA0KQEAgLTE4MjcsNiArMTgyNywx
-MSBAQCBzdGF0aWMgaW5saW5lIHN0cnVjdCBvYmpfY2dyb3VwICpnZXRfb2JqX2Nncm91cF9mcm9t
-X2N1cnJlbnQodm9pZCkNCiBpbnQgb2JqX2Nncm91cF9jaGFyZ2Uoc3RydWN0IG9ial9jZ3JvdXAg
-Km9iamNnLCBnZnBfdCBnZnAsIHNpemVfdCBzaXplKTsNCiB2b2lkIG9ial9jZ3JvdXBfdW5jaGFy
-Z2Uoc3RydWN0IG9ial9jZ3JvdXAgKm9iamNnLCBzaXplX3Qgc2l6ZSk7DQogDQorYm9vbCBvYmpf
-Y2dyb3VwX3RyYW5zZmVyX2NoYXJnZShzdHJ1Y3Qgb2JqX2Nncm91cCAqKnB0cl9vYmpjZywNCisJ
-CQkJc3RydWN0IG9ial9jZ3JvdXAgKm5ld19vYmpjZywNCisJCQkJZW51bSBtZW1jZ19zdGF0X2l0
-ZW0gaXRlbSwNCisJCQkJdW5zaWduZWQgaW50IG5yX3BhZ2VzKTsNCisNCiBleHRlcm4gc3RydWN0
-IHN0YXRpY19rZXlfZmFsc2UgbWVtY2dfYnBmX2VuYWJsZWRfa2V5Ow0KIHN0YXRpYyBpbmxpbmUg
-Ym9vbCBtZW1jZ19icGZfZW5hYmxlZCh2b2lkKQ0KIHsNCkBAIC0xOTMwLDYgKzE5MzUsMTQgQEAg
-c3RhdGljIGlubGluZSBzdHJ1Y3Qgb2JqX2Nncm91cCAqZ2V0X29ial9jZ3JvdXBfZnJvbV9jdXJy
-ZW50KHZvaWQpDQogCXJldHVybiBOVUxMOw0KIH0NCiANCitzdGF0aWMgaW5saW5lIGJvb2wgb2Jq
-X2Nncm91cF90cmFuc2Zlcl9jaGFyZ2Uoc3RydWN0IG9ial9jZ3JvdXAgKipwdHJfb2JqY2csDQor
-CQkJCQkgICAgICBzdHJ1Y3Qgb2JqX2Nncm91cCAqbmV3X29iamNnLA0KKwkJCQkJICAgICAgZW51
-bSBtZW1jZ19zdGF0X2l0ZW0gaXRlbSwNCisJCQkJCSAgICAgIHVuc2lnbmVkIGludCBucl9wYWdl
-cykNCit7DQorCXJldHVybiB0cnVlOw0KK30NCisNCiBzdGF0aWMgaW5saW5lIGJvb2wgbWVtY2df
-YnBmX2VuYWJsZWQodm9pZCkNCiB7DQogCXJldHVybiBmYWxzZTsNCmRpZmYgLS1naXQgYS9pbmNs
-dWRlL3VhcGkvbGludXgvZG1hLWJ1Zi5oIGIvaW5jbHVkZS91YXBpL2xpbnV4L2RtYS1idWYuaA0K
-aW5kZXggZTgyN2M5ZDIwYzVkLi4wYWFmMmU3ZDU5M2IgMTAwNjQ0DQotLS0gYS9pbmNsdWRlL3Vh
-cGkvbGludXgvZG1hLWJ1Zi5oDQorKysgYi9pbmNsdWRlL3VhcGkvbGludXgvZG1hLWJ1Zi5oDQpA
-QCAtMTY4LDYgKzE2OCwzMSBAQCBzdHJ1Y3QgZG1hX2J1Zl9pbXBvcnRfc3luY19maWxlIHsNCiAJ
-X19zMzIgZmQ7DQogfTsNCiANCisvKioNCisgKiBzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFy
-Z2UgLSBUcmFuc2ZlciBhIGRtYS1idWYncyBtZW1jZyBjaGFyZ2UNCisgKg0KKyAqIEFueSBob2xk
-ZXIgb2YgYSBkbWEtYnVmIGZpbGUgZGVzY3JpcHRvciBjYW4gcGVyZm9ybSBhDQorICogRE1BX0JV
-Rl9JT0NUTF9YRkVSX0NIQVJHRSB0byBhdHRyaWJ1dGUgdGhlIGJ1ZmZlcidzIG1lbW9yeQ0KKyAq
-IGNvc3QgdG8gYSBzcGVjaWZpYyBjZ3JvdXAsIG9yIG1vdmUgaXQgZnJvbSBvbmUgY2dyb3VwIHRv
-DQorICogYW5vdGhlci4gIFRoZSBpb2N0bCBjaGFyZ2VzIHRoZSBuZXcgY2dyb3VwIGJlZm9yZSB1
-bmNoYXJnaW5nDQorICogdGhlIG9sZCBvbmUgYXRvbWljYWxseS4gIE9uIGZhaWx1cmUgdGhlIG9y
-aWdpbmFsIGNoYXJnZSBpcw0KKyAqIHByZXNlcnZlZC4gIElmIHRoZSBidWZmZXIgaGFzIG5vIGV4
-aXN0aW5nIG1lbWNnIGNoYXJnZSwgdGhlDQorICogaW9jdGwgcmV0dXJucyAtRU9QTk9UU1VQUC4N
-CisgKi8NCitzdHJ1Y3QgZG1hX2J1Zl90cmFuc2Zlcl9jaGFyZ2Ugew0KKwkvKiogQGZsYWdzOiBS
-ZXNlcnZlZCwgbXVzdCBiZSB6ZXJvICovDQorCV9fdTMyIGZsYWdzOyAvKiB1bnVzZWQgZm9yIG5v
-dyAqLw0KKwkvKioNCisJICogQGNoYXJnZV9mZDogRmlsZSBkZXNjcmlwdG9yIGlkZW50aWZ5aW5n
-IHRoZSB0YXJnZXQgY2dyb3VwLg0KKwkgKg0KKwkgKiBNYXkgYmUgZWl0aGVyIGEgcGlkZmQsIGlu
-IHdoaWNoIGNhc2UgdGhlIGNoYXJnZSBtb3ZlcyB0byB0aGUNCisJICogbWVtb3J5IGNncm91cCBv
-ZiB0aGUgcmVmZXJlbmNlZCBwcm9jZXNzLCBvciBhIGNncm91cGZkIG9idGFpbmVkDQorCSAqIGJ5
-IG9wZW5pbmcgYSBjZ3JvdXAgdjIgZGlyZWN0b3J5LCBpbiB3aGljaCBjYXNlIHRoZSBjaGFyZ2Ug
-bW92ZXMNCisJICogZGlyZWN0bHkgdG8gdGhhdCBjZ3JvdXAncyBtZW1vcnkgY29udHJvbGxlci4N
-CisJICovDQorCV9fdTMyIGNoYXJnZV9mZDsNCit9Ow0KKw0KICNkZWZpbmUgRE1BX0JVRl9CQVNF
-CQknYicNCiAjZGVmaW5lIERNQV9CVUZfSU9DVExfU1lOQwlfSU9XKERNQV9CVUZfQkFTRSwgMCwg
-c3RydWN0IGRtYV9idWZfc3luYykNCiANCkBAIC0xNzksNSArMjA0LDYgQEAgc3RydWN0IGRtYV9i
-dWZfaW1wb3J0X3N5bmNfZmlsZSB7DQogI2RlZmluZSBETUFfQlVGX1NFVF9OQU1FX0IJX0lPVyhE
-TUFfQlVGX0JBU0UsIDEsIF9fdTY0KQ0KICNkZWZpbmUgRE1BX0JVRl9JT0NUTF9FWFBPUlRfU1lO
-Q19GSUxFCV9JT1dSKERNQV9CVUZfQkFTRSwgMiwgc3RydWN0IGRtYV9idWZfZXhwb3J0X3N5bmNf
-ZmlsZSkNCiAjZGVmaW5lIERNQV9CVUZfSU9DVExfSU1QT1JUX1NZTkNfRklMRQlfSU9XKERNQV9C
-VUZfQkFTRSwgMywgc3RydWN0IGRtYV9idWZfaW1wb3J0X3N5bmNfZmlsZSkNCisjZGVmaW5lIERN
-QV9CVUZfSU9DVExfWEZFUl9DSEFSR0UJX0lPVyhETUFfQlVGX0JBU0UsIDQsIHN0cnVjdCBkbWFf
-YnVmX3RyYW5zZmVyX2NoYXJnZSkNCiANCiAjZW5kaWYNCmRpZmYgLS1naXQgYS9tbS9tZW1jb250
-cm9sLmMgYi9tbS9tZW1jb250cm9sLmMNCmluZGV4IDc4MjZiYzIxYmVhOS4uYmY1YjI2NzJjMGM3
-IDEwMDY0NA0KLS0tIGEvbW0vbWVtY29udHJvbC5jDQorKysgYi9tbS9tZW1jb250cm9sLmMNCkBA
-IC0zMjU0LDYgKzMyNTQsNjQgQEAgc3RydWN0IG9ial9jZ3JvdXAgKmdldF9vYmpfY2dyb3VwX2Zy
-b21fZmQoaW50IGZkKQ0KIAlyZXR1cm4gb2JqY2c7DQogfQ0KIA0KKy8qKg0KKyAqIG9ial9jZ3Jv
-dXBfdHJhbnNmZXJfY2hhcmdlIC0gbW92ZSBhIGNoYXJnZSBiZXR3ZWVuIG9iamVjdCBjZ3JvdXBz
-DQorICogQHB0cl9vYmpjZzogcG9pbnRlciB0byB0aGUgb2JqZWN0IGNncm91cCB0byB0cmFuc2Zl
-ciBmcm9tDQorICogQG5ld19vYmpjZzogdGFyZ2V0IG9iamVjdCBjZ3JvdXA7IGNhbGxlciBtdXN0
-IGhvbGQgYSByZWZlcmVuY2UNCisgKiBAaXRlbTogbWVtY2cgc3RhdCBjb3VudGVyIHRvIGFkanVz
-dDsgbXVzdCBub3QgYmUgYSBub2RlIHN0YXQNCisgKiBAbnJfcGFnZXM6IG51bWJlciBvZiBwYWdl
-cyB0byB0cmFuc2Zlcg0KKyAqDQorICogVHJhbnNmZXJzIEBucl9wYWdlcyBvZiBjaGFyZ2UgZnJv
-bSAqQHB0cl9vYmpjZyB0byBAbmV3X29iamNnIGFuZCwgb24NCisgKiBzdWNjZXNzLCBzdG9yZXMg
-QG5ld19vYmpjZyBpbiAqQHB0cl9vYmpjZy4gRG9lcyBub3RoaW5nIGlmIGJvdGggcmVzb2x2ZQ0K
-KyAqIHRvIHRoZSBzYW1lIG1lbWNnOyAqQHB0cl9vYmpjZyBpcyBsZWZ0IHVudG91Y2hlZCBpbiB0
-aGF0IGNhc2UuDQorICoNCisgKiBVcGRhdGVzIHRvICpAcHRyX29iamNnIG11c3QgYmUgc2VyaWFs
-aXplZCBieSB0aGUgY2FsbGVyLg0KKyAqIFJldHVybnMgJXRydWUgb24gc3VjY2VzcywgJWZhbHNl
-IGlmIHRoZSBjaGFyZ2UgYWdhaW5zdCBAbmV3X29iamNnDQorICogZmFpbGVkLg0KKyAqLw0KK2Jv
-b2wgb2JqX2Nncm91cF90cmFuc2Zlcl9jaGFyZ2Uoc3RydWN0IG9ial9jZ3JvdXAgKipwdHJfb2Jq
-Y2csDQorCQkJCXN0cnVjdCBvYmpfY2dyb3VwICpuZXdfb2JqY2csDQorCQkJCWVudW0gbWVtY2df
-c3RhdF9pdGVtIGl0ZW0sDQorCQkJCXVuc2lnbmVkIGludCBucl9wYWdlcykNCit7DQorCXN0cnVj
-dCBvYmpfY2dyb3VwICpvbGRfb2JqY2cgPSAqcHRyX29iamNnOw0KKwlzdHJ1Y3QgbWVtX2Nncm91
-cCAqb2xkX21lbWNnID0gTlVMTCwgKm5ld19tZW1jZzsNCisJYm9vbCByZXQgPSB0cnVlOw0KKw0K
-KwlpZiAoIW5ld19vYmpjZyB8fCBtZW1fY2dyb3VwX2Rpc2FibGVkKCkpDQorCQlyZXR1cm4gdHJ1
-ZTsNCisNCisJbmV3X21lbWNnID0gZ2V0X21lbV9jZ3JvdXBfZnJvbV9vYmpjZyhuZXdfb2JqY2cp
-Ow0KKwlpZiAob2xkX29iamNnKQ0KKwkJb2xkX21lbWNnID0gZ2V0X21lbV9jZ3JvdXBfZnJvbV9v
-YmpjZyhvbGRfb2JqY2cpOw0KKw0KKwlpZiAob2xkX21lbWNnID09IG5ld19tZW1jZykNCisJCWdv
-dG8gb3V0Ow0KKw0KKwlpZiAodHJ5X2NoYXJnZShuZXdfbWVtY2csIEdGUF9LRVJORUwsIG5yX3Bh
-Z2VzKSkgew0KKwkJcmV0ID0gZmFsc2U7DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwltb2RfbWVt
-Y2dfc3RhdGUobmV3X21lbWNnLCBpdGVtLCBucl9wYWdlcyk7DQorDQorCWlmIChvbGRfb2JqY2cp
-IHsNCisJCS8qIFVuY2hhcmdlIG9sZCBjZ3JvdXAgKi8NCisJCW1vZF9tZW1jZ19zdGF0ZShvbGRf
-bWVtY2csIGl0ZW0sIC1ucl9wYWdlcyk7DQorCQlpZiAoIW1lbV9jZ3JvdXBfaXNfcm9vdChvbGRf
-bWVtY2cpKQ0KKwkJCXJlZmlsbF9zdG9jayhvbGRfbWVtY2csIG5yX3BhZ2VzKTsNCisJfQ0KKw0K
-KwlvYmpfY2dyb3VwX2dldChuZXdfb2JqY2cpOw0KKwkqcHRyX29iamNnID0gbmV3X29iamNnOw0K
-KwlvYmpfY2dyb3VwX3B1dChvbGRfb2JqY2cpOw0KKw0KK291dDoNCisJbWVtX2Nncm91cF9wdXQo
-bmV3X21lbWNnKTsNCisJbWVtX2Nncm91cF9wdXQob2xkX21lbWNnKTsNCisJcmV0dXJuIHJldDsN
-Cit9DQorDQogI2lmZGVmIENPTkZJR19NRU1DR19OTUlfU0FGRVRZX1JFUVVJUkVTX0FUT01JQw0K
-IHN0YXRpYyBpbmxpbmUgdm9pZCBhY2NvdW50X2ttZW1fbm1pX3NhZmUoc3RydWN0IG1lbV9jZ3Jv
-dXAgKm1lbWNnLCBpbnQgdmFsKQ0KIHsNCg0KLS0gDQoyLjU1LjANCg0K
+Both DMA_HEAP_IOCTL_ALLOC and the new DMA_BUF_IOCTL_XFER_CHARGE ioctl
+accept a charge_fd field that, when set, causes the allocation to be
+charged to the cgroup named by the fd (a pidfd or a cgroupfd) rather
+than the caller's.
+
+Charging is currently limited to the caller's own memcg subtree unless
+the caller holds CAP_SYS_RESOURCE. But the capability is all-or-nothing.
+A process holding it, along with a dma-heap device node or a dma-buf
+fd can charge unlimited memory to any other process's cgroup, potentially
+exhausting that cgroup's limit and triggering OOM kills independent of
+the victim's own activity or privileges.
+
+Add security_current_memcg_charge_task(), called in
+get_obj_cgroup_from_fd() when charge_fd refers to another process.
+The hook receives the credentials of the process whose cgroup will
+be charged (cred), giving security modules a controlled enforcement
+point for cross-cgroup objcg attribution policy.
+
+When CONFIG_SECURITY is not set the hook compiles to an inline
+returning 0, adding no overhead to the fast path.
+
+Signed-off-by: Albert Esteve <aesteve@redhat.com>
+---
+ include/linux/lsm_hook_defs.h |  1 +
+ include/linux/security.h      |  6 ++++++
+ mm/memcontrol.c               | 11 +++++++++++
+ security/security.c           | 14 ++++++++++++++
+ 4 files changed, 32 insertions(+)
+
+diff --git a/include/linux/lsm_hook_defs.h b/include/linux/lsm_hook_defs.h
+index 87d9d06710cb..beb339663d76 100644
+--- a/include/linux/lsm_hook_defs.h
++++ b/include/linux/lsm_hook_defs.h
+@@ -43,6 +43,7 @@ LSM_HOOK(int, 0, capset, struct cred *new, const struct cred *old,
+ 	 const kernel_cap_t *permitted)
+ LSM_HOOK(int, 0, capable, const struct cred *cred, struct user_namespace *ns,
+ 	 int cap, unsigned int opts)
++LSM_HOOK(int, 0, memcg_charge_task, const struct cred *cred)
+ LSM_HOOK(int, 0, quotactl, int cmds, int type, int id, const struct super_block *sb)
+ LSM_HOOK(int, 0, quota_on, struct dentry *dentry)
+ LSM_HOOK(int, 0, syslog, int type)
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 40831fab5470..6c6cb08bb1c6 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -352,6 +352,7 @@ int security_capable(const struct cred *cred,
+ 		       struct user_namespace *ns,
+ 		       int cap,
+ 		       unsigned int opts);
++int security_current_memcg_charge_task(const struct cred *cred);
+ int security_quotactl(int cmds, int type, int id, const struct super_block *sb);
+ int security_quota_on(struct dentry *dentry);
+ int security_syslog(int type);
+@@ -710,6 +711,11 @@ static inline int security_capable(const struct cred *cred,
+ 	return cap_capable(cred, ns, cap, opts);
+ }
+ 
++static inline int security_current_memcg_charge_task(const struct cred *cred)
++{
++	return 0;
++}
++
+ static inline int security_quotactl(int cmds, int type, int id,
+ 				     const struct super_block *sb)
+ {
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index bf5b2672c0c7..41c81e492007 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -60,6 +60,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/resume_user_mode.h>
+ #include <linux/psi.h>
++#include <linux/security.h>
+ #include <linux/seq_buf.h>
+ #include <linux/sched/isolation.h>
+ #include <linux/kmemleak.h>
+@@ -3201,10 +3202,12 @@ static bool mem_cgroup_may_charge(struct mem_cgroup *memcg)
+ struct obj_cgroup *get_obj_cgroup_from_fd(int fd)
+ {
+ 	struct cgroup_subsys_state *css;
++	const struct cred *tcred;
+ 	struct obj_cgroup *objcg;
+ 	struct mem_cgroup *memcg;
+ 	struct task_struct *task;
+ 	unsigned int pidfd_flags;
++	int ret;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return ERR_PTR(-EOPNOTSUPP);
+@@ -3229,6 +3232,14 @@ struct obj_cgroup *get_obj_cgroup_from_fd(int fd)
+ 		if (IS_ERR(task))
+ 			return ERR_CAST(task);
+ 
++		tcred = get_task_cred(task);
++		ret = security_current_memcg_charge_task(tcred);
++		put_cred(tcred);
++		if (ret) {
++			put_task_struct(task);
++			return ERR_PTR(ret);
++		}
++
+ 		rcu_read_lock();
+ 		css = task_css(task, memory_cgrp_id);
+ 		put_task_struct(task);
+diff --git a/security/security.c b/security/security.c
+index 4727b8347fc4..78b462b0ece5 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -674,6 +674,20 @@ int security_capable(const struct cred *cred,
+ 	return call_int_hook(capable, cred, ns, cap, opts);
+ }
+ 
++/**
++ * security_current_memcg_charge_task() - Check if cross-cgroup memory charging is allowed
++ * @cred: credentials of the process to charge
++ *
++ * Check whether the current process is allowed to charge
++ * memory to the cgroup of the process with credentials @cred.
++ *
++ * Return: Returns 0 if permission is granted.
++ */
++int security_current_memcg_charge_task(const struct cred *cred)
++{
++	return call_int_hook(memcg_charge_task, cred);
++}
++
+ /**
+  * security_quotactl() - Check if a quotactl() syscall is allowed for this fs
+  * @cmds: commands
+
+-- 
+2.55.0
+
