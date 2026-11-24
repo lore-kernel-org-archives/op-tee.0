@@ -2,54 +2,55 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0890606D0EA
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:06:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D2D0606A692
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:06:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=dj0sUm+Z;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q6MV3T+Q
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=nI/wX2Wx;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nEQsEOVv
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 29715456DD
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:06:24 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7DCBB4550D
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:06:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795529184;
-	bh=cFTcX5zX06yJZykgfJZX7vj2B6uDxu9XGGETlT23sQE=;
+	d=lists.trustedfirmware.org; s=2024; t=1795529212;
+	bh=zpA8p99yoYyAJavHN2hpgi/WaqiNX8jwA5osK7vUTPI=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=dj0sUm+ZZHf8CsLJ/ws2DgNFnYqZg60Jmoha58Jdwf1kgfXTQoGroTRS8yFeBTLmN
-	 Kk87QbJzixnaxtZ5n6Z+WtD9E7V8ZRkPxgU7ADO7XImgsxE65bmhO/um/YXpjPIIP7
-	 42pb/hheIEixVNpL3TOkB/RewyV6oBmwWTok/ShrBx4Ngi1wQ21k59zf35cbT10bgE
-	 llTlzU4Bxe50YWsNdVYq3KGFf2kjkCUgJ+8IA1FQCeRzvmNFN/1jpfUFh7iJ6bVK8a
-	 QNwO+YJhJC31Kpug24rEYi2dl831Bqvx6A1T26ubpe2UKKMV6cNUaoiez0bkeZT+3M
-	 SgHNaeIS8IqKQ==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id DF6C745543
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:04:58 +0000 (UTC)
+	b=nI/wX2Wxl2IC9C5YbTx7/5hpY1pa9BH8VRnS7KPjw4OIqMXRGxfdNncIpMpqOYerb
+	 zYYIw1aqgZNsPJII3RfKfRfbOw7DRmDKi9/nsSAtIGX7foBOkBWdHHZ1iAgbT1b1Lq
+	 JxG/rXFwyGlpYprEgxWIBvXAjyuK8UPPD13QZRi51xU2tGugLPaHM90E2YPF9LNPqU
+	 pqjgPtQEIb8j9lX9eYCBn6SC9btyL/2znOOwsCBjXQFNjOiF0aySHH7loaDShYgYkD
+	 dZwzFOmyjPYLS3wKVFqYKmsQhmoOfhnQXx/onuVg5q34W4JjWZaWhmozxz2g3VP2oJ
+	 KUasnQU1THt1A==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id A0BD144F98
+	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:05:14 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q6MV3T+Q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nEQsEOVv;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2A2CA620C2;
+	by sea.source.kernel.org (Postfix) with ESMTP id E3310435D0;
+	Tue, 24 Nov 2026 14:05:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E8BA1F000EE;
 	Tue, 24 Nov 2026 14:04:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F63E1F00ADF;
-	Tue, 24 Nov 2026 14:04:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795529097;
-	bh=dyKHuWz1d2Frm11VryLe5MVhcgNxdq9OLcfJXX7QEjE=;
+	s=k20260515; t=1795529113;
+	bh=hW7ZGPoql/0vjAt5ga+sKkmm9W80eGku2aKEtGV2c8w=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Q6MV3T+QtMeFGS05JxbY86fyXxb5BpRhz2xNTl9eMNfcKfw+grBzdABfY7zkWcmhf
-	 3oXmd4lIvhn6HY6OzXXCGpX3x871baxo9e2taEWdz4G5NRtFr4HIZLW/Mmej4HB25n
-	 pd5Rhlwzeg+i3fuK3nnd+/5nYHtvXaH9/5nXXdyOVT9uYdK2a7c0OsQs/bVh+3Yb8D
-	 8M6p5tkece9ezcQQtmoIpKbmcdZqP5JmjEIvTz5EAB0KjX1oZMDeijKf3LV7e9LjgL
-	 CH5DW18DiH/zpC3bH1tBGKVdQ66YVARE97fBELOKoKVCGs4OrCADqFtuBQSEP/uZlf
-	 9AljS1iLyidaw==
-Date: Tue, 24 Nov 2026 14:02:49 +0000
-Subject: [PATCH v2 06/13] selinuxfs: convert mmap hooks to mmap_prepare
+	b=nEQsEOVvPg9uZs8lPh3fAj1Qo39UVf8WJg/6I4WGhW8GIIKBie2GuD5DK/hWJLD7N
+	 XXFbsjJmFJ4zdg+ZeAGS56aohbKj0o8RcUk9oJKGqRdvPA1dlzGKwJgzce04YTfDoE
+	 kQMX4Kt1jvbJUHGy+3IdAW2GpTkIMJJi2M8m1j0s/6gqGZd3guFcFTSNOxrS31I3la
+	 KAii9xzYdmifvwQhJIoDqn1DIYWc1NWrZ02MGPgXDMQbsER2kNVx51Lo6ZPJT0J2gp
+	 lE7tqkcpAKoxp6VZEtLHwb1xz4xg8XIw89cIiw8bdorFELUoAEwIqVHFvq3itixg0I
+	 yBzI/3vuVb+EA==
+Date: Tue, 24 Nov 2026 14:02:50 +0000
+Subject: [PATCH v2 07/13] xen: convert xenstore interface mmap hooks to
+ mmap_prepare
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261124-late-2026-mmap_prepare-v2-6-0b0d99d655f9@kernel.org>
+Message-Id: <20261124-late-2026-mmap_prepare-v2-7-0b0d99d655f9@kernel.org>
 References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 In-Reply-To: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
@@ -88,12 +89,12 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2650; i=ljs@kernel.org;
- h=from:subject:message-id; bh=cFTcX5zX06yJZykgfJZX7vj2B6uDxu9XGGETlT23sQE=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ4oXBnSrzg9q6W+pOxNa5sv2mHvLOWmLDf/9bu4Ve
- ODDKszVUcrCIMbFICumyPL8i/j+IJGweZ0X/N1g5rAygQxh4OIUgIm8fMzw3/3c1MgpujcfSn5k
- 2CWletNH79GRC8V1Jxk2GHx6IO3yXJmRYf13k5To5D2ZX6wtDu9wmJ724si7t5XdipY5N4On9PC
- z8AMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2905; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=zpA8p99yoYyAJavHN2hpgi/WaqiNX8jwA5osK7vUTPI=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ4rvLvioea3/4JPLzEeZbl3oWb0s/9PJC095PjVfV
+ dpvcXbWh44SFgYxLgZZMUWW51/E9weJhM3rvODvBjOHlQlkCAMXpwBMZBMrw/fUYytbLzaFN9Wt
+ rU8JjT29a39kwz7OkrMbhI/s38wcfoaRYX/mMr77a2f5/t33Q2Wm5f1vJQLpU5PlHZd2C57NSnr
+ eyAgA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
@@ -104,8 +105,8 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
-	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
+	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
 	MIME_GOOD(-0.10)[text/plain];
 	MIME_TRACE(0.00)[0:+];
@@ -113,7 +114,7 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	FREEMAIL_TO(0.00)[linux-foundation.org,suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
 	ARC_NA(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DNSWL_BLOCKED(0.00)[100.103.45.18:received];
 	RCVD_COUNT_TWO(0.00)[2];
@@ -126,17 +127,17 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	TAGGED_RCPT(0.00)[netdev];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: DF6C745543
+X-Rspamd-Queue-Id: A0BD144F98
 X-Spamd-Bar: --------
-Message-ID-Hash: HJ4GCORT4RJPSFMHCS4HJWJLGEFZADOA
-X-Message-ID-Hash: HJ4GCORT4RJPSFMHCS4HJWJLGEFZADOA
+Message-ID-Hash: A5KR7ASECAPQRVKJNNGCMNE6SOUAXRM3
+X-Message-ID-Hash: A5KR7ASECAPQRVKJNNGCMNE6SOUAXRM3
 X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mm@kvack.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/HJ4GCORT4RJPSFMHCS4HJWJLGEFZADOA/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/A5KR7ASECAPQRVKJNNGCMNE6SOUAXRM3/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -152,78 +153,90 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Move from the deprecated mmap hook to the new mmap_prepare hook for the
-policy and status files.
+xenfs xsd_kva file and the xenbus_backend device, both of which remap the
+xenstore interface page.
 
-The policy file only sets VMA flags and operations. The status file remaps
-a single page, so use the PFN remap mmap action to do so.
+Use the PFN remap mmap action to do so, retaining the -EAGAIN error on
+failure via the action error override.
 
-Acked-by: Paul Moore <paul@paul-moore.com>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- security/selinux/selinuxfs.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/xen/xenbus/xenbus_dev_backend.c | 14 ++++++--------
+ drivers/xen/xenfs/xenstored.c           | 14 ++++++--------
+ 2 files changed, 12 insertions(+), 16 deletions(-)
 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index 310e19efff1d..e78c65685020 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -236,27 +236,25 @@ static ssize_t sel_read_handle_status(struct file *filp, char __user *buf,
- 				       sizeof(struct selinux_kernel_status));
+diff --git a/drivers/xen/xenbus/xenbus_dev_backend.c b/drivers/xen/xenbus/xenbus_dev_backend.c
+index edba5fecde4d..3e4cb267f411 100644
+--- a/drivers/xen/xenbus/xenbus_dev_backend.c
++++ b/drivers/xen/xenbus/xenbus_dev_backend.c
+@@ -89,27 +89,25 @@ static long xenbus_backend_ioctl(struct file *file, unsigned int cmd,
+ 	}
  }
  
--static int sel_mmap_handle_status(struct file *filp,
--				  struct vm_area_struct *vma)
-+static int sel_mmap_prepare_handle_status(struct vm_area_desc *desc)
+-static int xenbus_backend_mmap(struct file *file, struct vm_area_struct *vma)
++static int xenbus_backend_mmap_prepare(struct vm_area_desc *desc)
  {
--	struct page    *status = filp->private_data;
--	unsigned long	size = vma->vm_end - vma->vm_start;
-+	struct page    *status = desc->file->private_data;
+-	size_t size = vma->vm_end - vma->vm_start;
++	size_t size = vma_desc_size(desc);
  
- 	BUG_ON(!status);
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
  
- 	/* only allows one page from the head */
--	if (vma->vm_pgoff > 0 || size != PAGE_SIZE)
-+	if (desc->pgoff > 0 || vma_desc_size(desc) != PAGE_SIZE)
- 		return -EIO;
+-	if ((size > PAGE_SIZE) || (vma->vm_pgoff != 0))
++	if ((size > PAGE_SIZE) || (desc->pgoff != 0))
+ 		return -EINVAL;
  
--	return remap_pfn_range(vma, vma->vm_start,
--			       page_to_pfn(status),
--			       size, vma->vm_page_prot);
-+	mmap_action_remap_full(desc, page_to_pfn(status));
-+
-+	return 0;
- }
- 
- static const struct file_operations sel_handle_status_ops = {
- 	.open		= sel_open_handle_status,
- 	.read		= sel_read_handle_status,
--	.mmap		= sel_mmap_handle_status,
-+	.mmap_prepare	= sel_mmap_prepare_handle_status,
- 	.llseek		= generic_file_llseek,
- };
- 
-@@ -419,10 +417,10 @@ static const struct vm_operations_struct sel_mmap_policy_ops = {
- 	.page_mkwrite = sel_mmap_policy_fault,
- };
- 
--static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma)
-+static int sel_mmap_prepare_policy(struct vm_area_desc *desc)
- {
--	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
--	vma->vm_ops = &sel_mmap_policy_ops;
-+	vma_desc_set_flags(desc, VMA_DONTEXPAND_BIT, VMA_DONTDUMP_BIT);
-+	desc->vm_ops = &sel_mmap_policy_ops;
+-	if (remap_pfn_range(vma, vma->vm_start,
+-			    virt_to_pfn(xen_store_interface),
+-			    size, vma->vm_page_prot))
+-		return -EAGAIN;
++	mmap_action_remap_full(desc, virt_to_pfn(xen_store_interface));
++	desc->action.error_override = -EAGAIN;
  
  	return 0;
  }
-@@ -430,7 +428,7 @@ static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma)
- static const struct file_operations sel_policy_ops = {
- 	.open		= sel_open_policy,
- 	.read		= sel_read_policy,
--	.mmap		= sel_mmap_policy,
-+	.mmap_prepare	= sel_mmap_prepare_policy,
- 	.release	= sel_release_policy,
- 	.llseek		= generic_file_llseek,
+ 
+ static const struct file_operations xenbus_backend_fops = {
+ 	.open = xenbus_backend_open,
+-	.mmap = xenbus_backend_mmap,
++	.mmap_prepare = xenbus_backend_mmap_prepare,
+ 	.unlocked_ioctl = xenbus_backend_ioctl,
+ };
+ 
+diff --git a/drivers/xen/xenfs/xenstored.c b/drivers/xen/xenfs/xenstored.c
+index f59235f9f8a2..0cf57c286adb 100644
+--- a/drivers/xen/xenfs/xenstored.c
++++ b/drivers/xen/xenfs/xenstored.c
+@@ -31,24 +31,22 @@ static int xsd_kva_open(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int xsd_kva_mmap(struct file *file, struct vm_area_struct *vma)
++static int xsd_kva_mmap_prepare(struct vm_area_desc *desc)
+ {
+-	size_t size = vma->vm_end - vma->vm_start;
++	size_t size = vma_desc_size(desc);
+ 
+-	if ((size > PAGE_SIZE) || (vma->vm_pgoff != 0))
++	if ((size > PAGE_SIZE) || (desc->pgoff != 0))
+ 		return -EINVAL;
+ 
+-	if (remap_pfn_range(vma, vma->vm_start,
+-			    virt_to_pfn(xen_store_interface),
+-			    size, vma->vm_page_prot))
+-		return -EAGAIN;
++	mmap_action_remap_full(desc, virt_to_pfn(xen_store_interface));
++	desc->action.error_override = -EAGAIN;
+ 
+ 	return 0;
+ }
+ 
+ const struct file_operations xsd_kva_file_ops = {
+ 	.open = xsd_kva_open,
+-	.mmap = xsd_kva_mmap,
++	.mmap_prepare = xsd_kva_mmap_prepare,
+ 	.read = xsd_read,
+ 	.release = xsd_release,
  };
 
 -- 
