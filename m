@@ -1,85 +1,86 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B7A5606A321
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 16:08:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 157EC606A321
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 16:09:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=i/CBqtEL;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=UPdlfwLu
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=hLjG1mgh;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=JNPxDuHh
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7C7A74D9C0
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 16:08:55 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 6F76E50354
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 16:09:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795536535;
-	bh=OavKAVZv+OA0pfYHqsDmPh81k4IRaCsSuMGSaPHhIPw=;
+	d=lists.trustedfirmware.org; s=2024; t=1795536564;
+	bh=PVJS6gkYs1IOy2J1QEN8soh2l1ljp7ZJVoiYPlTtrQ8=;
 	h=Date:Subject:To:References:In-Reply-To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=i/CBqtELa47ZLIeQW8WHRUeVDFnstEv4FVzOGxXYs6pY+z2iDLQM1dMwlt76NWMNd
-	 AAZ+m3frfieQ8xtgRZO/OQfF15ALc7IIhyEkE/fi/+0bM/vTOGfvm8z6LKv+esMGNd
-	 A/ijMrDSxLO7z2Qb2AaCaffy4gor5VMpd9wzI8Tmpwxhqe2uRuVC2kRtTvwSn1ZZdN
-	 nv15q2gAxqK/BxYn77SYNxVh4+LKUANv9MhqpRlPX/SpZwRU2fE/iLpOwjekoetB1c
-	 mHDXg0wOTeQaHjTV/QGis8um4CfZyxK730o35c9EvFFFBweoMw7OKk7PqYFutq6td9
-	 hY1+hxywsj0lQ==
-Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0049644DC9
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 15:13:19 +0000 (UTC)
+	b=hLjG1mghOl4cQcoVB9KbGCh3HaXdgAQumSds4m1zfSGzMFhQcIqWZQT6Fdzm+DHdZ
+	 0fjFK4pw7hERbNNPCekm1c63b/+e1zD/ioDznZINGZ8qBNT83pLpmHXsjWFTK+5q1I
+	 uOttDx2DcA+QAykNEwqHR1n2XZZjB0SNgs7uCnVUHA/5bAB5EQoVu/IIgB4s4xe6ux
+	 Ta8UYb2pYYBv7LZ1T+3bsug5wr7xq8ka3H0VYenrWwbPvFsUWDET4b4TkpXjNuY9Mm
+	 W+9t2GJygWL38Ffgquh29K7EeMseMKB0tZlc8EiOM5Vr4GRR0jCAhjAKN+S9d8Qwff
+	 NLzvcdym70Btw==
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 1C4DF44DC9
+	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 15:14:24 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=UPdlfwLu;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=JNPxDuHh;
 	dkim-atps=neutral
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-6ba38c41804so5339374a12.3
-        for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 07:13:18 -0800 (PST)
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c4203bbb1e9so764030366b.3
+        for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 07:14:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1795533198; x=1796137998; darn=lists.trustedfirmware.org;
+        d=suse.com; s=google; t=1795533263; x=1796138063; darn=lists.trustedfirmware.org;
         h=content-type:in-reply-to:autocrypt:from:content-language:references
          :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=OavKAVZv+OA0pfYHqsDmPh81k4IRaCsSuMGSaPHhIPw=;
-        b=UPdlfwLujTSVfwuFY8In979f1Aq0StWWTt2Rfa18knyKQrYBH/JZbEz9aHWyNrpMP/
-         W0VwXxp4ncU6+CSHMJIBApLLhr+Fn7l5DEzbADyaBkZ3Rveft5FN8CHU0dlIilU80RJ0
-         nl+LpMbeYEX5dxbv7+ed+GBss/d0HYT7soZLj5o6WUHJ7ZvEqMZ0gwRcr3q8w8+7/pAX
-         ovQq+7dlgdU67Z0FQ4Q9dQaJjujkk9bPycUXy8TfPfHTXcuBANW08GdqApeV8XxARGET
-         8lK3el4tErIvjUu+vA+Kdof7HCV9ncAZGIhSa0XQjwovDw+RHA75Feh7UJtYGiA07rvi
-         n7tQ==
+        bh=PVJS6gkYs1IOy2J1QEN8soh2l1ljp7ZJVoiYPlTtrQ8=;
+        b=JNPxDuHh0zB6elFG9FZqEPovruYNusQmWJtWLJIIyMLTsN6IbOfW5M+kxiap6ymb4u
+         TV2K4dkv3G4eXdHa+eq5CniNycsyAv6LLXx/V1ub+xrq+Q4jUUi/oZReB5J9ZRdkzUL7
+         qNj2CieCrhn7vmSi72EFm8zThgIBId1cK9/c6D4GyzCemXmkEHBYhz2/ZMt0MZggjit7
+         KdOwWw5Mk6aY+WcRnDcbdjP9oiAtLh8mQlq7iZtUyy4K8bmajo/76jr59IIcSK2RzTMo
+         vuauOdQ3Z6J6foJH6jBSxlbcH0jaZKxL8GZOgMhBeliIC2FuLWwevlYBeAwq2o47GCpk
+         grFw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795533198; x=1796137998;
+        d=1e100.net; s=20260707; t=1795533263; x=1796138063;
         h=content-type:in-reply-to:autocrypt:from:content-language:references
          :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=OavKAVZv+OA0pfYHqsDmPh81k4IRaCsSuMGSaPHhIPw=;
-        b=FiGz458xH6ttJj6nnQZC+GCT6sAmJCr29O3mXqpOtsk+gl+XiXW11EQTZNvnfN7K8c
-         vm+kqOSeMy3ZMD/uhL0/AvFjXqu2h9tc86UVz0M2syZY5FbqUETDi2EgYPaRQM7oq63/
-         f32/HHH2LRPKy/SkkKE3PQ8F2Y7MVLwLFAahRPMxCDASM7WrjZ73GhBMGYvAk2nx78OQ
-         abCRBFzAiQP3EhrQNRA/kfFsWt9Yy6CZD33KDRTKwU2WMqIqqVDKL4hbQC6cgfsmtMum
-         SzL3jOJi7qlZ28wfGzuhynXsxsL4KzVnnkNoOYA/GSu+092lfmQaUEXryKMPT592pNKG
-         QAhg==
-X-Forwarded-Encrypted: i=1; AL+hErEK4O1ONDGnRvzGGZ10cEehBEjcJwAVd9CvMCNJo8pHMRgtK+8U3nd0Ls6InNgjyDOJapattk4=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z8Moh8aL56VJG0lwXtrwzT8zlHUkHLT2Tu25Yc6NETUzTAgGPv9
-	rWh8/hB6Bmr/e+aYlq+Gvu58RQiK0J57rLJHXIwzbaleep9LNyQQjLBsqiblfu/xwgM=
-X-Gm-Gg: AZFdTZeWD06S75JQAYKAvp9ZUEK78VH5mdQ/wcREdF9b802iA2JuYAvSPxAmgmd4qK4
-	hhfzF2aaS8QUPzvSLiJj3YEv+prVtUk9gVwlWOe1/bmBHTKB+ZPtofGlj6FdSpJuQILt/OMIkmE
-	IUsSqsFrUFrTHY9+57a6Uc1a27dq8rT/ipd+xp3rx0cZ7pjHwyWZDpNeRuD2g3iTcOlhU00Dc6Z
-	vUY0sCq9b99qfCcfe+mU3q9Vnl5UJjRS5a+kLriiIe7wquRAHODUAfhi7H2QxkE2PG7U8DGux+W
-	TxxzPUYT9GrOf1tRRv/jH+eDTBYpVZk8RvrzJ/Ap+SeT9uHXMgDp66SBEb7itLI4lQLcRusfJLe
-	yyS/aZE/1vCH5e0v16U98T7EIJzDSPTr2igZPJ5DrNMgS5Z9paOGuyzLn7Vt1LJOu643wg933n3
-	cYCbbZ6/DpG+f6rdookYR1FLmtbZR1eeQVP62JyHfDPJWBbN2faaOhOOBNo2ipGkQ9oDsiiScMp
-	2MC+j3lK9zTCKsI+1c6PzVWgp54EwC53WfAd7PgwGBxvSTfaIe9CDvQUX7X+wDiHHn6PzflEGE7
-	cn5H+Z9AKivutzFB972rz5/TEF1u0yOMEHXoPG+T0fQNa1FU7oCYH+wOfc/qZ+cx3Q8UpRleuO7
-	PkUuE7WfI1ZyEYyobFB3YpjdFQ8U9MCW7gIl4TXlXrAJ0vNJ/Wfc=
-X-Received: by 2002:a17:907:e00b:20b0:c4d:22e2:1a2b with SMTP id a640c23a62f3a-c513a47e2ffmr818303866b.1.1795533197737;
-        Tue, 24 Nov 2026 07:13:17 -0800 (PST)
+        bh=PVJS6gkYs1IOy2J1QEN8soh2l1ljp7ZJVoiYPlTtrQ8=;
+        b=yiCXt8glJJuaK2ZSj/WqOw03hO1QqNu0RRjETfr+YzE7/pTGxqFAIjLfyY6t3Pcw+S
+         /iNxqSzgxfpEN09wcO/y8t/4axbxdFpyL6utspRFkMIXia6E0GkkEHteRxY94IZALw+k
+         2kbjgtRvDHKjf/QVcJ3b6V28DlaIIbV4/d+AftAYRL0cENHvHSRqC8v+R+9g9ct4WFT1
+         uJiD/97o6Fmku2feTxuROn0wQV0If277HIYsjmGbo+FUPxS7wyTv2aBqqBtxmlZrRq2Q
+         EYRTTeLn6P9S/pdB+DtTv5GyzLompTiAWJWOd7GM74GTFtWHIIp8xFgKJbjnmTSSkyaI
+         KbIQ==
+X-Forwarded-Encrypted: i=1; AL+hErHtpxLuCauTywB/6FRCZB8W+9r/gbL90XnVYu5PzvOIgbqMs9e5JuoDEUnx/JyoTuQ6Mfw1fvM=@lists.trustedfirmware.org
+X-Gm-Message-State: APuU4Z8dFevE3gYN++rdfcz7wnx7vg/M07RcKJ7fCGG/fXwFB7GIdArl
+	zy7/j4EFfedMRrIEI+Ll1HTRL86tGe/vlATr8a5ulHJeB2TfUdsN3ftaJxrtR2bKAts=
+X-Gm-Gg: AZFdTZep1EU4ZAINOP/d7iOUi7S4Ooexvdv+dtA0AK6HGV0PX2CWU7bVmdok0ymd72m
+	0Tnj29E6hl5P+gexjnmymCHAicRhWtPS9QEdezt0SLSDey8qGgXKYx+/SlqFD70tqGZiY1JIlhv
+	AWaik1UYADwluzR5wXRVpkBcOr2TYuOrSwKYnv52+Mwf1GcG0WIdCMH4kMtJWAPPisFCG4fdpR+
+	UV7epoWyR7yAxhcyKxWSJIRtjbJdgn2IY+OfDIrAi2xvatAzwo4LkhhMdZbosYXaLBlG3BNJBud
+	IwsXTjIetjRDyU8expDlxiIcb5xNDZXQR21Hu+2ujEQNiNUrIeK8W+iaE4LxcWBMn1RIfdyZcK3
+	mzXiYvHstxyo7Rb5dbTBsEjG7gIE6XzWh3zdE43NOPCnTYzQqoNZgtU+2WUAxLima5+zpKtmxTk
+	hc7dUVaOnB+MOV0d41pFeiQ8LTFSNlCVC5N4CZzZWUdsUYFMlbJJsfZi6ul4hgQuBMAgwnXB/jx
+	FSSkPe80WQCrx63Ela2M8xANHynHtomzWsGHdrfre+oxO+xvRt+i7JZePg1YEijJZIaeFAkrAFI
+	UJZwr4TSNZuwK0Mr/O/QfQ54n5N3OCGh77ilu5sX2a0rxFUz4XY0xvq7o+t2lHh/XGEuZ8iCq/T
+	4T/fwhSI+0B+h+0XDrRpLSgsbz4heYZ6xyGHeB1ePeRk9SlgCESI=
+X-Received: by 2002:a17:906:c14b:b0:c35:babe:ab44 with SMTP id a640c23a62f3a-c513a1e0076mr1490288666b.0.1795533262820;
+        Tue, 24 Nov 2026 07:14:22 -0800 (PST)
 Received: from ?IPV6:2a00:12d0:afa3:c01:92cc:e257:77ba:97a1? (2a00-12d0-afa3-c01-92cc-e257-77ba-97a1.ip.tng.de. [2a00:12d0:afa3:c01:92cc:e257:77ba:97a1])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c513ae8d0dbsm543097066b.31.2026.11.24.07.13.16
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c513ae698ccsm534442066b.26.2026.11.24.07.14.21
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Nov 2026 07:13:17 -0800 (PST)
-Message-ID: <f9ddfaa9-9a78-4fcb-a142-6c466d215492@suse.com>
-Date: Tue, 24 Nov 2026 16:13:16 +0100
+        Tue, 24 Nov 2026 07:14:22 -0800 (PST)
+Message-ID: <589d567e-912d-4913-9949-ee28dfd7f719@suse.com>
+Date: Tue, 24 Nov 2026 16:14:21 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 01/13] xen/privcmd: convert mmap hook to mmap_prepare
+Subject: Re: [PATCH v2 07/13] xen: convert xenstore interface mmap hooks to
+ mmap_prepare
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  Stefano Stabellini <sstabellini@kernel.org>,
@@ -115,7 +116,7 @@ To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
- <20261124-late-2026-mmap_prepare-v2-1-0b0d99d655f9@kernel.org>
+ <20261124-late-2026-mmap_prepare-v2-7-0b0d99d655f9@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=jgross@suse.com; keydata=
  xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
@@ -140,57 +141,56 @@ Autocrypt: addr=jgross@suse.com; keydata=
  HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
  QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
  ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
-In-Reply-To: <20261124-late-2026-mmap_prepare-v2-1-0b0d99d655f9@kernel.org>
+In-Reply-To: <20261124-late-2026-mmap_prepare-v2-7-0b0d99d655f9@kernel.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="------------q205G5Arex3sh2KHaxisqvnr"
+ boundary="------------rZw0QHKmzMvHx5VSPSOUKur0"
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.83 / 15.00];
-	BAYES_HAM(-3.00)[99.98%];
+X-Spamd-Result: default: False [-4.60 / 15.00];
+	BAYES_HAM(-3.00)[99.99%];
 	SIGNED_PGP(-2.00)[];
 	SUSPICIOUS_RECIPS(1.50)[];
-	DWL_DNSWL_LOW(-1.00)[suse.com:dkim];
 	MIME_BASE64_TEXT_BOGUS(1.00)[];
-	R_MIXED_CHARSET(0.67)[subject];
+	DWL_DNSWL_LOW(-1.00)[suse.com:dkim];
 	DMARC_POLICY_ALLOW(-0.50)[suse.com,quarantine];
-	MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
 	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
 	R_DKIM_ALLOW(-0.20)[suse.com:s=google];
+	MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
 	MIME_BASE64_TEXT(0.10)[];
+	RWL_MAILSPIKE_GOOD(-0.10)[209.85.218.45:from];
 	HAS_ATTACHMENT(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	FREEMAIL_TO(0.00)[kernel.org,linux-foundation.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,suse.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
 	RCVD_TLS_LAST(0.00)[];
-	MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
 	ARC_NA(0.00)[];
 	DKIM_TRACE(0.00)[suse.com:+];
 	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
+	DNSWL_BLOCKED(0.00)[209.85.218.45:from];
 	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[62];
-	MID_RHS_MATCH_FROM(0.00)[];
+	MIME_TRACE(0.00)[0:+,1:+,2:+,3:~];
+	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
 	ALIAS_RESOLVED(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.208.41:from];
+	RCPT_COUNT_GT_50(0.00)[62];
 	TAGGED_RCPT(0.00)[netdev];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.208.41:from]
+	MID_RHS_MATCH_FROM(0.00)[];
+	TO_DN_SOME(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 0049644DC9
-X-Spamd-Bar: ---
+X-Rspamd-Queue-Id: 1C4DF44DC9
+X-Spamd-Bar: ----
 X-MailFrom: jgross@suse.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: NLTHNKBXIQKL6V3NO5JCHESDLXYIIDE3
-X-Message-ID-Hash: NLTHNKBXIQKL6V3NO5JCHESDLXYIIDE3
+Message-ID-Hash: XJNIDOQJB3JFDST4I6LDWPOP7DOLMUMO
+X-Message-ID-Hash: XJNIDOQJB3JFDST4I6LDWPOP7DOLMUMO
 X-Mailman-Approved-At: Tue, 24 Nov 2026 16:08:51 +0000
 CC: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mm@kvack.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/NLTHNKBXIQKL6V3NO5JCHESDLXYIIDE3/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/XJNIDOQJB3JFDST4I6LDWPOP7DOLMUMO/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -206,14 +206,15 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------q205G5Arex3sh2KHaxisqvnr
-Content-Type: multipart/mixed; boundary="------------AjT5XFhC0OM07fDCW0uVTora";
+--------------rZw0QHKmzMvHx5VSPSOUKur0
+Content-Type: multipart/mixed; boundary="------------1hIkmj8WyEEdRHjB5CXVAQ0q";
  protected-headers="v1"; hp="clear"
-Message-ID: <f9ddfaa9-9a78-4fcb-a142-6c466d215492@suse.com>
-Date: Tue, 24 Nov 2026 16:13:16 +0100
+Message-ID: <589d567e-912d-4913-9949-ee28dfd7f719@suse.com>
+Date: Tue, 24 Nov 2026 16:14:21 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 01/13] xen/privcmd: convert mmap hook to mmap_prepare
+Subject: Re: [PATCH v2 07/13] xen: convert xenstore interface mmap hooks to
+ mmap_prepare
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  Stefano Stabellini <sstabellini@kernel.org>,
@@ -256,7 +257,7 @@ Cc: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org,
  netdev@vger.kernel.org, linux-mm@kvack.org
 References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
- <20261124-late-2026-mmap_prepare-v2-1-0b0d99d655f9@kernel.org>
+ <20261124-late-2026-mmap_prepare-v2-7-0b0d99d655f9@kernel.org>
 Content-Language: en-US
 From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
 Autocrypt: addr=jgross@suse.com; keydata=
@@ -282,37 +283,38 @@ Autocrypt: addr=jgross@suse.com; keydata=
  HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
  QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
  ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
-In-Reply-To: <20261124-late-2026-mmap_prepare-v2-1-0b0d99d655f9@kernel.org>
+In-Reply-To: <20261124-late-2026-mmap_prepare-v2-7-0b0d99d655f9@kernel.org>
 
---------------AjT5XFhC0OM07fDCW0uVTora
+--------------1hIkmj8WyEEdRHjB5CXVAQ0q
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: base64
 
 T24gMjQuMTEuMjYgMTU6MDIsIExvcmVuem8gU3RvYWtlcyAoQVJNKSB3cm90ZToNCj4gTW92
 ZSBmcm9tIHRoZSBkZXByZWNhdGVkIG1tYXAgaG9vayB0byB0aGUgbmV3IG1tYXBfcHJlcGFy
-ZSBob29rLg0KPiANCj4gVGhlIGhvb2sgb25seSBzZXRzIFZNQSBmbGFncyBhbmQgb3BlcmF0
-aW9ucy4gVGhlIFZNQSBwcml2YXRlIGRhdGEgaXMNCj4gYWxyZWFkeSBOVUxMIGF0IHRoaXMg
-cG9pbnQsIHNvIHdlIG5vIGxvbmdlciBleHBsaWNpdGx5IGNsZWFyIGl0Lg0KPiANCj4gU2ln
-bmVkLW9mZi1ieTogTG9yZW56byBTdG9ha2VzIChBUk0pIDxsanNAa2VybmVsLm9yZz4NCkFj
-a2VkLWJ5OiBKdWVyZ2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+DQoNCg0KSnVlcmdlbg0K
+ZSBob29rIGZvciB0aGUNCj4geGVuZnMgeHNkX2t2YSBmaWxlIGFuZCB0aGUgeGVuYnVzX2Jh
+Y2tlbmQgZGV2aWNlLCBib3RoIG9mIHdoaWNoIHJlbWFwIHRoZQ0KPiB4ZW5zdG9yZSBpbnRl
+cmZhY2UgcGFnZS4NCj4gDQo+IFVzZSB0aGUgUEZOIHJlbWFwIG1tYXAgYWN0aW9uIHRvIGRv
+IHNvLCByZXRhaW5pbmcgdGhlIC1FQUdBSU4gZXJyb3Igb24NCj4gZmFpbHVyZSB2aWEgdGhl
+IGFjdGlvbiBlcnJvciBvdmVycmlkZS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IExvcmVuem8g
+U3RvYWtlcyAoQVJNKSA8bGpzQGtlcm5lbC5vcmc+DQpBY2tlZC1ieTogSnVlcmdlbiBHcm9z
+cyA8amdyb3NzQHN1c2UuY29tPg0KDQoNCkp1ZXJnZW4NCg==
 
+--------------1hIkmj8WyEEdRHjB5CXVAQ0q--
 
---------------AjT5XFhC0OM07fDCW0uVTora--
-
---------------q205G5Arex3sh2KHaxisqvnr
+--------------rZw0QHKmzMvHx5VSPSOUKur0
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmsFqYwFAwAAAAAACgkQsN6d1ii/Ey9P
-6wgAhB7FWWxaGPhKVeHejmUgx+jnN5sGJc29B5zeOJ/udOQfrpojRJR0JMaTJNeJ8g/QXkTWmCZt
-Zd6lRhkVQVMmVrlatIREKD6+lx0mr154pd31nTm9ffbjdyAK9RPk6czEHFUxkktbU/9vv+pBcZEa
-4SaEbJuidUtK7Vgek2j0JKYNWpqv8R80d+nRsMU+RX0YbRKCuT8Jtt3uB/TLb76UL/eK81vzE7j3
-bGBh83GA0cSOumIzSg72te0PCuz4U9UgccJbDbwLIPRkV2Gx83sLPaLOj5968cz/vyT0qZwJ5LfI
-2oGgirhriBPAdLJrm4WtpkDGIWO5CaJWyZf5I3zVZQ==
-=Eyqx
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmsFqc0FAwAAAAAACgkQsN6d1ii/Ey8U
+agf9EKmbZX8l548UDsdyJg6oJvCYHOXjuS/ExKBuNpmGhFgk7GREMY+3u3PwwH5i8jr55bbeWohR
+PQZmJLsVx91G2Go2UnTECf+ux5hcQK/L88QRCcbKXHLPL5o2jl4qSVtCpjc4+Zq8UulQYIwYP35a
+OS34bD2osQ81MOzn9C89cW+1W2vyw6436TybryP/f0H8AtinZ/cTr3yFyQO/tR2V2NBHtEzwqslP
+jNDjxr1xdpiDdCL4jZ8rdh7WfCE5cgGr89hzbDR9ZyzH4ka8x2ICUX++Mym777GSOuxLf3wzSPuW
+OkTRlKQEHsYqdVjYj7TAHGOBC56IwBlTfAmWefOR2g==
+=vFml
 -----END PGP SIGNATURE-----
 
---------------q205G5Arex3sh2KHaxisqvnr--
+--------------rZw0QHKmzMvHx5VSPSOUKur0--
