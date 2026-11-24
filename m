@@ -2,54 +2,54 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F186606B74D
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:09:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0360A606B002
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:09:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=Mx1i4DfU;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MQjYxltb
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=QBdGg8Nv;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R1t75HIV
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 74C2B4550D
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:09:16 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 54BC8456DD
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:09:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795529356;
-	bh=cW06dufDxxurFECoGUtsKanmgN5mVh9JU1n9DwUlF+c=;
+	d=lists.trustedfirmware.org; s=2024; t=1795529385;
+	bh=N+qzvarBReEV4cRJsAvEDjekSINy/joij8VQmMMnGpQ=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=Mx1i4DfUu9/5iC1pmEWfUgcOstHhIeWcLWzPUtVSEG+9WI36rHsh5kvLRmlZ3k0+S
-	 0RNHrIhnXRC9lwXg2kV9NQuOpZMpiTil7P+z3FY5j7zS6lmSjrlZtqrSmn/4sfRUY9
-	 GmIf3TElhyQs4l6ggJt7nz8JMeETptxUzjfigt0OniLoVZx2Cw98Fnap5oJJmZO9kM
-	 +bWRhzMbQRaJ4q5lqarS+3jopeqVGkM6PCpL9SMcADhdpNu90NcQA3JDFmiS9h8kRx
-	 Jb11jmXKGt68akEKJAaMBw0HnozGOeMVDc2UcvYz6+MxERoMS1E9UNyfu0hP0ObxM9
-	 /txS4iBOwhl7w==
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 9D1F250355
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:06:33 +0000 (UTC)
+	b=QBdGg8Nv2hfeLpgtZPsB8TCFsHDoeCsKlEzpuzq/vmEUy/lyxhKSb/uEpRnYPO8LI
+	 WNNLXQcfgAR3t09ITsGWx2ZQD8fcZs1nNzxyWXZ5YGQlDtyQ7RntiENSF5QrdeGf+1
+	 XG/36Q5rjsg+RZ3KnL8k03p18Swhs3gSZIYA3Tzg6qWKSKr9SbftFpbZZ+wXnkHB7w
+	 6kHcWAT2MOJxXVn6qs/nHkhKvdUYSIcTSM2pfngTSl/1dF0IWzhuXhs9QpYaxWuxi5
+	 CjR/DBTdFD0pchjWIGqBZtqM87pNcy9Mmp+uRHK5BcOtz0Gsqz9RJ9ElAxU6oYeblg
+	 ZFOKiXqpN1zEQ==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id D55B75034D
+	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:06:49 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MQjYxltb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R1t75HIV;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5EA04626B3;
-	Tue, 24 Nov 2026 14:06:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 108161F000D8;
-	Tue, 24 Nov 2026 14:06:17 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 2A6BE4485A;
+	Tue, 24 Nov 2026 14:06:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A4731F00AD3;
+	Tue, 24 Nov 2026 14:06:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795529193;
-	bh=hiMN3N/C7dD03jnJATzFgmGeR7RslpdlQJN0uDpFXN4=;
+	s=k20260515; t=1795529208;
+	bh=ome7MtfDmJxUwg0IIJcuaL9s3WvpoOw/F+488/56/Hk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=MQjYxltb9Lfnf6aDL5OYh7Tos6dJojDYdjybWJGWVNjJ6hrbfTJ8ZPZVPi5MfppI5
-	 pdUQnhlSUzUdj9WwvNDPmbRseMIDLkEdFaRFtoVatla5/Fuct+95HTLcdwq0RgK5Iz
-	 lSsu0hFGoicau84trJRRHIYubGhANzW+wKee32pMvpdmDLHzDYkAv+Y+RDzUir64io
-	 phFuvBt5hilAeyamBQdkPJtFH3lrISngr5HW4k0UvMVP3HH3PL1ngrc6X66Vnf4wu6
-	 OIFJJXbthFCqR6CzeLnrWA1f90gLOeQTTF8hFzd8U/xnGyYmPicXDtHsxEyFNM3Xca
-	 hXGpkJf0v9gPA==
-Date: Tue, 24 Nov 2026 14:02:55 +0000
-Subject: [PATCH v2 12/13] ptp: vmclock: convert mmap hook to mmap_prepare
+	b=R1t75HIVUgGwed4MxVH03XMPsKv2JqX+GHESlBjGLx+mFrupW37TcwLtpW/IA6nyy
+	 /GFmTHsaPp9jqeignnTYbg8XAcb71Zl5d/p+/LAhAPYbtvE2tXJtRSJM+KmOhA23xo
+	 b+0f+BFZK7TG8t5hljheItWqdjAzmcymj4aeA0igJZQkzHalY4cmxSLLwwaJ+kOvbF
+	 nAwp7tHpgVZ6SjGdt2vXASSIAfiPlHOInPOc+nSrJhCgTdzUl6o2H9Fj4JbZnGQWfo
+	 SbOpJ4PyEg3keLzdMV05PlznAg+UhjGJw7KHRudCO04Qr3OYwNZ7lVIq8rdOofismK
+	 Vd3gRU0Moj2oA==
+Date: Tue, 24 Nov 2026 14:02:56 +0000
+Subject: [PATCH v2 13/13] vhost-vdpa: convert mmap hook to mmap_prepare
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261124-late-2026-mmap_prepare-v2-12-0b0d99d655f9@kernel.org>
+Message-Id: <20261124-late-2026-mmap_prepare-v2-13-0b0d99d655f9@kernel.org>
 References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 In-Reply-To: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
@@ -88,12 +88,12 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2115; i=ljs@kernel.org;
- h=from:subject:message-id; bh=cW06dufDxxurFECoGUtsKanmgN5mVh9JU1n9DwUlF+c=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ0rUB1lesPbqmbJgNvPOB1avtaw+P/x3Y3Hccft6P
- pYlE/YpdpSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiJ7cx/FO8oGkyMUCeZdmO
- yW/19f9I/BF48NiouMQ8yLmwfZrEbkeGX8xe9be/bRf592j1j6f9U3c+nsYq1X3k/u9VLzZ8avR
- lb+cGAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2537; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=N+qzvarBReEV4cRJsAvEDjekSINy/joij8VQmMMnGpQ=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ0o8vLegK9dikmDZFhbDbGFDrSavY3cUZiWJFNvpx
+ 5wXv8/SUcrCIMbFICumyPL8i/j+IJGweZ0X/N1g5rAygQxh4OIUgInEJzMy/PW8eWna9yvXPQW+
+ +SxatMug7PudZW2LD+n8j3n/ocB19StGhukFquFZRov1Eu9xR6lFvWh5yOKQHaIvv8GK//TBGYm
+ lPAA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
@@ -104,8 +104,8 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
-	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
+	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
 	MIME_GOOD(-0.10)[text/plain];
 	MIME_TRACE(0.00)[0:+];
@@ -113,30 +113,30 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	FREEMAIL_TO(0.00)[linux-foundation.org,suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
 	ARC_NA(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+];
-	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DNSWL_BLOCKED(0.00)[100.103.45.18:received];
 	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
 	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[64];
+	RCPT_COUNT_GT_50(0.00)[63];
 	MID_RHS_MATCH_FROM(0.00)[];
 	ALIAS_RESOLVED(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	TAGGED_RCPT(0.00)[netdev];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 9D1F250355
+X-Rspamd-Queue-Id: D55B75034D
 X-Spamd-Bar: --------
-Message-ID-Hash: YWKIUVKNZSHTMQE5OOK2U4APDIGBDQU2
-X-Message-ID-Hash: YWKIUVKNZSHTMQE5OOK2U4APDIGBDQU2
+Message-ID-Hash: 4PHNKOVN53X5NWZRBNK5QA5CWMDZ7CP5
+X-Message-ID-Hash: 4PHNKOVN53X5NWZRBNK5QA5CWMDZ7CP5
 X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mm@kvack.org, David Woodhouse <dwmw@amazon.co.uk>
+CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mm@kvack.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/YWKIUVKNZSHTMQE5OOK2U4APDIGBDQU2/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/4PHNKOVN53X5NWZRBNK5QA5CWMDZ7CP5/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -151,64 +151,72 @@ X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook, using the
-I/O PFN remap mmap action to map the clock page and retaining the -EAGAIN
-error on failure via the action error override.
+Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
+only validates the request and sets the VMA flags, operations and page
+protection.
 
-Acked-by: David Woodhouse <dwmw@amazon.co.uk>
+Acked-by: Michael S. Tsirkin <mst@redhat.com>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/ptp/ptp_vmclock.c | 19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+ drivers/vhost/vdpa.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/ptp/ptp_vmclock.c b/drivers/ptp/ptp_vmclock.c
-index 7f25fe6c2ce2..6a1d5f40a566 100644
---- a/drivers/ptp/ptp_vmclock.c
-+++ b/drivers/ptp/ptp_vmclock.c
-@@ -364,27 +364,26 @@ struct vmclock_file_state {
- 	atomic_t seq;
+diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
+index c912ac40ca37..c729efd108d0 100644
+--- a/drivers/vhost/vdpa.c
++++ b/drivers/vhost/vdpa.c
+@@ -1617,19 +1617,19 @@ static const struct vm_operations_struct vhost_vdpa_vm_ops = {
+ 	.fault = vhost_vdpa_fault,
  };
  
--static int vmclock_miscdev_mmap(struct file *fp, struct vm_area_struct *vma)
-+static int vmclock_miscdev_mmap_prepare(struct vm_area_desc *desc)
+-static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
++static int vhost_vdpa_mmap_prepare(struct vm_area_desc *desc)
  {
--	struct vmclock_file_state *fst = fp->private_data;
-+	struct vmclock_file_state *fst = desc->file->private_data;
- 	struct vmclock_state *st = fst->st;
+-	struct vhost_vdpa *v = vma->vm_file->private_data;
++	struct vhost_vdpa *v = desc->file->private_data;
+ 	struct vdpa_device *vdpa = v->vdpa;
+ 	const struct vdpa_config_ops *ops = vdpa->config;
+ 	struct vdpa_notification_area notify;
+-	unsigned long index = vma->vm_pgoff;
++	unsigned long index = desc->pgoff;
  
--	if ((vma->vm_flags & (VM_READ|VM_WRITE)) != VM_READ)
-+	if (!vma_desc_test(desc, VMA_READ_BIT) ||
-+	    vma_desc_test(desc, VMA_WRITE_BIT))
- 		return -EROFS;
- 
- 	/*
- 	 * Restrict the read-only mapping so it cannot be upgraded to
- 	 * writable later with mprotect().
- 	 */
--	vm_flags_clear(vma, VM_MAYWRITE);
-+	vma_desc_clear_flags(desc, VMA_MAYWRITE_BIT);
- 
--	if (vma->vm_end - vma->vm_start != PAGE_SIZE || vma->vm_pgoff)
-+	if (vma_desc_size(desc) != PAGE_SIZE || desc->pgoff)
+-	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
++	if (vma_desc_size(desc) != PAGE_SIZE)
  		return -EINVAL;
+-	if ((vma->vm_flags & VM_SHARED) == 0)
++	if (!vma_desc_test(desc, VMA_SHARED_BIT))
+ 		return -EINVAL;
+-	if (vma->vm_flags & VM_READ)
++	if (vma_desc_test(desc, VMA_READ_BIT))
+ 		return -EINVAL;
+ 	if (!ops->get_vq_notification)
+ 		return -ENOTSUPP;
+@@ -1642,12 +1642,13 @@ static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
+ 		return -EINVAL;
+ 	if (notify.addr & (PAGE_SIZE - 1))
+ 		return -EINVAL;
+-	if (vma->vm_end - vma->vm_start != notify.size)
++	if (vma_desc_size(desc) != notify.size)
+ 		return -ENOTSUPP;
  
--	if (io_remap_pfn_range(vma, vma->vm_start,
--			       st->res.start >> PAGE_SHIFT, PAGE_SIZE,
--			       vma->vm_page_prot))
--		return -EAGAIN;
-+	mmap_action_ioremap_full(desc, st->res.start >> PAGE_SHIFT);
-+	desc->action.error_override = -EAGAIN;
- 
+-	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-	vm_flags_set(vma, VM_IO | VM_PFNMAP | VM_DONTEXPAND | VM_DONTDUMP);
+-	vma->vm_ops = &vhost_vdpa_vm_ops;
++	desc->page_prot = pgprot_noncached(desc->page_prot);
++	vma_desc_set_flags(desc, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTEXPAND_BIT,
++			   VMA_DONTDUMP_BIT);
++	desc->vm_ops = &vhost_vdpa_vm_ops;
  	return 0;
  }
-@@ -484,7 +483,7 @@ static const struct file_operations vmclock_miscdev_fops = {
- 	.owner = THIS_MODULE,
- 	.open = vmclock_miscdev_open,
- 	.release = vmclock_miscdev_release,
--	.mmap = vmclock_miscdev_mmap,
-+	.mmap_prepare = vmclock_miscdev_mmap_prepare,
- 	.read = vmclock_miscdev_read,
- 	.poll = vmclock_miscdev_poll,
+ #endif /* CONFIG_MMU */
+@@ -1659,7 +1660,7 @@ static const struct file_operations vhost_vdpa_fops = {
+ 	.write_iter	= vhost_vdpa_chr_write_iter,
+ 	.unlocked_ioctl	= vhost_vdpa_unlocked_ioctl,
+ #ifdef CONFIG_MMU
+-	.mmap		= vhost_vdpa_mmap,
++	.mmap_prepare	= vhost_vdpa_mmap_prepare,
+ #endif /* CONFIG_MMU */
+ 	.compat_ioctl	= compat_ptr_ioctl,
  };
 
 -- 
