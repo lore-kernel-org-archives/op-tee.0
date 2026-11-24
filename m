@@ -1,257 +1,221 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C0E3606A31E
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 13:57:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3308C606A33A
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:03:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=ULDyXIuy;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20260707 header.b=pZz6ZTps
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=2d9tU51J;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m5RF+lzm
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 74B3F45509
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 13:57:43 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id 7AAA145501
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:03:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795528663;
-	bh=8eiWIElRuMA8mX/pS9oYBItgRhxDb5aDKJ8dJoSy/BM=;
-	h=References:In-Reply-To:Date:Subject:To:CC:List-Id:List-Archive:
-	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
-	 From:Reply-To:From;
-	b=ULDyXIuyHiMUlkBLFQdbVQrNHsYcgvOxka0NOcihudNXXjGRzHneey0gDZp5ZVF6P
-	 j1HVQEvQEYDDjDCFJVq92bJXDAQoP2p3Co/stS6azDymyB0WaU/EDW5K++Q2Uz2A68
-	 WtQ9Vc8vTYCs+cCGnGgbUCbuvwD/PZJshBqqFkGZCZ+VUCayPupCizR8ocEcFyCkKj
-	 eyKWtLhR5WWss/HPwtdmCvF8dYC/a2wlSgRqUQ+08PsnlQBp0OI+RY+wkkMctnQZJO
-	 mKg3otAAIBkeD/OrqGaJgC3Enp5sqLYLyyCmnHLSfpUq/WScgOKyWUrRPLK6lowTIt
-	 jw1HCZQOF0WYg==
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 13B4044A3B
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 13:50:12 +0000 (UTC)
+	d=lists.trustedfirmware.org; s=2024; t=1795529007;
+	bh=cNcQh1oes+NuXX/SLhNhorMmsomyqOJdE2nbt8XExvk=;
+	h=Subject:Date:To:CC:List-Id:List-Archive:List-Help:List-Owner:
+	 List-Post:List-Subscribe:List-Unsubscribe:From:Reply-To:From;
+	b=2d9tU51J/9s7G5Coqg26I9dOYTgRCeXqkrUOl0gcdI8vbKJ9JlsKkUsvJK/leKxfW
+	 6ajEG6pSlEgl0UUT5VNRwbz4g/YiiWPLBzuZ0OFik9vpm2PIsvhwKXv4tK+WP9N+P+
+	 9H17roY0ptrpmZRUpKfxhXWXXYryTMBoOU9yNJqC8kVzLfcZoze4I0I4XwackUJZNS
+	 th0lRgS8zdswiAb2S0OOkc5ggN+YR+ArmMHuAq1ne4darIb5j07OgDYS88+3Qi4g6U
+	 RIxATdTNCaKX55bgbkKuG5Mit8LHbT8Hsvh87+sloHvNoufu8sunziqyiIt0BZUMmy
+	 KecDiCE8/h88A==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 0AD8444A40
+	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:03:22 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20260707 header.b=pZz6ZTps;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m5RF+lzm;
 	dkim-atps=neutral
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-4a3e706b5dfso2913237f8f.2
-        for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 05:50:12 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795528211; cv=none;
-        d=google.com; s=arc-20260327;
-        b=RpuI/Gpg7gLprGE861ARfoMcHGwhCGOKKt3nezTBweYXhe+UyXtL7xic0JrN0gVV61
-         TZW0HfroevjCl9MYeTeRHN6n4T/DmEZue77OlVYzl7fmMCTpNW1W8m3xAdQLmxZK2sAb
-         sfgK+yWcdHpeyJTIhLKP1VCB6fGiEUwPaOimrB7vzACOuUSF0mcZbgvlSxJNIKo9vZMU
-         Y3NpwujwabTGq5rckPDdljnxoRQQnfuS/xxZfmS8xt5sUYXrLIiynmJlrK/IRPFBO8SV
-         3lBh9jcjUOjRmHJL1iMCJAaAguFKJB2qGaNoKXBPOlpVG9Hgh9p4exQEqo1ug0Gyw/fK
-         zNEA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=XTPCHg4unEN6vtUDvCIgxfYMZVabwQIC4dv3+3CL15w=;
-        fh=lGhaIO29XOEgi6+ec4jI2+08LC1mRFzHJyWL+YC3hdM=;
-        b=B5lywLKybxNI4iaTnBMAxjpeVpq94i21Zd23ZAZmPT3jM9W+n2Bt5sM1yEhAKcNTJ0
-         rVQh4NTbUsuWgowTm1ZTf1WH7Krj1UvmB+zv+zTNlcxYsLYot5hj4sBE5Wy6r08bLVsG
-         5wwEEm4UqhehshSqkmWDxFCtlLDLgF/ED9lRSzNSiLKNbnm+p4qqaRmkiFOwfv6vNTK2
-         7Ou3GjgfQLvhhAn0+nQfEMkmkXcjPhfNziw3bx6mg7gih2Zb2lkBBkAWRgHBhEKk89yb
-         HPBXfUkn0vFECToy7s1+Q6Zq63xpaCDJtDCHusGPq2pofQq9ZFPncPY8Ik83T1QNrpL2
-         MXfA==;
-        darn=lists.trustedfirmware.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=googlemail.com; s=20260707; t=1795528211; x=1796133011; darn=lists.trustedfirmware.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XTPCHg4unEN6vtUDvCIgxfYMZVabwQIC4dv3+3CL15w=;
-        b=pZz6ZTps6KT0Ih5c/hJKAcQGq6RDWsVQae22kkSSTaKgcNZM8s6kbuwdmeQybIOLeU
-         zK6S+/k0rXndrtcBUM5dUgx6FJCAuMfNnp+0pBXZVrNr8RbNM2lZxuxQG8Nc/VQEGOiN
-         sOH2jVtNB/0/oOQKLnBZZQYuz5vFZwbaobUwst2LxqdFHbLNZAbRgq2I2aMS04bg92sW
-         qTT6sEXsK7pc/npPqdg+0sToDDQn0DTEJKbukF4C8uhfqPZMavD9DFy2LIyz8hUsO8z3
-         gJcQPFItn1YdYNG44NnscXKdeHrKGPYHdHJT6nmXh4V3mPqrokbXgEUaXEjuuyFBFnXh
-         ZEJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795528211; x=1796133011;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=XTPCHg4unEN6vtUDvCIgxfYMZVabwQIC4dv3+3CL15w=;
-        b=SnoXbbSaaNpilE5U4+px9On/VH/L1Tee7Ip2kMW0yz7IjrxrZeN0Ynk0L8VdOkgidH
-         SM2rb00OtJNN+j8lCL1xoxmKNB2FtVaTShhPcR4fw6rO69JaTtsO2mikPpdNGbAC14Ye
-         CCmlgwgfc/m0NwbsYYgsCOrpIQdHRZLZ55UyysVKX5nnOmafEYTrsw70H0xrv5NlDRht
-         sFkQ0oRvGmnUOA86ELlc8Vxw4lZcKWLpu6gBUN3GtYDK6hsFEHaB240fmfEACbyra5Yj
-         XvFIACaES0rgs7/m2lWKxpeiRhqEHh75ACt58FmYO1bMywI6mm27wYBSD3dKtGN0WEn7
-         Kz7g==
-X-Forwarded-Encrypted: i=1; AL+hErGJWmRk6S/JHXwG0/hRAptFDLgh4xHkX5B0NKRcuRHPlKfBw8xoMoOMOVVZLQsvVWfVLV3Yleg=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z+8w9hWgR4Cnaf88RAc7nbStVIpQ4LBO5nBiL9KBUr0hjDKsLpm
-	WJyfEtK3b/1ru6waqF9NaglztNXl5HT71rpAV0UvkNSKLSSpS+qIGoUiCJcoLWaiRy/F2/lkErl
-	JHEXVq/EGG9bq8QnCkLUGmhxgoVvb31o=
-X-Gm-Gg: AZFdTZfsBs6RtRQdzHrDbtuqlU7RLwa9CMAw27IllVza8Ofy6hPuTbGv2hwfTxhENaw
-	GvwyX/4PNbGiZrhqTeWSwrK5tkDJMWOY7HkkJchKOcijzpUA7ztIa+JhCUVZbBRvOSFHoGOifPM
-	4KpgZT2BBVlNEDuIe9+8NNVcjF3m3CX9oahNjiLacrZi2qQRaPEqCXqHRBBwZJe2eJiXS4sUe7x
-	2GbS5eaD7vnZy5YpKeZxAeRcC9BgfbltN+RdnsVVNRCCWgshLsTm+Dvk62ESrJjHLetMc8wX8o6
-	MmKPpm3FrhPX3UP1sKZ+vA91YXNBeh1AOYKSI7UgTC8v0Az3J0asoYELFB1JQH4yGo0m+VLeJof
-	zY9XroxnFIemkrmtD95wiQotVr02FdewaJEhNcgC/6WWJALsZ0wWm
-X-Received: by 2002:a05:600c:800e:b0:4bb:7757:fe58 with SMTP id
- 5b1f17b1804b1-4bb8881b9d7mr305306125e9.19.1795528210579; Tue, 24 Nov 2026
- 05:50:10 -0800 (PST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 470F941AF3;
+	Tue, 24 Nov 2026 14:03:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C9741F000CF;
+	Tue, 24 Nov 2026 14:03:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795529001;
+	bh=Pcp6KuvRcMiXfM74bIVPa/vEkoJOU8lTqnsRQrOb5o4=;
+	h=From:Subject:Date:To:Cc;
+	b=m5RF+lzmoV0KlfOio0Dl2o69dI4rgtq9fEDM529z18h4bvXVByTYYPIrO3nfq66Al
+	 S7b0xt4Isk2RZvdXlVCnJO2H9ApRMebR+cuuc1Mh6rszX9Zhla035nI0F5C6x/MHLD
+	 XeitIh3tzBgM7PxhrmmkTyrk505660hD/3k2opBfr2SrNPC1Zqxuz4rugypmvl0YHv
+	 L7i+BrNOy0yloakdV4vIbbD9MhDsYIvWUGxQp/CF8ICGFRPZrqEcGhx7b//ugJyzLI
+	 jvC7NpeW/ds4v/oSUDD3cFClNVL2B4axAeKCDrEKLPDhequ6MiNoo2JytLwjxnVOOr
+	 e+11WXxZ6coOA==
+Subject: [PATCH v2 00/13] mm: convert further simple mmap hooks to
+ mmap_prepare
+Date: Tue, 24 Nov 2026 14:02:43 +0000
+Message-Id: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261124-v2_20230123_tjmercier_google_com-v6-0-dce12fa03ad6@redhat.com>
- <20261124-v2_20230123_tjmercier_google_com-v6-6-dce12fa03ad6@redhat.com>
-In-Reply-To: <20261124-v2_20230123_tjmercier_google_com-v6-6-dce12fa03ad6@redhat.com>
-Date: Tue, 24 Nov 2026 14:49:55 +0100
-X-Gm-Features: Aa3M54qkPJ8C4GRzLQzCC_QtBShd4rpGnT89RPbtOkkrzzkAiMVQPjTTZfQmmls
-Message-ID: <CAJ2a_DeDF+9pbLKS9pcX4Tot4xZZ-K7HydKnDjW6TWC5bvREzQ@mail.gmail.com>
-Subject: Re: [PATCH v6 6/7] selinux: Restrict cross-cgroup memcg charging
-To: Albert Esteve <aesteve@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAA/3XNywqDQAyF4VcZsjZlMkUrrvoeRUrUqEO9DBmRF
+ vHdi0KXXZ5/8Z0NoqiXCIXZQGX10c8TFMYlBuqep07QN1AYcNZlRJZw4EXwWDiOHJ5BJbAKWlf
+ nt8ZdyZJAYiCotP59wo8yMdD7uMz6OX9WOuqPTP+RK6HFOs2Ym7biKuf7S3SS4TJrB+W+71+eu
+ Pr9vQAAAA==
+X-Change-ID: 20261101-late-2026-mmap_prepare-02c87d23101e
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Juergen Gross <jgross@suse.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ Jason Wang <jasowangio@gmail.com>,
+ =?utf-8?q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Jarkko Sakkinen <jarkko@kernel.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
+ Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Ryan Chen <ryan_chen@aspeedtech.com>,
+ Billy Tsai <billy_tsai@aspeedtech.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+ Scott Branden <scott.branden@broadcom.com>,
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Richard Cochran <richardcochran@gmail.com>,
+ David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2820; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=cNcQh1oes+NuXX/SLhNhorMmsomyqOJdE2nbt8XExvk=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ4rIHtHcwB4V8Hin/yxTxk7PB9MvbI3XXNtvsWVPh
+ GZ0tPrsjlIWBjEuBlkxRZbnX8T3B4mEzeu84O8GM4eVCWQIAxenAEykXpmR4T6L/n7RH25zgz5/
+ uKz5oG9xyJmgPXZrlS4HfLedtXeZAz8jw9ZDvbcNpRcv4J5c+V/n8+cDm1NbX87R834vLWG3KFv
+ 2OzMA
+X-Developer-Key: i=ljs@kernel.org; a=openpgp;
+ fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.50 / 15.00];
+X-Spamd-Result: default: False [-8.20 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
 	BAYES_HAM(-3.00)[99.99%];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
 	SUSPICIOUS_RECIPS(1.50)[];
-	ARC_ALLOW(-1.00)[google.com:s=arc-20260327:i=1];
-	DMARC_POLICY_ALLOW(-0.50)[gmail.com,none];
-	R_SPF_ALLOW(-0.20)[+ip4:209.85.128.0/17];
-	R_DKIM_ALLOW(-0.20)[googlemail.com:s=20260707];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
 	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_FROM(0.00)[googlemail.com];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVFROM(0.00)[gmail.com];
-	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[linux-foundation.org,suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
 	RCVD_TLS_LAST(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,cmpxchg.org,suse.com,lwn.net,linuxfoundation.org,linaro.org,amd.com,linux.dev,linux-foundation.org,collabora.com,arm.com,google.com,paul-moore.com,namei.org,hallyn.com,gmail.com,infradead.org,vger.kernel.org,lists.freedesktop.org,lists.linaro.org,kvack.org,lists.trustedfirmware.org,redhat.com];
-	RCPT_COUNT_TWELVE(0.00)[42];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[googlemail.com:+];
-	MISSING_XM_UA(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.221.47:from];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
 	ALIAS_RESOLVED(0.00)[];
-	RWL_MAILSPIKE_POSSIBLE(0.00)[209.85.221.47:from];
-	MID_RHS_MATCH_FROMTLD(0.00)[];
-	RCVD_COUNT_ONE(0.00)[1];
-	ASN(0.00)[asn:15169, ipnet:209.85.128.0/17, country:US];
-	DWL_DNSWL_NONE(0.00)[googlemail.com:dkim]
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,lists.xenproject.org,vger.kernel.org,lists.ozlabs.org,lists.linux.dev,lists.infradead.org,lists.trustedfirmware.org,kvack.org,linux.microsoft.com,outlook.com,suse.cz,oss.qualcomm.com,amazon.co.uk];
+	TAGGED_RCPT(0.00)[netdev];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[69];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[kernel.org:+];
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 13B4044A3B
-X-Spamd-Bar: ---
-X-MailFrom: cgzones@googlemail.com
-X-Mailman-Rule-Hits: nonmember-moderation
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0
-Message-ID-Hash: 7N4LGTYZB5PALWFLSFZE5DNARWUYVBJE
-X-Message-ID-Hash: 7N4LGTYZB5PALWFLSFZE5DNARWUYVBJE
-X-Mailman-Approved-At: Tue, 24 Nov 2026 13:57:40 +0000
-CC: Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, Sumit Semwal <sumit.semwal@linaro.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Michal Hocko <mhocko@kernel.org>, Roman Gushchin <roman.gushchin@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Muchun Song <muchun.song@linux.dev>, Andrew Morton <akpm@linux-foundation.org>, Benjamin Gaignard <benjamin.gaignard@collabora.com>, Brian Starkey <Brian.Starkey@arm.com>, John Stultz <jstultz@google.com>, "T.J. Mercier" <tjmercier@google.com>, Christian Brauner <brauner@kernel.org>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Shuah Khan <shuah@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>, Jens Wiklander <j
- enswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, Philipp Stanner <phasta@kernel.org>, airlied@gmail.com, cgroups@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, linux-kselftest@vger.kernel.org, op-tee@lists.trustedfirmware.org, echanude@redhat.com, mripard@kernel.org
+X-Rspamd-Queue-Id: 0AD8444A40
+X-Spamd-Bar: --------
+Message-ID-Hash: LYLZU2SZIWILL2BLMF2ACJJJ6NVRBHLO
+X-Message-ID-Hash: LYLZU2SZIWILL2BLMF2ACJJJ6NVRBHLO
+X-MailFrom: ljs@kernel.org
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
+CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mm@kvack.org, Kameron Carr <kameroncarr@linux.microsoft.com>, Michael Kelley <mhklinux@outlook.com>, Jan Kara <jack@suse.cz>, Abel Vesa <abel.vesa@oss.qualcomm.com>, Jens Wiklander <jens.wiklander@oss.qualcomm.com>, David Woodhouse <dwmw@amazon.co.uk>
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/7N4LGTYZB5PALWFLSFZE5DNARWUYVBJE/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/LYLZU2SZIWILL2BLMF2ACJJJ6NVRBHLO/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-From: =?utf-8?q?Christian_G=C3=B6ttsche_via_OP-TEE?= <op-tee@lists.trustedfirmware.org>
-Reply-To: =?UTF-8?Q?Christian_G=C3=B6ttsche?= <cgzones@googlemail.com>
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=4.0.1
+From: "Lorenzo Stoakes (ARM) via OP-TEE" <op-tee@lists.trustedfirmware.org>
+Reply-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 24 Nov 2026 at 14:05, Albert Esteve <aesteve@redhat.com> wrote:
->
-> The security_current_memcg_charge_task() and
-> security_current_memcg_charge_cgroup() hooks allow security modules to
-> control which processes may charge or transfer memcg memory to another
-> process's cgroup, named by a pidfd, or to an arbitrary cgroup named by
-> a cgroupfd, both passed in charge_fd. Without a policy implementation,
-> either hook is a no-op and the restriction is not enforced.
->
-> On SELinux-managed systems the only limit is CAP_SYS_RESOURCE. A
-> domain that holds both dma-heap access (today's only exporter that
-> opts-in) and that capability, can charge memory to any cgroup outside
-> its own subtree. Since the capability is all-or-nothing, SELinux
-> policy cannot express which targets such a domain may charge to.
->
-> Implement both selinux_memcg_charge_task() and
-> selinux_memcg_charge_cgroup() using avc_has_perm() with a new cgroup
-> object class and a new charge_to permission. Both charge_fd flavours
-> ultimately charge a cgroup, so one permission covers them and the
-> target type keeps the distinction: for the pidfd path the target is
-> the referred task's SID, as there is no cgroup object to take a label
-> from; for the cgroupfd path it is the cgroup directory's inode SID,
-> which comes from the genfscon entry for cgroupfs unless the directory
-> is relabeled.
->
-> The checks run when the charge target is resolved, before the
-> CAP_SYS_RESOURCE baseline is evaluated, and apply to every explicit
-> charge_fd target, including the caller's own subtree, so policy needs
-> a rule even for self-charging. Policy authors can then grant
-> cross-cgroup charging selectively, for example:
->
->   allow allocator_app_t client_app_t:cgroup charge_to;
->   allow allocator_app_t cgroup_t:cgroup charge_to;
->
-> Signed-off-by: Albert Esteve <aesteve@redhat.com>
-> ---
->  security/selinux/hooks.c            | 19 +++++++++++++++++++
->  security/selinux/include/classmap.h |  1 +
->  2 files changed, 20 insertions(+)
->
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 6c4c64d6e904..76a714107ae4 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -2204,6 +2204,23 @@ static int selinux_capable(const struct cred *cred, struct user_namespace *ns,
->         return cred_has_capability(cred, cap, opts, ns == &init_user_ns);
->  }
->
-> +static int selinux_memcg_charge_task(const struct cred *to)
-> +{
-> +       const struct cred *cred = current_cred();
-> +
-> +       return avc_has_perm(cred_sid(cred), cred_sid(to),
+Continue the conversion of users of the deprecated f_op->mmap callback to
+f_op->mmap_prepare. Keep things gentle this cycle by targeting simple
+cases.
 
-Small nit:
-`cred_sid(current_cred())` could be simplified using `current_sid()`
+No functional change intended.
 
-> +                           SECCLASS_CGROUP, CGROUP__CHARGE_TO, NULL);
-> +}
-> +
-> +static int selinux_memcg_charge_cgroup(const struct file *file)
-> +{
-> +       const struct cred *cred = current_cred();
-> +       struct inode_security_struct *isec = inode_security(file_inode(file));
-> +
-> +       return avc_has_perm(cred_sid(cred), isec->sid, SECCLASS_CGROUP,
-> +                           CGROUP__CHARGE_TO, NULL);
-> +}
-> +
->  static int selinux_quotactl(int cmds, int type, int id, const struct super_block *sb)
->  {
->         const struct cred *cred = current_cred();
-> @@ -7683,6 +7700,8 @@ static struct security_hook_list selinux_hooks[] __ro_after_init = {
->         LSM_HOOK_INIT(capget, selinux_capget),
->         LSM_HOOK_INIT(capset, selinux_capset),
->         LSM_HOOK_INIT(capable, selinux_capable),
-> +       LSM_HOOK_INIT(memcg_charge_task, selinux_memcg_charge_task),
-> +       LSM_HOOK_INIT(memcg_charge_cgroup, selinux_memcg_charge_cgroup),
->         LSM_HOOK_INIT(quotactl, selinux_quotactl),
->         LSM_HOOK_INIT(quota_on, selinux_quota_on),
->         LSM_HOOK_INIT(syslog, selinux_syslog),
-> diff --git a/security/selinux/include/classmap.h b/security/selinux/include/classmap.h
-> index 90cb61b16425..1f1f2fc4d35d 100644
-> --- a/security/selinux/include/classmap.h
-> +++ b/security/selinux/include/classmap.h
-> @@ -181,6 +181,7 @@ const struct security_class_mapping secclass_map[] = {
->         { "user_namespace", { "create", NULL } },
->         { "memfd_file",
->           { COMMON_FILE_PERMS, "execute_no_trans", "entrypoint", NULL } },
-> +       { "cgroup", { "charge_to", NULL } },
->         /* last one */ { NULL, {} }
->  };
->
->
-> --
-> 2.55.0
->
->
+Build tested on x86-64 (allmodconfig, each patch individually), i386,
+arm64 and ppc64le.
+
+Andrew - could you take this through your tree as it's a kernel-wide
+change?  Thanks!
+
+Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+---
+v2:
+* Added tags, thanks everybody!
+* cc'd linux-mm, Andrew.
+* Dropped the vduse patch (was 4/14), as commit bb2e6f166547 ("vduse: fix
+  VA/PA confusion in the coherent page fault path") completely broke the
+  driver and was merged without testing as a hotfix. Conversion can wait
+  for that to get fixed.
+
+v1:
+https://lore.kernel.org/r/20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org
+
+---
+Lorenzo Stoakes (ARM) (13):
+      xen/privcmd: convert mmap hook to mmap_prepare
+      KVM: PPC: Book3S: convert spapr TCE mmap hook to mmap_prepare
+      mshv_vtl: convert mmap hooks to mmap_prepare
+      x86/sgx: convert vepc mmap hook to mmap_prepare
+      udf: convert mmap hook to mmap_prepare
+      selinuxfs: convert mmap hooks to mmap_prepare
+      xen: convert xenstore interface mmap hooks to mmap_prepare
+      soc: aspeed: convert LPC and P2A control mmap hooks to mmap_prepare
+      soc: qcom: rmtfs_mem: convert mmap hook to mmap_prepare
+      tee: convert shm mmap hook to mmap_prepare
+      misc: bcm-vk: convert mmap hook to mmap_prepare
+      ptp: vmclock: convert mmap hook to mmap_prepare
+      vhost-vdpa: convert mmap hook to mmap_prepare
+
+ arch/powerpc/kvm/book3s_64_vio.c        |  6 +++---
+ arch/x86/kernel/cpu/sgx/virt.c          | 15 ++++++++-------
+ drivers/hv/mshv_vtl_main.c              | 14 +++++++-------
+ drivers/misc/bcm-vk/bcm_vk_dev.c        | 20 ++++++++++----------
+ drivers/ptp/ptp_vmclock.c               | 19 +++++++++----------
+ drivers/soc/aspeed/aspeed-lpc-ctrl.c    | 20 +++++++++-----------
+ drivers/soc/aspeed/aspeed-p2a-ctrl.c    | 22 ++++++++--------------
+ drivers/soc/qcom/rmtfs_mem.c            | 22 ++++++++++------------
+ drivers/tee/tee_shm.c                   | 14 +++++++-------
+ drivers/vhost/vdpa.c                    | 23 ++++++++++++-----------
+ drivers/xen/privcmd.c                   | 11 +++++------
+ drivers/xen/xenbus/xenbus_dev_backend.c | 14 ++++++--------
+ drivers/xen/xenfs/xenstored.c           | 14 ++++++--------
+ fs/udf/file.c                           |  8 ++++----
+ security/selinux/selinuxfs.c            | 24 +++++++++++-------------
+ 15 files changed, 115 insertions(+), 131 deletions(-)
+---
+base-commit: 5bd93e4b0b357e9d0a13199887aacbf04d1ce216
+change-id: 20261101-late-2026-mmap_prepare-02c87d23101e
+
+Cheers,
+-- 
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
+
