@@ -2,54 +2,55 @@ Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E8AC60A3817
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:03:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63CD560A263D
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:04:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=d4blpeat;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lgnIva9K
+	dkim=pass (2048-bit key) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=OqMS2slR;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iHtmG7Cj
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 7619145526
-	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:03:56 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id B958B45530
+	for <op-tee@archiver.kernel.org>; Tue, 24 Nov 2026 14:04:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=lists.trustedfirmware.org; s=2024; t=1795529036;
-	bh=vbEx7oZObK1/uvpt+gmlwGGN8AqsAvHpQ+6B/bIbWLc=;
+	d=lists.trustedfirmware.org; s=2024; t=1795529066;
+	bh=gtiaF6eQ5l4kQG69nvAkqE3NZUUEizPFbGQry23tGvI=;
 	h=Date:Subject:References:In-Reply-To:To:CC:List-Id:List-Archive:
 	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
 	 From:Reply-To:From;
-	b=d4blpeatKdQSVNYXlR0BsVTS56ZyD+xN2F8dZqCMy2vjwAvLcDBTWHVI8y11tym1V
-	 i3LNHcjcJvPfsm9p4UuYyXunnQQ1x3lrAM6VNB5g592Q01xE9YP/rePKExRWcuouy7
-	 HXhDAhguc2kGIXsORhka0Qd/udPMsag+zo+PARzDChG6QHsBqZhk51qmDz2NFaE3V2
-	 vmIJ03HEMxA663GmaACwnELo+DLGdgBqZrBlDF82T9hT41QCGCk+7KwcrUSSk/oiUU
-	 DfDctyHL5+KYgJEHZoN50z9g9W0zb1zvseKntLUFqfwHCvb1c3IiHVxu4nYf1mS48w
-	 NavgMPv9awcpg==
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id CC1F9456DD
-	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:03:37 +0000 (UTC)
+	b=OqMS2slRwoPVTanFMKaMvN2SD2O+3imIUTO6vFTZqGXoVurd4rlaEBoFV8M4ADrj+
+	 NmEtHH/w4PQ9iFJdHnoFCGoZtWFbqiSf0nOk4cFxj+q6HC3GnalCPlr3KE57dXHTAN
+	 zDf4jN/ZgbVyv2TojWc3SGwQH1vOvBldKL54LGal5Rt2emQXvdlbJMtyvbdQyb7USm
+	 NZQcOPNPebiUHwZQhXYOSuzcoJCDBtR7KrlJ9oXvhsFjumpM57GOULpcFfZFam6lU5
+	 w2Bme02lbkExkxija0bcvffq1wd99K7VD32cyJO0+vJwqsvZLiDfwx7DxAQBWz4DTg
+	 aaNJEf7MxOXOQ==
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id 226C144A40
+	for <op-tee@lists.trustedfirmware.org>; Tue, 24 Nov 2026 14:03:54 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lgnIva9K;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iHtmG7Cj;
 	dkim-atps=neutral
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4C35645ADA;
-	Tue, 24 Nov 2026 14:03:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EC9E1F000D2;
-	Tue, 24 Nov 2026 14:03:22 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id A6127601D9;
+	Tue, 24 Nov 2026 14:03:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 388EC1F00AE3;
+	Tue, 24 Nov 2026 14:03:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795529017;
-	bh=QEgT8LA0rRCf6QNXkIxcU8G4AwB3CCCB3Sy/g9Ov95E=;
+	s=k20260515; t=1795529033;
+	bh=vJUBuFI/X4ybR5TQJo0mpuZGpnhQ+Y28O/2YwIAeUl0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=lgnIva9KLMkUPJObpQOKYtz3otyVdfSMFpdn1jQwIpMlk520FFqMXVbw/h5rCk5aM
-	 ZcATjbGD+6/HreWcTYCyu4RHpZTCUrX6vOFINRYB7hegedAzZv3N3ozJ5fa11z9eaM
-	 gXXQWOhj64Q7pR47HsOyK6FGHG0uHoSfwTM6XiHuVS7myaCNjsnAuuXHUj/wq9U3p2
-	 lQW5/BHNg2s211IbQIjkhHQHG7z2O6su3Yfa2ykLBzNZFs2cu9h189uUCdMinPY7Ev
-	 uwAcxEkv+7zGOnE/QurKfUrnjuQWC6+1VYW3BugMR6VXffjfIIPgcP/WlsULN+XnOo
-	 BLi/c3ZTzPxGw==
-Date: Tue, 24 Nov 2026 14:02:44 +0000
-Subject: [PATCH v2 01/13] xen/privcmd: convert mmap hook to mmap_prepare
+	b=iHtmG7CjTvXPz3lA7PVVVfcohJ6emKtmjQ2NVdO2YLbIRwOCJfD95zg5jaPopSYaS
+	 gj5YZqmFSdMCB9FUDQv5kkAhrEJtfG0JXoItpXFghN79meSem8VIAhQgIUFZSzsgAY
+	 r4LSrjk7SnXCqTh4BUkrSrsjPXB067ziolwbz+SPR2Ltp0YGJdQcNB/fTa+3srse0H
+	 /GlPyBuULOvYPhH5W1j1efHQ11GpECImbgYnAOTpdtXBpeseeeo4Fqv9cOfTrOTpvy
+	 kwrbQFsHkQGnl4n4jy0umpUo8SNKV+PrXpeTfoo5qbg7WgAkB1/06qMvPYru+IuxNi
+	 f+p2tfqpbV87w==
+Date: Tue, 24 Nov 2026 14:02:45 +0000
+Subject: [PATCH v2 02/13] KVM: PPC: Book3S: convert spapr TCE mmap hook to
+ mmap_prepare
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261124-late-2026-mmap_prepare-v2-1-0b0d99d655f9@kernel.org>
+Message-Id: <20261124-late-2026-mmap_prepare-v2-2-0b0d99d655f9@kernel.org>
 References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 In-Reply-To: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
@@ -88,12 +89,12 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1514; i=ljs@kernel.org;
- h=from:subject:message-id; bh=vbEx7oZObK1/uvpt+gmlwGGN8AqsAvHpQ+6B/bIbWLc=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ4p9KnSRk7EO3//5aBbT8vkXtm3ydLgmlDTdz4Xh/
- 51DR51rO0pZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCR/xmMDDNFecLfebbckfi4
- vE7/m/LcK2sOZZ1nm8rxbKGpph2foA/Df18VkyVbq9Zv5zmv/2rbIZaiJdcOXiqa8Xh3xbur6dX
- d2awA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1158; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=gtiaF6eQ5l4kQG69nvAkqE3NZUUEizPFbGQry23tGvI=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZZ4oFbmu5VXls3dYr8f7eMuEO344nPNsfMWXNVf7Dq
+ qZ7i657dpSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiU0IYGTbVO6rNXJEyv+mV
+ +9vcNeFPj7t/YJz3RnHNZ8l9hdoHV+1h+O8ze3Ji1SVFpXAe612GQm+U5O/yPeIyeLxitpextfz
+ t+xwA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Rspamd-Action: no action
@@ -104,17 +105,18 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	SUSPICIOUS_RECIPS(1.50)[];
 	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
 	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
-	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31:c];
-	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
+	R_SPF_ALLOW(-0.20)[+ip4:172.105.4.254:c];
+	RCVD_IN_DNSWL_MED(-0.20)[172.105.4.254:from];
 	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
 	MIME_GOOD(-0.10)[text/plain];
 	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
 	FREEMAIL_TO(0.00)[linux-foundation.org,suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net];
+	ARC_NA(0.00)[];
 	DKIM_TRACE(0.00)[kernel.org:+];
-	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	ASN(0.00)[asn:63949, ipnet:172.105.0.0/19, country:SG];
 	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[100.103.45.18:received];
 	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
 	TO_DN_SOME(0.00)[];
@@ -125,17 +127,17 @@ X-Spamd-Result: default: False [-8.20 / 15.00];
 	TAGGED_RCPT(0.00)[netdev];
 	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: CC1F9456DD
+X-Rspamd-Queue-Id: 226C144A40
 X-Spamd-Bar: --------
-Message-ID-Hash: SM42Y6VN3IS5XBBTLW7NM6DF5R2WXZQL
-X-Message-ID-Hash: SM42Y6VN3IS5XBBTLW7NM6DF5R2WXZQL
+Message-ID-Hash: VAHUYO2EFWQLNQTHZJBNUOFIN72QFEDK
+X-Message-ID-Hash: VAHUYO2EFWQLNQTHZJBNUOFIN72QFEDK
 X-MailFrom: ljs@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
 CC: ljs@kernel.org, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org, linux-mm@kvack.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/SM42Y6VN3IS5XBBTLW7NM6DF5R2WXZQL/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/VAHUYO2EFWQLNQTHZJBNUOFIN72QFEDK/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
@@ -150,47 +152,38 @@ X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook.
-
-The hook only sets VMA flags and operations. The VMA private data is
-already NULL at this point, so we no longer explicitly clear it.
+Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
+only sets the VMA operations.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/xen/privcmd.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/book3s_64_vio.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/xen/privcmd.c b/drivers/xen/privcmd.c
-index 221b31611343..6d9e1fe03337 100644
---- a/drivers/xen/privcmd.c
-+++ b/drivers/xen/privcmd.c
-@@ -1645,14 +1645,13 @@ static const struct vm_operations_struct privcmd_vm_ops = {
- 	.fault = privcmd_fault
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index c5f3f5b29d89..05f6f2c9a432 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -247,9 +247,9 @@ static const struct vm_operations_struct kvm_spapr_tce_vm_ops = {
+ 	.fault = kvm_spapr_tce_fault,
  };
  
--static int privcmd_mmap(struct file *file, struct vm_area_struct *vma)
-+static int privcmd_mmap_prepare(struct vm_area_desc *desc)
+-static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
++static int kvm_spapr_tce_mmap_prepare(struct vm_area_desc *desc)
  {
- 	/* DONTCOPY is essential for Xen because copy_page_range doesn't know
- 	 * how to recreate these mappings */
--	vm_flags_set(vma, VM_IO | VM_PFNMAP | VM_DONTCOPY |
--			 VM_DONTEXPAND | VM_DONTDUMP);
--	vma->vm_ops = &privcmd_vm_ops;
--	vma->vm_private_data = NULL;
-+	vma_desc_set_flags(desc, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTCOPY_BIT,
-+			   VMA_DONTEXPAND_BIT, VMA_DONTDUMP_BIT);
-+	desc->vm_ops = &privcmd_vm_ops;
- 
+-	vma->vm_ops = &kvm_spapr_tce_vm_ops;
++	desc->vm_ops = &kvm_spapr_tce_vm_ops;
  	return 0;
  }
-@@ -1681,7 +1680,7 @@ const struct file_operations xen_privcmd_fops = {
- 	.unlocked_ioctl = privcmd_ioctl,
- 	.open = privcmd_open,
- 	.release = privcmd_release,
--	.mmap = privcmd_mmap,
-+	.mmap_prepare = privcmd_mmap_prepare,
+ 
+@@ -282,7 +282,7 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
+ }
+ 
+ static const struct file_operations kvm_spapr_tce_fops = {
+-	.mmap           = kvm_spapr_tce_mmap,
++	.mmap_prepare	= kvm_spapr_tce_mmap_prepare,
+ 	.release	= kvm_spapr_tce_release,
  };
- EXPORT_SYMBOL_GPL(xen_privcmd_fops);
  
 
 -- 
