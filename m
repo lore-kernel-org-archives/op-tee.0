@@ -1,198 +1,138 @@
 Received: from lists.trustedfirmware.org (lists.trustedfirmware.org [18.214.241.189])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D4AF606A31F
-	for <op-tee@archiver.kernel.org>; Fri, 27 Nov 2026 11:23:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8605B606A31E
+	for <op-tee@archiver.kernel.org>; Fri, 27 Nov 2026 12:14:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=CESoDuWm;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Q9yt1GTu
+	dkim=pass (2048-bit key, unprotected) header.d=lists.trustedfirmware.org header.i=@lists.trustedfirmware.org header.a=rsa-sha256 header.s=2024 header.b=Zt6QdqVr;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JrGEsf9R
 Received: from lists.trustedfirmware.org (localhost [127.0.0.1])
-	by lists.trustedfirmware.org (Postfix) with ESMTP id 8CABE5035F
-	for <op-tee@archiver.kernel.org>; Fri, 27 Nov 2026 11:23:46 +0000 (UTC)
+	by lists.trustedfirmware.org (Postfix) with ESMTP id D9F585035E
+	for <op-tee@archiver.kernel.org>; Fri, 27 Nov 2026 12:14:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=lists.trustedfirmware.org; s=2024; t=1795781692;
+	bh=H72B6Re7Lfo3dYJpngqffII6YfaUb4iqb0oxwd+0b1c=;
+	h=Subject:To:In-Reply-To:References:Date:CC:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From:Reply-To:From;
+	b=Zt6QdqVr+wf4qKsytSmBklvi7GNcKA6Ue6NJBrjR6y8QufpIK8XC5a5n+7OMG6yPI
+	 00WPYtvxPB5W6/AY3ga2EPxfGUT2vhJFiAF9DbwJ/DSccQa0gBPt7Nj/twZNBLEa4w
+	 cq/M01kW30u1QBDlaN/TrVQ8Z8J2/FwIlTfCtk32J7pJaxjSVCMctwL7Oc9cR5hhkb
+	 Zm8Y7QDtWX2I2kFlq4uHzCed/nh0fx1U1fPZ4pLAC+o9q9KRp3NImjiytIuR/OF4KT
+	 wppxQpDLS1BnvNFRJnhE7mpclKeXzyfGxxseKGf9Nq5IQzwh6Wk6DtHyW3Ji3vNyMR
+	 Wz3XdUdHrw5wg==
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.trustedfirmware.org (Postfix) with ESMTPS id C303844F32
+	for <op-tee@lists.trustedfirmware.org>; Fri, 27 Nov 2026 12:14:46 +0000 (UTC)
 Authentication-Results: lists.trustedfirmware.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=CESoDuWm;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Q9yt1GTu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JrGEsf9R;
 	dkim-atps=neutral
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	by lists.trustedfirmware.org (Postfix) with ESMTPS id 4959B44F32
-	for <op-tee@lists.trustedfirmware.org>; Fri, 27 Nov 2026 11:23:41 +0000 (UTC)
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ARAq9DE054488
-	for <op-tee@lists.trustedfirmware.org>; Fri, 27 Nov 2026 11:23:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:message-id:mime-version:subject:to; s=
-	qcppdkim1; bh=oyVIHwUXpz396ww9F8tPBI9FmpRAp1M+eoT3A1GyqyU=; b=CE
-	SoDuWmuat23oe0dRvY1isOww1tPGxyTPRtmwQoJLYRvXTaW8T5/rUzU5yaqQE+m/
-	B07WDfw9ogcSAfzdvjE21c/0WTJhGjDeqq4F4709YLTdVarNLbV641zj/dxIR9Dl
-	NTL8ZNK31mirP/MsE9aAPwwA1BQ9ADdBO1Z/DojicveBrDcv/k5HYbMXPwz1/nAp
-	O65nQUj8tFkW59sWDBwELn4fwsZnEohdAMa+28p1IquzHep5OB4YknCJxcL+5QRF
-	l1tkGTuBZBuTxBGX6/bpulj47Q0eHRrMrHlKkLToW+G9AypjwdOGVXlIqgL4A/lz
-	Teh+BWz2NtNDzXr3IX0Q==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j74g6s5rt-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <op-tee@lists.trustedfirmware.org>; Fri, 27 Nov 2026 11:23:40 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-93f3969a2a7so1119565485a.2
-        for <op-tee@lists.trustedfirmware.org>; Fri, 27 Nov 2026 03:23:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795778620; x=1796383420; darn=lists.trustedfirmware.org;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=oyVIHwUXpz396ww9F8tPBI9FmpRAp1M+eoT3A1GyqyU=;
-        b=Q9yt1GTuifpQAokAJYMXrcOHcfEct4hO9zicP/ZZFAayjyZLdugnTCD8MMTuIgwlqc
-         3BHlTtwCvg/+sldSJ5E+tGidKV/CuojJ1ao9VMXX+oLV/XRTPUXKYCZhmbhGUf9nhA42
-         DwT3YdHBk3munuIC/p+FkOFqTNhreO8+ZdgScvuzu4vNyNcdeY4vRuFvq1tpAf619S/E
-         pJugJxysKi6vlGOl8p0WTlknVOR6Hg3v1Cys8YrcbTugikyV8e3o5CK6UQO4rnB90Qsn
-         2dwr434ezmOtXCaMMxLnF0KA31DsDhObDxFMpTSqCGmVbYgxpRC24crxQrU4s9CpOdTc
-         i5nw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795778620; x=1796383420;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=oyVIHwUXpz396ww9F8tPBI9FmpRAp1M+eoT3A1GyqyU=;
-        b=pDK6zthnJh8qZtTvoBhlQ+MdNPma6q2R9AtsrqvySmrjyNvhrKG/62LDWch1Jw7Kzk
-         M+PI3b3i3ailpfJslZojpXlYu9ahG8TOSwafgCgagmjmAQmBNlOFYlyqWAJndDfSt/V8
-         M4qkpPbNndlQu/e/wj10Nt6TYS3ATEfmG3gX/7TcASAbjcX8oqS1t362EgCYtMQ+tcld
-         opEeXZ7bS2BxtiK4mAtk+bZMmzk24MzVHZweMfe63Ld2/njnG/mTIgV5mnmIPYya4sY0
-         O5waqmIEXvGWcvrLRpWcAfjplrswBLDV2AuxmJQfqbZjeFa5IkT7tU24Blk8Xu2ls7XY
-         lH9A==
-X-Forwarded-Encrypted: i=1; AL+hErG0q5vbiuaxS4q/cFglhWaBIjrw0zoCcakL20bVXKXDp8chNg0SXGEDUZrbkLg8dgQ8zcIHzvI=@lists.trustedfirmware.org
-X-Gm-Message-State: APuU4Z/FdeTxamKbpEdMXQWRb1oMnrpLACeSDGxN0T18QBYcuo97UV0O
-	UuDZeNPaXJyspWajSYCwP+eevYvKmIUDI7n0/ORI5AbkGvNCnMMkABpk782gswUrVVab9VgojeE
-	E9uw1nva8TMsoIMqlqyxkL+XwqfsGIC1XOxdZMpGiON3Cbn7jGXNnDfXB9oHqBCGc8hcLxEfZmN
-	RYXRorTQI=
-X-Gm-Gg: AZFdTZeu9mpulzCo0exUT5E46U2cS/gQ99Q76TOJk+OvmTLrzYg06yDNlU8i3LK6jaM
-	QUpTeekrCMAQMXfFJMSCcykhM0IClf8W+19mSPNDarTTZvSl1C5x1nxGJjBzMLMa8KuTKGGjGNX
-	Lda+jeV1pS9WASi5RWyjUGoRc+MUkpcr0fOvlrJVJtm5HeLiBbXUyBWzwH5YMemKkAnCEFs9t2q
-	ySfqPwklXP+HuVbJdgeHNN7Q9kevKW6Qv1/+aDDVc1woZlxiqsSP7IOiDaDkH6nU+2NE7vwUQIB
-	b4i9kwaLTI6EdPLQT7ZcaNHUT8HjPjtKzYCW8hiJhYxUlj7c+YN7ZQLKrUPmH97theUC+dDlfjP
-	krl8X/Vkv0/nHxpkcx4VL0Y1tC8z2adEej9uJOAID+C18l1+hzZR3pgcJ23iwhoDD2IislqSvho
-	fRhDWvtTuaWjqrJDFfuuG2PkthNtsLvk3KP1kAtsuuk3e3zJyZu9jIAHtr3++VpRjvBCQ5OsNvW
-	4gn
-X-Received: by 2002:a05:620a:28d5:b0:949:6d4d:2396 with SMTP id af79cd13be357-949ba9c6ac4mr4095406485a.27.1795778619974;
-        Fri, 27 Nov 2026 03:23:39 -0800 (PST)
-X-Received: by 2002:a05:620a:28d5:b0:949:6d4d:2396 with SMTP id af79cd13be357-949ba9c6ac4mr4095403085a.27.1795778619548;
-        Fri, 27 Nov 2026 03:23:39 -0800 (PST)
-Received: from rayden (h-79-136-84-34.A175.priv.bahnhof.se. [79.136.84.34])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6ba370cb764sm11193958a12.12.2026.11.27.03.23.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2026 03:23:38 -0800 (PST)
-Date: Fri, 27 Nov 2026 12:23:36 +0100
-From: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
-To: arm@kernel.org, soc@kernel.org
-Subject: [GIT PULL] TEE fix for v7.4
-Message-ID: <20261127112336.GA2749856@rayden>
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 247854187D;
+	Fri, 27 Nov 2026 12:14:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AA841F000C1;
+	Fri, 27 Nov 2026 12:14:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795781685;
+	bh=3w20wn8ciMIi314K9ZKRgL922tIUAQ1fVj1q7jFt11I=;
+	h=Subject:From:To:Cc:In-Reply-To:References:Date;
+	b=JrGEsf9RGSAi95mThpsPZiqwBb8CPAROQvgPolW2qIJ2xXEk5VJKACzsGFeqPtsMk
+	 12STunPm5NpI3riSYWarempFNzU3lBP52Nu9ASxRNvvlCt5tbzD/Hw69Mx3qSnEwze
+	 Tixfxfhgo095X1TISXxrvq2kWiGqVrUKHT1E9npI8SB7mKrHS/umAuWt+Hx6/XLiPW
+	 CxkomSEuUSy3wQR8uAzWuBAWKwnbwVNUjdHwpE1WFY5jnYft8hPuN8KnQgWOuemKqt
+	 DFUFi5a6yGXRGOdEjpfbF1YQa23ZPwEuA+i7DRrh/a6UUpOg1fAbG/YbyqIeU2kgn0
+	 fWfCj2t0bN5wQ==
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-Proofpoint-ORIG-GUID: Z86P-GHoCzi49TjXruVIMRMacw3Y1X5a
-X-Authority-Analysis: v=2.4 cv=U5kHnuru c=1 sm=1 tr=0 ts=6b09683c cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=dMv3lA6PLLkT9/uWe4YCGw==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=VwQbUJbxAAAA:8 a=KyRjHmHKXXPnJxnbqygA:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
- a=IoWCM6iH3mJn3m4BftBB:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI3MDA0NSBTYWx0ZWRfX6ZGtmEkmqWiR
- s1sYXBx5XI5jKScGGMF46tlmbTfxH2B8hqrq+FQ1pPxtazJQYuY/X0HnqWJFJCVIwiuzOwVYS8B
- pZ6fDLBaRNrpFfdjH7ox4qanvlr/b3A=
-X-Proofpoint-GUID: Z86P-GHoCzi49TjXruVIMRMacw3Y1X5a
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI3MDA0NSBTYWx0ZWRfX+RVS/f+7K9TX
- bWLxWv0Ey6ZwYNWIuSAjiAXUuYNpe9nrYUAiGvLz3e2jkpIlUf+nv6ICpqtLYyOmc7mcvuIPfmS
- 6qR3HY6nwbmsahDkOeduxQgTjP3EGtbUohSsw3Mvw5ZtITu7OP/iMF44IHLk/XJcC7Mlg08SOoI
- S/UPaW8OaoV32/vNksv5c/rCnjeccnF42VJHcfzE7yFqWVsV7u2w3t4QGNt0T1ozlbJ425TZdhF
- fyZc4t60fHBY7ZfAJ6q2i2EDuy2u5rGAhNO5n0wS7Ny+JG5dcMiRhTvB2BLdcAFEFXHKC2bX9qh
- RrdqzXX2D9LXzwsLy7vI99SzgwBDIvx2qGALgqJPA20VrUowz2EaketOiPztYJNHzOCyUdFHTB/
- sQKCwTQyRb2kS6I4A3n4o0j+RlnPeczrcP16rCtmNPyx3MPeDuCGFjaF6Q16BVpIoqUdQGs+0e2
- Qfslk26Y9fvv0R5ZXMA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-27_02,2026-11-26_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0 impostorscore=0
- adultscore=0 suspectscore=0 malwarescore=0 priorityscore=1501 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611270045
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v3 0/8] arm64: Unmap FF-A lent memory from direct map
+To: Vincent Donnefort <vdonnefort@google.com>
+In-Reply-To: <20261111110738.872947-1-vdonnefort@google.com>
+References: <20261111110738.872947-1-vdonnefort@google.com>
+Date: Fri, 27 Nov 2026 17:44:23 +0530
+Message-Id: <179578166371.172025.10770561998032628043.b4-review@b4>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=764; i=sumit.garg@kernel.org;
+ h=from:subject:message-id; bh=H72B6Re7Lfo3dYJpngqffII6YfaUb4iqb0oxwd+0b1c=;
+ b=owGbwMvMwCV2RWpxpe9rmzmMp9WSGLI5SzTqKoX2v6poOjM7Tepq5Ht5my8u93hEPXlY96rGb
+ llxtjyvo5SFQYyLQVZMkSX167dp24T+1YZaneCBmcPKBDKEgYtTACZyuYeRYavT7sI3m/SebpyX
+ onf6hgPXAYGpWw5ElojkKeqEbHUztmH4w+Vd9c3uxqQ7AhKnb8xtPv11xZuQkk5zO+20IpOs84t
+ N+AA=
+X-Developer-Key: i=sumit.garg@kernel.org; a=openpgp;
+ fpr=65F5F696B612FE7D553AC80CD41AA3794DEB3C9C
 X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.60 / 15.00];
+X-Spamd-Result: default: False [-7.70 / 15.00];
+	WHITELIST_SPF_DKIM(-3.00)[kernel.org:d:+,kernel.org:s:+];
 	BAYES_HAM(-3.00)[99.99%];
-	DMARC_POLICY_ALLOW(-0.50)[oss.qualcomm.com,none];
+	DWL_DNSWL_MED(-2.00)[kernel.org:dkim];
+	SUSPICIOUS_RECIPS(1.50)[];
 	MID_RHS_NOT_FQDN(0.50)[];
-	R_DKIM_ALLOW(-0.20)[qualcomm.com:s=qcppdkim1,oss.qualcomm.com:s=google];
-	R_SPF_ALLOW(-0.20)[+ip4:205.220.180.131];
-	RCVD_IN_DNSWL_LOW(-0.10)[205.220.180.131:from];
+	RCVD_DKIM_ARC_DNSWL_MED(-0.50)[];
+	DMARC_POLICY_ALLOW(-0.50)[kernel.org,quarantine];
+	R_DKIM_ALLOW(-0.20)[kernel.org:s=k20260515];
+	R_SPF_ALLOW(-0.20)[+ip4:172.234.252.31];
+	RCVD_IN_DNSWL_MED(-0.20)[172.234.252.31:from];
 	MIME_GOOD(-0.10)[text/plain];
-	ASN(0.00)[asn:22843, ipnet:205.220.180.0/24, country:US];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	MISSING_XM_UA(0.00)[];
-	RCVD_IN_DNSWL_NONE(0.00)[209.85.222.197:received];
-	NEURAL_HAM(-0.00)[-1.000];
-	DWL_DNSWL_BLOCKED(0.00)[qualcomm.com:dkim];
-	RCPT_COUNT_THREE(0.00)[4];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	TO_DN_NONE(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
-	PREVIOUSLY_DELIVERED(0.00)[op-tee@lists.trustedfirmware.org];
-	RCVD_COUNT_THREE(0.00)[4];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[26];
+	MIME_TRACE(0.00)[0:+];
+	TAGGED_RCPT(0.00)[dt];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	RCVD_TLS_LAST(0.00)[];
-	DNSWL_BLOCKED(0.00)[79.136.84.34:received];
-	DKIM_TRACE(0.00)[qualcomm.com:+,oss.qualcomm.com:+]
+	ASN(0.00)[asn:63949, ipnet:172.234.224.0/19, country:SG];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	NEURAL_HAM(-0.00)[-1.000];
+	DKIM_TRACE(0.00)[kernel.org:+];
+	ALIAS_RESOLVED(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[]
 X-Rspamd-Server: lists.trustedfirmware.org
-X-Rspamd-Queue-Id: 4959B44F32
-X-Spamd-Bar: ---
-Message-ID-Hash: CRSXLDLEKYPZZWN37OWKH6K5CIW73BRP
-X-Message-ID-Hash: CRSXLDLEKYPZZWN37OWKH6K5CIW73BRP
-X-MailFrom: jens.wiklander@oss.qualcomm.com
+X-Rspamd-Queue-Id: C303844F32
+X-Spamd-Bar: -------
+Message-ID-Hash: TJFDJXFUVXJJCY4HU545WSOZUSSWLUEC
+X-Message-ID-Hash: TJFDJXFUVXJJCY4HU545WSOZUSSWLUEC
+X-MailFrom: sumit.garg@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-op-tee.lists.trustedfirmware.org-0; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: linux-kernel@vger.kernel.org, op-tee@lists.trustedfirmware.org
+CC: catalin.marinas@arm.com, will@kernel.org, rppt@kernel.org, akpm@linux-foundation.org, m.szyprowski@samsung.com, jenswi@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, mark.rutland@arm.com, robin.murphy@arm.com, hch@lst.de, ryan.roberts@arm.com, sumit.garg@kernel.org, sudeep.holla@kernel.org, ardb@kernel.org, thierry.reding@kernel.org, david@kernel.org, danielmentz@google.com, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, iommu@lists.linux.dev, op-tee@lists.trustedfirmware.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 X-Mailman-Version: 3.3.5
 Precedence: list
 List-Id: <op-tee.lists.trustedfirmware.org>
-Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/CRSXLDLEKYPZZWN37OWKH6K5CIW73BRP/>
+Archived-At: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/message/TJFDJXFUVXJJCY4HU545WSOZUSSWLUEC/>
 List-Archive: <https://lists.trustedfirmware.org/archives/list/op-tee@lists.trustedfirmware.org/>
 List-Help: <mailto:op-tee-request@lists.trustedfirmware.org?subject=help>
 List-Owner: <mailto:op-tee-owner@lists.trustedfirmware.org>
 List-Post: <mailto:op-tee@lists.trustedfirmware.org>
 List-Subscribe: <mailto:op-tee-join@lists.trustedfirmware.org>
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS autolearn=unavailable autolearn_force=no
+From: Sumit Garg via OP-TEE <op-tee@lists.trustedfirmware.org>
+Reply-To: Sumit Garg <sumit.garg@kernel.org>
+X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hello soc maintainers,
+> This series is a follow-up to the discussion that has started here [1].
+> 
+> When memory is lent to the Secure world via FF-A, CPU speculative
+> accesses from NS to the lent pages can still occur as long as it retains
+> a cacheable mapping to it.
 
-Please pull this small fix for the TEE subsystem.
+One thing I forgot to ask during last review, in case of hypervisor
+support like pKVM how are going to handle unmap from stage-2? As I can
+see from code pKVM doesn't support FF-A lend calls to unmap pages from
+stage-2.
 
-Thanks,
-Jens
+I think overall it is important to unmap memory from both stage-1 and
+stage-2 to avoid CPU speculative accesses from NS when memory is lent to
+the secure world. Is there plan to support stage-2 unmapping like in
+case of pKVM?
 
-The following changes since commit 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4:
+-Sumit
 
-  Linux 7.4-rc1 (2026-11-01 13:26:31 -0800)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jenswi/linux-tee.git tags/tee-fix-for-v7.4
-
-for you to fetch changes up to 76313284b6a34ae7fde7ce18f815d25bdb1f5e62:
-
-  tee: avoid accessing dma-buf shared memory after put (2026-11-09 17:10:38 +0100)
-
-----------------------------------------------------------------
-Avoid accessing dma-buf shared memory after put
-
-----------------------------------------------------------------
-Hongyan Xu (1):
-      tee: avoid accessing dma-buf shared memory after put
-
- drivers/tee/tee_core.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+-- 
+Sumit Garg <sumit.garg@kernel.org>
